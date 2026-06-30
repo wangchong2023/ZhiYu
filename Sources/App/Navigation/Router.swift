@@ -237,6 +237,21 @@ final class Router {
     /// 是否正在显示设置面板
     var isShowingSettingsSheet: Bool = false
     
+    /// 是否正在显示用户个人中心菜单
+    var isShowingProfileMenu: Bool = false
+    
+    /// 是否正在显示个人资料面板
+    var isShowingProfileSheet: Bool = false
+    
+    /// 是否正在显示订阅计划面板
+    var isShowingPlanSheet: Bool = false
+    
+    /// 是否正在显示插件中心面板
+    var isShowingPluginsSheet: Bool = false
+    
+    /// 是否正在显示关于我们面板
+    var isShowingAboutSheet: Bool = false
+    
     /// 是否正在显示人工智能参数设置面板
     var isShowingAISettingsSheet: Bool = false
     

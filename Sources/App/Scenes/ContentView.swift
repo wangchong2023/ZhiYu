@@ -102,6 +102,50 @@ struct ContentView: View {
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
             .applyPagePresentationSizing()
         }
+        .sheet(isPresented: $router.isShowingProfileMenu) {
+            UserProfileMenuSheetContent()
+                .environment(authService)
+                .environment(store)
+                .environment(router)
+                .environmentObject(themeManager)
+                .environmentObject(onboardingService)
+                .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+                .applyPresentationSizing()
+        }
+        .fullScreenCover(isPresented: $router.isShowingProfileSheet) {
+            NavigationStack {
+                UserProfileView()
+            }
+            .environment(authService)
+            .environmentObject(themeManager)
+            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .applyPresentationSizing()
+        }
+        .fullScreenCover(isPresented: $router.isShowingPlanSheet) {
+            NavigationStack {
+                SubscriptionPlanView()
+            }
+            .environment(authService)
+            .environmentObject(themeManager)
+            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .applyPagePresentationSizing()
+        }
+        .fullScreenCover(isPresented: $router.isShowingPluginsSheet) {
+            NavigationStack {
+                PluginCenterView()
+            }
+            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .applyPagePresentationSizing()
+        }
+        .fullScreenCover(isPresented: $router.isShowingAboutSheet) {
+            NavigationStack {
+                AboutView()
+            }
+            .environment(store)
+            .environmentObject(themeManager)
+            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .applyPresentationSizing()
+        }
         .animation(DesignSystem.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
         .animation(DesignSystem.Animation.Config.prominentSpring, value: vaultService.selectedVaultID)
         .environmentObject(MedalService.shared)

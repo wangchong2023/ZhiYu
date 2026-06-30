@@ -171,29 +171,12 @@ struct UserProfileMenu: View {
     @EnvironmentObject var onboardingService: OnboardingService
     @EnvironmentObject var themeManager: ThemeManager
     
-    @State private var showProfile = false
-    @State private var showAbout = false
     @State private var showWatchMenu = false
-
-    @State private var showPlugins = false
-
-    @State private var showMenuPopover = false
-    @State private var showPlan = false
-    @State private var showAISettings = false // AI 大模型快捷设置展示状态
-    
-    /// 用于 watchOS 平台设置弹窗的展示状态
+    @State private var showAbout = false
     @State private var showSettings = false
-
-    /// popover 消失后待执行的导航动作，避免 UIKit 转场冲突（Mac Catalyst）
     @State private var pendingMenuAction: MenuAction?
 
-    private var isUITesting: Bool {
-        NSClassFromString("XCTest") != nil ||
-        ProcessInfo.processInfo.arguments.contains("--uitesting") ||
-        ProcessInfo.processInfo.environment["UITesting"] == "true"
-    }
-
-    fileprivate enum MenuAction {
+    enum MenuAction {
         case settings, profile, plan, plugins, aiSettings
     }
     
@@ -222,50 +205,51 @@ struct UserProfileMenu: View {
             }
         }
         #else
-        nonWatchBody
-        .fullScreenCover(isPresented: $showProfile) {
-            NavigationStack {
-                UserProfileView()
+        #if targetEnvironment(macCatalyst)
+        // Mac Catalyst: 使用 UIWindow 悬浮覆盖层，避开 UIPopoverPresentationController 的转场崩溃
+        Button(action: {
+            HapticFeedback.shared.trigger(.selection)
+            CatalystFloatingMenuManager.shared.show(
+                onAction: { action in pendingMenuAction = action },
+                onDismiss: {},
+                authService: authService,
+                store: store,
+                router: router,
+                themeManager: themeManager,
+                onboardingService: onboardingService
+            )
+        }) {
+            profileLabel
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("userProfileMenuButton")
+        .onChange(of: pendingMenuAction) { _, newValue in
+            guard let action = newValue else { return }
+            pendingMenuAction = nil
+            DispatchQueue.main.async {
+                executeMenuAction(action)
             }
-            .environment(authService)
-            .environmentObject(themeManager)
-            .applyPresentationSizing() // 适配大屏弹窗尺寸规范
         }
-        .fullScreenCover(isPresented: $showPlan) {
-            NavigationStack {
-                SubscriptionPlanView()
-            }
-            .environment(authService)
-            .environmentObject(themeManager)
-            // 套餐管理含配额大盘+套餐对比+购买功能，内容丰富，使用 .page 级别大尺寸
-            .applyPagePresentationSizing()
+        #else
+        // iOS/iPadOS：只返回触发按钮，不在此嵌套 sheet/popover，交由顶层 ContentView 统一调度
+        Button(action: {
+            HapticFeedback.shared.trigger(.selection)
+            router.isShowingProfileMenu = true
+        }) {
+            profileLabel
         }
-        .fullScreenCover(isPresented: $showAbout) {
-            aboutStack
-                .environment(store)
-                .environmentObject(themeManager)
-                .applyPresentationSizing() // 适配大屏弹窗尺寸规范
-        }
-
-        .fullScreenCover(isPresented: $showPlugins) {
-            NavigationStack {
-                PluginCenterView()
-            }
-            // 插件中心内容丰富，使用 .page 级别大尺寸，充分利用 iPad/Mac 屏幕空间
-            .applyPagePresentationSizing()
-        }
-
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("userProfileMenuButton")
+        #endif
         #endif
     }
 
-    /// 执行个人中心菜单里选择的跳转操作
-    /// - Parameter action: 选择的菜单操作类型
     private func executeMenuAction(_ action: MenuAction) {
         switch action {
         case .settings: router.isShowingSettingsSheet = true
-        case .profile: showProfile = true
-        case .plan: showPlan = true
-        case .plugins: showPlugins = true
+        case .profile: router.isShowingProfileSheet = true
+        case .plan: router.isShowingPlanSheet = true
+        case .plugins: router.isShowingPluginsSheet = true
         case .aiSettings: router.isShowingAISettingsSheet = true
         }
     }
@@ -296,110 +280,38 @@ struct UserProfileMenu: View {
             AboutView()
         }
     }
-    
-    @ViewBuilder
-    private var nonWatchBody: some View {
-        #if targetEnvironment(macCatalyst)
-        // Mac Catalyst: 使用 UIWindow 悬浮覆盖层，避开 UIPopoverPresentationController 的转场崩溃
-        Button(action: {
-            HapticFeedback.shared.trigger(.selection)
-            CatalystFloatingMenuManager.shared.show(
-                onAction: { action in pendingMenuAction = action },
-                onDismiss: {},
-                authService: authService,
-                store: store,
-                router: router,
-                themeManager: themeManager,
-                onboardingService: onboardingService
-            )
-        }) {
-            profileLabel
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("userProfileMenuButton")
-        .onChange(of: pendingMenuAction) { _, newValue in
-            guard let action = newValue else { return }
-            pendingMenuAction = nil
-            DispatchQueue.main.async {
-                executeMenuAction(action)
-            }
-        }
-        #else
-        // iOS/iPadOS：根据设备类型选择弹出方式
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            // iPhone 使用 sheet，确保可见
-            Button(action: {
-                HapticFeedback.shared.trigger(.selection)
-                showMenuPopover = true
-            }) {
-                profileLabel
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("userProfileMenuButton")
-            .sheet(isPresented: $showMenuPopover) {
-                VStack(spacing: 0) {
-                    Spacer().frame(height: DesignSystem.medium) // 为拖拽条留出空间
-                    CustomProfilePopover(
-                        showMenuPopover: $showMenuPopover,
-                        onAction: { pendingMenuAction = $0 }
-                    )
-                }
-                .environment(authService)
-                .environment(store)
-                .environment(router)
-                .environmentObject(themeManager)
-                .environmentObject(onboardingService)
-                .onDisappear {
-                    if let action = pendingMenuAction {
-                        pendingMenuAction = nil
-                        // 延迟 0.5s 执行，彻底避开 UIKit Dismiss/Present 周期冲突
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            executeMenuAction(action)
-                        }
-                    }
-                }
-                .presentationDetents(
-                    isUITesting
-                        ? [.large]
-                        : [.height(340)]
-                )
-                .presentationDragIndicator(.visible)
-                .background(
-                    themeManager.pageBackground().ignoresSafeArea()
-                )
-            }
-        } else {
-            // iPad 以及其他使用 popover
-            Button(action: {
-                HapticFeedback.shared.trigger(.selection)
-                showMenuPopover = true
-            }) {
-                profileLabel
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("userProfileMenuButton")
-            .popover(isPresented: $showMenuPopover) {
-                menuPopoverContent
-                    .frame(
-                        width: CustomProfilePopover.Constants.menuWidth,
-                        height: UIDevice.current.userInterfaceIdiom == .pad ? 360 : 340
-                    )
-                    .presentationCompactAdaptation(.popover)
-            }
-        }
-        #endif
-    }
 }
 
-// MARK: - UserProfileMenu 内部扩展
-private extension UserProfileMenu {
-    /// 菜单弹窗内容（iPhone sheet / iPad popover 共用）
-    @MainActor
-    var menuPopoverContent: some View {
-        CustomProfilePopover(
-            showMenuPopover: $showMenuPopover,
-            onAction: { pendingMenuAction = $0 }
-        )
+/// 顶层承载的个人中心 Sheet 视图内容
+struct UserProfileMenuSheetContent: View {
+    @Environment(AuthService.self) var authService
+    @Environment(AppStore.self) var store
+    @Environment(Router.self) var router
+    @EnvironmentObject var onboardingService: OnboardingService
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    @State private var pendingMenuAction: UserProfileMenu.MenuAction?
+    
+    private var isUITesting: Bool {
+        NSClassFromString("XCTest") != nil ||
+        ProcessInfo.processInfo.arguments.contains("--uitesting") ||
+        ProcessInfo.processInfo.environment["UITesting"] == "true"
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: DesignSystem.medium) // 为拖拽条留出空间
+            CustomProfilePopover(
+                showMenuPopover: Binding(
+                    get: { router.isShowingProfileMenu },
+                    set: { router.isShowingProfileMenu = $0 }
+                ),
+                onAction: { action in
+                    pendingMenuAction = action
+                    router.isShowingProfileMenu = false
+                }
+            )
+        }
         .environment(authService)
         .environment(store)
         .environment(router)
@@ -413,6 +325,25 @@ private extension UserProfileMenu {
                     executeMenuAction(action)
                 }
             }
+        }
+        .presentationDetents(
+            isUITesting
+                ? [.large]
+                : [.height(340)]
+        )
+        .presentationDragIndicator(.visible)
+        .background(
+            themeManager.pageBackground().ignoresSafeArea()
+        )
+    }
+    
+    private func executeMenuAction(_ action: UserProfileMenu.MenuAction) {
+        switch action {
+        case .settings: router.isShowingSettingsSheet = true
+        case .profile: router.isShowingProfileSheet = true
+        case .plan: router.isShowingPlanSheet = true
+        case .plugins: router.isShowingPluginsSheet = true
+        case .aiSettings: router.isShowingAISettingsSheet = true
         }
     }
 }
