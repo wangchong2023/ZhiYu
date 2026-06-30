@@ -110,7 +110,6 @@ struct ContentView: View {
                 .environmentObject(themeManager)
                 .environmentObject(onboardingService)
                 .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
-                .applyPresentationSizing()
         }
         .fullScreenCover(isPresented: $router.isShowingProfileSheet) {
             NavigationStack {
