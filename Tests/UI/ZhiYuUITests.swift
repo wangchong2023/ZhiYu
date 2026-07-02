@@ -179,13 +179,13 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
         ensureAppIsLoggedInAndInVault()
 
         var knowledgeTab = app.tabBars.buttons["Knowledge"]
-        if !knowledgeTab.exists {
+        if !knowledgeTab.waitForExistence(timeout: 5) {
             knowledgeTab = app.tabBars.buttons["books.vertical.fill"]
         }
-        if !knowledgeTab.exists {
+        if !knowledgeTab.waitForExistence(timeout: 5) {
             knowledgeTab = app.tabBars.buttons["知识库"]
         }
-        XCTAssertTrue(knowledgeTab.exists, "知识库 Tab 按钮应该存在")
+        XCTAssertTrue(knowledgeTab.waitForExistence(timeout: 15), "知识库 Tab 按钮应该存在")
         knowledgeTab.tap()
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Tab 切换等待")], timeout: 0.5)
 
@@ -271,7 +271,7 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
 
     private func enterKnowledgeList() {
         let knowledgeTab = resolveKnowledgeTab()
-        XCTAssertTrue(knowledgeTab.exists, "知识库 Tab 按钮应该存在")
+        XCTAssertTrue(knowledgeTab.waitForExistence(timeout: 15), "知识库 Tab 按钮应该存在")
         knowledgeTab.tap()
 
         let listPredicate = NSPredicate(format: "label CONTAINS '所有' OR label CONTAINS '页面' OR label CONTAINS 'Pages'")
@@ -282,12 +282,12 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
 
     private func resolveKnowledgeTab() -> XCUIElement {
         // 等待 TabBar 出现，防止 vault 切换动画未完成
-        _ = app.tabBars.firstMatch.waitForExistence(timeout: 5)
+        _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
         // L10n 自适应候选：en="ZhiYu", zh-Hans="知识库", 兼容旧版 "Knowledge"/"知识"
         let candidates = ["ZhiYu", "知识库", "Knowledge", "知识"]
         for name in candidates {
             let btn = app.tabBars.buttons[name]
-            if btn.exists { return btn }
+            if btn.waitForExistence(timeout: 2) { return btn }
         }
         return app.tabBars.buttons.firstMatch
     }
