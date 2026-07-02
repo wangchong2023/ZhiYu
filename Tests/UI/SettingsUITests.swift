@@ -218,14 +218,14 @@ final class SettingsE2ETests: KnowledgeBaseUITests {
         // 1. 找到用户头像入口并点击
         let profileButton = app.buttons["userProfileMenuButton"]
         XCTAssertTrue(profileButton.waitForExistence(timeout: 15), "用户头像入口应当存在")
-        profileButton.tap()
+        safeTap(profileButton)
 
         try? await Task.sleep(nanoseconds: 1_000_000_000)
 
         // 2. 点击系统设置菜单项
         let settingsMenuButton = app.buttons["settingsMenuButton"]
         XCTAssertTrue(settingsMenuButton.waitForExistence(timeout: 15), "系统设置菜单入口应当存在")
-        settingsMenuButton.tap()
+        safeTap(settingsMenuButton)
 
         try? await Task.sleep(nanoseconds: 1_500_000_000)
 
@@ -242,14 +242,14 @@ final class SettingsE2ETests: KnowledgeBaseUITests {
         // 1. 找到用户头像入口并点击
         let profileButton = app.buttons["userProfileMenuButton"]
         XCTAssertTrue(profileButton.waitForExistence(timeout: 15), "用户头像入口应当存在")
-        profileButton.tap()
+        safeTap(profileButton)
 
         try? await Task.sleep(nanoseconds: 1_000_000_000)
 
         // 2. 点击系统设置菜单项
         let settingsMenuButton = app.buttons["settingsMenuButton"]
         XCTAssertTrue(settingsMenuButton.waitForExistence(timeout: 15), "系统设置菜单入口应当存在")
-        settingsMenuButton.tap()
+        safeTap(settingsMenuButton)
 
         try? await Task.sleep(nanoseconds: 1_500_000_000)
 
