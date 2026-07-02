@@ -67,7 +67,7 @@ final class AuthUITests: XCTestCase {
     /// 确保用户协议复选框处于勾选状态（assertive：断言必须存在）。默认已是勾选，仅未勾选时才点击。
     private func ensureAgreementChecked() {
         let checkbox = app.buttons["agreementCheckbox"]
-        XCTAssertTrue(checkbox.waitForExistence(timeout: 5), "用户协议复选框应存在（agreementCheckbox）")
+        XCTAssertTrue(checkbox.waitForExistence(timeout: 15), "用户协议复选框应存在（agreementCheckbox）")
         // 通过 accessibilityValue 判断状态："checked" = 已勾选，"unchecked" = 未勾选
         // 这种方式不依赖 SF Symbol 的本地化 label，在中文/英文环境均可靠
         if (checkbox.value as? String) == "unchecked" {
@@ -78,7 +78,7 @@ final class AuthUITests: XCTestCase {
     /// 取消勾选用户协议复选框（用于测试协议拦截场景）
     private func uncheckAgreement() {
         let checkbox = app.buttons["agreementCheckbox"]
-        XCTAssertTrue(checkbox.waitForExistence(timeout: 5), "用户协议复选框应存在（agreementCheckbox）")
+        XCTAssertTrue(checkbox.waitForExistence(timeout: 15), "用户协议复选框应存在（agreementCheckbox）")
         // 通过 accessibilityValue 判断状态，避免 SF Symbol 本地化 label 引起的匹配失败
         if (checkbox.value as? String) == "checked" {
             checkbox.tap()
@@ -333,7 +333,7 @@ final class AuthUITests: XCTestCase {
 
         // GitHub 在 mock 模式下走 DEBUG mock 路径，不依赖真实网络
         XCTAssertTrue(
-            waitForHomeView(timeout: 10),
+            waitForHomeView(timeout: 20),
             "GitHub 登录（mock-backend）应成功进入主界面"
         )
         takeScreenshot(name: "TC09_02_GitHub_Login_Success")

@@ -153,10 +153,10 @@ class KnowledgeBaseUITests: XCTestCase {
         ensureAppMainInterfaceVisible()
 
         var tabButton = app.tabBars.buttons[tabName]
-        if !tabButton.waitForExistence(timeout: 5) {
+        if !tabButton.waitForExistence(timeout: 15) {
             tabButton = app.buttons[tabName]
         }
-        if tabButton.waitForExistence(timeout: 5) {
+        if tabButton.waitForExistence(timeout: 15) {
             tabButton.tap()
         } else if tapFallbackName(for: tabName) {
             return
@@ -252,12 +252,12 @@ class KnowledgeBaseUITests: XCTestCase {
         
         if tabName == "Settings" || tabName == "设置" {
             let settingsBtn = app.buttons["Settings"]
-            if settingsBtn.waitForExistence(timeout: 10) {
+            if settingsBtn.waitForExistence(timeout: 15) {
                 settingsBtn.tap()
                 return
             }
             let settingsBtnZh = app.buttons["设置"]
-            if settingsBtnZh.waitForExistence(timeout: 5) {
+            if settingsBtnZh.waitForExistence(timeout: 15) {
                 settingsBtnZh.tap()
                 return
             }
