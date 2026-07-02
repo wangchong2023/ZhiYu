@@ -46,6 +46,8 @@ class KnowledgeBaseUITests: XCTestCase {
 
         // [自适应金库工作台跳转保护] 如果启动后处于冷启动 NotebookHub 笔记本工作台界面（不存在 TabBar）
         // 必须先自动进入第一个可用金库，以展现出应用主界面及底座 TabBar，防止 UI 单测乱点或找不到元素崩溃
+        // 注意：先等待 15 秒让 App 充分加载，防止长时间测试后模拟器启动缓慢导致即时判断误判
+        _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
         if !app.tabBars.firstMatch.exists {
             let firstVaultCard = app.buttons.containing(NSPredicate(format: "label CONTAINS '的笔记本'")).element(boundBy: 0)
             let anyCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)

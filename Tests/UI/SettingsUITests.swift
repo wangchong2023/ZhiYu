@@ -196,6 +196,18 @@ final class iCloudSyncTests: KnowledgeBaseUITests {
 /// 覆盖：全滚动不崩溃、语言切换、主题颜色变更
 final class SettingsE2ETests: KnowledgeBaseUITests {
 
+    /// 每个测试前先导航到 Knowledge Tab，确保 userProfileMenuButton 处于可见状态
+    /// 防止因 App 初始化缓慢或先前测试遗留的 Tab 状态导致 Flaky 失败
+    override func setUp() async throws {
+        try await super.setUp()
+        // 回到 Knowledge Tab（userProfileMenuButton 所在视图）
+        tapTab(named: "Knowledge")
+        // 等待 userProfileMenuButton 完全渲染
+        let profileBtn = app.buttons["userProfileMenuButton"]
+        _ = profileBtn.waitForExistence(timeout: 20)
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+    }
+
     /// 验证设置页面所有 Section 可访问且应用不崩溃
     func testSettingsAllSectionsAccessible() async {
         tapTab(named: "设置")
