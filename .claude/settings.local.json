@@ -411,7 +411,9 @@
       "Bash(WOODPECKER_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidXNlciIsInVzZXItaWQiOiIxIn0.5yAkqCiJqH2-nwOPVLFDUUzB6CFOJNCix1c8-Kh5yeo\" WOODPECKER_SERVER=\"http://localhost:8000\" woodpecker-cli *)",
       "Bash(fastlane sync_version)",
       "Bash(/usr/libexec/PlistBuddy *)",
-      "Bash(python3 Tools/Gatekeeper/Compliance/check_localization.py)"
+      "Bash(python3 Tools/Gatekeeper/Compliance/check_localization.py)",
+      "Skill(investigate)",
+      "Bash(git commit -m 'perf\\(ci\\): 测试进程级并行度从 2 提升至 4 个模拟器实例 *)"
     ]
   }
 }
