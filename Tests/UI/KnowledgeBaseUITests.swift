@@ -148,12 +148,15 @@ class KnowledgeBaseUITests: XCTestCase {
     /// - Parameter tabName: Tab 标识名（支持英文或中文）
     func tapTab(named tabName: String) {
         // 先等待 TabBar 出现，防止主界面加载动画或 XCTest accessibility 缓存延迟导致误判
-        _ = app.tabBars.firstMatch.waitForExistence(timeout: 2.0)
+        _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
 
         ensureAppMainInterfaceVisible()
 
-        let tabButton = app.tabBars.buttons[tabName].exists ? app.tabBars.buttons[tabName] : app.buttons[tabName]
-        if tabButton.exists {
+        var tabButton = app.tabBars.buttons[tabName]
+        if !tabButton.waitForExistence(timeout: 5) {
+            tabButton = app.buttons[tabName]
+        }
+        if tabButton.waitForExistence(timeout: 5) {
             tabButton.tap()
         } else if tapFallbackName(for: tabName) {
             return
@@ -226,8 +229,11 @@ class KnowledgeBaseUITests: XCTestCase {
         
         guard let fallbackName = fallbackMapping[tabName] else { return false }
         
-        let fallbackBtn = app.tabBars.buttons[fallbackName].exists ? app.tabBars.buttons[fallbackName] : app.buttons[fallbackName]
-        if fallbackBtn.exists {
+        var fallbackBtn = app.tabBars.buttons[fallbackName]
+        if !fallbackBtn.waitForExistence(timeout: 5) {
+            fallbackBtn = app.buttons[fallbackName]
+        }
+        if fallbackBtn.waitForExistence(timeout: 5) {
             fallbackBtn.tap()
             return true
         }
@@ -245,16 +251,22 @@ class KnowledgeBaseUITests: XCTestCase {
         ]
         
         if tabName == "Settings" || tabName == "设置" {
-            let settingsBtn = app.buttons["Settings"].exists ? app.buttons["Settings"] : app.buttons["设置"]
-            if settingsBtn.exists {
+            let settingsBtn = app.buttons["Settings"]
+            if settingsBtn.waitForExistence(timeout: 10) {
                 settingsBtn.tap()
+                return
+            }
+            let settingsBtnZh = app.buttons["设置"]
+            if settingsBtnZh.waitForExistence(timeout: 5) {
+                settingsBtnZh.tap()
                 return
             }
         }
         
         let index = indexMapping[tabName] ?? (tabName == "Settings" || tabName == "设置" ? 4 : 0)
+        _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
         let button = app.tabBars.buttons.count > index ? app.tabBars.buttons.element(boundBy: index) : app.buttons.element(boundBy: index)
-        if button.exists {
+        if button.waitForExistence(timeout: 15) {
             button.tap()
         } else {
             XCTFail("找不到任何能点击的 Tab 按钮: \(tabName)")
