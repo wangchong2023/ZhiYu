@@ -413,7 +413,9 @@
       "Bash(/usr/libexec/PlistBuddy *)",
       "Bash(python3 Tools/Gatekeeper/Compliance/check_localization.py)",
       "Skill(investigate)",
-      "Bash(git commit -m 'perf\\(ci\\): 测试进程级并行度从 2 提升至 4 个模拟器实例 *)"
+      "Bash(git commit -m 'perf\\(ci\\): 测试进程级并行度从 2 提升至 4 个模拟器实例 *)",
+      "Bash(awk -F: '$NF > 0 {print}')",
+      "Bash(sort -t: -k2 -n)"
     ]
   }
 }
