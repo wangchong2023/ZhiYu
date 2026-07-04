@@ -107,14 +107,14 @@ run_check "工具脚本质量审计" \
     "python3 Tools/Gatekeeper/Sanity/check_scripts_quality.py" \
     || exit 1
 
-# 1.6 Woodpecker 流水线格式校验（woodpecker-cli 可用时执行）
-if command -v woodpecker-cli &>/dev/null; then
-    run_check "Woodpecker 流水线格式校验" \
-        "woodpecker-cli lint .woodpecker.yml" \
+# 1.6 GitLab CI 流水线格式校验
+if [ -f ".gitlab-ci.yml" ]; then
+    run_check "GitLab CI 流水线格式校验" \
+        "python3 -c \"import yaml; list(yaml.safe_load_all(open('.gitlab-ci.yml')))\"" \
         || exit 1
 else
-    echo -e "  ${CYAN}▸${NC} Woodpecker 流水线格式校验..."
-    echo -e "     ${SKIP} woodpecker-cli 不可用，跳过"; SKIPPED=$((SKIPPED + 1)); TOTAL=$((TOTAL + 1))
+    echo -e "  ${CYAN}▸${NC} GitLab CI 流水线格式校验..."
+    echo -e "     ${SKIP} .gitlab-ci.yml 不存在，跳过"; SKIPPED=$((SKIPPED + 1)); TOTAL=$((TOTAL + 1))
 fi
 
 # quick 模式在此结束
