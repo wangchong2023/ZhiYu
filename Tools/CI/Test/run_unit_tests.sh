@@ -59,6 +59,7 @@ XCODEBUILD_ARGS=(
     test
     -project "${PROJECT}"
     -scheme "${SCHEME}"
+    -only-testing:ZhiYuTests
     "${PARALLEL_DESTINATIONS[@]}"
     -derivedDataPath "${DERIVED_DATA_PATH}"
     -enableCodeCoverage YES
