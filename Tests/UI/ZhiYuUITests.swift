@@ -6,8 +6,8 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[Shared] 测试层
-//  核心职责：针对 ZhiYuUI 开展自动化单元测试验证。
 //
+// Dummy comment to realign GPG email signature verification.
 import XCTest
 
 /// 智宇 (ZhiYu) 全平台核心业务流 UI 自动化测试套件
