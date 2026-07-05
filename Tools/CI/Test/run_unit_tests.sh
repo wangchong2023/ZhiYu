@@ -19,16 +19,6 @@ DERIVED_DATA_PATH="${BUILD_DIR}/DerivedData-ios"
 # 获取动态寻找出的最新可用模拟器
 SIM_NAME=$(find_simulator)
 DESTINATION="platform=iOS Simulator,name=${SIM_NAME}"
-# 进程级并行：使用 4 个模拟器实例，xcodebuild 自动克隆并 round-robin 分配测试
-# 区别于线程级并行 (-parallel-testing-enabled)，每个模拟器是独立 OS 进程，
-# 拥有独立的 MainActor 和 Swift Concurrency 运行时，完全避免 actor 冲突
-PARALLEL_DESTINATIONS=(
-    "-destination" "${DESTINATION}"
-    "-destination" "${DESTINATION}"
-    "-destination" "${DESTINATION}"
-    "-destination" "${DESTINATION}"
-)
-echo "📱 使用模拟器: ${SIM_NAME}（进程级并行 ×4）"
 
 # ── 2. 从 @flaky 注释自动收集不稳定测试 ─────────────────────────────
 echo "🔍 收集 @flaky 标记的不稳定测试..."
@@ -46,6 +36,23 @@ CI_MODE="false"
 if [ "${1:-}" = "--ci" ] || [ "${CI:-}" = "true" ]; then
     CI_MODE="true"
 fi
+
+# ── 3.5 动态并行度调度 ─────────────────────────────────────────
+# 进程级并行：xcodebuild 自动克隆并 round-robin 分配测试至各模拟器实例
+# 区别于线程级并行 (-parallel-testing-enabled)，每个模拟器是独立 OS 进程，完全避免 actor 冲突。
+# 在 CI 环境下（CPU 和内存资源受限）使用 2 个实例，防止 4 实例导致 CPU 饥饿引发测试超时；
+# 在本地开发模式下默认保留 4 个实例，充分发挥本地高性能多核主机的优势。
+if [ "${CI_MODE}" = "true" ]; then
+    PARALLEL_COUNT=2
+else
+    PARALLEL_COUNT=4
+fi
+
+PARALLEL_DESTINATIONS=()
+for ((i=0; i<PARALLEL_COUNT; i++)); do
+    PARALLEL_DESTINATIONS+=("-destination" "${DESTINATION}")
+done
+echo "📱 使用模拟器: ${SIM_NAME}（进程级并行 ×${PARALLEL_COUNT}）"
 
 # ── 4. 构造 xcodebuild 参数 ──────────────────────────────────
 XCODEBUILD_ARGS=(
