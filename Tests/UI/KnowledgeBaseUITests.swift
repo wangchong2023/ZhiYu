@@ -50,7 +50,7 @@ class KnowledgeBaseUITests: XCTestCase {
         _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
         // 结合 userProfileMenuButton 状态共同判定，防止 XCTest 假阳性缓存误判导致自愈逻辑被跳过
         if !app.tabBars.firstMatch.exists || !app.buttons["userProfileMenuButton"].exists {
-            let firstVaultCard = app.buttons.containing(NSPredicate(format: "label CONTAINS '的笔记本'")).element(boundBy: 0)
+            let firstVaultCard = app.buttons.containing(NSPredicate(format: "label CONTAINS '的笔记本' OR label CONTAINS 'Vault' OR label CONTAINS 'Notebook' OR label CONTAINS 'Research'")).element(boundBy: 0)
             let anyCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)
             
             if firstVaultCard.waitForExistence(timeout: 2.0) && firstVaultCard.exists {
@@ -68,8 +68,10 @@ class KnowledgeBaseUITests: XCTestCase {
                     let nameField = app.textFields["notebook_name_textfield"]
                     if nameField.waitForExistence(timeout: 3.0) {
                         nameField.tap()
-                        // 使用 "项目调研"（L10n.Vault.researchName 的中文物理值）以确保新建金库后能自动触发 MaintenanceService.seedDefaultContent 演示数据播种
-                        nameField.typeText("项目调研")
+                        // 智能探测当前界面中英文状态以决定输入的金库名称，确保 L10n 数据种子播种一致性
+                        let isEnglish = app.staticTexts["Create Notebook"].exists || app.staticTexts["Create Vault"].exists || app.staticTexts["Notebook Name"].exists
+                        let vaultName = isEnglish ? "Research" : "项目调研"
+                        nameField.typeText(vaultName)
                         
                         let submitBtn = app.buttons["notebook_submit_button"]
                         if submitBtn.exists {
@@ -194,7 +196,7 @@ class KnowledgeBaseUITests: XCTestCase {
         // [自适应金库工作台跳转保护] 如果当前处于冷启动 NotebookHub 笔记本工作台界面（不存在 TabBar）
         // 必须先自动进入第一个可用金库，以展现出应用主界面及底座 TabBar
         if !app.tabBars.firstMatch.exists || !app.buttons["userProfileMenuButton"].exists {
-            let firstVaultCard = app.buttons.containing(NSPredicate(format: "label CONTAINS '的笔记本'")).element(boundBy: 0)
+            let firstVaultCard = app.buttons.containing(NSPredicate(format: "label CONTAINS '的笔记本' OR label CONTAINS 'Vault' OR label CONTAINS 'Notebook' OR label CONTAINS 'Research'")).element(boundBy: 0)
             var targetCard = firstVaultCard
             if !targetCard.exists {
                 targetCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)
@@ -221,8 +223,10 @@ class KnowledgeBaseUITests: XCTestCase {
             let nameField = app.textFields["notebook_name_textfield"]
             if nameField.waitForExistence(timeout: 3.0) {
                 nameField.tap()
-                // 使用 "项目调研"（L10n.Vault.researchName 的中文物理值）以确保新建金库后能自动触发 MaintenanceService.seedDefaultContent 演示数据播种
-                nameField.typeText("项目调研")
+                // 智能探测当前界面中英文状态以决定输入的金库名称，确保 L10n 数据种子播种一致性
+                let isEnglish = app.staticTexts["Create Notebook"].exists || app.staticTexts["Create Vault"].exists || app.staticTexts["Notebook Name"].exists
+                let vaultName = isEnglish ? "Research" : "项目调研"
+                nameField.typeText(vaultName)
                 
                 let submitBtn = app.buttons["notebook_submit_button"]
                 if submitBtn.exists {
@@ -322,5 +326,25 @@ class KnowledgeBaseUITests: XCTestCase {
     func navigateToSettingsTab() async {
         tapTab(named: "Settings")
         try? await Task.sleep(nanoseconds: 1 * 1_000_000_000)
+    }
+
+    /// 点击源元素并等待目标元素出现，若在短时间内目标未出现，则进行重试点击，彻底根治 CI 环境下的静默点击失败
+    /// - Parameters:
+    ///   - source: 被点击的源元素
+    ///   - target: 期待出现的目标元素
+    ///   - timeout: 每次点击后等待目标出现的超时时长
+    ///   - maxRetries: 最大点击重试次数，默认 3 次
+    /// - Returns: 目标元素最终是否成功出现并可用
+    @discardableResult
+    func tap(_ source: XCUIElement, waitingFor target: XCUIElement, timeout: TimeInterval = 3.0, maxRetries: Int = 3) -> Bool {
+        for i in 0..<maxRetries {
+            if target.exists { return true }
+            safeTap(source)
+            if target.waitForExistence(timeout: timeout) {
+                return true
+            }
+            print("⚠️ [UI Test] 点击 \(source.identifier) 后未检测到 \(target.identifier) 出现，重试第 \(i + 1) 次...")
+        }
+        return target.exists
     }
 }

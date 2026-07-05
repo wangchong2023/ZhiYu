@@ -231,13 +231,12 @@ final class SettingsE2ETests: KnowledgeBaseUITests {
         let profileButton = app.buttons["userProfileMenuButton"]
         XCTAssertTrue(profileButton.waitForExistence(timeout: 15), "用户头像入口应当存在")
         try? await Task.sleep(nanoseconds: 1_500_000_000) // 等待转场与淡入动画彻底静止
-        profileButton.tap()
-
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
-
-        // 2. 点击系统设置菜单项
+        
         let settingsMenuButton = app.buttons["settingsMenuButton"]
-        XCTAssertTrue(settingsMenuButton.waitForExistence(timeout: 15), "系统设置菜单入口应当存在")
+        // 使用自愈点击弹窗，防御高负荷下的点击静默失败
+        let tapped = tap(profileButton, waitingFor: settingsMenuButton, timeout: 3.0)
+        XCTAssertTrue(tapped, "系统设置菜单入口应当存在")
+
         try? await Task.sleep(nanoseconds: 1_000_000_000) // 等待 Popover 菜单淡入完成
         settingsMenuButton.tap()
 
@@ -257,13 +256,12 @@ final class SettingsE2ETests: KnowledgeBaseUITests {
         let profileButton = app.buttons["userProfileMenuButton"]
         XCTAssertTrue(profileButton.waitForExistence(timeout: 15), "用户头像入口应当存在")
         try? await Task.sleep(nanoseconds: 1_500_000_000) // 等待转场与淡入动画彻底静止
-        profileButton.tap()
-
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
-
-        // 2. 点击系统设置菜单项
+        
         let settingsMenuButton = app.buttons["settingsMenuButton"]
-        XCTAssertTrue(settingsMenuButton.waitForExistence(timeout: 15), "系统设置菜单入口应当存在")
+        // 使用自愈点击弹窗，防御高负荷下的点击静默失败
+        let tapped = tap(profileButton, waitingFor: settingsMenuButton, timeout: 3.0)
+        XCTAssertTrue(tapped, "系统设置菜单入口应当存在")
+
         try? await Task.sleep(nanoseconds: 1_000_000_000) // 等待 Popover 菜单淡入完成
         settingsMenuButton.tap()
 
