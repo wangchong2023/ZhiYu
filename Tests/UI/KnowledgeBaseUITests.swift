@@ -155,17 +155,39 @@ class KnowledgeBaseUITests: XCTestCase {
 
         ensureAppMainInterfaceVisible()
 
-        var tabButton = app.tabBars.buttons[tabName]
-        if !tabButton.waitForExistence(timeout: 15) {
-            tabButton = app.buttons[tabName]
+        // 1. 获取所有可能的别名列表
+        let aliases = tabAliases(for: tabName)
+        
+        // 2. 快速扫描（瞬时检测 exists），避免不必要的等待
+        for alias in aliases {
+            let tabButton = app.tabBars.buttons[alias]
+            if tabButton.exists {
+                tabButton.tap()
+                return
+            }
+            let genericButton = app.buttons[alias]
+            if genericButton.exists {
+                genericButton.tap()
+                return
+            }
         }
-        if tabButton.waitForExistence(timeout: 15) {
-            tabButton.tap()
-        } else if tapFallbackName(for: tabName) {
-            return
-        } else {
-            tapFallbackIndex(for: tabName)
+        
+        // 3. 如果瞬时检测全部没有找到，使用 2.0 秒的短超时等待任何一个别名出现
+        for alias in aliases {
+            let tabButton = app.tabBars.buttons[alias]
+            if tabButton.waitForExistence(timeout: 2.0) {
+                tabButton.tap()
+                return
+            }
+            let genericButton = app.buttons[alias]
+            if genericButton.waitForExistence(timeout: 2.0) {
+                genericButton.tap()
+                return
+            }
         }
+        
+        // 4. 终极兜底：使用物理位置索引
+        tapFallbackIndex(for: tabName)
     }
 
     private func ensureAppMainInterfaceVisible() {
@@ -220,27 +242,39 @@ class KnowledgeBaseUITests: XCTestCase {
         }
     }
 
-    private func tapFallbackName(for tabName: String) -> Bool {
-        let fallbackMapping: [String: String] = [
-            "设置": "Settings", "知识": "Knowledge", "主页": "Knowledge",
-            "图谱": "Graph", "搜索": "Search", "检索": "Search",
-            "导入": "Ingest", "来源": "Ingest", "对话": "Chat", "聊天": "Chat",
-            "合成": "Synthesis", "Settings": "设置", "Knowledge": "知识",
-            "Graph": "图谱", "Search": "搜索", "Ingest": "来源",
-            "Chat": "对话", "Synthesis": "合成"
+    private func tabAliases(for tabName: String) -> [String] {
+        var baseNames = [tabName]
+        
+        // 映射所有的近义词和本地化物理值
+        let mapping: [String: [String]] = [
+            "Knowledge": ["Knowledge", "知识", "主页", "NotebookHub"],
+            "知识": ["Knowledge", "知识", "主页", "NotebookHub"],
+            "主页": ["Knowledge", "知识", "主页", "NotebookHub"],
+            
+            "Chat": ["Chat", "AI Chat", "对话", "AI 对话", "聊天"],
+            "对话": ["Chat", "AI Chat", "对话", "AI 对话", "聊天"],
+            "聊天": ["Chat", "AI Chat", "对话", "AI 对话", "聊天"],
+            
+            "Ingest": ["Ingest", "Sources", "导入", "来源"],
+            "导入": ["Ingest", "Sources", "导入", "来源"],
+            "来源": ["Ingest", "Sources", "导入", "来源"],
+            
+            "Synthesis": ["Synthesis", "合成"],
+            "合成": ["Synthesis", "合成"],
+            
+            "Graph": ["Graph", "图谱"],
+            "图谱": ["Graph", "图谱"],
+            
+            "Settings": ["Settings", "设置"],
+            "设置": ["Settings", "设置"]
         ]
         
-        guard let fallbackName = fallbackMapping[tabName] else { return false }
-        
-        var fallbackBtn = app.tabBars.buttons[fallbackName]
-        if !fallbackBtn.waitForExistence(timeout: 5) {
-            fallbackBtn = app.buttons[fallbackName]
+        if let mapped = mapping[tabName] {
+            for val in mapped where !baseNames.contains(val) {
+                baseNames.append(val)
+            }
         }
-        if fallbackBtn.waitForExistence(timeout: 5) {
-            fallbackBtn.tap()
-            return true
-        }
-        return false
+        return baseNames
     }
 
     private func tapFallbackIndex(for tabName: String) {
