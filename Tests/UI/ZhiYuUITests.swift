@@ -73,7 +73,12 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
         }
 
         // 4. 确保在主金库内时，切换到根 Knowledge Tab 视图
-        let tabButton = app.tabBars.buttons["Knowledge"].exists ? app.tabBars.buttons["Knowledge"] : app.buttons["Knowledge"]
+        let tabButton = findFirstExisting(
+            app.tabBars.buttons["book.fill"],
+            app.tabBars.buttons["ZhiYu"],
+            app.tabBars.buttons["Knowledge"],
+            app.buttons["Knowledge"]
+        )
         if tabButton.waitForExistence(timeout: 5) {
             tabButton.tap()
         }
@@ -178,13 +183,13 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
     func testPageLinkNavigation() throws {
         ensureAppIsLoggedInAndInVault()
 
-        var knowledgeTab = app.tabBars.buttons["Knowledge"]
-        if !knowledgeTab.waitForExistence(timeout: 5) {
-            knowledgeTab = app.tabBars.buttons["books.vertical.fill"]
-        }
-        if !knowledgeTab.waitForExistence(timeout: 5) {
-            knowledgeTab = app.tabBars.buttons["知识库"]
-        }
+        let knowledgeTab = findFirstExisting(
+            app.tabBars.buttons["book.fill"],
+            app.tabBars.buttons["ZhiYu"],
+            app.tabBars.buttons["Knowledge"],
+            app.tabBars.buttons["books.vertical.fill"],
+            app.tabBars.buttons["知识库"]
+        )
         XCTAssertTrue(knowledgeTab.waitForExistence(timeout: 15), "知识库 Tab 按钮应该存在")
         knowledgeTab.tap()
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "Tab 切换等待")], timeout: 0.5)
@@ -284,7 +289,7 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
         // 等待 TabBar 出现，防止 vault 切换动画未完成
         _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
         // L10n 自适应候选：en="ZhiYu", zh-Hans="知识库", 兼容旧版 "Knowledge"/"知识"
-        let candidates = ["ZhiYu", "知识库", "Knowledge", "知识"]
+        let candidates = ["book.fill", "ZhiYu", "知识库", "Knowledge", "知识"]
         for name in candidates {
             let btn = app.tabBars.buttons[name]
             if btn.waitForExistence(timeout: 2) { return btn }
@@ -330,6 +335,8 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
 
         // 使用 findFirstExisting 统一查找 Chat Tab，与 testPageLinkNavigation 中 Knowledge Tab 一致
         let chatTab = findFirstExisting(
+            app.tabBars.buttons["bubble.left.and.bubble.right.fill"],
+            app.tabBars.buttons["AI Chat"],
             app.tabBars.buttons["Chat"],
             app.buttons["Chat"],
             app.tabBars.buttons["AI 对话"]
