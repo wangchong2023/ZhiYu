@@ -37,9 +37,12 @@ final class DashboardCoordinator {
 
     /// 刷新所有统计数据与 AI 洞察
     func refreshAll() async {
+        guard !Task.isCancelled else { return }
         isCalculating = true
         updateTags()
+        guard !Task.isCancelled else { isCalculating = false; return }
         await calculateStats()
+        guard !Task.isCancelled else { isCalculating = false; return }
         await refreshInsights()
         isCalculating = false
     }

@@ -88,17 +88,20 @@ public final class MaintenanceService {
         // 是否处于自动化 UI 测试模式，用于自愈保护
         let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
         
+        // 尝试获取当前选中金库名称（当 vaultName 为 nil 时兜底）
+        let resolvedName: String? = vaultName ?? VaultService.shared.currentVault?.name
+        
         do {
-            if vaultName == L10n.Vault.defaultName || vaultName == L10n.Vault.defaultNameZh || vaultName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains("Vault") == true)) {
+            if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains("Vault") == true)) {
                 // 默认知识管理笔记本 — 注入 AI 概念与 API 日志演示数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
                 logger.addLog(action: .create, target: L10n.InitialNotebook.Log.defaultDemoData, details: "Seeded_default_content", module: "Maintenance")
-            } else if vaultName == L10n.Vault.researchName || vaultName == L10n.Vault.researchNameZh || vaultName == L10n.Vault.researchNameEn || vaultName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains("Research") == true) {
+            } else if resolvedName == L10n.Vault.researchName || resolvedName == L10n.Vault.researchNameZh || resolvedName == L10n.Vault.researchNameEn || resolvedName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains("Research") == true) {
                 // 项目调研笔记本 — 注入行业分析演示数据
                 _ = try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore)
                 logger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: "Seeded_research_content", module: "Maintenance")
-            } else if isTesting {
-                // UI 自动化测试模式下的万能兜底种子注入，防止空页面导致 Dashboard 卡片显示不出来而超时
+            } else if isTesting || resolvedName != nil {
+                // 兜底：不为空的金库都尝试注入默认数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
                 logger.addLog(action: .create, target: L10n.InitialNotebook.Log.fallbackDemoData, details: "Seeded_fallback_content", module: "Maintenance")
             }
