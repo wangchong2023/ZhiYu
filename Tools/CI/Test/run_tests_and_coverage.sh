@@ -38,6 +38,52 @@ python3 Tools/CI/Test/check_coverage.py
 echo "===> Performance Regression Check"
 python3 Tools/CI/Perf/check_perf_regression.py
 
+# 5. 导出覆盖率产物供 GitLab CI artifacts 归档
+echo "===> Export Coverage Artifacts"
+COVERAGE_DIR="build/coverage"
+mkdir -p "$COVERAGE_DIR"
+
+# 复制最新 .xcresult 包
+LATEST_XCRESULT=$(python3 -c "
+import glob, os
+results = glob.glob('build/DerivedData-ios/**/*.xcresult', recursive=True)
+if results:
+    results.sort(key=os.path.getmtime, reverse=True)
+    print(results[0])
+" 2>/dev/null || true)
+
+if [ -n "$LATEST_XCRESULT" ] && [ -d "$LATEST_XCRESULT" ]; then
+    echo "  导出 .xcresult: $LATEST_XCRESULT"
+    cp -R "$LATEST_XCRESULT" "$COVERAGE_DIR/"
+    # 生成可读的覆盖率摘要
+    xcrun xccov view --report --json "$LATEST_XCRESULT" \
+        | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+total_covered = 0
+total_executable = 0
+def walk(node):
+    global total_covered, total_executable
+    if isinstance(node, dict):
+        if 'coveredLines' in node and 'executableLines' in node:
+            total_covered += node['coveredLines']
+            total_executable += node['executableLines']
+        for v in node.values():
+            walk(v)
+    elif isinstance(node, list):
+        for v in node:
+            walk(v)
+walk(data)
+if total_executable > 0:
+    pct = (total_covered / total_executable) * 100
+    summary = f'Total Coverage: {pct:.2f}%\nCovered Lines: {total_covered}\nExecutable Lines: {total_executable}'
+    print(summary)
+" > "$COVERAGE_DIR/summary.txt"
+    echo "  覆盖率摘要: $COVERAGE_DIR/summary.txt"
+else
+    echo "  ⚠️  未找到 .xcresult 测试结果包，跳过产物导出"
+fi
+
 echo "✅ 跑测、覆盖率门禁及性能回归校验全部通过！"
 
 # ── 打印构建版本信息 ──
