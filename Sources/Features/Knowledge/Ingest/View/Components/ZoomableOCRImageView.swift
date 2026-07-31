@@ -72,7 +72,7 @@ struct ZoomableOCRImageView: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(height: DesignSystem.Metrics.customSize240)
+                .frame(height: DesignSystem.Metrics.customSize260)
                 .background(Color.appCard)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
                 .overlay(
