@@ -122,12 +122,18 @@ struct VoiceAudioPlayerView: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
                 
-                FormattedMarkdownText(text: transcribedText)
+                FormattedMarkdownText(text: cleanText)
             }
         }
         .onAppear { setupAudioPlayer() }
         .onDisappear { stopAudioPlayer() }
         .onReceive(timer) { _ in updatePlaybackState() }
+    }
+    
+    private var cleanText: String {
+        transcribedText
+            .replacingOccurrences(of: "[[", with: "「")
+            .replacingOccurrences(of: "]]", with: "」")
     }
     
     private func setupAudioPlayer() {
