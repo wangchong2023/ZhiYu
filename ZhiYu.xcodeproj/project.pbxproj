@@ -427,6 +427,7 @@
 		32B695D8C48F0A11AAD39368 /* L10n+Dashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CBD4E32BC345BA0A2712D05 /* L10n+Dashboard.swift */; };
 		32BCA87ADFDA4DE71F52EB15 /* ZhiYuWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3744107E6BF0E8F88B523FA5 /* ZhiYuWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		332C76D41C2E77790A212A0A /* iOSAppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C83D00472913635D100F8F9 /* iOSAppEnvironment.swift */; };
+		3357038418416C90CBE5FEDC /* DemoAudioBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915DF1F1BA8EFAE5F5649301 /* DemoAudioBuilder.swift */; };
 		3373A82DFF6AE63294506EEA /* L10n+Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9093C4D82829D3CF57754B /* L10n+Auth.swift */; };
 		33962287FEF800DC84BD680D /* UndoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF8D349FB4CC461AD84DA4DC /* UndoService.swift */; };
 		33A16E6C13A9F73DA0817322 /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E732B5FBEAB333B42B827BC3 /* Spacing.swift */; };
@@ -1207,6 +1208,7 @@
 		93D38CE6AC4A273480D0DAF1 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76B953CC50C3072AC188E14 /* Date+Extensions.swift */; };
 		93E0D99E17386008941DE7B1 /* KnowledgeIngestPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85475C1E8A636EFD9557FF67 /* KnowledgeIngestPipeline.swift */; };
 		93F542414296FE0E9895E16D /* QuizProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC454C33881B0524198C9E3 /* QuizProcessor.swift */; };
+		940E572FC5501950465F409B /* DemoAudioBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915DF1F1BA8EFAE5F5649301 /* DemoAudioBuilder.swift */; };
 		941D2490FB81D37D6514B004 /* TaskCenterProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D6031265C0856B48123DFBC /* TaskCenterProtocol.swift */; };
 		9430DBBF2852883D1C95884B /* VisionProSpatialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565B786D87DFEA81DCA58A5B /* VisionProSpatialView.swift */; };
 		94523D307A02F3978C7D85BA /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94589743C22E4B620F5E914B /* AppTab.swift */; };
@@ -2055,6 +2057,7 @@
 		FAC24F7D9DBD57771FE89802 /* TagCloudDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02222DC1B182DDC71A0CB3D7 /* TagCloudDialogs.swift */; };
 		FAD585681CF9F609247A24CA /* RAGResultChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF1F44C327D8FD0533FFAEF /* RAGResultChart.swift */; };
 		FB5D858A2D32EE69C118A8D1 /* WebViewExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE7873D4D948C9EC112291C /* WebViewExportService.swift */; };
+		FB649C98326DD63801F87B59 /* DemoAudioBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915DF1F1BA8EFAE5F5649301 /* DemoAudioBuilder.swift */; };
 		FBA7C0B3346E45533800858E /* RAGConfigForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130BC126943F180E2802F7F5 /* RAGConfigForm.swift */; };
 		FBB77A7D0E5393A60E00489F /* KnowledgePageRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70036C4A620278A0352D027C /* KnowledgePageRepository.swift */; };
 		FBF3A9953FDBF64709C334F7 /* CollaborationComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE59877A4B0357AEB1F0E311 /* CollaborationComponents.swift */; };
@@ -2697,6 +2700,7 @@
 		9112DA748F39CA5018D59610 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9118C5EBB79C4C7BCEEAAA01 /* LocalPluginDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPluginDetailView.swift; sourceTree = "<group>"; };
 		912726C762F31F918625A562 /* VaultBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBadge.swift; sourceTree = "<group>"; };
+		915DF1F1BA8EFAE5F5649301 /* DemoAudioBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAudioBuilder.swift; sourceTree = "<group>"; };
 		91E39E63BB63E3A8E7047F33 /* DesignSystem+Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Layout.swift"; sourceTree = "<group>"; };
 		920FCC1CC81DC1AF0DD285C7 /* RAG_GoldenSet.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RAG_GoldenSet.json; sourceTree = "<group>"; };
 		92166E1ADED978BE461ACC28 /* AIContentEnricherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIContentEnricherTests.swift; sourceTree = "<group>"; };
@@ -4395,6 +4399,7 @@
 		782F263DCF6353C5C8920D26 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				915DF1F1BA8EFAE5F5649301 /* DemoAudioBuilder.swift */,
 				2E91D4E730AD5584BBDFF9A9 /* DemoImageBuilder.swift */,
 				239D9592E6B2B38915DF4F3B /* DemoPDFBuilder.swift */,
 				D205677C8591C14D5E90F726 /* InitialNotebookGenerator.swift */,
@@ -7041,6 +7046,7 @@
 				FCB2EDF7335BC913D26D3A9C /* Date+App.swift in Sources */,
 				291EFFDD435ED34902C34A92 /* Date+Extensions.swift in Sources */,
 				41ACDD2DE7A19C6E44BE4F44 /* DeepLinkService.swift in Sources */,
+				3357038418416C90CBE5FEDC /* DemoAudioBuilder.swift in Sources */,
 				F15F373EB9A23D11A8059D3E /* DemoImageBuilder.swift in Sources */,
 				9CF952EB24082B3CA630219E /* DemoPDFBuilder.swift in Sources */,
 				E0E71ADDDD1FAADD31956932 /* DesignModifiers.swift in Sources */,
@@ -7744,6 +7750,7 @@
 				49321503B121D0484046F0B1 /* Date+App.swift in Sources */,
 				3758B444F1C6BC2D6E9D9FBA /* Date+Extensions.swift in Sources */,
 				97A0D9C11448A84A9C54F766 /* DeepLinkService.swift in Sources */,
+				940E572FC5501950465F409B /* DemoAudioBuilder.swift in Sources */,
 				8A0737200322C18C14C00D45 /* DemoImageBuilder.swift in Sources */,
 				647B799182512EC250117EA9 /* DemoPDFBuilder.swift in Sources */,
 				2E02FB7DFCEE2EFA6EBF9B59 /* DesignModifiers.swift in Sources */,
@@ -8358,6 +8365,7 @@
 				3711D3CA0D4EF592986DEC91 /* Date+App.swift in Sources */,
 				93D38CE6AC4A273480D0DAF1 /* Date+Extensions.swift in Sources */,
 				F37B3C36D3AAAF85153C25CB /* DeepLinkService.swift in Sources */,
+				FB649C98326DD63801F87B59 /* DemoAudioBuilder.swift in Sources */,
 				E6D2E115F0DBE712DADE5070 /* DemoImageBuilder.swift in Sources */,
 				774A899C333559141EDFAA94 /* DemoPDFBuilder.swift in Sources */,
 				46A0FB639CDC5D1F680580FA /* DesignModifiers.swift in Sources */,

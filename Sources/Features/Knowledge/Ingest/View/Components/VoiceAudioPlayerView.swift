@@ -130,8 +130,21 @@ struct VoiceAudioPlayerView: View {
     }
     
     private func setupAudioPlayer() {
-        guard let path = audioPath, FileManager.default.fileExists(atPath: path) else { return }
-        let url = URL(fileURLWithPath: path)
+        #if os(iOS)
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
+        #endif
+        
+        var targetURL: URL?
+        if let path = audioPath, FileManager.default.fileExists(atPath: path) {
+            targetURL = URL(fileURLWithPath: path)
+        } else {
+            let tempDir = FileManager.default.temporaryDirectory
+            let fallbackPath = tempDir.appendingPathComponent("demo_voice_note.wav").path
+            targetURL = DemoAudioBuilder.ensureAudioExists(at: fallbackPath, duration: 45.0)
+        }
+        
+        guard let url = targetURL else { return }
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.prepareToPlay()
@@ -144,14 +157,17 @@ struct VoiceAudioPlayerView: View {
     }
     
     private func togglePlayPause() {
+        #if os(iOS)
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
+        #endif
+        
         if isPlaying {
             audioPlayer?.pause()
             isPlaying = false
         } else {
             if audioPlayer == nil {
-                // 如果本地没有物理音频流，启动体验模式
-                isPlaying = true
-                return
+                setupAudioPlayer()
             }
             audioPlayer?.play()
             isPlaying = true
