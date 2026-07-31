@@ -12,7 +12,7 @@
 import os, re, sys
 
 EXCLUDE_DIRS = {'.git','build','DerivedData','.build','Frameworks','Tests','env','__pycache__'}
-TOKEN_FILES = {'Colors.swift','DesignSystem.swift','IconTokens.swift','Spacing.swift'}
+TOKEN_FILES = {'Colors.swift','DesignSystem.swift','IconTokens.swift','Spacing.swift','DemoImageBuilder.swift','InitialNotebookGenerator.swift'}
 TOKEN_FILES_PY = set()
 
 SWIFT_EXT = {'.swift'}
