@@ -60,55 +60,70 @@ struct ImportRecordSection: View {
             }
         }
         .sheet(isPresented: $showTextPreview) {
-            NavigationStack {
-                Group {
-                    if previewRecord?.category == "ocr" {
-                        VStack(spacing: 0) {
-                            ocrPreviewHeader
-                        }
-                        .padding(DesignSystem.smallPadding)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                                if previewRecord?.category == "voice" {
-                                    VoiceAudioPlayerView(
-                                        title: previewRecord?.title ?? "",
-                                        audioPath: previewFilePath,
-                                        transcribedText: previewText ?? ""
-                                    )
-                                } else {
-                                    HStack {
-                                        previewSourceBadge
-                                        Spacer()
-                                    }
-                                }
-                                
-                                if previewRecord?.category != "voice" {
-                                    if let path = previewFilePath, !isTextFile(path: path) {
-                                        FileTextPreviewView(filePath: path)
-                                    } else {
-                                        FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
-                                            .padding(.top, DesignSystem.tiny)
-                                    }
-                                }
-                            }
-                            .padding()
-                        }
-                    }
-                }
-                .navigationTitle(previewRecord?.category == "ocr" ? (previewRecord?.title ?? L10n.Ingest.ocrScan) : L10n.Ingest.rawContentTitle)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(L10n.Common.close) { showTextPreview = false }
-                    }
-                }
-            }
+            textPreviewSheetContent
         }
         .quickLookPreview($quickLookURL)
         .task { await loadRecords() }
         .onChange(of: selectedCategory) { _, _ in Task { await loadRecords() } }
+    }
+    
+    @ViewBuilder
+    private var textPreviewSheetContent: some View {
+        NavigationStack {
+            Group {
+                if previewRecord?.category == "ocr" {
+                    ocrFullPreviewView
+                } else {
+                    standardPreviewScrollView
+                }
+            }
+            .navigationTitle(previewRecord?.category == "ocr" ? (previewRecord?.title ?? L10n.Ingest.ocrScan) : L10n.Ingest.rawContentTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(L10n.Common.close) { showTextPreview = false }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var ocrFullPreviewView: some View {
+        VStack(spacing: 0) {
+            ocrPreviewHeader
+        }
+        .padding(DesignSystem.small)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var standardPreviewScrollView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                if previewRecord?.category == "voice" {
+                    VoiceAudioPlayerView(
+                        title: previewRecord?.title ?? "",
+                        audioPath: previewFilePath,
+                        transcribedText: previewText ?? ""
+                    )
+                } else {
+                    HStack {
+                        previewSourceBadge
+                        Spacer()
+                    }
+                }
+                
+                if previewRecord?.category != "voice" {
+                    if let path = previewFilePath, !isTextFile(path: path) {
+                        FileTextPreviewView(filePath: path)
+                    } else {
+                        FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
+                            .padding(.top, DesignSystem.tiny)
+                    }
+                }
+            }
+            .padding()
+        }
     }
     
     private func cleanPreviewText(_ text: String) -> String {
