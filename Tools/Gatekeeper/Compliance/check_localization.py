@@ -33,6 +33,7 @@ ALLOW_NON_ASCII_FILES = {
     'IconTokens.swift',
     'DesignSystem+Icons.swift',
     'InitialNotebookGenerator.swift',
+    'DemoImageBuilder.swift',
     'AIContentEnricher.swift',
     'RAGEvaluationService.swift',  # RAG 评价服务的中文硬编码 Prompt
     'ModelLabManager.swift'        # 大模型测试实验室的模拟推理输出 data 源
