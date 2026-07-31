@@ -62,7 +62,7 @@ public struct DemoPDFBuilder {
         
         let headerTitleAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 20),
-            .foregroundColor: UIColor.white // Dynamic Color
+            .foregroundColor: UIColor(Color.appCard)
         ]
         let cleanTitle = sanitizeMarkdownText(title)
         let headerTitle = "📄 \(cleanTitle)"
@@ -128,7 +128,7 @@ public struct DemoPDFBuilder {
         
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: UIColor.darkGray,
+            .foregroundColor: UIColor(Color.secondary),
             .paragraphStyle: paragraph
         ]
         
@@ -156,7 +156,7 @@ public struct DemoPDFBuilder {
         for (idx, col) in cols.enumerated() {
             let attrs: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: 9.5), // Dynamic Type
-                .foregroundColor: UIColor.darkGray
+                .foregroundColor: UIColor(Color.secondary)
             ]
             let cellRect = CGRect(x: 36 + CGFloat(idx) * colWidth + 4, y: currentY + 3, width: colWidth - 8, height: 16)
             col.draw(in: cellRect, withAttributes: attrs)
@@ -175,7 +175,7 @@ public struct DemoPDFBuilder {
         
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 10.5), // Dynamic Type
-            .foregroundColor: UIColor(white: 0.2, alpha: 1.0),
+            .foregroundColor: UIColor(Color.appText),
             .paragraphStyle: paragraph
         ]
         
@@ -194,7 +194,7 @@ public struct DemoPDFBuilder {
     private static func renderFooter(pageHeight: CGFloat) {
         let footerAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 9), // Dynamic Type
-            .foregroundColor: UIColor.lightGray
+            .foregroundColor: UIColor(Color.secondary)
         ]
         let footerText = L10n.Ingest.fileImport
         footerText.draw(at: CGPoint(x: 36, y: pageHeight - 30), withAttributes: footerAttributes)
