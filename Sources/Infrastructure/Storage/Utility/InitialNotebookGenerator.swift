@@ -508,7 +508,7 @@ struct InitialNotebookGenerator {
                     rawText: seed.rawTextSnippet,
                     sourceURL: seed.sourceURL,
                     filePath: filePath,
-                    fileSize: seed.sourceURL != nil ? Int64(seed.content.utf8.count) : nil,
+                    fileSize: Int64((seed.rawTextSnippet ?? seed.content).utf8.count),
                     pageID: pageID.uuidString,
                     vaultID: activeVaultID,
                     taskID: nil,

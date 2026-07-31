@@ -86,8 +86,8 @@ def check_root_unknown_items(root_dir: str) -> list[str]:
     # 根目录已知的合法条目（不依赖硬编码白名单，而是从实际存在 + gitignore + 常识推断）
     known_hidden = {d for d in os.listdir(root_dir)
                     if d.startswith(".") and os.path.isdir(os.path.join(root_dir, d))}
-    known_files = {".gitignore", ".swiftlint.yml", ".woodpecker.yml",
-                   "project.yml", "LICENSE", "README.md",
+    known_files = {".gitignore", ".swiftlint.yml", ".woodpecker.yml", ".gitlab-ci.yml",
+                   ".jscpd.json", "project.yml", "LICENSE", "README.md",
                    "AGENTS.md", "CLAUDE.md", "GEMINI.md",
                    "ZhiYu.code-workspace"}
     known_dirs = {"build", "Docs", "Sources", "Tests", "Tools", "Frameworks", "env",

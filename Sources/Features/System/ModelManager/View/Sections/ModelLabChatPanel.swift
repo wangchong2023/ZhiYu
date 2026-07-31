@@ -47,43 +47,13 @@ extension ModelLabView {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: DesignSystem.medium) {
                     ForEach(chatHistory) { msg in
-                        HStack {
-                            if msg.isUser {
-                                Spacer()
-                                Text(msg.text)
-                                    .padding(.horizontal, Constants.chatBubblePadding)
-                                    .padding(.vertical, DesignSystem.standardPadding + 2)
-                                    .background(Color.theme.cyan.opacity(DesignSystem.Opacity.soft))
-                                    .foregroundStyle(.white)
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-                                    .padding(.leading, DesignSystem.large * 2)
-                            } else {
-                                Text(msg.text)
-                                    .padding(.horizontal, Constants.chatBubblePadding)
-                                    .padding(.vertical, DesignSystem.standardPadding + 2)
-                                    .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                                    .foregroundStyle(.appText)
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-                                    .padding(.trailing, DesignSystem.large * 2)
-                                Spacer()
-                            }
-                        }
-                        .id(msg.id)
+                        AIChatBubbleView(text: msg.text, isUser: msg.isUser)
+                            .id(msg.id)
                     }
 
-                    // 正在流式生成时的临时显示占位符
-                    if labManager.isGenerating && !labManager.generatedText.isEmpty {
-                        HStack {
-                            Text(labManager.generatedText)
-                                .padding(.horizontal, Constants.chatBubblePadding)
-                                .padding(.vertical, DesignSystem.standardPadding + 2)
-                                .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                                .foregroundStyle(.appText)
-                                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-                                .padding(.trailing, DesignSystem.large * 2)
-                            Spacer()
-                        }
-                        .id("generating_anchor")
+                    // 正在流式生成时的临时显示占位符（使用共享 AI 思考中与打字气泡）
+                    if labManager.isGenerating {
+                        generatingPlaceholderView
                     }
                 }
                 .padding(.vertical, DesignSystem.small)
@@ -96,10 +66,27 @@ extension ModelLabView {
             }
             .onChange(of: labManager.generatedText) { _, _ in
                 if labManager.isGenerating {
-                    proxy.scrollTo("generating_anchor", anchor: .bottom)
+                    withAnimation { proxy.scrollTo("generating_anchor", anchor: .bottom) }
+                }
+            }
+            .onChange(of: labManager.isGenerating) { _, isGen in
+                if isGen {
+                    withAnimation { proxy.scrollTo("generating_anchor", anchor: .bottom) }
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var generatingPlaceholderView: some View {
+        HStack {
+            if labManager.generatedText.isEmpty {
+                AIThinkingBubbleView()
+            } else {
+                AIChatBubbleView(text: labManager.generatedText, isUser: false)
+            }
+        }
+        .id("generating_anchor")
     }
 
     @ViewBuilder

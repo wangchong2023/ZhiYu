@@ -42,7 +42,7 @@ struct ImportRecordCard: View {
                 // 来源类型与 AI 标签行
                 HStack(spacing: DesignSystem.atomic) {
                     // 来源类型胶囊标签 (使用高对比度的实色背景，明确标明文件来源)
-                    Text(categoryValue?.displayName ?? L10n.Common.unknown)
+                    Text(categoryDisplayName)
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, DesignSystem.tightPadding)
                         .padding(.vertical, 2)
@@ -158,37 +158,87 @@ struct ImportRecordCard: View {
         }
     }
 
-    // MARK: - 分类样式
+    // MARK: - 分类与扩展名精细化识别
+
+    /// 从文件路径或标题中智能化推断文件扩展名
+    private var detectedExtension: String {
+        if let path = record.filePath, !path.isEmpty {
+            let ext = (path as NSString).pathExtension.lowercased()
+            if !ext.isEmpty { return ext }
+        }
+        let titleExt = (record.title as NSString).pathExtension.lowercased()
+        if !titleExt.isEmpty { return titleExt }
+
+        let titleLower = record.title.lowercased()
+        if titleLower.contains(".pdf") || titleLower.contains("pdf") { return "pdf" }
+        if titleLower.contains(".md") || titleLower.contains("markdown") { return "md" }
+        if titleLower.contains(".doc") || titleLower.contains("word") { return "docx" }
+        if titleLower.contains(".xls") || titleLower.contains("excel") { return "xlsx" }
+        if titleLower.contains(".ppt") { return "pptx" }
+        return ""
+    }
+
+    private var categoryDisplayName: String {
+        switch categoryValue {
+        case .file:
+            switch detectedExtension {
+            case "pdf": return "PDF"
+            case "md", "markdown": return "Markdown"
+            case "doc", "docx": return "Word"
+            case "xls", "xlsx", "csv": return "Excel"
+            case "ppt", "pptx": return "PPT"
+            case "txt", "json", "swift", "py": return "TXT"
+            default: return L10n.Ingest.fileImport
+            }
+        case .link: return L10n.Ingest.urlImport
+        case .manual: return L10n.Ingest.manualEntry
+        case .ocr: return L10n.Ingest.ocrScan
+        case .voice: return L10n.Ingest.voiceNote
+        default: return categoryValue?.displayName ?? L10n.Common.unknown
+        }
+    }
 
     private var fileIcon: String {
-        guard let path = record.filePath else { return "doc.fill" }
-        let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
-        switch ext {
+        switch detectedExtension {
         case "pdf": return "doc.richtext.fill"
-        case "png", "jpg", "jpeg", "heic", "gif": return "doc.image.fill"
-        case "mp3", "m4a", "wav", "caf": return "doc.sound.fill"
-        case "txt", "md": return "doc.text.fill"
+        case "md", "markdown": return "m.square.fill"
+        case "doc", "docx": return "w.square.fill"
+        case "xls", "xlsx", "csv": return "x.square.fill"
+        case "ppt", "pptx": return "p.square.fill"
+        case "png", "jpg", "jpeg", "heic", "webp": return "photo.fill"
+        case "mp3", "m4a", "wav": return "waveform.circle.fill"
+        case "txt", "json", "swift", "py": return "doc.plaintext.fill"
         case "zip", "tar", "gz": return "doc.zipper.fill"
-        default: return "doc.fill"
+        default: return "doc.text.fill"
         }
     }
 
     private var categoryIcon: String {
         switch categoryValue {
-        case .link: return "link"
+        case .link: return "safari.fill"
         case .file: return fileIcon
-        case .manual: return "pencil.line"
-        case .ocr: return "camera.fill"
-        case .clipboard: return "list.clipboard"
+        case .manual: return "square.and.pencil"
+        case .ocr: return "camera.viewfinder"
+        case .clipboard: return "doc.on.clipboard.fill"
         case .voice: return "waveform"
-        case nil: return "questionmark"
+        case nil: return "doc.fill"
         }
     }
 
     private var categoryColor: Color {
         switch categoryValue {
-        case .link: return .blue
-        case .file: return .orange
+        case .file:
+            switch detectedExtension {
+            case "pdf": return .red
+            case "md", "markdown": return .blue
+            case "doc", "docx": return .blue
+            case "xls", "xlsx", "csv": return .green
+            case "ppt", "pptx": return .orange
+            case "png", "jpg", "jpeg", "heic", "webp": return .purple
+            case "txt", "json", "swift", "py": return .teal
+            default: return .orange
+            }
+        case .link: return .cyan
         case .manual: return .green
         case .ocr: return .purple
         case .clipboard: return .gray

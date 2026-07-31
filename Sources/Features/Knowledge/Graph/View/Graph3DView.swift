@@ -17,6 +17,7 @@ import SceneKit
 @MainActor
 struct Graph3DView: View {
     @Environment(KnowledgeStore.self) var store
+    @Environment(Router.self) var router
     @State private var scene: SCNScene?
     @State private var cameraDistance: Float = BusinessConstants.Graph.ThreeD.defaultCameraDistance
     @State private var autoRotate = false
@@ -156,7 +157,8 @@ struct Graph3DView: View {
 
     private func nodeInfoBar(page: KnowledgePage) -> some View {
         Graph3DNodeInfoBar(page: page) {
-            Router.shared.navigate(to: .pageDetail(id: page.id))
+            isFullScreen = false
+            router.navigateToPage(id: page.id)
         }
     }
     

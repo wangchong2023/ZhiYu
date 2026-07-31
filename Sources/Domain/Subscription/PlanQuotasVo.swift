@@ -3,7 +3,9 @@
 //  ZhiYu
 //
 //  Created by Constantine on 2026/07/23.
-//  Description: C 端套餐能力与配额结构体，100% 对应后端 quotas_json 数据库及 JSON 协议。
+//
+//  系统层级：[L1.5] 领域层
+//  核心职责：C 端套餐能力与配额结构体 VO 模型，100% 对应后端 quotas_json 协议。
 //
 
 import Foundation

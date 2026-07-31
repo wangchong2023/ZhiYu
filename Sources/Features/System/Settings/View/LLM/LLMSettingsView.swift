@@ -21,8 +21,8 @@ struct LLMSettingsView: View {
     @State private var testing = false
     @State private var testResult: TestResult?
     @State private var showAPIKey = false
-    @State private var isConfigExpanded = true // 默认展开，方便用户发现
-    @State private var isProvidersExpanded = false // 默认折叠，减少首屏空间占用
+    @State private var isProvidersExpanded = true  // 默认展开方便用户直观查看与切换提供商
+    @State private var isCustomModelInput = false  // 非自定义提供商下是否切为手动输入模式
     
     enum TestResult {
         case success(latency: Int, streamOK: Bool, streamTested: Bool)
@@ -31,9 +31,8 @@ struct LLMSettingsView: View {
     
     var body: some View {
         @Bindable var config = config
-        // 直接返回 Form，利用父视图统一的渐变背景，解决多层 ignoresSafeArea 导致的点击命中测试拦截问题
         Form {
-            // Enable/Disable & Background options combined in 1 Section
+            // 1. 服务开关
             Section {
                 Toggle(isOn: $config.isEnabled) {
                     Label(L10n.AI.LLM.enableAssistant, systemImage: DesignSystem.Icons.sparkles)
@@ -65,54 +64,71 @@ struct LLMSettingsView: View {
             }
             .appListRowBackground()
             
-            // Provider & Config combined to form a single continuous block, default collapsed
+            // 2. 提供商选择与详细参数配置
             Section {
-                // 1. 模型提供商默认折叠
                 DisclosureGroup(isExpanded: $isProvidersExpanded) {
                     VStack(alignment: .leading, spacing: DesignSystem.medium) {
                         ForEach(LLMProvider.allCases) { provider in
                             Button(action: {
-                                let selectedProvider = provider
                                 testResult = nil
-                                config.provider = selectedProvider
-                                if !selectedProvider.defaultBaseURL.isEmpty {
-                                    config.baseURL = selectedProvider.defaultBaseURL
-                                }
-                                if !selectedProvider.defaultModel.isEmpty {
-                                    config.model = selectedProvider.defaultModel
-                                }
+                                config.provider = provider
+                                isCustomModelInput = false
                             }) {
                                 HStack {
                                     Image(systemName: provider.icon)
-                                        .foregroundStyle(.appAccent)
+                                        .frame(width: DesignSystem.titleIconSize, alignment: .center)
+                                        .foregroundStyle(config.provider == provider ? .appAccent : .appSecondary)
                                     Text(provider.displayName)
                                         .foregroundStyle(.appText)
                                     Spacer()
                                     if config.provider == provider {
                                         Image(systemName: DesignSystem.Icons.check)
+                                            .font(.body.bold())
                                             .foregroundStyle(.appAccent)
                                     }
                                 }
+                                .padding(.vertical, DesignSystem.tiny)
+                                .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
                         }
                         
                         Divider()
                             .padding(.vertical, DesignSystem.small)
                         
-                        // 2. 模型配置
+                        // 联动参数配置块
                         configurationContent
                     }
                     .padding(.top, DesignSystem.small)
                 } label: {
-                    Label(L10n.AI.LLM.Provider.title, systemImage: "cpu")
-                        .foregroundStyle(.appText)
+                    HStack {
+                        Label(L10n.AI.LLM.Provider.title, systemImage: "cpu")
+                            .foregroundStyle(.appText)
+                        Spacer()
+                        Text(config.provider.displayName)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.appAccent)
+                    }
                 }
             } header: {
-                Text(L10n.AI.LLM.providerConfig)
+                HStack {
+                    Text(L10n.AI.LLM.providerConfig)
+                    Spacer()
+                    Button(action: {
+                        testResult = nil
+                        config.provider = .deepSeek
+                        isCustomModelInput = false
+                    }) {
+                        Text(L10n.Common.reset)
+                            .font(.caption)
+                            .foregroundStyle(.appAccent)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .appListRowBackground()
             
-            // Test Connection
+            // 3. 连通性测试验证
             Section {
                 Button(action: testConnection) {
                     HStack {
@@ -127,8 +143,8 @@ struct LLMSettingsView: View {
                             .foregroundStyle(.appText)
                     }
                 }
-                .disabled(testing || config.apiKey.isEmpty || config.baseURL.isEmpty)
-                .opacity(config.apiKey.isEmpty || config.baseURL.isEmpty ? 0.6 : 1.0)
+                .disabled(testing || config.apiKey.isEmpty || (config.provider == .custom && config.baseURL.isEmpty))
+                .opacity(config.apiKey.isEmpty ? 0.6 : 1.0)
                 
                 if let result = testResult {
                     VStack(alignment: .leading, spacing: DesignSystem.small) {
@@ -178,23 +194,33 @@ struct LLMSettingsView: View {
         .scrollContentBackground(.hidden)
     }
     
-    /// 配置内容视图（API Key / Base URL / Model 输入）
+    /// 配置内容视图（API Key / Base URL / Model 选择与编辑）
     private var configurationContent: some View {
         @Bindable var config = config
+        let validation = config.provider.validateAPIKeyFormat(config.apiKey)
+        
         return VStack(spacing: DesignSystem.wide) {
             // API Key
             VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-                Text(L10n.AI.LLM.apiKey)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.appSecondary)
+                HStack {
+                    Text(L10n.AI.LLM.apiKey)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.appSecondary)
+                    Spacer()
+                    if !config.apiKey.isEmpty, let msg = validation.message, !validation.isValid {
+                        Text(msg)
+                            .font(.caption2)
+                            .foregroundStyle(Color.appAlert)
+                    }
+                }
                 HStack {
                     if showAPIKey {
-                        TextField("sk-...", text: $config.apiKey)
+                        TextField(config.provider.apiKeyPlaceholder, text: $config.apiKey)
                             .textFieldStyle(.plain)
                             .foregroundStyle(.appText)
                             .font(.system(.body, design: .monospaced))
                     } else {
-                        SecureField("sk-...", text: $config.apiKey)
+                        SecureField(config.provider.apiKeyPlaceholder, text: $config.apiKey)
                             .textFieldStyle(.plain)
                             .foregroundStyle(.appText)
                             .font(.system(.body, design: .monospaced))
@@ -209,9 +235,10 @@ struct LLMSettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                        .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
+                        .stroke(validation.isValid || config.apiKey.isEmpty ? Color.appBorder.opacity(DesignSystem.Opacity.prominent) : Color.appAlert.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
                 )
             }
+            
             // Base URL
             VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
                 Text(L10n.AI.LLM.apiAddress)
@@ -233,49 +260,76 @@ struct LLMSettingsView: View {
                     .keyboardType(.URL)
                     #endif
             }
-            // Model
+            
+            // Model (非自定义模式呈现 Picker 下拉菜单，自定义模式或手动模式呈现 TextField)
             VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-                Text(L10n.AI.LLM.model)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.appSecondary)
-                TextField("model-name", text: $config.model)
-                    .textFieldStyle(.plain)
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundStyle(.appText)
-                    .padding()
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
-                    )
-                    #if !os(watchOS)
-                    .autocapitalization(.none)
-                    #endif
-            }
-            // Model suggestions
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DesignSystem.small) {
-                    ForEach(suggestedModels, id: \.self) { model in
-                        Button(action: { config.model = model }) {
-                            Text(model)
-                                .font(.caption)
-                                .padding(.horizontal, DesignSystem.medium - 2)
-                                .padding(.vertical, DesignSystem.small - 2)
-                                .background(config.model == model ? Color.appAccent.opacity(DesignSystem.Opacity.medium) : Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                                .clipShape(Capsule())
-                                .foregroundStyle(config.model == model ? .appAccent : .appSecondary)
+                HStack {
+                    Text(L10n.AI.LLM.model)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.appSecondary)
+                    Spacer()
+                    if config.provider != .custom && !config.provider.suggestedModels.isEmpty {
+                        Button(action: { isCustomModelInput.toggle() }) {
+                            Text(isCustomModelInput ? L10n.AI.LLM.Model.preset : L10n.AI.LLM.Model.custom)
+                                .font(.caption2)
+                                .foregroundStyle(.appAccent)
                         }
-                        .buttonStyle(.plain)
+                    }
+                }
+                
+                if config.provider == .custom || isCustomModelInput || config.provider.suggestedModels.isEmpty {
+                    // 自定义输入框
+                    TextField("model-name", text: $config.model)
+                        .textFieldStyle(.plain)
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundStyle(.appText)
+                        .padding()
+                        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
+                        )
+                        #if !os(watchOS)
+                        .autocapitalization(.none)
+                        #endif
+                } else {
+                    // 官方提供商 Dropdown 下拉选择菜单
+                    Menu {
+                        ForEach(config.provider.suggestedModels, id: \.self) { modelName in
+                            Button(action: {
+                                config.model = modelName
+                            }) {
+                                HStack {
+                                    Text(modelName)
+                                    if config.model == modelName {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(config.model.isEmpty ? config.provider.defaultModel : config.model)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundStyle(.appText)
+                            Spacer()
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.caption)
+                                .foregroundStyle(.appSecondary)
+                        }
+                        .padding()
+                        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
+                        )
                     }
                 }
             }
         }
         .padding(.vertical, DesignSystem.small)
-    }
-    
-    private var suggestedModels: [String] {
-        config.provider.suggestedModels
     }
     
     func testConnection() {

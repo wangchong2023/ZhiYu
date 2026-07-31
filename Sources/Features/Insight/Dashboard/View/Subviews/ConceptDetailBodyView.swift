@@ -97,69 +97,98 @@ struct ConceptDetailBodyView: View {
                             .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
                     )
                 
-                let outgoing = page.outgoingLinks.prefix(Self.limitOutgoingCount)
+                let outgoing = Array(page.outgoingLinks.prefix(Self.limitOutgoingCount))
                 
                 if outgoing.isEmpty {
                     Text(L10n.Search.noResults)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 } else {
-                    // 精巧的 SwiftUI 交互式圆形拓扑脑图
+                    // 精巧自适应 SwiftUI 交互式圆形拓扑脑图
                     GeometryReader { geo in
                         let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
+                        // 动态根据几何视图宽高计算周边节点推离半径，防止碰撞挤压
                         let radius = min(geo.size.width, geo.size.height) * Self.neighborNodeAngleScale
                         
-                        // 绘制连接线
+                        // 1. 绘制连接线
                         Path { path in
                             for index in 0..<outgoing.count {
-                                let angle = Double(index) * (2 * Double.pi / Double(outgoing.count))
+                                let angle = Double(index) * (2 * Double.pi / Double(outgoing.count)) - (Double.pi / 2)
                                 let x = center.x + CGFloat(cos(angle)) * radius
                                 let y = center.y + CGFloat(sin(angle)) * radius
                                 path.move(to: center)
                                 path.addLine(to: CGPoint(x: x, y: y))
                             }
                         }
-                        .stroke(Color.appAccent.opacity(DesignSystem.Opacity.disabled), lineWidth: Self.connectionLineWidth)
+                        .stroke(
+                            LinearGradient(
+                                colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.disabled)],
+                                startPoint: .center,
+                                endPoint: .trailing
+                            ),
+                            lineWidth: Self.connectionLineWidth
+                        )
                         
-                        // 绘制中心主题节点
-                        Button(action: {}) {
-                            Text(page.title)
-                                .font(.caption2.bold())
-                                .foregroundStyle(.white)
-                                .padding(Self.centralNodePadding)
-                                .background(Color.appAccent)
-                                .clipShape(Circle())
-                                .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: Self.centralNodeShadowRadius)
-                        }
-                        .position(center)
-                        
-                        // 绘制周边关联词条节点
+                        // 2. 绘制周边关联词条节点 (按极坐标角度分布)
                         ForEach(Array(outgoing.enumerated()), id: \.offset) { index, link in
-                            let angle = Double(index) * (2 * Double.pi / Double(outgoing.count))
+                            let angle = Double(index) * (2 * Double.pi / Double(outgoing.count)) - (Double.pi / 2)
                             let x = center.x + CGFloat(cos(angle)) * radius
                             let y = center.y + CGFloat(sin(angle)) * radius
                             
                             Button(action: {
                                 onLinkTap(link)
                             }) {
-                                HStack(spacing: Spacing.tiny) {
-                                    Image(systemName: "tag")
+                                HStack(spacing: DesignSystem.tightPadding) {
+                                    Image(systemName: "tag.fill")
                                         .font(.system(size: Self.tagIconSize))
                                     Text(link)
-                                        .font(.system(size: Self.tagTextSize))
+                                        .font(.caption2.weight(.medium))
+                                        .lineLimit(1)
                                 }
                                 .foregroundStyle(.appText)
-                                .padding(.horizontal, Spacing.tiny)
-                                .padding(.vertical, Spacing.atomic)
+                                .padding(.horizontal, DesignSystem.medium)
+                                .padding(.vertical, DesignSystem.tightPadding)
                                 .background(Color.appCard)
                                 .clipShape(Capsule())
                                 .overlay(
                                     Capsule()
                                         .stroke(Color.appAccent.opacity(DesignSystem.Opacity.prominent), lineWidth: Self.neighborNodeBorderWidth)
                                 )
+                                .shadow(color: Color.appText.opacity(DesignSystem.Opacity.shadow), radius: 3)
                             }
                             .position(x: x, y: y)
                         }
+
+                        // 3. 绘制中心主题节点 (自适应长宽胶囊，防截断)
+                        Button {
+                            // Center node action
+                        } label: {
+                            HStack(spacing: DesignSystem.tightPadding) {
+                                Circle()
+                                    .fill(Color.appCard)
+                                    .frame(width: DesignSystem.iconTiny, height: DesignSystem.iconTiny)
+                                Text(page.title)
+                                    .font(.caption.weight(.bold))
+                                    .lineLimit(1)
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, DesignSystem.standardPadding)
+                            .padding(.vertical, DesignSystem.tightPadding)
+                            .background(
+                                LinearGradient(
+                                    colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.prominent)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: Self.neighborNodeBorderWidth)
+                            )
+                            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: Self.centralNodeShadowRadius)
+                        }
+                        .position(center)
                     }
                 }
             }

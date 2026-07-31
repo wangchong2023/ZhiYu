@@ -531,7 +531,7 @@ struct Graph3DNodeInfoBar: View {
             Spacer()
 
             Button(action: onViewPage) {
-                Text("View_Page")
+                Text(L10n.Graph.viewDetail)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appAccent)
                     .padding(.horizontal, DesignSystem.medium)

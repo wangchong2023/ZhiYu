@@ -58,6 +58,17 @@ extension L10n {
             public static func latency(_ value: String) -> String { AI.trf("llm.latency", value) }
             public static var configuration: String { AI.tr("llm.configuration") }
             public static var enableAssistant: String { AI.tr("llm.enableAssistant") }
+            
+            public enum Model {
+                public static var preset: String { AI.tr("llm.model.preset") }
+                public static var custom: String { AI.tr("llm.model.custom") }
+            }
+
+            public enum Validation {
+                public static var emptyKey: String { AI.tr("llm.validation.emptyKey") }
+                public static func prefixHint(_ prefix: String) -> String { AI.trf("llm.validation.prefixHint", prefix) }
+                public static func lengthHint(_ minLen: Int) -> String { AI.trf("llm.validation.lengthHint", minLen) }
+            }
             public static var chatHistory: String { AI.tr("llm.chatHistory") }
             public static var clearHistory: String { AI.tr("llm.clearHistory") }
             public static var chatSection: String { AI.tr("llm.chatSection") }

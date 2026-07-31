@@ -99,6 +99,9 @@ targets:
       - script: "python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py --local"
         name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
         basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_view_duplication.py"
+        name: "[Gatekeeper] Heuristic View Duplication Check"
+        basedOnDependencyAnalysis: false
     dependencies:
       - package: GRDB
       - package: Lottie

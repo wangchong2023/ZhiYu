@@ -120,6 +120,35 @@ public final class GlobalModelManager {
         }
     }
     
+    // MARK: - 持久化已完成模型 Flag 管理 (UserDefaults 容灾)
+    
+    private static let downloadedModelIdsKey = "zhiyu_downloaded_model_ids"
+    
+    /// 获取/更新本地记录的已完成模型 ID 集合
+    public private(set) var downloadedModelIds: Set<String> {
+        get {
+            let list = UserDefaults.standard.stringArray(forKey: Self.downloadedModelIdsKey) ?? []
+            return Set(list)
+        }
+        set {
+            UserDefaults.standard.set(Array(newValue), forKey: Self.downloadedModelIdsKey)
+        }
+    }
+    
+    /// 标记某个模型 ID 为已完成下载并持久化 Flag
+    public func markModelAsDownloaded(_ modelId: String) {
+        var current = downloadedModelIds
+        current.insert(modelId)
+        downloadedModelIds = current
+    }
+
+    /// 标记某个模型 ID 为未下载/移除持久化 Flag
+    public func markModelAsRemoved(_ modelId: String) {
+        var current = downloadedModelIds
+        current.remove(modelId)
+        downloadedModelIds = current
+    }
+    
     // MARK: - 核心管理方法
     
     /// 初始化加载白名单及检测本地沙盒已就绪的权重
@@ -149,47 +178,40 @@ public final class GlobalModelManager {
         await initializeManager()
     }
     
-    /// 物理扫描本地沙盒中大模型的权重文件并刷新状态
-    ///
-    /// 核心逻辑：
-    /// 1. 遍历远程下发的端侧模型白名单。
-    /// 2. 检测本地 Documents 目录下是否存在对应的权重文件（如 gemma-4-e2b-it.bin）。
-    /// 3. 若文件存在，通过 FileManager 读取其物理大小进行强校验：
-    ///    - 若大小为 0 或异常，则认定为损坏的临时残留文件，执行物理删除清理以杜绝欺骗误判。
-    ///    - 若大小大于 0，则认定为本地已完全就绪，将状态标为 `.completed`。
-    /// 4. 若文件不存在或已损坏清理，检查当前下载进度状态，若非下载中/暂停中/等待中，则重置降级为未下载状态。
+    /// 物理扫描本地沙盒中大模型的权重文件，结合 UserDefaults 持久化 Flag 执双重对齐
     public func refreshLocalModelFiles() {
         let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let currentFlags = downloadedModelIds
         
         for manifest in remoteManifests {
             let modelId = manifest.modelId
             let fileURL = documentDirectory.appendingPathComponent("\(modelId).bin")
             
             var isFileValid = false
-            if FileManager.default.fileExists(atPath: fileURL.path) {
+            let hasFile = FileManager.default.fileExists(atPath: fileURL.path)
+            
+            if hasFile {
                 do {
-                    // 获取文件物理属性以提取大小
                     let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
-                    if let fileSize = attributes[.size] as? Int64, fileSize == manifest.fileSizeInBytes {
+                    if let fileSize = attributes[.size] as? Int64, fileSize > 0 {
                         isFileValid = true
-                    } else {
-                        // 物理大小不匹配，认定为损坏的或测试残留文件，执行物理删除
-                        try FileManager.default.removeItem(at: fileURL)
-                        Logger.shared.warning("[GlobalModelManager] 检测到模型权重文件大小不匹配或损坏: \(modelId)，已执行物理清理")
+                        modelStorageUsage[modelId] = fileSize
+                        // 物理文件非空，自动自愈补齐持久化 Flag
+                        markModelAsDownloaded(modelId)
                     }
                 } catch {
-                    // 属性读取失败也视为异常，执行安全物理删除
-                    try? FileManager.default.removeItem(at: fileURL)
                     Logger.shared.error("[GlobalModelManager] 校验模型权重文件属性失败: \(modelId)，错误: \(error.localizedDescription)")
                 }
+            } else if currentFlags.contains(modelId) {
+                // 若磁盘文件已被物理清理，同步移除已失效的持久化 Flag
+                markModelAsRemoved(modelId)
             }
             
-            if isFileValid {
-                // 文件强校验合法，本地大模型完全就绪
+            // 双重对齐：物理文件校验合法，或者已存在有效持久化 Flag 且文件仍存
+            if isFileValid || (currentFlags.contains(modelId) && hasFile) {
                 downloadStates[modelId] = .completed(localURL: fileURL)
             } else {
-                // 文件失效或不存在，需要将状态重置。
-                // 若状态不是 downloading/paused/pending 等正在下载的相关状态，则降级为未下载状态 (failed with Not Downloaded)
+                // 文件不存在或无效，降级为未下载状态（若处于下载中则保持）
                 let currentState = downloadStates[modelId]
                 let isDownloadingOrActive: Bool
                 if let state = currentState {
@@ -280,6 +302,9 @@ public final class GlobalModelManager {
                 // 确保在主线程更新 `@Observable` 响应式状态以驱动 UI 安全重绘
                 await MainActor.run {
                     self.downloadStates[modelId] = state
+                    if case .completed = state {
+                        self.markModelAsDownloaded(modelId)
+                    }
                 }
             }
         }

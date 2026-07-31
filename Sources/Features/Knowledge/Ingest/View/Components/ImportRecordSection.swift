@@ -9,15 +9,16 @@
 //  核心职责：导入原始内容分段 Tab + 卡片列表区域
 
 import SwiftUI
+import QuickLook
 
 struct ImportRecordSection: View {
     @State private var selectedCategory: String = "all"
     @State private var records: [ImportRecord] = []
     @State private var previewText: String?
     @State private var previewFilePath: String?
+    @State private var previewRecord: ImportRecord?
     @State private var showTextPreview = false
     @State private var quickLookURL: URL?
-    @State private var showQuickLook = false
     @Environment(Router.self) var router
     var onAITag: ((ImportRecord) -> Void)?
     var onManualEdit: ((ImportRecord) -> Void)?
@@ -62,13 +63,40 @@ struct ImportRecordSection: View {
             NavigationStack {
                 Group {
                     if let path = previewFilePath {
-                        FileTextPreviewView(filePath: path)
+                        if ["png", "jpg", "jpeg", "heic", "webp"].contains((path as NSString).pathExtension.lowercased()) {
+                            VStack(spacing: DesignSystem.medium) {
+                                Label(L10n.Ingest.ocrScan, systemImage: "camera.viewfinder")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.appAccent)
+                                if let image = UIImage(contentsOfFile: path) {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(maxHeight: 300)
+                                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                                        .shadow(radius: 4)
+                                }
+                                ScrollView {
+                                    FormattedMarkdownText(text: previewText ?? "")
+                                        .padding()
+                                }
+                            }
+                            .padding()
+                        } else {
+                            FileTextPreviewView(filePath: path)
+                        }
                     } else {
                         ScrollView {
-                            Text(previewText ?? "")
-                                .font(.body.monospaced())
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                                HStack {
+                                    previewSourceBadge
+                                    Spacer()
+                                }
+                                
+                                FormattedMarkdownText(text: previewText ?? "")
+                                    .padding(.top, DesignSystem.tiny)
+                            }
+                            .padding()
                         }
                     }
                 }
@@ -81,11 +109,7 @@ struct ImportRecordSection: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showQuickLook) {
-            if let url = quickLookURL {
-                QuickLookPreview(fileURL: url)
-            }
-        }
+        .quickLookPreview($quickLookURL)
         .task { await loadRecords() }
         .onChange(of: selectedCategory) { _, _ in Task { await loadRecords() } }
     }
@@ -100,11 +124,29 @@ struct ImportRecordSection: View {
     }
 
     private func previewContent(_ record: ImportRecord, forceRaw: Bool = false) {
+        previewRecord = record
+        
+        #if canImport(UIKit)
+        // 仅当文件确实是 PDF（扩展名是 .pdf 或 category 为 pdf）时才进行 PDF 构建与 QuickLook 弹窗
+        let titleLower = record.title.lowercased()
+        let catLower = record.category.lowercased()
+        let isPDF = catLower == "pdf" || titleLower.hasSuffix(".pdf") || record.filePath?.lowercased().hasSuffix(".pdf") == true
+
+        if isPDF {
+            let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let pdfFileName = (record.filePath as NSString?)?.lastPathComponent ?? "\(record.id).pdf"
+            let targetPath = docURL.appendingPathComponent(pdfFileName).path
+            
+            if let pdfURL = DemoPDFBuilder.ensurePDFExists(at: targetPath, title: record.title, content: record.rawText ?? record.title) {
+                quickLookURL = pdfURL
+                return
+            }
+        }
+        #endif
+
         let handler = ImportPreviewHandler(urlOpener: urlOpener, shareSheet: shareSheet, router: router)
         let action = handler.resolveAction(for: record, forceRaw: forceRaw)
-        
-        print("DEBUG_INGEST: ClickedRecordTitle=\(record.title), ResolvedAction=\(action)")
-        
+
         switch action {
         case .navigateToPage(let uuid):
             router.navigateToPage(id: uuid)
@@ -116,7 +158,6 @@ struct ImportRecordSection: View {
             showTextPreview = true
         case .localBinaryFile(let url):
             quickLookURL = url
-            showQuickLook = true
         case .openURL(let url):
             Task { await urlOpener.open(url) }
         case .rawTextPreview(let text):
@@ -125,6 +166,49 @@ struct ImportRecordSection: View {
             showTextPreview = true
         case .none:
             break
+        }
+    }
+
+    // MARK: - 动态来源 Badge 胶囊与 Markdown 格式化渲染
+
+    @ViewBuilder
+    private var previewSourceBadge: some View {
+        let cat = previewRecord?.category ?? "file"
+        Label(badgeLabel(for: cat), systemImage: badgeIcon(for: cat))
+            .font(.caption.weight(.bold))
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, DesignSystem.tightPadding)
+            .background(Capsule().fill(badgeColor(for: cat).opacity(DesignSystem.Opacity.subtle)))
+            .foregroundStyle(badgeColor(for: cat))
+    }
+
+    private func badgeLabel(for category: String) -> String {
+        switch category {
+        case "ocr": return L10n.Ingest.ocrScan
+        case "voice": return L10n.Ingest.voiceNote
+        case "link": return L10n.Ingest.urlImport
+        case "manual": return L10n.Ingest.manualEntry
+        default: return L10n.Ingest.fileImport
+        }
+    }
+
+    private func badgeIcon(for category: String) -> String {
+        switch category {
+        case "ocr": return "camera.viewfinder"
+        case "voice": return "waveform"
+        case "link": return "link"
+        case "manual": return "square.and.pencil"
+        default: return "doc.text"
+        }
+    }
+
+    private func badgeColor(for category: String) -> Color {
+        switch category {
+        case "ocr": return .purple
+        case "voice": return .pink
+        case "link": return .blue
+        case "manual": return .orange
+        default: return .appAccent
         }
     }
 
@@ -190,7 +274,34 @@ struct ImportRecordSection: View {
 
     private func loadRecords() async {
         let cat: String? = selectedCategory == "all" ? nil : selectedCategory
-        records = (try? await repo.fetchAll(category: cat, limit: 50)) ?? []
+        let fetched = (try? await repo.fetchAll(category: cat, limit: 50)) ?? []
+        records = fetched.map { sanitizeRecordSize($0) }
+    }
+
+    /// 对旧有 Demo 数据库残留小字节记录进行实时自愈与计算修愈
+    private func sanitizeRecordSize(_ record: ImportRecord) -> ImportRecord {
+        var rec = record
+        let title = record.title
+        
+        let demoSnippetMap: [String: String] = [
+            L10n.InitialNotebook.PKM.title1: L10n.InitialNotebook.Snippet.methodology,
+            L10n.InitialNotebook.PKM.title4: L10n.InitialNotebook.Snippet.pkmVoiceForget,
+            L10n.InitialNotebook.PKM.title5: L10n.InitialNotebook.Snippet.pkmRagLink,
+            L10n.InitialNotebook.PKM.title2: L10n.InitialNotebook.Snippet.pkmOcrFolder,
+            L10n.InitialNotebook.Coffee.title1: L10n.InitialNotebook.Snippet.luckin,
+            L10n.InitialNotebook.Coffee.title2: L10n.InitialNotebook.Snippet.coffeeOcrManual,
+            L10n.InitialNotebook.Coffee.title4: L10n.InitialNotebook.Snippet.coffeeVoiceProcure,
+            L10n.InitialNotebook.Coffee.title5: L10n.InitialNotebook.Snippet.survey
+        ]
+        
+        if let snippet = demoSnippetMap[title] {
+            let size = Int64(snippet.utf8.count)
+            if (rec.fileSize ?? 0) < size {
+                rec.fileSize = size
+                rec.rawText = snippet
+            }
+        }
+        return rec
     }
 }
 
@@ -212,42 +323,59 @@ struct ImportPreviewHandler {
     let router: Router
     
     /// 根据导入记录的状态和内容，决定预览分发动作
-    func resolveAction(for record: ImportRecord, forceRaw: Bool = false, fileExists: (String) -> Bool = { FileManager.default.fileExists(atPath: $0) }) -> PreviewAction {
-        // 1. 优先：若有成功关联的知识页面，且非强预览类（文件/OCR/语音），则直接跳转至页面详情
-        let isForcePreviewCategory = record.category == ImportCategory.file.rawValue ||
-                                     record.category == ImportCategory.ocr.rawValue ||
-                                     record.category == ImportCategory.voice.rawValue
-        
-        if !forceRaw && !isForcePreviewCategory, let pageID = record.pageID, let uuid = UUID(uuidString: pageID), record.status == ImportRecordStatus.done {
-            return .navigateToPage(id: uuid)
-        }
-
-        // 2. 对于用户手工录入的记录，优先分派编辑事件以拉起表单
+    func resolveAction(for record: ImportRecord, forceRaw: Bool = false) -> PreviewAction {
+        // 1. 对于用户手工输入的记录，优先分派编辑事件以拉起输入编辑表单
         if !forceRaw, record.category == ImportCategory.manual.rawValue {
             return .manualEdit
         }
 
-        // 3. 处理本地磁盘文件
-        if let path = record.filePath, fileExists(path) {
+        // 2. 本地磁盘文件校验（自动进行相对路径/绝对路径寻址补全与自愈）
+        if let path = resolveExistingFilePath(record.filePath) {
             if isTextFile(path: path) {
                 return .localTextFile(path: path)
             }
             return .localBinaryFile(url: URL(fileURLWithPath: path))
         }
         
-        // 4. 链接 → 浏览器
+        // 3. 原始文本预览（支持 OCR 扫描文本、语音转文字速记、网页抓取文本弹窗预览）
+        if let rawText = record.rawText, !rawText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return .rawTextPreview(text: rawText)
+        }
+
+        // 4. 网页链接 → 默认浏览器 / Web Preview 打开
         if let urlStr = record.sourceURL, let url = URL(string: urlStr) {
             return .openURL(url: url)
         }
-        
-        // 5. 文本 → 兜底弹窗预览
-        if let rawText = record.rawText {
-            return .rawTextPreview(text: rawText)
+
+        // 5. 若无原始文本/文件，则降级跳转至已合成的知识页面
+        if let pageID = record.pageID, let uuid = UUID(uuidString: pageID) {
+            return .navigateToPage(id: uuid)
         }
         
         return .none
     }
     
+    /// 自愈补全相对路径或校验物理存在的沙盒绝对路径
+    private func resolveExistingFilePath(_ rawPath: String?) -> String? {
+        guard let path = rawPath, !path.isEmpty else { return nil }
+        
+        // A. 原始绝对路径存在
+        if FileManager.default.fileExists(atPath: path) {
+            return path
+        }
+        
+        // B. 路径自愈：尝试结合当前 App 沙盒 Documents 目录寻找文件
+        let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileName = (path as NSString).lastPathComponent
+        let resolvedURL = docURL.appendingPathComponent(fileName)
+        
+        if FileManager.default.fileExists(atPath: resolvedURL.path) {
+            return resolvedURL.path
+        }
+        
+        return nil
+    }
+
     private func isTextFile(path: String) -> Bool {
         let textExtensions = ["txt", "md", "json", "csv", "js", "py", "html", "xml", "css", "log", "swift", "yaml", "yml"]
         let ext = URL(fileURLWithPath: path).pathExtension.lowercased()

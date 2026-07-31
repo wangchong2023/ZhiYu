@@ -74,7 +74,7 @@ extension ModelLabView {
     func metricItemCard(title: String, value: String, unit: String, glowColor: Color) -> some View {
         VStack(spacing: 4) {
             Text(title)
-                .font(.system(size: 9, weight: .bold)) // Dynamic Type
+                .font(.caption2.weight(.medium))
                 .foregroundStyle(.appSecondary)
 
             Text(value)
@@ -84,8 +84,8 @@ extension ModelLabView {
                 .contentTransition(.numericText()) // 动画数字翻滚
 
             Text(unit)
-                .font(.system(size: 8, design: .monospaced)) // Dynamic Type
-                .foregroundStyle(.appSecondary)
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(glowColor.opacity(DesignSystem.Opacity.prominent))
         }
         .padding(.vertical, DesignSystem.small)
         .frame(maxWidth: .infinity)

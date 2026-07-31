@@ -61,7 +61,7 @@ final class AppToolbarModifierTests: XCTestCase {
     func testUserProfileMenuPopoverContentInitialization() {
         let store = AppStore()
         let router = Router.shared
-        let authService = AuthService()
+        let authService = AuthService.shared
         let onboardingService = OnboardingService()
         let themeManager = ThemeManager.shared
 

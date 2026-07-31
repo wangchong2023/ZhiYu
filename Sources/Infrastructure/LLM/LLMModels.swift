@@ -26,6 +26,12 @@ struct LLMProviderMetadata: Codable {
     let defaultModel: String
     /// 建议的模型列表
     let suggestedModels: [String]
+    /// API Key 必须包含的前缀 (如 "sk-")
+    let apiKeyPrefix: String?
+    /// API Key 最小长度要求
+    let apiKeyMinLength: Int?
+    /// API Key 占位提示字符串
+    let apiKeyPlaceholder: String?
     /// 显示图标 (SF Symbol)
     let icon: String
 }
@@ -50,15 +56,15 @@ final class LLMRegistry {
             return
         }
 
-        // 兜底方案：如果 JSON 未能加载（如尚未打包），使用硬编码数据
+        // 兜底方案：如果 JSON 未能加载（如尚未打包），使用硬编码数据（DeepSeek 第一位）
         let fallbacks: [LLMProviderMetadata] = [
-            .init(id: "zhipu", nameKey: "llm.provider.zhipu", baseURL: AppConstants.URLs.llmProviderZhipu, defaultModel: "glm-4-flash", suggestedModels: ["glm-4-flash", "glm-4", "glm-4v"], icon: "sparkles"),
-            .init(id: "minimax", nameKey: "llm.provider.minimax", baseURL: AppConstants.URLs.llmProviderMinimax, defaultModel: "abab6.5-chat", suggestedModels: ["abab6.5-chat", "abab5.5-chat"], icon: "cpu"),
-            .init(id: "qwen", nameKey: "llm.provider.qwen", baseURL: AppConstants.URLs.llmProviderQwen, defaultModel: "qwen-plus", suggestedModels: ["qwen-plus", "qwen-max", "qwen-turbo"], icon: "cloud.fill"),
-            .init(id: "deepseek", nameKey: "llm.provider.deepSeek", baseURL: AppConstants.URLs.llmProviderDeepSeek, defaultModel: "deepseek-v4-pro", suggestedModels: ["deepseek-v4-pro", "deepseek-v4-lite"], icon: "wave.3.forward"),
-            .init(id: "kimi", nameKey: "llm.provider.kimi", baseURL: AppConstants.URLs.llmProviderKimi, defaultModel: "moonshot-v1-8k", suggestedModels: ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"], icon: "moon.fill"),
-            .init(id: "siliconflow", nameKey: "llm.provider.siliconflow", baseURL: AppConstants.URLs.llmProviderSiliconFlow, defaultModel: "deepseek-ai/DeepSeek-V3", suggestedModels: ["deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-V2.5", "Qwen/Qwen2.5-72B-Instruct"], icon: "bolt.fill"),
-            .init(id: "custom", nameKey: "llm.provider.custom", baseURL: "", defaultModel: "", suggestedModels: ["default"], icon: "server.rack")
+            .init(id: "deepseek", nameKey: "llm.provider.deepSeek", baseURL: AppConstants.URLs.llmProviderDeepSeek, defaultModel: "deepseek-v4-pro", suggestedModels: ["deepseek-v4-pro", "deepseek-v4-lite"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "wave.3.forward"),
+            .init(id: "zhipu", nameKey: "llm.provider.zhipu", baseURL: AppConstants.URLs.llmProviderZhipu, defaultModel: "glm-5.2", suggestedModels: ["glm-5.2", "glm-5", "glm-5-turbo", "glm-5v-turbo", "glm-4-flash"], apiKeyPrefix: "", apiKeyMinLength: 20, apiKeyPlaceholder: "your-api-key", icon: "sparkles"),
+            .init(id: "minimax", nameKey: "llm.provider.minimax", baseURL: AppConstants.URLs.llmProviderMinimax, defaultModel: "abab7-chat", suggestedModels: ["abab7-chat", "abab6.5t-chat", "abab6.5s-chat"], apiKeyPrefix: "", apiKeyMinLength: 20, apiKeyPlaceholder: "your-api-key", icon: "cpu"),
+            .init(id: "qwen", nameKey: "llm.provider.qwen", baseURL: AppConstants.URLs.llmProviderQwen, defaultModel: "qwen3.7-max", suggestedModels: ["qwen3.7-max", "qwen3.8-max-preview", "qwen3.7-plus", "qwen3.7-flash"], apiKeyPrefix: "sk-", apiKeyMinLength: 25, apiKeyPlaceholder: "sk-...", icon: "cloud.fill"),
+            .init(id: "kimi", nameKey: "llm.provider.kimi", baseURL: AppConstants.URLs.llmProviderKimi, defaultModel: "kimi-k3", suggestedModels: ["kimi-k3", "kimi-k2.7", "moonshot-v1-128k", "moonshot-v1-32k", "moonshot-v1-8k"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "moon.fill"),
+            .init(id: "siliconflow", nameKey: "llm.provider.siliconflow", baseURL: AppConstants.URLs.llmProviderSiliconFlow, defaultModel: "deepseek-ai/DeepSeek-V4-Pro", suggestedModels: ["deepseek-ai/DeepSeek-V4-Pro", "deepseek-ai/DeepSeek-V4-Lite", "Qwen/Qwen3.7-Max"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "bolt.fill"),
+            .init(id: "custom", nameKey: "llm.provider.custom", baseURL: "", defaultModel: "", suggestedModels: [], apiKeyPrefix: "", apiKeyMinLength: 0, apiKeyPlaceholder: "sk-...", icon: "server.rack")
         ]
         for item in fallbacks {
             providers[item.id] = item
@@ -74,10 +80,10 @@ final class LLMRegistry {
 // MARK: - LLM 提供商枚举
 /// 智宇支持的所有 AI 服务商
 public enum LLMProvider: String, Codable, CaseIterable, Identifiable {
+    case deepSeek = "deepseek"
     case zhipu = "zhipu"
     case minimax = "minimax"
     case qwen = "qwen"
-    case deepSeek = "deepseek"
     case kimi = "kimi"
     case siliconflow = "siliconflow"
     case custom = "custom"
@@ -110,7 +116,37 @@ public enum LLMProvider: String, Codable, CaseIterable, Identifiable {
 
     /// 建议模型列表
     public var suggestedModels: [String] {
-        metadata?.suggestedModels ?? ["default"]
+        metadata?.suggestedModels ?? []
+    }
+
+    /// API Key 必需的前缀
+    public var apiKeyPrefix: String {
+        metadata?.apiKeyPrefix ?? ""
+    }
+
+    /// API Key 最小长度要求
+    public var apiKeyMinLength: Int {
+        metadata?.apiKeyMinLength ?? 0
+    }
+
+    /// API Key Placeholder 提示词
+    public var apiKeyPlaceholder: String {
+        metadata?.apiKeyPlaceholder ?? "sk-..."
+    }
+
+    /// 验证给定 API Key 格式规范性
+    public func validateAPIKeyFormat(_ key: String) -> (isValid: Bool, message: String?) {
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return (false, L10n.AI.LLM.Validation.emptyKey)
+        }
+        if !apiKeyPrefix.isEmpty && !trimmed.hasPrefix(apiKeyPrefix) {
+            return (false, L10n.AI.LLM.Validation.prefixHint(apiKeyPrefix))
+        }
+        if apiKeyMinLength > 0 && trimmed.count < apiKeyMinLength {
+            return (false, L10n.AI.LLM.Validation.lengthHint(apiKeyMinLength))
+        }
+        return (true, nil)
     }
 
     public var icon: String {
@@ -161,8 +197,8 @@ final class LLMConfigStore: ObservableObject {
         didSet { 
             if oldValue != provider {
                 saveConfig()
-                // 切换提供商时，自动加载该提供商对应的 API Key
-                self.apiKey = loadAPIKey(for: provider)
+                // 切换提供商时，自动联动装载该提供商专属的 API Key, BaseURL 和 Model
+                loadConfigForCurrentProvider()
             }
         }
     }
@@ -170,10 +206,10 @@ final class LLMConfigStore: ObservableObject {
         didSet { saveAPIKey(for: provider) }
     }
     @Published var baseURL: String {
-        didSet { saveConfig() }
+        didSet { saveBaseURL(baseURL, for: provider) }
     }
     @Published var model: String {
-        didSet { saveConfig() }
+        didSet { saveModel(model, for: provider) }
     }
     @Published var isEnabled: Bool {
         didSet { saveConfig() }
@@ -191,6 +227,12 @@ final class LLMConfigStore: ObservableObject {
     private func keychainKey(for provider: LLMProvider) -> String {
         return "llm_api_key_\(provider.rawValue)"
     }
+    private func baseURLStorageKey(for provider: LLMProvider) -> String {
+        return "llm_base_url_\(provider.rawValue)"
+    }
+    private func modelStorageKey(for provider: LLMProvider) -> String {
+        return "llm_model_\(provider.rawValue)"
+    }
 
     struct Config: Codable {
         let provider: LLMProvider
@@ -203,8 +245,6 @@ final class LLMConfigStore: ObservableObject {
 
     init() {
         var initialProvider: LLMProvider = .deepSeek
-        var initialBaseURL = LLMProvider.deepSeek.defaultBaseURL
-        var initialModel = LLMProvider.deepSeek.defaultModel
         var initialIsEnabled = false
         var initialAutoScan = true
         var initialAutoRefactor = false
@@ -212,23 +252,73 @@ final class LLMConfigStore: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: configKey),
            let config = try? JSONDecoder().decode(Config.self, from: data) {
             initialProvider = config.provider
-            initialBaseURL = config.baseURL
-            initialModel = config.model
             initialIsEnabled = config.isEnabled
             initialAutoScan = config.autoScan
             initialAutoRefactor = config.autoRefactor
         }
-        
+
         self.provider = initialProvider
-        self.baseURL = initialBaseURL
-        self.model = initialModel
         self.isEnabled = initialIsEnabled
         self.autoScan = initialAutoScan
         self.autoRefactor = initialAutoRefactor
         
-        // 延迟初始化 apiKey 以支持迁移逻辑
-        self.apiKey = "" 
+        // 自动初始化当前提供商绑定的独立存储参数
+        self.baseURL = ""
+        self.model = ""
+        self.apiKey = ""
+        
+        self.baseURL = loadBaseURL(for: initialProvider)
+        self.model = loadModel(for: initialProvider)
         self.apiKey = loadAPIKey(for: initialProvider)
+    }
+
+    /// 切换提供商时联动加载对应 API Key、BaseURL 和 Model
+    private func loadConfigForCurrentProvider() {
+        self.apiKey = loadAPIKey(for: provider)
+        self.baseURL = loadBaseURL(for: provider)
+        self.model = loadModel(for: provider)
+    }
+
+    /// 加载指定提供商绑定的 Base URL，官方提供商固定返回标准官方 URL
+    private func loadBaseURL(for provider: LLMProvider) -> String {
+        if provider != .custom {
+            return provider.defaultBaseURL
+        }
+        let key = baseURLStorageKey(for: provider)
+        if let stored = UserDefaults.standard.string(forKey: key), !stored.isEmpty {
+            return stored
+        }
+        return provider.defaultBaseURL
+    }
+
+    /// 保存指定提供商绑定的 Base URL
+    private func saveBaseURL(_ url: String, for provider: LLMProvider) {
+        let key = baseURLStorageKey(for: provider)
+        UserDefaults.standard.set(url, forKey: key)
+        saveConfig()
+    }
+
+    /// 加载指定提供商绑定的 Model，针对官方提供商过滤历史非法/废弃脏数据，自动回退至旗舰默认模型
+    private func loadModel(for provider: LLMProvider) -> String {
+        if provider == .custom {
+            let key = modelStorageKey(for: provider)
+            return UserDefaults.standard.string(forKey: key) ?? ""
+        }
+        
+        let key = modelStorageKey(for: provider)
+        if let stored = UserDefaults.standard.string(forKey: key), !stored.isEmpty {
+            if provider.suggestedModels.contains(stored) {
+                return stored
+            }
+        }
+        return provider.defaultModel
+    }
+
+    /// 保存指定提供商绑定的 Model
+    private func saveModel(_ m: String, for provider: LLMProvider) {
+        let key = modelStorageKey(for: provider)
+        UserDefaults.standard.set(m, forKey: key)
+        saveConfig()
     }
 
     private func saveConfig() {
@@ -246,50 +336,45 @@ final class LLMConfigStore: ObservableObject {
     }
 
     /// 从安全的 Keychain 或硬件芯片解密加载特定 LLM 提供商的 API 密钥
-    /// - Parameter provider: 大模型提供商类型
-    /// - Returns: 解密后的 API 密钥。如果失败，支持降级至已加密的本地备份，否则返回空字符串。
     private func loadAPIKey(for provider: LLMProvider) -> String {
         let key = keychainKey(for: provider)
         
         do {
-            if let encryptedValue = try KeychainService.shared.retrieve(key: key) {
-                if let decrypted = try? SecureEnclaveCryptoService.shared.decrypt(encryptedValue) {
+            if let encryptedValue = try KeychainService.shared.retrieve(key: key), !encryptedValue.isEmpty {
+                if let decrypted = try? SecureEnclaveCryptoService.shared.decrypt(encryptedValue), !decrypted.isEmpty {
                     return decrypted
                 } else {
-                    Logger.shared.warning("[LLMConfigStore] 硬件解密 API 密钥失败，可能由于硬件私钥更新。")
+                    return encryptedValue
                 }
             }
         } catch {
             Logger.shared.error("[LLMConfigStore] 从钥匙串读取 API 密钥失败", error: error)
         }
         
+        // 软件级加密兜底：在钥匙串/SecureEnclave存取受限下，读取经应用级 AES-GCM 加密后的本地备份
+        let fallbackKey = "zhiyu_llm_api_key_fallback_\(provider.rawValue)"
+        if let fallbackEncrypted = UserDefaults.standard.string(forKey: fallbackKey) {
+            if let decrypted = try? SecurityManager.shared.decrypt(fallbackEncrypted), !decrypted.isEmpty {
+                Logger.shared.debug("[LLMConfigStore] 已启用本地加密备份的 API 密钥兜底。")
+                return decrypted
+            }
+        }
+
         // 迁移逻辑：如果新版分提供商 Key 不存在，尝试读取旧版全局 Key
-        if let legacyValue = try? KeychainService.shared.retrieve(key: legacyKeychainAPIKey) {
-            // 对迁移上来的明文进行物理级硬件加密，持久化回 Keychain
+        if let legacyValue = try? KeychainService.shared.retrieve(key: legacyKeychainAPIKey), !legacyValue.isEmpty {
             if let encrypted = try? SecureEnclaveCryptoService.shared.encrypt(legacyValue) {
                 try? KeychainService.shared.store(key: key, value: encrypted)
             }
             return legacyValue
         }
 
-        // 软件级加密兜底：在钥匙串存取受限（如未签名、沙盒受限环境）下，读取经应用级 AES-GCM 加密后的本地备份，避免直接暴露明文
-        let fallbackKey = "zhiyu_llm_api_key_fallback_\(provider.rawValue)"
-        if let fallbackEncrypted = UserDefaults.standard.string(forKey: fallbackKey) {
-            if let decrypted = try? SecurityManager.shared.decrypt(fallbackEncrypted) {
-                Logger.shared.debug("[LLMConfigStore] 已启用本地加密备份的 API 密钥兜底。")
-                return decrypted
-            }
-        }
-
         return ""
     }
 
     /// 将特定 LLM 提供商的 API 密钥物理加密并安全存储到钥匙串
-    /// - Parameter provider: 大模型提供商类型
     private func saveAPIKey(for provider: LLMProvider) {
         let key = keychainKey(for: provider)
         
-        // 软件级加密备份：将 API 密钥通过应用级 AES-GCM 软件加密，备份在 UserDefaults，防范 Keychain 写入限制
         let fallbackKey = "zhiyu_llm_api_key_fallback_\(provider.rawValue)"
         if apiKey.isEmpty {
             UserDefaults.standard.removeObject(forKey: fallbackKey)
@@ -305,9 +390,11 @@ final class LLMConfigStore: ObservableObject {
         }
         
         do {
-            // 引入 Secure Enclave 硬件安全芯片物理级锁定
-            let encrypted = try SecureEnclaveCryptoService.shared.encrypt(apiKey)
-            try KeychainService.shared.store(key: key, value: encrypted)
+            if let encrypted = try? SecureEnclaveCryptoService.shared.encrypt(apiKey) {
+                try KeychainService.shared.store(key: key, value: encrypted)
+            } else {
+                try KeychainService.shared.store(key: key, value: apiKey)
+            }
         } catch {
             Logger.shared.error("[LLMConfigStore] 写入加密的 API 密钥至钥匙串失败", error: error)
         }

@@ -240,12 +240,25 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
             )
         } catch {
             let latency = Int(Date().timeIntervalSince(start) * 1000)
+            var code = "ERR"
+            if let llmErr = error as? LLMError {
+                switch llmErr {
+                case .unauthorized:
+                    code = "401"
+                case .httpError(let statusCode):
+                    code = "\(statusCode)"
+                case .rateLimited:
+                    code = "429"
+                default:
+                    break
+                }
+            }
             return ValidationResult(
                 isSuccess: false,
                 latencyMS: latency,
                 streamTested: streamTested,
                 streamOK: streamOK,
-                errorCode: "ERR",
+                errorCode: code,
                 errorMessage: error.localizedDescription
             )
         }

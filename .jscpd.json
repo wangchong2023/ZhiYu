@@ -3,8 +3,10 @@
   "min-lines": 10,
   "min-tokens": 50,
   "reporters": [
-    "console"
+    "console",
+    "json"
   ],
+  "output": "build/jscpd",
   "ignore": [
     "**/build/**",
     "**/.build/**",
@@ -13,7 +15,9 @@
     "**/*.xcstrings",
     "**/*.json",
     "**/env/**",
-    "**/.git/**"
+    "**/.git/**",
+    "**/Tests/**",
+    "**/Generated/**"
   ],
   "absolute": true
 }

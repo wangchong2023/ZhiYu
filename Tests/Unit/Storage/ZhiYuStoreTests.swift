@@ -87,7 +87,7 @@ final class ChatHistoryStoreTests: XCTestCase {
 
 // MARK: - 大模型配置与敏感密钥管理 (LLMConfigStore) 单元测试
 @MainActor
-final class LLMConfigStoreTests: XCTestCase {
+final class ZhiYuLLMConfigStoreTests: XCTestCase {
     
     var configStore: LLMConfigStore!
     

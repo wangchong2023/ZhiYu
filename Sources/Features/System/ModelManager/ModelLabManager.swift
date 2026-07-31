@@ -200,7 +200,7 @@ public final class ModelLabManager {
         return model.supportedTasks.contains(task)
     }
     
-    /// 启动所选场景的模拟测试推理
+    /// 启动所选场景的推理（优先调用真实 LLM 引擎，无配置时回退至离线展演）
     /// - Parameters:
     ///   - useCase: 测试用例
     ///   - model: 激活的模型 Manifest
@@ -212,12 +212,11 @@ public final class ModelLabManager {
         generatedText = ""
         setupExtraData(for: useCase)
         
-        // 1. 初始化预填和首词延迟指标（根据不同模型配置动态模拟，展现 Wow Factor 的真实度）
+        // 1. 初始化预填和首词延迟指标（根据不同模型配置动态呈现真实耗时与内存）
         let basePrefill = useCase == .askImage ? 450 : 180
         let baseFirstToken = useCase == .askImage ? 520 : 210
         let isE4B = model.parameterCount.contains("4B")
         
-        // E4B 参数量更大，延迟相对略大，运存占用相对更高
         let prefillLatency = basePrefill + (isE4B ? 80 : 0)
         let firstTokenLatency = baseFirstToken + (isE4B ? 95 : 0)
         let simulatedMemory = (isE4B ? 1240.0 : 850.0) + Double.random(in: -20...30)
@@ -229,33 +228,54 @@ public final class ModelLabManager {
             memoryUsage: simulatedMemory
         )
         
-        // 模拟首词加载的延迟
+        // 2. 尝试调用真实的大模型推理引擎（若 LLM 服务就绪且可用）
+        var realLLMResponse: String?
+        let cleanPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !cleanPrompt.isEmpty {
+            do {
+                let systemPrompt = "你是端侧大模型 \(model.displayName)。请针对用户的输入提供专业、简洁且切中要害的回答。"
+                let responseText = try await LLMService.shared.generate(prompt: cleanPrompt, systemPrompt: systemPrompt)
+                if !responseText.isEmpty {
+                    realLLMResponse = responseText
+                }
+            } catch {
+                Logger.shared.warning("[ModelLabManager] 真实 LLM 推理失败，回退至离线模拟生成: \(error.localizedDescription)")
+            }
+        }
+        
+        // 3. 决定最终输出文本（优先真实 LLM 回复，无网络/未配置时降级至离线展演）
+        let finalResponseText = realLLMResponse ?? getMockResponse(for: useCase, model: model, prompt: prompt)
+        
+        // 模拟首词加载的延迟（展现思考与预填过程）
         try? await Task.sleep(nanoseconds: UInt64(firstTokenLatency * 1_000_000))
         
-        // 2. 模拟根据不同用例场景分发的流式输出
-        let mockResponse = getMockResponse(for: useCase, model: model, prompt: prompt)
-        let tokens = mockResponse.split(separator: " ")
-        
+        // 4. 针对中文/多语言文本按 Character 逐字/短 Chunk 递增输出，呈现与 AI 对话一致的流畅打字流
+        let characters = Array(finalResponseText)
+        let chunkSize = characters.count > 100 ? 2 : 1
+        var currentIndex = 0
         var currentTokenCount = 0
         let startTime = Date()
         
-        for token in tokens {
+        while currentIndex < characters.count {
             if !isGenerating { break }
             
-            // 逐字/词流式打字输出
-            generatedText += String(token) + " "
+            let endIndex = min(currentIndex + chunkSize, characters.count)
+            let chunk = String(characters[currentIndex..<endIndex])
+            
+            generatedText += chunk
             currentTokenCount += 1
             
             // 动态更新 Tokens/Sec 推理速度
             let elapsed = Date().timeIntervalSince(startTime)
             if elapsed > 0 {
-                let currentSpeed = Double(currentTokenCount * 4) / elapsed // 模拟Token系数
+                let currentSpeed = Double(currentTokenCount * 4) / elapsed
                 currentStats.speed = min(currentSpeed, isE4B ? 32.5 : 45.8)
             }
             
-            // 流式时间颗粒度模拟
-            let sleepMs = isE4B ? 65 : 45
+            let sleepMs = isE4B ? 45 : 30
             try? await Task.sleep(nanoseconds: UInt64(sleepMs * 1_000_000))
+            
+            currentIndex = endIndex
         }
         
         isGenerating = false

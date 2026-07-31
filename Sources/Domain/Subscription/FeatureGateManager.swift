@@ -3,7 +3,9 @@
 //  ZhiYu
 //
 //  Created by Constantine on 2026/07/23.
-//  Description: C 端集中式能力门禁与离线配额降级管理者 (Domain Layer L1.5)
+//
+//  系统层级：[L1.5] 领域层
+//  核心职责：C 端集中式能力门禁与离线配额降级管理者，控制 Feature 门禁与离线 Quota。
 //
 
 import Foundation

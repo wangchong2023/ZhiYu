@@ -1,50 +1,68 @@
 [
     {
+        "id": "deepseek",
+        "nameKey": "llm.provider.deepSeek",
+        "baseURL": "https://api.deepseek.com/v1",
+        "defaultModel": "deepseek-v4-pro",
+        "suggestedModels": ["deepseek-v4-pro", "deepseek-v4-lite"],
+        "apiKeyPrefix": "sk-",
+        "apiKeyMinLength": 30,
+        "apiKeyPlaceholder": "sk-...",
+        "icon": "wave.3.forward"
+    },
+    {
         "id": "zhipu",
         "nameKey": "llm.provider.zhipu",
         "baseURL": "https://open.bigmodel.cn/api/paas/v4",
-        "defaultModel": "glm-4-flash",
-        "suggestedModels": ["glm-4-flash", "glm-4", "glm-4v"],
+        "defaultModel": "glm-5.2",
+        "suggestedModels": ["glm-5.2", "glm-5", "glm-5-turbo", "glm-5v-turbo", "glm-4-flash"],
+        "apiKeyPrefix": "",
+        "apiKeyMinLength": 20,
+        "apiKeyPlaceholder": "your-api-key",
         "icon": "sparkles"
     },
     {
         "id": "minimax",
         "nameKey": "llm.provider.minimax",
         "baseURL": "https://api.minimax.chat/v1",
-        "defaultModel": "abab6.5-chat",
-        "suggestedModels": ["abab6.5-chat", "abab5.5-chat"],
+        "defaultModel": "abab7-chat",
+        "suggestedModels": ["abab7-chat", "abab6.5t-chat", "abab6.5s-chat"],
+        "apiKeyPrefix": "",
+        "apiKeyMinLength": 20,
+        "apiKeyPlaceholder": "your-api-key",
         "icon": "cpu"
     },
     {
         "id": "qwen",
         "nameKey": "llm.provider.qwen",
         "baseURL": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "defaultModel": "qwen-plus",
-        "suggestedModels": ["qwen-plus", "qwen-max", "qwen-turbo"],
+        "defaultModel": "qwen3.7-max",
+        "suggestedModels": ["qwen3.7-max", "qwen3.8-max-preview", "qwen3.7-plus", "qwen3.7-flash"],
+        "apiKeyPrefix": "sk-",
+        "apiKeyMinLength": 25,
+        "apiKeyPlaceholder": "sk-...",
         "icon": "cloud.fill"
-    },
-    {
-        "id": "deepseek",
-        "nameKey": "llm.provider.deepSeek",
-        "baseURL": "https://api.deepseek.com/v1",
-        "defaultModel": "deepseek-v4-pro",
-        "suggestedModels": ["deepseek-v4-pro", "deepseek-v4-lite"],
-        "icon": "wave.3.forward"
     },
     {
         "id": "kimi",
         "nameKey": "llm.provider.kimi",
         "baseURL": "https://api.moonshot.cn/v1",
-        "defaultModel": "moonshot-v1-8k",
-        "suggestedModels": ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
+        "defaultModel": "kimi-k3",
+        "suggestedModels": ["kimi-k3", "kimi-k2.7", "moonshot-v1-128k", "moonshot-v1-32k", "moonshot-v1-8k"],
+        "apiKeyPrefix": "sk-",
+        "apiKeyMinLength": 30,
+        "apiKeyPlaceholder": "sk-...",
         "icon": "moon.fill"
     },
     {
         "id": "siliconflow",
         "nameKey": "llm.provider.siliconflow",
         "baseURL": "https://api.siliconflow.cn/v1",
-        "defaultModel": "deepseek-ai/DeepSeek-V3",
-        "suggestedModels": ["deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-V2.5", "Qwen/Qwen2.5-72B-Instruct"],
+        "defaultModel": "deepseek-ai/DeepSeek-V4-Pro",
+        "suggestedModels": ["deepseek-ai/DeepSeek-V4-Pro", "deepseek-ai/DeepSeek-V4-Lite", "Qwen/Qwen3.7-Max"],
+        "apiKeyPrefix": "sk-",
+        "apiKeyMinLength": 30,
+        "apiKeyPlaceholder": "sk-...",
         "icon": "bolt.fill"
     },
     {
@@ -52,7 +70,10 @@
         "nameKey": "llm.provider.custom",
         "baseURL": "",
         "defaultModel": "",
-        "suggestedModels": ["default"],
+        "suggestedModels": [],
+        "apiKeyPrefix": "",
+        "apiKeyMinLength": 0,
+        "apiKeyPlaceholder": "API Key",
         "icon": "server.rack"
     }
 ]

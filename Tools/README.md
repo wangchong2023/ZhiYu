@@ -39,6 +39,7 @@ Tools/
 | `check_domain_purity.py` | 验证领域层 (Domain) 平台无关性，严禁导入 UIKit/AppKit |
 | `check_test_di_setup.py` | 检查单元测试 DI 容器（ServiceContainer）的双注册合法性 |
 | `check_layer_markers.sh` | 检查 Swift 文件头部是否标注合法架构层级标记（如 `[L1]`） |
+| `check_view_duplication.py` | 基于 AST 结构树与修饰符链启发式检测跨 Feature 域 View 相似度并提示沉淀 |
 
 ### Compliance (规范守卫)
 | 脚本 | 功能说明 |

@@ -233,5 +233,6 @@ public final class ChatViewModel: ObservableObject {
 | 11 | `check_root_hygiene.py` | 根目录垃圾文件/临时脚本扫描 | `Tools/Gatekeeper/Sanity/` |
 | 12 | `check_test_di_setup.py` | 测试文件 DI Mock 环境完整性 | `Tools/Gatekeeper/Architecture/` |
 | 13 | `check_complexity.py` | 🆕 圈复杂度门禁（SwiftLint cyclomatic_complexity, error≤10） | `Tools/Gatekeeper/Compliance/` |
+| 14 | `check_view_duplication.py` | 🆕 启发式 View 结构与修饰符链复用沉淀门禁 | `Tools/Gatekeeper/Architecture/` |
 
-> **执行方式**：本地开发使用 `bash Tools/CI/Analyze/run_static_analysis.sh`；CI 流水线同脚本自动执行。全部 **13 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
+> **执行方式**：本地开发使用 `bash Tools/CI/Analyze/run_static_analysis.sh`；CI 流水线同脚本自动执行。全部 **14 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
