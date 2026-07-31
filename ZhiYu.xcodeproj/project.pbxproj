@@ -1070,6 +1070,7 @@
 		81C52C2AC95AB03931F0D6CF /* MediaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C648BB8FBB082DC46FB0E00C /* MediaStore.swift */; };
 		81CE125CEC8120F596E2B22C /* DesignSystem+Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E495EE85C40C1E8E0BB597 /* DesignSystem+Domain.swift */; };
 		8243DAEEF8CB59787FDF4226 /* WorkflowService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC9430B092E48D23956BDD5 /* WorkflowService.swift */; };
+		82486A338B89B21A3DFA14BE /* VoiceAudioPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498AF94A2F9F50E3CBDF0091 /* VoiceAudioPlayerView.swift */; };
 		824BC72E48A985BFD3C368BC /* WeChatAuthStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE732DB2FC21219974658761 /* WeChatAuthStrategy.swift */; };
 		82592FDE7C5533BC216EC19D /* SynthesisDocRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD9728BB74F860B913921EE /* SynthesisDocRow.swift */; };
 		82E5E275590F9D7FCE485B13 /* L10n+ICloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = C755F375A0358C5401CE811E /* L10n+ICloud.swift */; };
@@ -1729,6 +1730,7 @@
 		D58C6CD5F311CBEAA772B3ED /* QuickLookPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573791390C21B384E83649DF /* QuickLookPreview.swift */; };
 		D5A19A6A2F580C4DC6AD5D39 /* AppLinkProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04434B2108D3CAD90067B99 /* AppLinkProcessor.swift */; };
 		D5C11D2D8319DD10DA11E349 /* TextChunker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3F27288B8422059783062 /* TextChunker.swift */; };
+		D5D46F4A6B69D7902D74D81C /* VoiceAudioPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498AF94A2F9F50E3CBDF0091 /* VoiceAudioPlayerView.swift */; };
 		D5E4612C606DD3216BB9CED2 /* testAIPulseIndicator.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 058DF6AD09237AF576C50F85 /* testAIPulseIndicator.1.png */; };
 		D5F2018D6FA522A6EBEA82AF /* PageLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C00BEF4D3E7453F17B36249 /* PageLink.swift */; };
 		D639B3D791BCD5B67B9BBECB /* PluginRecord+GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BC6BA576F65B12DB20341B /* PluginRecord+GRDB.swift */; };
@@ -2432,6 +2434,7 @@
 		487AD4215D5D4698E152AD1B /* DesignSystem+Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Task.swift"; sourceTree = "<group>"; };
 		48939D44E30F1457368D3ED7 /* DesignSystem+Decorator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Decorator.swift"; sourceTree = "<group>"; };
 		4931D387A2AB3FA400531A2C /* L10n+Accessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+Accessibility.swift"; sourceTree = "<group>"; };
+		498AF94A2F9F50E3CBDF0091 /* VoiceAudioPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAudioPlayerView.swift; sourceTree = "<group>"; };
 		4A536E224D4E199BF9F85012 /* AppLayoutComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLayoutComponents.swift; sourceTree = "<group>"; };
 		4AB0E83E99E67D66F8BB5F49 /* EntityDetailBodyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityDetailBodyView.swift; sourceTree = "<group>"; };
 		4AC0C45988798544F3DA2441 /* ZhiYuStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZhiYuStoreTests.swift; sourceTree = "<group>"; };
@@ -4962,6 +4965,7 @@
 				573791390C21B384E83649DF /* QuickLookPreview.swift */,
 				7C156F5C5ABCBD89F675089F /* SmartIngestPreview.swift */,
 				6C6164DD513146F869DBF765 /* URLImportSheet.swift */,
+				498AF94A2F9F50E3CBDF0091 /* VoiceAudioPlayerView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -7537,6 +7541,7 @@
 				DEFE6EC131CCB583C5A7E905 /* ViewFactory.swift in Sources */,
 				47FFEEF2F5863908D1CEF6DE /* ViewProvider.swift in Sources */,
 				E65B6BC4612BDD8266C84596 /* VisionProSpatialView.swift in Sources */,
+				D5D46F4A6B69D7902D74D81C /* VoiceAudioPlayerView.swift in Sources */,
 				18FE5DCDBB94A767D671ACD1 /* VoiceNoteComponents.swift in Sources */,
 				8DDAE2B3780A816397064723 /* VoiceNoteView.swift in Sources */,
 				7A5CD70DC10C779CC08FDF82 /* WatchHapticService.swift in Sources */,
@@ -8231,6 +8236,7 @@
 				B99CCA790A8DF4947C98F655 /* ViewFactory.swift in Sources */,
 				9E4FDDAA6B7551B00FC6B98C /* ViewProvider.swift in Sources */,
 				9430DBBF2852883D1C95884B /* VisionProSpatialView.swift in Sources */,
+				82486A338B89B21A3DFA14BE /* VoiceAudioPlayerView.swift in Sources */,
 				8B2DDF37A27018A7C780F4A0 /* VoiceNoteComponents.swift in Sources */,
 				04814A05C3EFE2AAF80C5D72 /* VoiceNoteView.swift in Sources */,
 				410AE6E5B0F1B93C4C0144C1 /* WatchHapticService.swift in Sources */,

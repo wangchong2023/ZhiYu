@@ -65,6 +65,12 @@ struct ImportRecordSection: View {
                     VStack(alignment: .leading, spacing: DesignSystem.medium) {
                         if previewRecord?.category == "ocr" {
                             ocrPreviewHeader
+                        } else if previewRecord?.category == "voice" {
+                            VoiceAudioPlayerView(
+                                title: previewRecord?.title ?? "",
+                                audioPath: previewFilePath,
+                                transcribedText: previewText ?? ""
+                            )
                         } else {
                             HStack {
                                 previewSourceBadge
@@ -72,11 +78,13 @@ struct ImportRecordSection: View {
                             }
                         }
                         
-                        if let path = previewFilePath, !isTextFile(path: path) {
-                            FileTextPreviewView(filePath: path)
-                        } else {
-                            FormattedMarkdownText(text: previewText ?? "")
-                                .padding(.top, DesignSystem.tiny)
+                        if previewRecord?.category != "voice" {
+                            if let path = previewFilePath, !isTextFile(path: path) {
+                                FileTextPreviewView(filePath: path)
+                            } else {
+                                FormattedMarkdownText(text: previewText ?? "")
+                                    .padding(.top, DesignSystem.tiny)
+                            }
                         }
                     }
                     .padding()
