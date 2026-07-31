@@ -73,7 +73,7 @@ struct NotebookFormSheet: View {
                                     )
                                     .frame(width: DesignSystem.Metrics.avatarPickerSize, height: DesignSystem.Metrics.avatarPickerSize)
                                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
-                                    .shadow(color: Color.black.opacity(DesignSystem.Opacity.ghost), radius: DesignSystem.smallRadius, y: 3)
+                                    .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.ghost), radius: DesignSystem.smallRadius, y: 3)
                                 
                                 Text(icon.isEmpty ? "" : icon)
                                     .font(.largeTitle)

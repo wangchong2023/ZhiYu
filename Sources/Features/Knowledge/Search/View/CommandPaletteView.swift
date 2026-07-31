@@ -80,7 +80,7 @@ struct CommandPaletteView: View {
             .frame(height: DesignSystem.Metrics.commandPaletteHeight)
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-            .shadow(color: Color.black.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.mediumRadius)
+            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.mediumRadius)
         }
         .frame(width: DesignSystem.Metrics.commandPaletteWidth)
         .onAppear { isFocused = true }
