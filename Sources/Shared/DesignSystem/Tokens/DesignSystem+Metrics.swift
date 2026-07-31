@@ -110,6 +110,14 @@ extension DesignSystem {
         /// 彩虹徽章小/大图标 (14px / 22px)
         public static let glowBadgeSmallIcon: CGFloat = 14
         public static let glowBadgeLargeIcon: CGFloat = 22
+        public static let glowBadgeSize: CGFloat = 14
+        public static let glowBadgeRingSize: CGFloat = 22
+        
+        /// 动画光晕与解密动效圈尺寸 (500px / 400px / 180px / 220px)
+        public static let largeGlowSize: CGFloat = 500
+        public static let mediumGlowSize: CGFloat = 400
+        public static let ringSmallSize: CGFloat = 180
+        public static let ringLargeSize: CGFloat = 220
         
         public static let settingsSidebarWidth: CGFloat = Spacing.Metrics.settingsSidebarWidth
         public static let settingsIconFrameSize: CGFloat = Spacing.Metrics.settingsIconFrameSize
