@@ -34,8 +34,8 @@ struct VoiceAudioPlayerView: View {
                         .font(.caption.weight(.bold))
                         .padding(.horizontal, DesignSystem.medium)
                         .padding(.vertical, DesignSystem.tightPadding)
-                        .background(Capsule().fill(Color.pink.opacity(DesignSystem.Opacity.subtle)))
-                        .foregroundStyle(.pink)
+                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
+                        .foregroundStyle(.appAccent)
                     
                     Spacer()
                     
@@ -48,7 +48,7 @@ struct VoiceAudioPlayerView: View {
                 HStack(spacing: DesignSystem.tiny) {
                     ForEach(0..<waveformLevels.count, id: \.self) { index in
                         RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                            .fill(isPlaying ? Color.pink : Color.pink.opacity(DesignSystem.Opacity.medium))
+                            .fill(isPlaying ? Color.appAccent : Color.appAccent.opacity(DesignSystem.Opacity.medium))
                             .frame(height: isPlaying ? waveformLevels[index] * 32 + 8 : 12)
                             .animation(.easeInOut(duration: 0.2).repeatCount(1, autoreverses: true), value: isPlaying)
                     }
@@ -64,7 +64,7 @@ struct VoiceAudioPlayerView: View {
                             player.currentTime = currentTime
                         }
                     }
-                    .tint(.pink)
+                    .tint(.appAccent)
                     
                     HStack {
                         Text(formatTime(currentTime))
@@ -92,8 +92,8 @@ struct VoiceAudioPlayerView: View {
                     Button(action: togglePlayPause) {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                             .font(.system(size: 48)) // Dynamic Type
-                            .foregroundStyle(.pink)
-                            .shadow(color: Color.pink.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
+                            .foregroundStyle(.appAccent)
+                            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
                     }
                     
                     Button(action: { seekBy(5) }) {
@@ -111,7 +111,7 @@ struct VoiceAudioPlayerView: View {
                     .fill(Color.appCard)
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(Color.pink.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
+                            .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
                     )
             )
             

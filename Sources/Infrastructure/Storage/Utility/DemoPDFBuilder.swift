@@ -54,15 +54,31 @@ public struct DemoPDFBuilder {
         }
     }
 
+    private enum PDFTheme {
+        static let headerBg = UIColor(displayP3Red: 0.11, green: 0.16, blue: 0.27, alpha: 1.0)
+        static let h1Text = UIColor(displayP3Red: 0.06, green: 0.09, blue: 0.16, alpha: 1.0)
+        static let h2Text = UIColor(displayP3Red: 0.14, green: 0.38, blue: 0.92, alpha: 1.0)
+        static let quoteText = UIColor(displayP3Red: 0.20, green: 0.25, blue: 0.33, alpha: 1.0)
+        static let quoteBg = UIColor(displayP3Red: 0.94, green: 0.96, blue: 0.98, alpha: 1.0)
+        static let quoteLine = UIColor(displayP3Red: 0.14, green: 0.38, blue: 0.92, alpha: 1.0)
+        static let tableHeaderBg = UIColor(displayP3Red: 0.88, green: 0.91, blue: 0.94, alpha: 1.0)
+        static let tableCellBg = UIColor(displayP3Red: 0.97, green: 0.98, blue: 0.99, alpha: 1.0)
+        static let tableHeaderText = UIColor(displayP3Red: 0.06, green: 0.09, blue: 0.16, alpha: 1.0)
+        static let tableCellText = UIColor(displayP3Red: 0.12, green: 0.16, blue: 0.23, alpha: 1.0)
+        static let tableBorder = UIColor(displayP3Red: 0.80, green: 0.84, blue: 0.88, alpha: 1.0)
+        static let headerText = UIColor(displayP3Red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+        static let bodyText = UIColor(displayP3Red: 0.12, green: 0.16, blue: 0.23, alpha: 1.0)
+        static let footerText = UIColor(displayP3Red: 0.39, green: 0.45, blue: 0.55, alpha: 1.0)
+    }
+
     private static func renderHeader(title: String, pageWidth: CGFloat, context: UIGraphicsPDFRendererContext) {
         let headerRect = CGRect(x: 0, y: 0, width: pageWidth, height: 72)
-        let headerColor = UIColor(red: 0.11, green: 0.16, blue: 0.27, alpha: 1.0) // 深邃藏青蓝
-        headerColor.setFill()
+        PDFTheme.headerBg.setFill()
         context.fill(headerRect)
         
         let headerTitleAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 20),
-            .foregroundColor: UIColor.white
+            .foregroundColor: PDFTheme.headerText
         ]
         let cleanTitle = sanitizeMarkdownText(title)
         let headerTitle = "📄 \(cleanTitle)"
@@ -102,7 +118,7 @@ public struct DemoPDFBuilder {
         let h1Text = sanitizeMarkdownText(text.replacingOccurrences(of: "# ", with: ""))
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 17),
-            .foregroundColor: UIColor(red: 0.06, green: 0.09, blue: 0.16, alpha: 1.0) // 深石墨黑
+            .foregroundColor: PDFTheme.h1Text
         ]
         let rect = CGRect(x: 36, y: currentY + 8, width: contentWidth, height: 26)
         h1Text.draw(in: rect, withAttributes: attrs)
@@ -113,7 +129,7 @@ public struct DemoPDFBuilder {
         let h2Text = sanitizeMarkdownText(text.replacingOccurrences(of: "## ", with: ""))
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 14),
-            .foregroundColor: UIColor(red: 0.14, green: 0.38, blue: 0.92, alpha: 1.0) // 皇家克莱因蓝
+            .foregroundColor: PDFTheme.h2Text
         ]
         let rect = CGRect(x: 36, y: currentY + 6, width: contentWidth, height: 22)
         h2Text.draw(in: rect, withAttributes: attrs)
@@ -128,16 +144,16 @@ public struct DemoPDFBuilder {
         
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: UIColor(red: 0.20, green: 0.25, blue: 0.33, alpha: 1.0), // 深蓝灰，高对比度
+            .foregroundColor: PDFTheme.quoteText,
             .paragraphStyle: paragraph
         ]
         
         let bgRect = CGRect(x: 36, y: currentY, width: contentWidth, height: 32)
-        UIColor(red: 0.94, green: 0.96, blue: 0.98, alpha: 1.0).setFill() // 清爽柔和底板
+        PDFTheme.quoteBg.setFill()
         context.fill(bgRect)
         
         let lineRect = CGRect(x: 36, y: currentY, width: 4, height: 32)
-        UIColor(red: 0.14, green: 0.38, blue: 0.92, alpha: 1.0).setFill() // 皇家蓝左边杠
+        PDFTheme.quoteLine.setFill()
         context.fill(lineRect)
         
         let textRect = CGRect(x: 48, y: currentY + 6, width: contentWidth - 20, height: 22)
@@ -150,8 +166,8 @@ public struct DemoPDFBuilder {
         let colWidth = contentWidth / CGFloat(max(1, cols.count))
         
         let isHeader = currentY < 140
-        let cellBgColor = isHeader ? UIColor(red: 0.88, green: 0.91, blue: 0.94, alpha: 1.0) : UIColor(red: 0.97, green: 0.98, blue: 0.99, alpha: 1.0)
-        let textColor = isHeader ? UIColor(red: 0.06, green: 0.09, blue: 0.16, alpha: 1.0) : UIColor(red: 0.12, green: 0.16, blue: 0.23, alpha: 1.0)
+        let cellBgColor = isHeader ? PDFTheme.tableHeaderBg : PDFTheme.tableCellBg
+        let textColor = isHeader ? PDFTheme.tableHeaderText : PDFTheme.tableCellText
         let font = isHeader ? UIFont.boldSystemFont(ofSize: 10) : UIFont.systemFont(ofSize: 10) // Dynamic Type
         
         let cellBg = CGRect(x: 36, y: currentY, width: contentWidth, height: 22)
@@ -160,7 +176,7 @@ public struct DemoPDFBuilder {
         
         // 绘制表框细线
         context.cgContext.setLineWidth(0.5)
-        context.cgContext.setStrokeColor(UIColor(red: 0.80, green: 0.84, blue: 0.88, alpha: 1.0).cgColor)
+        context.cgContext.setStrokeColor(PDFTheme.tableBorder.cgColor)
         context.cgContext.stroke(cellBg)
         
         for (idx, col) in cols.enumerated() {
@@ -185,7 +201,7 @@ public struct DemoPDFBuilder {
         
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 11), // Dynamic Type
-            .foregroundColor: UIColor(red: 0.12, green: 0.16, blue: 0.23, alpha: 1.0), // 深灰黑色，绝对对比度
+            .foregroundColor: PDFTheme.bodyText,
             .paragraphStyle: paragraph
         ]
         
@@ -204,7 +220,7 @@ public struct DemoPDFBuilder {
     private static func renderFooter(pageHeight: CGFloat) {
         let footerAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 9), // Dynamic Type
-            .foregroundColor: UIColor(red: 0.39, green: 0.45, blue: 0.55, alpha: 1.0)
+            .foregroundColor: PDFTheme.footerText
         ]
         let footerText = L10n.Ingest.fileImport
         footerText.draw(at: CGPoint(x: 36, y: pageHeight - 30), withAttributes: footerAttributes)
