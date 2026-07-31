@@ -135,24 +135,17 @@ struct VoiceAudioPlayerView: View {
         try? AVAudioSession.sharedInstance().setActive(true)
         #endif
         
-        var targetURL: URL?
         if let path = audioPath, FileManager.default.fileExists(atPath: path) {
-            targetURL = URL(fileURLWithPath: path)
-        } else {
-            let tempDir = FileManager.default.temporaryDirectory
-            let fallbackPath = tempDir.appendingPathComponent("demo_voice_note.wav").path
-            targetURL = DemoAudioBuilder.ensureAudioExists(at: fallbackPath, duration: 45.0)
-        }
-        
-        guard let url = targetURL else { return }
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.prepareToPlay()
-            if let p = audioPlayer {
-                duration = p.duration
+            let url = URL(fileURLWithPath: path)
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.prepareToPlay()
+                if let p = audioPlayer {
+                    duration = p.duration
+                }
+            } catch {
+                // Audio player fallback handled gracefully
             }
-        } catch {
-            // Audio player fallback handled gracefully
         }
     }
     
@@ -163,14 +156,20 @@ struct VoiceAudioPlayerView: View {
         #endif
         
         if isPlaying {
-            audioPlayer?.pause()
+            if let player = audioPlayer {
+                player.pause()
+            } else {
+                VoiceSpeechState.shared.stop()
+            }
             isPlaying = false
         } else {
-            if audioPlayer == nil {
-                setupAudioPlayer()
+            if let player = audioPlayer {
+                player.play()
+                isPlaying = true
+            } else {
+                VoiceSpeechState.shared.speak(text: transcribedText)
+                isPlaying = true
             }
-            audioPlayer?.play()
-            isPlaying = true
         }
     }
     
@@ -182,6 +181,7 @@ struct VoiceAudioPlayerView: View {
     
     private func stopAudioPlayer() {
         audioPlayer?.stop()
+        VoiceSpeechState.shared.stop()
         isPlaying = false
     }
     
@@ -193,11 +193,10 @@ struct VoiceAudioPlayerView: View {
                 isPlaying = false
             }
         } else {
-            // 体验模式进度模拟
-            currentTime += 0.1
-            if currentTime >= duration {
-                currentTime = 0
+            if !VoiceSpeechState.shared.isSpeaking {
                 isPlaying = false
+            } else {
+                currentTime += 0.1
             }
         }
         
@@ -209,5 +208,51 @@ struct VoiceAudioPlayerView: View {
         let mins = Int(time) / 60
         let secs = Int(time) % 60
         return String(format: "%02d:%02d", mins, secs)
+    }
+}
+
+// MARK: - AVSpeechSynthesizer 中文普通话人声朗读单例
+@MainActor
+final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
+    static let shared = VoiceSpeechState()
+    private let synthesizer = AVSpeechSynthesizer()
+    var isSpeaking = false
+    
+    override init() {
+        super.init()
+        synthesizer.delegate = self
+    }
+    
+    func speak(text: String) {
+        #if os(iOS)
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
+        #endif
+        
+        stop()
+        let cleanText = text
+            .replacingOccurrences(of: "[[", with: "")
+            .replacingOccurrences(of: "]]", with: "")
+            .replacingOccurrences(of: "#", with: "")
+            .replacingOccurrences(of: "*", with: "")
+        
+        let utterance = AVSpeechUtterance(string: cleanText)
+        utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+        utterance.rate = 0.5
+        isSpeaking = true
+        synthesizer.speak(utterance)
+    }
+    
+    func stop() {
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking(at: .immediate)
+        }
+        isSpeaking = false
+    }
+    
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor in
+            self.isSpeaking = false
+        }
     }
 }
