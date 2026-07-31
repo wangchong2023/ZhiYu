@@ -163,8 +163,39 @@ actor KnowledgeInsightService {
         }
     }
 
-    /// 生成最近一周的知识洞察
-    func generateWeeklyInsight(pages: [KnowledgePage], llmService: any LLMServiceProtocol) async throws -> WeeklyInsight {
+    private func weeklyCacheKey() -> String {
+        let calendar = Calendar.current
+        let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        let year = comps.yearForWeekOfYear ?? 2026
+        let week = comps.weekOfYear ?? 1
+        let lang = Localized.currentLanguage
+        return "weekly_insight_cache_\(year)_\(week)_\(lang)"
+    }
+
+    private func loadCachedWeeklyInsight() async -> WeeklyInsight? {
+        let key = weeklyCacheKey()
+        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return nil }
+        let data = await MainActor.run { keyStore.data(forKey: key) }
+        guard let data, let insight = try? JSONDecoder().decode(WeeklyInsight.self, from: data) else {
+            return nil
+        }
+        return insight
+    }
+
+    private func saveCachedWeeklyInsight(_ insight: WeeklyInsight) async {
+        let key = weeklyCacheKey()
+        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        if let data = try? JSONEncoder().encode(insight) {
+            await MainActor.run { keyStore.set(data, forKey: key) }
+        }
+    }
+
+    /// 生成最近一周的知识洞察 (仅在 forceRefresh 为 true 或无本地缓存时才向 AI 请求新周报)
+    func generateWeeklyInsight(pages: [KnowledgePage], llmService: any LLMServiceProtocol, forceRefresh: Bool = false) async throws -> WeeklyInsight {
+        if !forceRefresh, let cached = await loadCachedWeeklyInsight() {
+            return cached
+        }
+
         updateStatus(L10n.AI.Status.synthesizing)
         let calendar = Calendar.current
         let lastWeek = calendar.date(byAdding: .day, value: -7, to: Date()) ?? Date()
@@ -183,13 +214,16 @@ actor KnowledgeInsightService {
         formatter.locale = Locale(identifier: Localized.currentLanguage)
         let dateRange = "\(formatter.string(from: lastWeek)) - \(formatter.string(from: Date()))"
 
-        return WeeklyInsight(
+        let insight = WeeklyInsight(
             dateRange: dateRange,
             totalNewPages: newPages.count,
             topKeywords: keywords,
             aiSummary: summary,
             growthTraction: newPages.count > 5 ? L10n.Dashboard.insight.growth.explosive : L10n.Dashboard.insight.growth.steady
         )
+
+        await saveCachedWeeklyInsight(insight)
+        return insight
     }
 
     private func updateStatus(_ text: String) {

@@ -102,7 +102,7 @@ public final class AIInsightStore {
     func generateWeeklyInsight(forceRefresh: Bool = false) async {
         let pages = await pageStore.pages
         do {
-            let insight = try await insightService.generateWeeklyInsight(pages: pages, llmService: llmService)
+            let insight = try await insightService.generateWeeklyInsight(pages: pages, llmService: llmService, forceRefresh: forceRefresh)
             self.weeklyInsight = insight
         } catch {
             logger.addLog(action: .aiscanFailed, target: "WeeklyInsight", details: error.localizedDescription)

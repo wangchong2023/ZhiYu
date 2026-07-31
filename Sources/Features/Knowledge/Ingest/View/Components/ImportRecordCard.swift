@@ -41,7 +41,7 @@ struct ImportRecordCard: View {
                 
                 // 来源类型与 AI 标签行
                 HStack(spacing: DesignSystem.atomic) {
-                    // 来源类型胶囊标签 (使用高对比度的实色背景，明确标明文件来源)
+                    // 来源类型胶囊标签 (使用高对比度的精致色彩背景)
                     Text(categoryDisplayName)
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, DesignSystem.tightPadding)
@@ -54,11 +54,11 @@ struct ImportRecordCard: View {
                             HStack(spacing: DesignSystem.atomic) {
                                 ForEach(tagList, id: \.self) { tag in
                                     Text(tag)
-                                        .font(.caption2)
+                                        .font(.caption2.weight(.medium))
                                         .padding(.horizontal, DesignSystem.tightPadding)
                                         .padding(.vertical, 2)
-                                        .background(Capsule().fill(categoryColor.opacity(DesignSystem.Opacity.subtle)))
-                                        .foregroundStyle(categoryColor)
+                                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
+                                        .foregroundStyle(.appAccent)
                                 }
                             }
                         }
