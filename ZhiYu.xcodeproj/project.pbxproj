@@ -837,6 +837,7 @@
 		673867CE8A2AE535C110665F /* pkm_methodology.md in Resources */ = {isa = PBXBuildFile; fileRef = AB57FA79A989F2B01487426B /* pkm_methodology.md */; };
 		674BF6B41397A89B2F6FB990 /* XlsxStringsProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 458229A1EDF1FFDEB91F01F9 /* XlsxStringsProcessor.swift */; };
 		676BFA051005BFC70079BFC4 /* SecurityReinforcement.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0CB5CD7975DA1ACA7069ECE /* SecurityReinforcement.swift */; };
+		678A59C27DCC46A00992F851 /* ZoomableOCRImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9CA1DB1D6F37438EDA555F /* ZoomableOCRImageView.swift */; };
 		678CE5331284614F5F44FBDB /* DataCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145774E1257A629C404171A1 /* DataCoordinator.swift */; };
 		67A3C9A8482C8331DC358655 /* AIPulseIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BE94BBEB5456D5620D7F0B4 /* AIPulseIndicator.swift */; };
 		67AB488CB81BA5C35AEFC0A6 /* BusinessConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12A412FBA085F3E38446079 /* BusinessConstants.swift */; };
@@ -1828,6 +1829,7 @@
 		E1CD7A0589BE3C7A6E031FB7 /* RAGModels+GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4F409221BDB8A7D56B0602 /* RAGModels+GRDB.swift */; };
 		E1E60304706D06769FEE7FDC /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 824906B6A4D91AAF2C3107A1 /* UserProfileView.swift */; };
 		E1FC0CB34456344F95C2AEDD /* FileTextPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F71DD66CE558877D09D0D7 /* FileTextPreviewView.swift */; };
+		E20323ABBD16BC8C7DB81167 /* ZoomableOCRImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9CA1DB1D6F37438EDA555F /* ZoomableOCRImageView.swift */; };
 		E20A58E4A971ED0725167404 /* ImportRecordSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2134DB4E72EABD9610480808 /* ImportRecordSection.swift */; };
 		E20B04B8128E2998E16114FD /* DocumentFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4912BDEF2C5552443B5198 /* DocumentFormat.swift */; };
 		E244E4470C33D09CCAAE242E /* MacURLOpenerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FC5194BEA43CEE313B4E20 /* MacURLOpenerService.swift */; };
@@ -2218,6 +2220,7 @@
 		0EA66A036B9775F16B55A4A0 /* CollaborationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborationService.swift; sourceTree = "<group>"; };
 		0F0175A27682FABACA9530A6 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		0F68B4107A5E94C97A3D14D4 /* AppLottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLottieView.swift; sourceTree = "<group>"; };
+		0F9CA1DB1D6F37438EDA555F /* ZoomableOCRImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableOCRImageView.swift; sourceTree = "<group>"; };
 		0FC23305832506739C0B68F2 /* LintIssueList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LintIssueList.swift; sourceTree = "<group>"; };
 		109C835FC55EB93B6370F66D /* VaultRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultRepository.swift; sourceTree = "<group>"; };
 		11185597A5722BBB27F014BE /* ModelLabMaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabMaskView.swift; sourceTree = "<group>"; };
@@ -4971,6 +4974,7 @@
 				7C156F5C5ABCBD89F675089F /* SmartIngestPreview.swift */,
 				6C6164DD513146F869DBF765 /* URLImportSheet.swift */,
 				498AF94A2F9F50E3CBDF0091 /* VoiceAudioPlayerView.swift */,
+				0F9CA1DB1D6F37438EDA555F /* ZoomableOCRImageView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -7561,6 +7565,7 @@
 				9BA87147E2CB4D902A12528A /* XlsxStringsProcessor.swift in Sources */,
 				9DF786F3181FCD58A32D1F87 /* ZhiYuApp.swift in Sources */,
 				3D16EC3F9272F150E171AD26 /* ZipUtility.swift in Sources */,
+				678A59C27DCC46A00992F851 /* ZoomableOCRImageView.swift in Sources */,
 				6B36B08D41F6131ADD20CFB0 /* iCloudSyncComponents.swift in Sources */,
 				531A840AFFB8CB4EB5F7F316 /* iCloudSyncCoordinator.swift in Sources */,
 				EDCE6DAD1D844407C2E2C470 /* iCloudSyncManager.swift in Sources */,
@@ -8257,6 +8262,7 @@
 				674BF6B41397A89B2F6FB990 /* XlsxStringsProcessor.swift in Sources */,
 				2719120A504CAC6B46A713D7 /* ZhiYuApp.swift in Sources */,
 				55C9C1519DB31222992C1003 /* ZipUtility.swift in Sources */,
+				E20323ABBD16BC8C7DB81167 /* ZoomableOCRImageView.swift in Sources */,
 				3599986CF2D8AE5C391F4592 /* iCloudSyncComponents.swift in Sources */,
 				91C7B93338962B683ECE788F /* iCloudSyncCoordinator.swift in Sources */,
 				C3A458367ACBD3EA77C89C05 /* iCloudSyncManager.swift in Sources */,

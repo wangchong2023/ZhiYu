@@ -190,20 +190,8 @@ struct ImportRecordSection: View {
                 let targetPath = docURL.appendingPathComponent(imgPath).path
                 
                 if let uiImg = DemoImageBuilder.ensureImageExists(at: targetPath, title: record.title) {
-                    VStack(spacing: DesignSystem.tiny) {
-                        Image(uiImage: uiImg)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: DesignSystem.Metrics.customSize220)
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                                    .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
-                            )
-                            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, DesignSystem.tiny)
+                    ZoomableOCRImageView(image: uiImg)
+                        .padding(.vertical, DesignSystem.tiny)
                 }
                 #endif
             }
