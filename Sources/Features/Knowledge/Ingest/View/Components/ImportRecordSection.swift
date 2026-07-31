@@ -78,13 +78,16 @@ struct ImportRecordSection: View {
                             }
                         }
                         
-                        if previewRecord?.category != "voice" {
+                        if previewRecord?.category != "voice" && previewRecord?.category != "ocr" {
                             if let path = previewFilePath, !isTextFile(path: path) {
                                 FileTextPreviewView(filePath: path)
                             } else {
                                 FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
                                     .padding(.top, DesignSystem.tiny)
                             }
+                        } else if previewRecord?.category == "ocr" {
+                            FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
+                                .padding(.top, DesignSystem.tiny)
                         }
                     }
                     .padding()
@@ -125,6 +128,14 @@ struct ImportRecordSection: View {
         let titleLower = record.title.lowercased()
         let catLower = record.category.lowercased()
         let isPDF = catLower == "pdf" || titleLower.hasSuffix(".pdf") || record.filePath?.lowercased().hasSuffix(".pdf") == true
+
+        // 对于 OCR 扫描分类，强制走智宇原生带有手势捏合与缩放控制按钮的 ZoomableOCRImageView 预览弹窗
+        if catLower == "ocr" {
+            previewText = record.rawText ?? record.title
+            previewFilePath = record.filePath
+            showTextPreview = true
+            return
+        }
 
         if isPDF {
             let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
