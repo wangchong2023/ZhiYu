@@ -40,11 +40,13 @@ extension L10n {
         public static var insightsEmpty: String { Localized.tr("dashboard.insights.empty", table: t) }
         public static var graphShortcut: String { Localized.tr("graphShortcut", table: t) }
 
+        // swiftlint:disable:next type_name
         public struct insight {
             public static var weeklyTitle: String { L10n.Common.tr("sidebar.weeklyInsight") }
             public static var generateReport: String { Localized.tr("dashboard.insight.generateReport", table: t) }
             public static var addPagesFirst: String { Localized.tr("dashboard.insight.addPagesFirst", table: t) }
 
+            // swiftlint:disable:next type_name
             public struct daily {
                 public static var systemPrompt: String { Localized.tr("dashboard.insight.daily.systemPrompt", table: t) }
 
@@ -57,15 +59,18 @@ extension L10n {
                 public static func promptRecent(_ focus: String, _ title: String, _ snippet: String) -> String { Dashboard.trf("insight.daily.prompt.recent", focus, title, snippet) }
             }
 
+            // swiftlint:disable:next type_name
             public struct mock {
                 public static var insight: String { Localized.tr("dashboard.insight.mock.insight", table: t) }
                 public static var suggestedConnection: String { Localized.tr("dashboard.insight.mock.suggestedConnection", table: t) }
             }
 
+            // swiftlint:disable:next type_name
             public struct recap {
                 public static var tip: String { Localized.tr("dashboard.insight.recap.tip", table: t) }
             }
 
+            // swiftlint:disable:next type_name
             public struct weekly {
                 public static var systemPrompt: String { Localized.tr("dashboard.insight.weekly.systemPrompt", table: t) }
 
@@ -75,17 +80,20 @@ extension L10n {
                 public static func prompt(_ titles: String) -> String { Dashboard.trf("insight.weekly.prompt", titles) }
             }
 
+            // swiftlint:disable:next type_name
             public struct growth {
                 public static var explosive: String { Localized.tr("dashboard.insight.growth.explosive", table: t) }
                 public static var steady: String { Localized.tr("dashboard.insight.growth.steady", table: t) }
             }
 
+            // swiftlint:disable:next type_name
             public struct tips {
-        public static var title: String { tr("title") }
+                public static var title: String { tr("title") }
                 public static var content: String { Localized.tr("dashboard.insight.tips.content", table: t) }
             }
         }
 
+        // swiftlint:disable:next type_name
         public struct pageList {
             public static var tags: String { Localized.tr("dashboard.pageList.tags", table: t) }
             public static var sources: String { L10n.Common.Tab.ingest }
@@ -124,8 +132,6 @@ extension L10n {
             /// - Returns: 本地化格式化文案
             public static func comparisonCount(_ count: Int) -> String { Localized.trf("dashboard.pageList.comparisonCount", table: t, count) }
 
-
-
             /// 获取格式化原始个数文案
             /// - Parameter count: 原始个数
             /// - Returns: 本地化格式化文案
@@ -158,6 +164,7 @@ extension L10n {
         /// 已清理条数的后缀文案
         public static var cleanedSuffix: String { Localized.tr("dashboard.stats.cleanedSuffix", table: t) }
 
+        // swiftlint:disable:next type_name
         public struct stats {
             public static var title: String { Localized.tr("dashboard.stats.title", table: t) }
             public static var audioFormat: String { Localized.tr("dashboard.stats.audioFormat", table: t) }
@@ -321,6 +328,7 @@ extension L10n {
             /// - Returns: 格式化后的本地化文案
             public static func rawPageCountFormat(_ count: Int, _ size: String) -> String { Dashboard.trf("dashboard.stats.rawPageCountFormat", count, size) }
 
+            // swiftlint:disable:next type_name
             public struct short {
                 public static var entity: String { Dashboard.tr("stats.short.entity") }
                 public static var concept: String { Dashboard.tr("stats.short.concept") }
@@ -333,6 +341,7 @@ extension L10n {
             }
         }
 
+        // swiftlint:disable:next type_name
         public struct index {
             public static var title: String { Localized.tr("dashboard.index.title", table: t) }
             public static var overview: String { Localized.tr("dashboard.index.overview", table: t) }
@@ -342,6 +351,9 @@ extension L10n {
             public static var status: String { Localized.tr("dashboard.system.status", table: t) }
             public static var database: String { Dashboard.tr("stats.database") }
             public static var logs: String { Dashboard.tr("stats.logs") }
+            public static var models: String { Dashboard.tr("stats.models") }
+            public static var plugins: String { Dashboard.tr("stats.plugins") }
+            public static var caches: String { Dashboard.tr("stats.caches") }
         }
     }
 }

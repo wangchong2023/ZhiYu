@@ -199,11 +199,24 @@ public struct StorageStats: Sendable, Equatable {
     public let databaseSize: Int64
     public let logsSize: Int64
     public let exportsSize: Int64
+    public let modelsSize: Int64
+    public let pluginsSize: Int64
+    public let cachesSize: Int64
 
-    public init(databaseSize: Int64, logsSize: Int64, exportsSize: Int64) {
+    public init(
+        databaseSize: Int64,
+        logsSize: Int64,
+        exportsSize: Int64,
+        modelsSize: Int64 = 0,
+        pluginsSize: Int64 = 0,
+        cachesSize: Int64 = 0
+    ) {
         self.databaseSize = databaseSize
         self.logsSize = logsSize
         self.exportsSize = exportsSize
+        self.modelsSize = modelsSize
+        self.pluginsSize = pluginsSize
+        self.cachesSize = cachesSize
     }
 }
 

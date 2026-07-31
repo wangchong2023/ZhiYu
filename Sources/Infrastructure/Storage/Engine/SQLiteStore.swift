@@ -230,7 +230,54 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
             }
         }
         
-        return StorageStats(databaseSize: totalDbSize, logsSize: 0, exportsSize: 0)
+        let totalModelSize = calculateLocalModelsStorageSize(appSupport: appSupport)
+        let totalPluginSize = calculatePluginsStorageSize(appSupport: appSupport)
+        let totalCachesSize = calculateCachesStorageSize()
+        
+        return StorageStats(
+            databaseSize: totalDbSize,
+            logsSize: 0,
+            exportsSize: 0,
+            modelsSize: totalModelSize,
+            pluginsSize: totalPluginSize,
+            cachesSize: totalCachesSize
+        )
+    }
+
+    private func calculateLocalModelsStorageSize(appSupport: URL) -> Int64 {
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        let modelDirs = [
+            docDir?.appendingPathComponent("Models"),
+            appSupport.appendingPathComponent("Models")
+        ].compactMap { $0 }
+        return modelDirs.reduce(0) { $0 + folderSize(at: $1) }
+    }
+
+    private func calculatePluginsStorageSize(appSupport: URL) -> Int64 {
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        let pluginDirs = [
+            docDir?.appendingPathComponent("Plugins"),
+            appSupport.appendingPathComponent("Plugins")
+        ].compactMap { $0 }
+        return pluginDirs.reduce(0) { $0 + folderSize(at: $1) }
+    }
+
+    private func calculateCachesStorageSize() -> Int64 {
+        guard let cachesDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return 0 }
+        return folderSize(at: cachesDir)
+    }
+
+    private func folderSize(at dir: URL) -> Int64 {
+        var size: Int64 = 0
+        if let enumerator = FileManager.default.enumerator(at: dir, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) {
+            while let fileURL = enumerator.nextObject() as? URL {
+                if let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey]),
+                   let fileSize = resourceValues.fileSize {
+                    size += Int64(fileSize)
+                }
+            }
+        }
+        return size
     }
     
     /// 执行批量数据库写入操作 (在隔离环境内)

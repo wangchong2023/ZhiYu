@@ -167,11 +167,18 @@ final class SystemStatsCoordinator {
             "file": fileStats
         ]
         
+        let modelManagerSize = GlobalModelManager.shared.modelStorageUsage.values.reduce(Int64(0), +)
+        let effectiveModelsSize = max(stats.modelsSize, modelManagerSize)
+        let modelCount = GlobalModelManager.shared.modelStorageUsage.count
+        
         let categories = [
             StorageCategory(label: L10n.Dashboard.System.database, value: stats.databaseSize, count: VaultService.shared.vaults.count, color: .blue),
+            StorageCategory(label: L10n.Dashboard.System.models, value: effectiveModelsSize, count: modelCount, color: .purple),
+            StorageCategory(label: L10n.Dashboard.System.plugins, value: stats.pluginsSize, count: 0, color: .indigo),
             StorageCategory(label: L10n.Dashboard.System.logs, value: stats.logsSize, count: allLogEntries.count, color: .orange),
             StorageCategory(label: L10n.Dashboard.stats.storageImport, value: (try? await importRecordRepo.totalStorageSize()) ?? 0, count: (try? await importRecordRepo.fetchAll(category: nil, limit: 2000).count) ?? 0, color: .green),
-            StorageCategory(label: L10n.Dashboard.stats.storageExport, value: stats.exportsSize, count: allLogEntries.filter { $0.action == .export }.count, color: .purple)
+            StorageCategory(label: L10n.Dashboard.stats.storageExport, value: stats.exportsSize, count: allLogEntries.filter { $0.action == .export }.count, color: .pink),
+            StorageCategory(label: L10n.Dashboard.System.caches, value: stats.cachesSize, count: 0, color: .gray)
         ]
         self.storageCategories = categories
         self.totalStorage = categories.reduce(0) { $0 + $1.value }
