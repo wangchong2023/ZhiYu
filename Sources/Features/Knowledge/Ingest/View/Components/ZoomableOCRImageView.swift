@@ -110,7 +110,7 @@ struct ZoomableOCRImageView: View {
                 .background(
                     Capsule()
                         .fill(Color.appCard)
-                        .shadow(color: Color.black.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
+                        .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
                 )
                 .padding(DesignSystem.medium)
             }
