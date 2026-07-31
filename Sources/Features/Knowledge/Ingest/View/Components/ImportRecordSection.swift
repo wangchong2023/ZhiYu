@@ -161,8 +161,8 @@ struct ImportRecordSection: View {
                         .font(.caption.weight(.bold))
                         .padding(.horizontal, DesignSystem.medium)
                         .padding(.vertical, DesignSystem.tightPadding)
-                        .background(Capsule().fill(Color.purple.opacity(DesignSystem.Opacity.subtle)))
-                        .foregroundStyle(.purple)
+                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
+                        .foregroundStyle(.appAccent)
                     
                     Spacer()
                     
@@ -185,9 +185,9 @@ struct ImportRecordSection: View {
                             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
                             .overlay(
                                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                                    .stroke(Color.purple.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
+                                    .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
                             )
-                            .shadow(color: Color.purple.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
+                            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, DesignSystem.tiny)

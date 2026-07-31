@@ -52,7 +52,7 @@ public struct DemoImageBuilder {
         }
         
         cgContext.setLineWidth(1)
-        cgContext.setStrokeColor(UIColor.white.withAlphaComponent(0.06).cgColor)
+        cgContext.setStrokeColor(UIColor(Color.appText).withAlphaComponent(0.06).cgColor)
         let step: CGFloat = 40
         for x in stride(from: CGFloat(0), to: size.width, by: step) {
             cgContext.move(to: CGPoint(x: x, y: 0))
@@ -102,7 +102,7 @@ public struct DemoImageBuilder {
     private static func drawOCRTitleAndFooter(title: String, size: CGSize) {
         let titleAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 18),
-            .foregroundColor: UIColor.white // Dynamic Color
+            .foregroundColor: UIColor(Color.appText)
         ]
         let displayTitle = "📷 \(title)"
         let titleSize = (displayTitle as NSString).size(withAttributes: titleAttrs)
@@ -110,7 +110,7 @@ public struct DemoImageBuilder {
         
         let tagAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 13), // Dynamic Type
-            .foregroundColor: UIColor.white.withAlphaComponent(0.7)
+            .foregroundColor: UIColor(Color.appSecondary)
         ]
         let tagText = L10n.Ingest.ocrScan
         let tagSize = (tagText as NSString).size(withAttributes: tagAttrs)
