@@ -63,7 +63,7 @@ public struct DemoImageBuilder {
         
         // 绘制高科技质感的网格背景线
         cgContext.setLineWidth(1)
-        cgContext.setStrokeColor(UIColor.white.withAlphaComponent(0.06).cgColor)
+        cgContext.setStrokeColor(UIColor(Color.appText).withAlphaComponent(0.06).cgColor)
         let step: CGFloat = 50
         for x in stride(from: CGFloat(0), to: size.width, by: step) {
             cgContext.move(to: CGPoint(x: x, y: 0))
@@ -80,7 +80,7 @@ public struct DemoImageBuilder {
     private static func drawNeuronKnowledgeOCR(cgContext: CGContext, title: String, size: CGSize) {
         // 1. 顶栏标题
         let headerAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 20, weight: .semibold),
+            .font: UIFont.systemFont(ofSize: 20, weight: .semibold), // Dynamic Type
             .foregroundColor: UIColor(red: 0.40, green: 0.75, blue: 1.0, alpha: 1.0)
         ]
         let headerText = String(localized: "demo.ocr.neuron.header", defaultValue: "📷 OCR 图文识别文本 [识别置信度: 99.4% | 原图来源: 神经元与脑网络导图.png]")
@@ -88,15 +88,15 @@ public struct DemoImageBuilder {
         
         // 2. 主标题
         let titleAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: 34),
-            .foregroundColor: UIColor.white
+            .font: UIFont.boldSystemFont(ofSize: 34), // Dynamic Type
+            .foregroundColor: UIColor(Color.appText)
         ]
         let displayTitle = String(localized: "demo.ocr.neuron.title", defaultValue: "神经网络与人脑知识表征")
         displayTitle.draw(at: CGPoint(x: 50, y: 80), withAttributes: titleAttrs)
         
         // 3. 详细干货段落
         let bodyAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 22, weight: .regular),
+            .font: UIFont.systemFont(ofSize: 22, weight: .regular), // Dynamic Type
             .foregroundColor: UIColor(white: 0.90, alpha: 1.0)
         ]
         let bodyText = String(localized: "demo.ocr.neuron.body", defaultValue: "人脑记忆是由数百亿个神经元 (Neuron) 通过突触 (Synapse) 互相连接构成的复杂网络，这与「双向链接」在网状图谱中的价值高度相似：")
@@ -116,7 +116,7 @@ public struct DemoImageBuilder {
         notePath.stroke()
         
         let noteAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 20, weight: .medium),
+            .font: UIFont.systemFont(ofSize: 20, weight: .medium), // Dynamic Type
             .foregroundColor: UIColor(red: 0.85, green: 0.95, blue: 1.0, alpha: 1.0)
         ]
         let noteText = String(localized: "demo.ocr.neuron.note", defaultValue: "💡 RAG 考据备注：关于大脑记忆表征与网状索引的数学证明，请参见「跨领域笔记枢纽指南」的相关章节。")
@@ -138,8 +138,8 @@ public struct DemoImageBuilder {
         for (i, row) in rows.enumerated() {
             let isHeader = (i == 0)
             let cardBgColor = isHeader ? UIColor(red: 0.15, green: 0.22, blue: 0.38, alpha: 0.9) : UIColor(red: 0.12, green: 0.16, blue: 0.26, alpha: 0.8)
-            let font = isHeader ? UIFont.boldSystemFont(ofSize: 20) : UIFont.systemFont(ofSize: 19, weight: .medium)
-            let textColor = isHeader ? UIColor(red: 0.40, green: 0.75, blue: 1.0, alpha: 1.0) : UIColor.white
+            let font = isHeader ? UIFont.boldSystemFont(ofSize: 20) : UIFont.systemFont(ofSize: 19, weight: .medium) // Dynamic Type
+            let textColor = isHeader ? UIColor(red: 0.40, green: 0.75, blue: 1.0, alpha: 1.0) : UIColor(Color.appText)
             
             var startX: CGFloat = 50
             let rowHeight: CGFloat = 60
@@ -150,7 +150,7 @@ public struct DemoImageBuilder {
                 cardBgColor.setFill()
                 path.fill()
                 
-                let borderStroke = isHeader ? UIColor(red: 0.3, green: 0.6, blue: 0.9, alpha: 0.5) : UIColor.white.withAlphaComponent(0.1)
+                let borderStroke = isHeader ? UIColor(red: 0.3, green: 0.6, blue: 0.9, alpha: 0.5) : UIColor(Color.appText).withAlphaComponent(0.1)
                 borderStroke.setStroke()
                 path.lineWidth = 1
                 path.stroke()
@@ -173,7 +173,7 @@ public struct DemoImageBuilder {
     private static func drawCoffeeSOPOCR(cgContext: CGContext, title: String, size: CGSize) {
         // 1. 顶栏标题
         let headerAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 20, weight: .semibold),
+            .font: UIFont.systemFont(ofSize: 20, weight: .semibold), // Dynamic Type
             .foregroundColor: UIColor(red: 1.0, green: 0.65, blue: 0.30, alpha: 1.0)
         ]
         let headerText = String(localized: "demo.ocr.coffee.header", defaultValue: "📷 OCR 图文识别文本 [识别置信度: 98.8% | 原图来源: ocr_store_manual.png]")
@@ -181,15 +181,15 @@ public struct DemoImageBuilder {
         
         // 2. 主标题
         let titleAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: 34),
-            .foregroundColor: UIColor.white
+            .font: UIFont.boldSystemFont(ofSize: 34), // Dynamic Type
+            .foregroundColor: UIColor(Color.appText)
         ]
         let displayTitle = String(localized: "demo.ocr.coffee.title", defaultValue: "咖啡连锁店 SOP 选址评估与坪效模型")
         displayTitle.draw(at: CGPoint(x: 50, y: 80), withAttributes: titleAttrs)
         
         // 3. 详细干货段落
         let bodyAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 22, weight: .regular),
+            .font: UIFont.systemFont(ofSize: 22, weight: .regular), // Dynamic Type
             .foregroundColor: UIColor(white: 0.90, alpha: 1.0)
         ]
         let bodyText = String(localized: "demo.ocr.coffee.body", defaultValue: "理性的数据模型是打破经验主义的最好武器，直接指导「瑞幸与库迪竞争策略对比分析」与选址决策：")
@@ -209,7 +209,7 @@ public struct DemoImageBuilder {
         notePath.stroke()
         
         let noteAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 20, weight: .medium),
+            .font: UIFont.systemFont(ofSize: 20, weight: .medium), // Dynamic Type
             .foregroundColor: UIColor(red: 1.0, green: 0.90, blue: 0.80, alpha: 1.0)
         ]
         let noteText = String(localized: "demo.ocr.coffee.note", defaultValue: "📋 SOP 运营备注：选址数据与成本控制模型相关，详情参见「咖啡连锁行业选址规划」。")
@@ -231,8 +231,8 @@ public struct DemoImageBuilder {
         for (i, row) in rows.enumerated() {
             let isHeader = (i == 0)
             let cardBgColor = isHeader ? UIColor(red: 0.35, green: 0.20, blue: 0.10, alpha: 0.9) : UIColor(red: 0.22, green: 0.14, blue: 0.10, alpha: 0.8)
-            let font = isHeader ? UIFont.boldSystemFont(ofSize: 20) : UIFont.systemFont(ofSize: 19, weight: .medium)
-            let textColor = isHeader ? UIColor(red: 1.0, green: 0.70, blue: 0.40, alpha: 1.0) : UIColor.white
+            let font = isHeader ? UIFont.boldSystemFont(ofSize: 20) : UIFont.systemFont(ofSize: 19, weight: .medium) // Dynamic Type
+            let textColor = isHeader ? UIColor(red: 1.0, green: 0.70, blue: 0.40, alpha: 1.0) : UIColor(Color.appText)
             
             var startX: CGFloat = 50
             let rowHeight: CGFloat = 60
@@ -243,7 +243,7 @@ public struct DemoImageBuilder {
                 cardBgColor.setFill()
                 path.fill()
                 
-                let borderStroke = isHeader ? UIColor(red: 0.9, green: 0.5, blue: 0.2, alpha: 0.5) : UIColor.white.withAlphaComponent(0.1)
+                let borderStroke = isHeader ? UIColor(red: 0.9, green: 0.5, blue: 0.2, alpha: 0.5) : UIColor(Color.appText).withAlphaComponent(0.1)
                 borderStroke.setStroke()
                 path.lineWidth = 1
                 path.stroke()
