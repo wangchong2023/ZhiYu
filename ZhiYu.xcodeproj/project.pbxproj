@@ -1125,6 +1125,7 @@
 		896B8F904301038FB1E6A770 /* CollaborationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDA65555329C4C9A9318EB91 /* CollaborationView.swift */; };
 		89A16398076601B6F8CAD326 /* ImportRecordCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA32EEB7F25B605AAAC31F7 /* ImportRecordCard.swift */; };
 		89B15EF396B6937FE8534C3C /* L10n+Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63FD160FB200B0ED44B841C8 /* L10n+Log.swift */; };
+		8A0737200322C18C14C00D45 /* DemoImageBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E91D4E730AD5584BBDFF9A9 /* DemoImageBuilder.swift */; };
 		8A5054B06CDF7B9B40A9ABEF /* VectorDataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DCE29060A0BD520D46D87D3 /* VectorDataRepository.swift */; };
 		8A8B02D082FAEC5E976DC00F /* PDFReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9D2993F89C99ED470703073 /* PDFReaderView.swift */; };
 		8A8BD4E62087BE1EDC65441B /* L10n+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 894214A0A9869DEF7A51D46F /* L10n+Chat.swift */; };
@@ -1863,6 +1864,7 @@
 		E65B6BC4612BDD8266C84596 /* VisionProSpatialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565B786D87DFEA81DCA58A5B /* VisionProSpatialView.swift */; };
 		E671E40DC2135756BF11FB5C /* iOSPDFService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C66F3B4BF2CE28F9974C99 /* iOSPDFService.swift */; };
 		E693A5E30E894BD587AEFB33 /* ModelLabLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15160A2FC384F4D546D3C416 /* ModelLabLogic.swift */; };
+		E6D2E115F0DBE712DADE5070 /* DemoImageBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E91D4E730AD5584BBDFF9A9 /* DemoImageBuilder.swift */; };
 		E736AF99D300240BFA2F3BDF /* PlatformRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD649E60BBEBE28639DAC1B /* PlatformRegistrar.swift */; };
 		E74EF9BAFA331B0395AAA51A /* DatabaseManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D347C07E9908DA7B0F65B368 /* DatabaseManagerProtocol.swift */; };
 		E74FC36790520F6EA6E2B927 /* AppButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67DF3E790A58E5B83C25CA33 /* AppButtons.swift */; };
@@ -1962,6 +1964,7 @@
 		F10E062C9F1784371077BF11 /* AITaskProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2179BFDE3EEE56249DC8559C /* AITaskProgress.swift */; };
 		F13C7F70BF933D1DBB5E3A11 /* RemoteConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBACC9C467DD88E737F5E2D /* RemoteConfigService.swift */; };
 		F14ABA21E36C8C0D69461AD4 /* LLMChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E4B085428A719FF280AFB9 /* LLMChatService.swift */; };
+		F15F373EB9A23D11A8059D3E /* DemoImageBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E91D4E730AD5584BBDFF9A9 /* DemoImageBuilder.swift */; };
 		F16C5F8A177765EBDE01BAB1 /* AuthPhonePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBEB4EB2523E3603559D8746 /* AuthPhonePanel.swift */; };
 		F171206A017A7A74287130DD /* SQLiteFileSignatureRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C00EEE2F7189E4AB0CAC23 /* SQLiteFileSignatureRepository.swift */; };
 		F19ADED4170CA75981495E1E /* VersionInfoFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAD49CE8F1DF1692F29AE1 /* VersionInfoFormatter.swift */; };
@@ -2327,6 +2330,7 @@
 		2D7EE3D7837CBE8C68771FB5 /* DocxProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocxProcessor.swift; sourceTree = "<group>"; };
 		2D801F6A65D1A624DE86177D /* PluginProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginProtocols.swift; sourceTree = "<group>"; };
 		2E90BD834EB38BF336501889 /* UserProfileMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileMenu.swift; sourceTree = "<group>"; };
+		2E91D4E730AD5584BBDFF9A9 /* DemoImageBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoImageBuilder.swift; sourceTree = "<group>"; };
 		2E9CC61B47B0CB325F62E15D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2EAA243CC977029E870F987D /* ImportRecordRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportRecordRepositoryTests.swift; sourceTree = "<group>"; };
 		2FBA2AD001B81B2540679AA6 /* ZhiYuWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZhiYuWidgetBundle.swift; sourceTree = "<group>"; };
@@ -4388,6 +4392,7 @@
 		782F263DCF6353C5C8920D26 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				2E91D4E730AD5584BBDFF9A9 /* DemoImageBuilder.swift */,
 				239D9592E6B2B38915DF4F3B /* DemoPDFBuilder.swift */,
 				D205677C8591C14D5E90F726 /* InitialNotebookGenerator.swift */,
 			);
@@ -7032,6 +7037,7 @@
 				FCB2EDF7335BC913D26D3A9C /* Date+App.swift in Sources */,
 				291EFFDD435ED34902C34A92 /* Date+Extensions.swift in Sources */,
 				41ACDD2DE7A19C6E44BE4F44 /* DeepLinkService.swift in Sources */,
+				F15F373EB9A23D11A8059D3E /* DemoImageBuilder.swift in Sources */,
 				9CF952EB24082B3CA630219E /* DemoPDFBuilder.swift in Sources */,
 				E0E71ADDDD1FAADD31956932 /* DesignModifiers.swift in Sources */,
 				9F6476D86C86AE700EFB9FE5 /* DesignSystem+Action.swift in Sources */,
@@ -7733,6 +7739,7 @@
 				49321503B121D0484046F0B1 /* Date+App.swift in Sources */,
 				3758B444F1C6BC2D6E9D9FBA /* Date+Extensions.swift in Sources */,
 				97A0D9C11448A84A9C54F766 /* DeepLinkService.swift in Sources */,
+				8A0737200322C18C14C00D45 /* DemoImageBuilder.swift in Sources */,
 				647B799182512EC250117EA9 /* DemoPDFBuilder.swift in Sources */,
 				2E02FB7DFCEE2EFA6EBF9B59 /* DesignModifiers.swift in Sources */,
 				1BB62B222023710088F4C081 /* DesignSystem+Action.swift in Sources */,
@@ -8345,6 +8352,7 @@
 				3711D3CA0D4EF592986DEC91 /* Date+App.swift in Sources */,
 				93D38CE6AC4A273480D0DAF1 /* Date+Extensions.swift in Sources */,
 				F37B3C36D3AAAF85153C25CB /* DeepLinkService.swift in Sources */,
+				E6D2E115F0DBE712DADE5070 /* DemoImageBuilder.swift in Sources */,
 				774A899C333559141EDFAA94 /* DemoPDFBuilder.swift in Sources */,
 				46A0FB639CDC5D1F680580FA /* DesignModifiers.swift in Sources */,
 				DCBB38703082F582A6C0DEB5 /* DesignSystem+Action.swift in Sources */,

@@ -61,44 +61,25 @@ struct ImportRecordSection: View {
         }
         .sheet(isPresented: $showTextPreview) {
             NavigationStack {
-                Group {
-                    if let path = previewFilePath {
-                        if ["png", "jpg", "jpeg", "heic", "webp"].contains((path as NSString).pathExtension.lowercased()) {
-                            VStack(spacing: DesignSystem.medium) {
-                                Label(L10n.Ingest.ocrScan, systemImage: "camera.viewfinder")
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.appAccent)
-                                if let image = UIImage(contentsOfFile: path) {
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(maxHeight: 300)
-                                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                                        .shadow(radius: 4)
-                                }
-                                ScrollView {
-                                    FormattedMarkdownText(text: previewText ?? "")
-                                        .padding()
-                                }
-                            }
-                            .padding()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                        if previewRecord?.category == "ocr" {
+                            ocrPreviewHeader
                         } else {
-                            FileTextPreviewView(filePath: path)
-                        }
-                    } else {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                                HStack {
-                                    previewSourceBadge
-                                    Spacer()
-                                }
-                                
-                                FormattedMarkdownText(text: previewText ?? "")
-                                    .padding(.top, DesignSystem.tiny)
+                            HStack {
+                                previewSourceBadge
+                                Spacer()
                             }
-                            .padding()
+                        }
+                        
+                        if let path = previewFilePath, !isTextFile(path: path) {
+                            FileTextPreviewView(filePath: path)
+                        } else {
+                            FormattedMarkdownText(text: previewText ?? "")
+                                .padding(.top, DesignSystem.tiny)
                         }
                     }
+                    .padding()
                 }
                 .navigationTitle(L10n.Ingest.rawContentTitle)
                 .navigationBarTitleDisplayMode(.inline)
@@ -170,6 +151,51 @@ struct ImportRecordSection: View {
     }
 
     // MARK: - 动态来源 Badge 胶囊与 Markdown 格式化渲染
+
+    @ViewBuilder
+    private var ocrPreviewHeader: some View {
+        if let record = previewRecord {
+            VStack(alignment: .leading, spacing: DesignSystem.small) {
+                HStack {
+                    Label(L10n.Ingest.ocrScan, systemImage: "camera.viewfinder")
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, DesignSystem.medium)
+                        .padding(.vertical, DesignSystem.tightPadding)
+                        .background(Capsule().fill(Color.purple.opacity(DesignSystem.Opacity.subtle)))
+                        .foregroundStyle(.purple)
+                    
+                    Spacer()
+                    
+                    Text(L10n.Ingest.imageOCRLabel)
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                
+                #if canImport(UIKit)
+                let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                let imgPath = (record.filePath as NSString?)?.lastPathComponent ?? "\(record.id).png"
+                let targetPath = docURL.appendingPathComponent(imgPath).path
+                
+                if let uiImg = DemoImageBuilder.ensureImageExists(at: targetPath, title: record.title) {
+                    VStack(spacing: DesignSystem.tiny) {
+                        Image(uiImage: uiImg)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: DesignSystem.Metrics.customSize220)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                                    .stroke(Color.purple.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
+                            )
+                            .shadow(color: Color.purple.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, DesignSystem.tiny)
+                }
+                #endif
+            }
+        }
+    }
 
     @ViewBuilder
     private var previewSourceBadge: some View {
