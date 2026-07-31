@@ -61,35 +61,43 @@ struct ImportRecordSection: View {
         }
         .sheet(isPresented: $showTextPreview) {
             NavigationStack {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                        if previewRecord?.category == "ocr" {
+                Group {
+                    if previewRecord?.category == "ocr" {
+                        VStack(spacing: 0) {
                             ocrPreviewHeader
-                        } else if previewRecord?.category == "voice" {
-                            VoiceAudioPlayerView(
-                                title: previewRecord?.title ?? "",
-                                audioPath: previewFilePath,
-                                transcribedText: previewText ?? ""
-                            )
-                        } else {
-                            HStack {
-                                previewSourceBadge
-                                Spacer()
-                            }
                         }
-                        
-                        if previewRecord?.category != "voice" && previewRecord?.category != "ocr" {
-                            if let path = previewFilePath, !isTextFile(path: path) {
-                                FileTextPreviewView(filePath: path)
-                            } else {
-                                FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
-                                    .padding(.top, DesignSystem.tiny)
+                        .padding(DesignSystem.smallPadding)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                                if previewRecord?.category == "voice" {
+                                    VoiceAudioPlayerView(
+                                        title: previewRecord?.title ?? "",
+                                        audioPath: previewFilePath,
+                                        transcribedText: previewText ?? ""
+                                    )
+                                } else {
+                                    HStack {
+                                        previewSourceBadge
+                                        Spacer()
+                                    }
+                                }
+                                
+                                if previewRecord?.category != "voice" {
+                                    if let path = previewFilePath, !isTextFile(path: path) {
+                                        FileTextPreviewView(filePath: path)
+                                    } else {
+                                        FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
+                                            .padding(.top, DesignSystem.tiny)
+                                    }
+                                }
                             }
+                            .padding()
                         }
                     }
-                    .padding()
                 }
-                .navigationTitle(L10n.Ingest.rawContentTitle)
+                .navigationTitle(previewRecord?.category == "ocr" ? (previewRecord?.title ?? L10n.Ingest.ocrScan) : L10n.Ingest.rawContentTitle)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -199,6 +207,7 @@ struct ImportRecordSection: View {
                 
                 if let uiImg = DemoImageBuilder.ensureImageExists(at: targetPath, title: record.title) {
                     ZoomableOCRImageView(image: uiImg)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .padding(.vertical, DesignSystem.tiny)
                 }
                 #endif

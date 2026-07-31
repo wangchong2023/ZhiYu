@@ -72,13 +72,9 @@ struct ZoomableOCRImageView: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(height: DesignSystem.Metrics.sourceCardHeight)
-                .background(Color.appCard)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.appBackground)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                        .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
-                )
                 
                 // 2. 浮动缩放控制面板
                 HStack(spacing: DesignSystem.small) {
