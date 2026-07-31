@@ -11,6 +11,7 @@
 
 import SwiftUI
 import AVFoundation
+import NaturalLanguage
 
 struct VoiceAudioPlayerView: View {
     let title: String
@@ -236,8 +237,24 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
             .replacingOccurrences(of: "#", with: "")
             .replacingOccurrences(of: "*", with: "")
         
+        let recognizer = NLLanguageRecognizer()
+        recognizer.processString(cleanText)
+        let detectedLang = recognizer.dominantLanguage?.rawValue ?? "zh-CN"
+        
+        let languageCode: String
+        switch detectedLang {
+        case "en": languageCode = "en-US"
+        case "ja": languageCode = "ja-JP"
+        case "ko": languageCode = "ko-KR"
+        case "fr": languageCode = "fr-FR"
+        case "de": languageCode = "de-DE"
+        case "es": languageCode = "es-ES"
+        case "zh-Hant": languageCode = "zh-TW"
+        default: languageCode = "zh-CN"
+        }
+        
         let utterance = AVSpeechUtterance(string: cleanText)
-        utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+        utterance.voice = AVSpeechSynthesisVoice(language: languageCode) ?? AVSpeechSynthesisVoice(language: "zh-CN")
         utterance.rate = 0.5
         isSpeaking = true
         synthesizer.speak(utterance)
