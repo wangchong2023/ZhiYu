@@ -85,9 +85,6 @@ struct ImportRecordSection: View {
                                 FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
                                     .padding(.top, DesignSystem.tiny)
                             }
-                        } else if previewRecord?.category == "ocr" {
-                            FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
-                                .padding(.top, DesignSystem.tiny)
                         }
                     }
                     .padding()
