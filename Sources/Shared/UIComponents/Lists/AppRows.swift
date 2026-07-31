@@ -135,7 +135,7 @@ public struct AppDivider: View {
             }
             Rectangle()
                 .fill(color)
-                .frame(height: DesignSystem.Metrics.customSize1)
+                .frame(height: DesignSystem.Metrics.dividerThickness)
         }
     }
 }

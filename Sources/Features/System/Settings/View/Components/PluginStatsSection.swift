@@ -44,7 +44,7 @@ struct PluginStatsSection: View {
                                 .foregroundStyle(by: .value("Plugin", displayName(for: id)))
                                 .cornerRadius(DesignSystem.microRadius)
                             }
-                            .frame(height: DesignSystem.Metrics.customSize140)
+                            .frame(height: DesignSystem.Metrics.chartHeight)
                             .padding(.top, DesignSystem.small)
 
                             Text(L10n.Plugin.Stats.totalExecutionTime(String(format: "%.3fs", totalTime)))

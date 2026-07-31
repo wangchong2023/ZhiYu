@@ -71,32 +71,37 @@ struct NotebookFormSheet: View {
                                         Circle()
                                             .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.shadow), lineWidth: 2)
                                     )
-                                    .frame(width: DesignSystem.Metrics.customSize96, height: DesignSystem.Metrics.customSize96)
-
+                                    .frame(width: DesignSystem.Metrics.avatarPickerSize, height: DesignSystem.Metrics.avatarPickerSize)
+                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
+                                    .shadow(color: Color.black.opacity(DesignSystem.Opacity.ghost), radius: DesignSystem.smallRadius, y: 3)
+                                
                                 Text(icon.isEmpty ? "" : icon)
                                     .font(.largeTitle)
                             }
-                            .padding(DesignSystem.medium)
+                            .buttonStyle(.plain)
+                            .padding(.vertical, DesignSystem.small)
                             
                             Text(L10n.Vault.iconLabel)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             
                             ScrollView(.horizontal, showsIndicators: false) {
-                                LazyHStack(spacing: DesignSystem.medium) {
+                                HStack(spacing: DesignSystem.small) {
                                     ForEach(iconOptions, id: \.self) { item in
                                         Button {
                                             icon = item
                                         } label: {
-                                            Text(item)
-                                                .font(.title)
-                                                .frame(width: DesignSystem.Metrics.customSize54, height: DesignSystem.Metrics.customSize54)
+                                            ZStack {
+                                                Circle()
+                                                    .fill(icon == item ? Color.appAccent : Color.appCard)
+                                                    .frame(width: DesignSystem.Metrics.colorOptionSize, height: DesignSystem.Metrics.colorOptionSize)
                                                 .background(icon == item ? Color.appAccent.opacity(DesignSystem.Opacity.medium) : Color.primary.opacity(DesignSystem.Opacity.ghost))
                                                 .clipShape(Circle())
                                                 .overlay(
                                                     Circle()
                                                         .strokeBorder(icon == item ? Color.appAccent : Color.clear, lineWidth: 2)
                                                 )
+                                            }
                                         }
                                     }
                                 }

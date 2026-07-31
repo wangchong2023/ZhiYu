@@ -126,7 +126,7 @@ public struct AmbientGlowView: View {
                             endRadius: 300
                         )
                     )
-                    .frame(width: DesignSystem.Metrics.customSize500, height: DesignSystem.Metrics.customSize500)
+                    .frame(width: DesignSystem.Metrics.backgroundLargeDecorativeSize, height: DesignSystem.Metrics.backgroundLargeDecorativeSize)
                     .blur(radius: 80)
                     .position(x: size.width / 2, y: size.height / 2)
             }
@@ -147,7 +147,7 @@ public struct PageBackgroundView: View {
             MeshGradientView()
             VStack {
                 AmbientGlowView(color: accentColor)
-                    .frame(height: DesignSystem.Metrics.customSize300)
+                    .frame(height: DesignSystem.Metrics.backgroundDecorativeSize)
                     .offset(y: -150)
                 Spacer()
             }

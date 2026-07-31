@@ -75,35 +75,42 @@ extension DesignSystem {
         /// 耗时分析标签宽度 (60px)
         public static let timingLabelWidth: CGFloat = 60
     
-        // 自动生成的魔鬼数字补充常量
-        public static let customSize150: CGFloat = 150
-        public static let customSize1: CGFloat = 1
-        public static let customSize56: CGFloat = 56
-        public static let customSize80: CGFloat = 80
-        public static let customSize36: CGFloat = 36
-        public static let customSize300: CGFloat = 300
-        public static let customSize96: CGFloat = 96
-        public static let customSize54: CGFloat = 54
-        public static let customSize40: CGFloat = 40
-        public static let customSize140: CGFloat = 140
-        public static let customSize180: CGFloat = 180
-        public static let customSize500: CGFloat = 500
-        public static let customSize400: CGFloat = 400
-        public static let customSize220: CGFloat = 220
-        public static let customSize14: CGFloat = 14
-        public static let customSize22: CGFloat = 22
-            public static let customSize100: CGFloat = 100
-        public static let customSize375: CGFloat = 375
-        public static let customSize50: CGFloat = 50
-        public static let customSize768: CGFloat = 768
-        public static let customSize1200: CGFloat = 1200
-        public static let customSize812: CGFloat = 812
-        public static let customSize200: CGFloat = 200
-        public static let customSize800: CGFloat = 800
-        public static let customSize600: CGFloat = 600
-        public static let customSize1024: CGFloat = 1024
-        public static let customSize260: CGFloat = 260
-        public static let customSize24: CGFloat = 24
+        // MARK: - 语义化 UI 组件与布局 Token
+        /// 分割线厚度 (1px)
+        public static let dividerThickness: CGFloat = 1
+        /// 按钮与图标操作框尺寸 (56px)
+        public static let notebookActionIconSize: CGFloat = 56
+        /// 笔记本卡片宽度 (140px)
+        public static let notebookCardWidth: CGFloat = 140
+        /// 笔记本卡片高度 (180px)
+        public static let notebookCardHeight: CGFloat = 180
+        /// 笔记本标记条宽度 (40px)
+        public static let notebookBadgeWidth: CGFloat = 40
+        /// 头像选择框尺寸 (96px)
+        public static let avatarPickerSize: CGFloat = 96
+        /// 颜色选项圈尺寸 (54px)
+        public static let colorOptionSize: CGFloat = 54
+        /// 图谱控制浮框宽度 (140px)
+        public static let graphControlWidth: CGFloat = 140
+        /// 搜索命令面板宽度 (500px)
+        public static let commandPaletteWidth: CGFloat = 500
+        /// 锁屏/安全校验弹窗宽度 (500px)
+        public static let lockDialogWidth: CGFloat = 500
+        /// 锁屏/安全校验弹窗高度 (400px)
+        public static let lockDialogHeight: CGFloat = 400
+        /// 骨架屏头像尺寸 (40px)
+        public static let avatarSkeletonSize: CGFloat = 40
+        /// 骨架屏文本高度 (14px)
+        public static let textSkeletonHeight: CGFloat = 14
+        /// 空状态插画高度 (100px)
+        public static let emptyStateGraphicHeight: CGFloat = 100
+        /// 背景装饰光晕尺寸 (300px / 500px)
+        public static let backgroundDecorativeSize: CGFloat = 300
+        public static let backgroundLargeDecorativeSize: CGFloat = 500
+        /// 彩虹徽章小/大图标 (14px / 22px)
+        public static let glowBadgeSmallIcon: CGFloat = 14
+        public static let glowBadgeLargeIcon: CGFloat = 22
+        
         public static let settingsSidebarWidth: CGFloat = Spacing.Metrics.settingsSidebarWidth
         public static let settingsIconFrameSize: CGFloat = Spacing.Metrics.settingsIconFrameSize
     }

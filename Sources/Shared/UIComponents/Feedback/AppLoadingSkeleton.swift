@@ -54,11 +54,10 @@ public struct AppLoadingSkeleton: View {
                     skeletonRectangle()
                         .frame(height: DesignSystem.Metrics.heroValueSize)
                     HStack(spacing: 8) {
-                        skeletonRectangle().frame(width: DesignSystem.Metrics.customSize40, height: DesignSystem.Metrics.customSize40).clipShape(Circle())
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            skeletonRectangle().frame(height: DesignSystem.Metrics.customSize14).frame(width: 120) // swiftlint:disable:this magic_numbers_frame
-                            skeletonRectangle().frame(height: DesignSystem.mediumRadius).frame(width: DesignSystem.Metrics.customSize80)
+                        skeletonRectangle().frame(width: DesignSystem.Metrics.avatarSkeletonSize, height: DesignSystem.Metrics.avatarSkeletonSize)
+                        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+                            skeletonRectangle().frame(height: DesignSystem.Metrics.textSkeletonHeight).frame(width: DesignSystem.Metrics.sourceCardWidth / 2)
+                            skeletonRectangle().frame(height: DesignSystem.mediumRadius).frame(width: DesignSystem.Metrics.emptyStateGraphicHeight)
                         }
                     }
                 }

@@ -81,7 +81,7 @@ public struct AppEmptyState: View {
                         )
                     )
             }
-            .frame(height: DesignSystem.Metrics.customSize100)
+            .frame(height: DesignSystem.Metrics.emptyStateGraphicHeight)
 
             // 文字说明区
             VStack(spacing: Spacing.small) {

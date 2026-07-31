@@ -55,7 +55,7 @@ public struct NotebookCoverView: View {
                 Spacer()
                 RoundedRectangle(cornerRadius: 2 /* 装饰微圆角，暂无 DesignSystem token */)
                     .fill(Color.theme.white.opacity(DesignSystem.Opacity.disabled))
-                    .frame(width: DesignSystem.Metrics.customSize40, height: DesignSystem.tiny)
+                    .frame(width: DesignSystem.Metrics.notebookBadgeWidth, height: DesignSystem.tiny)
             }
             
             Spacer()
@@ -74,7 +74,7 @@ public struct NotebookCoverView: View {
             }
         }
         .padding(DesignSystem.standardPadding)
-        .frame(width: DesignSystem.Metrics.customSize140, height: DesignSystem.Metrics.customSize180)
+        .frame(width: DesignSystem.Metrics.notebookCardWidth, height: DesignSystem.Metrics.notebookCardHeight)
         .background(
             // 根据主题类型绘制背景
             Group {

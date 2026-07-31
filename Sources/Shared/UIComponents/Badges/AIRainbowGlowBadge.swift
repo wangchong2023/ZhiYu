@@ -71,7 +71,7 @@ public struct AIRainbowGlowBadge: View {
             // 1. 底层呼吸发光光晕 (Rainbow Glow Effect)
             Circle()
                 .fill(glowColor)
-                .frame(width: DesignSystem.Metrics.customSize14, height: DesignSystem.Metrics.customSize14)
+                .frame(width: DesignSystem.Metrics.glowBadgeSize, height: DesignSystem.Metrics.glowBadgeSize)
                 .scaleEffect(1.0 + breathAnim * 0.45)
                 .blur(radius: 2.0 + breathAnim * 3.0)
                 .opacity(0.4 + breathAnim * 0.5)
@@ -86,7 +86,7 @@ public struct AIRainbowGlowBadge: View {
                         ),
                         lineWidth: 2
                     )
-                    .frame(width: DesignSystem.Metrics.customSize22, height: DesignSystem.Metrics.customSize22)
+                    .frame(width: DesignSystem.Metrics.glowBadgeRingSize, height: DesignSystem.Metrics.glowBadgeRingSize)
                     .rotationEffect(.degrees(rotateAnim))
             } else if modelManager.isCloudEscalationEnabled {
                 Circle()

@@ -30,7 +30,7 @@ struct ImportRecordCard: View {
             Image(systemName: categoryIcon)
                 .font(.title3)
                 .foregroundStyle(categoryColor)
-                .frame(width: DesignSystem.Metrics.customSize36, height: DesignSystem.Metrics.customSize36)
+                .frame(width: DesignSystem.Metrics.iconBoxSize, height: DesignSystem.Metrics.iconBoxSize)
                 .background(categoryColor.opacity(DesignSystem.Opacity.subtle))
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
 

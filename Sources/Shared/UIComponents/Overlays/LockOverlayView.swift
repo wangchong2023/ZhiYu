@@ -45,13 +45,13 @@ struct LockOverlayView: View {
             ZStack {
                 Circle()
                     .fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                    .frame(width: DesignSystem.Metrics.customSize500, height: DesignSystem.Metrics.customSize500)
+                    .frame(width: DesignSystem.Metrics.largeGlowSize, height: DesignSystem.Metrics.largeGlowSize)
                     .blur(radius: 100)
                     .offset(x: isAnimating ? 150 : -150, y: isAnimating ? -100 : 100)
                 
                 Circle()
                     .fill(Color.theme.purple.opacity(DesignSystem.Opacity.light))
-                    .frame(width: DesignSystem.Metrics.customSize400, height: DesignSystem.Metrics.customSize400)
+                    .frame(width: DesignSystem.Metrics.mediumGlowSize, height: DesignSystem.Metrics.mediumGlowSize)
                     .blur(radius: 80)
                     .offset(x: isAnimating ? -180 : 180, y: isAnimating ? 80 : -80)
             }
@@ -68,7 +68,7 @@ struct LockOverlayView: View {
                             LinearGradient(colors: [Color.appAccent.opacity(DesignSystem.Opacity.disabled), .clear], startPoint: .topLeading, endPoint: .bottomTrailing),
                             lineWidth: 1
                         )
-                        .frame(width: DesignSystem.Metrics.customSize180, height: DesignSystem.Metrics.customSize180)
+                        .frame(width: DesignSystem.Metrics.ringSmallSize, height: DesignSystem.Metrics.ringSmallSize)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
                         .animation(.linear(duration: 20).repeatForever(autoreverses: false), value: isAnimating)
                     
@@ -77,7 +77,7 @@ struct LockOverlayView: View {
                             LinearGradient(colors: [.clear, Color.appAccent.opacity(DesignSystem.Opacity.medium)], startPoint: .topLeading, endPoint: .bottomTrailing),
                             lineWidth: 1
                         )
-                        .frame(width: DesignSystem.Metrics.customSize220, height: DesignSystem.Metrics.customSize220)
+                        .frame(width: DesignSystem.Metrics.ringLargeSize, height: DesignSystem.Metrics.ringLargeSize)
                         .rotationEffect(.degrees(isAnimating ? -360 : 0))
                         .animation(.linear(duration: 25).repeatForever(autoreverses: false), value: isAnimating)
 

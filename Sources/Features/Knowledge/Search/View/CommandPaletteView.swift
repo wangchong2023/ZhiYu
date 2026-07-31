@@ -77,12 +77,12 @@ struct CommandPaletteView: View {
                 }
             }
             .listStyle(.plain)
-            .frame(height: DesignSystem.Metrics.customSize300)
+            .frame(height: DesignSystem.Metrics.commandPaletteHeight)
+            .background(Color.appCard)
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
+            .shadow(color: Color.black.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.mediumRadius)
         }
-        .background(PageBackgroundView(accentColor: .appAccent))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        .shadow(color: .black.opacity(DesignSystem.Opacity.soft), radius: 20)
-        .frame(width: DesignSystem.Metrics.customSize500)
+        .frame(width: DesignSystem.Metrics.commandPaletteWidth)
         .onAppear { isFocused = true }
     }
 }

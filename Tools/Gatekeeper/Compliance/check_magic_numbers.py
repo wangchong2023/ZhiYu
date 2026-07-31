@@ -38,24 +38,30 @@ def scan_file(path, ext):
     return issues
 
 
+def check_swift_colors(raw, path, line_no, s):
+    results = []
+    if re.search(r'Color\(red:', raw) and 'DesignSystem' not in raw:
+        results.append(('Color(red:)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.search(r'Color\(hex:\s*"([^"]+)"', raw):
+        results.append(('Color(hex:"...")', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    return results
+
+def check_swift_layout(raw, path, line_no, s):
+    results = []
+    if re.search(r'\.padding\(\s*(\d+)\s*\)', raw) and 'DesignSystem' not in raw:
+        results.append(('hardcoded padding', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.search(r'cornerRadius:\s*(\d+)\s*[),]', raw) and 'DesignSystem' not in raw and 'Spacing' not in raw:
+        results.append(('hardcoded cornerRadius', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.search(r'customSize\d+', raw) and 'DesignSystem+Metrics.swift' not in path and 'Spacing.swift' not in path:
+        results.append(('pseudo-token customSize (硬编码数字变相包裹)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    return results
+
 def check_swift_line(path, line_no, s, raw):
     """
     检查 Swift 单行代码中是否包含硬编码的 UI 参数，
     例如硬编码的 RGB Color 构造、Hex Color 字符串、硬编码的 padding 或 cornerRadius。
     """
-    results = []
-    if re.search(r'Color\(red:', raw) and 'DesignSystem' not in raw:
-        results.append(('Color(red:)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    m = re.search(r'Color\(hex:\s*"([^"]+)"', raw)
-    if m:
-        results.append(('Color(hex:"...")', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    m = re.search(r'\.padding\(\s*(\d+)\s*\)', raw)
-    if m and 'DesignSystem' not in raw:
-        results.append(('hardcoded padding', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    m = re.search(r'cornerRadius:\s*(\d+)\s*[),]', raw)
-    if m and 'DesignSystem' not in raw and 'Spacing' not in raw:
-        results.append(('hardcoded cornerRadius', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    return results
+    return check_swift_colors(raw, path, line_no, s) + check_swift_layout(raw, path, line_no, s)
 
 
 def check_python_line(path, line_no, s, raw):

@@ -33,7 +33,7 @@ struct SubscriptionFeatureGrid: View {
 
                     Rectangle()
                         .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
-                        .frame(width: DesignSystem.Metrics.customSize1)
+                        .frame(width: DesignSystem.Metrics.dividerThickness)
                         .padding(.horizontal, 4)
                         .frame(maxHeight: 24)
 
@@ -80,7 +80,7 @@ struct SubscriptionFeatureGrid: View {
 
             Rectangle()
                 .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
-                .frame(width: DesignSystem.Metrics.customSize1)
+                .frame(width: DesignSystem.Metrics.dividerThickness)
                 .padding(.horizontal, 4)
                 .frame(maxHeight: 16)
 

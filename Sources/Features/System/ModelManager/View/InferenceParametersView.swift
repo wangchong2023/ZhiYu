@@ -353,7 +353,7 @@ public struct InferenceParametersView: View {
             Image(systemName: "info.circle")
                 .font(.caption)
                 .foregroundStyle(isExpanded ? .appAccent : .appSecondary.opacity(DesignSystem.Opacity.soft))
-                .frame(width: DesignSystem.Metrics.customSize24, height: DesignSystem.Metrics.customSize24)
+                .frame(width: DesignSystem.Metrics.iconBoxSize, height: DesignSystem.Metrics.iconBoxSize)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

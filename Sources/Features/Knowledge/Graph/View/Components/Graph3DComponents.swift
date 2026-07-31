@@ -476,7 +476,7 @@ struct Graph3DControlsOverlay: View {
                             }
                             .frame(maxHeight: 220) 
                         }
-                        .frame(width: DesignSystem.Metrics.customSize140)
+                        .frame(width: DesignSystem.Metrics.graphControlWidth)
                         .background(
                             RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .fill(.regularMaterial)

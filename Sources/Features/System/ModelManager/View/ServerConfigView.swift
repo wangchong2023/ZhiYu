@@ -124,7 +124,7 @@ public struct ServerConfigView: View {
             Image(systemName: "plus")
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.white)
-                .frame(width: DesignSystem.Metrics.customSize56, height: DesignSystem.Metrics.customSize56)
+                .frame(width: DesignSystem.Metrics.notebookActionIconSize, height: DesignSystem.Metrics.notebookActionIconSize)
                 .background(Color.appAccent)
                 .clipShape(Circle())
                 .shadow(color: .primary.opacity(DesignSystem.Opacity.medium), radius: 8, y: 4)

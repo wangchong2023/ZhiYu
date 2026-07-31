@@ -48,7 +48,7 @@ struct MermaidWebView: View {
                 zoomButton(icon: DesignSystem.Icons.plusMagnifyingglass) { zoom(by: 1.2) }
                 
                 Divider()
-                    .frame(width: DesignSystem.Metrics.customSize1, height: DesignSystem.IconSize.small)
+                    .frame(width: DesignSystem.Metrics.dividerThickness, height: DesignSystem.IconSize.small)
                     .background(Color.appBorder.opacity(DesignSystem.Opacity.soft))
                 
                 zoomButton(icon: DesignSystem.Icons.refresh) { resetZoom() }

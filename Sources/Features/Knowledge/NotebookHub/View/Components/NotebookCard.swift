@@ -65,7 +65,7 @@ struct NotebookCard: View {
             .padding(.top, DesignSystem.small)
             .padding(.bottom, DesignSystem.small) // 统一收紧内边距，减少卡片内部白边
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: DesignSystem.Metrics.customSize180)
+            .frame(height: DesignSystem.Metrics.notebookCardHeight)
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
             .overlay(
