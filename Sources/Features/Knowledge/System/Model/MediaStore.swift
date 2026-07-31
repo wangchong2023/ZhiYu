@@ -12,9 +12,9 @@ import Foundation
 import CryptoKit
 
 /// 媒体存储器
-/// 专门物理托管特定金库（Vault）沙盒目录下的非文本型多媒体二进制资产。
+/// 专门物理托管特定笔记本（Vault）沙盒目录下的非文本型多媒体二进制资产。
 public final class MediaStore: Sendable {
-    /// 目标金库的根路径
+    /// 目标笔记本的根路径
     public let vaultURL: URL
     
     /// 附件存储相对子路径
@@ -26,7 +26,7 @@ public final class MediaStore: Sendable {
     }
     
     /// 初始化媒体存储器
-    /// - Parameter vaultURL: 物理金库的沙盒根路径
+    /// - Parameter vaultURL: 物理笔记本的沙盒根路径
     public init(vaultURL: URL) {
         self.vaultURL = vaultURL
         ensureAttachmentsDirectoryExists()

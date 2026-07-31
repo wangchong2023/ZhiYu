@@ -23,7 +23,7 @@ import json
 # ==============================================================================
 
 # 排除扫描的路径
-EXCLUDE_DIRS = ['Localization/Catalogs', 'Tests', '.git', 'env', 'build', 'Frameworks', 'Resources']
+EXCLUDE_DIRS = ['Localization/Catalogs', 'Tests', '.git', 'env', 'build', 'Frameworks']
 
 # 启发式英文句子的最小长度判定
 MIN_NATURAL_LANG_LEN = 4
@@ -1064,8 +1064,7 @@ class ObsoleteKeyDetector:
             'ondevice.',
             'icloud.',
             'llm.',
-            'weekly.aiAnalysis',
-            'watch.'
+            'weekly.aiAnalysis'
         )
         
         unused_issues = []

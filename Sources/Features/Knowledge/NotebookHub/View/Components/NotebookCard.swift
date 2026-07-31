@@ -12,11 +12,11 @@ import SwiftUI
 
 /// 笔记本网格卡片组件。
 /// 
-/// 该组件承载于 [L2] 业务功能层金库工作台。它直观展示金库卡片元数据（包含图标、名、更新时间及相对描述），
+/// 该组件承载于 [L2] 业务功能层笔记本工作台。它直观展示笔记本卡片元数据（包含图标、名、更新时间及相对描述），
 /// 并且深度挂载了由 Task 2 升级的 `AppCardButtonStyle`，使用户在点击、长按或执行 ContextMenu 时获得拟真阻尼按压物理回跃触感。
 struct NotebookCard: View {
     
-    /// 获取当前金库工作台的数据和路由视图模型
+    /// 获取当前笔记本工作台的数据和路由视图模型
     @Environment(NotebookHubViewModel.self) var viewModel
     
     /// 当前卡片所绑定的笔记本元数据实体 (Vault)
@@ -41,7 +41,7 @@ struct NotebookCard: View {
                 .padding(.top, DesignSystem.tiny)
                 .accessibilityHidden(true) // 屏蔽装饰性发光底座及 Emoji 的无谓直译，由外壳统合播报
                 
-                // 2. 金库名称标题
+                // 2. 笔记本名称标题
                 Text(notebook.name)
                     .font(.title3.weight(.bold))
                     .foregroundStyle(.primary)

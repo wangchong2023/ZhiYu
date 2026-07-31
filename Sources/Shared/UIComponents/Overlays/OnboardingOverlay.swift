@@ -21,11 +21,6 @@ struct OnboardingOverlay: View {
             ZStack {
                 Color.theme.black.opacity(Colors.Opacity.secondaryOpacity * 0.875) // 0.7
                     .ignoresSafeArea()
-                    .onTapGesture { 
-                        withAnimation {
-                            service.nextStep()
-                        }
-                    }
                 
                 VStack(spacing: Spacing.loosePadding) { // 24
                     Image(systemName: step.icon)

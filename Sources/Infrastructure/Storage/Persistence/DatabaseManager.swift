@@ -12,7 +12,7 @@ import Foundation
 @preconcurrency import GRDB
 
 /// 数据库中枢管理器（DatabaseManager）。
-/// 它是知识金库高内聚持久化层（Persistence）的基座大脑，托管了专属笔记本数据库（Workspace DB）
+/// 它是知识笔记本高内聚持久化层（Persistence）的基座大脑，托管了专属笔记本数据库（Workspace DB）
 /// 和全局共享设置数据库（Global DB）的双轨道生命周期。
 @MainActor
 final class DatabaseManager {

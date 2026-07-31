@@ -21,5 +21,12 @@ extension L10n {
             public static var pdf: String { Platform.tr("platform.unsupported.pdf") }
             public static var mermaid: String { Platform.tr("platform.unsupported.mermaid") }
         }
+
+        public enum Watch {
+            public static var pages: String { Platform.tr("watch.pages") }
+            public static var words: String { Platform.tr("watch.words") }
+            public static var recentUpdates: String { L10n.Common.recentUpdates }
+            public static var tenThousand: String { Platform.tr("watch.tenThousand") }
+        }
     }
 }

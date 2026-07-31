@@ -26,9 +26,9 @@ extension L10n {
         /// 打开操作的无障碍基础声明
         public static var tapToOpen: String { Localized.tr("accessibility.tapToOpen", table: t) }
         
-        /// 笔记本金库卡片的无障碍类别标签
+        /// 笔记本笔记本卡片的无障碍类别标签
         public static var notebookCardLabel: String { Localized.tr("accessibility.notebookCardLabel", table: t) }
-        /// 笔记本金库卡片无障碍手势提示文案
+        /// 笔记本笔记本卡片无障碍手势提示文案
         public static var notebookCardHint: String { Localized.tr("accessibility.notebookCardHint", table: t) }
         /// 列表单行笔记本无障碍手势提示文案
         public static var notebookListRowHint: String { Localized.tr("accessibility.notebookListRowHint", table: t) }

@@ -48,7 +48,7 @@ public enum Animations {
     /// 突出弹性动效阻尼系数 (0.58)
     /// 
     /// - Note: 经由 Task 2 微动效交互革新，该值从原先稳重的临界阻尼 0.8 调整为 **0.58**。
-    /// 0.58 属于精心调优的**欠阻尼 (Underdamped)** 物理状态，能够为大盘金库切库、全局 Tab 视图大切换等
+    /// 0.58 属于精心调优的**欠阻尼 (Underdamped)** 物理状态，能够为大盘笔记本切库、全局 Tab 视图大切换等
     /// 跨度较大的界面连续运动，赋予极为生动、自然、且伴随轻微视觉物理回弹的高端苹果风交互体验。
     public static let prominentSpringDamping: Double = 0.58
     

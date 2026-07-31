@@ -63,7 +63,9 @@ gantt
   * **多 Vault LWW (Last-Write-Wins) iCloud 自动融合**：集成 CloudKit 增量同步，在多终端网络断开恢复后，基于修改时间戳和版本指纹自动解决数据合并冲突。
   * **JavaScript 插件 CLI 与调试工具 SDK**：为社区生态开发者提供命令行 CLI 脚手架，支持局域网无线连接真机进行插件实时热重载 (Hot Reload) 与脚本调试。
   * **插件市场支付变现**：推出变现模块 `MonetizationInfo`，集成 Apple StoreKit 2 代内购订阅，使能插件作者变现，开启智宇生态系统。
-  * **离线 Edge AI**：在 iOS Simulator / iPhone 17 上，集成本地 CoreML 编译器与苹果原生 Neural Engine，无需联网即可进行端侧 3B LLM 的高速本地推理与 Embedding 计算。
+  * **离线 Edge AI 与 Ollama 本地网络全连通**：完善 `OllamaAdapter` 本地 API 请求与响应处理，基于 `custom_local_llm_enabled` 控制项支持连接私有端侧 Ollama / LM Studio 节点；同时在 iOS Simulator / iPhone 17 上集成本地 CoreML 编译器。
+  * **高阶 3D 拓扑图谱演化与社区聚类**：解禁 `graph_advanced_enabled` 控制项，引入时间轴演化回放动画与 Louvain 图聚类算法，自动划分知识大类。
+  * **双人 TTS 播客音轨 (Audio Overview)**：解禁 `audio_overview_enabled` 控制项，支持基于文档自动合成双人对话播客音轨。
   * **加密知识分片**：允许用户导出“思维切片”分享给他人，支持端到端加密传输。
 
 ---

@@ -16,8 +16,8 @@ public enum HapticPattern: Sendable {
     case error      // 操作失败或拒绝
     case warning    // 警告
     case processing // AI 正在处理
-    case lock       // 金库加锁
-    case unlock     // 金库解锁
+    case lock       // 笔记本加锁
+    case unlock     // 笔记本解锁
     case link       // 链接建立
     case selection  // UI 选择反馈
     case pulse      // AI 思考脉搏 (循环轻触)

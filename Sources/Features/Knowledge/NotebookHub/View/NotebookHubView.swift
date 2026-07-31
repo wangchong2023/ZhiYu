@@ -64,11 +64,6 @@ public struct NotebookHubView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                HStack(spacing: 0) {
-                    UserProfileMenu()
-                }
-            }
             // 使用 ToolbarItemGroup 替代 ToolbarItem + HStack，解决 SwiftUI 在大屏/分栏下 HStack 拦截点击、导致菜单及头像按钮点击无响应的交互缺陷。
             ToolbarItemGroup(placement: .topBarTrailing) {
                 sparklesButton
@@ -76,6 +71,7 @@ public struct NotebookHubView: View {
                 sortMenu
                 #endif
                 displayModeButton
+                UserProfileMenu()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("toggleDisplayMode"))) { _ in
@@ -111,6 +107,11 @@ public struct NotebookHubView: View {
                     }
             }
             .environment(router)
+        }
+        .onAppear {
+            if !onboardingService.hasCompletedOnboarding {
+                onboardingService.nextStep()
+            }
         }
     }
     

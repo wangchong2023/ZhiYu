@@ -23,7 +23,6 @@ struct CoachMarkOverlay: View {
             // 半透明背景
             Color.theme.black.opacity(DesignSystem.coachMarkBackgroundOpacity)
                 .ignoresSafeArea()
-                .onTapGesture { dismissWithAnimation() }
             
             VStack(spacing: DesignSystem.giant) {
                 // 图标

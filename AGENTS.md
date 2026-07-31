@@ -21,6 +21,7 @@
 | `Docs/Guides/srp-file-organization.md` | 🆕 SRP 文件拆分原则、重构方法论、View/Service 拆分模式 |
 | `Docs/Architecture/AUTH_ARCHITECTURE.md` | 认证架构与多平台登录流程 |
 | `Docs/Design/DATABASE_SCHEMA.md` | 完整 DDL、ER 关系、索引设计 |
+| `Docs/Design/EXTERNAL_API_SPECIFICATION.md` | 🆕 对外 RESTful API 接口规范（认证、订阅、反馈、RAG评估、本地LLM、插件市场等） |
 | `Docs/Design/SECURITY_DESIGN.md` | 安全设计、OWASP、个人信息保护 |
 | `Docs/Design/UI_COMPONENTS.md` | 通用 UI 组件库规范 |
 | `Docs/Design/PLUGIN_SDK.md` | 插件 SDK 接口与沙箱规范 |

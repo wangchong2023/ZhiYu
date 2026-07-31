@@ -106,7 +106,7 @@ public final class KnowledgeStore {
                     await self.refresh()
                     
                     // 🎬 RAG 冷启动魔法时刻 (Aha Moment)：
-                    // 在新建金库首次切换进入时，如果数据库为空且未播种过，则自动注入欢迎与引导数据
+                    // 在新建笔记本首次切换进入时，如果数据库为空且未播种过，则自动注入欢迎与引导数据
                     if let vaultID = notification.userInfo?["vaultID"] as? UUID {
                         let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
                         let seedKey = "seeded_vault_\(vaultID.uuidString)"
@@ -162,7 +162,7 @@ public final class KnowledgeStore {
         self.totalPages = pages.count
         self.totalWords = pages.reduce(0) { $0 + $1.content.count }
 
-        // 同步刷新当前活跃金库的页面计数并落库以保证 UI 数据一致性
+        // 同步刷新当前活跃笔记本的页面计数并落库以保证 UI 数据一致性
         if let selectedVaultID = VaultService.shared.selectedVaultID {
             await VaultService.shared.refreshPageCount(for: selectedVaultID)
         }

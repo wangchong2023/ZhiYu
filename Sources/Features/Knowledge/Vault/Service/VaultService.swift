@@ -11,7 +11,7 @@
 import Foundation
 import Observation
 
-/// 知识笔记本/金库中枢服务（VaultService）。
+/// 知识笔记本/笔记本中枢服务（VaultService）。
 /// 业务功能层中负责维护多笔记本租户（Multi-Vault）生命周期的大脑门面。
 @Observable
 @MainActor
@@ -19,7 +19,7 @@ public final class VaultService: VaultServiceProtocol {
 
     // MARK: - 依赖注入
 
-    /// 注入金库元数据持久化仓储协议（vaultRepository），使用可选计算属性安全解析以规避单元测试单例污染崩溃。
+    /// 注入笔记本元数据持久化仓储协议（vaultRepository），使用可选计算属性安全解析以规避单元测试单例污染崩溃。
     @ObservationIgnored
     var vaultRepository: (any VaultRepository)? {
         ServiceContainer.shared.optionalResolve((any VaultRepository).self)

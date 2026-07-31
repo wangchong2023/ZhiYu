@@ -211,7 +211,7 @@ struct InitialNotebookGenerator {
         }
     }
 
-    /// 解析当前金库沙盒目录下的 raw/{笔记本英文名}/{Category} 文件夹路径
+    /// 解析当前笔记本沙盒目录下的 raw/{笔记本英文名}/{Category} 文件夹路径
     /// 必须在 MainActor 上执行，以安全访问 DatabaseManager
     private static func resolveImportsFolder(for category: ImportCategory) async -> URL? {
         await MainActor.run {

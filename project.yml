@@ -198,7 +198,6 @@ targets:
         SDKROOT: watchos
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
         GENERATE_INFOPLIST_FILE: "YES"
-        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.zhiyu.app
         INFOPLIST_KEY_WKWatchKitApp: YES
         INFOPLIST_KEY_WKApplication: YES
         INFOPLIST_KEY_WKWatchOnly: YES

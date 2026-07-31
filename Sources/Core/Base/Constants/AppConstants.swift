@@ -282,8 +282,10 @@ public struct AppConstants {
         // MARK: - 导入限制
 
         public enum ImportLimits {
-            /// 单文件最大大小：10 MB
-            public static let maxFileSizeBytes: Int64 = 10 * 1_024 * 1_024
+            /// Lite 版单文件最大大小：10 MB
+            public static let liteMaxFileSizeBytes: Int64 = 10 * 1_024 * 1_024
+            /// Pro 版单文件最大大小：50 MB
+            public static let maxFileSizeBytes: Int64 = 50 * 1_024 * 1_024
             /// 语音录制最大时长：15 分钟
             public static let maxVoiceDurationSeconds: TimeInterval = 15 * 60
             /// OCR 图片最大大小：5 MB

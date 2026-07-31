@@ -55,7 +55,7 @@ struct WatchKnowledgeStatsView: View {
                         Text("\(totalPages)")
                             .font(.title3.weight(.bold))
                             .foregroundStyle(Color.watchText)
-                        Text(L.tr("watch.pages"))
+                        Text(L10n.Platform.Watch.pages)
                             .font(.caption2)
                             .foregroundStyle(Color.watchSecondary)
                     }
@@ -67,7 +67,7 @@ struct WatchKnowledgeStatsView: View {
                         Text(formatNumber(totalWords))
                             .font(.caption.weight(.bold))
                             .foregroundStyle(Color.watchText)
-                        Text(L.tr("watch.words"))
+                        Text(L10n.Platform.Watch.words)
                             .font(.caption2)
                             .foregroundStyle(Color.watchSecondary)
                     }
@@ -77,7 +77,7 @@ struct WatchKnowledgeStatsView: View {
                 
                 // 3. 最近更新列表
                 VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) {
-                    Text(L.tr("watch.recentUpdates"))
+                    Text(L10n.Platform.Watch.recentUpdates)
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(Color.watchSecondary)
                     
@@ -108,21 +108,12 @@ struct WatchKnowledgeStatsView: View {
     /// - Returns: 格式化后的显示字符串（例如 "2.5"、"1.5k"、"500"）
     func formatNumber(_ n: Int) -> String {
         if n >= 10000 {
-            return String(format: "%.1f" + L.tr("watch.tenThousand"), Double(n) / 10000.0)
+            return String(format: "%.1f" + L10n.Platform.Watch.tenThousand, Double(n) / 10000.0)
         } else if n >= 1000 {
             return String(format: "%.1fk", Double(n) / 1000.0)
         }
         return "\(n)"
     }
-}
-
-// MARK: - 本地化助手 (手表端精简版)
-/// 委托到 Watch.xcstrings 表，避免手表端硬编码空字典
-enum L {
-    /// 从 Watch.xcstrings 表获取本地化字符串
-    /// - Parameter key: 本地化键
-    /// - Returns: 本地化后的字符串
-    static func tr(_ key: String) -> String { Localized.tr(key, table: "Platform") }
 }
 
 // MARK: - 手表端最近更新单行视图

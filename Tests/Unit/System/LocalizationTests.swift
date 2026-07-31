@@ -67,6 +67,32 @@ final class LocalizationTests: XCTestCase {
         Localized.languageMode = .chinese
         XCTAssertEqual(Localized.currentLanguage, "zh-Hans")
         
+        // 测试切换到繁体中文
+        Localized.languageMode = .traditionalChinese
+        XCTAssertEqual(Localized.currentLanguage, "zh-Hant")
+        
+        // 测试切换到新增 7 种语言
+        Localized.languageMode = .spanish
+        XCTAssertEqual(Localized.currentLanguage, "es")
+        
+        Localized.languageMode = .french
+        XCTAssertEqual(Localized.currentLanguage, "fr")
+        
+        Localized.languageMode = .arabic
+        XCTAssertEqual(Localized.currentLanguage, "ar")
+        
+        Localized.languageMode = .russian
+        XCTAssertEqual(Localized.currentLanguage, "ru")
+        
+        Localized.languageMode = .korean
+        XCTAssertEqual(Localized.currentLanguage, "ko")
+        
+        Localized.languageMode = .japanese
+        XCTAssertEqual(Localized.currentLanguage, "ja")
+        
+        Localized.languageMode = .portuguese
+        XCTAssertEqual(Localized.currentLanguage, "pt")
+        
         // 还原现场
         Localized.languageMode = currentMode
     }

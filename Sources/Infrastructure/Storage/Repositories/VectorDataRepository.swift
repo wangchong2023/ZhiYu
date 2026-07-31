@@ -25,7 +25,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     }
 
     init(dbWriter: any DatabaseWriter) {
-        // 保留原构造函数，但内部实际上不持有静态 dbWriter，使用动态计算属性以支持多笔记本金库无缝热切换并消除 closed 连接挂起隐慢
+        // 保留原构造函数，但内部实际上不持有静态 dbWriter，使用动态计算属性以支持多笔记本笔记本无缝热切换并消除 closed 连接挂起隐慢
     }
 
     // MARK: - 向量映射 (Embeddings)

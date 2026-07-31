@@ -15,7 +15,7 @@ import Observation
 @MainActor
 @Observable
 final class VaultStorageSecurityService {
-    /// 当前金库是否处于锁定状态（UI 应据此显示遮罩或锁定视图）
+    /// 当前笔记本是否处于锁定状态（UI 应据此显示遮罩或锁定视图）
     var isLocked = false
 
     /// 当前硬件环境是否支持并已配置生物识别（FaceID/TouchID）
@@ -94,7 +94,7 @@ final class VaultStorageSecurityService {
     }
 
     /**
-     * @description: 立即锁定金库，更新 isLocked 状态并触发震动反馈
+     * @description: 立即锁定笔记本，更新 isLocked 状态并触发震动反馈
      * @return {*}
      */
 

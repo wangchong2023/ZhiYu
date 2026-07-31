@@ -5,7 +5,7 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L2] 业务功能层
-//  核心职责：Vault 数据协调器 — 笔记本元数据加载/初始化、演示库构建与自动热恢复活跃金库连接。
+//  核心职责：Vault 数据协调器 — 笔记本元数据加载/初始化、演示库构建与自动热恢复活跃笔记本连接。
 //
 import Foundation
 
@@ -77,7 +77,7 @@ extension VaultService {
         ]
     }
 
-    /// 极端降级兜底：建立支持多语言本地化的内存级缓存金库
+    /// 极端降级兜底：建立支持多语言本地化的内存级缓存笔记本
     func buildFallbackDemoVaults() -> [Vault] {
         return [
             Vault(
@@ -103,7 +103,7 @@ extension VaultService {
         ]
     }
 
-    /// 自动从持久化偏好中恢复最近一次使用的金库并执行底层 SQLite 物理热重载联接
+    /// 自动从持久化偏好中恢复最近一次使用的笔记本并执行底层 SQLite 物理热重载联接
     func autoRestoreActiveVault() {
         if let idString = keyStore?.string(forKey: AppConstants.Keys.Storage.vaultsSelectedID),
            let id = UUID(uuidString: idString),

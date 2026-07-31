@@ -171,6 +171,7 @@ struct UserProfileMenu: View {
     @EnvironmentObject var onboardingService: OnboardingService
     @EnvironmentObject var themeManager: ThemeManager
     
+    @State private var isShowingPopover = false
     @State private var showWatchMenu = false
     @State private var showAbout = false
     @State private var showSettings = false
@@ -231,11 +232,57 @@ struct UserProfileMenu: View {
             }
         }
         #else
-        // iOS/iPadOS：只返回触发按钮，不在此嵌套 sheet/popover，交由顶层 ContentView 统一调度
-        Button(action: {
-            HapticFeedback.shared.trigger(.selection)
-            router.isShowingProfileMenu = true
-        }) {
+        // iOS/iPadOS：使用原生 Menu 控件，彻底解决 ToolbarItem 内部 popover 状态失效导致的点击无响应问题
+        Menu {
+            Button(action: {
+                HapticFeedback.shared.trigger(.selection)
+                router.isShowingProfileSheet = true
+            }) {
+                Label(authService.currentUser?.name ?? L10n.Auth.profileAndQuota, systemImage: "person.crop.circle.fill")
+            }
+
+            Divider()
+
+            Button(action: {
+                HapticFeedback.shared.trigger(.selection)
+                router.isShowingSettingsSheet = true
+            }) {
+                Label(L10n.Common.settings, systemImage: "gearshape.fill")
+            }
+            .accessibilityIdentifier("settingsMenuButton")
+
+            Button(action: {
+                HapticFeedback.shared.trigger(.selection)
+                router.isShowingPlanSheet = true
+            }) {
+                Label(L10n.Auth.subscription, systemImage: "creditcard.fill")
+            }
+
+            Button(action: {
+                HapticFeedback.shared.trigger(.selection)
+                router.isShowingAISettingsSheet = true
+            }) {
+                Label(L10n.Settings.Section.ai, systemImage: DesignSystem.Icons.sparkles)
+            }
+            .accessibilityIdentifier("aiSettingsMenuButton")
+
+            Button(action: {
+                HapticFeedback.shared.trigger(.selection)
+                router.isShowingPluginsSheet = true
+            }) {
+                Label(L10n.Plugin.title, systemImage: "puzzlepiece.extension.fill")
+            }
+
+            Divider()
+
+            Button(role: .destructive, action: {
+                HapticFeedback.shared.trigger(.selection)
+                authService.logout()
+            }) {
+                Label(L10n.Common.logout, systemImage: DesignSystem.Icons.logout)
+            }
+            .accessibilityIdentifier("logoutButton")
+        } label: {
             profileLabel
         }
         .buttonStyle(.plain)
@@ -290,6 +337,7 @@ struct UserProfileMenuSheetContent: View {
     @EnvironmentObject var onboardingService: OnboardingService
     @EnvironmentObject var themeManager: ThemeManager
     
+    @Binding var isShowingPopover: Bool
     @State private var pendingMenuAction: UserProfileMenu.MenuAction?
     
     private var isUITesting: Bool {
@@ -300,41 +348,42 @@ struct UserProfileMenuSheetContent: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: DesignSystem.medium) // 为拖拽条留出空间
             CustomProfilePopover(
                 showMenuPopover: Binding(
-                    get: { router.isShowingProfileMenu },
-                    set: { router.isShowingProfileMenu = $0 }
+                    get: { isShowingPopover },
+                    set: {
+                        isShowingPopover = $0
+                        router.isShowingProfileMenu = $0
+                    }
                 ),
                 onAction: { action in
                     pendingMenuAction = action
+                    isShowingPopover = false
                     router.isShowingProfileMenu = false
                 }
             )
         }
+        .frame(width: CustomProfilePopover.Constants.menuWidth, height: CustomProfilePopover.Constants.menuHeight)
         .environment(authService)
         .environment(store)
         .environment(router)
         .environmentObject(themeManager)
         .environmentObject(onboardingService)
         .onDisappear {
+            isShowingPopover = false
+            router.isShowingProfileMenu = false
             if let action = pendingMenuAction {
                 pendingMenuAction = nil
-                // 延迟 0.5s 执行，彻底避开 UIKit Dismiss/Present 周期冲突
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                // 延迟 0.3s 执行，避开 popover dismiss 与后续 sheet present 周期冲突
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     executeMenuAction(action)
                 }
             }
         }
-        .presentationDetents(
-            isUITesting
-                ? [.large]
-                : [.height(340)]
-        )
-        .presentationDragIndicator(.visible)
-        .background(
-            themeManager.pageBackground().ignoresSafeArea()
-        )
+        .presentationCompactAdaptation(.popover)
+        .presentationBackground {
+            themeManager.pageBackground()
+        }
     }
     
     private func executeMenuAction(_ action: UserProfileMenu.MenuAction) {
@@ -360,10 +409,11 @@ struct CustomProfilePopover: View {
         static let menuWidth: CGFloat = 320
         #elseif os(iOS)
         /// iPad 大屏：菜单宽度 300pt
-        static let menuWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 300 : 240
+        static let menuWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
         #else
-        static let menuWidth: CGFloat = 240
+        static let menuWidth: CGFloat = 280
         #endif
+        static let menuHeight: CGFloat = 360
         static let iconBoxSize: CGFloat = 30
     }
     
@@ -419,43 +469,41 @@ struct CustomProfilePopover: View {
 
             AppDivider()
 
-            // 菜单列表
-            ScrollView {
-                VStack(spacing: DesignSystem.small) {
-                    menuRow(icon: "gearshape.fill", color: .blue, title: L10n.Common.settings) {
-                        onAction?(.settings)
-                        showMenuPopover = false
-                    }
-                    .accessibilityIdentifier("settingsMenuButton")
-                    
-                    menuRow(icon: "creditcard.fill", color: Color(hue: 0.62, saturation: 0.65, brightness: 0.82), title: L10n.Auth.subscription) {
-                        onAction?(.plan)
-                        showMenuPopover = false
-                    }
-                    
-                    menuRow(icon: DesignSystem.Icons.sparkles, color: .purple, title: L10n.Settings.Section.ai) {
-                        onAction?(.aiSettings)
-                        showMenuPopover = false
-                    }
-                    .accessibilityIdentifier("aiSettingsMenuButton")
-                    
-                    menuRow(icon: "puzzlepiece.extension.fill", color: .indigo, title: L10n.Plugin.title) {
-                        onAction?(.plugins)
-                        showMenuPopover = false
-                    }
-                    
-                    Divider()
-                        .padding(.vertical, DesignSystem.tiny)
-                        .opacity(DesignSystem.Opacity.soft)
-                    
-                    menuRow(icon: DesignSystem.Icons.logout, color: .red, title: L10n.Common.logout, textColor: .red) {
-                        showMenuPopover = false
-                        authService.logout()
-                    }
-                    .accessibilityIdentifier("logoutButton")
+            // 菜单列表（一次性完整平铺展示，防止出现滚动截断）
+            VStack(spacing: DesignSystem.tiny) {
+                menuRow(icon: "gearshape.fill", color: .blue, title: L10n.Common.settings) {
+                    onAction?(.settings)
+                    showMenuPopover = false
                 }
-                .padding(DesignSystem.small)
+                .accessibilityIdentifier("settingsMenuButton")
+                
+                menuRow(icon: "creditcard.fill", color: Color(hue: 0.62, saturation: 0.65, brightness: 0.82), title: L10n.Auth.subscription) {
+                    onAction?(.plan)
+                    showMenuPopover = false
+                }
+                
+                menuRow(icon: DesignSystem.Icons.sparkles, color: .purple, title: L10n.Settings.Section.ai) {
+                    onAction?(.aiSettings)
+                    showMenuPopover = false
+                }
+                .accessibilityIdentifier("aiSettingsMenuButton")
+                
+                menuRow(icon: "puzzlepiece.extension.fill", color: .indigo, title: L10n.Plugin.title) {
+                    onAction?(.plugins)
+                    showMenuPopover = false
+                }
+                
+                Divider()
+                    .padding(.vertical, DesignSystem.tiny)
+                    .opacity(DesignSystem.Opacity.soft)
+                
+                menuRow(icon: DesignSystem.Icons.logout, color: .red, title: L10n.Common.logout, textColor: .red) {
+                    showMenuPopover = false
+                    authService.logout()
+                }
+                .accessibilityIdentifier("logoutButton")
             }
+            .padding(DesignSystem.small)
         }
         .frame(maxWidth: .infinity)
         .background(

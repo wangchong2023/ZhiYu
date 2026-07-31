@@ -13,7 +13,7 @@ import Foundation
 /// 数据库热切换与连接生命周期隔离契约。
 ///
 /// 遵循此协议的实例能够安全地调度并挂载不同的物理数据库，并提供物理释放通道连接、闭合文件锁的生命周期管理，
-/// 从而确保多金库隔离切换时不发生 `SQLITE_BUSY` 死锁。
+/// 从而确保多笔记本隔离切换时不发生 `SQLITE_BUSY` 死锁。
 @MainActor
 public protocol VaultDatabaseSwitcher: Sendable {
     /// 进行多数据库实例的安全切换与 WAL 锁重置。

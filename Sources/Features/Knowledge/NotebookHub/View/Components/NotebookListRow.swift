@@ -12,7 +12,7 @@ import SwiftUI
 
 /// 笔记本列表单行行组件。
 /// 
-/// 该组件承载于 [L2] 业务功能层金库工作台。它在列表/表格视图下直观呈现金库元数据（包括图标、名称、简短说明、知识页统计数据），
+/// 该组件承载于 [L2] 业务功能层笔记本工作台。它在列表/表格视图下直观呈现笔记本元数据（包括图标、名称、简短说明、知识页统计数据），
 /// 并且深度挂载了由 Task 2 升级的 `AppCardButtonStyle`，使用户在列表中点击整行时获得拟真阻尼按压物理回弹触感。
 @MainActor
 struct NotebookListRow: View {
@@ -20,7 +20,7 @@ struct NotebookListRow: View {
     /// 当前列表行绑定的笔记本元数据实体 (Vault)
     let notebook: Vault
     
-    /// 获取当前金库工作台的数据和路由视图模型
+    /// 获取当前笔记本工作台的数据和路由视图模型
     @Environment(NotebookHubViewModel.self) var viewModel
     
     /// 当用户点击列表整行时触发的回调行为
@@ -41,7 +41,7 @@ struct NotebookListRow: View {
                 }
                 .accessibilityHidden(true) // 屏蔽装饰性圆形底座与 Emoji 噪读，由行容器强合并朗读
                 
-                // 2. 金库元数据展示 (名称标题及描述，描述过长时智能单行截断)
+                // 2. 笔记本元数据展示 (名称标题及描述，描述过长时智能单行截断)
                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
                     Text(notebook.name)
                         .font(.system(size: DesignSystem.headlineFontSize, weight: .bold))
@@ -57,7 +57,7 @@ struct NotebookListRow: View {
                 
                 Spacer()
                 
-                // 3. 统计指标展示（显示该金库中已持久化的知识页面总数）
+                // 3. 统计指标展示（显示该笔记本中已持久化的知识页面总数）
                 HStack(alignment: .lastTextBaseline, spacing: DesignSystem.atomic) {
                     Text("\(notebook.pageCount)")
                         .font(.system(size: DesignSystem.bodyFontSize, weight: .semibold, design: .rounded))

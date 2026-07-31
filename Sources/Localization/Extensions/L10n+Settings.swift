@@ -40,6 +40,14 @@ extension L10n {
         public static var systemTheme: String { tr("settings.systemTheme") }
         public static var languageEnglish: String { tr("language.english") }
         public static var languageChinese: String { tr("language.chinese") }
+        public static var languageTraditionalChinese: String { tr("language.traditionalChinese") }
+        public static var languageSpanish: String { tr("language.spanish") }
+        public static var languageFrench: String { tr("language.french") }
+        public static var languageArabic: String { tr("language.arabic") }
+        public static var languageRussian: String { tr("language.russian") }
+        public static var languageKorean: String { tr("language.korean") }
+        public static var languageJapanese: String { tr("language.japanese") }
+        public static var languagePortuguese: String { tr("language.portuguese") }
         public static var systemLanguage: String { tr("settings.systemLanguage") }
         public static var languageSystem: String { tr("language.system") }
         public static var llmSettings: String { tr("llmSettings") }

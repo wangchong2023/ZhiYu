@@ -21,6 +21,30 @@ public enum LanguageMode: String, CaseIterable, Identifiable {
     /// 强制简体中文环境。
     case chinese = "zh-Hans"
     
+    /// 强制繁体中文环境。
+    case traditionalChinese = "zh-Hant"
+    
+    /// 强制西班牙语环境。
+    case spanish = "es"
+    
+    /// 强制法语环境。
+    case french = "fr"
+    
+    /// 强制阿拉伯语环境。
+    case arabic = "ar"
+    
+    /// 强制俄语环境。
+    case russian = "ru"
+    
+    /// 强制韩语环境。
+    case korean = "ko"
+    
+    /// 强制日语环境。
+    case japanese = "ja"
+    
+    /// 强制葡萄牙语环境。
+    case portuguese = "pt"
+    
     /// 遵循 Identifiable 协议的唯一识别码。
     public var id: String { self.rawValue }
     
@@ -30,6 +54,14 @@ public enum LanguageMode: String, CaseIterable, Identifiable {
         case .auto: return L10n.Settings.languageSystem
         case .english: return L10n.Settings.languageEnglish
         case .chinese: return L10n.Settings.languageChinese
+        case .traditionalChinese: return L10n.Settings.languageTraditionalChinese
+        case .spanish: return L10n.Settings.languageSpanish
+        case .french: return L10n.Settings.languageFrench
+        case .arabic: return L10n.Settings.languageArabic
+        case .russian: return L10n.Settings.languageRussian
+        case .korean: return L10n.Settings.languageKorean
+        case .japanese: return L10n.Settings.languageJapanese
+        case .portuguese: return L10n.Settings.languagePortuguese
         }
     }
 }
@@ -51,12 +83,41 @@ internal struct Localized {
     /// 当前缓存的 Bundle 对应的语言标识码（如 "zh-Hans" 或 "en"）。
     nonisolated(unsafe) private static var cachedLanguage: String?
     
-    /// 获取当前应用处于激活状态的首选语言代码（如 "zh-Hans", "en"）。
+    /// 获取当前应用处于激活状态的首选语言代码（如 "zh-Hans", "zh-Hant", "en", "es", "fr", "ar", "ru", "ko", "ja", "pt"）。
     static var currentLanguage: String {
         switch languageMode {
-        case .auto: return Bundle.main.preferredLocalizations.first ?? "en"
+        case .auto:
+            let preferred = Bundle.main.preferredLocalizations.first ?? "en"
+            if preferred.hasPrefix("zh-Hant") || preferred.hasPrefix("zh-HK") || preferred.hasPrefix("zh-TW") || preferred.hasPrefix("zh-MO") {
+                return "zh-Hant"
+            } else if preferred.hasPrefix("zh") {
+                return "zh-Hans"
+            } else if preferred.hasPrefix("es") {
+                return "es"
+            } else if preferred.hasPrefix("fr") {
+                return "fr"
+            } else if preferred.hasPrefix("ar") {
+                return "ar"
+            } else if preferred.hasPrefix("ru") {
+                return "ru"
+            } else if preferred.hasPrefix("ko") {
+                return "ko"
+            } else if preferred.hasPrefix("ja") {
+                return "ja"
+            } else if preferred.hasPrefix("pt") {
+                return "pt"
+            }
+            return preferred.hasPrefix("en") ? "en" : preferred
         case .english: return "en"
         case .chinese: return "zh-Hans"
+        case .traditionalChinese: return "zh-Hant"
+        case .spanish: return "es"
+        case .french: return "fr"
+        case .arabic: return "ar"
+        case .russian: return "ru"
+        case .korean: return "ko"
+        case .japanese: return "ja"
+        case .portuguese: return "pt"
         }
     }
     

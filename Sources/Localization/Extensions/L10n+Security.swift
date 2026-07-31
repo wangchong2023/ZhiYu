@@ -36,12 +36,12 @@ extension L10n {
             trf("security.sandbox.instructions", content)
         }
 
-        /// 金库完整性校验失败的提示
+        /// 笔记本完整性校验失败的提示
         public static var integrityVerificationFailed: String {
             Security.tr("hashMismatchDesc")
         }
         
-        /// 目标金库完整性校验失败的提示
+        /// 目标笔记本完整性校验失败的提示
         public static var targetIntegrityVerificationFailed: String {
             Security.tr("targetHashMismatchDesc")
         }

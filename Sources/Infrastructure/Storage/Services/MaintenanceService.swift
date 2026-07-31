@@ -88,7 +88,7 @@ public final class MaintenanceService {
         // 是否处于自动化 UI 测试模式，用于自愈保护
         let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
         
-        // 尝试获取当前选中金库名称（当 vaultName 为 nil 时兜底）
+        // 尝试获取当前选中笔记本名称（当 vaultName 为 nil 时兜底）
         let resolvedName: String? = vaultName ?? VaultService.shared.currentVault?.name
         
         do {
@@ -101,7 +101,7 @@ public final class MaintenanceService {
                 _ = try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore)
                 logger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: "Seeded_research_content", module: "Maintenance")
             } else if isTesting || resolvedName != nil {
-                // 兜底：不为空的金库都尝试注入默认数据
+                // 兜底：不为空的笔记本都尝试注入默认数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
                 logger.addLog(action: .create, target: L10n.InitialNotebook.Log.fallbackDemoData, details: "Seeded_fallback_content", module: "Maintenance")
             }

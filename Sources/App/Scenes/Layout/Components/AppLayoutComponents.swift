@@ -49,16 +49,6 @@ extension ContentView {
             
             globalOverlaySheets()
         }
-        .onAppear {
-            if !onboardingService.hasCompletedOnboarding {
-                onboardingService.nextStep()
-            }
-        }
-        .onChange(of: onboardingService.hasCompletedOnboarding) { _, newValue in
-            if !newValue && onboardingService.currentStep == nil {
-                onboardingService.nextStep()
-            }
-        }
         .appToast()
     }
 

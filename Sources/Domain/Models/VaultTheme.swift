@@ -10,8 +10,8 @@
 //
 import Foundation
 
-/// 金库视觉主题模型
-/// 决定具体金库在 UI 列表、导航栏与渐变背景上的展现形式。
+/// 笔记本视觉主题模型
+/// 决定具体笔记本在 UI 列表、导航栏与渐变背景上的展现形式。
 public struct VaultTheme: Codable, Equatable, Sendable {
     /// 唯一识别的样式配置 ID
     public var id: String
@@ -24,7 +24,7 @@ public struct VaultTheme: Codable, Equatable, Sendable {
     /// 文字或高亮部分的点缀色十六进制
     public var accentColor: String
     
-    /// 初始化金库主题
+    /// 初始化笔记本主题
     /// - Parameters:
     ///   - id: 样式唯一标识
     ///   - name: 主题名称

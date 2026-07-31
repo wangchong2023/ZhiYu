@@ -45,7 +45,7 @@ struct MacOSBiometricAuthProvider: BiometricAuthProviderProtocol {
 #if os(macOS)
 /// macOS 安全存储：实现真正的 Security-Scoped Bookmarks 持久化
 struct MacOSSecurityScopedStorage: SecurityScopedStorageProtocol {
-    /// 为指定安全路径（如外部金库目录）创建并持久化安全作用域书签数据。
+    /// 为指定安全路径（如外部笔记本目录）创建并持久化安全作用域书签数据。
     /// - Parameter url: 待存储的物理路径 URL。
     func storeBookmark(for url: URL) {
         do {

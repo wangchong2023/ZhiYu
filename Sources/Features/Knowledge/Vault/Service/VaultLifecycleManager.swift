@@ -35,7 +35,7 @@ extension VaultService {
         await refreshPageCount(for: vault.id)
     }
 
-    /// 选择并激活目标金库，同时触发底层的专属物理数据库 WAL 切换。
+    /// 选择并激活目标笔记本，同时触发底层的专属物理数据库 WAL 切换。
     public func selectVault(_ vault: Vault) {
         self.selectedVaultID = vault.id
         keyStore?.set(vault.id.uuidString, forKey: AppConstants.Keys.Storage.vaultsSelectedID)
@@ -64,7 +64,7 @@ extension VaultService {
         }
     }
 
-    /// 退出当前选中的笔记本金库。
+    /// 退出当前选中的笔记本笔记本。
     public func exitVault() {
         NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
 
@@ -74,7 +74,7 @@ extension VaultService {
         databaseSwitcher?.releaseDatabaseConnection()
     }
 
-    /// 创建全新的笔记本金库。
+    /// 创建全新的笔记本笔记本。
     public func createVault(name: String, icon: String? = nil, description: String? = nil) {
         let newVault = Vault(
             id: UUID(),

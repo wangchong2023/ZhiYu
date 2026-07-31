@@ -102,15 +102,7 @@ struct ContentView: View {
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
             .applyPagePresentationSizing()
         }
-        .sheet(isPresented: $router.isShowingProfileMenu) {
-            UserProfileMenuSheetContent()
-                .environment(authService)
-                .environment(store)
-                .environment(router)
-                .environmentObject(themeManager)
-                .environmentObject(onboardingService)
-                .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
-        }
+
         .fullScreenCover(isPresented: $router.isShowingProfileSheet) {
             NavigationStack {
                 UserProfileView()

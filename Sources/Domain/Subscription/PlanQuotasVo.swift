@@ -16,7 +16,7 @@ public struct PlanQuotasVo: Codable, Equatable, Sendable {
     /// 最大知识页数，-1 表示无限
     public var maxKnowledgePages: Int
 
-    /// 最大独立金库数，-1 表示无限
+    /// 最大独立笔记本数，-1 表示无限
     public var maxVaultsCount: Int
 
     /// 单文件附件大小上限 (MB)
@@ -135,17 +135,17 @@ extension PlanQuotasVo {
         )
     }
 
-    /// Pro 专业版无限基线
+    /// Pro 专业版基线 (功能与配额表对齐)
     public static var createProDefault: PlanQuotasVo {
         PlanQuotasVo(
-            maxKnowledgePages: -1,
-            maxVaultsCount: -1,
-            maxFileSizeMb: 200,
+            maxKnowledgePages: 50000,
+            maxVaultsCount: 100,
+            maxFileSizeMb: 50, // 50 MB
             dailyAiMessages: -1,
             cloudLlmModelsEnabled: true,
             vectorSearchEnabled: true,
-            graphAdvancedEnabled: true,
-            audioOverviewEnabled: true,
+            graphAdvancedEnabled: false, // 规划中特性，暂未开启
+            audioOverviewEnabled: false, // 规划中特性，暂未开启
             largeAttachmentSync: true,
             advancedExportEnabled: true,
             spotlightIndexingEnabled: true,

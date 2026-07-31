@@ -34,7 +34,7 @@ public struct User: Codable, Identifiable, Sendable {
 
     /// 当前套餐标识：free（Lite 基础版）或 pro（Pro 专业版）
     public var planKey: String?
-    /// 套餐允许的最大金库（笔记本）数量
+    /// 套餐允许的最大笔记本数量
     public var maxVaults: Int
     /// 套餐允许的最大知识页面数量
     public var maxPages: Int
@@ -44,11 +44,11 @@ public struct User: Codable, Identifiable, Sendable {
     public var features: [String]
 
     public struct DefaultQuotas {
-        public static let liteMaxVaults = 4
+        public static let liteMaxVaults = 2
         public static let liteMaxPages = 1000
         public static let liteMaxPlugins = 3
         
-        public static let proMaxVaults = 10
+        public static let proMaxVaults = 100
         public static let proMaxPages = 50000
         public static let proMaxPlugins = 999999
     }
