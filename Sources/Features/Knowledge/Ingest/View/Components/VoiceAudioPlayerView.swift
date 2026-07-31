@@ -237,7 +237,15 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
         #endif
         
         stop()
-        let cleanText = text
+        var cleanText = text
+        if let firstLineEnd = cleanText.firstIndex(of: "\n") {
+            let firstLine = cleanText[..<firstLineEnd]
+            if firstLine.hasPrefix("🎙️") || (firstLine.contains("[") && firstLine.contains("]")) {
+                cleanText = String(cleanText[firstLineEnd...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        
+        cleanText = cleanText
             .replacingOccurrences(of: "[[", with: "")
             .replacingOccurrences(of: "]]", with: "")
             .replacingOccurrences(of: "#", with: "")

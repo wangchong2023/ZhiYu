@@ -82,7 +82,7 @@ struct ImportRecordSection: View {
                             if let path = previewFilePath, !isTextFile(path: path) {
                                 FileTextPreviewView(filePath: path)
                             } else {
-                                FormattedMarkdownText(text: previewText ?? "")
+                                FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
                                     .padding(.top, DesignSystem.tiny)
                             }
                         }
@@ -101,6 +101,11 @@ struct ImportRecordSection: View {
         .quickLookPreview($quickLookURL)
         .task { await loadRecords() }
         .onChange(of: selectedCategory) { _, _ in Task { await loadRecords() } }
+    }
+    
+    private func cleanPreviewText(_ text: String) -> String {
+        text.replacingOccurrences(of: "[[", with: "「")
+            .replacingOccurrences(of: "]]", with: "」")
     }
 
     // MARK: - 预览分发
