@@ -102,7 +102,7 @@ public struct DemoPDFBuilder {
         let h1Text = sanitizeMarkdownText(text.replacingOccurrences(of: "# ", with: ""))
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 16),
-            .foregroundColor: UIColor.black
+            .foregroundColor: UIColor(Color.appText)
         ]
         let rect = CGRect(x: 36, y: currentY + 8, width: contentWidth, height: 26)
         h1Text.draw(in: rect, withAttributes: attrs)
