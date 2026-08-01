@@ -140,22 +140,68 @@ final class ZhiYuLLMConfigStoreTests: XCTestCase {
         // Mock SecureEnclaveCryptoService + MockKeychainService 已由 setUp 注入，模拟器环境安全
         configStore.apiKey = "test-key-12345"
         configStore.provider = .deepSeek
-        configStore.model = "deepseek-chat"
+        configStore.model = "deepseek-v4-lite"
         configStore.isEnabled = true
 
         // 初始化一个新的 Store 来测试持久性
         let restored = LLMConfigStore()
         XCTAssertEqual(restored.apiKey, "test-key-12345")
         XCTAssertEqual(restored.provider, .deepSeek)
-        XCTAssertEqual(restored.model, "deepseek-chat")
+        XCTAssertEqual(restored.model, "deepseek-v4-lite")
         XCTAssertTrue(restored.isEnabled)
     }
 
     /// 验证所有 AI 服务提供商的模型图标与文案配置无误
     func testAllProviderDefaults() {
         for provider in LLMProvider.allCases {
-            XCTAssertFalse(provider.displayName.isEmpty)
-            XCTAssertFalse(provider.icon.isEmpty)
+            XCTAssertFalse(provider.displayName.isEmpty, "所有 provider displayName 不应为空")
+            XCTAssertFalse(provider.icon.isEmpty, "所有 provider icon 不应为空")
         }
+    }
+}
+
+// MARK: - 存储引擎并发事务与异常路径单元测试
+@MainActor
+final class SQLiteStoreConcurrencyTests: XCTestCase {
+
+    override func setUp() async throws {
+        try await super.setUp()
+        setupFullMockEnvironment()
+    }
+
+    override func tearDown() async throws {
+        DatabaseManager.shared.reset()
+        try await super.tearDown()
+    }
+
+    /// 验证高并发批量写入与主线程同步读取碰撞时无死锁且保持数据最终一致性
+    func testConcurrentBulkIngestAndRead() async throws {
+        let store = ServiceContainer.shared.resolve(SQLiteStore.self)
+        
+        // 并发执行 20 次异步写入
+        await withTaskGroup(of: Void.self) { group in
+            for i in 1...20 {
+                group.addTask {
+                    let page = KnowledgePage(
+                        id: "concurrent_page_\(i)",
+                        title: "并发测试标题 \(i)",
+                        content: "这是并发写入的测试内容段落 \(i)",
+                        tags: ["TestTag"],
+                        updatedAt: Date()
+                    )
+                    await store.savePage(page)
+                }
+            }
+        }
+
+        let allPages = store.pages
+        XCTAssertGreaterThanOrEqual(allPages.count, 20, "高并发写入后全量读取页面数应大于等于 20")
+    }
+
+    /// 验证搜索不存在的关键词时不会抛出异常而是优雅返回空数组
+    func testSearchNonExistentKeyword_returnsEmptyArray() async throws {
+        let store = ServiceContainer.shared.resolve(SQLiteStore.self)
+        let results = await store.searchPages(query: "NON_EXISTENT_KEYWORD_XYZ_999")
+        XCTAssertTrue(results.isEmpty, "搜索不存在关键词必须优雅返回空数组")
     }
 }

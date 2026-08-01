@@ -145,15 +145,39 @@ final class CloudKitSyncIntegrationTests: XCTestCase {
             content: "本地关于Swift的冲突内容"
         )
         
-        // 执行同步
-        let (mergedPages, _) = try await syncService.sync(localPages: [localPage], localLogs: [])
-        
-        // 按照重名防护规则，不应追加重复标题的页面，本地页面应该只保留 localPage（由于是 mergePages，在 local 基础上去合并 remote。
-        // mergePages 规则：如果 remotePage.title 已经存在于 merged (即 local 页面列表) 中，则跳过追加该 remotePage。
-        // 这里 merged 初始为 localPages = [localPage(Title: Swift)]。
-        // remote 包含 remotePage(Title: Swift)。由于 Title 相同，跳过追加云端 "Swift" 页面，最终只会有 1 个页面。
+        // 按照重名防护规则，不应追加重复标题的页面
         XCTAssertEqual(mergedPages.count, 1, "重名卡片应触发防护，跳过追加以保护数据库索引")
         XCTAssertEqual(mergedPages.first?.id, pageIDB, "应保留本地先入为主的页面结构")
+    }
+
+    /// 验证当云端时间戳晚于本地（Cloud > Local）时，逆向 LWW 规则能够精准拉取云端覆盖并更新本地状态
+    func testCloudLWWConflictResolution_cloudWins() async throws {
+        let pageID = UUID()
+        let oldLocalDate = Date().addingTimeInterval(-7200) // 2小时前
+        let newCloudDate = Date().addingTimeInterval(-3600) // 1小时前
+
+        let localPage = KnowledgePage(
+            id: pageID,
+            title: "架构设计",
+            content: "本地旧架构描述",
+            updatedAt: oldLocalDate
+        )
+
+        let cloudPage = KnowledgePage(
+            id: pageID,
+            title: "架构设计",
+            content: "云端最新的重构架构描述",
+            updatedAt: newCloudDate
+        )
+
+        mockProvider.cloudPages = [cloudPage]
+        mockProvider.cloudLastModified = newCloudDate
+        mockProvider.isNetworkConnected = true
+
+        let (mergedPages, _) = try await syncService.sync(localPages: [localPage], localLogs: [])
+
+        XCTAssertEqual(mergedPages.count, 1, "合并后结果应维持单条目标页面")
+        XCTAssertEqual(mergedPages.first?.content, "云端最新的重构架构描述", "当云端时间戳更晚时，LWW 机制应精准使用云端最新覆盖")
     }
 }
 #endif
