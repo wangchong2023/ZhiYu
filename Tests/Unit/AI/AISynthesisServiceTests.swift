@@ -100,6 +100,40 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
         XCTAssertEqual(result[2], "后续问题三")
     }
 
+    /// 验证当 LLM 切换后，所有 6 种合成操作（MindMap, Slides, Quiz, Infographic, Report, Expansion）均能动态解析最新 LLM 句柄并成功生成产出
+    func testAllSynthesisTypes_useCurrentLLM() async throws {
+        await MainActor.run {
+            mockLLM.generateResult = "# 知识测试标题\n- 核心内容要点一\n- 核心内容要点二"
+        }
+
+        let service = AISynthesisService.shared
+
+        // 1. 思维导图
+        let mindmap = try await service.generateMindMap(content: "测试文本内容")
+        XCTAssertFalse(mindmap.isEmpty, "思维导图应成功生成且非空")
+        XCTAssertTrue(mindmap.contains("mindmap"), "思维导图必须包含 mindmap 关键字")
+
+        // 2. 演示文稿
+        let slides = try await service.generatePresentation(content: "测试文本内容")
+        XCTAssertFalse(slides.isEmpty, "演示文稿应成功生成")
+
+        // 3. 知识测验
+        let quiz = try await service.generateQuiz(content: "测试文本内容")
+        XCTAssertFalse(quiz.isEmpty, "知识测验应成功生成")
+
+        // 4. 信息图表
+        let infographic = try await service.generateInfographic(content: "测试文本内容")
+        XCTAssertFalse(infographic.isEmpty, "信息图表应成功生成")
+
+        // 5. 深度报告
+        let report = try await service.generateReport(content: "测试文本内容")
+        XCTAssertFalse(report.isEmpty, "深度报告应成功生成")
+
+        // 6. 知识扩写
+        let expansion = try await service.expandKnowledge(content: "测试文本内容")
+        XCTAssertFalse(expansion.isEmpty, "知识扩写应成功生成")
+    }
+
     /// 验证当 LLM 返回非规范的 JSON 或其他错误文本时，能优雅防护并返回空数组。
     func testPredictFollowUpQuestions_fallback() async throws {
         await MainActor.run {
