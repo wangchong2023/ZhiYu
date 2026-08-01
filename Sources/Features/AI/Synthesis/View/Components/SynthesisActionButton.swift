@@ -53,7 +53,6 @@ struct SynthesisActionButton: View {
                 let combinedContent = store.pages.map { "# \($0.title)\n\($0.content)" }.joined(separator: "\n\n---\n\n")
                 let sourceIDs = store.pages.map(\.id)
                 Task {
-                    ToastManager.shared.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
                     do {
                         _ = try await synthesisStore.performSynthesis(type: type, combinedContent: combinedContent, sourcePageIDs: sourceIDs)
                         HapticFeedback.shared.trigger(.success)
