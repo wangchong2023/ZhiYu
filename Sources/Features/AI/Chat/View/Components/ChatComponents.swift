@@ -155,7 +155,8 @@ struct ChatBubbleView: View {
                 // 复制按钮
                 Button(action: {
                     HapticFeedback.shared.trigger(.selection)
-                    AppPasteboard.string = message.content
+                    let processed = ThinkingProcessor.process(message.content)
+                    AppPasteboard.string = processed.mainContent
                     ToastManager.shared.show(type: .success, message: L10n.Chat.copied)
                 }) {
                     Image(systemName: "doc.on.doc")
@@ -295,13 +296,63 @@ struct ChatContentView: View {
     let pages: [KnowledgePage]
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
-    @State private var expanded = false
+    @State private var isThinkingExpanded = false
     @Binding var selectedTab: AppTab
     
     var body: some View {
+        let processed = ThinkingProcessor.process(text)
+        
         VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+            // 🛡️ AI 思考过程：从正文中剥离并展示为默认折叠的交互卡片
+            if let thinking = processed.thinkingContent {
+                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                    Button(action: {
+                        HapticFeedback.shared.trigger(.selection)
+                        withAnimation(DesignSystem.standardAnimation) {
+                            isThinkingExpanded.toggle()
+                        }
+                    }) {
+                        HStack(spacing: DesignSystem.tiny) {
+                            Image(systemName: "brain")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(Color.appAccent)
+                            Text(L10n.Common.aiThinking)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.appSecondary)
+                            Spacer()
+                            Image(systemName: isThinkingExpanded ? "chevron.up" : "chevron.down")
+                                .font(.caption2)
+                                .foregroundStyle(.appSecondary)
+                        }
+                        .padding(.horizontal, DesignSystem.small)
+                        .padding(.vertical, DesignSystem.tightPadding)
+                        .background(
+                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                                .fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity * 0.5))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if isThinkingExpanded {
+                        Text(thinking)
+                            .font(.caption)
+                            .foregroundStyle(.appSecondary)
+                            .padding(.leading, DesignSystem.small)
+                            .padding(.vertical, DesignSystem.tiny)
+                            .overlay(
+                                Rectangle()
+                                    .fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
+                                    .frame(width: DesignSystem.Metrics.dividerThickness * 2),
+                                alignment: .leading
+                            )
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+                .padding(.bottom, DesignSystem.tiny)
+            }
+            
             // 清理常见的 LLM 转义符错误 (确保 Markdown 渲染正常)
-            let cleanedText = text.replacingOccurrences(of: "\\`", with: "`")
+            let cleanedText = processed.mainContent.replacingOccurrences(of: "\\`", with: "`")
                 .replacingOccurrences(of: "\\*", with: "*")
                 .replacingOccurrences(of: "\\_", with: "_")
                 .replacingOccurrences(of: "\\[\\[", with: "[[")

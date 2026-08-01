@@ -159,6 +159,27 @@ struct SynthesisView: View {
                 Text(L10n.AI.Synthesis.noDocs)
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
+                
+                if let type = selectedFilterType {
+                    Button(action: {
+                        HapticFeedback.shared.trigger(.selection)
+                        withAnimation(.spring()) {
+                            selectedFilterType = nil
+                        }
+                    }) {
+                        HStack(spacing: DesignSystem.tiny) {
+                            Text(L10n.Search.all)
+                                .font(.caption.bold())
+                            Image(systemName: "arrow.uturn.left")
+                                .font(.caption2)
+                        }
+                        .padding(.horizontal, DesignSystem.medium)
+                        .padding(.vertical, DesignSystem.tightPadding)
+                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity * 0.5)))
+                        .foregroundStyle(Color.appAccent)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, DesignSystem.Metrics.emptyStateVerticalPadding)
@@ -296,7 +317,11 @@ struct SynthesisView: View {
                         onNavigate: { pageID in
                             showOutput = false
                             if store.pages.contains(where: { $0.id == pageID }) {
-                                router.navigateToPage(id: pageID)
+                                router.selectedTab = .knowledge
+                                Task { @MainActor in
+                                    try? await Task.sleep(nanoseconds: 100_000_000)
+                                    router.navigateToPage(id: pageID)
+                                }
                             } else {
                                 ToastManager.shared.show(type: .info, message: L10n.AI.Synthesis.Error.noPages)
                             }
@@ -355,7 +380,10 @@ struct SynthesisView: View {
                                          store: store, 
                                          showNoPagesAlert: $showNoPagesAlert, 
                                          showLimitAlert: $showLimitAlert,
-                                         showLLMAlert: $showLLMAlert)
+                                         showLLMAlert: $showLLMAlert,
+                                         selectedFilterType: $selectedFilterType,
+                                         selectedDoc: $selectedDoc,
+                                         showOutput: $showOutput)
                 }
             }
             .appContainer(padding: true)

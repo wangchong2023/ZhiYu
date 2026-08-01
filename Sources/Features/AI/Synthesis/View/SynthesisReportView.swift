@@ -60,15 +60,23 @@ struct SynthesisSourcePagesBar: View {
                         }) {
                             HStack(spacing: DesignSystem.tiny) {
                                 Image(systemName: page.displayIcon)
-                                    .font(.caption2)
+                                    .font(.caption2.weight(.medium))
                                 Text(page.title)
-                                    .font(.caption)
+                                    .font(.caption.weight(.medium))
                                     .lineLimit(1)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 10, weight: .bold)) // Dynamic Type
+                                    .foregroundStyle(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
                             }
-                            .padding(.horizontal, DesignSystem.small)
-                            .padding(.vertical, DesignSystem.tightPadding)
-                            .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity)))
-                            .foregroundStyle(.appAccent)
+                            .padding(.horizontal, DesignSystem.small + 2)
+                            .padding(.vertical, DesignSystem.tightPadding + 1)
+                            .background(
+                                ZStack {
+                                    Capsule().fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity * 0.5))
+                                    Capsule().strokeBorder(Color.appAccent.opacity(DesignSystem.dimmedOpacity), lineWidth: 1)
+                                }
+                            )
+                            .foregroundStyle(Color.appAccent)
                         }
                     }
                 }
@@ -77,7 +85,7 @@ struct SynthesisSourcePagesBar: View {
             }
         }
         .background(DesignSystem.containerMaterial)
-        .shadow(color: Color.black.opacity(DesignSystem.secondaryOpacity), radius: 8, x: 0, y: -4)
+        .shadow(color: Color.appBorder.opacity(DesignSystem.secondaryOpacity), radius: 8, x: 0, y: -4)
     }
 }
 

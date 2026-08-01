@@ -21,6 +21,9 @@ struct SynthesisActionButton: View {
     @Binding var showNoPagesAlert: Bool
     @Binding var showLimitAlert: Bool
     @Binding var showLLMAlert: Bool
+    @Binding var selectedFilterType: SynthesisStore.SynthesisType?
+    @Binding var selectedDoc: SynthesisStore.SynthesisDocument?
+    @Binding var showOutput: Bool
     
     var body: some View {
         let state = synthesisStore.synthesisStates[type] ?? .idle
@@ -54,8 +57,15 @@ struct SynthesisActionButton: View {
                 let sourceIDs = store.pages.map(\.id)
                 Task {
                     do {
-                        _ = try await synthesisStore.performSynthesis(type: type, combinedContent: combinedContent, sourcePageIDs: sourceIDs)
+                        let docID = try await synthesisStore.performSynthesis(type: type, combinedContent: combinedContent, sourcePageIDs: sourceIDs)
                         HapticFeedback.shared.trigger(.success)
+                        withAnimation(DesignSystem.standardAnimation) {
+                            selectedFilterType = type // 🛡️ 自动联动切换列表 Filter 至刚生成的类型分类
+                            if let newDoc = synthesisStore.synthesisResults[type]?.first(where: { $0.id.uuidString == docID }) {
+                                selectedDoc = newDoc
+                                showOutput = true // 🛡️ 生成完成直接自动展示生成的预览 Sheet
+                            }
+                        }
                         ToastManager.shared.show(type: .success, message: L10n.AI.Task.statusCompleted)
                     } catch {
                         HapticFeedback.shared.trigger(.error)
