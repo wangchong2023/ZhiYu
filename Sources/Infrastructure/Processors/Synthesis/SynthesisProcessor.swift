@@ -92,15 +92,20 @@ enum SynthesisProcessor {
         return code
     }
 
-    /// 对 Mermaid 进行语法纠错加固 (处理节点文本中的非法字符)
+    /// 对 Mermaid 进行语法纠错加固 (处理节点文本中的非法字符与缩进)
     private static func sanitizeMermaidSyntax(_ code: String) -> String {
         let isMindmap = code.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("mindmap")
         var lines = code.components(separatedBy: .newlines)
 
         for i in 0..<lines.count {
             var line = lines[i]
+            // Tab 缩进归一化：将所有 Tab 替换为 2 个标准空格
+            line = line.replacingOccurrences(of: "\t", with: "  ")
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty || trimmed == "mindmap" { continue }
+            if trimmed.isEmpty || trimmed == "mindmap" || trimmed == "graph TD" {
+                lines[i] = line
+                continue
+            }
 
             // 获取缩进
             let indentation = line.prefix { $0.isWhitespace }
@@ -110,33 +115,29 @@ enum SynthesisProcessor {
                 // 1. 移除行尾可能导致解析错误的连字符
                 var content = trimmed.replacingOccurrences(of: #"-+$"#, with: "", options: .regularExpression)
 
-                // 2. 如果包含特殊字符且没带括号，套上引号
+                // 2. 如果包含冒号、括号等特殊字符且未加双引号，套上双引号
                 let hasBrackets = (content.contains("((") && content.contains("))")) ||
                                   (content.contains("[") && content.contains("]")) ||
                                   (content.contains("{{") && content.contains("}}")) ||
                                   (content.contains("(") && content.contains(")"))
 
-                if !hasBrackets && !content.hasPrefix("\"") {
-                    // 清理内容中的非法引号
+                let hasSpecialChars = content.contains(":") || content.contains("?") || content.contains("_")
+
+                if (!hasBrackets || hasSpecialChars) && !content.hasPrefix("\"") {
                     let safeText = content.replacingOccurrences(of: "\"", with: "'")
-                                          .replacingOccurrences(of: ":", with: ":")
                     content = "\"\(safeText)\""
-                } else if hasBrackets {
-                    // 如果有括号，确保括号内的内容也是安全的
-                    content = content.replacingOccurrences(of: ":", with: ":")
                 }
 
                 line = String(indentation) + content
             } else {
                 // 针对 graph 等其他图表的通用处理
-                // 1. 处理节点定义 ID[Label] -> ID["Label"]
                 let pattern = #"(\w+)(\[+|\(+|\{+)(.+?)(\]+|\)+|\}+)"#
                 if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
                     let range = NSRange(location: 0, length: line.utf16.count)
                     line = regex.stringByReplacingMatches(in: line, options: [], range: range, withTemplate: #"$1["$3"]"#)
                 }
 
-                // 2. 标签内容净化
+                // 标签内容净化
                 if let start = line.firstIndex(of: "["), let end = line.lastIndex(of: "]") {
                     let range = line.index(after: start)..<end
                     let inner = line[range]
@@ -145,9 +146,7 @@ enum SynthesisProcessor {
                         innerText = String(innerText.dropFirst().dropLast())
                     }
 
-                    let cleaned = innerText.replacingOccurrences(of: "(", with: "(")
-                                           .replacingOccurrences(of: ")", with: ")")
-                                           .replacingOccurrences(of: "\"", with: "'")
+                    let cleaned = innerText.replacingOccurrences(of: "\"", with: "'")
                                            .trimmingCharacters(in: .whitespaces)
                     line.replaceSubrange(range, with: "\"\(cleaned)\"")
                 }

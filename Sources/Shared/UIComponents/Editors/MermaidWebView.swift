@@ -288,12 +288,19 @@ struct MermaidWKWebViewMac: NSViewRepresentable {
                         const { svg } = await mermaid.render('mindmap-svg', `\(escapedCode)`);
                         root.innerHTML = svg;
                     } catch (e) {
-                        root.innerHTML = `
-                            <div class="error-container">
-                                <div>\(L10n.AI.Synthesis.Mindmap.renderError)</div>
-                                <div class="error-details">${e.message || e}</div>
-                            </div>
-                        `;
+                        const rawCode = `\(escapedCode)`;
+                        const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
+                        let listHtml = '<div style="padding:20px; color:#e0e0e0; font-family:sans-serif;">';
+                        lines.forEach(line => {
+                            const trimmed = line.trim();
+                            if (trimmed.startsWith('#')) {
+                                listHtml += `<h3 style="color:#0A84FF;margin-top:16px;">${trimmed.replace(/^#+\\s*/, '')}</h3>`;
+                            } else {
+                                listHtml += `<div style="padding-left:16px;margin-vertical:4px;border-left:2px solid #0A84FF;">• ${trimmed}</div>`;
+                            }
+                        });
+                        listHtml += '</div>';
+                        root.innerHTML = listHtml;
                     }
                 })();
             </script>

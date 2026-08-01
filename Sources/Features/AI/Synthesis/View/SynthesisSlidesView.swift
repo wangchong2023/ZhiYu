@@ -18,14 +18,28 @@ struct SynthesisSlidesView: View {
 
     private var slides: [String] {
         let content = doc.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        let rawSlides = content.components(separatedBy: "\n---")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-        
-        if rawSlides.isEmpty {
-            return [content]
+        var parts: [String] = []
+
+        if content.contains("\n---") {
+            parts = content.components(separatedBy: "\n---")
+        } else if content.contains("\n## ") {
+            parts = content.components(separatedBy: "\n## ").map { $0.hasPrefix("## ") ? $0 : "## " + $0 }
+        } else {
+            parts = [content]
         }
-        return rawSlides
+
+        let cleaned = parts.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map { slide -> String in
+                // 🛡️ 自动检测并闭合在切分点被截断的代码块围栏
+                let fenceCount = slide.components(separatedBy: "```").count - 1
+                if fenceCount % 2 != 0 {
+                    return slide + "\n```"
+                }
+                return slide
+            }
+
+        return cleaned.isEmpty ? [content] : cleaned
     }
 
     var body: some View {

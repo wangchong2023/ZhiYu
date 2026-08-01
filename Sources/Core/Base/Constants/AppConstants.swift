@@ -323,6 +323,16 @@ public struct AppConstants {
 // MARK: - App Store 订阅产品 ID 常量
 
 extension AppConstants {
+    /// 导出与合成限制
+    public struct ExportLimits {
+        /// 有效文本生成最小字节数 (10 字节)
+        public static let minValidSynthesisTextBytes: Int = 10
+        /// 有效 PDF/PPTX 产物导出最小字节数 (100 字节)
+        public static let minValidPDFBytes: Int64 = 100
+        /// 离屏 Web 渲染降级等待超时 (800 毫秒)
+        public static let webRenderFallbackTimeoutMS: UInt64 = 800
+    }
+
     /// App Store 订阅相关常量
     public struct Subscription {
         /// 月付 Pro 套餐商品 ID（对应 App Store Connect 配置）
@@ -382,9 +392,9 @@ extension AppConstants {
         /// 语义化版本号（SemVer），发布时需与 git tag 同步更新
         public static let semVer = "1.0.0"
         /// Git 短提交哈希（构建时自动注入）
-        public static let gitShortHash = "42cea190"
+        public static let gitShortHash = "6ad301d4"
         /// 构建时间戳 ISO 8601（构建时自动注入）
-        public static let buildTimestamp = "2026-06-27T11:31:51Z"
+        public static let buildTimestamp = "2026-08-01T03:02:45Z"
     }
 }
 

@@ -252,7 +252,7 @@ final class SynthesisProcessorTests: XCTestCase {
         // 观测点 3: 验证有效的生成内容必须具有最小正文长度
         let validMindmapCode = "mindmap\n  root((主题))\n    节点A"
         let formatted = SynthesisProcessor.formatMermaid(validMindmapCode, fallbackPrefix: "mindmap")
-        XCTAssertGreaterThanOrEqual(formatted.utf8.count, 10, "有效思维导图输出字节数必须 >= 10 字节")
+        XCTAssertGreaterThanOrEqual(formatted.utf8.count, AppConstants.ExportLimits.minValidSynthesisTextBytes, "有效思维导图输出字节数必须满足 AppConstants.ExportLimits 限制")
     }
 
     // MARK: - 内容正确性观测点断言 (Semantic Correctness Observation Points)

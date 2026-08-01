@@ -150,12 +150,12 @@ public final class SynthesisStore {
         let cleanedContent = Self.cleanMarkdown(content)
         let trimmed = cleanedContent.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 🛡️ 校验生成内容有效性：拒绝 0 字节、纯骨架关键字或小于 10 字节的无效填充
+        // 🛡️ 校验生成内容有效性：拒绝 0 字节、纯骨架关键字或小于最小字节阀值的无效填充
         guard !trimmed.isEmpty,
               trimmed != "mindmap",
               trimmed != "graph TD",
               trimmed != "graph",
-              trimmed.utf8.count >= 10 else {
+              trimmed.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
             Logger.shared.addLog(action: .ingest, target: type.title, details: "Synthesis result invalid or empty (size: \(trimmed.utf8.count) B)")
             return
         }
@@ -219,7 +219,7 @@ public final class SynthesisStore {
             }
 
             let cleaned = Self.cleanMarkdown(content).trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !cleaned.isEmpty, cleaned != "mindmap", cleaned != "graph TD", cleaned.utf8.count >= 10 else {
+            guard !cleaned.isEmpty, cleaned != "mindmap", cleaned != "graph TD", cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
                 let emptyError = L10n.AI.Synthesis.Error.limitReached
                 throw AppError.synthesis(emptyError, code: -3)
             }

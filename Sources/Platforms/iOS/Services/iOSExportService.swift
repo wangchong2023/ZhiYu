@@ -173,7 +173,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol, @unchecked Sendab
                 webView.createPDF(configuration: config) { result in
                     switch result {
                     case .success(let data):
-                        guard data.count > 100 else {
+                        guard Int64(data.count) >= AppConstants.ExportLimits.minValidPDFBytes else {
                             continuation.resume(throwing: ExportError.internalError("PDF_Content_Empty"))
                             return
                         }

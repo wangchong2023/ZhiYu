@@ -92,9 +92,14 @@ enum QuizProcessor {
     static func parseToQuizModel(_ text: String) -> QuizModel? {
         // 1. 尝试直接解码为标准的 QuizModel
         if let data = text.data(using: .utf8),
-           let quiz = try? JSONDecoder().decode(QuizModel.self, from: data),
+           var quiz = try? JSONDecoder().decode(QuizModel.self, from: data),
            !quiz.questions.isEmpty {
-            return quiz
+            // 🛡️ 答案索引越界自动纠偏防爆
+            let sanitizedQuestions = quiz.questions.map { question -> QuizQuestion in
+                let validAnswer = (question.answer >= 0 && question.answer < question.options.count) ? question.answer : 0
+                return QuizQuestion(id: question.id, text: question.text, options: question.options, answer: validAnswer, explanation: question.explanation)
+            }
+            return QuizModel(title: quiz.title, questions: sanitizedQuestions)
         }
 
         // 2. 尝试剥离 Markdown 围栏后解码 Shell
@@ -103,11 +108,13 @@ enum QuizProcessor {
            let shell = try? JSONDecoder().decode(QuizModelShell.self, from: data),
            !shell.questions.isEmpty {
             let questions = shell.questions.enumerated().map { index, item in
-                QuizQuestion(
+                let opts = item.options
+                let validAnswer = (item.answer >= 0 && item.answer < opts.count) ? item.answer : 0
+                return QuizQuestion(
                     id: item.id ?? index,
                     text: item.text,
-                    options: item.options,
-                    answer: item.answer,
+                    options: opts,
+                    answer: validAnswer,
                     explanation: item.explanation ?? ""
                 )
             }
