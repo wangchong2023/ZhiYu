@@ -79,4 +79,23 @@ final class SynthesisStoreTests: XCTestCase {
             XCTAssertTrue(store.synthesisResults[type]?.isEmpty ?? true, "删除操作必须清理内存列表")
         }
     }
+
+    func testPerformSynthesis_throwsLimitReachedErrorWithoutAutoEviction() async {
+        let type = SynthesisStore.SynthesisType.mindmap
+        // 模拟填满 5 份用户旧文档
+        for i in 1...5 {
+            let content = "# 知识主题 \(i)\nmindmap\n  root((主题\(i)))\n    节点\(i)"
+            store.saveSynthesisResult(type: type, content: content)
+        }
+
+        XCTAssertEqual(store.synthesisResults[type]?.count, 5, "满额包含 5 份文档")
+
+        // 尝试再次合成第 6 份
+        do {
+            _ = try await store.performSynthesis(type: type, combinedContent: "新的合成正文内容数据")
+            XCTFail("达到 5 份上限时必须拒绝生成并抛出超限错误，绝对禁止随意自动删剔旧文档")
+        } catch {
+            XCTAssertEqual(store.synthesisResults[type]?.count, 5, "用户旧文档数量必须保持 5 份完整未减少")
+        }
+    }
 }
