@@ -62,7 +62,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol, @unchecked Sendab
         </body>
         </html>
         """
-        webView?.loadHTMLString(html, baseURL: nil)
+        webView?.loadHTMLString(html, baseURL: Bundle.main.bundleURL)
     }
 
     private func loadLocalJS(named name: String) -> String {
@@ -173,6 +173,10 @@ final class iOSExportService: NSObject, ExportServiceProtocol, @unchecked Sendab
                 webView.createPDF(configuration: config) { result in
                     switch result {
                     case .success(let data):
+                        guard data.count > 100 else {
+                            continuation.resume(throwing: ExportError.internalError("PDF_Content_Empty"))
+                            return
+                        }
                         let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(fileName).pdf")
                         do {
                             try data.write(to: url)
