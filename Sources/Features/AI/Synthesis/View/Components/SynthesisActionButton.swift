@@ -53,7 +53,15 @@ struct SynthesisActionButton: View {
                 let combinedContent = store.pages.map { "# \($0.title)\n\($0.content)" }.joined(separator: "\n\n---\n\n")
                 let sourceIDs = store.pages.map(\.id)
                 Task {
-                    try? await synthesisStore.performSynthesis(type: type, combinedContent: combinedContent, sourcePageIDs: sourceIDs)
+                    ToastManager.shared.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
+                    do {
+                        _ = try await synthesisStore.performSynthesis(type: type, combinedContent: combinedContent, sourcePageIDs: sourceIDs)
+                        HapticFeedback.shared.trigger(.success)
+                        ToastManager.shared.show(type: .success, message: L10n.AI.Task.statusCompleted)
+                    } catch {
+                        HapticFeedback.shared.trigger(.error)
+                        ToastManager.shared.show(type: .error, message: error.localizedDescription)
+                    }
                 }
             }) {
                 VStack(spacing: DesignSystem.tiny) {

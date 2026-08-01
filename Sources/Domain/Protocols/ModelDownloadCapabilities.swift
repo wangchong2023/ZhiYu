@@ -14,7 +14,7 @@ import Foundation
 /// 任务下载状态枚举
 public enum DownloadState: Codable, Sendable, Equatable {
     case pending         // 等待排队
-    case downloading(progress: Double) // 下载中，附带 0.0 到 1.0 的百分比进度
+    case downloading(progress: Double, bytesPerSecond: Double = 0) // 下载中，附带 0.0 到 1.0 的百分比进度与实时下载速率
     case paused          // 暂停中 (包含断点续传数据已捕获)
     case verifying       // 校验签名与指纹中 (100% 下载完成)
     case completed(localURL: URL) // 下载且校验完成，模型已安全移入沙盒 Document 目录

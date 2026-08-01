@@ -38,6 +38,15 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     /// 模型 ID 到对应 SHA256 校验指纹的缓存映射表
     private var sha256Checksums: [String: String] = [:]
     
+    private struct SpeedTrackerState {
+        let lastBytes: Int64
+        let lastTime: Date
+        let currentSpeed: Double
+    }
+
+    /// 模型 ID 到实时下载速率计算器的追踪映射表
+    private var downloadSpeedTrackers: [String: SpeedTrackerState] = [:]
+    
     /// 模型 ID 到其异步流事件通道 (Continuation) 的订阅分发映射表
     private var continuations: [String: AsyncStream<DownloadState>.Continuation] = [:]
     
@@ -178,9 +187,32 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     
     // MARK: - 供 Delegate 调用的内部并发更新方法
     
-    /// 更新下载进度百分比
+    /// 更新下载进度百分比与实时下载速率
+    public func updateProgress(for modelId: String, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+        guard totalBytesExpectedToWrite > 0 else { return }
+        let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+        let now = Date()
+
+        var calculatedSpeed: Double = 0
+        if let tracker = downloadSpeedTrackers[modelId] {
+            let timeDiff = now.timeIntervalSince(tracker.lastTime)
+            if timeDiff >= 0.5 {
+                let bytesDiff = Double(totalBytesWritten - tracker.lastBytes)
+                calculatedSpeed = max(0, bytesDiff / timeDiff)
+                downloadSpeedTrackers[modelId] = SpeedTrackerState(lastBytes: totalBytesWritten, lastTime: now, currentSpeed: calculatedSpeed)
+            } else {
+                calculatedSpeed = tracker.currentSpeed
+            }
+        } else {
+            downloadSpeedTrackers[modelId] = SpeedTrackerState(lastBytes: totalBytesWritten, lastTime: now, currentSpeed: 0)
+        }
+
+        updateState(for: modelId, to: .downloading(progress: progress, bytesPerSecond: calculatedSpeed))
+    }
+
+    /// 更新下载进度百分比 (兼容旧模式)
     public func updateProgress(for modelId: String, progress: Double) {
-        updateState(for: modelId, to: .downloading(progress: progress))
+        updateState(for: modelId, to: .downloading(progress: progress, bytesPerSecond: 0))
     }
     
     /// 完成下载，在沙盒临时路径触发指纹完整性验证
@@ -328,7 +360,7 @@ private final class ModelDownloadDelegateHelper: NSObject, URLSessionDownloadDel
         
         // 强行注入 Swift 6 并发上下文，回推给 Actor 主体
         Task {
-            await manager.updateProgress(for: modelId, progress: progress)
+            await manager.updateProgress(for: modelId, totalBytesWritten: totalBytesWritten, totalBytesExpectedToWrite: totalBytesExpectedToWrite)
         }
     }
     

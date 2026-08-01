@@ -18,8 +18,16 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     @Inject private var logger: any LoggerProtocol
     private var llm: any LLMServiceProtocol
 
+    /// 动态解析最新的 LLMService 实例，防止持有失效句柄
+    private var currentLLM: any LLMServiceProtocol {
+        if let liveLLM = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {
+            return liveLLM
+        }
+        return llm
+    }
+
     private init() {
-        // 面向接口依赖，解析协议类型以解耦 LLMService 具体实现，修复单元测试 Mock 注册的注入时序崩溃
+        // 面向接口依赖，解析协议类型以解耦 LLMService 具体实现
         self.llm = ServiceContainer.shared.resolve((any LLMServiceProtocol).self)
     }
 
@@ -60,7 +68,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         Indent with 2 spaces.
         Do NOT use code fences (```).
         """
-        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.formatMermaid(result, fallbackPrefix: "mindmap")
     }
 
@@ -84,7 +92,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         Separate slides with '---' on a new line.
         Each slide should start with a title ('# ' or '## ') followed by concise bullet points or key insights.
         """
-        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
@@ -110,7 +118,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         Output ONLY valid JSON matching this schema:
         \(jsonFormat)
         """
-        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
 
         // 使用专用的 QuizProcessor 进行处理
         if QuizProcessor.canDecodeAsQuizModel(result) {
@@ -134,7 +142,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         Do NOT use code fences (```).
         Only output the Title and the Mermaid code.
         """
-        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.formatMermaid(result, fallbackPrefix: "graph TD")
     }
 
@@ -147,7 +155,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         You are a senior analyst and technical report writer.
         Structure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion.
         """
-        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
@@ -225,7 +233,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         let prompt = L10n.AI.Prompt.predictQuestions(recentMessages)
 
         logger.debug("[PredictQuestions] Prompt: \(String(prompt.prefix(500)))")
-        let result = try await llm.generate(
+        let result = try await currentLLM.generate(
             prompt: prompt,
             systemPrompt: L10n.AI.Prompt.predictQuestionsSystem
         )
