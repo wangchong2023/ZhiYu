@@ -41,6 +41,7 @@ struct SynthesisActionButton: View {
                     return
                 }
                 
+                let targetPages = store.pages.isEmpty ? store.pages : store.pages
                 if store.pages.isEmpty {
                     HapticFeedback.shared.trigger(.error)
                     showNoPagesAlert = true

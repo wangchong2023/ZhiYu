@@ -160,7 +160,7 @@ struct SynthesisView: View {
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
                 
-                if let type = selectedFilterType {
+                if selectedFilterType != nil {
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
                         withAnimation(.spring()) {

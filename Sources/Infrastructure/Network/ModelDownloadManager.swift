@@ -356,8 +356,6 @@ private final class ModelDownloadDelegateHelper: NSObject, URLSessionDownloadDel
     ) {
         guard let modelId = downloadTask.taskDescription, totalBytesExpectedToWrite > 0 else { return }
         
-        let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
-        
         // 强行注入 Swift 6 并发上下文，回推给 Actor 主体
         Task {
             await manager.updateProgress(for: modelId, totalBytesWritten: totalBytesWritten, totalBytesExpectedToWrite: totalBytesExpectedToWrite)

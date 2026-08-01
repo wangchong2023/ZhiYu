@@ -54,7 +54,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func summarize(content: String) async throws -> String {
         let prompt = PromptService.shared.summaryPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await llm.generate(prompt: prompt, systemPrompt: "")
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: "")
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
@@ -62,11 +62,15 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     func generateMindMap(content: String) async throws -> String {
         let prompt = PromptService.shared.mindmapPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = """
-        You are a Mermaid mindmap expert.
-        Always start with '# <Summary Title>'.
-        Then follow with the Mermaid code starting strictly with 'mindmap'.
-        Indent with 2 spaces.
-        Do NOT use code fences (```).
+        You are a senior Knowledge Architect and Mind Map Expert.
+        Analyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.
+        Rules:
+        1. Always start with '# <Document Core Title>'.
+        2. Then output standard Mermaid code strictly starting with 'mindmap'.
+        3. Root node MUST be 'root((<Document Title>))'.
+        4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).
+        5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).
+        6. Do NOT use markdown code fences (```).
         """
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: "mindmap")
@@ -81,7 +85,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func extractActions(content: String) async throws -> String {
         let prompt = PromptService.shared.actionPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await llm.generate(prompt: prompt, systemPrompt: "")
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: "")
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
@@ -114,13 +118,25 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         let explanationLabel = L10n.AI.Prompt.Quiz.explanation
 
         let jsonFormat = """
-        {"title":"\(quizTitle)","questions":[{"id":0,"text":"\(questionLabel)?","options":["\(optionLabel) A","\(optionLabel) B","\(optionLabel) C","\(optionLabel) D"],"answer":0,"explanation":"\(explanationLabel)"}]}
+        {
+          "quizTitle": "\(quizTitle)",
+          "questions": [
+            {
+              "question": "\(questionLabel)",
+              "options": ["\(optionLabel) A", "\(optionLabel) B", "\(optionLabel) C", "\(optionLabel) D"],
+              "answerIndex": 0,
+              "explanation": "\(explanationLabel)"
+            }
+          ]
+        }
         """
+
         let systemPrompt = """
-        You are a quiz generation expert.
-        Create a 3-5 question multiple-choice quiz based on the user's content.
-        Output ONLY valid JSON matching this schema:
+        You are an educational assessment expert.
+        Generate 3 to 5 multiple-choice quiz questions based on the provided content.
+        Output MUST be strict JSON matching this structure:
         \(jsonFormat)
+        Do NOT wrap in code fences. Output JSON only.
         """
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
 
@@ -166,7 +182,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// 知识深度扩充：对现有内容进行多维度深挖与背景补充
     func expandKnowledge(content: String) async throws -> String {
         let prompt = PromptService.shared.expansionPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await llm.generate(prompt: prompt, systemPrompt: PromptService.shared.expansionSystemPrompt)
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: PromptService.shared.expansionSystemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
