@@ -270,7 +270,9 @@ struct MermaidWKWebViewMac: NSViewRepresentable {
                 #mermaid-root { background-color: transparent; width: 100%; padding: 20px; box-sizing: border-box; }
                 svg { max-width: 100% !important; height: auto !important; }
                 .error-container { color: #ff453a; text-align: center; padding: 40px 20px; font-size: 14px; background: rgba(255,69,58,0.1); border-radius: 12px; margin: 20px; border: 1px solid rgba(255,69,58,0.2); }
-                .error-details { font-family: monospace; font-size: 11px; margin-top: 12px; opacity: 0.7; word-break: break-all; text-align: left; }
+                .fallback-box { padding: 20px; color: #e0e0e0; font-family: -apple-system, sans-serif; }
+                .fallback-h3 { color: #0A84FF; margin-top: 16px; font-size: 16px; font-weight: 600; }
+                .fallback-item { padding-left: 16px; margin: 4px 0; border-left: 2px solid #0A84FF; }
             </style>
         </head>
         <body>
@@ -290,13 +292,14 @@ struct MermaidWKWebViewMac: NSViewRepresentable {
                     } catch (e) {
                         const rawCode = `\(escapedCode)`;
                         const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
-                        let listHtml = '<div style="padding:20px; color:#e0e0e0; font-family:sans-serif;">';
+                        let listHtml = '<div class="fallback-box">';
                         lines.forEach(line => {
                             const trimmed = line.trim();
                             if (trimmed.startsWith('#')) {
-                                listHtml += `<h3 style="color:#0A84FF;margin-top:16px;">${trimmed.replace(/^#+\\s*/, '')}</h3>`;
+                                const headerText = trimmed.replace(/^#+\\s*/, '');
+                                listHtml += `<h3 class="fallback-h3">${headerText}</h3>`;
                             } else {
-                                listHtml += `<div style="padding-left:16px;margin-vertical:4px;border-left:2px solid #0A84FF;">• ${trimmed}</div>`;
+                                listHtml += `<div class="fallback-item">• ${trimmed}</div>`;
                             }
                         });
                         listHtml += '</div>';
