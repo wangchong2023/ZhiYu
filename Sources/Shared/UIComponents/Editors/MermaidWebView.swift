@@ -157,7 +157,7 @@ struct MermaidWKWebView: UIViewRepresentable {
     /// - Parameter uiView: uiView
     /// - Parameter context: context
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        uiView.loadHTMLString(generateHTML(), baseURL: nil)
+        uiView.loadHTMLString(generateHTML(), baseURL: Bundle.main.bundleURL)
     }
     
     private func generateHTML() -> String {
@@ -249,7 +249,7 @@ struct MermaidWKWebViewMac: NSViewRepresentable {
     /// - Parameter nsView: nsView
     /// - Parameter context: context
     func updateNSView(_ nsView: WKWebView, context: Context) {
-        nsView.loadHTMLString(generateHTML(), baseURL: nil)
+        nsView.loadHTMLString(generateHTML(), baseURL: Bundle.main.bundleURL)
     }
     
     private func generateHTML() -> String {

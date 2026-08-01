@@ -17,27 +17,43 @@ import SwiftUI
 /// 从文档 Markdown 内容中提取标题与 Mermaid 代码，驱动 MermaidWebView 进行可视化渲染
 struct SynthesisMindmapView: View {
     let doc: SynthesisStore.SynthesisDocument
+    @State private var selectedDisplayMode = 0 // 0: 可视化图表, 1: 文本报告
+
+    private var mermaidCode: String {
+        extractMermaidCode(from: doc.content)
+    }
 
     var body: some View {
-        VStack(spacing: DesignSystem.standardPadding) {
-            if let title = extractTitle(from: doc.content) {
-                Text(title)
-                    .font(.title2.bold())
-                    .padding(.top, DesignSystem.widePadding)
-                    .padding(.horizontal)
-                    .frame(maxWidth: .infinity, alignment: .center)
+        VStack(spacing: DesignSystem.medium) {
+            Picker("", selection: $selectedDisplayMode) {
+                Text(L10n.AI.Synthesis.actions).tag(0)
+                Text(L10n.AI.Synthesis.documentList).tag(1)
             }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, DesignSystem.standardPadding)
+            .padding(.top, DesignSystem.small)
 
-            MermaidWebView(mermaidCode: extractMermaidCode(from: doc.content))
-                .id(doc.id)
+            if selectedDisplayMode == 0 && !mermaidCode.isEmpty {
+                VStack(spacing: DesignSystem.standardPadding) {
+                    if let title = extractTitle(from: doc.content) {
+                        Text(title)
+                            .font(.title2.bold())
+                            .padding(.top, DesignSystem.small)
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+
+                    MermaidWebView(mermaidCode: mermaidCode)
+                        .id(doc.id)
+                }
+            } else {
+                SynthesisReportView(doc: doc)
+            }
         }
     }
 
     // MARK: - 辅助解析
 
-    /// 从 Markdown 内容中提取一级标题（# 开头行）
-    /// - Parameter content: Markdown 原始文本
-    /// - Returns: 去除前缀后的标题，若不存在则返回 nil
     private func extractTitle(from content: String) -> String? {
         let lines = content.components(separatedBy: .newlines)
         if let firstLine = lines.map({ $0.trimmingCharacters(in: .whitespaces) }).first(where: { !$0.isEmpty }),
@@ -47,22 +63,34 @@ struct SynthesisMindmapView: View {
         return nil
     }
 
-    /// 从 Markdown 内容中提取 Mermaid 代码块
-    /// 优先匹配 ```mermaid … ``` 围栏代码块，若不存在则回退到排除标题行的纯文本行
-    /// - Parameter content: Markdown 原始文本
-    /// - Returns: Mermaid 语法代码
     private func extractMermaidCode(from content: String) -> String {
         if let regex = try? NSRegularExpression(pattern: "```(?:mermaid)?\\n([\\s\\S]*?)```", options: []),
            let match = regex.firstMatch(in: content, options: [], range: NSRange(content.startIndex..., in: content)),
            let range = Range(match.range(at: 1), in: content) {
-            return String(content[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let extracted = String(content[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !extracted.isEmpty {
+                return extracted
+            }
         }
+
         let lines = content.components(separatedBy: .newlines)
-        return lines.filter { line in
+        let filtered = lines.filter { line in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             return !trimmed.hasPrefix("#") && !trimmed.hasPrefix("```") && !trimmed.isEmpty
         }
         .joined(separator: "\n")
         .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if filtered.hasPrefix("mindmap") || filtered.hasPrefix("graph") || filtered.hasPrefix("sequenceDiagram") || filtered.hasPrefix("gantt") || filtered.hasPrefix("pie") {
+            return filtered
+        }
+        
+        // 自动自愈补充基础思维导图/架构图声明
+        if doc.type == .mindmap {
+            return "mindmap\n  root((\(extractTitle(from: content) ?? L10n.AI.Synthesis.title)))\n    \(filtered.replacingOccurrences(of: "\n", with: "\n    "))"
+        } else if doc.type == .infographic {
+            return "graph TD\n  A[\(extractTitle(from: content) ?? L10n.AI.Synthesis.title)] --> B[\(filtered.prefix(100))]"
+        }
+        return filtered
     }
 }

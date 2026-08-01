@@ -22,6 +22,8 @@ struct SynthesisReportView: View {
             MarkdownRendererView(content: doc.content, isPrivate: false, onLinkTap: { _ in })
                 .padding()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.appBackground)
     }
 }
 
@@ -75,7 +77,7 @@ struct SynthesisSourcePagesBar: View {
 
 // MARK: - 输出 Sheet 内容分发
 
-/// 根据文档类型分发到对应的子视图（Mindmap / Quiz / Report）
+/// 根据文档类型分发到对应的子视图（Mindmap / Slides / Quiz / Report / Infographic / Expansion）
 struct SynthesisOutputContent: View {
     let doc: SynthesisStore.SynthesisDocument
 
@@ -84,9 +86,10 @@ struct SynthesisOutputContent: View {
             switch doc.type {
             case .mindmap, .infographic:
                 SynthesisMindmapView(doc: doc)
+            case .slides:
+                SynthesisSlidesView(doc: doc)
             case .quiz:
-                if let data = doc.content.data(using: .utf8),
-                   let quiz = try? JSONDecoder().decode(QuizModel.self, from: data) {
+                if let quiz = QuizProcessor.parseToQuizModel(doc.content) {
                     QuizView(quiz: quiz)
                 } else {
                     SynthesisReportView(doc: doc)
@@ -95,5 +98,7 @@ struct SynthesisOutputContent: View {
                 SynthesisReportView(doc: doc)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.appBackground)
     }
 }
