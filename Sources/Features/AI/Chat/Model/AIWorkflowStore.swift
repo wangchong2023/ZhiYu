@@ -210,6 +210,8 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         return expanded
     }
 
+    @ObservationIgnored @Inject private var synthesisStore: SynthesisStore
+
     /// 执行通用页面综合任务（MindMap, Quiz, etc.）
     public func performPageSynthesis(type: SynthesisStore.SynthesisType, title: String, content: String) async throws -> String {
         isProcessingPageAI = true
@@ -220,11 +222,12 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
             let result = try await AISynthesisService.shared.synthesize(type: type, content: content)
             TaskCenter.shared.completeTask(id: taskID)
             
+            // 🛡️ 持久化落盘存入 SynthesisDocument 数组，确保在合成列表中可查
+            synthesisStore.saveSynthesisResult(type: type, content: result)
+
             // 针对不同类型处理结果
             if type == .quiz {
-                let cleaned = LLMUtils.stripMarkdown(result)
-                if let data = cleaned.data(using: .utf8),
-                   let quiz = try? JSONDecoder().decode(QuizModel.self, from: data) {
+                if let quiz = QuizProcessor.parseToQuizModel(result) {
                     activeQuiz = quiz
                 } else {
                     activePageAIResult = result

@@ -164,6 +164,31 @@ final class SynthesisProcessorTests: XCTestCase {
         XCTAssertEqual(model?.questions.first?.text, "1+1=?")
     }
 
+    func testQuizProcessor_parseFlexibleJSONWithStringsAndFences() {
+        // 变异情况：answer 为字符串 "0"、id 为字符串 "q1" 且带有 Markdown 代码围栏
+        let mutatedJSON = """
+        ```json
+        {
+          "title": "知识测验",
+          "questions": [
+            {
+              "id": "q1",
+              "text": "在知识图谱中，词条“神经元”通常与哪个主题相关联？",
+              "options": ["脑科学", "信息茧房", "双脑协同", "卡片盒笔记法"],
+              "answer": "0",
+              "explanation": "根据词条：什么是神经元..."
+            }
+          ]
+        }
+        ```
+        """
+        let model = QuizProcessor.parseToQuizModel(mutatedJSON)
+        XCTAssertNotNil(model, "包含字符串类型 answer/id 的变异 JSON 必须被 100% 成功解码")
+        XCTAssertEqual(model?.title, "知识测验")
+        XCTAssertEqual(model?.questions.count, 1)
+        XCTAssertEqual(model?.questions.first?.answer, 0, "字符串 '0' 必须被柔性自愈解码为索引 0")
+    }
+
     func testQuizProcessor_parseMarkdownQuiz() {
         let markdown = """
         # 知识评估

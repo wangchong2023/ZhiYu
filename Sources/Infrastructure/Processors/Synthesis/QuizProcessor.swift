@@ -13,115 +13,128 @@ import Foundation
 /// 专门处理知识测验数据的解析、转换与清洗
 enum QuizProcessor {
 
-    struct QuizModelShell: Codable {
-        let title: String
-        let questions: [QuestionShell]
-        struct QuestionShell: Codable {
-            let id: Int?
+    struct FlexibleQuizShell: Codable {
+        let title: String?
+        let questions: [FlexibleQuestionShell]
+
+        struct FlexibleQuestionShell: Codable {
+            let id: FlexibleID?
             let text: String
             let options: [String]
-            let answer: Int
+            let answer: FlexibleAnswer?
             let explanation: String?
+        }
+
+        enum FlexibleID: Codable {
+            case int(Int)
+            case string(String)
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                if let i = try? container.decode(Int.self) {
+                    self = .int(i)
+                } else if let s = try? container.decode(String.self) {
+                    self = .string(s)
+                } else {
+                    self = .int(0)
+                }
+            }
+
+            var intValue: Int {
+                switch self {
+                case .int(let i): return i
+                case .string(let s): return Int(s) ?? 0
+                }
+            }
+        }
+
+        enum FlexibleAnswer: Codable {
+            case int(Int)
+            case string(String)
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                if let i = try? container.decode(Int.self) {
+                    self = .int(i)
+                } else if let s = try? container.decode(String.self) {
+                    self = .string(s)
+                } else {
+                    self = .int(0)
+                }
+            }
+
+            func asIndex(optionCount: Int) -> Int {
+                guard optionCount > 0 else { return 0 }
+                switch self {
+                case .int(let i):
+                    return (i >= 0 && i < optionCount) ? i : 0
+                case .string(let s):
+                    let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+                    if let i = Int(trimmed) {
+                        return (i >= 0 && i < optionCount) ? i : 0
+                    }
+                    if trimmed.hasPrefix("A") { return 0 }
+                    if trimmed.hasPrefix("B") { return min(1, optionCount - 1) }
+                    if trimmed.hasPrefix("C") { return min(2, optionCount - 1) }
+                    if trimmed.hasPrefix("D") { return min(3, optionCount - 1) }
+                    return 0
+                }
+            }
         }
     }
 
     /// 检查文本是否可以解析为标准的交互式测验模型
     static func canDecodeAsQuizModel(_ text: String) -> Bool {
-        let cleaned = LLMUtils.stripMarkdown(text)
-        guard let data = cleaned.data(using: .utf8) else { return false }
-        return (try? JSONDecoder().decode(QuizModelShell.self, from: data)) != nil
+        return parseToQuizModel(text) != nil
     }
 
     /// 尝试将 JSON 测验转换为 Markdown 格式
     static func convertJSONToMarkdown(_ text: String) -> String? {
-        let cleaned = LLMUtils.stripMarkdown(text)
-        guard let data = cleaned.data(using: .utf8) else { return nil }
-
-        struct QuizJSON: Codable {
-            let title: String?
-            let questions: [QuestionJSON]
-        }
-        struct QuestionJSON: Codable {
-            let id: Int?
-            let text: String
-            let options: [String]
-            let answer: AnyCodable?
-            let explanation: String?
-        }
-
-        enum AnyCodable: Codable {
-            case int(Int)
-            case string(String)
-            init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let i = try? container.decode(Int.self) { self = .int(i) } else if let s = try? container.decode(String.self) { self = .string(s) } else { throw DecodingError.dataCorruptedError(in: container, debugDescription: "Not_int_or_string") }
-            }
-
-            /// 编码
-            func encode(to encoder: Encoder) throws {}
-            var stringValue: String {
-                switch self {
-                case .int(let i): return "\(i)"
-                case .string(let s): return s
+        if let model = parseToQuizModel(text) {
+            var md = "# \(model.title)\n\n"
+            for (index, question) in model.questions.enumerated() {
+                md += "## \(index + 1). \(question.text)\n\n"
+                for opt in question.options {
+                    md += "* \(opt)\n"
                 }
+                md += "\n<details>\n<summary>\(L10n.Quiz.showAnswer)</summary>\n\n"
+                if question.answer < question.options.count {
+                    md += "**\(L10n.Quiz.correctAnswer):** \(question.options[question.answer])\n\n"
+                }
+                if !question.explanation.isEmpty {
+                    md += "**\(L10n.AI.Prompt.Quiz.explanation):** \(question.explanation)\n\n"
+                }
+                md += "</details>\n\n"
             }
+            return md
         }
-
-        guard let quiz = try? JSONDecoder().decode(QuizJSON.self, from: data) else { return nil }
-
-        var md = "# \(quiz.title ?? L10n.Quiz.title)\n\n"
-        for (index, question) in quiz.questions.enumerated() {
-            md += "## \(index + 1). \(question.text)\n\n"
-            for opt in question.options {
-                md += "* \(opt)\n"
-            }
-            md += "\n<details>\n<summary>\(L10n.Quiz.showAnswer)</summary>\n\n"
-            if let ans = question.answer {
-                md += "**\(L10n.Quiz.correctAnswer):** \(ans.stringValue)\n\n"
-            }
-            if let exp = question.explanation {
-                md += "**\(L10n.Quiz.explanation):** \(exp)\n"
-            }
-            md += "\n</details>\n\n"
-        }
-
-        return md
+        return nil
     }
 
     /// 将任意文本（Raw JSON、Markdown 包裹 JSON 或纯 Markdown 试卷）自愈解析为 QuizModel
     static func parseToQuizModel(_ text: String) -> QuizModel? {
-        // 1. 尝试直接解码为标准的 QuizModel
-        if let data = text.data(using: .utf8),
-           var quiz = try? JSONDecoder().decode(QuizModel.self, from: data),
-           !quiz.questions.isEmpty {
-            // 🛡️ 答案索引越界自动纠偏防爆
-            let sanitizedQuestions = quiz.questions.map { question -> QuizQuestion in
-                let validAnswer = (question.answer >= 0 && question.answer < question.options.count) ? question.answer : 0
-                return QuizQuestion(id: question.id, text: question.text, options: question.options, answer: validAnswer, explanation: question.explanation)
-            }
-            return QuizModel(title: quiz.title, questions: sanitizedQuestions)
-        }
-
-        // 2. 尝试剥离 Markdown 围栏后解码 Shell
+        // 1. 尝试使用标准的 FlexibleQuizShell 解码
         let cleaned = LLMUtils.stripMarkdown(text)
         if let data = cleaned.data(using: .utf8),
-           let shell = try? JSONDecoder().decode(QuizModelShell.self, from: data),
+           let shell = try? JSONDecoder().decode(FlexibleQuizShell.self, from: data),
            !shell.questions.isEmpty {
-            let questions = shell.questions.enumerated().map { index, item in
-                let opts = item.options
-                let validAnswer = (item.answer >= 0 && item.answer < opts.count) ? item.answer : 0
+            let questions = shell.questions.enumerated().map { index, item -> QuizQuestion in
+                let opts = item.options.isEmpty ? [L10n.AI.Prompt.Quiz.option] : item.options
+                let validAnswer = item.answer?.asIndex(optionCount: opts.count) ?? 0
+                let id = item.id?.intValue ?? index
                 return QuizQuestion(
-                    id: item.id ?? index,
+                    id: id,
                     text: item.text,
                     options: opts,
                     answer: validAnswer,
                     explanation: item.explanation ?? ""
                 )
             }
-            return QuizModel(title: shell.title, questions: questions)
+            let title = shell.title.flatMap { $0.isEmpty ? nil : $0 } ?? L10n.Quiz.title
+            return QuizModel(title: title, questions: questions)
         }
 
-        // 3. 从 Markdown 格式中自愈解析题目、选项与答案
+        // 2. 尝试从 Markdown 格式中自愈解析题目、选项与答案
         return parseMarkdownQuiz(text)
     }
 

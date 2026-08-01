@@ -91,6 +91,17 @@ struct SynthesisOutputContent: View {
             case .quiz:
                 if let quiz = QuizProcessor.parseToQuizModel(doc.content) {
                     QuizView(quiz: quiz)
+                } else if let md = QuizProcessor.convertJSONToMarkdown(doc.content) {
+                    let fallbackDoc = SynthesisStore.SynthesisDocument(
+                        id: doc.id,
+                        type: doc.type,
+                        name: doc.name,
+                        content: md,
+                        createdAt: doc.createdAt,
+                        size: md.utf8.count,
+                        sourcePageIDs: doc.sourcePageIDs
+                    )
+                    SynthesisReportView(doc: fallbackDoc)
                 } else {
                     SynthesisReportView(doc: doc)
                 }
