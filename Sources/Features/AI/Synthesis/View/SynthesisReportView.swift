@@ -21,6 +21,7 @@ struct SynthesisReportView: View {
         ScrollView {
             MarkdownRendererView(content: doc.content, isPrivate: false, onLinkTap: { _ in })
                 .padding()
+                .padding(.bottom, DesignSystem.loosePadding * 2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
@@ -39,14 +40,17 @@ struct SynthesisSourcePagesBar: View {
         let sourcePages = store.pages.filter { sourcePageIDs.contains($0.id) }
         VStack(alignment: .leading, spacing: 0) {
             Divider()
+                .background(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
+
             HStack {
                 Label(L10n.AI.Synthesis.sourceCount(sourcePageIDs.count), systemImage: "doc.text")
                     .font(.caption.weight(.semibold))
+                    .foregroundStyle(.appSecondary)
                 Spacer()
             }
             .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.vertical, DesignSystem.tightPadding)
-            .background(.ultraThinMaterial)
+            .padding(.top, DesignSystem.small)
+            .padding(.bottom, DesignSystem.tiny)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: DesignSystem.small) {
@@ -63,15 +67,17 @@ struct SynthesisSourcePagesBar: View {
                             }
                             .padding(.horizontal, DesignSystem.small)
                             .padding(.vertical, DesignSystem.tightPadding)
-                            .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
+                            .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity)))
                             .foregroundStyle(.appAccent)
                         }
                     }
                 }
                 .padding(.horizontal, DesignSystem.standardPadding)
-                .padding(.vertical, DesignSystem.tightPadding)
+                .padding(.bottom, DesignSystem.small)
             }
         }
+        .background(DesignSystem.containerMaterial)
+        .shadow(color: Color.black.opacity(DesignSystem.secondaryOpacity), radius: 8, x: 0, y: -4)
     }
 }
 

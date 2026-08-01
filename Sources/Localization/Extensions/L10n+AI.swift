@@ -397,6 +397,8 @@ extension L10n {
             public enum Mindmap {
                 public static var title: String { AI.tr("prompt.expert.mindmap.title") }
                 public static var renderError: String { AI.tr("synthesis.mindmap.renderError") }
+                public static var defaultBranch1: String { AI.tr("synthesis.mindmap.defaultBranch1") }
+                public static var defaultBranch2: String { AI.tr("synthesis.mindmap.defaultBranch2") }
             }
 
             public enum Error {
