@@ -20,27 +20,30 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// 全局唯一的线程安全单例实例。
     static let shared = LLMService()
 
-    // MARK: - 注入依赖
+    // MARK: - 安全延迟解析底层子服务 (DIP 解耦 + 崩溃防御)
     
-    /// LLM 配置管理器，用以动态拉取 API Key、模型规格及服务器基准地址。
-    @ObservationIgnored @Inject private var configManager: LLMConfigManager
+    private var configManager: LLMConfigManager? {
+        ServiceContainer.shared.resolveOptional(LLMConfigManager.self)
+    }
+
+    private var chatRunner: (any LLMChatServiceProtocol)? {
+        ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self)
+    }
     
-    /// AI 指标分析服务，用以审计 Token 吞吐和响应耗时。
-    @ObservationIgnored @Inject private var analytics: AIAnalyticsService
+    private var ingestProcessor: (any LLMKnowledgeServiceProtocol)? {
+        ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self)
+    }
     
-    // MARK: - 注入拆分后的底层子服务 (DIP 解耦)
-    
-    @ObservationIgnored @Inject private var chatRunner: any LLMChatServiceProtocol
-    @ObservationIgnored @Inject private var ingestProcessor: any LLMKnowledgeServiceProtocol
-    @ObservationIgnored @Inject private var queryReranker: any LLMRetrievalServiceProtocol
+    private var queryReranker: (any LLMRetrievalServiceProtocol)? {
+        ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self)
+    }
 
     // MARK: - UI 状态属性 (透传转发至 configManager)
     
-    /// 当前所选的模型服务提供商（例如 OpenAI, Anthropic, Ollama 等）。
-    /// 当前所选的模型服务提供商（例如 OpenAI, Anthropic, Ollama 等）。
+    /// 当前所选的模型服务提供商（例如 DeepSeek, 智谱 AI, MiniMax 等）。
     var provider: LLMProvider {
-        get { configManager.provider }
-        set { configManager.provider = newValue; objectWillChange.send() }
+        get { configManager?.provider ?? .deepSeek }
+        set { configManager?.provider = newValue; objectWillChange.send() }
     }
     
     /// 安全的访问密钥 API Key。
@@ -50,21 +53,21 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
             if ProcessInfo.processInfo.arguments.contains("--uitesting") {
                 return "mock_api_key_for_testing"
             }
-            return configManager.apiKey
+            return configManager?.apiKey ?? ""
         }
-        set { configManager.apiKey = newValue; objectWillChange.send() }
+        set { configManager?.apiKey = newValue; objectWillChange.send() }
     }
     
     /// API 调用的基础网关地址。
     var baseURL: String {
-        get { configManager.baseURL }
-        set { configManager.baseURL = newValue; objectWillChange.send() }
+        get { configManager?.baseURL ?? "" }
+        set { configManager?.baseURL = newValue; objectWillChange.send() }
     }
     
     /// 大语言模型的具体代号规格（如 gpt-4o, claude-3-5-sonnet 等）。
     var model: String {
-        get { configManager.model }
-        set { configManager.model = newValue; objectWillChange.send() }
+        get { configManager?.model ?? "" }
+        set { configManager?.model = newValue; objectWillChange.send() }
     }
     
     /// AI 模块是否处于开启状态。
@@ -74,21 +77,21 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
             if ProcessInfo.processInfo.arguments.contains("--uitesting") {
                 return true
             }
-            return configManager.isEnabled
+            return configManager?.isEnabled ?? false
         }
-        set { configManager.isEnabled = newValue; objectWillChange.send() }
+        set { configManager?.isEnabled = newValue; objectWillChange.send() }
     }
     
     /// 是否开启后台自动化知识扫描与标签提取。
     var autoScan: Bool {
-        get { configManager.autoScan }
-        set { configManager.autoScan = newValue; objectWillChange.send() }
+        get { configManager?.autoScan ?? false }
+        set { configManager?.autoScan = newValue; objectWillChange.send() }
     }
     
     /// 是否使能后台智能重构分析与自动化双链链接发现。
     var autoRefactor: Bool {
-        get { configManager.autoRefactor }
-        set { configManager.autoRefactor = newValue; objectWillChange.send() }
+        get { configManager?.autoRefactor ?? false }
+        set { configManager?.autoRefactor = newValue; objectWillChange.send() }
     }
 
     /// 判断大模型所需的密钥、地址及开关是否已配置就绪。
@@ -97,7 +100,7 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
         if ProcessInfo.processInfo.arguments.contains("--uitesting") {
             return true
         }
-        return configManager.isReady
+        return configManager?.isReady ?? false
     }
 
     // MARK: - 初始化
@@ -105,7 +108,7 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// 内部单例初始化构造方法。
     init() {
         // 在完成 DI 解析后，绑定刷新 Handler
-        configManager.setRefreshHandler { [weak self] in
+        configManager?.setRefreshHandler { [weak self] in
             self?.objectWillChange.send()
         }
     }
@@ -117,7 +120,10 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter systemPrompt: systemPrompt
     /// - Returns: 字符串
     func generate(prompt: String, systemPrompt: String, maxTokens: Int = BusinessConstants.AI.maxOutputTokens) async throws -> String {
-        try await chatRunner.generate(prompt: prompt, systemPrompt: systemPrompt, maxTokens: maxTokens)
+        guard let runner = chatRunner else {
+            throw LLMError.notConfigured
+        }
+        return try await runner.generate(prompt: prompt, systemPrompt: systemPrompt, maxTokens: maxTokens)
     }
 
     /// chat
@@ -126,16 +132,24 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter pages: pages
     /// - Returns: 返回值
     func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
-        try await chatRunner.chat(query: query, history: history, pages: pages)
+        guard let runner = chatRunner else {
+            throw LLMError.notConfigured
+        }
+        return try await runner.chat(query: query, history: history, pages: pages)
     }
- 
+
     /// chatStream
     /// - Parameter query: query
     /// - Parameter history: history
     /// - Parameter pages: pages
     /// - Returns: 返回值
     func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
-        chatRunner.chatStream(query: query, history: history, pages: pages)
+        guard let runner = chatRunner else {
+            return AsyncThrowingStream { continuation in
+                continuation.finish(throwing: LLMError.notConfigured)
+            }
+        }
+        return runner.chatStream(query: query, history: history, pages: pages)
     }
 
     /// smart导入摄取
@@ -144,7 +158,10 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter pages: pages
     /// - Returns: 返回值
     func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
-        try await ingestProcessor.smartIngest(title: title, rawContent: rawContent, pages: pages)
+        guard let processor = ingestProcessor else {
+            throw LLMError.notConfigured
+        }
+        return try await processor.smartIngest(title: title, rawContent: rawContent, pages: pages)
     }
 
     /// discoverPotentialLinks
@@ -152,7 +169,8 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter existingTitles: existingTitles
     /// - Returns: 列表
     func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] {
-        try await ingestProcessor.discoverPotentialLinks(content: content, existingTitles: existingTitles)
+        guard let processor = ingestProcessor else { return [] }
+        return try await processor.discoverPotentialLinks(content: content, existingTitles: existingTitles)
     }
 
     /// foldContent
@@ -161,28 +179,32 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter title: title
     /// - Returns: 字符串
     func foldContent(existingContent: String, newContent: String, title: String) async throws -> String {
-        try await ingestProcessor.foldContent(existingContent: existingContent, newContent: newContent, title: title)
+        guard let processor = ingestProcessor else { return existingContent + "\n" + newContent }
+        return try await processor.foldContent(existingContent: existingContent, newContent: newContent, title: title)
     }
 
     /// analyzeForRefactoring
     /// - Parameter pages: pages
     /// - Returns: 列表
     func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] {
-        try await ingestProcessor.analyzeForRefactoring(pages: pages)
+        guard let processor = ingestProcessor else { return [] }
+        return try await processor.analyzeForRefactoring(pages: pages)
     }
 
     /// rewriteQuery
     /// - Parameter query: query
     /// - Returns: 字符串
     func rewriteQuery(_ query: String) async -> String {
-        await queryReranker.rewriteQuery(query)
+        guard let reranker = queryReranker else { return query }
+        return await reranker.rewriteQuery(query)
     }
 
     /// expandQuery
     /// - Parameter query: query
     /// - Returns: 列表
     func expandQuery(_ query: String) async -> [String] {
-        await queryReranker.expandQuery(query)
+        guard let reranker = queryReranker else { return [query] }
+        return await reranker.expandQuery(query)
     }
 
     /// rerank
@@ -190,7 +212,8 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter candidates: candidates
     /// - Returns: 列表
     func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] {
-        try await queryReranker.rerank(query: query, candidates: candidates)
+        guard let reranker = queryReranker else { return candidates }
+        return try await reranker.rerank(query: query, candidates: candidates)
     }
 
     /// rerankChunks
@@ -198,14 +221,16 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter chunks: chunks
     /// - Returns: 列表
     func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] {
-        await queryReranker.rerankChunks(query: query, chunks: chunks)
+        guard let reranker = queryReranker else { return chunks }
+        return await reranker.rerankChunks(query: query, chunks: chunks)
     }
 
     /// 生成HypotheticalDocument
     /// - Parameter query: query
     /// - Returns: 字符串
     func generateHypotheticalDocument(query: String) async -> String {
-        await queryReranker.generateHypotheticalDocument(query: query)
+        guard let reranker = queryReranker else { return query }
+        return await reranker.generateHypotheticalDocument(query: query)
     }
 
     /// AI 模块连通性与响应测速测试 — 同时验证非流式与流式信道。
