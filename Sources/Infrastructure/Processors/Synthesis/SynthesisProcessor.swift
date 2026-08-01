@@ -55,6 +55,31 @@ enum SynthesisProcessor {
         return code
     }
 
+    /// 柔性自愈：将普通文本或 Markdown 节点转换为合法标准的 Mermaid Mindmap 代码
+    /// - Parameters:
+    ///   - text: LLM 返回的文本内容
+    ///   - title: 根节点标题
+    /// - Returns: 符合 Mermaid 规范的 Mindmap 代码
+    static func convertMarkdownToListMindmap(_ text: String, title: String) -> String {
+        let lines = text.components(separatedBy: .newlines)
+        var mermaidLines = ["# \(title)", "", "mindmap", "  root((\(title)))"]
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty || trimmed.hasPrefix("```") || trimmed.lowercased() == "mindmap" { continue }
+            let cleanText = trimmed.replacingOccurrences(of: "#", with: "")
+                                   .replacingOccurrences(of: "-", with: "")
+                                   .replacingOccurrences(of: "*", with: "")
+                                   .trimmingCharacters(in: .whitespaces)
+            if !cleanText.isEmpty && cleanText != title {
+                mermaidLines.append("    \(cleanText)")
+            }
+        }
+        if mermaidLines.count <= 4 {
+            mermaidLines.append("    \(L10n.AI.Synthesis.Mindmap.title)")
+        }
+        return mermaidLines.joined(separator: "\n")
+    }
+
     private static func cleanMermaidDelimiters(_ text: String) -> String {
         text.replacingOccurrences(of: "```mermaid", with: "")
             .replacingOccurrences(of: "```", with: "")

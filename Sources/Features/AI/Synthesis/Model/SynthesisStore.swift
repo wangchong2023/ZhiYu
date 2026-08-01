@@ -222,7 +222,7 @@ public final class SynthesisStore {
 
             let cleaned = Self.cleanMarkdown(content).trimmingCharacters(in: .whitespacesAndNewlines)
             guard !cleaned.isEmpty, cleaned != "mindmap", cleaned != "graph TD", cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
-                let emptyError = L10n.AI.Synthesis.Error.limitReached
+                let emptyError = L10n.AI.Synthesis.Error.noPages
                 throw AppError.synthesis(emptyError, code: -3)
             }
 
@@ -258,6 +258,9 @@ public final class SynthesisStore {
         guard var docs = _synthesisResults[type] else { return }
         docs.removeAll { $0.id == docID }
         synthesisResults[type] = docs
+        if docs.isEmpty {
+            synthesisStates[type] = .idle
+        }
         persistResults(for: type)
     }
 
@@ -270,6 +273,9 @@ public final class SynthesisStore {
             docs.removeAll { ids.contains($0.id) }
             if docs.count != originalCount {
                 synthesisResults[type] = docs
+                if docs.isEmpty {
+                    synthesisStates[type] = .idle
+                }
                 persistResults(for: type)
             }
         }
@@ -303,11 +309,20 @@ public final class SynthesisStore {
 
     /// 清除All
     public func clearAll() {
-        synthesisResults.removeAll()
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        withMutation(keyPath: \.synthesisResults) {
+            _synthesisResults.removeAll()
+        }
+        withMutation(keyPath: \.synthesisStates) {
+            for type in SynthesisType.allCases {
+                _synthesisStates[type] = .idle
+            }
+        }
+        
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
         for type in SynthesisType.allCases {
-            keyStore.removeObject(forKey: AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue)
-            synthesisStates[type] = .idle
+            let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
+            keyStore?.removeObject(forKey: key)
+            UserDefaults.standard.removeObject(forKey: key)
         }
     }
 
@@ -353,9 +368,15 @@ public final class SynthesisStore {
     }
     
     private func persistResults(for type: SynthesisType) {
-        guard let docs = _synthesisResults[type],
-              let data = try? JSONEncoder().encode(docs),
-              let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
-        keyStore.set(data, forKey: AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue)
+        let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        if let docs = _synthesisResults[type], !docs.isEmpty,
+           let data = try? JSONEncoder().encode(docs) {
+            keyStore?.set(data, forKey: key)
+            UserDefaults.standard.set(data, forKey: key)
+        } else {
+            keyStore?.removeObject(forKey: key)
+            UserDefaults.standard.removeObject(forKey: key)
+        }
     }
 }

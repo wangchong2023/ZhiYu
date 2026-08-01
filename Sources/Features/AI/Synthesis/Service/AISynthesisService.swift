@@ -69,7 +69,11 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         Do NOT use code fences (```).
         """
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
-        return SynthesisProcessor.formatMermaid(result, fallbackPrefix: "mindmap")
+        let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: "mindmap")
+        if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return SynthesisProcessor.convertMarkdownToListMindmap(result, title: L10n.AI.Synthesis.Mindmap.title)
+        }
+        return formatted
     }
 
     /// 提取Actions

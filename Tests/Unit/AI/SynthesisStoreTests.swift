@@ -98,4 +98,48 @@ final class SynthesisStoreTests: XCTestCase {
             XCTAssertEqual(store.synthesisResults[type]?.count, 5, "用户旧文档数量必须保持 5 份完整未减少")
         }
     }
+
+    // MARK: - 深度反向读取语义与物理抹除验证测试 (Reverse Content Inspection Tests)
+
+    func testReverseRead_persistedContentHasRealSemanticContentAndStructure() {
+        let type = SynthesisStore.SynthesisType.mindmap
+        let rawContent = "# 计算机科学架构\nmindmap\n  root((计算机科学))\n    数据结构\n    操作系统"
+        store.saveSynthesisResult(type: type, content: rawContent)
+
+        // 1. 从内存中反向读取
+        guard let memoryDoc = store.synthesisResults[type]?.first else {
+            XCTFail("内存列表中必须包含存盘文档")
+            return
+        }
+        XCTAssertGreaterThan(memoryDoc.content.utf8.count, 20, "反向读取：正文内容必须包含实际语义，非空非空壳")
+        XCTAssertTrue(memoryDoc.content.contains("计算机科学"), "反向读取：正文必须包含生成的真实主题关键字")
+        XCTAssertTrue(memoryDoc.content.contains("mindmap"), "反向读取：思维导图必须包含 Mermaid mindmap 结构定义")
+
+        // 2. 从磁盘物理 Key 反向解码读取
+        let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
+        guard let diskData = UserDefaults.standard.data(forKey: key),
+              let diskDocs = try? JSONDecoder().decode([SynthesisStore.SynthesisDocument].self, from: diskData),
+              let diskDoc = diskDocs.first else {
+            XCTFail("磁盘 Key 下必须能成功物理解包出 SynthesisDocument")
+            return
+        }
+        XCTAssertEqual(diskDoc.id, memoryDoc.id, "物理解包文档 ID 必须与内存数据完全吻合")
+        XCTAssertEqual(diskDoc.content, memoryDoc.content, "物理解包文档正文必须与内存数据 100% 一致")
+    }
+
+    func testReverseRead_clearAllCompletelyRemovesPhysicalDiskData() {
+        let type = SynthesisStore.SynthesisType.mindmap
+        let content = "# 待清空知识点\n这是存入的临时测试数据"
+        store.saveSynthesisResult(type: type, content: content)
+
+        let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
+        XCTAssertNotNil(UserDefaults.standard.data(forKey: key), "存盘后磁盘物理 Key 必须存在数据")
+
+        // 执行清空
+        store.clearAll()
+
+        // 反向物理读取校验
+        XCTAssertTrue(store.synthesisResults[type]?.isEmpty ?? true, "反向读取：内存字典必须已被完全清空")
+        XCTAssertNil(UserDefaults.standard.data(forKey: key), "反向读取：磁盘 Key 下物理数据必须已被 100% 抹除，返回 nil")
+    }
 }
