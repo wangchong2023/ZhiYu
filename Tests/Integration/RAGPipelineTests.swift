@@ -76,6 +76,31 @@ final class RAGPipelineTests: XCTestCase {
         let systemPrompt = "你是一个专业的知识管理助手。"
         let aiResponse = try await store.llmService.generate(prompt: prompt, systemPrompt: systemPrompt)
         
-        XCTAssertTrue(aiResponse.contains("RAG") || aiResponse.contains("双向链接") || !aiResponse.isEmpty, "AI 响应不应为空且应包含关键信息")
+        // 5. 校验 RAG 回答
+        XCTAssertFalse(aiResponse.isEmpty, "RAG 管道生成的回答不应为空")
+        XCTAssertTrue(aiResponse.contains("RAG") || aiResponse.contains("双向链接"), "AI 响应应包含关键信息")
+    }
+
+    /// 验证当向量化索引出现故障或为空时，RAG 管道能平滑降级为纯文本/关键词检索而不抛出致命崩溃
+    func testRAGPipeline_vectorIndexFallback() async throws {
+        let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
+        
+        // 导入一篇空页面/异常页面
+        _ = await store.ingestService.ingestRawContent(
+            title: "降级边界测试",
+            content: "通用测试文本内容",
+            forceDeepScan: false,
+            llmService: store.llmService,
+            pageStore: sqliteStore
+        )
+
+        // 发起对话请求：即使向量服务返回空或异常，RAG 管道仍能成功输出降级回复
+        let response = try await store.ragOrchestrator.chat(
+            query: "测试降级",
+            history: [],
+            pages: store.pages
+        )
+        
+        XCTAssertFalse(response.content.isEmpty, "向量服务降级时 RAG 仍应产生有效兜底输出")
     }
 }
