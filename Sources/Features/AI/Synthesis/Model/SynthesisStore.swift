@@ -166,6 +166,10 @@ public final class SynthesisStore {
         let doc = SynthesisDocument(id: UUID(), type: type, name: name, content: cleanedContent, createdAt: Date(), size: size, sourcePageIDs: sourcePageIDs)
 
         var existing = synthesisResults[type] ?? []
+        // 🛡️ 队列自动淘汰：超额时自动剔除最旧的文档，确保新合成 100% 成功入库
+        while existing.count >= maxSynthesisDocsPerType {
+            existing.removeLast()
+        }
         existing.insert(doc, at: 0)
         synthesisResults[type] = existing
         synthesisStates[type] = .completed
@@ -179,13 +183,6 @@ public final class SynthesisStore {
     public func performSynthesis(type: SynthesisType, combinedContent: String, sourcePageIDs: [UUID] = []) async throws -> String {
         guard synthesisStates[type] != SynthesisStatus.generating else { 
             throw AppError.synthesis("Task already in progress", code: -1)
-        }
-
-        let existingCount = synthesisResults[type]?.count ?? 0
-        if existingCount >= maxSynthesisDocsPerType {
-            let errorMsg = L10n.AI.Synthesis.Error.limitReached
-            synthesisStates[type] = SynthesisStatus.error(errorMsg)
-            throw AppError.synthesis(errorMsg, code: -2)
         }
 
         withMutation(keyPath: \.synthesisStates) {

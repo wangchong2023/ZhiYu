@@ -46,11 +46,15 @@ struct PageDetailWrapper: View {
     @Environment(AppStore.self) var store
     
     var body: some View {
-        if let page = store.pages.first(where: { $0.id == id }) {
-            PageDetailView(page: page)
-        } else {
-            ContentUnavailableView(L10n.Common.Error.notFound, systemImage: "doc.questionmark")
+        Group {
+            if let page = store.pages.first(where: { $0.id == id }) {
+                PageDetailView(page: page)
+            } else {
+                ContentUnavailableView(L10n.Common.Error.notFound, systemImage: "doc.questionmark")
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.appBackground)
     }
 }
 

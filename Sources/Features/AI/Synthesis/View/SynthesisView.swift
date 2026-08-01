@@ -71,6 +71,7 @@ struct SynthesisView: View {
                 docToDelete: docToDelete,
                 batchDelete: batchDelete,
                 onConfigureAI: { router.isShowingAISettingsSheet = true },
+                synthesisStore: synthesisStore,
                 outputSheet: outputSheet
             )
             .onTaskStatusChange(taskCenter)
@@ -294,7 +295,11 @@ struct SynthesisView: View {
                         store: store,
                         onNavigate: { pageID in
                             showOutput = false
-                            router.navigateToPage(id: pageID)
+                            if store.pages.contains(where: { $0.id == pageID }) {
+                                router.navigateToPage(id: pageID)
+                            } else {
+                                ToastManager.shared.show(type: .info, message: L10n.AI.Synthesis.Error.noPages)
+                            }
                         }
                     )
                 }
@@ -377,6 +382,7 @@ extension View {
         docToDelete: SynthesisStore.SynthesisDocument?,
         batchDelete: @escaping () -> Void,
         onConfigureAI: @escaping () -> Void,
+        synthesisStore: SynthesisStore,
         outputSheet: some View
     ) -> some View {
         self
@@ -399,7 +405,8 @@ extension View {
                 docToRename: docToRename,
                 docToDelete: docToDelete,
                 batchDelete: batchDelete,
-                onConfigureAI: onConfigureAI
+                onConfigureAI: onConfigureAI,
+                synthesisStore: synthesisStore
             )
     }
 
@@ -414,7 +421,8 @@ extension View {
         docToRename: SynthesisStore.SynthesisDocument?,
         docToDelete: SynthesisStore.SynthesisDocument?,
         batchDelete: @escaping () -> Void,
-        onConfigureAI: @escaping () -> Void
+        onConfigureAI: @escaping () -> Void,
+        synthesisStore: SynthesisStore
     ) -> some View {
         self
             .alertNoPages(isPresented: showNoPagesAlert)
@@ -422,7 +430,7 @@ extension View {
             .alertRenameDoc(isPresented: showRenameDialog, name: newDocName, doc: docToRename)
             .alertLLMNotConfigured(isPresented: showLLMAlert, onConfigure: onConfigureAI)
             .confirmBatchDelete(isPresented: showBatchDeleteConfirm, action: batchDelete)
-            .alertDeleteDoc(isPresented: showDeleteDocConfirm, doc: docToDelete)
+            .alertDeleteDoc(isPresented: showDeleteDocConfirm, doc: docToDelete, store: synthesisStore)
     }
 
     /// alertLLMNotConfigured
@@ -489,11 +497,10 @@ extension View {
     /// alert删除Doc
     /// - Parameter isPresented: isPresented
     /// - Parameter doc: doc
-    func alertDeleteDoc(isPresented: Binding<Bool>, doc: SynthesisStore.SynthesisDocument?) -> some View {
+    func alertDeleteDoc(isPresented: Binding<Bool>, doc: SynthesisStore.SynthesisDocument?, store: SynthesisStore) -> some View {
         self.alert(L10n.Common.deleteConfirm, isPresented: isPresented) {
             Button(L10n.Common.delete, role: .destructive) {
                 if let doc = doc {
-                    @Inject var store: SynthesisStore
                     store.deleteSynthesisDoc(type: doc.type, docID: doc.id)
                     HapticFeedback.shared.trigger(.success)
                 }
