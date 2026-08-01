@@ -150,4 +150,83 @@ final class SynthesisProcessorTests: XCTestCase {
         let result = SynthesisProcessor.cleanMarkdown("")
         XCTAssertEqual(result, "")
     }
+
+    // MARK: - QuizProcessor Parse Tests
+
+    func testQuizProcessor_parseRawJSON() {
+        let json = """
+        {"title":"测试测验","questions":[{"id":1,"text":"1+1=?","options":["1","2","3","4"],"answer":1,"explanation":"基础数学"}]}
+        """
+        let model = QuizProcessor.parseToQuizModel(json)
+        XCTAssertNotNil(model)
+        XCTAssertEqual(model?.title, "测试测验")
+        XCTAssertEqual(model?.questions.count, 1)
+        XCTAssertEqual(model?.questions.first?.text, "1+1=?")
+    }
+
+    func testQuizProcessor_parseMarkdownQuiz() {
+        let markdown = """
+        # 知识评估
+
+        ## 1. 深度学习的基础单元是什么？
+        * A. 神经元
+        * B. 过滤器
+        * C. 卷积层
+        * D. 激活函数
+        **正确答案:** A
+        **解析:** 神经元是人工神经网络的核心构建单元。
+        """
+        let model = QuizProcessor.parseToQuizModel(markdown)
+        XCTAssertNotNil(model)
+        XCTAssertEqual(model?.title, "知识评估")
+        XCTAssertEqual(model?.questions.count, 1)
+        XCTAssertEqual(model?.questions.first?.options.count, 4)
+    }
+
+    func testQuizProcessor_parseInvalidInputReturnsNil() {
+        let invalidText = "这是一段普通随笔，没有任何题目"
+        let model = QuizProcessor.parseToQuizModel(invalidText)
+        XCTAssertNil(model)
+    }
+
+    func testQuizProcessor_emptyAndCorruptedInput() {
+        XCTAssertNil(QuizProcessor.parseToQuizModel(""))
+        XCTAssertNil(QuizProcessor.parseToQuizModel("{}"))
+        XCTAssertNil(QuizProcessor.parseToQuizModel("```json\n{}\n```"))
+    }
+
+    func testQuizProcessor_markdownMissingAnswerIndex_fallbackToFirstOption() {
+        let markdown = """
+        # 补全测试
+        1. 没有显示正确答案标记的题目
+        - 选项一
+        - 选项二
+        """
+        let model = QuizProcessor.parseToQuizModel(markdown)
+        XCTAssertNotNil(model)
+        XCTAssertEqual(model?.questions.first?.answer, 0)
+    }
+
+    // MARK: - Slides Splitting Tests
+
+    func testSlidesSplitting_multipleSections() {
+        let content = """
+        # 第一页
+        正文一
+        ---
+        # 第二页
+        正文二
+        ---
+        # 第三页
+        正文三
+        """
+        let slides = content.components(separatedBy: "\n---")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        
+        XCTAssertEqual(slides.count, 3)
+        XCTAssertTrue(slides[0].contains("第一页"))
+        XCTAssertTrue(slides[1].contains("第二页"))
+        XCTAssertTrue(slides[2].contains("第三页"))
+    }
 }
