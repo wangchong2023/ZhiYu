@@ -97,10 +97,11 @@ xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iO
 - **长期工具**：存放在 `Tools/` 目录下，按用途分入子目录（`Gatekeeper/`、`CI/`、`Lint/`、`Mock/`、`Plugins/`、`Utils/`）。
 - **文档维护**：新增或移动脚本后，必须同步更新 `Tools/README.md`。
 
-### 7. 数据库 Model 字段绑定规范
-- **禁止物理硬编码**：在编写数据库 Schema 迁移、建表与 SQL 数据处理时，严禁直接使用硬编码的裸物理表名或物理字段名字面量（例如 `"created_at"`、`t.column("created_at")`）。
-- **必须通过 Model 字段**：必须使用各数据库 Model 实体自带的 `databaseTableName` 静态常量及 `Columns` / `CodingKeys` 常量作为表名和字段的映射插值，以保证编译期类型安全与模型解耦。
-- **强校验网关**：项目已集成 `Tools/Gatekeeper/check_storage_constants.py` 守卫网关，检测到任何硬编码物理字段或未进行常量插值的硬编码 SQL 均会**阻断编译**。
+### 8. 单元测试编写核心原则（反覆盖率虚胖）
+- **测试目的**：测试用例的唯一目的是发现真实潜在缺陷，绝非满足覆盖率的静态数字。
+- **反模式拦截**：严禁编写无断言、常量断言或全依赖 Mock 绕过核心逻辑的“空测试”。
+- **变异与错误路径**：除 Happy Path 外，必须包含注入错误参数、依赖故障或临界越界的变异/反向断言。
+- **禁止静默 `try?`**：抛错路径必须使用 `XCTAssertThrowsError` 精准校验类型与 Message。
 
 ## 提交规范
 使用 Conventional Commits 格式：
