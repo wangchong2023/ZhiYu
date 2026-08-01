@@ -6,7 +6,7 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L0.5] 系统集成层
-//  核心职责：安全基础设施：Keychain 密钥管理、Secure Enclave 加密、HMAC 签名。
+//  核心职责：Prompt 注入防御：恶意指令检测拦截、Unicode 归一化、DLP 图片外链净化、上下文沙箱包裹。
 //
 import Foundation
 
@@ -21,18 +21,28 @@ final class PromptSanitizer: Sendable {
     // MARK: - 恶意注入检测正则列表
     
     /// 恶意 System Override 指令特征正则表达式库
+    /// - Note: VULN-011 修复：扩展同义词覆盖 + Unicode 归一化前置处理，降低绕过风险
     private let injectionPatterns: [String] = [
+        // 原始模式：ignore (all) previous/system/prior instructions/directives/prompts/rules
         #"(?i)ignore\s+(?:all\s+)?(?:previous|system|prior)\s+(?:instructions|directives|prompts|rules)"#,
+        // VULN-011 修复：新增同义词变体覆盖
+        #"(?i)disregard\s+(?:all\s+)?(?:previous|prior|system|above)\s+(?:instructions|directives|prompts|rules|context)"#,
+        #"(?i)forget\s+(?:all\s+)?(?:previous|prior|above)\s+(?:instructions|directives|context|rules)"#,
+        #"(?i)override\s+(?:the\s+)?(?:system|previous|prior)\s+(?:instructions|directives|rules|prompt)"#,
+        #"(?i)stop\s+following\s+(?:your\s+)?(?:instructions|directives|rules)"#,
+        #"(?i)you\s+(?:must\s+)?now\s+act\s+as"#,
+        #"(?i)pretend\s+(?:to\s+be|you\s+are)"#,
         #"(?i)system\s+override"#,
-        #"(?i)you\s+must\s+now\s+act\s+as"#,
-        #"(?i)stop\s+following\s+instructions"#,
-        #"(?i)bypass\s+the\s+safety"#,
+        #"(?i)bypass\s+(?:the\s+)?(?:safety|security|filter|restriction)(?:\s+check)?"#,
         #"(?i)ignore\s+the\s+context\s+sandbox"#,
-        #"(?i)forget\s+what\s+you\s+were\s+told"#,
-        // 🛡️ 新增防御特征：拦截试图将模型诱导至所谓的“开发者模式”以解除安全限制的攻击
+        #"(?i)jailbreak\s+mode"#,
         #"(?i)developer\s+mode"#,
-        // 🛡️ 新增防御特征：拦截任何尝试“绕过安全检查” (bypass security check) 语素的注入行为
-        #"(?i)bypass\s+(?:the\s+)?(?:safety|security)(?:\s+check)?"#
+        // 审查修复 LOW-3: 添加 (?i) 标志，大小写不敏感匹配
+        #"(?i)DAN\s+mode"#,
+        // 审查修复 LOW-2: 收紧数据外泄拦截 — 仅拦截向外部 URL 发送敏感数据的模式
+        // 避免误判合法的 "fetch http://example.com" 等正常 URL 处理指令
+        #"(?i)(?:send|post|upload|exfiltrate)\s+(?:your\s+)?(?:system\s+)?(?:prompt|instructions|rules|context|api[_\s-]?key|secret|token)(?:\s+to\s+)?(?:https?://|ftp://)"#,
+        #"(?i)reveal\s+(?:your\s+)?(?:system\s+)?(?:prompt|instructions|rules)"#
     ]
     
     // MARK: - API 接口
@@ -41,31 +51,40 @@ final class PromptSanitizer: Sendable {
     /// - Parameter prompt: 原始 Prompt 输入
     /// - Returns: 净化后的安全 Prompt。如果包含高风险注入，则抹除敏感注入部分并发出安全警告。
     func sanitize(_ prompt: String) -> String {
+        // 审查修复 LOW-1: Unicode NFKC 归一化仅用于正则匹配阶段
+        // 匹配命中后对原始 prompt（非归一化文本）做恶意片段替换，保留用户原始输入格式
+        let normalizedPrompt = prompt.precomposedStringWithCompatibilityMapping
         var sanitized = prompt
-        
+
         // 依次用正则匹配并拦截/替换有毒指令，确保安全
         for pattern in injectionPatterns {
             if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
-                let range = NSRange(location: 0, length: sanitized.utf16.count)
-                if regex.firstMatch(in: sanitized, options: [], range: range) != nil {
-                    // 记录安全警报日志
-                    Logger.shared.addLog(
-                        action: .error,
-                        target: "PromptSanitizer",
-                        details: L10n.Security.promptInjectionLog(pattern),
-                        module: "Security"
-                    )
-                    // 将恶意指令替换为无害的安全警告占位符
-                    sanitized = regex.stringByReplacingMatches(
-                        in: sanitized,
-                        options: [],
-                        range: range,
-                        withTemplate: L10n.Security.promptInjectionPlaceholder
-                    )
+                // 在归一化文本上匹配，定位恶意片段
+                let normalizedRange = NSRange(location: 0, length: normalizedPrompt.utf16.count)
+                guard regex.firstMatch(in: normalizedPrompt, options: [], range: normalizedRange) != nil else {
+                    continue
                 }
+
+                // 记录安全警报日志
+                Logger.shared.addLog(
+                    action: .error,
+                    target: "PromptSanitizer",
+                    details: L10n.Security.promptInjectionLog(pattern),
+                    module: "Security"
+                )
+
+                // 将恶意指令替换为无害的安全警告占位符
+                // 在原始 prompt 上替换匹配到的范围
+                let originalRange = NSRange(location: 0, length: sanitized.utf16.count)
+                sanitized = regex.stringByReplacingMatches(
+                    in: sanitized,
+                    options: [],
+                    range: originalRange,
+                    withTemplate: L10n.Security.promptInjectionPlaceholder
+                )
             }
         }
-        
+
         return sanitized
     }
     
