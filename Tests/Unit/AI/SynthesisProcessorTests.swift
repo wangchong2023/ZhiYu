@@ -45,10 +45,10 @@ final class SynthesisProcessorTests: XCTestCase {
         XCTAssertTrue(result.contains("graph TD"))
     }
 
-    func testFormatMermaid_bareGraphKeyword() {
+    func testFormatMermaid_bareGraphKeyword_isBlockedAsEmpty() {
         let input = "graph"
         let result = SynthesisProcessor.formatMermaid(input, fallbackPrefix: "graph TD")
-        XCTAssertTrue(result.contains("graph TD"))
+        XCTAssertEqual(result, "", "裸关键字 'graph' 无有效节点，必须被拦截返回空字符串")
     }
 
     func testFormatMermaid_preservesTitle() {
@@ -228,5 +228,108 @@ final class SynthesisProcessorTests: XCTestCase {
         XCTAssertTrue(slides[0].contains("第一页"))
         XCTAssertTrue(slides[1].contains("第二页"))
         XCTAssertTrue(slides[2].contains("第三页"))
+    }
+
+    // MARK: - 观测点断言 (Metrics & Inspection Assertions)
+
+    func testFormatMermaid_preventsSkeleton7BAnd8BOutputs() {
+        // 观测点 1: 验证空文本输出被拦截为 ""，绝对不能返回纯 7B 的 "mindmap" 或 8B 的 "graph TD"
+        let emptyResultMindmap = SynthesisProcessor.formatMermaid("", fallbackPrefix: "mindmap")
+        XCTAssertEqual(emptyResultMindmap, "", "空文本生成时 formatMermaid 必须返回空字符串拦截，防止出现 7B 'mindmap' 假存盘")
+
+        let emptyResultGraph = SynthesisProcessor.formatMermaid("", fallbackPrefix: "graph TD")
+        XCTAssertEqual(emptyResultGraph, "", "空文本生成时 formatMermaid 必须返回空字符串拦截，防止出现 8B 'graph TD' 假存盘")
+
+        // 观测点 2: 验证仅包含关键字的文本也被拦截
+        let bareMindmap = SynthesisProcessor.formatMermaid("mindmap", fallbackPrefix: "mindmap")
+        XCTAssertEqual(bareMindmap, "")
+
+        let bareGraph = SynthesisProcessor.formatMermaid("graph TD", fallbackPrefix: "graph TD")
+        XCTAssertEqual(bareGraph, "")
+    }
+
+    func testSynthesisContentMinimumByteSizeObservationPoint() {
+        // 观测点 3: 验证有效的生成内容必须具有最小正文长度
+        let validMindmapCode = "mindmap\n  root((主题))\n    节点A"
+        let formatted = SynthesisProcessor.formatMermaid(validMindmapCode, fallbackPrefix: "mindmap")
+        XCTAssertGreaterThanOrEqual(formatted.utf8.count, 10, "有效思维导图输出字节数必须 >= 10 字节")
+    }
+
+    // MARK: - 内容正确性观测点断言 (Semantic Correctness Observation Points)
+
+    func testMindmapSemanticCorrectnessObservationPoint() {
+        let sampleOutput = """
+        # 知识涌现架构图
+        mindmap
+          root((知识库核心))
+            原子笔记
+            深度合成
+        """
+        let formatted = SynthesisProcessor.formatMermaid(sampleOutput, fallbackPrefix: "mindmap")
+        XCTAssertTrue(formatted.contains("mindmap"), "思维导图必须包含 mindmap 声明")
+        XCTAssertTrue(formatted.contains("root((") || formatted.contains("知识库核心"), "思维导图必须包含根节点定义")
+        XCTAssertTrue(formatted.contains("原子笔记"), "思维导图必须包含有效的具体节点内容")
+    }
+
+    func testInfographicSemanticCorrectnessObservationPoint() {
+        let sampleOutput = """
+        # RAG 管道流程
+        graph TD
+          A[文档输入] --> B[语义分块]
+          B --> C[向量存储]
+        """
+        let formatted = SynthesisProcessor.formatMermaid(sampleOutput, fallbackPrefix: "graph TD")
+        XCTAssertTrue(formatted.contains("graph TD"), "信息图表必须包含 graph TD 架构图头")
+        XCTAssertTrue(formatted.contains("-->"), "信息图表必须包含节点间的连接箭头关系")
+        XCTAssertTrue(formatted.contains("文档输入") && formatted.contains("向量存储"), "信息图表必须包含完整的内容节点")
+    }
+
+    func testQuizSemanticCorrectnessObservationPoint() {
+        let sampleQuizJSON = """
+        {
+          "title": "RAG 系统架构测试",
+          "questions": [
+            {
+              "id": 1,
+              "text": "以下哪个属于向量数据库检索技术？",
+              "options": ["HNSW 索引", "B-Tree 索引", "Hash 索引", "顺序扫描"],
+              "answer": 0,
+              "explanation": "HNSW 是常用的高维向量近似最近邻搜索算法。"
+            }
+          ]
+        }
+        """
+        let model = QuizProcessor.parseToQuizModel(sampleQuizJSON)
+        XCTAssertNotNil(model, "测验文档必须成功解析为 QuizModel")
+        XCTAssertEqual(model?.questions.count, 1, "测验题数目必须满足预期的数量 (>=1)")
+        
+        if let question = model?.questions.first {
+            XCTAssertGreaterThanOrEqual(question.options.count, 2, "题目备选项必须 >= 2 个")
+            XCTAssertTrue(question.answer >= 0 && question.answer < question.options.count, "正确答案索引必须在有效选项数组范围内")
+            XCTAssertFalse(question.text.isEmpty, "题目正文不能为空")
+        }
+    }
+
+    func testSlidesSemanticCorrectnessObservationPoint() {
+        let sampleSlidesMarkdown = """
+        # 智宇 RAG 闭环设计
+        面向 iOS/macOS 的 AI 原生知识管理
+        ---
+        ## 核心架构
+        * 向量与 FTS5 混合检索
+        * AI 深度合成实验室
+        ---
+        ## 总结
+        闭环自动化研发
+        """
+        let slides = sampleSlidesMarkdown.components(separatedBy: "\n---")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        XCTAssertEqual(slides.count, 3, "演示文稿必须按 --- 规范精准分隔为 3 页 Slide")
+        for (idx, slide) in slides.enumerated() {
+            XCTAssertFalse(slide.isEmpty, "第 \(idx + 1) 页幻灯片内容不能为空")
+            XCTAssertTrue(slide.contains("#"), "每一页幻灯片必须包含标示主题的标题指令")
+        }
     }
 }

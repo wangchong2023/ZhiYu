@@ -143,8 +143,23 @@ public final class SynthesisStore {
     /// 保存SynthesisResult
     /// - Parameter type: type
     /// - Parameter content: content
+    /// 保存SynthesisResult
+    /// - Parameter type: type
+    /// - Parameter content: content
     public func saveSynthesisResult(type: SynthesisType, content: String, sourcePageIDs: [UUID] = []) {
         let cleanedContent = Self.cleanMarkdown(content)
+        let trimmed = cleanedContent.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 🛡️ 校验生成内容有效性：拒绝 0 字节、纯骨架关键字或小于 10 字节的无效填充
+        guard !trimmed.isEmpty,
+              trimmed != "mindmap",
+              trimmed != "graph TD",
+              trimmed != "graph",
+              trimmed.utf8.count >= 10 else {
+            Logger.shared.addLog(action: .ingest, target: type.title, details: "Synthesis result invalid or empty (size: \(trimmed.utf8.count) B)")
+            return
+        }
+
         let title = extractTitle(from: cleanedContent, type: type)
         let name = "\(title) - \(formatDateFull(Date()))"
         let size = cleanedContent.utf8.count
@@ -201,6 +216,12 @@ public final class SynthesisStore {
                 content = try await AISynthesisService.shared.generateInfographic(content: augmentedContent)
             case .expansion:
                 content = try await AISynthesisService.shared.expandKnowledge(content: augmentedContent)
+            }
+
+            let cleaned = Self.cleanMarkdown(content).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !cleaned.isEmpty, cleaned != "mindmap", cleaned != "graph TD", cleaned.utf8.count >= 10 else {
+                let emptyError = L10n.AI.Synthesis.Error.limitReached
+                throw AppError.synthesis(emptyError, code: -3)
             }
 
             self.saveSynthesisResult(type: type, content: content, sourcePageIDs: sourcePageIDs)

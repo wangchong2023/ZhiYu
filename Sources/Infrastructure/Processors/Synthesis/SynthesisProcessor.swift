@@ -17,9 +17,13 @@ enum SynthesisProcessor {
     /// - Parameters:
     ///   - text: 包含 Mermaid 代码的原始文本
     ///   - fallbackPrefix: 当无法自动识别图表类型时的默认前缀
-    /// - Returns: 标准化的 Mermaid 代码块
+    /// - Returns: 标准化的 Mermaid 代码块，若文本为空或无效则返回空字符串
     static func formatMermaid(_ text: String, fallbackPrefix: String) -> String {
         let cleaned = Self.cleanMermaidDelimiters(text)
+        guard !cleaned.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return ""
+        }
+
         let title = Self.extractMermaidTitle(from: cleaned).title
         var code = Self.extractMermaidTitle(from: cleaned).code
         let foundMatch = Self.findMermaidPattern(in: code, matchedCode: &code)
@@ -27,6 +31,9 @@ enum SynthesisProcessor {
         if foundMatch {
             code = Self.fixMermaidKeywordSpacing(code)
         } else {
+            if code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return ""
+            }
             code = "\(fallbackPrefix)\n  " + code.replacingOccurrences(of: "\n", with: "\n  ")
         }
 
@@ -35,6 +42,12 @@ enum SynthesisProcessor {
         }
 
         code = sanitizeMermaidSyntax(code)
+        let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // 若最终代码仅剩关键字（如 "mindmap" 或 "graph TD"），视为空无效图表
+        if trimmedCode == "mindmap" || trimmedCode == "graph TD" || trimmedCode == "graph" {
+            return ""
+        }
 
         if let title = title {
             return "\(title)\n\n\(code)"

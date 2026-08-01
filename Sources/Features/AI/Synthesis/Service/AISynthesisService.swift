@@ -78,7 +78,13 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func generatePresentation(content: String) async throws -> String {
         let prompt = PromptService.shared.slidesPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await llm.generate(prompt: prompt, systemPrompt: "presentation_expert_prompt")
+        let systemPrompt = """
+        You are a presentation design expert.
+        Generate structured Markdown slides.
+        Separate slides with '---' on a new line.
+        Each slide should start with a title ('# ' or '## ') followed by concise bullet points or key insights.
+        """
+        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
@@ -98,7 +104,13 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         let jsonFormat = """
         {"title":"\(quizTitle)","questions":[{"id":0,"text":"\(questionLabel)?","options":["\(optionLabel) A","\(optionLabel) B","\(optionLabel) C","\(optionLabel) D"],"answer":0,"explanation":"\(explanationLabel)"}]}
         """
-        let result = try await llm.generate(prompt: prompt, systemPrompt: "quiz_generator_prompt_\(jsonFormat)")
+        let systemPrompt = """
+        You are a quiz generation expert.
+        Create a 3-5 question multiple-choice quiz based on the user's content.
+        Output ONLY valid JSON matching this schema:
+        \(jsonFormat)
+        """
+        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
 
         // 使用专用的 QuizProcessor 进行处理
         if QuizProcessor.canDecodeAsQuizModel(result) {
@@ -131,7 +143,11 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func generateReport(content: String) async throws -> String {
         let prompt = PromptService.shared.reportPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await llm.generate(prompt: prompt, systemPrompt: "report_writer_prompt")
+        let systemPrompt = """
+        You are a senior analyst and technical report writer.
+        Structure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion.
+        """
+        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
