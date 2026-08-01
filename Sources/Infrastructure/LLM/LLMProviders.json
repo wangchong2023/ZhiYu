@@ -4,7 +4,7 @@
         "nameKey": "llm.provider.deepSeek",
         "baseURL": "https://api.deepseek.com/v1",
         "defaultModel": "deepseek-v4-pro",
-        "suggestedModels": ["deepseek-v4-pro", "deepseek-v4-lite"],
+        "suggestedModels": ["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-chat"],
         "apiKeyPrefix": "sk-",
         "apiKeyMinLength": 30,
         "apiKeyPlaceholder": "sk-...",

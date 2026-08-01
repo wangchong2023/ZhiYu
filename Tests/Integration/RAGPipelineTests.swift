@@ -95,7 +95,7 @@ final class RAGPipelineTests: XCTestCase {
         )
 
         // 发起对话请求：即使向量服务返回空或异常，RAG 管道仍能成功输出降级回复
-        let response = try await store.ragOrchestrator.chat(
+        let response = try await store.llmService.chat(
             query: "测试降级",
             history: [],
             pages: store.pages

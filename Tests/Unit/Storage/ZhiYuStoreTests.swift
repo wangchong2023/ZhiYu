@@ -183,18 +183,18 @@ final class SQLiteStoreConcurrencyTests: XCTestCase {
             for i in 1...20 {
                 group.addTask {
                     let page = KnowledgePage(
-                        id: "concurrent_page_\(i)",
+                        id: UUID(),
                         title: "并发测试标题 \(i)",
                         content: "这是并发写入的测试内容段落 \(i)",
                         tags: ["TestTag"],
                         updatedAt: Date()
                     )
-                    await store.savePage(page)
+                    await store.syncRemotePage(page)
                 }
             }
         }
 
-        let allPages = store.pages
+        let allPages = await store.pages
         XCTAssertGreaterThanOrEqual(allPages.count, 20, "高并发写入后全量读取页面数应大于等于 20")
     }
 
