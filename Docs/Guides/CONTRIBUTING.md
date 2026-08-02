@@ -64,7 +64,7 @@ swiftlint --strict
 
 ## 4. 分支管理与 Git 工作流 (Git Branching & Merge Policy)
 
-智宇全面遵循与 `ZhiYu-Backend` 保持 100% 一致的 Git 分支合入与卡控管理办法：
+智宇全面遵循与 `ZhiYu-Backend` 保持 100% 一致的 Git 分支合入与卡控管理办法，完整规范见 [`CI_CD_WORKFLOW.md §3`](../Architecture/CI_CD_WORKFLOW.md#3-分支策略与-mr-合流强卡控-git-branching--branch-protection-rules)：
 
 ### 4.1 分支命名规范
 * `main`: **绝对受控与稳定的生产主分支（严禁直接 `git push`）**。

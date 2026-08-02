@@ -57,10 +57,81 @@ swift test --package-path Packages/ZhiYuFeatures
 | | `build-watchos` | `main` / `develop` / `release/*` push | 构建 watchOS 模拟器目标 (`ZhiYuWatch`) |
 | **test** | `test-and-coverage` | `main` / `develop` / `release/*` push | 运行全量单元测试与覆盖率熔断门禁（必须大于 85%） |
 
+---
+
+## 3. 分支策略与 MR 合流强卡控 (Git Branching & Branch Protection Rules)
+
+智宇客户端与 `ZhiYu-Backend` 全面统一 Git 分支生命周期与 MR 合入规则。
+
+### 3.1 分支命名与生命周期规范
+
+| 分支类型 | 前缀格式 | 适用场景 | 对应 Git 提交前缀 | CI 触发策略 |
+|:---|:---|:---|:---|:---|
+| **主分支** | `main` | 绝对稳定且随时可编译发布的生产基线 | - | 触发全平台 build + test + artifact |
+| **特性分支** | `feature/<name>` | 新功能组件开发 (例: `feature/voice-note`) | `feat:` | 触发静态扫描 + 极速 SPM 单测 |
+| **修复分支** | `fix/<issue-id>` | 缺陷及 Crash 修复 (例: `fix/concurrency-warning`) | `fix:` | 触发静态扫描 + 极速 SPM 单测 |
+| **重构分支** | `refactor/<name>` | 架构/模板重构 (例: `refactor/project-template`) | `refactor:` | 触发静态扫描 + 极速 SPM 单测 |
+| **文档分支** | `docs/<name>` | 纯文档及注释更新 (例: `docs/l10n-guide`) | `docs:` | 触发文档关联审计 |
+| **测试分支** | `test/<name>` | 测试用例或 CI 门禁调试 (例: `test/gatekeeper`) | `test:` | 触发静态扫描 |
+| **紧急修复** | `hotfix/<issue-id>` | 生产紧急 Hotfix | `fix:` / `hotfix:` | 触发全量测试 |
+| **发布分支** | `release/v<ver>` | 版本发布筹备 (例: `release/v2.3.0`) | `chore:` | 触发全平台发布 |
+
+### 3.2 MR 合流标准与四重硬卡控
+
+```
+┌───────────────────────┐         git push          ┌───────────────────────┐
+│ 开发者在特性分支开发  │ ───────────────────────→  │ 发起 Merge Request    │
+│ feature/voice-note    │                           │ (MR → main)           │
+└───────────────────────┘                           └───────────┬───────────┘
+                                                                │
+                                                                ▼
+                                                    ┌───────────────────────┐
+                                                    │ GitLab CI 流水线校验  │
+                                                    │ - Gatekeeper 21 项    │
+                                                    │ - 单元测试全绿        │
+                                                    │ - 覆盖率 > 85%        │
+                                                    └───────────┬───────────┘
+                                                                │ (流水线全绿)
+                                                                ▼
+                                                    ┌───────────────────────┐
+                                                    │ Maintainer 审查与批准│
+                                                    └───────────┬───────────┘
+                                                                │ (Approve)
+                                                                ▼
+                                                    ┌───────────────────────┐
+                                                    │ 合入 main 主分支      │
+                                                    └───────────────────────┘
+```
+
+1. **🚫 禁止直接 Push `main` (`push_access_level: 0 / No one`)**：主分支禁用 `git push main`，任何修改必须通过 MR 流程。
+2. **🚦 流水线全绿方可合并 (`only_allow_merge_if_pipeline_succeeds: true`)**：未通过静态检查或单元测试，Merge 按钮置灰封锁。
+3. **👥 Maintainer 审核制 (`merge_access_level: 40 / Maintainers`)**：仅 Maintainer 角色允许点击 Merge 按钮。
+4. **🔒 禁用 Force Push (`allow_force_push: false`)**：分支历史禁止强覆盖。
+
+### 3.3 分支保护自动化部署 (API 指引)
+
+```bash
+# 1. 配置 MR 流水线强卡控 (GitLab CE)
+curl -X PUT "http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu" \
+  -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"only_allow_merge_if_pipeline_succeeds": true}'
+
+# 2. 配置 main 主分支保护
+curl -X POST "http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu/protected_branches" \
+  -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "main",
+    "push_access_level": 0,
+    "merge_access_level": 40,
+    "allow_force_push": false
+  }'
+```
 
 ---
 
-## 2.5. 四层纵深防御矩阵 (Defense-in-Depth)
+## 4. 四层纵深防御矩阵 (Defense-in-Depth)
 
 | 检查项 | 脚本/工具 | Layer 1: Pre-commit | Layer 2: Build Phase | Layer 3: Woodpecker CI | Layer 4: GitHub Actions |
 |--------|-----------|:---:|:---:|:---:|:---:|

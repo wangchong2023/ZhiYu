@@ -30,8 +30,7 @@
 | `Docs/Testing/TEST_CASES.md` | 各模块测试用例 |
 | `Docs/Testing/UNIT_TEST_GUIDE.md` | 单元测试编写指南 |
 | `Docs/Testing/SYSTEM_TEST_PLAN.md` | 系统测试计划 |
-| `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署 |
-| `Docs/Architecture/GIT_BRANCHING_POLICY.md` | 🆕 Git 分支管理与 MR 合入卡控规范（对齐 ZhiYu-Backend） |
+| `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署、Git 分支管理与 MR 卡控规范（对齐 ZhiYu-Backend） |
 | `Docs/Design/SECURITY_THREAT_MODEL.md` | 安全威胁模型 |
 | `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Guides/CONTRIBUTING.md` | 贡献指南 |
