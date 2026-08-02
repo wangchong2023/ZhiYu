@@ -81,6 +81,7 @@
 		079D3F008B0EF5482410257E /* FileArchiverProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA2420EB77613B5AE3641F /* FileArchiverProtocol.swift */; };
 		07C754855A73285795BE4AB1 /* ModuleRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27225A732EA9DEE5493E0E41 /* ModuleRegistrar.swift */; };
 		0804C0ABC060D68145A33EAB /* CollaborationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7C238B00D09E936040D6F /* CollaborationModels.swift */; };
+		080DF18A56E064B35F0C67A4 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 38BC5BEF2B997B5786EA472D /* GRDB */; };
 		080F0E8D630529BF4FC93ABE /* AppLayoutComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A536E224D4E199BF9F85012 /* AppLayoutComponents.swift */; };
 		08270978B6483B40DA69C8D1 /* TaskCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4511C699EAAC3B47CC6EBA4 /* TaskCenterView.swift */; };
 		084C3906754D668BE79C9FEB /* SmartRoutingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89CA029679B8726086B78E85 /* SmartRoutingView.swift */; };
@@ -866,7 +867,7 @@
 		62ECCC169216CD970C511073 /* OCRScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE2DE3891BED9621DA0FF8F6 /* OCRScanView.swift */; };
 		62FAA3D3EE6284EE800A6023 /* FloatingContextCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78A54CB4ED37F010F1F7AFF1 /* FloatingContextCapsule.swift */; };
 		630C7F6CFAA51610A001FD46 /* L10n+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 894214A0A9869DEF7A51D46F /* L10n+Chat.swift */; };
-		631B6D061C9A731F73B2EC05 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 38BC5BEF2B997B5786EA472D /* GRDB */; };
+		631B6D061C9A731F73B2EC05 /* UFPCore in Frameworks */ = {isa = PBXBuildFile; productRef = 452EBBA1FC020F84E7C84001 /* UFPCore */; };
 		631BE8F5CFF38AEAD16A3A52 /* IconPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57A5760D19F7F1927ED221B /* IconPickerView.swift */; };
 		635BEAD497A05C13C08C9C47 /* PluginDetailSupportViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38262226B66319C1A2C4F1 /* PluginDetailSupportViews.swift */; };
 		63CE90F1B0B216E3101BE097 /* DesignSystem+Grid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FF5594472265452B8B07B2 /* DesignSystem+Grid.swift */; };
@@ -1720,6 +1721,7 @@
 		C2A418EBD0FF345FAB436329 /* GuideStepRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4CE6B0A2892569834C0D8D7 /* GuideStepRow.swift */; };
 		C2B8086873C900BB2DF9EE48 /* marked.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 600F9630B189F8BAC640CD0E /* marked.min.js */; };
 		C2CB8CB2432E44A7247ADF5A /* PluginRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA6B888313581CB16E217BC /* PluginRegistry.swift */; };
+		C2D7B10F33E8C2603C61B42F /* UFPStorage in Frameworks */ = {isa = PBXBuildFile; productRef = A3F17215B7AFAE7677CDF0F3 /* UFPStorage */; };
 		C2DB1527A0ECCD39A7042715 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F967ED20B869F1E7C5ECC4 /* AuthService.swift */; };
 		C2DBA5B8A6803484FD865F6B /* DynamicComplianceManager+Patch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB1EB638D518882AA2A76C3 /* DynamicComplianceManager+Patch.swift */; };
 		C2FF26C029FC574E36338F22 /* AdaptiveTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E68FBF679D7A4A587CAF4D76 /* AdaptiveTextEditor.swift */; };
@@ -3351,7 +3353,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				631B6D061C9A731F73B2EC05 /* GRDB in Frameworks */,
+				631B6D061C9A731F73B2EC05 /* UFPCore in Frameworks */,
+				C2D7B10F33E8C2603C61B42F /* UFPStorage in Frameworks */,
+				080DF18A56E064B35F0C67A4 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6534,6 +6538,8 @@
 			);
 			name = ZhiYuWidgets;
 			packageProductDependencies = (
+				452EBBA1FC020F84E7C84001 /* UFPCore */,
+				A3F17215B7AFAE7677CDF0F3 /* UFPStorage */,
 				38BC5BEF2B997B5786EA472D /* GRDB */,
 			);
 			productName = ZhiYuWidgets;
@@ -10111,6 +10117,10 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Markdown;
 		};
+		452EBBA1FC020F84E7C84001 /* UFPCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UFPCore;
+		};
 		4F3F5683C09430C4842B4968 /* ZhiYuFeatures */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ZhiYuFeatures;
@@ -10170,6 +10180,10 @@
 		95D20DBAEE53222522783650 /* ZhiYuAICore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ZhiYuAICore;
+		};
+		A3F17215B7AFAE7677CDF0F3 /* UFPStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UFPStorage;
 		};
 		AB5BB3386988C0037E0ADCF4 /* UFPCore */ = {
 			isa = XCSwiftPackageProductDependency;
