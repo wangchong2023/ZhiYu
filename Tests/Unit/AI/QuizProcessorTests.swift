@@ -63,7 +63,7 @@ final class QuizProcessorTests: XCTestCase {
         let json = """
         {"title": "T", "questions": []}
         """
-        XCTAssertTrue(QuizProcessor.canDecodeAsQuizModel(json))
+        XCTAssertFalse(QuizProcessor.canDecodeAsQuizModel(json), "空题目列表的 JSON 不能判定为有效的 Quiz 测验文档")
     }
 
     // MARK: - convertJSONToMarkdown

@@ -39,20 +39,23 @@ final class LLMConfigStoreTests: XCTestCase {
         
         let allProviders: [LLMProvider] = [.deepSeek, .zhipu, .minimax, .qwen, .kimi, .siliconflow, .custom]
         
-        // 步骤 1：为每一个 Provider 写入独一无二的配置参数
+        // 步骤 1：为每一个 Provider 写入独一无二的配置参数（模型选择官方 suggestedModels 内部合法模型）
         for provider in allProviders {
             store.provider = provider
             store.apiKey = "key_\(provider.rawValue)"
             store.baseURL = "https://custom.\(provider.rawValue).com/v1"
-            store.model = "model-\(provider.rawValue)"
+            store.model = provider.suggestedModels.first ?? "custom-model-\(provider.rawValue)"
         }
         
         // 步骤 2：轮询切换 provider，验证各自独立的配置 100% 精准恢复与隔离，无交叉串号
+        // 既有设计规范：官方提供商 baseURL 为固定官方入口，只有 custom 允许自定义 baseURL
         for provider in allProviders {
             store.provider = provider
             XCTAssertEqual(store.apiKey, "key_\(provider.rawValue)", "\(provider.displayName) 专属 API Key 还原失败")
-            XCTAssertEqual(store.baseURL, "https://custom.\(provider.rawValue).com/v1", "\(provider.displayName) 专属 BaseURL 还原失败")
-            XCTAssertEqual(store.model, "model-\(provider.rawValue)", "\(provider.displayName) 专属 Model 还原失败")
+            let expectedBaseURL = (provider == .custom) ? "https://custom.custom.com/v1" : provider.defaultBaseURL
+            XCTAssertEqual(store.baseURL, expectedBaseURL, "\(provider.displayName) 专属 BaseURL 还原失败")
+            let expectedModel = provider.suggestedModels.first ?? "custom-model-\(provider.rawValue)"
+            XCTAssertEqual(store.model, expectedModel, "\(provider.displayName) 专属 Model 还原失败")
         }
     }
 

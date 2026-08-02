@@ -149,7 +149,7 @@ private struct PDFLibraryEmptyView: View {
             Text(L10n.Ingest.PDF.libraryHint)
         } actions: {
             AppPrimaryButton(title: L10n.Ingest.PDF.add, action: onAdd)
-                .frame(maxWidth: 200)
+                .frame(maxWidth: DesignSystem.Gallery.modalMaxWidth)
         }
     }
 }

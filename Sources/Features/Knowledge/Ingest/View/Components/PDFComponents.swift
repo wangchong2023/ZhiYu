@@ -247,15 +247,15 @@ struct PDFDocumentRow: View {
                 .font(.caption)
                 .foregroundStyle(.appSecondary)
         }
-        .padding(.vertical, Spacing.atomic * 2) // 4
+        .padding(.vertical, Spacing.tiny) // 4
     }
     
     private var pdfIcon: some View {
         RoundedRectangle(cornerRadius: Spacing.microRadius)
-            .fill(Color.appAccent.opacity(Colors.Opacity.glassOpacity * 1.5)) // 0.15
-            .frame(width: Spacing.Metrics.heroValueSize * 1.85, height: Spacing.Metrics.heroValueSize * 2.45) // 48, 64
+            .fill(Color.appAccent.opacity(DesignSystem.Opacity.glass)) // 0.15
+            .frame(width: Spacing.iconDisplay, height: Spacing.iconDisplay + Spacing.standardPadding) // 48, 64
             .overlay(
-                VStack(spacing: Spacing.atomic * 2) { // 4
+                VStack(spacing: Spacing.tiny) { // 4
                     Image(systemName: DesignSystem.Icons.docRichtext)
                         .font(.title3)
                         .foregroundStyle(.appAccent)

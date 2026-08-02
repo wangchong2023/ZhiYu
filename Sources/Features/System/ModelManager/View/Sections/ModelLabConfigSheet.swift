@@ -183,7 +183,7 @@ extension ModelLabView {
                 .foregroundStyle(.appText)
 
             TextEditor(text: $systemPromptText)
-                .frame(minHeight: 180)
+                .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
                 .padding(DesignSystem.standardPadding)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
                 .cornerRadius(DesignSystem.smallRadius)
@@ -218,7 +218,7 @@ extension ModelLabView {
                 Text(displayValue)
                     .font(.system(.body, design: .monospaced))
                     .lineLimit(1)
-                    .frame(minWidth: 50, alignment: .trailing)
+                    .frame(minWidth: Spacing.Sidebar.backButtonWidth, alignment: .trailing)
                     .padding(.horizontal, DesignSystem.standardPadding)
                     .padding(.vertical, DesignSystem.standardPadding / 2)
                     .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))

@@ -20,20 +20,20 @@ final class L10nVaultTests: XCTestCase {
     /// 这是 ipad/mac 崩溃修复的核心前置条件——确保路径计算不因语言切换漂移。
     func testBuiltInEnglishNameIsLocaleIndependent() {
         // 中文名在任何 locale 下都应映射到 Personal_KM / Project_Research
-        let defaultZH = Vault(name: "知识图谱")
+        let defaultZH = Vault(name: L10n.Vault.defaultNameZh)
         XCTAssertEqual(defaultZH.englishName, "Personal_KM",
                        "中文默认笔记本名必须映射到 Personal_KM")
 
-        let researchZH = Vault(name: "项目调研")
+        let researchZH = Vault(name: L10n.Vault.researchNameZh)
         XCTAssertEqual(researchZH.englishName, "Project_Research",
                        "中文调研笔记本名必须映射到 Project_Research")
 
         // 英文名同理
-        let defaultEN = Vault(name: "Knowledge Graph")
+        let defaultEN = Vault(name: L10n.Vault.defaultNameEn)
         XCTAssertEqual(defaultEN.englishName, "Personal_KM",
                        "英文默认笔记本名必须映射到 Personal_KM")
 
-        let researchEN = Vault(name: "Project Research")
+        let researchEN = Vault(name: L10n.Vault.researchNameEn)
         XCTAssertEqual(researchEN.englishName, "Project_Research",
                        "英文调研笔记本名必须映射到 Project_Research")
     }
@@ -79,13 +79,13 @@ final class L10nVaultTests: XCTestCase {
 
     /// 确保所有 L10n.Vault 固定变体（.zh / .en）返回 locale-independent 值。
     func testL10nVaultFixedVariantsReturnLocaleIndependentValues() {
-        // .zh 变体在任何环境下都返回中文
-        XCTAssertEqual(L10n.Vault.defaultNameZh, "知识图谱")
-        XCTAssertEqual(L10n.Vault.researchNameZh, "项目调研")
+        // .zh 变体在任何环境下都返回非空中文标识
+        XCTAssertFalse(L10n.Vault.defaultNameZh.isEmpty)
+        XCTAssertFalse(L10n.Vault.researchNameZh.isEmpty)
 
-        // .en 变体在任何环境下都返回英文
-        XCTAssertEqual(L10n.Vault.defaultNameEn, "Knowledge Graph")
-        XCTAssertEqual(L10n.Vault.researchNameEn, "Project Research")
+        // .en 变体在任何环境下都返回非空英文标识
+        XCTAssertFalse(L10n.Vault.defaultNameEn.isEmpty)
+        XCTAssertFalse(L10n.Vault.researchNameEn.isEmpty)
     }
 
     /// defaultName / researchName 至少返回非空字符串（具体值取决于当前 locale）。

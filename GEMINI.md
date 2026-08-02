@@ -103,6 +103,9 @@ xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iO
 - **变异与错误路径**：除 Happy Path 外，必须包含注入错误参数、依赖故障或临界越界的变异/反向断言。
 - **禁止静默 `try?`**：抛错路径必须使用 `XCTAssertThrowsError` 精准校验类型与 Message。
 
+### 9. 开源选型优先原则 (Open-Source First Policy)
+- **强约束规则**：如果实现 1 个功能在业界存在开源成熟、稳定的开源库，**必须优先通知 USER 进行选型对比与决策**，严禁擅自直接造轮子自研写代码。
+
 ## 提交规范
 使用 Conventional Commits 格式：
 - `feat:` (新功能), `fix:` (缺陷修复), `docs:` (文档), `refactor:` (重构), `perf:` (优化)。

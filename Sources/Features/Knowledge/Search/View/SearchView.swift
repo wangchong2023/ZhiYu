@@ -395,10 +395,10 @@ struct SearchBadgeView: View {
     let color: Color
     var body: some View {
         Text(label)
-            .font(.system(size: DesignSystem.microFontSize - DesignSystem.atomic, weight: .bold)) // 9
-            .padding(.horizontal, DesignSystem.tiny + DesignSystem.atomic) // 6
-            .padding(.vertical, DesignSystem.atomic * 2) // 2
-            .background(color.opacity(DesignSystem.glassOpacity / 1.5)) // 0.1
+            .font(.caption2.weight(.bold))
+            .padding(.horizontal, Spacing.Chip.horizontalPadding) // 6
+            .padding(.vertical, Spacing.Chip.verticalPadding) // 3
+            .background(color.opacity(DesignSystem.Opacity.subtle)) // 0.12
             .foregroundStyle(color)
             .clipShape(Capsule())
     }

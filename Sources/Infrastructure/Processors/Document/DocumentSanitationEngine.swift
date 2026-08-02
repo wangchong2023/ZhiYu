@@ -1,0 +1,100 @@
+//
+//  DocumentSanitationEngine.swift
+//  ZhiYu
+//
+//  Created by Antigravity on 2026/08/01.
+//  Copyright © 2026 WangChong. All rights reserved.
+//
+//  系统层级：[L1] 基础设施层
+//  核心职责：多模态导入 (Ingest) 与 AI 知识合成 (Synthesis) 共用的文档规范化清洗引擎。
+//
+import Foundation
+
+/// 全局文档规范化清洗引擎
+public final class DocumentSanitationEngine: DocumentSanitizerProtocol {
+    public static let shared = DocumentSanitationEngine()
+
+    private init() {}
+
+    public func sanitize(_ rawText: String, options: SanitizerOptions = .defaultSuite) -> String {
+        guard !rawText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return ""
+        }
+
+        var result = rawText
+
+        // 1. 自动剥离前导对话废话（如 "Here is the summary:"）
+        if options.contains(.stripLeadingChatter) {
+            result = stripLeadingChatter(result)
+        }
+
+        // 2. 剥离 HTML 冗余标签与控制字符
+        if options.contains(.stripHTMLNoise) {
+            result = stripHTMLNoise(result)
+        }
+
+        // 3. 合并 OCR 不自然换行
+        if options.contains(.mergeOCRLineBreaks) {
+            result = mergeOCRLineBreaks(result)
+        }
+
+        // 4. 应用 AST 节点级闭合与语法清理
+        result = SwiftMarkdownASTCleaner.cleanAST(result)
+
+        // 5. 应用 Mermaid 节点状态机修复
+        if options.contains(.sanitizeMermaid) {
+            result = MermaidSanitizer.sanitize(result)
+        }
+
+        // 6. 应用盘古中英文混排空格优化
+        if options.contains(.applyPanguSpacing) {
+            result = PanguFormatter.spacing(result)
+        }
+
+        return result
+    }
+
+    private func stripHTMLNoise(_ text: String) -> String {
+        var clean = text
+        clean = clean.replacingOccurrences(of: "<script[^>]*>[\\s\\S]*?</script>", with: "", options: .regularExpression)
+        clean = clean.replacingOccurrences(of: "<style[^>]*>[\\s\\S]*?</style>", with: "", options: .regularExpression)
+        clean = clean.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        return clean
+    }
+
+    private func mergeOCRLineBreaks(_ text: String) -> String {
+        let lines = text.components(separatedBy: .newlines)
+        var merged: [String] = []
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty {
+                merged.append("")
+                continue
+            }
+            if trimmed.hasPrefix("#") || trimmed.hasPrefix("-") || trimmed.hasPrefix("*") || trimmed.hasPrefix(">") || trimmed.hasPrefix("```") {
+                merged.append(line)
+                continue
+            }
+            if let last = merged.last, !last.isEmpty, !last.hasPrefix("#"), !last.hasPrefix("-"), !last.hasPrefix("*"), !last.hasPrefix(">"), !last.hasPrefix("```") {
+                merged[merged.count - 1] = last + " " + trimmed
+            } else {
+                merged.append(line)
+            }
+        }
+        return merged.joined(separator: "\n")
+    }
+
+    private func stripLeadingChatter(_ text: String) -> String {
+        let lines = text.components(separatedBy: .newlines)
+        guard let firstLine = lines.first?.trimmingCharacters(in: .whitespaces) else { return text }
+
+        let lower = firstLine.lowercased()
+        for prefix in L10n.AI.Synthesis.Fallback.chatterPrefixes {
+            if lower.hasPrefix(prefix.lowercased()) && firstLine.contains(":") {
+                return lines.dropFirst().joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return text
+    }
+}

@@ -37,7 +37,7 @@ public struct StatCard: View {
             ZStack {
                 Circle()
                     .fill(color.opacity(DesignSystem.glassOpacity * 1.2))
-                    .frame(width: DesignSystem.Metrics.largeIconBoxSize * 1.2, height: DesignSystem.Metrics.largeIconBoxSize * 1.2)
+                    .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
 
                 Image(systemName: icon)
                     .font(.title2.weight(.medium))

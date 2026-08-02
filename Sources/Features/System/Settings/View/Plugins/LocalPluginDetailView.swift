@@ -81,7 +81,7 @@ struct LocalPluginDetailView: View {
                         HStack(spacing: DesignSystem.small) {
                             Text("v\(manifest.version)")
                                 .font(.caption2.weight(.semibold))
-                                .padding(.horizontal, DesignSystem.small).padding(.vertical, DesignSystem.atomic * 2)
+                                .padding(.horizontal, DesignSystem.small).padding(.vertical, DesignSystem.tiny)
                                 .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle)).foregroundStyle(.appAccent)
                                 .clipShape(Capsule())
 

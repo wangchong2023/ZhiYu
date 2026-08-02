@@ -54,24 +54,15 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func summarize(content: String) async throws -> String {
         let prompt = PromptService.shared.summaryPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: "")
+        let systemPrompt = L10n.AI.Prompt.System.summarize
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
     /// 生成思维导图 (Mermaid)
     func generateMindMap(content: String) async throws -> String {
         let prompt = PromptService.shared.mindmapPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = """
-        You are a senior Knowledge Architect and Mind Map Expert.
-        Analyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.
-        Rules:
-        1. Always start with '# <Document Core Title>'.
-        2. Then output standard Mermaid code strictly starting with 'mindmap'.
-        3. Root node MUST be 'root((<Document Title>))'.
-        4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).
-        5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).
-        6. Do NOT use markdown code fences (```).
-        """
+        let systemPrompt = L10n.AI.Prompt.System.mindmap
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: "mindmap")
         if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
@@ -85,7 +76,8 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func extractActions(content: String) async throws -> String {
         let prompt = PromptService.shared.actionPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: "")
+        let systemPrompt = L10n.AI.Prompt.System.actions
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
@@ -94,14 +86,13 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func generatePresentation(content: String) async throws -> String {
         let prompt = PromptService.shared.slidesPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = """
-        You are a presentation design expert.
-        Generate structured Markdown slides.
-        Separate slides with '---' on a new line.
-        Each slide should start with a title ('# ' or '## ') followed by concise bullet points or key insights.
-        """
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
-        return SynthesisProcessor.cleanMarkdown(result)
+        let systemPrompt = L10n.AI.Prompt.System.slides
+        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
+        let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
+        if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return cleaned
+        }
+        return SynthesisProcessor.generateFallbackPresentation(from: content, title: L10n.AI.Prompt.Expert.Slides.title)
     }
 
     /// 将 Markdown 转换为 PPTX 文件
@@ -113,57 +104,36 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     func generateQuiz(content: String) async throws -> String {
         let prompt = PromptService.shared.quizPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
         let quizTitle = L10n.AI.Prompt.Quiz.defaultTitle
-        let questionLabel = L10n.AI.Prompt.Quiz.question
-        let optionLabel = L10n.AI.Prompt.Quiz.option
-        let explanationLabel = L10n.AI.Prompt.Quiz.explanation
 
-        let jsonFormat = """
-        {
-          "quizTitle": "\(quizTitle)",
-          "questions": [
-            {
-              "question": "\(questionLabel)",
-              "options": ["\(optionLabel) A", "\(optionLabel) B", "\(optionLabel) C", "\(optionLabel) D"],
-              "answerIndex": 0,
-              "explanation": "\(explanationLabel)"
-            }
-          ]
-        }
-        """
+        let systemPrompt = L10n.AI.Prompt.System.quiz(quizTitle)
+        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
 
-        let systemPrompt = """
-        You are an educational assessment expert.
-        Generate 3 to 5 multiple-choice quiz questions based on the provided content.
-        Output MUST be strict JSON matching this structure:
-        \(jsonFormat)
-        Do NOT wrap in code fences. Output JSON only.
-        """
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
-
-        // 使用专用的 QuizProcessor 进行处理
-        if QuizProcessor.canDecodeAsQuizModel(result) {
-            return result
+        // 使用专用的 QuizProcessor 进行解析与格式转换
+        if QuizProcessor.canDecodeAsQuizModel(rawResult) {
+            return rawResult
         }
 
-        if let formatted = QuizProcessor.convertJSONToMarkdown(result) {
+        if let formatted = QuizProcessor.convertJSONToMarkdown(rawResult) {
             return formatted
         }
 
-        return result
+        if rawResult.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return rawResult
+        }
+
+        return SynthesisProcessor.generateFallbackQuiz(from: content, title: L10n.AI.Prompt.Quiz.defaultTitle)
     }
 
     /// 生成信息图表 (Mermaid)
     func generateInfographic(content: String) async throws -> String {
         let prompt = PromptService.shared.infographicPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = """
-        You are a senior data visualization expert.
-        Create a professional Mermaid graph TD structure.
-        Always start with '# <Summary Title>'.
-        Do NOT use code fences (```).
-        Only output the Title and the Mermaid code.
-        """
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
-        return SynthesisProcessor.formatMermaid(result, fallbackPrefix: "graph TD")
+        let systemPrompt = L10n.AI.Prompt.System.infographic
+        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
+        let formatted = SynthesisProcessor.formatMermaid(rawResult, fallbackPrefix: "graph TD")
+        if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return SynthesisProcessor.generateFallbackInfographic(from: content, title: L10n.Knowledge.Page.AI.infographic)
+        }
+        return formatted
     }
 
     /// 生成Report
@@ -171,19 +141,25 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func generateReport(content: String) async throws -> String {
         let prompt = PromptService.shared.reportPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = """
-        You are a senior analyst and technical report writer.
-        Structure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion.
-        """
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
-        return SynthesisProcessor.cleanMarkdown(result)
+        let systemPrompt = L10n.AI.Prompt.System.report
+        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
+        let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
+        if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return cleaned
+        }
+        return SynthesisProcessor.generateFallbackReport(from: content, title: L10n.AI.Prompt.Expert.Report.title)
     }
 
     /// 知识深度扩充：对现有内容进行多维度深挖与背景补充
     func expandKnowledge(content: String) async throws -> String {
         let prompt = PromptService.shared.expansionPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: PromptService.shared.expansionSystemPrompt)
-        return SynthesisProcessor.cleanMarkdown(result)
+        let systemPrompt = L10n.AI.Prompt.System.expansion
+        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
+        let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
+        if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return cleaned
+        }
+        return SynthesisProcessor.generateFallbackExpansion(from: content, title: L10n.Knowledge.Page.AI.expansion)
     }
 
     /// 针对具体的 Lint 问题提供 AI 修复建议
@@ -209,7 +185,8 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         \(otherTitles.prefix(50).joined(separator: ", "))
         """
 
-        return try await llm.generate(prompt: prompt, systemPrompt: "")
+        let systemPrompt = L10n.AI.Prompt.System.suggestFix
+        return try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
     }
 
     /// 自动生成启发式问题：分析知识库并推荐 3 个最值得深挖的问题
@@ -232,7 +209,8 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         // 诊断日志（logger 通过 @Inject 注入）
         logger.debug("[InsightQuestions] Prompt(前500): \(String(prompt.prefix(500)))")
 
-        let result = try await llm.generate(prompt: prompt, systemPrompt: "")
+        let systemPrompt = L10n.AI.Prompt.System.insightQuestions
+        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
         logger.debug("[InsightQuestions] 原始响应(前300): \(String(result.prefix(300)))")
         return LLMUtils.parseJSONArray(result)
     }

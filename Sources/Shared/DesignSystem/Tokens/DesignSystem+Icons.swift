@@ -29,6 +29,10 @@ extension DesignSystem {
         public static let hashtag = Typography.Icons.hashtag
         public static let link = Typography.Icons.link
         public static let sparkles = Typography.Icons.sparkles
+        public static let sparkle = Typography.Icons.sparkles
+        public static let quote = Typography.Icons.quoteOpening
+        public static let scan = "qrcode.viewfinder"
+        public static let voiceNote = Typography.Icons.micFill
         public static let more = Typography.Icons.more
         public static let edit = Typography.Icons.edit
         public static let pencilCircle = Typography.Icons.pencilCircle

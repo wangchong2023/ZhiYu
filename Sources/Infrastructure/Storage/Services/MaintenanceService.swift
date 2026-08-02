@@ -20,8 +20,12 @@ public final class MaintenanceService {
     @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
     @ObservationIgnored @Inject private var vaultService: any VaultServiceProtocol
     @ObservationIgnored @Inject private var backupService: BackupService
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
-    @ObservationIgnored @Inject private var undoService: UndoService
+    @ObservationIgnored @Inject private var logger: (any LoggerProtocol)?
+    @ObservationIgnored @Inject private var undoService: UndoService?
+
+    private var activeLogger: any LoggerProtocol {
+        logger ?? Logger.shared
+    }
 
     public init() {}
     
@@ -41,9 +45,12 @@ public final class MaintenanceService {
         ]
 
         var existingVaults = vaultService.vaults
-        for config in demoVaultConfigs where !existingVaults.contains(where: { $0.name == config.name }) {
+        for config in demoVaultConfigs {
+            let targetEnglishName = Vault(name: config.name).englishName
+            if !existingVaults.contains(where: { $0.englishName == targetEnglishName }) {
                 vaultService.createVault(name: config.name, icon: config.icon, description: config.description)
-                logger.addLog(action: .create, target: config.name, details: "InitialNotebook_VaultCreated", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: config.name, details: "InitialNotebook_VaultCreated", module: "Maintenance")
+            }
         }
 
         existingVaults = vaultService.vaults
@@ -73,9 +80,9 @@ public final class MaintenanceService {
                 totalCount += count
                 vaultDetails.append((name: vault.name, count: count))
                 await vaultService.refreshPageCount(for: vault.id)
-                logger.addLog(action: .create, target: vault.name, details: "InitialNotebook_PageCountRefreshed", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: vault.name, details: "InitialNotebook_PageCountRefreshed", module: "Maintenance")
             } catch {
-                logger.addLog(action: .error, target: vault.name, details: "InitialNotebook_Failed", module: "Maintenance")
+                activeLogger.addLog(action: .error, target: vault.name, details: "InitialNotebook_Failed", module: "Maintenance")
             }
         }
         return (total: totalCount, details: vaultDetails)
@@ -95,18 +102,18 @@ public final class MaintenanceService {
             if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains("Vault") == true)) {
                 // 默认知识管理笔记本 — 注入 AI 概念与 API 日志演示数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
-                logger.addLog(action: .create, target: L10n.InitialNotebook.Log.defaultDemoData, details: "Seeded_default_content", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.defaultDemoData, details: "Seeded_default_content", module: "Maintenance")
             } else if resolvedName == L10n.Vault.researchName || resolvedName == L10n.Vault.researchNameZh || resolvedName == L10n.Vault.researchNameEn || resolvedName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains("Research") == true) {
                 // 项目调研笔记本 — 注入行业分析演示数据
                 _ = try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore)
-                logger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: "Seeded_research_content", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: "Seeded_research_content", module: "Maintenance")
             } else if isTesting || resolvedName != nil {
                 // 兜底：不为空的笔记本都尝试注入默认数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
-                logger.addLog(action: .create, target: L10n.InitialNotebook.Log.fallbackDemoData, details: "Seeded_fallback_content", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.fallbackDemoData, details: "Seeded_fallback_content", module: "Maintenance")
             }
         } catch {
-            logger.addLog(action: .error, target: vaultName ?? L10n.InitialNotebook.Log.unknownVault, details: "Seed_Failed: \(error)", module: "Maintenance")
+            activeLogger.addLog(action: .error, target: vaultName ?? L10n.InitialNotebook.Log.unknownVault, details: "Seed_Failed: \(error)", module: "Maintenance")
         }
     }
 
@@ -114,7 +121,7 @@ public final class MaintenanceService {
 
     /// 清除所有开发者数据 (重置系统)
     public func clearAllDeveloperData() async {
-        undoService.clear()
+        undoService?.clear()
         try? await pageStore.resetDatabase()
         AppEventBus.shared.publish(.pagesCleared)
     }
@@ -123,18 +130,18 @@ public final class MaintenanceService {
 
     /// 保存关键状态至磁盘并触发备份
     public func saveToDisk(pages: [KnowledgePage]) async {
-        await logger.saveToDisk()
+        await activeLogger.saveToDisk()
         backupService.createBackup(pages: pages)
     }
 
     /// 从磁盘重新加载数据
     public func loadFromDisk() async {
         await pageStore.reloadFromDisk()
-        await logger.loadFromDisk()
+        await activeLogger.loadFromDisk()
     }
 
     /// 清理所有日志
     public func clearLogs() async {
-        await logger.clearAllLogs()
+        await activeLogger.clearAllLogs()
     }
 }

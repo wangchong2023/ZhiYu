@@ -24,5 +24,6 @@ extension DesignSystem {
         public static let vaultShadowRadius: CGFloat = Spacing.Sidebar.vaultShadowRadius
         public static let vaultShadowY: CGFloat = Spacing.Sidebar.vaultShadowY
         public static let width: CGFloat = Spacing.Sidebar.width
+        public static let backButtonWidth: CGFloat = Spacing.Sidebar.backButtonWidth
     }
 }

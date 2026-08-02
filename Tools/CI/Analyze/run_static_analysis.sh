@@ -73,6 +73,7 @@ run_parallel_task "Duplicate Code (jscpd)" "duplicate_code" "python3 Tools/Gatek
 run_parallel_task "Commit Signature" "signature" "bash Tools/CI/Analyze/verify_commit_signature.sh" & pid18=$!
 run_parallel_task "SBOM Generation & Syft Scan" "sbom_generation" "(python3 Tools/CI/Analyze/generate_sbom.py && (syft . --exclude ./build --exclude ./env -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo Syft skipped) && python3 Tools/CI/Analyze/merge_sbom.py)" & pid19=$!
 run_parallel_task "Heuristic View Duplication" "view_duplication" "python3 Tools/Gatekeeper/Architecture/check_view_duplication.py" & pid20=$!
+run_parallel_task "Design Token Layering" "token_layering" "python3 Tools/Gatekeeper/Compliance/check_token_layering.py" & pid21=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -95,6 +96,7 @@ wait $pid17 || EXIT_CODE=1
 wait $pid18 || EXIT_CODE=1
 wait $pid19 || EXIT_CODE=1
 wait $pid20 || EXIT_CODE=1
+wait $pid21 || EXIT_CODE=1
 
 echo ""
 if [ $EXIT_CODE -ne 0 ]; then

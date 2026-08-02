@@ -39,7 +39,7 @@ struct IngestView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, DesignSystem.standardPadding)
-                .padding(.bottom, DesignSystem.standardPadding * 2)
+                .padding(.bottom, DesignSystem.huge)
             }
         }
         .appTabToolbar(title: L10n.Ingest.title)
@@ -180,7 +180,7 @@ struct IngestView: View {
     private var recentActivitiesSection: some View {
         let ingestTasks = TaskCenter.shared.tasks.filter { $0.type == .ingest }
         return VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            AppSectionHeader(title: L10n.Ingest.recent, icon: DesignSystem.Icons.listBulletRectangle).padding(.horizontal, DesignSystem.atomic * 2)
+            AppSectionHeader(title: L10n.Ingest.recent, icon: DesignSystem.Icons.listBulletRectangle).padding(.horizontal, DesignSystem.tiny)
             if ingestTasks.isEmpty {
                 VStack(spacing: DesignSystem.tightPadding) {
                     Image(systemName: DesignSystem.Icons.clock).font(.title2).foregroundStyle(.appSecondary.opacity(DesignSystem.dimmedOpacity))

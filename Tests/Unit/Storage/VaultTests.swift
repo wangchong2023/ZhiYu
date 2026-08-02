@@ -17,17 +17,17 @@ final class VaultTests: XCTestCase {
     /// 测试内置默认笔记本的中英文及本地化翻译映射
     func testBuiltInVaultEnglishNames() {
         // 1. 默认笔记本 知识图谱 / Knowledge Graph
-        let vault1 = Vault(name: "知识图谱")
+        let vault1 = Vault(name: L10n.Vault.defaultNameZh)
         XCTAssertEqual(vault1.englishName, "Personal_KM")
         
-        let vault2 = Vault(name: "Knowledge Graph")
+        let vault2 = Vault(name: L10n.Vault.defaultNameEn)
         XCTAssertEqual(vault2.englishName, "Personal_KM")
         
         // 2. 项目调研默认笔记本
-        let vault3 = Vault(name: "项目调研")
+        let vault3 = Vault(name: L10n.Vault.researchNameZh)
         XCTAssertEqual(vault3.englishName, "Project_Research")
         
-        let vault4 = Vault(name: "Project Research")
+        let vault4 = Vault(name: L10n.Vault.researchNameEn)
         XCTAssertEqual(vault4.englishName, "Project_Research")
     }
     

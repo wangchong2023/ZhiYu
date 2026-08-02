@@ -158,7 +158,7 @@ public struct NotebookHubView: View {
                 ) {
                     viewModel.isShowingCreateSheet = true
                 }
-                .padding(.top, DesignSystem.huge * 2)
+                .padding(.top, DesignSystem.huge)
             } else if viewModel.displayMode == .grid {
                 let columns = appEnv.screenClass == .expansive 
                     ? [GridItem(.adaptive(minimum: 250), spacing: DesignSystem.standardPadding)]

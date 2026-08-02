@@ -24,6 +24,12 @@ struct MarkdownRendererView: View {
     @State private var tempUnlocked = false
     private let parser = MarkdownProcessor()
 
+    private enum Layout {
+        static let minColWidth: CGFloat = 80
+        static let maxColWidth: CGFloat = 180
+        static let cellHeight: CGFloat = 36
+    }
+
     var body: some View {
         Group {
             if content.isEmpty && TaskCenter.shared.tasks.contains(where: { task in
@@ -86,8 +92,8 @@ struct MarkdownRendererView: View {
             renderHeading(text: text, level: level)
         case .paragraph(let text):
             renderParagraph(text: text)
-        case .bulletList(let items, let indent):
-            renderBulletList(items: items, indent: indent)
+        case .bulletList(let items, let indent, let startNumber):
+            renderBulletList(items: items, indent: indent, startNumber: startNumber)
         case .blockquote(let text):
             renderBlockquote(text: text)
         case .codeBlock(let code, let language):
@@ -158,13 +164,13 @@ struct MarkdownRendererView: View {
 
     // MARK: - Render Bullet List
     @ViewBuilder
-    private func renderBulletList(items: [String], indent: Int) -> some View {
+    private func renderBulletList(items: [String], indent: Int, startNumber: Int = 1) -> some View {
         let isOrdered = indent == -1
         VStack(alignment: .leading, spacing: DesignSystem.tiny) {
             ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                 HStack(alignment: .top, spacing: DesignSystem.tightPadding) {
                     if isOrdered {
-                        Text("\(index + 1).")
+                        Text("\(startNumber + index).")
                             .font(.system(.body, design: .rounded).weight(.bold))
                             .foregroundStyle(.appAccent)
                             .frame(width: DesignSystem.IconSize.standard, alignment: .trailing)
@@ -261,13 +267,13 @@ struct MarkdownRendererView: View {
                                 .foregroundStyle(.appAccent)
                                 .padding(.horizontal, DesignSystem.small)
                                 .padding(.vertical, DesignSystem.tightPadding)
-                                .frame(minWidth: 80, maxWidth: 180, alignment: .leading)
+                                .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
                         }
                         .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                         // 列间分割线（最后一列不加）
                         if index < headers.count - 1 {
                             Divider()
-                                .frame(maxHeight: 36)
+                                .frame(maxHeight: Layout.cellHeight)
                                 .background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
                         }
                     }
@@ -283,7 +289,7 @@ struct MarkdownRendererView: View {
                                     .foregroundStyle(.appText)
                                     .padding(.horizontal, DesignSystem.small)
                                     .padding(.vertical, DesignSystem.tightPadding)
-                                    .frame(minWidth: 80, maxWidth: 180, alignment: .leading)
+                                    .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .background(rowIndex % 2 != 0 ? Color.appCard.opacity(DesignSystem.Opacity.shadow) : Color.clear)

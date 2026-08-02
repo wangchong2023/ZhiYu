@@ -185,7 +185,8 @@ public actor Logger: LoggerProtocol {
     public nonisolated func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         #if DEBUG
         let fileName = (file as NSString).lastPathComponent
-        print(" [DEBUG] [\(fileName):\(line)] \(function) -> \(message)")
+        // 审查修复 MED-7: 日志输出前脱敏，防止 API key 明文泄露
+        print(" [DEBUG] [\(fileName):\(line)] \(function) -> \(LogMasker.mask(message))")
         #endif
     }
     
@@ -196,7 +197,8 @@ public actor Logger: LoggerProtocol {
     /// - Parameter line: line
     public nonisolated func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         let fileName = (file as NSString).lastPathComponent
-        print(" [INFO] [\(fileName):\(line)] \(function) -> \(message)")
+        // 审查修复 MED-7: 日志输出前脱敏
+        print(" [INFO] [\(fileName):\(line)] \(function) -> \(LogMasker.mask(message))")
     }
     
     /// warning
@@ -206,7 +208,8 @@ public actor Logger: LoggerProtocol {
     /// - Parameter line: line
     public nonisolated func warning(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         let fileName = (file as NSString).lastPathComponent
-        print(" [WARNING] [\(fileName):\(line)] \(function) -> \(message)")
+        // 审查修复 MED-7: 日志输出前脱敏
+        print(" [WARNING] [\(fileName):\(line)] \(function) -> \(LogMasker.mask(message))")
     }
     
     /// error
@@ -218,7 +221,8 @@ public actor Logger: LoggerProtocol {
     public nonisolated func error(_ message: String, error: Error? = nil, file: String = #file, function: String = #function, line: Int = #line) {
         let fileName = (file as NSString).lastPathComponent
         let errDesc = error.map { " (Error: \($0.localizedDescription))" } ?? ""
-        print(" [ERROR]" + " [\(fileName):\(line)]" + " \(function)" + " -> \(message)\(errDesc)")
+        // 审查修复 MED-7: 日志输出前脱敏
+        print(" [ERROR]" + " [\(fileName):\(line)]" + " \(function)" + " -> \(LogMasker.mask(message))\(errDesc)")
         
         addLog(action: .error, target: message, details: errDesc, module: "System", status: .failure, failureReason: error?.localizedDescription)
     }
@@ -263,10 +267,13 @@ public actor Logger: LoggerProtocol {
         status: LogStatus? = nil,
         failureReason: String? = nil
     ) async {
+        // 审查修复 MED-7: 持久化前对 target/details 脱敏，防止 API key 明文写入日志文件
+        let maskedTarget = LogMasker.mask(target)
+        let maskedDetails = LogMasker.mask(details)
         let entry = LogEntry(
             action: action,
-            target: target,
-            details: details,
+            target: maskedTarget,
+            details: maskedDetails,
             duration: duration,
             startTime: startTime,
             endTime: endTime,

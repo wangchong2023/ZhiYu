@@ -186,6 +186,7 @@ extension MarkdownProcessor {
         guard isBulletList || isNumberedList else { return nil }
 
         let startIndent = getIndentLevel(startLine)
+        let startNumber = isNumberedList ? extractNumberPrefix(trimmedStart) : 1
         var items: [String] = []
         var i = startIndex
 
@@ -218,7 +219,14 @@ extension MarkdownProcessor {
             i += 1
         }
 
-        return (.bulletList(items: items, indent: isNumberedList ? -1 : startIndent), i)
+        return (.bulletList(items: items, indent: isNumberedList ? -1 : startIndent, startNumber: startNumber), i)
+    }
+
+    /// 提取编号行开头的具体数字（如 "1. " -> 1, "3. " -> 3）
+    private func extractNumberPrefix(_ trimmed: String) -> Int {
+        guard let dotIndex = trimmed.firstIndex(of: ".") else { return 1 }
+        let prefix = trimmed[..<dotIndex]
+        return Int(prefix) ?? 1
     }
 
     /// 判断一行是否为编号列表项（如 "1. " 或 "12.xx"）

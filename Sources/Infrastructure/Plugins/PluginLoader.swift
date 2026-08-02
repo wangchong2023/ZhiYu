@@ -11,10 +11,92 @@
 
 import Foundation
 import ZIPFoundation
+import CryptoKit
 
 /// 插件加载器：负责从本地磁盘发现并解析插件文件
 @MainActor
 final class PluginLoader {
+
+    /// 插件签名密钥的 Keychain 存储键（审查修复 HIGH-3：不再硬编码盐值）
+    private static let signatureKeychainKey = "com.zhiyu.plugin.signature_key"
+    /// 内置插件签名密钥标识（首次启动时生成随机密钥并存入 Keychain）
+    private static let signatureKeyInfo = Data("zhiyu-plugin-signature-v1".utf8)
+
+    // MARK: - 插件签名校验（VULN-001 修复）
+
+    /// 获取或生成插件签名密钥（审查修复 HIGH-3：密钥存 Keychain，不硬编码在二进制中）
+    /// - Returns: HMAC-SHA256 对称密钥
+    private static func getSignatureKey() -> SymmetricKey? {
+        // 尝试从 Keychain 读取
+        if let stored = try? KeychainService.shared.retrieve(key: signatureKeychainKey),
+           let keyData = Data(base64Encoded: stored) {
+            return SymmetricKey(data: keyData)
+        }
+        // 生成 32 字节随机密钥并存入 Keychain
+        var randomBytes = [UInt8](repeating: 0, count: 32)
+        let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        guard status == errSecSuccess else { return nil }
+        let keyData = Data(randomBytes)
+        try? KeychainService.shared.store(key: signatureKeychainKey, value: keyData.base64EncodedString())
+        return SymmetricKey(data: keyData)
+    }
+
+    /// 校验插件脚本签名：使用 HMAC-SHA256 验证 index.js 内容完整性
+    /// - Parameters:
+    ///   - script: 插件 JS 脚本内容
+    ///   - manifest: 插件清单（含 codeSignature 字段）
+    ///   - isTrustedLocal: 是否为内部生成的可信本地插件（loadPluginFromRawJS 路径）
+    /// - Returns: true 表示签名有效或为内置信任插件；false 表示签名缺失或不匹配
+    private static func verifyPluginSignature(script: String, manifest: PluginManifest, isTrustedLocal: Bool = false) -> Bool {
+        // 审查修复 HIGH-2: local. 豁免仅限 loadPluginFromRawJS 内部生成路径
+        // 外部 manifest（.zyplugin / 明文目录）的 local. 前缀视为可疑，强制要求签名
+        if isTrustedLocal {
+            Logger.shared.warning("[PluginRegistry] \(manifest.id): 内部本地开发插件跳过签名校验")
+            return true
+        }
+
+        // 外部 manifest 的 local. 前缀视为可疑，拒绝加载
+        if manifest.id.hasPrefix("local.") {
+            Logger.shared.error("[PluginRegistry] \(manifest.id): 外部插件使用 local. 前缀，视为可疑，拒绝加载")
+            return false
+        }
+
+        guard let expectedSignature = manifest.codeSignature, !expectedSignature.isEmpty else {
+            Logger.shared.error("[PluginRegistry] \(manifest.id): 拒绝加载 — 缺少代码签名 (codeSignature)")
+            return false
+        }
+
+        // 审查修复 HIGH-3: 从 Keychain 获取签名密钥，而非硬编码常量
+        guard let key = getSignatureKey() else {
+            Logger.shared.error("[PluginRegistry] \(manifest.id): 签名密钥不可用，拒绝加载")
+            return false
+        }
+        let scriptData = Data(script.utf8)
+        let computed = HMAC<SHA256>.authenticationCode(for: scriptData, using: key)
+        let computedData = Data(computed)
+        guard let expectedData = Data(hexString: expectedSignature) else {
+            Logger.shared.error("[PluginRegistry] \(manifest.id): 拒绝加载 — 签名格式无效 (非合法 hex)")
+            return false
+        }
+
+        // 审查修复 MED-2: 使用常量时间比较，防御时序侧信道
+        guard constantTimeCompare(computedData, expectedData) else {
+            Logger.shared.error("[PluginRegistry] \(manifest.id): 拒绝加载 — 代码签名不匹配 (expected: \(expectedSignature.prefix(16))..., got: \(computedData.hexEncoded.prefix(16))...)")
+            return false
+        }
+
+        return true
+    }
+
+    /// 常量时间字节比较（审查修复 MED-2）
+    private static func constantTimeCompare(_ a: Data, _ b: Data) -> Bool {
+        guard a.count == b.count else { return false }
+        var result: UInt8 = 0
+        for i in 0..<a.count {
+            result |= a[i] ^ b[i]
+        }
+        return result == 0
+    }
 
     // MARK: - 插件自动发现机制
 
@@ -172,18 +254,7 @@ final class PluginLoader {
             }
 
             // 提取所有条目到文件（ZIPFoundation 文件提取保证数据完整）
-            for entry in archive {
-                let entryPath = entry.path
-                guard !entryPath.contains("..") else {
-                    Logger.shared.warning("[PluginRegistry] Skipped: \(entryPath)")
-                    continue
-                }
-                let destURL = tempDir.appendingPathComponent(entryPath)
-                // 确保父目录存在（处理 ZIP 内目录结构）
-                try? FileManager.default.createDirectory(at: destURL.deletingLastPathComponent(),
-                                                         withIntermediateDirectories: true)
-                _ = try archive.extract(entry, to: destURL)
-            }
+            try extractArchiveEntries(archive, to: tempDir)
 
             // 读取提取的文件
             let manifestURL = tempDir.appendingPathComponent("manifest.json")
@@ -202,6 +273,12 @@ final class PluginLoader {
             Logger.shared.info("[PluginRegistry] JS preview: \(String(script.prefix(80)).replacingOccurrences(of: "\n", with: " "))")
 
             let manifest = try JSONDecoder().decode(PluginManifest.self, from: manifestData)
+
+            // 🛡️ VULN-001 修复：强制代码签名校验，拒绝加载未签名或签名不匹配的插件
+            guard Self.verifyPluginSignature(script: script, manifest: manifest) else {
+                Logger.shared.error("[PluginRegistry] .zyplugin 签名校验失败，拒绝加载: \(manifest.name)")
+                return
+            }
 
             // 校验多语言 README 完整性
             validateReadmeFiles(manifest: manifest, extractedDir: tempDir)
@@ -225,6 +302,39 @@ final class PluginLoader {
 
     // MARK: - 文件夹形式加载（明文加载）
 
+    /// 安全提取 ZIP 归档条目到目标目录（VULN-014 修复：完整路径穿越防护）
+    private func extractArchiveEntries(_ archive: Archive, to tempDir: URL) throws {
+        let tempDirStandardized = tempDir.standardizedFileURL.path
+        for entry in archive {
+            let entryPath = entry.path
+            // 1. 拒绝 ".." 相对路径穿越
+            guard !entryPath.contains("..") else {
+                Logger.shared.warning("[PluginRegistry] Skipped path traversal: \(entryPath)")
+                continue
+            }
+            // 2. 拒绝绝对路径（Unix / 和 Windows 盘符 C:\）
+            // 审查修复 LOW-5: 冒号检查改为精确的 Windows 盘符正则，避免误拒含冒号的合法文件名
+            guard !entryPath.hasPrefix("/"),
+                  !entryPath.matchesRegex(#"^[A-Za-z]:[\\/]"#) else {
+                Logger.shared.warning("[PluginRegistry] Skipped absolute path: \(entryPath)")
+                continue
+            }
+            // 3. 拒绝空路径
+            guard !entryPath.isEmpty else { continue }
+            let destURL = tempDir.appendingPathComponent(entryPath)
+            // 4. 额外验证：确保 destURL 标准化后仍在 tempDir 内
+            let destStandardized = destURL.standardizedFileURL.path
+            guard destStandardized.hasPrefix(tempDirStandardized) else {
+                Logger.shared.warning("[PluginRegistry] Skipped path escape: \(entryPath)")
+                continue
+            }
+            // 确保父目录存在（处理 ZIP 内目录结构）
+            try? FileManager.default.createDirectory(at: destURL.deletingLastPathComponent(),
+                                                     withIntermediateDirectories: true)
+            _ = try archive.extract(entry, to: destURL)
+        }
+    }
+
     /// 从解压明文插件目录中直接加载插件并进行 JavaScript 沙箱挂载
     /// - Parameter directoryURL: 物理子目录 URL 路径
     private func loadPluginFromDirectory(_ directoryURL: URL) {
@@ -244,6 +354,12 @@ final class PluginLoader {
             let manifestData = try Data(contentsOf: manifestURL)
             let script = try String(contentsOf: scriptURL, encoding: .utf8)
             let manifest = try JSONDecoder().decode(PluginManifest.self, from: manifestData)
+
+            // 🛡️ VULN-001 修复：强制代码签名校验
+            guard Self.verifyPluginSignature(script: script, manifest: manifest) else {
+                Logger.shared.error("[PluginRegistry] 明文目录插件签名校验失败，拒绝加载: \(manifest.name)")
+                return
+            }
 
             // 校验多语言 README 完整性
             validateReadmeFiles(manifest: manifest, extractedDir: directoryURL)
@@ -279,6 +395,13 @@ final class PluginLoader {
                 descriptions: ["en": "Legacy .js plugin (migrate to .zyplugin format)"]
             )
 
+            // 🛡️ VULN-001 修复 + 审查修复 HIGH-2: 本地 .js 插件通过 isTrustedLocal 豁免签名
+            // 仅此路径（内部生成 id）允许豁免，外部 manifest 的 local. 前缀会被拒绝
+            guard Self.verifyPluginSignature(script: scriptContent, manifest: manifest, isTrustedLocal: true) else {
+                Logger.shared.error("[PluginRegistry] 拒绝加载未签名 .js: \(displayName)")
+                return
+            }
+
             #if canImport(JavaScriptCore) && !os(watchOS)
             if let jsPlugin = JavaScriptPlugin(script: scriptContent, manifest: manifest) {
                 PluginRegistry.shared.loadPlugin(jsPlugin)
@@ -288,5 +411,40 @@ final class PluginLoader {
         } catch {
             Logger.shared.error("[PluginRegistry] Failed to load .js: \(fileURL.lastPathComponent)", error: error)
         }
+    }
+}
+
+// MARK: - 辅助扩展
+
+/// 审查修复 LOW-5: String 正则匹配辅助
+private extension String {
+    func matchesRegex(_ pattern: String) -> Bool {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return false }
+        let range = NSRange(location: 0, length: self.utf16.count)
+        return regex.firstMatch(in: self, options: [], range: range) != nil
+    }
+}
+
+/// 审查修复 MED-2: Data hex 编解码辅助
+private extension Data {
+    /// 从 hex 字符串构造 Data
+    init?(hexString: String) {
+        let cleaned = hexString.lowercased().replacingOccurrences(of: " ", with: "")
+        guard cleaned.count % 2 == 0 else { return nil }
+        var bytes = [UInt8]()
+        bytes.reserveCapacity(cleaned.count / 2)
+        var index = cleaned.startIndex
+        while index < cleaned.endIndex {
+            let next = cleaned.index(index, offsetBy: 2)
+            guard let byte = UInt8(cleaned[index..<next], radix: 16) else { return nil }
+            bytes.append(byte)
+            index = next
+        }
+        self.init(bytes)
+    }
+
+    /// 转为 hex 字符串
+    var hexEncoded: String {
+        map { String(format: "%02x", $0) }.joined()
     }
 }

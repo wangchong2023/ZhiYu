@@ -89,20 +89,16 @@ extension ModelLabView {
     /// - Returns: 模型选择的 Menu 下拉视图
     func modelSelectionMenu(for useCase: UseCaseType) -> some View {
         Menu {
-            ForEach(modelManager.remoteManifests) { model in
-                if modelManager.isModelLocalReady(for: model.modelId) {
-                    Button {
-                        HapticFeedback.shared.trigger(.selection)
-                        modelManager.activeModelId = model.modelId
-                        loadParametersForModel(model.modelId)
-                    } label: {
-                        HStack {
-                            Text(model.displayName)
-                            if model.modelId == getActiveModel()?.modelId {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
+            Picker("", selection: Binding(
+                get: { getActiveModel()?.modelId ?? modelManager.activeModelId },
+                set: { newId in
+                    HapticFeedback.shared.trigger(.selection)
+                    modelManager.activeModelId = newId
+                    loadParametersForModel(newId)
+                }
+            )) {
+                ForEach(modelManager.remoteManifests.filter { modelManager.isModelLocalReady(for: $0.modelId) }) { model in
+                    Text(model.displayName).tag(model.modelId)
                 }
             }
         } label: {

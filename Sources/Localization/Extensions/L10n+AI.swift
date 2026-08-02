@@ -252,6 +252,19 @@ extension L10n {
                 AI.tr("prompt.predictQuestionsSystem")
             }
 
+            public enum System {
+                public static var summarize: String { AI.tr("prompt.system.summarize") }
+                public static var mindmap: String { AI.tr("prompt.system.mindmap") }
+                public static var actions: String { AI.tr("prompt.system.actions") }
+                public static var slides: String { AI.tr("prompt.system.slides") }
+                public static func quiz(_ quizTitle: String) -> String { AI.trf("prompt.system.quiz", quizTitle) }
+                public static var infographic: String { AI.tr("prompt.system.infographic") }
+                public static var report: String { AI.tr("prompt.system.report") }
+                public static var expansion: String { AI.tr("prompt.system.expansion") }
+                public static var suggestFix: String { AI.tr("prompt.system.suggestFix") }
+                public static var insightQuestions: String { AI.tr("prompt.system.insightQuestions") }
+            }
+
             // MARK: - L10n 净化后的 AI 提示词
             
             /// 搜索变体生成提示词
@@ -335,6 +348,14 @@ extension L10n {
                     public static var title: String { AI.tr("prompt.expert.report.title") }
                     public static var footer: String { AI.tr("prompt.expert.report.footer") }
                 }
+                public enum Infographic {
+                    public static var title: String { AI.tr("prompt.expert.infographic.title") }
+                    public static var footer: String { AI.tr("prompt.expert.infographic.footer") }
+                }
+                public enum Expansion {
+                    public static var title: String { AI.tr("prompt.expert.expansion.title") }
+                    public static var footer: String { AI.tr("prompt.expert.expansion.footer") }
+                }
             }
 
             public enum Default {
@@ -393,6 +414,45 @@ extension L10n {
             public static var actions: String { AI.tr("synthesis.actions") }
             public static var citationInstruction: String { AI.tr("synthesis.citationInstruction") }
             public static func sourceCount(_ n: Int) -> String { AI.trf("synthesis.sourceCount_%d", n) }
+
+            public enum Actions {
+                public static var polish: String { AI.tr("synthesis.actions.polish") }
+                public static var regenerate: String { AI.tr("synthesis.actions.regenerate") }
+            }
+
+            public enum Control {
+                public static var title: String { AI.tr("synthesis.control.title") }
+                public static var depth: String { AI.tr("synthesis.control.depth") }
+                public static var audience: String { AI.tr("synthesis.control.audience") }
+                public static var tone: String { AI.tr("synthesis.control.tone") }
+                public static var customPromptTitle: String { AI.tr("synthesis.control.customPromptTitle") }
+                public static var startSynthesis: String { AI.tr("synthesis.control.startSynthesis") }
+                public static func describeSynthesisType(_ title: String) -> String { AI.trf("synthesis.control.describeType_%@", title) }
+
+                public enum Depth {
+                    public static var concise: String { AI.tr("synthesis.control.depth.concise") }
+                    public static var standard: String { AI.tr("synthesis.control.depth.standard") }
+                    public static var detailed: String { AI.tr("synthesis.control.depth.detailed") }
+                }
+                public enum Audience {
+                    public static var beginner: String { AI.tr("synthesis.control.audience.beginner") }
+                    public static var professional: String { AI.tr("synthesis.control.audience.professional") }
+                    public static var executive: String { AI.tr("synthesis.control.audience.executive") }
+                }
+                public enum Tone {
+                    public static var academic: String { AI.tr("synthesis.control.tone.academic") }
+                    public static var professional: String { AI.tr("synthesis.control.tone.professional") }
+                    public static var casual: String { AI.tr("synthesis.control.tone.casual") }
+                }
+                public enum Placeholder {
+                    public static var mindmap: String { AI.tr("synthesis.control.placeholder.mindmap") }
+                    public static var slides: String { AI.tr("synthesis.control.placeholder.slides") }
+                    public static var quiz: String { AI.tr("synthesis.control.placeholder.quiz") }
+                    public static var report: String { AI.tr("synthesis.control.placeholder.report") }
+                    public static var infographic: String { AI.tr("synthesis.control.placeholder.infographic") }
+                    public static var expansion: String { AI.tr("synthesis.control.placeholder.expansion") }
+                }
+            }
             
             public enum Mindmap {
                 public static var title: String { AI.tr("prompt.expert.mindmap.title") }
@@ -404,6 +464,40 @@ extension L10n {
             public enum Error {
                 public static var limitReached: String { AI.tr("synthesis.error.limitReached") }
                 public static var noPages: String { AI.tr("synthesis.error.noPages") }
+                public static var invalidResult: String { AI.tr("synthesis.error.invalidResult") }
+                public static var pageNotFound: String { AI.tr("synthesis.error.pageNotFound") }
+            }
+
+            public enum Fallback {
+                public static var slidesHeader: String { AI.tr("synthesis.fallback.slidesHeader") }
+                public static var coreConcept: String { AI.tr("synthesis.fallback.coreConcept") }
+                public static var reportOverview: String { AI.tr("synthesis.fallback.reportOverview") }
+                public static var reportKeyPoints: String { AI.tr("synthesis.fallback.reportKeyPoints") }
+                public static func reportPointItem(_ index: Int, _ text: String) -> String { AI.trf("synthesis.fallback.reportPointItem", index, text) }
+                public static var reportSummaryHeader: String { AI.tr("synthesis.fallback.reportSummaryHeader") }
+                public static var reportSummaryBody: String { AI.tr("synthesis.fallback.reportSummaryBody") }
+                public static var expansionBackground: String { AI.tr("synthesis.fallback.expansionBackground") }
+                public static var expansionBackgroundBody: String { AI.tr("synthesis.fallback.expansionBackgroundBody") }
+                public static var expansionDetailsHeader: String { AI.tr("synthesis.fallback.expansionDetailsHeader") }
+                public static func expansionDetailItem(_ index: Int, _ text: String) -> String { AI.trf("synthesis.fallback.expansionDetailItem", index, text) }
+                public static var expansionFutureHeader: String { AI.tr("synthesis.fallback.expansionFutureHeader") }
+                public static var expansionFutureBody: String { AI.tr("synthesis.fallback.expansionFutureBody") }
+
+                public static var chatterPrefixes: [String] {
+                    [
+                        AI.tr("synthesis.chatter.hereIs"),
+                        AI.tr("synthesis.chatter.heres"),
+                        AI.tr("synthesis.chatter.hereAre"),
+                        AI.tr("synthesis.chatter.belowIs"),
+                        AI.tr("synthesis.chatter.belowAre"),
+                        AI.tr("synthesis.chatter.thisIs"),
+                        AI.tr("synthesis.chatter.followingIs"),
+                        AI.tr("synthesis.chatter.asRequested"),
+                        AI.tr("synthesis.chatter.parsedAs"),
+                        AI.tr("synthesis.chatter.belowChinese"),
+                        AI.tr("synthesis.chatter.asFollowsChinese")
+                    ]
+                }
             }
         }
 

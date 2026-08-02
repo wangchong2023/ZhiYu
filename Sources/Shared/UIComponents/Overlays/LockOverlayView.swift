@@ -106,7 +106,7 @@ struct LockOverlayView: View {
                         .font(.subheadline)
                         .foregroundStyle(.appSecondary)
                         .multilineTextAlignment(.center)
-                        .frame(maxWidth: 320)
+                        .frame(maxWidth: DesignSystem.Gallery.modalMaxWidth)
                         .lineSpacing(4)
                 }
                 

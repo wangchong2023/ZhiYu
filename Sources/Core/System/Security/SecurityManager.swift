@@ -218,7 +218,22 @@ class SecurityManager: @unchecked Sendable {
             finalStoredSig = keyStore?.string(forKey: signatureKeyPrefix + fileName)
         }
         
-        guard let expectedSig = finalStoredSig else { return true }
+        // VULN-004 修复：无签名时 fail-closed（返回 false），而非 fail-open（返回 true）
+        // 审查修复 LOW-4: DEBUG 放行仅限模拟器，避免 DEBUG 构建在真机上放行
+        guard let expectedSig = finalStoredSig else {
+            #if DEBUG && targetEnvironment(simulator)
+            Logger.shared.debug("[SecurityManager] 无签名记录，模拟器 DEBUG 模式下放行: \(fileURL.lastPathComponent)")
+            return true
+            #else
+            Logger.shared.addLog(
+                action: .error,
+                target: "SecurityManager",
+                details: "Integrity check failed: no signature on file: \(fileURL.lastPathComponent)",
+                module: "Security"
+            )
+            return false
+            #endif
+        }
         
         do {
             let currentSig = try await calculateHMAC(for: fileURL)

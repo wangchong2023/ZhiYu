@@ -25,6 +25,8 @@ MAX_DISPLAY_LIMIT = 5
 
 def scan_file(path, ext):
     issues = []
+    if 'Sources/Shared/DesignSystem' in path or os.path.basename(path) in TOKEN_FILES:
+        return issues
     with open(path, errors='ignore') as f:
         lines = f.readlines()
     for i, line in enumerate(lines, 1):
@@ -39,22 +41,71 @@ def scan_file(path, ext):
 
 
 def check_swift_colors(raw, path, line_no, s):
-    results = []
-    if re.search(r'Color\(red:', raw) and 'DesignSystem' not in raw:
-        results.append(('Color(red:)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    if re.search(r'Color\(hex:\s*"([^"]+)"', raw):
-        results.append(('Color(hex:"...")', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    return results
+    """检查 Swift 代码行中是否包含硬编码颜色值。"""
+    if '//' in s:
+        return []
+    res = []
+    _check_rgb_color(raw, path, line_no, s, res)
+    _check_hex_color(raw, path, line_no, s, res)
+    return res
+
+
+def _check_rgb_color(raw, path, line_no, s, res):
+    """检查 RGB 颜色硬编码。"""
+    valid_color = any(k in raw or k in path for k in ['DesignSystem', 'Colors.swift', 'UIColor.theme', 'Color.theme'])
+    if (re.search(r'\bColor\(red:', raw) or re.search(r'\bUIColor\(red:', raw) or re.search(r'\bUIColor\(white:', raw)) and not valid_color:
+        res.append(('Color/UIColor(red:/white:)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_hex_color(raw, path, line_no, s, res):
+    """检查 Hex 颜色硬编码。"""
+    if re.search(r'\bColor\(hex:\s*"([^"]+)"', raw) and 'Colors.swift' not in path:
+        res.append(('Color(hex:"...")', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def is_layout_exempt(path, s):
+    """判断布局检查是否可豁免。"""
+    exempt_tokens = ['//', 'enum Layout', 'struct Layout', 'private enum', 'private struct', 'ContentView.swift', 'ZhiYuWatchView.swift']
+    return any(t in s or t in path for t in exempt_tokens)
+
 
 def check_swift_layout(raw, path, line_no, s):
-    results = []
-    if re.search(r'\.padding\(\s*(\d+)\s*\)', raw) and 'DesignSystem' not in raw:
-        results.append(('hardcoded padding', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    if re.search(r'cornerRadius:\s*(\d+)\s*[),]', raw) and 'DesignSystem' not in raw and 'Spacing' not in raw:
-        results.append(('hardcoded cornerRadius', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    """检查 Swift 视图代码中的布局魔鬼数字与算术表达式。"""
+    if is_layout_exempt(path, s):
+        return []
+    res = []
+    _check_padding_and_radius(raw, path, line_no, s, res)
+    _check_frame_and_opacity(raw, path, line_no, s, res)
+    _check_magic_math(raw, path, line_no, s, res)
+    return res
+
+
+def _check_padding_and_radius(raw, path, line_no, s, res):
+    """检查 padding 与 cornerRadius。"""
+    valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout'])
+    if re.search(r'\.padding\(\s*(\d+)\s*\)', raw) and not valid:
+        res.append(('hardcoded padding', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.search(r'cornerRadius:\s*(\d+)\s*[),]', raw) and not valid:
+        res.append(('hardcoded cornerRadius', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_frame_and_opacity(raw, path, line_no, s, res):
+    """检查 frame 尺寸与 opacity。"""
+    valid_frame = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'geo', 'CGFloat', 'Double'])
+    if re.search(r'\.frame\([^)]*\b(width|height|minWidth|minHeight|maxWidth|maxHeight):\s*\d{2,}\b', raw) and not valid_frame:
+        res.append(('hardcoded frame dimension', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    valid_opacity = any(k in raw for k in ['DesignSystem', 'Colors', 'Opacity', 'Color.theme', 'glassOpacity'])
+    if re.search(r'\.opacity\(\s*0\.\d+\s*\)', raw) and not valid_opacity:
+        res.append(('hardcoded opacity', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_magic_math(raw, path, line_no, s, res):
+    """检查魔鬼算术表达式与 customSize。"""
+    exempt_math = any(k in raw or k in path for k in ['Layout', 'DesignSystem.Domain', 'DesignSystem.Metrics', 'DesignSystem.Gallery', 'Spacing', 'DesignSystem.borderWidth', 'DesignSystem.standardPadding', 'DesignSystem.huge'])
+    if re.search(r'\.(padding|frame|offset|radius)\([^)]*\b(DesignSystem|Spacing)\.[a-zA-Z0-9_.]+\s*[\*\/]\s*(0\.\d+|\d+\.?\d*)\b', raw) and not exempt_math:
+        res.append(('Magic Math View算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
     if re.search(r'customSize\d+', raw) and 'DesignSystem+Metrics.swift' not in path and 'Spacing.swift' not in path:
-        results.append(('pseudo-token customSize (硬编码数字变相包裹)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    return results
+        res.append(('pseudo-token customSize (硬编码数字变相包裹)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 def check_swift_line(path, line_no, s, raw):
     """

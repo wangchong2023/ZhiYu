@@ -121,5 +121,35 @@ extension DesignSystem {
         
         public static let settingsSidebarWidth: CGFloat = Spacing.Metrics.settingsSidebarWidth
         public static let settingsIconFrameSize: CGFloat = Spacing.Metrics.settingsIconFrameSize
+
+        // MARK: - 快照测试设备与布局尺寸 Token
+        /// iPhone 13/14/15 Pro 竖屏逻辑宽度 (375pt)
+        public static let snapshotPhoneWidth: CGFloat = 375
+        /// iPhone 13/14/15 Pro 竖屏逻辑高度 (812pt)
+        public static let snapshotPhoneHeight: CGFloat = 812
+        /// iPad 竖屏逻辑宽度 (768pt)
+        public static let snapshotPadWidth: CGFloat = 768
+        /// 侧边栏快照固定宽度 (300pt)
+        public static let snapshotSidebarWidth: CGFloat = 300
+        /// 详情视图快照固定宽度 (500pt)
+        public static let snapshotDetailWidth: CGFloat = 500
+        /// 长滚动视图快照高度 (1200pt)
+        public static let snapshotScrollHeight: CGFloat = 1200
+        /// 面包屑栏快照高度 (50pt)
+        public static let snapshotBreadcrumbHeight: CGFloat = 50
+        /// 小型组件快照尺寸 (100pt)
+        public static let snapshotSmallComponentSize: CGFloat = 100
+        /// 中型组件快照尺寸 (150pt)
+        public static let snapshotMediumComponentSize: CGFloat = 150
+        /// 图谱节点视口快照尺寸 (200pt)
+        public static let snapshotGraphViewportSize: CGFloat = 200
+        /// 图谱布局标准测试画布宽度 (800pt)
+        public static let snapshotGraphCanvasWidth: CGFloat = 800
+        /// 图谱布局标准测试画布高度 (600pt)
+        public static let snapshotGraphCanvasHeight: CGFloat = 600
+        /// iPad 横屏逻辑宽度 (1024pt)
+        public static let snapshotPadLandscapeWidth: CGFloat = 1024
+        /// 空图像占位尺寸 (10pt)，用于测试空画布安全转换
+        public static let snapshotEmptyImageSize: CGFloat = 10
     }
 }

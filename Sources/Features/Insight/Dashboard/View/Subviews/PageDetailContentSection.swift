@@ -64,7 +64,7 @@ struct PageDetailContentSection: View {
                 .background(Color.appAccent.opacity(hintBgOpacity))
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
         }
-        .frame(maxWidth: .infinity, minHeight: 200)
+        .frame(maxWidth: .infinity, minHeight: Spacing.Grid.emptyStateHeight)
         .padding()
     }
 }

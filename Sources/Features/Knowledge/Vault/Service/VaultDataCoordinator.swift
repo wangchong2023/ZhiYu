@@ -27,7 +27,25 @@ extension VaultService {
             do {
                 var loadedVaults = try await vaultRepository.fetchAllVaults()
 
-                // 通过 englishName（locale-independent）确保 2 个内置笔记本始终存在，
+                // 1. 针对历史语言切换可能产生的重复内置笔记本（如简体“知识图谱”与繁体“知識圖譜”）进行物理去重合并
+                var seenDemoEnglishNames = Set<String>()
+                var cleanedVaults: [Vault] = []
+                for vault in loadedVaults {
+                    if vault.englishName == "Personal_KM" || vault.englishName == "Project_Research" {
+                        if seenDemoEnglishNames.contains(vault.englishName) {
+                            // 物理物理清理冗余的脏笔记本数据
+                            Task { [vaultID = vault.id] in
+                                try? await vaultRepository.deleteVault(id: vaultID)
+                            }
+                            continue
+                        }
+                        seenDemoEnglishNames.insert(vault.englishName)
+                    }
+                    cleanedVaults.append(vault)
+                }
+                loadedVaults = cleanedVaults
+
+                // 2. 通过 englishName（locale-independent）确保 2 个内置笔记本始终存在，
                 // 避免因 locale 变更或旧版命名差异导致内置笔记本缺失
                 let demoVaults = buildDefaultDemoVaults()
                 for demo in demoVaults {

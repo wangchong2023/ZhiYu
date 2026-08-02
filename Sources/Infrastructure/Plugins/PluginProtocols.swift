@@ -28,8 +28,11 @@ struct PluginManifest: Codable {
     public let readmeFiles: [String: String]?
     /// 插件图标文件名
     public let iconFile: String?
+    /// 插件代码签名（HMAC-SHA256，基于 index.js 内容 + 内置盐值计算）
+    /// - Note: 安全要求：所有外部插件必须提供有效签名，否则拒绝加载（VULN-001 修复）
+    public let codeSignature: String?
 
-    init(id: String, version: String, author: String = "Unknown", permissions: [String] = [], allowedDomains: [String]? = nil, names: [String: String], descriptions: [String: String], readmeFiles: [String: String]? = nil, iconFile: String? = nil, category: String? = nil) {
+    init(id: String, version: String, author: String = "Unknown", permissions: [String] = [], allowedDomains: [String]? = nil, names: [String: String], descriptions: [String: String], readmeFiles: [String: String]? = nil, iconFile: String? = nil, category: String? = nil, codeSignature: String? = nil) {
         self.id = id
         self.version = version
         self.author = author
@@ -40,6 +43,7 @@ struct PluginManifest: Codable {
         self.descriptions = descriptions
         self.readmeFiles = readmeFiles
         self.iconFile = iconFile
+        self.codeSignature = codeSignature
     }
     
     /// 获取当前语言环境下的显示名称

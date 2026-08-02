@@ -37,7 +37,7 @@ public struct AIChatBubbleView: View {
                     .background(Color.theme.cyan.opacity(DesignSystem.Opacity.soft))
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-                    .padding(.leading, DesignSystem.large * 2)
+                    .padding(.leading, DesignSystem.huge)
             } else {
                 Text(text)
                     .font(.subheadline)
@@ -46,7 +46,7 @@ public struct AIChatBubbleView: View {
                     .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
                     .foregroundStyle(.appText)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-                    .padding(.trailing, DesignSystem.large * 2)
+                    .padding(.trailing, DesignSystem.huge)
                 Spacer()
             }
         }
@@ -73,7 +73,7 @@ public struct AIThinkingBubbleView: View {
             .padding(.vertical, DesignSystem.standardPadding + 2)
             .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-            .padding(.trailing, DesignSystem.large * 2)
+            .padding(.trailing, DesignSystem.huge)
 
             Spacer()
         }

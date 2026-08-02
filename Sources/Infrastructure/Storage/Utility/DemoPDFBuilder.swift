@@ -9,7 +9,7 @@
 //  核心职责：为示例演示数据生成真正的原生的 PDF 物理文件，确保在点击预览时拉起 100% 原生的 QuickLook/PDFKit 渲染器。
 //
 
-#if canImport(UIKit)
+#if canImport(UIKit) && canImport(PDFKit) && !os(watchOS)
 import UIKit
 import PDFKit
 import SwiftUI
@@ -239,6 +239,14 @@ public struct DemoPDFBuilder {
     private static func isTableSeparator(_ line: String) -> Bool {
         let cleaned = line.replacingOccurrences(of: " ", with: "")
         return cleaned.hasPrefix("|:") || cleaned.hasPrefix("|-") || (cleaned.contains("---") && cleaned.contains("|"))
+    }
+}
+#else
+import Foundation
+
+public struct DemoPDFBuilder {
+    public static func ensurePDFExists(at path: String, title: String, content: String) -> URL? {
+        return nil
     }
 }
 #endif

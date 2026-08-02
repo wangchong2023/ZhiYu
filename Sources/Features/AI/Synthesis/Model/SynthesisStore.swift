@@ -73,6 +73,16 @@ public final class SynthesisStore {
             case .expansion: return "doc.append.fill"
             }
         }
+        public var customPromptPlaceholder: String {
+            switch self {
+            case .mindmap: return L10n.AI.Synthesis.Control.Placeholder.mindmap
+            case .slides: return L10n.AI.Synthesis.Control.Placeholder.slides
+            case .quiz: return L10n.AI.Synthesis.Control.Placeholder.quiz
+            case .report: return L10n.AI.Synthesis.Control.Placeholder.report
+            case .infographic: return L10n.AI.Synthesis.Control.Placeholder.infographic
+            case .expansion: return L10n.AI.Synthesis.Control.Placeholder.expansion
+            }
+        }
     }
 
     public enum SynthesisStatus: Equatable, Sendable {
@@ -146,7 +156,8 @@ public final class SynthesisStore {
     /// 保存SynthesisResult
     /// - Parameter type: type
     /// - Parameter content: content
-    public func saveSynthesisResult(type: SynthesisType, content: String, sourcePageIDs: [UUID] = []) {
+    @discardableResult
+    public func saveSynthesisResult(type: SynthesisType, content: String, sourcePageIDs: [UUID] = []) -> SynthesisDocument? {
         let cleanedContent = Self.cleanMarkdown(content)
         let trimmed = cleanedContent.trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -157,7 +168,7 @@ public final class SynthesisStore {
               trimmed != "graph",
               trimmed.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
             Logger.shared.addLog(action: .ingest, target: type.title, details: "Synthesis result invalid or empty (size: \(trimmed.utf8.count) B)")
-            return
+            return nil
         }
 
         let title = extractTitle(from: cleanedContent, type: type)
@@ -170,24 +181,44 @@ public final class SynthesisStore {
         synthesisResults[type] = existing
         synthesisStates[type] = .completed
         persistResults(for: type)
+        return doc
+    }
+
+    /// 核心分派执行不同类型的 AI 合成任务
+    private func dispatchSynthesis(type: SynthesisType, content: String) async throws -> String {
+        switch type {
+        case .mindmap:
+            return try await AISynthesisService.shared.generateMindMap(content: content)
+        case .slides:
+            return try await AISynthesisService.shared.generatePresentation(content: content)
+        case .quiz:
+            return try await AISynthesisService.shared.generateQuiz(content: content)
+        case .report:
+            return try await AISynthesisService.shared.generateReport(content: content)
+        case .infographic:
+            return try await AISynthesisService.shared.generateInfographic(content: content)
+        case .expansion:
+            return try await AISynthesisService.shared.expandKnowledge(content: content)
+        }
     }
 
     /// 执行Synthesis
     /// - Parameter type: type
     /// - Parameter combinedContent: combinedContent
-    /// - Returns: 字符串
-    public func performSynthesis(type: SynthesisType, combinedContent: String, sourcePageIDs: [UUID] = []) async throws -> String {
+    /// - Returns: 合成文档对象 SynthesisDocument
+    public func performSynthesis(type: SynthesisType, combinedContent: String, options: SynthesisControlOptions = SynthesisControlOptions(), sourcePageIDs: [UUID] = []) async throws -> SynthesisDocument {
         guard synthesisStates[type] != SynthesisStatus.generating else { 
             throw AppError.synthesis("Task already in progress", code: -1)
         }
 
         let existingCount = synthesisResults[type]?.count ?? 0
         if existingCount >= maxSynthesisDocsPerType {
-            let errorMsg = L10n.AI.Synthesis.Error.limitReached
-            withMutation(keyPath: \.synthesisStates) {
-                _synthesisStates[type] = SynthesisStatus.error(errorMsg)
+            // 自动容量管控：已达 5 个阈值时自动移除最旧文档，避免阻塞用户合成体验
+            if var docs = synthesisResults[type], !docs.isEmpty {
+                docs.removeLast()
+                synthesisResults[type] = docs
+                persistResults(for: type)
             }
-            throw AppError.synthesis(errorMsg, code: -2)
         }
 
         withMutation(keyPath: \.synthesisStates) {
@@ -195,41 +226,43 @@ public final class SynthesisStore {
         }
         let taskID = TaskCenter.shared.addTask(type: .synthesis, name: type.title, target: L10n.Common.Sidebar.synthesis)
 
-        // Prepend anti-hallucination + source citation instruction
+        var customInstruction = ""
+        if !options.customPrompt.isEmpty {
+            customInstruction = "\(L10n.AI.Synthesis.Control.customPromptTitle): \(options.customPrompt)\n"
+        }
+
+        // Prepend anti-hallucination + source citation + custom options instruction
         let augmentedContent = """
-        \(L10n.AI.Synthesis.citationInstruction)
+        \(customInstruction)\(L10n.AI.Synthesis.citationInstruction)
 
         ---
         \(combinedContent)
         """
 
+        let traceID = UUID().uuidString
+        Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] Starting synthesis")
+
         do {
-            let content: String
-            switch type {
-            case .mindmap:
-                content = try await AISynthesisService.shared.generateMindMap(content: augmentedContent)
-            case .slides:
-                content = try await AISynthesisService.shared.generatePresentation(content: augmentedContent)
-            case .quiz:
-                content = try await AISynthesisService.shared.generateQuiz(content: augmentedContent)
-            case .report:
-                content = try await AISynthesisService.shared.generateReport(content: augmentedContent)
-            case .infographic:
-                content = try await AISynthesisService.shared.generateInfographic(content: augmentedContent)
-            case .expansion:
-                content = try await AISynthesisService.shared.expandKnowledge(content: augmentedContent)
-            }
-
-            let cleaned = Self.cleanMarkdown(content).trimmingCharacters(in: .whitespacesAndNewlines)
+            let content = try await dispatchSynthesis(type: type, content: augmentedContent)
+            let strategy = SynthesisStrategyFactory.strategy(for: type)
+            let processedContent = strategy.process(rawContent: content, sourceContent: combinedContent)
+            
+            let cleaned = Self.cleanMarkdown(processedContent).trimmingCharacters(in: .whitespacesAndNewlines)
             guard !cleaned.isEmpty, cleaned != "mindmap", cleaned != "graph TD", cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
-                let emptyError = L10n.AI.Synthesis.Error.noPages
-                throw AppError.synthesis(emptyError, code: -3)
+                let invalidError = L10n.AI.Synthesis.Error.invalidResult
+                Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] Synthesis validation failed, invalid content")
+                throw AppError.synthesis(invalidError, code: -3)
             }
 
-            self.saveSynthesisResult(type: type, content: content, sourcePageIDs: sourcePageIDs)
+            guard let savedDoc = self.saveSynthesisResult(type: type, content: processedContent, sourcePageIDs: sourcePageIDs) else {
+                let invalidError = L10n.AI.Synthesis.Error.invalidResult
+                throw AppError.synthesis(invalidError, code: -3)
+            }
+            Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] [SynthesisStatus: Success] Saved doc \(savedDoc.id)")
             TaskCenter.shared.completeTask(id: taskID)
-            return content
+            return savedDoc
         } catch {
+            Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] [SynthesisStatus: Error] \(error.localizedDescription)")
             withMutation(keyPath: \.synthesisStates) {
                 self._synthesisStates[type] = SynthesisStatus.error(error.localizedDescription)
             }

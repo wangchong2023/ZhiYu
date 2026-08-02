@@ -27,7 +27,7 @@ struct GraphEmptyStateView: View {
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, DesignSystem.loosePadding * 1.5)
+                    .padding(.horizontal, DesignSystem.huge)
             }
             
             Button(action: { selectedTab = .ingest }) {

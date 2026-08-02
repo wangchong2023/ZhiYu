@@ -20,16 +20,17 @@ struct SynthesisSlidesView: View {
         let content = doc.content.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
 
-        if content.contains("\n---") {
-            parts = content.components(separatedBy: "\n---")
+        if content.contains("---") {
+            parts = content.components(separatedBy: "---")
         } else if content.contains("\n## ") {
             parts = content.components(separatedBy: "\n## ").map { $0.hasPrefix("## ") ? $0 : "## " + $0 }
         } else {
             parts = [content]
         }
 
-        let cleaned = parts.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        let cleaned = parts
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && $0 != "---" }
             .map { slide -> String in
                 // 🛡️ 自动检测并闭合在切分点被截断的代码块围栏
                 let fenceCount = slide.components(separatedBy: "```").count - 1
@@ -103,6 +104,11 @@ struct SynthesisSlidesView: View {
             .padding(.bottom, DesignSystem.medium)
         }
         .background(Color.appBackground)
+        .onAppear {
+            if slides.count <= 1 && !doc.content.contains("---") && !doc.content.contains("##") {
+                Logger.shared.error("[SYNTH_ERR_SLIDES]" + " \(doc.content.prefix(50))")
+            }
+        }
     }
 
     private func slideCard(content: String, pageIndex: Int) -> some View {
@@ -111,11 +117,11 @@ struct SynthesisSlidesView: View {
                 MarkdownRendererView(content: content, isPrivate: false, onLinkTap: { _ in })
                     .padding(DesignSystem.loosePadding)
             }
-            .frame(maxWidth: .infinity, minHeight: 320, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: Spacing.Grid.emptyStateHeight, alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                     .fill(Color.appCard)
-                    .shadow(color: .black.opacity(DesignSystem.Opacity.soft), radius: 10, x: 0, y: 4)
+                    .shadow(color: .black.opacity(DesignSystem.Opacity.soft), radius: DesignSystem.mediumRadius, x: 0, y: DesignSystem.tiny)
             )
             .padding(.horizontal, DesignSystem.standardPadding)
             .padding(.vertical, DesignSystem.small)

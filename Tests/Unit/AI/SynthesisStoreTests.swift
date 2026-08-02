@@ -20,9 +20,11 @@ final class SynthesisStoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
         store = SynthesisStore()
+        store.clearAll()
     }
 
     override func tearDown() {
+        store?.clearAll()
         store = nil
         super.tearDown()
     }
@@ -141,5 +143,15 @@ final class SynthesisStoreTests: XCTestCase {
         // 反向物理读取校验
         XCTAssertTrue(store.synthesisResults[type]?.isEmpty ?? true, "反向读取：内存字典必须已被完全清空")
         XCTAssertNil(UserDefaults.standard.data(forKey: key), "反向读取：磁盘 Key 下物理数据必须已被 100% 抹除，返回 nil")
+    }
+
+    func testPerformSynthesis_WithOptionsAndCustomPrompt() async throws {
+        let type = SynthesisStore.SynthesisType.report
+        let customOptions = SynthesisControlOptions(depth: .detailed, audience: .executive, tone: .academic, customPrompt: "包含高并发架构视角")
+        let sourceText = "# 系统架构\n这是智宇应用的技术基座架构说明文档。面向 iOS/macOS/watchOS 多端同步。"
+
+        let doc = try await store.performSynthesis(type: type, combinedContent: sourceText, options: customOptions)
+        XCTAssertNotNil(doc, "包含控制选项的合成必须成功返回 SynthesisDocument")
+        XCTAssertGreaterThanOrEqual(doc.size, AppConstants.ExportLimits.minValidSynthesisTextBytes)
     }
 }

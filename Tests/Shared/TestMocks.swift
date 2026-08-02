@@ -57,6 +57,52 @@ final class MockLLMService: LLMService, @unchecked Sendable {
         if let handler = generateHandler {
             return try await handler(prompt, systemPrompt)
         }
+        if systemPrompt.contains("Mermaid") || prompt.contains("思维导图") || prompt.contains("mindmap") {
+            return """
+            # UI测试思维导图
+
+            ```mermaid
+            mindmap
+              root((UI测试思维导图))
+                核心功能
+                  语义检索
+                  双向链接
+                架构设计
+                  L0-L3分层
+            ```
+            """
+        } else if prompt.contains("信息图表") || prompt.contains("infographic") {
+            return """
+            # UI测试信息图表
+
+            ```mermaid
+            graph TD
+              A[核心数据] --> B[存储层]
+              A --> C[展现层]
+            ```
+            """
+        } else if prompt.contains("演示文稿") || prompt.contains("slides") || prompt.contains("幻灯片") {
+            return """
+            # 幻灯片 1：项目概述
+            欢迎使用智宇 AI 知识管理系统。
+
+            ---
+            # 幻灯片 2：核心能力
+            - 混合向量检索
+            - 深度合成实验室
+            """
+        } else if prompt.contains("知识测验") || prompt.contains("quiz") {
+            return """
+            [
+              {
+                "question": "智宇系统的存储架构依赖什么框架？",
+                "options": ["GRDB.swift", "CoreData", "Realm", "MongoDB"],
+                "answerIndex": 0,
+                "explanation": "智宇底层采用 GRDB.swift 驱动 SQLite + FTS5 全文检索。"
+              }
+            ]
+            """
+        }
         return "智宇是一款优秀的基于 RAG 的知识管理应用，具备双向链接功能。"
     }
     override func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {

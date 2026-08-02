@@ -235,8 +235,8 @@ struct GraphInsightsPanel: View {
             Text("\(count)")
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(.white)
-                .padding(.horizontal, DesignSystem.small / 2)
-                .padding(.vertical, DesignSystem.atomic * 1.5)
+                .padding(.horizontal, Spacing.Chip.iconSpacing)
+                .padding(.vertical, Spacing.Chip.verticalPadding)
                 .background(
                     LinearGradient(
                         colors: [color, color.opacity(DesignSystem.surfaceOpacity - 0.05)],
@@ -317,15 +317,15 @@ struct GraphInsightsPanel: View {
                                 HapticFeedback.shared.trigger(.selection)
                                 onSelectNode(nodeID)
                             }) {
-                                HStack(spacing: DesignSystem.small / 2.5) {
+                                HStack(spacing: Spacing.Chip.iconSpacing) {
                                     Image(systemName: node.pageType.icon)
                                         .font(.caption)
                                     Text(node.title)
                                         .font(.caption.weight(.medium))
                                         .lineLimit(1)
                                 }
-                                .padding(.horizontal, DesignSystem.mediumRadius + DesignSystem.atomic)
-                                .padding(.vertical, DesignSystem.atomic * 2.5)
+                                .padding(.horizontal, DesignSystem.medium)
+                                .padding(.vertical, DesignSystem.tiny)
                                 .background(color.opacity(DesignSystem.subtleFillOpacity * 0.8))
                                 .overlay(
                                     Capsule()

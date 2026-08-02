@@ -48,6 +48,7 @@ Tools/
 | `check_storage_constants.py` | 拦截数据库物理表名和物理字段的硬编码 SQL 插值 |
 | `check_magic_numbers.py` | 自动扫描代码中的魔鬼数字（颜色、尺寸及硬编码常数） |
 | `check_hig_compliance.py` | 校验 Apple HIG 无障碍规范（字号限制、hint 等） |
+| `check_token_layering.py` | 校验 3 级设计令牌分层 (3-Tier Tokens) 与平台上下文动态解耦规范 |
 
 ### Release (安全与发布就绪)
 | 脚本 | 功能说明 |

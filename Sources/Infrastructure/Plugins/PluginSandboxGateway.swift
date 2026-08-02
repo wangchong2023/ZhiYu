@@ -53,8 +53,15 @@ struct PluginSandboxGateway {
             throw PluginSandboxError.invalidURL(urlString)
         }
 
-        // 域名白名单审计
-        let isAllowed = allowedDomains.contains(where: { host.contains($0) })
+        // 域名白名单审计（VULN-002 修复：使用精确后缀匹配，杜绝子串绕过）
+        let normalizedHost = host.lowercased()
+        let isAllowed = allowedDomains.contains { domain in
+            let normalizedDomain = domain.lowercased()
+            // 拒绝空字符串白名单（空字符串会匹配任意 host）
+            guard !normalizedDomain.isEmpty else { return false }
+            // 精确匹配或合法子域后缀匹配（".domain" 确保是子域，而非前缀欺骗）
+            return normalizedHost == normalizedDomain || normalizedHost.hasSuffix("." + normalizedDomain)
+        }
         guard isAllowed else {
             throw PluginSandboxError.dlpFetchBlocked(host)
         }

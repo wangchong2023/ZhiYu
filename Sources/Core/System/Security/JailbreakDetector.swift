@@ -6,9 +6,12 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L0.5] 系统集成层
-//  核心职责：安全基础设施：Keychain 密钥管理、Secure Enclave 加密、HMAC 签名。
+//  核心职责：越狱检测：检测设备越狱状态、沙箱完整性、Cydia scheme，保障运行环境安全。
 //
 import Foundation
+#if os(iOS)
+import UIKit
+#endif
 
 /// 越狱检测器
 /// 封装设备运行环境的安全完整性检测逻辑，防止应用在越狱或被注入调试器等不安全设备上运行，保障知识图谱的本地机密性。
@@ -22,6 +25,7 @@ public final class JailbreakDetector: Sendable {
     ///
     /// 综合多项底层安全检测项。任何一项异常即判定为已越狱。
     /// - Returns: 若已越狱返回 true，否则返回 false。
+    @MainActor
     public func isJailbroken() -> Bool {
         // 1. 检测常见越狱文件的物理路径是否存在
         if checkCommonJailbreakFiles() {
@@ -70,13 +74,12 @@ public final class JailbreakDetector: Sendable {
     }
     
     /// 检验是否能打开 Cydia 协议 URL
+    @MainActor
     private func checkCydiaScheme() -> Bool {
-        // 平台限制：非 iOS 等需要 UI 调用的地方使用桥接或简易检测
+        // VULN-010 修复：恢复 Cydia scheme 检测，使用 canOpenURL 判断
         #if os(iOS)
-        // 仅校验 Cydia URL 是否可被成功构造，不绑定变量以消除警告
-        if URL(string: "cydia://package/com.example.test") != nil {
-            // 使用非 UI 的其他探测方式或直接安全忽略，此处做简化
-            return false
+        if let url = URL(string: "cydia://package/com.example.test") {
+            return UIApplication.shared.canOpenURL(url)
         }
         #endif
         return false

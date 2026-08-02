@@ -16,6 +16,8 @@ extension IngestCoordinator {
     /// 从网页 URL 提取图片并 OCR，返回追加的 Markdown 文本
     func extractImagesFromURL(_ urlString: String) async throws -> String {
         guard let url = URL(string: urlString) else { return "" }
+        // VULN-005 修复：SSRF 防护 — 拒绝内网地址
+        guard SSRFGuard.isSafeURL(url) else { return "" }
         guard let (htmlData, _) = try? await URLSession.shared.data(from: url) else { return "" }
         guard let html = String(data: htmlData, encoding: .utf8) else { return "" }
         return await imageExtractor.extractImagesFromHTML(html, baseURL: url)
@@ -97,6 +99,14 @@ extension IngestCoordinator {
     ) async -> Bool {
         await MainActor.run {
             TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.fetchingURL): \(urlString)")
+        }
+
+        // VULN-005 修复：SSRF 防护 — 拒绝内网/环回/链路本地地址
+        if let url = URL(string: urlString), !SSRFGuard.isSafeURL(url) {
+            await MainActor.run {
+                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.fetchingURL): \(urlString) [blocked]")
+            }
+            return false
         }
 
         let rawResult = try? await scraper.fetchMarkdown(from: urlString)

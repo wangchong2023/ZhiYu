@@ -155,13 +155,10 @@ final class PromptService: ObservableObject, @unchecked Sendable {
         Logger.shared.info("Prompt configurations reset to default.")
     }
 
-    /// 根据当前界面语言生成的 AI 回复指令
+    /// 根据当前客户端界面语言动态生成的 AI 多语言回复 Prompt 指令
     var languageInstruction: String {
-        if Localized.isChinese {
-            return L10n.AI.Prompt.replyInChinese
-        } else {
-            return "\n\nPlease reply in English."
-        }
+        let langCode = Localized.currentLanguage
+        return "\n\nPlease reply in the user's current locale language (\(langCode))."
     }
 }
 

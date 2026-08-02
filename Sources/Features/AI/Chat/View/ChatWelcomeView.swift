@@ -80,7 +80,7 @@ struct SuggestionGroupView: View {
                         .opacity(DesignSystem.Opacity.soft)
                 }
                 .foregroundStyle(color)
-                .padding(.leading, DesignSystem.atomic * 2)
+                .padding(.leading, DesignSystem.tiny)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

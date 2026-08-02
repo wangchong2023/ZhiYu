@@ -18526,10 +18526,117 @@
         }
       }
     },
+    "synthesis.control.customPromptTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعليمات مخصصة"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Instruction"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instrucción personalizada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instruction personnalisée"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カスタム指示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용자 지정 지시사항"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пользовательские инструкции"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定制提示词"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定制提示词"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Instruction"
+          }
+        }
+      }
+    },
     "speech.tapToRecord": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
         "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start recording"
+          }
+        },
+        "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Tap to start recording"
@@ -18546,47 +18653,590 @@
             "state": "translated",
             "value": "点擊開始錄音"
           }
+        }
+      }
+    },
+    "synthesis.chatter.asFollowsChinese": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如下所示"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如下所示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如下所示"
+          }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap to start recording"
+            "value": "如下所示"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap to start recording"
+            "value": "如下所示"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap to start recording"
+            "value": "如下所示"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap to start recording"
+            "value": "如下所示"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap to start recording"
+            "value": "如下所示"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap to start recording"
+            "value": "如下所示"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap to start recording"
+            "value": "如下所示"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.belowChinese": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        }
+      }
+    },
+    "synthesis.control.describeType_%@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "描述您要创建的%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "描述您要建立的%@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Describe the %@ you want to create"
+          }
+        }
+      }
+    },
+    "synthesis.control.placeholder.expansion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定扩展维度或延伸领域，例如：“补充在分布式与多终端同步场景下的演变路径”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定擴展維度或延伸領域，例如：“補充在分布式与多終端同步場景下的演變路徑”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify expansion dimension, e.g., 'Include multi-terminal sync evolution'."
+          }
+        }
+      }
+    },
+    "synthesis.control.placeholder.infographic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定风格、颜色或侧重点：“使用蓝色主题，并强调 3 个关键统计数据。”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定風格、顏色或侧重点：“使用藍色主題，並強調 3 個關鍵統计資料。”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify diagram style, e.g., 'Use blue theme and highlight 3 statistics'."
+          }
+        }
+      }
+    },
+    "synthesis.control.placeholder.mindmap": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定导图分支结构、层级重点或主题，例如：“以架构设计为核心，分为 3 层，并突出 SQLite 存储引擎”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定导圖分支結構、层级重点或主題，例如：“以架構設计為核心，分為 3 层，並突出 SQLite 存储引擎”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify mindmap structure, e.g., '3 levels focusing on SQLite engine'."
+          }
+        }
+      }
+    },
+    "synthesis.control.placeholder.quiz": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定题型、难度或测试重点，例如：“包含 5 道单选题，侧重考察系统架构分层设计”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定題型、难度或测試重点，例如：“包含 5 道單選題，侧重考察係統架構分层設计”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify question types or difficulty, e.g., '5 multiple-choice questions on system layering'."
+          }
+        }
+      }
+    },
+    "synthesis.control.placeholder.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定简报摘要侧重点，例如：“聚焦风险控制与成本分析，提供结论性执行摘要”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定简报摘要侧重点，例如：“聚焦風險控制与成本分析，提供結論性執行摘要”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify report focus area, e.g., 'Focus on risk control & cost analysis'."
+          }
+        }
+      }
+    },
+    "synthesis.control.placeholder.slides": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定幻灯片风格、页数或侧重点，例如：“生成 5 页 PPT，使用简约风，突出 3 项核心业务指标”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指定幻灯片風格、頁數或侧重点，例如：“生成 5 頁 PPT，使用简約風，突出 3 項核心業務指標”"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Specify slide style or page count, e.g., '5 slides focusing on 3 core metrics'."
           }
         }
       }
@@ -19172,6 +19822,2866 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vault is empty, cannot perform synthesis"
+          }
+        }
+      }
+    },
+    "synthesis.error.invalidResult": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 合成生成失败，内容为空或格式无效"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI 合成生成失敗，內容為空或格式無效"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI synthesis result is empty or invalid format"
+          }
+        }
+      }
+    },
+    "synthesis.error.pageNotFound": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到关联的源页面"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到關联的源頁面"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Associated source page not found"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.coreConcept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心概念解析"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心概念解析"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Concept Analysis"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.reportOverview": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. 概述与核心目标"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. 概述与核心目標"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 1. Overview and Core Objectives"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.reportKeyPoints": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. 关键知识要点分析"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. 關鍵知識要点分析"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 2. Key Knowledge Analysis"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.reportPointItem": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **要点 %lld**: %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **要点 %lld**: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "* **Key Point %lld**: %@"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.reportSummaryHeader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. 总结与建议"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. 總結与建議"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\n## 3. Summary and Recommendations"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.reportSummaryBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "基于知识库相关来源的综合解析，以上核心要点提供了完整的结构化背景参考。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "基於知識庫相關來源的綜合解析，以上核心要点提供了完整的結構化背景参考。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on synthesis of vault sources, the key points above provide structured background context."
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionBackground": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 背景与科学原理"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 背景与科學原理"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Background and Core Principles"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionBackgroundBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本主题立足于知识库现有资料，探讨其底层核心逻辑与发展脉络。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本主題立足於知識庫現有資料，探讨其底层核心逻辑与發展脈絡。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on vault materials, exploring core underlying logic and evolution."
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionDetailsHeader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 核心细节深度剖析"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 核心細節深度剖析"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Deep Dive Details"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionDetailItem": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### 细节维度 %lld\n%@\n"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### 細節維度 %lld\n%@\n"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "### Detail Dimension %lld\n%@\n"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionFutureHeader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 延伸思考与前沿趋势"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 延伸思考与前沿趨勢"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Future Trends"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionFutureBody": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "探讨该知识主题在跨学科应用及未来演化中的潜在价值。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "探讨该知識主題在跨學科套用及未來演化中的潛在價值。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploring potential value in cross-domain applications and future evolution."
+          }
+        }
+      }
+    },
+    "synthesis.actions.polish": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "润色"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "潤色"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polish"
+          }
+        }
+      }
+    },
+    "synthesis.actions.regenerate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新生成"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新生成"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate Section"
+          }
+        }
+      }
+    },
+    "synthesis.control.audience": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标受众"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目標受眾"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target Audience"
+          }
+        }
+      }
+    },
+    "synthesis.control.audience.beginner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "基础入门"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "基础入門"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginner"
+          }
+        }
+      }
+    },
+    "synthesis.control.audience.executive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理汇报"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理汇报"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executive"
+          }
+        }
+      }
+    },
+    "synthesis.control.audience.professional": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "领域专家"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "領域專家"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domain Expert"
+          }
+        }
+      }
+    },
+    "synthesis.control.depth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "篇幅深度"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "篇幅深度"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content Depth"
+          }
+        }
+      }
+    },
+    "synthesis.control.depth.concise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "精简提炼"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "精简提炼"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concise"
+          }
+        }
+      }
+    },
+    "synthesis.control.depth.detailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "详尽长文"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "詳盡長文"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detailed"
+          }
+        }
+      }
+    },
+    "synthesis.control.depth.standard": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标准深度"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "標準深度"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        }
+      }
+    },
+    "synthesis.control.startSynthesis": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始 AI 合成"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始 AI 合成"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start AI Synthesis"
+          }
+        }
+      }
+    },
+    "synthesis.control.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "合成控制维度"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "合成控制維度"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synthesis Control"
+          }
+        }
+      }
+    },
+    "synthesis.control.tone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "语气风格"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "語氣風格"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone & Style"
+          }
+        }
+      }
+    },
+    "synthesis.control.tone.academic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "学术严谨"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "學術嚴谨"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Academic Rigor"
+          }
+        }
+      }
+    },
+    "synthesis.control.tone.casual": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生动风趣"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生動風趣"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Casual"
+          }
+        }
+      }
+    },
+    "synthesis.control.tone.professional": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "干练职场"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "幹练職場"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Professional Tone"
+          }
+        }
+      }
+    },
+    "prompt.expert.expansion.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "知识扩写页脚"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "知識擴寫頁腳"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion Footer"
+          }
+        }
+      }
+    },
+    "prompt.expert.expansion.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "知识扩写演进"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "知識擴寫演進"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Expansion"
+          }
+        }
+      }
+    },
+    "prompt.expert.infographic.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "信息图页脚"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "資訊圖頁腳"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Footer"
+          }
+        }
+      }
+    },
+    "prompt.expert.infographic.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "信息图框架"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "資訊圖框架"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Infographic Framework"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.slidesHeader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心要点"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心要点"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Takeaways"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.asRequested": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "根据您的要求"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "根據您的要求"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "as requested"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.belowAre": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如下"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如下"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below are"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.belowIs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如下是"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如下是"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "below is"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.followingIs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以下是"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "following is"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.hereAre": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这里有"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這裏有"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here are"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.hereIs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这里是"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這裏是"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here is"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.heres": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这有"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這有"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "here's"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.parsedAs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解析如下"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解析如下"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "parsed as"
+          }
+        }
+      }
+    },
+    "synthesis.chatter.thisIs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这是"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這是"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is"
           }
         }
       }
@@ -21796,6 +25306,48 @@
             "state": "translated",
             "value": "Preset Model"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset Model"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset Model"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset Model"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset Model"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset Model"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset Model"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset Model"
+          }
         }
       }
     },
@@ -21819,6 +25371,48 @@
             "state": "translated",
             "value": "Custom Model ID"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Model ID"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Model ID"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Model ID"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Model ID"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Model ID"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Model ID"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom Model ID"
+          }
         }
       }
     },
@@ -21834,10 +25428,52 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "API Key 不可為空"
+            "value": "API Key 不能為空"
           }
         },
         "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key cannot be empty"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key cannot be empty"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key cannot be empty"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key cannot be empty"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key cannot be empty"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key cannot be empty"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API Key cannot be empty"
+          }
+        },
+        "pt": {
           "stringUnit": {
             "state": "translated",
             "value": "API Key cannot be empty"
@@ -21857,10 +25493,52 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "前綴格式提醒：需以 \"%@\" 開頭"
+            "value": "前缀格式提醒：需以 \"%@\" 開頭"
           }
         },
         "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefix hint: Should start with \"%@\""
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefix hint: Should start with \"%@\""
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefix hint: Should start with \"%@\""
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefix hint: Should start with \"%@\""
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefix hint: Should start with \"%@\""
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefix hint: Should start with \"%@\""
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prefix hint: Should start with \"%@\""
+          }
+        },
+        "pt": {
           "stringUnit": {
             "state": "translated",
             "value": "Prefix hint: Should start with \"%@\""
@@ -21888,6 +25566,48 @@
             "state": "translated",
             "value": "Length hint: At least %d characters"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length hint: At least %d characters"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length hint: At least %d characters"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length hint: At least %d characters"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length hint: At least %d characters"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length hint: At least %d characters"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length hint: At least %d characters"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length hint: At least %d characters"
+          }
         }
       }
     },
@@ -21911,6 +25631,48 @@
             "state": "translated",
             "value": "核心概要分析"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Overview Analysis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Overview Analysis"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Overview Analysis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Overview Analysis"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Overview Analysis"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Overview Analysis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Overview Analysis"
+          }
         }
       }
     },
@@ -21932,7 +25694,699 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "知識要點提取"
+            "value": "知識要点提取"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Insights Extraction"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Insights Extraction"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Insights Extraction"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Insights Extraction"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Insights Extraction"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Insights Extraction"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key Insights Extraction"
+          }
+        }
+      }
+    },
+    "prompt.system.summarize": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一个专业的知识分析师。请深入分析提供的文本并生成结构化的摘要。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一個專業的知識分析師。請深入分析提供的文本並生成結構化的摘要。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge analyst. Analyze the provided content thoroughly and generate a structured summary."
+          }
+        }
+      }
+    },
+    "prompt.system.mindmap": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名资深知识架构师与思维导图专家。\n请深入分析输入文档，并构建丰富、多层级的 Mermaid 格式思维导图。\n规则：\n1. 始终以 '# <文档核心标题>' 开头。\n2. 然后输出严格以 'mindmap' 开头的标准 Mermaid 代码。\n3. 根节点必须为 'root((<文档标题>))'。\n4. 提取 3 至 6 个主要主题作为一级分支（缩进 4 个空格）。\n5. 每个主题下提取 2 至 4 个具体子观点或核心洞察（缩进 6 个空格）。\n6. 切勿使用 markdown 代码块包裹语法(```)。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名資深知識架構師与思維导圖專家。\n請深入分析輸入文档，並構建豐富、多层级的 Mermaid 格式思維导圖。\n規則：\n1. 始終以 '# <文档核心標題>' 開頭。\n2. 然後輸出嚴格以 'mindmap' 開頭的標準 Mermaid 程式碼。\n3. 根節点必须為 'root((<文档標題>))'。\n4. 提取 3 至 6 個主要主題作為一级分支（縮進 4 個空格）。\n5. 每個主題下提取 2 至 4 個具體子觀点或核心洞察（縮進 6 個空格）。\n6. 切勿使用 markdown 程式碼塊包裹語法(```)。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior Knowledge Architect and Mind Map Expert.\nAnalyze the input document thoroughly and construct a rich, multi-level hierarchical Mind Map in Mermaid format.\nRules:\n1. Always start with '# <Document Core Title>'.\n2. Then output standard Mermaid code strictly starting with 'mindmap'.\n3. Root node MUST be 'root((<Document Title>))'.\n4. Extract 3 to 6 major themes as primary branches (indented by 4 spaces).\n5. For each theme, extract 2 to 4 specific sub-points or key insights (indented by 6 spaces).\n6. Do NOT use markdown code fences (```)."
+          }
+        }
+      }
+    },
+    "prompt.system.actions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一个任务提取专家。请从文本中识别并提取清晰、可执行的待办事项与下一步计划。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一個任務提取專家。請从文本中識別並提取清晰、可執行的待办事項与下一步计劃。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a task extraction expert. Identify and extract clear, actionable items and next steps from the content."
+          }
+        }
+      }
+    },
+    "prompt.system.slides": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名资深演示文稿设计师和演讲教练。\n请严格基于所给内容生成 5 至 8 页结构化的 Markdown 幻灯片。\n规则：\n1. 始终以 '# <演示标题>' 开头。\n2. 幻灯片之间用单独一行的 '---' 分隔。总页数严格控制在 5 至 8 页之间。\n3. 每页幻灯片必须以清晰的小标题 ('## <页面标题>') 开头，后跟 3 至 5 条精炼的要点 ('* <要点>')。\n4. 切勿输出空页面或只有标题无要点内容的页面。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名資深演示文稿設计師和演讲教练。\n請嚴格基於所給內容生成 5 至 8 頁結構化的 Markdown 幻灯片。\n規則：\n1. 始終以 '# <演示標題>' 開頭。\n2. 幻灯片之間用單独一行的 '---' 分隔。總頁數嚴格控制在 5 至 8 頁之間。\n3. 每頁幻灯片必须以清晰的小標題 ('## <頁面標題>') 開頭，後跟 3 至 5 條精炼的要点 ('* <要点>')。\n4. 切勿輸出空頁面或隻有標題無要点內容的頁面。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior presentation designer and speech coach.\nGenerate 5 to 8 structured Markdown slides based strictly on the provided content.\nRules:\n1. Always start with '# <Presentation Title>'.\n2. Separate slides with '---' on a new line. Limit total slides strictly between 5 and 8 pages.\n3. Each slide MUST begin with a clear section title ('## <Slide Title>') followed by 3 to 5 concise bullet points ('* <Point>').\n4. Do NOT output empty slides or title-only slides without bullet points."
+          }
+        }
+      }
+    },
+    "prompt.system.quiz": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名教育测评专家。\n请严格基于所给内容生成 3 至 5 道单项选择测试题。\n重要要求：每道题的正确选项下标（answerIndex）必须随机分布在 0, 1, 2, 3 中（A/B/C/D 随机分布），严禁所有题目的正确答案固定为第一个选项（如全选 A/index 0）。\n输出必须是严格匹配此结构的 JSON：\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"具体理论问题描述？\",\n      \"options\": [\"干扰项描述一\", \"正确核心结论说明\", \"干扰项描述二\", \"干扰项描述三\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"详细解析说明...\"\n    }\n  ]\n}\n切勿用代码块包裹。仅输出合法 JSON。所有选项必须是基于源文本提取的完整、有意义句子。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名教育测評專家。\n請嚴格基於所給內容生成 3 至 5 道單項選擇测試題。\n重要要求：每道題的正確選項下標（answerIndex）必须隨機分布在 0, 1, 2, 3 中（A/B/C/D 隨機分布），嚴禁所有題目的正確答案固定為第一個選項（如全選 A/index 0）。\n輸出必须是嚴格匹配此結構的 JSON：\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"具體理論問題描述？\",\n      \"options\": [\"幹扰項描述一\", \"正確核心結論說明\", \"幹扰項描述二\", \"幹扰項描述三\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"詳細解析說明...\"\n    }\n  ]\n}\n切勿用程式碼塊包裹。仅輸出合法 JSON。所有選項必须是基於源文本提取的完整、有意义句子。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are an educational assessment expert.\nGenerate 3 to 5 multiple-choice quiz questions based strictly on the provided content.\nCRITICAL REQUIREMENT: Randomize the correct answer index (answerIndex) across 0, 1, 2, and 3 for each question. Do NOT always place the correct answer as option A (index 0). Distribute correct answers across A, B, C, D.\nOutput MUST be strict JSON matching this structure:\n{\n  \"quizTitle\": \"%@\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"question\": \"Question description?\",\n      \"options\": [\"Distractor 1\", \"Correct core conclusion\", \"Distractor 2\", \"Distractor 3\"],\n      \"answerIndex\": 1,\n      \"explanation\": \"Detailed explanation...\"\n    }\n  ]\n}\nDo NOT wrap in code fences. Output valid JSON only. All options MUST be complete, meaningful sentences derived from the source text."
+          }
+        }
+      }
+    },
+    "prompt.system.infographic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名资深数据可视化专家。\n请创建一个专业的 Mermaid graph TD 图表结构。\n始终以 '# <总结标题>' 开头。\n切勿使用代码块包裹(```)。\n仅输出标题和 Mermaid 代码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名資深資料可視化專家。\n請建立一個專業的 Mermaid graph TD 圖表結構。\n始終以 '# <總結標題>' 開頭。\n切勿使用程式碼塊包裹(```)。\n仅輸出標題和 Mermaid 程式碼。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data visualization expert.\nCreate a professional Mermaid graph TD structure.\nAlways start with '# <Summary Title>'.\nDo NOT use code fences (```).\nOnly output the Title and the Mermaid code."
+          }
+        }
+      }
+    },
+    "prompt.system.report": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名资深分析师与技术报告作者。\n请按照主标题 ('# ')、摘要说明、详细章节 ('## ')、核心发现与结论结构化生成报告。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名資深分析師与技術报告作者。\n請按照主標題 ('# ')、摘要說明、詳細章節 ('## ')、核心發現与結論結構化生成报告。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior analyst and technical report writer.\nStructure the report with a main title ('# '), abstract/summary, detailed sections ('## '), key findings, and conclusion."
+          }
+        }
+      }
+    },
+    "prompt.system.expansion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名资深知识架构师与研究员。\n请对输入内容进行深入、有洞察力的扩展。\n要求：\n1. 以 '# <扩展标题>' 开头。\n2. 划分为 3 至 4 个带实质性标题的主题章节 ('## 核心机制与结构解构', '## 实践应用与落地方法', '## 延伸思考与前沿趋势')。\n3. 切勿使用像 '细节维度 1' 或 'Detail 1' 这类通用占位标题。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名資深知識架構師与研究員。\n請對輸入內容進行深入、有洞察力的擴展。\n要求：\n1. 以 '# <擴展標題>' 開頭。\n2. 劃分為 3 至 4 個带實質性標題的主題章節 ('## 核心機制与結構解構', '## 實践套用与落地方法', '## 延伸思考与前沿趨勢')。\n3. 切勿使用像 '細節維度 1' 或 'Detail 1' 這類通用佔位標題。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior knowledge architect and researcher.\nProvide a deep, insightful expansion of the input content.\nRequirements:\n1. Start with '# <Expanded Title>'.\n2. Divide into 3 to 4 topic sections with meaningful headers ('## Core Mechanism', '## Practical Application', '## Future Trends').\n3. Do NOT use generic placeholder titles like 'Detail 1'."
+          }
+        }
+      }
+    },
+    "prompt.system.suggestFix": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名知识库质量专家。请提供精确、可操作的建议，以解决文档质量缺陷。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名知識庫質量專家。請提供精確、可操作的建議，以解決文档質量缺陷。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a Knowledge Base Quality Specialist. Provide precise, actionable suggestions to resolve document quality issues."
+          }
+        }
+      }
+    },
+    "prompt.system.insightQuestions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名资深研究助手。请分析知识库摘要，并提出深入、有启发性的研讨问题。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名資深研究助手。請分析知識庫摘要，並提出深入、有啟發性的研讨問題。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
           }
         }
       }

@@ -84,7 +84,7 @@ struct VaultBadge: View {
                 .font(.system(size: DesignSystem.bodyFontSize, weight: .bold))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
-                .frame(maxWidth: 120)
+                .frame(maxWidth: DesignSystem.Gallery.cardMinWidth)
 
             if platformEnv.interactionStyle != InteractionStyle.crown {
                 Image(systemName: DesignSystem.Icons.chevronUpDown)

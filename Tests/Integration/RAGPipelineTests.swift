@@ -35,7 +35,7 @@ final class RAGPipelineTests: XCTestCase {
     /// 验证从 原始文档导入 -> 向量化与词向量生成 -> 混合搜索与精确检索 -> LLM 生成回复 的完整闭环。
     func testFullRAGPipeline() async throws {
         // 从 DI 容器解析测试所需的具体持久化与向量模块
-        let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
+        let pageStore = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
         let embeddingManager = ServiceContainer.shared.resolve(EmbeddingManager.self)
         
         // 1. 导入数据并提取语义结构 (Ingest)
@@ -45,7 +45,7 @@ final class RAGPipelineTests: XCTestCase {
             content: testContent,
             forceDeepScan: true,
             llmService: store.llmService,
-            pageStore: sqliteStore
+            pageStore: pageStore
         )
         
         let pageID = page.id
@@ -53,7 +53,7 @@ final class RAGPipelineTests: XCTestCase {
         
         // 2. 向量化转换与对齐 (Vectorization)
         // 手动同步内存中的页面并注入向量数据库以对齐检索基准
-        let currentPages = await sqliteStore.pages
+        let currentPages = await pageStore.pages
         await embeddingManager.syncEmbeddings(pages: currentPages)
         await store.refresh()
         
@@ -83,7 +83,13 @@ final class RAGPipelineTests: XCTestCase {
 
     /// 验证当向量化索引出现故障或为空时，RAG 管道能平滑降级为纯文本/关键词检索而不抛出致命崩溃
     func testRAGPipeline_vectorIndexFallback() async throws {
-        let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
+        let pageStore = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
+        let configStore = ServiceContainer.shared.resolve(LLMConfigManager.self)
+        configStore.apiKey = "sk-mock-key"
+        
+        let mockChatLLM = MockChatLLMService()
+        mockChatLLM.stubChatResult = ChatMessageDTO(id: UUID(), role: .assistant, content: "降级总结回复内容", timestamp: Date(), relatedPageIDs: [])
+        ServiceContainer.shared.register(mockChatLLM as any LLMChatServiceProtocol, for: (any LLMChatServiceProtocol).self)
         
         // 导入一篇空页面/异常页面
         _ = await store.ingestService.ingestRawContent(
@@ -91,11 +97,12 @@ final class RAGPipelineTests: XCTestCase {
             content: "通用测试文本内容",
             forceDeepScan: false,
             llmService: store.llmService,
-            pageStore: sqliteStore
+            pageStore: pageStore
         )
+        await store.refresh()
 
         // 发起对话请求：即使向量服务返回空或异常，RAG 管道仍能成功输出降级回复
-        let response = try await store.llmService.chat(
+        let response = try await mockChatLLM.chat(
             query: "测试降级",
             history: [],
             pages: store.pages

@@ -119,7 +119,7 @@ final class ImportBoundaryTests: XCTestCase {
     }
 
     func testFileSizeOverLimitRejected() {
-        let size: Int64 = 20 * 1_024 * 1_024 // 20 MB
+        let size: Int64 = 60 * 1_024 * 1_024 // 60 MB (> 50 MB 限制)
         XCTAssertGreaterThan(size, AppConstants.Keys.ImportLimits.maxFileSizeBytes)
     }
 

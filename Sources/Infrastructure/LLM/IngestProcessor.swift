@@ -52,7 +52,8 @@ final class IngestProcessor: LLMKnowledgeServiceProtocol, @unchecked Sendable {
     /// 智能语义分析、分块并提取核心实体导入到知识库
     func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
         guard let ingestService = self.ingestService else { throw LLMError.notConfigured }
-        return try await ingestService.smartIngest(title: title, rawContent: rawContent, pages: pages)
+        let sanitizedText = DocumentSanitationEngine.shared.sanitize(rawContent)
+        return try await ingestService.smartIngest(title: title, rawContent: sanitizedText, pages: pages)
     }
     
     /// 根据当前正文分析并发现可能存在双向关联的已有页面标题

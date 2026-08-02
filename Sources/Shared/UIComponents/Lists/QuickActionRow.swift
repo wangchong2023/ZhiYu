@@ -70,7 +70,7 @@ public struct QuickActionRow: View {
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appSecondary.opacity(Colors.dimmedOpacity))
             }
-            .padding(Spacing.medium + Spacing.atomic * 2) // 14
+            .padding(Spacing.standardPadding)
             .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
             .clipShape(RoundedRectangle(cornerRadius: Spacing.medium))
             .shadow(

@@ -117,47 +117,62 @@ final class LLMAIServicesTests: XCTestCase {
         XCTAssertEqual(links, ["Link1", "Link2"])
     }
     
-    // MARK: - LLMConfigStore 调试降级测试
+    // MARK: - LLMConfigStore 安全存储测试（VULN-008 修复后）
     
-    /// 测试在调试环境下，如果 Keychain 异常，LLMConfigStore 是否能够通过 UserDefaults 降级方案成功保存并读取 API 密钥
+    /// 验证 VULN-008 修复：API 密钥仅通过 Keychain 加密存储，UserDefaults 中不得保留任何明文或密文备份。
+    /// 使用 MockKeychainService + MockSecureEnclaveCryptoService 避免模拟器 Keychain -34018 环境问题。
     @MainActor
     func testLLMConfigStoreFallback() throws {
-        // 1. 构造一个临时的测试提供商与测试密钥
         let testProvider = LLMProvider.deepSeek
         let testKey = "sk-test-fallback-key-123456"
-        
-        // 清理可能残留的测试数据
+        let keychainKey = "llm_api_key_\(testProvider.rawValue)"
         let fallbackKey = "zhiyu_llm_api_key_fallback_\(testProvider.rawValue)"
-        UserDefaults.standard.removeObject(forKey: fallbackKey)
         
-        // 2. 实例化配置存储库
-        let store = LLMConfigStore()
-        store.provider = testProvider
-        
-        // 3. 设定测试 API 密钥，由于在单元测试中（DEBUG 下运行），这会自动写入 UserDefaults 备份
-        store.apiKey = testKey
-        
-        // 验证内存状态是否更新
-        XCTAssertEqual(store.apiKey, testKey, "内存中的 API 密钥应立即更新")
-        
-        // 验证本地 UserDefaults 中是否已有该降级备份且是安全加密密文
-        let backupValue = UserDefaults.standard.string(forKey: fallbackKey)
-        XCTAssertNotNil(backupValue, "UserDefaults 中应有该降级备份")
-        XCTAssertNotEqual(backupValue, testKey, "备份应被安全加密以防泄露，不应是明文")
-        if let encrypted = backupValue {
-            let decrypted = try SecurityManager.shared.decrypt(encrypted)
-            XCTAssertEqual(decrypted, testKey, "降级备份解密还原后应与原始 Key 完全一致")
+        // 注入 Mock 服务，绕过模拟器 Keychain entitlement 限制
+        let mockKeychain = MockKeychainService()
+        let mockCrypto = MockSecureEnclaveCryptoService()
+        KeychainService.testOverride = mockKeychain
+        SecureEnclaveCryptoService.testOverride = mockCrypto
+        defer {
+            KeychainService.testOverride = nil
+            SecureEnclaveCryptoService.testOverride = nil
         }
         
-        // 4. 重新实例化一个全新的 LLMConfigStore，模拟 App 重启
+        // 清理残留
+        UserDefaults.standard.removeObject(forKey: fallbackKey)
+        try? mockKeychain.delete(key: keychainKey)
+        
+        let store = LLMConfigStore()
+        store.provider = testProvider
+        store.apiKey = testKey
+        
+        XCTAssertEqual(store.apiKey, testKey, "内存中的 API 密钥应立即更新")
+        
+        // VULN-008 核心断言：UserDefaults 中不得存在任何 API 密钥备份
+        XCTAssertNil(UserDefaults.standard.string(forKey: fallbackKey),
+                     "VULN-008: UserDefaults 中不得保留 API 密钥的任何备份形式")
+        
+        // 验证 Keychain 中存有密钥（Mock 为直通，非真实加密）
+        let storedValue = try? mockKeychain.retrieve(key: keychainKey)
+        XCTAssertNotNil(storedValue, "API 密钥应已存入 Keychain")
+        XCTAssertEqual(storedValue, testKey, "API 密钥应物理写入 Keychain 存储区")
+        
+        // 验证解密后能还原原始密钥
+        if let encrypted = storedValue,
+           let decrypted = try? mockCrypto.decrypt(encrypted) {
+            XCTAssertEqual(decrypted, testKey, "Keychain 加密密钥解密后应与原始 Key 完全一致")
+        }
+        
+        // 验证重新实例化后能从 Keychain 恢复
         let secondStore = LLMConfigStore()
         secondStore.provider = testProvider
+        XCTAssertEqual(secondStore.apiKey, testKey, "重新实例化后应能通过 Keychain 恢复 API 密钥")
         
-        // 验证其读取出来的 apiKey 是否正是我们备份的测试密钥
-        XCTAssertEqual(secondStore.apiKey, testKey, "重新实例化后的 LLMConfigStore 应能通过降级机制成功恢复 API 密钥")
-        
-        // 5. 测试清空密钥的行为
+        // 清空密钥后验证 Keychain 和 UserDefaults 均无残留
         store.apiKey = ""
-        XCTAssertNil(UserDefaults.standard.string(forKey: fallbackKey), "清空密钥后，降级备份也应该被清除")
+        XCTAssertNil(try? mockKeychain.retrieve(key: keychainKey),
+                     "清空密钥后 Keychain 不得有任何残留")
+        XCTAssertNil(UserDefaults.standard.string(forKey: fallbackKey),
+                     "清空密钥后 UserDefaults 不得有任何残留")
     }
 }

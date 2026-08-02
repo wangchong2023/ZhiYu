@@ -44,6 +44,7 @@ struct SynthesisView: View {
     @State private var showBatchDeleteConfirm = false
     @State private var showLLMAlert = false
     @State private var selectedFilterType: SynthesisStore.SynthesisType?
+    @State private var showPromptWorkshop = false
 
     var body: some View {
         @Bindable var synthesisStore = synthesisStore
@@ -75,6 +76,9 @@ struct SynthesisView: View {
                 outputSheet: outputSheet
             )
             .onTaskStatusChange(taskCenter)
+            .task {
+                await store.refresh()
+            }
         }
     }
 
@@ -323,7 +327,7 @@ struct SynthesisView: View {
                                     router.navigateToPage(id: pageID)
                                 }
                             } else {
-                                ToastManager.shared.show(type: .info, message: L10n.AI.Synthesis.Error.noPages)
+                                ToastManager.shared.show(type: .info, message: L10n.AI.Synthesis.Error.pageNotFound)
                             }
                         }
                     )
@@ -371,8 +375,25 @@ struct SynthesisView: View {
 
     private var synthesisEntryView: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            AppSectionHeader(title: L10n.AI.Synthesis.actions, icon: DesignSystem.Icons.wand)
-                .padding(.horizontal, DesignSystem.tiny)
+            AppSectionHeader(
+                title: L10n.AI.Synthesis.actions,
+                icon: DesignSystem.Icons.wand,
+                trailing: AnyView(
+                    Button(action: {
+                        HapticFeedback.shared.trigger(.selection)
+                        showPromptWorkshop = true
+                    }) {
+                        HStack(spacing: DesignSystem.tiny) {
+                            Image(systemName: DesignSystem.Icons.promptWorkshop)
+                            Text(L10n.AI.Prompt.Factory.title)
+                                .font(.caption.bold())
+                        }
+                        .foregroundStyle(Color.appAccent)
+                    }
+                    .buttonStyle(.plain)
+                )
+            )
+            .padding(.horizontal, DesignSystem.tiny)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.medium) {
                 ForEach(SynthesisStore.SynthesisType.allCases) { type in
@@ -387,6 +408,18 @@ struct SynthesisView: View {
                 }
             }
             .appContainer(padding: true)
+        }
+        .sheet(isPresented: $showPromptWorkshop) {
+            NavigationStack {
+                PromptWorkshopView()
+                    .navigationTitle(L10n.AI.Prompt.Factory.title)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(L10n.Common.done) { showPromptWorkshop = false }
+                        }
+                    }
+            }
         }
     }
 }

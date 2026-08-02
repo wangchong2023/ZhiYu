@@ -122,8 +122,7 @@ struct GraphNodeView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        // swiftlint:disable:next magic_numbers_opacity
-                        colors: [nodeBaseColor.opacity(0.85), nodeBaseColor],
+                        colors: [nodeBaseColor.opacity(DesignSystem.Opacity.pressed), nodeBaseColor],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )

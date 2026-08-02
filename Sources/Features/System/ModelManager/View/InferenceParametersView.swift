@@ -159,17 +159,15 @@ public struct InferenceParametersView: View {
                 .foregroundStyle(.appText)
 
             Menu {
-                ForEach(modelManager.remoteManifests.filter { modelManager.isModelLocalReady(for: $0.modelId) }) { manifest in
-                    Button(action: {
-                        modelManager.activeModelId = manifest.modelId
-                        loadParametersForModel(manifest.modelId)
-                    }) {
-                        HStack {
-                            Text(manifest.displayName)
-                            if modelManager.activeModelId == manifest.modelId {
-                                Image(systemName: "checkmark")
-                            }
-                        }
+                Picker(L10n.ModelManager.Parameters.currentModel, selection: Binding(
+                    get: { modelManager.activeModelId },
+                    set: { newId in
+                        modelManager.activeModelId = newId
+                        loadParametersForModel(newId)
+                    }
+                )) {
+                    ForEach(modelManager.remoteManifests.filter { modelManager.isModelLocalReady(for: $0.modelId) }) { manifest in
+                        Text(manifest.displayName).tag(manifest.modelId)
                     }
                 }
             } label: {

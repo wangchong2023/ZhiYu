@@ -130,15 +130,13 @@ public struct UserProfileView: View {
                     } placeholder: {
                         ProgressView()
                     }
-                    // swiftlint:disable:next magic_numbers_frame
-                    .frame(width: 88, height: 88)
+                    .frame(width: DesignSystem.Gallery.emptyStateImageSize / 2, height: DesignSystem.Gallery.emptyStateImageSize / 2)
                     .clipShape(Circle())
                 } else {
                     Image(systemName: DesignSystem.Icons.personCropFill)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        // swiftlint:disable:next magic_numbers_frame
-                        .frame(width: 88, height: 88)
+                        .frame(width: DesignSystem.Gallery.emptyStateImageSize / 2, height: DesignSystem.Gallery.emptyStateImageSize / 2)
                         .foregroundStyle(.appSecondary)
                 }
 
@@ -146,8 +144,7 @@ public struct UserProfileView: View {
                 if isUploading {
                     Circle()
                         .fill(Color.theme.black.opacity(DesignSystem.Opacity.disabled))
-                        // swiftlint:disable:next magic_numbers_frame
-                        .frame(width: 88, height: 88)
+                        .frame(width: DesignSystem.Gallery.emptyStateImageSize / 2, height: DesignSystem.Gallery.emptyStateImageSize / 2)
                     ProgressView()
                         .tint(.white)
                 }

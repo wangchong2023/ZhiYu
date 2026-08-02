@@ -107,6 +107,11 @@ public final class KnowledgeStore {
                     
                     // 🎬 RAG 冷启动魔法时刻 (Aha Moment)：
                     // 在新建笔记本首次切换进入时，如果数据库为空且未播种过，则自动注入欢迎与引导数据
+                    // 防御性校验：在应用冷启动尚未完成 DI 注册前，避开早期的数据库卡片准备通知引发的竞态注入
+                    guard ServiceContainer.shared.isReady || ProcessInfo.processInfo.arguments.contains("--uitesting") else {
+                        return
+                    }
+
                     if let vaultID = notification.userInfo?["vaultID"] as? UUID {
                         let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
                         let seedKey = "seeded_vault_\(vaultID.uuidString)"

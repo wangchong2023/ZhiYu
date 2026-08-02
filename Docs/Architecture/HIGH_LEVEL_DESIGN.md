@@ -204,4 +204,90 @@ public protocol LLMServiceProtocol: Sendable {
 > **审计报告**：[`Tools/Audit/ZhiYu_Codebase_Audit_2026-06-22.md`](../../Tools/Audit/ZhiYu_Codebase_Audit_2026-06-22.md) — P0/P1 全部清零 ✅
 
 ---
+
+## 6. 全局 AI Prompt 统一集中管理与双层漏斗安全合规架构 (2026-08)
+
+为杜绝 Prompt 散落硬编码、绕过合规监管与 OWASP Prompt Injection 注入风险，系统构建了贯穿 L0.5 至 L1.5 的**双层漏斗安全防御架构 (Tiered Funnel Defense Architecture)** 与全流程治理体系：
+
+```mermaid
+graph TD
+    subgraph "输入源 (Ingest / Direct UI)"
+        Ingest[IngestSanitationPipeline<br/>OCR/语音/剪藏/文档 5层清洗]
+        UserInput[用户直接 Prompt / 提问]
+    end
+
+    subgraph "L1.5: Domain 提示词集中中心"
+        Registry[GlobalPromptRegistry<br/>Prompt 模板统一集中注册]
+    end
+
+    subgraph "L0.5: Fast Path 第一层快速漏斗 (<1ms)"
+        Sanitizer[MultilingualTextSanitizer<br/>9大语系 Leetspeak/重音符/全半角/繁简洗词]
+        ACEngine[AhoCorasickEngine<br/>O-TextLength 多模式匹配引擎]
+        Moderation[ContentModerationEngine<br/>政治/色情/暴恐硬拦截]
+    end
+
+    subgraph "L0.5: Slow Path 第二层深检漏斗 (30ms-80ms NPU)"
+        CoreMLGuard[CoreMLModerationClassifier<br/>Meta Llama Guard 3 1B CoreML AI防越狱深检]
+    end
+
+    subgraph "安全合规与隐私保障"
+        DynamicPatch[DynamicComplianceManager+Patch<br/>RSA/ECDSA 策略签名校验 & Delta Patch]
+        PII[PIIMasker<br/>身份证/信用卡/APIKey 脱敏]
+        Guard[PromptSecurityGuard<br/>OWASP 防注入 / Token定界符转义 / XML沙箱]
+    end
+
+    subgraph "L1: LLM 适配服务"
+        LLM[LLMClient / Provider 外发]
+    end
+
+    Ingest --> Registry
+    UserInput --> Registry
+    Registry --> Sanitizer
+    Sanitizer --> ACEngine
+    ACEngine --> Moderation
+    Moderation -->|方案A放行| CoreMLGuard
+    CoreMLGuard -->|方案B放行| PII
+    PII --> Guard
+    Guard --> LLM
+    Moderation -->|判定违规| DynamicPatch
+```
+
+### 核心演进特性
+
+1. **双层漏斗安全防御架构 (Tiered Funnel Defense)**：
+   - **第一层 Fast Path (方案 A)**：`MultilingualTextSanitizer` (9 大语系 Leetspeak 还原、重音符剥离、全半角归一) + `AhoCorasickEngine` (<1ms 耗时，0% NPU 消耗)，毫秒级拦截 80% 明文显性违规与敏感词。
+   - **第二层 Slow Path (方案 B)**：`CoreMLModerationClassifier` (集成 Meta Llama Guard 3 1B CoreML 小模型)，在 Apple Neural Engine NPU 硬件上做 30ms 深度 AI 语义防越狱分类，专门拦截隐藏极深的 DAN 角色扮演与 Prompt 注入。
+2. **云端策略 RSA/ECDSA 数字签名与 Delta Patch (`DynamicComplianceManager+Patch`)**：
+   - 使用 Apple `Security.framework` `SecKeyVerifySignature` 对云端 RemoteConfig JSON 下发策略实施 RSA/ECDSA 公钥防篡改验签；校验通过后自动执行 `configVersion` 增量 Delta Patch 合并。
+3. **三端 0 编译告警静态门禁 (`check_compiler_warnings.py`)**：
+   - 抓取 iOS / macOS Catalyst / watchOS 三端 Xcode 编译日志，阻断任何包含警告的代码提交。```
+
+### 6.1 核心合规与安全防护组件
+
+1. **GlobalPromptRegistry (`Domain/Prompt`)**:
+   - 应用级 System Prompt 统一集中注册中心，禁止在 View/Service 中硬编码 Prompt 文本。
+   - 自动包含变量模版渲染与输入内容定界符包裹逻辑。
+2. **IngestSanitationPipeline (`Infrastructure/Processors`)**:
+   - 多模模态摄入清洗流水线，包含 `stripControlCharacters` (不可见字符剥离), `normalizeUnicode` (Unicode 正规化), `mergeOCRLineBreaks` (OCR 断行修复) 与 `stripHTMLNoise` (网页标签剥离)。
+3. **ContentModerationEngine (`Core/System/Security`)**:
+   - 政治反动 (`politicalReactionary`)、黄色色情 (`adultNSFW`)、暴恐涉禁 (`violenceTerrorism`) 的**零容忍物理硬阻断**（绝对禁止外发 LLM），抛出 `PromptComplianceError.contentViolatesPolicy`。
+4. **DynamicComplianceManager (`Core/System/Security`)**:
+   - 支持结合 `L10n.Security` (9 大语言: 简中, 繁中, 英, 日, 韩, 西, 法, 阿, 俄) 与 `RemoteConfigService` 云端 JSON 热更新的动态合规告示与正则词库管理架构。
+5. **PromptSecurityGuard & PIIMasker (`Core/System/Security`)**:
+   - **PIIMasker**: 身份证号、信用卡号、API Key / Secret Token、邮箱与手机号码的自动 `[REDACTED_PII]` 脱敏。
+   - **PromptSecurityGuard**: OWASP Anti-Injection、定界符转义（`<|im_start|>`、`### System:` 等 Token 安全中和）与 XML 金沙箱包裹。
+### 6.2 多端协同与实时活动架构 (Live Activity, Widgets & Apple Watch Sync)
+
+1. **iOS 灵动岛 (Live Activity & Dynamic Island)**：
+   - 依赖 `ActivityService` 调度 `Activity<AIProcessingAttributes>` 状态机。
+   - 包含 **AI 合成实验室**、**文档 Ingest & OCR** 与 **语音笔记转写** 3 大场景，支持在 Dynamic Island (Compact Leading/Trailing, Expanded) 与锁屏 Live Activity Widget 实时渲染进度条、引用源数量与剩余估计时间。
+2. **桌面与锁屏小组件 (Widgets Extension)**：
+   - 包含 **每日 AI 洞察/闪念小组件 (`DailyInsightWidgetView`)**、**知识库分布小组件 (`KnowledgeDistributionWidgetView`)** 与 **极速捕获小组件 (`QuickCaptureWidgetView`)**。
+   - 通过 `VaultWidgetSyncManager` 定时将统计快照写回 App Group (`group.com.zhiyu.app`) 的 `widget_stats.json` 共享文件，实现零进程间 IPC 耗费的秒级跨进程渲染。
+3. **Apple Watch (watchOS) 专属扩展**：
+   - **`WatchDailyInsightView`**：支持在手表端以卡片轮播形式翻阅每日 AI 炼化出的金句洞察与闪念卡片。
+   - **`WatchVoiceCaptureView`**：手表端极速语音灵感捕捉，录音听写后自动通过 App Group 与 `WCSession` (WatchConnectivity) 静默同步回 iOS 存储管道。
+
+---
 *本文档为智宇系统的高阶概要设计，实现细节请参阅详细设计 [DETAILED_DESIGN.md](../Design/DETAILED_DESIGN.md)。*
+

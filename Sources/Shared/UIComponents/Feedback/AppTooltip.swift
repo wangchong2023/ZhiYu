@@ -48,7 +48,7 @@ public struct AppTooltip: View {
                 }
             }
         }
-        .padding(DesignSystem.medium + DesignSystem.atomic * 2) // 14
+        .padding(DesignSystem.standardPadding) // 16
         .background(
             RoundedRectangle(cornerRadius: DesignSystem.medium)
                 .fill(Color.appCard)

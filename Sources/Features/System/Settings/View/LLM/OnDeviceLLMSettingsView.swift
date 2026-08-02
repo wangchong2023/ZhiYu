@@ -237,8 +237,7 @@ public struct OnDeviceLLMSettingsView: View {
                     }
                 }
                 .padding()
-                // swiftlint:disable:next magic_numbers_opacity
-                .background(Color.appAccent.opacity(0.06))
+                .background(Color.appAccent.opacity(DesignSystem.Opacity.ghost))
                 .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
             } else {
                 Button(action: loadModel) {

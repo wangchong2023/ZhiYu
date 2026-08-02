@@ -31,5 +31,8 @@ extension DesignSystem {
         public static let hoverScale: CGFloat = Spacing.Gallery.hoverScale
         public static let splashLogoBottomPadding: CGFloat = Spacing.Gallery.splashLogoBottomPadding
         public static let splashButtonBottomPadding: CGFloat = Spacing.Gallery.splashButtonBottomPadding
+        public static let cardMinWidth: CGFloat = Spacing.Gallery.cardMinWidth
+        public static let emptyStateImageSize: CGFloat = Spacing.Gallery.emptyStateImageSize
+        public static let modalMaxWidth: CGFloat = Spacing.Gallery.modalMaxWidth
     }
 }

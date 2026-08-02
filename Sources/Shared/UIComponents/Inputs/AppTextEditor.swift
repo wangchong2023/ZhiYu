@@ -76,7 +76,7 @@ public struct AppTextEditor: View {
                     )
             )
             .shadow(color: isFocused ? Color.theme.blue.opacity(DesignSystem.Opacity.light) : Color.clear, radius: 4, x: 0, y: 2)
-            .frame(minHeight: 120)
+            .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
             
             // 字数限额计数条
             if let limit = maxCharacters {

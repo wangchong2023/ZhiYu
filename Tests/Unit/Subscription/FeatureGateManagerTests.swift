@@ -86,9 +86,11 @@ final class FeatureGateManagerTests: XCTestCase {
         let sut2 = FeatureGateManager(userDefaults: defaults)
 
         XCTAssertTrue(sut2.isFeatureEnabled(\.vectorSearchEnabled))
-        XCTAssertTrue(sut2.isFeatureEnabled(\.graphAdvancedEnabled))
-        XCTAssertTrue(sut2.isFeatureEnabled(\.audioOverviewEnabled))
-        XCTAssertEqual(sut2.getQuotaLimit(\.maxKnowledgePages), -1)
-        XCTAssertFalse(sut2.isQuotaExceeded(\.maxKnowledgePages, currentUsage: 999999))
+        XCTAssertTrue(sut2.isFeatureEnabled(\.cloudLlmModelsEnabled))
+        XCTAssertFalse(sut2.isFeatureEnabled(\.graphAdvancedEnabled))
+        XCTAssertFalse(sut2.isFeatureEnabled(\.audioOverviewEnabled))
+        XCTAssertEqual(sut2.getQuotaLimit(\.maxKnowledgePages), 50000)
+        XCTAssertEqual(sut2.getQuotaLimit(\.dailyAiMessages), -1)
+        XCTAssertFalse(sut2.isQuotaExceeded(\.maxKnowledgePages, currentUsage: 49999))
     }
 }

@@ -577,7 +577,7 @@ final class GraphLayoutRealisticTests: XCTestCase {
                 }
                 return nil
             },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize1200, height: DesignSystem.Metrics.customSize800)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotScrollHeight, height: DesignSystem.Metrics.snapshotGraphCanvasWidth)
         )
         let elapsed = Date().timeIntervalSince(start)
 
@@ -639,7 +639,7 @@ final class GraphLayoutRealisticTests: XCTestCase {
         let result = GraphLayoutProcessor.layout(
             pages: allPages,
             linkResolver: { title in allPages.first { $0.title == title } },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize1200, height: DesignSystem.Metrics.customSize800)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotScrollHeight, height: DesignSystem.Metrics.snapshotGraphCanvasWidth)
         )
 
         // Should have 10 nodes and 8 edges (5-1 in A, 5-1 in B)

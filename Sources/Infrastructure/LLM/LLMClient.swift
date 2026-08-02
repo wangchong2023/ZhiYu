@@ -83,14 +83,23 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
     }
 
     private func performRequest(body: [String: Any]) async throws -> [String: Any] {
+        // VULN-013 修复 + 审查修复 MED-1: 强制 HTTPS，但对 loopback 地址豁免
+        // 本地回环不经过网络，无明文泄露风险，支持本地 LLM 开发（如 Ollama/llama.cpp）
+        let lowerURL = normalizedBaseURL.lowercased()
+        let isHTTPS = lowerURL.hasPrefix("https://")
+        let isLoopback = isLoopbackURL(lowerURL)
+        guard isHTTPS || isLoopback else {
+            throw LLMError.invalidURL
+        }
         guard let url = URL(string: "\(normalizedBaseURL)/chat/completions") else {
             throw LLMError.invalidURL
         }
 
+        let cleanAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = Self.defaultTimeout
 
         let httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -152,14 +161,19 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
     /// - Returns: 异步字节流
     /// - Throws: 网络或 API 错误
     func sendStreamingRequest(body: [String: Any]) async throws -> URLSession.AsyncBytes {
+        // VULN-013 修复：强制 HTTPS，防止 API key 明文传输
+        guard normalizedBaseURL.lowercased().hasPrefix("https://") else {
+            throw LLMError.invalidURL
+        }
         guard let url = URL(string: "\(normalizedBaseURL)/chat/completions") else {
             throw LLMError.invalidURL
         }
 
+        let cleanAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = Self.streamingTimeout
 
         let httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -173,6 +187,18 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
         }
 
         return bytes
+    }
+
+    // MARK: - 辅助方法
+
+    /// 审查修复 MED-1: 判断 URL 是否为 loopback 地址（本地回环）
+    /// loopback 不经过网络，无明文泄露风险，豁免 HTTPS 强制校验
+    private func isLoopbackURL(_ urlString: String) -> Bool {
+        let lower = urlString.lowercased()
+        return lower.contains("://localhost") ||
+               lower.contains("://127.0.0.1") ||
+               lower.contains("://[::1]") ||
+               lower.contains("://0.0.0.0")
     }
 }
 

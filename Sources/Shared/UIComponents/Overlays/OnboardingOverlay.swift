@@ -44,7 +44,7 @@ struct OnboardingOverlay: View {
                         Text(step == .vault ? L10n.Onboarding.Action.start : L10n.Onboarding.Action.next)
                             .font(.headline)
                             .foregroundStyle(Color.theme.white)
-                            .padding(.horizontal, Spacing.huge * 1.25) // 40
+                            .padding(.horizontal, Spacing.Sidebar.backButtonWidth) // 40
                             .padding(.vertical, Spacing.medium) // 12
                             .background(Color.appAccent)
                             .clipShape(Capsule())
@@ -58,9 +58,9 @@ struct OnboardingOverlay: View {
                     .font(.footnote)
                     .foregroundStyle(.appSecondary)
                 }
-                .padding(Spacing.giant * 1.5)
+                .padding(Spacing.huge)
                 .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.largeRadius * 1.5))
+                .clipShape(RoundedRectangle(cornerRadius: Spacing.chipRadius))
                 .shadow(radius: Spacing.giant)
                 .padding(Spacing.giant)
                 .transition(.scale.combined(with: .opacity))

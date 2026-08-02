@@ -193,11 +193,20 @@ public final class GlobalModelManager {
             if hasFile {
                 do {
                     let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
-                    if let fileSize = attributes[.size] as? Int64, fileSize > 0 {
+                    let fileSize = (attributes[.size] as? Int64) ?? 0
+                    let expectedSize = manifest.fileSizeInBytes
+                    
+                    if fileSize > 0 && (expectedSize <= 0 || fileSize == expectedSize) {
                         isFileValid = true
                         modelStorageUsage[modelId] = fileSize
-                        // 物理文件非空，自动自愈补齐持久化 Flag
+                        // 物理文件合法非空，自动自愈补齐持久化 Flag
                         markModelAsDownloaded(modelId)
+                    } else {
+                        // 物理文件为 0 字节或大小不匹配：强力删除物理残留坏包并移除标志
+                        try? FileManager.default.removeItem(at: fileURL)
+                        modelStorageUsage.removeValue(forKey: modelId)
+                        markModelAsRemoved(modelId)
+                        Logger.shared.warning("[GlobalModelManager] 物理清理损坏/大小不匹配的大模型文件: \(modelId) (实际: \(fileSize) B, 期望: \(expectedSize) B)")
                     }
                 } catch {
                     Logger.shared.error("[GlobalModelManager] 校验模型权重文件属性失败: \(modelId)，错误: \(error.localizedDescription)")
@@ -207,8 +216,8 @@ public final class GlobalModelManager {
                 markModelAsRemoved(modelId)
             }
             
-            // 双重对齐：物理文件校验合法，或者已存在有效持久化 Flag 且文件仍存
-            if isFileValid || (currentFlags.contains(modelId) && hasFile) {
+            // 物理文件校验合法才认定为完成
+            if isFileValid {
                 downloadStates[modelId] = .completed(localURL: fileURL)
             } else {
                 // 文件不存在或无效，降级为未下载状态（若处于下载中则保持）

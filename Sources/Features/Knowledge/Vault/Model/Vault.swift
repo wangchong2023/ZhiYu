@@ -34,11 +34,25 @@ public struct Vault: Identifiable, Codable, Hashable, VaultProtocol {
     public var englishName: String {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // 1. 内置演示笔记本映射，保证路径稳定性
-        if trimmedName == L10n.Vault.defaultNameZh || trimmedName == L10n.Vault.defaultNameEn || trimmedName == L10n.Vault.defaultName {
+        // 1. 内置演示笔记本全语言（简体、繁体、英文）映射，保证跨语言环境下的目录与唯一 ID 识别稳定性
+        let defaultNames: Set<String> = [
+            "Personal_KM",
+            L10n.Vault.defaultName,
+            L10n.Vault.defaultNameZh,
+            L10n.Vault.defaultNameEn
+        ]
+        let researchNames: Set<String> = [
+            "Project_Research",
+            L10n.Vault.researchName,
+            L10n.Vault.researchNameZh,
+            L10n.Vault.researchNameEn,
+            L10n.InitialNotebook.Log.projectResearch
+        ]
+        
+        if defaultNames.contains(trimmedName) {
             return "Personal_KM"
         }
-        if trimmedName == L10n.Vault.researchNameZh || trimmedName == L10n.Vault.researchNameEn || trimmedName == L10n.Vault.researchName {
+        if researchNames.contains(trimmedName) {
             return "Project_Research"
         }
         

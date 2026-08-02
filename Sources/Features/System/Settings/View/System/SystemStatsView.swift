@@ -59,7 +59,7 @@ struct SystemStatsView: View {
                     if coordinator.isLoading {
                         VStack {
                             ProgressView()
-                                .padding(.vertical, DesignSystem.large * 2.5)
+                                .padding(.vertical, Spacing.Sidebar.backButtonWidth)
                         }
                     } else {
                         switch selectedTab {
@@ -73,7 +73,7 @@ struct SystemStatsView: View {
                         }
                     }
                 }
-                .padding(.bottom, DesignSystem.large * 2) // 底部留白
+                .padding(.bottom, DesignSystem.huge) // 底部留白
             }
             .background(PageBackgroundView(accentColor: .appAccent))
         }

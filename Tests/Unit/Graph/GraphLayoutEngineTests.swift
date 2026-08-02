@@ -18,7 +18,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
     // MARK: - 空输入
 
     func testLayoutEmptyPagesReturnsEmptyNodesAndEdges() {
-        let size = CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+        let size = CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         let result = GraphLayoutProcessor.layout(
             pages: [],
             linkResolver: { (_: String) -> KnowledgePage? in nil },
@@ -32,7 +32,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
 
     func testLayoutSinglePageReturnsOneNodeNoEdges() {
         let page = KnowledgePage(title: "单页", content: "内容")
-        let size = CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+        let size = CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         let result = GraphLayoutProcessor.layout(
             pages: [page],
             linkResolver: { (_: String) -> KnowledgePage? in nil },
@@ -56,7 +56,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
                 if title == "B" { return pageB }
                 return nil
             },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         )
 
         XCTAssertEqual(result.nodes.count, 2)
@@ -73,7 +73,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
                 if title == "B" { return pageB }
                 return nil
             },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         )
 
         XCTAssertEqual(result.nodes.count, 2)
@@ -92,7 +92,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
                 if title == "B" { return pageB }
                 return nil
             },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         )
 
         let linkCount = result.edges.filter { $0.source == pageA.id && $0.target == pageB.id }.count
@@ -109,7 +109,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
         let result = GraphLayoutProcessor.layout(
             pages: [pageA, pageB],
             linkResolver: { (_: String) -> KnowledgePage? in nil },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         )
 
         XCTAssertEqual(result.edges.count, 1, "relatedPageIDs 应生成边")
@@ -123,7 +123,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
         let result = GraphLayoutProcessor.layout(
             pages: [pageA],
             linkResolver: { (_: String) -> KnowledgePage? in nil },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         )
 
         XCTAssertEqual(result.nodes.count, 1)
@@ -132,7 +132,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
 
     func testLayoutNodePositionsWithinCanvas() {
         let pages = (0..<10).map { KnowledgePage(title: "P\($0)", content: "") }
-        let canvasSize = CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+        let canvasSize = CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         let result = GraphLayoutProcessor.layout(
             pages: pages,
             linkResolver: { (_: String) -> KnowledgePage? in nil },
@@ -151,7 +151,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
 
     func testLayoutMultiplePagesCreatesNodesForAll() {
         let pages = (0..<20).map { KnowledgePage(title: "页面\($0)", content: "") }
-        let size = CGSize(width: DesignSystem.Metrics.customSize1024, height: DesignSystem.Metrics.customSize768)
+        let size = CGSize(width: DesignSystem.Metrics.snapshotPadLandscapeWidth, height: DesignSystem.Metrics.snapshotPadWidth)
         let result = GraphLayoutProcessor.layout(
             pages: pages,
             linkResolver: { (_: String) -> KnowledgePage? in nil },
@@ -164,7 +164,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
 
     func testLayoutNodePositionsAreDistinct() {
         let pages = (0..<50).map { KnowledgePage(title: "P\($0)", content: "") }
-        let size = CGSize(width: DesignSystem.Metrics.customSize1024, height: DesignSystem.Metrics.customSize1024)
+        let size = CGSize(width: DesignSystem.Metrics.snapshotPadLandscapeWidth, height: DesignSystem.Metrics.snapshotPadLandscapeWidth)
         let result = GraphLayoutProcessor.layout(
             pages: pages,
             linkResolver: { (_: String) -> KnowledgePage? in nil },
@@ -183,7 +183,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
         let target = KnowledgePage(title: "目标页面", content: "")
         let source = KnowledgePage(title: "源页面", content: "链接 [[目标页面]]")
         let pages = [source, target]
-        let size = CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+        let size = CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
 
         let linkMap: [String: KnowledgePage] = [
             "目标页面": target
@@ -202,7 +202,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
 
     func testLayoutIsolatedNodeHasNoEdges() {
         let isolated = KnowledgePage(title: "孤立节点", content: "")
-        let size = CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+        let size = CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         let result = GraphLayoutProcessor.layout(
             pages: [isolated],
             linkResolver: { (_: String) -> KnowledgePage? in nil },
@@ -234,7 +234,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
         let result = GraphLayoutProcessor.layout(
             pages: pages,
             linkResolver: linkResolver,
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         )
 
         // 源布局引擎生成所有 10 条边（Hub → 每个子节点）

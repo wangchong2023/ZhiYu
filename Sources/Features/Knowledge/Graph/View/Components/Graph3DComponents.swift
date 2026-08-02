@@ -474,7 +474,7 @@ struct Graph3DControlsOverlay: View {
                                 }
                                 .fixedSize(horizontal: false, vertical: true)
                             }
-                            .frame(maxHeight: 220) 
+                            .frame(maxHeight: Spacing.Grid.emptyStateHeight) 
                         }
                         .frame(width: DesignSystem.Metrics.graphControlWidth)
                         .background(

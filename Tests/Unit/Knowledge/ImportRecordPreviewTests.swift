@@ -13,12 +13,12 @@ import XCTest
 @testable import ZhiYu
 
 final class ImportRecordPreviewTests: XCTestCase {
-    
+
     private var mockURLOpener: MockURLOpener!
     private var mockShareSheet: MockShareSheet!
     private var router: Router!
     private var handler: ImportPreviewHandler!
-    
+
     @MainActor
     override func setUp() {
         super.setUp()
@@ -31,7 +31,7 @@ final class ImportRecordPreviewTests: XCTestCase {
             router: router
         )
     }
-    
+
     override func tearDown() {
         mockURLOpener = nil
         mockShareSheet = nil
@@ -39,100 +39,91 @@ final class ImportRecordPreviewTests: XCTestCase {
         handler = nil
         super.tearDown()
     }
-    
-    // MARK: - 1. 优先跳转至关联页面详情测试 (第一优先级)
-    func testNavigateToPage() {
-        let pageUUID = UUID()
-        let record = ImportRecord(
-            id: UUID().uuidString,
-            category: ImportCategory.link.rawValue,
-            title: "已完成并关联页面的链接",
-            status: ImportRecordStatus.done,
-            rawText: "一些解析文本",
-            pageID: pageUUID.uuidString
-        )
-        
-        let action = handler.resolveAction(for: record, fileExists: { _ in true })
-        XCTAssertEqual(action, .navigateToPage(id: pageUUID))
-    }
-    
-    // MARK: - 1b. 文件、OCR、语音即使关联页面也必须强制预览，不进行页面跳转的测试
-    func testForcePreviewForSpecificCategories() {
-        let pageUUID = UUID()
-        let record = ImportRecord(
-            id: UUID().uuidString,
-            category: ImportCategory.file.rawValue,
-            title: "已完成并关联页面的文件",
-            status: ImportRecordStatus.done,
-            rawText: "一些解析文本",
-            pageID: pageUUID.uuidString
-        )
-        
-        // 虽然有关联页面，但因为属于强预览类型，且物理文件不存在，应该走文本预览
-        let action = handler.resolveAction(for: record, fileExists: { _ in false })
-        XCTAssertEqual(action, .rawTextPreview(text: "一些解析文本"))
-    }
-    
-    // MARK: - 2. 手工记录跳转编辑测试 (第二优先级)
+
+    // MARK: - 1. 手工记录跳转编辑测试（最高优先级）
+
+    /// 手工记录优先分派编辑事件，拉起输入编辑表单
     func testManualEdit() {
         let record = ImportRecord(
             id: UUID().uuidString,
             category: ImportCategory.manual.rawValue,
             title: "手工导入记录"
         )
-        
-        let action = handler.resolveAction(for: record, fileExists: { _ in false })
+
+        let action = handler.resolveAction(for: record)
         XCTAssertEqual(action, .manualEdit)
     }
-    
-    // MARK: - 3. 本地文本文件预览测试 (第三优先级 - 纯文本)
-    func testLocalTextFile() {
+
+    /// forceRaw 模式下手工记录不走编辑，降级到后续分支
+    func testManualEditForceRawFallsThrough() {
+        let record = ImportRecord(
+            id: UUID().uuidString,
+            category: ImportCategory.manual.rawValue,
+            title: "强制原始文本的手工记录",
+            rawText: "手工录入的文本内容"
+        )
+
+        let action = handler.resolveAction(for: record, forceRaw: true)
+        XCTAssertEqual(action, .rawTextPreview(text: "手工录入的文本内容"))
+    }
+
+    // MARK: - 2. 本地文本文件预览测试
+
+    /// 磁盘上真实存在的文本文件应走文本预览分支
+    func testLocalTextFile() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let tempFile = tempDir.appendingPathComponent("zhiyu_test_notes.md")
+        try "# 测试 Markdown".write(to: tempFile, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: tempFile) }
+
         let record = ImportRecord(
             id: UUID().uuidString,
             category: ImportCategory.file.rawValue,
             title: "本地文本记录",
-            filePath: "/path/to/notes.md"
+            filePath: tempFile.path
         )
-        
-        // 模拟磁盘上存在该文件
-        let action = handler.resolveAction(for: record, fileExists: { path in
-            return path == "/path/to/notes.md"
-        })
-        XCTAssertEqual(action, .localTextFile(path: "/path/to/notes.md"))
+
+        let action = handler.resolveAction(for: record)
+        XCTAssertEqual(action, .localTextFile(path: tempFile.path))
     }
-    
-    // MARK: - 4. 本地二进制文件 QL 预览测试 (第三优先级 - 二进制)
-    func testLocalBinaryFile() {
+
+    // MARK: - 3. 本地二进制文件 QL 预览测试
+
+    /// 磁盘上真实存在的二进制文件应走 QL 预览分支
+    func testLocalBinaryFile() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let tempFile = tempDir.appendingPathComponent("zhiyu_test_doc.pdf")
+        try Data([0x25, 0x50, 0x44, 0x46]).write(to: tempFile)
+        defer { try? FileManager.default.removeItem(at: tempFile) }
+
         let record = ImportRecord(
             id: UUID().uuidString,
             category: ImportCategory.file.rawValue,
             title: "本地PDF记录",
-            filePath: "/path/to/doc.pdf"
+            filePath: tempFile.path
         )
-        
-        // 模拟磁盘上存在该文件
-        let action = handler.resolveAction(for: record, fileExists: { path in
-            return path == "/path/to/doc.pdf"
-        })
-        let expectedURL = URL(fileURLWithPath: "/path/to/doc.pdf")
-        XCTAssertEqual(action, .localBinaryFile(url: expectedURL))
+
+        let action = handler.resolveAction(for: record)
+        XCTAssertEqual(action, .localBinaryFile(url: tempFile))
     }
-    
-    // MARK: - 5. 网页链接跳转浏览器测试 (第四优先级)
-    func testOpenURL() {
+
+    /// filePath 指向不存在的文件时，应跳过文件分支降级处理
+    func testNonExistentFileFallsThrough() {
         let record = ImportRecord(
             id: UUID().uuidString,
-            category: ImportCategory.link.rawValue,
-            title: "链接记录",
-            sourceURL: "https://example.com/source"
+            category: ImportCategory.file.rawValue,
+            title: "文件已丢失的记录",
+            rawText: "降级文本预览",
+            filePath: "/path/to/nonexistent_file.md"
         )
-        
-        let action = handler.resolveAction(for: record, fileExists: { _ in false })
-        let expectedURL = URL(string: "https://example.com/source")!
-        XCTAssertEqual(action, .openURL(url: expectedURL))
+
+        let action = handler.resolveAction(for: record)
+        XCTAssertEqual(action, .rawTextPreview(text: "降级文本预览"))
     }
-    
-    // MARK: - 6. 提取出的纯文本弹窗预览测试 (第五优先级)
+
+    // MARK: - 4. 提取出的纯文本弹窗预览测试
+
+    /// OCR/语音/网页抓取的原始文本应走文本弹窗预览
     func testRawTextPreview() {
         let record = ImportRecord(
             id: UUID().uuidString,
@@ -140,20 +131,71 @@ final class ImportRecordPreviewTests: XCTestCase {
             title: "无文件的OCR文本记录",
             rawText: "这是扫描提取出来的文字"
         )
-        
-        let action = handler.resolveAction(for: record, fileExists: { _ in false })
+
+        let action = handler.resolveAction(for: record)
         XCTAssertEqual(action, .rawTextPreview(text: "这是扫描提取出来的文字"))
     }
-    
+
+    // MARK: - 5. 网页链接跳转浏览器测试
+
+    /// 有 sourceURL 但无 rawText、无本地文件的链接记录应打开浏览器
+    func testOpenURL() {
+        let record = ImportRecord(
+            id: UUID().uuidString,
+            category: ImportCategory.link.rawValue,
+            title: "链接记录",
+            sourceURL: "https://example.com/source"
+        )
+
+        let action = handler.resolveAction(for: record)
+        let expectedURL = URL(string: "https://example.com/source")!
+        XCTAssertEqual(action, .openURL(url: expectedURL))
+    }
+
+    // MARK: - 6. 关联页面跳转测试（降级优先级）
+
+    /// 有 pageID 但无 rawText、无 sourceURL、无本地文件的记录应跳转页面详情
+    func testNavigateToPage() {
+        let pageUUID = UUID()
+        let record = ImportRecord(
+            id: UUID().uuidString,
+            category: ImportCategory.link.rawValue,
+            title: "已完成并关联页面的链接",
+            status: ImportRecordStatus.done,
+            pageID: pageUUID.uuidString
+        )
+
+        let action = handler.resolveAction(for: record)
+        XCTAssertEqual(action, .navigateToPage(id: pageUUID))
+    }
+
+    /// 有 rawText 时优先走文本预览，不跳转页面
+    func testRawTextTakesPrecedenceOverPageNavigation() {
+        let pageUUID = UUID()
+        let record = ImportRecord(
+            id: UUID().uuidString,
+            category: ImportCategory.link.rawValue,
+            title: "有文本的关联页面记录",
+            status: ImportRecordStatus.done,
+            rawText: "优先展示的文本",
+            pageID: pageUUID.uuidString
+        )
+
+        let action = handler.resolveAction(for: record)
+        XCTAssertEqual(action, .rawTextPreview(text: "优先展示的文本"))
+    }
+
     // MARK: - 7. 兜底回退测试
+
+    /// 无任何可预览内容的记录应返回 none
     func testNoneFallback() {
         let record = ImportRecord(
             id: UUID().uuidString,
             category: ImportCategory.file.rawValue,
             title: "什么都没有的记录"
         )
-        
-        let action = handler.resolveAction(for: record, fileExists: { _ in false })
+
+        let action = handler.resolveAction(for: record)
         XCTAssertEqual(action, .none)
     }
 }

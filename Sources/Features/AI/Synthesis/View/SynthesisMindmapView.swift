@@ -33,18 +33,30 @@ struct SynthesisMindmapView: View {
             .padding(.horizontal, DesignSystem.standardPadding)
             .padding(.top, DesignSystem.small)
 
-            if selectedDisplayMode == 0 && !mermaidCode.isEmpty {
-                VStack(spacing: DesignSystem.standardPadding) {
-                    if let title = extractTitle(from: doc.content) {
-                        Text(title)
-                            .font(.title2.bold())
-                            .padding(.top, DesignSystem.small)
-                            .padding(.horizontal)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
+            if selectedDisplayMode == 0 {
+                if !mermaidCode.isEmpty && SynthesisProcessor.isValidMermaidSyntax(mermaidCode) {
+                    VStack(spacing: DesignSystem.standardPadding) {
+                        if let title = extractTitle(from: doc.content) {
+                            Text(title)
+                                .font(.title2.bold())
+                                .padding(.top, DesignSystem.small)
+                                .padding(.horizontal)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
 
-                    MermaidWebView(mermaidCode: mermaidCode)
-                        .id(doc.id)
+                        MermaidWebView(mermaidCode: mermaidCode)
+                            .id(doc.id)
+                    }
+                } else {
+                    SynthesisErrorStateView(
+                        docType: doc.type,
+                        onSwitchToText: {
+                            withAnimation { selectedDisplayMode = 1 }
+                        }
+                    )
+                    .onAppear {
+                        Logger.shared.error("[SYNTH_ERR_MERMAID]" + " \(doc.type.rawValue)")
+                    }
                 }
             } else {
                 SynthesisReportView(doc: doc)
@@ -87,7 +99,20 @@ struct SynthesisMindmapView: View {
         
         // 自动自愈补充基础思维导图/架构图声明
         if doc.type == .mindmap {
-            return "mindmap\n  root((\(extractTitle(from: content) ?? L10n.AI.Synthesis.title)))\n    \(filtered.replacingOccurrences(of: "\n", with: "\n    "))"
+            let sanitizedTitle = (extractTitle(from: content) ?? L10n.AI.Synthesis.title)
+                .replacingOccurrences(of: "(", with: "")
+                .replacingOccurrences(of: ")", with: "")
+                .replacingOccurrences(of: "[", with: "")
+                .replacingOccurrences(of: "]", with: "")
+            let sanitizedBody = filtered
+                .replacingOccurrences(of: "(", with: "")
+                .replacingOccurrences(of: ")", with: "")
+                .replacingOccurrences(of: "[", with: "")
+                .replacingOccurrences(of: "]", with: "")
+                .replacingOccurrences(of: "：", with: " ")
+                .replacingOccurrences(of: ":", with: " ")
+                .replacingOccurrences(of: "\n", with: "\n    ")
+            return "mindmap\n  root((\(sanitizedTitle)))\n    \(sanitizedBody)"
         } else if doc.type == .infographic {
             return "graph TD\n  A[\(extractTitle(from: content) ?? L10n.AI.Synthesis.title)] --> B[\(filtered.prefix(100))]"
         }

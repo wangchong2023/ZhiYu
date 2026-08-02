@@ -21,7 +21,7 @@ struct SynthesisReportView: View {
         ScrollView {
             MarkdownRendererView(content: doc.content, isPrivate: false, onLinkTap: { _ in })
                 .padding()
-                .padding(.bottom, DesignSystem.loosePadding * 2)
+                .padding(.bottom, DesignSystem.huge)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
@@ -116,14 +116,29 @@ struct SynthesisOutputContent: View {
                         sourcePageIDs: doc.sourcePageIDs
                     )
                     SynthesisReportView(doc: fallbackDoc)
+                        .onAppear {
+                            Logger.shared.error("[SYNTH_ERR_QUIZ_JSON]" + " \(doc.content.prefix(50))")
+                        }
+                } else {
+                    SynthesisErrorStateView(docType: doc.type)
+                        .onAppear {
+                            Logger.shared.error("[SYNTH_ERR_QUIZ_FORMAT]" + " \(doc.content.prefix(50))")
+                        }
+                }
+            default:
+                if doc.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    SynthesisErrorStateView(docType: doc.type)
                 } else {
                     SynthesisReportView(doc: doc)
                 }
-            default:
-                SynthesisReportView(doc: doc)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
+        .onAppear {
+            if doc.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Logger.shared.error("[SYNTH_ERR_CONTENT_EMPTY]" + " \(doc.type.rawValue)")
+            }
+        }
     }
 }

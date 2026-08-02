@@ -208,7 +208,7 @@ struct SplashBackgroundView: View {
                             )
                     }
                 }
-                .padding(.bottom, DesignSystem.Metrics.heroValueSize * 7) // 180
+                .padding(.bottom, Spacing.Vault.cardHeight) // 180
             }
         }
     }

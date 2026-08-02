@@ -39,7 +39,7 @@ public struct OCRImageContentView: View {
                 Image(uiImage: img)
                     .resizable()
                     .scaledToFit()
-                    .frame(maxHeight: DesignSystem.Metrics.heroValueSize * 11.5)
+                    .frame(maxHeight: Spacing.Grid.emptyStateHeight)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
                     .shadow(color: .primary.opacity(DesignSystem.shadowOpacity), radius: DesignSystem.small)
                     .overlay(
@@ -58,7 +58,7 @@ public struct OCRImageContentView: View {
                 Image(nsImage: img)
                     .resizable()
                     .scaledToFit()
-                    .frame(maxHeight: DesignSystem.Metrics.heroValueSize * 11.5)
+                    .frame(maxHeight: Spacing.Grid.emptyStateHeight)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
                     .shadow(color: .primary.opacity(DesignSystem.shadowOpacity), radius: DesignSystem.small)
                     .overlay(

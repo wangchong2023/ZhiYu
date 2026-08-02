@@ -162,7 +162,7 @@ def main():
     print("🛡️  智宇 (ZhiYu) SPM 依赖安全指纹审计门禁启动中...")
     print(DIVIDER)
     
-    workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     resolved_path = _find_resolved_path(workspace_root)
     
     if not os.path.exists(resolved_path):

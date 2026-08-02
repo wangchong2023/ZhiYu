@@ -62,7 +62,7 @@ struct MermaidWebView: View {
             .shadow(color: .black.opacity(DesignSystem.Opacity.light), radius: 8, x: 0, y: 4)
             .padding(DesignSystem.Layout.cardContentPadding)
         }
-        .frame(minHeight: 400)
+        .frame(minHeight: Spacing.Grid.emptyStateHeight)
         .sheet(item: $identifiablePDFURL) { identifiable in
             #if os(iOS)
             ActivityView(activityItems: [identifiable.url])
@@ -90,8 +90,7 @@ struct MermaidWebView: View {
             Image(systemName: icon)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appText)
-                // swiftlint:disable:next magic_numbers_frame
-                .frame(width: 40, height: 40)
+                .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
                 .contentShape(Rectangle())
         }
         .buttonStyle(ScaleButtonStyle()) // 使用统一的缩放反馈样式
@@ -160,6 +159,7 @@ struct MermaidWKWebView: UIViewRepresentable {
         uiView.loadHTMLString(generateHTML(), baseURL: Bundle.main.bundleURL)
     }
     
+    // swiftlint:disable:next function_body_length
     private func generateHTML() -> String {
         let escapedCode = mermaidCode
             .replacingOccurrences(of: "\\", with: "\\\\")
@@ -175,20 +175,26 @@ struct MermaidWKWebView: UIViewRepresentable {
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
             <script src="mermaid.min.js"></script>
             <style>
-                body { background-color: transparent; margin: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; width: 100vw; font-family: -apple-system; }
+                body { background-color: transparent; margin: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; width: 100vw; font-family: -apple-system, sans-serif; color: #1c1c1e; }
+                @media (prefers-color-scheme: dark) {
+                    body { color: #f2f2f7; }
+                }
                 #mermaid-root { background-color: transparent; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; }
                 svg { max-width: 100% !important; height: auto !important; }
-                .error-container { color: #ff453a; text-align: center; padding: 40px 20px; font-size: 14px; background: rgba(255,69,58,0.1); border-radius: 12px; margin: 20px; border: 1px solid rgba(255,69,58,0.2); }
-                .error-details { font-family: monospace; font-size: 11px; margin-top: 12px; opacity: 0.7; word-break: break-all; text-align: left; }
+                .fallback-box { padding: 24px; background: rgba(120, 120, 128, 0.08); border-radius: 16px; border: 1px solid rgba(120, 120, 128, 0.16); }
+                .fallback-h3 { color: #0A84FF; margin-top: 12px; margin-bottom: 12px; font-size: 17px; font-weight: 600; }
+                .fallback-item { padding-left: 12px; margin: 8px 0; font-size: 15px; border-left: 3px solid #0A84FF; line-height: 1.4; opacity: 0.9; }
             </style>
         </head>
         <body>
             <div id="mermaid-root"></div>
             <script>
+                mermaid.parseError = function(err, hash) {};
                 mermaid.initialize({
                     startOnLoad: false,
                     theme: 'neutral',
                     securityLevel: 'loose',
+                    suppressErrorRendering: true,
                     mindmap: { useMaxWidth: true }
                 });
                 (async () => {
@@ -197,12 +203,20 @@ struct MermaidWKWebView: UIViewRepresentable {
                         const { svg } = await mermaid.render('mindmap-svg', `\(escapedCode)`);
                         root.innerHTML = svg;
                     } catch (e) {
-                        root.innerHTML = `
-                            <div class="error-container">
-                                <div>\(L10n.AI.Synthesis.Mindmap.renderError)</div>
-                                <div class="error-details">${e.message || e}</div>
-                            </div>
-                        `;
+                        const rawCode = `\(escapedCode)`;
+                        const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
+                        let listHtml = '<div class="fallback-box">';
+                        lines.forEach(line => {
+                            const trimmed = line.trim();
+                            if (trimmed.startsWith('#')) {
+                                const headerText = trimmed.replace(/^#+\\s*/, '');
+                                listHtml += `<h3 class="fallback-h3">${headerText}</h3>`;
+                            } else {
+                                listHtml += `<div class="fallback-item">${trimmed}</div>`;
+                            }
+                        });
+                        listHtml += '</div>';
+                        root.innerHTML = listHtml;
                     }
                 })();
             </script>

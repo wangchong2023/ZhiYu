@@ -166,13 +166,12 @@ public struct OnDeviceTestView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
                 }
-                .frame(maxHeight: 220)
+                .frame(maxHeight: Spacing.Grid.emptyStateHeight)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.shadow))
                 .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
                 .overlay(
                     RoundedRectangle(cornerRadius: Spacing.standardRadius)
-                        // swiftlint:disable:next magic_numbers_opacity
-                        .strokeBorder(Color.appText.opacity(0.06), lineWidth: 1)
+                        .strokeBorder(Color.appText.opacity(DesignSystem.Opacity.ghost), lineWidth: 1)
                 )
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -227,14 +226,15 @@ public struct OnDeviceModelRow: View {
         HStack(spacing: 14) {
             // 左侧精美模型图标
             ZStack {
+                let circleBgColor = isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.glass) : Color.appSecondary.opacity(DesignSystem.Opacity.light)
+                let iconColor = isSelected ? Color.appAccent : Color.appSecondary
                 Circle()
-                    .fill(isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.glass) : Color.appSecondary.opacity(DesignSystem.Opacity.light))
-                    // swiftlint:disable:next magic_numbers_frame
-                    .frame(width: 38, height: 38)
+                    .fill(circleBgColor)
+                    .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
                 
                 Image(systemName: model.icon)
                     .font(.subheadline.weight(.bold))
-                    .foregroundStyle(isSelected ? .appAccent : .appSecondary)
+                    .foregroundStyle(iconColor)
             }
             
             // 中间模型名称及来源描述

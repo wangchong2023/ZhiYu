@@ -122,17 +122,15 @@ struct AuthView: View {
         HStack {
             Spacer()
             Menu {
-                ForEach(LanguageMode.allCases) { mode in
-                    Button(action: {
+                Picker("", selection: Binding(
+                    get: { selectedLanguage },
+                    set: { mode in
                         selectedLanguage = mode
                         Localized.languageMode = mode
-                    }) {
-                        HStack {
-                            Text(mode.displayName)
-                            if selectedLanguage == mode {
-                                Image(systemName: "checkmark")
-                            }
-                        }
+                    }
+                )) {
+                    ForEach(LanguageMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
                     }
                 }
             } label: {

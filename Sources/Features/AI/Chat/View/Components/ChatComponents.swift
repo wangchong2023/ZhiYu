@@ -63,8 +63,7 @@ struct ChatBubbleView: View {
                     .padding(.vertical, Spacing.medium)
                     .background(
                         LinearGradient(
-                            // swiftlint:disable:next magic_numbers_opacity
-                            colors: [.appAccent, .appAccent.opacity(0.85)],
+                            colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.pressed)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -313,7 +312,7 @@ struct ChatContentView: View {
                         }
                     }) {
                         HStack(spacing: DesignSystem.tiny) {
-                            Image(systemName: "brain")
+                            Image(systemName: DesignSystem.Icons.sparkles)
                                 .font(.caption2.weight(.semibold))
                                 .foregroundStyle(Color.appAccent)
                             Text(L10n.Common.aiThinking)
@@ -342,7 +341,7 @@ struct ChatContentView: View {
                             .overlay(
                                 Rectangle()
                                     .fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
-                                    .frame(width: DesignSystem.Metrics.dividerThickness * 2),
+                                    .frame(width: DesignSystem.atomic),
                                 alignment: .leading
                             )
                             .transition(.opacity.combined(with: .move(edge: .top)))

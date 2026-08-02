@@ -35,6 +35,17 @@
 - 图标（icon）、颜色（Color）属性应存放在 `Views/Styles/` 目录下的 Extension 中。
 - **优点**：保持 Model 的纯粹性，方便多平台（如无 UI 的 CLI 工具）重用模型。
 
+## 设计系统 Token 3级分层与 CI 魔鬼数字门禁
+
+智宇遵循 W3C DTCG 与 Apple HIG 规范，建立三层 Token 结构：
+1. **Tier 1 (Primitive)**: 基础物理数值 (`Spacing.small = 8pt`, `Opacity.subtle = 0.12`)。
+2. **Tier 2 (Semantic)**: 场景语义数值 (`Color.appCard`, `Color.appBorder`, `Color.appText`, `Color.theme.red`)。
+3. **Tier 3 (Component)**: 组件上下文数值 (`Spacing.Action.buttonHeight`, `Spacing.Sidebar.width`)。
+
+### 规则与禁令：
+- **绝对禁止 View 层变相算术 (Magic Math)**：严禁在 UI 视图组件中写 `loosePadding * 1.5`、`tiny * 0.6` 或 `atomic * 2` 等内联乘除加减法。必须直接使用具体命名的语义 Token。
+- **静态 CI 门禁强阻断 (`check_magic_numbers.py`)**：自动对 `.padding()`, `.frame()`, `.opacity()`, `Color(hex:)`, `Color(red:)`, `UIColor(red:)` 及 View 层 `Magic Math` 算术表达式进行编译拦截。
+
 ## SwiftUI 图谱模式
 
 - **浮动控件**：对浮动在内容之上的控件（Picker、缩放按钮、筛选药丸），使用 `.overlay(alignment:)`。避免使用带有 `VStack { Spacer() }` 的 ZStack 子视图——它们会创建透明的全屏层，拦截触摸事件。`.overlay(alignment:)` 仅占据其内容的固有尺寸。
@@ -312,3 +323,33 @@ SystemStatsView.swift (626行)
 - **系统层级**: L0-L3 标识
 - **核心职责**: 一句话说清本文件的职责，避免模板化表达
 - 278 个文件已从模板注释更新为领域描述
+
+## Prompt 统一集中管理与安全合规防护模式 (v2.2 新增)
+
+### 1. 注册与渲染 (GlobalPromptRegistry)
+UI 或 Service 层严禁在内部拼接或硬编码系统 Prompt 文本，必须调用：
+```swift
+let finalPrompt = GlobalPromptRegistry.render(
+    templateKey: "synthesis.summaryReport",
+    variables: ["LANGUAGE": "zh-Hans", "CONTENT": safeUserContent]
+)
+```
+
+### 2. 5层摄入清洗 (IngestSanitationPipeline)
+多模态文档与网页数据在提交给 LLM 前必须通过 5 层清洗流水线：
+```swift
+let pipeline = IngestSanitationPipeline()
+let sanitizedText = try await pipeline.sanitize(
+    rawInput,
+    options: [.stripControlCharacters, .normalizeUnicode, .mergeOCRLineBreaks, .stripHTMLNoise]
+)
+```
+
+### 3. 三级安全拦截与脱敏 (ContentModerationEngine / PromptSecurityGuard / PIIMasker)
+- **Moderation**: 政治反动/黄色色情/暴恐涉禁直接抛出 `PromptComplianceError.contentViolatesPolicy` 物理死封阻断。
+- **PII 脱敏**: 敏感隐私自动中和 `PIIMasker.maskPII(text)`。
+- **Anti-Injection**: 定界符中和与 XML 安全沙箱包裹 `PromptSecurityGuard.sanitize(userInput)`。
+
+### 4. 动态合规多语言 (DynamicComplianceManager)
+拒答告示与正则词库优先匹配 RemoteConfig 下发的最新策略，离线时优雅回退至本地 String Catalog (`L10n.Security`) 9 大语言定义。
+

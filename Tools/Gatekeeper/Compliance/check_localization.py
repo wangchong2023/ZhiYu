@@ -36,7 +36,10 @@ ALLOW_NON_ASCII_FILES = {
     'DemoImageBuilder.swift',
     'AIContentEnricher.swift',
     'RAGEvaluationService.swift',  # RAG 评价服务的中文硬编码 Prompt
-    'ModelLabManager.swift'        # 大模型测试实验室的模拟推理输出 data 源
+    'ModelLabManager.swift',       # 大模型测试实验室的模拟推理输出 data 源
+    'ThinkingProcessor.swift',     # 思维链解析引擎的中文思考标志与分隔符
+    'SynthesisProcessor.swift',    # 知识合成柔性自愈引擎与模板文本
+    'AISynthesisService.swift'     # AI 合成服务 System Prompt 与 JSON Schema 模板
 }
 
 # 匹配模式： " ... " 字符串字面量
@@ -374,6 +377,28 @@ class XCStringsAuditor:
             issues.append((file, key, f'English value is a compound PascalCase code placeholder: "{en_val}"', "ERROR"))
         self._check_key_translation(file, key, locs, en_val, zh_val, en_trimmed, zh_trimmed, issues)
         self._check_key_state(file, key, value, en_val, zh_val, locs, issues)
+        self._check_multi_language_format_specifiers(file, key, locs, en_val, issues)
+
+    def _check_multi_language_format_specifiers(self, file, key, locs, en_val, issues):
+        """
+        校验多语言 Format Specifier (%@, %d, %s) 参数数量与格式的跨语言一致性。
+        """
+        if not en_val:
+            return
+        specifier_pattern = re.compile(r'%[0-9]*\$?[@dDfsudxX]')
+        en_specifiers = specifier_pattern.findall(en_val)
+        if not en_specifiers:
+            return
+
+        for lang, loc in locs.items():
+            if lang == 'en':
+                continue
+            val = loc.get('stringUnit', {}).get('value', '')
+            if not val:
+                continue
+            lang_specifiers = specifier_pattern.findall(val)
+            if len(lang_specifiers) != len(en_specifiers):
+                issues.append((file, key, f'{lang} format specifier count mismatch with en: expected {len(en_specifiers)}, got {len(lang_specifiers)} ("{val}")', "WARNING"))
 
     def audit(self):
         """
@@ -445,7 +470,9 @@ EXEMPT_STRINGS = {
     "Prompt configurations saved to UserDefaults.",
     "Prompt configurations reset to default.",
     "\n\nPlease reply in English.",
-    "Export is not supported on this platform."
+    "Export is not supported on this platform.",
+    "Thinking Process:",
+    "Reasoning Process:"
 }
 
 class SourceCodeAuditor:

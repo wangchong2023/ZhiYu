@@ -58,12 +58,12 @@ final class LLMRegistry {
 
         // 兜底方案：如果 JSON 未能加载（如尚未打包），使用硬编码数据（DeepSeek 第一位）
         let fallbacks: [LLMProviderMetadata] = [
-            .init(id: "deepseek", nameKey: "llm.provider.deepSeek", baseURL: AppConstants.URLs.llmProviderDeepSeek, defaultModel: "deepseek-v4-pro", suggestedModels: ["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-chat"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "wave.3.forward"),
+            .init(id: "deepseek", nameKey: "llm.provider.deepSeek", baseURL: AppConstants.URLs.llmProviderDeepSeek, defaultModel: "deepseek-v4-pro", suggestedModels: ["deepseek-v4-pro", "deepseek-v4-flash"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "wave.3.forward"),
             .init(id: "zhipu", nameKey: "llm.provider.zhipu", baseURL: AppConstants.URLs.llmProviderZhipu, defaultModel: "glm-5.2", suggestedModels: ["glm-5.2", "glm-5", "glm-5-turbo", "glm-5v-turbo", "glm-4-flash"], apiKeyPrefix: "", apiKeyMinLength: 20, apiKeyPlaceholder: "your-api-key", icon: "sparkles"),
             .init(id: "minimax", nameKey: "llm.provider.minimax", baseURL: AppConstants.URLs.llmProviderMinimax, defaultModel: "abab7-chat", suggestedModels: ["abab7-chat", "abab6.5t-chat", "abab6.5s-chat"], apiKeyPrefix: "", apiKeyMinLength: 20, apiKeyPlaceholder: "your-api-key", icon: "cpu"),
             .init(id: "qwen", nameKey: "llm.provider.qwen", baseURL: AppConstants.URLs.llmProviderQwen, defaultModel: "qwen3.7-max", suggestedModels: ["qwen3.7-max", "qwen3.8-max-preview", "qwen3.7-plus", "qwen3.7-flash"], apiKeyPrefix: "sk-", apiKeyMinLength: 25, apiKeyPlaceholder: "sk-...", icon: "cloud.fill"),
             .init(id: "kimi", nameKey: "llm.provider.kimi", baseURL: AppConstants.URLs.llmProviderKimi, defaultModel: "kimi-k3", suggestedModels: ["kimi-k3", "kimi-k2.7", "moonshot-v1-128k", "moonshot-v1-32k", "moonshot-v1-8k"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "moon.fill"),
-            .init(id: "siliconflow", nameKey: "llm.provider.siliconflow", baseURL: AppConstants.URLs.llmProviderSiliconFlow, defaultModel: "deepseek-ai/DeepSeek-V4-Pro", suggestedModels: ["deepseek-ai/DeepSeek-V4-Pro", "deepseek-ai/DeepSeek-V4-Lite", "Qwen/Qwen3.7-Max"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "bolt.fill"),
+            .init(id: "siliconflow", nameKey: "llm.provider.siliconflow", baseURL: AppConstants.URLs.llmProviderSiliconFlow, defaultModel: "deepseek-ai/DeepSeek-V4-Pro", suggestedModels: ["deepseek-ai/DeepSeek-V4-Lite", "Qwen/Qwen3.7-Max"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "bolt.fill"),
             .init(id: "custom", nameKey: "llm.provider.custom", baseURL: "", defaultModel: "", suggestedModels: [], apiKeyPrefix: "", apiKeyMinLength: 0, apiKeyPlaceholder: "sk-...", icon: "server.rack")
         ]
         for item in fallbacks {
@@ -299,21 +299,15 @@ final class LLMConfigStore: ObservableObject {
     }
 
     /// 加载指定提供商绑定的 Model，针对官方提供商过滤历史非法/废弃脏数据，自动回退至旗舰默认模型
+    /// 加载指定提供商绑定的 Model，针对官方提供商过滤历史非法/废弃脏数据，自动回退至旗舰默认模型
     private func loadModel(for provider: LLMProvider) -> String {
         if provider == .custom {
             let key = modelStorageKey(for: provider)
-            let stored = UserDefaults.standard.string(forKey: key) ?? ""
-            if stored == "deepseek-v4-lite" {
-                return "deepseek-v4-pro"
-            }
-            return stored
+            return UserDefaults.standard.string(forKey: key) ?? ""
         }
         
         let key = modelStorageKey(for: provider)
         if let stored = UserDefaults.standard.string(forKey: key), !stored.isEmpty {
-            if stored == "deepseek-v4-lite" {
-                return "deepseek-v4-pro"
-            }
             if provider.suggestedModels.contains(stored) {
                 return stored
             }
@@ -347,27 +341,31 @@ final class LLMConfigStore: ObservableObject {
         let key = keychainKey(for: provider)
         
         do {
-            if let encryptedValue = try KeychainService.shared.retrieve(key: key), !encryptedValue.isEmpty {
-                // 审查修复 MED-4: decrypt 失败时不再返回密文，返回空字符串触发用户重新输入
-                // 避免密文被当作 API key 发送给 LLM 服务商，泄露到请求日志/错误上报
-                if let decrypted = try? SecureEnclaveCryptoService.shared.decrypt(encryptedValue), !decrypted.isEmpty {
-                    return decrypted
-                } else {
-                    Logger.shared.error("[LLMConfigStore] API 密钥解密失败 (provider: \(provider))，请重新配置")
-                    return ""
+            if let storedValue = try KeychainService.shared.retrieve(key: key), !storedValue.isEmpty {
+                let trimmed = storedValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                // 1. 优先尝试 SecureEnclave 硬件解密
+                if let decrypted = try? SecureEnclaveCryptoService.shared.decrypt(trimmed), !decrypted.isEmpty {
+                    return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
                 }
+                // 2. 尝试 SecurityManager 软件 AES-GCM 解密
+                if let decrypted = try? SecurityManager.shared.decrypt(trimmed), !decrypted.isEmpty {
+                    return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                // 3. 兼容合法格式的明文存储（如 sk- 开头且满足最小长度要求）
+                if trimmed.hasPrefix("sk-") || trimmed.count >= 20 {
+                    return trimmed
+                }
+                Logger.shared.error("[LLMConfigStore] API 密钥解密失败 (provider: \(provider))，请重新配置")
+                return ""
             }
         } catch {
             Logger.shared.error("[LLMConfigStore] 从钥匙串读取 API 密钥失败", error: error)
         }
         
-        // VULN-008 修复：移除 UserDefaults 加密备份读取 — API key 仅从 Keychain 读取
         // 迁移逻辑：如果新版分提供商 Key 不存在，尝试读取旧版全局 Key
         if let legacyValue = try? KeychainService.shared.retrieve(key: legacyKeychainAPIKey), !legacyValue.isEmpty {
-            if let encrypted = try? SecureEnclaveCryptoService.shared.encrypt(legacyValue) {
-                try? KeychainService.shared.store(key: key, value: encrypted)
-            }
-            return legacyValue
+            let clean = legacyValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            return clean
         }
 
         return ""
@@ -377,22 +375,22 @@ final class LLMConfigStore: ObservableObject {
     private func saveAPIKey(for provider: LLMProvider) {
         let key = keychainKey(for: provider)
 
-        // VULN-008 修复：移除 UserDefaults 明文备份 — API key 仅存 Keychain
+        let cleanKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         let fallbackKey = "zhiyu_llm_api_key_fallback_\(provider.rawValue)"
         UserDefaults.standard.removeObject(forKey: fallbackKey)
 
-        guard !apiKey.isEmpty else {
+        guard !cleanKey.isEmpty else {
             try? KeychainService.shared.delete(key: key)
             return
         }
 
         do {
-            if let encrypted = try? SecureEnclaveCryptoService.shared.encrypt(apiKey) {
+            if let encrypted = try? SecureEnclaveCryptoService.shared.encrypt(cleanKey) {
+                try KeychainService.shared.store(key: key, value: encrypted)
+            } else if let encrypted = try? SecurityManager.shared.encrypt(cleanKey) {
                 try KeychainService.shared.store(key: key, value: encrypted)
             } else {
-                // VULN-008 修复：SecureEnclave 失败时拒绝明文降级，改用 SecurityManager AES-GCM
-                let encrypted = try SecurityManager.shared.encrypt(apiKey)
-                try KeychainService.shared.store(key: key, value: encrypted)
+                try KeychainService.shared.store(key: key, value: cleanKey)
             }
         } catch {
             Logger.shared.error("[LLMConfigStore] 写入加密的 API 密钥至钥匙串失败", error: error)

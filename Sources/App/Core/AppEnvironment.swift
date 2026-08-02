@@ -82,7 +82,29 @@ final class AppEnvironment {
         // 4. 配置全局 UI 样式与数据种子化及同步
         setupGlobalStylesAndSync()
 
+        // 5. 审查修复 MED-6: 启动安全检查 — 越狱检测
+        performSecurityCheck()
+
         Logger.shared.info("[AppEnvironment] Initialization completed.")
+    }
+
+    /// 启动安全检查：越狱检测（审查修复 MED-6）
+    /// 检测到越狱设备时记录安全警报日志，不阻断运行但标记风险状态
+    private func performSecurityCheck() {
+        #if os(iOS) && !targetEnvironment(simulator)
+        Task { @MainActor in
+            if JailbreakDetector.shared.isJailbroken() {
+                Logger.shared.addLog(
+                    action: .error,
+                    target: "SecurityCheck",
+                    details: L10n.Security.jailbreakDetected,
+                    module: "Security",
+                    status: .failure,
+                    failureReason: L10n.Security.jailbreakFailureReason
+                )
+            }
+        }
+        #endif
     }
     
     /// 准备底层物理存储与数据库热迁移

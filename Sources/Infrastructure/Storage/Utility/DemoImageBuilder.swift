@@ -9,7 +9,7 @@
 //  核心职责：为 OCR 扫描与图片导入记录生成高可读性、高精度且与页面内容 100% 对应的出版级图像。
 //
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 import SwiftUI
 
@@ -260,6 +260,14 @@ public struct DemoImageBuilder {
             startY += rowHeight
         }
         return startY
+    }
+}
+#else
+import Foundation
+
+public struct DemoImageBuilder {
+    public static func ensureDemoImagesExist(at directory: URL) -> [URL] {
+        return []
     }
 }
 #endif

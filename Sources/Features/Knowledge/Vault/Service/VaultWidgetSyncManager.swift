@@ -33,8 +33,16 @@ extension VaultService {
         }
     }
 
-    /// 将当前 vault 的统计快照写入 App Group JSON（供 Widget Extension 读取）
-    func writeWidgetStatsSnapshot(pageCount: Int, linkCount: Int, tagCount: Int) async {
+    /// 将当前 vault 的统计与每日洞察快照写入 App Group JSON（供 Widget Extension & Watch 读取）
+    func writeWidgetStatsSnapshot(
+        pageCount: Int,
+        linkCount: Int = 0,
+        tagCount: Int = 0,
+        dailyInsightTitle: String = L10n.Widget.llmWikiChunking,
+        dailyInsightContent: String = L10n.Widget.llmWikiDescription,
+        flashThoughtSummary: String = L10n.Widget.flashThoughtSub,
+        distribution: [String: Double] = ["source": 0.4, "concept": 0.3, "entity": 0.2, "map": 0.1]
+    ) async {
         guard let groupURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: "group.com.zhiyu.app"
         ) else { return }
@@ -43,13 +51,17 @@ extension VaultService {
             "pageCount": pageCount,
             "linkCount": linkCount,
             "tagCount": tagCount,
+            "dailyInsightTitle": dailyInsightTitle,
+            "dailyInsightContent": dailyInsightContent,
+            "flashThoughtSummary": flashThoughtSummary,
+            "distribution": distribution,
             "recentPages": []
         ]
         let url = groupURL.appendingPathComponent("widget_stats.json")
         do {
             let data = try JSONSerialization.data(withJSONObject: snapshot)
             try data.write(to: url, options: .atomic)
-            Logger.shared.info("[VaultService] Widget snapshot written: pageCount=\(pageCount) to \(url.lastPathComponent)")
+            Logger.shared.info("[VaultService] Widget & Watch snapshot written: pageCount=\(pageCount) to \(url.lastPathComponent)")
         } catch {
             Logger.shared.warning("[VaultService] Widget snapshot write failed: \(error.localizedDescription)")
         }

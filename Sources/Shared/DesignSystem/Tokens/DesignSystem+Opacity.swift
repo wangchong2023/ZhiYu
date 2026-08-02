@@ -28,6 +28,7 @@ extension DesignSystem {
         public static let dim: Double = 0.6
         public static let overlay: Double = 0.7
         public static let prominent: Double = 0.8
+        public static let pressed: Double = 0.8
         public static let solid: Double = 1.0
     }
 }

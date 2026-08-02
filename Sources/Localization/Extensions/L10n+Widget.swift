@@ -31,6 +31,23 @@ extension L10n {
         public static var tags: String { L10n.Common.tr("accessibility.tags") }
         public static var vaultName: String { Localized.tr("widget.vaultName", table: t) }
         public static var ai: String { Localized.tr("widget.ai", table: t) }
+        public static var dailyInsight: String { Localized.tr("widget.dailyInsight", table: t) }
+        public static var knowledgeDistribution: String { Localized.tr("widget.knowledgeDistribution", table: t) }
+        public static var voice: String { L10n.Common.tr("tab.voice") }
+        public static var qa: String { Localized.tr("widget.qa", table: t) }
+        public static var dictating: String { Localized.tr("widget.dictating", table: t) }
+        public static var voiceFlashCapture: String { Localized.tr("widget.voiceFlashCapture", table: t) }
+        public static var syncedToiOS: String { Localized.tr("widget.syncedToiOS", table: t) }
+        public static var llmWikiChunking: String { Localized.tr("widget.llmWikiChunking", table: t) }
+        public static var llmWikiDescription: String { Localized.tr("widget.llmWikiDescription", table: t) }
+        public static var flashThoughtSub: String { Localized.tr("widget.flashThoughtSub", table: t) }
+        public static var insightQuote1: String { Localized.tr("widget.insightQuote1", table: t) }
+        public static var insightQuote2: String { Localized.tr("widget.insightQuote2", table: t) }
+        public static var insightQuote3: String { Localized.tr("widget.insightQuote3", table: t) }
+        public static var sampleVoiceNote: String { Localized.tr("widget.sampleVoiceNote", table: t) }
+        public static var zhiyuAI: String { Localized.tr("widget.zhiyuAI", table: t) }
+        public static var widgetsPreview: String { Localized.tr("widget.widgetsPreview", table: t) }
+        public static var watchVoiceCapture: String { Localized.tr("widget.watchVoiceCapture", table: t) }
 
         /// pages
         /// - Parameter n: n

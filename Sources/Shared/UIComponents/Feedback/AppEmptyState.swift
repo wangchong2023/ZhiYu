@@ -67,8 +67,7 @@ public struct AppEmptyState: View {
 
                 Circle()
                     .fill(Color.appAccent.opacity(Colors.glassOpacity * 0.3))
-                    // swiftlint:disable:next magic_numbers_frame
-                    .frame(width: 160, height: 160)
+                    .frame(width: DesignSystem.Gallery.emptyStateImageSize, height: DesignSystem.Gallery.emptyStateImageSize)
 
                 // 主图标容器
                 Image(systemName: icon)
@@ -103,7 +102,7 @@ public struct AppEmptyState: View {
                     .font(.caption)
                     .foregroundStyle(.appAccent)
                     .padding(.horizontal, Spacing.medium)
-                    .padding(.vertical, Spacing.tiny + Spacing.atomic)
+                    .padding(.vertical, DesignSystem.tiny)
                     .background(
                         RoundedRectangle(cornerRadius: Spacing.chipRadius)
                             .fill(Color.appAccent.opacity(Colors.glassOpacity))

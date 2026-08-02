@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import CryptoKit
 
 /// 动态提示词解析引擎，使用 Actor 隔离保证并发安全
 public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
@@ -68,8 +69,22 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
             // 2. 尝试从本地缓存读取
             if FileManager.default.fileExists(atPath: cachedFileURL.path),
                let cachedContent = try? String(contentsOf: cachedFileURL, encoding: .utf8) {
-                // 本地存在该版本缓存，直接采用
-                rawPrompt = cachedContent
+                // 审查修复 MED-3: 缓存读取路径同样校验 SHA256，防止缓存被篡改
+                if let expectedHash = skill.remotePromptSHA256 {
+                    let computedHash = SHA256.hash(data: Data(cachedContent.utf8))
+                    let computedHex = computedHash.map { String(format: "%02x", $0) }.joined()
+                    if computedHex != expectedHash.lowercased() {
+                        // 缓存哈希不匹配，删除缓存并降级到本地模板
+                        Logger.shared.error("[PromptTemplateEngine] \(skill.skillId): 缓存哈希不匹配，删除缓存并降级到本地模板")
+                        try? FileManager.default.removeItem(at: cachedFileURL)
+                    } else {
+                        // 缓存校验通过，直接采用
+                        rawPrompt = cachedContent
+                    }
+                } else {
+                    // 未配置哈希校验，保持兼容行为
+                    rawPrompt = cachedContent
+                }
             } else {
                 // 3. 本地无缓存，发起静默网络请求热更新拉取
                 do {
@@ -83,8 +98,24 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
                        let fetchedContent = String(data: data, encoding: .utf8) {
                         // 校验拉取到的内容是否非空，若有效则写入沙盒缓存
                         if !fetchedContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            rawPrompt = fetchedContent
-                            try? fetchedContent.write(to: cachedFileURL, atomically: true, encoding: .utf8)
+                            // VULN-009 修复：远程 Prompt 完整性校验
+                            // 若配置了 SHA256 哈希，必须匹配才能使用，否则降级到本地模板
+                            if let expectedHash = skill.remotePromptSHA256 {
+                                let computedHash = SHA256.hash(data: Data(fetchedContent.utf8))
+                                let computedHex = computedHash.map { String(format: "%02x", $0) }.joined()
+                                if computedHex != expectedHash.lowercased() {
+                                    Logger.shared.error("[PromptTemplateEngine] \(skill.skillId): 远程 Prompt 哈希不匹配，降级到本地模板 (expected: \(expectedHash.prefix(16))..., got: \(computedHex.prefix(16))...)")
+                                    // 哈希不匹配，使用本地模板
+                                } else {
+                                    rawPrompt = fetchedContent
+                                    try? fetchedContent.write(to: cachedFileURL, atomically: true, encoding: .utf8)
+                                }
+                            } else {
+                                // 未配置哈希校验，保持兼容行为（但记录警告）
+                                Logger.shared.warning("[PromptTemplateEngine] \(skill.skillId): 远程 Prompt 未配置 SHA256 校验，存在篡改风险")
+                                rawPrompt = fetchedContent
+                                try? fetchedContent.write(to: cachedFileURL, atomically: true, encoding: .utf8)
+                            }
                         }
                     }
                 } catch {

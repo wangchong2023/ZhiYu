@@ -215,11 +215,11 @@ struct OCRSaveForm: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.vertical, DesignSystem.atomic * 2) // 4
+            .padding(.vertical, DesignSystem.tiny) // 4
 
             // Tags
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) { // 6
+                HStack(spacing: Spacing.Chip.horizontalPadding) { // 6
                     ForEach(targetTags, id: \.self) { tag in
                         TagPill(tag: tag, onRemove: { onRemoveTag(tag) })
                     }
@@ -269,7 +269,7 @@ struct TagPill: View {
             }
         }
         .padding(.horizontal, DesignSystem.small) // 8
-        .padding(.vertical, DesignSystem.atomic * 2) // 4
+        .padding(.vertical, DesignSystem.tiny) // 4
         .background(Color.appAccent.opacity(DesignSystem.glassOpacity), in: Capsule()) // 0.1
     }
 }

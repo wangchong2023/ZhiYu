@@ -8,9 +8,23 @@ packages:
     path: /Users/constantine/Documents/work/code/opensrc/swift/lottie-ios
   ZIPFoundation:
     path: /Users/constantine/Documents/work/code/opensrc/swift/ZIPFoundation
+  SwiftMarkdown:
+    url: https://github.com/apple/swift-markdown.git
+    from: 0.3.0
 
 options:
   bundleIdPrefix: com.zhiyu.app
+  developmentLanguage: en
+  knownLocalizations:
+    - en
+    - zh-Hans
+    - zh-Hant
+    - ja
+    - ko
+    - es
+    - fr
+    - ar
+    - ru
   deploymentTarget:
     iOS: "17.0"
     macOS: "14.0"
@@ -69,6 +83,9 @@ targets:
       - script: "python3 Tools/Gatekeeper/Compliance/check_localization.py"
         name: "[Gatekeeper] L10n Leak & Hardcode Audit"
         basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Compliance/check_prompt_governance.py"
+        name: "[Gatekeeper] Prompt Governance & Security Audit"
+        basedOnDependencyAnalysis: false
       - script: "python3 Tools/Gatekeeper/Compliance/check_storage_constants.py"
         name: "[Gatekeeper] Storage Constants Audit"
         basedOnDependencyAnalysis: false
@@ -106,6 +123,8 @@ targets:
       - package: GRDB
       - package: Lottie
       - package: ZIPFoundation
+      - package: SwiftMarkdown
+        product: Markdown
       - target: ZhiYuWidgets
       - framework: Frameworks/WechatOpenSDK.xcframework
       - framework: Frameworks/ATAuthSDK_D.xcframework
@@ -164,6 +183,7 @@ targets:
           - "Features/AI/Chat/Model/AIWorkflowStore.swift"
           - "Features/AI/Chat/Model/AIInsightStore.swift"
           - "Features/AI/Synthesis/**"
+          - "Infrastructure/Processors/Synthesis/**"
           - "Features/Knowledge/**/View/**"
           - "Features/Knowledge/**/Coordinator/**"
           - "Features/Knowledge/NotebookHub/ViewModel/NotebookHubViewModel.swift"

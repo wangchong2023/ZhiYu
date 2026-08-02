@@ -259,8 +259,8 @@ struct ChatViewContent: View {
                         Text(L10n.Common.cancel)
                             .font(.system(size: 11, weight: .semibold)) // Dynamic Type
                     }
-                    .padding(.horizontal, DesignSystem.tiny * 1.5)
-                    .padding(.vertical, DesignSystem.tiny * 0.6)
+                    .padding(.horizontal, Spacing.Chip.horizontalPadding)
+                    .padding(.vertical, DesignSystem.atomic)
                     .foregroundStyle(Color.theme.red)
                     .background(Color.theme.red.opacity(DesignSystem.Opacity.glass))
                     .clipShape(Capsule())
@@ -351,7 +351,7 @@ struct ChatViewContent: View {
                                             .foregroundStyle(.appText)
                                     }
                                     .padding(.horizontal, DesignSystem.standardPadding)
-                                    .padding(.vertical, DesignSystem.tiny * 1.5)
+                                    .padding(.vertical, Spacing.Chip.horizontalPadding)
                                     .background(Color.appCard.opacity(DesignSystem.Opacity.glass))
                                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
                                     .overlay(

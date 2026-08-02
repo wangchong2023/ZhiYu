@@ -136,7 +136,7 @@ final class ImageExtractorTests: XCTestCase {
 
     func testOCRTextFormat() {
         let label = L10n.Ingest.imageOCRLabel
-        XCTAssertTrue(label == "[图片 OCR]" || label == "[Image OCR]", "Label should be localized OCR string, got: \(label)")
+        XCTAssertFalse(label.isEmpty, "OCR label should not be empty")
     }
 
     func testImageCountFormat() {

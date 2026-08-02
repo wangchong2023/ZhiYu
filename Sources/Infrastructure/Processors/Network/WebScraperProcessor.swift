@@ -76,7 +76,13 @@ final class WebScraperProcessor: @unchecked Sendable {
         guard let url = URL(string: normalizedString) else {
             throw ScraperError.invalidURL
         }
-        
+
+        // VULN-006 修复：SSRF 防护 — 拒绝内网/环回/链路本地地址
+        guard SSRFGuard.isSafeURL(url) else {
+            Logger.shared.warning("[WebScraper] SSRF 拦截: \(url.host ?? "unknown")")
+            throw ScraperError.invalidURL
+        }
+
         return try await chain.handle(url: url, startTime: startTime)
     }
 }

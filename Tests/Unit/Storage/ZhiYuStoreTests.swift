@@ -140,14 +140,14 @@ final class ZhiYuLLMConfigStoreTests: XCTestCase {
         // Mock SecureEnclaveCryptoService + MockKeychainService 已由 setUp 注入，模拟器环境安全
         configStore.apiKey = "test-key-12345"
         configStore.provider = .deepSeek
-        configStore.model = "deepseek-v4-lite"
+        configStore.model = "deepseek-v4-pro"
         configStore.isEnabled = true
 
         // 初始化一个新的 Store 来测试持久性
         let restored = LLMConfigStore()
         XCTAssertEqual(restored.apiKey, "test-key-12345")
         XCTAssertEqual(restored.provider, .deepSeek)
-        XCTAssertEqual(restored.model, "deepseek-v4-lite")
+        XCTAssertEqual(restored.model, "deepseek-v4-pro")
         XCTAssertTrue(restored.isEnabled)
     }
 

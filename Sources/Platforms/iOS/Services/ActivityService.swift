@@ -26,8 +26,29 @@ final class ActivityService: LiveActivityProtocol {
 
     private init() {}
 
-    /// 启动实时活动
+    /// 遵从 LiveActivityProtocol 基础协议的启动接口
     func startActivity(id: UUID, name: String, target: String) {
+        startActivity(
+            id: id,
+            name: name,
+            target: target,
+            kind: .synthesis,
+            sourceCount: 0,
+            currentFileName: "",
+            estimatedSecondsRemaining: 0
+        )
+    }
+
+    /// 启动实时活动
+    func startActivity(
+        id: UUID,
+        name: String,
+        target: String,
+        kind: ActivityKind = .synthesis,
+        sourceCount: Int = 0,
+        currentFileName: String = "",
+        estimatedSecondsRemaining: Int = 0
+    ) {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         
@@ -35,7 +56,14 @@ final class ActivityService: LiveActivityProtocol {
             Logger.shared.debug("DynamicIsland_Preparing")
             
             let attributes = AIProcessingAttributes(taskName: name, startTime: Date())
-            let contentState = AIProcessingAttributes.ContentState(progress: 0.05, status: target)
+            let contentState = AIProcessingAttributes.ContentState(
+                progress: 0.05,
+                status: target,
+                kind: kind,
+                sourceCount: sourceCount,
+                currentFileName: currentFileName,
+                estimatedSecondsRemaining: estimatedSecondsRemaining
+            )
             
             do {
                 if activeActivities.count >= 5 {
@@ -58,18 +86,43 @@ final class ActivityService: LiveActivityProtocol {
         #endif
     }
 
-    /// 更新指定任务的实时进度
+    /// 遵从 LiveActivityProtocol 基础协议的更新进度接口
     func updateProgress(id: UUID, progress: Double, message: String) async {
+        await updateProgress(
+            id: id,
+            progress: progress,
+            message: message,
+            sourceCount: 0,
+            currentFileName: "",
+            estimatedSecondsRemaining: 0
+        )
+    }
+
+    /// 更新指定任务的实时进度
+    func updateProgress(
+        id: UUID,
+        progress: Double,
+        message: String,
+        sourceCount: Int = 0,
+        currentFileName: String = "",
+        estimatedSecondsRemaining: Int = 0
+    ) async {
         #if os(iOS) && !targetEnvironment(macCatalyst)
         guard let activity = activeActivities[id] else { return }
         
-        let newState = AIProcessingAttributes.ContentState(progress: progress, status: message)
+        var currentState = activity.content.state
+        currentState.progress = progress
+        currentState.status = message
+        if sourceCount > 0 { currentState.sourceCount = sourceCount }
+        if !currentFileName.isEmpty { currentState.currentFileName = currentFileName }
+        if estimatedSecondsRemaining > 0 { currentState.estimatedSecondsRemaining = estimatedSecondsRemaining }
+
         let title = LocalizedStringResource(stringLiteral: "\(Int(progress * 100))%")
         let body = LocalizedStringResource(stringLiteral: message)
         let alertConfiguration = AlertConfiguration(title: title, body: body, sound: .default)
         
         await activity.update(
-            ActivityContent(state: newState, staleDate: nil),
+            ActivityContent(state: currentState, staleDate: nil),
             alertConfiguration: alertConfiguration
         )
         #endif

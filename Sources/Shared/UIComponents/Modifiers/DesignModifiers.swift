@@ -54,8 +54,7 @@ struct PremiumAmbientShadowModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             // 第一层：大范围微弱漫反射阴影，确立环境光底色
-            // swiftlint:disable:next magic_numbers_opacity
-            .shadow(color: color.opacity(0.06), radius: radius, x: 0, y: radius * 0.4)
+            .shadow(color: color.opacity(DesignSystem.Opacity.ghost), radius: radius, x: 0, y: radius * 0.4)
             // 第二层：小范围紧致遮蔽阴影，确立物理接缝立体感
             .shadow(color: color.opacity(DesignSystem.Opacity.faint), radius: radius * 0.4, x: 0, y: radius * 0.15)
     }

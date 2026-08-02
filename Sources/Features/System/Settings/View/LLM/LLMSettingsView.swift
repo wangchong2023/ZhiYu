@@ -73,6 +73,9 @@ struct LLMSettingsView: View {
                                 testResult = nil
                                 config.provider = provider
                                 isCustomModelInput = false
+                                if !provider.suggestedModels.contains(config.model) {
+                                    config.model = provider.defaultModel
+                                }
                             }) {
                                 HStack {
                                     Image(systemName: provider.icon)
@@ -269,7 +272,12 @@ struct LLMSettingsView: View {
                         .foregroundStyle(.appSecondary)
                     Spacer()
                     if config.provider != .custom && !config.provider.suggestedModels.isEmpty {
-                        Button(action: { isCustomModelInput.toggle() }) {
+                        Button(action: {
+                            isCustomModelInput.toggle()
+                            if !isCustomModelInput && !config.provider.suggestedModels.contains(config.model) {
+                                config.model = config.provider.defaultModel
+                            }
+                        }) {
                             Text(isCustomModelInput ? L10n.AI.LLM.Model.preset : L10n.AI.LLM.Model.custom)
                                 .font(.caption2)
                                 .foregroundStyle(.appAccent)
@@ -296,16 +304,9 @@ struct LLMSettingsView: View {
                 } else {
                     // 官方提供商 Dropdown 下拉选择菜单
                     Menu {
-                        ForEach(config.provider.suggestedModels, id: \.self) { modelName in
-                            Button(action: {
-                                config.model = modelName
-                            }) {
-                                HStack {
-                                    Text(modelName)
-                                    if config.model == modelName {
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
+                        Picker(L10n.AI.LLM.model, selection: $config.model) {
+                            ForEach(config.provider.suggestedModels, id: \.self) { modelName in
+                                Text(modelName).tag(modelName)
                             }
                         }
                     } label: {

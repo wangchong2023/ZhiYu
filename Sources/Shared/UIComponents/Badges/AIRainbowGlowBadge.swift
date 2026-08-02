@@ -113,7 +113,7 @@ public struct AIRainbowGlowBadge: View {
                     .foregroundStyle(mainColor)
             }
         }
-        .padding(DesignSystem.atomic * 1.5)
+        .padding(Spacing.Chip.verticalPadding)
         .contentShape(Circle())
     }
     
@@ -229,8 +229,7 @@ public struct AIRainbowGlowBadge: View {
         }
         .padding()
         .frame(width: controlCenterWidth)
-        // swiftlint:disable:next magic_numbers_opacity
-        .background(Color.appCard.opacity(0.95))
+        .background(Color.appCard.opacity(DesignSystem.Opacity.pressed))
         .presentationBackgroundInteraction(.enabled)
     }
 

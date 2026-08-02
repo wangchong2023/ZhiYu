@@ -100,6 +100,8 @@ final class ImageExtractor: Sendable {
             // 过滤明显不是图片的 URL（SVG 跳过，图标太小）
             let ext = url.pathExtension.lowercased()
             guard ext != "svg" else { continue }
+            // VULN-007 修复：SSRF 防护 — 拒绝内网/环回/链路本地图片地址
+            guard SSRFGuard.isSafeURL(url) else { continue }
             urls.append(url)
         }
         return urls
@@ -108,6 +110,8 @@ final class ImageExtractor: Sendable {
     // MARK: - 下载
 
     private func downloadImage(_ url: URL) async -> Data? {
+        // VULN-007 修复：SSRF 防护 — 下载前再次校验（防止 resolveURL 绕过）
+        guard SSRFGuard.isSafeURL(url) else { return nil }
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForResource = AppConstants.Keys.ImportLimits.imageDownloadTimeoutSeconds
         let session = URLSession(configuration: config)

@@ -164,6 +164,10 @@ public enum Spacing {
         public static let splashLogoBottomPadding: CGFloat = huge * 2
         /// 启动页按钮底部间距
         public static let splashButtonBottomPadding: CGFloat = huge * 1.5
+        
+        public static let cardMinWidth: CGFloat = 120
+        public static let emptyStateImageSize: CGFloat = 160
+        public static let modalMaxWidth: CGFloat = 480
     }
     
     /// 时间轴展示规范
@@ -263,29 +267,29 @@ public enum Spacing {
         /// 启动页名言闪烁偏移量 (-200)
         public static let splashQuoteShimmerOffset: CGFloat = -200
         
-        /// 指令面板标准高度
-        public static let commandPaletteHeight: CGFloat = heroValueSize * 15.3
-        /// 功能引导图标缩放比例
+        /// 指令面板标准高度 (488pt)
+        public static let commandPaletteHeight: CGFloat = 488
+        /// 功能引导图标缩放比例 (1.3)
         public static let coachMarkIconScale: CGFloat = 1.3
-        /// 功能引导主要操作水平内边距
-        public static let coachMarkActionHorizontalPadding: CGFloat = heroValueSize * 1.25
-        /// 功能引导卡片圆角偏移
-        public static let coachMarkRadiusOffset: CGFloat = heroValueSize * 0.4
-        /// 功能引导阴影半径
-        public static let coachMarkShadowRadius: CGFloat = heroValueSize * 1.15
-        /// 功能引导阴影 Y 轴偏移
-        public static let coachMarkShadowY: CGFloat = heroValueSize * 0.57
+        /// 功能引导主要操作水平内边距 (40pt)
+        public static let coachMarkActionHorizontalPadding: CGFloat = 40
+        /// 功能引导卡片圆角偏移 (12pt)
+        public static let coachMarkRadiusOffset: CGFloat = 12
+        /// 功能引导阴影半径 (36pt)
+        public static let coachMarkShadowRadius: CGFloat = 36
+        /// 功能引导阴影 Y 轴偏移 (18pt)
+        public static let coachMarkShadowY: CGFloat = 18
         
-        /// 欢迎页装饰点阵宽度
-        public static let welcomeHeroDotWidth: CGFloat = heroValueSize * 7.7
-        /// 欢迎页装饰点阵高度
-        public static let welcomeHeroDotHeight: CGFloat = heroValueSize * 3.85
-        /// 欢迎页装饰圆环大小
-        public static let welcomeHeroCircleSize: CGFloat = heroValueSize * 5.4
-        /// 欢迎页英雄图标大小
-        public static let welcomeHeroIconSize: CGFloat = heroValueSize * 2.76
-        /// 统计卡片最小宽度
-        public static let statCardMinWidth: CGFloat = heroValueSize * 6.15
+        /// 欢迎页装饰点阵宽度 (248pt)
+        public static let welcomeHeroDotWidth: CGFloat = 248
+        /// 欢迎页装饰点阵高度 (124pt)
+        public static let welcomeHeroDotHeight: CGFloat = 124
+        /// 欢迎页装饰圆环大小 (172pt)
+        public static let welcomeHeroCircleSize: CGFloat = 172
+        /// 欢迎页英雄图标大小 (88pt)
+        public static let welcomeHeroIconSize: CGFloat = 88
+        /// 统计卡片最小宽度 (196pt)
+        public static let statCardMinWidth: CGFloat = 196
 
         /// 标题字体大小 (20px)
         public static let titleFontSize: CGFloat = 20
@@ -370,6 +374,8 @@ public enum Spacing {
         
         /// 侧边栏标准宽度
         public static let width: CGFloat = 280
+        /// 返回按钮点击区域宽度
+        public static let backButtonWidth: CGFloat = Action.backButtonWidth
     }
     
     /// 笔记本枢纽规范

@@ -48,6 +48,10 @@ env/
 # Claude Code
 .codegraph/
 
+# CodeFree 安全审计产物
+.codefree/
+codefree-code-review/
+
 # Temporary log/pid files
 /tmp/*.log
 /tmp/*.pid

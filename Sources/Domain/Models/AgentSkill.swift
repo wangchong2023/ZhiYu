@@ -31,6 +31,10 @@ public struct AgentSkill: Codable, Sendable, Identifiable, Equatable {
     /// 外部托管的复杂 Markdown Prompt 纯文本拉取 URL (为 nil 时直接采用本地预设的 systemPromptTemplate)
     public let remotePromptURLString: String?
     
+    /// 远程 Prompt 的 SHA-256 哈希值（VULN-009 修复：完整性校验，防止 MITM 篡改）
+    /// - Note: 若提供此字段，下载的远程 Prompt 必须匹配此哈希，否则拒绝使用并降级到本地模板
+    public let remotePromptSHA256: String?
+    
     /// 输入限制规约 JSON Schema 描述串 (可选)，用于约束返回格式或交互参数校验
     public let inputSchema: String?
     
@@ -49,6 +53,7 @@ public struct AgentSkill: Codable, Sendable, Identifiable, Equatable {
         description: String,
         systemPromptTemplate: String,
         remotePromptURLString: String? = nil,
+        remotePromptSHA256: String? = nil,
         inputSchema: String? = nil,
         tags: [String] = [],
         customParameters: InferenceParameters? = nil,
@@ -59,6 +64,7 @@ public struct AgentSkill: Codable, Sendable, Identifiable, Equatable {
         self.description = description
         self.systemPromptTemplate = systemPromptTemplate
         self.remotePromptURLString = remotePromptURLString
+        self.remotePromptSHA256 = remotePromptSHA256
         self.inputSchema = inputSchema
         self.tags = tags
         self.customParameters = customParameters

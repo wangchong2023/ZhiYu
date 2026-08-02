@@ -65,5 +65,25 @@ extension L10n {
         public static var keychainHMACSaltError: String {
             tr("security.keychain.hmacSaltError")
         }
+
+        /// 审查修复 MED-6: 越狱检测告警日志
+        public static var jailbreakDetected: String {
+            tr("security.jailbreak.detected")
+        }
+
+        /// 审查修复 MED-6: 越狱检测失败原因
+        public static var jailbreakFailureReason: String {
+            tr("security.jailbreak.failureReason")
+        }
+
+        /// 违反安全合规政策拒答提示
+        public static var compliancePolicyViolation: String {
+            tr("security.compliance.policy_violation")
+        }
+
+        /// 频控挂起账户提示
+        public static var accountTemporarilyThrottled: String {
+            tr("security.compliance.account_throttled")
+        }
     }
 }

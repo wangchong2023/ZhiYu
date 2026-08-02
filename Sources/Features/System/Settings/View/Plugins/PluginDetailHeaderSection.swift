@@ -86,7 +86,7 @@ extension PluginDetailView {
                     Text("v\(displayVersion)")
                         .font(.caption2.weight(.semibold))
                         .padding(.horizontal, DesignSystem.small)
-                        .padding(.vertical, DesignSystem.atomic * 2)
+                        .padding(.vertical, DesignSystem.tiny)
                         .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                         .foregroundStyle(.appAccent)
                         .clipShape(Capsule())

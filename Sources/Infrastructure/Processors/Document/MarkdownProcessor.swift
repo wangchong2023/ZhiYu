@@ -35,7 +35,8 @@ final class MarkdownProcessor: Sendable {
         /// - Parameters:
         ///   - items: 列表中每一项的纯文本内容数组。
         ///   - indent: 缩进级别（若为有序列表，则该值统一约定为 -1）。
-        case bulletList(items: [String], indent: Int)
+        ///   - startNumber: 起始编号（有序列表默认为 1，可从指定数字如 2, 3 起算）。
+        case bulletList(items: [String], indent: Int, startNumber: Int = 1)
         
         /// 引用块（以 `>` 引导）。
         /// - Parameter text: 引用块内的文本内容。

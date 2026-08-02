@@ -78,7 +78,7 @@ struct FloatingContextCapsule: View {
                 .lineLimit(1)
         }
         .padding(.trailing, DesignSystem.medium)
-        .frame(minHeight: 44)
+        .frame(minHeight: Spacing.Action.buttonHeight)
         #else
         Menu {
             Button(action: {
@@ -101,7 +101,7 @@ struct FloatingContextCapsule: View {
         } label: {
             HStack(spacing: DesignSystem.small) {
                 Text(vault.name)
-                    .font(.custom("AvenirNext", size: 18).weight(.bold))
+                    .font(.title3.weight(.bold))
                     .lineLimit(1)
                 
                 Image(systemName: DesignSystem.Icons.down)
@@ -109,7 +109,7 @@ struct FloatingContextCapsule: View {
                     .foregroundStyle(.white.opacity(DesignSystem.Opacity.dim))
             }
             .padding(.trailing, DesignSystem.medium)
-            .frame(minHeight: 44)
+            .frame(minHeight: Spacing.Action.buttonHeight)
         }
         #endif
     }
@@ -117,13 +117,13 @@ struct FloatingContextCapsule: View {
     private var hubIndicator: some View {
         HStack(spacing: DesignSystem.small) {
             Text(L10n.Common.unknown) // 完美对齐图 1
-                .font(.custom("AvenirNext", size: 18).weight(.bold))
+                .font(.title3.weight(.bold))
             
             Image(systemName: DesignSystem.Icons.down)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.white.opacity(DesignSystem.Opacity.dim))
         }
         .padding(.trailing, DesignSystem.medium)
-        .frame(minHeight: 44)
+        .frame(minHeight: Spacing.Action.buttonHeight)
     }
 }

@@ -55,8 +55,8 @@ public final class LLMConfigManager {
     private let configStore: LLMConfigStore
     private var cancellables = Set<AnyCancellable>()
     
-    /// 子服务刷新闭包
-    private var onRefresh: (@MainActor () -> Void)?
+    /// 子服务刷新闭包列表
+    private var refreshHandlers: [@MainActor () -> Void] = []
 
     public init() {
         self.configStore = LLMConfigStore()
@@ -70,14 +70,15 @@ public final class LLMConfigManager {
             .store(in: &cancellables)
     }
     
-    /// set刷新Handler
-    /// - Parameter handler: handler
-    /// - Returns: 返回值
+    /// 注册刷新 Handler（支持多服务同时订阅）
+    /// - Parameter handler: 刷新回调
     public func setRefreshHandler(_ handler: @escaping @MainActor () -> Void) {
-        self.onRefresh = handler
+        self.refreshHandlers.append(handler)
     }
 
     private func refreshSubServices() {
-        onRefresh?()
+        for handler in refreshHandlers {
+            handler()
+        }
     }
 }

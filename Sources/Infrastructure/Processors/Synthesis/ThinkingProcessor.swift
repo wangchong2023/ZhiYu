@@ -31,39 +31,107 @@ public enum ThinkingProcessor {
             return Result(thinkingContent: nil, mainContent: "")
         }
 
-        // 1. 优先提取 <think>...</think> 或 <thinking>...</thinking> 围栏
+        if let res = extractEnclosedThinking(text) { return res }
+        if let res = extractUnclosedThinking(text) { return res }
+        if let res = extractPrefixThinking(text) { return res }
+        if let res = extractImplicitCoT(text) { return res }
+
+        return Result(thinkingContent: nil, mainContent: text)
+    }
+
+    // MARK: - 私有解析辅助函数
+
+    private static func extractEnclosedThinking(_ text: String) -> Result? {
         let thinkPatterns = [
             #"(?s)<think>(.*?)</think>"#,
-            #"(?s)<thinking>(.*?)</thinking>"#
+            #"(?s)<thinking>(.*?)</thinking>"#,
+            #"(?s)<thought>(.*?)</thought>"#,
+            #"(?s)\[think\](.*?)\[/think\]"#,
+            #"(?s)\[thinking\](.*?)\[/thinking\]"#,
+            #"(?s)\[思考过程\](.*?)\[/思考过程\]"#,
+            #"(?s)```think\s*\n(.*?)\n```"#
         ]
-
         for pattern in thinkPatterns {
-            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
-                let range = NSRange(text.startIndex..<text.endIndex, in: text)
-                if let match = regex.firstMatch(in: text, options: [], range: range) {
-                    if let thinkRange = Range(match.range(at: 1), in: text) {
-                        let thinking = String(text[thinkRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-                        let remaining = regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "")
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                        return Result(thinkingContent: thinking.isEmpty ? nil : thinking, mainContent: remaining)
-                    }
-                }
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { continue }
+            let range = NSRange(text.startIndex..<text.endIndex, in: text)
+            if let match = regex.firstMatch(in: text, options: [], range: range),
+               let thinkRange = Range(match.range(at: 1), in: text) {
+                let thinking = String(text[thinkRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+                let remaining = regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                return Result(thinkingContent: thinking.isEmpty ? nil : thinking, mainContent: remaining)
             }
         }
+        return nil
+    }
 
-        // 2. 识别无围栏但顶部有明确“思考过程：”或“Thinking Process:”标记的情况
-        let prefixes = ["\u{601D}\u{8003}\u{8FC7}\u{7A0B}：", "\u{601D}\u{8003}\u{8FC7}\u{7A0B}:", "Thinking" + " Process:", "Reasoning:"]
-        for prefix in prefixes where text.hasPrefix(prefix) {
+    private static func extractUnclosedThinking(_ text: String) -> Result? {
+        let unclosedPatterns = [
+            #"(?i)^<(think|thinking|thought)>(.*)"#,
+            #"(?i)^\[(think|thinking|thought|思考过程)\](.*)"#
+        ]
+        for pattern in unclosedPatterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else { continue }
+            let range = NSRange(text.startIndex..<text.endIndex, in: text)
+            if let match = regex.firstMatch(in: text, options: [], range: range),
+               let contentRange = Range(match.range(at: 2), in: text) {
+                let content = String(text[contentRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+                return Result(thinkingContent: content.isEmpty ? nil : content, mainContent: "")
+            }
+        }
+        return nil
+    }
+
+    private static func extractPrefixThinking(_ text: String) -> Result? {
+        let prefixes = [
+            "思考过程：", "思考过程:", "思考：", "思考:",
+            "Thinking Process:", "Thinking:", "Reasoning Process:", "Reasoning:",
+            "思路分析：", "思路分析:"
+        ]
+        let lowerText = text.lowercased()
+        for prefix in prefixes where lowerText.hasPrefix(prefix.lowercased()) {
             let afterPrefix = String(text.dropFirst(prefix.count)).trimmingCharacters(in: .whitespacesAndNewlines)
-            // 查找思考过程与正文的分界点（如 \n\n 或 正文关键词）
-            if let dividerRange = afterPrefix.range(of: "\n\n") {
+            if let dividerRange = findAnswerDivider(in: afterPrefix) {
                 let thinking = String(afterPrefix[..<dividerRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
                 let main = String(afterPrefix[dividerRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
                 return Result(thinkingContent: thinking.isEmpty ? nil : thinking, mainContent: main)
             }
+            return Result(thinkingContent: afterPrefix, mainContent: "")
         }
+        return nil
+    }
 
-        // 3. 无思考过程，整段作为正式回答
-        return Result(thinkingContent: nil, mainContent: text)
+    private static func extractImplicitCoT(_ text: String) -> Result? {
+        let implicitCoTPrefixes = [
+            "我们被要求",
+            "用户需求：", "用户需求:",
+            "需求分析：", "需求分析:",
+            "分析用户",
+            "解构问题：", "解构问题:"
+        ]
+        for prefix in implicitCoTPrefixes where text.hasPrefix(prefix) {
+            if let dividerRange = findAnswerDivider(in: text) {
+                let thinking = String(text[..<dividerRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                let main = String(text[dividerRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !main.isEmpty {
+                    return Result(thinkingContent: thinking, mainContent: main)
+                }
+            }
+        }
+        return nil
+    }
+
+    private static func findAnswerDivider(in text: String) -> Range<String.Index>? {
+        let dividerKeywords = [
+            "\n\n根据", "\n\n建议", "\n\n以下是",
+            "\n\n1. ", "\n\n### ", "\n\n回答："
+        ]
+        for keyword in dividerKeywords {
+            if let range = text.range(of: keyword),
+               let doubleNewline = text[range.lowerBound..<range.upperBound].range(of: "\n\n") {
+                return doubleNewline
+            }
+        }
+        return text.range(of: "\n\n")
     }
 }

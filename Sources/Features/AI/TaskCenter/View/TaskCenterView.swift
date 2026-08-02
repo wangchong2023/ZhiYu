@@ -33,7 +33,7 @@ struct TaskCenterView: View {
                             .padding(.top, DesignSystem.loosePadding)
                     }
                     // 追加底部安全间距，确保在小屏或带底部 TabBar 的机型上，描述文字可以完全滚上来
-                    .padding(.bottom, DesignSystem.huge * 2)
+                    .padding(.bottom, DesignSystem.huge)
                 }
             } else {
                 List {

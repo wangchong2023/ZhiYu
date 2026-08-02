@@ -176,6 +176,14 @@ final class PPTXProcessor {
                             \(bodyText)
                         </p:txBody>
                     </p:sp>
+                    <p:sp>
+                        <p:nvSpPr><p:cNvPr id="4" name="SlideNumber"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="sldNum" sz="quarter" idx="2"/></p:nvPr></p:nvSpPr>
+                        <p:spPr/>
+                        <p:txBody>
+                            <a:bodyPr/><a:lstStyle/>
+                            <a:p><a:fld id="{00000000-0000-0000-0000-000000000000}" type="slidenum"><a:rPr lang="en-US" smtClean="0"/><a:t>\(index)</a:t></a:fld></a:p>
+                        </p:txBody>
+                    </p:sp>
                 </p:spTree>
             </p:cSld>
         </p:sld>

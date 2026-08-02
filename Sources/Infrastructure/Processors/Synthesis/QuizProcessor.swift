@@ -113,6 +113,7 @@ enum QuizProcessor {
 
     /// 将任意文本（Raw JSON、Markdown 包裹 JSON 或纯 Markdown 试卷）自愈解析为 QuizModel
     static func parseToQuizModel(_ text: String) -> QuizModel? {
+        let model: QuizModel?
         // 1. 尝试使用标准的 FlexibleQuizShell 解码
         let cleaned = LLMUtils.stripMarkdown(text)
         if let data = cleaned.data(using: .utf8),
@@ -131,11 +132,52 @@ enum QuizProcessor {
                 )
             }
             let title = shell.title.flatMap { $0.isEmpty ? nil : $0 } ?? L10n.Quiz.title
-            return QuizModel(title: title, questions: questions)
+            model = QuizModel(title: title, questions: questions)
+        } else {
+            // 2. 尝试从 Markdown 格式中自愈解析题目、选项与答案
+            model = parseMarkdownQuiz(text)
         }
 
-        // 2. 尝试从 Markdown 格式中自愈解析题目、选项与答案
-        return parseMarkdownQuiz(text)
+        guard let validModel = model else { return nil }
+        return randomizeQuizAnswers(validModel)
+    }
+
+    // MARK: - 常量定义（告别魔鬼数字）
+    private static let minOptionsForRandomization = 2
+    private static let defaultAnswerIndex = 0
+
+    /// 自动纠偏与随机打乱测验题目答案选项（防止所有测验的正确选项固定为第一个选项 / Option A）
+    static func randomizeQuizAnswers(_ model: QuizModel) -> QuizModel {
+        let randomizedQuestions = model.questions.map { question -> QuizQuestion in
+            guard question.options.count >= minOptionsForRandomization else { return question }
+
+            // 1. 清洗选项的前缀（如 "A. ", "B. ", "1. "）
+            let cleanOptions = question.options.map { opt in
+                opt.replacingOccurrences(of: #"^[A-D\d][\.\s、:]\s*"#, with: "", options: .regularExpression)
+                   .trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+
+            let isValidAnswer = (question.answer >= 0 && question.answer < cleanOptions.count)
+            let origAnswerIndex = isValidAnswer ? question.answer : defaultAnswerIndex
+            let correctAnswerText = cleanOptions[origAnswerIndex]
+
+            // 2. 将选项洗牌打乱
+            var shuffledOptions = cleanOptions
+            shuffledOptions.shuffle()
+
+            // 3. 计算洗牌后正确答案的新 index
+            let newAnswerIndex = shuffledOptions.firstIndex(of: correctAnswerText) ?? defaultAnswerIndex
+
+            return QuizQuestion(
+                id: question.id,
+                text: question.text,
+                options: shuffledOptions,
+                answer: newAnswerIndex,
+                explanation: question.explanation
+            )
+        }
+
+        return QuizModel(title: model.title, questions: randomizedQuestions)
     }
 
     private static func parseMarkdownQuiz(_ text: String) -> QuizModel? {

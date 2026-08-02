@@ -131,10 +131,10 @@ struct Graph3DView: View {
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(isFullScreen ? .center : .leading)
-                    .frame(maxWidth: 240)
+                    .frame(maxWidth: DesignSystem.Gallery.cardMinWidth * 2) // 240
             }
         }
-        .padding(.top, isFullScreen ? 20 : 0)
+        .padding(.top, isFullScreen ? DesignSystem.wide : 0)
         .allowsHitTesting(false)
     }
 
@@ -218,13 +218,13 @@ struct Graph3DView: View {
         let ambientLight = SCNNode()
         ambientLight.light = SCNLight()
         ambientLight.light?.type = .ambient
-        ambientLight.light?.color = UIColor(white: 0.2, alpha: 1)
+        ambientLight.light?.color = UIColor.theme.black
         scene.rootNode.addChildNode(ambientLight)
 
         let omniLight = SCNNode()
         omniLight.light = SCNLight()
         omniLight.light?.type = .omni
-        omniLight.light?.color = UIColor(white: 1.0, alpha: 1)
+        omniLight.light?.color = UIColor.theme.white
         omniLight.position = SCNVector3(20, 30, 20)
         scene.rootNode.addChildNode(omniLight)
     }

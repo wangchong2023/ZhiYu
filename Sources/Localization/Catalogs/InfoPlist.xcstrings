@@ -1,664 +1,664 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "CFBundleDisplayName" : {
-      "comment" : "Bundle display name",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+  "sourceLanguage": "en",
+  "strings": {
+    "CFBundleDisplayName": {
+      "comment": "Bundle display name",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇"
-          }
-        }
-      }
-    },
-    "CFBundleName" : {
-      "comment" : "Bundle name",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇"
           }
         }
       }
     },
-    "NSCameraUsageDescription" : {
-      "comment" : "Privacy - Camera Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+    "CFBundleName": {
+      "comment": "Bundle name",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs camera access to scan document text (OCR)."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要使用您的相机来扫描和识别文档内容（OCR）。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要使用您的相機來掃描和識別文档內容（OCR）。"
-          }
-        }
-      }
-    },
-    "NSFaceIDUsageDescription" : {
-      "comment" : "Privacy - Face ID Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs Face ID to protect your privacy vault."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要使用 Face ID 来保护您的知识库和隐私空间安全。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要使用 Face ID 來保护您的知識庫和隱私空間安全。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇"
           }
         }
       }
     },
-    "NSHumanReadableCopyright" : {
-      "comment" : "Copyright (human-readable)",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+    "NSCameraUsageDescription": {
+      "comment": "Privacy - Camera Usage Description",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 ZhiYu. All rights reserved."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs camera access to scan document text (OCR)."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 智宇。保留所有权利。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要使用您的相机来扫描和识别文档内容（OCR）。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copyright © 2026 智宇。保留所有權利。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要使用您的相機來掃描和識別文档內容（OCR）。"
           }
         }
       }
     },
-    "NSMicrophoneUsageDescription" : {
-      "comment" : "Privacy - Microphone Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+    "NSFaceIDUsageDescription": {
+      "comment": "Privacy - Face ID Usage Description",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs microphone access to record voice notes."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs Face ID to protect your privacy vault."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要访问您的麦克风，以便录制语音笔记。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要使用 Face ID 来保护您的知识库和隐私空间安全。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要访問您的麥克風，以便錄制語音筆記。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要使用 Face ID 來保护您的知識庫和隱私空間安全。"
           }
         }
       }
     },
-    "NSPhotoLibraryUsageDescription" : {
-      "comment" : "Privacy - Photo Library Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+    "NSHumanReadableCopyright": {
+      "comment": "Copyright (human-readable)",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs photo library access for OCR text scanning."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 ZhiYu. All rights reserved."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要访问您的相册，以便导入图片进行 OCR 文字扫描。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 智宇。保留所有权利。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要访問您的相册，以便匯入圖片進行 OCR 文字掃描。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copyright © 2026 智宇。保留所有權利。"
           }
         }
       }
     },
-    "NSRemindersFullAccessUsageDescription" : {
-      "comment" : "Privacy - Reminders Full Access Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+    "NSMicrophoneUsageDescription": {
+      "comment": "Privacy - Microphone Usage Description",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs microphone access to record voice notes."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要完全访问您的提醒事项，以便为您创建和管理知识流待办任务。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要访问您的麦克风，以便录制语音笔记。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要完全访問您的提醒事項，以便為您建立和管理知識流待办任務。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要访問您的麥克風，以便錄制語音筆記。"
           }
         }
       }
     },
-    "NSRemindersUsageDescription" : {
-      "comment" : "Privacy - Reminders Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+    "NSPhotoLibraryUsageDescription": {
+      "comment": "Privacy - Photo Library Usage Description",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs photo library access for OCR text scanning."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要访问提醒事项，以便将您的行动项同步到系统提醒事项应用中。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要访问您的相册，以便导入图片进行 OCR 文字扫描。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要访問提醒事項，以便將您的行動項同步到係統提醒事項套用中。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要访問您的相册，以便匯入圖片進行 OCR 文字掃描。"
           }
         }
       }
     },
-    "NSSpeechRecognitionUsageDescription" : {
-      "comment" : "Privacy - Speech Recognition Usage Description",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+    "NSRemindersFullAccessUsageDescription": {
+      "comment": "Privacy - Reminders Full Access Usage Description",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ZhiYu needs speech recognition to transcribe your voice notes."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs full access to reminders to create and manage task lists for your knowledge workflows."
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要使用语音识别功能，以便将您的语音笔记实时转换为文字。"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要完全访问您的提醒事项，以便为您创建和管理知识流待办任务。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "智宇需要使用語音識別功能，以便將您的語音筆記實時轉換為文字。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要完全访問您的提醒事項，以便為您建立和管理知識流待办任務。"
+          }
+        }
+      }
+    },
+    "NSRemindersUsageDescription": {
+      "comment": "Privacy - Reminders Usage Description",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs reminders access to sync your action items to the system Reminders app."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要访问提醒事项，以便将您的行动项同步到系统提醒事项应用中。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要访問提醒事項，以便將您的行動項同步到係統提醒事項套用中。"
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription": {
+      "comment": "Privacy - Speech Recognition Usage Description",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu needs speech recognition to transcribe your voice notes."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要使用语音识别功能，以便将您的语音笔记实时转换为文字。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇需要使用語音識別功能，以便將您的語音筆記實時轉換為文字。"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

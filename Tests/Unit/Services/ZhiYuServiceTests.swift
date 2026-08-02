@@ -483,7 +483,7 @@ final class LintServiceEdgeCasesTests: XCTestCase {
                 if title == "B" { return pageB }
                 return nil
             },
-            canvasSize: CGSize(width: DesignSystem.Metrics.customSize800, height: DesignSystem.Metrics.customSize600)
+            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
         )
         XCTAssertEqual(result.edges.count, 2, "Circular links should produce 2 edges")
     }

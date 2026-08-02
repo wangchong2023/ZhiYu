@@ -357,4 +357,72 @@ final class SynthesisProcessorTests: XCTestCase {
             XCTAssertTrue(slide.contains("#"), "每一页幻灯片必须包含标示主题的标题指令")
         }
     }
+
+    func testPerformSynthesis_WhenLLMOutputIsEmpty_SelfHealsToValidMarkdown() {
+        // Given: LLM 输出为空或仅包含 Chat 杂质
+        let emptyLLMOutput = "Here is the result:"
+        let sourceContent = "智宇是一款 AI 原生知识管理应用，基于 LLM Wiki 方法论构建。"
+
+        // When: 通过 SynthesisStrategyFactory 选取 Report 策略处理
+        let strategy = SynthesisStrategyFactory.strategy(for: .report)
+        let healedResult = strategy.process(rawContent: emptyLLMOutput, sourceContent: sourceContent)
+
+        // Then: 必须自愈为符合结构的合法 Markdown，且字节数达到安全底线
+        XCTAssertGreaterThanOrEqual(healedResult.utf8.count, AppConstants.ExportLimits.minValidSynthesisTextBytes, "空输出必须柔性降级自愈为达到有效字节数的 Markdown")
+        XCTAssertTrue(healedResult.contains("# "), "自愈产物必须包含一级标题")
+    }
+
+    // MARK: - NotebookLM Custom Prompt & Multi-Language Tests
+
+    func testSynthesisControlOptions_CustomPromptAndDefaultValues() {
+        let options = SynthesisControlOptions()
+        XCTAssertEqual(options.depth, .standard, "默认深度应为 standard")
+        XCTAssertEqual(options.audience, .professional, "默认受众应为 professional")
+        XCTAssertEqual(options.tone, .professional, "默认语气应为 professional")
+        XCTAssertEqual(options.customPrompt, "", "默认自定义提示语应为空")
+
+        let customized = SynthesisControlOptions(depth: .detailed, audience: .executive, tone: .academic, customPrompt: "包含分布式与多终端同步场景")
+        XCTAssertEqual(customized.depth, .detailed)
+        XCTAssertEqual(customized.audience, .executive)
+        XCTAssertEqual(customized.tone, .academic)
+        XCTAssertEqual(customized.customPrompt, "包含分布式与多终端同步场景")
+    }
+
+    func testSynthesisType_CustomPromptPlaceholders_DifferentiatedAndNonEmpty() {
+        let allTypes = SynthesisStore.SynthesisType.allCases
+        var placeholders = Set<String>()
+
+        for type in allTypes {
+            let placeholder = type.customPromptPlaceholder
+            XCTAssertFalse(placeholder.isEmpty, "\(type) 的定制提示语占位符不能为空")
+            placeholders.insert(placeholder)
+        }
+
+        XCTAssertEqual(placeholders.count, allTypes.count, "6 大合成卡片必须拥有各自独立的差异化 Prompt 占位引导文案")
+    }
+
+    // MARK: - Mermaid 语法解析与非 Mermaid 纯文本打拦截断言
+
+    func testIsValidMermaidSyntax_validMindmap_returnsTrue() {
+        let validCode = """
+        mindmap
+          root((思维导图))
+            节点1
+            节点2
+        """
+        XCTAssertTrue(SynthesisProcessor.isValidMermaidSyntax(validCode), "合法的 Mermaid mindmap 代码必须通过语法校验")
+    }
+
+    func testIsValidMermaidSyntax_invalidRawMockText_returnsFalse() {
+        let rawMockText = "这是针对 UI 测试的非流式 Mock 大模型回复内容。"
+        XCTAssertFalse(SynthesisProcessor.isValidMermaidSyntax(rawMockText), "非 Mermaid 结构的普通 Mock 文本必须判定为语法无效，防止引发解析崩溃")
+    }
+
+    func testFormatMermaid_invalidBareKeywords_failsValidation() {
+        let bareKeywords = ["mindmap", "graph TD", "graph"]
+        for kw in bareKeywords {
+            let formatted = SynthesisProcessor.formatMermaid(kw, fallbackPrefix: "graph TD")
+            XCTAssertFalse(SynthesisProcessor.isValidMermaidSyntax(formatted), "仅含裸关键字 '\(kw)' 的格式化结果必须被判定为无效图表")
+        }
+    }
 }

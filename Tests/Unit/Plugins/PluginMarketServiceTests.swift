@@ -9,6 +9,7 @@
 //  核心职责：针对 PluginMarketService 开展自动化单元测试验证。
 //
 import XCTest
+import CryptoKit
 @testable import ZhiYu
 
 final class MockURLProtocol: URLProtocol {
@@ -435,11 +436,12 @@ final class PluginMarketServiceTests: XCTestCase {
         
         // 简短的市场插件 ID 
         let marketID = "toc-generator"
-        // 真实的规范 ID
-        let realManifestID = "com.zhiyu.plugin.local.toc-generator"
+        // 真实的规范 ID（审查修复 HIGH-2: 外部 manifest 不得使用 local. 前缀）
+        let realManifestID = "com.zhiyu.plugin.toc-generator"
         
         // 彻底清除可能因为之前测试残留于内存或物理磁盘中的同名插件，保证单测环境的绝对隔离性
         PluginRegistry.shared.unloadPlugin(id: realManifestID)
+        PluginRegistry.shared.unloadPlugin(id: "com.zhiyu.plugin.local.toc-generator")
         
         let destFolder = pluginsDir.appendingPathComponent(marketID)
         try? fileManager.removeItem(at: destFolder)
@@ -462,6 +464,25 @@ final class PluginMarketServiceTests: XCTestCase {
             descriptions: ["en": "Test ID Mismatch."]
         )
         
+        let indexJS = """
+        function onLoad(context) {
+            context.log("Loaded TOC Generator");
+        }
+        function onUnload() {}
+        """
+        
+        // VULN-001 修复后：外部插件必须携带有效 HMAC-SHA256 签名
+        // 注入 Mock Keychain + 已知密钥，计算与 indexJS 匹配的签名
+        let mockKeychain = MockKeychainService()
+        let testKey = SymmetricKey(size: .bits256)
+        let testKeyData = testKey.withUnsafeBytes { Data($0) }
+        try mockKeychain.store(key: "com.zhiyu.plugin.signature_key", value: testKeyData.base64EncodedString())
+        KeychainService.testOverride = mockKeychain
+        defer { KeychainService.testOverride = nil }
+        
+        let computedHMAC = HMAC<SHA256>.authenticationCode(for: Data(indexJS.utf8), using: testKey)
+        let signatureHex = Data(computedHMAC).map { String(format: "%02x", $0) }.joined()
+        
         let manifestJSON = """
         {
             "id": "\(realManifestID)",
@@ -469,15 +490,9 @@ final class PluginMarketServiceTests: XCTestCase {
             "author": "ZhiYu Team",
             "permissions": ["writeContent", "log"],
             "names": { "en": "TOC Generator" },
-            "descriptions": { "en": "Test ID Mismatch." }
+            "descriptions": { "en": "Test ID Mismatch." },
+            "codeSignature": "\(signatureHex)"
         }
-        """
-        
-        let indexJS = """
-        function onLoad(context) {
-            context.log("Loaded TOC Generator");
-        }
-        function onUnload() {}
         """
         
         MockURLProtocol.requestHandler = { request in

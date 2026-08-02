@@ -270,7 +270,7 @@ struct ConflictDiffView: View {
                 set: { mergedContents[item.id] = $0 }
             ))
             .font(.system(.body, design: .monospaced))
-            .frame(minHeight: 180)
+            .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
             .padding(DesignSystem.tiny)
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))

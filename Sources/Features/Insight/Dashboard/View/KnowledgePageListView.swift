@@ -198,12 +198,12 @@ struct KnowledgePageListContent: View {
                     title: L10n.Search.noResults,
                     description: L10n.Search.noResultsHint
                 )
-                .padding(.top, 40)
+                .padding(.top, Spacing.Sidebar.backButtonWidth)
             }
         }
         .padding(.horizontal, DesignSystem.standardPadding)
         .padding(.vertical, DesignSystem.loosePadding)
-        .padding(.bottom, DesignSystem.standardPadding * 2)
+        .padding(.bottom, DesignSystem.huge)
     }
     
     @ViewBuilder

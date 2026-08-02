@@ -84,7 +84,8 @@ SAFE_FILE_PATTERNS = [
     r'LLMModels\.swift',        # LLM 端点配置
     r'AppConfig',               # 应用配置文件
     r'WebScraperProcessor\.swift',  # UA 字符串
-    r'InitialNotebookGenerator\.swift', # 初始/测试演示数据文件，包含公开引用源 URL
+    r'InitialNotebookGenerator\.swift', # 初始/测试演示数据文件，包括公开引用源 URL
+    r'SSRFGuard\.swift',           # SSRF 防护：内含 RFC 1918 私有 IP 段用于安全过滤，非泄露
 ]
 
 # 报告输出时的显示宽度和数量截断限制
