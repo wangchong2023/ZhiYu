@@ -40,6 +40,9 @@ Tools/
 | `check_test_di_setup.py` | 检查单元测试 DI 容器（ServiceContainer）的双注册合法性 |
 | `check_layer_markers.sh` | 检查 Swift 文件头部是否标注合法架构层级标记（如 `[L1]`） |
 | `check_view_duplication.py` | 基于 AST 结构树与修饰符链启发式检测跨 Feature 域 View 相似度并提示沉淀 |
+| `check_opensource_adapters.py` | 审计 Sources/ 层开源库直接 import 行为，强约束通过适配层间接调用 |
+| `check_dependency_registry.py` | 校验 `opensource_dependencies.yml` 与 Package.swift/project.yml 三层一致性 |
+| `check_opensource_physical_placement.py` | 审计开源适配层在 SPM 包中的物理归位与残留清理状态 |
 
 ### Compliance (规范守卫)
 | 脚本 | 功能说明 |
@@ -58,6 +61,9 @@ Tools/
 
 ### Sanity (工程健康)
 | 脚本 | 功能说明 |
+|------|------|
+| `check_absolute_paths.py` | 阻断代码、配置及脚本中出现的硬编码绝对路径 |
+| `check_scripts_quality.py` | 校验 Tools/ 脚本圈复杂度 (<=10)、Docstring 函数头及规范性 |
 |------|------|
 | `check_root_hygiene.py` | 拦截临时文件及根目录非标结构，维护工作区整洁 |
 | `check_layout.py` | 检测冲突约束、负 Spacing 及跨平台布局不兼容项 |
