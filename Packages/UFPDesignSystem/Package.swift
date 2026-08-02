@@ -14,9 +14,27 @@
 import PackageDescription
 import Foundation
 
-// MARK: - 开源库本地路径（通过 OPENSRC_ROOT 环境变量注入，参见 Config/.env.local）
-let opensrcRoot = ProcessInfo.processInfo.environment["OPENSRC_ROOT"] ?? {
-    fatalError("[UFPDesignSystem] 缺少 OPENSRC_ROOT 环境变量。请先执行: source Config/.env.local && bash Tools/Utils/bootstrap.sh")
+// MARK: - 开源库本地路径自动智能推导（环境变量优先 -> 向上解析 Config/.env.local -> 默认降级路径）
+let opensrcRoot: String = {
+    if let env = ProcessInfo.processInfo.environment["OPENSRC_ROOT"], !env.isEmpty {
+        return env
+    }
+    let envFile = URL(fileURLWithPath: #file)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent("Config/.env.local")
+    if let content = try? String(contentsOf: envFile, encoding: .utf8) {
+        for line in content.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("OPENSRC_ROOT=") {
+                let val = trimmed.replacingOccurrences(of: "OPENSRC_ROOT=", with: "")
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+                if !val.isEmpty { return val }
+            }
+        }
+    }
+    return "/Users/constantine/Documents/work/code/opensrc/swift"
 }()
 
 let package = Package(

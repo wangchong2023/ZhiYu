@@ -110,6 +110,15 @@ struct AppLauncher {
         } else {
             // 正常应用运行环境下：启动完整的业务 App，拉起核心 AppEnvironment 环境
             
+            #if DEBUG
+            if CommandLine.arguments.contains("--uitesting") || CommandLine.arguments.contains("-UITesting") {
+                #if canImport(UIKit)
+                UIView.setAnimationsEnabled(false)
+                #endif
+                Logger.shared.info("[AppLauncher] UI Testing environment detected. Disabled UIView animations for test stability.")
+            }
+            #endif
+            
             // 物理自愈：如果检测到启动参数包含 "-ResetUserDefaults"（通常在 UI 自动化大回归跑测时传递）
             // 将重置并清空所有带有 "seeded_vault_" 前缀的本地笔记本冷启动播种标记，确保 Seeding 流程 100% 触发自愈
             //
