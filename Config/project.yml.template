@@ -96,6 +96,48 @@ settings:
     MTL_ENABLE_DEBUG_INFO: INCLUDE_SOURCE
     FRAMEWORK_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
 
+_shared_excludes:
+  watchos: &WATCHOS_EXCLUDES
+    - "App/**"
+    - "Platforms/iOS/**"
+    - "Platforms/macOS/**"
+    - "Features/AI/**/View/**"
+    - "Features/AI/**/Coordinator/**"
+    - "Features/AI/Chat/Model/AIWorkflowStore.swift"
+    - "Features/AI/Chat/Model/AIInsightStore.swift"
+    - "Features/AI/Synthesis/**"
+    - "Infrastructure/Processors/Synthesis/**"
+    - "Features/Knowledge/**/View/**"
+    - "Features/Knowledge/**/Coordinator/**"
+    - "Features/Knowledge/NotebookHub/ViewModel/NotebookHubViewModel.swift"
+    - "Features/Insight/**/View/**"
+    - "Features/Insight/**/Coordinator/**"
+    - "Features/System/**/View/**"
+    - "Features/AI/AIViewProvider.swift"
+    - "Features/Knowledge/KnowledgeViewProvider.swift"
+    - "Features/Insight/InsightViewProvider.swift"
+    - "Features/System/SystemViewProvider.swift"
+    - "Shared/UIComponents/Menus/UserProfileMenu.swift"
+    - "Shared/UIComponents/Navigation/AdaptiveSidebarView.swift"
+    - "Shared/UIComponents/Navigation/NavigateAction.swift"
+    - "Shared/UIComponents/Overlays/**"
+    - "Shared/UIComponents/Pickers/**"
+    - "Shared/UIComponents/Editors/**"
+    - "Shared/UIComponents/Badges/AIRainbowGlowBadge.swift"
+    - "Shared/UIComponents/Interaction/KeyboardShortcutsView.swift"
+    - "Shared/UIComponents/Modifiers/AppToolbarModifier.swift"
+    - "Shared/UIComponents/Feedback/AppAILoadingSkeleton.swift"
+    - "Shared/UIComponents/Feedback/AppLottieView.swift"
+    - "Shared/UIComponents/Feedback/AppTooltip.swift"
+    - "Shared/UIComponents/Feedback/TooltipManager.swift"
+    - "Shared/DesignSystem/Styles/SynthesisStore+UI.swift"
+    - "Platforms/watchOS/WatchContentView.swift"
+    - "Infrastructure/Storage/Sync/iCloudSyncCoordinator.swift"
+    - "Info.plist"
+    - "MacInfo.plist"
+    - "Base.lproj/**"
+    - "LaunchScreen.storyboard"
+
 targets:
   ZhiYu:
     type: application
@@ -201,46 +243,7 @@ targets:
     platform: watchOS
     sources:
       - path: Sources
-        excludes:
-          - "App/**"
-          - "Platforms/iOS/**"
-          - "Platforms/macOS/**"
-          - "Features/AI/**/View/**"
-          - "Features/AI/**/Coordinator/**"
-          - "Features/AI/Chat/Model/AIWorkflowStore.swift"
-          - "Features/AI/Chat/Model/AIInsightStore.swift"
-          - "Features/AI/Synthesis/**"
-          - "Infrastructure/Processors/Synthesis/**"
-          - "Features/Knowledge/**/View/**"
-          - "Features/Knowledge/**/Coordinator/**"
-          - "Features/Knowledge/NotebookHub/ViewModel/NotebookHubViewModel.swift"
-          - "Features/Insight/**/View/**"
-          - "Features/Insight/**/Coordinator/**"
-          - "Features/System/**/View/**"
-          - "Features/AI/AIViewProvider.swift"
-          - "Features/Knowledge/KnowledgeViewProvider.swift"
-          - "Features/Insight/InsightViewProvider.swift"
-          - "Features/System/SystemViewProvider.swift"
-          - "Shared/UIComponents/Menus/UserProfileMenu.swift"
-          - "Shared/UIComponents/Navigation/AdaptiveSidebarView.swift"
-          - "Shared/UIComponents/Navigation/NavigateAction.swift"
-          - "Shared/UIComponents/Overlays/**"
-          - "Shared/UIComponents/Pickers/**"
-          - "Shared/UIComponents/Editors/**"
-          - "Shared/UIComponents/Badges/AIRainbowGlowBadge.swift"
-          - "Shared/UIComponents/Interaction/KeyboardShortcutsView.swift"
-          - "Shared/UIComponents/Modifiers/AppToolbarModifier.swift"
-          - "Shared/UIComponents/Feedback/AppAILoadingSkeleton.swift"
-          - "Shared/UIComponents/Feedback/AppLottieView.swift"
-          - "Shared/UIComponents/Feedback/AppTooltip.swift"
-          - "Shared/UIComponents/Feedback/TooltipManager.swift"
-          - "Shared/DesignSystem/Styles/SynthesisStore+UI.swift"
-          - "Platforms/watchOS/WatchContentView.swift"
-          - "Infrastructure/Storage/Sync/iCloudSyncCoordinator.swift"
-          - "Info.plist"
-          - "MacInfo.plist"
-          - "Base.lproj/**"
-          - "LaunchScreen.storyboard"
+        excludes: *WATCHOS_EXCLUDES
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.watch
