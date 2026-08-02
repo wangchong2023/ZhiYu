@@ -38,36 +38,45 @@ OPENSRC_ROOT = os.environ.get("OPENSRC_ROOT", "")
 # MARK: - 轻量 YAML 解析（不依赖 pyyaml）
 # ==============================================================================
 
+def check_key_value(stripped: str, current: dict):
+    """解析并提取冒号分隔键值对"""
+    if ":" in stripped and not stripped.startswith("-"):
+        key, _, val = stripped.partition(":")
+        val_clean = val.strip().strip('"')
+        if key.strip() and val_clean:
+            current[key.strip()] = val_clean
+
+
+def process_registry_line(line: str, current: dict, in_deps: bool) -> tuple[dict, bool, dict | None]:
+    """处理单行 YAML 内容"""
+    stripped = line.strip()
+    if stripped.startswith("#") or not stripped:
+        return current, in_deps, None
+    if stripped == "dependencies:":
+        return current, True, None
+    if not in_deps:
+        return current, False, None
+
+    if stripped.startswith("- name:"):
+        completed = current if current else None
+        new_item = {"name": stripped.split(":", 1)[1].strip()}
+        return new_item, True, completed
+
+    check_key_value(stripped, current)
+    return current, True, None
+
+
 def parse_registry(filepath: Path) -> list[dict]:
     """简单解析 opensource_dependencies.yml，提取 dependencies 列表"""
     deps = []
-    current = {}
+    current: dict = {}
     in_deps = False
 
     with open(filepath, encoding="utf-8") as f:
         for line in f:
-            stripped = line.strip()
-            if stripped.startswith("#") or not stripped:
-                continue
-            if stripped == "dependencies:":
-                in_deps = True
-                continue
-            if not in_deps:
-                continue
-
-            # 新条目开始
-            if stripped.startswith("- name:"):
-                if current:
-                    deps.append(current)
-                current = {"name": stripped.split(":", 1)[1].strip()}
-                continue
-
-            # 键值对
-            if ":" in stripped and not stripped.startswith("-"):
-                key, _, val = stripped.partition(":")
-                val = val.strip().strip('"')
-                if key.strip() and val:
-                    current[key.strip()] = val
+            current, in_deps, completed = process_registry_line(line, current, in_deps)
+            if completed:
+                deps.append(completed)
 
     if current:
         deps.append(current)
@@ -202,10 +211,66 @@ def check_registry_completeness(deps: list[dict]) -> list[str]:
 
 
 # ==============================================================================
+# MARK: - 常量定义
+# ==============================================================================
+
+DIVIDER_WIDTH = 50
+
+
+# ==============================================================================
 # MARK: - 主流程
 # ==============================================================================
 
+def run_audits(active_deps: list[dict]) -> tuple[list[str], int]:
+    """运行 4 大一致性审计规则"""
+    all_violations: list[str] = []
+    passed = 0
+
+    print("【1/4】project.yml.template 一致性")
+    v1 = check_template(active_deps)
+    if v1:
+        all_violations.extend(v1)
+        print("\n".join(v1))
+    else:
+        print("  ✅ 所有 project_yml_path 库均已在模板中以 ${OPENSRC_ROOT} 引入")
+        passed += 1
+
+    print("\n【2/4】SPM Package.swift 本地路径声明")
+    v2 = check_package_swift(active_deps)
+    if v2:
+        all_violations.extend(v2)
+        print("\n".join(v2))
+    else:
+        print("  ✅ 所有需声明的库均已在对应 Package.swift 中以 (opensrcRoot)/名称 本地路径引入")
+        passed += 1
+
+    print("\n【3/4】本地磁盘克隆状态（OPENSRC_ROOT）")
+    v3 = check_local_clones(active_deps)
+    if v3:
+        errors = [x for x in v3 if x.strip().startswith("❌")]
+        print("\n".join(v3))
+        if errors:
+            all_violations.extend(errors)
+        else:
+            passed += 1
+    else:
+        print("  ✅ 所有库均已克隆到 OPENSRC_ROOT")
+        passed += 1
+
+    print("\n【4/4】注册表字段完整性")
+    v4 = check_registry_completeness(active_deps)
+    if v4:
+        all_violations.extend(v4)
+        print("\n".join(v4))
+    else:
+        print("  ✅ 所有注册表条目字段完整")
+        passed += 1
+
+    return all_violations, passed
+
+
 def main() -> int:
+    """执行开源依赖注册表 (SSOT) 三层一致性与完整性校验入口"""
     print("\n🔍 [Dependency Registry Audit] 开源依赖注册表一致性审计...\n")
     print(f"   SSOT: {REGISTRY_FILE.relative_to(PROJECT_DIR)}")
     print(f"   OPENSRC_ROOT: {OPENSRC_ROOT or '（未设置）'}\n")
@@ -218,63 +283,15 @@ def main() -> int:
     active_deps = [d for d in deps if d.get("status") == "active"]
     print(f"   注册库总数：{len(deps)}，活跃：{len(active_deps)}\n")
 
-    all_violations: list[str] = []
-    passed = 0
+    all_violations, _ = run_audits(active_deps)
 
-    # ── 审计 1：project.yml.template ──
-    print("【1/4】project.yml.template 一致性")
-    v = check_template(active_deps)
-    if v:
-        all_violations.extend(v)
-        print("\n".join(v))
-    else:
-        print("  ✅ 所有 project_yml_path 库均已在模板中以 ${OPENSRC_ROOT} 引入")
-        passed += 1
-
-    print("\n【2/4】SPM Package.swift 本地路径声明")
-    v = check_package_swift(active_deps)
-    if v:
-        all_violations.extend(v)
-        print("\n".join(v))
-    else:
-        print("  ✅ 所有需声明的库均已在对应 Package.swift 中以 (opensrcRoot)/名称 本地路径引入")
-        passed += 1
-
-    # ── 审计 3：本地磁盘克隆 ──
-    print("\n【3/4】本地磁盘克隆状态（OPENSRC_ROOT）")
-    v = check_local_clones(active_deps)
-    if v:
-        # 警告级别（⚠️ 开头）不阻断构建
-        errors = [x for x in v if x.strip().startswith("❌")]
-        warnings = [x for x in v if x.strip().startswith("⚠️")]
-        print("\n".join(v))
-        if errors:
-            all_violations.extend(errors)
-        else:
-            passed += 1  # 只有警告不算失败
-    else:
-        print("  ✅ 所有库均已克隆到 OPENSRC_ROOT")
-        passed += 1
-
-    # ── 审计 4：注册表完整性 ──
-    print("\n【4/4】注册表字段完整性")
-    v = check_registry_completeness(active_deps)
-    if v:
-        all_violations.extend(v)
-        print("\n".join(v))
-    else:
-        print("  ✅ 所有注册表条目字段完整")
-        passed += 1
-
-    # ── 汇总 ──
-    print(f"\n{'━' * 50}")
+    print(f"\n{'━' * DIVIDER_WIDTH}")
     if all_violations:
         true_errors = [x for x in all_violations if "❌" in x]
         print(f"❌ [Dependency Registry Audit] {len(true_errors)} 处违规，构建阻断！")
-        print("   请更新 Config/opensource_dependencies.yml 或对应的 Package.swift/project.yml.template")
         return 1
     else:
-        print(f"✅ [Dependency Registry Audit] 4/4 审计全部通过，依赖注册表一致性完整。")
+        print("✅ [Dependency Registry Audit] 4/4 审计全部通过，依赖注册表一致性完整。")
         return 0
 
 

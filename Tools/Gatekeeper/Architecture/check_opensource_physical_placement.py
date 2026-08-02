@@ -118,53 +118,44 @@ def check_package_declares_deps(package_name: str, required_deps: list) -> list:
 # MARK: - 报告输出
 # ==============================================================================
 
+def audit_rule(rule: dict) -> tuple[list[str], str, str, str]:
+    """处理单个物理归位规则的主审计逻辑"""
+    issues = []
+    adapter = rule["adapter_file"]
+    pkg = rule["expected_package"]
+    subpath = rule["expected_subpath"]
+    severity = rule["severity"]
+    desc = rule["description"]
+
+    if pkg and subpath and not check_file_in_package(pkg, subpath):
+        issues.append(f"❌ 未找到物理归位文件：Packages/{pkg}/{subpath}")
+
+    residues = check_file_not_in_sources(rule["forbidden_paths"])
+    for r in residues:
+        rel = os.path.relpath(r, PROJECT_DIR)
+        issues.append(f"⚠️  旧文件残留：{rel}")
+
+    if pkg and rule["package_must_declare"]:
+        missing_deps = check_package_declares_deps(pkg, rule["package_must_declare"])
+        for dep in missing_deps:
+            issues.append(f"❌ Package.swift 缺少依赖声明：Packages/{pkg}/Package.swift 未声明 {dep}")
+
+    return issues, adapter, desc, severity
+
+
 def main():
+    """扫描并审计开源适配层文件在 SPM 包中的物理分布与残留检查"""
     errors = []
     warnings = []
 
     print("\n🔍 [Physical Adapter Placement Audit] 开始物理归位审计...\n")
 
     for rule in PHYSICAL_PLACEMENT_RULES:
-        adapter = rule["adapter_file"]
-        pkg = rule["expected_package"]
-        subpath = rule["expected_subpath"]
-        severity = rule["severity"]
-        desc = rule["description"]
-
-        issues = []
-
-        # 1. 检查文件是否在正确 SPM 包位置
-        if pkg and subpath:
-            if not check_file_in_package(pkg, subpath):
-                issues.append(
-                    f"❌ 未找到物理归位文件：Packages/{pkg}/{subpath}\n"
-                    f"   → 适配器尚未迁移到 SPM 包，当前仍为逻辑隔离（编译器无法阻断越层调用）"
-                )
-
-        # 2. 检查旧文件是否已清理（Sources/ 中不应残留）
-        residues = check_file_not_in_sources(rule["forbidden_paths"])
-        for r in residues:
-            rel = os.path.relpath(r, PROJECT_DIR)
-            issues.append(
-                f"⚠️  旧文件残留：{rel}\n"
-                f"   → 物理迁移完成后须删除 Sources/ 中的旧文件，否则存在二义性"
-            )
-
-        # 3. 检查 Package.swift 依赖声明完整性
-        if pkg and rule["package_must_declare"]:
-            missing_deps = check_package_declares_deps(pkg, rule["package_must_declare"])
-            for dep in missing_deps:
-                issues.append(
-                    f"❌ Package.swift 缺少依赖声明：Packages/{pkg}/Package.swift 未声明 {dep}\n"
-                    f"   → SPM 编译器将找不到开源库，需在 dependencies 中添加本地路径引用"
-                )
-
+        issues, adapter, desc, severity = audit_rule(rule)
         if issues:
             print(f"{'❌' if severity == 'ERROR' else '⚠️ '} {adapter}  ({desc})")
             for issue in issues:
-                for line in issue.split("\n"):
-                    print(f"    {line}")
-            print()
+                print(f"   {issue}")
             if severity == "ERROR":
                 errors.extend(issues)
             else:
@@ -172,14 +163,13 @@ def main():
         else:
             print(f"✅ {adapter}  →  物理归位已完成，SPM 依赖声明完整")
 
-    print()
-    if errors:
-        print(f"❌ [Physical Adapter Placement Audit] 发现 {len(errors)} 处物理归位违规，构建阻断！")
-        sys.exit(1)
-    elif warnings:
-        print(f"⚠️  [Physical Adapter Placement Audit] 审计通过（含 {len(warnings)} 条警告，为已知例外）。")
+    if not errors and not warnings:
+        print("\n✅ [Physical Placement Audit] 所有开源库适配层 100% 物理归位包物理隔离。")
+    elif not errors:
+        print(f"\n⚠️  [Physical Placement Audit] 发现 {len(warnings)} 项残留（警告不阻断构建）。")
     else:
-        print("✅ [Physical Adapter Placement Audit] 所有适配器均已物理归位，SPM 物理隔离完整。")
+        print(f"\n❌ [Physical Placement Audit] 发现 {len(errors)} 项严重错误，阻断构建！")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

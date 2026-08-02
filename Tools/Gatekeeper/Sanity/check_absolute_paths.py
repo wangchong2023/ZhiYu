@@ -119,11 +119,15 @@ def scan_project() -> list[dict]:
     return all_violations
 
 
+MAX_SNIPPET_LENGTH = 100
+
+
 # ==============================================================================
 # MARK: - 主流程
 # ==============================================================================
 
 def main():
+    """扫描项目根目录下代码与配置中是否存在硬编码绝对路径"""
     print("\n🔍 [Absolute Path Audit] 扫描硬编码绝对路径...\n")
 
     violations = scan_project()
@@ -136,7 +140,7 @@ def main():
     for v in violations:
         print(f"  {v['file']}:{v['line']}")
         print(f"    路径：{v['path']}")
-        print(f"    内容：{v['content'][:100]}")
+        print(f"    内容：{v['content'][:MAX_SNIPPET_LENGTH]}")
         print()
 
     print(

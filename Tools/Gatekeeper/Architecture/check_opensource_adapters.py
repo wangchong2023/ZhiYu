@@ -27,21 +27,15 @@ SOURCES_DIR = os.path.join(PROJECT_DIR, "Sources")
 
 # 开源库注册表：每个库的允许引用白名单（只有这些路径可以直接 import）
 # Key = import 名称, Value = list of allowed path prefixes (相对于 Sources/)
-# 渐进阈值：GRDB 当前还在 Sources/ 内过渡（待迁移至 UFPStorage SPM）
-# 對违规文件数设定上限，防止新增违规（随重构进度逐步收紧）
-MAX_GRDB_VIOLATIONS = 33  # 当前基线: 33 个文件，每清除一批后降低此值
+# GRDB 已 100% 物理隔离至 Packages/UFPStorage SPM 包中（GRDBReexport.swift 唯一重导出），Sources/ 层零残留
+MAX_GRDB_VIOLATIONS = 0  # 严格封锁：违规必须为 0，Sources/ 层严禁任何直接 import GRDB
 
 OPEN_SOURCE_REGISTRY = {
     "GRDB": {
-        # 仅允许在存储适配层内使用，严禁在 App/、Features/、Core/Base/、Domain/ 层直接 import
-        # 长期目标：将所有 GRDB 使用迁移至 UFPStorage SPM 包，清空此白名单
-        "allowed_prefixes": [
-            "Infrastructure/Storage/",           # 过渡期允许（待迁移 UFPStorage SPM）
-            "Infrastructure/Models/",             # 过渡期允许（GRDB Row 映射模型）
-            "Platforms/iOS/Widgets/",             # Widget 平台例外，独立扩展必须直接访问 DB
-        ],
-        "adapter_class": "UFPStorage SPM 包内的 SQLiteStore / Repository 适配层",
-        "severity": "ERROR",  # 严格封锁：违规必须处理，配合 MAX_GRDB_VIOLATIONS 阈值渐进清理
+        # GRDB 已全量隔离至 UFPStorage SPM 包，Sources/ 层不允许任何直接 import
+        "allowed_prefixes": [],
+        "adapter_class": "UFPStorage SPM 包内的 GRDBReexport / SQLiteStore",
+        "severity": "ERROR",
     },
     "Lottie": {
         "allowed_prefixes": [
@@ -141,54 +135,60 @@ def check_direct_imports(sources_dir: str) -> list:
 # MARK: - 报告输出
 # ==============================================================================
 
+def report_grdb_baseline(grdb_errors: list[dict]):
+    """处理并输出 GRDB 渐进迁移阈值审计报告"""
+    count = len(grdb_errors)
+    if count > MAX_GRDB_VIOLATIONS:
+        print(f"\n❌ [GRDB 渐进阈值] 直接 import GRDB 的文件数 {count} 超过阈值 {MAX_GRDB_VIOLATIONS}！")
+        print(f"   新增了 {count - MAX_GRDB_VIOLATIONS} 处违规，构建阻断！")
+        sys.exit(1)
+    elif count == MAX_GRDB_VIOLATIONS:
+        print(f"\n⚠️  [GRDB 渐进阈值] 直接 import GRDB 的文件数：{count}/{MAX_GRDB_VIOLATIONS}（已达基线上限）")
+        for v in grdb_errors:
+            if any(v["file"].startswith(p) for p in ["App/", "Core/"]):
+                print(f"      ⚠️  {v['file']}（优先迁移）")
+    else:
+        print(f"\n✅ [GRDB 渐进阈值] 直接 import GRDB 的文件数：{count}/{MAX_GRDB_VIOLATIONS}（已减少）")
+
+
+def process_violations_report(errors: list[dict], warnings: list[dict]):
+    """处理并打印非 GRDB 错误与警告报告"""
+    if warnings:
+        print(f"\n⚠️  [Open-Source Adapter Audit] {len(warnings)} 处警告：")
+        for v in warnings:
+            print(f"   {v['file']}: import {v['module']} → 通过 [{v['adapter']}] 间接调用")
+
+    other_errors = [v for v in errors if v["module"] != "GRDB"]
+    if other_errors:
+        print(f"\n❌ [Open-Source Adapter Audit] 发现 {len(other_errors)} 处违规：\n")
+        for v in other_errors:
+            print(f"   {v['file']} import {v['module']} → 需通过 [{v['adapter']}] 间接调用")
+        sys.exit(1)
+    return other_errors
+
+
+def print_audit_result(errors: list[dict], warnings: list[dict], other_errors: list[dict]):
+    """处理并输出最终结果"""
+    if not errors and not warnings:
+        print("\n✅ [Open-Source Adapter Audit] 审计通过：所有开源库均通过适配层封装调用。")
+    elif not other_errors:
+        print("\n✅ [Open-Source Adapter Audit] 审计通过（GRDB 渐进迁移中，其余库完全合规）。")
+
+
 def main():
+    """主逻辑：扫描 Sources/ 层开源库直接 import 情况并校验适配器封装规则"""
     violations = check_direct_imports(SOURCES_DIR)
 
     errors = [v for v in violations if v["severity"] == "ERROR"]
     warnings = [v for v in violations if v["severity"] == "WARNING"]
 
-    if warnings:
-        print(f"\n⚠️  [Open-Source Adapter Audit] {len(warnings)} 处警告：")
-        for v in warnings:
-            print(f"   {v['file']}: import {v['module']}")
-            print(f"      → 建议通过适配层 [{v['adapter']}] 间接调用")
+    other_errors = process_violations_report(errors, warnings)
 
-    # GRDB 渐进阈值控制：允许当前存量，阻断新增
     grdb_errors = [v for v in errors if v["module"] == "GRDB"]
-    other_errors = [v for v in errors if v["module"] != "GRDB"]
-
-    if other_errors:
-        print(f"\n❌ [Open-Source Adapter Audit] 发现 {len(other_errors)} 处违规：\n")
-        for v in other_errors:
-            print(f"   {v['file']}")
-            print(f"      import {v['module']}")
-            print(f"      ❌ 违规：此文件不在允许的白名单中")
-            print(f"      🔧 修复：通过适配层 [{v['adapter']}] 间接调用")
-            print()
-        sys.exit(1)
-
     if grdb_errors:
-        count = len(grdb_errors)
-        if count > MAX_GRDB_VIOLATIONS:
-            print(f"\n❌ [GRDB 渐进阈值] 直接 import GRDB 的文件数 {count} 超过阈值 {MAX_GRDB_VIOLATIONS}！")
-            print(f"   新增了 {count - MAX_GRDB_VIOLATIONS} 处违规，构建阻断！")
-            print(f"   请将新代码通过 UFPStorage SPM 包的适配层调用，不得在 App/、Features/、Core/ 层直接 import GRDB")
-            sys.exit(1)
-        elif count == MAX_GRDB_VIOLATIONS:
-            print(f"\n⚠️  [GRDB 渐进阈值] 直接 import GRDB 的文件数：{count}/{MAX_GRDB_VIOLATIONS}（已达基线上限）")
-            print(f"   请在每次清理迁移后降低 MAX_GRDB_VIOLATIONS 的值")
-            print(f"   文件清单：App/、Core/ 层违规应优先迁移")
-            for v in grdb_errors:
-                if any(v["file"].startswith(p) for p in ["App/", "Core/"]):
-                    print(f"      ⚠️  {v['file']}（优先迁移）")
-        else:
-            print(f"\n✅ [GRDB 渐进阈值] 直接 import GRDB 的文件数：{count}/{MAX_GRDB_VIOLATIONS}（已减少）")
-            print(f"   🎉 请将 MAX_GRDB_VIOLATIONS 从 {MAX_GRDB_VIOLATIONS} 降低至 {count}")
+        report_grdb_baseline(grdb_errors)
 
-    if not errors and not warnings:
-        print(f"\n✅ [Open-Source Adapter Audit] 审计通过：所有开源库均通过适配层封装调用。")
-    elif not other_errors:
-        print(f"\n✅ [Open-Source Adapter Audit] 审计通过（GRDB 渐进迁移中，其余库完全合规）。")
+    print_audit_result(errors, warnings, other_errors)
 
 
 if __name__ == "__main__":

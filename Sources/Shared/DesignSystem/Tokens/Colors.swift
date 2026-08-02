@@ -115,6 +115,7 @@ public enum Colors {
 // MARK: - Color 扩展 (Semantic Colors)
 extension Color {
     
+#if !canImport(MarkdownUI)
     /// 跨平台支持的亮暗模式适配初始化器
     public init(light: Color, dark: Color) {
         #if canImport(UIKit) && !os(watchOS)
@@ -125,6 +126,7 @@ extension Color {
         self.init(light) 
         #endif
     }
+#endif
     
     // MARK: - 核心语义颜色
     // MARK: @LR-01: 适配全平台多语言环境下的视觉对比度
