@@ -76,6 +76,7 @@ struct SynthesisActionButton: View {
                         .clipShape(Circle())
                         .shadow(radius: 2)
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel(L10n.AI.Synthesis.Control.title)
                 .padding(DesignSystem.tiny)
                 .disabled(state == .generating)

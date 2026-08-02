@@ -18,7 +18,7 @@ import Combine
 class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
 
     /// 全局唯一的线程安全单例实例。
-    static let shared = LLMService()
+    @MainActor public static let shared = LLMService()
 
     // MARK: - 安全延迟解析底层子服务 (DIP 解耦 + 崩溃防御)
     
