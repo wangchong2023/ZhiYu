@@ -31,7 +31,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         if let resolved = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {
             self.llm = resolved
         } else {
-            self.llm = LLMService.shared
+            self.llm = MainActor.assumeIsolated { LLMService.shared }
         }
     }
 

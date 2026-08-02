@@ -43,8 +43,8 @@ public final class NativeMemoryEngine: MemoryEngineProtocol, @unchecked Sendable
     }
 
     public func recordSessionSummary(sessionID: String, summary: String) async throws {
-        lock.lock()
-        defer { lock.unlock() }
-        sessionSummaries[sessionID] = summary
+        lock.withLock {
+            sessionSummaries[sessionID] = summary
+        }
     }
 }

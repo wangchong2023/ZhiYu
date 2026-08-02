@@ -44,8 +44,8 @@ public final class SwarmMemoryAdapter: MemoryEngineProtocol, @unchecked Sendable
     }
 
     public func recordSessionSummary(sessionID: String, summary: String) async throws {
-        lock.lock()
-        defer { lock.unlock() }
-        adapterSummaries[sessionID] = summary
+        lock.withLock {
+            adapterSummaries[sessionID] = summary
+        }
     }
 }
