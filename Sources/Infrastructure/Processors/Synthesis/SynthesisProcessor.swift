@@ -16,8 +16,10 @@ enum SynthesisProcessor {
     /// 过滤源内容中的 Prompt 系统指令与无关符号
     static func sanitizeSourceLines(_ text: String) -> [String] {
         let promptKeywords = [
-            "合成时请使用", "仅陈述源材料", "禁止编造", "页面标题", "Source",
-            "---", "Format:", "Requirements:"
+            "Source", "---", "Format:", "Requirements:",
+            L10n.AI.Synthesis.Control.depth,
+            L10n.AI.Synthesis.Control.audience,
+            L10n.AI.Synthesis.Control.tone
         ]
         return text.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespaces) }
@@ -218,22 +220,42 @@ enum SynthesisProcessor {
         return lines.joined(separator: "\n")
     }
 
-    /// 从文本内容中提取第一个 H1 级别的标题
+    /// 从文本内容中提取第一个 H1 级别的合法标题（过滤 Prompt 指令标头）
     static func extractTitle(from content: String) -> String? {
         let lines = content.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespaces) }
 
-        if let firstLine = lines.first(where: { !$0.isEmpty && $0.hasPrefix("# ") }) {
-            return firstLine.replacingOccurrences(of: #"^#+\s*"#, with: "", options: .regularExpression)
-                            .replacingOccurrences(of: "```", with: "")
-                            .trimmingCharacters(in: .whitespaces)
+        for line in lines where !line.isEmpty {
+            if line.hasPrefix("# ") {
+                let candidate = line.replacingOccurrences(of: #"^#+\s*"#, with: "", options: .regularExpression)
+                                    .replacingOccurrences(of: "```", with: "")
+                                    .trimmingCharacters(in: .whitespaces)
+                if !candidate.isEmpty &&
+                    !candidate.hasPrefix("【") &&
+                    !candidate.contains(L10n.AI.Synthesis.Control.depth) &&
+                    !candidate.contains(L10n.AI.Synthesis.Control.audience) &&
+                    !candidate.contains(L10n.AI.Synthesis.Control.tone) {
+                    return candidate
+                }
+            }
         }
         return nil
     }
 
-    /// 清理 Markdown 内容中的冗余转义
+    /// 清理 Markdown 内容中的冗余转义与裸露 Prompt 控制参数
     static func cleanMarkdown(_ text: String) -> String {
         var cleaned = text
+        let promptPatterns = [
+            #"【(篇幅要求|目标受众|语气风格|自定义要求|深度要求)[^】]*】[^\n]*\n?"#,
+            #"【(篇幅|受众|语气|风格)[^】]*】[^\n]*\n?"#
+        ]
+        for pat in promptPatterns {
+            if let regex = try? NSRegularExpression(pattern: pat, options: []) {
+                let range = NSRange(location: 0, length: cleaned.utf16.count)
+                cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: "")
+            }
+        }
+
         let replacements = [
             "\\+": "+", "\\-": "-", "\\*": "*", "\\. ": ". ",
             "\\!": "!", "\\[\\[": "[[", "\\]\\]": "]]",
@@ -253,8 +275,16 @@ enum SynthesisProcessor {
 
     private static func extractRootTitle(title: String, lines: [String]) -> String {
         var rootName = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        if rootName.hasPrefix("【") || rootName.contains(L10n.AI.Synthesis.Control.depth) || rootName.contains(L10n.AI.Synthesis.Control.audience) {
+            rootName = ""
+        }
         if rootName.isEmpty || rootName == L10n.AI.Prompt.Expert.Slides.title {
-            if let firstValidLine = lines.first(where: { $0.count > minValidTitleLength }) {
+            if let firstValidLine = lines.first(where: {
+                $0.count > minValidTitleLength &&
+                !$0.hasPrefix("【") &&
+                !$0.contains(L10n.AI.Synthesis.Control.depth) &&
+                !$0.contains(L10n.AI.Synthesis.Control.audience)
+            }) {
                 rootName = firstValidLine.replacingOccurrences(of: #"^[\-\*\+\#\d\.]+\s*"#, with: "", options: .regularExpression)
             }
         }

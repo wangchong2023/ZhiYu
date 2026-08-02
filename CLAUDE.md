@@ -30,7 +30,26 @@
 | `Docs/Design/SECURITY_THREAT_MODEL.md` | 安全威胁模型 |
 | `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Guides/CONTRIBUTING.md` | 贡献指南 |
-| `Docs/Guides/USER_GUIDE.md` | 用户使用手册 |
+## 四大强制质量红线 (4 Non-Negotiable Quality Redlines)
+
+> **所有 Agent 在此仓库编写、修补或重构 Swift 代码时，必须严格遵守以下 4 条绝对红线，严禁任何违规！**
+
+1. **🌐 多国语言 (L10n) 强约束**：
+   - 严禁在视图层、服务层或处理器中出现硬编码中文/ASCII 文本字符串或裸露过滤关键词（如 `"篇幅要求"`, `"目标受众"`）。
+   - 禁止直接调用 `.tr()`；必须通过 `L10n.模块.属性` 强类型访问。
+   - 所有展示与过滤文本必须在 `Sources/Localization/Extensions/L10n+XXX.swift` 注册，并在 `.xcstrings` Catalog 配置。
+
+2. **🎨 设计系统 Token 强约束 (Design System Tokens)**：
+   - 严禁在 SwiftUI 视图中使用硬编码字号、边距、圆角或透明度（如 `.padding(12)`, `.font(.system(size: 16))`）。
+   - 视图样式与间距必须统一引用 `DesignSystem` 令牌（如 `DesignSystem.standardPadding`, `DesignSystem.medium`, `DesignSystem.titleFontSize`）。
+
+3. **🏗️ 架构分层 (L0-L3 + SPM) 单向依赖**：
+   - 依赖关系严格自顶向下：L3 应用层 (`ZhiYu App`) → L2 业务功能切片包 (`ZhiYuFeatures`) → L1.5 领域大脑包 (`ZhiYuDomain`) → L1 基础设施包 (`ZhiYuAICore` / `UFPStorage`) → Shared (`UFPDesignSystem`) → L0 底座包 (`UFPCore`)。
+   - 严禁反向跨层依赖或在领域层导入 UI 框架（`UIKit`/`AppKit`/`SwiftUI`）。
+
+4. **🔢 彻底去魔鬼化数字 / 字符 / 字符串 (No Magic Numbers/Strings)**：
+   - 业务逻辑、限制阈值、校验常量、Prompt 关键词组必须抽取为强类型常量枚举或 `L10n` 扩展。
+   - 严禁在代码中出现内联魔鬼数字（如 `3`, `5`, `15`）或硬编码正则特征字面量。
 
 ## 项目概览
 

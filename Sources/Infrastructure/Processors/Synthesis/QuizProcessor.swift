@@ -15,14 +15,40 @@ enum QuizProcessor {
 
     struct FlexibleQuizShell: Codable {
         let title: String?
-        let questions: [FlexibleQuestionShell]
+        let quizTitle: String?
+        let questions: [FlexibleQuestionShell]?
+
+        var displayTitle: String {
+            if let t = quizTitle, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return t }
+            if let t = title, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return t }
+            return L10n.Quiz.title
+        }
 
         struct FlexibleQuestionShell: Codable {
             let id: FlexibleID?
-            let text: String
-            let options: [String]
+            let text: String?
+            let question: String?
+            let questionText: String?
+            let options: [String]?
             let answer: FlexibleAnswer?
+            let answerIndex: FlexibleAnswer?
             let explanation: String?
+
+            var realText: String {
+                if let queryQuestion = question, !queryQuestion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return queryQuestion }
+                if let t = text, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return t }
+                if let qt = questionText, !qt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return qt }
+                return ""
+            }
+
+            var realOptions: [String] {
+                options ?? []
+            }
+
+            var realAnswerIndex: Int {
+                let ans = answer ?? answerIndex
+                return ans?.asIndex(optionCount: realOptions.count) ?? 0
+            }
         }
 
         enum FlexibleID: Codable {
@@ -118,21 +144,26 @@ enum QuizProcessor {
         let cleaned = LLMUtils.stripMarkdown(text)
         if let data = cleaned.data(using: .utf8),
            let shell = try? JSONDecoder().decode(FlexibleQuizShell.self, from: data),
-           !shell.questions.isEmpty {
-            let questions = shell.questions.enumerated().map { index, item -> QuizQuestion in
-                let opts = item.options.isEmpty ? [L10n.AI.Prompt.Quiz.option] : item.options
-                let validAnswer = item.answer?.asIndex(optionCount: opts.count) ?? 0
-                let id = item.id?.intValue ?? index
+           let shellQuestions = shell.questions, !shellQuestions.isEmpty {
+            let questions = shellQuestions.enumerated().compactMap { index, item -> QuizQuestion? in
+                let opts = item.realOptions.isEmpty ? [L10n.AI.Prompt.Quiz.option] : item.realOptions
+                let validAnswer = item.realAnswerIndex
+                let id = item.id?.intValue ?? index + 1
+                let qText = item.realText
+                guard !qText.isEmpty else { return nil }
                 return QuizQuestion(
                     id: id,
-                    text: item.text,
+                    text: qText,
                     options: opts,
                     answer: validAnswer,
                     explanation: item.explanation ?? ""
                 )
             }
-            let title = shell.title.flatMap { $0.isEmpty ? nil : $0 } ?? L10n.Quiz.title
-            model = QuizModel(title: title, questions: questions)
+            if !questions.isEmpty {
+                model = QuizModel(title: shell.displayTitle, questions: questions)
+            } else {
+                model = parseMarkdownQuiz(text)
+            }
         } else {
             // 2. 尝试从 Markdown 格式中自愈解析题目、选项与答案
             model = parseMarkdownQuiz(text)

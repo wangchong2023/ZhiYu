@@ -42,14 +42,26 @@
 1. **先评估后选型**：在规划任何复杂功能（如算法、解析器、加解密、文本清洗、语义分词等）时，必须先盘点业界主流开源方案（如 GitHub 高 Star SPM / CocoaPods / CMake 库）。
 2. **主动通知决策**：列出开源库与自研方案在包体积、性能、维护成本、安全许可（License）上的对比，提交给 USER 进行选型确认后方可落地。
 
-## 单元测试编写核心原则（反覆盖率虚胖）
+## 四大强制质量红线 (4 Non-Negotiable Quality Redlines)
 
-> **测试用例的唯一目的是发现真实潜在问题，而不是为了满足覆盖率的数字！**
+> **所有 Agent 在此仓库编写、修补或重构 Swift 代码时，必须严格遵守以下 4 条绝对红线，严禁任何违规！**
 
-1. **禁止假断言与覆盖率虚胖**：严禁编写无断言、常量断言或全依赖 Mock 绕过核心逻辑的“空测试”。
-2. **必须包含变异与反向断言**：测试用例除验证 Happy Path 正常路径外，必须包含至少一个注入错误参数、依赖故障或临界越界的变异/反向断言。
-3. **禁止静默 `try?` 吞掉异常**：测试中严禁使用 `try?` 掩盖错误；必须使用 `XCTAssertThrowsError` 精准校验 Error 类型及 Message。
-4. **显性断言语义信息**：所有 `XCTAssert` 断言必须附带明确的失败原因描述信息，禁止无提示的孤立断言。
+1. **🌐 多国语言 (L10n) 强约束**：
+   - 严禁在视图层、服务层或处理器中出现硬编码中文/ASCII 文本字符串或裸露过滤关键词（如 `"篇幅要求"`, `"目标受众"`）。
+   - 禁止直接调用 `.tr()`；必须通过 `L10n.模块.属性` 强类型访问。
+   - 所有展示与过滤文本必须在 `Sources/Localization/Extensions/L10n+XXX.swift` 注册，并在 `.xcstrings` Catalog 配置。
+
+2. **🎨 设计系统 Token 强约束 (Design System Tokens)**：
+   - 严禁在 SwiftUI 视图中使用硬编码字号、边距、圆角或透明度（如 `.padding(12)`, `.font(.system(size: 16))`）。
+   - 视图样式与间距必须统一引用 `DesignSystem` 令牌（如 `DesignSystem.standardPadding`, `DesignSystem.medium`, `DesignSystem.titleFontSize`）。
+
+3. **🏗️ 架构分层 (L0-L3 + SPM) 单向依赖**：
+   - 依赖关系严格自顶向下：L3 应用层 (`ZhiYu App`) → L2 业务功能切片包 (`ZhiYuFeatures`) → L1.5 领域大脑包 (`ZhiYuDomain`) → L1 基础设施包 (`ZhiYuAICore` / `UFPStorage`) → Shared (`UFPDesignSystem`) → L0 底座包 (`UFPCore`)。
+   - 严禁反向跨层依赖或在领域层导入 UI 框架（`UIKit`/`AppKit`/`SwiftUI`）。
+
+4. **🔢 彻底去魔鬼化数字 / 字符 / 字符串 (No Magic Numbers/Strings)**：
+   - 业务逻辑、限制阈值、校验常量、Prompt 关键词组必须抽取为强类型常量枚举或 `L10n` 扩展。
+   - 严禁在代码中出现内联魔鬼数字（如 `3`, `5`, `15`）或硬编码正则特征字面量。
 
 ## 项目概览
 

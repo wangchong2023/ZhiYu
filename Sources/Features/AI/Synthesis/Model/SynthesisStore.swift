@@ -65,12 +65,12 @@ public final class SynthesisStore {
         }
         public var formatIcon: String {
             switch self {
-            case .mindmap: return "doc.plaintext"
+            case .mindmap: return "circle.hexagongrid.fill"
             case .slides: return "play.rectangle.fill"
             case .quiz: return "checklist.checked"
             case .report: return "doc.richtext.fill"
             case .infographic: return "chart.bar.fill"
-            case .expansion: return "doc.append.fill"
+            case .expansion: return "text.badge.plus"
             }
         }
         public var customPromptPlaceholder: String {

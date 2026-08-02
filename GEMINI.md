@@ -88,10 +88,18 @@ xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iO
 - **MARK 标签**：`// MARK: - 中文标题`。
 
 ### 4. 本地化 (L10n) 强约束规范
-- **禁止硬编码**：UI 层严禁出现硬编码字符串。所有展示文本必须通过 `L10n.模块.属性` 访问。
+- **禁止硬编码**：UI 层、业务逻辑与处理器严禁出现硬编码中文/ASCII 字符串或裸露过滤关键词（如 `"篇幅要求"`, `"目标受众"`）。所有展示与过滤文本必须通过 `L10n.模块.属性` 强类型访问。
 - **禁止直连 tr()**：严禁在业务视图或服务层直接调用 `.tr()`。
 - **禁止假国际化**：在 `L10n+XXX.swift` 扩展中，禁止直接赋值硬编码中文，必须映射至 `.xcstrings`。
-- **强校验网关**：项目已集成 `check_localization.py` 编译网关。任何硬编码非 ASCII 字符或非法 `.tr()` 调用将**阻断编译**。开发者必须先在 `L10n` 扩展中定义属性并在 `.xcstrings` 中配置翻译，方可通行。
+- **强校验网关**：项目已集成 `check_localization.py` 编译网关。任何硬编码非 ASCII 字符或非法 `.tr()` 调用将**阻断编译**。
+
+### 5. 设计系统 Token 强约束 (Design System Tokens)
+- **禁止硬编码 UI 尺寸**：严禁在 SwiftUI 视图中使用硬编码字号、边距、圆角或透明度（如 `.padding(12)`, `.font(.system(size: 16))`）。
+- **统一 Token 引用**：必须使用 `DesignSystem` 令牌（如 `DesignSystem.standardPadding`, `DesignSystem.medium`, `DesignSystem.titleFontSize`）。
+
+### 6. 去魔鬼化数字/字符/字符串 (No Magic Numbers/Strings)
+- **提取强类型常量**：业务逻辑、限制阈值、校验常量、Prompt 关键词组必须抽取为强类型常量枚举或 `L10n` 扩展。
+- **禁止内联魔鬼常量**：严禁在代码中出现内联魔鬼数字（如 `3`, `5`, `15`）或硬编码正则特征字面量。
 
 ### 5. 编码风格
 - 遵循 `Docs/Guides/swift-coding-style.md`。
