@@ -18,6 +18,12 @@ import re
 import sys
 from pathlib import Path
 
+# 导入统一门禁报告器
+GATEKEEPER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if GATEKEEPER_DIR not in sys.path:
+    sys.path.insert(0, GATEKEEPER_DIR)
+from gatekeeper_reporter import GatekeeperReporter
+
 # ==============================================================================
 # MARK: - 全局配置区
 # ==============================================================================
@@ -152,17 +158,19 @@ def report_grdb_baseline(grdb_errors: list[dict]):
 
 
 def process_violations_report(errors: list[dict], warnings: list[dict]):
-    """处理并打印非 GRDB 错误与警告报告"""
+    """处理并打印非 GRDB 错误与警告报告，使用 Xcode 标准 <file>:<line>: error: 规则格式化输出"""
     if warnings:
         print(f"\n⚠️  [Open-Source Adapter Audit] {len(warnings)} 处警告：")
         for v in warnings:
-            print(f"   {v['file']}: import {v['module']} → 通过 [{v['adapter']}] 间接调用")
+            line_no = v.get("line", 1)
+            print(f"{v['file']}:{line_no}: warning: [Open-Source Adapter Audit] import {v['module']} → 通过 [{v['adapter']}] 间接调用")
 
     other_errors = [v for v in errors if v["module"] != "GRDB"]
     if other_errors:
         print(f"\n❌ [Open-Source Adapter Audit] 发现 {len(other_errors)} 处违规：\n")
         for v in other_errors:
-            print(f"   {v['file']} import {v['module']} → 需通过 [{v['adapter']}] 间接调用")
+            line_no = v.get("line", 1)
+            print(f"{v['file']}:{line_no}: error: [Open-Source Adapter Audit] 违规 import {v['module']}，必须通过 [{v['adapter']}] 间接调用")
         sys.exit(1)
     return other_errors
 
@@ -177,18 +185,15 @@ def print_audit_result(errors: list[dict], warnings: list[dict], other_errors: l
 
 def main():
     """主逻辑：扫描 Sources/ 层开源库直接 import 情况并校验适配器封装规则"""
+    reporter = GatekeeperReporter("Open-Source Adapter Audit")
     violations = check_direct_imports(SOURCES_DIR)
 
-    errors = [v for v in violations if v["severity"] == "ERROR"]
-    warnings = [v for v in violations if v["severity"] == "WARNING"]
+    for v in violations:
+        lvl = v["severity"]
+        msg = f"违规 import {v['module']}，必须通过 [{v['adapter']}] 间接调用"
+        reporter.add_issue(v["file"], v.get("line", 1), msg, level=lvl)
 
-    other_errors = process_violations_report(errors, warnings)
-
-    grdb_errors = [v for v in errors if v["module"] == "GRDB"]
-    if grdb_errors:
-        report_grdb_baseline(grdb_errors)
-
-    print_audit_result(errors, warnings, other_errors)
+    reporter.report()
 
 
 if __name__ == "__main__":
