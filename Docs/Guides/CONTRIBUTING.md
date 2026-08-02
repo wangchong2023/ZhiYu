@@ -62,13 +62,25 @@ swiftlint --strict
 
 ---
 
-## 4. 分支管理与 Git 工作流 (Git Flow)
+## 4. 分支管理与 Git 工作流 (Git Branching & Merge Policy)
 
-*   `main`: 绝对稳定的生产发布分支。
-*   `develop`: 主干合并分支，所有功能分支汇聚于此。
-*   `feature/*`: 新增功能分支，完成后发起 Code Review 合入 develop。
-*   `bugfix/*`: 缺陷修复分支。
-*   `hotfix/*`: 紧急生产热修复分支。
+智宇全面遵循与 `ZhiYu-Backend` 保持 100% 一致的 Git 分支合入与卡控管理办法：
+
+### 4.1 分支命名规范
+* `main`: **绝对受控与稳定的生产主分支（严禁直接 `git push`）**。
+* `feature/<description>`: 新增功能分支（如 `feature/voice-note`）。
+* `fix/<issue-id>`: 缺陷与 Crash 修复分支（如 `fix/token-expired`）。
+* `refactor/<description>`: 不改变业务行为的代码重构分支（如 `refactor/project-template`）。
+* `docs/<description>`: 纯文档及注释变更分支。
+* `test/<description>`: 测试用例或 CI 流水线调试分支。
+* `hotfix/<description>`: 生产紧急热修复分支。
+* `release/v<version>`: 版本发布分支（如 `release/v2.3.0`）。
+
+### 4.2 分支保护与 MR (Merge Request) 合入卡控
+1. **禁止直推 `main` (`push_access_level: No one`)**：所有代码变更必须在特性分支提交，并向 `main` 发起 MR / PR。
+2. **流水线全绿方可合并 (`only_allow_merge_if_pipeline_succeeds: true`)**：提交 MR 后自动触发 GitLab CI。必须通过 7 大 Gatekeeper 门禁和全量编译测试，Merge 按钮才允许点击。
+3. **Maintainer 代码审查**：MR 必须经过至少 1 位 Maintainer 审查通过后方可合并。
+4. **禁止强推 (`allow_force_push: false`)**：主分支禁用 force push，确保版本演进历史完整追溯。
 
 ---
 
