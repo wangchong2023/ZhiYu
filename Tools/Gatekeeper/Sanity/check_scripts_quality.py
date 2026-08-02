@@ -116,6 +116,12 @@ class ScriptAuditor:
         if not has_header_comment:
             issues.append((1, f"Python 脚本文件头前 15 行缺少核心职责/创建版权中文说明注释"))
 
+        # 1.5 针对 Gatekeeper 门禁脚本，强校验必须接入 GatekeeperReporter 统一机制
+        norm_path = filepath.replace('\\', '/')
+        if '/Tools/Gatekeeper/' in norm_path and filename not in ('gatekeeper_reporter.py', 'check_scripts_quality.py', 'check_compile_all.py'):
+            if 'GatekeeperReporter' not in content:
+                issues.append((1, "Gatekeeper 门禁脚本必须统一导入并使用 GatekeeperReporter 机制暴露 IDE/CI 缺陷"))
+
         # 2. 解析 AST 进行语法级审计
         try:
             tree = ast.parse(content, filename=filepath)

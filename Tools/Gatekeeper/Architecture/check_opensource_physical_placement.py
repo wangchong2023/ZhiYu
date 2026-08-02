@@ -22,6 +22,11 @@ import os
 import re
 import sys
 
+GATEKEEPER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if GATEKEEPER_DIR not in sys.path:
+    sys.path.insert(0, GATEKEEPER_DIR)
+from gatekeeper_reporter import GatekeeperReporter
+
 # ==============================================================================
 # MARK: - 全局配置区
 # ==============================================================================
