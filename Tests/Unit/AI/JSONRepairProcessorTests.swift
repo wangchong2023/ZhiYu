@@ -10,6 +10,7 @@
 //
 
 import XCTest
+import ZhiYuAICore
 @testable import ZhiYu
 
 final class JSONRepairProcessorTests: XCTestCase {

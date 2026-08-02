@@ -37,7 +37,7 @@ final class MacFileArchiver: FileArchiverProtocol, @unchecked Sendable {
         try process.run()
         process.waitUntilExit()
         guard process.terminationStatus == 0 else {
-            throw FileArchiverError.extractionFailed(reason: "unzip exit \(process.terminationStatus)")
+            throw FileArchiverError.extractionFailed(reason: "unzip_exit_\(process.terminationStatus)")
         }
     }
 }
