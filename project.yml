@@ -74,6 +74,7 @@ options:
     macOS: "14.0"
     watchOS: "10.0"
   xcodeVersion: "16.0"
+  createIntermediateGroups: true
   generateEmptyDirectories: true
 
 settings:
@@ -119,7 +120,7 @@ targets:
         Debug:
           SWIFT_STRICT_CONCURRENCY: targeted
     preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\nif which swiftlint >/dev/null; then swiftlint lint --strict; else echo 'warning: SwiftLint not installed. Please download from https://github.com/realm/SwiftLint'; fi"
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\nbash Tools/Gatekeeper/Lint/check_swiftlint.sh"
         name: "[Gatekeeper] SwiftLint Quality Audit"
         basedOnDependencyAnalysis: false
       - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Architecture/check_domain_purity.py"
@@ -329,7 +330,6 @@ targets:
       - path: Sources/Platforms/iOS/Activity/AIProcessingAttributes.swift
       - path: Sources/Core/Base/Protocols/LiveActivityProtocol.swift
       - path: Sources/Core/Base/Constants/AppConstants.swift
-      - path: Sources/Platforms/iOS/Widgets/WidgetL10n.swift
       - path: Sources/Localization/Catalogs/Platform.xcstrings
     settings:
       base:
