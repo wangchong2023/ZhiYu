@@ -27,7 +27,7 @@ MIN_RESPONSIBILITY_LEN = 10
 # 模板化描述检测阈值（同一描述出现次数）
 TEMPLATE_THRESHOLD = 3
 
-LAYER_PATTERN = re.compile(r'系统层级\s*[：:]\s*\[(L\d\.?\d?|Shared)\]')
+LAYER_PATTERN = re.compile(r'系统层级\s*[：:]\s*\[([^\]]+)\]')
 RESPONSIBILITY_PATTERN = re.compile(r'核心职责\s*[：:]\s*(.+)')
 # 排除目录（不要求文件头）
 EXCLUDE_DIRS = {"Sources/Localization/"}

@@ -6,7 +6,7 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L1.5] 领域层
-//  核心职责：用户反馈仓储协议
+//  核心职责：定义用户反馈与评价数据的仓储读写与持久化存储抽象接口。
 
 import Foundation
 
