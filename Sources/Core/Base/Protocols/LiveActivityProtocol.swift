@@ -10,6 +10,13 @@
 //
 import Foundation
 
+/// 实时活动任务类型
+public enum ActivityKind: String, Codable, Hashable, Sendable {
+    case synthesis
+    case ingestOCR
+    case voiceNote
+}
+
 /// [Infra] 实时活动服务协议
 /// 旨在抹平 iOS 灵动岛 (Live Activity) 与其他平台的差异，实现业务层无宏。
 @MainActor
@@ -21,6 +28,17 @@ public protocol LiveActivityProtocol: Sendable {
     ///   - target: 目标对象名称
     func startActivity(id: UUID, name: String, target: String)
     
+    /// 开启包含扩展属性的实时活动（如 AI 合成引用数、文档文件名、预估剩余秒数）
+    func startActivity(
+        id: UUID,
+        name: String,
+        target: String,
+        kind: ActivityKind,
+        sourceCount: Int,
+        currentFileName: String,
+        estimatedSecondsRemaining: Int
+    )
+
     /// 更新活动进度
     /// - Parameters:
     ///   - id: 任务 UUID
@@ -28,6 +46,16 @@ public protocol LiveActivityProtocol: Sendable {
     ///   - message: 状态描述文本
     func updateProgress(id: UUID, progress: Double, message: String) async
     
+    /// 更新包含扩展元数据的活动进度
+    func updateProgress(
+        id: UUID,
+        progress: Double,
+        message: String,
+        sourceCount: Int,
+        currentFileName: String,
+        estimatedSecondsRemaining: Int
+    ) async
+
     /// 结束实时活动
     /// - Parameter id: 任务 UUID
     func endActivity(id: UUID) async

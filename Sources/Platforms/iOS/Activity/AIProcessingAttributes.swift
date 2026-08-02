@@ -9,17 +9,9 @@
 //  核心职责：iOS 平台实现：后台任务、Widget、文件归档、Spotlight 索引。
 //
 import Foundation
-#if os(iOS) && !targetEnvironment(macCatalyst)
-import ActivityKit
-#endif
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
-/// 实时活动任务类型
-public enum ActivityKind: String, Codable, Hashable, Sendable {
-    case synthesis
-    case ingestOCR
-    case voiceNote
-}
+import ActivityKit
 
 /// AI 治理/处理任务的实时活动属性
 public struct AIProcessingAttributes: ActivityAttributes, Hashable, Sendable {

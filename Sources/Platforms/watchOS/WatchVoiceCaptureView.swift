@@ -11,7 +11,12 @@
 
 import SwiftUI
 
+#if os(watchOS)
+import WatchKit
+#endif
+
 public struct WatchVoiceCaptureView: View {
+    @Inject private var watchSync: any WatchSyncProtocol
     @State private var isRecording = false
     @State private var recordedText = ""
     @State private var showSuccessBanner = false
@@ -45,7 +50,7 @@ public struct WatchVoiceCaptureView: View {
             }
 
             if showSuccessBanner {
-                Label(L10n.Widget.syncedToiOS, systemImage: DesignSystem.Icons.checkMark)
+                Label(L10n.Widget.syncedToiOS, systemImage: DesignSystem.Icons.check)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(Color.theme.green)
                     .transition(.opacity)
@@ -59,6 +64,10 @@ public struct WatchVoiceCaptureView: View {
             isRecording.toggle()
             if !isRecording {
                 recordedText = L10n.Widget.sampleVoiceNote
+                watchSync.sendContent(recordedText)
+                #if os(watchOS)
+                WKInterfaceDevice.current().play(.success)
+                #endif
                 showSuccessBanner = true
             }
         }

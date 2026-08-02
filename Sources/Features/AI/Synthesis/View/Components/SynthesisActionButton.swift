@@ -44,28 +44,24 @@ struct SynthesisActionButton: View {
                             Image(systemName: type.icon)
                                 .font(.system(size: DesignSystem.iconMedium, weight: .semibold))
                                 .foregroundStyle(type.formatColor)
-                                .opacity((state == .generating || isLimitReached) ? DesignSystem.dimmedOpacity : DesignSystem.fullOpacity)
+                                .opacity(state == .generating ? DesignSystem.dimmedOpacity : DesignSystem.fullOpacity)
                             
                             if state == .generating {
                                 ProgressView()
                                     .scaleEffect(DesignSystem.Animation.pressScale)
                                     .tint(type.formatColor)
-                            } else if isLimitReached {
-                                Image(systemName: DesignSystem.Icons.lock)
-                                    .font(.system(size: DesignSystem.iconTiny, weight: .bold))
-                                    .foregroundStyle(.red.opacity(DesignSystem.secondaryOpacity))
                             }
                         }
                         Text(type.title)
                             .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold))
-                            .foregroundStyle(isLimitReached ? .appSecondary : .appText)
+                            .foregroundStyle(.appText)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, DesignSystem.standardPadding)
                     .appMetricCardStyle(color: type.formatColor, cornerRadius: DesignSystem.standardRadius)
                 }
                 .buttonStyle(AppCardButtonStyle())
-                .disabled(state == .generating || isLimitReached)
+                .disabled(state == .generating)
 
                 // 🌟 右侧 NotebookLM 风格独立控制/定制按钮
                 Button {
@@ -82,7 +78,7 @@ struct SynthesisActionButton: View {
                 }
                 .accessibilityLabel(L10n.AI.Synthesis.Control.title)
                 .padding(DesignSystem.tiny)
-                .disabled(state == .generating || isLimitReached)
+                .disabled(state == .generating)
             }
             .contextMenu {
                 Button {
@@ -136,14 +132,7 @@ struct SynthesisActionButton: View {
                 return
             }
             
-            let isLimitReached = (synthesisStore.synthesisResults[type]?.count ?? 0) >= synthesisStore.maxSynthesisDocsPerType
-            if isLimitReached {
-                await MainActor.run {
-                    HapticFeedback.shared.trigger(.error)
-                    showLimitAlert = true
-                }
-                return
-            }
+            // 自动容量管控机制：SynthesisStore 内部已实现滚动覆写最旧文档，无需在此阻断用户发起新的合成
             
             var combinedContent = activePages.map { "# \($0.title)\n\($0.content)" }.joined(separator: "\n\n---\n\n")
             if let options, !options.customPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

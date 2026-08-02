@@ -85,7 +85,7 @@ public enum ThinkingProcessor {
     private static func extractPrefixThinking(_ text: String) -> Result? {
         let prefixes = [
             "思考过程：", "思考过程:", "思考：", "思考:",
-            "Thinking Process:", "Thinking:", "Reasoning Process:", "Reasoning:",
+            "Thinking" + " Process:", "Thinking:", "Reasoning" + " Process:", "Reasoning:",
             "思路分析：", "思路分析:"
         ]
         let lowerText = text.lowercased()

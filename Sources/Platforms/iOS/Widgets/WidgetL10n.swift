@@ -23,4 +23,16 @@ enum WidgetL10n {
     static var ai: String { String(localized: "widget.ai", table: "Platform") }
     static var title: String { String(localized: "widget.title", table: "Platform") }
     static var recentUpdates: String { String(localized: "widget.recentUpdates", table: "Platform") }
+    static var dailyInsight: String { String(localized: "widget.dailyInsight", table: "Platform") }
+    static var knowledgeDistribution: String { String(localized: "widget.knowledgeDistribution", table: "Platform") }
+    static var voice: String { String(localized: "tab.voice", table: "Common") }
+    static var qa: String { String(localized: "widget.qa", table: "Platform") }
+    static var llmWikiChunking: String { String(localized: "widget.llmWikiChunking", table: "Platform") }
+    static var llmWikiDescription: String { String(localized: "widget.llmWikiDescription", table: "Platform") }
+    static var flashThoughtSub: String { String(localized: "widget.flashThoughtSub", table: "Platform") }
+    static var insightQuote1: String { String(localized: "widget.insightQuote1", table: "Platform") }
+    static var insightQuote2: String { String(localized: "widget.insightQuote2", table: "Platform") }
+    static var insightQuote3: String { String(localized: "widget.insightQuote3", table: "Platform") }
+    static var weeklyHeatmap: String { String(localized: "widget.weeklyHeatmap", table: "Platform") }
+    static var quickCaptureTitle: String { String(localized: "widget.quickCaptureTitle", table: "Platform") }
 }

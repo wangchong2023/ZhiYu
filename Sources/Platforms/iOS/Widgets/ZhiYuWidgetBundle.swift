@@ -17,7 +17,10 @@ struct ZhiYuWidgetBundle: WidgetBundle {
         // 注册实时活动 Widget
         AIProcessingActivityWidget()
         
-        // 注册桌面静态 Widget
+        // 注册桌面与锁屏静态/动态 Widget
         KnowledgeStatsWidget()
+        DailyInsightWidget()
+        KnowledgeDistributionWidget()
+        QuickCaptureWidget()
     }
 }

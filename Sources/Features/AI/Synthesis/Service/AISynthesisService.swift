@@ -27,8 +27,12 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     }
 
     private init() {
-        // 面向接口依赖，解析协议类型以解耦 LLMService 具体实现
-        self.llm = ServiceContainer.shared.resolve((any LLMServiceProtocol).self)
+        // 使用 resolveOptional 防护 DI 未就绪阶段，降级至 LLMService.shared 避免单例初始化崩溃
+        if let resolved = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {
+            self.llm = resolved
+        } else {
+            self.llm = LLMService.shared
+        }
     }
 
     // 由于 ServiceContainer.register 需要在主线程或确保安全，我们在外层注册

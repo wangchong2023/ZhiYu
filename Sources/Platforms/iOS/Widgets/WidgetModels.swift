@@ -106,10 +106,30 @@ struct WidgetRecentPage: Codable {
     let colorName: String
 }
 
+/// 每日 AI 洞察与炼化金句
+struct WidgetDailyInsight: Codable {
+    let title: String
+    let content: String
+    let flashThoughtSummary: String
+}
+
+/// 知识库分类比例与热度分布
+struct WidgetDistributionStats: Codable {
+    let sourceRatio: Double
+    let conceptRatio: Double
+    let entityRatio: Double
+    let mapRatio: Double
+    let weeklyGrowth: Int
+}
+
 /// Widget 统计数据快照（主 App 写入 App Group JSON，Widget Extension 只读）
 struct WidgetStatsSnapshot: Codable {
     let pageCount: Int
     let linkCount: Int
     let tagCount: Int
+    let dailyInsightTitle: String?
+    let dailyInsightContent: String?
+    let flashThoughtSummary: String?
+    let distribution: [String: Double]?
     let recentPages: [WidgetRecentPage]
 }

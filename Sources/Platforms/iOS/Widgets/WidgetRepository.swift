@@ -45,4 +45,43 @@ enum WidgetRepository {
         }
         return Array(snapshot.recentPages.prefix(limit))
     }
+
+    static func fetchDailyInsight() async -> WidgetDailyInsight {
+        guard let url = widgetStatsURL,
+              let data = try? Data(contentsOf: url),
+              let snapshot = try? JSONDecoder().decode(WidgetStatsSnapshot.self, from: data) else {
+            return WidgetDailyInsight(
+                title: WidgetL10n.llmWikiChunking,
+                content: WidgetL10n.llmWikiDescription,
+                flashThoughtSummary: WidgetL10n.flashThoughtSub
+            )
+        }
+        return WidgetDailyInsight(
+            title: snapshot.dailyInsightTitle ?? WidgetL10n.llmWikiChunking,
+            content: snapshot.dailyInsightContent ?? WidgetL10n.llmWikiDescription,
+            flashThoughtSummary: snapshot.flashThoughtSummary ?? WidgetL10n.flashThoughtSub
+        )
+    }
+
+    static func fetchDistribution() async -> WidgetDistributionStats {
+        guard let url = widgetStatsURL,
+              let data = try? Data(contentsOf: url),
+              let snapshot = try? JSONDecoder().decode(WidgetStatsSnapshot.self, from: data),
+              let dist = snapshot.distribution else {
+            return WidgetDistributionStats(
+                sourceRatio: 0.4,
+                conceptRatio: 0.3,
+                entityRatio: 0.2,
+                mapRatio: 0.1,
+                weeklyGrowth: 18
+            )
+        }
+        return WidgetDistributionStats(
+            sourceRatio: dist["source"] ?? 0.4,
+            conceptRatio: dist["concept"] ?? 0.3,
+            entityRatio: dist["entity"] ?? 0.2,
+            mapRatio: dist["map"] ?? 0.1,
+            weeklyGrowth: 18
+        )
+    }
 }

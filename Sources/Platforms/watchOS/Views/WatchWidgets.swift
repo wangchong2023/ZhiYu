@@ -37,7 +37,7 @@ struct WatchCaptureWidget: Widget {
         }
         .configurationDisplayName(L10n.Watch.widgetCapture)
         .description(L10n.Watch.widgetDescription)
-        .supportedFamilies([.accessoryCircular, .accessoryCorner, .accessoryInline])
+        .supportedFamilies([.accessoryCircular, .accessoryCorner, .accessoryInline, .accessoryRectangular])
     }
 }
 
@@ -61,38 +61,78 @@ struct Provider: TimelineProvider {
     
     /// 单元测试可直接调用的占位数据生成逻辑
     func makePlaceholder() -> SimpleEntry {
-        SimpleEntry(date: Date())
+        SimpleEntry(date: Date(), synthesisCount: 8, flashQuote: L10n.Widget.llmWikiChunking)
     }
     
     /// 单元测试可直接调用的快照数据生成逻辑
     func makeSnapshot(completion: @escaping (SimpleEntry) -> Void) {
-        let entry = SimpleEntry(date: Date())
+        let entry = SimpleEntry(date: Date(), synthesisCount: 8, flashQuote: L10n.Widget.llmWikiChunking)
         completion(entry)
     }
     
     /// 单元测试可直接调用的时间线生成逻辑
     func makeTimeline(completion: @escaping (Timeline<SimpleEntry>) -> Void) {
-        let timeline = Timeline(entries: [SimpleEntry(date: Date())], policy: .atEnd)
+        let timeline = Timeline(entries: [SimpleEntry(date: Date(), synthesisCount: 8, flashQuote: L10n.Widget.llmWikiChunking)], policy: .atEnd)
         completion(timeline)
     }
 }
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
+    var synthesisCount: Int = 8
+    var flashQuote: String = L10n.Widget.llmWikiChunking
 }
 
 struct WatchWidgetView: View {
     var entry: Provider.Entry
+    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        // 使用带有 Intent 的 Button，点击即触发 App 逻辑
         Button(intent: WatchCaptureIntent()) {
-            ZStack {
-                Circle()
-                    .fill(Color.appAccent.gradient)
-                Image(systemName: DesignSystem.Icons.micFill)
-                    .font(.system(size: 20, weight: .bold)) // Dynamic Type
-                    .foregroundStyle(Color.theme.white)
+            switch family {
+            case .accessoryRectangular:
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Image(systemName: "sparkles")
+                            .foregroundStyle(Color.appAccent)
+                        Text(L10n.Widget.dailyInsight)
+                            .font(.caption2.weight(.bold))
+                        Spacer()
+                        Text("🔥 \(entry.synthesisCount)")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.orange)
+                    }
+                    Text(entry.flashQuote)
+                        .font(.caption2)
+                        .lineLimit(2)
+                }
+            case .accessoryInline:
+                HStack(spacing: 4) {
+                    Image(systemName: "flame.fill")
+                        .foregroundStyle(.orange)
+                    Text("\(entry.synthesisCount) \(L10n.Widget.knowledgeCompile) · \(entry.flashQuote)")
+                }
+            case .accessoryCorner:
+                VStack {
+                    Image(systemName: DesignSystem.Icons.micFill)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Color.appAccent)
+                    Text("\(entry.synthesisCount)")
+                        .font(.caption2.weight(.bold))
+                }
+            default:
+                ZStack {
+                    Circle()
+                        .fill(Color.appAccent.gradient)
+                    VStack(spacing: 0) {
+                        Image(systemName: DesignSystem.Icons.micFill)
+                            .font(.system(size: 14, weight: .bold)) // Dynamic Type
+                            .foregroundStyle(Color.theme.white)
+                        Text("\(entry.synthesisCount)")
+                            .font(.system(size: 9, weight: .bold)) // Dynamic Type
+                            .foregroundStyle(Color.theme.white)
+                    }
+                }
             }
         }
         .containerBackground(Color.appAccent.gradient, for: .widget)

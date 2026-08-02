@@ -241,6 +241,7 @@ targets:
     sources:
       - path: Sources/Platforms/iOS/Widgets
       - path: Sources/Platforms/iOS/Activity/AIProcessingAttributes.swift
+      - path: Sources/Core/Base/Protocols/LiveActivityProtocol.swift
       - path: Sources/Core/Base/Constants/AppConstants.swift
       - path: Sources/Platforms/iOS/Widgets/WidgetL10n.swift
       - path: Sources/Localization/Catalogs/Platform.xcstrings

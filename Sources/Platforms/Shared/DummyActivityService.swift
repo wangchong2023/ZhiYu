@@ -21,6 +21,18 @@ final class DummyActivityService: LiveActivityProtocol, Sendable {
         // 非支持平台不执行任何操作
     }
     
+    func startActivity(
+        id: UUID,
+        name: String,
+        target: String,
+        kind: ActivityKind,
+        sourceCount: Int,
+        currentFileName: String,
+        estimatedSecondsRemaining: Int
+    ) {
+        // 非支持平台不执行任何操作
+    }
+
     /// 更新Progress
     /// - Parameter id: id
     /// - Parameter progress: progress
@@ -28,7 +40,18 @@ final class DummyActivityService: LiveActivityProtocol, Sendable {
     func updateProgress(id: UUID, progress: Double, message: String) async {
         // 非支持平台不执行任何操作
     }
-    
+
+    func updateProgress(
+        id: UUID,
+        progress: Double,
+        message: String,
+        sourceCount: Int,
+        currentFileName: String,
+        estimatedSecondsRemaining: Int
+    ) async {
+        // 非支持平台不执行任何操作
+    }
+
     /// 结束Activity
     /// - Parameter id: id
     func endActivity(id: UUID) async {
