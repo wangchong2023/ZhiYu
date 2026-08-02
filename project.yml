@@ -120,59 +120,8 @@ targets:
         Debug:
           SWIFT_STRICT_CONCURRENCY: targeted
     preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\nbash Tools/Gatekeeper/Lint/check_swiftlint.sh"
-        name: "[Gatekeeper] SwiftLint Quality Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Architecture/check_domain_purity.py"
-        name: "[Gatekeeper] Domain Purity Check"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Compliance/check_localization.py"
-        name: "[Gatekeeper] L10n Leak & Hardcode Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Compliance/check_prompt_governance.py"
-        name: "[Gatekeeper] Prompt Governance & Security Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Compliance/check_storage_constants.py"
-        name: "[Gatekeeper] Storage Constants Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Compliance/check_magic_numbers.py"
-        name: "[Gatekeeper] Magic Number Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Release/check_hardcoded_secrets.py"
-        name: "[Gatekeeper] Hardcoded Secrets Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Compliance/check_hig_compliance.py"
-        name: "[Gatekeeper] HIG Compliance Check"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Release/check_appstore_readiness.py"
-        name: "[Gatekeeper] App Store Readiness Check"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Architecture/check_architecture_dependency.py"
-        name: "[Gatekeeper] Architecture Dependency Check"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Sanity/check_scripts_quality.py"
-        name: "[Gatekeeper] Tools Scripts Quality Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Sanity/check_layout.py"
-        name: "[Gatekeeper] Cross-Platform Layout Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/check_inject_safety.py"
-        name: "[Gatekeeper] DI Inject Safety Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Sanity/check_duplicate_code.py --local"
-        name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Architecture/check_view_duplication.py"
-        name: "[Gatekeeper] Heuristic View Duplication Check"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Architecture/check_opensource_adapters.py"
-        name: "[Gatekeeper] Open-Source Adapter Logical Isolation Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Architecture/check_opensource_physical_placement.py"
-        name: "[Gatekeeper] Open-Source Adapter Physical Placement Audit"
-        basedOnDependencyAnalysis: false
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/Sanity/check_dead_code.py"
-        name: "[Gatekeeper] Dead Code & Migration Residue Audit (Periphery)"
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
+        name: "[Gatekeeper] All Quality & Security Audits"
         basedOnDependencyAnalysis: false
     dependencies:
       - package: UFPCore
@@ -225,11 +174,8 @@ targets:
         Release:
           CODE_SIGN_ENTITLEMENTS: Sources/ZhiYu.entitlements
     preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\nif which swiftlint >/dev/null; then swiftlint lint --strict; else echo 'warning: SwiftLint not installed. Please download from https://github.com/realm/SwiftLint'; fi"
-        name: "[Gatekeeper] SwiftLint Quality Audit"
-        basedOnDependencyAnalysis: false
-      - script: "python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py --local"
-        name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
+        name: "[Gatekeeper] All Quality & Security Audits"
         basedOnDependencyAnalysis: false
     dependencies:
       - package: UFPCore
