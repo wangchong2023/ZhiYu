@@ -1,35 +1,29 @@
 # 智宇 (ZhiYu) 持续集成与交付 (CI/CD) 规范
 
-> 最后更新: 2026-06-27 (v5.1 — 版本注入步骤 + 构建号管理)
+> 最后更新: 2026-08-02 (v6.0 — GitLab CE v18.1.0 架构重构 + .gitlab-ci.yml 规范)
 
 ---
 
 ## 1. CI 架构概览
 
+智宇客户端与 `ZhiYu-Backend` 统一采用 **GitLab CE v18.1.0 + GitLab Runner** 持续集成架构：
+
 ```
-┌──────────┐    push/webhook     ┌──────────────────┐    gRPC     ┌──────────────────────────┐
-│  Gitea   │ ──────────────────→ │ Woodpecker Server │ ←───────── │ Woodpecker Agent (macOS) │
-│ :3000    │                     │ :8000 (Web UI)    │            │ darwin/arm64 backend=local│
-└──────────┘                     │ :9000 (gRPC)      │            │ healthcheck :3001         │
-                                 └──────────────────┘            └──────────────────────────┘
-                                           │                                 │
-                                           │ gRPC                            │ 直接执行
-                                           ↓                                 ↓
-                                 ┌──────────────────┐            ┌──────────────────────────┐
-                                 │ Woodpecker Agent │            │ xcodebuild + Gatekeeper  │
-                                 │ (Docker 容器)    │            │ 脚本 (preBuildScripts)   │
-                                 │ linux/arm64      │            └──────────────────────────┘
-                                 │ backend=docker   │
-                                 │ healthcheck :3002│
-                                 └──────────────────┘
-                                           │
-                                           ↓
-                                    ZhiYu-Backend 构建
+┌──────────────┐    push / MR     ┌──────────────────────┐    Job Queue   ┌──────────────────────────┐
+│  GitLab CE   │ ───────────────→ │ GitLab CI/CD Engine  │ ─────────────→ │ macOS Shell Runner       │
+│  :8480 (Web) │                  │ (.gitlab-ci.yml)     │                │ tags: macos,shell,xcode  │
+└──────────────┘                  └──────────────────────┘                └────────────┬─────────────┘
+                                                                                       │
+                                                                                       ▼
+                                                                          ┌──────────────────────────┐
+                                                                          │ XcodeGen + Gatekeeper    │
+                                                                          │ xcodebuild + xcrun       │
+                                                                          └──────────────────────────┘
 ```
 
 ## 1.1 SPM 极速单测矩阵与本地包验证 (Fast Package Matrix)
 
-在 Xcode 全量构建前，CI 流水线首先并行触发各 SPM 本地包的毫秒级纯 Swift 单测：
+在 Xcode 全量编译前，CI 流水线首先并行触发各 SPM 本地包的毫秒级纯 Swift 单测：
 
 ```bash
 # 1. 验证通用底座与存储包
@@ -43,60 +37,26 @@ swift test --package-path Packages/ZhiYuAICore
 swift test --package-path Packages/ZhiYuFeatures
 ```
 
-| 组件 | 位置 | 端口 | 职责 |
+| 组件 | 运行环境 | 访问/标识 | 职责 |
 |------|------|------|------|
-| Gitea | `bin-gitea-1` (Docker) | `3000` (Web), `2222` (SSH) | 代码托管 + Webhook |
-| Woodpecker Server | `bin-woodpecker-server-1` (Docker) | `8000` (Web), `9000` (gRPC) | 流水线调度 |
-| iOS Agent | `launchd` 原生进程 | `3001` (健康检查) | ZhiYu iOS 构建 (backend=local) |
-| Backend Agent | `launchd` 原生进程 | `3002` (健康检查) | ZhiYu-Backend 构建 (backend=docker) |
-
-### Agent 配置
-
-**iOS Agent** (`~/Library/LaunchAgents/com.zhiyu.woodpecker-agent.plist`):
-
-| 环境变量 | 值 |
-|----------|-----|
-| `WOODPECKER_SERVER` | `localhost:9000` |
-| `WOODPECKER_BACKEND` | `local` |
-| `WOODPECKER_LABELS` | `platform=darwin/arm64,backend=local` |
-| `WOODPECKER_HEALTHCHECK_ADDR` | `:3001` |
-
-**Backend Agent** (`~/Library/LaunchAgents/com.zhiyu.woodpecker-agent-backend.plist`):
-
-| 环境变量 | 值 |
-|----------|-----|
-| `WOODPECKER_SERVER` | `localhost:9000` |
-| `WOODPECKER_BACKEND` | `docker` |
-| `WOODPECKER_LABELS` | `platform=linux/arm64,backend=docker` |
-| `WOODPECKER_HEALTHCHECK_ADDR` | `:3002` |
+| **GitLab CE** | Docker Compose | `http://127.0.0.1:8480` | 代码托管、MR 管理、CI 控制台 |
+| **GitLab Runner** | macOS launchd 原生服务 | `macos-shell-runner` | 执行 iOS/macOS/watchOS 构建与测试 |
 
 ---
 
-## 2. 主 CI 流水线 (`.woodpecker.yml`)
+## 2. 主 CI 流水线 (`.gitlab-ci.yml`)
 
-每次 push 到 `main` 分支通过 Gitea Webhook 自动触发，**8 步执行**（步骤间通过 `depends_on` 声明依赖，可并行处自动并行）：
+流水线包含 4 个核心阶段 (Stages)：`analyze` → `prepare` → `build` → `test`
 
-| # | 步骤 | depends_on | 说明 |
-|---|------|------------|------|
-| 1 | `clone-repo` | — | 用 `$CI_NETRC_*` 凭据写 `~/.netrc`，`git fetch origin $CI_COMMIT_SHA` 精确拉取提交 |
-| 2 | `static-analysis` | clone-repo | 并发执行 **19 项**静态分析（见 `Tools/CI/run_static_analysis.sh`） |
-| 3 | `prepare-dependencies` | clone-repo | `xcodegen generate` + SPM 依赖解析 |
-| 4 | `inject-version` | prepare-dependencies | `inject_version.sh` 从 git tag 提取 SemVer + `git rev-list --count` 构建号 + 短哈希，写入 Info.plist（详见 [版本管理规范](../../Docs/Design/VERSION_MANAGEMENT.md)） |
-| 5 | `build-ios` | inject-version | `build_platform.sh ZhiYu iOS` |
-| 6 | `build-macos` | build-ios | `build_platform.sh ZhiYuMac macOS` |
-| 7 | `build-watchos` | build-macos | `build_platform.sh ZhiYuWatch watchOS` |
-| 8 | `test-and-verify-coverage` | build-watchos | `xcodebuild test` + 覆盖率红线校验（`run_tests_and_coverage.sh`） |
+| 阶段 (Stage) | 任务 (Job) | 触发条件 | 执行内容 |
+|---|---|---|---|
+| **analyze** | `static-analysis` | 所有 push / MR | 运行 21 项 Gatekeeper 静态合规审计 |
+| **prepare** | `build-prepare` | `main` / `develop` / `release/*` push | `xccodegen generate` + 解析 SPM 依赖 + 注入版本号 |
+| **build** | `build-ios` | `main` / `develop` / `release/*` push | 构建 iOS 模拟器目标 (`ZhiYu`) |
+| | `build-macos` | `main` / `develop` / `release/*` push | 构建 macOS Catalyst 目标 (`ZhiYuMac`) |
+| | `build-watchos` | `main` / `develop` / `release/*` push | 构建 watchOS 模拟器目标 (`ZhiYuWatch`) |
+| **test** | `test-and-coverage` | `main` / `develop` / `release/*` push | 运行全量单元测试与覆盖率熔断门禁（必须大于 85%） |
 
-**依赖拓扑：**
-
-```
-clone-repo ──┬─→ static-analysis (19 项并行)
-             └─→ prepare-dependencies ──→ inject-version ──→ build-ios ──→ build-macos ──→ build-watchos ──→ test-and-verify-coverage
-```
-
-> **运行环境前置**：`swiftlint`、`swift`、`xcodebuild` 依赖 iOS Agent（macOS launchd 原生进程）预装；`radon`（Python 圈复杂度工具）在 `static-analysis` step 内 `pip3 install`。
-
-流水线标签：`backend: local`（仅匹配 iOS Agent）
 
 ---
 
