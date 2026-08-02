@@ -83,6 +83,13 @@ public struct UserProfileView: View {
         .navigationTitle(L10n.Auth.profileAndQuota)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(L10n.Common.cancel) {
+                    dismiss()
+                }
+                .disabled(isSaving)
+            }
+
             ToolbarItem(placement: .confirmationAction) {
                 if isSaving {
                     ProgressView()
