@@ -344,6 +344,8 @@ targets:
         SKIP_INSTALL: "YES"
         TARGETED_DEVICE_FAMILY: "1"
     dependencies:
+      - package: UFPCore
+      - package: UFPStorage
       - package: GRDB
 
   ZhiYuTests:

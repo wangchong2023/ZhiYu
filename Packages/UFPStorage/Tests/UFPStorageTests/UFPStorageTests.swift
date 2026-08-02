@@ -15,8 +15,10 @@ import XCTest
 final class UFPStorageTests: XCTestCase {
 
     func testStorageConstantsIntegrity() {
-        XCTAssertEqual(StorageConstants.databaseFileName, "ZhiYu.sqlite")
-        XCTAssertEqual(StorageConstants.Tables.pages, "knowledge_pages")
-        XCTAssertEqual(StorageConstants.Limits.maxBatchInsertSize, 500)
+        XCTAssertEqual(StorageConstants.walCheckpointThreshold, 1000)
+        XCTAssertEqual(StorageConstants.connectionTimeout, 30)
+        XCTAssertEqual(StorageConstants.defaultPageSize, 4096)
+        XCTAssertEqual(StorageConstants.defaultBatchInsertLimit, 500)
+        XCTAssertEqual(StorageConstants.defaultPageLimit, 20)
     }
 }

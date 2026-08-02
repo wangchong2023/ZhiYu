@@ -81,22 +81,22 @@ public enum PromptConstants {
         {
           "type": "object",
           "properties": {
-            "title": { "type": "string", "description": "测验标题" },
+            "title": { "type": "string", "description": "Quiz title" },
             "questions": {
               "type": "array",
-              "description": "测验题目列表",
+              "description": "Quiz questions list",
               "items": {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "integer", "description": "题目序号从 1 开始" },
-                  "question": { "type": "string", "description": "问题描述" },
+                  "id": { "type": "integer", "description": "Question ID starting from 1" },
+                  "question": { "type": "string", "description": "Question text" },
                   "options": {
                     "type": "array",
                     "items": { "type": "string" },
-                    "description": "选项列表 (至少 2 项)"
+                    "description": "Options list (at least 2 items)"
                   },
-                  "answer": { "type": "integer", "description": "正确选项索引 (从 0 开始)" },
-                  "explanation": { "type": "string", "description": "解析说明" }
+                  "answer": { "type": "integer", "description": "Correct option index starting from 0" },
+                  "explanation": { "type": "string", "description": "Explanation text" }
                 },
                 "required": ["question", "options", "answer", "explanation"]
               }

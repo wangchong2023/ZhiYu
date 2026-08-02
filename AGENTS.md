@@ -71,37 +71,27 @@
 
 智宇 (ZhiYu) — 面向 iOS/macOS/watchOS 的 AI 原生知识管理应用，基于 Karpathy 的 LLM Wiki 方法论构建。不仅是一个 Markdown 编辑器，更是一个 RAG 闭环系统：语义分块 → 混合 FTS5+向量存储 → AI 合成实验室（含深度引用）。660 个 Swift 文件，~90K 行代码。
 
-## 构建与开发
+## 构建与开发 (Makefile SSOT)
+
+建议优先使用根目录 `Makefile` 快捷入口（自动强载 `Config/.env.local` 环境变量并触发 `bootstrap.sh` 校验）：
 
 ```bash
-# 从 project.yml 生成 Xcode 项目（配置变更后必须执行）
-xcodegen generate
+# 自动强载环境变量 → 自动 xcodegen → 一键构建对应 Targets
+make ios                  # 构建 iOS App (ZhiYu scheme)
+make mac                  # 构建 macOS Catalyst App (ZhiYuMac scheme)
+make watch                # 构建 watchOS App (ZhiYuWatch scheme)
+make test                 # 运行主 App 单元测试
+make test-spm PKG=包名     # 运行指定 SPM 本地包极速单测 (例: make test-spm PKG=UFPStorage)
+make test-spm-all         # 运行全量 6 大 SPM 本地包极速单测 (UFPCore/Storage/DesignSystem/Domain/AICore/Features)
+make test-all             # 运行全量 SPM 单测 + 主 App 单元测试
+make audit                # 运行 CI 8 大架构与依赖审计门禁
+make gen                  # 仅运行 bootstrap 加载环境并重生成 ZhiYu.xcodeproj
+make lint                 # 运行 SwiftLint 严格检查
 
-# 构建 iOS
+# 直接使用 xcodebuild（需手动先 source Config/.env.local）
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'generic/platform=iOS'
-
-# 构建 macOS (Catalyst)
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuMac -destination 'platform=macOS'
-
-# 构建 watchOS
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'generic/platform=watchOS'
-
-# 列出可用模拟器
-xcodebuild -project ZhiYu.xcodeproj -scheme ZhiYu -showdestinations | grep simulator
-
-# 运行 SPM 本地包极速单测 (脱离模拟器，毫秒级通过)
-swift test --package-path Packages/UFPCore
-swift test --package-path Packages/ZhiYuDomain
-swift test --package-path Packages/ZhiYuAICore
-
-# 运行主 App 单元测试
-xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -enableCodeCoverage YES
-
-# 运行单个测试类
-xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests/AppStoreTests
-
-# 代码检查（需安装 SwiftLint）
-swiftlint --strict
 ```
 
 ## 架构：L0–L3 严格分层

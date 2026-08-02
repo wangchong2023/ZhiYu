@@ -106,7 +106,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     /// 生成测验题
     func generateQuiz(content: String) async throws -> String {
-        let schemaInstruction = "\n\n请务必严格按照以下 JSON Schema 格式返回结果，禁止添加 Markdown 代码块标记（如 ```json ）：\n" + PromptConstants.Schemas.quizJSONSchema
+        let schemaInstruction = "\n\nPlease output valid raw JSON adhering to the JSON Schema below (no markdown block tags):\n" + PromptConstants.Schemas.quizJSONSchema
         let prompt = PromptService.shared.quizPrompt + PromptService.shared.languageInstruction + schemaInstruction + "\n\n\n\(truncated(content))"
         let quizTitle = L10n.AI.Prompt.Quiz.defaultTitle
 
