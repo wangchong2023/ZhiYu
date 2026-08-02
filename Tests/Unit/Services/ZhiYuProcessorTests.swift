@@ -100,7 +100,7 @@ final class MarkdownProcessorTests: XCTestCase {
         let content = "- Item 1\n- Item 2\n- Item 3"
         let blocks = parser.parse(content)
         
-        guard case .bulletList(let items, _) = blocks.first else {
+        guard case .bulletList(let items, _, _) = blocks.first else {
             XCTFail("应当正常解析出无序列表"); return
         }
         XCTAssertEqual(items.count, 3)

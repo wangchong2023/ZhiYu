@@ -49,4 +49,42 @@ public struct SynthesisControlOptions: Sendable, Equatable {
         self.tone = tone
         self.customPrompt = customPrompt
     }
+
+    /// 转换为系统提示词调控指令
+    public var promptInstruction: String {
+        var instructions: [String] = []
+
+        switch depth {
+        case .concise:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.depthConcise(PromptConstants.SynthesisWordCount.conciseMinWords, PromptConstants.SynthesisWordCount.conciseMaxWords))
+        case .standard:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.depthStandard(PromptConstants.SynthesisWordCount.standardMinWords, PromptConstants.SynthesisWordCount.standardMaxWords))
+        case .detailed:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.depthDetailed(PromptConstants.SynthesisWordCount.detailedMinWords, PromptConstants.SynthesisWordCount.detailedMaxWords))
+        }
+
+        switch audience {
+        case .beginner:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.audienceBeginner)
+        case .professional:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.audienceProfessional)
+        case .executive:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.audienceExecutive)
+        }
+
+        switch tone {
+        case .academic:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.toneAcademic)
+        case .professional:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.toneProfessional)
+        case .casual:
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.toneCasual)
+        }
+
+        if !customPrompt.isEmpty {
+            instructions.append(L10n.AI.Synthesis.Control.Instruction.customPrompt(customPrompt))
+        }
+
+        return instructions.joined(separator: "\n")
+    }
 }

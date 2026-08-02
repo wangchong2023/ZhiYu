@@ -17,11 +17,11 @@ struct GraphLayoutProcessor {
 
     /// 布局配置参数
     struct Config {
-        var repulsion: CGFloat = BusinessConstants.Graph.Physics.repulsionForce
-        var attraction: CGFloat = BusinessConstants.Graph.Physics.attractionForce
-        var damping: CGFloat = BusinessConstants.Graph.Physics.damping
-        var centerGravity: CGFloat = BusinessConstants.Graph.Physics.centerGravity
-        var iterations: Int = BusinessConstants.Graph.TwoD.simulationIterations
+        var repulsion: CGFloat = GraphConstants.Physics.repulsionForce
+        var attraction: CGFloat = GraphConstants.Physics.attractionForce
+        var damping: CGFloat = GraphConstants.Physics.damping
+        var centerGravity: CGFloat = GraphConstants.Physics.centerGravity
+        var iterations: Int = GraphConstants.TwoD.simulationIterations
         var padding: CGFloat = DesignSystem.Graph.layoutPadding
 
         static let `default` = Config()
@@ -60,7 +60,7 @@ struct GraphLayoutProcessor {
     }
 
     private static func computeCanvasDimensions(canvasSize: CGSize, nodeCount: Int) -> CanvasDimensions {
-        let baseExpansion = 1.0 + CGFloat(max(0, CGFloat(nodeCount) - BusinessConstants.Graph.TwoD.baseExpansionOffset)) * BusinessConstants.Graph.TwoD.expansionFactor
+        let baseExpansion = 1.0 + CGFloat(max(0, CGFloat(nodeCount) - GraphConstants.TwoD.baseExpansionOffset)) * GraphConstants.TwoD.expansionFactor
         let width = canvasSize.width * baseExpansion
         let height = canvasSize.height * baseExpansion
         return CanvasDimensions(width: width, height: height, centerX: width / 2, centerY: height / 2, radius: min(width, height) * 0.4)
@@ -173,7 +173,7 @@ struct GraphLayoutProcessor {
 
     /// 计算节点间的网格斥力
     private static func computeRepulsionForces(nodes: [GraphNode], forces: inout [CGPoint], config: Config) {
-        let gridSize = BusinessConstants.Graph.Physics.gridSize
+        let gridSize = GraphConstants.Physics.gridSize
         var grid: [Int: [Int]] = [:]
 
         for i in nodes.indices {
@@ -197,10 +197,10 @@ struct GraphLayoutProcessor {
                         let dy = nodes[i].position.y - nodes[j].position.y
                         let distSq = dx * dx + dy * dy
 
-                        if distSq > BusinessConstants.Graph.Physics.maxRepulsionDistanceSq || distSq < BusinessConstants.Graph.Physics.minDistanceSq { continue }
+                        if distSq > GraphConstants.Physics.maxRepulsionDistanceSq || distSq < GraphConstants.Physics.minDistanceSq { continue }
 
                         let dist = sqrt(distSq)
-                        let collisionForce: CGFloat = dist < BusinessConstants.Graph.Physics.collisionDistance ? BusinessConstants.Graph.Physics.collisionForce : 0
+                        let collisionForce: CGFloat = dist < GraphConstants.Physics.collisionDistance ? GraphConstants.Physics.collisionForce : 0
                         let force = (config.repulsion / distSq) + collisionForce
 
                         let fx = (dx / dist) * force

@@ -116,7 +116,7 @@ final class MarkdownParserTests: XCTestCase {
         """
         let blocks = processor.parse(md)
         XCTAssertEqual(blocks.count, 1)
-        if case .bulletList(let items, _) = blocks[0] {
+        if case .bulletList(let items, _, _) = blocks[0] {
             XCTAssertEqual(items, ["Item A", "Item B", "Item C"])
         } else {
             XCTFail("应为 bulletList")
@@ -130,9 +130,8 @@ final class MarkdownParserTests: XCTestCase {
         """
         let blocks = processor.parse(md)
         XCTAssertEqual(blocks.count, 1)
-        if case .bulletList(let items, let indent) = blocks[0] {
+        if case .bulletList(let items, _, _) = blocks[0] {
             XCTAssertEqual(items, ["First", "Second"])
-            XCTAssertEqual(indent, -1)
         } else {
             XCTFail("应为 bulletList (ordered)")
         }

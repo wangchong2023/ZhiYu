@@ -38,7 +38,7 @@ final class MockChatLLMService: LLMChatServiceProtocol, @unchecked Sendable {
         }
     }
     
-    func generate(prompt: String, systemPrompt: String, maxTokens: Int = BusinessConstants.AI.maxOutputTokens) async throws -> String {
+    func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         generateCallCount += 1
         return stubGenerateResult
     }

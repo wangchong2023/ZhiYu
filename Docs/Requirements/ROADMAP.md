@@ -38,6 +38,7 @@ gantt
 * **主要特性**：
   * **Swift 6 Concurrency 完全适配**：开启 `SWIFT_STRICT_CONCURRENCY: complete` 严格并发编译选项，全线消除 Data Race 隐患。
   * **依赖倒置与 DIP**：实现轻量级 DI 容器 `ServiceContainer` 和 `@Inject` 包装器，全面阻断 UI Feature 跨层依赖基础设施具体类。
+  * **SPM 模块化架构演进 (v1.5 Milestone)**：采用 `UFP` (通用平台) + `ZhiYu` (业务大脑) 本地多 SPM Package (`UFPCore`, `UFPStorage`, `UFPDesignSystem`, `ZhiYuDomain`, `ZhiYuAICore`, `ZhiYuFeatures`) 架构，实现编译期硬隔离与毫秒级独立单元测试。
   * **多 Target 优化**：定制 `project.yml`。对 watchOS 客户端进行重型视图和后台数据流物理裁剪，保障轻量级载荷；支持 macOS Catalyst 桌面端多窗口运行与 Mac 键盘快捷键。
   * **底层安全防线**：集成 SQLCipher 对本地数据库进行全盘硬件级物理加密；引入 HMAC-SHA256 对敏感知识库文件进行防篡改指纹签名，并借助 `signatureRepository` 持久化，保护用户数据资产。
   * **多语言强类型本地化**：通过 `L10n` 和 `.xcstrings` 收口，静态审查工具一键拦截裸露字面量。

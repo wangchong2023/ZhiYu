@@ -21,16 +21,16 @@
 //
 ```
 
-## 层级标注规范
+## 层级与 SPM 物理包标注规范
 
-| 层级 | 标注 | 适用文件类型 | 典型路径 |
+| 层级 / SPM 包 | 标注 | 适用文件类型 | 典型物理路径 |
 |------|------|-------------|---------|
-| L0 | `[L0] 基础设施层 — 基座 (Base)` | 协议定义、DI 容器、基础常量/工具 | `Core/Base/` |
-| L0.5 | `[L0.5] 基础设施层 — 系统集成 (System)` | 日志、安全、触感、硬件封装 | `Core/System/` |
-| L1 | `[L1] 基础设施层 — 服务实现 (Infra)` | LLM 适配、数据库持久化、文档解析器 | `Infrastructure/` |
-| L1.5 | `[L1.5] 领域层 (Domain)` | **纯粹的**领域模型、业务协议、RAG 编排 | `Domain/` |
-| L2 | `[L2] 业务功能层 (Features)` | Service、Model、ViewModel、Coordinator | `Features/**/Service/`、`Features/**/Model/` |
-| L3 | `[L3] 表现层 (Presentation)` | View、ViewProvider、View Components | `Features/**/View/`、`App/`、`Shared/` |
+| **UFPCore** | `系统层级：[UFPCore]` | 通用底座、DI 容器、系统 Logger、基础协议 | `Packages/UFPCore/` |
+| **UFPStorage** | `系统层级：[UFPStorage]` | 通用 SQLite/GRDB 存储算子、DB 迁移脚本 | `Packages/UFPStorage/` |
+| **UFPDesignSystem** | `系统层级：[UFPDesignSystem]` | 通用 UI Token (Spacing, Colors) 与 Bundle.module 资源 | `Packages/UFPDesignSystem/` |
+| **ZhiYuDomain** | `系统层级：[ZhiYuDomain]` | 知识库领域大脑、`KnowledgePage` 模型、Memory 契约协议 | `Packages/ZhiYuDomain/` |
+| **ZhiYuAICore** | `系统层级：[ZhiYuAICore]` | Prompt 沙箱、ContextReranker 降噪重排、Native/Swarm 适配器 | `Packages/ZhiYuAICore/` |
+| **ZhiYuFeatures** | `系统层级：[ZhiYuFeaturesAI]` | 垂直业务功能界面 (Chat, Synthesis, Vault, Graph) | `Packages/ZhiYuFeatures/` |
 
 ### ⚠️ 关键区分规则
 

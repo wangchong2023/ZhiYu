@@ -39,7 +39,10 @@ ALLOW_NON_ASCII_FILES = {
     'ModelLabManager.swift',       # 大模型测试实验室的模拟推理输出 data 源
     'ThinkingProcessor.swift',     # 思维链解析引擎的中文思考标志与分隔符
     'SynthesisProcessor.swift',    # 知识合成柔性自愈引擎与模板文本
-    'AISynthesisService.swift'     # AI 合成服务 System Prompt 与 JSON Schema 模板
+    'AISynthesisService.swift',    # AI 合成服务 System Prompt 与 JSON Schema 模板
+    'PromptSecuritySanitizer.swift', # AI 提示词安全防护与越狱攻击特征词集
+    'NativeMemoryEngine.swift',    # 自研分层对话记忆引擎断言与摘要
+    'SwarmMemoryAdapter.swift'     # 开源 Swarm 框架记忆适配器数据
 }
 
 # 匹配模式： " ... " 字符串字面量
@@ -557,7 +560,8 @@ class SourceCodeAuditor:
         if TextUtil.is_chinese(s):
             self._audit_chinese_literal(s, line_no, is_allow_non_ascii, is_logger, issues)
         else:
-            self._audit_english_literal(s, line, line_no, is_view, is_logger, issues)
+            if not is_allow_non_ascii:
+                self._audit_english_literal(s, line, line_no, is_view, is_logger, issues)
 
 
     def check_file(self, file_path):

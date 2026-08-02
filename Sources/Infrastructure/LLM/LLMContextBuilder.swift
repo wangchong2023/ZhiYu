@@ -17,19 +17,22 @@ final class LLMContextBuilder: Sendable {
 
     // MARK: - Configuration Constants
     /// Max entities listed in the system prompt overview.
-    private static let maxEntityOverview = BusinessConstants.RAG.maxEntityOverview
+    private static let maxEntityOverview = PromptConstants.RAGPrompt.maxEntityOverview
     /// Max concepts listed in the system prompt overview.
-    private static let maxConceptOverview = BusinessConstants.RAG.maxConceptOverview
+    private static let maxConceptOverview = PromptConstants.RAGPrompt.maxConceptOverview
     /// Max sources listed in the system prompt overview.
-    private static let maxSourceOverview = BusinessConstants.RAG.maxSourceOverview
+    private static let maxSourceOverview = PromptConstants.RAGPrompt.maxSourceOverview
     /// Max recent pages shown in the system prompt overview.
-    private static let maxRecentOverview = BusinessConstants.RAG.maxRecentOverview
+    private static let maxRecentOverview = PromptConstants.RAGPrompt.maxRecentOverview
     /// Content preview length per page in system prompt.
-    private static let contentPreviewLength = BusinessConstants.RAG.contentPreviewLength
+    private static let contentPreviewLength = PromptConstants.RAGPrompt.contentPreviewLength
     /// Max pages included in the relevant context for a query.
-    private static let maxContextPages = BusinessConstants.RAG.maxContextPages
+    private static let maxContextPages = PromptConstants.RAGPrompt.maxContextPages
     /// Content preview length per page in query context.
-    private static let contextPreviewLength = BusinessConstants.RAG.contextPreviewLength
+    private static let contextPreviewLength = PromptConstants.RAGPrompt.contextPreviewLength
+
+    private let sanitizer = PromptSecuritySanitizer()
+    private let reranker = ContextReranker()
 
     // MARK: - System Prompt
     /// 构建SystemPrompt
@@ -90,19 +93,25 @@ final class LLMContextBuilder: Sendable {
         return prompt
     }
 
-    /// 使用多路召回 (Multi-Query) 和向量搜索获取高度相关的知识片段。
+    /// 使用多路召回与二阶段重排序 (Two-Stage Rerank) 获取高度相关的知识片段，并完成 XML 沙箱化隔离。
     /// - Returns: (格式化后的 Prompt 字符串, 提取出的信源数据对象列表)
     func buildRelevantContext(query: String) async -> (context: String, sources: [KnowledgeSource]) {
+        // 0. 越狱注入攻击扫描
+        try? sanitizer.scanJailbreakAttempt(in: query)
+
         let embeddingProvider = ServiceContainer.shared.resolve((any EmbeddingProvider).self)
 
         // 1. 执行多路召回
-        let searchResults = await embeddingProvider.multiQuerySearch(query: query, topK: AppConfig.AI.topKResults)
+        let rawResults = await embeddingProvider.multiQuerySearch(query: query, topK: AppConfig.AI.topKResults)
 
-        guard !searchResults.isEmpty else {
+        guard !rawResults.isEmpty else {
             return ("\(L10n.AI.LLM.Prompt.relevantPages)\n\(L10n.Common.Global.noData)\n", [])
         }
 
-        // 2. 智能压缩逻辑 (Compression)
+        // 2. 执行二阶段重排序 (Two-Stage Rerank)
+        let searchResults = reranker.rerank(query: query, candidates: rawResults, topK: PromptConstants.RAGPrompt.maxContextPages)
+
+        // 3. 智能压缩逻辑 (Compression)
         let maxContextLength = AppConfig.AI.maxContextLength
         var currentLength = 0
         var compressedResults: [(chunk: PageChunk, score: Float)] = []
@@ -121,22 +130,22 @@ final class LLMContextBuilder: Sendable {
             }
         }
 
-        // 3. 聚合分块上下文并提取 Source 模型
-        var context = "\(L10n.AI.LLM.Prompt.relevantPages)\n"
+        // 4. 聚合分块上下文并提取 Source 模型
+        var rawContext = "\(L10n.AI.LLM.Prompt.relevantPages)\n"
         var sources: [KnowledgeSource] = []
         let groupedResults = Dictionary(grouping: compressedResults) { $0.chunk.pageID }
 
         for (pageID, results) in groupedResults {
             let store = ServiceContainer.shared.resolve(KnowledgePageRepository.self)
             if let page = try? await store.fetch(id: pageID) {
-                context += "\n---\n## \(page.title) [\(L10n.AI.LLM.Prompt.typeLabel): \(page.pageType.displayName)]\n"
+                rawContext += "\n---\n## \(page.title) [\(L10n.AI.LLM.Prompt.typeLabel): \(page.pageType.displayName)]\n"
 
                 for (chunk, score) in results.sorted(by: { $0.score > $1.score }) {
                     let relevanceLabel = L10n.AI.Prompt.relevanceScore
                     let typeLabel = L10n.AI.Prompt.chunkType
-                    context += "\n> [\(relevanceLabel): \(String(format: "%.4f", score)) | \(typeLabel): \(chunk.chunkType)]\n"
-                    context += chunk.content
-                    context += "\n"
+                    rawContext += "\n> [\(relevanceLabel): \(String(format: "%.4f", score)) | \(typeLabel): \(chunk.chunkType)]\n"
+                    rawContext += chunk.content
+                    rawContext += "\n"
                     
                     // 构建 Source 模型
                     sources.append(KnowledgeSource(
@@ -150,7 +159,7 @@ final class LLMContextBuilder: Sendable {
             }
         }
 
-        return (context, sources)
+        return (sanitizer.sanitizeContext(rawContext), sources)
     }
 
     // MARK: - Ingest Prompt Builder

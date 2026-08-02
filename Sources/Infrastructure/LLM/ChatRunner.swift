@@ -55,7 +55,7 @@ final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
     // MARK: - LLMChatServiceProtocol 契约方法
     
     /// 通用单次一问一答文本推理生成接口
-    func generate(prompt: String, systemPrompt: String, maxTokens: Int = BusinessConstants.AI.maxOutputTokens) async throws -> String {
+    func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         // UI 自动化测试模式下的自愈：在测试环境下拦截并返回本地 Mock 生成数据以保证 100% 绿通，规避真实 API 可达性限制
         if ProcessInfo.processInfo.arguments.contains("--uitesting") {
             try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))

@@ -118,12 +118,12 @@ actor LinkService {
         let semanticScored = await embeddingProvider.search(query: query, topK: 50)
         let semanticResults = filterSemanticResults(semanticScored, query: query, pages: pages)
 
-        let k = BusinessConstants.RAG.rrfK
+        let k = SearchConstants.rrfK
         var scores: [UUID: Double] = [:]
         var diagMap: [UUID: (fts: Int, vec: Int)] = [:]
 
         // Step 3: 动态权重 — 短查询（如"3D"）关键词匹配更可靠
-        let keywordWeight = query.count < BusinessConstants.RAG.shortQueryThreshold ? 1.5 : 1.0
+        let keywordWeight = query.count < SearchConstants.shortQueryThreshold ? 1.5 : 1.0
         let semanticWeight = 1.0
 
         // Step 4: RRF 分数累加 — 关键词结果
@@ -175,13 +175,13 @@ actor LinkService {
         query: String,
         pages: [KnowledgePage]
     ) -> [KnowledgePage] {
-        let similarityThreshold: Float = query.count < BusinessConstants.RAG.shortQueryThreshold
-            ? BusinessConstants.RAG.semanticThresholdShort
-            : BusinessConstants.RAG.semanticThresholdLong
+        let similarityThreshold: Float = query.count < SearchConstants.shortQueryThreshold
+            ? SearchConstants.semanticThresholdShort
+            : SearchConstants.semanticThresholdLong
         return scored
             .filter { res in
-                if query.count < BusinessConstants.RAG.shortQueryThreshold {
-                    if res.score > BusinessConstants.RAG.semanticShortHighConfidence { return true }
+                if query.count < SearchConstants.shortQueryThreshold {
+                    if res.score > SearchConstants.semanticShortHighConfidence { return true }
                     if let page = pages.first(where: { $0.id == res.id }) {
                         return page.title.lowercased().contains(query.lowercased())
                     }

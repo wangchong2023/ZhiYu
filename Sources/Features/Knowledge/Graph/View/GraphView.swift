@@ -26,7 +26,7 @@ struct GraphContainerView: View {
     @StateObject private var tooltipManager = TooltipManager.shared
 
     /// 每个节点最多保留的重要连线数
-    private var maxEdgesPerNode: Int { BusinessConstants.Graph.maxEdgesPerNode }
+    private var maxEdgesPerNode: Int { GraphConstants.maxEdgesPerNode }
 
     /// 动态过滤后的边列表：每节点仅保留最重要 K 条连线，避免密集时视觉混乱
     private var currentFilteredEdges: [GraphEdge] {

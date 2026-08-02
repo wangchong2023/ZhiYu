@@ -197,6 +197,21 @@ def check_swift_line(line_content, line_no, file_path):
     return issues
 
 
+def _check_file_form_theme(file_path, content, warnings_list):
+    """检查 Swift 视图中使用的 Form 是否配置了 .scrollContentBackground(.hidden) 与 DesignSystem 主题染色"""
+    if "Form {" in content:
+        if ".scrollContentBackground(.hidden)" not in content and "scrollContentBackground" not in content:
+            warnings_list.append({
+                "line": 1,
+                "message": "检测到视图中使用原生 Form 但未配置 .scrollContentBackground(.hidden)，可能导致深色模式背景呈现退化灰色。建议配置 DesignSystem 沉浸式背景。"
+            })
+        if "Color.app" not in content and ".tint(" not in content and "Color.theme" not in content:
+            warnings_list.append({
+                "line": 1,
+                "message": "检测到视图中使用原生 Form 但未指定 DesignSystem 主题色 (.tint(Color.appAccent) 或 Color.appBackground)，可能导致系统默认蓝色/灰色退化。"
+            })
+
+
 def _audit_file_hig(file_path):
     """
     审计单个 Swift 文件并返回包含的 (errors, warnings) 计数。
@@ -205,11 +220,20 @@ def _audit_file_hig(file_path):
     warnings = 0
     try:
         with open(file_path, "r", encoding="utf-8") as f:
+            full_content = f.read()
+            f.seek(0)
             lines = f.readlines()
     except Exception as e:
         # 文件读取失败时，输出编译错误阻断
         print(f"{file_path}:1: error: [HIG Compliance] 无法读取文件进行静态审计: {str(e)}", file=sys.stderr)
         return 1, 0
+
+    file_warnings = []
+    _check_file_form_theme(file_path, full_content, file_warnings)
+    for fw in file_warnings:
+        log_msg = f"{file_path}:{fw['line']}: warning: [HIG Compliance] {fw['message']}"
+        print(log_msg)
+        warnings += 1
 
     for index, line in enumerate(lines, 1):
         line_issues = check_swift_line(line, index, file_path)

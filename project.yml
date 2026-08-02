@@ -8,6 +8,18 @@ packages:
     path: /Users/constantine/Documents/work/code/opensrc/swift/lottie-ios
   ZIPFoundation:
     path: /Users/constantine/Documents/work/code/opensrc/swift/ZIPFoundation
+  UFPCore:
+    path: Packages/UFPCore
+  UFPStorage:
+    path: Packages/UFPStorage
+  UFPDesignSystem:
+    path: Packages/UFPDesignSystem
+  ZhiYuDomain:
+    path: Packages/ZhiYuDomain
+  ZhiYuAICore:
+    path: Packages/ZhiYuAICore
+  ZhiYuFeatures:
+    path: Packages/ZhiYuFeatures
   SwiftMarkdown:
     url: https://github.com/apple/swift-markdown.git
     from: 0.3.0
@@ -120,6 +132,12 @@ targets:
         name: "[Gatekeeper] Heuristic View Duplication Check"
         basedOnDependencyAnalysis: false
     dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
       - package: GRDB
       - package: Lottie
       - package: ZIPFoundation

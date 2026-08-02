@@ -119,7 +119,7 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// - Parameter prompt: prompt
     /// - Parameter systemPrompt: systemPrompt
     /// - Returns: 字符串
-    func generate(prompt: String, systemPrompt: String, maxTokens: Int = BusinessConstants.AI.maxOutputTokens) async throws -> String {
+    func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         guard let runner = chatRunner else {
             throw LLMError.notConfigured
         }

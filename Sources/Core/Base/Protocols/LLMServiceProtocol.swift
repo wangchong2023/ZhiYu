@@ -164,6 +164,6 @@ protocol LLMServiceProtocol: ObservableObject, LLMChatServiceProtocol, LLMKnowle
 extension LLMChatServiceProtocol {
     /// generate() 的 maxTokens 默认值，所有调用方无需显式传参
     func generate(prompt: String, systemPrompt: String) async throws -> String {
-        try await generate(prompt: prompt, systemPrompt: systemPrompt, maxTokens: BusinessConstants.AI.maxOutputTokens)
+        try await generate(prompt: prompt, systemPrompt: systemPrompt, maxTokens: PromptConstants.TokenLimits.defaultMaxOutputTokens)
     }
 }

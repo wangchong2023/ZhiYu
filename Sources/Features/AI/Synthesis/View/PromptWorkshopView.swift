@@ -110,6 +110,7 @@ struct PromptWorkshopView: View {
             .appListRowBackground() // 适配全局毛玻璃背景
         }
         .scrollContentBackground(.hidden) // 隐藏 Form 默认的白色背景，实现高端毛玻璃穿透
+        .tint(Color.appAccent)
         .appNavigationBarTitleDisplayMode(.inline)
         .onDisappear {
             promptService.save()

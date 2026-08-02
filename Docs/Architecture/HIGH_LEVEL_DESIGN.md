@@ -6,37 +6,80 @@
 
 ---
 
-## 1. 物理与逻辑分层架构
+## 1. 物理与逻辑 SPM 模块化分层架构
 
-智宇采用严格的垂直功能切片与层级解耦模式，系统分层依赖自顶向下单向流转，禁止反向越级依赖。
+智宇采用基于 **Swift Package Manager (SPM)** 的本地多包物理隔离架构，系统分层依赖自顶向下单向流转，编译期物理卡绝反向越级依赖。
 
 ```mermaid
 graph TD
-    subgraph "L3: 应用调度层 (Sources/App)"
+    subgraph "L3: 应用调度层 (ZhiYu App)"
         ZApp[ZhiYuApp]
         Router[Router / Navigation]
         Env[AppEnvironment]
     end
 
-    subgraph "L2: 业务功能层 (Sources/Features)"
-        Feat_K[Knowledge 功能域]
-        Feat_AI[AI 功能域]
-        Feat_Ins[Insight 功能域]
-        Feat_Sys[System 功能域]
+    subgraph "L2: 业务功能切片包 (Packages/ZhiYuFeatures)"
+        Feat_AI[ZhiYuFeaturesAI]
+        Feat_K[ZhiYuFeaturesKnowledge]
+        Feat_Ins[ZhiYuFeaturesInsight]
     end
 
-    subgraph "L1.5: 领域中心层 (Sources/Domain)"
-        RAGOrch[RAGOrchestrator]
-        CtxBuild[LLMContextBuilder]
-        DomainModels[Domain Models]
+    subgraph "L1.5: 智宇业务领域大脑 (Packages/ZhiYuDomain)"
+        DomainModels[KnowledgePage / PageChunk / DTOs]
+        MemProto[MemoryEngineProtocol]
+        PromptConst[PromptConstants]
     end
 
-    subgraph "L1: 基础设施层 (Sources/Infrastructure)"
-        LLMSvc[LLMService]
-        SQLStore[SQLiteStore]
+    subgraph "L1: 智宇 AI 中台适配包 (Packages/ZhiYuAICore)"
+        Sanitizer[PromptSecuritySanitizer]
+        Reranker[ContextReranker]
+        NativeMem[NativeMemoryEngine]
+        SwarmMem[SwarmMemoryAdapter]
+    end
+
+    subgraph "L1: 通用存储引擎包 (Packages/UFPStorage)"
+        SQLiteEngine[SQLiteStore / GRDB 封装]
+        StorageConst[StorageConstants]
+    end
+
+    subgraph "Shared: 通用设计系统包 (Packages/UFPDesignSystem)"
+        DesignTokens[Spacing / Color / Typography Tokens]
+        ModuleBundle[Bundle.module 资源分发]
+    end
+
+    subgraph "L0: 通用底座包 (Packages/UFPCore)"
+        DI[ServiceContainer DI 容器]
+        Logger[Logger 日志]
+        AppConst[AppConstants]
+    end
+
+    ZApp --> Feat_AI
+    ZApp --> Feat_K
+    ZApp --> Feat_Ins
+
+    Feat_AI --> DomainModels
+    Feat_AI --> Sanitizer
+    Feat_AI --> DesignTokens
+
+    Feat_K --> DomainModels
+    Feat_K --> SQLiteEngine
+
+    Sanitizer --> DomainModels
+    Sanitizer --> SQLiteEngine
+    
+    DomainModels --> DI
+    SQLiteEngine --> DI
+    DesignTokens --> DI
+```
+
+        subgraph "记忆与 Agent 框架适配器集 (Memory Adapters)"
+            NatMem[NativeMemoryEngine]
+            SwarmAdapter[SwarmMemoryAdapter / Wax]
+        end
+
+        SQLStore[SQLiteStore / GRDB]
         EmbedMgr[EmbeddingManager]
         Chunker[TextChunkerProcessor]
-        Parsers[PDF / OCR Parsers]
     end
 
     subgraph "L0.5: 系统集成层 (Sources/Core/System)"

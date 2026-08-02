@@ -226,14 +226,13 @@ public final class SynthesisStore {
         }
         let taskID = TaskCenter.shared.addTask(type: .synthesis, name: type.title, target: L10n.Common.Sidebar.synthesis)
 
-        var customInstruction = ""
-        if !options.customPrompt.isEmpty {
-            customInstruction = "\(L10n.AI.Synthesis.Control.customPromptTitle): \(options.customPrompt)\n"
-        }
+        let controlInstruction = options.promptInstruction
 
-        // Prepend anti-hallucination + source citation + custom options instruction
+        // Prepend anti-hallucination + source citation + control options instruction
         let augmentedContent = """
-        \(customInstruction)\(L10n.AI.Synthesis.citationInstruction)
+        \(controlInstruction)
+
+        \(L10n.AI.Synthesis.citationInstruction)
 
         ---
         \(combinedContent)

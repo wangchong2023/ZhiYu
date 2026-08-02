@@ -37,7 +37,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
     ///   - prompt: 提示词
     ///   - systemPrompt: 系统设定
     /// - Returns: 生成纯文本结果
-    public func generate(prompt: String, systemPrompt: String, maxTokens: Int = BusinessConstants.AI.maxOutputTokens) async throws -> String {
+    public func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         // UI 自动化测试靶场下的智能自愈：直接返回本地 Mock 保证 100% 绿通
         if ProcessInfo.processInfo.arguments.contains("--uitesting") {
             try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))

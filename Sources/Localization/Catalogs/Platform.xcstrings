@@ -2795,6 +2795,40 @@
           }
         }
       }
+    },
+    "widget.weeklyHeatmap": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周度炼化热度图"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly Synthesis Heatmap"
+          }
+        }
+      }
+    },
+    "widget.quickCaptureTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "极速捕获与 AI 助手"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Capture & AI"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

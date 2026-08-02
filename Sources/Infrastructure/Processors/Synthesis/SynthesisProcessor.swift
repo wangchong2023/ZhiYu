@@ -384,18 +384,22 @@ enum SynthesisProcessor {
             "# \(rootName)",
             "",
             "## 知识背景与起源分析",
-            lines.prefix(2).joined(separator: "\n"),
+            lines.prefix(3).joined(separator: "\n\n"),
             ""
         ]
 
-        var lineIndex = 2
+        let linesPerSection = max(2, (lines.count - 3) / sectionTitles.count)
+        var currentOffset = 3
+
         for secTitle in sectionTitles {
             expansion.append(secTitle)
-            if lineIndex < lines.count {
-                expansion.append(lines[lineIndex])
-                lineIndex += 1
+            if currentOffset < lines.count {
+                let endIdx = min(currentOffset + linesPerSection, lines.count)
+                let sectionContent = lines[currentOffset..<endIdx].joined(separator: "\n\n")
+                expansion.append(sectionContent)
+                currentOffset = endIdx
             } else {
-                expansion.append("围绕该主题，在实际应用场景中可结合知识库上下文进行深入实践与验证。")
+                expansion.append("围绕该主题，在实际应用场景中可结合知识库上下文进行深入实践与验证。通过原子化笔记与双向链接网络，促成不同主题之间的非线性网状碰撞与长时记忆巩固。")
             }
             expansion.append("")
         }

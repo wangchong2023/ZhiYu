@@ -27,6 +27,22 @@
                                     ZhiYu-Backend 构建
 ```
 
+## 1.1 SPM 极速单测矩阵与本地包验证 (Fast Package Matrix)
+
+在 Xcode 全量构建前，CI 流水线首先并行触发各 SPM 本地包的毫秒级纯 Swift 单测：
+
+```bash
+# 1. 验证通用底座与存储包
+swift test --package-path Packages/UFPCore
+swift test --package-path Packages/UFPStorage
+swift test --package-path Packages/UFPDesignSystem
+
+# 2. 验证智宇业务大脑与 AI 中台包
+swift test --package-path Packages/ZhiYuDomain
+swift test --package-path Packages/ZhiYuAICore
+swift test --package-path Packages/ZhiYuFeatures
+```
+
 | 组件 | 位置 | 端口 | 职责 |
 |------|------|------|------|
 | Gitea | `bin-gitea-1` (Docker) | `3000` (Web), `2222` (SSH) | 代码托管 + Webhook |

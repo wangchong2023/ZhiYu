@@ -4,6 +4,19 @@
 
 ---
 
+## 0. SPM 本地 Package 单元测试矩阵 (Package Test Matrix)
+
+| 包/模块 (SPM Package) | 测试套件 (Test Suite) | 测试场景 | 命令行执行命令 | 优先级 |
+| :--- | :--- | :--- | :--- | :--- |
+| **UFPCore** | `UFPCoreTests` | `ServiceContainer` 并发线程安全、未注册断言与 `Logger` 格式 | `swift test --package-path Packages/UFPCore` | P0 |
+| **UFPStorage** | `UFPStorageTests` | `SQLiteStore` GRDB 封装逻辑与 `StorageConstants` 完整性 | `swift test --package-path Packages/UFPStorage` | P0 |
+| **UFPDesignSystem** | `UFPDesignSystemTests` | `Spacing` Token 矩阵与 `Bundle.module` 资源包装载 | `swift test --package-path Packages/UFPDesignSystem` | P1 |
+| **ZhiYuDomain** | `ZhiYuDomainTests` | `PromptConstants` 限额约束与 `MemoryEngineProtocol` 契约存根 | `swift test --package-path Packages/ZhiYuDomain` | P0 |
+| **ZhiYuAICore** | `ZhiYuAICoreTests` | XML 沙箱转义、越狱拦截、`ContextReranker` 降噪重排与热切换 | `swift test --package-path Packages/ZhiYuAICore` | P0 |
+| **ZhiYuFeatures** | `ZhiYuFeaturesTests` | AI / Knowledge / Insight 垂直业务模块入口与状态装载 | `swift test --package-path Packages/ZhiYuFeatures` | P1 |
+
+---
+
 ## 1. 核心存储与检索 (AppStore & Logic)
 
 | 用例 ID | 模块 | 测试场景 | 预期结果 | 优先级 |

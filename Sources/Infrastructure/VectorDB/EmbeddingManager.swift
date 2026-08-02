@@ -19,7 +19,7 @@ public actor EmbeddingManager: EmbeddingProvider {
     /// 自然语言嵌入模型
     private let embeddingModel: NLEmbedding?
     /// 当前使用的模型名称
-    private let modelName = BusinessConstants.AI.defaultEmbeddingModel
+    private let modelName = PromptConstants.InferenceDefaults.defaultEmbeddingModel
 
     /// 内存缓存：页面级向量
     private var vectorCache: [UUID: [Float]] = [:]
@@ -128,7 +128,7 @@ public actor EmbeddingManager: EmbeddingProvider {
         
         for (id, vector) in vectorCache {
             let score = EmbeddingManager.cosineSimilarity(queryVector, vector)
-            if score > BusinessConstants.RAG.semanticThresholdShort {
+            if score > SearchConstants.semanticThresholdShort {
                 results.append((id, score))
             }
         }

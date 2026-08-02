@@ -54,6 +54,8 @@ struct SynthesisControlSheet: View {
                     .pickerStyle(.segmented)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.appBackground)
             .navigationTitle(L10n.AI.Synthesis.Control.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -61,6 +63,7 @@ struct SynthesisControlSheet: View {
                     Button(L10n.Common.cancel) {
                         dismiss()
                     }
+                    .foregroundStyle(Color.appSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.AI.Synthesis.Control.startSynthesis) {
@@ -68,8 +71,10 @@ struct SynthesisControlSheet: View {
                         dismiss()
                     }
                     .fontWeight(.semibold)
+                    .foregroundStyle(Color.appAccent)
                 }
             }
         }
+        .tint(Color.appAccent)
     }
 }

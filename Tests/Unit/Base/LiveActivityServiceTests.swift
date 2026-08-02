@@ -9,6 +9,7 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class LiveActivityServiceTests: XCTestCase {
 
     func testContentStateCodableContract() throws {

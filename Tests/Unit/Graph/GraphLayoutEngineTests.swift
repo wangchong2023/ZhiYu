@@ -216,7 +216,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
 
     /// 验证每节点最多保留 maxEdgesPerNode 条连线
     func testEdgeDensityTruncation() {
-        let maxEdges = BusinessConstants.Graph.maxEdgesPerNode
+        let maxEdges = GraphConstants.maxEdgesPerNode
         // Hub 节点链接 10 个子节点
         var pages: [KnowledgePage] = []
         let links = (1...10).map { "[[Node\($0)]]" }.joined(separator: " ")

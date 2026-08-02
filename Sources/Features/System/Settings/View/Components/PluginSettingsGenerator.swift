@@ -43,6 +43,9 @@ struct PluginCustomSettingsView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.appBackground)
+        .tint(Color.appAccent)
         .navigationTitle(tab.name)
         .onAppear {
             loadInitialData()

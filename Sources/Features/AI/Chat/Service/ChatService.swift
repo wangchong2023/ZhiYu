@@ -62,7 +62,7 @@ final class ChatService: ChatServiceProtocol, @unchecked Sendable {
     /// - Returns: 返回值
     func streamChat(query: String, pages: [KnowledgePage]) -> AsyncThrowingStream<String, Error> {
         logger.debug(" [ChatService] : \(query)")
-        let history = Array(historyStore.recent(BusinessConstants.AI.maxChatHistorySize))
+        let history = Array(historyStore.recent(PromptConstants.TokenLimits.maxChatHistorySize))
         return llmService.chatStream(query: query, history: history, pages: pages)
     }
 }

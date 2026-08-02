@@ -50,8 +50,8 @@ public final class AIAnalyticsService: @unchecked Sendable {
         let governance = self.governance
         let evalService = self.evalService
         Task.detached(priority: .background) {
-            let promptTokens = (systemPrompt.count + query.count) / BusinessConstants.AI.charactersPerToken
-            let completionTokens = response.count / BusinessConstants.AI.charactersPerToken
+            let promptTokens = (systemPrompt.count + query.count) / PromptConstants.TokenLimits.charactersPerToken
+            let completionTokens = response.count / PromptConstants.TokenLimits.charactersPerToken
 
             _ = try? await governance.logCall(model: modelName, promptTokens: promptTokens, completionTokens: completionTokens, latencyMS: latency, status: AppConstants.Storage.defaultCallStatus)
             _ = try? await governance.logTokenUsage(model: modelName, promptTokens: promptTokens, completionTokens: completionTokens)

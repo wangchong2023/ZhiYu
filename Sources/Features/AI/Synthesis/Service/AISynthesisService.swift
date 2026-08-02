@@ -48,9 +48,9 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     }
     #endif
 
-    /// 输入截断保护：超长内容统一截断至 BusinessConstants.AI.maxSynthesisInputLength
+    /// 输入截断保护：超长内容统一截断至 PromptConstants.TokenLimits.maxSynthesisInputLength
     private func truncated(_ content: String) -> String {
-        String(content.prefix(BusinessConstants.AI.maxSynthesisInputLength))
+        String(content.prefix(PromptConstants.TokenLimits.maxSynthesisInputLength))
     }
 
     /// 摘要

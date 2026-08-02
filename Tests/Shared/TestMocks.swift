@@ -53,7 +53,7 @@ final class MockLLMService: LLMService, @unchecked Sendable {
         return AsyncThrowingStream { $0.finish() }
     }
     
-    override func generate(prompt: String, systemPrompt: String, maxTokens: Int = BusinessConstants.AI.maxOutputTokens) async throws -> String {
+    override func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         if let handler = generateHandler {
             return try await handler(prompt, systemPrompt)
         }
@@ -159,7 +159,7 @@ final class MockLLMChatService: LLMChatServiceProtocol, @unchecked Sendable {
     ///   - prompt: 提示词
     ///   - systemPrompt: 系统角色设定提示词
     /// - Returns: 生成的模拟文本段落
-    func generate(prompt: String, systemPrompt: String, maxTokens: Int = BusinessConstants.AI.maxOutputTokens) async throws -> String {
+    func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         return "Mock Generated Content"
     }
 }

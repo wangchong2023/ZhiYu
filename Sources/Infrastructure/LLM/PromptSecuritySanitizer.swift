@@ -1,0 +1,75 @@
+//
+//  PromptSecuritySanitizer.swift
+//  ZhiYu
+//
+//  Created by Antigravity on 2026/08/02.
+//  Copyright © 2026 WangChong. All rights reserved.
+//
+//  系统层级：[L1] 基础设施层
+//  核心职责：通用提示词安全与沙箱转换器 (Universal Prompt Security & Sandboxing)。
+//           防护 AI Chat、合成实验室 (Synthesis Lab) 与知识导入 (Ingestion) 免受 Prompt 越狱注入攻击。
+//
+
+import Foundation
+
+/// 提示词安全防护错误枚举
+public enum PromptSecurityError: LocalizedError, Equatable {
+    case jailbreakAttemptDetected(pattern: String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .jailbreakAttemptDetected(let pattern):
+            return L10n.AI.Prompt.jailbreakError(pattern)
+        }
+    }
+}
+
+/// 通用提示词安全沙箱与越狱注入拦截器
+public struct PromptSecuritySanitizer: Sendable {
+    
+    /// 常见的越狱注入攻击特征词集
+    private static let jailbreakPatterns: [String] = [
+        "ignore previous instructions",
+        "ignore all previous instructions",
+        "ignore above instructions",
+        "system override",
+        "jailbreak",
+        "dan mode",
+        "developer mode",
+        "forget all rules",
+        "you are now unfiltered"
+    ]
+
+    public init() {}
+
+    /// 扫描输入文本中是否存在提示词注入越狱攻击
+    /// - Parameter text: 待校验的原始文本
+    /// - Throws: 发现注入模式时抛出 PromptSecurityError.jailbreakAttemptDetected
+    public func scanJailbreakAttempt(in text: String) throws {
+        let lowered = text.lowercased()
+        for pattern in Self.jailbreakPatterns where lowered.contains(pattern) {
+            Logger.shared.warning("[PromptSecurity] 拦截越狱攻击特征: \(pattern)")
+            throw PromptSecurityError.jailbreakAttemptDetected(pattern: pattern)
+        }
+    }
+
+    /// 使用 XML 标签对 RAG 召回的知识库上下文进行沙箱包装，隔离外部非信任内容
+    /// - Parameter context: 原始召回上下文
+    /// - Returns: 经过 XML 沙箱包装后的上下文字符串
+    public func sanitizeContext(_ context: String) -> String {
+        let escaped = context
+            .replacingOccurrences(of: "</context>", with: "[/context]")
+            .replacingOccurrences(of: "<context>", with: "[context]")
+        return "<context>\n\(escaped)\n</context>"
+    }
+
+    /// 使用 XML 标签对用户输入的 Query 进行沙箱包装，防止其伪造 System Prompt
+    /// - Parameter query: 原始用户输入
+    /// - Returns: 经过 XML 沙箱包装后的用户 Query
+    public func sanitizeUserQuery(_ query: String) -> String {
+        let escaped = query
+            .replacingOccurrences(of: "</user_query>", with: "[/user_query]")
+            .replacingOccurrences(of: "<user_query>", with: "[user_query]")
+        return "<user_query>\n\(escaped)\n</user_query>"
+    }
+}

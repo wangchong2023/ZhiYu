@@ -202,7 +202,13 @@ struct ChatViewContent: View {
                 Task {
                     await coordinator.regenerateLastMessage(pages: store.pages)
                 }
-            } : nil
+            } : nil,
+            predictedQuestions: isLastAssistant ? coordinator.predictedQuestions : [],
+            onSelectQuestion: { question in
+                Task {
+                    await coordinator.sendMessage(query: question, pages: store.pages)
+                }
+            }
         )
         .id(message.id)
         .overlay {

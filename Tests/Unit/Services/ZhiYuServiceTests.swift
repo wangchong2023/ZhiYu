@@ -344,7 +344,7 @@ final class MarkdownProcessorEdgeCaseTests: XCTestCase {
         let blocks = parser.parse(content)
 
         // Ordered lists are parsed into bulletList blocks (no separate orderedList type yet)
-        guard case .bulletList(let items, _) = blocks.first else {
+        guard case .bulletList(let items, _, _) = blocks.first else {
             XCTFail("Expected bulletList block for ordered list"); return
         }
         XCTAssertEqual(items.count, 3)
@@ -357,7 +357,7 @@ final class MarkdownProcessorEdgeCaseTests: XCTestCase {
         let content = "- Item 1\n  - Nested\n  - Also nested\n- Item 2"
         let blocks = parser.parse(content)
 
-        guard case .bulletList(let items, _) = blocks.first else {
+        guard case .bulletList(let items, _, _) = blocks.first else {
             XCTFail("Expected bullet list"); return
         }
         XCTAssertEqual(items.count, 2)

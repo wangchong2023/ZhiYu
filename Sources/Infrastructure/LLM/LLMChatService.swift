@@ -28,7 +28,7 @@ final class LLMChatService: Sendable {
     /// 构建标准对话消息数组
     private func buildChatMessages(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [[String: Any]] {
         // 注入回复篇幅控制指令，引导模型在可配区间内作答
-        let lengthHint = "\nKeep response within \(BusinessConstants.AI.maxOutputTokens) characters."
+        let lengthHint = "\nKeep response within \(PromptConstants.TokenLimits.defaultMaxOutputTokens) characters."
         let fullSystemPrompt = systemPrompt + PromptService.shared.languageInstruction + lengthHint
         var messages: [[String: Any]] = [["role": "system", "content": fullSystemPrompt]]
         
@@ -48,7 +48,7 @@ final class LLMChatService: Sendable {
             "model": model,
             "messages": buildChatMessages(systemPrompt: systemPrompt, query: query, history: history),
             "temperature": AppConfig.AI.defaultTemperature,
-            "max_tokens": BusinessConstants.AI.maxOutputTokens
+            "max_tokens": PromptConstants.TokenLimits.defaultMaxOutputTokens
         ]
     }
 

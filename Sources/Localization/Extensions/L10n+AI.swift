@@ -232,6 +232,9 @@ extension L10n {
         }
 
         public enum Prompt {
+            public static func jailbreakError(_ pattern: String) -> String {
+                AI.trf("prompt.jailbreakError", pattern)
+            }
             public static var relevanceScore: String { AI.tr("llm.prompt.relevanceScore") }
             public static var chunkType: String { AI.tr("llm.prompt.chunkType") }
             public static var fixSuggestion: String { AI.tr("prompt.fixSuggestion") }
@@ -296,6 +299,9 @@ extension L10n {
             public static func rerankUserPrompt(query: String, context: String) -> String {
                 AI.trf("prompt.rerankUserPrompt", query, context)
             }
+
+            /// 延伸探讨推荐前缀标题
+            public static var followUpHeader: String { AI.tr("prompt.followUpHeader") }
 
             /// 假设性回答 (HyDE) 系统提示词
             public static var hydeSystem: String { AI.tr("prompt.hydeSystem") }
@@ -451,6 +457,18 @@ extension L10n {
                     public static var report: String { AI.tr("synthesis.control.placeholder.report") }
                     public static var infographic: String { AI.tr("synthesis.control.placeholder.infographic") }
                     public static var expansion: String { AI.tr("synthesis.control.placeholder.expansion") }
+                }
+                public enum Instruction {
+                    public static func depthConcise(_ minWords: Int, _ maxWords: Int) -> String { AI.trf("synthesis.control.instruction.depthConcise_%d_%d", minWords, maxWords) }
+                    public static func depthStandard(_ minWords: Int, _ maxWords: Int) -> String { AI.trf("synthesis.control.instruction.depthStandard_%d_%d", minWords, maxWords) }
+                    public static func depthDetailed(_ minWords: Int, _ maxWords: Int) -> String { AI.trf("synthesis.control.instruction.depthDetailed_%d_%d", minWords, maxWords) }
+                    public static var audienceBeginner: String { AI.tr("synthesis.control.instruction.audienceBeginner") }
+                    public static var audienceProfessional: String { AI.tr("synthesis.control.instruction.audienceProfessional") }
+                    public static var audienceExecutive: String { AI.tr("synthesis.control.instruction.audienceExecutive") }
+                    public static var toneAcademic: String { AI.tr("synthesis.control.instruction.toneAcademic") }
+                    public static var toneProfessional: String { AI.tr("synthesis.control.instruction.toneProfessional") }
+                    public static var toneCasual: String { AI.tr("synthesis.control.instruction.toneCasual") }
+                    public static func customPrompt(_ prompt: String) -> String { AI.trf("synthesis.control.instruction.customPrompt_%@", prompt) }
                 }
             }
             

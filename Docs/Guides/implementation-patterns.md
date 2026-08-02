@@ -13,10 +13,26 @@
 ## 架构解耦模式
 
 ### 1. 模块化 DI (Modular Dependency Injection)
-避免在 `ZhiYuApp.init()` 中平铺数百行注册逻辑。使用 `ModuleRegistrar`：
-- 每个层级（Core, Storage, Domain）定义自己的 `Registrar`。
-- `ZhiYuApp` 仅负责按顺序调用 `register(in:)`。
-- **优点**：启动代码整洁，支持在测试环境中一键替换整组 Mock。
+### 1.1 SPM 本地包模块化与静态库链接范式 (Local SPM Packages)
+为了在编译期硬阻断反向越级依赖并防止 iOS App 启动 (t1) 耗时恶化，本地包使用 `.static` 链接并在 `Package.swift` 中统一配置多平台支持：
+
+```swift
+let package = Package(
+    name: "UFPCore",
+    platforms: [.iOS(.v17), .macOS(.v14), .watchOS(.v10)],
+    products: [
+        .library(name: "UFPCore", type: .static, targets: ["UFPCore"]),
+        .library(name: "UFPCoreTestMocks", type: .static, targets: ["UFPCoreTestMocks"])
+    ],
+    targets: [
+        .target(name: "UFPCore"),
+        .target(name: "UFPCoreTestMocks", dependencies: ["UFPCore"]),
+        .testTarget(name: "UFPCoreTests", dependencies: ["UFPCore", "UFPCoreTestMocks"])
+    ]
+)
+```
+
+在测试环境中，单测通过 `swift test --package-path Packages/UFPCore` 秒级触发，无模拟器装载开销。
 
 ### 2. 能力协议 (Capability Protocols)
 当 L2 服务需要访问 L1 Store 的特定高级功能（如向量索引）时，不要使用类型强转（`as? SQLiteStore`）。
@@ -108,19 +124,36 @@ Chat 用户输入                    max_tokens = 1000               API 硬限�
 合成功能 content                 Prompt 注入                      Prompt 软引导
   .truncated(500)       ──→      "控制在1000字以内"        ──→    提升质量
 
-所有 generate() 调用             BusinessConstants.AI             客户端兜底
+所有 generate() 调用             PromptConstants.TokenLimits     客户端兜底
   自动携带 maxTokens 默认值       统一配置入口                     .prefix()
 ```
 
-### 统一常量 (`BusinessConstants.AI`)
+### 统一常量 (`PromptConstants.TokenLimits`)
 
 | 常量 | 值 | 作用域 | 说明 |
 |------|----|--------|------|
-| `maxUserInputLength` | 1000 | Chat 用户输入 | ChatCoordinator 发送前截断 |
-| `maxSynthesisInputLength` | 500 | 合成/后台 prompt | AISynthesisService.truncated() |
-| `maxOutputTokens` | 1000 | 所有 LLM 调用 | ChatRunner.generate() 的 max_tokens 参数 |
+| `maxUserInputLength` | 4000 | Chat 用户输入 | ChatCoordinator 发送前截断 |
+| `maxSynthesisInputLength` | 8000 | 合成/后台 prompt | AISynthesisService 截断防护 |
+| `defaultMaxOutputTokens` | 3072 | 所有 LLM 调用 | LLMService.generate() 的 max_tokens 参数 |
 
-> 所有限制在 `Sources/Domain/Models/BusinessConstants.swift` 的 `BusinessConstants.AI` 中一处调整即可全局生效。
+> 所有限制归位至 `Sources/Domain/Models/PromptConstants.swift` 的 `PromptConstants.TokenLimits` 中统一治理。
+
+### 5. 提示词安全沙箱模式 (`PromptSecuritySanitizer`)
+为防御恶意的外部网页/Markdown 文本引发的 Prompt 越狱注入攻击：
+- 使用 `<context>` 标签显式包裹 RAG 召回的知识库文本。
+- 使用 `<user_query>` 标签显式包裹用户输入的 Prompt，隔离伪造的 System Prompt。
+- 集成特征词检测器 (`scanJailbreakAttempt`)，拦截注入模式。
+
+### 6. RAG 二次重排序模式 (`ContextReranker`)
+在多路召回（Vector + FTS5）之后，使用 `ContextReranker` 执行二阶段重排序：
+- 按关键词交叉覆盖密度 (Cross-Matching Density) + 向量分值二次计分。
+- 按 0.35 置信度极小门限剔除噪点，精选 Top-5 高匹配度切片，降低 Context 幻觉。
+
+### 7. 开源适配器与契约隔离模式 (`MemoryEngineProtocol` & `SwarmMemoryAdapter`)
+为了方便未来将 L1.5 领域层的记忆引擎无缝替换为开源实现（如 Swarm / Wax）：
+- **L1.5 领域契约**：定义纯粹的 `MemoryEngineProtocol`。
+- **L1 适配器**：实现自研的 `NativeMemoryEngine` 与开源 `SwarmMemoryAdapter`。
+- **L3 / L2 解耦**：表现层与 Store 仅依赖 `MemoryEngineProtocol` 接口，可以在 DI 注册中心 (`ServiceContainer`) 中零修改热切换底层引擎。
 
 ### 流式 Chat 特殊处理
 

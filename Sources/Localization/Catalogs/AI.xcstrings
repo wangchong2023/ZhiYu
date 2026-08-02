@@ -1,6 +1,40 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "prompt.jailbreakError": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detected potential prompt jailbreak injection attack: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检测到潜在的提示词越狱注入攻击: %@"
+          }
+        }
+      }
+    },
+    "prompt.followUpHeader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you'd like to explore this topic further, recommended next steps include:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果你对当前话题比较深入，接下来比较值得了解的是："
+          }
+        }
+      }
+    },
     "ai.status.analyzing": {
       "extractionState": "manual",
       "localizations": {
@@ -26387,6 +26421,176 @@
           "stringUnit": {
             "state": "translated",
             "value": "You are a senior research assistant. Analyze the knowledge repository summaries and propose deep, insightful questions."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.audienceBeginner": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【目标受众】基础入门，请使用通俗易懂的通俗化表达，适当补充背景说明。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Target Audience] Beginner, use clear and plain explanations with necessary background context."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.audienceProfessional": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【目标受众】领域专家，请保持专业深度，使用准确的领域术语与严密逻辑。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Target Audience] Domain expert, maintain professional depth with precise terminology and rigorous logic."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.audienceExecutive": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【目标受众】管理汇报，重点突出核心业务结论、战略价值与关键决策建议。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Target Audience] Executive summary, highlight core business conclusions, strategic values, and decision recommendations."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.toneAcademic": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【语气风格】学术严谨，论证严密，规范条理。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Tone & Style] Academic & rigorous, logically structured."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.toneProfessional": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【语气风格】干练职场，简洁高效，重点突出。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Tone & Style] Professional & concise, clear focus."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.toneCasual": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【语气风格】生动风趣，轻松易读，比喻恰当。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Tone & Style] Engaging & vivid, easy to read."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.customPrompt_%@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【自定义指令】%@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Custom Instruction] %@"
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.depthConcise_%d_%d": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【篇幅要求】精简提炼（约 %1$d-%2$d 字），结构紧凑，直击要点。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Length Requirement] Concise summary (approx. %1$d-%2$d words), compact structure, straight to key points."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.depthStandard_%d_%d": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【篇幅要求】标准深度（约 %1$d-%2$d 字），论述充分，结构完整。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Length Requirement] Standard depth (approx. %1$d-%2$d words), comprehensive analysis, complete structure."
+          }
+        }
+      }
+    },
+    "synthesis.control.instruction.depthDetailed_%d_%d": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "【篇幅要求】详尽长文与深度扩写（约 %1$d-%2$d 字），请展开多维度论述，包含概念背景、理论机制、结构解构、实践落地与前沿延伸，内容务必丰富饱满。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[Length Requirement] Detailed long-form expansion (approx. %1$d-%2$d words), expand multi-dimensional analysis including background, theoretical mechanism, key components, practical applications, and future trends."
           }
         }
       }

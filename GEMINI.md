@@ -29,26 +29,31 @@ xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuMac -destination 'platfor
 # 构建 watchOS
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO > build/watch_build.log 2>&1
 
-# 运行单元测试
+# 运行 SPM 本地包极速单测 (脱离模拟器，毫秒级通过)
+swift test --package-path Packages/UFPCore
+swift test --package-path Packages/ZhiYuDomain
+swift test --package-path Packages/ZhiYuAICore
+
+# 运行主 App 单元测试
 xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' > build/test_results.log 2>&1
 ```
 
-## 架构规范 (垂直化功能架构)
+## 架构规范 (SPM 本地多 Package 物理隔离)
 
-项目遵循垂直化功能架构 (Vertical Slices)，将代码按职责深度分层，并在业务逻辑层执行垂直切片，以最大化模块内聚并减少跨层耦合。
+项目遵循基于 SPM 本地多 Package 的垂直化切片架构，物理隔离 `import` 依赖。
 
-| 层级 | 名称 | 物理路径 | 核心职责 |
-| :--- | :--- | :--- | :--- |
-| **L3** | 应用层 (App) | `Sources/App/` | 全局入口、环境配置、路由中心 |
-| **L2** | 业务功能层 (Features) | `Sources/Features/` | 业务域分组的垂直切片，包含 UI 及本地状态 |
-| **L1.5** | 领域层 (Domain) | `Sources/Domain/` | **核心业务大脑**：业务规则、RAG 编排、跨模块契约 |
-| **L1** | 基础设施层 (Infra) | `Sources/Infrastructure/` | 技术实现：LLM 适配、数据库持久化、文档解析 |
-| **L0.5** | 系统集成层 (System) | `Sources/Core/System/` | 系统能力封装：日志、触感、安全、硬件集成 |
-| **L0** | 底层基座层 (Base) | `Sources/Core/Base/` | 内核：DI 容器、全局协议定义、基础常量与工具 |
-| **Shared** | 共享标准层 | `Sources/Shared/` | 视觉标准：设计系统、通用 UI 原子组件 |
+| 层级 | 名称 | SPM 物理包 | 物理路径 | 核心职责 |
+| :--- | :--- | :--- | :--- | :--- |
+| **L3** | 应用层 (App) | `ZhiYu` App Target | `Sources/App/` | 全局入口、环境配置、路由中心 |
+| **L2** | 业务功能层 (Features) | `ZhiYuFeatures` | `Packages/ZhiYuFeatures/` | 业务切片 (AI/Knowledge/Insight) |
+| **L1.5** | 领域层 (Domain) | `ZhiYuDomain` | `Packages/ZhiYuDomain/` | **核心业务大脑**：业务规则、RAG 契约 |
+| **L1** | 基础设施层 (Infra) | `ZhiYuAICore` / `UFPStorage` | `Packages/ZhiYuAICore/`, `Packages/UFPStorage/` | AI 适配器与物理存储算子 |
+| **L0** | 底层基座层 (Base) | `UFPCore` | `Packages/UFPCore/` | 内核：DI 容器、Logger、全局协议 |
+| **Shared** | 共享标准层 | `UFPDesignSystem` | `Packages/UFPDesignSystem/` | 视觉标准：Design Token、`Bundle.module` |
 
 ## 目录结构 (物理归位)
 
+- `Packages/`: 本地 SPM 物理隔离包（`UFPCore`, `UFPStorage`, `UFPDesignSystem`, `ZhiYuDomain`, `ZhiYuAICore`, `ZhiYuFeatures`）。
 - `Sources/App`: 应用启动逻辑与全局路由调度。
 - `Sources/Core/Base`: 极简内核，无业务逻辑，无系统依赖。
 - `Sources/Core/System`: 封装 Apple 系统框架能力。

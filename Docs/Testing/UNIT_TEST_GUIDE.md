@@ -12,18 +12,26 @@
 - 异步测试使用 `async throws` 方法签名 + Swift 并发，禁止使用 `expectation(description:)` 旧范式。
 
 ### 1.2 Swift Testing（@Test 宏，推荐）
-适用于 Swift 6 并发敏感的新模块（Domain 层、Infrastructure 层）：
-```swift
-import Testing
+---
 
-@Suite("RAG 编排器测试")
-struct RAGOrchestratorTests {
-    @Test("混合检索应优先返回向量相似度最高的结果")
-    func hybridSearchPrioritizesVector() async throws {
-        // 测试体
-    }
-}
+## 1.3 SPM 本地 Package 极速单测 (Swift Package Testing)
+
+项目升级为本地 SPM 模块化后，每个 Package (`UFPCore`, `UFPStorage`, `UFPDesignSystem`, `ZhiYuDomain`, `ZhiYuAICore`, `ZhiYuFeatures`) 均支持独立的秒级命令行测试：
+
+```bash
+# 运行底层通用 Package 测试 (无需 iOS 模拟器装载)
+swift test --package-path Packages/UFPCore
+swift test --package-path Packages/UFPStorage
+swift test --package-path Packages/UFPDesignSystem
+
+# 运行智宇业务领域与 AI 中台 Package 测试
+swift test --package-path Packages/ZhiYuDomain
+swift test --package-path Packages/ZhiYuAICore
+swift test --package-path Packages/ZhiYuFeatures
 ```
+
+### TestMocks 共享依赖模式
+各 Package 暴露独立的 `*TestMocks` Library Target（如 `UFPCoreTestMocks`、`ZhiYuDomainTestMocks`），供上层 SPM 测试套件无缝导入使用，生产产物自动拦截测试代码打包。
 
 ---
 

@@ -133,6 +133,7 @@ struct FeedbackView: View {
             .appListRowBackground()
         }
         .scrollContentBackground(.hidden)
+        .tint(Color.appAccent)
     }
 
     // MARK: - 历史列表

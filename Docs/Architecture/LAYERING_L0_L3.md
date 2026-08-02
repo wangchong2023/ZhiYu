@@ -8,15 +8,14 @@
 
 项目遵循垂直化功能架构，将代码物理划分为以下层级：
 
-| 层级 | 名称 | 物理路径 | 核心职责 | 依赖限制说明 |
-| :--- | :--- | :--- | :--- | :--- |
-| **L3** | 应用层 (App) | `Sources/App/` | 全局入口、环境配置、路由中心 | 可依赖所有下层组件 |
-| **L2** | 业务功能层 (Features) | `Sources/Features/` | 业务域分组的垂直切片，包含 UI 及本地状态 | 仅可依赖 L1.5 及以下，严禁同层级循环依赖 |
-| **L1.5** | 领域层 (Domain) | `Sources/Domain/` | **核心业务大脑**：业务规则、RAG 编排、跨模块契约 | **平台无关**！严禁导入 UI 框架或具体基础设施实现 |
-| **L1** | 基础设施层 (Infra) | `Sources/Infrastructure/` | 技术实现：LLM 适配、数据库持久化、文档解析 | 严禁依赖 L2/L3，通过协议向上注入服务 |
-| **L0.5** | 系统集成层 (System) | `Sources/Core/System/` | 系统能力封装：日志、触感、安全、硬件集成 | 严禁依赖 L1 及以上任何业务层组件 |
-| **L0** | 底层基座层 (Base) | `Sources/Core/Base/` | 内核：DI 容器、全局协议定义、基础常量与工具 | 极简内核，无业务逻辑，绝对零外部/上层依赖 |
-| **Shared** | 共享标准层 | `Sources/Shared/` | 视觉标准：设计系统、通用 UI 原子组件 | 仅供 UI 视图引用，严禁包含任何业务逻辑 |
+| 层级 | 名称 | SPM 物理包 | 物理路径 | 核心职责 | 依赖限制说明 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **L3** | 应用层 (App) | `ZhiYu` App Entry | `Sources/App/` | 全局入口、环境配置、路由中心 | 可依赖所有 SPM 模块 |
+| **L2** | 业务功能层 (Features) | `ZhiYuFeatures` | `Packages/ZhiYuFeatures/` | 业务域分组切片 (AI/Knowledge/Insight) | 依赖 `ZhiYuDomain`, `ZhiYuAICore`, `UFPDesignSystem`, `UFPCore` |
+| **L1.5** | 领域层 (Domain) | `ZhiYuDomain` | `Packages/ZhiYuDomain/` | **核心业务大脑**：业务规则、RAG 契约 | 仅依赖 `UFPCore`！**绝对平台无关**！ |
+| **L1** | 基础设施层 (Infra) | `ZhiYuAICore` / `UFPStorage` | `Packages/ZhiYuAICore/`, `Packages/UFPStorage/` | AI 适配、Rerank 降噪与 GRDB 物理存储 | 严禁反向依赖 L2/L3 |
+| **L0.5/L0** | 底层基座层 (Base) | `UFPCore` | `Packages/UFPCore/` | 内核：DI 容器、Logger、全局协议定义 | 极简内核，无业务逻辑，绝对零外部/上层依赖 |
+| **Shared** | 共享标准层 | `UFPDesignSystem` | `Packages/UFPDesignSystem/` | 视觉标准：Design Token、Bundle.module | 仅供 UI 视图引用，严禁包含业务逻辑 |
 
 ---
 

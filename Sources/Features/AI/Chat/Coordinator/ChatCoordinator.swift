@@ -75,8 +75,8 @@ final class ChatCoordinator {
         let rawText = (query ?? inputText).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !rawText.isEmpty else { return }
 
-        // 用户输入长度保护：截断至 BusinessConstants.AI.maxUserInputLength
-        let text = String(rawText.prefix(BusinessConstants.AI.maxUserInputLength))
+        // 用户输入长度保护：截断至 PromptConstants.TokenLimits.maxUserInputLength
+        let text = String(rawText.prefix(PromptConstants.TokenLimits.maxUserInputLength))
         
         if isProcessing {
             cancelCurrentRequest()

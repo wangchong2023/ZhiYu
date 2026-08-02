@@ -25,6 +25,8 @@ struct ChatBubbleView: View {
     var isSelectionMode: Bool = false
     var isSelected: Bool = false
     var onRegenerate: (() -> Void)?
+    var predictedQuestions: [String] = []
+    var onSelectQuestion: ((String) -> Void)?
     
     var body: some View {
         HStack(spacing: Spacing.medium) { // 12
@@ -125,6 +127,15 @@ struct ChatBubbleView: View {
                 referencesPanel
                     .frame(maxWidth: AppScreen.bubbleMaxWidth, alignment: .leading)
                     .padding(.top, DesignSystem.tiny)
+            }
+            
+            // 延伸探讨与追问推荐卡片 (渲染与 GPT 体验一致的嵌套卡片)
+            if !predictedQuestions.isEmpty {
+                SuggestedFollowUpCardView(questions: predictedQuestions) { question in
+                    onSelectQuestion?(question)
+                }
+                .frame(maxWidth: bubbleMaxWidth, alignment: .leading)
+                .padding(.top, DesignSystem.tiny)
             }
             
             // 操作按钮栏：点赞、贬低、复制、重新生成
@@ -454,5 +465,72 @@ struct PulsingDot: ViewModifier {
                     isAnimating = true
                 }
             }
+    }
+}
+
+// MARK: - Suggested Follow-up Card View
+/// 延伸探讨与追问推荐卡片 (匹配高端 GPT/Claude 问答下方的卡片样式)
+struct SuggestedFollowUpCardView: View {
+    let questions: [String]
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.small) {
+            // Header
+            HStack(spacing: DesignSystem.tiny) {
+                Image(systemName: "sparkles")
+                    .font(.caption)
+                    .foregroundStyle(.appAccent)
+                Text(L10n.AI.Prompt.followUpHeader)
+                    .font(.system(size: DesignSystem.captionFontSize, weight: .semibold))
+                    .foregroundStyle(.appText)
+            }
+
+            // Numbered List Items
+            VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+                ForEach(Array(questions.enumerated()), id: \.offset) { index, question in
+                    Button(action: {
+                        HapticFeedback.shared.trigger(.selection)
+                        onSelect(question)
+                    }) {
+                        HStack(alignment: .top, spacing: DesignSystem.small) {
+                            Text("\(index + 1).")
+                                .font(.system(size: DesignSystem.bodyFontSize, weight: .bold))
+                                .foregroundStyle(.appAccent)
+
+                            Text(question)
+                                .font(.system(size: DesignSystem.bodyFontSize, weight: .medium))
+                                .foregroundStyle(.appText)
+                                .multilineTextAlignment(.leading)
+
+                            Spacer(minLength: 0)
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                        }
+                        .padding(.horizontal, DesignSystem.medium)
+                        .padding(.vertical, DesignSystem.small)
+                        .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
+                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: DesignSystem.borderWidth)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(DesignSystem.standardPadding)
+        .background(
+            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
+                .fill(Color.appCard.opacity(DesignSystem.Opacity.glass))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
+                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: DesignSystem.borderWidth)
+        )
+        .shadow(color: Color.appBackground.opacity(DesignSystem.shadowOpacity), radius: 6, x: 0, y: 2)
     }
 }

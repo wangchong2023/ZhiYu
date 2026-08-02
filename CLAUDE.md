@@ -54,7 +54,12 @@ xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'gener
 # 列出可用模拟器
 xcodebuild -project ZhiYu.xcodeproj -scheme ZhiYu -showdestinations | grep simulator
 
-# 运行单元测试
+# 运行 SPM 本地包极速单测 (脱离模拟器，毫秒级通过)
+swift test --package-path Packages/UFPCore
+swift test --package-path Packages/ZhiYuDomain
+swift test --package-path Packages/ZhiYuAICore
+
+# 运行主 App 单元测试
 xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -enableCodeCoverage YES
 
 # 运行单个测试类
@@ -86,6 +91,14 @@ swiftlint --strict
 ## 项目结构（关键路径）
 
 ```
+Packages/                        # 本地 SPM 多 Package 物理隔离目录
+├── UFPCore/                     # [UFP] 通用底座 & DI 容器
+├── UFPStorage/                  # [UFP] 通用存储引擎 (SQLite/GRDB 物理 DB)
+├── UFPDesignSystem/             # [UFP] 通用 UI Token 与 Bundle.module 资源
+├── ZhiYuDomain/                 # [ZhiYu] 业务领域大脑 & 契约 Protocols
+├── ZhiYuAICore/                 # [ZhiYu] AI 中台适配器 (Prompt 沙箱/Reranker/MemoryAdapters)
+└── ZhiYuFeatures/               # [ZhiYu] 垂直业务功能切片 (AI/Knowledge/Insight)
+
 Sources/
 ├── App/                         # [L3] @main 入口、环境初始化、路由、AppStore、主题
 │   ├── ZhiYuApp.swift           # 入口点，场景定义，全局环境注入
