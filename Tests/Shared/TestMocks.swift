@@ -445,6 +445,9 @@ extension XCTestCase {
         
         let mockRemoteConfig = MockRemoteConfigService()
         ServiceContainer.shared.register(mockRemoteConfig as any RemoteConfigCapabilities, for: (any RemoteConfigCapabilities).self)
+
+        ServiceContainer.shared.register(MockFileArchiver() as any FileArchiverProtocol, for: (any FileArchiverProtocol).self)
+        ServiceContainer.shared.register(MockExportService() as any ExportServiceProtocol, for: (any ExportServiceProtocol).self)
     }
 }
 
@@ -547,6 +550,17 @@ final class MockRemoteConfigService: RemoteConfigCapabilities, @unchecked Sendab
     func fetchAgentSkills() async throws -> [AgentSkill] {
         return []
     }
+}
+
+final class MockFileArchiver: FileArchiverProtocol, @unchecked Sendable {
+    func zip(directory sourceDir: URL, to destinationURL: URL) async throws {}
+    func extractContents(from archiveURL: URL, to destinationURL: URL) throws {}
+}
+
+final class MockExportService: ExportServiceProtocol, @unchecked Sendable {
+    func exportToPDF(markdown: String, fileName: String) async throws -> URL { URL(fileURLWithPath: "/tmp/\(fileName).pdf") }
+    func exportMindmapToPDF(mermaidCode: String, fileName: String) async throws -> URL { URL(fileURLWithPath: "/tmp/\(fileName).pdf") }
+    func exportToPPTX(markdown: String, fileName: String) async throws -> URL { URL(fileURLWithPath: "/tmp/\(fileName).pptx") }
 }
 
 // MARK: - Mock Security Services (P1: 单例 TestOverride 模式)

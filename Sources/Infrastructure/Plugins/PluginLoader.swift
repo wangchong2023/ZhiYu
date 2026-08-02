@@ -391,7 +391,7 @@ private extension Data {
         bytes.reserveCapacity(cleaned.count / 2)
         var index = cleaned.startIndex
         while index < cleaned.endIndex {
-            let next = cleaned.index(index, offsetBy: 2)
+            guard let next = cleaned.index(index, offsetBy: 2, limitedBy: cleaned.endIndex) else { break }
             guard let byte = UInt8(cleaned[index..<next], radix: 16) else { return nil }
             bytes.append(byte)
             index = next

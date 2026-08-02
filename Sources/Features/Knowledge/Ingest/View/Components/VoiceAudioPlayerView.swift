@@ -230,6 +230,8 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
         synthesizer.delegate = self
     }
     
+    /// 触发文本语音朗读并管理 AVAudioSession 声音播放会话
+    /// - Parameter text: 待转换朗读的原始 Markdown 或纯文本
     func speak(text: String) {
         #if os(iOS)
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
