@@ -96,48 +96,6 @@ settings:
     MTL_ENABLE_DEBUG_INFO: INCLUDE_SOURCE
     FRAMEWORK_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
 
-_shared_excludes:
-  watchos: &WATCHOS_EXCLUDES
-    - "App/**"
-    - "Platforms/iOS/**"
-    - "Platforms/macOS/**"
-    - "Features/AI/**/View/**"
-    - "Features/AI/**/Coordinator/**"
-    - "Features/AI/Chat/Model/AIWorkflowStore.swift"
-    - "Features/AI/Chat/Model/AIInsightStore.swift"
-    - "Features/AI/Synthesis/**"
-    - "Infrastructure/Processors/Synthesis/**"
-    - "Features/Knowledge/**/View/**"
-    - "Features/Knowledge/**/Coordinator/**"
-    - "Features/Knowledge/NotebookHub/ViewModel/NotebookHubViewModel.swift"
-    - "Features/Insight/**/View/**"
-    - "Features/Insight/**/Coordinator/**"
-    - "Features/System/**/View/**"
-    - "Features/AI/AIViewProvider.swift"
-    - "Features/Knowledge/KnowledgeViewProvider.swift"
-    - "Features/Insight/InsightViewProvider.swift"
-    - "Features/System/SystemViewProvider.swift"
-    - "Shared/UIComponents/Menus/UserProfileMenu.swift"
-    - "Shared/UIComponents/Navigation/AdaptiveSidebarView.swift"
-    - "Shared/UIComponents/Navigation/NavigateAction.swift"
-    - "Shared/UIComponents/Overlays/**"
-    - "Shared/UIComponents/Pickers/**"
-    - "Shared/UIComponents/Editors/**"
-    - "Shared/UIComponents/Badges/AIRainbowGlowBadge.swift"
-    - "Shared/UIComponents/Interaction/KeyboardShortcutsView.swift"
-    - "Shared/UIComponents/Modifiers/AppToolbarModifier.swift"
-    - "Shared/UIComponents/Feedback/AppAILoadingSkeleton.swift"
-    - "Shared/UIComponents/Feedback/AppLottieView.swift"
-    - "Shared/UIComponents/Feedback/AppTooltip.swift"
-    - "Shared/UIComponents/Feedback/TooltipManager.swift"
-    - "Shared/DesignSystem/Styles/SynthesisStore+UI.swift"
-    - "Platforms/watchOS/WatchContentView.swift"
-    - "Infrastructure/Storage/Sync/iCloudSyncCoordinator.swift"
-    - "Info.plist"
-    - "MacInfo.plist"
-    - "Base.lproj/**"
-    - "LaunchScreen.storyboard"
-
 targets:
   ZhiYu:
     type: application
@@ -242,8 +200,9 @@ targets:
     type: application
     platform: watchOS
     sources:
-      - path: Sources
-        excludes: *WATCHOS_EXCLUDES
+      - path: Sources/Platforms/watchOS
+      - path: Sources/Platforms/Shared
+      - path: Sources/Localization
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.watch
@@ -255,11 +214,8 @@ targets:
         INFOPLIST_KEY_WKApplication: YES
         INFOPLIST_KEY_WKWatchOnly: YES
     preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\nif which swiftlint >/dev/null; then swiftlint lint --strict; else echo 'warning: SwiftLint not installed. Please download from https://github.com/realm/SwiftLint'; fi"
-        name: "[Gatekeeper] SwiftLint Quality Audit"
-        basedOnDependencyAnalysis: false
-      - script: "python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py --local"
-        name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
+        name: "[Gatekeeper] All Quality & Security Audits"
         basedOnDependencyAnalysis: false
     dependencies:
       - package: UFPCore
