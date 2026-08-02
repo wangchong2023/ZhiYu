@@ -10,7 +10,7 @@
 //
 import XCTest
 import MultipeerConnectivity
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 // MARK: - E2E: Complete Knowledge Page Workflow Tests

@@ -9,7 +9,7 @@
 //  核心职责：App 模块的 ModuleRegistrar 实现。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 // MARK: - 注册协议
 /// 模块注册器协议：定义统一的注入入口 (@SR-04: 模块化沙盒管控基础)

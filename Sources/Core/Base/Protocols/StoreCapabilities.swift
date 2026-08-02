@@ -9,7 +9,7 @@
 //  核心职责：跨层协议定义，建立 L0-L3 各层间的抽象契约。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 具备向量化与语义嵌入检索能力的底层存储协议。
 public protocol VectorIndexableStore: Sendable {

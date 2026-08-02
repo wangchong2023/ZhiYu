@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 提供动态 `dbWriter` 计算属性的协议。
 ///

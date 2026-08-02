@@ -13,8 +13,24 @@
 #
 
 # ==============================================================================
-# MARK: - 全局路径与基础变量定义
+# MARK: - 环境变量与离线依赖自动加载
 # ==============================================================================
+
+# 自动载入离线开源依赖环境变量 (OPENSRC_ROOT)
+if [ -f "Config/.env.local" ]; then
+    source "Config/.env.local"
+elif [ -f "../Config/.env.local" ]; then
+    source "../Config/.env.local"
+fi
+
+# 确保 CI 执行环境包含基础工具链路径
+export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+
+# 如果 ZhiYu.xcodeproj 不存在，自动跑 bootstrap 一键修复
+if [ ! -d "ZhiYu.xcodeproj" ] && [ -f "Tools/Utils/bootstrap.sh" ]; then
+    echo "⚙️  CI 环境缺失 Xcode 项目文件，自动触发 bootstrap 一键生成..."
+    bash Tools/Utils/bootstrap.sh
+fi
 
 # 项目工程文件名
 export PROJECT="ZhiYu.xcodeproj"

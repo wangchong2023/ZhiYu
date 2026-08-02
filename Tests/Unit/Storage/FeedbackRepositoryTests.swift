@@ -9,7 +9,7 @@
 //  核心职责：FeedbackEntry 模型 + FeedbackRepository CRUD 全覆盖测试
 
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

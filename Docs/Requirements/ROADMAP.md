@@ -58,6 +58,26 @@ gantt
 
 ---
 
+### 🛡️ 阶段 3.5：v2.3 — 全量开源库物理隔离与 AI 合成实验室加固 (已完成 · 2026-08)
+* **核心焦点**：实现全量 8 大开源库的物理隔离、彻底消除源码直引依赖，构建离线优先管理体系与 AI 合成实验室全链路容错。
+* **主要特性**：
+  * **全量开源库物理隔离与单点重导出**：
+    - `GRDB.swift` 物理收敛至 `UFPStorage` SPM 包，通过 `GRDBReexport` 唯一导出，`Sources/` 层 33 个文件 `import GRDB` 全量替换为 `import UFPStorage`；`StorageConstants` 剥离所有业务表名。
+    - `ZIPFoundation` 完全解耦，封装为 `ZIPFoundationArchiver` 适配器（内置 VULN-014 路径穿越防护），`PluginLoader` 改为依赖注入 `FileArchiverProtocol`。
+    - `lottie-ios` 与 `swift-markdown-ui` 封装于 `UFPDesignSystem` SPM 包。
+    - `SwiftJSONSanitizer` 与 `PartialJSON` 封装于 `ZhiYuAICore` SPM 包。
+  * **离线优先与自动化依赖审计门禁**：
+    - 建立 `Config/opensource_dependencies.yml` 开源注册表 SSOT。
+    - 所有 Package.swift 统一为 `path: opensrcRoot/名称` 本地路径依赖，零 GitHub URL 网络依赖。
+    - 扩展 Gatekeeper CI 门禁（`check_opensource_adapters.py` 与 `check_dependency_registry.py`），实现 4/4 项自动化硬卡。
+  * **AI 合成实验室全链路容错与加固**：
+    - **双层 JSON 自愈**：`JSONRepairProcessor` 兼具语法修复与流式截断补全。
+    - **JSON Schema 源头约束**：`PromptConstants.Schemas.quizJSONSchema` 强类型 schema 在 Prompt 尾部强制注入。
+    - **Mermaid 前置安全拦截**：`SynthesisProcessor.safeMermaidSyntax` 拦截冒号/问号/括号等危险字符并双引号转义，防止渲染崩溃。
+    - **[[WikiLink]] 双向联动**：修复 Markdown 转义，实现 `SynthesisReportView` 到 `Router` 页面推栈的导航联动。
+
+---
+
 ### 🌌 阶段四：v2.0 — iCloud 自动同步、开放插件 SDK 与变现生态 (展望)
 * **核心焦点**：打通多终端无缝同步，开放第三方 JS 沙盒插件市场，建立商业化变现平台。
 * **主要特性**：

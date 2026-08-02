@@ -9,7 +9,7 @@
 //  核心职责：基于 GRDB 的插件仓储实现，持久化插件元数据、状态及运行时统计至全局数据库。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 基于 GRDB 的插件持久化仓储实现，操作全局共享数据库（global.sqlite3）。
 final class SQLitePluginRepository: PluginRepository, @unchecked Sendable {

@@ -11,7 +11,7 @@
 //           故按 Repository 模式定义最小化 TableRecord + FetchableRecord。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 // MARK: - 页面行模型
 

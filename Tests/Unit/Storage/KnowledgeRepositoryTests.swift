@@ -9,7 +9,7 @@
 //  核心职责：针对 KnowledgeRepository 开展自动化单元测试验证。
 //
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 final class KnowledgeRepositoryTests: XCTestCase {

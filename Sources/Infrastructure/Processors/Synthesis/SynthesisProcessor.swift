@@ -220,6 +220,21 @@ enum SynthesisProcessor {
         return lines.joined(separator: "\n")
     }
 
+    /// 拦截并对 Mermaid 节点文本中的危险字符（冒号、问号、括号、下划线、花括号等）进行前置转义包覆处理，防止渲染语法解析崩溃
+    static func safeMermaidSyntax(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+
+        let dangerChars = [":", "?", "(", ")", "[", "]", "_", "#", "{", "}", ";"]
+        let needsQuoting = dangerChars.contains(where: { trimmed.contains($0) })
+
+        if needsQuoting && !(trimmed.hasPrefix("\"") && trimmed.hasSuffix("\"")) {
+            let safeContent = trimmed.replacingOccurrences(of: "\"", with: "'")
+            return "\"\(safeContent)\""
+        }
+        return trimmed
+    }
+
     /// 从文本内容中提取第一个 H1 级别的合法标题（过滤 Prompt 指令标头）
     static func extractTitle(from content: String) -> String? {
         let lines = content.components(separatedBy: .newlines)
@@ -317,6 +332,30 @@ enum SynthesisProcessor {
             slideTopics.append((fallbackTitle, Array(currentBullets.prefix(maxBulletsPerSlide))))
         }
         return slideTopics
+    }
+
+    /// 柔性自愈：如果演示文稿缺乏 --- 分页符，自动根据标题层级将文本切割组装为 Slides
+    static func formatSlidesIfNeeded(_ text: String, fallbackTitle: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.contains("\n---\n") || trimmed.contains("\n--- \n") {
+            return trimmed
+        }
+        let lines = sanitizeSourceLines(trimmed)
+        let rootName = extractRootTitle(title: fallbackTitle, lines: lines)
+        let slideTopics = extractPresentationTopics(from: lines)
+        if slideTopics.isEmpty {
+            return generateFallbackPresentation(from: trimmed, title: fallbackTitle)
+        }
+
+        var slideDeck = ["# \(rootName)\n\n* \(L10n.AI.Prompt.Expert.Slides.title)"]
+        for topic in slideTopics {
+            var slideText = "## \(topic.title)"
+            for bullet in topic.bullets {
+                slideText += "\n* \(bullet)"
+            }
+            slideDeck.append(slideText)
+        }
+        return slideDeck.joined(separator: "\n\n---\n\n")
     }
 
     /// 柔性自愈：生成标准演示文稿 (Markdown Slide Presentation)，严格控制 5-8 页，拒绝空页

@@ -10,7 +10,7 @@
 //
 import XCTest
 import SwiftUI
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 // MARK: - 知识页面模型单元测试

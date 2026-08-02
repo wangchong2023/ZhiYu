@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 // MARK: - 标签物理记录实体
 /// 物理表：`tags`，负责存储全局扁平化标签词典

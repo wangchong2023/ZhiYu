@@ -9,7 +9,7 @@
 //  核心职责：FeedbackEntry 的 SQLite 仓储实现
 
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 final class SQLiteFeedbackRepository: FeedbackRepository, DatabaseWriterProvider, @unchecked Sendable {
 

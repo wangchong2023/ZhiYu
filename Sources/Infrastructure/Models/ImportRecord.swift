@@ -9,7 +9,7 @@
 //  核心职责：导入原始内容留存数据模型
 
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 导入原始内容留存记录
 public struct ImportRecord: Identifiable, Codable, FetchableRecord, MutablePersistableRecord, Sendable {

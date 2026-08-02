@@ -1,13 +1,48 @@
 name: ZhiYu
+# ──────────────────────────────────────────────────────────────────────────────
+# SPM 包声明
+# ──────────────────────────────────────────────────────────────────────────────
+# 此文件是模板，由 bootstrap.sh 通过 envsubst 生成实际的 project.yml。
+# 禁止直接编辑 project.yml（生成物），所有改动请在此文件进行。
+#
+# 分组规则：
+#   [外部开源库] 全部使用 /Users/constantine/Documents/work/code/opensrc/swift/<库目录名> 本地路径，统一离线优先策略。
+#               库信息维护于 Config/opensource_dependencies.yml。
+#   [内部 SPM 包] 使用相对路径 Packages/<PackageName>，无需环境变量。
+# ──────────────────────────────────────────────────────────────────────────────
 packages:
-  SnapshotTesting:
-    path: /Users/constantine/Documents/work/code/opensrc/swift/swift-snapshot-testing
+
+  # ── 外部开源库（本地克隆，离线优先）────────────────────────────────────────
+  # 依赖信息：Config/opensource_dependencies.yml
+  # 克隆目录：/Users/constantine/Documents/work/code/opensrc/swift（由 Config/.env.local 配置）
+
+  # 存储引擎
   GRDB:
     path: /Users/constantine/Documents/work/code/opensrc/swift/GRDB.swift
+
+  # JSON 自愈（双层防护）
+  SwiftJSONSanitizer:
+    path: /Users/constantine/Documents/work/code/opensrc/swift/SwiftJSONSanitizer
+  PartialJSON:
+    path: /Users/constantine/Documents/work/code/opensrc/swift/PartialJSON
+
+  # UI 渲染
   Lottie:
     path: /Users/constantine/Documents/work/code/opensrc/swift/lottie-ios
+  SwiftMarkdownUI:
+    path: /Users/constantine/Documents/work/code/opensrc/swift/swift-markdown-ui
+  SwiftMarkdown:
+    path: /Users/constantine/Documents/work/code/opensrc/swift/swift-markdown
+
+  # 文件处理
   ZIPFoundation:
     path: /Users/constantine/Documents/work/code/opensrc/swift/ZIPFoundation
+
+  # 测试工具
+  SnapshotTesting:
+    path: /Users/constantine/Documents/work/code/opensrc/swift/swift-snapshot-testing
+
+  # ── 内部 SPM 包（相对路径，无需环境变量）──────────────────────────────────
   UFPCore:
     path: Packages/UFPCore
   UFPStorage:
@@ -20,9 +55,6 @@ packages:
     path: Packages/ZhiYuAICore
   ZhiYuFeatures:
     path: Packages/ZhiYuFeatures
-  SwiftMarkdown:
-    url: https://github.com/apple/swift-markdown.git
-    from: 0.3.0
 
 options:
   bundleIdPrefix: com.zhiyu.app
@@ -131,6 +163,15 @@ targets:
       - script: "python3 Tools/Gatekeeper/Architecture/check_view_duplication.py"
         name: "[Gatekeeper] Heuristic View Duplication Check"
         basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_opensource_adapters.py"
+        name: "[Gatekeeper] Open-Source Adapter Logical Isolation Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_opensource_physical_placement.py"
+        name: "[Gatekeeper] Open-Source Adapter Physical Placement Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Sanity/check_dead_code.py"
+        name: "[Gatekeeper] Dead Code & Migration Residue Audit (Periphery)"
+        basedOnDependencyAnalysis: false
     dependencies:
       - package: UFPCore
       - package: UFPStorage
@@ -143,6 +184,12 @@ targets:
       - package: ZIPFoundation
       - package: SwiftMarkdown
         product: Markdown
+      - package: SwiftMarkdownUI
+        product: MarkdownUI
+      - package: SwiftJSONSanitizer
+        product: SwiftJSONSanitizerDynamic
+      - package: PartialJSON
+        product: PartialJSON
       - target: ZhiYuWidgets
       - framework: Frameworks/WechatOpenSDK.xcframework
       - framework: Frameworks/ATAuthSDK_D.xcframework
@@ -183,9 +230,23 @@ targets:
         name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
         basedOnDependencyAnalysis: false
     dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
       - package: GRDB
       - package: Lottie
       - package: ZIPFoundation
+      - package: SwiftMarkdown
+        product: Markdown
+      - package: SwiftMarkdownUI
+        product: MarkdownUI
+      - package: SwiftJSONSanitizer
+        product: SwiftJSONSanitizerDynamic
+      - package: PartialJSON
+        product: PartialJSON
 
   ZhiYuWatch:
     type: application
@@ -250,6 +311,12 @@ targets:
         name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
         basedOnDependencyAnalysis: false
     dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
       - package: GRDB
       - package: ZIPFoundation
 
@@ -352,6 +419,9 @@ schemes:
     build:
       targets:
         ZhiYu: all
+      preActions:
+        - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
+          name: "[Auto-Sync] Load Environment"
     test:
       targets:
         - ZhiYuTests
@@ -365,6 +435,9 @@ schemes:
     build:
       targets:
         ZhiYuMac: all
+      preActions:
+        - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
+          name: "[Auto-Sync] Load Environment"
     run:
       executable: ZhiYuMac
   
@@ -380,6 +453,9 @@ schemes:
     build:
       targets:
         ZhiYuWatch: all
+      preActions:
+        - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
+          name: "[Auto-Sync] Load Environment"
     test:
       targets:
         - ZhiYuWatchTests

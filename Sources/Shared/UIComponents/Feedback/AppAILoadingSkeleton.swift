@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 增强型 AI 骨架屏
 /// 支持展示当前的 RAG 阶段，并提供类似神经元跳动的动画效果

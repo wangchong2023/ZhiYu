@@ -9,7 +9,7 @@
 //  核心职责：持久化引擎：GRDB/SQLite 仓库、同步、加密、数据库管理。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// [Infra] 用于映射 `file_signatures` 表的 GRDB 类型安全实体
 struct FileSignatureRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {

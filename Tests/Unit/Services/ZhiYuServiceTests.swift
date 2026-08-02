@@ -10,7 +10,7 @@
 //
 import XCTest
 import SwiftUI
-@preconcurrency import GRDB
+import UFPStorage
 @preconcurrency @testable import ZhiYu
 
 // MARK: - BackupService Tests

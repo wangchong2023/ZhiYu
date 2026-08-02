@@ -12,6 +12,12 @@
 //
 
 import PackageDescription
+import Foundation
+
+// MARK: - 开源库本地路径（通过 OPENSRC_ROOT 环境变量注入，参见 Config/.env.local）
+let opensrcRoot = ProcessInfo.processInfo.environment["OPENSRC_ROOT"] ?? {
+    fatalError("[ZhiYuAICore] 缺少 OPENSRC_ROOT 环境变量。请先执行: source Config/.env.local && bash Tools/Utils/bootstrap.sh")
+}()
 
 let package = Package(
     name: "ZhiYuAICore",
@@ -35,7 +41,9 @@ let package = Package(
     dependencies: [
         .package(path: "../UFPCore"),
         .package(path: "../UFPStorage"),
-        .package(path: "../ZhiYuDomain")
+        .package(path: "../ZhiYuDomain"),
+        .package(path: "\(opensrcRoot)/SwiftJSONSanitizer"),
+        .package(path: "\(opensrcRoot)/PartialJSON")
     ],
     targets: [
         .target(
@@ -43,7 +51,9 @@ let package = Package(
             dependencies: [
                 .product(name: "UFPCore", package: "UFPCore"),
                 .product(name: "UFPStorage", package: "UFPStorage"),
-                .product(name: "ZhiYuDomain", package: "ZhiYuDomain")
+                .product(name: "ZhiYuDomain", package: "ZhiYuDomain"),
+                .product(name: "SwiftJSONSanitizerDynamic", package: "SwiftJSONSanitizer"),
+                .product(name: "PartialJSON", package: "PartialJSON")
             ]
         ),
         .target(

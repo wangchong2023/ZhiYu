@@ -45,7 +45,7 @@ struct iOSPlatformRegistrar: PlatformRegistrar {
         #else
         container.register(DummyActivityService() as any LiveActivityProtocol, for: (any LiveActivityProtocol).self)
         #endif
-        container.register(iOSFileArchiver(), for: (any FileArchiverProtocol).self)
+        container.register(ZIPFoundationArchiver(), for: (any FileArchiverProtocol).self)
         container.register(iOSAccessibilityService(), for: (any AccessibilityServiceProtocol).self)
 
         container.register(iOSAppEnvironment(), for: (any AppEnvironmentProtocol).self)

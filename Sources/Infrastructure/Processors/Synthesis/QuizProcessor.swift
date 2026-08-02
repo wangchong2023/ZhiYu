@@ -9,6 +9,7 @@
 //  核心职责：文档处理器：Markdown 解析、文本分块、图谱布局、网页抓取。
 //
 import Foundation
+import ZhiYuAICore
 
 /// 专门处理知识测验数据的解析、转换与清洗
 enum QuizProcessor {
@@ -140,9 +141,11 @@ enum QuizProcessor {
     /// 将任意文本（Raw JSON、Markdown 包裹 JSON 或纯 Markdown 试卷）自愈解析为 QuizModel
     static func parseToQuizModel(_ text: String) -> QuizModel? {
         let model: QuizModel?
-        // 1. 尝试使用标准的 FlexibleQuizShell 解码
+        // 1. 尝试使用标准的 FlexibleQuizShell 解码 (结合 JSONRepairProcessor 自愈修复)
         let cleaned = LLMUtils.stripMarkdown(text)
-        if let data = cleaned.data(using: .utf8),
+        let repairedJSON = JSONRepairProcessor.repair(cleaned)
+        
+        if let data = repairedJSON.data(using: .utf8),
            let shell = try? JSONDecoder().decode(FlexibleQuizShell.self, from: data),
            let shellQuestions = shell.questions, !shellQuestions.isEmpty {
             let questions = shellQuestions.enumerated().compactMap { index, item -> QuizQuestion? in

@@ -8,7 +8,7 @@
 //  系统层级：[L1] 基础设施层
 //  核心职责：持久化引擎：GRDB/SQLite 仓库、同步、加密、数据库管理。
 //
-@preconcurrency import GRDB
+import UFPStorage
 import Foundation
 
 // MARK: - PageChunk GRDB 协议遵循

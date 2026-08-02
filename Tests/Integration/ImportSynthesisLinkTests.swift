@@ -9,7 +9,7 @@
 //  核心职责：导入→合成数据源链路验证 + 异常输入全覆盖
 
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

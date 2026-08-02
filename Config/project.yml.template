@@ -1,0 +1,463 @@
+name: ZhiYu
+# ──────────────────────────────────────────────────────────────────────────────
+# SPM 包声明
+# ──────────────────────────────────────────────────────────────────────────────
+# 此文件是模板，由 bootstrap.sh 通过 envsubst 生成实际的 project.yml。
+# 禁止直接编辑 project.yml（生成物），所有改动请在此文件进行。
+#
+# 分组规则：
+#   [外部开源库] 全部使用 ${OPENSRC_ROOT}/<库目录名> 本地路径，统一离线优先策略。
+#               库信息维护于 Config/opensource_dependencies.yml。
+#   [内部 SPM 包] 使用相对路径 Packages/<PackageName>，无需环境变量。
+# ──────────────────────────────────────────────────────────────────────────────
+packages:
+
+  # ── 外部开源库（本地克隆，离线优先）────────────────────────────────────────
+  # 依赖信息：Config/opensource_dependencies.yml
+  # 克隆目录：${OPENSRC_ROOT}（由 Config/.env.local 配置）
+
+  # 存储引擎
+  GRDB:
+    path: ${OPENSRC_ROOT}/GRDB.swift
+
+  # JSON 自愈（双层防护）
+  SwiftJSONSanitizer:
+    path: ${OPENSRC_ROOT}/SwiftJSONSanitizer
+  PartialJSON:
+    path: ${OPENSRC_ROOT}/PartialJSON
+
+  # UI 渲染
+  Lottie:
+    path: ${OPENSRC_ROOT}/lottie-ios
+  SwiftMarkdownUI:
+    path: ${OPENSRC_ROOT}/swift-markdown-ui
+  SwiftMarkdown:
+    path: ${OPENSRC_ROOT}/swift-markdown
+
+  # 文件处理
+  ZIPFoundation:
+    path: ${OPENSRC_ROOT}/ZIPFoundation
+
+  # 测试工具
+  SnapshotTesting:
+    path: ${OPENSRC_ROOT}/swift-snapshot-testing
+
+  # ── 内部 SPM 包（相对路径，无需环境变量）──────────────────────────────────
+  UFPCore:
+    path: Packages/UFPCore
+  UFPStorage:
+    path: Packages/UFPStorage
+  UFPDesignSystem:
+    path: Packages/UFPDesignSystem
+  ZhiYuDomain:
+    path: Packages/ZhiYuDomain
+  ZhiYuAICore:
+    path: Packages/ZhiYuAICore
+  ZhiYuFeatures:
+    path: Packages/ZhiYuFeatures
+
+options:
+  bundleIdPrefix: com.zhiyu.app
+  developmentLanguage: en
+  knownLocalizations:
+    - en
+    - zh-Hans
+    - zh-Hant
+    - ja
+    - ko
+    - es
+    - fr
+    - ar
+    - ru
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+    watchOS: "10.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "0.0.0-dev"       # CI 会在构建前通过 inject_version.sh 覆盖
+    CURRENT_PROJECT_VERSION: "0"          # CI 会在构建前通过 inject_version.sh 覆盖
+    TARGETED_DEVICE_FAMILY: "1,2,4"
+    INFOPLIST_FILE: Sources/Info.plist
+    DEVELOPMENT_TEAM: "XSC749SK6J"
+    CODE_SIGN_IDENTITY: "Apple Development"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_COMPILATION_MODE: wholemodule
+    SWIFT_GENERATE_LOCALIZATION_SYMBOL_KEYS: NO
+    EAGER_COMPILATION_ENABLED: NO
+    MTL_ENABLE_DEBUG_INFO: INCLUDE_SOURCE
+    FRAMEWORK_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
+
+targets:
+  ZhiYu:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+        excludes:
+          - "Platforms/macOS/**"
+          - "Platforms/watchOS/**"
+          - "Platforms/iOS/Widgets/**"
+          - "MacInfo.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app
+        INFOPLIST_FILE: Sources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-iOS
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
+        CODE_SIGN_ENTITLEMENTS: Sources/ZhiYu.entitlements
+        NSSupportsLiveActivities: YES
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/App/ZhiYu-Bridging-Header.h
+      configs:
+        Debug:
+          SWIFT_STRICT_CONCURRENCY: targeted
+    preBuildScripts:
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\nif which swiftlint >/dev/null; then swiftlint lint --strict; else echo 'warning: SwiftLint not installed. Please download from https://github.com/realm/SwiftLint'; fi"
+        name: "[Gatekeeper] SwiftLint Quality Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_domain_purity.py"
+        name: "[Gatekeeper] Domain Purity Check"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Compliance/check_localization.py"
+        name: "[Gatekeeper] L10n Leak & Hardcode Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Compliance/check_prompt_governance.py"
+        name: "[Gatekeeper] Prompt Governance & Security Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Compliance/check_storage_constants.py"
+        name: "[Gatekeeper] Storage Constants Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Compliance/check_magic_numbers.py"
+        name: "[Gatekeeper] Magic Number Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Release/check_hardcoded_secrets.py"
+        name: "[Gatekeeper] Hardcoded Secrets Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Compliance/check_hig_compliance.py"
+        name: "[Gatekeeper] HIG Compliance Check"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Release/check_appstore_readiness.py"
+        name: "[Gatekeeper] App Store Readiness Check"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_architecture_dependency.py"
+        name: "[Gatekeeper] Architecture Dependency Check"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Sanity/check_scripts_quality.py"
+        name: "[Gatekeeper] Tools Scripts Quality Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Sanity/check_layout.py"
+        name: "[Gatekeeper] Cross-Platform Layout Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/check_inject_safety.py"
+        name: "[Gatekeeper] DI Inject Safety Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py --local"
+        name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_view_duplication.py"
+        name: "[Gatekeeper] Heuristic View Duplication Check"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_opensource_adapters.py"
+        name: "[Gatekeeper] Open-Source Adapter Logical Isolation Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Architecture/check_opensource_physical_placement.py"
+        name: "[Gatekeeper] Open-Source Adapter Physical Placement Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Sanity/check_dead_code.py"
+        name: "[Gatekeeper] Dead Code & Migration Residue Audit (Periphery)"
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
+      - package: GRDB
+      - package: Lottie
+      - package: ZIPFoundation
+      - package: SwiftMarkdown
+        product: Markdown
+      - package: SwiftMarkdownUI
+        product: MarkdownUI
+      - package: SwiftJSONSanitizer
+        product: SwiftJSONSanitizerDynamic
+      - package: PartialJSON
+        product: PartialJSON
+      - target: ZhiYuWidgets
+      - framework: Frameworks/WechatOpenSDK.xcframework
+      - framework: Frameworks/ATAuthSDK_D.xcframework
+
+  ZhiYuMac:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Sources
+        excludes:
+          - "Platforms/watchOS/**"
+          - "Platforms/iOS/Widgets/**"
+          - "Info.plist"
+          - "Base.lproj/**"
+          - "LaunchScreen.storyboard"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.mac
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-iOS
+        INFOPLIST_FILE: Sources/MacInfo.plist
+        SUPPORTS_MACCATALYST: "YES"
+        SDKROOT: iphoneos
+        TARGETED_DEVICE_FAMILY: "2"
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/App/ZhiYu-Bridging-Header.h
+      configs:
+        Debug:
+          CODE_SIGN_IDENTITY: "-"
+          CODE_SIGN_ENTITLEMENTS: ""
+        Release:
+          CODE_SIGN_ENTITLEMENTS: Sources/ZhiYu.entitlements
+    preBuildScripts:
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\nif which swiftlint >/dev/null; then swiftlint lint --strict; else echo 'warning: SwiftLint not installed. Please download from https://github.com/realm/SwiftLint'; fi"
+        name: "[Gatekeeper] SwiftLint Quality Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py --local"
+        name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
+      - package: GRDB
+      - package: Lottie
+      - package: ZIPFoundation
+      - package: SwiftMarkdown
+        product: Markdown
+      - package: SwiftMarkdownUI
+        product: MarkdownUI
+      - package: SwiftJSONSanitizer
+        product: SwiftJSONSanitizerDynamic
+      - package: PartialJSON
+        product: PartialJSON
+
+  ZhiYuWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - path: Sources
+        excludes:
+          - "App/**"
+          - "Platforms/iOS/**"
+          - "Platforms/macOS/**"
+          - "Features/AI/**/View/**"
+          - "Features/AI/**/Coordinator/**"
+          - "Features/AI/Chat/Model/AIWorkflowStore.swift"
+          - "Features/AI/Chat/Model/AIInsightStore.swift"
+          - "Features/AI/Synthesis/**"
+          - "Infrastructure/Processors/Synthesis/**"
+          - "Features/Knowledge/**/View/**"
+          - "Features/Knowledge/**/Coordinator/**"
+          - "Features/Knowledge/NotebookHub/ViewModel/NotebookHubViewModel.swift"
+          - "Features/Insight/**/View/**"
+          - "Features/Insight/**/Coordinator/**"
+          - "Features/System/**/View/**"
+          - "Features/AI/AIViewProvider.swift"
+          - "Features/Knowledge/KnowledgeViewProvider.swift"
+          - "Features/Insight/InsightViewProvider.swift"
+          - "Features/System/SystemViewProvider.swift"
+          - "Shared/UIComponents/Menus/UserProfileMenu.swift"
+          - "Shared/UIComponents/Navigation/AdaptiveSidebarView.swift"
+          - "Shared/UIComponents/Navigation/NavigateAction.swift"
+          - "Shared/UIComponents/Overlays/**"
+          - "Shared/UIComponents/Pickers/**"
+          - "Shared/UIComponents/Editors/**"
+          - "Shared/UIComponents/Badges/AIRainbowGlowBadge.swift"
+          - "Shared/UIComponents/Interaction/KeyboardShortcutsView.swift"
+          - "Shared/UIComponents/Modifiers/AppToolbarModifier.swift"
+          - "Shared/UIComponents/Feedback/AppAILoadingSkeleton.swift"
+          - "Shared/UIComponents/Feedback/AppLottieView.swift"
+          - "Shared/UIComponents/Feedback/AppTooltip.swift"
+          - "Shared/UIComponents/Feedback/TooltipManager.swift"
+          - "Shared/DesignSystem/Styles/SynthesisStore+UI.swift"
+          - "Platforms/watchOS/WatchContentView.swift"
+          - "Infrastructure/Storage/Sync/iCloudSyncCoordinator.swift"
+          - "Info.plist"
+          - "MacInfo.plist"
+          - "Base.lproj/**"
+          - "LaunchScreen.storyboard"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.watch
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-Watch
+        SDKROOT: watchos
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_WKWatchKitApp: YES
+        INFOPLIST_KEY_WKApplication: YES
+        INFOPLIST_KEY_WKWatchOnly: YES
+    preBuildScripts:
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin\"\nif which swiftlint >/dev/null; then swiftlint lint --strict; else echo 'warning: SwiftLint not installed. Please download from https://github.com/realm/SwiftLint'; fi"
+        name: "[Gatekeeper] SwiftLint Quality Audit"
+        basedOnDependencyAnalysis: false
+      - script: "python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py --local"
+        name: "[Gatekeeper] Duplicate Code Detection (jscpd)"
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
+      - package: GRDB
+      - package: ZIPFoundation
+
+  ZhiYuWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Sources/Platforms/iOS/Widgets
+      - path: Sources/Platforms/iOS/Activity/AIProcessingAttributes.swift
+      - path: Sources/Core/Base/Protocols/LiveActivityProtocol.swift
+      - path: Sources/Core/Base/Constants/AppConstants.swift
+      - path: Sources/Platforms/iOS/Widgets/WidgetL10n.swift
+      - path: Sources/Localization/Catalogs/Platform.xcstrings
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.widgets
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: WIDGET
+        INFOPLIST_FILE: Sources/Platforms/iOS/Widgets/Info.plist
+        GENERATE_INFOPLIST_FILE: "NO"
+        NSSupportsLiveActivities: YES
+        CODE_SIGN_ENTITLEMENTS: Sources/ZhiYuWidgets.entitlements
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        SDKROOT: iphoneos
+        SKIP_INSTALL: "YES"
+        TARGETED_DEVICE_FAMILY: "1"
+    dependencies:
+      - package: GRDB
+
+  ZhiYuTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+        excludes:
+          - "UITests/**"
+          - "UI/**"
+          - "Platforms/Watch*.swift"
+      - path: Sources
+        includes:
+          - "Platforms/watchOS/WatchWatchSyncService.swift"
+          - "Platforms/watchOS/WatchOCRService.swift"
+          - "Platforms/watchOS/WatchPDFService.swift"
+          - "Platforms/watchOS/WatchPasteboardService.swift"
+          - "Platforms/watchOS/WatchSpeechService.swift"
+          - "Platforms/iOS/Widgets/KnowledgeStatsWidget.swift"
+          - "Platforms/iOS/Widgets/WidgetL10n.swift"
+          - "Platforms/iOS/Widgets/WidgetRepository.swift"
+          - "Platforms/iOS/Widgets/WidgetModels.swift"
+          - "Core/Base/Constants/AppConstants.swift"
+    settings:
+      base:
+        SWIFT_STRICT_CONCURRENCY: minimal
+    dependencies:
+      - target: ZhiYu
+      - package: SnapshotTesting
+
+  ZhiYuUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/UI
+    dependencies:
+      - target: ZhiYu
+      - package: SnapshotTesting
+
+  ZhiYuWatchTests:
+    type: bundle.unit-test
+    platform: watchOS
+    sources:
+      - path: Tests
+        includes:
+          - "Platforms/WatchPlatformTests.swift"
+          - "Platforms/WatchSyncTests.swift"
+          - "Platforms/WatchViewTests.swift"
+          - "Shared/TestMocks.swift"
+    dependencies:
+      - target: ZhiYuWatch
+
+  ZhiYuMacTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Tests
+        includes:
+          - "Platforms/MacPlatformTests.swift"
+      - path: Sources
+        includes:
+          - "Platforms/macOS/MacFileArchiver.swift"
+          - "Platforms/macOS/MacOSPlatformCapabilities.swift"
+          - "Platforms/macOS/MacPasteboardService.swift"
+          - "Core/Base/Protocols/PasteboardProtocol.swift"
+          - "Core/Base/Protocols/FileArchiverProtocol.swift"
+          - "Core/Base/Protocols/PlatformCapabilities.swift"
+          - "Core/Base/Constants/AppConstants.swift"
+
+schemes:
+  ZhiYu:
+    build:
+      targets:
+        ZhiYu: all
+      preActions:
+        - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
+          name: "[Auto-Sync] Load Environment"
+    test:
+      targets:
+        - ZhiYuTests
+        - ZhiYuUITests
+      environmentVariables:
+        RECORD_SNAPSHOTS: "0"
+    run:
+      executable: ZhiYu
+  
+  ZhiYuMac:
+    build:
+      targets:
+        ZhiYuMac: all
+      preActions:
+        - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
+          name: "[Auto-Sync] Load Environment"
+    run:
+      executable: ZhiYuMac
+  
+  ZhiYuMacTests:
+    build:
+      targets:
+        ZhiYuMacTests: all
+    test:
+      targets:
+        - ZhiYuMacTests
+  
+  ZhiYuWatch:
+    build:
+      targets:
+        ZhiYuWatch: all
+      preActions:
+        - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
+          name: "[Auto-Sync] Load Environment"
+    test:
+      targets:
+        - ZhiYuWatchTests
+    run:
+      executable: ZhiYuWatch

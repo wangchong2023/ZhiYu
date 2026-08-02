@@ -12,7 +12,7 @@ import XCTest
 import SwiftUI
 import SnapshotTesting
 import Combine
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

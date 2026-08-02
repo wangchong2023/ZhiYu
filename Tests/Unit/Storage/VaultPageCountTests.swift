@@ -9,7 +9,7 @@
 //  核心职责：验证 VaultRepository 对 pageCount 字段的完整读写链路
 
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

@@ -9,7 +9,7 @@
 //  核心职责：持久化引擎：GRDB/SQLite 仓库、同步、加密、数据库管理。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// [Infra] 向量存储实现
 final class VectorDataRepository: VectorRepository, @unchecked Sendable {

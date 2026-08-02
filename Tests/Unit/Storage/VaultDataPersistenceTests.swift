@@ -9,7 +9,7 @@
 //  核心职责：验证多笔记本切换后数据不丢失的完整链路
 
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

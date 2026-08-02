@@ -11,7 +11,7 @@
 import Foundation
 import XCTest
 import Combine
-@preconcurrency import GRDB
+import UFPStorage
 import LocalAuthentication
 #if os(watchOS)
 @testable import ZhiYuWatch

@@ -38,8 +38,8 @@ graph TD
     end
 
     subgraph "L1: 通用存储引擎包 (Packages/UFPStorage)"
-        SQLiteEngine[SQLiteStore / GRDB 封装]
-        StorageConst[StorageConstants]
+        SQLiteEngine[GRDBReexport / GRDB 物理隔离与重导出]
+        StorageConst[StorageConstants (纯通用引擎配置)]
     end
 
     subgraph "Shared: 通用设计系统包 (Packages/UFPDesignSystem)"

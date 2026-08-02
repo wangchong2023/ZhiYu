@@ -18,7 +18,7 @@ public struct SlidesSynthesisStrategy: SynthesisStrategyProtocol {
     public func process(rawContent: String, sourceContent: String) -> String {
         let cleaned = SynthesisProcessor.cleanMarkdown(rawContent)
         if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            return cleaned
+            return SynthesisProcessor.formatSlidesIfNeeded(cleaned, fallbackTitle: L10n.AI.Prompt.Expert.Slides.title)
         }
         Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InsufficientBytes")
         return generateFallback(from: sourceContent, title: L10n.AI.Prompt.Expert.Slides.title)

@@ -234,4 +234,129 @@ public final class ChatViewModel: ObservableObject {
 | 13 | `check_complexity.py` | 🆕 圈复杂度门禁（SwiftLint cyclomatic_complexity, error≤10） | `Tools/Gatekeeper/Compliance/` |
 | 14 | `check_view_duplication.py` | 🆕 启发式 View 结构与修饰符链复用沉淀门禁 | `Tools/Gatekeeper/Architecture/` |
 
-> **执行方式**：本地开发使用 `bash Tools/CI/Analyze/run_static_analysis.sh`；CI 流水线同脚本自动执行。全部 **14 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
+> **执行方式**：本地开发使用 `bash Tools/CI/Analyze/run_static_analysis.sh`；CI 流水线同脚本自动执行。全部 **15 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
+
+---
+
+## 7. 开源库适配层分层原则 (Open-Source Adapter Layer Policy)
+
+### 7.1 设计动机
+
+智宇引入了多个高质量外部开源库（GRDB、Lottie、ZIPFoundation、SwiftJSONSanitizer、PartialJSON、MarkdownUI）。如果业务层直接 `import` 这些库，会导致：
+
+1. **依赖链污染**：切换/升级开源库时，业务层代码大量改动。
+2. **测试阻断**：Unit Test 无法 Mock 开源库的具体行为，Snapshot Test 失效。
+3. **分层破坏**：开源库类型侵入领域模型与协议定义，打破 L0-L3 单向依赖。
+
+**解决方案**：所有开源库必须在匹配的 SPM 物理包中建立「适配层（Adapter Layer）」，上层只调用适配层暴露的 Swift 原生协议或类型。
+
+### 7.2 UFP 包与开源库对应关系
+
+> [!IMPORTANT]
+> **核心原则：`UFPCore` 定义协议契约（零外部依赖），开源库的实现适配器分布到各自匹配的 UFP/ZhiYu 包中，严禁将开源库的 import 引入比适配层更上游的包。**
+
+| 开源库 | 适配层所在包 | 适配器类 / 协议 | 上层调用方式 | 严禁直接 import 的位置 |
+| :--- | :--- | :--- | :--- | :--- |
+| **GRDB** | `UFPStorage` | `GRDBReexport` (`@_exported import GRDB`) | `import UFPStorage`（唯一允许 `import GRDB` 的包） | 除 `UFPStorage` 外所有包及 `Sources/` 层 |
+| **Lottie** | `UFPDesignSystem` | `AppLottieView` | `import UFPDesignSystem` 使用 `AppLottieView` | 除 `UFPDesignSystem` 外所有包及 `Sources/` 层 |
+| **MarkdownUI** | `UFPDesignSystem` | `MarkdownRendererView` | `import UFPDesignSystem` 使用 `MarkdownRendererView` | 除 `UFPDesignSystem` 外所有包及 `Sources/` 层 |
+| **SwiftJSONSanitizer** + **PartialJSON** | `ZhiYuAICore` | `JSONRepairProcessor` | `import ZhiYuAICore` 调用 `JSONRepairProcessor.repair(_:)` | `ZhiYuDomain`, `ZhiYuFeatures`, App 层 |
+| **ZIPFoundation** | `Platforms/iOS` | `ZIPFoundationArchiver` | 通过 `FileArchiverProtocol` 注入，`PluginLoader` 解耦 | 除 `ZIPFoundationArchiver.swift` 外所有文件 |
+
+### 7.3 架构分层示意图
+
+```mermaid
+graph TD
+    subgraph "L3 应用层 (App Target)"
+        AppEnv["AppEnvironment"]
+        Router["Router"]
+    end
+
+    subgraph "L2 业务功能层 (ZhiYuFeatures)"
+        SynthView["SynthesisReportView"]
+        QuizView["QuizView"]
+    end
+
+    subgraph "L1.5 领域层 (ZhiYuDomain)"
+        DomainProto["业务协议契约\nAnyPageStoreCapabilities\nFileArchiverProtocol"]
+    end
+
+    subgraph "L1 基础设施层"
+        subgraph "ZhiYuAICore"
+            JSONRepair["JSONRepairProcessor\n(适配层)"]
+            PartialJSON_lib["PartialJSON ★"]
+            SanitizerLib["SwiftJSONSanitizer ★"]
+        end
+        subgraph "UFPStorage"
+            Repo["KnowledgePageRepository\n(适配层)"]
+            GRDB_lib["GRDB ★"]
+        end
+    end
+
+    subgraph "Shared 视觉标准层 (UFPDesignSystem)"
+        LottieView["AppLottieView\n(适配层)"]
+        MDView["MarkdownRendererView\n(适配层·待建)"]
+        Lottie_lib["Lottie ★"]
+        MarkdownUI_lib["MarkdownUI ★"]
+    end
+
+    subgraph "L0 底座层 (UFPCore)"
+        Protocols["协议定义\n零外部依赖\ndependencies: []"]
+    end
+
+    SynthView -->|"import ZhiYuAICore\n调用 JSONRepairProcessor"| JSONRepair
+    SynthView -->|"import UFPDesignSystem\n使用 MarkdownRendererView"| MDView
+    QuizView -->|"import ZhiYuAICore"| JSONRepair
+    JSONRepair --> PartialJSON_lib
+    JSONRepair --> SanitizerLib
+    Repo --> GRDB_lib
+    LottieView --> Lottie_lib
+    MDView --> MarkdownUI_lib
+    AppEnv -->|"通过协议注入"| DomainProto
+    DomainProto -->|"依赖"| Protocols
+
+    style PartialJSON_lib fill:#ff9999,stroke:#cc0000
+    style SanitizerLib fill:#ff9999,stroke:#cc0000
+    style GRDB_lib fill:#ff9999,stroke:#cc0000
+    style Lottie_lib fill:#ff9999,stroke:#cc0000
+    style MarkdownUI_lib fill:#ff9999,stroke:#cc0000
+```
+
+> ★ 红色节点 = 外部开源库，只允许出现在其所在适配层的包内，不得向上层渗透。
+
+### 7.4 UFPCore 中的开源适配协议模板
+
+`UFPCore` 不依赖任何外部库，但需定义上层可依赖的协议接口：
+
+```swift
+// Sources/Core/Base/Protocols/Adapters/JSONRepairCapable.swift
+// 系统层级：[L0] 底层基座层
+// 核心职责：JSON 自愈能力协议契约，由 ZhiYuAICore 中的 JSONRepairProcessor 实现
+public protocol JSONRepairCapable: Sendable {
+    static func repair(_ rawJSON: String) -> String
+}
+
+// Sources/Core/Base/Protocols/Adapters/FileArchiverProtocol.swift
+// 核心职责：文件压缩/解压能力协议契约，由 iOSFileArchiver (Platforms) 实现
+public protocol FileArchiverProtocol: Sendable {
+    func zip(sourceDir: URL, to destination: URL) throws
+    func unzip(archive: URL, to destination: URL) throws
+}
+
+// Sources/Core/Base/Protocols/Adapters/MarkdownRenderCapable.swift
+// 核心职责：Markdown 渲染 View 协议契约，由 UFPDesignSystem 中的 MarkdownRendererView 实现
+// (SwiftUI View 协议，由 UFPDesignSystem 扩展 View 提供)
+```
+
+### 7.5 红线 9：开源库不得绕过适配层直接调用
+
+- **违规行为**：在 `ZhiYuFeatures`、`ZhiYuDomain`、`UFPCore` 的任何文件中出现 `import GRDB`、`import Lottie`、`import MarkdownUI`、`import SwiftJSONSanitizer`、`import PartialJSON`、`import ZIPFoundation`。
+- **惩罚机制**：CI 静态门禁 `check_opensource_adapters.py` 直接阻断构建。
+- **例外白名单**：
+  - `UFPStorage` 内 → `import GRDB` ✅
+  - `UFPDesignSystem` 内 → `import Lottie`, `import MarkdownUI` ✅
+  - `ZhiYuAICore` 内 → `import SwiftJSONSanitizer`, `import PartialJSON` ✅
+  - `Infrastructure/Plugins/PluginLoader.swift` → `import ZIPFoundation` ✅（插件加载器唯一入口）
+  - `Platforms/iOS/Services/iOSFileArchiver.swift` → `import ZIPFoundation` ✅（平台适配器）
+
+

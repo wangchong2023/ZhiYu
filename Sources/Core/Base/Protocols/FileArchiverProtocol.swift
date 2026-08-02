@@ -17,6 +17,13 @@ public protocol FileArchiverProtocol: Sendable {
     ///   - sourceDir: 待压缩的源目录
     ///   - destinationURL: 目标文件路径 (应以 .zip 或 .pptx 结尾)
     func zip(directory sourceDir: URL, to destinationURL: URL) async throws
+
+    /// 将 ZIP 归档文件解压到指定目录（含路径穿越防护）
+    /// - Parameters:
+    ///   - archiveURL: 待解压的 ZIP/归档文件 URL
+    ///   - destinationURL: 目标解压目录
+    /// - Throws: `FileArchiverError.extractionFailed` 或路径穿越错误
+    func extractContents(from archiveURL: URL, to destinationURL: URL) throws
 }
 
 /// 文件归档过程中抛出的强类型异常枚举
@@ -25,4 +32,6 @@ public enum FileArchiverError: Error, Sendable {
     case platformNotSupported
     /// 压缩流写入异常或物理磁盘空间不足
     case compressionFailed
+    /// 解压失败（归档损坏、格式不支持等）
+    case extractionFailed(reason: String)
 }

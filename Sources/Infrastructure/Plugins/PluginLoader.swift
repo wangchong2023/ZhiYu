@@ -10,12 +10,14 @@
 //
 
 import Foundation
-import ZIPFoundation
 import CryptoKit
 
 /// 插件加载器：负责从本地磁盘发现并解析插件文件
 @MainActor
 final class PluginLoader {
+
+    /// ZIPFoundation 适配层注入（通过 FileArchiverProtocol 间接调用，不直接 import ZIPFoundation）
+    @Inject private var archiver: any FileArchiverProtocol
 
     /// 插件签名密钥的 Keychain 存储键（审查修复 HIGH-3：不再硬编码盐值）
     private static let signatureKeychainKey = "com.zhiyu.plugin.signature_key"
@@ -233,9 +235,9 @@ final class PluginLoader {
         return nil
     }
 
-    // MARK: - .zyplugin 加载（ZIPFoundation 文件提取）
+    // MARK: - .zyplugin 加载（通过 FileArchiverProtocol 适配层）
 
-    /// 使用 ZIPFoundation 解压 .zyplugin：提取到临时文件后读取，确保数据完整性
+    /// 解压 .zyplugin 并加载插件（ZIPFoundation 由适配层封装，PluginLoader 无需知晒）
     private func loadPluginFromArchive(_ archiveURL: URL) {
         do {
             // 创建临时目录
@@ -244,17 +246,8 @@ final class PluginLoader {
             try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: tempDir) }
 
-            // 打开 ZIP 归档
-            let archive: Archive
-            do {
-                archive = try Archive(url: archiveURL, accessMode: .read)
-            } catch {
-                Logger.shared.error("[PluginRegistry] Cannot open archive: \(archiveURL.lastPathComponent), error: \(error)")
-                return
-            }
-
-            // 提取所有条目到文件（ZIPFoundation 文件提取保证数据完整）
-            try extractArchiveEntries(archive, to: tempDir)
+            // 通过协议适配层解压（内置路径穿越防护 VULN-014）
+            try archiver.extractContents(from: archiveURL, to: tempDir)
 
             // 读取提取的文件
             let manifestURL = tempDir.appendingPathComponent("manifest.json")
@@ -269,7 +262,6 @@ final class PluginLoader {
             let manifestData = try Data(contentsOf: manifestURL)
             let script = try String(contentsOf: scriptURL, encoding: .utf8)
 
-            // [DEBUG] 打印前 200 字符验证完整性
             Logger.shared.info("[PluginRegistry] JS preview: \(String(script.prefix(80)).replacingOccurrences(of: "\n", with: " "))")
 
             let manifest = try JSONDecoder().decode(PluginManifest.self, from: manifestData)
@@ -280,10 +272,7 @@ final class PluginLoader {
                 return
             }
 
-            // 校验多语言 README 完整性
             validateReadmeFiles(manifest: manifest, extractedDir: tempDir)
-
-            // 持久化图标和 README 到 Documents/Plugins/{id}_icon.png
             persistPluginAssets(manifest: manifest, extractedDir: tempDir)
 
             #if canImport(JavaScriptCore) && !os(watchOS)
@@ -301,39 +290,6 @@ final class PluginLoader {
     }
 
     // MARK: - 文件夹形式加载（明文加载）
-
-    /// 安全提取 ZIP 归档条目到目标目录（VULN-014 修复：完整路径穿越防护）
-    private func extractArchiveEntries(_ archive: Archive, to tempDir: URL) throws {
-        let tempDirStandardized = tempDir.standardizedFileURL.path
-        for entry in archive {
-            let entryPath = entry.path
-            // 1. 拒绝 ".." 相对路径穿越
-            guard !entryPath.contains("..") else {
-                Logger.shared.warning("[PluginRegistry] Skipped path traversal: \(entryPath)")
-                continue
-            }
-            // 2. 拒绝绝对路径（Unix / 和 Windows 盘符 C:\）
-            // 审查修复 LOW-5: 冒号检查改为精确的 Windows 盘符正则，避免误拒含冒号的合法文件名
-            guard !entryPath.hasPrefix("/"),
-                  !entryPath.matchesRegex(#"^[A-Za-z]:[\\/]"#) else {
-                Logger.shared.warning("[PluginRegistry] Skipped absolute path: \(entryPath)")
-                continue
-            }
-            // 3. 拒绝空路径
-            guard !entryPath.isEmpty else { continue }
-            let destURL = tempDir.appendingPathComponent(entryPath)
-            // 4. 额外验证：确保 destURL 标准化后仍在 tempDir 内
-            let destStandardized = destURL.standardizedFileURL.path
-            guard destStandardized.hasPrefix(tempDirStandardized) else {
-                Logger.shared.warning("[PluginRegistry] Skipped path escape: \(entryPath)")
-                continue
-            }
-            // 确保父目录存在（处理 ZIP 内目录结构）
-            try? FileManager.default.createDirectory(at: destURL.deletingLastPathComponent(),
-                                                     withIntermediateDirectories: true)
-            _ = try archive.extract(entry, to: destURL)
-        }
-    }
 
     /// 从解压明文插件目录中直接加载插件并进行 JavaScript 沙箱挂载
     /// - Parameter directoryURL: 物理子目录 URL 路径
@@ -417,7 +373,7 @@ final class PluginLoader {
 // MARK: - 辅助扩展
 
 /// 审查修复 LOW-5: String 正则匹配辅助
-private extension String {
+extension String {
     func matchesRegex(_ pattern: String) -> Bool {
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return false }
         let range = NSRange(location: 0, length: self.utf16.count)

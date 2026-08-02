@@ -1,0 +1,53 @@
+# .periphery.yml
+# ZhiYu 项目死代码检测配置
+# 工具：Periphery 2.21.2
+# 文档：https://github.com/peripheryapp/periphery
+#
+# 执行：periphery scan
+# CI 封装：python3 Tools/Gatekeeper/Sanity/check_dead_code.py
+#
+
+# Xcode 项目路径
+project: ZhiYu.xcodeproj
+
+# 需要编译的 Scheme
+schemes:
+  - ZhiYu
+
+# 输出格式（xcode 格式方便 CI 解析）
+format: xcode
+
+# ==============================================================================
+# 排除范围（不参与死代码检测的路径）
+# ==============================================================================
+exclude:
+  # 测试代码不检测（测试桩/Mock 天然是"未使用"的）
+  - "Tests/**"
+  - "**/*Tests.swift"
+  - "**/*Mock*.swift"
+  - "**/*Stub*.swift"
+
+  # 生成文件与工具脚本
+  - "Tools/**"
+  - "DerivedData/**"
+  - "build/**"
+
+  # Widget 扩展（独立 Target，会误报）
+  - "Sources/Platforms/iOS/Widgets/**"
+
+  # L10n 扩展（通过字符串 key 动态调用，静态分析无法识别）
+  - "Sources/Localization/**"
+
+# ==============================================================================
+# 保留注解（在代码中用 // periphery:ignore 标注刻意保留的"未使用"符号）
+# ==============================================================================
+# 在代码中：
+#   // periphery:ignore
+#   public func intentionallyUnused() { ... }
+
+# 相对宽松的报告策略：只报 ERROR 级别（真实死代码），WARNING 作信息提示
+# retain_public: true  # 保留所有 public API（开源库导出接口不报警）
+retain_public: true
+
+# 保留遵循已知协议的声明（防止 Protocol Witness 误报）
+retain_unused_protocol_func_params: true

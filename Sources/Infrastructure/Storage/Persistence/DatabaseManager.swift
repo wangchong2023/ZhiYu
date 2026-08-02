@@ -9,7 +9,7 @@
 //  核心职责：持久化引擎：GRDB/SQLite 仓库、同步、加密、数据库管理。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 数据库中枢管理器（DatabaseManager）。
 /// 它是知识笔记本高内聚持久化层（Persistence）的基座大脑，托管了专属笔记本数据库（Workspace DB）

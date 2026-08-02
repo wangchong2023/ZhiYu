@@ -11,7 +11,7 @@
 
 import XCTest
 import Combine
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 /// 知识库十万节点性能收敛测试类

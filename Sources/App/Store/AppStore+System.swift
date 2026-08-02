@@ -8,7 +8,7 @@
 //  核心职责：AppStore 的系统协议实现 — AnyPageStore 全量接口适配与 GraphDataProvider 桥接。
 //
 import SwiftUI
-@preconcurrency import GRDB
+import UFPStorage
 
 // MARK: - AnyPageStore 协议实现
 

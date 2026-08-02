@@ -10,7 +10,7 @@
 //
 import Foundation
 import CryptoKit
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 安全管理器：负责数据签名、加密与完整性校验。
 class SecurityManager: @unchecked Sendable {

@@ -72,3 +72,10 @@ __pycache__/
 # 临时测试数据目录
 Configs/
 zhiyu-releases/
+
+# 本地环境配置（包含机器相关绝对路径，不提交）
+Config/.env.local
+
+# project.yml 由 bootstrap.sh 从 Config/project.yml.template 生成，不提交
+# 提交的是模板：Config/project.yml.template
+project.yml

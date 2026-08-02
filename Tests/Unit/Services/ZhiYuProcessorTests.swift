@@ -10,7 +10,7 @@
 //
 import XCTest
 import SwiftUI
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 // MARK: - 文档物理格式探测自动分类 (DocumentFormat) 单元测试

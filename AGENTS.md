@@ -35,6 +35,10 @@
 | `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Guides/CONTRIBUTING.md` | 贡献指南 |
 | `Docs/Guides/USER_GUIDE.md` | 用户使用手册 |
+## 任务清单与实施计划更新规范 (Task & Plan Protection Policy)
+
+> **实施计划 (`implementation_plan.md`) 和任务清单 (`task.md`) 中如果存在未完成的事项，严禁未经 USER 确认直接覆写、删除或重置！修改或替换未完成事项前必须明确向 USER 汇报并获得确认。**
+
 ## 开源选型优先原则 (Open-Source First Policy)
 
 > **如果实现 1 个功能在业界存在开源成熟、稳定的开源库，必须优先通知 USER 进行技术选型与决策，严禁直接造轮子自研写代码！**

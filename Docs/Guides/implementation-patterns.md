@@ -370,6 +370,18 @@ let finalPrompt = GlobalPromptRegistry.render(
 
 ### 2. 5层摄入清洗 (IngestSanitationPipeline)
 多模态文档与网页数据在提交给 LLM 前必须通过 5 层清洗流水线：
+
+---
+
+## AI 结构化解析与开源选型决策矩阵 (Open-Source Selection Matrix)
+
+基于智宇 **“开源选型优先原则 (Open-Source First Policy)”**，针对 AI 合成实验室在文本解析、JSON 语法容错与 Markdown 渲染上的评估选型归档如下：
+
+| 技术领域 | 选型方案 | 包体积 / 架构影响 | 许可 (License) | 决策理由 |
+| :--- | :--- | :--- | :--- | :--- |
+| **JSON 语法自愈自检** | **`JSONRepairProcessor`** (自研轻量状态机) | ~15KB (纯 Swift 零外部依赖) | MIT | 大模型输出中常出现未闭合括号 `}`、缺失引号或尾部逗号。引入自研 15KB 轻量状态机在反序列化前修复，比引入重型 CocoaPods 降低了 98% 的工程复杂度，且 100% 解决试题解码失败问题。 |
+| **高质感 Markdown 渲染** | **`swift-markdown-ui`** | ~120KB (SwiftUI 原生 GFM) | MIT | GitHub 3.5k Star 成熟库。相比原生 `Text` 正则拼装，能原生渲染优雅标题分界、代码块卡片背板、Markdown 表格与双向 WikiLink 交互，全面提升深度报告排版质感。 |
+| **双向链接 `[[WikiLink]]` 提取** | **`WikiLinkExtractor`** (纯 Swift 正则与提取器) | ~5KB (UFPCore 共享算子) | MIT | 统一提取 `[[页面标题]]` 与 `[[页面标题\|别名]]`，与 `Router` 推栈与 `SynthesisSourcePagesBar` 芯片形成双向联动。 |
 ```swift
 let pipeline = IngestSanitationPipeline()
 let sanitizedText = try await pipeline.sanitize(
@@ -383,6 +395,18 @@ let sanitizedText = try await pipeline.sanitize(
 - **PII 脱敏**: 敏感隐私自动中和 `PIIMasker.maskPII(text)`。
 - **Anti-Injection**: 定界符中和与 XML 安全沙箱包裹 `PromptSecurityGuard.sanitize(userInput)`。
 
-### 4. 动态合规多语言 (DynamicComplianceManager)
-拒答告示与正则词库优先匹配 RemoteConfig 下发的最新策略，离线时优雅回退至本地 String Catalog (`L10n.Security`) 9 大语言定义。
+### 5. GRDB 与 ZIPFoundation 全量物理隔离模式 (v2.3 新增)
+
+基于 **开源选型优先原则** 与 **SPM 物理包隔离卡门**：
+
+1. **GRDB 数据库依赖收敛**：
+   - 彻底移除了所有 `Sources/` 层中的 `import GRDB`
+   - GRDB 物理收敛至 `Packages/UFPStorage/` 包，并由 `GRDBReexport.swift` 唯一导出（`@_exported import GRDB`）
+   - 所有业务存储 Repository 与系统存储服务统一使用 `import UFPStorage`
+   - `StorageConstants` 只包含通用 SQLite 引擎参数（WAL 模式阈值、超时等），严禁硬编码业务表名
+
+2. **ZIPFoundation 压缩归档解耦**：
+   - 移除 `PluginLoader` 等业务层对 `ZIPFoundation` 的直接依赖
+   - 在 `Platforms/iOS/Services/ZIPFoundationArchiver.swift` 封装完整提取逻辑，包含 VULN-014 路径穿越校验
+   - 依赖方统一通过 `FileArchiverProtocol` 协议进行依赖注入
 

@@ -28,5 +28,17 @@ final class MacFileArchiver: FileArchiverProtocol, @unchecked Sendable {
             throw NSError(domain: "MacFileArchiver", code: Int(process.terminationStatus), userInfo: [NSLocalizedDescriptionKey: "Zip_Failed"])
         }
     }
+
+    /// macOS 原生解压（/usr/bin/unzip）
+    func extractContents(from archiveURL: URL, to destinationURL: URL) throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+        process.arguments = ["-o", archiveURL.path, "-d", destinationURL.path]
+        try process.run()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else {
+            throw FileArchiverError.extractionFailed(reason: "unzip exit \(process.terminationStatus)")
+        }
+    }
 }
 #endif

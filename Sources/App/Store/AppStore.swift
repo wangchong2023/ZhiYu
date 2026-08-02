@@ -12,7 +12,7 @@
 import SwiftUI
 import Combine
 import Observation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 智宇核心状态中心 (L3-Facade)
 /// 负责全局状态同步、跨服务协调及业务流程封装。

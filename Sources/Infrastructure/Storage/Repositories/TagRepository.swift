@@ -9,7 +9,7 @@
 //  核心职责：属于 Repositories 模块，负责标签数据的持久化与迁移。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 标签数据仓储
 public struct TagRepository: Sendable {

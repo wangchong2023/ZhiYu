@@ -12,7 +12,7 @@
 //
 
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 演示数据生成器
 ///

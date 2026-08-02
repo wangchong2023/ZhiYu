@@ -73,4 +73,37 @@ public enum PromptConstants {
         public static let defaultTextModel: String = AppModel.gpt4o.rawValue
         public static let defaultEmbeddingModel: String = AppModel.appleNLv1.rawValue
     }
+
+    // MARK: - JSON Schema 结构约束描述 (Structured Output JSON Schemas)
+    public struct Schemas {
+        /// Quiz 测验题目的标准 JSON Schema 约束描述（强制 LLM 按照结构化 JSON 返回）
+        public static let quizJSONSchema: String = """
+        {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "测验标题" },
+            "questions": {
+              "type": "array",
+              "description": "测验题目列表",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer", "description": "题目序号从 1 开始" },
+                  "question": { "type": "string", "description": "问题描述" },
+                  "options": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "选项列表 (至少 2 项)"
+                  },
+                  "answer": { "type": "integer", "description": "正确选项索引 (从 0 开始)" },
+                  "explanation": { "type": "string", "description": "解析说明" }
+                },
+                "required": ["question", "options", "answer", "explanation"]
+              }
+            }
+          },
+          "required": ["questions"]
+        }
+        """
+    }
 }

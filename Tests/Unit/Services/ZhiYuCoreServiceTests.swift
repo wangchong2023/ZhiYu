@@ -10,7 +10,7 @@
 //
 import XCTest
 import SwiftUI
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 // MARK: - 历史撤销与恢复 (UndoService) 单元测试

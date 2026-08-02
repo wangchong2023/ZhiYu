@@ -10,7 +10,7 @@
 //
 import SwiftUI
 import Observation
-@preconcurrency import GRDB
+import UFPStorage
 /// 应用程序全局环境
 /// 负责协调服务初始化、生命周期管理及全局状态（Stores）持有
 @Observable

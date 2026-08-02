@@ -9,7 +9,7 @@
 //  核心职责：ImportRecord 的 SQLite 仓储实现
 
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriterProvider, @unchecked Sendable {
     // MARK: - ImportRecordRepository

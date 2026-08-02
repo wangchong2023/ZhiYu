@@ -9,7 +9,7 @@
 //  核心职责：RAG 全链路质量治理 SQLite 存储实现。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// [Infra] RAG 全链路质量治理 SQLite 存储
 final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterProvider, @unchecked Sendable {

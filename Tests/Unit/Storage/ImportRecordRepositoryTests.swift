@@ -9,7 +9,7 @@
 //  核心职责：验证 ImportRecordRepository CRUD 类型安全操作
 
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

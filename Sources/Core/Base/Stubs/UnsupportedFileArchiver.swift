@@ -13,9 +13,14 @@ import Foundation
 /// 不支持的文件归档服务占位符
 public final class UnsupportedFileArchiver: FileArchiverProtocol, @unchecked Sendable {
     public init() {}
-    
+
     /// zip
     public func zip(directory sourceDir: URL, to destinationURL: URL) async throws {
+        throw FileArchiverError.platformNotSupported
+    }
+
+    /// 当前平台不支持解压运算
+    public func extractContents(from archiveURL: URL, to destinationURL: URL) throws {
         throw FileArchiverError.platformNotSupported
     }
 }

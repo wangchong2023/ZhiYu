@@ -9,7 +9,7 @@
 //  核心职责：用户反馈数据模型（GRDB ORM）
 
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 用户反馈条目
 public struct FeedbackEntry: Identifiable, Codable, FetchableRecord, MutablePersistableRecord, Sendable {

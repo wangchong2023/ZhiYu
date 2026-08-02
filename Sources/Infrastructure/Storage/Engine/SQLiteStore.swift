@@ -10,7 +10,7 @@
 //
 import Foundation
 import Combine
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 核心持久化存储引擎 (L1Actor)
 /// 采用 actor 模式确保多端并发下的数据一致性，封装复杂的 SQL 事务。

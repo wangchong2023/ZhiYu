@@ -9,7 +9,7 @@
 //  核心职责：RAG 全链路质量治理数据模型（Token、调用日志、评估结果）。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 // MARK: - Token 使用量模型
 /// 用于统计 AI 模型消耗的 Token 数据

@@ -9,7 +9,7 @@
 //  核心职责：针对 DatabaseSchemaMigrator 开展自动化单元测试验证。
 //
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

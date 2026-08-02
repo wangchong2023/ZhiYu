@@ -15,7 +15,7 @@ final class PPTXProcessorTests: XCTestCase {
         super.setUp()
         let container = ServiceContainer.shared
         if container.resolveOptional((any FileArchiverProtocol).self) == nil {
-            let archiver = iOSFileArchiver()
+            let archiver = ZIPFoundationArchiver()
             container.register(archiver as any FileArchiverProtocol, for: (any FileArchiverProtocol).self)
         }
     }

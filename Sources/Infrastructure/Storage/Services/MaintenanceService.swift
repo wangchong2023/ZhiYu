@@ -10,7 +10,7 @@
 //
 import Foundation
 import Observation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// 系统维护服务 (L1-Infra)
 /// 负责处理非核心业务的系统级管理任务。

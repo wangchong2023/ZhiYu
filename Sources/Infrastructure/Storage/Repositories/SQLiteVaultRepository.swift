@@ -9,7 +9,7 @@
 //  核心职责：持久化引擎：GRDB/SQLite 仓库、同步、加密、数据库管理。
 //
 import Foundation
-@preconcurrency import GRDB
+import UFPStorage
 
 /// [Infra] 用于映射 `global_vaults` 表的 GRDB 类型安全实体
 struct VaultRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {

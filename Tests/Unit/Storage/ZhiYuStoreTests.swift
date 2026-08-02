@@ -10,7 +10,7 @@
 //
 import XCTest
 import SwiftUI
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 // MARK: - 多轮对话会话缓存 (ChatHistoryStore) 单元测试

@@ -9,7 +9,7 @@
 //  核心职责：导入功能边界条件全覆盖 — 重复文件、大小限制、格式校验、频控、批量限制
 
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

@@ -9,7 +9,7 @@
 //  核心职责：批量导入、AI 标签、标签分组逻辑测试
 
 import XCTest
-@preconcurrency import GRDB
+import UFPStorage
 @testable import ZhiYu
 
 @MainActor

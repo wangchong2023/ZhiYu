@@ -16,15 +16,30 @@ import SwiftUI
 /// 以 Markdown 渲染器展示合成文档内容的通用回退视图
 struct SynthesisReportView: View {
     let doc: SynthesisStore.SynthesisDocument
+    @Inject private var router: Router
+    @Environment(AppStore.self) private var store: AppStore
 
     var body: some View {
         ScrollView {
-            MarkdownRendererView(content: doc.content, isPrivate: false, onLinkTap: { _ in })
-                .padding()
-                .padding(.bottom, DesignSystem.huge)
+            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                MarkdownRendererView(content: doc.content, isPrivate: false, onLinkTap: { target in
+                    handleLinkTap(target)
+                })
+            }
+            .padding(DesignSystem.standardPadding)
+            .padding(.bottom, DesignSystem.huge)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
+    }
+
+    private func handleLinkTap(_ target: String) {
+        let cleanTarget = target.replacingOccurrences(of: "[", with: "")
+                               .replacingOccurrences(of: "]", with: "")
+                               .trimmingCharacters(in: .whitespacesAndNewlines)
+        if let targetPage = store.pages.first(where: { $0.title.lowercased() == cleanTarget.lowercased() }) {
+            router.navigate(to: .pageDetail(id: targetPage.id))
+        }
     }
 }
 
