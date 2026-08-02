@@ -578,7 +578,7 @@
 		50DE14EF0228ABA1ECA48341 /* UINavigationController+PopGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = F222F3322366805595B60A89 /* UINavigationController+PopGesture.swift */; };
 		5104971A76C8E018F1637DAE /* QuizProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC454C33881B0524198C9E3 /* QuizProcessor.swift */; };
 		513CF7AB588AE59D2755A0B6 /* L10n+CoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3FB8FD138C00E2DC4D49D3 /* L10n+CoreModels.swift */; };
-		51885D99B9FB0D6DACD198C0 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 25C160E78D0A0079B9DDBAD9 /* ZIPFoundation */; };
+		51885D99B9FB0D6DACD198C0 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F8FBC184818589C4E541C345 /* Lottie */; };
 		51C76CD0AE09951420C0B4E6 /* System.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = ABD8CD4C32C6003E8BBDEC00 /* System.xcstrings */; };
 		51FB3EF2AF75C168807C13A8 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 242B644BE716C72200063E36 /* SidebarView.swift */; };
 		520B336A9E6119844B49AD89 /* LLMConfigStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDECC9029EE7F1014B823735 /* LLMConfigStoreTests.swift */; };
@@ -867,6 +867,7 @@
 		7AA77BC48F89889A0303FE6B /* MockLLMServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 989FFD36A9187F018758C1FD /* MockLLMServices.swift */; };
 		7AAAEFB8DE2F81C8B5F408EB /* IngestSanitationPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59202201D46045DD9259403 /* IngestSanitationPipeline.swift */; };
 		7AB84AE9AF564EC2C78643E1 /* AppEnvironmentProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DD66E506EB42272441DD10 /* AppEnvironmentProtocol.swift */; };
+		7AC32CA9A86059EF4C4A9A5B /* Localized.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEBA23C20D4626F4A1208D7 /* Localized.swift */; };
 		7AD2C429A19CC0CC0A0AFFA0 /* MarkdownEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380D1050BD09B6BE7020ADBF /* MarkdownEditorView.swift */; };
 		7AD3D0F14971DD315A0D5CEE /* OnboardingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0237F4DBBF188A05C25D0B9C /* OnboardingOverlay.swift */; };
 		7AFC152BDD0E12B43CFCE264 /* iOSBackgroundTaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6DF1F248C26D199F903782D /* iOSBackgroundTaskProvider.swift */; };
@@ -1514,6 +1515,7 @@
 		D3D05B7488F0DEEC03E32E92 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311C9B98A4351AEBDD9BA1FC /* ThemeManager.swift */; };
 		D401A0DFE4AE6F154E9BD9F1 /* Widget.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5F2363B3ACD7889BFEC66EF0 /* Widget.xcstrings */; };
 		D444B2BA12717B6A0ADC4E7D /* FileSystemSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE23A6BB463ABF559CBC21F2 /* FileSystemSyncService.swift */; };
+		D44984EEB779ED43783C726F /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 25C160E78D0A0079B9DDBAD9 /* ZIPFoundation */; };
 		D48B7371DB485CAFB1226440 /* L10n+Plugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CC6F6B06158CB0DFB59E4D6 /* L10n+Plugin.swift */; };
 		D4A2BB780567D6AF8E9CB4AB /* iOSHapticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84C953CDB10B686AF8D46A /* iOSHapticService.swift */; };
 		D4AEC4ECE8A3C4DCEDB31FD3 /* GeneratedSQL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 591AA8355DE2F98AE94E85FA /* GeneratedSQL.swift */; };
@@ -2948,7 +2950,8 @@
 				AD6DA7C78B7CD989F978711D /* ZhiYuAICore in Frameworks */,
 				95DDC1858B095E92A45500C1 /* ZhiYuFeatures in Frameworks */,
 				29DF800D580A432C1ED5A488 /* GRDB in Frameworks */,
-				51885D99B9FB0D6DACD198C0 /* ZIPFoundation in Frameworks */,
+				51885D99B9FB0D6DACD198C0 /* Lottie in Frameworks */,
+				D44984EEB779ED43783C726F /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5994,6 +5997,7 @@
 				0043F065290B964E4912749D /* ZhiYuAICore */,
 				E4FE0D091246BE1AB55711CF /* ZhiYuFeatures */,
 				27EC66462D43C62281B48DA8 /* GRDB */,
+				F8FBC184818589C4E541C345 /* Lottie */,
 				25C160E78D0A0079B9DDBAD9 /* ZIPFoundation */,
 			);
 			productName = ZhiYuWatch;
@@ -8115,6 +8119,7 @@
 				42B870D9ACA5ECEFE9D63B20 /* L10n+Watch.swift in Sources */,
 				20090050BD82720CC89EBD34 /* L10n+Widget.swift in Sources */,
 				1BB84563632BC532B9A54360 /* L10n+Workflow.swift in Sources */,
+				7AC32CA9A86059EF4C4A9A5B /* Localized.swift in Sources */,
 				2C99FE751581EC84B9396384 /* StubIngestService.swift in Sources */,
 				2AE34BF033F9E62CBFB3E7BB /* StubLinkService.swift in Sources */,
 				6EBED2081BBFCC0D7B915ABC /* WatchAccessibilityService.swift in Sources */,
@@ -9009,6 +9014,10 @@
 		F7048ACA8FDACD7BE745F800 /* ZhiYuDomain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ZhiYuDomain;
+		};
+		F8FBC184818589C4E541C345 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

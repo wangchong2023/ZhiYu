@@ -96,8 +96,27 @@ settings:
     MTL_ENABLE_DEBUG_INFO: INCLUDE_SOURCE
     FRAMEWORK_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
 
+targetTemplates:
+  BaseAppTemplate:
+    preBuildScripts:
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
+        name: "[Gatekeeper] All Quality & Security Audits"
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
+      - package: GRDB
+      - package: Lottie
+      - package: ZIPFoundation
+
 targets:
   ZhiYu:
+    templates:
+      - BaseAppTemplate
     type: application
     platform: iOS
     sources:
@@ -119,20 +138,7 @@ targets:
       configs:
         Debug:
           SWIFT_STRICT_CONCURRENCY: targeted
-    preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
-        name: "[Gatekeeper] All Quality & Security Audits"
-        basedOnDependencyAnalysis: false
     dependencies:
-      - package: UFPCore
-      - package: UFPStorage
-      - package: UFPDesignSystem
-      - package: ZhiYuDomain
-      - package: ZhiYuAICore
-      - package: ZhiYuFeatures
-      - package: GRDB
-      - package: Lottie
-      - package: ZIPFoundation
       - package: SwiftMarkdown
         product: Markdown
       - package: SwiftMarkdownUI
@@ -146,6 +152,8 @@ targets:
       - framework: Frameworks/ATAuthSDK_D.xcframework
 
   ZhiYuMac:
+    templates:
+      - BaseAppTemplate
     type: application
     platform: iOS
     deploymentTarget: "17.0"
@@ -173,20 +181,7 @@ targets:
           CODE_SIGN_ENTITLEMENTS: ""
         Release:
           CODE_SIGN_ENTITLEMENTS: Sources/ZhiYu.entitlements
-    preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
-        name: "[Gatekeeper] All Quality & Security Audits"
-        basedOnDependencyAnalysis: false
     dependencies:
-      - package: UFPCore
-      - package: UFPStorage
-      - package: UFPDesignSystem
-      - package: ZhiYuDomain
-      - package: ZhiYuAICore
-      - package: ZhiYuFeatures
-      - package: GRDB
-      - package: Lottie
-      - package: ZIPFoundation
       - package: SwiftMarkdown
         product: Markdown
       - package: SwiftMarkdownUI
@@ -197,12 +192,15 @@ targets:
         product: PartialJSON
 
   ZhiYuWatch:
+    templates:
+      - BaseAppTemplate
     type: application
     platform: watchOS
     sources:
       - path: Sources/Platforms/watchOS
       - path: Sources/Platforms/Shared
       - path: Sources/Localization
+      - path: Sources/Core/Base/Utils/Localized.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.watch
@@ -213,19 +211,6 @@ targets:
         INFOPLIST_KEY_WKWatchKitApp: YES
         INFOPLIST_KEY_WKApplication: YES
         INFOPLIST_KEY_WKWatchOnly: YES
-    preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
-        name: "[Gatekeeper] All Quality & Security Audits"
-        basedOnDependencyAnalysis: false
-    dependencies:
-      - package: UFPCore
-      - package: UFPStorage
-      - package: UFPDesignSystem
-      - package: ZhiYuDomain
-      - package: ZhiYuAICore
-      - package: ZhiYuFeatures
-      - package: GRDB
-      - package: ZIPFoundation
 
   ZhiYuWidgets:
     type: app-extension
