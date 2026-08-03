@@ -53,6 +53,7 @@ sonarqube-analysis:
   allow_failure: false
   variables:
     SONAR_HOST_URL: "http://10.211.55.2:9000"
+    GIT_DEPTH: "0"
   script:
     - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) 与 Quality Gate 硬阻断"
     - sonar-scanner
