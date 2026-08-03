@@ -57,8 +57,10 @@ protocol AppStoreProtocol: AnyObject, Observable {
     func seedDefaultContent(vaultName: String?) async
 
     // ── 建议应用 ──
+    #if !os(watchOS)
     /// 应用重构建议
     func applyRefactorSuggestion(_ suggestion: RefactorSuggestion) async
+    #endif
     /// 应用潜在链接建议
     func applyPotentialLink(_ link: PotentialLinkSuggestion) async
 }

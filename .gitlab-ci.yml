@@ -1,15 +1,20 @@
 # ============================================================
-# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v1.0.0)
+# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v3.0.0)
 #
 # 运行环境: macOS 宿主机 Shell Runner（tagged: macos, shell, xcode, arm64）
 #   - 必须在安装了 Xcode 的 Mac 上运行
 #   - 使用 GitLab Shell Runner，不需要 Docker
 #
+# 架构: prepare 生成项目 → artifacts 传递 → 串行构建 → 测试
+#   - build-prepare 生成 ZhiYu.xcodeproj + Config/.env.local，通过 artifacts 传递
+#   - 后续 Job 通过 dependencies 下载 artifacts，跳过重复 checkout/生成
+#   - Shell Runner 单机部署，build Job 串行执行
+#
 # 执行顺序:
-#   analyze → build-prepare → build(ios/macos/watchos) → test
+#   analyze(静态分析 + SonarQube) → prepare → build(ios→macos→watchos) → test
 #
 # 流程控制:
-#   仅 main/develop/release/* 分支 push 触发完整流水线
+#   仅 main/develop/release/* 分支触发完整流水线
 #   所有分支 push 触发 static-analysis
 # ============================================================
 
@@ -19,13 +24,17 @@ stages:
   - build
   - test
 
-# 全局默认：仅在打了 macos 标签的 Shell Runner 上执行
 default:
   tags:
     - macos
     - shell
     - xcode
     - arm64
+  before_script:
+    - |
+      if [ -n "${OPENSRC_ROOT:-}" ] && [ ! -f Config/.env.local ]; then
+        echo "export OPENSRC_ROOT=${OPENSRC_ROOT}" > Config/.env.local
+      fi
 
 # ════════════════════════════════════════════════════════════
 # analyze — 静态代码分析（所有分支）
@@ -37,61 +46,68 @@ static-analysis:
     - echo "===> 安装静态分析 Python 依赖"
     - pip3 install --quiet radon 2>/dev/null || true
     - echo "===> 运行全部静态分析"
-    - bash Tools/ci/run-code-static-analysis.sh
+    - bash Tools/CI/run-code-static-analysis.sh
 
 sonarqube-analysis:
   stage: analyze
   allow_failure: false
+  variables:
+    SONAR_HOST_URL: "http://10.211.55.2:9000"
+    GIT_DEPTH: "0"
   script:
     - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) 与 Quality Gate 硬阻断"
-    - sonar-scanner -Dsonar.qualitygate.wait=true
-
+    - sonar-scanner
+        -Dsonar.host.url=${SONAR_HOST_URL}
+        -Dsonar.qualitygate.wait=true
 
 # ════════════════════════════════════════════════════════════
-# prepare — 构建前准备（生成工程、解析依赖、注入版本）
+# prepare — 生成 Xcode 工程（artifacts 传递给后续 Job）
 # ════════════════════════════════════════════════════════════
 
 build-prepare:
   stage: prepare
-  needs: [static-analysis]
+  needs: [static-analysis, sonarqube-analysis]
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - xcodegen generate
-    - mkdir -p build /tmp/zhiyu-spm-cache
-    - xcodebuild -resolvePackageDependencies
-        -project ZhiYu.xcodeproj
-        -scheme ZhiYu
-        -clonedSourcePackagesDirPath /tmp/zhiyu-spm-cache
-    - bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
+    - make gen
+    - bash Tools/CI/build-pipeline-version-inject.sh Sources/Info.plist
+  artifacts:
+    paths:
+      - ZhiYu.xcodeproj/
+      - Config/.env.local
+    expire_in: 1 hour
 
 # ════════════════════════════════════════════════════════════
-# build — 多平台构建（串行，依次验证 iOS → macOS → watchOS）
+# build — 多平台构建（串行，复用 prepare artifacts）
 # ════════════════════════════════════════════════════════════
 
 build-ios:
   stage: build
   needs: [build-prepare]
+  dependencies: [build-prepare]
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - bash Tools/ci/build-pipeline-platform.sh ZhiYu 'generic/platform=iOS Simulator' ios
+    - make ios
 
 build-macos:
   stage: build
-  needs: [build-ios]
+  needs: [build-ios, build-prepare]
+  dependencies: [build-prepare]
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - bash Tools/ci/build-pipeline-platform.sh ZhiYuMac 'platform=macOS' macos
+    - make mac
 
 build-watchos:
   stage: build
-  needs: [build-macos]
+  needs: [build-macos, build-prepare]
+  dependencies: [build-prepare]
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - bash Tools/ci/build-pipeline-platform.sh ZhiYuWatch 'generic/platform=watchOS Simulator' watchos
+    - make watch
 
 # ════════════════════════════════════════════════════════════
 # test — 单元测试 + 覆盖率验证
@@ -99,11 +115,12 @@ build-watchos:
 
 test-and-coverage:
   stage: test
-  needs: [build-watchos]
+  needs: [build-watchos, build-prepare]
+  dependencies: [build-prepare]
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - bash Tools/ci/run-test-with-coverage.sh
+    - bash Tools/CI/run-test-with-coverage.sh
   coverage: '/Coverage: \d+\.\d+%/'
   artifacts:
     when: always

@@ -11,6 +11,7 @@
 import Foundation
 import Combine
 
+#if !os(watchOS)
 /// 端侧本地大模型推理服务协议契约。
 @MainActor
 public protocol OnDeviceLLMServiceProtocol: ObservableObject, Sendable {
@@ -79,3 +80,4 @@ public protocol OnDeviceLLMServiceProtocol: ObservableObject, Sendable {
     /// - Parameter model: 待删除的模型对象
     func deleteModel(_ model: OnDeviceModel) throws
 }
+#endif

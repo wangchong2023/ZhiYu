@@ -45,6 +45,7 @@ public final class ContentModerationEngine: Sendable {
     private let politicalPatterns = [#"(?i)(?:颠覆政权|暴乱|反动宣言|煽动仇恨)"#]
     private let nsfwPatterns = [#"(?i)(?:淫秽色情|露骨色情|涉黄描述)"#]
     private let violencePatterns = [#"(?i)(?:制造炸弹|恐怖袭击|毒品交易)"#]
+    private let gamblingNarcoticsPatterns = [#"(?i)(?:制造冰毒|提纯步骤|赌博网站|套利刷流水|冰毒配方|合成冰毒)"#]
 
     /// 评估用户输入文本并执行合规检查与三级处置
     public func evaluateAndEnforce(_ text: String) throws -> String {
@@ -53,7 +54,7 @@ public final class ContentModerationEngine: Sendable {
         // 0. 全球 9 大语言抗变异洗词预处理（Leetspeak 还原、重音符剥离、繁简归一化、剥离插入隔符）
         let sanitizedText = MultilingualTextSanitizer.shared.sanitizeForModeration(text)
 
-        // 1. 拦截级别 3 重度违规 (政治、黄色、暴恐)
+        // 1. 拦截级别 3 重度违规 (政治、黄色、暴恐、赌博毒品)
         let activePolitical = DynamicComplianceManager.shared.getPatterns(for: .politicalReactionary, fallback: politicalPatterns)
         if matchesAny(sanitizedText, rawText: text, patterns: activePolitical) {
             Logger.shared.addLog(action: .error, target: "ContentModerationEngine", details: "Blocked political content", module: "Security")
@@ -70,6 +71,12 @@ public final class ContentModerationEngine: Sendable {
         if matchesAny(sanitizedText, rawText: text, patterns: activeViolence) {
             Logger.shared.addLog(action: .error, target: "ContentModerationEngine", details: "Blocked violence content", module: "Security")
             throw PromptComplianceError.contentViolatesPolicy(.violenceTerrorism)
+        }
+
+        let activeGamblingNarcotics = DynamicComplianceManager.shared.getPatterns(for: .gamblingNarcotics, fallback: gamblingNarcoticsPatterns)
+        if matchesAny(sanitizedText, rawText: text, patterns: activeGamblingNarcotics) {
+            Logger.shared.addLog(action: .error, target: "ContentModerationEngine", details: "Blocked gambling/narcotics content", module: "Security")
+            throw PromptComplianceError.contentViolatesPolicy(.gamblingNarcotics)
         }
 
         // 2. 处理级别 1 (PII 脱敏) 与级别 2 (注入脱敏)

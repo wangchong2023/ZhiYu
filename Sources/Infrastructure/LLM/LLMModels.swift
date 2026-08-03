@@ -157,6 +157,7 @@ public enum LLMProvider: String, Codable, CaseIterable, Identifiable {
 // MARK: - Smart Ingest Result
 typealias SmartIngestResult = SmartIngestResultDTO
 
+#if !os(watchOS)
 // MARK: - LLM Errors
 enum LLMError: LocalizedError {
     case notConfigured
@@ -397,3 +398,4 @@ final class LLMConfigStore: ObservableObject {
         }
     }
 }
+#endif

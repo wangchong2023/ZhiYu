@@ -110,7 +110,20 @@ targetTemplates:
       - package: ZhiYuAICore
       - package: ZhiYuFeatures
       - package: GRDB
-      - package: Lottie
+      - package: ZIPFoundation
+  WatchAppTemplate:
+    preBuildScripts:
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
+        name: "[Gatekeeper] All Quality & Security Audits"
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - package: UFPCore
+      - package: UFPStorage
+      - package: UFPDesignSystem
+      - package: ZhiYuDomain
+      - package: ZhiYuAICore
+      - package: ZhiYuFeatures
+      - package: GRDB
       - package: ZIPFoundation
 
 targets:
@@ -193,14 +206,52 @@ targets:
 
   ZhiYuWatch:
     templates:
-      - BaseAppTemplate
+      - WatchAppTemplate
     type: application
     platform: watchOS
     sources:
+      # watchOS 专属源码
       - path: Sources/Platforms/watchOS
       - path: Sources/Platforms/Shared
+      # 本地化
       - path: Sources/Localization
+      # L0 基础设施：DI 容器、协议、常量、Stubs、工具
+      - path: Sources/Core/Base/ServiceContainer.swift
       - path: Sources/Core/Base/Utils/Localized.swift
+      - path: Sources/Core/Base/Utils/PageContentUtility.swift
+      - path: Sources/Core/Base/Utils/Character+CJK.swift
+      - path: Sources/Core/Base/Constants
+      - path: Sources/Core/Base/Stubs
+      - path: Sources/Core/Base/Protocols
+      # L0 系统服务：Logger、Haptic、Routing、AudioSplitter、SecurityReinforcement、Notifications
+      - path: Sources/Core/System/Logger/Logger.swift
+      - path: Sources/Core/System/Haptic/WatchHapticService.swift
+      - path: Sources/Core/System/Routing/AppLinkProcessor.swift
+      - path: Sources/Core/System/Workflow/AudioSplitter.swift
+      - path: Sources/Core/System/Security/SecurityReinforcement.swift
+      - path: Sources/Core/System/Notifications/AppNotifications.swift
+      # L1.5 领域层：模型、协议、RAG
+      - path: Sources/Domain/Models/KnowledgePage.swift
+      - path: Sources/Domain/Models/PageType.swift
+      - path: Sources/Domain/Models/LintIssue.swift
+      - path: Sources/Domain/Models/SearchConstants.swift
+      - path: Sources/Domain/Models/SearchDiagnosticInfo.swift
+      - path: Sources/Domain/Models/RAGModels.swift
+      - path: Sources/Domain/Models/PromptConstants.swift
+      - path: Sources/Domain/Protocols/IngestServiceProtocol.swift
+      - path: Sources/Domain/RAG/LinkService.swift
+      # L1 基础设施模型
+      - path: Sources/Infrastructure/Models/SpeechModels.swift
+      - path: Sources/Infrastructure/Models/PDFModels.swift
+      - path: Sources/Infrastructure/LLM/LLMModels.swift
+      # 协作模型（DiscoveredRoom/CollabUser，MultipeerConnectivity 已条件编译隔离）
+      - path: Sources/Features/System/Collaboration/Model/CollaborationModels.swift
+      # 共享设计系统（DesignSystem 令牌入口 + Tokens 子目录 + PageType UI 扩展）
+      - path: Sources/Shared/DesignSystem/DesignSystem.swift
+      - path: Sources/Shared/DesignSystem/Tokens
+      - path: Sources/Shared/DesignSystem/Styles/PageType+UI.swift
+      # 跨平台适配
+      - path: Sources/Shared/Platforms/Adaptor/CrossPlatform.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.watch

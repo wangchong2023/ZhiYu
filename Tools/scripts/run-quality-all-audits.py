@@ -32,7 +32,7 @@ GATEKEEPER_AUDIT_STEPS = [
     ("Tools 脚本静态质量审计", ["python3", "Tools/scripts/audit-quality-scripts.py"]),
     ("跨平台 Layout 布局规范审计", ["python3", "Tools/ios/check-design-layout.py"]),
     ("DI 注入安全与崩溃风险审计", ["python3", "Tools/ios/check-code-di-crash-risk.py"]),
-    ("代码重复率静态检测 (jscpd)", ["python3", "Tools/scripts/check_duplicate_code.py", "--local"]),
+    ("代码重复率静态检测 (jscpd)", ["python3", "Tools/ios/assert-code-duplication.py", "--local"]),
     ("视图重复启发式提取审计", ["python3", "Tools/ios/audit-arch-view-duplication.py"]),
     ("开源库适配器逻辑隔离审计", ["python3", "Tools/ios/check-arch-opensource-adapters.py"]),
     ("开源库适配器物理归位审计", ["python3", "Tools/ios/check-arch-opensource-placement.py"]),

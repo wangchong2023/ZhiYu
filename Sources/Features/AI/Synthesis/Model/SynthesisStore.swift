@@ -213,12 +213,9 @@ public final class SynthesisStore {
 
         let existingCount = synthesisResults[type]?.count ?? 0
         if existingCount >= maxSynthesisDocsPerType {
-            // 自动容量管控：已达 5 个阈值时自动移除最旧文档，避免阻塞用户合成体验
-            if var docs = synthesisResults[type], !docs.isEmpty {
-                docs.removeLast()
-                synthesisResults[type] = docs
-                persistResults(for: type)
-            }
+            // 容量管控：已达 5 份上限时拒绝生成并抛错，由 UI 层提示用户清理旧文档
+            // 严禁自动删除用户历史文档（用户决策：抛错不删除）
+            throw AppError.synthesis(L10n.AI.Synthesis.Error.limitReached, code: -2)
         }
 
         withMutation(keyPath: \.synthesisStates) {

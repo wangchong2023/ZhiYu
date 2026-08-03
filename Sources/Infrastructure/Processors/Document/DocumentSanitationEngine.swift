@@ -86,11 +86,14 @@ public final class DocumentSanitationEngine: DocumentSanitizerProtocol {
     }
 
     private func stripLeadingChatter(_ text: String) -> String {
-        let lines = text.components(separatedBy: .newlines)
+        let lines = text.components(separatedBy: "\n")
         guard let firstLine = lines.first?.trimmingCharacters(in: .whitespaces) else { return text }
 
         let lower = firstLine.lowercased()
-        for prefix in L10n.AI.Synthesis.Fallback.chatterPrefixes {
+        // 使用全语种前缀集合，覆盖所有支持语言（中/英/日/韩/法/西/阿/俄/葡/繁中）
+        // 无论用户当前系统语言为何，均能匹配 LLM 输出的多语言前导废话
+        let allPrefixes = L10n.AI.Synthesis.Fallback.allChatterPrefixes
+        for prefix in allPrefixes {
             if lower.hasPrefix(prefix.lowercased()) && firstLine.contains(":") {
                 return lines.dropFirst().joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
             }

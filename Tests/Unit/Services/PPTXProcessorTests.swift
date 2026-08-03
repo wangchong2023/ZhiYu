@@ -11,17 +11,10 @@ import XCTest
 
 final class PPTXProcessorTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-        let container = ServiceContainer.shared
-        if container.resolveOptional((any FileArchiverProtocol).self) == nil {
-            let archiver = ZIPFoundationArchiver()
-            container.register(archiver as any FileArchiverProtocol, for: (any FileArchiverProtocol).self)
-        }
-    }
-
     func testPPTXProcessor_GeneratesValidZipAndOpenXMLStructure() async throws {
-        // Given: 多页面幻灯片 Markdown 文本
+        // Given: 多页面幻灯片 Markdown 文本 + 专用 PPTXProcessor 实例（构造函数注入真实 archiver）
+        // 不使用 shared 单例，避免全局 ServiceContainer 状态污染
+        let processor = PPTXProcessor(archiver: ZIPFoundationArchiver())
         let markdown = """
         # 智宇 LLM Wiki 架构
         
@@ -36,7 +29,7 @@ final class PPTXProcessorTests: XCTestCase {
         """
 
         // When: 生成 PPTX
-        let outputURL = try await PPTXProcessor.shared.generate(markdown: markdown, title: "TestPresentation")
+        let outputURL = try await processor.generate(markdown: markdown, title: "TestPresentation")
 
         // Then:
         // 1. 生成的 outputURL 文件必须在磁盘上合法存在且大于 0 字节

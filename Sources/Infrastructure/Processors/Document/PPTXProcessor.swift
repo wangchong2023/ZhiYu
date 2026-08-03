@@ -12,8 +12,22 @@ import Foundation
 
 /// 简易原生 PPTX 生成器 (OpenXML 架构)
 /// 遵循微软 OpenXML 标准，通过生成 XML 目录结构并使用系统 zip 工具打包。
+///
+/// 依赖注入：通过构造函数接收 `FileArchiverProtocol`，避免方法内 `@Inject`
+/// 导致的全局 `ServiceContainer.shared` 状态污染（测试间 Mock 串扰）。
+/// 生产环境使用 `shared` 单例（从 DI 容器解析 archiver），
+/// 测试环境直接构造专用实例注入 Mock/真实 archiver。
 final class PPTXProcessor {
-    nonisolated(unsafe) static let shared = PPTXProcessor()
+    nonisolated(unsafe) static let shared = PPTXProcessor(archiver: ServiceContainer.shared.resolve((any FileArchiverProtocol).self))
+
+    /// 压缩归档器（构造函数注入，隔离全局 DI 容器状态）
+    private let archiver: any FileArchiverProtocol
+
+    /// 构造函数注入 archiver
+    /// - Parameter archiver: 文件归档器实现（生产用 ZIPFoundationArchiver，测试可注入 Mock）
+    init(archiver: any FileArchiverProtocol) {
+        self.archiver = archiver
+    }
 
     struct Slide {
         let title: String
@@ -49,7 +63,6 @@ final class PPTXProcessor {
             try FileManager.default.removeItem(at: outputURL)
         }
 
-        @Inject var archiver: any FileArchiverProtocol
         try await archiver.zip(directory: tempDir, to: outputURL)
         return outputURL
     }
