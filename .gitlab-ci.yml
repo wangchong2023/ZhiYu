@@ -1,12 +1,17 @@
 # ============================================================
-# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v1.0.0)
+# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v2.0.0)
 #
 # 运行环境: macOS 宿主机 Shell Runner（tagged: macos, shell, xcode, arm64）
 #   - 必须在安装了 Xcode 的 Mac 上运行
 #   - 使用 GitLab Shell Runner，不需要 Docker
 #
+# 架构: 单 Job 串行构建
+#   - Shell Runner 单机部署，多 Job 并行无收益
+#   - 避免 artifacts 传递和重复 checkout 开销
+#   - prepare + build + test 在同一 Job 内完成
+#
 # 执行顺序:
-#   analyze → build-prepare → build(ios/macos/watchos) → test
+#   analyze(静态分析 + SonarQube) → build(全平台构建 + 测试)
 #
 # 流程控制:
 #   仅 main/develop/release/* 分支 push 触发完整流水线
@@ -15,11 +20,8 @@
 
 stages:
   - analyze
-  - prepare
   - build
-  - test
 
-# 全局默认：仅在打了 macos 标签的 Shell Runner 上执行
 default:
   tags:
     - macos
@@ -55,58 +57,26 @@ sonarqube-analysis:
         -Dsonar.host.url=${SONAR_HOST_URL}
         -Dsonar.qualitygate.wait=true
 
-
 # ════════════════════════════════════════════════════════════
-# prepare — 构建前准备（生成工程、解析依赖、注入版本）
+# build — 全平台构建 + 单元测试（单 Job 串行）
 # ════════════════════════════════════════════════════════════
 
-build-prepare:
-  stage: prepare
-  needs: [static-analysis]
+build-all:
+  stage: build
+  needs: [static-analysis, sonarqube-analysis]
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
+    - echo "===> [1/5] 生成 Xcode 工程"
     - make gen
     - bash Tools/CI/Build/inject_version.sh Sources/Info.plist
-
-# ════════════════════════════════════════════════════════════
-# build — 多平台构建（串行，依次验证 iOS → macOS → watchOS）
-# ════════════════════════════════════════════════════════════
-
-build-ios:
-  stage: build
-  needs: [build-prepare]
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
-  script:
+    - echo "===> [2/5] 构建 iOS"
     - make ios
-
-build-macos:
-  stage: build
-  needs: [build-ios]
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
-  script:
+    - echo "===> [3/5] 构建 macOS"
     - make mac
-
-build-watchos:
-  stage: build
-  needs: [build-macos]
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
-  script:
+    - echo "===> [4/5] 构建 watchOS"
     - make watch
-
-# ════════════════════════════════════════════════════════════
-# test — 单元测试 + 覆盖率验证
-# ════════════════════════════════════════════════════════════
-
-test-and-coverage:
-  stage: test
-  needs: [build-watchos]
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
-  script:
+    - echo "===> [5/5] 单元测试 + 覆盖率"
     - bash Tools/CI/Test/run_tests_and_coverage.sh
   coverage: '/Coverage: \d+\.\d+%/'
   artifacts:

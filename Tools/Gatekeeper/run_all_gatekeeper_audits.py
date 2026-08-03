@@ -32,7 +32,7 @@ GATEKEEPER_AUDIT_STEPS = [
     ("Tools 脚本静态质量审计", ["python3", "Tools/Gatekeeper/Sanity/check_scripts_quality.py"]),
     ("跨平台 Layout 布局规范审计", ["python3", "Tools/Gatekeeper/Sanity/check_layout.py"]),
     ("DI 注入安全与崩溃风险审计", ["python3", "Tools/Gatekeeper/check_inject_safety.py"]),
-    ("代码重复率静态检测 (jscpd)", ["python3", "Tools/Gatekeeper/Sanity/check_duplicate_code.py", "--local"]),
+    ("代码重复率静态检测 (jscpd)", ["python3", "Tools/Gatekeeper/Compliance/check_code_duplication.py"]),
     ("视图重复启发式提取审计", ["python3", "Tools/Gatekeeper/Architecture/check_view_duplication.py"]),
     ("开源库适配器逻辑隔离审计", ["python3", "Tools/Gatekeeper/Architecture/check_opensource_adapters.py"]),
     ("开源库适配器物理归位审计", ["python3", "Tools/Gatekeeper/Architecture/check_opensource_physical_placement.py"]),
