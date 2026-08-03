@@ -115,16 +115,21 @@ public enum Colors {
 // MARK: - Color 扩展 (Semantic Colors)
 extension Color {
     
-#if !canImport(MarkdownUI)
-    /// 跨平台支持的亮暗模式适配初始化器
+#if canImport(UIKit) && !os(watchOS)
     public init(light: Color, dark: Color) {
-        #if canImport(UIKit) && !os(watchOS)
         self.init(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
         })
-        #else
-        self.init(light) 
-        #endif
+    }
+#elseif canImport(AppKit)
+    public init(light: Color, dark: Color) {
+        self.init(NSColor { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(dark) : NSColor(light)
+        })
+    }
+#else
+    public init(light: Color, dark: Color) {
+        self.init(light)
     }
 #endif
     
