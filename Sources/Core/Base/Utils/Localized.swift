@@ -280,6 +280,43 @@ internal struct Localized {
         tr(key, table: "Common")
     }
     
+    /// 读取指定 Key 在**所有支持语言**下的翻译值（去重）。
+    ///
+    /// 用途：当需要匹配 LLM 输出中可能出现的多语言前导废话（如 "Here is" / "以下是" / "以下は"）
+    /// 时，无论用户当前系统语言为何，都需覆盖全部语种。
+    /// 运行时 `.xcstrings` 已被 Xcode 编译为各 `.lproj` 目录下的 `.strings` 文件，
+    /// 本方法遍历 Bundle 中所有 `.lproj`，逐个加载对应语言 Bundle 读取翻译。
+    ///
+    /// - Parameters:
+    ///   - key: 本地化 Key（不含表名前缀，如 "synthesis.chatter.hereIs"）。
+    ///   - table: 物理表名（如 "AI"）。
+    /// - Returns: 所有语言翻译值的去重数组（未翻译的 key 会被跳过）。
+    static func allValues(forKey key: String, table: String) -> [String] {
+        let resolvedTable = resolveTableName(for: key, defaultTable: table)
+        var results: [String] = []
+        let marker = "MISSING_KEY_MARKER"
+        
+        for lang in Bundle.main.localizations {
+            guard let lprojPath = Bundle.main.path(forResource: lang, ofType: "lproj"),
+                  let langBundle = Bundle(path: lprojPath) else {
+                continue
+            }
+            
+            var value = NSLocalizedString(key, tableName: resolvedTable, bundle: langBundle, value: marker, comment: "")
+            
+            // Fallback 降级至 Common 共享表
+            if value == marker && resolvedTable != "Common" {
+                value = NSLocalizedString(key, tableName: "Common", bundle: langBundle, value: marker, comment: "")
+            }
+            
+            if value != marker && !results.contains(value) {
+                results.append(value)
+            }
+        }
+        
+        return results
+    }
+    
     /// 从 Common 默认表中高性能获取特定本地化格式化词条文本。
     /// - Parameters:
     ///   - key: 本地化 Key。

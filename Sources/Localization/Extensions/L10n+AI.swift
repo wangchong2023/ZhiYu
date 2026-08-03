@@ -516,6 +516,28 @@ extension L10n {
                         AI.tr("synthesis.chatter.asFollowsChinese")
                     ]
                 }
+
+                /// 所有支持语言下的 chatter 前缀集合（去重）。
+                ///
+                /// 用于匹配 LLM 输出中可能出现的多语言前导废话。
+                /// 无论用户当前系统语言为何，均覆盖全部语种翻译，
+                /// 避免系统中文环境下漏匹配 LLM 英文输出 "Here is the summary:"。
+                public static var allChatterPrefixes: [String] {
+                    let keys = [
+                        "synthesis.chatter.hereIs",
+                        "synthesis.chatter.heres",
+                        "synthesis.chatter.hereAre",
+                        "synthesis.chatter.belowIs",
+                        "synthesis.chatter.belowAre",
+                        "synthesis.chatter.thisIs",
+                        "synthesis.chatter.followingIs",
+                        "synthesis.chatter.asRequested",
+                        "synthesis.chatter.parsedAs",
+                        "synthesis.chatter.belowChinese",
+                        "synthesis.chatter.asFollowsChinese"
+                    ]
+                    return keys.flatMap { Localized.allValues(forKey: $0, table: "AI") }
+                }
             }
         }
 
