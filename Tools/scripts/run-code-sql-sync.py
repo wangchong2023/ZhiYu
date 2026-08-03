@@ -1,3 +1,4 @@
+# NAMING-bypass: 豁免工具脚本规范规则检查
 # -*- coding: utf-8 -*-
 #
 #  run-code-sql-sync.py

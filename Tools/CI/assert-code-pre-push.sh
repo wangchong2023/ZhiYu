@@ -31,7 +31,7 @@ for arg in "$@"; do
     esac
 done
 
-PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$PROJECT_DIR"
 
 TOTAL=0; PASSED=0; FAILED=0; SKIPPED=0

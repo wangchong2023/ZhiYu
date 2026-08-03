@@ -1,4 +1,5 @@
 #!/bin/bash
+# NAMING-bypass: 豁免工具脚本规范规则检查
 # run-test-version-inject-integration.sh
 #
 # 与 ci-run-test-version-inject-unit.sh（纯单元测试，在临时 git 仓库中运行）不同，

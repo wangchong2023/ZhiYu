@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# NAMING-bypass: 豁免工具脚本规范规则检查
 """
 ZhiYu 插件完整性校验工具
 

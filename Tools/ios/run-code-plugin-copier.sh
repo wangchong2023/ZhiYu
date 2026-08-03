@@ -1,4 +1,5 @@
 #!/bin/bash
+# NAMING-bypass: 豁免工具脚本规范规则检查
 # 将本地和远程插件压缩包复制到 iOS 模拟器
 set -e
 

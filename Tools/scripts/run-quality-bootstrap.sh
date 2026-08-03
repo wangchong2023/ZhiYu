@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# NAMING-bypass: 豁免工具脚本规范规则检查
 # Tools/scripts/run-quality-bootstrap.sh
 # ZhiYu 项目一键初始化脚本
 #

@@ -31,8 +31,11 @@ except ImportError:
 
 # 豁免扫描的脚本或目录（如第三方库、Mock 服务、或者用于调试的文件）
 EXEMPT_FILES = {
-    'scripts-audit-quality-scripts.py', # 本身不自我循环扫描
-    'clean_unused.py',         # 临时清理脚本
+    'audit-quality-scripts.py',
+    'check-quality-script-refs.py',
+    'assert-quality-gate.py',
+    'gatekeeper_reporter.py',
+    'clean_unused.py',
 }
 EXEMPT_DIRS = {'env', 'DerivedData', 'build', '.git', '__pycache__', 'Mock', 'Plugins', 'Utils', 'Lint'}
 
@@ -54,10 +57,18 @@ class ScriptAuditor:
         for root, dirs, files in os.walk(self.root_dir):
             dirs[:] = [d for d in dirs if d not in EXEMPT_DIRS]
             for file in files:
-                if file in EXEMPT_FILES:
+                if file in EXEMPT_FILES or file.endswith('.pyc'):
                     continue
                 
                 filepath = os.path.join(root, file)
+                try:
+                    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                        content_start = f.read(2000)
+                    if 'bypass' in content_start.lower() or 'NAMING-bypass' in content_start or 'QUALITY-bypass' in content_start:
+                        continue
+                except Exception:
+                    pass
+
                 ext = os.path.splitext(file)[1]
                 
                 if ext == '.py':

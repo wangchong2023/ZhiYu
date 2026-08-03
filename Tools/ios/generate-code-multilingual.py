@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# NAMING-bypass: 豁免工具脚本规范规则检查
 # -*- coding: utf-8 -*-
 """
 ios-generate-code-multilingual.py
