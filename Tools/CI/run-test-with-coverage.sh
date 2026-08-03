@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==============================================================================
 # 项目名称: ZhiYu (智宇 iOS 客户端)
-# 脚本名称: Tools/ci/run-test-with-coverage.sh
+# 脚本名称: Tools/CI/run-test-with-coverage.sh
 # 脚本功能: 集合执行测试计数、单元测试执行、代码覆盖率阈值审计、性能回归比对。
 # ==============================================================================
 set -euo pipefail
@@ -28,15 +28,15 @@ echo "$TEST_COUNT" > build/.test_count
 
 # 2. 执行单元测试 (CI 模式下执行)
 echo "===> Run Unit Tests"
-bash Tools/ci/run-test-unit.sh --ci
+bash Tools/CI/run-test-unit.sh --ci
 
 # 3. 代码覆盖率门禁熔断校验
 echo "===> Code Coverage Check"
-python3 Tools/ci/assert-test-coverage.py
+python3 Tools/CI/assert-test-coverage.py
 
 # 4. 性能回归阻断校验
 echo "===> Performance Regression Check"
-python3 Tools/ci/check-pipeline-perf-regression.py
+python3 Tools/CI/check-pipeline-perf-regression.py
 
 # 5. 导出覆盖率产物供 GitLab CI artifacts 归档
 echo "===> Export Coverage Artifacts"

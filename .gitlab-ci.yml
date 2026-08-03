@@ -66,7 +66,7 @@ sonarqube-analysis:
 
 build-prepare:
   stage: prepare
-  needs: [static-analysis, sonarqube-analysis]
+  needs: [static-analysis]
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
