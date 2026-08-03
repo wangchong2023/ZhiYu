@@ -699,7 +699,6 @@
 		5E216038B4F1D9B8030B2469 /* IngestURLHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EBB1BD68A061B7ACA6F9009 /* IngestURLHandler.swift */; };
 		5E68E62E797CA489B9403094 /* AdaptiveSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA44AE18567F7CB1E0AA8AB /* AdaptiveSidebarView.swift */; };
 		5E9940D8D8927DD9E7654363 /* EmbeddingManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20452010195FAEED1B8BC9E1 /* EmbeddingManagerTests.swift */; };
-		5EB3CEE497AF29106E3CA7D3 /* inject_version_test.sh in Resources */ = {isa = PBXBuildFile; fileRef = 222EBB60DA4FFAD6329FB526 /* inject_version_test.sh */; };
 		5ED05AAA5A15ADC6DF8CF3CF /* Graph.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A99E81CD203899D47AE64ED3 /* Graph.xcstrings */; };
 		5ED2635AC03258A26053D507 /* CJKSpacingFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC5933E517D072A2CF823B2B /* CJKSpacingFormatter.swift */; };
 		5ED6CA559C7A4C9345836175 /* LLMClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA3E1F1517AF26B3495A36A1 /* LLMClient.swift */; };
@@ -1788,7 +1787,6 @@
 		EFBA9EB25688103C70CFEA7A /* SearchIndexerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7880DD208AE245809269D822 /* SearchIndexerProtocol.swift */; };
 		EFC7D83B50A7F47491B7E653 /* IngestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0671133E268EB2E7EE0CFE6 /* IngestStore.swift */; };
 		EFE0647A3117684BCF549FBB /* MarkdownEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380D1050BD09B6BE7020ADBF /* MarkdownEditorView.swift */; };
-		EFFEAC9415242556EAD8B01C /* inject_version_integration_test.sh in Resources */ = {isa = PBXBuildFile; fileRef = 35DBF8C38153378082E33468 /* inject_version_integration_test.sh */; };
 		F00BBD68F53752AD28EEFD2E /* LinkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E12AD5BEA111DB5F6D20E4B /* LinkService.swift */; };
 		F0389B75A6997CF39F9C967E /* PluginSandboxGateway.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE1CAB1B36AD355CF9F30A7 /* PluginSandboxGateway.swift */; };
 		F05DD8F19FB389A60704127B /* L10n+Security.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17E91403727B4F7BF405458 /* L10n+Security.swift */; };
@@ -2136,7 +2134,6 @@
 		2179BFDE3EEE56249DC8559C /* AITaskProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AITaskProgress.swift; sourceTree = "<group>"; };
 		21D5E4512C170EF039C98037 /* iOSAccessibilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSAccessibilityService.swift; sourceTree = "<group>"; };
 		21DECBA9E8104312A893299E /* iOSSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSpeechService.swift; sourceTree = "<group>"; };
-		222EBB60DA4FFAD6329FB526 /* inject_version_test.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = inject_version_test.sh; sourceTree = "<group>"; };
 		223A88F0020EBEE3AF842DE3 /* DesignSystem+Shadows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Shadows.swift"; sourceTree = "<group>"; };
 		227B4CA0D1A46574EE62D160 /* PasteboardProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardProtocol.swift; sourceTree = "<group>"; };
 		22EB75DD5B601F8843B9FC1B /* 个人知识管理方法论.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = "个人知识管理方法论.md"; path = "zh-Hans.lproj/个人知识管理方法论.md"; sourceTree = "<group>"; };
@@ -2206,7 +2203,6 @@
 		355463AB960A6FC1A4D666A5 /* StubBackgroundTaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubBackgroundTaskProvider.swift; sourceTree = "<group>"; };
 		3570BC13F3506D576E6CC907 /* TagCloudCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCloudCoordinator.swift; sourceTree = "<group>"; };
 		3588273E43C2886973F9DD1C /* DesignSystem+Metrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Metrics.swift"; sourceTree = "<group>"; };
-		35DBF8C38153378082E33468 /* inject_version_integration_test.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = inject_version_integration_test.sh; sourceTree = "<group>"; };
 		366AC9AF11B2DB0CFB498FCA /* GraphModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphModels.swift; sourceTree = "<group>"; };
 		371FCB95A47FEF84D9117F1D /* PluginEnginePool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginEnginePool.swift; sourceTree = "<group>"; };
 		3744107E6BF0E8F88B523FA5 /* ZhiYuWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ZhiYuWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3728,14 +3724,6 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		43B73040FC75FA45D6B08EF6 /* CI */ = {
-			isa = PBXGroup;
-			children = (
-				222EBB60DA4FFAD6329FB526 /* inject_version_test.sh */,
-			);
-			path = CI;
-			sourceTree = "<group>";
-		};
 		47B7F50223785D112CE5A55D /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
@@ -4496,7 +4484,6 @@
 				0881C102C2E21734199DB3B8 /* ImportSynthesisE2ETests.swift */,
 				19EEDF83F7F113E8C140B15D /* ImportSynthesisLinkTests.swift */,
 				2573B77A8EA35FFB90A476D2 /* IngestQueueTests.swift */,
-				35DBF8C38153378082E33468 /* inject_version_integration_test.sh */,
 				8A41902A5FBD7B7865B4DCFF /* MultiVaultSwitchTests.swift */,
 				7DDA46686C68D592D918AC61 /* RAGPipelineTests.swift */,
 				A08E389F630F8B47E99CE719 /* ZhiYuE2ETests.swift */,
@@ -5517,7 +5504,6 @@
 			children = (
 				DD86893099D262EDE13738C7 /* AI */,
 				38BE7053CC194C6831CD8108 /* Base */,
-				43B73040FC75FA45D6B08EF6 /* CI */,
 				665D948B5CC760CEBE0D669F /* Dashboard */,
 				EA3B69718BBA8BBEF35B05D6 /* Graph */,
 				96E0E500077DD4CCD7B75E41 /* Knowledge */,
@@ -6286,8 +6272,6 @@
 			files = (
 				0DBFF1C4718503004E34BDA6 /* .swiftlint.yml in Resources */,
 				3BE2AD9A1B7E0DDED0836756 /* RAG_GoldenSet.json in Resources */,
-				EFFEAC9415242556EAD8B01C /* inject_version_integration_test.sh in Resources */,
-				5EB3CEE497AF29106E3CA7D3 /* inject_version_test.sh in Resources */,
 				D5E4612C606DD3216BB9CED2 /* testAIPulseIndicator.1.png in Resources */,
 				68C182A8300B1842967CFEC6 /* testAboutView.1.png in Resources */,
 				7C4BB9C3EA117C6AF44A3563 /* testAdaptiveSidebarView.1.png in Resources */,

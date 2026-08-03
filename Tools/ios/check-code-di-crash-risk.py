@@ -23,17 +23,38 @@ SOURCES_DIR = PROJECT_ROOT / "Sources"
 
 
 def _is_in_function_context(lines: list[str], line_index: int) -> bool:
-    """检测指定行是否在函数体内（缩进块中）。"""
+    """检测指定行是否在函数体内（缩进块中）。
+
+    改进逻辑：遇到闭合 `}` 时记录缩进层级并继续向上搜索外层函数，
+    避免误判 init/方法体内的 resolve() 为存储属性风险。
+    """
     indent = len(lines[line_index]) - len(lines[line_index].lstrip())
     for i in range(line_index - 1, -1, -1):
         stripped = lines[i].strip()
         if not stripped or stripped.startswith("//"):
             continue
         prev_indent = len(lines[i]) - len(lines[i].lstrip())
+        if prev_indent < indent and re.search(r"\b(func|init)\s+\w*", stripped):
+            return True
         if prev_indent < indent and re.search(r"\bfunc\s+\w+", stripped):
             return True
         if prev_indent < indent and stripped == "}":
-            break
+            indent = prev_indent
+            continue
+    return False
+
+
+def _is_whitelisted(stripped: str) -> bool:
+    """判断一行是否属于已知安全模式（白名单）。
+
+    白名单场景：
+    - `static let shared` 单例：DI 在 AppEnvironment 启动链中已就绪
+    - `@Entry var` 默认值：SwiftUI EnvironmentValues，ModuleRegistrar 注册早于视图创建
+    """
+    if re.search(r"static\s+let\s+shared\s*=", stripped):
+        return True
+    if "@Entry" in stripped:
+        return True
     return False
 
 
@@ -62,6 +83,8 @@ def _check_file(file_path: Path) -> list[tuple[int, str]]:
             if "ServiceContainer.shared.resolve(" not in stripped:
                 continue
             if _is_in_function_context(lines, i):
+                continue
+            if _is_whitelisted(stripped):
                 continue
             if _is_dangerous_line(stripped):
                 findings.append((i + 1, stripped))

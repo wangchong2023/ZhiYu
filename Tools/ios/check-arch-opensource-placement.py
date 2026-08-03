@@ -31,7 +31,7 @@ from gatekeeper_reporter import GatekeeperReporter
 # MARK: - 全局配置区
 # ==============================================================================
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SOURCES_DIR = os.path.join(PROJECT_DIR, "Sources")
 PACKAGES_DIR = os.path.join(PROJECT_DIR, "Packages")
 
