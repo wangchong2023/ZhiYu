@@ -116,20 +116,20 @@ public enum Colors {
 extension Color {
     
 #if canImport(UIKit) && !os(watchOS)
-    public init(light: Color, dark: Color) {
+    public init(adaptLight: Color, dark: Color) {
         self.init(UIColor { traitCollection in
-            traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+            traitCollection.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(adaptLight)
         })
     }
 #elseif canImport(AppKit)
-    public init(light: Color, dark: Color) {
+    public init(adaptLight: Color, dark: Color) {
         self.init(NSColor { appearance in
-            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(dark) : NSColor(light)
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(dark) : NSColor(adaptLight)
         })
     }
 #else
-    public init(light: Color, dark: Color) {
-        self.init(light)
+    public init(adaptLight: Color, dark: Color) {
+        self.init(adaptLight)
     }
 #endif
     
@@ -137,12 +137,12 @@ extension Color {
     // MARK: @LR-01: 适配全平台多语言环境下的视觉对比度
     // MARK: @PR-03: 语义化颜色规范，支持高性能亮暗模式切换
     
-    public static var appBackground: Color { Color(light: Color(hex: "f5f5fa"), dark: Color(hex: "1a1b2e")) }
-    public static var appCard: Color { Color(light: Color(hex: "ffffff"), dark: Color(hex: "252640")) }
-    public static var appText: Color { Color(light: Color(hex: "1a1a2e"), dark: Color(hex: "e8e8f0")) }
-    public static var appSecondary: Color { Color(light: Color(hex: "6b6b87"), dark: Color(hex: "ababc7")) }
-    public static var appTertiary: Color { Color(light: Color(hex: "9e9eb3"), dark: Color(hex: "7a7a91")) }
-    public static var appBorder: Color { Color(light: Color(hex: "ebebf2"), dark: Color(hex: "303142")) }
+    public static var appBackground: Color { Color(adaptLight: Color(hex: "f5f5fa"), dark: Color(hex: "1a1b2e")) }
+    public static var appCard: Color { Color(adaptLight: Color(hex: "ffffff"), dark: Color(hex: "252640")) }
+    public static var appText: Color { Color(adaptLight: Color(hex: "1a1a2e"), dark: Color(hex: "e8e8f0")) }
+    public static var appSecondary: Color { Color(adaptLight: Color(hex: "6b6b87"), dark: Color(hex: "ababc7")) }
+    public static var appTertiary: Color { Color(adaptLight: Color(hex: "9e9eb3"), dark: Color(hex: "7a7a91")) }
+    public static var appBorder: Color { Color(adaptLight: Color(hex: "ebebf2"), dark: Color(hex: "303142")) }
     
     /// 主题强调色 (通过 ThemeManager 获取，确保在主线程访问)
     public static var appAccent: Color {
@@ -154,7 +154,7 @@ extension Color {
     }
     
     /// 玻璃拟态高亮色/光泽色
-    public static var appGloss: Color { Color(light: Color.white, dark: Color.white.opacity(DesignSystem.Opacity.dim)) }
+    public static var appGloss: Color { Color(adaptLight: Color.white, dark: Color.white.opacity(DesignSystem.Opacity.dim)) }
     
     // MARK: - 知识分类语义颜色
     
@@ -263,27 +263,27 @@ public struct ColorTheme: Sendable {
     // MARK: - HIG 推荐的非硬编码语义适配颜色（亮/暗模式）
     
     /// 警告/警示（橙色）
-    public var orange: Color { Color(light: Color(hex: "FF9500"), dark: Color(hex: "FF9F0A")) }
+    public var orange: Color { Color(adaptLight: Color(hex: "FF9500"), dark: Color(hex: "FF9F0A")) }
     /// 录音/错误/删除（红色）
-    public var red: Color { Color(light: Color(hex: "FF3B30"), dark: Color(hex: "FF453A")) }
+    public var red: Color { Color(adaptLight: Color(hex: "FF3B30"), dark: Color(hex: "FF453A")) }
     /// 成功/完成/在线（绿色）
-    public var green: Color { Color(light: Color(hex: "34C759"), dark: Color(hex: "30D158")) }
+    public var green: Color { Color(adaptLight: Color(hex: "34C759"), dark: Color(hex: "30D158")) }
     /// 标签/特定逻辑（紫色）
-    public var purple: Color { Color(light: Color(hex: "AF52DE"), dark: Color(hex: "BF5AF2")) }
+    public var purple: Color { Color(adaptLight: Color(hex: "AF52DE"), dark: Color(hex: "BF5AF2")) }
     /// 链接/特定标识（蓝色）
-    public var blue: Color { Color(light: Color(hex: "007AFF"), dark: Color(hex: "0A84FF")) }
+    public var blue: Color { Color(adaptLight: Color(hex: "007AFF"), dark: Color(hex: "0A84FF")) }
     /// 阴影与基础色（黑色）
-    public var black: Color { Color(light: Color(hex: "000000"), dark: Color(hex: "000000")) }
+    public var black: Color { Color(adaptLight: Color(hex: "000000"), dark: Color(hex: "000000")) }
     /// 阴影与基础色（白色）
-    public var white: Color { Color(light: Color(hex: "FFFFFF"), dark: Color(hex: "FFFFFF")) }
+    public var white: Color { Color(adaptLight: Color(hex: "FFFFFF"), dark: Color(hex: "FFFFFF")) }
     /// 幽灵填充色/失效（灰色）
-    public var gray: Color { Color(light: Color(hex: "8E8E93"), dark: Color(hex: "8E8E93")) }
+    public var gray: Color { Color(adaptLight: Color(hex: "8E8E93"), dark: Color(hex: "8E8E93")) }
     /// 测试/多用例特定颜色（青色）
     public var cyan: Color { Color.cyan }
     /// 比对/特定标识（青色/蓝绿色）
-    public var teal: Color { Color(light: Color(hex: "30B0C7"), dark: Color(hex: "40C8E0")) }
+    public var teal: Color { Color(adaptLight: Color(hex: "30B0C7"), dark: Color(hex: "40C8E0")) }
     /// 词条/高亮（黄色）
-    public var yellow: Color { Color(light: Color(hex: "FFCC00"), dark: Color(hex: "FFD60A")) }
+    public var yellow: Color { Color(adaptLight: Color(hex: "FFCC00"), dark: Color(hex: "FFD60A")) }
 }
 
 #if canImport(UIKit)
