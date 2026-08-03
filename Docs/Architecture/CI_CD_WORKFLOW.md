@@ -51,12 +51,13 @@ swift test --package-path Packages/ZhiYuFeatures
 | 阶段 (Stage) | 任务 (Job) | 触发条件 | 执行内容 |
 |---|---|---|---|
 | **analyze** | `static-analysis` | 所有 push / MR | 运行 20 项 Gatekeeper 静态合规审计 |
-| | `sonarqube-analysis` | 所有 push / MR | 运行 SonarQube 全语言 (Swift, Python, Shell, YAML) 质量分析与 90% 语句 / 85% 分支 Quality Gate 硬阻断 |
+| | `sonarqube-analysis` | 所有 push / MR | 运行 SonarQube 全语言 (Swift, Python, Shell, YAML) 质量分析与 95% 语句 / 90% 分支 Quality Gate 硬阻断 |
 | **prepare** | `build-prepare` | `main` / `develop` / `release/*` push | `xccodegen generate` + 解析 SPM 依赖 + 注入版本号 |
 | **build** | `build-ios` | `main` / `develop` / `release/*` push | 构建 iOS 模拟器目标 (`ZhiYu`) |
 | | `build-macos` | `main` / `develop` / `release/*` push | 构建 macOS Catalyst 目标 (`ZhiYuMac`) |
 | | `build-watchos` | `main` / `develop` / `release/*` push | 构建 watchOS 模拟器目标 (`ZhiYuWatch`) |
-| **test** | `test-and-coverage` | `main` / `develop` / `release/*` push | 运行全量单元测试与覆盖率熔断门禁（语句 ≥ 90%，分支 ≥ 85%） |
+| **test** | `test-and-coverage` | `main` / `develop` / `release/*` push | 运行全量单元测试与覆盖率熔断门禁（语句 ≥ 95%，分支 ≥ 90%） |
+
 
 
 ---

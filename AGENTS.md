@@ -52,10 +52,11 @@
 
 1. **🛡️ SonarQube 全语言 Quality Gate 硬阻断**：
    - 支持扫描全语言资产：`Swift (iOS/macOS)`、`Python`、`Shell (.sh/.bash)`、`YAML (.yaml/.yml)`。
-   - 语句/行覆盖率 (Line / Instruction Coverage) 必须达标 **≥ 90.0%**。
-   - 分支覆盖率 (Branch Coverage) 必须达标 **≥ 85.0%**。
+   - 语句/行覆盖率 (Line / Instruction Coverage) 必须达标 **≥ 95.0%**。
+   - 分支覆盖率 (Branch Coverage) 必须达标 **≥ 90.0%**。
    - 代码重复率 (Duplicated Lines %) 必须严格控制在 **< 3.0%**（全语言 CPD 引擎卡控）。
    - 触发方式：由 CI/CD 流水线中的 `sonar-scanner -Dsonar.qualitygate.wait=true` 执行卡控与阻断。
+
 
 1. **🌐 多国语言 (L10n) 强约束**：
    - 严禁在视图层、服务层或处理器中出现硬编码中文/ASCII 文本字符串或裸露过滤关键词（如 `"篇幅要求"`, `"目标受众"`）。
