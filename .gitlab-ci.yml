@@ -48,7 +48,6 @@ sonarqube-analysis:
     - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) 与 Quality Gate 硬阻断"
     - sonar-scanner
         -Dsonar.host.url=${SONAR_HOST_URL}
-        -Dsonar.login=${SONAR_TOKEN}
         -Dsonar.qualitygate.wait=true
 
 
