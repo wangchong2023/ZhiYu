@@ -2,7 +2,7 @@
 # ==============================================================================
 # 脚本名称: pre-push
 # 核心职责: 推送前调用统一门禁脚本，执行全面检查。
-# 详细逻辑: Tools/pre_push_check.sh
+# 详细逻辑: Tools/CI/assert-code-pre-push.sh
 # ==============================================================================
 
 # 默认模式：静态检查 + 编译校验
@@ -16,4 +16,4 @@ elif [ "${QUICK_CHECK:-0}" = "1" ]; then
     MODE_ARG="--quick"
 fi
 
-exec bash Tools/pre_push_check.sh $MODE_ARG
+exec bash Tools/CI/assert-code-pre-push.sh $MODE_ARG
