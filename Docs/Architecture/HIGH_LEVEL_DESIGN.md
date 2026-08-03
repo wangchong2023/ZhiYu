@@ -238,7 +238,7 @@ public protocol LLMServiceProtocol: Sendable {
 | P1 修复 | `@preconcurrency import SwiftUI` 清理 | 4 文件 |
 | P1 修复 | `iOSSpeechService` 宏密度降低（10→4 处） | 1 文件 → 2 文件 |
 | P1 修复 | 14 大文件 SRP 重构（9 主文件 → 34 新文件） | 9 文件 + 34 新文件 |
-| CI 增强 | 3 个新 Gatekeeper 脚本 + 12 个 CI 检查项全量通过 | Tools/Gatekeeper/ |
+| CI 增强 | 3 个新 Gatekeeper 脚本 + 12 个 CI 检查项全量通过 | Tools/scripts/ |
 | 测试增强 | 17 个跨平台协议单元测试 + 852 全量测试通过 | Tests/Unit/ |
 | 文档更新 | 新增 `PLATFORM_PROTOCOL_ARCHITECTURE.md` + `srp-file-organization.md` | 2 新文档 |
 | Docker 清理 | 释放 206 GB (85%) — 清理 120+ 旧版镜像 | 3 个微服务 |
@@ -302,7 +302,7 @@ graph TD
    - **第二层 Slow Path (方案 B)**：`CoreMLModerationClassifier` (集成 Meta Llama Guard 3 1B CoreML 小模型)，在 Apple Neural Engine NPU 硬件上做 30ms 深度 AI 语义防越狱分类，专门拦截隐藏极深的 DAN 角色扮演与 Prompt 注入。
 2. **云端策略 RSA/ECDSA 数字签名与 Delta Patch (`DynamicComplianceManager+Patch`)**：
    - 使用 Apple `Security.framework` `SecKeyVerifySignature` 对云端 RemoteConfig JSON 下发策略实施 RSA/ECDSA 公钥防篡改验签；校验通过后自动执行 `configVersion` 增量 Delta Patch 合并。
-3. **三端 0 编译告警静态门禁 (`check_compiler_warnings.py`)**：
+3. **三端 0 编译告警静态门禁 (`check-code-compiler-warnings.py`)**：
    - 抓取 iOS / macOS Catalyst / watchOS 三端 Xcode 编译日志，阻断任何包含警告的代码提交。```
 
 ### 6.1 核心合规与安全防护组件

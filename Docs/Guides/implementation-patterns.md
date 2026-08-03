@@ -60,7 +60,7 @@ let package = Package(
 
 ### 规则与禁令：
 - **绝对禁止 View 层变相算术 (Magic Math)**：严禁在 UI 视图组件中写 `loosePadding * 1.5`、`tiny * 0.6` 或 `atomic * 2` 等内联乘除加减法。必须直接使用具体命名的语义 Token。
-- **静态 CI 门禁强阻断 (`check_magic_numbers.py`)**：自动对 `.padding()`, `.frame()`, `.opacity()`, `Color(hex:)`, `Color(red:)`, `UIColor(red:)` 及 View 层 `Magic Math` 算术表达式进行编译拦截。
+- **静态 CI 门禁强阻断 (`audit-design-magic-numbers.py`)**：自动对 `.padding()`, `.frame()`, `.opacity()`, `Color(hex:)`, `Color(red:)`, `UIColor(red:)` 及 View 层 `Magic Math` 算术表达式进行编译拦截。
 
 ## SwiftUI 图谱模式
 

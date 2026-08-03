@@ -476,17 +476,17 @@ SwiftUI 在最新版本中是完全 Sendable 的，`@preconcurrency` 可能不�
 
 ### ✅ CI Gatekeeper
 - `.learnings/` 初始化（4 条学习记录）
-- `Tools/Gatekeeper/check_platform_macros.py` — 检查 Features/Domain 层 `#if os()`
-- `Tools/Gatekeeper/check_file_headers.py` — 验证层级标注
-- `Tools/Gatekeeper/check_magic_strings.py` — 检查硬编码 URL/UserDefaults key
+- `Tools/scripts/ios-check-code-platform-macros.py` — 检查 Features/Domain 层 `#if os()`
+- `Tools/scripts/ios-check-security-file-headers.py` — 验证层级标注
+- `Tools/scripts/ios-audit-code-magic-strings.py` — 检查硬编码 URL/UserDefaults key
 
 ### ✅ Phase 4: 中文注释补充（2026-06-23）
 - Domain 层 9 文件、Infrastructure 层 12 文件，新增/改进注释 60+ 条
 - 规范：`///` 文档注释 + `// Step N:` 流程标记 + 简体中文
 
 ### ✅ Phase 4: 圈复杂度静态分析 CI 集成（2026-06-23）
-- 新增 `Tools/Gatekeeper/Compliance/check_complexity.py` — 基于 SwiftLint cyclomatic_complexity 规则
-- 集成至 `run_static_analysis.sh` 第 13 个并行任务
+- 新增 `Tools/ios/ios-check-code-complexity.py` — 基于 SwiftLint cyclomatic_complexity 规则
+- 集成至 `ci-run-code-static-analysis.sh` 第 13 个并行任务
 - SwiftLint 配置：warning: 8, error: 10，当前 0 violations ✅
 
 ### ✅ Phase 3: 统一 UserDefaults KeyStore（#15，2026-06-24）

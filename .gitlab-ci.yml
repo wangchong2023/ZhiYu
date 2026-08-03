@@ -46,7 +46,7 @@ static-analysis:
     - echo "===> 安装静态分析 Python 依赖"
     - pip3 install --quiet radon 2>/dev/null || true
     - echo "===> 运行全部静态分析"
-    - bash Tools/CI/Analyze/run_static_analysis.sh
+    - bash Tools/CI/run-code-static-analysis.sh
 
 sonarqube-analysis:
   stage: analyze
@@ -71,7 +71,7 @@ build-prepare:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - make gen
-    - bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+    - bash Tools/CI/build-pipeline-version-inject.sh Sources/Info.plist
   artifacts:
     paths:
       - ZhiYu.xcodeproj/
@@ -120,7 +120,7 @@ test-and-coverage:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - bash Tools/CI/Test/run_tests_and_coverage.sh
+    - bash Tools/CI/run-test-with-coverage.sh
   coverage: '/Coverage: \d+\.\d+%/'
   artifacts:
     when: always

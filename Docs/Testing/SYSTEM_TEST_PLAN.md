@@ -73,6 +73,6 @@
 ## 5. 验收签名 (Sign-off)
 测试完成并发布需通过以下门禁：
 1. [ ] 100% 的 P0 核心验收用例全部通过。
-2. [ ] 核心领域层 (Domain) 汇总覆盖率 > 85%（以 `Tools/CI/check_coverage.py` 熔断红线为准，拒绝低于红线的代码合并）。
+2. [ ] 核心领域层 (Domain) 汇总覆盖率 > 85%（以 `Tools/ci/assert-test-coverage.py` 熔断红线为准，拒绝低于红线的代码合并）。
 3. [ ] 单元与集成测试套件大回归 100% 绿通（0 Unexpected Failures）。
 4. [ ] 内存泄漏 (Instruments) 扫描结果为零，无任何 Blocked Thread。

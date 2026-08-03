@@ -30,7 +30,7 @@
 ```
 AppConstants.Version.semVer              ← 唯一版本来源（已提交，防抵赖）
         │
-        ├── inject_version.sh            ← CI / fastlane 调用
+        ├── ci-build-pipeline-version-inject.sh            ← CI / fastlane 调用
         │       ├── 读取 semVer
         │       ├── 校验 git tag 一致性（有 tag 时告警）
         │       ├── 写 Info.plist（CFBundleShortVersionString / CFBundleVersion / hash / timestamp）
@@ -58,7 +58,7 @@ fastlane bump_version version:1.1.0
 ```bash
 fastlane sync_version
 # 或直接调用：
-bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 ```
 
 此命令将当前版本号、构建号、hash、时间戳写入 Info.plist 和 AppConstants.swift。
@@ -67,7 +67,7 @@ bash Tools/CI/Build/inject_version.sh Sources/Info.plist
 
 - **日常开发**：不打 tag，仅通过 `AppConstants.Version.semVer` 指定版本号
 - **正式发布**：修改 semVer → 提交 → `git tag -a v1.0.0` → `fastlane sync_version` → 构建
-- **一致性校验**：`inject_version.sh` 在检测到 git tag 时自动校验 tag 与 semVer 一致，不一致则打印 WARNING 但仍以 semVer 为准
+- **一致性校验**：`build-pipeline-version-inject.sh` 在检测到 git tag 时自动校验 tag 与 semVer 一致，不一致则打印 WARNING 但仍以 semVer 为准
 
 ---
 
@@ -75,14 +75,14 @@ bash Tools/CI/Build/inject_version.sh Sources/Info.plist
 
 ### 4.1 脚本路径
 
-`Tools/CI/Build/inject_version.sh`
+`Tools/ci/build-pipeline-version-inject.sh`
 
 ### 4.2 用法
 
 ```bash
-./inject_version.sh <info_plist_path>
+Tools/ci/build-pipeline-version-inject.sh <info_plist_path>
 # 典型调用:
-bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 ```
 
 ### 4.3 核心逻辑
@@ -123,7 +123,7 @@ fastlane bump_version version:1.1.0
 fastlane sync_version
 ```
 
-调用 `inject_version.sh` 执行完整的版本信息同步。
+调用 `build-pipeline-version-inject.sh` 执行完整的版本信息同步。
 
 ### 5.3 canary（已有，未改动）
 
@@ -144,7 +144,7 @@ clone-repo → static-analysis
 clone-repo → build-prepare → build-ios → build-macos → build-watchos → test
                  ├─ xcodegen generate
                  ├─ SPM resolve
-                 └─ inject_version.sh     ← 版本注入合并在此步骤
+                 └─ ci-build-pipeline-version-inject.sh     ← 版本注入合并在此步骤
 ```
 
 测试步骤 (`test-and-verify-coverage`) 首尾打印版本信息。
@@ -173,7 +173,7 @@ clone-repo → build-prepare → build-ios → build-macos → build-watchos →
 2. git add . && git commit                 # 提交版本号变更
 3. git tag -a v1.1.0 -m "Release v1.1.0"  # 打 tag（与 semVer 一致）
 4. git push --tags                         # 推送 tag
-5. CI 自动触发                             # inject_version.sh 校验通过，构建
+5. CI 自动触发                             # ci-build-pipeline-version-inject.sh 校验通过，构建
 6. fastlane canary                         # 上传 TestFlight（CI 自动执行）
 7. App Store Connect                       # 提交审核
 ```
@@ -196,8 +196,8 @@ clone-repo → build-prepare → build-ios → build-macos → build-watchos →
 `Sources/Core/Base/Constants/AppConstants.swift` 第 378-386 行：
 
 - `semVer` — 手动维护，发布时与 git tag 同步
-- `gitShortHash` — 构建时由 `inject_version.sh` 自动注入
-- `buildTimestamp` — 构建时由 `inject_version.sh` 自动注入
+- `gitShortHash` — 构建时由 `build-pipeline-version-inject.sh` 自动注入
+- `buildTimestamp` — 构建时由 `build-pipeline-version-inject.sh` 自动注入
 
 ### 8.2 VersionInfoFormatter
 
@@ -217,9 +217,9 @@ clone-repo → build-prepare → build-ios → build-macos → build-watchos →
 
 ## 9. 测试
 
-### 9.1 inject_version.sh 单元测试
+### 9.1 ci-build-pipeline-version-inject.sh 单元测试
 
-`Tests/Unit/CI/inject_version_test.sh`
+`Tools/ci/run-test-version-inject-unit.sh`
 
 | 测试场景 | 输入 | 预期输出 |
 |---------|------|---------|
@@ -232,7 +232,7 @@ clone-repo → build-prepare → build-ios → build-macos → build-watchos →
 
 ### 9.2 集成测试
 
-`Tests/Integration/inject_version_integration_test.sh` — 在真实项目仓库中验证 inject → plist → 读取 全链路。
+`Tools/ci/run-test-version-inject-integration.sh` — 在真实项目仓库中验证 inject → plist → 读取 全链路。
 
 ### 9.3 AboutView 快照测试
 
@@ -240,7 +240,7 @@ clone-repo → build-prepare → build-ios → build-macos → build-watchos →
 
 ### 9.4 App Store 合规门禁
 
-`check_appstore_readiness.py` 自动校验 `CFBundleShortVersionString` 格式（纯数字点分），注入脚本输出通过此门禁自然验证。
+`ios-check-release-appstore.py` 自动校验 `CFBundleShortVersionString` 格式（纯数字点分），注入脚本输出通过此门禁自然验证。
 
 ---
 

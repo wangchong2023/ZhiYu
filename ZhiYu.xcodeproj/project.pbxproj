@@ -6459,7 +6459,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/scripts/run-quality-all-audits.py";
 		};
 		665147DE446053A0CEBFB7C9 /* [Gatekeeper] All Quality & Security Audits */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -6478,7 +6478,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/scripts/run-quality-all-audits.py";
 		};
 		D34CA6FC513FF05BBA6CEE9F /* [Gatekeeper] All Quality & Security Audits */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -6497,7 +6497,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py";
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/scripts/run-quality-all-audits.py";
 		};
 /* End PBXShellScriptBuildPhase section */
 

@@ -2,7 +2,7 @@ name: ZhiYu
 # ──────────────────────────────────────────────────────────────────────────────
 # SPM 包声明
 # ──────────────────────────────────────────────────────────────────────────────
-# 此文件是模板，由 bootstrap.sh 通过 envsubst 生成实际的 project.yml。
+# 此文件是模板，由 scripts-run-dev-bootstrap.sh 通过 envsubst 生成实际的 project.yml。
 # 禁止直接编辑 project.yml（生成物），所有改动请在此文件进行。
 #
 # 分组规则：
@@ -80,8 +80,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    MARKETING_VERSION: "0.0.0-dev"       # CI 会在构建前通过 inject_version.sh 覆盖
-    CURRENT_PROJECT_VERSION: "0"          # CI 会在构建前通过 inject_version.sh 覆盖
+    MARKETING_VERSION: "0.0.0-dev"       # CI 会在构建前通过 ci-build-pipeline-version-inject.sh 覆盖
+    CURRENT_PROJECT_VERSION: "0"          # CI 会在构建前通过 ci-build-pipeline-version-inject.sh 覆盖
     TARGETED_DEVICE_FAMILY: "1,2,4"
     INFOPLIST_FILE: Sources/Info.plist
     DEVELOPMENT_TEAM: "XSC749SK6J"
@@ -99,7 +99,7 @@ settings:
 targetTemplates:
   BaseAppTemplate:
     preBuildScripts:
-      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/run_all_gatekeeper_audits.py"
+      - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/Gatekeeper/scripts-run-quality-all-audits.py"
         name: "[Gatekeeper] All Quality & Security Audits"
         basedOnDependencyAnalysis: false
     dependencies:

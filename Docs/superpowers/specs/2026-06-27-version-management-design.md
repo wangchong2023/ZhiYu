@@ -25,14 +25,14 @@ Git Tag 驱动 + CI 注入 + 运行时从 Bundle 读取。
 ### 数据流
 
 ```
-git tag v1.2.3 → CI (Woodpecker/GHA) → inject_version.sh → Info.plist → Bundle.main → AboutView
+git tag v1.2.3 → CI (Woodpecker/GHA) → ci-build-pipeline-version-inject.sh → Info.plist → Bundle.main → AboutView
 ```
 
 ### 改动清单
 
 | 改动 | 类型 | 路径 |
 |------|------|------|
-| 新增 `inject_version.sh` | 新文件 | `Tools/CI/Build/inject_version.sh` |
+| 新增 `build-pipeline-version-inject.sh` | 新文件 | `Tools/ci/build-pipeline-version-inject.sh` |
 | 修复 AboutView 版本显示 | 修改 | `Sources/App/Scenes/AboutView.swift:52` |
 | 新增 VERSION_MANAGEMENT.md | 新文件 | `Docs/Design/VERSION_MANAGEMENT.md` |
 | 更新 CI/CD 文档 | 修改 | `Docs/Architecture/CI_CD_WORKFLOW.md` |
@@ -44,6 +44,6 @@ git tag v1.2.3 → CI (Woodpecker/GHA) → inject_version.sh → Info.plist → 
 
 | 测试 | 类型 | 覆盖 |
 |------|------|------|
-| `inject_version_test.sh` | 单元 | 正常 tag / 无 tag fallback / 构建号递增 / 短哈希格式 |
+| `ci-run-test-version-inject-unit.sh` | 单元 | 正常 tag / 无 tag fallback / 构建号递增 / 短哈希格式 |
 | AboutView 快照 | 快照 | 验证版本展示格式 `1.2.3 (342 · abc1234)` |
-| 已有 `check_appstore_readiness.py` | 门禁 | 自动校验版本号格式合规 |
+| 已有 `ios-check-release-appstore.py` | 门禁 | 自动校验版本号格式合规 |
