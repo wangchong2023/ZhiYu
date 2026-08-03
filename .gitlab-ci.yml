@@ -1,26 +1,28 @@
 # ============================================================
-# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v2.0.0)
+# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v3.0.0)
 #
 # 运行环境: macOS 宿主机 Shell Runner（tagged: macos, shell, xcode, arm64）
 #   - 必须在安装了 Xcode 的 Mac 上运行
 #   - 使用 GitLab Shell Runner，不需要 Docker
 #
-# 架构: 单 Job 串行构建
-#   - Shell Runner 单机部署，多 Job 并行无收益
-#   - 避免 artifacts 传递和重复 checkout 开销
-#   - prepare + build + test 在同一 Job 内完成
+# 架构: prepare 生成项目 → artifacts 传递 → 串行构建 → 测试
+#   - build-prepare 生成 ZhiYu.xcodeproj + Config/.env.local，通过 artifacts 传递
+#   - 后续 Job 通过 dependencies 下载 artifacts，跳过重复 checkout/生成
+#   - Shell Runner 单机部署，build Job 串行执行
 #
 # 执行顺序:
-#   analyze(静态分析 + SonarQube) → build(全平台构建 + 测试)
+#   analyze(静态分析 + SonarQube) → prepare → build(ios→macos→watchos) → test
 #
 # 流程控制:
-#   仅 main/develop/release/* 分支 push 触发完整流水线
+#   仅 main/develop/release/* 分支触发完整流水线
 #   所有分支 push 触发 static-analysis
 # ============================================================
 
 stages:
   - analyze
+  - prepare
   - build
+  - test
 
 default:
   tags:
@@ -30,7 +32,7 @@ default:
     - arm64
   before_script:
     - |
-      if [ -n "${OPENSRC_ROOT:-}" ]; then
+      if [ -n "${OPENSRC_ROOT:-}" ] && [ ! -f Config/.env.local ]; then
         echo "export OPENSRC_ROOT=${OPENSRC_ROOT}" > Config/.env.local
       fi
 
@@ -58,25 +60,65 @@ sonarqube-analysis:
         -Dsonar.qualitygate.wait=true
 
 # ════════════════════════════════════════════════════════════
-# build — 全平台构建 + 单元测试（单 Job 串行）
+# prepare — 生成 Xcode 工程（artifacts 传递给后续 Job）
 # ════════════════════════════════════════════════════════════
 
-build-all:
-  stage: build
+build-prepare:
+  stage: prepare
   needs: [static-analysis, sonarqube-analysis]
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - echo "===> [1/5] 生成 Xcode 工程"
     - make gen
     - bash Tools/CI/Build/inject_version.sh Sources/Info.plist
-    - echo "===> [2/5] 构建 iOS"
+  artifacts:
+    paths:
+      - ZhiYu.xcodeproj/
+      - Config/.env.local
+    expire_in: 1 hour
+
+# ════════════════════════════════════════════════════════════
+# build — 多平台构建（串行，复用 prepare artifacts）
+# ════════════════════════════════════════════════════════════
+
+build-ios:
+  stage: build
+  needs: [build-prepare]
+  dependencies: [build-prepare]
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
+  script:
     - make ios
-    - echo "===> [3/5] 构建 macOS"
+
+build-macos:
+  stage: build
+  needs: [build-ios]
+  dependencies: [build-prepare]
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
+  script:
     - make mac
-    - echo "===> [4/5] 构建 watchOS"
+
+build-watchos:
+  stage: build
+  needs: [build-macos]
+  dependencies: [build-prepare]
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
+  script:
     - make watch
-    - echo "===> [5/5] 单元测试 + 覆盖率"
+
+# ════════════════════════════════════════════════════════════
+# test — 单元测试 + 覆盖率验证
+# ════════════════════════════════════════════════════════════
+
+test-and-coverage:
+  stage: test
+  needs: [build-watchos]
+  dependencies: [build-prepare]
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
+  script:
     - bash Tools/CI/Test/run_tests_and_coverage.sh
   coverage: '/Coverage: \d+\.\d+%/'
   artifacts:
