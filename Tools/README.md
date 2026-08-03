@@ -67,10 +67,9 @@ Tools/
 |------|------|
 | `check_root_hygiene.py` | 拦截临时文件及根目录非标结构，维护工作区整洁 |
 | `check_layout.py` | 检测冲突约束、负 Spacing 及跨平台布局不兼容项 |
-| `check_docs_and_configs.py` | 校验工程文档完整性与规范一致性 |
-| `check_scripts_quality.py` | 检测 Shell 及 Python 脚本编码规范与可执行状态 |
 | `check_swift_quality.py` | 扫描 Swift 强类型、隐式隐患等代码质量缺陷 |
 | `check_unsafe_string_index.py` | 扫描 Swift 源码中不安全的 String.Index 偏移调用 |
+
 
 ---
 

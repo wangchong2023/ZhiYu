@@ -69,7 +69,6 @@ run_parallel_task "Cyclomatic Complexity" "complexity" "python3 Tools/Gatekeeper
 run_parallel_task "Localization Compliance" "localization" "python3 Tools/Gatekeeper/Compliance/check_localization.py" & pid14=$!
 run_parallel_task "SwiftLint" "swiftlint" "swiftlint --strict --reporter github-actions-logging 2>/dev/null || swiftlint --strict" & pid15=$!
 run_parallel_task "Hardcoded Secrets" "hardcoded_secrets" "python3 Tools/Gatekeeper/Release/check_hardcoded_secrets.py" & pid16=$!
-run_parallel_task "Duplicate Code (jscpd)" "duplicate_code" "python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py" & pid17=$!
 run_parallel_task "Commit Signature" "signature" "bash Tools/CI/Analyze/verify_commit_signature.sh" & pid18=$!
 run_parallel_task "SBOM Generation & Syft Scan" "sbom_generation" "(python3 Tools/CI/Analyze/generate_sbom.py && (syft . --exclude ./build --exclude ./env -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo Syft skipped) && python3 Tools/CI/Analyze/merge_sbom.py)" & pid19=$!
 run_parallel_task "Heuristic View Duplication" "view_duplication" "python3 Tools/Gatekeeper/Architecture/check_view_duplication.py" & pid20=$!
@@ -92,11 +91,11 @@ wait $pid13 || EXIT_CODE=1
 wait $pid14 || EXIT_CODE=1
 wait $pid15 || EXIT_CODE=1
 wait $pid16 || EXIT_CODE=1
-wait $pid17 || EXIT_CODE=1
 wait $pid18 || EXIT_CODE=1
 wait $pid19 || EXIT_CODE=1
 wait $pid20 || EXIT_CODE=1
 wait $pid21 || EXIT_CODE=1
+
 
 echo ""
 if [ $EXIT_CODE -ne 0 ]; then

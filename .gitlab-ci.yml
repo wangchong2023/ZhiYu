@@ -39,6 +39,14 @@ static-analysis:
     - echo "===> 运行全部静态分析"
     - bash Tools/CI/Analyze/run_static_analysis.sh
 
+sonarqube-analysis:
+  stage: analyze
+  allow_failure: false
+  script:
+    - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) 与 Quality Gate 硬阻断"
+    - sonar-scanner -Dsonar.qualitygate.wait=true
+
+
 # ════════════════════════════════════════════════════════════
 # prepare — 构建前准备（生成工程、解析依赖、注入版本）
 # ════════════════════════════════════════════════════════════

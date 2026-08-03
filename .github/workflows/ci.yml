@@ -73,11 +73,9 @@ jobs:
       - name: Scan Root Hygiene
         run: python3 Tools/Gatekeeper/Sanity/check_root_hygiene.py
 
-      - name: Scan Duplicate Code
-        run: python3 Tools/Gatekeeper/Sanity/check_duplicate_code.py
-
       - name: Validate Test DI Setup
         run: python3 Tools/Gatekeeper/Architecture/check_test_di_setup.py
+
 
       - name: Verify Commit Signature
         run: |
@@ -97,6 +95,12 @@ jobs:
           brew install syft 2>/dev/null || true
           syft . -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo "Syft unavailable"
           python3 Tools/CI/Analyze/merge_sbom.py
+
+      - name: SonarQube 全语言 Quality Gate 质量门禁校验 (Swift, Python, Shell, YAML)
+        run: |
+          sonar-scanner \
+            -Dsonar.qualitygate.wait=true
+
 
       - name: Upload SBOM Artifact
         uses: actions/upload-artifact@v4
