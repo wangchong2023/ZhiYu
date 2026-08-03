@@ -92,7 +92,7 @@ build-ios:
 
 build-macos:
   stage: build
-  needs: [build-ios]
+  needs: [build-ios, build-prepare]
   dependencies: [build-prepare]
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
@@ -101,7 +101,7 @@ build-macos:
 
 build-watchos:
   stage: build
-  needs: [build-macos]
+  needs: [build-macos, build-prepare]
   dependencies: [build-prepare]
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
@@ -114,7 +114,7 @@ build-watchos:
 
 test-and-coverage:
   stage: test
-  needs: [build-watchos]
+  needs: [build-watchos, build-prepare]
   dependencies: [build-prepare]
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
