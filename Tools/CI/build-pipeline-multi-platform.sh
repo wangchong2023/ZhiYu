@@ -6,7 +6,7 @@
 # 用法: ./Tools/ci/build-pipeline-multi-platform.sh
 # ==============================================================================
 # 引入持续集成公共基础底座
-source "$(dirname "$0")/../ci-common-shared.sh"
+source "$(dirname "$0")/ci-common-shared.sh"
 
 LOG_DIR="${BUILD_DIR}/multi_platform_logs"
 mkdir -p "$LOG_DIR"

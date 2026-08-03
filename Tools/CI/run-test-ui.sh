@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # 引入持续集成公共基础底座
-source "$(dirname "$0")/../ci-common-shared.sh"
+source "$(dirname "$0")/ci-common-shared.sh"
 
 # 获取动态寻找出的最新可用模拟器
 SIM_NAME=$(find_simulator)

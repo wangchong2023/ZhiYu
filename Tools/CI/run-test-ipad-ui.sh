@@ -10,7 +10,7 @@
 #
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$SCRIPT_DIR/../ci-common-shared.sh"
+source "$SCRIPT_DIR/ci-common-shared.sh"
 source "$SCRIPT_DIR/run-test-flaky-report.sh" > /dev/null
 
 SIM_NAME=$(find_ipad_simulator)

@@ -11,7 +11,7 @@
 set -euo pipefail
 
 # 引入持续集成公共基础底座
-source "$(dirname "$0")/../ci-common-shared.sh"
+source "$(dirname "$0")/ci-common-shared.sh"
 
 # ── 1. 常量与环境配置 ──────────────────────────────────────────
 DERIVED_DATA_PATH="${BUILD_DIR}/DerivedData-ios"

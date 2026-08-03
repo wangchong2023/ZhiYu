@@ -9,7 +9,7 @@
 set -euo pipefail
 
 # 引入持续集成公共基础底座
-source "$(dirname "$0")/../ci-common-shared.sh"
+source "$(dirname "$0")/ci-common-shared.sh"
 
 SCHEME="${1:?缺少 scheme 参数}"
 DEST="${2:?缺少 destination 参数}"
