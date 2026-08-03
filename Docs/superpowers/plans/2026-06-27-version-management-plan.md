@@ -4,9 +4,9 @@
 
 **目标：** 实现 Git Tag 驱动的版本管理系统——CI 自动注入 SemVer + 构建号 + 短哈希到 Info.plist，关于页面从 Bundle 读取真实版本号。
 
-**架构：** `git tag → inject_version.sh (CI) → Info.plist → Bundle.main → AboutView`。注入脚本使用 `PlistBuddy`（macOS 原生），双 CI（Woodpecker + GitHub Actions）均兼容。开发和 PR 构建无 tag 时 fallback 为 `0.0.0-dev`。
+**架构：** `git tag → ci-build-pipeline-version-inject.sh (CI) → Info.plist → Bundle.main → AboutView`。注入脚本使用 `PlistBuddy`（macOS 原生），双 CI（Woodpecker + GitHub Actions）均兼容。开发和 PR 构建无 tag 时 fallback 为 `0.0.0-dev`。
 
-**技术栈：** Bash + PlistBuddy (inject_version.sh)，SwiftUI (AboutView)，Shell 测试 (Bats 风格)，SnapTesting (AboutView 快照)，YAML (CI 配置)
+**技术栈：** Bash + PlistBuddy (ci-build-pipeline-version-inject.sh)，SwiftUI (AboutView)，Shell 测试 (Bats 风格)，SnapTesting (AboutView 快照)，YAML (CI 配置)
 
 ---
 
@@ -14,8 +14,8 @@
 
 | 文件 | 操作 | 职责 |
 |------|------|------|
-| `Tools/CI/Build/inject_version.sh` | 创建 | 从 git 提取版本号，写入 Info.plist |
-| `Tests/Unit/CI/inject_version_test.sh` | 创建 | inject_version.sh 的单元测试（4 个场景） |
+| `Tools/ci/build-pipeline-version-inject.sh` | 创建 | 从 git 提取版本号，写入 Info.plist |
+| `Tools/ci/run-test-version-inject-unit.sh` | 创建 | ci-build-pipeline-version-inject.sh 的单元测试（4 个场景） |
 | `Sources/App/Scenes/AboutView.swift` | 修改 | 替换硬编码版本号为 Bundle 读取 |
 | `Tests/SnapshotTests/ComponentSnapshots.swift` | 修改 | 新增 AboutView 快照测试 |
 | `project.yml` | 修改 | 新增 MARKETING_VERSION / CURRENT_PROJECT_VERSION 占位 |
@@ -24,19 +24,19 @@
 
 ---
 
-### Task 1: 创建 inject_version.sh 脚本
+### Task 1: 创建 ci-build-pipeline-version-inject.sh 脚本
 
 **文件：**
-- 创建: `Tools/CI/Build/inject_version.sh`
+- 创建: `Tools/ci/build-pipeline-version-inject.sh`
 
 - [ ] **Step 1: 编写版本注入脚本**
 
 ```bash
 #!/bin/bash
-# inject_version.sh — 注入版本号到 Info.plist（双 CI 通用）
+# ci-build-pipeline-version-inject.sh — 注入版本号到 Info.plist（双 CI 通用）
 #
-# 用法: ./inject_version.sh <info_plist_path>
-# 示例: bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+# 用法: Tools/ci/build-pipeline-version-inject.sh <info_plist_path>
+# 示例: bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 #
 # 环境要求:
 #   - macOS（需要 /usr/libexec/PlistBuddy）
@@ -87,13 +87,13 @@ echo "[inject_version] CFBundleShortVersionString=$VERSION  CFBundleVersion=$BUI
 - [ ] **Step 2: 设置脚本可执行权限**
 
 ```bash
-chmod +x Tools/CI/Build/inject_version.sh
+chmod +x Tools/ci/build-pipeline-version-inject.sh
 ```
 
 - [ ] **Step 3: 本地验证脚本能正常运行**
 
 ```bash
-bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 ```
 
 预期输出：
@@ -111,8 +111,8 @@ bash Tools/CI/Build/inject_version.sh Sources/Info.plist
 - [ ] **Step 4: 提交**
 
 ```bash
-git add Tools/CI/Build/inject_version.sh
-git commit -m "feat: 新增版本号注入脚本 inject_version.sh
+git add Tools/ci/build-pipeline-version-inject.sh
+git commit -m "feat: 新增版本号注入脚本 ci-build-pipeline-version-inject.sh
 
 从 git tag 提取 SemVer + git rev-list 构建号 + 短哈希，
 通过 PlistBuddy 写入 Info.plist 的 CFBundleShortVersionString / CFBundleVersion / GIT_SHORT_HASH。
@@ -121,10 +121,10 @@ git commit -m "feat: 新增版本号注入脚本 inject_version.sh
 
 ---
 
-### Task 2: 编写 inject_version.sh 单元测试
+### Task 2: 编写 ci-build-pipeline-version-inject.sh 单元测试
 
 **文件：**
-- 创建: `Tests/Unit/CI/inject_version_test.sh`
+- 创建: `Tools/ci/run-test-version-inject-unit.sh`
 
 测试策略：在临时 git 仓库中测试，不依赖真实项目仓库。使用 Bats 风格（纯 shell，无外部依赖）或直接手工断言。
 
@@ -132,7 +132,7 @@ git commit -m "feat: 新增版本号注入脚本 inject_version.sh
 
 ```bash
 #!/bin/bash
-# inject_version_test.sh — inject_version.sh 的单元测试
+# ci-run-test-version-inject-unit.sh — ci-build-pipeline-version-inject.sh 的单元测试
 #
 # 测试场景:
 #   1. 无 tag → CFBundleShortVersionString = "0.0.0-dev"
@@ -143,7 +143,7 @@ git commit -m "feat: 新增版本号注入脚本 inject_version.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-INJECT_SCRIPT="$SCRIPT_DIR/../../../Tools/CI/Build/inject_version.sh"
+INJECT_SCRIPT="$SCRIPT_DIR/.Tools/ci/build-pipeline-version-inject.sh"
 PASS=0
 FAIL=0
 
@@ -190,7 +190,7 @@ git commit --quiet -m "Initial commit"
 
 echo ""
 echo "════════════════════════════════════════"
-echo "  inject_version.sh 单元测试"
+echo "  ci-build-pipeline-version-inject.sh 单元测试"
 echo "════════════════════════════════════════"
 echo ""
 
@@ -252,8 +252,8 @@ echo "════════════════════════�
 - [ ] **Step 2: 运行测试验证全部通过**
 
 ```bash
-chmod +x Tests/Unit/CI/inject_version_test.sh
-bash Tests/Unit/CI/inject_version_test.sh
+chmod +x Tools/ci/run-test-version-inject-unit.sh
+bash Tools/ci/run-test-version-inject-unit.sh
 ```
 
 预期输出：
@@ -269,8 +269,8 @@ bash Tests/Unit/CI/inject_version_test.sh
 - [ ] **Step 3: 提交**
 
 ```bash
-git add Tests/Unit/CI/inject_version_test.sh
-git commit -m "test: 新增 inject_version.sh 单元测试
+git add Tools/ci/run-test-version-inject-unit.sh
+git commit -m "test: 新增 ci-build-pipeline-version-inject.sh 单元测试
 
 覆盖 5 个场景：无 tag fallback、正常 tag、构建号验证、短哈希格式、幂等写入。
 在临时 git 仓库中运行，不依赖项目真实历史。"
@@ -313,7 +313,7 @@ private var versionDisplayString: String {
 
 ```bash
 # 先注入版本号模拟 CI 行为
-bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 # 编译验证
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'generic/platform=iOS Simulator' 2>&1 | tail -5
 ```
@@ -404,8 +404,8 @@ git commit -m "test: 新增 AboutView 快照测试
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    MARKETING_VERSION: "0.0.0-dev"       # CI 会在构建前通过 inject_version.sh 覆盖
-    CURRENT_PROJECT_VERSION: "0"          # CI 会在构建前通过 inject_version.sh 覆盖
+    MARKETING_VERSION: "0.0.0-dev"       # CI 会在构建前通过 ci-build-pipeline-version-inject.sh 覆盖
+    CURRENT_PROJECT_VERSION: "0"          # CI 会在构建前通过 ci-build-pipeline-version-inject.sh 覆盖
 ```
 
 - [ ] **Step 2: 重新生成 Xcode 工程并验证**
@@ -425,7 +425,7 @@ git add project.yml ZhiYu.xcodeproj/project.pbxproj
 git commit -m "feat: project.yml 新增版本号占位设置
 
 MARKETING_VERSION = 0.0.0-dev, CURRENT_PROJECT_VERSION = 0。
-CI 在构建前通过 inject_version.sh 覆盖实际值。"
+CI 在构建前通过 ci-build-pipeline-version-inject.sh 覆盖实际值。"
 ```
 
 ---
@@ -463,7 +463,7 @@ steps:
       - echo "===> 安装静态分析 Python 依赖"
       - pip3 install --quiet radon 2>/dev/null || true
       - echo "===> 运行全部 19 项静态分析（并行执行）"
-      - bash Tools/CI/Analyze/run_static_analysis.sh
+      - bash Tools/ci/run-code-static-analysis.sh
 
   prepare-dependencies:
     depends_on: [clone-repo]
@@ -477,31 +477,31 @@ steps:
     depends_on: [prepare-dependencies]
     image: bash
     commands:
-      - bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+      - bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 
   build-ios:
     depends_on: [inject-version]
     image: bash
     commands:
-      - bash Tools/CI/Build/build_platform.sh ZhiYu 'generic/platform=iOS Simulator' ios
+      - bash Tools/ci/build-pipeline-platform.sh ZhiYu 'generic/platform=iOS Simulator' ios
 
   build-macos:
     depends_on: [build-ios]
     image: bash
     commands:
-      - bash Tools/CI/Build/build_platform.sh ZhiYuMac 'platform=macOS' macos
+      - bash Tools/ci/build-pipeline-platform.sh ZhiYuMac 'platform=macOS' macos
 
   build-watchos:
     depends_on: [build-macos]
     image: bash
     commands:
-      - bash Tools/CI/Build/build_platform.sh ZhiYuWatch 'generic/platform=watchOS Simulator' watchos
+      - bash Tools/ci/build-pipeline-platform.sh ZhiYuWatch 'generic/platform=watchOS Simulator' watchos
 
   test-and-verify-coverage:
     depends_on: [build-watchos]
     image: bash
     commands:
-      - bash Tools/CI/Test/run_tests_and_coverage.sh
+      - bash Tools/ci/run-test-with-coverage.sh
 ```
 
 - [ ] **Step 2: 提交**
@@ -511,7 +511,7 @@ git add .woodpecker.yml
 git commit -m "ci: Woodpecker 流水线新增 inject-version 步骤
 
 在 prepare-dependencies (xcodegen generate) 之后、build-ios 之前
-调用 inject_version.sh 写入版本号到 Info.plist。
+调用 ci-build-pipeline-version-inject.sh 写入版本号到 Info.plist。
 依赖拓扑: prepare-dependencies → inject-version → build-ios → ..."
 ```
 
@@ -533,10 +533,10 @@ git commit -m "ci: Woodpecker 流水线新增 inject-version 步骤
           xcodegen generate
 
       - name: Inject Version
-        run: bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+        run: bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 ```
 
-注意：GHA 的 `multi-platform` job 使用 `download-artifact` 获取 xcodegen 生成的工程，但 `inject_version.sh` 需要项目根目录下的 `.git` 目录和 `Sources/Info.plist`。`checkout` 步骤已经提供了 `.git` 目录，所以可以直接运行注入脚本。注入在 xcodegen 之后、xcodebuild 之前执行。
+注意：GHA 的 `multi-platform` job 使用 `download-artifact` 获取 xcodegen 生成的工程，但 `build-pipeline-version-inject.sh` 需要项目根目录下的 `.git` 目录和 `Sources/Info.plist`。`checkout` 步骤已经提供了 `.git` 目录，所以可以直接运行注入脚本。注入在 xcodegen 之后、xcodebuild 之前执行。
 
 - [ ] **Step 2: 提交**
 
@@ -544,7 +544,7 @@ git commit -m "ci: Woodpecker 流水线新增 inject-version 步骤
 git add .github/workflows/ci.yml
 git commit -m "ci: GitHub Actions 多平台构建前注入版本号
 
-在 multi-platform 矩阵编译前调用 inject_version.sh，
+在 multi-platform 矩阵编译前调用 ci-build-pipeline-version-inject.sh，
 确保 iOS/macOS/watchOS 三平台都使用正确的版本号。"
 ```
 
@@ -555,7 +555,7 @@ git commit -m "ci: GitHub Actions 多平台构建前注入版本号
 - [ ] **Step 1: 运行 inject_version 单元测试**
 
 ```bash
-bash Tests/Unit/CI/inject_version_test.sh
+bash Tools/ci/run-test-version-inject-unit.sh
 ```
 
 预期：5/5 通过
@@ -566,7 +566,7 @@ bash Tests/Unit/CI/inject_version_test.sh
 # 恢复 Info.plist 到注入前的状态（git checkout）
 git checkout Sources/Info.plist
 # 注入版本号
-bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 # 重新生成工程
 xcodegen generate
 # 编译验证
@@ -613,8 +613,8 @@ git status
 实施完成后验证：
 
 1. **本地无 tag 构建**：About 页显示 `0.0.0-dev (N · abc1234)` — 其中 N 为 commit 数
-2. **打 tag 后构建**：`git tag v1.0.0 && bash Tools/CI/Build/inject_version.sh Sources/Info.plist` → About 页显示 `1.0.0 (N · abc1234)`
+2. **打 tag 后构建**：`git tag v1.0.0 && bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist` → About 页显示 `1.0.0 (N · abc1234)`
 3. **构建号单调递增**：每新增一个 commit，构建号 +1
 4. **双 CI 兼容**：Woodpecker 和 GitHub Actions 都能正确注入版本号
 5. **快照测试覆盖**：AboutView 渲染结果可验证
-6. **已有门禁无回归**：`check_appstore_readiness.py` 校验 CFBundleVersion 格式仍然通过
+6. **已有门禁无回归**：`ios-check-release-appstore.py` 校验 CFBundleVersion 格式仍然通过

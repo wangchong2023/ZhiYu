@@ -23,7 +23,7 @@ gen: bootstrap
 
 bootstrap:
 	@echo "⚙️  自动加载 Config/.env.local 并重生成 Xcode 项目..."
-	@bash Tools/Utils/bootstrap.sh
+	@bash Tools/scripts/run-quality-bootstrap.sh
 
 ios: gen
 	@echo "📱 正在构建 iOS Targets..."
@@ -61,9 +61,9 @@ test-all: test-spm-all test
 
 audit:
 	@echo "🔍 运行 CI 架构与开源依赖门禁体系..."
-	@python3 Tools/Gatekeeper/Architecture/check_opensource_adapters.py
-	@python3 Tools/Gatekeeper/Architecture/check_dependency_registry.py
-	@python3 Tools/Gatekeeper/Sanity/check_absolute_paths.py
+	@python3 Tools/ios/check-arch-opensource-adapters.py
+	@python3 Tools/ios/check-arch-dependency-registry.py
+	@python3 Tools/ios/check-code-absolute-paths.py
 
 lint:
 	@swiftlint --strict

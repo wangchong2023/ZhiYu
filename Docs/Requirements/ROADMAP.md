@@ -51,7 +51,7 @@ gantt
 * **主要特性**：
   * **AI 基础设施拆分**：将 `LLMService` 彻底剥离并解耦为 `ChatLLMService` (对话编排)、`IngestLLMService` (摄入/拆分/折叠) 与 `RerankService` (同义扩展与重排)，由门面类透传，降低代码文件复杂度。
   * **AppStore Facade 物理减脂**：创建全新的 `MediaStore` 统一整合 OCR、PDF 元数据存取与 Snapshot 截图加载；完成 `SearchStore` 的物理完全切除，各 Store 独立挂载并统一注册至 DI 容器，实现状态单一源。
-  * **代码覆盖率 85% 自动熔断**：通过 `check_coverage.py` 流水线脚本，对核心领域层 (`Sources/Domain`) 强加 85% 单元测试覆盖率红线，低于此红线 CI 自动拒绝合并（剔除了旧有后缀豁免）。
+  * **代码覆盖率 85% 自动熔断**：通过 `assert-test-coverage.py` 流水线脚本，对核心领域层 (`Sources/Domain`) 强加 85% 单元测试覆盖率红线，低于此红线 CI 自动拒绝合并（剔除了旧有后缀豁免）。
   * **Golden Set 质量度量**：集成 50+ 组核心场景的召回率自动化检验，低于 90% 准确性要求时强行报错。
   * **ZhiYuTests.swift (37KB) 物理拆解**：打碎超长测试文件为 4 个职责分明的高内聚测试模块。
   * **三端 UX 质感升华**：统一实现四大模块的 `Empty States` 空白视图、通用 `AppErrorView` 错误面板、以及优雅滑入的 `Loading Skeleton` 骨架屏组件。
@@ -69,7 +69,7 @@ gantt
   * **离线优先与自动化依赖审计门禁**：
     - 建立 `Config/opensource_dependencies.yml` 开源注册表 SSOT。
     - 所有 Package.swift 统一为 `path: opensrcRoot/名称` 本地路径依赖，零 GitHub URL 网络依赖。
-    - 扩展 Gatekeeper CI 门禁（`check_opensource_adapters.py` 与 `check_dependency_registry.py`），实现 4/4 项自动化硬卡。
+    - 扩展 Gatekeeper CI 门禁（`check-arch-opensource-adapters.py` 与 `check-arch-dependency-registry.py`），实现 4/4 项自动化硬卡。
   * **AI 合成实验室全链路容错与加固**：
     - **双层 JSON 自愈**：`JSONRepairProcessor` 兼具语法修复与流式截断补全。
     - **JSON Schema 源头约束**：`PromptConstants.Schemas.quizJSONSchema` 强类型 schema 在 Prompt 尾部强制注入。

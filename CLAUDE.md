@@ -98,7 +98,7 @@ swiftlint --strict
 2. **禁止直接调用 tr()**：视图层（View）及业务逻辑层严禁直接调用 `.tr("key")` 或 `.trf("key", ...)`。必须通过 `L10n.模块.属性` 访问。
 3. **扩展定义**：所有本地化词条必须在 `Sources/Localization/Extensions/L10n+XXX.swift` 中定义为强类型属性。
 4. **禁止假国际化**：在 `L10n+XXX.swift` 扩展文件中，严禁直接给属性赋值硬编码的中文（如 `var ok: String { "确定" }`），必须调用底层 `tr()` 方法映射至 `.xcstrings`。
-5. **强制网关**：`Tools/Gatekeeper/check_localization.py` 已集成至编译流程。违反上述规则（如硬编码中文或直接调用 tr）将**直接导致编译失败**。
+5. **强制网关**：`Tools/ios/check-code-localization.py` 已集成至编译流程。违反上述规则（如硬编码中文或直接调用 tr）将**直接导致编译失败**。
 
 | 层级 | 名称 | 内容 |
 |-------|------|-----------------|

@@ -381,7 +381,7 @@ sequenceDiagram
 ```
 
 ### 10.2 多语言安全合规性保证
-*   **移除硬编码中文字符**：所有 Shortcuts Title、Description 和 Siri 语音引导词全部移除硬编码，使用 `LocalizedStringResource` 通过 String Catalog (`.xcstrings`) 动态加载。这在 `check_localization.py` 静态 Gatekeeper 审计中被作为强制绿灯规则。
+*   **移除硬编码中文字符**：所有 Shortcuts Title、Description 和 Siri 语音引导词全部移除硬编码，使用 `LocalizedStringResource` 通过 String Catalog (`.xcstrings`) 动态加载。这在 `check-code-localization.py` 静态 Gatekeeper 审计中被作为强制绿灯规则。
 
 ---
 

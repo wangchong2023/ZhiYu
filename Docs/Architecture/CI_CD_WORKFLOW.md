@@ -138,34 +138,34 @@ curl -X POST "http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu/protecte
 
 | 检查项 | 脚本/工具 | Layer 1: Pre-commit | Layer 2: Build Phase | Layer 3: Woodpecker CI | Layer 4: GitHub Actions |
 |--------|-----------|:---:|:---:|:---:|:---:|
-| 硬编码密钥扫描 | `check_hardcoded_secrets.py` | ✅ | ✅ | ✅ | ✅ |
-| 本地化合规 | `check_localization.py` | ✅(仅报告) | ✅ | ❌ | ✅ |
+| 硬编码密钥扫描 | `assert-release-hardcoded-secrets.py` | ✅ | ✅ | ✅ | ✅ |
+| 本地化合规 | `check-code-localization.py` | ✅(仅报告) | ✅ | ❌ | ✅ |
 | SwiftLint 严格模式 | `swiftlint lint --strict` | ❌ | ✅ | ✅ | ✅ |
-| 架构依赖 (L0-L3 分层) | `check_architecture_dependency.py` | ❌ | ✅ | ✅ | ✅ |
-| 领域纯净度 | `check_domain_purity.py` | ❌ | ✅ | ✅ | ❌ |
+| 架构依赖 (L0-L3 分层) | `audit-arch-dependency.py` | ❌ | ✅ | ✅ | ✅ |
+| 领域纯净度 | `audit-arch-domain-purity.py` | ❌ | ✅ | ✅ | ❌ |
 | 魔鬼数字/字符串 | `check_magic_numbers_v2.py` | ❌ | ✅ | ✅ | ✅ |
-| 根目录卫生 (临时文件+结构) | `check_root_hygiene.py` | ❌ | ❌ | ✅ | ✅ |
-| Storage 常量 | `check_storage_constants.py` | ❌ | ✅ | ❌ | ❌ |
-| HIG 合规 | `check_hig_compliance.py` | ❌ | ✅ | ❌ | ❌ |
-| App Store 就绪 | `check_appstore_readiness.py` | ❌ | ✅ | ❌ | ❌ |
-| DI 测试设置审计 | `check_test_di_setup.py` | ❌ | ❌ | ✅ | ✅ |
-| 文档与配置完整性 | `check_docs_and_configs.py` | ❌ | ❌ | ✅ | ❌ |
-| Swift 注释与函数长度 | `check_swift_quality.py` | ❌ | ❌ | ✅ | ❌ |
-| Tools 脚本质量 (Python/Shell) | `check_scripts_quality.py` | ❌ | ✅ | ✅ | ❌ |
-| ShellCheck (条件性¹) | 内嵌于 `check_scripts_quality.py` | ❌ | ❌ | ✅ | ❌ |
+| 根目录卫生 (临时文件+结构) | `scripts-check-dev-root-hygiene.py` | ❌ | ❌ | ✅ | ✅ |
+| Storage 常量 | `check-code-storage-constants.py` | ❌ | ✅ | ❌ | ❌ |
+| HIG 合规 | `check-design-hig.py` | ❌ | ✅ | ❌ | ❌ |
+| App Store 就绪 | `ios-check-release-appstore.py` | ❌ | ✅ | ❌ | ❌ |
+| DI 测试设置审计 | `check-arch-test-di-setup.py` | ❌ | ❌ | ✅ | ✅ |
+| 文档与配置完整性 | `docs-check-config-docs.py` | ❌ | ❌ | ✅ | ❌ |
+| Swift 注释与函数长度 | `audit-code-swift-quality.py` | ❌ | ❌ | ✅ | ❌ |
+| Tools 脚本质量 (Python/Shell) | `scripts-audit-quality-scripts.py` | ❌ | ✅ | ✅ | ❌ |
+| ShellCheck (条件性¹) | 内嵌于 `scripts-audit-quality-scripts.py` | ❌ | ❌ | ✅ | ❌ |
 | 分层标记审计 | `lint_layer_markers.sh` | ❌ | ❌ | ✅ | ❌ |
 | Unsafe String.Index 扫描 | `scan_unsafe_string_index.py` | ❌ | ❌ | ✅ | ❌ |
-| SPM 完整性 | `verify_spm_integrity.sh` | ❌ | ❌ | ✅ | ✅ |
-| SPM 依赖漏洞审计 | `audit_spm_dependencies.py` | ❌ | ❌ | ❌ | ✅ |
-| SBOM 生成 (SPDX+CycloneDX) | `generate_sbom.py` / `merge_sbom.py` | ❌ | ❌ | ✅ | ✅ |
-| 代码覆盖率红线 (85%) | `check_coverage.py` | ❌ | ❌ | ✅ | ✅ |
+| SPM 完整性 | `check-arch-spm-integrity.sh` | ❌ | ❌ | ✅ | ✅ |
+| SPM 依赖漏洞审计 | `ci-audit-spm-dependencies.py` | ❌ | ❌ | ❌ | ✅ |
+| SBOM 生成 (SPDX+CycloneDX) | `generate-arch-sbom-single.py` / `generate-arch-sbom-merged.py` | ❌ | ❌ | ✅ | ✅ |
+| 代码覆盖率红线 (85%) | `assert-test-coverage.py` | ❌ | ❌ | ✅ | ✅ |
 
-> **¹ ShellCheck 条件性**：`check_scripts_quality.py` 在运行时 `shutil.which("shellcheck")` 动态探测，仅当 Agent/runner 已安装 shellcheck 才合流校验，否则静默跳过。GitHub-hosted macos-15 runner 预装 shellcheck；自托管 Woodpecker iOS Agent 需自行 `brew install shellcheck`。
+> **¹ ShellCheck 条件性**：`scripts-audit-quality-scripts.py` 在运行时 `shutil.which("shellcheck")` 动态探测，仅当 Agent/runner 已安装 shellcheck 才合流校验，否则静默跳过。GitHub-hosted macos-15 runner 预装 shellcheck；自托管 Woodpecker iOS Agent 需自行 `brew install shellcheck`。
 
 **分层原则：**
 - **Layer 1 (Pre-commit)**: 最快，只阻断密钥泄露，其余仅报告
 - **Layer 2 (Build Phase)**: 每次本地构建运行，覆盖代码质量 + 魔鬼数字 + 架构分层 + SwiftLint `--strict`（与 CI 同口径，杜绝本地绕过）
-- **Layer 3 (Woodpecker)**: 自托管 CI，`run_static_analysis.sh` 并发 19 项 + 三平台编译 + 测试覆盖率
+- **Layer 3 (Woodpecker)**: 自托管 CI，`run-code-static-analysis.sh` 并发 19 项 + 三平台编译 + 测试覆盖率
 - **Layer 4 (GitHub Actions)**: 独立验证 + 产物上传 + 多平台矩阵 + SPM 漏洞审计
 
 ---
@@ -179,15 +179,15 @@ Xcode Build Phases 中为每个 target 配置的 `preBuildScripts`（定义于 `
 | Gatekeeper 脚本 | ZhiYu (iOS) | ZhiYuMac | ZhiYuWatch | ZhiYuWidgets | ZhiYuTests |
 |------|:---:|:---:|:---:|:---:|:---:|
 | `swiftlint lint --strict` | ✅ | ✅ | ❌ | ❌ | ❌ |
-| `check_domain_purity.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
-| `check_localization.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
-| `check_storage_constants.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
+| `audit-arch-domain-purity.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
+| `check-code-localization.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
+| `check-code-storage-constants.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
 | `check_magic_numbers_v2.py` | ✅ | ❌ | ❌ | ❌ | ❌ |
-| `check_hardcoded_secrets.py` | ✅ | ❌ | ❌ | ❌ | ❌ |
-| `check_hig_compliance.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
-| `check_appstore_readiness.py` | ✅ | ✅ | ❌ | ❌ | ❌ |
-| `check_architecture_dependency.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
-| `check_scripts_quality.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
+| `assert-release-hardcoded-secrets.py` | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `check-design-hig.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
+| `ios-check-release-appstore.py` | ✅ | ✅ | ❌ | ❌ | ❌ |
+| `audit-arch-dependency.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
+| `scripts-audit-quality-scripts.py` | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **合计** | **10** | **8** | **6** | **0** | **0** |
 
 ### 各脚本职责
@@ -195,15 +195,15 @@ Xcode Build Phases 中为每个 target 配置的 `preBuildScripts`（定义于 `
 | 脚本 | 功能 | 阻断级别 |
 |------|------|---------|
 | `swiftlint lint --strict` | 圈复杂度 (<10) / 函数长度 (NBNC<50) / 编码规范硬熔断 | ERROR |
-| `check_domain_purity.py` | 领域层纯净度（禁止跨域直接依赖） | ERROR |
-| `check_localization.py` | 硬编码中文 + 违规 `.tr()` 调用 + 翻译占位符 | ERROR |
-| `check_storage_constants.py` | 数据库物理表名/字段名硬编码 | ERROR |
+| `audit-arch-domain-purity.py` | 领域层纯净度（禁止跨域直接依赖） | ERROR |
+| `check-code-localization.py` | 硬编码中文 + 违规 `.tr()` 调用 + 翻译占位符 | ERROR |
+| `check-code-storage-constants.py` | 数据库物理表名/字段名硬编码 | ERROR |
 | `check_magic_numbers_v2.py` | UI 与业务逻辑魔鬼数字检测 | ERROR |
-| `check_hardcoded_secrets.py` | 密钥/Token/内网 IP 扫描 | ERROR |
-| `check_hig_compliance.py` | Apple HIG 人机交互指南合规性 | ERROR |
-| `check_appstore_readiness.py` | App Store 提审前上架就绪度 | ERROR |
-| `check_architecture_dependency.py` | L0–L3 分层依赖方向审计 | ERROR |
-| `check_scripts_quality.py` | Tools 目录 Python/Shell 脚本质量（含 ShellCheck） | ERROR |
+| `assert-release-hardcoded-secrets.py` | 密钥/Token/内网 IP 扫描 | ERROR |
+| `check-design-hig.py` | Apple HIG 人机交互指南合规性 | ERROR |
+| `ios-check-release-appstore.py` | App Store 提审前上架就绪度 | ERROR |
+| `audit-arch-dependency.py` | L0–L3 分层依赖方向审计 | ERROR |
+| `scripts-audit-quality-scripts.py` | Tools 目录 Python/Shell 脚本质量（含 ShellCheck） | ERROR |
 
 > **设计说明**：`ZhiYuWidgets` 与 `ZhiYuTests` 不配 Gatekeeper，因为 Widget 扩展只依赖设计令牌与少量模型、测试 target 不发布。SwiftLint 未在 `ZhiYuWatch` 的 Build Phase 单独配置，watchOS 代码规范由主 target 的 lint 覆盖（`Sources/` 全局扫描）。
 
@@ -215,8 +215,8 @@ Xcode Build Phases 中为每个 target 配置的 `preBuildScripts`（定义于 `
 
 | 检查项 | 工具 | 阻断条件 |
 |--------|------|---------|
-| 硬编码密钥扫描 | `Tools/Gatekeeper/check_hardcoded_secrets.py` | 命中即阻断 |
-| 本地化合规 | `Tools/Gatekeeper/check_localization.py` | 仅报告，不阻断（编译时强制） |
+| 硬编码密钥扫描 | `Tools/ios/assert-release-hardcoded-secrets.py` | 命中即阻断 |
+| 本地化合规 | `Tools/ios/check-code-localization.py` | 仅报告，不阻断（编译时强制） |
 
 ---
 
@@ -238,7 +238,7 @@ Xcode Build Phases 中为每个 target 配置的 `preBuildScripts`（定义于 `
 | 指标 | 阈值 |
 |------|------|
 | 覆盖率统计 | `xcrun xccov view --report` 解析 .xcresult |
-| CI 检查 | `Tools/CI/check_coverage.py` |
+| CI 检查 | `Tools/ci/assert-test-coverage.py` |
 
 ---
 
@@ -247,41 +247,41 @@ Xcode Build Phases 中为每个 target 配置的 `preBuildScripts`（定义于 `
 ```
 Tools/
 ├── Gatekeeper/                          # 编译门禁 (project.yml preBuildScripts)
-│   ├── check_domain_purity.py           # 领域层纯净度
-│   ├── check_localization.py            # 硬编码中文 + 违规 tr() 调用
-│   ├── check_storage_constants.py       # 数据库物理字段硬编码
+│   ├── audit-arch-domain-purity.py           # 领域层纯净度
+│   ├── check-code-localization.py            # 硬编码中文 + 违规 tr() 调用
+│   ├── check-code-storage-constants.py       # 数据库物理字段硬编码
 │   ├── check_magic_numbers_v2.py        # 魔鬼数字检测
-│   ├── check_hardcoded_secrets.py       # 密钥/Token/IP 扫描
-│   ├── check_hig_compliance.py          # Apple HIG 合规性
-│   ├── check_appstore_readiness.py      # App Store 上架就绪度
-│   ├── check_architecture_dependency.py # L0-L3 分层依赖审计
-│   ├── check_root_hygiene.py            # 根目录卫生 (临时文件+结构)
-│   ├── check_scripts_quality.py         # Tools 脚本质量 (Python/Shell + ShellCheck)
-│   ├── check_swift_quality.py           # Swift 函数长度与注释完备性
-│   ├── check_test_di_setup.py           # 测试环境 DI 完整性
-│   ├── check_docs_and_configs.py        # 文档完整性 + 死链 + 配置一致性
-│   └── check_coverage.py                # 覆盖率红线 (Domain 层, 85%)
+│   ├── assert-release-hardcoded-secrets.py       # 密钥/Token/IP 扫描
+│   ├── check-design-hig.py          # Apple HIG 合规性
+│   ├── ios-check-release-appstore.py      # App Store 上架就绪度
+│   ├── audit-arch-dependency.py # L0-L3 分层依赖审计
+│   ├── scripts-check-dev-root-hygiene.py            # 根目录卫生 (临时文件+结构)
+│   ├── scripts-audit-quality-scripts.py         # Tools 脚本质量 (Python/Shell + ShellCheck)
+│   ├── audit-code-swift-quality.py           # Swift 函数长度与注释完备性
+│   ├── check-arch-test-di-setup.py           # 测试环境 DI 完整性
+│   ├── docs-check-config-docs.py        # 文档完整性 + 死链 + 配置一致性
+│   └── assert-test-coverage.py                # 覆盖率红线 (Domain 层, 85%)
 ├── CI/                                  # CI 流水线脚本
-│   ├── run_static_analysis.sh           # 并发调度 19 项静态分析
-│   ├── prepare_build_environment.sh     # xcodegen generate 等构建前准备
-│   ├── inject_version.sh                # 版本号注入（git tag → Info.plist）
-│   ├── build_platform.sh                # 单平台 xcodebuild 构建封装
-│   ├── build_multi_platform.sh          # 多平台矩阵构建封装
-│   ├── run_tests_and_coverage.sh        # xcodebuild test + 覆盖率红线
-│   ├── run_unit_tests.sh                # 单元测试 (CI 侧)
-│   ├── run_ui_tests.sh                  # UI 测试 (跳过 Monkey)
-│   ├── check_coverage.py                # 覆盖率红线 (与 Gatekeeper 版不同, 见 §8)
-│   ├── check_perf_regression.py         # 性能回归分析
-│   ├── update_perf_baseline.sh          # 性能基线更新
-│   ├── collect_flaky_tests.sh           # Flaky 测试收集
-│   ├── ci-test-progress.sh              # 测试用例数统计
-│   ├── audit_spm_dependencies.py        # SPM 依赖漏洞审计
-│   ├── verify_spm_integrity.sh          # SPM 包完整性校验
-│   ├── verify_commit_signature.sh       # GPG 提交签名校验
-│   ├── verify_reproducible_build.sh     # 确定性构建验证
-│   ├── generate_sbom.py                 # SPDX 2.3 SBOM 生成
-│   ├── merge_sbom.py                    # SPDX + CycloneDX SBOM 合并
-│   └── notify_feishu.sh                 # 飞鱼 CI 通知
+│   ├── run-code-static-analysis.sh           # 并发调度 19 项静态分析
+│   ├── ci-build-pipeline-env-prepare.sh     # xcodegen generate 等构建前准备
+│   ├── ci-build-pipeline-version-inject.sh                # 版本号注入（git tag → Info.plist）
+│   ├── ci-build-pipeline-platform.sh                # 单平台 xcodebuild 构建封装
+│   ├── ci-build-pipeline-multi-platform.sh          # 多平台矩阵构建封装
+│   ├── ci-run-test-with-coverage.sh        # xcodebuild test + 覆盖率红线
+│   ├── run-test-unit.sh                # 单元测试 (CI 侧)
+│   ├── ci-run-test-ui.sh                  # UI 测试 (跳过 Monkey)
+│   ├── assert-test-coverage.py                # 覆盖率红线 (与 Gatekeeper 版不同, 见 §8)
+│   ├── check-pipeline-perf-regression.py         # 性能回归分析
+│   ├── generate-pipeline-perf-baseline.sh          # 性能基线更新
+│   ├── run-test-flaky-report.sh           # Flaky 测试收集
+│   ├── ci-run-test-progress.sh              # 测试用例数统计
+│   ├── ci-audit-spm-dependencies.py        # SPM 依赖漏洞审计
+│   ├── check-arch-spm-integrity.sh          # SPM 包完整性校验
+│   ├── ci-check-security-commit-signature.sh       # GPG 提交签名校验
+│   ├── ci-check-pipeline-reproducible.sh     # 确定性构建验证
+│   ├── generate-arch-sbom-single.py                 # SPDX 2.3 SBOM 生成
+│   ├── generate-arch-sbom-merged.py                    # SPDX + CycloneDX SBOM 合并
+│   └── run-pipeline-feishu.sh                 # 飞鱼 CI 通知
 ├── Lint/                                # 手动代码质量检查
 │   ├── audit_l10n.py                    # 本地化深度审计
 │   ├── lint_layer_markers.sh            # 分层标记审计
@@ -291,18 +291,18 @@ Tools/
 │   ├── test_plugin_e2e.py
 │   └── MockServer/
 ├── Plugins/                             # 插件 SDK + 源文件 + 测试
-│   ├── copy_plugins_to_sim.sh
-│   ├── validate_plugin.py
-│   ├── test_plugin_and_model_features.sh
+│   ├── ios-run-plugin-copy-to-sim.sh
+│   ├── ios-check-plugin-validate.py
+│   ├── ios-run-plugin-feature-tests.sh
 │   └── Local/ Remote/ community/ smart-cleaner/
 ├── Utils/                               # 辅助脚本
-│   ├── run_tests.sh
-│   ├── sync_sql.py
-│   └── update_snapshots.sh
+│   ├── scripts-run-dev-tests.sh
+│   ├── scripts-run-dev-sql-sync.py
+│   └── ios-generate-test-snapshots.sh
 └── README.md
 ```
 
-> **注意**：`Tools/CI/check_coverage.py` 与 `Tools/Gatekeeper/check_coverage.py` 同名但实现不同（CI 版用于 Woodpecker/GitHub 流水线，Gatekeeper 版预留 Build Phase 调用）。修改时注意区分，建议未来重命名消除歧义。
+> **注意**：`Tools/ci/assert-test-coverage.py` 与 `Tools/ci/assert-test-coverage.py` 同名但实现不同（CI 版用于 Woodpecker/GitHub 流水线，Gatekeeper 版预留 Build Phase 调用）。修改时注意区分，建议未来重命名消除歧义。
 
 ---
 

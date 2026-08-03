@@ -91,7 +91,7 @@ xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iO
 - **禁止硬编码**：UI 层、业务逻辑与处理器严禁出现硬编码中文/ASCII 字符串或裸露过滤关键词（如 `"篇幅要求"`, `"目标受众"`）。所有展示与过滤文本必须通过 `L10n.模块.属性` 强类型访问。
 - **禁止直连 tr()**：严禁在业务视图或服务层直接调用 `.tr()`。
 - **禁止假国际化**：在 `L10n+XXX.swift` 扩展中，禁止直接赋值硬编码中文，必须映射至 `.xcstrings`。
-- **强校验网关**：项目已集成 `check_localization.py` 编译网关。任何硬编码非 ASCII 字符或非法 `.tr()` 调用将**阻断编译**。
+- **强校验网关**：项目已集成 `ios-check-code-localization.py` 编译网关。任何硬编码非 ASCII 字符或非法 `.tr()` 调用将**阻断编译**。
 
 ### 5. 设计系统 Token 强约束 (Design System Tokens)
 - **禁止硬编码 UI 尺寸**：严禁在 SwiftUI 视图中使用硬编码字号、边距、圆角或透明度（如 `.padding(12)`, `.font(.system(size: 16))`）。

@@ -19,7 +19,7 @@
 |------|------|
 | **最大行数** | 每个文件 ≤ **500 行** |
 | **理想行数** | 100 – 300 行 |
-| **硬上限** | 超过 500 行强制拆分（CI `check_swift_quality.py` 会阻断） |
+| **硬上限** | 超过 500 行强制拆分（CI `audit-code-swift-quality.py` 会阻断） |
 | **文件头规范** | 每个文件必须标注 `系统层级` + 独有 `核心职责` |
 
 ### 1.2 为什么需要 SRP 拆分？
@@ -206,10 +206,10 @@ xcodebuild -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Sim
 swiftlint lint --config .swiftlint.yml
 
 # 3. CI 门禁
-bash Tools/CI/Analyze/run_static_analysis.sh
+bash Tools/ci/run-code-static-analysis.sh
 
 # 4. 文件头检查
-python3 Tools/Gatekeeper/check_file_headers.py
+python3 Tools/ios/check-code-file-headers.py
 ```
 
 ---
@@ -523,7 +523,7 @@ extension PluginDetailView {
 xcodegen generate
 
 # 或使用项目提供的构建脚本
-bash Tools/build_all.sh
+bash Tools/ci/build-pipeline-all.sh
 ```
 
 ### 6.4 拆分后确保文件头注释完整
@@ -585,8 +585,8 @@ extension AuthService {
 # 检查所有 Swift 文件行数，标记超过 500 行的文件
 find Sources -name "*.swift" -exec wc -l {} + | awk '$1 > 500 {print $0}' | sort -rn
 
-# 在 CI 中自动执行（check_swift_quality.py）
-python3 Tools/Gatekeeper/Sanity/check_swift_quality.py
+# 在 CI 中自动执行（audit-code-swift-quality.py）
+python3 Tools/ios/audit-code-swift-quality.py
 ```
 
 ## 附录 B：xcodegen project.yml 文件注册示例

@@ -406,10 +406,10 @@ ZStack {
 2. **运行静态检查脚本**:
    ```bash
    # 本地化检查
-   python3 Tools/Gatekeeper/Compliance/check_localization.py
+   python3 Tools/ios/ios-check-code-localization.py
    
    # HIG 合规检查
-   python3 Tools/Gatekeeper/Compliance/check_hig_compliance.py
+   python3 Tools/ios/ios-check-design-hig.py
    ```
 
 3. **生成修复建议代码片段**:

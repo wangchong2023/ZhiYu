@@ -328,7 +328,7 @@ public struct InfoCard: View {
 
 ### 门禁脚本
 
-`Tools/Gatekeeper/check_localization.py` 已集成至编译流程，违反上述规则将**直接导致编译失败**。
+`Tools/ios/check-code-localization.py` 已集成至编译流程，违反上述规则将**直接导致编译失败**。
 
 ---
 

@@ -215,26 +215,26 @@ public final class ChatViewModel: ObservableObject {
 
 ## 6. 架构门禁自动扫描规范
 
-为了确保规范在团队协作中不被突破，配置以下构建门禁（全部通过 `Tools/CI/Analyze/run_static_analysis.sh` 集成串行执行）：
+为了确保规范在团队协作中不被突破，配置以下构建门禁（全部通过 `Tools/ci/run-code-static-analysis.sh` 集成串行执行）：
 
 | # | 脚本 | 检测内容 | 路径 |
 |---|------|---------|------|
-| 1 | `check_platform_macros.py` | Features/Domain 层 `#if os()` 宏阻断 | `Tools/Gatekeeper/` |
-| 2 | `check_magic_strings.py` | 硬编码 URL / UserDefaults key 检测 | `Tools/Gatekeeper/` |
-| 3 | `check_file_headers.py` | 文件层级标注 + 核心职责完整性验证 | `Tools/Gatekeeper/` |
-| 4 | `check_architecture_dependency.py` | L0-L3 跨层非法依赖扫描 | `Tools/Gatekeeper/Architecture/` |
-| 5 | `check_domain_purity.py` | Domain 层平台无关性（禁止 import UIKit/SwiftUI） | `Tools/Gatekeeper/Architecture/` |
-| 6 | `check_hardcoded_secrets.py` | 硬编码密钥/Token 检测 | `Tools/Gatekeeper/Release/` |
-| 7 | `check_magic_numbers.py` | 魔鬼数字/字符串检测（排除 Widget） | `Tools/Gatekeeper/Compliance/` |
-| 8 | `check_localization.py` | 国际化字符串合规（禁止硬编码中文） | `Tools/Gatekeeper/Compliance/` |
-| 9 | `check_layer_markers.sh` | 文件层级标注覆盖率统计 | `Tools/Gatekeeper/Architecture/` |
-| 10 | `check_swift_quality.py` | Swift 注释、文件头、代码长度审计 | `Tools/Gatekeeper/Sanity/` |
-| 11 | `check_root_hygiene.py` | 根目录垃圾文件/临时脚本扫描 | `Tools/Gatekeeper/Sanity/` |
-| 12 | `check_test_di_setup.py` | 测试文件 DI Mock 环境完整性 | `Tools/Gatekeeper/Architecture/` |
-| 13 | `check_complexity.py` | 🆕 圈复杂度门禁（SwiftLint cyclomatic_complexity, error≤10） | `Tools/Gatekeeper/Compliance/` |
-| 14 | `check_view_duplication.py` | 🆕 启发式 View 结构与修饰符链复用沉淀门禁 | `Tools/Gatekeeper/Architecture/` |
+| 1 | `check-code-platform-macros.py` | Features/Domain 层 `#if os()` 宏阻断 | `Tools/scripts/` |
+| 2 | `audit-code-magic-strings.py` | 硬编码 URL / UserDefaults key 检测 | `Tools/scripts/` |
+| 3 | `check-code-file-headers.py` | 文件层级标注 + 核心职责完整性验证 | `Tools/scripts/` |
+| 4 | `audit-arch-dependency.py` | L0-L3 跨层非法依赖扫描 | `Tools/ios/` |
+| 5 | `audit-arch-domain-purity.py` | Domain 层平台无关性（禁止 import UIKit/SwiftUI） | `Tools/ios/` |
+| 6 | `assert-release-hardcoded-secrets.py` | 硬编码密钥/Token 检测 | `Tools/ios/` |
+| 7 | `audit-design-magic-numbers.py` | 魔鬼数字/字符串检测（排除 Widget） | `Tools/ios/` |
+| 8 | `check-code-localization.py` | 国际化字符串合规（禁止硬编码中文） | `Tools/ios/` |
+| 9 | `check-arch-layer-markers.sh` | 文件层级标注覆盖率统计 | `Tools/ios/` |
+| 10 | `audit-code-swift-quality.py` | Swift 注释、文件头、代码长度审计 | `Tools/scripts/` |
+| 11 | `scripts-check-dev-root-hygiene.py` | 根目录垃圾文件/临时脚本扫描 | `Tools/scripts/` |
+| 12 | `check-arch-test-di-setup.py` | 测试文件 DI Mock 环境完整性 | `Tools/ios/` |
+| 13 | `check-code-complexity.py` | 🆕 圈复杂度门禁（SwiftLint cyclomatic_complexity, error≤10） | `Tools/ios/` |
+| 14 | `audit-arch-view-duplication.py` | 🆕 启发式 View 结构与修饰符链复用沉淀门禁 | `Tools/ios/` |
 
-> **执行方式**：本地开发使用 `bash Tools/CI/Analyze/run_static_analysis.sh`；CI 流水线同脚本自动执行。全部 **15 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
+> **执行方式**：本地开发使用 `bash Tools/ci/run-code-static-analysis.sh`；CI 流水线同脚本自动执行。全部 **15 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
 
 ---
 
@@ -351,7 +351,7 @@ public protocol FileArchiverProtocol: Sendable {
 ### 7.5 红线 9：开源库不得绕过适配层直接调用
 
 - **违规行为**：在 `ZhiYuFeatures`、`ZhiYuDomain`、`UFPCore` 的任何文件中出现 `import GRDB`、`import Lottie`、`import MarkdownUI`、`import SwiftJSONSanitizer`、`import PartialJSON`、`import ZIPFoundation`。
-- **惩罚机制**：CI 静态门禁 `check_opensource_adapters.py` 直接阻断构建。
+- **惩罚机制**：CI 静态门禁 `check-arch-opensource-adapters.py` 直接阻断构建。
 - **例外白名单**：
   - `UFPStorage` 内 → `import GRDB` ✅
   - `UFPDesignSystem` 内 → `import Lottie`, `import MarkdownUI` ✅

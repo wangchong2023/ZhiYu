@@ -103,7 +103,7 @@ swiftlint --strict
 - [ ] 本地编译零 Error 且无任何 Static Concurrency Concurrency Conformance 警告。
 - [ ] `swiftlint --strict` 零警报通过。
 - [ ] 逻辑修改已补齐对应的 `XCTest` 单元测试或 `ZhiYuUITests` UI 冒烟测试。
-- [ ] **流水线门禁校验**：核心领域层 (Domain) 的汇总测试覆盖率不低于 **85%**（合并前必须通过 `python3 Tools/CI/check_coverage.py` 熔断脚本校验）。
+- [ ] **流水线门禁校验**：核心领域层 (Domain) 的汇总测试覆盖率不低于 **85%**（合并前必须通过 `python3 Tools/ci/assert-test-coverage.py` 熔断脚本校验）。
 - [ ] 移除所有残留的调试用 `print()`。
 
 ### 6.2 门禁防线三阶段

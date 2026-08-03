@@ -272,7 +272,7 @@ echo "🎉 UI stability test iteration successfully passed 5/5 times!"
 ```
 
 - [ ] **Step 2: 执行全量单元测试与覆盖率报表输出**
-  运行：`./env/venv/bin/python3 Tools/CI/check_coverage.py` 或提取 Core 模块代码覆盖率。
+  运行：`./env/venv/bin/python3 Tools/ci/assert-test-coverage.py` 或提取 Core 模块代码覆盖率。
   预期：输出汇总报表。
 
 - [ ] **Step 3: 生成 Walkthrough 交付文档**

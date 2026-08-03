@@ -16,8 +16,8 @@
 #   purpose     : 引入目的
 #   status      : active（使用中）| planned（计划中）| deprecated（待移除）
 #
-# CI 校验：Tools/Gatekeeper/Architecture/check_opensource_physical_placement.py
-# 克隆脚本：Tools/Utils/bootstrap.sh（从本文件读取）
+# CI 校验：Tools/Gatekeeper/Architecture/ios-check-arch-opensource-placement.py
+# 克隆脚本：Tools/Utils/scripts-run-dev-bootstrap.sh（从本文件读取）
 #
 
 dependencies:
@@ -156,7 +156,7 @@ dependencies:
     ref: "2.21.2"
     branch: main
     integration: homebrew             # brew install periphery
-    adapter: Tools/Gatekeeper/Sanity/check_dead_code.py
+    adapter: Tools/Gatekeeper/Sanity/ios-audit-code-dead-code.py
     layer: CI Gate Only
     license: MIT
     purpose: 死代码检测（未使用的类、函数、import）+ 物理迁移残留文件检测

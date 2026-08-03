@@ -37,7 +37,7 @@ static-analysis:
     - echo "===> 安装静态分析 Python 依赖"
     - pip3 install --quiet radon 2>/dev/null || true
     - echo "===> 运行全部静态分析"
-    - bash Tools/CI/Analyze/run_static_analysis.sh
+    - bash Tools/ci/run-code-static-analysis.sh
 
 sonarqube-analysis:
   stage: analyze
@@ -63,7 +63,7 @@ build-prepare:
         -project ZhiYu.xcodeproj
         -scheme ZhiYu
         -clonedSourcePackagesDirPath /tmp/zhiyu-spm-cache
-    - bash Tools/CI/Build/inject_version.sh Sources/Info.plist
+    - bash Tools/ci/build-pipeline-version-inject.sh Sources/Info.plist
 
 # ════════════════════════════════════════════════════════════
 # build — 多平台构建（串行，依次验证 iOS → macOS → watchOS）
@@ -75,7 +75,7 @@ build-ios:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - bash Tools/CI/Build/build_platform.sh ZhiYu 'generic/platform=iOS Simulator' ios
+    - bash Tools/ci/build-pipeline-platform.sh ZhiYu 'generic/platform=iOS Simulator' ios
 
 build-macos:
   stage: build
@@ -83,7 +83,7 @@ build-macos:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - bash Tools/CI/Build/build_platform.sh ZhiYuMac 'platform=macOS' macos
+    - bash Tools/ci/build-pipeline-platform.sh ZhiYuMac 'platform=macOS' macos
 
 build-watchos:
   stage: build
@@ -91,7 +91,7 @@ build-watchos:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - bash Tools/CI/Build/build_platform.sh ZhiYuWatch 'generic/platform=watchOS Simulator' watchos
+    - bash Tools/ci/build-pipeline-platform.sh ZhiYuWatch 'generic/platform=watchOS Simulator' watchos
 
 # ════════════════════════════════════════════════════════════
 # test — 单元测试 + 覆盖率验证
@@ -103,7 +103,7 @@ test-and-coverage:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - bash Tools/CI/Test/run_tests_and_coverage.sh
+    - bash Tools/ci/run-test-with-coverage.sh
   coverage: '/Coverage: \d+\.\d+%/'
   artifacts:
     when: always

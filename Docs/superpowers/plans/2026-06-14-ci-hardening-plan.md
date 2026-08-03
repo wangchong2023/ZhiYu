@@ -17,22 +17,22 @@
   .github/CODEOWNERS                              # 代码所有权分配
   .github/pull_request_template.md                # PR 提交流程标准化
   .github/dependabot.yml                          # 自动依赖更新
-  Tools/CI/collect_flaky_tests.sh                 # @flaky → 跳过列表
-  Tools/CI/generate_sbom.py                       # Package.resolved → SPDX
-  Tools/CI/merge_sbom.py                          # 自解析 + Syft 合并
-  Tools/CI/verify_spm_integrity.sh                # SPM 哈希校验
-  Tools/CI/check_perf_regression.py               # 性能基线比对
-  Tools/CI/update_perf_baseline.sh                # 手动更新基线
-  Tools/CI/notify_feishu.sh                       # 飞书 CI 告警
-  Tools/CI/verify_reproducible_build.sh           # 确定性构建验证
+  Tools/ci/run-test-flaky-report.sh                 # @flaky → 跳过列表
+  Tools/ci/generate-arch-sbom-single.py                       # Package.resolved → SPDX
+  Tools/ci/generate-arch-sbom-merged.py                          # 自解析 + Syft 合并
+  Tools/ci/check-arch-spm-integrity.sh                # SPM 哈希校验
+  Tools/ci/check-pipeline-perf-regression.py               # 性能基线比对
+  Tools/ci/generate-pipeline-perf-baseline.sh                # 手动更新基线
+  Tools/ci/run-pipeline-feishu.sh                       # 飞书 CI 告警
+  Tools/ci/check-pipeline-reproducible.sh           # 确定性构建验证
   fastlane/Fastfile                               # Canary 部署管道
 
 修改:
   .woodpecker.yml                                 # +静态分析步骤 +确定性验证
   .github/workflows/ci.yml                        # +完整性/SBOM/性能/确定性
   project.yml                                     # +SWIFT_COMPILATION_MODE
-  Tools/CI/run_unit_tests.sh                      # +不稳定测试自动收集
-  Tools/CI/run_ui_tests.sh                        # +不稳定测试自动收集
+  Tools/ci/run-test-unit.sh                      # +不稳定测试自动收集
+  Tools/ci/run-test-ui.sh                        # +不稳定测试自动收集
 ```
 
 ---
@@ -112,8 +112,8 @@ cat > .github/pull_request_template.md << 'EOF'
 <!-- 描述此 PR 做了什么以及为什么 -->
 
 ## 测试计划
-- [ ] 单元测试通过（本地运行 `./Tools/CI/run_unit_tests.sh`）
-- [ ] UI 测试通过（本地运行 `./Tools/CI/run_ui_tests.sh`）
+- [ ] 单元测试通过（本地运行 `Tools/ci/run-test-unit.sh`）
+- [ ] UI 测试通过（本地运行 `Tools/ci/run-test-ui.sh`）
 - [ ] Monkey 测试通过（仅本地，CI 跳过）
 - [ ] 新增测试覆盖（如有）
 
@@ -188,19 +188,19 @@ git commit -m "docs: 记录 GitHub 分支保护规则配置"
 ### Task 4: 创建不稳定测试自动收集脚本
 
 **Files:**
-- Create: `Tools/CI/collect_flaky_tests.sh`
-- Modify: `Tools/CI/run_unit_tests.sh:20-30`
-- Modify: `Tools/CI/run_ui_tests.sh:13-17`
+- Create: `Tools/ci/run-test-flaky-report.sh`
+- Modify: `Tools/ci/run-test-unit.sh:20-30`
+- Modify: `Tools/ci/run-test-ui.sh:13-17`
 
 - [ ] **Step 1: 创建收集脚本**
 
 ```bash
-cat > Tools/CI/collect_flaky_tests.sh << 'EOF'
+cat > Tools/ci/run-test-flaky-report.sh << 'EOF'
 #!/bin/bash
 # ==============================================================================
-# collect_flaky_tests.sh
+# run-test-flaky-report.sh
 # 扫描 Tests/ 中 @flaky: 标记的测试，生成 CI 跳过列表
-# 用法: ./Tools/CI/collect_flaky_tests.sh [--ci]
+# 用法: Tools/ci/run-test-flaky-report.sh [--ci]
 # 输出: 打印 -skip-testing:Target/TestClass/testName 参数列表 (stdout)
 # ==============================================================================
 set -euo pipefail
@@ -250,18 +250,18 @@ while IFS= read -r test_id; do
     [ -n "$test_id" ] && echo "-skip-testing:${test_id}"
 done < "$OUTPUT_FILE"
 EOF
-chmod +x Tools/CI/collect_flaky_tests.sh
+chmod +x Tools/ci/run-test-flaky-report.sh
 ```
 
 - [ ] **Step 2: 验证脚本**
 
 ```bash
-./Tools/CI/collect_flaky_tests.sh && echo "✅ collect_flaky_tests.sh 工作正常"
+Tools/ci/run-test-flaky-report.sh && echo "✅ run-test-flaky-report.sh 工作正常"
 ```
 
-- [ ] **Step 3: 更新 run_unit_tests.sh — 替换硬编码 SKIP_TESTS**
+- [ ] **Step 3: 更新 run-test-unit.sh — 替换硬编码 SKIP_TESTS**
 
-修改 `Tools/CI/run_unit_tests.sh`，将硬编码 `SKIP_TESTS` 数组替换为脚本调用：
+修改 `Tools/ci/run-test-unit.sh`，将硬编码 `SKIP_TESTS` 数组替换为脚本调用：
 
 ```bash
 # 旧代码（删除）:
@@ -275,7 +275,7 @@ chmod +x Tools/CI/collect_flaky_tests.sh
 FLAKY_ARGS=()
 while IFS= read -r skip_arg; do
     [ -n "$skip_arg" ] && FLAKY_ARGS+=("$skip_arg")
-done < <(bash Tools/CI/collect_flaky_tests.sh)
+done < <(bash Tools/ci/run-test-flaky-report.sh)
 
 # 在 XCODEBUILD_ARGS 中追加
 for skip_arg in "${FLAKY_ARGS[@]}"; do
@@ -283,9 +283,9 @@ for skip_arg in "${FLAKY_ARGS[@]}"; do
 done
 ```
 
-- [ ] **Step 4: 同样更新 run_ui_tests.sh**
+- [ ] **Step 4: 同样更新 ci-run-test-ui.sh**
 
-修改 `Tools/CI/run_ui_tests.sh` 的 SKIP_TESTS 部分：
+修改 `Tools/ci/run-test-ui.sh` 的 SKIP_TESTS 部分：
 
 ```bash
 # 旧代码（删除）:
@@ -298,7 +298,7 @@ done
 FLAKY_ARGS=()
 while IFS= read -r skip_arg; do
     [ -n "$skip_arg" ] && FLAKY_ARGS+=("$skip_arg")
-done < <(bash Tools/CI/collect_flaky_tests.sh)
+done < <(bash Tools/ci/run-test-flaky-report.sh)
 ```
 
 - [ ] **Step 5: 给现有 Monkey 测试添加 @flaky 标记**
@@ -313,7 +313,7 @@ func testWildMonkeyClickTraversal() throws {
 - [ ] **Step 6: 提交**
 
 ```bash
-git add Tools/CI/collect_flaky_tests.sh Tools/CI/run_unit_tests.sh Tools/CI/run_ui_tests.sh Tests/UI/ZhiYuMonkeyTests.swift
+git add Tools/ci/run-test-flaky-report.sh Tools/ci/run-test-unit.sh Tools/ci/run-test-ui.sh Tests/UI/ZhiYuMonkeyTests.swift
 git commit -m "ci: @flaky 自动标记系统 — 替换硬编码 SKIP_TESTS 为注释驱动收集"
 ```
 
@@ -387,14 +387,14 @@ git commit -m "ci: 添加 Dependabot 配置 — SPM + GitHub Actions 每周自�
 ### Task 6: 创建 SBOM 生成工具链
 
 **Files:**
-- Create: `Tools/CI/generate_sbom.py`
-- Create: `Tools/CI/merge_sbom.py`
-- Create: `Tools/CI/verify_spm_integrity.sh`
+- Create: `Tools/ci/generate-arch-sbom-single.py`
+- Create: `Tools/ci/generate-arch-sbom-merged.py`
+- Create: `Tools/ci/check-arch-spm-integrity.sh`
 
-- [ ] **Step 1: 创建 generate_sbom.py — Package.resolved 解析器**
+- [ ] **Step 1: 创建 generate-arch-sbom-single.py — Package.resolved 解析器**
 
 ```bash
-cat > Tools/CI/generate_sbom.py << 'PYEOF'
+cat > Tools/ci/generate-arch-sbom-single.py << 'PYEOF'
 #!/usr/bin/env python3
 """从 Package.resolved 生成 SPDX 2.3 JSON SBOM."""
 import json, os, sys, hashlib
@@ -479,7 +479,7 @@ def main():
             "version": pin.get("state", {}).get("version", "unknown"),
             "revision": pin.get("state", {}).get("revision", "")[:12],
             "repository_url": pin.get("location", ""),
-            "license": "NOASSERTION"  # 待 merge_sbom.py 补充
+            "license": "NOASSERTION"  # 待 generate-arch-sbom-merged.py 补充
         }
         packages.append(pkg)
 
@@ -496,23 +496,23 @@ def main():
 if __name__ == "__main__":
     main()
 PYEOF
-chmod +x Tools/CI/generate_sbom.py
+chmod +x Tools/ci/generate-arch-sbom-single.py
 ```
 
-- [ ] **Step 2: 测试 generate_sbom.py**
+- [ ] **Step 2: 测试 generate-arch-sbom-single.py**
 
 ```bash
-python3 Tools/CI/generate_sbom.py
+python3 Tools/ci/generate-arch-sbom-single.py
 # 预期: 输出 build/sbom.spdx.json 路径
 python3 -c "import json; d=json.load(open('build/sbom.spdx.json')); assert d['spdxVersion']=='SPDX-2.3'; print('✅ SPDX 格式有效')"
 ```
 
-- [ ] **Step 3: 创建 merge_sbom.py — 合并 Syft License 信息**
+- [ ] **Step 3: 创建 generate-arch-sbom-merged.py — 合并 Syft License 信息**
 
 ```bash
-cat > Tools/CI/merge_sbom.py << 'PYEOF'
+cat > Tools/ci/generate-arch-sbom-merged.py << 'PYEOF'
 #!/usr/bin/env python3
-"""合并 generate_sbom.py 输出与 Syft 扫描结果，补齐 License 信息."""
+"""合并 generate-arch-sbom-single.py 输出与 Syft 扫描结果，补齐 License 信息."""
 import json, os, sys
 
 PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -535,7 +535,7 @@ def main():
     syft_path = os.path.join(PROJECT_DIR, "build", "syft.cdx.json")
 
     if not os.path.exists(spdx_path):
-        print("❌ sbom.spdx.json 不存在，请先运行 generate_sbom.py", file=sys.stderr)
+        print("❌ sbom.spdx.json 不存在，请先运行 generate-arch-sbom-single.py", file=sys.stderr)
         sys.exit(1)
 
     with open(spdx_path) as f:
@@ -560,18 +560,18 @@ def main():
 if __name__ == "__main__":
     main()
 PYEOF
-chmod +x Tools/CI/merge_sbom.py
+chmod +x Tools/ci/generate-arch-sbom-merged.py
 ```
 
 - [ ] **Step 4: 创建 SPM 完整性校验脚本**
 
 ```bash
-cat > Tools/CI/verify_spm_integrity.sh << 'EOF'
+cat > Tools/ci/check-arch-spm-integrity.sh << 'EOF'
 #!/bin/bash
 # ==============================================================================
-# verify_spm_integrity.sh
+# check-arch-spm-integrity.sh
 # 校验 Package.resolved 中记录的 revision 与检出 commit 一致
-# 用法: ./Tools/CI/verify_spm_integrity.sh
+# 用法: Tools/ci/check-arch-spm-integrity.sh
 # ==============================================================================
 set -euo pipefail
 
@@ -622,7 +622,7 @@ else
     echo "✅ 所有 SPM 依赖完整性校验通过"
 fi
 EOF
-chmod +x Tools/CI/verify_spm_integrity.sh
+chmod +x Tools/ci/check-arch-spm-integrity.sh
 ```
 
 - [ ] **Step 5: 在 CI 中加入 SBOM + 完整性检查**
@@ -630,25 +630,25 @@ chmod +x Tools/CI/verify_spm_integrity.sh
 在 `.woodpecker.yml` 的 `static-analysis` 步骤末尾添加：
 ```yaml
       - echo "--- SPM 完整性校验 ---"
-      - bash Tools/CI/verify_spm_integrity.sh
+      - bash Tools/ci/check-arch-spm-integrity.sh
       - echo "--- SBOM 生成 ---"
-      - python3 Tools/CI/generate_sbom.py
+      - python3 Tools/ci/generate-arch-sbom-single.py
       - brew install syft 2>/dev/null || true
       - syft . -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo "Syft 不可用，跳过 license 检测"
-      - python3 Tools/CI/merge_sbom.py
+      - python3 Tools/ci/generate-arch-sbom-merged.py
 ```
 
 在 `.github/workflows/ci.yml` 的 `lint-and-audit` job 末尾添加：
 ```yaml
       - name: Verify SPM Integrity
-        run: bash Tools/CI/verify_spm_integrity.sh
+        run: bash Tools/ci/check-arch-spm-integrity.sh
 
       - name: Generate SBOM
         run: |
-          python3 Tools/CI/generate_sbom.py
+          python3 Tools/ci/generate-arch-sbom-single.py
           brew install syft 2>/dev/null || true
           syft . -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo "Syft unavailable"
-          python3 Tools/CI/merge_sbom.py
+          python3 Tools/ci/generate-arch-sbom-merged.py
 
       - name: Upload SBOM Artifact
         uses: actions/upload-artifact@v4
@@ -661,7 +661,7 @@ chmod +x Tools/CI/verify_spm_integrity.sh
 - [ ] **Step 6: 提交**
 
 ```bash
-git add Tools/CI/generate_sbom.py Tools/CI/merge_sbom.py Tools/CI/verify_spm_integrity.sh .woodpecker.yml .github/workflows/ci.yml
+git add Tools/ci/generate-arch-sbom-single.py Tools/ci/generate-arch-sbom-merged.py Tools/ci/check-arch-spm-integrity.sh .woodpecker.yml .github/workflows/ci.yml
 git commit -m "ci: SBOM(A+C混合) + SPM完整性校验 — Package.resolved解析 + Syft License补齐"
 ```
 
@@ -698,19 +698,19 @@ git commit -m "ci: 添加提交签名验证 — warning 级别，非阻断"
 ### Task 8: 创建性能回归检测工具
 
 **Files:**
-- Create: `Tools/CI/check_perf_regression.py`
-- Create: `Tools/CI/update_perf_baseline.sh`
+- Create: `Tools/ci/check-pipeline-perf-regression.py`
+- Create: `Tools/ci/generate-pipeline-perf-baseline.sh`
 - Create: `build/.perf_baselines/.gitkeep`
 
 - [ ] **Step 1: 创建基线更新脚本**
 
 ```bash
-cat > Tools/CI/update_perf_baseline.sh << 'EOF'
+cat > Tools/ci/generate-pipeline-perf-baseline.sh << 'EOF'
 #!/bin/bash
 # ==============================================================================
-# update_perf_baseline.sh
+# generate-pipeline-perf-baseline.sh
 # 从最新 CI 运行中提取性能数据并更新基线
-# 用法: ./Tools/CI/update_perf_baseline.sh [xcresult_path]
+# 用法: Tools/ci/generate-pipeline-perf-baseline.sh [xcresult_path]
 # ==============================================================================
 set -euo pipefail
 
@@ -763,13 +763,13 @@ done < /tmp/perf_data.tsv
 
 echo "✅ 基线已更新至 $BASELINE_DIR"
 EOF
-chmod +x Tools/CI/update_perf_baseline.sh
+chmod +x Tools/ci/generate-pipeline-perf-baseline.sh
 ```
 
 - [ ] **Step 2: 创建回归检测脚本**
 
 ```bash
-cat > Tools/CI/check_perf_regression.py << 'PYEOF'
+cat > Tools/ci/check-pipeline-perf-regression.py << 'PYEOF'
 #!/usr/bin/env python3
 """性能回归检测 — 比对当前测试耗时与基线，超过 10% 阈值则阻断."""
 import json, os, sys, subprocess
@@ -822,7 +822,7 @@ def main():
     current = extract_durations(xcresult)
 
     if not current:
-        print("⚠️  未能提取性能数据，跳过（首次运行请执行 update_perf_baseline.sh）")
+        print("⚠️  未能提取性能数据，跳过（首次运行请执行 generate-pipeline-perf-baseline.sh）")
         return 0
 
     regressions = []
@@ -853,7 +853,7 @@ def main():
         print(f"\n❌ {len(regressions)} 个性能回归超过 {TOLERANCE_PCT}% 阈值:")
         for name, base, cur, delta in regressions:
             print(f"   {name}: {base:.0f}ms → {cur:.0f}ms (+{delta:.1f}%)")
-        print("\n如有意提升基线，请运行: ./Tools/CI/update_perf_baseline.sh")
+        print("\n如有意提升基线，请运行: Tools/ci/generate-pipeline-perf-baseline.sh")
         return 1
 
     if warnings:
@@ -864,7 +864,7 @@ def main():
 if __name__ == "__main__":
     sys.exit(main())
 PYEOF
-chmod +x Tools/CI/check_perf_regression.py
+chmod +x Tools/ci/check-pipeline-perf-regression.py
 ```
 
 - [ ] **Step 3: 初始化基线目录**
@@ -880,19 +880,19 @@ echo "build/.perf_baselines/*.json" >> .gitignore
 在 `.woodpecker.yml` 的 `test` 步骤末尾添加：
 ```yaml
       - echo "===> Checking performance regression..."
-      - python3 Tools/CI/check_perf_regression.py
+      - python3 Tools/ci/check-pipeline-perf-regression.py
 ```
 
 在 `.github/workflows/ci.yml` 的 `test` job 中添加：
 ```yaml
       - name: Check Performance Regression
-        run: python3 Tools/CI/check_perf_regression.py
+        run: python3 Tools/ci/check-pipeline-perf-regression.py
 ```
 
 - [ ] **Step 5: 提交**
 
 ```bash
-git add Tools/CI/check_perf_regression.py Tools/CI/update_perf_baseline.sh build/.perf_baselines/.gitkeep .gitignore .woodpecker.yml .github/workflows/ci.yml
+git add Tools/ci/check-pipeline-perf-regression.py Tools/ci/generate-pipeline-perf-baseline.sh build/.perf_baselines/.gitkeep .gitignore .woodpecker.yml .github/workflows/ci.yml
 git commit -m "ci: 性能回归检测 — 10%阈值基线比对 + 自动基线更新脚本"
 ```
 
@@ -977,7 +977,7 @@ git commit -m "ci: security-scan 中试运行 SWIFT_TREAT_WARNINGS_AS_ERRORS"
 
 **Files:**
 - Modify: `project.yml`
-- Create: `Tools/CI/verify_reproducible_build.sh`
+- Create: `Tools/ci/check-pipeline-reproducible.sh`
 
 - [ ] **Step 1: project.yml 增加确定性编译设置**
 
@@ -995,12 +995,12 @@ settings:
 - [ ] **Step 2: 创建构建可重现验证脚本**
 
 ```bash
-cat > Tools/CI/verify_reproducible_build.sh << 'EOF'
+cat > Tools/ci/check-pipeline-reproducible.sh << 'EOF'
 #!/bin/bash
 # ==============================================================================
-# verify_reproducible_build.sh
+# ci-check-pipeline-reproducible.sh
 # 两次独立构建 → 比对二进制 hash → 验证确定性
-# 用法: ./Tools/CI/verify_reproducible_build.sh
+# 用法: Tools/ci/check-pipeline-reproducible.sh
 # ==============================================================================
 set -euo pipefail
 
@@ -1054,7 +1054,7 @@ fi
 
 rm -rf "$BUILD_DIR"
 EOF
-chmod +x Tools/CI/verify_reproducible_build.sh
+chmod +x Tools/ci/check-pipeline-reproducible.sh
 ```
 
 - [ ] **Step 3: 在 CI 中添加验证步骤**
@@ -1064,13 +1064,13 @@ chmod +x Tools/CI/verify_reproducible_build.sh
 ```yaml
       - name: Verify Reproducible Build (iOS only)
         if: matrix.platform.name == 'iOS'
-        run: bash Tools/CI/verify_reproducible_build.sh
+        run: bash Tools/ci/check-pipeline-reproducible.sh
 ```
 
 - [ ] **Step 4: 提交**
 
 ```bash
-git add project.yml Tools/CI/verify_reproducible_build.sh .github/workflows/ci.yml
+git add project.yml Tools/ci/check-pipeline-reproducible.sh .github/workflows/ci.yml
 git commit -m "ci: 确定性构建 L1+L2 — wholemodule + SOURCE_DATE_EPOCH + 双构建比对"
 ```
 
@@ -1079,17 +1079,17 @@ git commit -m "ci: 确定性构建 L1+L2 — wholemodule + SOURCE_DATE_EPOCH + �
 ### Task 12: 飞书 CI 告警
 
 **Files:**
-- Create: `Tools/CI/notify_feishu.sh`
+- Create: `Tools/ci/run-pipeline-feishu.sh`
 
 - [ ] **Step 1: 创建飞书通知脚本**
 
 ```bash
-cat > Tools/CI/notify_feishu.sh << 'EOF'
+cat > Tools/ci/run-pipeline-feishu.sh << 'EOF'
 #!/bin/bash
 # ==============================================================================
-# notify_feishu.sh
+# run-pipeline-feishu.sh
 # CI 流水线状态飞书通知 — 仅在失败或恢复时发送
-# 用法: ./Tools/CI/notify_feishu.sh
+# 用法: Tools/ci/run-pipeline-feishu.sh
 # 环境变量: FEISHU_WEBHOOK_URL (CI secret), CI_PIPELINE_STATUS, CI_COMMIT_SHA,
 #           CI_COMMIT_MESSAGE, CI_PIPELINE_URL, CI_PIPELINE_NUMBER
 # ==============================================================================
@@ -1160,7 +1160,7 @@ curl -s -X POST -H "Content-Type: application/json" -d "$JSON" "$WEBHOOK"
 echo ""
 echo "✅ 飞书通知已发送 ($STATUS)"
 EOF
-chmod +x Tools/CI/notify_feishu.sh
+chmod +x Tools/ci/run-pipeline-feishu.sh
 ```
 
 - [ ] **Step 2: 在 Woodpecker 中添加通知步骤**
@@ -1172,7 +1172,7 @@ chmod +x Tools/CI/notify_feishu.sh
     depends_on: [test, ui-test, multi-platform]
     image: bash
     commands:
-      - bash Tools/CI/notify_feishu.sh
+      - bash Tools/ci/run-pipeline-feishu.sh
     secrets: [FEISHU_WEBHOOK_URL]
     when:
       status: [failure, success]
@@ -1190,7 +1190,7 @@ echo "⚠️  请手动在 Woodpecker Web UI 中配置 FEISHU_WEBHOOK_URL secret
 - [ ] **Step 4: 提交**
 
 ```bash
-git add Tools/CI/notify_feishu.sh .woodpecker.yml
+git add Tools/ci/run-pipeline-feishu.sh .woodpecker.yml
 git commit -m "ci: 飞书 CI 告警 — 失败/恢复时推送消息卡片"
 ```
 

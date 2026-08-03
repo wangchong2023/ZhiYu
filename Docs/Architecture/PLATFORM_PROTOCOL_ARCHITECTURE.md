@@ -238,17 +238,17 @@ struct SettingsView: View {
 
 | 脚本 | 检测内容 | 阻断条件 |
 |------|---------|---------|
-| `check_platform_macros.py` | Features/Domain 层 `#if os()` 宏 | 发现新增即阻断 |
-| `check_magic_strings.py` | 硬编码 URL / UserDefaults key | 发现即阻断 |
-| `check_file_headers.py` | 文件层级标注完整性 | 缺失 `系统层级` 即阻断 |
+| `check-code-platform-macros.py` | Features/Domain 层 `#if os()` 宏 | 发现新增即阻断 |
+| `audit-code-magic-strings.py` | 硬编码 URL / UserDefaults key | 发现即阻断 |
+| `check-code-file-headers.py` | 文件层级标注完整性 | 缺失 `系统层级` 即阻断 |
 
 **运行方式**：
 ```bash
 # 单脚本运行
-python3 Tools/Gatekeeper/check_platform_macros.py
+python3 Tools/ios/check-code-platform-macros.py
 
 # 全量 CI 静态分析（12 项并行）
-bash Tools/CI/Analyze/run_static_analysis.sh
+bash Tools/ci/run-code-static-analysis.sh
 ```
 
 ---

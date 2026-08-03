@@ -60,7 +60,7 @@ ZhiYu 已建立四层纵深防御（Pre-commit → Build Phase → Woodpecker �
 func testWildMonkeyClickTraversal() { ... }
 ```
 
-**新建 `Tools/CI/collect_flaky_tests.sh`**：`grep -rn "@flaky:" Tests/` → 生成 `build/.flaky_tests`，CI 脚本从文件读取跳过列表。
+**新建 `Tools/ci/run-test-flaky-report.sh`**：`grep -rn "@flaky:" Tests/` → 生成 `build/.flaky_tests`，CI 脚本从文件读取跳过列表。
 
 ### 2.4 CI 自身可观测性
 
@@ -68,7 +68,7 @@ func testWildMonkeyClickTraversal() { ... }
 
 **文件**：
 - `build/.ci_health` — 流水线失败记录
-- `Tools/CI/notify_feishu.sh` — 飞书告警（第四阶段实现）
+- `Tools/ci/run-pipeline-feishu.sh` — 飞书告警（第四阶段实现）
 
 ---
 
@@ -113,12 +113,12 @@ Package.resolved                     Syft 文件系统扫描
 (版本+revision+仓库URL)               (LICENSE 文件检测)
         │                                    │
         ▼                                    ▼
-  Tools/CI/generate_sbom.py           syft . -o cyclonedx-json
+  Tools/ci/generate-arch-sbom-single.py           syft . -o cyclonedx-json
   (自解析 ~80 行 Python)              (现成工具)
         │                                    │
         └──────────────┬─────────────────────┘
                        ▼
-              Tools/CI/merge_sbom.py (~60 行)
+              Tools/ci/generate-arch-sbom-merged.py (~60 行)
               合并 → SPDX 2.3 + CycloneDX
                        │
                        ▼
@@ -130,8 +130,8 @@ Package.resolved                     Syft 文件系统扫描
 **为什么混合**：自解析提供精确版本/revision，Syft 补齐 License 信息。Syft 单独使用对 SPM 传递依赖检测不完整，但 License 文件扫描不受此影响。
 
 **新建文件**：
-- `Tools/CI/generate_sbom.py` — Package.resolved 解析 + SPDX 生成
-- `Tools/CI/merge_sbom.py` — 合并自解析结果与 Syft 输出
+- `Tools/ci/generate-arch-sbom-single.py` — Package.resolved 解析 + SPDX 生成
+- `Tools/ci/generate-arch-sbom-merged.py` — 合并自解析结果与 Syft 输出
 
 **依赖**：`brew install syft`（CI 环境预装）
 
@@ -147,7 +147,7 @@ Package.resolved                     Syft 文件系统扫描
 **方案**：CI `lint-and-audit` 阶段增加哈希比对，校验 `Package.resolved` 记录的 revision 与检出的实际 commit 一致：
 
 ```bash
-Tools/CI/verify_spm_integrity.sh
+Tools/ci/check-arch-spm-integrity.sh
 ```
 
 ---
@@ -172,12 +172,12 @@ CI 运行性能测试
       └── 退化 < 5%:   ✅  通过
 ```
 
-**新建 `Tools/CI/check_perf_regression.py`**：
+**新建 `Tools/ci/check-pipeline-perf-regression.py`**：
 - 解析 xcresult 提取性能指标（`xcrun xcresulttool get --format json`）
 - 与基线 JSON 比对
 - 超阈值时输出退化详情并返回非零
 
-**新建 `Tools/CI/update_perf_baseline.sh`**：
+**新建 `Tools/ci/generate-pipeline-perf-baseline.sh`**：
 - 手动运行，将当前 CI 性能数据写入基线文件
 - 仅在确认性能提升是预期行为时使用
 
@@ -234,7 +234,7 @@ diff <(xxd build/app1.xcarchive/.../ZhiYu) <(xxd build/app2.xcarchive/.../ZhiYu)
 
 **方案**：Woodpecker Webhook → 飞书自定义机器人 → 失败/恢复时推送消息卡片。
 
-**新建 `Tools/CI/notify_feishu.sh`**：
+**新建 `Tools/ci/run-pipeline-feishu.sh`**：
 - 读取 Woodpecker 环境变量（`CI_PIPELINE_STATUS` 等）
 - 仅在 **失败** 或 **恢复** 时发送
 - Webhook URL 通过 CI secret 注入
@@ -284,14 +284,14 @@ end
 |------|------|------|
 | 1 | `.github/CODEOWNERS` | 代码所有权分配 |
 | 1 | `.github/pull_request_template.md` | PR 提交流程标准化 |
-| 1 | `Tools/CI/collect_flaky_tests.sh` | @flaky 注释 → 跳过列表 |
+| 1 | `Tools/ci/run-test-flaky-report.sh` | @flaky 注释 → 跳过列表 |
 | 2 | `.github/dependabot.yml` | 自动依赖更新 |
-| 2 | `Tools/CI/generate_sbom.py` | Package.resolved → SPDX JSON |
-| 2 | `Tools/CI/merge_sbom.py` | 自解析 + Syft → 合并 SBOM |
-| 2 | `Tools/CI/verify_spm_integrity.sh` | SPM 依赖哈希校验 |
-| 3 | `Tools/CI/check_perf_regression.py` | 性能基线比对 |
-| 3 | `Tools/CI/update_perf_baseline.sh` | 手动更新性能基线 |
-| 4 | `Tools/CI/notify_feishu.sh` | 飞书 CI 告警 |
+| 2 | `Tools/ci/generate-arch-sbom-single.py` | Package.resolved → SPDX JSON |
+| 2 | `Tools/ci/generate-arch-sbom-merged.py` | 自解析 + Syft → 合并 SBOM |
+| 2 | `Tools/ci/check-arch-spm-integrity.sh` | SPM 依赖哈希校验 |
+| 3 | `Tools/ci/check-pipeline-perf-regression.py` | 性能基线比对 |
+| 3 | `Tools/ci/generate-pipeline-perf-baseline.sh` | 手动更新性能基线 |
+| 4 | `Tools/ci/run-pipeline-feishu.sh` | 飞书 CI 告警 |
 | 4 | `fastlane/Fastfile` | Canary 部署管道 |
 
 ## 七、风险与依赖
