@@ -26,6 +26,11 @@ default:
     - shell
     - xcode
     - arm64
+  before_script:
+    - |
+      if [ -n "${OPENSRC_ROOT:-}" ]; then
+        echo "export OPENSRC_ROOT=${OPENSRC_ROOT}" > Config/.env.local
+      fi
 
 # ════════════════════════════════════════════════════════════
 # analyze — 静态代码分析（所有分支）
@@ -61,7 +66,6 @@ build-prepare:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - echo "export OPENSRC_ROOT=${OPENSRC_ROOT}" > Config/.env.local
     - make gen
     - bash Tools/CI/Build/inject_version.sh Sources/Info.plist
 
