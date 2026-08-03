@@ -65,7 +65,7 @@ build-all:
   stage: build
   needs: [static-analysis, sonarqube-analysis]
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - echo "===> [1/5] 生成 Xcode 工程"
     - make gen
