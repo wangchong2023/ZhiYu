@@ -47,12 +47,23 @@ public enum JSONRepairProcessor {
             text = String(text[firstBrace...lastBrace])
         }
 
-        // 第一层：SwiftJSONSanitizer — 语法缺陷修复（括号不匹配、尾部逗号等）
+        // 预处理 0：补齐未加引号的 key（SwiftJSONSanitizer 不处理此情况）
+        // 匹配形如 `  keyName:` 或 `{keyName:` 的裸 key，仅当 keyName 是合法标识符时补齐双引号
+        text = quoteUnquotedKeys(text)
+
+        // 第一层：SwiftJSONSanitizer — 语法缺陷修复（括号不匹配、数组尾逗号等）
         let sanitized = SwiftJSONSanitizer.sanitize(text, options: .minify)
 
+        // 预处理 1：移除对象尾逗号 `,}`（SwiftJSONSanitizer 仅移除数组尾逗号 `,]`）
+        // 注意：不能用 .regularExpression 选项，因为 } 在正则中是特殊字符会导致匹配失败
+        var result = sanitized
+            .replacingOccurrences(of: ",}", with: "}")
+            .replacingOccurrences(of: ",\n}", with: "\n}")
+            .replacingOccurrences(of: ",\r\n}", with: "\r\n}")
+
         // 验证第一层结果是否合规
-        if isValidJSON(sanitized) {
-            return sanitized
+        if isValidJSON(result) {
+            return result
         }
 
         // 第二层：PartialJSON — 流式截断自愈补全
@@ -61,10 +72,23 @@ public enum JSONRepairProcessor {
         }
 
         // 两层均无法修复时，返回语法修复结果（优于原始损坏串）
-        return sanitized.isEmpty ? text : sanitized
+        return result.isEmpty ? text : result
     }
 
     // MARK: - 私有辅助
+
+    /// 补齐 JSON 对象中未加引号的裸 key
+    /// 仅处理 `keyName:` 形式，其中 keyName 由字母/下划线/数字组成且不以数字开头
+    private static func quoteUnquotedKeys(_ text: String) -> String {
+        // 正则匹配：在 `{` 或 `,` 之后（允许空白），捕获未加引号的 key 名，后跟 `:`
+        // 替换为 `"key":`
+        let pattern = #"(?<=\{)(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*):"#
+        let pattern2 = #"(?<=,)(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*):"#
+        var result = text
+        result = result.replacingOccurrences(of: pattern, with: #"$1"$2"$3:"#, options: .regularExpression)
+        result = result.replacingOccurrences(of: pattern2, with: #"$1"$2"$3:"#, options: .regularExpression)
+        return result
+    }
 
     /// 使用 PartialJSON 将不完整 JSON 解析并序列化为合规字符串
     private static func recoverWithPartialJSON(_ text: String) -> String? {

@@ -85,12 +85,21 @@ public final class DocumentSanitationEngine: DocumentSanitizerProtocol {
         return merged.joined(separator: "\n")
     }
 
+    /// 英文前导对话废话匹配规则（LLM 输出常为英文，需独立于当前语言环境匹配）
+    /// 这些是匹配规则而非 UI 展示文本，与 L10n.chatterPrefixes 互补使用
+    private static let englishChatterPrefixes: [String] = [
+        "here is", "here's", "here are", "below is", "below are",
+        "this is", "following is", "as requested", "parsed as"
+    ]
+
     private func stripLeadingChatter(_ text: String) -> String {
-        let lines = text.components(separatedBy: .newlines)
+        let lines = text.components(separatedBy: "\n")
         guard let firstLine = lines.first?.trimmingCharacters(in: .whitespaces) else { return text }
 
         let lower = firstLine.lowercased()
-        for prefix in L10n.AI.Synthesis.Fallback.chatterPrefixes {
+        // 合并当前语言前缀（L10n）与英文前缀（匹配规则），实现多语言覆盖
+        let allPrefixes = L10n.AI.Synthesis.Fallback.chatterPrefixes + Self.englishChatterPrefixes
+        for prefix in allPrefixes {
             if lower.hasPrefix(prefix.lowercased()) && firstLine.contains(":") {
                 return lines.dropFirst().joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
             }

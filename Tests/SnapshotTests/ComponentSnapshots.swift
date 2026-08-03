@@ -53,7 +53,7 @@ final class ComponentSnapshots: XCTestCase {
     
     /// 测试图谱节点的视觉一致性
     func testGraphNodeView() {
-        setupMockEnvironment()
+        setupMockEnvironment(record: isRecordModeEnabled)
         let node = GraphNode(
             id: UUID(),
             title: "测试节点",
@@ -79,7 +79,7 @@ final class ComponentSnapshots: XCTestCase {
         .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
         .background(Color.appBackground)
         
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)), record: isRecordModeEnabled)
     }
     
     /// 测试 AI 助手聊天视图 (ChatView) 的视觉一致性

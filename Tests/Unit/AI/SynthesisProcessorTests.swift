@@ -186,7 +186,14 @@ final class SynthesisProcessorTests: XCTestCase {
         XCTAssertNotNil(model, "包含字符串类型 answer/id 的变异 JSON 必须被 100% 成功解码")
         XCTAssertEqual(model?.title, "知识测验")
         XCTAssertEqual(model?.questions.count, 1)
-        XCTAssertEqual(model?.questions.first?.answer, 0, "字符串 '0' 必须被柔性自愈解码为索引 0")
+        // randomizeQuizAnswers 会洗牌选项导致 answer 索引变化，
+        // 验证 answer 在合法范围内且指向正确答案文本（"脑科学"），而非固定索引
+        guard let question = model?.questions.first else {
+            XCTFail("题目不应为空"); return
+        }
+        XCTAssertGreaterThanOrEqual(question.answer, 0, "answer 索引应 ≥ 0")
+        XCTAssertLessThan(question.answer, question.options.count, "answer 索引应 < options 数量")
+        XCTAssertEqual(question.options[question.answer], "脑科学", "字符串 '0' 必须被柔性自愈解码，洗牌后仍指向正确答案文本")
     }
 
     func testQuizProcessor_parseMarkdownQuiz() {
@@ -229,7 +236,14 @@ final class SynthesisProcessorTests: XCTestCase {
         """
         let model = QuizProcessor.parseToQuizModel(markdown)
         XCTAssertNotNil(model)
-        XCTAssertEqual(model?.questions.first?.answer, 0)
+        // randomizeQuizAnswers 会洗牌选项，fallback 答案（"选项一"）的索引会变化，
+        // 验证 answer 在合法范围内且指向 fallback 答案文本，而非固定索引 0
+        guard let question = model?.questions.first else {
+            XCTFail("题目不应为空"); return
+        }
+        XCTAssertGreaterThanOrEqual(question.answer, 0, "answer 索引应 ≥ 0")
+        XCTAssertLessThan(question.answer, question.options.count, "answer 索引应 < options 数量")
+        XCTAssertEqual(question.options[question.answer], "选项一", "缺失答案标记时应 fallback 到第一个选项，洗牌后仍指向该选项文本")
     }
 
     // MARK: - Slides Splitting Tests
