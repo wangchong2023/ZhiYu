@@ -30,7 +30,7 @@ except ImportError:
             print(f"{f}:{l}: {level.lower()}: {m}")
         def report(self): pass
 
-PROJECT_ROOT = TOOLS_DIR.parent.parent
+PROJECT_ROOT = TOOLS_DIR.parent
 FEATURES_DIR = PROJECT_ROOT / "Sources" / "Features"
 
 # ── 常量定义 ──

@@ -18,7 +18,7 @@ SEPARATOR_WIDTH = 72
 TRUNCATE_LINE_LENGTH = 120
 MAX_COMPLEXITY = 10
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent
+PROJECT_ROOT = SCRIPT_DIR.parent.parent
 SOURCES_DIR = PROJECT_ROOT / "Sources"
 
 

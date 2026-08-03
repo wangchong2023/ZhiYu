@@ -20,7 +20,7 @@ from pathlib import Path
 from collections import defaultdict
 
 # ── 常量定义 ──────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parents[3]  # ZhiYu/
+PROJECT_ROOT = Path(__file__).resolve().parents[2]  # ZhiYu/
 SOURCES_DIR = PROJECT_ROOT / "Sources"
 COMPLEXITY_THRESHOLD = 10          # 单函数最大允许圈复杂度（与 .swiftlint.yml 对齐）
 HIGH_COMPLEXITY_WARN = 8           # 复杂度 ≥ 8 时生成警告

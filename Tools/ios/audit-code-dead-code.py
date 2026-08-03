@@ -27,7 +27,7 @@ MAX_DISPLAY_LINES = 30
 # 渐进式阈值：超过此数量则阻断构建，随清理进度逐步收紧
 MAX_ALLOWED_DEAD_CODE = 50
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 SOURCES_DIR = PROJECT_ROOT / "Sources"
 
 # 基线：忽略已存在的无害模式

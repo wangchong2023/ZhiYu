@@ -19,7 +19,7 @@ from pathlib import Path
 
 # ── 常量定义 ──────────────────────────────────────────────
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 PROJECT_FILE = PROJECT_ROOT / "ZhiYu.xcodeproj"
 
 # 编译超时（秒）

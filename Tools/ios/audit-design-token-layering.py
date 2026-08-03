@@ -20,7 +20,7 @@ SYS_GATEKEEPER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..
 sys.path.append(SYS_GATEKEEPER_DIR)
 from gatekeeper_reporter import GatekeeperReporter
 
-PROJECT_ROOT = os.path.abspath(os.path.join(SYS_GATEKEEPER_DIR, '../..'))
+PROJECT_ROOT = os.path.abspath(os.path.join(SYS_GATEKEEPER_DIR, '..'))
 SOURCES_DIR = os.path.join(PROJECT_ROOT, 'Sources')
 LAYERING_FILE = os.path.join(SOURCES_DIR, 'Shared/DesignSystem/DesignSystem+Layering.swift')
 PLATFORM_CONTEXT_FILE = os.path.join(SOURCES_DIR, 'Shared/DesignSystem/PlatformContext.swift')

@@ -12,7 +12,7 @@ echo "🔒 [Git Hook] 启动 Git Pre-commit 静态扫描..."
 
 # 硬编码密钥扫描（阻断 API Key / Token / 密码泄露）
 # 保留在 pre-commit 作为安全红线——比 build phase 更早拦截
-python3 Tools/Gatekeeper/Release/check_hardcoded_secrets.py
+python3 Tools/ios/assert-release-hardcoded-secrets.py
 if [ $? -ne 0 ]; then
     echo "❌ [Git Hook] 硬编码密钥扫描失败！请移除代码中的密钥/Token。"
     exit 1
