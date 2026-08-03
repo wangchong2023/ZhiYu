@@ -31,32 +31,58 @@ for arg in "$@"; do
     esac
 done
 
+# 函数: is_content_match
+# 描述: 判断已安装 hook 与源文件内容是否一致（符号链接视为一致，普通文件则 diff 校验）
+# 参数: $1=源文件路径 $2=目标文件路径
+# 返回: 0=一致 1=不一致
+is_content_match() {
+    local src="$1" dst="$2"
+    if [ -L "$dst" ]; then
+        local link_target
+        link_target=$(readlink "$dst")
+        if [ "$link_target" = "$src" ]; then
+            return 0
+        fi
+        if [ -f "$link_target" ] && diff -q "$src" "$link_target" >/dev/null 2>&1; then
+            return 0
+        fi
+        return 1
+    fi
+    diff -q "$src" "$dst" >/dev/null 2>&1
+}
+
 if [ "$MODE" = "verify" ]; then
     echo "🔍 验证 Git Hooks 安装状态..."
     ALL_OK=true
     for hook in "$HOOKS_SRC"/*; do
         hook_name=$(basename "$hook")
-        # 跳过非脚本文件（如 .DS_Store）
         if [[ "$hook_name" == .* ]] || [ ! -f "$hook" ]; then
             continue
         fi
         target="$HOOKS_DST/$hook_name"
-        if [ -x "$target" ]; then
-            echo "  ✅ $hook_name — 已安装且可执行"
-        elif [ -f "$target" ]; then
-            echo "  ⚠️  $hook_name — 已安装但不可执行"
-            ALL_OK=false
-        else
+        if [ ! -e "$target" ]; then
             echo "  ❌ $hook_name — 未安装"
             ALL_OK=false
+            continue
         fi
+        if [ ! -x "$target" ]; then
+            echo "  ⚠️  $hook_name — 已安装但不可执行"
+            ALL_OK=false
+            continue
+        fi
+        if ! is_content_match "$hook" "$target"; then
+            echo "  ❌ $hook_name — 内容与源文件不一致（可能引用了过时路径）"
+            ALL_OK=false
+            continue
+        fi
+        echo "  ✅ $hook_name — 已安装、可执行、内容一致"
     done
     if [ "$ALL_OK" = true ]; then
         echo ""
-        echo "✅ 所有 hooks 已正确安装。"
+        echo "✅ 所有 hooks 已正确安装且内容与源文件一致。"
     else
         echo ""
-        echo "❌ 部分 hooks 未安装或不可执行，请运行: ./Tools/setup_hooks.sh"
+        echo "❌ 部分 hooks 未安装、不可执行或内容过时，请运行: ./Tools/setup_hooks.sh"
         exit 1
     fi
     exit 0

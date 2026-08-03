@@ -69,6 +69,9 @@ codefree-code-review/
 # Python 缓存
 __pycache__/
 
+# SonarQube 扫描缓存
+.scannerwork/
+
 # 临时测试数据目录
 Configs/
 zhiyu-releases/
