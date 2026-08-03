@@ -18,7 +18,6 @@ import os
 import sys
 import urllib.request
 import urllib.error
-import xml.etree.ElementTree as ET
 
 # ==============================================================================
 # MARK: - 常量定义
@@ -76,6 +75,13 @@ COLOR_CYAN = "\033[36m"
 COLOR_BOLD = "\033[1m"
 COLOR_RESET = "\033[0m"
 
+HTTP_UNAUTHORIZED = 401
+HTTP_NOT_FOUND = 404
+API_TIMEOUT_SECONDS = 30
+REPORT_LINE_WIDTH = 72
+TABLE_SEPARATOR_WIDTH = 60
+MODULE_TABLE_SEPARATOR_WIDTH = 80
+
 
 # ==============================================================================
 # MARK: - 日志函数
@@ -121,12 +127,12 @@ def _api_get(url: str, token: str) -> dict | None:
         headers = {"Authorization": f"Basic {encoded}"}
     req = urllib.request.Request(url, headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=API_TIMEOUT_SECONDS) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
-        if e.code == 401:
-            log_error(f"认证失败 (HTTP 401)，请检查 SONAR_TOKEN 是否有效")
-        elif e.code == 404:
+        if e.code == HTTP_UNAUTHORIZED:
+            log_error(f"认证失败 (HTTP {HTTP_UNAUTHORIZED})，请检查 SONAR_TOKEN 是否有效")
+        elif e.code == HTTP_NOT_FOUND:
             pass
         else:
             log_error(f"HTTP {e.code}: {e.reason}")
@@ -218,9 +224,9 @@ def _coverage_status(value: str | None, threshold: float, higher_is_better: bool
 
 def print_overall_report(measures: dict[str, str], qg_status: dict):
     """打印项目整体覆盖率报告"""
-    print(f"\n{'=' * 72}")
+    print(f"\n{'=' * REPORT_LINE_WIDTH}")
     print(f"{COLOR_BOLD}  ZhiYu SonarQube 覆盖率报告 — 项目整体{COLOR_RESET}")
-    print(f"{'=' * 72}")
+    print(f"{'=' * REPORT_LINE_WIDTH}")
 
     line_cov = measures.get("line_coverage")
     branch_cov = measures.get("branch_coverage")
@@ -246,7 +252,7 @@ def print_overall_report(measures: dict[str, str], qg_status: dict):
     print(f"  Code Smells:   {_format_int(code_smells)}")
 
     print(f"\n  {'指标':<24} {'当前值':>10}   {'阈值':>10}   {'状态'}")
-    print(f"  {'-' * 60}")
+    print(f"  {'-' * TABLE_SEPARATOR_WIDTH}")
     print(f"  {'语句覆盖率 (line_coverage)':<24} {_format_pct(line_cov):>10}   {'≥' + str(LINE_COVERAGE_THRESHOLD) + '%':>10}   {_coverage_status(line_cov, LINE_COVERAGE_THRESHOLD)}")
     print(f"  {'分支覆盖率 (branch_coverage)':<24} {_format_pct(branch_cov):>10}   {'≥' + str(BRANCH_COVERAGE_THRESHOLD) + '%':>10}   {_coverage_status(branch_cov, BRANCH_COVERAGE_THRESHOLD)}")
     print(f"  {'综合覆盖率 (coverage)':<24} {_format_pct(overall_cov):>10}   {'—':>10}   —")
@@ -265,9 +271,9 @@ def print_overall_report(measures: dict[str, str], qg_status: dict):
 
 def print_module_report(module_results: list[dict]):
     """打印各模块覆盖率报告"""
-    print(f"\n{'=' * 72}")
+    print(f"\n{'=' * REPORT_LINE_WIDTH}")
     print(f"{COLOR_BOLD}  ZhiYu SonarQube 覆盖率报告 — 模块明细{COLOR_RESET}")
-    print(f"{'=' * 72}")
+    print(f"{'=' * REPORT_LINE_WIDTH}")
 
     has_data = any(r["measures"] for r in module_results)
     if not has_data:
@@ -276,7 +282,7 @@ def print_module_report(module_results: list[dict]):
 
     header = f"  {'模块':<40} {'语句覆盖率':>10} {'分支覆盖率':>10} {'重复率':>8} {'代码行':>8}"
     print(f"\n{header}")
-    print(f"  {'-' * 80}")
+    print(f"  {'-' * MODULE_TABLE_SEPARATOR_WIDTH}")
 
     for r in module_results:
         label = r["label"]
@@ -333,7 +339,7 @@ def main():
     """主程序：拉取 SonarQube 覆盖率数据，生成整体与模块报告，判定是否达标"""
     parser = argparse.ArgumentParser(
         description="ZhiYu SonarQube 覆盖率报告与 Quality Gate 达标检查",
-        epilog="示例: python3 Tools/CI/Test/check_sonarqube_coverage.py --host http://localhost:9000 --token squ_xxx --project ZhiYu-Mobile-iOS",
+        epilog="示例: python3 Tools/CI/Test/check_sonarqube_coverage.py --host http://localhost:9000 --token squ_xxx --project ZhiYu",
     )
     parser.add_argument("--host", default=os.environ.get("SONAR_HOST_URL", "http://localhost:9000"), help="SonarQube 服务器地址 (默认: SONAR_HOST_URL 环境变量或 http://localhost:9000)")
     parser.add_argument("--token", default=os.environ.get("SONAR_TOKEN", ""), help="SonarQube 认证 Token (默认: SONAR_TOKEN 环境变量)")
@@ -365,7 +371,7 @@ def main():
 
     print_module_report(module_results)
 
-    print(f"\n{'=' * 72}")
+    print(f"\n{'=' * REPORT_LINE_WIDTH}")
     if not overall_measures:
         log_warn("项目尚无扫描数据，请先完成一次 SonarQube 分析")
         return 1 if args.strict else 0
