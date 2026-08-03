@@ -61,12 +61,7 @@ build-prepare:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - xcodegen generate
-    - mkdir -p build /tmp/zhiyu-spm-cache
-    - xcodebuild -resolvePackageDependencies
-        -project ZhiYu.xcodeproj
-        -scheme ZhiYu
-        -clonedSourcePackagesDirPath /tmp/zhiyu-spm-cache
+    - make gen
     - bash Tools/CI/Build/inject_version.sh Sources/Info.plist
 
 # ════════════════════════════════════════════════════════════
@@ -79,7 +74,7 @@ build-ios:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - bash Tools/CI/Build/build_platform.sh ZhiYu 'generic/platform=iOS Simulator' ios
+    - make ios
 
 build-macos:
   stage: build
@@ -87,7 +82,7 @@ build-macos:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - bash Tools/CI/Build/build_platform.sh ZhiYuMac 'platform=macOS' macos
+    - make mac
 
 build-watchos:
   stage: build
@@ -95,7 +90,7 @@ build-watchos:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/ && $CI_PIPELINE_SOURCE == "push"'
   script:
-    - bash Tools/CI/Build/build_platform.sh ZhiYuWatch 'generic/platform=watchOS Simulator' watchos
+    - make watch
 
 # ════════════════════════════════════════════════════════════
 # test — 单元测试 + 覆盖率验证
