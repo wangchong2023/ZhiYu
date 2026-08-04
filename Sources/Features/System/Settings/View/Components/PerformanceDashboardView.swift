@@ -21,7 +21,7 @@ struct PerformanceDashboardView: View {
     
     private func updateMetricsData() {
         service.updateMemoryUsage()
-        service.updatePageMetrics(pages: store.pages)
+        service.updatePageMetrics(pageCount: store.pages.count, totalWords: store.pages.reduce(0) { $0 + $1.wordCount })
         service.updateGraphMetrics(nodes: store.totalPages, edges: store.totalConnectionCount)
     }
     

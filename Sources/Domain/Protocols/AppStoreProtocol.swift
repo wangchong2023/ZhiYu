@@ -5,7 +5,7 @@
 //  Created by Antigravity on 2026/05/29.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L0] 底层基座层
+//  系统层级：[L1.5] 领域层
 //  核心职责：Protocols。定义智宇核心状态中心的抽象契约。
 //
 

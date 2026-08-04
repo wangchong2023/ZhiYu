@@ -386,7 +386,7 @@ private enum L10nTable {
     static let ai = "AI"
     static let insight = "Insight"
     static let system = "System"
-    static let ingest = "Ingest"
+    static let ingest = "Ingest" // arch_exempt: xcstrings 表名，非领域实体引用
     static let plugin = "Plugin"
     static let platform = "Platform"
     

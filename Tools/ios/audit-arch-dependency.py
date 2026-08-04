@@ -22,7 +22,8 @@ import sys
 # ==============================================================================
 
 # 项目根目录，相对于 Tools/scripts/Architecture 目录的上一级 (退3层)
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+# 项目根目录，相对于 Tools/ios 目录的上一级 (退2层: Tools/ios → Tools → 项目根)
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SOURCES_DIR = os.path.join(PROJECT_DIR, "Sources")
 
 # 排除分析的文件夹
@@ -55,15 +56,15 @@ LAYER_PATHS = {
 }
 
 # 忽略提取的通用 Swift 关键字与常见类型名（避免因同名匹配造成误报）
+# 注意：领域实体（PageChunk/KnowledgePage/Tag 等）不在此白名单中，
+# 以便 audit-arch-dependency 能拦截 L0→L1.5 跨层引用
 COMMON_KEYWORDS = {
     "View", "Text", "Button", "Label", "Image", "String", "Int", "Double", "CGFloat",
     "Bool", "UUID", "URL", "Task", "Color", "Font", "Spacer", "ZStack", "VStack", "HStack",
     "ForEach", "EmptyView", "Binding", "Environment", "State", "Observable", "MainActor",
     "App", "Scene", "Widget", "Capsule", "Circle", "Rectangle", "RoundedRectangle", "Empty",
     "Done", "User", "Plan", "Theme", "Error", "Log", "Logger", "Date", "Data",
-    "Status", "Columns", "CodingKeys", "Ingest", "LLMProvider", "VoiceRecording", 
-    "PDFDocumentInfo", "OnDeviceModel", "PageChunk", "KnowledgePage", "LintIssue", 
-    "PotentialLinkSuggestion", "Tag"
+    "Status", "Columns", "CodingKeys"
 }
 
 # ==============================================================================
@@ -246,10 +247,10 @@ def run_architecture_audit():
     print(f"  - 基础设施层 (Infrastructure) 实体数: {len(infra_entities)}")
 
     # 2. 定义各层不应该引用的实体名单（Core、Infra、Domain 严禁调用 UI 视图或控制器）
-    # 同时 Core 禁止直接引用业务逻辑服务（domain_services_entities）与底层基础设施（infra_entities）
+    # 架构红线：L0 底座层禁止反向引用 L1.5 领域层（含 Models 和 Services 全部实体）
     forbidden_rules = {
-        # Core (L0) 禁止调用高层 UI 视图、底层具体 Infra，以及 Domain 层核心 Service 实体（但放宽对 Domain Models 的依赖）
-        "Core": high_level_ui_entities.union(domain_services_entities).union(infra_entities),
+        # Core (L0) 严禁调用任何高层实体：UI 视图、Domain Services、Domain Models、Infrastructure
+        "Core": high_level_ui_entities.union(domain_all_entities).union(infra_entities),
         # Infrastructure (L1) 禁止直接调用表现层 UI
         "Infrastructure": high_level_ui_entities,
         # Domain (L1.5) 作为大脑层，可以调用 Infra 和 Core，但绝对禁止直接调用表现层 UI (View/Coordinator)

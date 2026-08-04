@@ -5,7 +5,7 @@
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L0] 底层基座层
+//  系统层级：[L1.5] 领域层
 //  核心职责：定义 SearchIndexer 模块的抽象契约接口。
 //
 import Foundation

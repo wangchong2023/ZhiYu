@@ -5,7 +5,7 @@
 //  Created by Antigravity on 2026/06/01.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L0] 底层基座层
+//  系统层级：[L1.5] 领域层
 //  核心职责：定义云同步相关的抽象契约接口。
 //
 

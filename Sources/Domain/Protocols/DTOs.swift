@@ -5,7 +5,7 @@
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L0] 底层基座层
+//  系统层级：[L1.5] 领域层
 //  核心职责：跨层协议定义，建立 L0-L3 各层间的抽象契约。
 //
 import Foundation
@@ -106,59 +106,5 @@ public struct RefactorSuggestionDTO: Codable, Identifiable, Sendable {
 }
 
 // MARK: - 日志审计 DTO
-
-/// 操作执行状态
-public enum LogStatus: String, Codable, Sendable {
-    case success
-    case failure
-    case processing
-    
-    public var localizedName: String {
-        switch self {
-        case .success: return L10n.Common.Log.Status.success
-        case .failure: return L10n.Common.Log.Status.failure
-        case .processing: return L10n.Common.Log.Status.processing
-        }
-    }
-}
-
-/// 操作日志条目模型，记录系统操作的元数据
-public struct LogEntry: Identifiable, Codable, Sendable {
-    public var id: UUID
-    public var action: LogAction
-    public var target: String
-    public var details: String
-    public var timestamp: Date
-    public var duration: TimeInterval?
-    public var startTime: Date?
-    public var endTime: Date?
-    public var module: String? // 来源模块，如 SystemVault, AppStore
-    public var status: LogStatus?
-    public var failureReason: String?
-    
-    public init(
-        id: UUID = UUID(),
-        action: LogAction,
-        target: String,
-        details: String = "",
-        timestamp: Date = Date(),
-        duration: TimeInterval? = nil,
-        startTime: Date? = nil,
-        endTime: Date? = nil,
-        module: String? = nil,
-        status: LogStatus? = nil,
-        failureReason: String? = nil
-    ) {
-        self.id = id
-        self.action = action
-        self.target = target
-        self.details = details
-        self.timestamp = timestamp
-        self.duration = duration
-        self.startTime = startTime
-        self.endTime = endTime
-        self.module = module
-        self.status = status
-        self.failureReason = failureReason
-    }
-}
+// LogStatus / LogEntry 已下移至 L0 Core/Base/Constants，供 Logger 与日志审计共享。
+// LogStatus.localizedName 扩展见 Sources/Localization/Extensions/L10n+Common.swift。

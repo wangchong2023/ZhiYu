@@ -128,10 +128,11 @@ final class PerformanceService: ObservableObject {
     
     // MARK: - Page Metrics
     /// 更新PageMetrics
-    /// - Parameter pages: pages
-    func updatePageMetrics(pages: [KnowledgePage]) {
-        metrics.pageCount = pages.count
-        metrics.totalWords = pages.reduce(0) { $0 + $1.wordCount }
+    /// - Parameter pageCount: 页面总数
+    /// - Parameter totalWords: 总字数
+    func updatePageMetrics(pageCount: Int, totalWords: Int) {
+        metrics.pageCount = pageCount
+        metrics.totalWords = totalWords
         metrics.lastUpdated = Date()
     }
     

@@ -29,23 +29,26 @@ final class SnapshotService {
     }
 
     /// 为指定页面保存快照
-    func saveSnapshot(for page: KnowledgePage) {
-        let pageDir = snapshotsURL.appendingPathComponent(page.id.uuidString, isDirectory: true)
+    /// - Parameter pageID: 页面 ID
+    /// - Parameter title: 页面标题
+    /// - Parameter content: 页面内容
+    func saveSnapshot(pageID: UUID, title: String, content: String) {
+        let pageDir = snapshotsURL.appendingPathComponent(pageID.uuidString, isDirectory: true)
         try? fileManager.createDirectory(at: pageDir, withIntermediateDirectories: true)
 
         let timestamp = ISO8601DateFormatter().string(from: Date())
         let fileURL = pageDir.appendingPathComponent("\(timestamp).md")
-        
+
         // 构建带元数据的快照内容
         let snapshotContent = """
         ---
         Snapshot-Date: \(timestamp)
-        Original-Title: \(page.title)
+        Original-Title: \(title)
         ---
-        
-        \(page.content)
+
+        \(content)
         """
-        
+
         try? snapshotContent.write(to: fileURL, atomically: true, encoding: .utf8)
     }
 

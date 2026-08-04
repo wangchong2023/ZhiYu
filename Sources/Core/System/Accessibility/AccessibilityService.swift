@@ -26,17 +26,27 @@ final class AccessibilityService: ObservableObject {
     
     // MARK: - VoiceOver Helpers
     /// pageAnnouncement
-    /// - Parameter page: page
+    /// - Parameter title: 页面标题
+    /// - Parameter pageTypeDisplay: 页面类型显示名
+    /// - Parameter statusDisplay: 页面状态显示名
+    /// - Parameter tags: 标签列表
+    /// - Parameter wordCount: 字数
     /// - Returns: 字符串
-    static func pageAnnouncement(_ page: KnowledgePage) -> String {
+    static func pageAnnouncement(
+        title: String,
+        pageTypeDisplay: String,
+        statusDisplay: String,
+        tags: [String],
+        wordCount: Int
+    ) -> String {
         var parts: [String] = []
-        parts.append(page.title)
-        parts.append(page.pageType.displayName)
-        parts.append(page.status.displayName)
-        if !page.tags.isEmpty {
-            parts.append(L10n.Accessibility.tags + ": " + page.tags.joined(separator: ", "))
+        parts.append(title)
+        parts.append(pageTypeDisplay)
+        parts.append(statusDisplay)
+        if !tags.isEmpty {
+            parts.append(L10n.Accessibility.tags + ": " + tags.joined(separator: ", "))
         }
-        let wordStr = "\(page.wordCount) " + L10n.Accessibility.words
+        let wordStr = "\(wordCount) " + L10n.Accessibility.words
         parts.append(wordStr)
         return parts.joined(separator: ", ")
     }

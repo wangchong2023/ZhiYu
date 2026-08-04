@@ -239,6 +239,18 @@ targets:
       - path: Sources/Domain/Models/RAGModels.swift
       - path: Sources/Domain/Models/PromptConstants.swift
       - path: Sources/Domain/Protocols/IngestServiceProtocol.swift
+      - path: Sources/Domain/Protocols/EmbeddingProvider.swift
+      - path: Sources/Domain/Protocols/SyncProtocols.swift
+      - path: Sources/Domain/Protocols/AppStoreProtocol.swift
+      - path: Sources/Domain/Protocols/SpeechServiceProtocol.swift
+      - path: Sources/Domain/Protocols/SearchIndexerProtocol.swift
+      - path: Sources/Domain/Protocols/OnDeviceLLMServiceProtocol.swift
+      - path: Sources/Domain/Protocols/LLMServiceProtocol.swift
+      - path: Sources/Domain/Protocols/LinkServiceProtocol.swift
+      - path: Sources/Domain/Protocols/StoreCapabilities.swift
+      - path: Sources/Domain/Protocols/PDFServiceProtocol.swift
+      - path: Sources/Domain/Protocols/DTOs.swift
+      - path: Sources/Domain/Protocols/UnsupportedSearchIndexer.swift
       - path: Sources/Domain/RAG/LinkService.swift
       # L1 基础设施模型
       - path: Sources/Infrastructure/Models/SpeechModels.swift

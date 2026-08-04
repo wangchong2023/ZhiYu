@@ -25,7 +25,13 @@ extension View {
     func appPageRow(page: KnowledgePage) -> some View {
         self
             .accessibilityElement(children: .combine)
-            .accessibilityLabel(AccessibilityService.pageAnnouncement(page))
+            .accessibilityLabel(AccessibilityService.pageAnnouncement(
+                title: page.title,
+                pageTypeDisplay: page.pageType.displayName,
+                statusDisplay: page.status.displayName,
+                tags: page.tags,
+                wordCount: page.wordCount
+            ))
             .accessibilityHint(L10n.Accessibility.tapToOpen)
             .accessibilityAddTraits(.isButton)
     }

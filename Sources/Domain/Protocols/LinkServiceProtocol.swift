@@ -5,7 +5,7 @@
 //  Created by Antigravity on 2026/05/30.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L0] 底层基座层
+//  系统层级：[L1.5] 领域层
 //  核心职责：定义 LinkService 模块的抽象契约接口，解耦 Domain 与具体向量化双向链接服务的强引用。
 //
 
