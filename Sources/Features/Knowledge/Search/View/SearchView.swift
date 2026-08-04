@@ -27,6 +27,7 @@ struct SearchView: View {
     @State private var advancedResults: [KnowledgePage] = []
     @State private var useAdvancedSearch = false
     @State private var showDiagnostics = false
+    @Environment(\.interfaceIdiom) private var idiom
     
     init(initialQuery: String? = nil, initialFilterType: PageType? = nil) {
         self.initialQuery = initialQuery
@@ -156,53 +157,53 @@ struct SearchView: View {
                         Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
 
                         // Status Filters
-                        #if !os(watchOS)
-                        Menu {
-                            Button(L10n.Common.all) { filterStatus = nil }
-                            ForEach(PageStatus.allCases, id: \.self) { status in
-                                Button(status.displayName) { filterStatus = status }
+                        if idiom != .watch {
+                            Menu {
+                                Button(L10n.Common.all) { filterStatus = nil }
+                                ForEach(PageStatus.allCases, id: \.self) { status in
+                                    Button(status.displayName) { filterStatus = status }
+                                }
+                            } label: {
+                                HStack(spacing: DesignSystem.tiny) {
+                                    Image(systemName: DesignSystem.Icons.flag)
+                                        .font(.caption)
+                                    Text(filterStatus?.displayName ?? L10n.Knowledge.Page.status)
+                                        .font(.caption)
+                                }
+                                .padding(.horizontal, DesignSystem.tightPadding + DesignSystem.atomic) // 10
+                                .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 5
+                                .background(filterStatusBackgroundColor)
+                                .clipShape(Capsule())
+                                .foregroundStyle(filterStatusLabelColor)
                             }
-                        } label: {
-                            HStack(spacing: DesignSystem.tiny) {
-                                Image(systemName: DesignSystem.Icons.flag)
-                                    .font(.caption)
-                                Text(filterStatus?.displayName ?? L10n.Knowledge.Page.status)
-                                    .font(.caption)
-                            }
-                            .padding(.horizontal, DesignSystem.tightPadding + DesignSystem.atomic) // 10
-                            .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 5
-                            .background(filterStatusBackgroundColor)
-                            .clipShape(Capsule())
-                            .foregroundStyle(filterStatusLabelColor)
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
-                        #endif
 
                         Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
 
                         // Sort options
-                        #if !os(watchOS)
-                        Menu {
-                            ForEach(SortOption.allCases, id: \.self) { option in
-                                Button(action: { sortBy = option }) {
-                                    Label(L10n.Common.tr(option.rawValue), systemImage: sortBy == option ? DesignSystem.Icons.check : "")
+                        if idiom != .watch {
+                            Menu {
+                                ForEach(SortOption.allCases, id: \.self) { option in
+                                    Button(action: { sortBy = option }) {
+                                        Label(L10n.Common.tr(option.rawValue), systemImage: sortBy == option ? DesignSystem.Icons.check : "")
+                                    }
                                 }
+                            } label: {
+                                HStack(spacing: DesignSystem.tiny) {
+                                    Image(systemName: DesignSystem.Icons.sortUpDown)
+                                        .font(.caption)
+                                    Text(L10n.Common.tr(sortBy.rawValue))
+                                        .font(.caption)
+                                }
+                                .padding(.horizontal, DesignSystem.tightPadding + DesignSystem.atomic) // 10
+                                .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 5
+                                .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
+                                .clipShape(Capsule())
+                                .foregroundStyle(.appSecondary)
                             }
-                        } label: {
-                            HStack(spacing: DesignSystem.tiny) {
-                                Image(systemName: DesignSystem.Icons.sortUpDown)
-                                    .font(.caption)
-                                Text(L10n.Common.tr(sortBy.rawValue))
-                                    .font(.caption)
-                            }
-                            .padding(.horizontal, DesignSystem.tightPadding + DesignSystem.atomic) // 10
-                            .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 5
-                            .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                            .clipShape(Capsule())
-                            .foregroundStyle(.appSecondary)
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
-                        #endif
                     }
                     .padding(.horizontal)
                 }
@@ -261,9 +262,7 @@ struct SearchView: View {
                             }
                             .buttonStyle(.plain)
                             .listRowBackground(Color.clear)
-                            #if !os(watchOS)
-                            .listRowSeparator(.hidden)
-                            #endif
+                            .skipOnWatch { $0.listRowSeparator(.hidden) }
                             .contextMenu {
                                 Button {
                                     HapticFeedback.shared.trigger(.selection)

@@ -62,9 +62,7 @@ struct LintViewContent: View {
                     Text(L10n.Lint.title).tag(0)
                     Text(L10n.Lint.aiSuggestions).tag(1)
                 }
-                #if !os(watchOS)
-                .pickerStyle(.segmented)
-                #endif
+                .segmentedPickerStyleIfAvailable()
                 .padding(.horizontal, DesignSystem.huge)
                 .padding(.vertical, DesignSystem.tiny)
                 .background(.ultraThinMaterial.opacity(DesignSystem.Opacity.shadow))

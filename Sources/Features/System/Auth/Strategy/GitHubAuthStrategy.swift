@@ -11,7 +11,7 @@
 
 import Foundation
 import AuthenticationServices
-#if !os(watchOS)
+#if canImport(UIKit)
 import UIKit
 #endif
 
@@ -82,7 +82,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                 continuation.resume(returning: cred)
             }
             
-            #if !os(watchOS)
+            #if canImport(UIKit)
             session.presentationContextProvider = self
             #endif
             session.prefersEphemeralWebBrowserSession = false
@@ -91,7 +91,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
     }
 }
 
-#if !os(watchOS)
+#if canImport(UIKit)
 extension GitHubAuthStrategy: ASWebAuthenticationPresentationContextProviding {
 
     /// presentationAnchor

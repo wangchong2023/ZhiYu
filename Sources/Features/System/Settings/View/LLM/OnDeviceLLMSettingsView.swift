@@ -94,9 +94,7 @@ public struct OnDeviceLLMSettingsView: View {
                 }
                 .appListRowBackground()
             }
-            #if !os(watchOS)
-            .listStyle(.insetGrouped)
-            #endif
+            .insetGroupedListStyleIfIOS()
             .scrollContentBackground(.hidden) // 隐藏 Form 默认的白色背景，实现高端毛玻璃穿透
         }
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -273,8 +271,7 @@ public struct OnDeviceLLMSettingsView: View {
                 .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                 .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
             }
-            #if !os(watchOS)
-            .fileImporter(
+            .skipOnWatch { $0.fileImporter(
                 isPresented: $showImportPicker,
                 allowedContentTypes: {
                     var types: [UTType] = []
@@ -301,8 +298,7 @@ public struct OnDeviceLLMSettingsView: View {
                 case .failure:
                     break
                 }
-            }
-            #endif
+            } }
         }
         .padding(.vertical, DesignSystem.tiny)
     }

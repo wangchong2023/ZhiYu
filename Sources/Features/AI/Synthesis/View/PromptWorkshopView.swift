@@ -37,34 +37,34 @@ struct PromptWorkshopView: View {
             Form {
                 // ── 认知补全：功能简介 (可收缩) ──
                 Section {
-                    #if os(watchOS)
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                        Label(L10n.AI.Prompt.Workshop.Intro.title, systemImage: DesignSystem.Icons.promptWorkshop)
-                            .font(.headline)
-                            .foregroundStyle(.appAccent)
-                        Text(L10n.AI.Prompt.Workshop.Intro.desc)
-                            .font(.subheadline)
-                            .foregroundStyle(.appSecondary)
-                    }
-                    #else
-                    DisclosureGroup(isExpanded: $isIntroExpanded) {
+                    if idiom == .watch {
                         VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                            Label(L10n.AI.Prompt.Workshop.Intro.title, systemImage: DesignSystem.Icons.promptWorkshop)
+                                .font(.headline)
+                                .foregroundStyle(.appAccent)
                             Text(L10n.AI.Prompt.Workshop.Intro.desc)
                                 .font(.subheadline)
                                 .foregroundStyle(.appSecondary)
-                                .lineSpacing(4)
-                                .padding(.top, DesignSystem.tiny)
                         }
-                    } label: {
-                        HStack(spacing: DesignSystem.medium) {
-                            Image(systemName: DesignSystem.Icons.promptWorkshop)
-                                .font(.title3)
-                                .foregroundStyle(.appAccent)
-                            Text(L10n.AI.Prompt.Workshop.Intro.title)
-                                .font(.headline)
+                    } else {
+                        DisclosureGroup(isExpanded: $isIntroExpanded) {
+                            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                                Text(L10n.AI.Prompt.Workshop.Intro.desc)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.appSecondary)
+                                    .lineSpacing(4)
+                                    .padding(.top, DesignSystem.tiny)
+                            }
+                        } label: {
+                            HStack(spacing: DesignSystem.medium) {
+                                Image(systemName: DesignSystem.Icons.promptWorkshop)
+                                    .font(.title3)
+                                    .foregroundStyle(.appAccent)
+                                Text(L10n.AI.Prompt.Workshop.Intro.title)
+                                    .font(.headline)
+                            }
                         }
                     }
-                    #endif
                 }
                 .appListRowBackground() // 适配全局毛玻璃背景
 

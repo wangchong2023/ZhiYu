@@ -22,6 +22,7 @@ struct VoiceNoteView: View {
     @State private var elapsedSeconds: Int = 0
     @Environment(\.dismiss) private var dismiss
     var onFinish: ((String, String, URL?) -> Void)?
+    @Environment(\.interfaceIdiom) private var idiom
 
     private let maxDuration = AppConstants.Keys.ImportLimits.maxVoiceDurationSeconds
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -103,10 +104,7 @@ struct VoiceNoteView: View {
                     Text(lang.name).tag(lang.code)
                 }
             }
-            #if !os(watchOS)
-            .pickerStyle(.menu)
-            .tint(.appAccent)
-            #endif
+            .skipOnWatch { $0.pickerStyle(.menu).tint(.appAccent) }
         }
         .appContainer(cornerRadius: DesignSystem.cardRadius, padding: true)
     }
@@ -234,55 +232,55 @@ struct VoiceNoteView: View {
                 }
             }
             
-            #if !os(watchOS)
-            TextEditor(text: Binding(
-                get: { speechService.transcribedText },
-                set: { speechService.transcribedText = $0 }
-            ))
-                .font(.body)
-                .foregroundStyle(.appText)
-                .frame(minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight, maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight)
-                .padding(Spacing.medium)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                        .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                )
-            #else
-            TextField("", text: Binding(
-                get: { speechService.transcribedText },
-                set: { speechService.transcribedText = $0 }
-            ))
-                .font(.body)
-                .foregroundStyle(.appText)
-                .padding(Spacing.medium)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-            
-            HStack {
-                Text("\(speechService.transcribedText.count) \(L10n.Voice.Speech.characters)")
-                    .font(.caption)
-                    .foregroundStyle(.appSecondary)
+            if idiom != .watch {
+                TextEditor(text: Binding(
+                    get: { speechService.transcribedText },
+                    set: { speechService.transcribedText = $0 }
+                ))
+                    .font(.body)
+                    .foregroundStyle(.appText)
+                    .frame(minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight, maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight)
+                    .padding(Spacing.medium)
+                    .background(Color.appCard)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                    )
+            } else {
+                TextField("", text: Binding(
+                    get: { speechService.transcribedText },
+                    set: { speechService.transcribedText = $0 }
+                ))
+                    .font(.body)
+                    .foregroundStyle(.appText)
+                    .padding(Spacing.medium)
+                    .background(Color.appCard)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
                 
-                Spacer()
-                
-                Button(action: { 
-                    onFinish?(L10n.Voice.Speech.defaultTitle, speechService.transcribedText, speechService.currentAudioFileURL)
-                    dismiss()
-                }) {
-                    HStack {
-                        Image(systemName: DesignSystem.Icons.squareAndPencil)
-                        Text(L10n.Voice.Speech.confirmAndEdit)
+                HStack {
+                    Text("\(speechService.transcribedText.count) \(L10n.Voice.Speech.characters)")
+                        .font(.caption)
+                        .foregroundStyle(.appSecondary)
+                    
+                    Spacer()
+                    
+                    Button(action: { 
+                        onFinish?(L10n.Voice.Speech.defaultTitle, speechService.transcribedText, speechService.currentAudioFileURL)
+                        dismiss()
+                    }) {
+                        HStack {
+                            Image(systemName: DesignSystem.Icons.squareAndPencil)
+                            Text(L10n.Voice.Speech.confirmAndEdit)
+                        }
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, Spacing.standardPadding)
+                        .background(Color.appAccent)
+                        .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
                     }
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, Spacing.standardPadding)
-                    .background(Color.appAccent)
-                    .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
                 }
             }
-            #endif
         }
         .appContainer(cornerRadius: DesignSystem.cardRadius, padding: true)
     }

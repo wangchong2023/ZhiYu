@@ -11,7 +11,7 @@
 //
 
 import Foundation
-#if !os(watchOS)
+#if canImport(UIKit)
 import UIKit
 
 // MARK: - Carrier Auth 专用错误

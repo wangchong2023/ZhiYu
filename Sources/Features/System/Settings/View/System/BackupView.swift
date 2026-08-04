@@ -90,9 +90,7 @@ struct BackupView: View {
                 }
                 .appListRowBackground()
             }
-            #if !os(watchOS)
-            .listStyle(.insetGrouped)
-            #endif
+            .insetGroupedListStyleIfIOS()
             .scrollContentBackground(.hidden)
             .background(themeManager.pageBackground())
             .navigationTitle(L10n.Backup.title)

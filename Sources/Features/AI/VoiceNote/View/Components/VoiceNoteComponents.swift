@@ -19,6 +19,7 @@ struct SaveVoiceNoteSheet: View {
     @Environment(AppStore.self) var store
     @Environment(\.dismiss) private var dismiss
     @State private var selectedType: PageType = .source
+    @Environment(\.interfaceIdiom) private var idiom
     
     var body: some View {
         NavigationStack {
@@ -44,9 +45,7 @@ struct SaveVoiceNoteSheet: View {
                 .foregroundStyle(.appSecondary)
             
             TextField(L10n.Voice.Speech.noteTitlePlaceholder, text: $title)
-                #if !os(watchOS)
-                .textFieldStyle(.roundedBorder)
-                #endif
+                .roundedBorderTextFieldStyle()
         }
     }
     
@@ -62,9 +61,7 @@ struct SaveVoiceNoteSheet: View {
                     Label(type.displayName, systemImage: type.icon).tag(type)
                 }
             }
-            #if !os(watchOS)
-                .pickerStyle(.segmented)
-                #endif
+            .segmentedPickerStyleIfAvailable()
         }
     }
     
@@ -74,32 +71,32 @@ struct SaveVoiceNoteSheet: View {
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
             
-            #if !os(watchOS)
-            TextEditor(text: Binding(
-                get: { speechService.transcribedText },
-                set: { speechService.transcribedText = $0 }
-            ))
-                .font(.body)
-                .foregroundStyle(.appText)
-                .frame(minHeight: DesignSystem.Metrics.heroValueSize * 4.6, maxHeight: DesignSystem.Metrics.heroValueSize * 11.5) // 120, 300
-                .padding(DesignSystem.small)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                        .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                )
-            #else
-            TextField("", text: Binding(
-                get: { speechService.transcribedText },
-                set: { speechService.transcribedText = $0 }
-            ))
-                .font(.body)
-                .foregroundStyle(.appText)
-                .padding(DesignSystem.small)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-            #endif
+            if idiom != .watch {
+                TextEditor(text: Binding(
+                    get: { speechService.transcribedText },
+                    set: { speechService.transcribedText = $0 }
+                ))
+                    .font(.body)
+                    .foregroundStyle(.appText)
+                    .frame(minHeight: DesignSystem.Metrics.heroValueSize * 4.6, maxHeight: DesignSystem.Metrics.heroValueSize * 11.5) // 120, 300
+                    .padding(DesignSystem.small)
+                    .background(Color.appCard)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
+                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                    )
+            } else {
+                TextField("", text: Binding(
+                    get: { speechService.transcribedText },
+                    set: { speechService.transcribedText = $0 }
+                ))
+                    .font(.body)
+                    .foregroundStyle(.appText)
+                    .padding(DesignSystem.small)
+                    .background(Color.appCard)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+            }
         }
     }
     

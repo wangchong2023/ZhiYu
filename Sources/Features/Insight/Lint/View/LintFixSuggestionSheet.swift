@@ -94,7 +94,6 @@ struct LintIssueRow: View {
     }
 
     private func fetchAISuggestion() {
-        #if !os(watchOS)
         guard !isAnalyzing else { return }
         isAnalyzing = true
 
@@ -114,6 +113,5 @@ struct LintIssueRow: View {
                 }
             }
         }
-        #endif
     }
 }

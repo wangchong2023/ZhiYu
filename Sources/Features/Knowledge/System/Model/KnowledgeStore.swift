@@ -313,11 +313,9 @@ public final class KnowledgeStore {
         // 转发至领域层 KnowledgePageManager 执行物理和向量导入流程
         // 注意：此处仍需传递 pageStore (通常是 AppStore 或 self) 以满足协议
         // 为保持解耦，我们传递 ServiceContainer 中的 AnyPageStore 实例
-        #if !os(watchOS)
         if let store = ServiceContainer.shared.resolveOptional(AppStore.self) {
             await pageManager.ingestFolder(at: url, pageStore: store)
         }
-        #endif
         await refresh()
     }
 

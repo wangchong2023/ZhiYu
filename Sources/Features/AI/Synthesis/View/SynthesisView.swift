@@ -105,9 +105,7 @@ struct SynthesisView: View {
         Section {
             synthesisEntryView
         }
-        #if !os(watchOS)
-        .listRowSeparator(.hidden)
-        #endif
+        .skipOnWatch { $0.listRowSeparator(.hidden) }
         .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: DesignSystem.loosePadding, trailing: DesignSystem.standardPadding))
         .listRowBackground(Color.clear)
     }
@@ -122,9 +120,7 @@ struct SynthesisView: View {
 
             documentRows
         }
-        #if !os(watchOS)
-        .listRowSeparator(.hidden)
-        #endif
+        .skipOnWatch { $0.listRowSeparator(.hidden) }
         .listRowBackground(Color.clear)
     }
 
@@ -449,7 +445,7 @@ extension View {
         self
             .sheet(isPresented: showOutput) { outputSheet }
             .sheet(item: pdfURL) { identifiable in
-                #if !os(watchOS)
+                #if canImport(PDFKit)
                 PDFPreviewWrapper(url: identifiable.url)
                 #else
                 Text(identifiable.url.lastPathComponent)

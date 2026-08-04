@@ -268,9 +268,7 @@ struct RawStorageListView: View {
                                         }
                                         .buttonStyle(.plain)
                                         .listRowBackground(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                                        #if !os(watchOS)
-                                        .listRowSeparator(.visible)
-                                        #endif
+                                        .skipOnWatch { $0.listRowSeparator(.visible) }
                                     }
                                 } label: {
                                     HStack(spacing: Spacing.small) {

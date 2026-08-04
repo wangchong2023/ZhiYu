@@ -191,9 +191,7 @@ struct LLMSettingsView: View {
             }
             .appListRowBackground()
         }
-        #if !os(watchOS)
-        .listStyle(.insetGrouped)
-        #endif
+        .insetGroupedListStyleIfIOS()
         .scrollContentBackground(.hidden)
     }
     
@@ -258,10 +256,7 @@ struct LLMSettingsView: View {
                         RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
                             .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
                     )
-                    #if !os(watchOS)
-                    .autocapitalization(.none)
-                    .keyboardType(.URL)
-                    #endif
+                    .skipOnWatch { $0.autocapitalization(.none).keyboardType(.URL) }
             }
             
             // Model (非自定义模式呈现 Picker 下拉菜单，自定义模式或手动模式呈现 TextField)
@@ -298,9 +293,7 @@ struct LLMSettingsView: View {
                             RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
                                 .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
                         )
-                        #if !os(watchOS)
-                        .autocapitalization(.none)
-                        #endif
+                        .skipOnWatch { $0.autocapitalization(.none) }
                 } else {
                     // 官方提供商 Dropdown 下拉选择菜单
                     Menu {

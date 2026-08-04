@@ -9,8 +9,6 @@
 
 import Foundation
 
-#if !os(watchOS)
-
 // MARK: - 认证与系统模块 (L2)
 
 /// 认证模块注册器：负责 Auth、Vault、Settings 等系统核心服务
@@ -31,5 +29,3 @@ struct AuthModuleRegistrar: ModuleRegistrar {
         Logger.shared.info("[DI] Auth & system module registration completed")
     }
 }
-
-#endif

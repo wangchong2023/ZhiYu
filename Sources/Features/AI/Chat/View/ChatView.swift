@@ -31,6 +31,7 @@ struct ChatViewContent: View {
     
     // 使用协调器管理状态与交互
     @State private var coordinator = ChatCoordinator()
+    @Environment(\.interfaceIdiom) private var idiom
     
     @FocusState private var isInputFocused: Bool
 
@@ -48,11 +49,9 @@ struct ChatViewContent: View {
         .appTabToolbar(title: "") {
             chatMenu
         }
-        #if !os(watchOS)
-        .sheet(item: $coordinator.exportURL) { identifiable in
+        .skipOnWatch { $0.sheet(item: $coordinator.exportURL) { identifiable in
             ActivityView(activityItems: [identifiable.url])
-        }
-        #endif
+        } }
         .alert(L10n.Common.error, isPresented: $coordinator.showError) {
             Button(L10n.Common.ok) { coordinator.errorMessage = nil }
         } message: {
@@ -102,49 +101,49 @@ struct ChatViewContent: View {
     
     @ViewBuilder
     private var chatMenu: some View {
-        #if !os(watchOS)
-        Menu {
-            Section {
-                Button(action: { }) {
-                    Label("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignSystem.Icons.chatBubble)
+        if idiom != .watch {
+            Menu {
+                Section {
+                    Button(action: { }) {
+                        Label("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignSystem.Icons.chatBubble)
+                    }
+                    .disabled(true)
+                    
+                    Button(role: .destructive, action: { 
+                        coordinator.showClearConfirmation = true
+                    }) {
+                        Label(L10n.AI.LLM.clearHistory, systemImage: DesignSystem.Icons.delete)
+                    }
                 }
-                .disabled(true)
                 
-                Button(role: .destructive, action: { 
-                    coordinator.showClearConfirmation = true
-                }) {
-                    Label(L10n.AI.LLM.clearHistory, systemImage: DesignSystem.Icons.delete)
-                }
-            }
-            
-            Section {
-                NavigationLink(destination: PromptWorkshopView()) {
-                    Label(L10n.Settings.promptSettings, systemImage: "sparkles.rectangle.stack")
-                }
-            }
-            
-            if !coordinator.chatHistory.isEmpty {
-                Section(L10n.Chat.exportConversation) {
-                    Button(action: {
-                        coordinator.toggleSelectionMode()
-                    }) {
-                        Label(coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport, systemImage: coordinator.isSelectionMode ? DesignSystem.Icons.checkCircle : DesignSystem.Icons.checklist)
+                Section {
+                    NavigationLink(destination: PromptWorkshopView()) {
+                        Label(L10n.Settings.promptSettings, systemImage: "sparkles.rectangle.stack")
                     }
+                }
+                
+                if !coordinator.chatHistory.isEmpty {
+                    Section(L10n.Chat.exportConversation) {
+                        Button(action: {
+                            coordinator.toggleSelectionMode()
+                        }) {
+                            Label(coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport, systemImage: coordinator.isSelectionMode ? DesignSystem.Icons.checkCircle : DesignSystem.Icons.checklist)
+                        }
 
-                    Button(action: {
-                        Task { await coordinator.exportChat() }
-                    }) {
-                        Label(coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF, systemImage: DesignSystem.Icons.docRichtext)
+                        Button(action: {
+                            Task { await coordinator.exportChat() }
+                        }) {
+                            Label(coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF, systemImage: DesignSystem.Icons.docRichtext)
+                        }
                     }
                 }
+            } label: {
+                Image(systemName: DesignSystem.Icons.more)
+                    .font(.callout.weight(.bold))
+                    .foregroundStyle(.appSecondary)
             }
-        } label: {
-            Image(systemName: DesignSystem.Icons.more)
-                .font(.callout.weight(.bold))
-                .foregroundStyle(.appSecondary)
+            .buttonStyle(.plain)  // 消除 Toolbar 中 Menu 的 bordered 白色背景
         }
-        .buttonStyle(.plain)  // 消除 Toolbar 中 Menu 的 bordered 白色背景
-        #endif
     }
     
     private var chatMessageList: some View {

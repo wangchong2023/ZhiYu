@@ -25,7 +25,18 @@ CHECK_DIRS = [
     SOURCES_DIR / "Domain",
 ]
 
-OS_MACRO_PATTERN = re.compile(r'#if\s+os\(')
+# 拦截平台条件编译宏的正则表达式
+# 覆盖形式：#if os( / #if !os( / #elseif os( / #elseif !os( / 复合条件中含 !os(
+OS_MACRO_PATTERNS = [
+    re.compile(r'#if\s+os\('),
+    re.compile(r'#if\s+!os\('),
+    re.compile(r'#elseif\s+os\('),
+    re.compile(r'#elseif\s+!os\('),
+    re.compile(r'#if\s+.*&&\s*!os\('),
+    re.compile(r'#if\s+.*\|\|\s*!os\('),
+    re.compile(r'#elseif\s+.*&&\s*!os\('),
+    re.compile(r'#elseif\s+.*\|\|\s*!os\('),
+]
 
 
 def _scan_directory(check_dir: Path) -> list[tuple[Path, list[tuple[int, str]]]]:
@@ -43,8 +54,10 @@ def _scan_directory(check_dir: Path) -> list[tuple[Path, list[tuple[int, str]]]]
         try:
             with open(swift_file, 'r') as f:
                 for i, line in enumerate(f, 1):
-                    if OS_MACRO_PATTERN.search(line):
-                        violations.append((i, line.strip()))
+                    for pattern in OS_MACRO_PATTERNS:
+                        if pattern.search(line):
+                            violations.append((i, line.strip()))
+                            break  # 同一行不重复记录
         except Exception:
             pass
         if violations:

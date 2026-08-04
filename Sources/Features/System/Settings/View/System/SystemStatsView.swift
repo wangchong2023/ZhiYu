@@ -50,9 +50,7 @@ struct SystemStatsView: View {
                             Text(tab.title).tag(tab)
                         }
                     }
-                    #if !os(watchOS)
-                .pickerStyle(.segmented)
-                #endif
+                    .segmentedPickerStyleIfAvailable()
                     .padding(.horizontal, Spacing.medium)
                     .padding(.vertical, Spacing.medium)
                     
@@ -204,9 +202,7 @@ struct SystemStatsView: View {
                     } else {
                         HStack(spacing: Spacing.medium) {
                             chartContainer
-                                #if !os(watchOS)
-        .frame(maxWidth: .infinity, alignment: .center)
-        #endif
+                                .skipOnWatch { $0.frame(maxWidth: .infinity, alignment: .center) }
                             
                             legendContainer
                                 .frame(maxWidth: .infinity)

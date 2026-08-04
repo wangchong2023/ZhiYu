@@ -10,7 +10,7 @@
 //
 
 import Foundation
-#if !os(watchOS)
+#if canImport(UIKit)
 import UIKit
 #endif
 #if canImport(GoogleSignIn)
@@ -35,7 +35,7 @@ public final class GoogleAuthStrategy: AuthStrategy {
     /// - Returns: 获取到的授权凭证模型 `AuthCredential`
     /// - Throws: SDK 未配置错误、未在前台活跃场景或用户取消登录错误
     public func acquireCredentials() async throws -> AuthCredential {
-        #if canImport(GoogleSignIn) && !os(watchOS)
+        #if canImport(GoogleSignIn)
         
         // 1. 防御性配置探针：检测 Info.plist 或者是 GIDSignIn 的 configuration 中是否配置了有效的 clientID
         let clientID = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String ?? GIDSignIn.sharedInstance.configuration?.clientID

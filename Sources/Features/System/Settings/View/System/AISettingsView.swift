@@ -35,9 +35,7 @@ struct AISettingsView: View {
                             .tag(index)
                     }
                 }
-                #if !os(watchOS)
-                .pickerStyle(.segmented)
-                #endif
+                .segmentedPickerStyleIfAvailable()
                 .padding(.horizontal)
                 .padding(.vertical, Spacing.small)
  

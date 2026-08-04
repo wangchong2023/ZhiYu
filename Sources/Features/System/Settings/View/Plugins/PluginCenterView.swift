@@ -39,9 +39,7 @@ struct PluginCenterView: View {
                 Text(L10n.Plugin.marketTitle).tag(0)
                 Text(L10n.Plugin.myPlugins).tag(1)
             }
-            #if !os(watchOS)
-            .pickerStyle(.segmented)
-            #endif
+            .segmentedPickerStyleIfAvailable()
             .padding(.horizontal)
             .padding(.vertical, DesignSystem.small)
             
@@ -61,11 +59,9 @@ struct PluginCenterView: View {
         .task {
             await marketService.fetchPlugins()
         }
-#if !os(watchOS)
-        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.item]) { _ in
+        .skipOnWatch { $0.fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.item]) { _ in
             // 处理文件选择结果
-        }
-#endif
+        } }
         .confirmationDialog(
             L10n.Plugin.safeModeWarningTitle,
             isPresented: $showSafeModeWarning,

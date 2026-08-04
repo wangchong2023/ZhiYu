@@ -63,9 +63,7 @@ public struct ModelStoreView: View {
             }
         }
         .navigationTitle(L10n.Settings.localModelManager)
-        #if !os(watchOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
+        .inlineNavigationBarTitleIfAvailable()
         .alert(item: $alertManifest) { manifest in
             let requiredGb = String(format: "%.1f", manifest.minDeviceMemoryInGb)
             let currentGb = String(format: "%.1f", Double(modelManager.physicalMemory) / (1024 * 1024 * 1024))

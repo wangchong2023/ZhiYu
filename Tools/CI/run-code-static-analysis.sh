@@ -74,6 +74,12 @@ run_parallel_task "SBOM Generation & Syft Scan" "sbom_generation" "(python3 Tool
 run_parallel_task "Heuristic View Duplication" "view_duplication" "python3 Tools/ios/audit-arch-view-duplication.py" & pid20=$!
 run_parallel_task "Design Token Layering" "token_layering" "python3 Tools/ios/audit-design-token-layering.py" & pid21=$!
 run_parallel_task "Swift Compiler Warnings" "swift_warnings" "bash Tools/CI/check-code-swift-warnings.sh" & pid22=$!
+run_parallel_task "Platform Macros Guard" "platform_macros" "python3 Tools/ios/check-code-platform-macros.py" & pid23=$!
+run_parallel_task "Open-Source Adapters" "opensource_adapters" "python3 Tools/ios/check-arch-opensource-adapters.py" & pid24=$!
+run_parallel_task "Magic Strings Audit" "magic_strings" "python3 Tools/ios/audit-code-magic-strings.py" & pid25=$!
+run_parallel_task "File Headers" "file_headers" "python3 Tools/ios/check-code-file-headers.py" & pid26=$!
+run_parallel_task "DI Registration" "di_registration" "python3 Tools/ios/check-arch-di-registration.py" & pid27=$!
+run_parallel_task "Inject Safety" "inject_safety" "python3 Tools/ios/check-code-inject-safety.py --strict" & pid28=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -97,6 +103,12 @@ wait $pid19 || EXIT_CODE=1
 wait $pid20 || EXIT_CODE=1
 wait $pid21 || EXIT_CODE=1
 wait $pid22 || EXIT_CODE=1
+wait $pid23 || EXIT_CODE=1
+wait $pid24 || EXIT_CODE=1
+wait $pid25 || EXIT_CODE=1
+wait $pid26 || EXIT_CODE=1
+wait $pid27 || EXIT_CODE=1
+wait $pid28 || EXIT_CODE=1
 
 
 echo ""

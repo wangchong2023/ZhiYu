@@ -62,7 +62,7 @@ public final class AppleAuthStrategy: NSObject, AuthStrategy {
             
             let controller = ASAuthorizationController(authorizationRequests: [request])
             controller.delegate = self
-            #if !os(watchOS)
+            #if canImport(UIKit)
             controller.presentationContextProvider = self
             #endif
             controller.performRequests()
@@ -117,7 +117,7 @@ extension AppleAuthStrategy: ASAuthorizationControllerDelegate {
     }
 }
 
-#if !os(watchOS)
+#if canImport(UIKit)
 // MARK: - ASAuthorizationControllerPresentationContextProviding
 
 extension AppleAuthStrategy: ASAuthorizationControllerPresentationContextProviding {

@@ -11,7 +11,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-#if !os(watchOS)
+#if canImport(UIKit)
 /// 相关页面排序拖拽代理
 struct RelatedPageDropDelegate: DropDelegate {
     let item: KnowledgePage

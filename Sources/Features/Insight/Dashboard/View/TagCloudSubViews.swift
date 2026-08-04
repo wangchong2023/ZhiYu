@@ -179,9 +179,7 @@ extension TagCloudViewContent {
                                     .padding(.horizontal, DesignSystem.small)
                                     .padding(.vertical, DesignSystem.tiny)
                             )
-                            #if !os(watchOS)
-                            .listRowSeparator(.hidden)
-                            #endif
+                            .skipOnWatch { $0.listRowSeparator(.hidden) }
                         }
                     }
                 }

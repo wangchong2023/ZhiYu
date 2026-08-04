@@ -13,7 +13,7 @@
 import SwiftUI
 
 // 简单的模糊背景视图 (非 macOS 平台使用透明占位)
-#if !os(macOS)
+#if canImport(UIKit)
 struct BlurView: View {
     var body: some View {
         Color.clear

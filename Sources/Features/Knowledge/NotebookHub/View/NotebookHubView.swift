@@ -21,6 +21,7 @@ public struct NotebookHubView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var onboardingService: OnboardingService
     @Inject var appEnv: any AppEnvironmentProtocol // 注入环境能力
+    @Environment(\.interfaceIdiom) private var idiom
     
     // MARK: - 初始化
     
@@ -67,9 +68,9 @@ public struct NotebookHubView: View {
             // 使用 ToolbarItemGroup 替代 ToolbarItem + HStack，解决 SwiftUI 在大屏/分栏下 HStack 拦截点击、导致菜单及头像按钮点击无响应的交互缺陷。
             ToolbarItemGroup(placement: .topBarTrailing) {
                 sparklesButton
-                #if !os(watchOS)
-                sortMenu
-                #endif
+                if idiom != .watch {
+                    sortMenu
+                }
                 displayModeButton
                 UserProfileMenu()
             }

@@ -92,9 +92,7 @@ struct PDFIngestSheet: View {
                 Text(L10n.Ingest.PDF.pageRange).tag("pageRange")
                 Text(L10n.Ingest.PDF.highlightsOnly).tag("highlights")
             }
-            #if !os(watchOS)
-                .pickerStyle(.segmented)
-                #endif
+            .segmentedPickerStyleIfAvailable()
             
             if ingestMode == "pageRange" {
                 HStack {
