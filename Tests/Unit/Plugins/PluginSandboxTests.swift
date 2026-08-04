@@ -23,7 +23,10 @@ final class PluginSandboxTests: XCTestCase {
         try await super.setUp()
         // 关键点：搭建标准的 Mock 环境以防止底层 resolve 找不到所需服务
         dbQueue = setupFullMockEnvironment()
-        
+        // 注入 MockKeychainService，绕过 CI 模拟器环境 errSecMissingEntitlement -34018 限制
+        // 避免 LLMConfigStore.loadAPIKey 调用真实 Keychain 失败导致测试间状态污染
+        KeychainService.testOverride = MockKeychainService()
+
         registry = PluginRegistry.shared
         registry.reset()
     }
@@ -32,6 +35,7 @@ final class PluginSandboxTests: XCTestCase {
         registry.reset()
         registry = nil
         ServiceContainer.shared.reset()
+        KeychainService.testOverride = nil
         dbQueue = nil
         try await super.tearDown()
     }

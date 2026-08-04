@@ -28,37 +28,43 @@ struct GraphCanvasView: View {
     var heroNamespace: Namespace.ID
     let onNodeTap: (GraphNode) -> Void
 
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // 渲染边
-                Canvas { context, size in
-                    drawEdges(in: context, size: size)
-                }
-                .frame(width: max(geometry.size.width, graphSize.width), height: max(geometry.size.height, graphSize.height))
+    @Environment(\.interfaceIdiom) private var idiom
 
-                // 渲染节点
-                let isLowDetail = scale < AppConfig.UI.graphLODZoomThreshold
-                
-                ForEach(nodes.filter { filterType == nil || $0.pageType == filterType }) { node in
-                    renderNode(node)
-                    
-                    if !isLowDetail {
-                        GraphNodeLabel(
-                            node: node,
-                            isSelected: selectedNodeID == node.id,
-                            nodeSize: DesignSystem.Graph.nodeSizeReference
-                        )
+    var body: some View {
+        if idiom == .watch {
+            WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.graphCanvasPlaceholder)
+        } else {
+            GeometryReader { geometry in
+                ZStack {
+                    // 渲染边
+                    Canvas { context, size in
+                        drawEdges(in: context, size: size)
+                    }
+                    .frame(width: max(geometry.size.width, graphSize.width), height: max(geometry.size.height, graphSize.height))
+
+                    // 渲染节点
+                    let isLowDetail = scale < AppConfig.UI.graphLODZoomThreshold
+
+                    ForEach(nodes.filter { filterType == nil || $0.pageType == filterType }) { node in
+                        renderNode(node)
+
+                        if !isLowDetail {
+                            GraphNodeLabel(
+                                node: node,
+                                isSelected: selectedNodeID == node.id,
+                                nodeSize: DesignSystem.Graph.nodeSizeReference
+                            )
+                        }
                     }
                 }
-            }
-            .offset(offset)
-            .scaleEffect(scale)
-            .gesture(zoomGesture)
-            .simultaneousGesture(dragGesture)
-            .onAppear { graphSize = geometry.size }
-            .onChange(of: geometry.size) { _, newSize in
-                graphSize = newSize
+                .offset(offset)
+                .scaleEffect(scale)
+                .gesture(zoomGesture)
+                .simultaneousGesture(dragGesture)
+                .onAppear { graphSize = geometry.size }
+                .onChange(of: geometry.size) { _, newSize in
+                    graphSize = newSize
+                }
             }
         }
     }
@@ -113,11 +119,11 @@ struct GraphCanvasView: View {
     }
 
     private var zoomGesture: some Gesture {
-        #if os(watchOS)
-        TapGesture()
-        #else
-        MagnificationGesture().onChanged { v in scale = lastScale * v }.onEnded { _ in lastScale = scale }
-        #endif
+        if idiom == .watch {
+            AnyGesture(TapGesture().map { _ in CGFloat(1.0) })
+        } else {
+            AnyGesture(MagnificationGesture().onChanged { v in scale = lastScale * v }.onEnded { _ in lastScale = scale })
+        }
     }
     private var dragGesture: some Gesture {
         DragGesture().onChanged { v in offset = CGSize(width: lastOffset.width + v.translation.width, height: lastOffset.height + v.translation.height) }.onEnded { _ in lastOffset = offset }

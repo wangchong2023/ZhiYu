@@ -5,8 +5,10 @@
 //  系统层级：[L0] 基础设施层（平台适配）
 //  核心职责：watchOS 端功能占位通用 View，替代 Features 层 #if os(watchOS) 占位代码。
 //
+//  - Note: 跨平台可见（无 #if os(watchOS) 包裹）。View 本身可在所有平台编译，
+//    但仅在运行时 `interfaceIdiom == .watch` 时被 Features 层渲染分发。
+//
 
-#if os(watchOS)
 import SwiftUI
 
 /// watchOS 功能占位通用 View
@@ -34,4 +36,3 @@ struct WatchFeaturePlaceholderView: View {
         }
     }
 }
-#endif

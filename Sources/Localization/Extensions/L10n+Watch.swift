@@ -45,5 +45,22 @@ extension L10n {
         }
         public static var briefingSystemPrompt: String { watchTr("watch.briefing.systemPrompt") }
         public static var briefingFailed: String { watchTr("watch.briefing.failed") }
+
+        // ─── watchOS 功能占位文案（Task 5：7 处 #if os(watchOS) 物理隔离） ─────────
+
+        /// TaskCenterView watchOS 占位提示
+        public static var taskCenterPlaceholder: String { watchTr("watch.placeholder.taskCenter") }
+        /// PromptWorkshopView watchOS 占位提示
+        public static var promptWorkshopPlaceholder: String { watchTr("watch.placeholder.promptWorkshop") }
+        /// GraphCanvasView watchOS 占位提示
+        public static var graphCanvasPlaceholder: String { watchTr("watch.placeholder.graphCanvas") }
+        /// Graph3DComponents watchOS 占位提示
+        public static var graph3DPlaceholder: String { watchTr("watch.placeholder.graph3D") }
+        /// IngestView watchOS 占位提示
+        public static var ingestPlaceholder: String { watchTr("watch.placeholder.ingest") }
+        /// PDFReaderView watchOS 占位提示
+        public static var pdfReaderPlaceholder: String { watchTr("watch.placeholder.pdfReader") }
+        /// OCRScanView watchOS 占位提示
+        public static var ocrScanPlaceholder: String { watchTr("watch.placeholder.ocrScan") }
     }
 }

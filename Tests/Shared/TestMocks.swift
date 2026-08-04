@@ -289,6 +289,14 @@ extension XCTestCase {
         // ⚠️ 必须在 Router.shared 之前注册：Router.init() 依赖 KeyStoreProtocol 恢复上次选中的 Tab。
         ServiceContainer.shared.register(UserDefaultsKeyStore.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
 
+        // KeychainService.testOverride — 统一注入 MockKeychainService
+        // 绕过 CI 模拟器环境 errSecMissingEntitlement -34018 限制
+        // 避免 LLMConfigStore.loadAPIKey / NetworkClient / PluginLoader 调用真实 Keychain 失败
+        // 导致测试间状态污染（flaky test）
+        if KeychainService.testOverride == nil {
+            KeychainService.testOverride = MockKeychainService()
+        }
+
         ServiceContainer.shared.register(HapticFeedback.shared, for: HapticFeedback.self)
         #if !os(watchOS)
         ServiceContainer.shared.register(Router.shared, for: Router.self)

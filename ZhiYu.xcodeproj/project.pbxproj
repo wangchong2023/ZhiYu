@@ -190,6 +190,7 @@
 		164E9BDCE80EF2BB004E22F3 /* ContextReranker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA9609E0D4C687C9B10DD76 /* ContextReranker.swift */; };
 		16B586064FB12B43B63B2F2B /* DesignSystem+Radius.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10230744FA21B40BB6D04E5 /* DesignSystem+Radius.swift */; };
 		16D1B5083C0263EC52B70AB3 /* TokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757C3CA17076EBB0FAE7FACA /* TokenManager.swift */; };
+		16FBBC5A728BCB10F69B5742 /* WatchFeaturePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E2C10CE4399816407B00E5 /* WatchFeaturePlaceholderView.swift */; };
 		17355D096E329A643A976F20 /* ZhiYuDomainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500D999F3B54590E19A19ADE /* ZhiYuDomainTests.swift */; };
 		1776E8DF47495EA495518C72 /* QuickLookPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573791390C21B384E83649DF /* QuickLookPreview.swift */; };
 		17999DEE831EA86E8E563A3B /* DesignSystem+Timeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0BAE97AC67CA8A7518F85B6 /* DesignSystem+Timeline.swift */; };
@@ -1077,6 +1078,7 @@
 		8F0A4326D98C356A10CE7E07 /* LLMAIServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C578383EA6FA07ACEBDCB0 /* LLMAIServicesTests.swift */; };
 		8F1775D51FDA3A8B932CDD69 /* 个人知识管理方法论.md in Resources */ = {isa = PBXBuildFile; fileRef = 22EB75DD5B601F8843B9FC1B /* 个人知识管理方法论.md */; };
 		8F2EBBDA040CD0EC11F14AB4 /* mermaid.min.js in Resources */ = {isa = PBXBuildFile; fileRef = FBF2590EE0EB9FB9F25270DE /* mermaid.min.js */; };
+		8F426BCBE3AC81000EA043BB /* PlatformTraits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8737B3F3C18F17760EF3BA9D /* PlatformTraits.swift */; };
 		8F82DD456DB541D9E4249EEC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9112DA748F39CA5018D59610 /* Assets.xcassets */; };
 		8F980A27845DA44581FDA09B /* TagCapsuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300DA47B34718CA59D0F7361 /* TagCapsuleView.swift */; };
 		8F9E21CDB87EF7919AD7DE84 /* AppAILoadingSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F5A28F8655CD6D659AC66F /* AppAILoadingSkeleton.swift */; };
@@ -1396,6 +1398,7 @@
 		B99CCA790A8DF4947C98F655 /* ViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12C18036855353BBC7EC2DE /* ViewFactory.swift */; };
 		B9C4C05D6C4B7B4F9BB6B635 /* L10n+Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4931D387A2AB3FA400531A2C /* L10n+Accessibility.swift */; };
 		B9C776ED838A302C592D2CC0 /* DesignSystem+Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0591F3A92EFAC5ED04876559 /* DesignSystem+Vault.swift */; };
+		B9CAA7276D98AB6E194863FE /* WatchFeaturePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E2C10CE4399816407B00E5 /* WatchFeaturePlaceholderView.swift */; };
 		B9D16417AF9FF2D127810DCA /* PDFModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 184351F1861A0151EBFF16E5 /* PDFModels.swift */; };
 		BA6E690730ABC49072E493EC /* LintFixSuggestionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD9DD73E8FDB75E331E4F3C /* LintFixSuggestionSheet.swift */; };
 		BAC304D07EC71878589373E4 /* MCSessionDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3644C00B813FD7E1DED4BD9 /* MCSessionDelegateImpl.swift */; };
@@ -1466,6 +1469,7 @@
 		C30A16E38C69FAC142883ADC /* L10n+Creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37EA9F105DC32BF211B76A17 /* L10n+Creation.swift */; };
 		C3133F1D02E533EDA7BAE90D /* L10n+Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3844A41892DB53426CB2F51 /* L10n+Search.swift */; };
 		C33C55315B18F24597C47586 /* StandardSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298B4CF76CE459BE937A504F /* StandardSection.swift */; };
+		C340ED804A1ACBCBF2F1BC11 /* WatchFeaturePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E2C10CE4399816407B00E5 /* WatchFeaturePlaceholderView.swift */; };
 		C359994653430E3C599FA62B /* OnDeviceLLMServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FC4941CE7D0A07553410AC /* OnDeviceLLMServiceProtocol.swift */; };
 		C36555AB067614DE5163E0B3 /* Character+CJK.swift in Sources */ = {isa = PBXBuildFile; fileRef = D350E229755AD1731A238BC9 /* Character+CJK.swift */; };
 		C3719307A0416346C25432D5 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F64C26710A9103D87019759 /* LocalizationTests.swift */; };
@@ -2078,6 +2082,7 @@
 		14AE12868D60824B4EA7167E /* LLMRefactorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMRefactorService.swift; sourceTree = "<group>"; };
 		14C7C0384FE55208DA52C875 /* JSONRepairProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRepairProcessorTests.swift; sourceTree = "<group>"; };
 		14D48188E888F2528439D834 /* PluginDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginDataStore.swift; sourceTree = "<group>"; };
+		14E2C10CE4399816407B00E5 /* WatchFeaturePlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchFeaturePlaceholderView.swift; sourceTree = "<group>"; };
 		14EAB7D9C7DA9E242EBC7556 /* LLMManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMManifest.swift; sourceTree = "<group>"; };
 		14EBA84BD7ADE0F2ACB754AA /* PageDetailContentSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageDetailContentSection.swift; sourceTree = "<group>"; };
 		15160A2FC384F4D546D3C416 /* ModelLabLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabLogic.swift; sourceTree = "<group>"; };
@@ -3219,6 +3224,7 @@
 			children = (
 				06B6F26341300A6C681D2CD3 /* CrossPlatform.swift */,
 				8737B3F3C18F17760EF3BA9D /* PlatformTraits.swift */,
+				14E2C10CE4399816407B00E5 /* WatchFeaturePlaceholderView.swift */,
 			);
 			path = Adaptor;
 			sourceTree = "<group>";
@@ -7367,6 +7373,7 @@
 				D5D46F4A6B69D7902D74D81C /* VoiceAudioPlayerView.swift in Sources */,
 				18FE5DCDBB94A767D671ACD1 /* VoiceNoteComponents.swift in Sources */,
 				8DDAE2B3780A816397064723 /* VoiceNoteView.swift in Sources */,
+				C340ED804A1ACBCBF2F1BC11 /* WatchFeaturePlaceholderView.swift in Sources */,
 				7A5CD70DC10C779CC08FDF82 /* WatchHapticService.swift in Sources */,
 				7C182C9C81EED54D43ACF869 /* WatchSyncProtocol.swift in Sources */,
 				824BC72E48A985BFD3C368BC /* WeChatAuthStrategy.swift in Sources */,
@@ -8112,6 +8119,7 @@
 				82486A338B89B21A3DFA14BE /* VoiceAudioPlayerView.swift in Sources */,
 				8B2DDF37A27018A7C780F4A0 /* VoiceNoteComponents.swift in Sources */,
 				04814A05C3EFE2AAF80C5D72 /* VoiceNoteView.swift in Sources */,
+				16FBBC5A728BCB10F69B5742 /* WatchFeaturePlaceholderView.swift in Sources */,
 				410AE6E5B0F1B93C4C0144C1 /* WatchHapticService.swift in Sources */,
 				E838F851A28328577A321B0E /* WatchSyncProtocol.swift in Sources */,
 				F860039ED3BBA979896FED19 /* WeChatAuthStrategy.swift in Sources */,
@@ -8255,6 +8263,7 @@
 				6035B42CBD5DDDF35A761093 /* PasteboardProtocol.swift in Sources */,
 				2DB6378DE8EC10B1A8FA089A /* PlatformCapabilities.swift in Sources */,
 				9DCFEA0F5DCDF8C8F72CB120 /* PlatformRegistrar.swift in Sources */,
+				8F426BCBE3AC81000EA043BB /* PlatformTraits.swift in Sources */,
 				508360D430B249BF14249B99 /* PromptConstants.swift in Sources */,
 				8D8A17A51A1C4128D51FE002 /* RAGModels.swift in Sources */,
 				F7F3B1BDD49A898BEB5563C7 /* ReminderServiceProtocol.swift in Sources */,
@@ -8288,6 +8297,7 @@
 				AFCDB944EBEE5B23A0ED6BB9 /* WatchBriefingView.swift in Sources */,
 				B52A30B430525A4046F5A013 /* WatchDeviceInfoService.swift in Sources */,
 				4DEC2A1B9F4E3D68378B7BD5 /* WatchDictationView.swift in Sources */,
+				B9CAA7276D98AB6E194863FE /* WatchFeaturePlaceholderView.swift in Sources */,
 				54C68F073A2ED48CCD784E4D /* WatchFlashView.swift in Sources */,
 				D92CE811DD798B6A3AA6B22D /* WatchHapticService.swift in Sources */,
 				31D84EB7707D9194475B9DCE /* WatchModuleRegistrar.swift in Sources */,

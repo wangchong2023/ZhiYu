@@ -12,19 +12,10 @@ import SwiftUI
 import PhotosUI
 
 // MARK: - OCR Scanner View
-#if os(watchOS)
-@MainActor
-struct OCRScanView: View {
-    var onFinish: ((String, String, Data?) -> Void)?
-    
-    var body: some View {
-        Text(L10n.Common.Status.simulatorNotSupported)
-    }
-}
-#else
 @MainActor
 struct OCRScanView: View {
     @Environment(IngestStore.self) var ingestStore
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImage: AppImage?
     @State private var recognizedText = ""
@@ -44,82 +35,86 @@ struct OCRScanView: View {
     var onFinish: ((String, String, Data?) -> Void)?
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: DesignSystem.giant) {
-                    // Image picker area
-                    OCRImagePickerArea(
-                        selectedImage: selectedImage,
-                        isProcessing: isProcessing,
-                        selectedPhoto: selectedPhoto,
-                        onPhotoSelected: { loadImage(from: $0) },
-                        onStartRecognition: startRecognition
-                    )
-
-                    // Recognized text
-                    if !recognizedText.isEmpty {
-                        OCRResultDisplay(
-                            recognizedText: $recognizedText,
-                            onCopy: copyToClipboard
+        if idiom == .watch {
+            WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.ocrScanPlaceholder)
+        } else {
+            NavigationStack {
+                ScrollView {
+                    VStack(spacing: DesignSystem.giant) {
+                        // Image picker area
+                        OCRImagePickerArea(
+                            selectedImage: selectedImage,
+                            isProcessing: isProcessing,
+                            selectedPhoto: selectedPhoto,
+                            onPhotoSelected: { loadImage(from: $0) },
+                            onStartRecognition: startRecognition
                         )
-                    }
 
-                    // Save to 知识库 (Now just finishes and returns data)
-                    if !recognizedText.isEmpty {
-                        Button(action: {
-                            let imageData = selectedImage?.jpegData(compressionQuality: 0.9)
-                    onFinish?(targetTitle, recognizedText, imageData)
-                            dismiss()
-                        }) {
-                            HStack {
-                                Image(systemName: DesignSystem.Icons.squareAndPencil)
-                                Text(L10n.Ingest.OCR.confirmAndEdit)
-                            }
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.appAccent)
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                        // Recognized text
+                        if !recognizedText.isEmpty {
+                            OCRResultDisplay(
+                                recognizedText: $recognizedText,
+                                onCopy: copyToClipboard
+                            )
                         }
-                        .padding(.top, 10)
+
+                        // Save to 知识库 (Now just finishes and returns data)
+                        if !recognizedText.isEmpty {
+                            Button(action: {
+                                let imageData = selectedImage?.jpegData(compressionQuality: 0.9)
+                                onFinish?(targetTitle, recognizedText, imageData)
+                                dismiss()
+                            }) {
+                                HStack {
+                                    Image(systemName: DesignSystem.Icons.squareAndPencil)
+                                    Text(L10n.Ingest.OCR.confirmAndEdit)
+                                }
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.appAccent)
+                                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                            }
+                            .padding(.top, 10)
+                        }
+                    }
+                    .padding()
+                }
+                .scrollContentBackground(.hidden)
+                .background(PageBackgroundView(accentColor: .appAccent))
+                .navigationTitle(L10n.Ingest.OCR.title)
+                .appNavigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(L10n.Common.done) {
+                            dismiss()
+                        }
                     }
                 }
-                .padding()
-            }
-            .scrollContentBackground(.hidden)
-            .background(PageBackgroundView(accentColor: .appAccent))
-            .navigationTitle(L10n.Ingest.OCR.title)
-.appNavigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.done) {
-                        dismiss()
+                .onChange(of: selectedPhoto) { _, newValue in
+                    loadImage(from: newValue)
+                }
+                .sheet(isPresented: $showIconPicker) {
+                    IconPickerView(selectedIcon: $targetCustomIcon)
+                }
+                .alert(L10n.Ingest.OCR.scanFailed, isPresented: $showOCRError) {
+                    Button(L10n.Common.ok, role: .cancel) {}
+                } message: {
+                    Text(ocrErrorMessage)
+                }
+                .alert(L10n.Editor.addTag, isPresented: $showAddTagInput) {
+                    TextField(L10n.Editor.enterTag, text: $newTagText)
+                        .accessibilityIdentifier("enterTagName")
+                    Button(L10n.Ingest.OCR.addTag) {
+                        commitNewTag()
                     }
+                    Button(L10n.Common.cancel, role: .cancel) {
+                        newTagText = ""
+                    }
+                } message: {
+                    Text(L10n.Editor.enterTag)
                 }
-            }
-            .onChange(of: selectedPhoto) { _, newValue in
-                loadImage(from: newValue)
-            }
-            .sheet(isPresented: $showIconPicker) {
-                IconPickerView(selectedIcon: $targetCustomIcon)
-            }
-            .alert(L10n.Ingest.OCR.scanFailed, isPresented: $showOCRError) {
-                Button(L10n.Common.ok, role: .cancel) {}
-            } message: {
-                Text(ocrErrorMessage)
-            }
-            .alert(L10n.Editor.addTag, isPresented: $showAddTagInput) {
-                TextField(L10n.Editor.enterTag, text: $newTagText)
-                    .accessibilityIdentifier("enterTagName")
-                Button(L10n.Ingest.OCR.addTag) {
-                    commitNewTag()
-                }
-                Button(L10n.Common.cancel, role: .cancel) {
-                    newTagText = ""
-                }
-            } message: {
-                Text(L10n.Editor.enterTag)
             }
         }
     }
@@ -191,4 +186,3 @@ struct OCRScanView: View {
         newTagText = ""
     }
 }
-#endif

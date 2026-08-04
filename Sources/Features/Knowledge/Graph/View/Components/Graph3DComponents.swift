@@ -18,13 +18,9 @@ import AppKit
 
 // MARK: - Tappable Scene View Representable
 /// SceneKit 视图的可点击封装，支持节点点击检测
-#if os(watchOS)
-struct TappableSceneView: View {
-    let scene: SCNScene?
-    let onNodeTap: (UUID?) -> Void
-    var body: some View { Text("Not Supported") }
-}
-#elseif canImport(UIKit)
+/// - Note: watchOS 不编译此文件（Features 层不在 watchOS target sources），
+///   watchOS 端的 3D 图谱占位由调用方 Graph3DView 通过 WatchFeaturePlaceholderView 处理。
+#if canImport(UIKit)
 @MainActor
 /// SceneKit 场景包装器组件
 /// 负责在 SwiftUI 中嵌入 3D 渲染引擎，并实现基于点击位置的 3D 节点命中测试（Hit Test）以及附加 0.005 阻尼的自定义相机拖拽/缩放手势。

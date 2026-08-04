@@ -252,6 +252,8 @@ targets:
       - path: Sources/Shared/DesignSystem/Styles/PageType+UI.swift
       # 跨平台适配
       - path: Sources/Shared/Platforms/Adaptor/CrossPlatform.swift
+      - path: Sources/Shared/Platforms/Adaptor/PlatformTraits.swift
+      - path: Sources/Shared/Platforms/Adaptor/WatchFeaturePlaceholderView.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.watch

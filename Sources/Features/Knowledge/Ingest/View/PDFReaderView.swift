@@ -15,64 +15,54 @@ import PDFKit
 import UniformTypeIdentifiers
 
 // MARK: - PDF Library View
-#if os(watchOS)
-@MainActor
-struct PDFLibraryView: View {
-    var body: some View {
-        Text(L10n.Common.Status.simulatorNotSupported)
-    }
-}
-
-struct PDFReaderView: View {
-    let documentInfo: PDFDocumentInfo
-    var body: some View {
-        Text(L10n.Common.Status.simulatorNotSupported)
-    }
-}
-#else
 @MainActor
 struct PDFLibraryView: View {
     @Environment(AppStore.self) var store
     @Environment(IngestStore.self) var ingestStore
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var documents: [PDFDocumentInfo] = []
     @State private var showFilePicker = false
     @State private var selectedDoc: PDFDocumentInfo?
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if documents.isEmpty {
-                    PDFLibraryEmptyView(onAdd: { showFilePicker = true })
-                } else {
-                    PDFDocumentListView(
-                        documents: documents,
-                        onSelect: { selectedDoc = $0 },
-                        onDelete: deleteDocument,
-                        onIngest: ingestPDF
-                    )
-                }
-            }
-            .navigationTitle(L10n.Ingest.PDF.title)
-            .toolbar {
-                ToolbarItem(placement: .automatic) {
-                    Button(action: { showFilePicker = true }) {
-                        Image(systemName: DesignSystem.Icons.plus)
+        if idiom == .watch {
+            WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.pdfReaderPlaceholder)
+        } else {
+            NavigationStack {
+                Group {
+                    if documents.isEmpty {
+                        PDFLibraryEmptyView(onAdd: { showFilePicker = true })
+                    } else {
+                        PDFDocumentListView(
+                            documents: documents,
+                            onSelect: { selectedDoc = $0 },
+                            onDelete: deleteDocument,
+                            onIngest: ingestPDF
+                        )
                     }
                 }
-            }
-            .fileImporter(
-                isPresented: $showFilePicker,
-                allowedContentTypes: [.pdf],
-                allowsMultipleSelection: false
-            ) { result in
-                handleFileImport(result)
-            }
-            .sheet(item: $selectedDoc) { doc in
-                PDFReaderView(documentInfo: doc)
-            }
-            .onAppear {
-                Task {
-                    documents = await ingestStore.loadPDFDocuments()
+                .navigationTitle(L10n.Ingest.PDF.title)
+                .toolbar {
+                    ToolbarItem(placement: .automatic) {
+                        Button(action: { showFilePicker = true }) {
+                            Image(systemName: DesignSystem.Icons.plus)
+                        }
+                    }
+                }
+                .fileImporter(
+                    isPresented: $showFilePicker,
+                    allowedContentTypes: [.pdf],
+                    allowsMultipleSelection: false
+                ) { result in
+                    handleFileImport(result)
+                }
+                .sheet(item: $selectedDoc) { doc in
+                    PDFReaderView(documentInfo: doc)
+                }
+                .onAppear {
+                    Task {
+                        documents = await ingestStore.loadPDFDocuments()
+                    }
                 }
             }
         }
@@ -193,6 +183,7 @@ struct PDFReaderView: View {
     let documentInfo: PDFDocumentInfo
     @Environment(AppStore.self) var store
     @Environment(IngestStore.self) var ingestStore
+    @Environment(\.interfaceIdiom) private var idiom
 
     @State private var currentPage = 0
     @State private var highlights: [PDFHighlight] = []
@@ -205,42 +196,46 @@ struct PDFReaderView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                PageBackgroundView(accentColor: .appAccent)
-                    .ignoresSafeArea()
+        if idiom == .watch {
+            WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.pdfReaderPlaceholder)
+        } else {
+            NavigationStack {
+                ZStack {
+                    PageBackgroundView(accentColor: .appAccent)
+                        .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    pdfContent
-                    bottomBar
-                }
-            }
-            .navigationTitle(documentInfo.title)
-.appNavigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItemGroup(placement: .automatic) {
-                    Button(action: { showHighlightPanel.toggle() }) {
-                        Image(systemName: showHighlightPanel ? DesignSystem.Icons.highlighterFill : DesignSystem.Icons.highlighter)
-                    }
-
-                    Button(action: { showIngestSheet = true }) {
-                        Image(systemName: DesignSystem.Icons.arrowDownDoc)
+                    VStack(spacing: 0) {
+                        pdfContent
+                        bottomBar
                     }
                 }
-            }
-            .sheet(isPresented: $showIngestSheet) {
-                PDFIngestSheet(documentInfo: documentInfo, ingestStore: ingestStore, pdfDocument: pdfDocument)
-            }
-        }
-        .onAppear {
-            Task {
-                if let url = await ingestStore.loadPDFDocument(fileName: documentInfo.fileName) {
-                    #if canImport(PDFKit)
-                    pdfDocument = PDFDocument(url: url)
-                    #endif
+                .navigationTitle(documentInfo.title)
+                .appNavigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItemGroup(placement: .automatic) {
+                        Button(action: { showHighlightPanel.toggle() }) {
+                            Image(systemName: showHighlightPanel ? DesignSystem.Icons.highlighterFill : DesignSystem.Icons.highlighter)
+                        }
+
+                        Button(action: { showIngestSheet = true }) {
+                            Image(systemName: DesignSystem.Icons.arrowDownDoc)
+                        }
+                    }
                 }
-                highlights = documentInfo.highlights
-                currentPage = documentInfo.lastReadPage
+                .sheet(isPresented: $showIngestSheet) {
+                    PDFIngestSheet(documentInfo: documentInfo, ingestStore: ingestStore, pdfDocument: pdfDocument)
+                }
+            }
+            .onAppear {
+                Task {
+                    if let url = await ingestStore.loadPDFDocument(fileName: documentInfo.fileName) {
+                        #if canImport(PDFKit)
+                        pdfDocument = PDFDocument(url: url)
+                        #endif
+                    }
+                    highlights = documentInfo.highlights
+                    currentPage = documentInfo.lastReadPage
+                }
             }
         }
     }
@@ -368,5 +363,3 @@ struct PDFReaderView: View {
         store.addLog(action: .highlight, target: documentInfo.title, details: L10n.Ingest.pdfPageNumber(currentPage + 1))
     }
 }
-
-#endif

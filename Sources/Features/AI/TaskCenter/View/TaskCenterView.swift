@@ -18,196 +18,201 @@ struct TaskCenterView: View {
     @Environment(AppStore.self) var store
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(Router.self) var router
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var showClearConfirm = false
     // 跟踪当前选中的过滤任务类型，为 nil 时展示全部分类
     @State private var selectedFilterType: TaskType?
     
     var body: some View {
-        Group {
-            if taskCenter.tasks.isEmpty {
-                ScrollView {
-                    VStack(spacing: DesignSystem.loosePadding) {
-                        statusDashboard
-                            .padding(.horizontal, DesignSystem.Task.dashboardPadding)
-                        emptyState
-                            .padding(.top, DesignSystem.loosePadding)
-                    }
-                    // 追加底部安全间距，确保在小屏或带底部 TabBar 的机型上，描述文字可以完全滚上来
-                    .padding(.bottom, DesignSystem.huge)
-                }
-            } else {
-                List {
-                    Section {
-                        statusDashboard
-                            .padding(.vertical, DesignSystem.tightPadding)
-                    } header: {
-                        Text(L10n.AI.Task.categories)
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.appText)
-                    }
-                    
-                    Section {
-                        // 根据选中的过滤条件筛选展示的 Section 分类
-                        ForEach(TaskType.allCases.filter { selectedFilterType == nil || $0 == selectedFilterType }, id: \.self) { type in
-                            let metrics = taskCenter.metrics(for: type)
-                            let tasks = taskCenter.tasks.filter { $0.type == type }
-                            
-                            #if os(watchOS)
-                            Section {
-                                if tasks.isEmpty {
-                                    Text(L10n.AI.Task.noHistory)
-                                        .font(.caption)
-                                        .foregroundStyle(.appSecondary)
-                                        .padding(.vertical, DesignSystem.tightPadding)
-                                } else {
-                                    ForEach(tasks.sorted(by: { $0.startTime > $1.startTime })) { task in
-                                        TaskRow(task: task)
-                                            .contentShape(Rectangle())
-                                            .onTapGesture {
-                                                taskCenter.markAsRead(task.id)
-                                                if let pageID = task.associatedPageID {
-                                                    router.navigateToPage(id: pageID)
-                                                }
-                                            }
-                                    }
-                                    .onDelete { indices in
-                                        let sortedTasks = tasks.sorted(by: { $0.startTime > $1.startTime })
-                                        indices.forEach { index in
-                                            taskCenter.removeTask(sortedTasks[index].id)
-                                        }
-                                    }
-                                }
-                            } header: {
-                                HStack(spacing: DesignSystem.medium) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
-                                            .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
-                                        Image(systemName: type.icon)
-                                            .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
-                                            .foregroundStyle(taskColor(for: type))
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                                        Text(type.localizedName)
-                                            .font(.subheadline.bold())
-                                        Text(L10n.AI.Task.historyCount(metrics.total))
-                                            .font(.caption2)
-                                            .foregroundStyle(.appSecondary)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    if metrics.running > 0 {
-                                        HStack(spacing: DesignSystem.tiny) {
-                                            ProgressView()
-                                                .controlSize(.small)
-                                            Text("\(metrics.running)")
-                                                .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold, design: .rounded))
-                                                .foregroundStyle(taskColor(for: type))
-                                        }
-                                        .padding(.horizontal, DesignSystem.tightPadding)
-                                        .padding(.vertical, DesignSystem.tiny)
-                                        .background(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
-                                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                                    }
-                                }
-                                .padding(.vertical, DesignSystem.tiny)
-                            }
-                            #else
-                            DisclosureGroup {
-                                if tasks.isEmpty {
-                                    Text(L10n.AI.Task.noHistory)
-                                        .font(.caption)
-                                        .foregroundStyle(.appSecondary)
-                                        .padding(.vertical, DesignSystem.tightPadding)
-                                } else {
-                                    ForEach(tasks.sorted(by: { $0.startTime > $1.startTime })) { task in
-                                        TaskRow(task: task)
-                                            .contentShape(Rectangle())
-                                            .onTapGesture {
-                                                taskCenter.markAsRead(task.id)
-                                                if let pageID = task.associatedPageID {
-                                                    router.navigateToPage(id: pageID)
-                                                }
-                                            }
-                                    }
-                                    .onDelete { indices in
-                                        let sortedTasks = tasks.sorted(by: { $0.startTime > $1.startTime })
-                                        indices.forEach { index in
-                                            taskCenter.removeTask(sortedTasks[index].id)
-                                        }
-                                    }
-                                }
-                            } label: {
-                                HStack(spacing: DesignSystem.medium) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
-                                            .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
-                                        Image(systemName: type.icon)
-                                            .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
-                                            .foregroundStyle(taskColor(for: type))
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                                        Text(type.localizedName)
-                                            .font(.subheadline.bold())
-                                        Text(L10n.AI.Task.historyCount(metrics.total))
-                                            .font(.caption2)
-                                            .foregroundStyle(.appSecondary)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    if metrics.running > 0 {
-                                        HStack(spacing: DesignSystem.tiny) {
-                                            ProgressView()
-                                                .controlSize(.small)
-                                            Text("\(metrics.running)")
-                                                .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold, design: .rounded))
-                                                .foregroundStyle(taskColor(for: type))
-                                        }
-                                        .padding(.horizontal, DesignSystem.tightPadding)
-                                        .padding(.vertical, DesignSystem.tiny)
-                                        .background(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
-                                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                                    }
-                                }
-                                .padding(.vertical, DesignSystem.tiny)
-                            }
-                            #endif
+        if idiom == .watch {
+            WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.taskCenterPlaceholder)
+        } else {
+            Group {
+                if taskCenter.tasks.isEmpty {
+                    ScrollView {
+                        VStack(spacing: DesignSystem.loosePadding) {
+                            statusDashboard
+                                .padding(.horizontal, DesignSystem.Task.dashboardPadding)
+                            emptyState
+                                .padding(.top, DesignSystem.loosePadding)
                         }
-                    } header: {
-                        Text(L10n.AI.Task.listTitle)
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.appText)
-                            .textCase(nil)
+                        // 追加底部安全间距，确保在小屏或带底部 TabBar 的机型上，描述文字可以完全滚上来
+                        .padding(.bottom, DesignSystem.huge)
                     }
+                } else {
+                    List {
+                        Section {
+                            statusDashboard
+                                .padding(.vertical, DesignSystem.tightPadding)
+                        } header: {
+                            Text(L10n.AI.Task.categories)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.appText)
+                        }
+
+                        Section {
+                            // 根据选中的过滤条件筛选展示的 Section 分类
+                            ForEach(TaskType.allCases.filter { selectedFilterType == nil || $0 == selectedFilterType }, id: \.self) { type in
+                                let metrics = taskCenter.metrics(for: type)
+                                let tasks = taskCenter.tasks.filter { $0.type == type }
+
+                                #if os(watchOS)
+                                Section {
+                                    if tasks.isEmpty {
+                                        Text(L10n.AI.Task.noHistory)
+                                            .font(.caption)
+                                            .foregroundStyle(.appSecondary)
+                                            .padding(.vertical, DesignSystem.tightPadding)
+                                    } else {
+                                        ForEach(tasks.sorted(by: { $0.startTime > $1.startTime })) { task in
+                                            TaskRow(task: task)
+                                                .contentShape(Rectangle())
+                                                .onTapGesture {
+                                                    taskCenter.markAsRead(task.id)
+                                                    if let pageID = task.associatedPageID {
+                                                        router.navigateToPage(id: pageID)
+                                                    }
+                                                }
+                                        }
+                                        .onDelete { indices in
+                                            let sortedTasks = tasks.sorted(by: { $0.startTime > $1.startTime })
+                                            indices.forEach { index in
+                                                taskCenter.removeTask(sortedTasks[index].id)
+                                            }
+                                        }
+                                    }
+                                } header: {
+                                    HStack(spacing: DesignSystem.medium) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                                .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
+                                            Image(systemName: type.icon)
+                                                .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
+                                                .foregroundStyle(taskColor(for: type))
+                                        }
+
+                                        VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                                            Text(type.localizedName)
+                                                .font(.subheadline.bold())
+                                            Text(L10n.AI.Task.historyCount(metrics.total))
+                                                .font(.caption2)
+                                                .foregroundStyle(.appSecondary)
+                                        }
+
+                                        Spacer()
+
+                                        if metrics.running > 0 {
+                                            HStack(spacing: DesignSystem.tiny) {
+                                                ProgressView()
+                                                    .controlSize(.small)
+                                                Text("\(metrics.running)")
+                                                    .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold, design: .rounded))
+                                                    .foregroundStyle(taskColor(for: type))
+                                            }
+                                            .padding(.horizontal, DesignSystem.tightPadding)
+                                            .padding(.vertical, DesignSystem.tiny)
+                                            .background(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                                        }
+                                    }
+                                    .padding(.vertical, DesignSystem.tiny)
+                                }
+                                #else
+                                DisclosureGroup {
+                                    if tasks.isEmpty {
+                                        Text(L10n.AI.Task.noHistory)
+                                            .font(.caption)
+                                            .foregroundStyle(.appSecondary)
+                                            .padding(.vertical, DesignSystem.tightPadding)
+                                    } else {
+                                        ForEach(tasks.sorted(by: { $0.startTime > $1.startTime })) { task in
+                                            TaskRow(task: task)
+                                                .contentShape(Rectangle())
+                                                .onTapGesture {
+                                                    taskCenter.markAsRead(task.id)
+                                                    if let pageID = task.associatedPageID {
+                                                        router.navigateToPage(id: pageID)
+                                                    }
+                                                }
+                                        }
+                                        .onDelete { indices in
+                                            let sortedTasks = tasks.sorted(by: { $0.startTime > $1.startTime })
+                                            indices.forEach { index in
+                                                taskCenter.removeTask(sortedTasks[index].id)
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: DesignSystem.medium) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                                .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
+                                            Image(systemName: type.icon)
+                                                .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
+                                                .foregroundStyle(taskColor(for: type))
+                                        }
+
+                                        VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                                            Text(type.localizedName)
+                                                .font(.subheadline.bold())
+                                            Text(L10n.AI.Task.historyCount(metrics.total))
+                                                .font(.caption2)
+                                                .foregroundStyle(.appSecondary)
+                                        }
+
+                                        Spacer()
+
+                                        if metrics.running > 0 {
+                                            HStack(spacing: DesignSystem.tiny) {
+                                                ProgressView()
+                                                    .controlSize(.small)
+                                                Text("\(metrics.running)")
+                                                    .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold, design: .rounded))
+                                                    .foregroundStyle(taskColor(for: type))
+                                            }
+                                            .padding(.horizontal, DesignSystem.tightPadding)
+                                            .padding(.vertical, DesignSystem.tiny)
+                                            .background(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                                        }
+                                    }
+                                    .padding(.vertical, DesignSystem.tiny)
+                                }
+                                #endif
+                            }
+                        } header: {
+                            Text(L10n.AI.Task.listTitle)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.appText)
+                                .textCase(nil)
+                        }
+                    }
+                    #if !os(watchOS)
+                    .listStyle(.insetGrouped)
+                    #endif
                 }
-                #if !os(watchOS)
-                .listStyle(.insetGrouped)
-                #endif
             }
-        }
-        .appSubPageToolbar(title: L10n.AI.Task.centerTitle)
-        .scrollContentBackground(.hidden)
-        .background(PageBackgroundView(accentColor: .appAccent))
-        .onAppear {
-            taskCenter.markAllAsRead()
-        }
-        .confirmationDialog(
-            L10n.AI.Task.clearConfirmTitle,
-            isPresented: $showClearConfirm,
-            titleVisibility: .visible
-        ) {
-            Button(L10n.Common.Misc.clearAll, role: .destructive) {
-                taskCenter.reset()
-                HapticFeedback.shared.trigger(.success)
+            .appSubPageToolbar(title: L10n.AI.Task.centerTitle)
+            .scrollContentBackground(.hidden)
+            .background(PageBackgroundView(accentColor: .appAccent))
+            .onAppear {
+                taskCenter.markAllAsRead()
             }
-            Button(L10n.Common.cancel, role: .cancel) {}
-        } message: {
-            Text(L10n.AI.Task.clearConfirmMessage)
+            .confirmationDialog(
+                L10n.AI.Task.clearConfirmTitle,
+                isPresented: $showClearConfirm,
+                titleVisibility: .visible
+            ) {
+                Button(L10n.Common.Misc.clearAll, role: .destructive) {
+                    taskCenter.reset()
+                    HapticFeedback.shared.trigger(.success)
+                }
+                Button(L10n.Common.cancel, role: .cancel) {}
+            } message: {
+                Text(L10n.AI.Task.clearConfirmMessage)
+            }
         }
     }
     

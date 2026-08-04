@@ -55,13 +55,11 @@ struct IngestView: View {
         } message: {
             Text(L10n.Common.configureAI)
         }
-        #if !os(watchOS)
         .fileImporter(
             isPresented: $coordinator.showFileImporter,
             allowedContentTypes: [.pdf, .text, .plainText, UTType("net.daringfireball.markdown")].compactMap({$0}),
             allowsMultipleSelection: true
         ) { coordinator.handleFileImport($0) }
-        #endif
         .sheet(isPresented: $coordinator.showVoiceNote, onDismiss: { if !coordinator.newTitle.isEmpty { coordinator.showManualForm = true } }) {
             VoiceNoteView(onFinish: { title, text, audioURL in
                 coordinator.sourceHint = .voice
@@ -238,16 +236,12 @@ struct IngestView: View {
                 }
                 Section(header: Text(L10n.Creation.content)) {
                     Group {
-                        #if os(watchOS)
-                        TextField("", text: $coordinator.newContent, axis: .vertical)
-                        #else
                         // 这里使用全局环境注入的 appEnv 来判断交互样式
                         if ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self).interactionStyle == InteractionStyle.crown {
                             TextField("", text: $coordinator.newContent, axis: .vertical)
                         } else {
                             TextEditor(text: $coordinator.newContent)
                         }
-                        #endif
                     }.frame(minHeight: DesignSystem.Metrics.heroValueSize * 7.7)
                 }
             }
