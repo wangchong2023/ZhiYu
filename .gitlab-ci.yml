@@ -1,17 +1,18 @@
 # ============================================================
-# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v3.0.0)
+# ZhiYu iOS/macOS/watchOS GitLab CI/CD 流水线 (v3.1.0)
 #
 # 运行环境: macOS 宿主机 Shell Runner（tagged: macos, shell, xcode, arm64）
 #   - 必须在安装了 Xcode 的 Mac 上运行
 #   - 使用 GitLab Shell Runner，不需要 Docker
 #
-# 架构: prepare 生成项目 → artifacts 传递 → 串行构建 → 测试
+# 架构: prepare 生成项目 → artifacts 传递 → 串行构建 → 测试 → SonarQube
 #   - build-prepare 生成 ZhiYu.xcodeproj + Config/.env.local，通过 artifacts 传递
 #   - 后续 Job 通过 dependencies 下载 artifacts，跳过重复 checkout/生成
 #   - Shell Runner 单机部署，build Job 串行执行
+#   - SonarQube 在测试后运行，包含 slather 生成的覆盖率报告
 #
 # 执行顺序:
-#   analyze(静态分析 + SonarQube) → prepare → build(ios→macos→watchos) → test
+#   analyze(静态分析) → prepare → build(ios→macos→watchos) → test → sonar(SonarQube+覆盖率)
 #
 # 流程控制:
 #   仅 main/develop/release/* 分支触发完整流水线
@@ -23,6 +24,7 @@ stages:
   - prepare
   - build
   - test
+  - sonar
 
 default:
   tags:
@@ -49,16 +51,30 @@ static-analysis:
     - bash Tools/CI/run-code-static-analysis.sh
 
 sonarqube-analysis:
-  stage: analyze
+  stage: sonar
+  needs: [test-and-coverage]
+  dependencies: [test-and-coverage]
   allow_failure: false
   variables:
     SONAR_HOST_URL: "http://10.211.55.2:9000"
     GIT_DEPTH: "0"
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) 与 Quality Gate 硬阻断"
-    - sonar-scanner
-        -Dsonar.host.url=${SONAR_HOST_URL}
-        -Dsonar.qualitygate.wait=true
+    - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) + slather 覆盖率 + Quality Gate 硬阻断"
+    - |
+      if [ -f build/coverage/sonarqube-generic-coverage.xml ]; then
+        echo "  发现 slather 覆盖率报告，注入 sonar.coverageReportPaths"
+        sonar-scanner \
+          -Dsonar.host.url=${SONAR_HOST_URL} \
+          -Dsonar.coverageReportPaths=build/coverage/sonarqube-generic-coverage.xml \
+          -Dsonar.qualitygate.wait=true
+      else
+        echo "  ⚠️  未发现覆盖率报告，仅运行代码质量扫描"
+        sonar-scanner \
+          -Dsonar.host.url=${SONAR_HOST_URL} \
+          -Dsonar.qualitygate.wait=true
+      fi
 
 # ════════════════════════════════════════════════════════════
 # prepare — 生成 Xcode 工程（artifacts 传递给后续 Job）

@@ -1,0 +1,42 @@
+# ==============================================================================
+# 项目名称: ZhiYu (智宇 iOS 客户端)
+# 配置名称: .slather.yml
+# 配置功能: Slather 覆盖率工具配置，从 .xcresult 提取代码覆盖率，
+#           生成 SonarQube Generic Coverage XML 报告。
+# 参考文档: https://github.com/CocoaPods/slather
+# ==============================================================================
+
+# Xcode 工程
+xcodeproj: ZhiYu.xcodeproj
+scheme: ZhiYu
+configuration: Debug
+
+# 覆盖率服务: SonarQube XML 格式
+coverage_service: sonarqube_xml
+
+# 输出目录
+output_directory: build/coverage
+
+# 源码目录（仅扫描项目自有代码，排除第三方依赖）
+source_directory: Sources
+
+# 源码文件白名单（仅纳入 Sources 目录下的 Swift 文件）
+# slather 的 ignore 对 repo 外路径（../../opensrc/）无法 fnmatch，
+# 改用 source_files 白名单只包含项目源码
+source_files:
+  - "Sources/**/*.swift"
+
+# 忽略列表（不纳入覆盖率统计）
+ignore:
+  - "**/opensrc/**/*"        # 第三方开源库源码（GRDB/SnapshotTesting 等）
+  - "**/GRDB*"               # GRDB 数据库
+  - "**/ZIPFoundation*"      # ZIP 压缩库
+  - "**/SnapshotTesting*"    # 快照测试库
+  - "**/Lottie*"             # Lottie 动画库
+  - "**/MarkdownUI*"         # MarkdownUI 库
+  - "Packages/**/*"          # SPM 本地包（独立测试）
+  - "Sources/Platforms/**/*" # 平台适配层（条件编译，难以全覆盖）
+  - "Tests/**/*"             # 测试代码本身
+  - "**/*+Mock*"             # Mock 文件
+  - "**/*Preview*"           # SwiftUI Preview
+  - "**/AppEntry*"           # 入口点

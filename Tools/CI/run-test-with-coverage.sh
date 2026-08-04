@@ -80,6 +80,25 @@ if total_executable > 0:
     print(summary)
 " > "$COVERAGE_DIR/summary.txt"
     echo "  覆盖率摘要: $COVERAGE_DIR/summary.txt"
+
+    # ── 用 slather 生成 SonarQube Generic Coverage XML ──
+    # slather 从 .xcresult 提取行级覆盖率，生成 SonarQube 原生支持的 XML 格式
+    # 配置文件: .slather.yml (source_files 白名单仅含 Sources/**/*.swift)
+    echo "  生成 SonarQube 覆盖率报告 (slather)..."
+    DERIVED_DATA_DIR=$(dirname "$(dirname "$LATEST_XCRESULT")")
+    if command -v slather >/dev/null 2>&1; then
+        slather coverage --sonarqube-xml \
+            --output-directory "$COVERAGE_DIR" \
+            --build-directory "$DERIVED_DATA_DIR" \
+            ZhiYu.xcodeproj 2>&1 | grep -v "^warning:" || true
+        if [ -f "$COVERAGE_DIR/sonarqube-generic-coverage.xml" ]; then
+            echo "  ✅ SonarQube 覆盖率报告: $COVERAGE_DIR/sonarqube-generic-coverage.xml"
+        else
+            echo "  ⚠️  slather 未生成覆盖率报告，跳过"
+        fi
+    else
+        echo "  ⚠️  slather 未安装，跳过 SonarQube 覆盖率报告生成"
+    fi
 else
     echo "  ⚠️  未找到 .xcresult 测试结果包，跳过产物导出"
 fi
