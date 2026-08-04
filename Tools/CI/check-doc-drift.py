@@ -92,8 +92,12 @@ def scan_doc_file(md_file, registry, drift_issues):
     return refs_in_file
 
 
-def print_drift_report(drift_issues, total_refs, total_docs):
-    """打印文档漂移报告"""
+def print_drift_report(drift_issues, total_refs, total_docs, strict=False):
+    """打印文档漂移报告
+
+    Args:
+        strict: True 时发现漂移返回退出码 1（熔断 CI），False 时返回 0（WARNING）
+    """
     print(f"   扫描 {total_docs} 个文档，发现 {total_refs} 个代码符号引用\n")
 
     if not drift_issues:
@@ -115,13 +119,20 @@ def print_drift_report(drift_issues, total_refs, total_docs):
 
     print("=" * REPORT_SEPARATOR_WIDTH)
     print(f"⚠️  共 {total_ghosts} 个幽灵引用，分布于 {len(drift_issues)} 个文档。")
+    if strict:
+        print("❌ [Doc Drift Checker] --strict 模式：发现漂移，熔断 CI！")
+        return 1
     print("   这些引用可能指向已删除/重命名的类型，建议更新文档。")
     print("   （本检查为 WARNING，不熔断 CI）")
     return 0
 
 
-def scan_doc_drift():
-    """扫描文档漂移（使用 ExemptionRegistry 动态白名单）"""
+def scan_doc_drift(strict=False):
+    """扫描文档漂移（使用 ExemptionRegistry 动态白名单）
+
+    Args:
+        strict: True 时发现漂移熔断 CI（退出码 1）
+    """
     print("📄 [Doc Drift Checker] 开始检测文档与代码漂移...\n")
 
     if not DOCS_DIR.exists():
@@ -152,8 +163,10 @@ def scan_doc_drift():
         total_docs += 1
         total_refs += scan_doc_file(md_file, registry, drift_issues)
 
-    return print_drift_report(drift_issues, total_refs, total_docs)
+    return print_drift_report(drift_issues, total_refs, total_docs, strict=strict)
 
 
 if __name__ == "__main__":
-    sys.exit(scan_doc_drift())
+    # --strict 参数：发现漂移时熔断 CI（退出码 1）
+    strict_mode = "--strict" in sys.argv
+    sys.exit(scan_doc_drift(strict=strict_mode))

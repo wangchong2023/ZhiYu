@@ -561,7 +561,7 @@ def _print_usage():
     print("  python3 exemption_registry.py is-exempt <symbol>  查询符号是否豁免")
 
 
-def _cmd_stats():
+def _cmd_stats(args=None):
     """stats 子命令：显示符号集统计"""
     registry = ExemptionRegistry()
     registry.load()
@@ -576,8 +576,13 @@ def _cmd_stats():
     return 0
 
 
-def _cmd_check_stale():
-    """check-stale 子命令：检测过期白名单项"""
+def _cmd_check_stale(args=None):
+    """check-stale 子命令：检测过期白名单项
+
+    Args:
+        args: 命令行参数，支持 --strict（发现过期项时返回退出码 1 熔断 CI）
+    """
+    strict = args is not None and "--strict" in args
     registry = ExemptionRegistry()
     registry.load()
     stale = registry.check_stale()
@@ -592,10 +597,13 @@ def _cmd_check_stale():
         print(f"    found_in: {item['found_in']}")
         print(f"    suggestion: {item['suggestion']}")
         print()
+    if strict:
+        print("❌ [Exemption Registry] --strict 模式：发现过期项，熔断 CI！")
+        return 1
     return 0
 
 
-def _cmd_rebuild_cache():
+def _cmd_rebuild_cache(args=None):
     """rebuild-cache 子命令：重建符号缓存"""
     print("🔄 [Exemption Registry] 重建符号缓存...")
     clear_cache()
@@ -645,9 +653,10 @@ def main():
         return 0
 
     cmd = sys.argv[INDEX_SUBCOMMAND]
+    cmd_args = sys.argv[2:]  # 子命令后的额外参数（如 --strict）
 
     if cmd in COMMAND_DISPATCH:
-        return COMMAND_DISPATCH[cmd]()
+        return COMMAND_DISPATCH[cmd](cmd_args)
     elif cmd == "is-exempt":
         return _cmd_is_exempt(sys.argv)
     else:

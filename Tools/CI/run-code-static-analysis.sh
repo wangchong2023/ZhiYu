@@ -80,6 +80,8 @@ run_parallel_task "Magic Strings Audit" "magic_strings" "python3 Tools/ios/audit
 run_parallel_task "File Headers" "file_headers" "python3 Tools/ios/check-code-file-headers.py" & pid26=$!
 run_parallel_task "DI Registration" "di_registration" "python3 Tools/ios/check-arch-di-registration.py" & pid27=$!
 run_parallel_task "Inject Safety" "inject_safety" "python3 Tools/ios/check-code-inject-safety.py --strict" & pid28=$!
+run_parallel_task "Doc Drift" "doc_drift" "python3 Tools/CI/check-doc-drift.py --strict" & pid29=$!
+run_parallel_task "Exemption Stale" "exemption_stale" "python3 Tools/CI/exemption_registry.py check-stale --strict" & pid30=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -109,6 +111,8 @@ wait $pid25 || EXIT_CODE=1
 wait $pid26 || EXIT_CODE=1
 wait $pid27 || EXIT_CODE=1
 wait $pid28 || EXIT_CODE=1
+wait $pid29 || EXIT_CODE=1
+wait $pid30 || EXIT_CODE=1
 
 
 echo ""

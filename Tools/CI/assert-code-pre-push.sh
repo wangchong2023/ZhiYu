@@ -117,9 +117,14 @@ else
     echo -e "     ${SKIP} .gitlab-ci.yml 不存在，跳过"; SKIPPED=$((SKIPPED + 1)); TOTAL=$((TOTAL + 1))
 fi
 
-# 1.7 免白名单过期检测（非阻断，WARNING）
+# 1.7 免白名单过期检测（阻断——过期白名单必须清理）
 run_check "免白名单过期检测" \
-    "python3 Tools/CI/exemption_registry.py check-stale" \
+    "python3 Tools/CI/exemption_registry.py check-stale --strict" \
+    || exit 1
+
+# 1.8 文档漂移检测（非阻断 WARNING——文档更新不紧急）
+run_check "文档漂移检测" \
+    "python3 Tools/CI/check-doc-drift.py" \
     "false"
 
 # quick 模式在此结束
