@@ -652,6 +652,7 @@
 		57FB0D21FBA9BA532A1E08E6 /* SearchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB86F371DB19E2B342D7DE0B /* SearchUITests.swift */; };
 		582B3E335C78BB94604472DB /* StubCollaborationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9421E8A5489BF6AA581410F /* StubCollaborationProvider.swift */; };
 		5848A8B2DD9EA45AECE7546C /* ChatRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5294BBBE0CB8D49758743DC3 /* ChatRunner.swift */; };
+		58858824CE2C59234B8A9AA4 /* PlatformTraits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8737B3F3C18F17760EF3BA9D /* PlatformTraits.swift */; };
 		58876310135D6DCFCAA9B72C /* InitialNotebookGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D205677C8591C14D5E90F726 /* InitialNotebookGenerator.swift */; };
 		5895BDA7C4E0F396F792F8BA /* SQLiteImportRecordRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E34D3DAA5E64E76B6EAD5F /* SQLiteImportRecordRepository.swift */; };
 		58A092B985FD8A1530CA9636 /* DashboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EBBDE21C963D718766B9C5F /* DashboardModels.swift */; };
@@ -1323,6 +1324,7 @@
 		B0363C176736A2E4441989C1 /* SwiftMarkdownASTCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800A07A53BD8A6A8220B8A40 /* SwiftMarkdownASTCleaner.swift */; };
 		B0A75C5CB88C4DA4C1705923 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20C0463C6EF23090BE0C1C9 /* FeedbackView.swift */; };
 		B0CECBDFACD0B0927A0EF99F /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09486FED6E6B19546A8A3329 /* Animations.swift */; };
+		B0D601A07144A20B6975AA96 /* PlatformTraitsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1012B40C4D80297C5AFD119B /* PlatformTraitsTests.swift */; };
 		B0E41B46CBDB7C9DFAC1D6DF /* RAGEvaluationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF056668E2CBDB478EB793AC /* RAGEvaluationView.swift */; };
 		B14CC9026EBBBE5E82A3153A /* DesignSystem+List.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47118FA1BF97E1F6B6062DB /* DesignSystem+List.swift */; };
 		B154FDDDF9D3334459C44DBF /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D61AF026EBC2F06927D94E2 /* SettingsStoreTests.swift */; };
@@ -1476,6 +1478,7 @@
 		C4361502507C0949C7F59E13 /* DocumentSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF75BCB64D000FB30D95F27 /* DocumentSanitizerTests.swift */; };
 		C436AF207DE7C3166B1764C2 /* VaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46D516CE1A420E59CF16E426 /* VaultTests.swift */; };
 		C438A5256536A3433E6C885C /* MultipeerCollaborationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753254F49750B91800CE0E1D /* MultipeerCollaborationProvider.swift */; };
+		C479E203CC25AFEACB4AC844 /* PlatformTraits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8737B3F3C18F17760EF3BA9D /* PlatformTraits.swift */; };
 		C4CACFCDC7632B149472D2E7 /* MarkdownProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A3D67D9E1192A5BD67C55A /* MarkdownProcessor.swift */; };
 		C4CFEAF6D602D83F0150E223 /* StubCollaborationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9421E8A5489BF6AA581410F /* StubCollaborationProvider.swift */; };
 		C4D4E3C0A9DE27322F47EAE8 /* PluginStatsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC3B06A7030A5C9B1F316E2 /* PluginStatsSection.swift */; };
@@ -2049,6 +2052,7 @@
 		0F36A62177F746897DB03A7E /* PPTXProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PPTXProcessorTests.swift; sourceTree = "<group>"; };
 		0F9CA1DB1D6F37438EDA555F /* ZoomableOCRImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableOCRImageView.swift; sourceTree = "<group>"; };
 		0FC23305832506739C0B68F2 /* LintIssueList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LintIssueList.swift; sourceTree = "<group>"; };
+		1012B40C4D80297C5AFD119B /* PlatformTraitsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformTraitsTests.swift; sourceTree = "<group>"; };
 		109C835FC55EB93B6370F66D /* VaultRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultRepository.swift; sourceTree = "<group>"; };
 		11185597A5722BBB27F014BE /* ModelLabMaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabMaskView.swift; sourceTree = "<group>"; };
 		116BDDFA071091AC3EE4F4ED /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -2531,6 +2535,7 @@
 		861FA93734BED9A4AF964966 /* Ingest.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Ingest.xcstrings; sourceTree = "<group>"; };
 		86671F0C49670F331F14C589 /* QuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
 		868F1602FB8033BE41909C4E /* MacInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = MacInfo.plist; sourceTree = "<group>"; };
+		8737B3F3C18F17760EF3BA9D /* PlatformTraits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformTraits.swift; sourceTree = "<group>"; };
 		873A8E11CFDC40B693220B80 /* WatchPlatformCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchPlatformCapabilities.swift; sourceTree = "<group>"; };
 		8806478BEB3457510590BF71 /* AppErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppErrorView.swift; sourceTree = "<group>"; };
 		8875D467843104E3432F0C04 /* PluginLoadUnloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginLoadUnloadTests.swift; sourceTree = "<group>"; };
@@ -3213,6 +3218,7 @@
 			isa = PBXGroup;
 			children = (
 				06B6F26341300A6C681D2CD3 /* CrossPlatform.swift */,
+				8737B3F3C18F17760EF3BA9D /* PlatformTraits.swift */,
 			);
 			path = Adaptor;
 			sourceTree = "<group>";
@@ -5232,6 +5238,14 @@
 			path = Coordinator;
 			sourceTree = "<group>";
 		};
+		CA66254E2C825114F217F07D /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				1012B40C4D80297C5AFD119B /* PlatformTraitsTests.swift */,
+			);
+			path = Platform;
+			sourceTree = "<group>";
+		};
 		CCF361125EDFE998B887A7FC /* Buttons */ = {
 			isa = PBXGroup;
 			children = (
@@ -5507,6 +5521,7 @@
 				665D948B5CC760CEBE0D669F /* Dashboard */,
 				EA3B69718BBA8BBEF35B05D6 /* Graph */,
 				96E0E500077DD4CCD7B75E41 /* Knowledge */,
+				CA66254E2C825114F217F07D /* Platform */,
 				D1406F0B91682F9DF13F2A6D /* Plugins */,
 				6B5098F27D58E77DA0A0B503 /* Security */,
 				DDDE9409B4C553F0D6BB9D57 /* Services */,
@@ -6600,6 +6615,7 @@
 				E2BBF8998FC7FA40DAB10081 /* OnboardingMilestoneTests.swift in Sources */,
 				646ED615BE4342C7F3E18206 /* PIIMaskerTests.swift in Sources */,
 				E457E4E522639F16CC0BB509 /* PPTXProcessorTests.swift in Sources */,
+				B0D601A07144A20B6975AA96 /* PlatformTraitsTests.swift in Sources */,
 				6B3AB6D18AD2DD250EBCBCF8 /* PluginCenterViewTests.swift in Sources */,
 				151E8EE0CE3E03E3AACD6E77 /* PluginLoadUnloadTests.swift in Sources */,
 				7DCB9982043893048951BBF0 /* PluginMarketServiceTests.swift in Sources */,
@@ -7145,6 +7161,7 @@
 				904435C0F8B5469DED84E233 /* PlatformModifiers.swift in Sources */,
 				E736AF99D300240BFA2F3BDF /* PlatformRegistrar.swift in Sources */,
 				F66BBEE48BC527A5C3E9D705 /* PlatformTextEditor.swift in Sources */,
+				58858824CE2C59234B8A9AA4 /* PlatformTraits.swift in Sources */,
 				5A8A67A1F263F40F299B5C65 /* PluginCenterView.swift in Sources */,
 				2E76D73E64D4536496D95FF0 /* PluginDataStore.swift in Sources */,
 				3B2EB891A2B1567CB638130B /* PluginDetailActionsSection.swift in Sources */,
@@ -7889,6 +7906,7 @@
 				8FF76950B0924FF464B4075F /* PlatformModifiers.swift in Sources */,
 				0A73C80E673B16A9D832014C /* PlatformRegistrar.swift in Sources */,
 				01BF4CECD43C806E1231CBD4 /* PlatformTextEditor.swift in Sources */,
+				C479E203CC25AFEACB4AC844 /* PlatformTraits.swift in Sources */,
 				E2617DE594276FD151FC7152 /* PluginCenterView.swift in Sources */,
 				3603E146C4CD6B38D18F9895 /* PluginDataStore.swift in Sources */,
 				BC1E85E1B81331BDC21ED5C3 /* PluginDetailActionsSection.swift in Sources */,
