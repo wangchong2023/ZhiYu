@@ -155,16 +155,7 @@ def collect_project_symbols():
         if not search_dir.exists():
             continue
         for swift_file in search_dir.rglob("*.swift"):
-            try:
-                content = swift_file.read_text(encoding="utf-8", errors="ignore")
-            except Exception:
-                continue
-
-            for pattern in [TYPE_PATTERN, FUNC_PATTERN, VAR_PATTERN, CASE_PATTERN]:
-                for m in pattern.finditer(content):
-                    # TYPE_PATTERN 有 2 个 group（第 2 个是名称），其余 1 个
-                    symbol = m.group(2) if pattern == TYPE_PATTERN else m.group(1)
-                    symbols.add(symbol)
+            symbols |= _collect_symbols_from_swift_file(swift_file)
 
     return symbols
 
@@ -173,12 +164,81 @@ def collect_project_symbols():
 # P3: Apple SDK 符号自动收集
 # ==============================================================================
 
+# SDK 提取超时（秒）
+SDK_PATH_TIMEOUT_SECONDS = 10
+SDK_EXTRACT_TIMEOUT_SECONDS = 30
+
+# SDK 候选列表（按优先级）
+SDK_CANDIDATES = ["macosx", "iphoneos", "iphonesimulator"]
+
+# 符号名合法性正则（仅 PascalCase/camelCase 标识符）
+VALID_SYMBOL_NAME = re.compile(r'^[A-Za-z][A-Za-z0-9_]*$')
+
+
+def _resolve_sdk_path():
+    """动态获取 SDK 路径，优先 macosx，兼容非 iOS 开发环境"""
+    for sdk_name in SDK_CANDIDATES:
+        try:
+            result = subprocess.run(
+                ["xcrun", "--sdk", sdk_name, "--show-sdk-path"],
+                capture_output=True, text=True,
+                timeout=SDK_PATH_TIMEOUT_SECONDS, check=False,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            continue
+    return None
+
+
+def _extract_module_symbols(module_name, sdk_path, tmpdir):
+    """提取单个模块的符号图，返回符号集合"""
+    symbols = set()
+    try:
+        result = subprocess.run(
+            [
+                "xcrun", "swift-symbolgraph-extract",
+                "-module-name", module_name,
+                "-output-dir", tmpdir,
+                "-sdk", sdk_path,
+            ],
+            capture_output=True, text=True,
+            timeout=SDK_EXTRACT_TIMEOUT_SECONDS, check=False,
+        )
+        if result.returncode != 0:
+            return symbols
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return symbols
+
+    # 解析 .symbols.json 文件
+    for json_file in Path(tmpdir).glob(f"{module_name}*.symbols.json"):
+        symbols |= _parse_symbolgraph_file(json_file)
+    return symbols
+
+
+def _parse_symbolgraph_file(json_file):
+    """解析单个 .symbols.json 文件，返回合法符号名集合"""
+    symbols = set()
+    try:
+        with open(json_file, "r", encoding="utf-8") as f:
+            graph = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return symbols
+
+    for symbol_obj in graph.get("symbols", []):
+        names = symbol_obj.get("names", {})
+        title = names.get("title", "")
+        # 仅保留 PascalCase/camelCase 标识符
+        # 跳过含空格/冒号/括号的（如 "init(_:)" / "==" ）
+        if title and VALID_SYMBOL_NAME.match(title):
+            symbols.add(title)
+    return symbols
+
+
 def collect_sdk_symbols(force_rebuild=False):
     """使用 xcrun swift-symbolgraph-extract 收集 Apple SDK 符号
 
     缓存机制：首次收集后缓存至 .exemption_cache/sdk_symbols.json
-    若缓存存在且未过期（SDK 版本未变），直接加载缓存
-
     降级策略：若 xcrun 不可用或 SDK 提取失败，返回空集（不阻断审计）
     """
     # 检查缓存
@@ -190,20 +250,7 @@ def collect_sdk_symbols(force_rebuild=False):
             pass  # 缓存损坏，重建
 
     symbols = set()
-
-    # 动态获取 SDK 路径（优先 macosx，兼容非 iOS 开发环境）
-    sdk_path = None
-    for sdk_name in ["macosx", "iphoneos", "iphonesimulator"]:
-        try:
-            result = subprocess.run(
-                ["xcrun", "--sdk", sdk_name, "--show-sdk-path"],
-                capture_output=True, text=True, timeout=10, check=False,
-            )
-            if result.returncode == 0 and result.stdout.strip():
-                sdk_path = result.stdout.strip()
-                break
-        except (subprocess.TimeoutExpired, FileNotFoundError):
-            continue
+    sdk_path = _resolve_sdk_path()
 
     if not sdk_path:
         # SDK 不可用，降级为空集
@@ -214,37 +261,7 @@ def collect_sdk_symbols(force_rebuild=False):
     import tempfile
     with tempfile.TemporaryDirectory() as tmpdir:
         for module_name in APPLE_SDK_MODULES:
-            try:
-                result = subprocess.run(
-                    [
-                        "xcrun", "swift-symbolgraph-extract",
-                        "-module-name", module_name,
-                        "-output-dir", tmpdir,
-                        "-sdk", sdk_path,
-                    ],
-                    capture_output=True, text=True, timeout=30, check=False,
-                )
-                if result.returncode != 0:
-                    continue
-
-                # 解析 .symbols.json 文件
-                for json_file in Path(tmpdir).glob(f"{module_name}*.symbols.json"):
-                    try:
-                        with open(json_file, "r", encoding="utf-8") as f:
-                            graph = json.load(f)
-                        for symbol_obj in graph.get("symbols", []):
-                            # 优先使用 names.title（可读符号名）
-                            names = symbol_obj.get("names", {})
-                            title = names.get("title", "")
-                            if title:
-                                # 仅保留 PascalCase/camelCase 标识符
-                                # 跳过含空格/冒号/括号的（如 "init(_:)" / "==" ）
-                                if re.match(r'^[A-Za-z][A-Za-z0-9_]*$', title):
-                                    symbols.add(title)
-                    except (json.JSONDecodeError, IOError):
-                        continue
-            except (subprocess.TimeoutExpired, FileNotFoundError):
-                continue
+            symbols |= _extract_module_symbols(module_name, sdk_path, tmpdir)
 
     _save_cache(SDK_SYMBOLS_CACHE, symbols)
     return symbols
@@ -253,6 +270,21 @@ def collect_sdk_symbols(force_rebuild=False):
 # ==============================================================================
 # P4: 第三方库符号自动收集
 # ==============================================================================
+
+def _collect_symbols_from_swift_file(swift_file):
+    """从单个 Swift 文件收集类型/方法/属性/枚举 case 符号"""
+    symbols = set()
+    try:
+        content = swift_file.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return symbols
+
+    for pattern in [TYPE_PATTERN, FUNC_PATTERN, VAR_PATTERN, CASE_PATTERN]:
+        for m in pattern.finditer(content):
+            symbol = m.group(2) if pattern == TYPE_PATTERN else m.group(1)
+            symbols.add(symbol)
+    return symbols
+
 
 def collect_third_party_symbols(force_rebuild=False):
     """扫描 .build/checkouts/ 下所有 SPM 依赖的 Swift 文件
@@ -278,21 +310,11 @@ def collect_third_party_symbols(force_rebuild=False):
     for checkout_dir in SPM_CHECKOUTS_DIR.iterdir():
         if not checkout_dir.is_dir():
             continue
-
         sources_subdir = checkout_dir / "Sources"
         if not sources_subdir.exists():
             continue
-
         for swift_file in sources_subdir.rglob("*.swift"):
-            try:
-                content = swift_file.read_text(encoding="utf-8", errors="ignore")
-            except Exception:
-                continue
-
-            for pattern in [TYPE_PATTERN, FUNC_PATTERN, VAR_PATTERN, CASE_PATTERN]:
-                for m in pattern.finditer(content):
-                    symbol = m.group(2) if pattern == TYPE_PATTERN else m.group(1)
-                    symbols.add(symbol)
+            symbols |= _collect_symbols_from_swift_file(swift_file)
 
     _save_cache(THIRD_PARTY_SYMBOLS_CACHE, symbols)
     return symbols
@@ -405,6 +427,11 @@ class ExemptionRegistry:
     """
 
     def __init__(self, force_rebuild_cache=False):
+        """初始化免白名单注册中心实例。
+
+        Args:
+            force_rebuild_cache: 是否强制重建 SDK/第三方库符号缓存
+        """
         self.force_rebuild = force_rebuild_cache
         self.whitelist_data = {}
         self.project_symbols = set()
@@ -500,72 +527,104 @@ class ExemptionRegistry:
 # CLI 入口
 # ==============================================================================
 
+def _print_usage():
+    """打印 CLI 用法"""
+    print("用法:")
+    print("  python3 exemption_registry.py stats          显示符号集统计")
+    print("  python3 exemption_registry.py check-stale    检测过期白名单项")
+    print("  python3 exemption_registry.py rebuild-cache  重建符号缓存")
+    print("  python3 exemption_registry.py is-exempt <symbol>  查询符号是否豁免")
+
+
+def _cmd_stats():
+    """stats 子命令：显示符号集统计"""
+    registry = ExemptionRegistry()
+    registry.load()
+    stats = registry.get_stats()
+    print("📊 [Exemption Registry] 符号集统计:")
+    print(f"  手动白名单:     {stats['manual_whitelist']}")
+    print(f"  项目代码符号:   {stats['project_symbols']}")
+    print(f"  Apple SDK 符号: {stats['sdk_symbols']}")
+    print(f"  第三方库符号:   {stats['third_party_symbols']}")
+    print(f"  ────────────────────────")
+    print(f"  总计:           {stats['total']}")
+    return 0
+
+
+def _cmd_check_stale():
+    """check-stale 子命令：检测过期白名单项"""
+    registry = ExemptionRegistry()
+    registry.load()
+    stale = registry.check_stale()
+
+    if not stale:
+        print("✅ [Exemption Registry] 未发现过期白名单项")
+        return 0
+
+    print(f"⚠️  [Exemption Registry] 发现 {len(stale)} 个过期白名单项:\n")
+    for item in stale:
+        print(f"  • {item['symbol']} (category: {item['category']})")
+        print(f"    found_in: {item['found_in']}")
+        print(f"    suggestion: {item['suggestion']}")
+        print()
+    return 0
+
+
+def _cmd_rebuild_cache():
+    """rebuild-cache 子命令：重建符号缓存"""
+    print("🔄 [Exemption Registry] 重建符号缓存...")
+    clear_cache()
+    registry = ExemptionRegistry(force_rebuild_cache=True)
+    registry.load()
+    stats = registry.get_stats()
+    print(f"✅ 缓存重建完成:")
+    print(f"  Apple SDK 符号: {stats['sdk_symbols']}")
+    print(f"  第三方库符号:   {stats['third_party_symbols']}")
+    return 0
+
+
+def _cmd_is_exempt(args):
+    """is-exempt 子命令：查询符号是否豁免"""
+    if len(args) < MIN_ARGS_FOR_QUERY:
+        print("用法: python3 exemption_registry.py is-exempt <symbol>")
+        return 1
+    symbol = args[INDEX_QUERY_ARG]
+    registry = ExemptionRegistry()
+    registry.load()
+    if registry.is_exempt(symbol):
+        print(f"✅ '{symbol}' 已豁免")
+    else:
+        print(f"❌ '{symbol}' 未豁免（可能是幽灵引用）")
+    return 0
+
+
+# CLI 参数索引常量
+# argv[0]=脚本名, argv[1]=子命令, argv[2]=子命令参数
+MIN_ARGS_FOR_CMD = 2  # 脚本名 + 子命令
+MIN_ARGS_FOR_QUERY = 3  # 脚本名 + 子命令 + 查询符号
+INDEX_SUBCOMMAND = 1
+INDEX_QUERY_ARG = 2
+
+# 子命令分派表
+COMMAND_DISPATCH = {
+    "stats": _cmd_stats,
+    "check-stale": _cmd_check_stale,
+    "rebuild-cache": _cmd_rebuild_cache,
+}
+
+
 def main():
     """CLI 入口：支持 stats / check-stale / rebuild-cache / is-exempt 子命令"""
-    if len(sys.argv) < 2:
-        print("用法:")
-        print("  python3 exemption_registry.py stats          显示符号集统计")
-        print("  python3 exemption_registry.py check-stale    检测过期白名单项")
-        print("  python3 exemption_registry.py rebuild-cache  重建符号缓存")
-        print("  python3 exemption_registry.py is-exempt <symbol>  查询符号是否豁免")
+    if len(sys.argv) < MIN_ARGS_FOR_CMD:
+        _print_usage()
         return 0
 
-    cmd = sys.argv[1]
+    cmd = sys.argv[INDEX_SUBCOMMAND]
 
-    if cmd == "stats":
-        registry = ExemptionRegistry()
-        registry.load()
-        stats = registry.get_stats()
-        print("📊 [Exemption Registry] 符号集统计:")
-        print(f"  手动白名单:     {stats['manual_whitelist']}")
-        print(f"  项目代码符号:   {stats['project_symbols']}")
-        print(f"  Apple SDK 符号: {stats['sdk_symbols']}")
-        print(f"  第三方库符号:   {stats['third_party_symbols']}")
-        print(f"  ────────────────────────")
-        print(f"  总计:           {stats['total']}")
-        return 0
-
-    elif cmd == "check-stale":
-        registry = ExemptionRegistry()
-        registry.load()
-        stale = registry.check_stale()
-
-        if not stale:
-            print("✅ [Exemption Registry] 未发现过期白名单项")
-            return 0
-
-        print(f"⚠️  [Exemption Registry] 发现 {len(stale)} 个过期白名单项:\n")
-        for item in stale:
-            print(f"  • {item['symbol']} (category: {item['category']})")
-            print(f"    found_in: {item['found_in']}")
-            print(f"    suggestion: {item['suggestion']}")
-            print()
-        return 0
-
-    elif cmd == "rebuild-cache":
-        print("🔄 [Exemption Registry] 重建符号缓存...")
-        clear_cache()
-        registry = ExemptionRegistry(force_rebuild_cache=True)
-        registry.load()
-        stats = registry.get_stats()
-        print(f"✅ 缓存重建完成:")
-        print(f"  Apple SDK 符号: {stats['sdk_symbols']}")
-        print(f"  第三方库符号:   {stats['third_party_symbols']}")
-        return 0
-
+    if cmd in COMMAND_DISPATCH:
+        return COMMAND_DISPATCH[cmd]()
     elif cmd == "is-exempt":
-        if len(sys.argv) < 3:
-            print("用法: python3 exemption_registry.py is-exempt <symbol>")
-            return 1
-        symbol = sys.argv[2]
-        registry = ExemptionRegistry()
-        registry.load()
-        if registry.is_exempt(symbol):
-            print(f"✅ '{symbol}' 已豁免")
-        else:
-            print(f"❌ '{symbol}' 未豁免（可能是幽灵引用）")
-        return 0
-
+        return _cmd_is_exempt(sys.argv)
     else:
         print(f"未知命令: {cmd}")
         return 1

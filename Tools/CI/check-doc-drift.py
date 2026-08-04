@@ -38,8 +38,10 @@ from exemption_registry import ExemptionRegistry
 REPORT_SEPARATOR_WIDTH = 60
 MAX_ABBREVIATION_LENGTH = 5  # 全大写缩写最大长度（URL/UUID/LLM/RAG/AI/FTS/DI/SPM/CI/CD）
 
-# 反引号标识符正则：`PascalCase` 或 `camelCase` 或 `snake_case`
-IDENTIFIER_PATTERN = re.compile(r'`([A-Za-z][A-Za-z0-9_]*)`')
+# 反引号标识符正则：仅 PascalCase 类型/协议名（`KnowledgePage`、`RouterProtocol`）
+# 刻意排除 camelCase 函数名（`processMemory()`）——函数是实现细节，
+# 文档应描述"做什么"而非"哪个函数做"，避免函数重命名导致白名单爆炸
+IDENTIFIER_PATTERN = re.compile(r'`([A-Z][A-Za-z0-9_]*)`')
 
 
 def is_skippable_reference(ref, registry):
@@ -62,15 +64,6 @@ def is_skippable_reference(ref, registry):
     return False
 
 
-def is_camelcase_word(ref, registry):
-    """判断 camelCase 引用是否为普通英文单词（非代码符号）"""
-    if ref[0].islower() and "_" not in ref:
-        # 若注册中心未收录，视为普通英文单词
-        if not registry.is_exempt(ref):
-            return True
-    return False
-
-
 def scan_doc_file(md_file, registry, drift_issues):
     """扫描单个 Markdown 文件的代码符号引用"""
     refs_in_file = 0
@@ -87,12 +80,9 @@ def scan_doc_file(md_file, registry, drift_issues):
         if is_skippable_reference(ref, registry):
             continue
 
-        if is_camelcase_word(ref, registry):
-            continue
-
         refs_in_file += 1
 
-        # 再次确认是否豁免（camelCase 可能在此处才被收录）
+        # 确认是否豁免
         if not registry.is_exempt(ref):
             drift_issues[str(rel_path)].append(ref)
 
