@@ -89,9 +89,16 @@ def check_root_unknown_items(root_dir: str) -> list[str]:
     known_files = {".gitignore", ".swiftlint.yml", ".woodpecker.yml", ".gitlab-ci.yml",
                    ".jscpd.json", "project.yml", "LICENSE", "README.md",
                    "AGENTS.md", "CLAUDE.md", "GEMINI.md",
-                   "ZhiYu.code-workspace"}
+                   "ZhiYu.code-workspace",
+                   # CI/构建配置
+                   ".periphery.yml", ".slather.yml", "sonar-project.properties",
+                   "Makefile",
+                   # 环境配置
+                   ".envrc"}
     known_dirs = {"build", "Docs", "Sources", "Tests", "Tools", "Frameworks", "env",
-                  "fastlane", "ZhiYu.xcodeproj"}
+                  "fastlane", "ZhiYu.xcodeproj",
+                  # 项目结构
+                  "Config", "Packages"}
 
     all_known = known_hidden | known_files | known_dirs | gitignored
     try:
