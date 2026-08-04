@@ -149,15 +149,13 @@ final class AppSyncOrchestratorTests: XCTestCase {
     /// 测试当云端数据未更新（上一次同步后云端无修改），则跳过冲突解决，维持本地不变
     func testPerformSyncWhenCloudNotUpdated() async throws {
         // Arrange
-        var pushedLogs: [LogEntry] = []
         var pushCallCount = 0
-        
+
         provider.pullHandler = {
             return CloudSnapshot(pages: self.localPages, logs: self.localLogs, lastModified: Date().addingTimeInterval(-10))
         }
-        provider.pushHandler = { _, logs in
+        provider.pushHandler = { _, _ in
             pushCallCount += 1
-            pushedLogs = logs
         }
         
         // 第一次同步：确立 lastSyncDate 状态为“现在”

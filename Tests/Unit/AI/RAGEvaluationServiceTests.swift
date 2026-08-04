@@ -20,7 +20,7 @@ final class RAGEvaluationServiceTests: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
-        await setupFullMockEnvironment()
+        setupFullMockEnvironment()
         
         mockLLM = try XCTUnwrap(ServiceContainer.shared.resolve((any LLMServiceProtocol).self) as? MockLLMService)
         governanceStore = ServiceContainer.shared.resolve((any RAGGovernanceRepository).self)

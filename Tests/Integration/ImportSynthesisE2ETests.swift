@@ -21,7 +21,7 @@ final class ImportSynthesisE2ETests: XCTestCase {
         try await super.setUp()
         setupFullMockEnvironment()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try DatabaseManager.shared.setupForTesting(with: dbQueue)
         store = AppStore()
     }
 

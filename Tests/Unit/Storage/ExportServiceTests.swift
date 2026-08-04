@@ -22,7 +22,6 @@ final class ExportServiceTests: XCTestCase {
 
     @MainActor
     func testExportServiceInvocationSafety() async {
-        let markdown = "# 测试导出\n正文内容"
         let service = WebViewExportService.shared
         XCTAssertNotNil(service, "WebViewExportService 门面单例必须可用")
     }

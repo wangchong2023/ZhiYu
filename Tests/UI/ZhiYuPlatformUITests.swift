@@ -550,8 +550,6 @@ final class MacCatalystTests: ZhiYuPlatformUITests {
         let window = app.windows.firstMatch
         XCTAssertTrue(window.exists, "Mac 应该有窗口")
 
-        // 窗口应该有最小化、关闭按钮等
-        let closeButton = window.buttons["close-button"]
         // Mac 窗口按钮可能使用不同的 identifier
         XCTAssertTrue(window.buttons.count > 0, "Mac 窗口应该有按钮")
     }

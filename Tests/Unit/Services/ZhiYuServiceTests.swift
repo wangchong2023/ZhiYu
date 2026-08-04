@@ -564,7 +564,7 @@ final class PageLifecycleIntegrationTests: XCTestCase {
     func testCreateAndLinkPagesFullLifecycle() async {
         // 1. Create pages
         var pageA = KnowledgePage(title: "Machine Learning", pageType: .concept, content: "Related to [[Neural Network]]")
-        var pageB = KnowledgePage(title: "Neural Network", pageType: .entity, content: "Part of [[Machine Learning]]")
+        let pageB = KnowledgePage(title: "Neural Network", pageType: .entity, content: "Part of [[Machine Learning]]")
         var pageC = KnowledgePage(title: "Data Science", pageType: .concept, content: "Uses machine learning")
 
         // 2. Add related page

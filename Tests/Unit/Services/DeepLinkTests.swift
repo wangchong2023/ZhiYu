@@ -172,7 +172,6 @@ final class DeepLinkTests: XCTestCase {
         
         let concurrencyCount = 20
         var results: [Bool] = []
-        let lock = NSLock()
         
         await withTaskGroup(of: Bool.self) { group in
             for _ in 0..<concurrencyCount {
@@ -181,9 +180,7 @@ final class DeepLinkTests: XCTestCase {
                 }
             }
             for await res in group {
-                lock.lock()
                 results.append(res)
-                lock.unlock()
             }
         }
         

@@ -54,7 +54,7 @@ final class KnowledgePageProcessorTests: XCTestCase {
 private final class MockProcessor: KnowledgePageProcessor {
     let id: String
     let name: String
-    var processedCount = 0
+    nonisolated(unsafe) var processedCount = 0
 
     init(id: String, name: String) {
         self.id = id

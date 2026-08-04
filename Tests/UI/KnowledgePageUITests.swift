@@ -238,7 +238,6 @@ final class PageLifecycleE2ETests: KnowledgeBaseUITests {
     }
 
     private func findCreateButton() -> XCUIElement? {
-        let identifiers = ["knowledge.createPage"]
         let symbolPredicate = NSPredicate(format: "identifier CONTAINS 'plus' OR identifier CONTAINS 'add' OR identifier CONTAINS 'compose'")
         let labelPredicate = NSPredicate(format: "label BEGINSWITH '+' OR label CONTAINS '创建' OR label CONTAINS 'New' OR label CONTAINS '新建'")
 

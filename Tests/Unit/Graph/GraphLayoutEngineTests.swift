@@ -102,7 +102,7 @@ final class GraphLayoutProcessorTests: XCTestCase {
     // MARK: - 边界与辅助属性
     
     func testLayoutRelatedPageIDsCreateEdges() {
-        var pageA = KnowledgePage(title: "A", pageType: .entity, content: "Content")
+        let pageA = KnowledgePage(title: "A", pageType: .entity, content: "Content")
         var pageB = KnowledgePage(title: "B", pageType: .concept, content: "Content")
         pageB.relatedPageIDs = [pageA.id]
 
@@ -226,7 +226,6 @@ final class GraphLayoutProcessorTests: XCTestCase {
             pages.append(KnowledgePage(title: "Node\(i)", pageType: .entity, content: "子节点 \(i)"))
         }
 
-        let allTitles = Set(pages.map(\.title))
         let linkResolver: (String) -> KnowledgePage? = { title in
             pages.first(where: { $0.title == title })
         }

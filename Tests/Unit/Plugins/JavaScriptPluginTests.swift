@@ -51,25 +51,27 @@ final class JavaScriptPluginTests: XCTestCase {
         let expectation = self.expectation(description: "Watchdog should interrupt within 1.0s")
 
         DispatchQueue.global(qos: .userInteractive).async {
-            do {
-                _ = try plugin.preProcess(content: "hello")
-                XCTFail("❌ 未能成功触发熔断：死循环预处理脚本竟然成功返回了")
-            } catch {
-                // 看门狗熔断发生在 evaluateScript 阶段，当前实现统一映射为 scriptSyntaxError
-                // 验证错误类型为 PluginSandboxError（无论具体 case，只要能拦截恶意脚本即为有效防御）
-                guard let se = error as? PluginSandboxError else {
-                    XCTFail("异常应为 PluginSandboxError 枚举类型，实际为: \(type(of: error))")
-                    return
+            Task {
+                do {
+                    _ = try await MainActor.run { try plugin.preProcess(content: "hello") }
+                    XCTFail("❌ 未能成功触发熔断：死循环预处理脚本竟然成功返回了")
+                } catch {
+                    // 看门狗熔断发生在 evaluateScript 阶段，当前实现统一映射为 scriptSyntaxError
+                    // 验证错误类型为 PluginSandboxError（无论具体 case，只要能拦截恶意脚本即为有效防御）
+                    guard let se = error as? PluginSandboxError else {
+                        XCTFail("异常应为 PluginSandboxError 枚举类型，实际为: \(type(of: error))")
+                        return
+                    }
+                    // 接受所有由沙箱抛出的安全错误：scriptSyntaxError（看门狗/语法）、timeout、preProcessException、postProcessException
+                    switch se {
+                    case .scriptSyntaxError, .timeout, .preProcessException, .postProcessException:
+                        print("🛡️ [单元测试成功] 看门狗安全拦截恶意脚本，错误: \(se)")
+                    default:
+                        XCTFail("异常 case 应为安全拦截相关，实际为: \(se)")
+                    }
                 }
-                // 接受所有由沙箱抛出的安全错误：scriptSyntaxError（看门狗/语法）、timeout、preProcessException、postProcessException
-                switch se {
-                case .scriptSyntaxError, .timeout, .preProcessException, .postProcessException:
-                    print("🛡️ [单元测试成功] 看门狗安全拦截恶意脚本，错误: \(se)")
-                default:
-                    XCTFail("异常 case 应为安全拦截相关，实际为: \(se)")
-                }
+                expectation.fulfill()
             }
-            expectation.fulfill()
         }
         
         wait(for: [expectation], timeout: 2.0)

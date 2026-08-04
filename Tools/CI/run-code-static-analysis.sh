@@ -73,6 +73,7 @@ run_parallel_task "Commit Signature" "signature" "bash Tools/ci/check-release-co
 run_parallel_task "SBOM Generation & Syft Scan" "sbom_generation" "(python3 Tools/ci/generate-arch-sbom-single.py && (syft . --exclude ./build --exclude ./env -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo Syft skipped) && python3 Tools/ci/generate-arch-sbom-merged.py)" & pid19=$!
 run_parallel_task "Heuristic View Duplication" "view_duplication" "python3 Tools/ios/audit-arch-view-duplication.py" & pid20=$!
 run_parallel_task "Design Token Layering" "token_layering" "python3 Tools/ios/audit-design-token-layering.py" & pid21=$!
+run_parallel_task "Swift Compiler Warnings" "swift_warnings" "bash Tools/CI/check-code-swift-warnings.sh" & pid22=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -95,6 +96,7 @@ wait $pid18 || EXIT_CODE=1
 wait $pid19 || EXIT_CODE=1
 wait $pid20 || EXIT_CODE=1
 wait $pid21 || EXIT_CODE=1
+wait $pid22 || EXIT_CODE=1
 
 
 echo ""

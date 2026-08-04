@@ -20,7 +20,7 @@ final class AIContentEnricherTests: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
-        await setupFullMockEnvironment()
+        setupFullMockEnvironment()
     }
     
     // MARK: - 纯文本测试

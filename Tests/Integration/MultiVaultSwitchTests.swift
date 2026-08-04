@@ -91,17 +91,17 @@ final class MultiVaultSwitchTests: XCTestCase {
         try await DatabaseManager.shared.switchDatabase(to: vaultAID, at: dbAURL)
         StorageModuleRegistrar.register(in: ServiceContainer.shared)
         let storeA = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
-        _ = try await storeA.anyCreatePage(title: "PageA", pageType: .concept, customIcon: "doc", content: "ContentA", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
+        _ = await storeA.anyCreatePage(title: "PageA", pageType: .concept, customIcon: "doc", content: "ContentA", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
         
         try await DatabaseManager.shared.switchDatabase(to: vaultBID, at: dbBURL)
         StorageModuleRegistrar.register(in: ServiceContainer.shared)
         let storeB = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
-        _ = try await storeB.anyCreatePage(title: "PageB", pageType: .concept, customIcon: "doc", content: "ContentB", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
+        _ = await storeB.anyCreatePage(title: "PageB", pageType: .concept, customIcon: "doc", content: "ContentB", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
         
         try await DatabaseManager.shared.switchDatabase(to: vaultCID, at: dbCURL)
         StorageModuleRegistrar.register(in: ServiceContainer.shared)
         let storeC = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
-        _ = try await storeC.anyCreatePage(title: "PageC", pageType: .concept, customIcon: "doc", content: "ContentC", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
+        _ = await storeC.anyCreatePage(title: "PageC", pageType: .concept, customIcon: "doc", content: "ContentC", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
         
         // 阶段二：使用 TaskGroup 发起 12 个多线程高并发 Task，高频竞速切换这三个库，并在切换后尝试立即读写
         let concurrencyLevel = 12
@@ -202,9 +202,7 @@ final class MultiVaultSwitchTests: XCTestCase {
     /// 用例 3: 模拟小组件 Timeline 刷新时与 App 执行切换物理库同时发生，验证 AppGroup 数据隔离防竞争机制
     func testWidgetTimelineAppGroupSwitchingGrace() async throws {
         print("🎬 【TC-VLT-06】模拟小组件与 AppConurrent 切换时 AppGroup 数据隔离防死锁测试...")
-        
-        let container = ServiceContainer.shared
-        
+
         // 模拟 App 正在挂载，置起 AppGroup 物理隔离切换标志位
         let switchingKey = "ZhiYu_Vault_Switching_Lock"
         UserDefaults.standard.set(true, forKey: switchingKey)

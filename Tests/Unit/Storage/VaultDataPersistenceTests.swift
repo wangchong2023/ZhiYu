@@ -22,7 +22,7 @@ final class VaultDataPersistenceTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        await setupFullMockEnvironment()
+        setupFullMockEnvironment()
 
         vaultAID = UUID()
         vaultBID = UUID()

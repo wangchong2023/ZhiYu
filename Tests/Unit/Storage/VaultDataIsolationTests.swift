@@ -90,7 +90,7 @@ final class VaultDataIsolationTests: XCTestCase {
         // 写入专属于 笔记本 A 的页面
         let pageATitle = "专属于笔记本A的绝密构想"
         let pageAContent = "这是笔记本 A 中的专有内容，包含其独特的设计模式与架构规约。"
-        _ = try await storeA.anyCreatePage(
+        _ = await storeA.anyCreatePage(
             title: pageATitle,
             pageType: .concept,
             customIcon: "doc.text.fill",
@@ -131,7 +131,7 @@ final class VaultDataIsolationTests: XCTestCase {
         // 写入专属于 笔记本 B 的页面
         let pageBTitle = "专属于笔记本B的独立规划"
         let pageBContent = "这是笔记本 B 中的专有内容，主要包括其独立的产品演进大纲与里程碑节点。"
-        _ = try await storeB.anyCreatePage(
+        _ = await storeB.anyCreatePage(
             title: pageBTitle,
             pageType: .concept,
             customIcon: "chart.bar.fill",
@@ -225,7 +225,7 @@ final class VaultDataIsolationTests: XCTestCase {
         
         // 1. 使用已有安全机制（anyCreatePage）写入旧页面，严禁编写硬编码的 SQL 语句
         let oldPageTitle = "即将被覆盖的过时构想"
-        _ = try await store.anyCreatePage(
+        _ = await store.anyCreatePage(
             title: oldPageTitle,
             pageType: .concept,
             customIcon: "doc.text",
@@ -330,7 +330,7 @@ final class VaultDataIsolationTests: XCTestCase {
         }
         
         // 1. 使用已有机制（anyCreatePage）写入测试数据，严禁硬编码 SQL
-        _ = try await store.anyCreatePage(
+        _ = await store.anyCreatePage(
             title: "待清除的页面",
             pageType: .entity,
             customIcon: "doc",

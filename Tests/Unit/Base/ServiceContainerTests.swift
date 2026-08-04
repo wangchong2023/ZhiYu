@@ -33,7 +33,7 @@ private protocol MockDatabaseForDIProtocol: AnyObject, Sendable {
 }
 
 /// 模拟数据库服务实现
-private final class MockDatabaseForDI: MockDatabaseForDIProtocol {
+private final class MockDatabaseForDI: MockDatabaseForDIProtocol, @unchecked Sendable {
     @Inject var logger: any MockLoggerForDIProtocol
     
     func execute(_ query: String) {

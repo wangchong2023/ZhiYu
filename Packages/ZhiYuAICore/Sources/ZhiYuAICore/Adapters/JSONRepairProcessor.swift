@@ -56,7 +56,7 @@ public enum JSONRepairProcessor {
 
         // 预处理 1：移除对象尾逗号 `,}`（SwiftJSONSanitizer 仅移除数组尾逗号 `,]`）
         // 注意：不能用 .regularExpression 选项，因为 } 在正则中是特殊字符会导致匹配失败
-        var result = sanitized
+        let result = sanitized
             .replacingOccurrences(of: ",}", with: "}")
             .replacingOccurrences(of: ",\n}", with: "\n}")
             .replacingOccurrences(of: ",\r\n}", with: "\r\n}")

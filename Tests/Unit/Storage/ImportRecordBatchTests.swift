@@ -164,9 +164,11 @@ final class ImportRecordBatchTests: XCTestCase {
 
     func testExtractJSONInvalidResponse() {
         let response = "no json here"
-        guard let start = response.firstIndex(of: "{"),
-              let end = response.lastIndex(of: "}") else { return } // No JSON
-        XCTFail("Should not find JSON brackets")
+        guard response.firstIndex(of: "{") == nil,
+              response.lastIndex(of: "}") == nil else {
+            XCTFail("Should not find JSON brackets")
+            return
+        }
     }
 
     // MARK: - 导入记录标题别名
@@ -205,7 +207,7 @@ final class ImportRecordBatchTests: XCTestCase {
         var fetched = try await repo.fetchByID(record.id)
         XCTAssertNotNil(fetched)
         fetched?.title = "智宇产品手册"
-        if var r = fetched { try await repo.save(r) }
+        if let r = fetched { try await repo.save(r) }
 
         let updated = try await repo.fetchByID(record.id)
         XCTAssertEqual(updated?.title, "智宇产品手册")

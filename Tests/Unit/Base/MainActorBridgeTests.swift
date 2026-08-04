@@ -32,8 +32,7 @@ final class MainActorBridgeTests: XCTestCase {
     func testVoid_onMainThread_executesWithoutDeadlock() {
         XCTAssertTrue(Thread.isMainThread)
 
-        var executed = false
-        runOnMainSync { executed = true }
+        let executed = runOnMainSync { true }
 
         XCTAssertTrue(executed, "Void 闭包应在主线程直接执行")
     }
@@ -59,15 +58,15 @@ final class MainActorBridgeTests: XCTestCase {
     /// 后台线程调用 Void 版本应安全调度到主线程
     func testVoid_onBackgroundThread_executesOnMain() {
         let exp = expectation(description: "后台线程 Void 调用完成")
-        var capturedIsMain = false
+        let capturedIsMain = MutableBox<Bool>(false)
 
         DispatchQueue.global(qos: .default).async {
-            runOnMainSync { capturedIsMain = Thread.isMainThread }
+            runOnMainSync { capturedIsMain.value = Thread.isMainThread }
             exp.fulfill()
         }
 
         wait(for: [exp], timeout: 2.0)
-        XCTAssertTrue(capturedIsMain, "Void 闭包应在主线程执行")
+        XCTAssertTrue(capturedIsMain.value, "Void 闭包应在主线程执行")
     }
 
     // MARK: - @MainActor 隔离代码访问
@@ -105,4 +104,9 @@ final class MainActorBridgeTests: XCTestCase {
 
         wait(for: [exp], timeout: 5.0)
     }
+}
+
+private final class MutableBox<T>: @unchecked Sendable {
+    var value: T
+    init(_ v: T) { self.value = v }
 }

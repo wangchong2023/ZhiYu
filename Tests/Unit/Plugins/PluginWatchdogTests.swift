@@ -95,11 +95,11 @@ final class PluginWatchdogTests: XCTestCase {
         try await super.setUp()
         setupFullMockEnvironment()
         registry = PluginRegistry.shared
-        await registry.reset() // 重置为初始空白状态
+        registry.reset() // 重置为初始空白状态
     }
     
     override func tearDown() async throws {
-        await registry.reset()
+        registry.reset()
         registry = nil
         try await super.tearDown()
     }

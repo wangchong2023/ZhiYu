@@ -38,7 +38,7 @@ final class KnowledgeIngestPipelineTests: XCTestCase {
     func testProcess_withoutLLM_indexChunksNotCalled() async throws {
         let content = "不需要 LLM 的简单内容。"
         let pageID = UUID()
-        let result = try await pipeline.process(
+        _ = try await pipeline.process(
             content: content,
             pageID: pageID,
             llm: nil,
@@ -154,8 +154,8 @@ final class KnowledgeIngestPipelineTests: XCTestCase {
 // MARK: - Mock EmbeddingProvider
 
 private final class MockEmbeddingProvider: EmbeddingProvider {
-    var indexChunksCalled = false
-    var lastIndexedPageID: UUID?
+    nonisolated(unsafe) var indexChunksCalled = false
+    nonisolated(unsafe) var lastIndexedPageID: UUID?
 
     func getAllEmbeddings() async -> [UUID: [Float]] { [:] }
     func syncEmbeddings(pages: [KnowledgePage]) async {}

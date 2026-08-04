@@ -29,7 +29,7 @@ final class KnowledgeStoreStressTests: XCTestCase {
         print("🧪 [StressTest] 开始并发刷新压力测试 (迭代次数: \(iterations))...")
         
         await withTaskGroup(of: Void.self) { group in
-            for i in 0..<iterations {
+            for _ in 0..<iterations {
                 group.addTask {
                     // 模拟从不同任务并发调用 MainActor 隔离的方法
                     await store.refresh()

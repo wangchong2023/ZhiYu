@@ -43,7 +43,7 @@ final class WidgetSyncSnapshotTests: XCTestCase {
             try JSONSerialization.jsonObject(with: invalidData),
             "遇到损坏的 JSON 数据必须精确抛出 Error，不得吞掉异常"
         ) { error in
-            XCTAssertTrue(error is NSError, "错误必须为 NSError / JSON 异常")
+            XCTAssertEqual((error as NSError).domain, NSCocoaErrorDomain, "错误必须为 JSON 解析异常")
         }
     }
 }

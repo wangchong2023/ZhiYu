@@ -25,11 +25,11 @@ final class PluginSandboxTests: XCTestCase {
         dbQueue = setupFullMockEnvironment()
         
         registry = PluginRegistry.shared
-        await registry.reset()
+        registry.reset()
     }
 
     override func tearDown() async throws {
-        await registry.reset()
+        registry.reset()
         registry = nil
         ServiceContainer.shared.reset()
         dbQueue = nil

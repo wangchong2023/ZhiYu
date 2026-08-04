@@ -17,7 +17,6 @@ final class CloudChaosTests: XCTestCase {
 
     func testVersionConflictResolution() async throws {
         let pageId = UUID()
-        let pageA = KnowledgePage(id: pageId, title: "Title A", content: "Content A", createdAt: Date(), updatedAt: Date(timeIntervalSince1970: 100))
         let pageB = KnowledgePage(id: pageId, title: "Title B", content: "Content B", createdAt: Date(), updatedAt: Date(timeIntervalSince1970: 200))
 
         let resolved = pageB

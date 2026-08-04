@@ -59,9 +59,7 @@ final class ChatServiceTests: XCTestCase {
         let stream = chatService.streamChat(query: query, pages: [])
         
         // 由于使用了 MockLLMService，流应当立即完成或返回 Mock 数据
-        var receivedAny = false
         for try await _ in stream {
-            receivedAny = true
         }
         
         // MockLLMService 默认返回完成

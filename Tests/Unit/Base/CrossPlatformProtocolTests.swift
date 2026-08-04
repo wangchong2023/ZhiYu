@@ -247,7 +247,7 @@ final class CrossPlatformMockUsabilityTests: XCTestCase {
         XCTAssertEqual(mock.sharedBatches.count, 3, "应记录 3 批分享")
 
         // 验证每批的内容
-        let lastItems = mock.lastSharedItems as? [Any]
+        let lastItems = mock.lastSharedItems
         XCTAssertNotNil(lastItems)
     }
 }

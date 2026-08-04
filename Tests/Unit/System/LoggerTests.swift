@@ -88,7 +88,7 @@ final class SystemLoggerTests: XCTestCase {
         let logger = Logger(customDirectory: tempDirectory)
         
         // 1. 成功操作路径
-        let successVal = try logger.logTimed(action: .ingest, target: "TimedSuccess", module: "TestModule", details: "测试计时成功") {
+        let successVal = logger.logTimed(action: .ingest, target: "TimedSuccess", module: "TestModule", details: "测试计时成功") {
             // 模拟轻量操作
             return "Result_OK"
         }

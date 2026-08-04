@@ -17,12 +17,18 @@ import UFPStorage
 
 @MainActor
 final class ComponentSnapshots: XCTestCase {
-    
-    /// 依据环境变量判断是否启用快照录制模式，用于支持 CI/CD 脚本自动更新基准图片
-    private var isRecordModeEnabled: Bool {
-        return ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1"
+
+    /// 依据环境变量判断快照录制策略，用于支持 CI/CD 脚本自动更新基准图片
+    private static var recordMode: SnapshotTestingConfiguration.Record {
+        ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
     }
-    
+
+    override func invokeTest() {
+        withSnapshotTesting(record: Self.recordMode) {
+            super.invokeTest()
+        }
+    }
+
     /// 测试 AI 脉搏指示器的视觉一致性
     func testAIPulseIndicator() {
         // 配置 Mock 环境
@@ -42,7 +48,6 @@ final class ComponentSnapshots: XCTestCase {
     /// - Parameter record: 显式控制是否开启录制。若传入 true 则强制开启录制，若为 false 则强制对比，不传则默认使用环境变量 RECORD_SNAPSHOTS 决定
     private func setupMockEnvironment(record: Bool? = nil) {
         setupFullMockEnvironment()
-        isRecording = record ?? isRecordModeEnabled
         
         // 清理聊天历史，防止其他测试（如 UI 测试）的残留数据污染快照测试
         ChatService.shared.clearHistory()
@@ -53,7 +58,7 @@ final class ComponentSnapshots: XCTestCase {
     
     /// 测试图谱节点的视觉一致性
     func testGraphNodeView() {
-        setupMockEnvironment(record: isRecordModeEnabled)
+        setupMockEnvironment()
         let node = GraphNode(
             id: UUID(),
             title: "测试节点",
@@ -79,7 +84,7 @@ final class ComponentSnapshots: XCTestCase {
         .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
         .background(Color.appBackground)
         
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)), record: isRecordModeEnabled)
+        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
     }
     
     /// 测试 AI 助手聊天视图 (ChatView) 的视觉一致性
@@ -234,8 +239,7 @@ final class ComponentSnapshots: XCTestCase {
             KnowledgePage(title: "当前深度详情", pageType: .concept, content: "")
         ]
         
-        var navigatedId: UUID?
-        let rawBreadcrumbView = BreadcrumbView(history: history, onNavigate: { navigatedId = $0 }, onGoHome: {})
+        let rawBreadcrumbView = BreadcrumbView(history: history, onNavigate: { _ in }, onGoHome: {})
         
         // 显式触发重构后的面包屑点击行为，消灭未覆盖闭包行
         if let firstPage = history.first {

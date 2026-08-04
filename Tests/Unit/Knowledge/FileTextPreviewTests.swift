@@ -39,7 +39,7 @@ final class FileTextPreviewTests: XCTestCase {
         if FileManager.default.fileExists(atPath: tempFilePath) {
             try FileManager.default.removeItem(atPath: tempFilePath)
         }
-        try super.tearDown()
+        super.tearDown()
     }
     
     /// 验证大文件增量流式读取的分块大小、EOF 标志以及偏移有效性

@@ -24,9 +24,7 @@ final class SnapshotHelper {
               let data = uiImage.pngData() else {
             return false
         }
-        
-        let currentHash = data.base64EncodedString().count // 简易哈希：使用长度作为初步校验
-        
+
         // 1. 获取参考快照路径
         // swiftlint:disable:next force_unwrapping
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!

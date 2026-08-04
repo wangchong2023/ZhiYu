@@ -93,7 +93,7 @@ final class AuthUITests: XCTestCase {
         if !appleBtn.waitForExistence(timeout: 3) {
             // 一次滑动不够则再滑一次
             app.scrollViews.firstMatch.swipeUp()
-            appleBtn.waitForExistence(timeout: 2)
+            _ = appleBtn.waitForExistence(timeout: 2)
         }
     }
 

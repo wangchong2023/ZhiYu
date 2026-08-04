@@ -49,7 +49,7 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
         }
 
         // 3. 此时若处于 NotebookHubView (金库列表/选择页)，则需要点击进入默认金库
-        var hubView = app.scrollViews["NotebookHubView"]
+        let hubView = app.scrollViews["NotebookHubView"]
         var isHubVisible = hubView.waitForExistence(timeout: 3)
         if !isHubVisible {
             let predicate = NSPredicate(format: "label CONTAINS '笔记本' OR label CONTAINS 'Notebook'")

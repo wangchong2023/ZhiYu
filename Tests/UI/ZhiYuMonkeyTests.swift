@@ -102,14 +102,10 @@ final class ZhiYuMonkeyTests: XCTestCase {
                 if !isDestructive && !isDestructiveId && !isIconOption && hasValidFrame && targetElement.isHittable {
                         print("[MONKEY] 第 \(step)/\(maxIterations) 步：拟真操作 -> 元素类型: \(targetElement.elementType)，文本标签: '\(targetElement.label)'")
                         
-                        // 执行防护式点击，捕捉极端动效竞争异常
-                        do {
-                            if targetElement.exists && targetElement.isHittable {
-                                targetElement.tap()
-                                clicked = true
-                            }
-                        } catch {
-                            print("[MONKEY] 操作警告：元素状态在执行瞬间发生偏转，跳过该步。")
+                        // 执行防护式点击，检查元素可点击性
+                        if targetElement.exists && targetElement.isHittable {
+                            targetElement.tap()
+                            clicked = true
                         }
                     }
             }

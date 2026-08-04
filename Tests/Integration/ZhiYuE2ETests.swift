@@ -144,7 +144,7 @@ final class KnowledgePageWorkflowTests: XCTestCase {
     func testBrokenPageLinksIdentified() async {
         let pageA = KnowledgePage(title: "A", pageType: .entity, content: "Links to [[NonExistent Page]]")
         let pageB = KnowledgePage(title: "B", pageType: .concept, content: "Real link to [[C]]")
-        var pageC = KnowledgePage(title: "C", pageType: .source, content: "Content here")
+        let pageC = KnowledgePage(title: "C", pageType: .source, content: "Content here")
 
         let pages = [pageA, pageB, pageC]
 
@@ -203,8 +203,8 @@ final class KnowledgePageWorkflowTests: XCTestCase {
     // MARK: - Health Check Integration
 
     func testHealthCheckNoIssuesForHealthyKnowledge() async {
-        var page1 = KnowledgePage(title: "Healthy A", pageType: .entity, content: String(repeating: "Healthy content here. ", count: 10))
-        var page2 = KnowledgePage(title: "Healthy B", pageType: .concept, content: "Links to [[Healthy A]]. " + String(repeating: "More healthy content. ", count: 10))
+        let page1 = KnowledgePage(title: "Healthy A", pageType: .entity, content: String(repeating: "Healthy content here. ", count: 10))
+        let page2 = KnowledgePage(title: "Healthy B", pageType: .concept, content: "Links to [[Healthy A]]. " + String(repeating: "More healthy content. ", count: 10))
 
         let pages = [page1, page2]
 
@@ -320,7 +320,7 @@ final class SearchFilterWorkflowTests: XCTestCase {
 
     func testSortByRecentlyUpdated() {
         var oldPage = KnowledgePage(title: "Old", pageType: .entity, content: "Content")
-        var newPage = KnowledgePage(title: "New", pageType: .entity, content: "Content")
+        let newPage = KnowledgePage(title: "New", pageType: .entity, content: "Content")
 
         // Simulate dates
         oldPage = KnowledgePage(

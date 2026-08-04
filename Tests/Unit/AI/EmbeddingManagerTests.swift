@@ -39,7 +39,7 @@ final class MockVectorRepository: VectorRepository, @unchecked Sendable {
     }
     
     func deleteChunks(for pageID: UUID) async throws {
-        queue.sync {
+        _ = queue.sync {
             chunksStore.removeValue(forKey: pageID)
         }
     }
