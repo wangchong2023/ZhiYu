@@ -30,6 +30,7 @@ struct GraphNodeView: View {
     let onSelect: () -> Void
     var heroNamespace: Namespace.ID
     @State private var isHovered = false
+    @Environment(\.interfaceIdiom) private var idiom
     
     // 视口裁剪参数
     let viewportRect: CGRect? // 当前可见区域
@@ -87,11 +88,11 @@ struct GraphNodeView: View {
             Label(L10n.Graph.copyPageLink, systemImage: DesignSystem.Icons.link)
         }
         Divider()
-        #if os(macOS)
-        Button(action: { }) {
-            Label(L10n.Graph.openInNewWindow, systemImage: DesignSystem.Icons.macwindowBadgePlus)
+        if idiom == .mac {
+            Button(action: { }) {
+                Label(L10n.Graph.openInNewWindow, systemImage: DesignSystem.Icons.macwindowBadgePlus)
+            }
         }
-        #endif
     }
     
     private var nodeContent: some View {

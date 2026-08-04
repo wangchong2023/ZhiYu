@@ -23,6 +23,7 @@ struct VoiceAudioPlayerView: View {
     @State private var currentTime: TimeInterval = 0
     @State private var duration: TimeInterval = 45.0
     @State private var waveformLevels: [CGFloat] = [0.3, 0.6, 0.4, 0.8, 0.5, 0.9, 0.3, 0.7, 0.4, 0.6, 0.8, 0.3, 0.5, 0.7, 0.4, 0.9, 0.6, 0.3]
+    @Environment(\.interfaceIdiom) private var idiom
     
     private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
@@ -137,10 +138,10 @@ struct VoiceAudioPlayerView: View {
     }
     
     private func setupAudioPlayer() {
-        #if os(iOS)
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
-        #endif
+        if idiom == .iPhone || idiom == .iPad {
+            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try? AVAudioSession.sharedInstance().setActive(true)
+        }
         
         if let path = audioPath, FileManager.default.fileExists(atPath: path) {
             let url = URL(fileURLWithPath: path)
@@ -157,10 +158,10 @@ struct VoiceAudioPlayerView: View {
     }
     
     private func togglePlayPause() {
-        #if os(iOS)
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
-        #endif
+        if idiom == .iPhone || idiom == .iPad {
+            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try? AVAudioSession.sharedInstance().setActive(true)
+        }
         
         if isPlaying {
             if let player = audioPlayer {
@@ -233,10 +234,7 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
     /// 触发文本语音朗读并管理 AVAudioSession 声音播放会话
     /// - Parameter text: 待转换朗读的原始 Markdown 或纯文本
     func speak(text: String) {
-        #if os(iOS)
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
-        #endif
+        configurePlaybackSessionIfNeeded()
         
         stop()
         var cleanText = text
@@ -274,6 +272,15 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
         utterance.rate = 0.5
         isSpeaking = true
         synthesizer.speak(utterance)
+    }
+    
+    /// 在 iOS 平台配置 AVAudioSession 为播放模式
+    /// - Note: macOS / watchOS 无 AVAudioSession 概念，运行时跳过。
+    private func configurePlaybackSessionIfNeeded() {
+        let idiom = InterfaceIdiomKey.defaultValue
+        guard idiom == .iPhone || idiom == .iPad else { return }
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
     }
     
     func stop() {

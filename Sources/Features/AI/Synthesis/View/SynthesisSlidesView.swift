@@ -15,6 +15,7 @@ import SwiftUI
 struct SynthesisSlidesView: View {
     let doc: SynthesisStore.SynthesisDocument
     @State private var currentSlideIndex = 0
+    @Environment(\.interfaceIdiom) private var idiom
 
     private var slides: [String] {
         let content = doc.content.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -70,9 +71,7 @@ struct SynthesisSlidesView: View {
                         .tag(index)
                 }
             }
-            #if os(iOS)
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            #endif
+            .modifier(SlideTabViewStyleModifier(idiom: idiom))
             .frame(maxHeight: .infinity)
 
             // 底部翻页控制器
@@ -125,6 +124,20 @@ struct SynthesisSlidesView: View {
             )
             .padding(.horizontal, DesignSystem.standardPadding)
             .padding(.vertical, DesignSystem.small)
+        }
+    }
+}
+
+// MARK: - 幻灯片 TabView 样式修饰符
+/// 根据设备形态应用分页 TabView 样式（仅 iPhone/iPad）。
+private struct SlideTabViewStyleModifier: ViewModifier {
+    let idiom: InterfaceIdiom
+
+    func body(content: Content) -> some View {
+        if idiom == .iPhone || idiom == .iPad {
+            content.tabViewStyle(.page(indexDisplayMode: .never))
+        } else {
+            content
         }
     }
 }

@@ -15,6 +15,7 @@ import SwiftUI
 struct QuizPresentationModifier: ViewModifier {
     @Binding var activeQuiz: QuizModel?
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.interfaceIdiom) private var idiom
 
     init(activeQuiz: Binding<QuizModel?>) {
         self._activeQuiz = activeQuiz
@@ -31,17 +32,17 @@ struct QuizPresentationModifier: ViewModifier {
                         .frame(minWidth: Spacing.Decorator.desktopSheetMinWidth, minHeight: Spacing.Decorator.desktopSheetMinHeight)
                 }
         } else {
-            #if os(iOS) && !targetEnvironment(macCatalyst)
-            content
-                .fullScreenCover(item: $activeQuiz) { quiz in
-                    QuizView(quiz: quiz)
-                }
-            #else
-            content
-                .sheet(item: $activeQuiz) { quiz in
-                    QuizView(quiz: quiz)
-                }
-            #endif
+            if idiom == .iPhone || idiom == .iPad {
+                content
+                    .fullScreenCover(item: $activeQuiz) { quiz in
+                        QuizView(quiz: quiz)
+                    }
+            } else {
+                content
+                    .sheet(item: $activeQuiz) { quiz in
+                        QuizView(quiz: quiz)
+                    }
+            }
         }
     }
 }
