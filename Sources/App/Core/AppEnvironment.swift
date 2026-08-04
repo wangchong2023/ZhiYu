@@ -20,9 +20,12 @@ final class AppEnvironment {
     static let shared = AppEnvironment()
     
     // ── 核心业务状态 ──
-    let store: AppStore
-    let ingestStore: IngestStore
-    let synthesisStore: SynthesisStore
+    // 注意：Store 改为 var，延迟到 DI 注册完成后赋值。
+    // 原因：Store 的 @Inject 属性首次访问时解析 DI 容器，
+    //       必须保证 DI 在 Store 实例化前就绪。
+    private(set) var store: AppStore!
+    private(set) var ingestStore: IngestStore!
+    private(set) var synthesisStore: SynthesisStore!
     let router: Router
 
     // ── 系统级状态 ──
@@ -31,16 +34,12 @@ final class AppEnvironment {
     /// 必须在 registerDIModules() 之后才能首次访问，故用计算属性。
     var llmService: LLMService { LLMService.shared }
     var llmConfig: LLMConfigManager   // var：init 中先赋初值，DI 就绪后重新解析
-    
+
     private init() {
-        // ── 0. 必须先初始化所有 stored properties（Swift 要求在调用 self 方法前完成）──
+        // ── 0. 仅初始化不依赖 DI 的 stored properties（Swift 要求在调用 self 方法前完成）──
         self.router = Router.shared
         self.themeManager = ThemeManager.shared
         self.llmConfig = LLMConfigManager()
-        // llmService 为计算属性，首次访问时自动触发 LLMService.shared（此时 DI 已就绪）
-        self.ingestStore = IngestStore()
-        self.synthesisStore = SynthesisStore()
-        self.store = AppStore()
 
         Logger.shared.info("[AppEnvironment] Starting initialization...")
 
@@ -57,15 +56,41 @@ final class AppEnvironment {
         // 1. 准备底层物理存储 (@P0: 确保护航数据库在注册前就绪)
         prepareDatabase()
 
-        // 2. 执行模块化注册 (L0 - L3) — 生产路径和测试路径均需注册
-        //    Store 初始化时会通过 @Inject 访问服务，DI 必须在此之前或同时就绪
+        // 2. 执行模块化注册 (L0 - L3) — 必须在 Store 实例化前完成
+        //    Store 的 @Inject 属性首次访问时会解析 DI 容器，故 DI 必须先就绪
         registerDIModules()
 
-        // 2.1 DI 就绪后立即加载本地化语言偏好缓存（避免后续跨 actor 访问 keyStore）
+        // 2.1 DI 就绪断言：验证 Store 依赖的关键服务已全部注册
+        //     若断言失败，说明 ModuleRegistrar 注册顺序有误，需立即暴露而非延后到 Store 崩溃
+        ServiceContainer.shared.assertRegistered(
+            [
+                (any LoggerProtocol).self,
+                (any AnyPageStoreCapabilities).self,
+                (any LLMServiceProtocol).self,
+                (any EmbeddingProvider).self,
+                KnowledgePageManager.self,
+                LinkService.self,
+                IngestService.self,
+                BackupService.self,
+                UndoService.self,
+                TagStore.self,
+                PerformanceService.self,
+                SettingsStore.self,
+                SnapshotService.self,
+                VaultStorageSecurityService.self
+            ],
+            context: "Before Store instantiation"
+        )
+
+        // 2.2 DI 就绪后立即加载本地化语言偏好缓存（避免后续跨 actor 访问 keyStore）
         Localized.loadCachedLanguageMode()
 
         // 🧪 Unit Test 环境：注册所有服务但不锁定 DI 容器，允许测试 reset() 后重新注册 Mock
         if isRunningInUnitTests {
+            // 测试环境仍需实例化 Store（测试可能访问），DI 已就绪
+            self.ingestStore = IngestStore()
+            self.synthesisStore = SynthesisStore()
+            self.store = AppStore()
             Logger.shared.info("[AppEnvironment] DI services registered (test mode, chain NOT locked).")
             return
         }
@@ -76,7 +101,13 @@ final class AppEnvironment {
         // 2.5 DI 就绪后重新解析需要容器注入的属性
         self.llmConfig = ServiceContainer.shared.resolve(LLMConfigManager.self)
 
-        // 3. 将核心 Store 注册到 DI 容器，支持各处 @Inject 调用
+        // 3. DI 就绪后实例化核心 Store（@Inject 首次访问安全）
+        //    AppStore.init 内部会自注册到 DI 容器
+        self.ingestStore = IngestStore()
+        self.synthesisStore = SynthesisStore()
+        self.store = AppStore()
+
+        // 3.1 补充注册 AppStore.init 未覆盖的 Store（IngestStore/SynthesisStore）
         registerStoresToContainer()
 
         // 4. 配置全局 UI 样式与数据种子化及同步
@@ -175,17 +206,13 @@ final class AppEnvironment {
         AppModuleRegistrar.register(in: ServiceContainer.shared)
     }
 
-    /// 将核心 Store 注册到 DI 容器以供全局注入
+    /// 补充注册 AppStore.init 未覆盖的核心 Store 到 DI 容器
+    /// 注意：AppStore/SearchStore/AIWorkflowStore/AIInsightStore/TagStore/KnowledgeStore
+    ///       已在 AppStore.init 内自注册，此处仅注册 IngestStore/SynthesisStore
     private func registerStoresToContainer() {
         let container = ServiceContainer.shared
-        container.register(self.store, for: AppStore.self)
         container.register(self.ingestStore, for: IngestStore.self)
         container.register(self.synthesisStore, for: SynthesisStore.self)
-        container.register(self.store.searchStore, for: SearchStore.self)
-        container.register(self.store.aiWorkflowStore, for: AIWorkflowStore.self)
-        container.register(self.store.aiWorkflowStore as any AIWorkflowCapabilities, for: (any AIWorkflowCapabilities).self)
-        container.register(self.store.aiInsightStore, for: AIInsightStore.self)
-        container.register(self.store.tagStore, for: TagStore.self)
     }
 
     /// 配置全局样式与数据种子化及同步

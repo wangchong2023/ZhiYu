@@ -25,8 +25,8 @@ public final class SearchStore {
     public var isAdvancedSearching = false
 
     @ObservationIgnored private var searchTask: Task<Void, Never>?
-    @ObservationIgnored @Inject private var linkService: LinkService
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
+    @ObservationIgnored @Inject private var linkService: LinkService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
 
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 

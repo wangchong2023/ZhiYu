@@ -11,6 +11,7 @@
 import Foundation
 import CryptoKit
 import UFPStorage
+import os
 
 /// 安全管理器：负责数据签名、加密与完整性校验。
 class SecurityManager: @unchecked Sendable {
@@ -45,7 +46,7 @@ class SecurityManager: @unchecked Sendable {
     // 使用 nonisolated(unsafe) 配合 actor 同步访问或确保单线程访问
     // 此处由于 SecurityManager 是 Sendable 且 singleton，我们采用锁或 MainActor 隔离来保护缓存
     // 为简化实现且保证性能，我们将缓存操作也放在辅助方法中
-    private let lock = NSLock()
+    private let lock = OSAllocatedUnfairLock()
     private var _cachedPassphrase: String?
     private var cachedPassphrase: String? {
         get { lock.withLock { _cachedPassphrase } }

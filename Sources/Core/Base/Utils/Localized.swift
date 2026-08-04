@@ -9,6 +9,7 @@
 //  核心职责：通用工具函数（向量数学、本地化辅助、ZIP 工具等）。
 //
 import Foundation
+import os
 
 /// 智宇系统支持的语言模式定义。
 public enum LanguageMode: String, CaseIterable, Identifiable {
@@ -75,7 +76,7 @@ public enum LanguageMode: String, CaseIterable, Identifiable {
 internal struct Localized {
     
     /// 锁屏障，保证静态缓存读写的并发安全
-    private static let cacheLock = NSLock()
+    private static let cacheLock = OSAllocatedUnfairLock()
     
     /// 缓存的已加载本地化 Bundle 实例，实现内存级常驻。
     nonisolated(unsafe) private static var cachedBundle: Bundle?
@@ -167,39 +168,38 @@ internal struct Localized {
     
     /// 清除当前的 Bundle 缓存，迫使下一次翻译查找时执行磁盘装载。
     private static func clearBundleCache() {
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-        cachedBundle = nil
-        cachedLanguage = nil
+        cacheLock.withLock {
+            cachedBundle = nil
+            cachedLanguage = nil
+        }
     }
-    
+
     /// 高性能内存缓存获取当前语言的本地化 Bundle。
     /// 仅在当前语言与已缓存语言不一致，或者缓存为空时，才执行磁盘 I/O 检索。
     /// - Returns: 指向对应语言的 `.lproj` 常驻 Bundle 实例。
     private static func getOrLoadBundle() -> Bundle {
         let currentLang = currentLanguage
-        
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-        
-        // 击中缓存：如果已经装载过相同语言的 Bundle，直接闪回内存对象
-        if let cached = cachedBundle, cachedLanguage == currentLang {
-            return cached
+
+        return cacheLock.withLock {
+            // 击中缓存：如果已经装载过相同语言的 Bundle，直接闪回内存对象
+            if let cached = cachedBundle, cachedLanguage == currentLang {
+                return cached
+            }
+
+            // 未击中缓存：执行物理路径扫描与重装载
+            let bundle: Bundle
+            if let path = Bundle.main.path(forResource: currentLang, ofType: "lproj"),
+               let b = Bundle(path: path) {
+                bundle = b
+            } else {
+                bundle = .main
+            }
+
+            // 缓存实体与时序标记
+            cachedBundle = bundle
+            cachedLanguage = currentLang
+            return bundle
         }
-        
-        // 未击中缓存：执行物理路径扫描与重装载
-        let bundle: Bundle
-        if let path = Bundle.main.path(forResource: currentLang, ofType: "lproj"),
-           let b = Bundle(path: path) {
-            bundle = b
-        } else {
-            bundle = .main
-        }
-        
-        // 缓存实体与时序标记
-        cachedBundle = bundle
-        cachedLanguage = currentLang
-        return bundle
     }
     
     /// 根据传入的本地化 Key 及原请求表名，自动计算路由映射的目标物理表名。

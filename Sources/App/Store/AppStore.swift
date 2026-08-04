@@ -72,20 +72,20 @@ public final class AppStore {
     }
 
     // ── 核心依赖 (DI) ──
-    @ObservationIgnored @Inject var pageStore: any AnyPageStoreCapabilities
-    @ObservationIgnored @Inject var pageManager: KnowledgePageManager
+    @ObservationIgnored @Inject var pageStore: any AnyPageStoreCapabilities  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var pageManager: KnowledgePageManager  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     /// Factory 风格：可选依赖，测试环境或 DI 未就绪时为 nil
     @ObservationIgnored @Inject var maintenanceService: MaintenanceService?
-    @ObservationIgnored @Inject var logger: any LoggerProtocol
-    @ObservationIgnored @Inject var performanceService: PerformanceService
-    @ObservationIgnored @Inject var llmService: any LLMServiceProtocol
-    @ObservationIgnored @Inject var settingsStore: SettingsStore
-    @ObservationIgnored @Inject var linkService: LinkService
-    @ObservationIgnored @Inject var backupService: BackupService
-    @ObservationIgnored @Inject var undoService: UndoService
-    @ObservationIgnored @Inject var ingestService: IngestService
-    @ObservationIgnored @Inject var securityService: VaultStorageSecurityService
-    @ObservationIgnored @Inject var snapshotService: SnapshotService
+    @ObservationIgnored @Inject var logger: any LoggerProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var performanceService: PerformanceService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var llmService: any LLMServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var settingsStore: SettingsStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var linkService: LinkService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var backupService: BackupService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var undoService: UndoService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var ingestService: IngestService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var securityService: VaultStorageSecurityService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject var snapshotService: SnapshotService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
 
     // ── 职责解耦：子 Store 聚合 ──
     @ObservationIgnored public var searchStore: SearchStore!

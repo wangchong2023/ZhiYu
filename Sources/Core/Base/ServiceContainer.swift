@@ -251,6 +251,37 @@ final class ServiceContainer: @unchecked Sendable {
         return exists
     }
 
+    /// 启动期断言：验证关键服务已全部注册，未注册则 assertionFailure + 诊断输出
+    /// - Parameter requiredTypes: 必需服务的元类型列表
+    /// - Parameter context: 调用上下文描述（用于诊断信息）
+    func assertRegistered(_ requiredTypes: [Any.Type], context: String) {
+        var missing: [String] = []
+        for type in requiredTypes {
+            let key = makeKey(forAny: type)
+            let exists = lock.withLock { services[key] != nil }
+            if !exists {
+                missing.append(String(describing: type))
+            }
+        }
+        if !missing.isEmpty {
+            let registeredCount = lock.withLock { services.count }
+            let summary = "[DI Startup Assertion] \(context): \(missing.count) required service(s) NOT registered: \(missing.joined(separator: ", ")). Total registered: \(registeredCount)"
+            os_log(.fault, log: diLog, "%{public}@", summary)
+            fputs("""
+            ╔══════════════════════════════════════════════════════════════╗
+            ║  DI STARTUP ASSERTION FAILURE                                ║
+            ╠══════════════════════════════════════════════════════════════╣
+            ║  Context:    \(context)
+            ║  Missing:    \(missing.count) service(s)
+            ║              \(missing.joined(separator: ", "))
+            ║  Registered: \(registeredCount) services total
+            ╚══════════════════════════════════════════════════════════════╝
+
+            """, stderr)
+            assertionFailure(summary)
+        }
+    }
+
     /// 安全解析服务，未注册时返回 nil（不 fatalError）
     func optionalResolve<T>(_ type: T.Type) -> T? {
         let key = makeKey(for: type)

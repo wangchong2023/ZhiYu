@@ -17,8 +17,8 @@ import Observation
 public final class TagStore {
     
     // ── 核心依赖 ──
-    @ObservationIgnored @Inject private var store: any AnyPageStore
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
+    @ObservationIgnored @Inject private var store: any AnyPageStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var logger: any LoggerProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
 
     public init() {}
 

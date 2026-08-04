@@ -17,12 +17,12 @@ import Combine
 @MainActor
 @Observable
 final class IngestStore {
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
-    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
-    @ObservationIgnored @Inject private var ingestService: IngestService
-    @ObservationIgnored @Inject private var pdfService: any PDFServiceProtocol
-    @ObservationIgnored @Inject private var ocrService: any OCRServiceProtocol
+    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var logger: any LoggerProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var ingestService: IngestService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var pdfService: any PDFServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var ocrService: any OCRServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
 
     init() {}
 

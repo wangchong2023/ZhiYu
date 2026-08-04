@@ -15,4 +15,13 @@ public enum LogStatus: String, Codable, Sendable {
     case success
     case failure
     case processing
+
+    /// 本地化显示名称（供日志视图展示）
+    public var localizedName: String {
+        switch self {
+        case .success: return L10n.Log.statusSuccess
+        case .failure: return L10n.Log.statusFailure
+        case .processing: return L10n.Log.statusProcessing
+        }
+    }
 }

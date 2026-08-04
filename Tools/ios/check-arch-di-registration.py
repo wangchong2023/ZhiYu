@@ -41,6 +41,9 @@ def extract_inject_types() -> set:
                 type_name = match.group(1)
                 # 清理: 去除 "any " 前缀, "()" 后缀, "?" / "!" 后缀
                 type_name = type_name.replace("any ", "").rstrip("?!")
+                # 跳过单字母泛型类型参数（如 T），避免误报
+                if len(type_name) <= 1:
+                    continue
                 inject_types.add(type_name)
     return inject_types
 

@@ -11,6 +11,7 @@
 //
 import Foundation
 import CoreML
+import os
 
 /// 深度 AI 意图分类结果
 public struct CoreMLModerationResult: Sendable {
@@ -31,7 +32,7 @@ public struct CoreMLModerationResult: Sendable {
 public final class CoreMLModerationClassifier: @unchecked Sendable {
     public static let shared = CoreMLModerationClassifier()
 
-    private let lock = NSLock()
+    private let lock = OSAllocatedUnfairLock()
     private var isCoreMLModelLoaded: Bool = false
 
     private init() {}

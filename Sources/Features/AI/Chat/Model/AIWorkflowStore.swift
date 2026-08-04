@@ -65,15 +65,15 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         }
     }
 
-    @ObservationIgnored @Inject private var insightService: KnowledgeInsightService
-    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Inject private var insightService: KnowledgeInsightService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     /// [L1.5] 知识库领域仓储 — 遵循 DIP，L2 不再直接依赖 L1 SQLiteStore
-    @ObservationIgnored @Inject private var knowledgeRepository: any KnowledgeRepository
+    @ObservationIgnored @Inject private var knowledgeRepository: any KnowledgeRepository  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     /// [L0] 向量检索能力 — 通过 L0 协议注入，避免直接耦合 L1 EmbeddingManager
-    @ObservationIgnored @Inject private var vectorStore: any VectorIndexableStore
-    @ObservationIgnored @Inject private var lintService: LintService
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
-    @ObservationIgnored @Inject private var linkService: LinkService
+    @ObservationIgnored @Inject private var vectorStore: any VectorIndexableStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var lintService: LintService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var logger: any LoggerProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Inject private var linkService: LinkService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
     @ObservationIgnored @Inject private var keyStore: (any KeyStoreProtocol)?
 
@@ -210,7 +210,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         return expanded
     }
 
-    @ObservationIgnored @Inject private var synthesisStore: SynthesisStore
+    @ObservationIgnored @Inject private var synthesisStore: SynthesisStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
 
     /// 执行通用页面综合任务（MindMap, Quiz, etc.）
     public func performPageSynthesis(type: SynthesisStore.SynthesisType, title: String, content: String) async throws -> String {

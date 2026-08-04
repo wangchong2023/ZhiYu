@@ -11,13 +11,14 @@
 //
 
 import Foundation
+import os
 
 /// 开源 Swarm / Wax 记忆框架挂载适配器
 public final class SwarmMemoryAdapter: MemoryEngineProtocol, @unchecked Sendable {
     public let engineType: MemoryEngineType = .openSourceAdapter
 
     private var adapterSummaries: [String: String] = [:]
-    private let lock = NSLock()
+    private let lock = OSAllocatedUnfairLock()
 
     public init() {}
 

@@ -117,6 +117,10 @@ def scan_file(filepath: Path) -> List[Finding]:
         if line.startswith("//"):
             continue
 
+        # 豁免标注：// inject_exempt 表示该行 @Inject 已确认 DI 就绪后访问
+        if "// inject_exempt" in line:
+            continue
+
         _check_non_optional_inject(raw_line, risk, rel_path, i, findings)
         _check_direct_resolve(line, risk, rel_path, i, findings)
 

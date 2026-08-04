@@ -23,5 +23,8 @@ extension L10n {
         public static var endTime: String { tr("log.endTime") }
         public static var duration: String { tr("log.duration") }
         public static var failureReason: String { tr("log.failureReason") }
+        public static var statusSuccess: String { tr("log.statusSuccess") }
+        public static var statusFailure: String { tr("log.statusFailure") }
+        public static var statusProcessing: String { tr("log.statusProcessing") }
     }
 }

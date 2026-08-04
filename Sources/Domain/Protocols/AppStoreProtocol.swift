@@ -32,13 +32,11 @@ protocol AppStoreProtocol: AnyObject, Observable {
     var conceptCount: Int { get }
     var lintIssues: [LintIssue] { get }
 
-    #if !os(watchOS)
     // ── UI 状态 ──
     var pendingCoachMark: CoachMarkType? { get set }
 
     var growthSeries: [KnowledgeGrowthPoint] { get }
-    #endif
-    
+
     var isPrivacyModeEnabled: Bool { get }
     var showPerfDashboard: Bool { get set }
     
@@ -57,10 +55,8 @@ protocol AppStoreProtocol: AnyObject, Observable {
     func seedDefaultContent(vaultName: String?) async
 
     // ── 建议应用 ──
-    #if !os(watchOS)
     /// 应用重构建议
     func applyRefactorSuggestion(_ suggestion: RefactorSuggestion) async
-    #endif
     /// 应用潜在链接建议
     func applyPotentialLink(_ link: PotentialLinkSuggestion) async
 }
@@ -71,6 +67,6 @@ protocol AppStoreProtocol: AnyObject, Observable {
 import SwiftUI
 
 extension EnvironmentValues {
-    @Entry var appStore: any AppStoreProtocol = ServiceContainer.shared.resolve((any AppStoreProtocol).self)
+    @Entry var appStore: any AppStoreProtocol = ServiceContainer.shared.resolve((any AppStoreProtocol).self)  // inject_exempt: EnvironmentValues 默认值，DI 就绪后访问
 }
 #endif

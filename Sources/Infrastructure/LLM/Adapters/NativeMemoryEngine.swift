@@ -10,13 +10,14 @@
 //
 
 import Foundation
+import os
 
 /// 自研生产级分层对话记忆引擎
 public final class NativeMemoryEngine: MemoryEngineProtocol, @unchecked Sendable {
     public let engineType: MemoryEngineType = .native
 
     private var sessionSummaries: [String: String] = [:]
-    private let lock = NSLock()
+    private let lock = OSAllocatedUnfairLock()
 
     public init() {}
 
