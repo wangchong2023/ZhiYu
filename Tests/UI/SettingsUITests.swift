@@ -288,10 +288,7 @@ final class OnboardingUITests: KnowledgeBaseUITests {
     func testWelcomeVaultOnboardingFlow() async {
         // 关键过程：查找欢迎标题
         let welcomeTitle = app.staticTexts["欢迎来到智宇"].firstMatch
-        let welcomeTitleAlternative = app.staticTexts.matching(
-            NSPredicate(format: "label CONTAINS '智宇' OR label CONTAINS 'ZhiYu'")
-        ).firstMatch
-        
+
         // 关键过程：查找进入按钮并模拟点击
         let startButton = app.buttons["进入知识宇宙"].firstMatch
         let startButtonAlternative = app.buttons.matching(

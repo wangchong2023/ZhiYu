@@ -136,6 +136,7 @@ test-and-coverage:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
+    - export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"
     - bash Tools/CI/run-test-with-coverage.sh
   coverage: '/Coverage: \d+\.\d+%/'
   artifacts:

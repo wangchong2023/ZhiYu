@@ -119,8 +119,8 @@ final class KnowledgePageWorkflowTests: XCTestCase {
     // MARK: - PageLinks
 
     func testBidirectionalLinkCreation() async {
-        var pageA = KnowledgePage(title: "Page A", pageType: .entity, content: "Links to [[Page B]]")
-        var pageB = KnowledgePage(title: "Page B", pageType: .concept, content: "Links to [[Page A]]")
+        let pageA = KnowledgePage(title: "Page A", pageType: .entity, content: "Links to [[Page B]]")
+        let pageB = KnowledgePage(title: "Page B", pageType: .concept, content: "Links to [[Page A]]")
 
         // Outgoing links
         XCTAssertEqual(pageA.outgoingLinks, ["Page B"])

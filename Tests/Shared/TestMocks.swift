@@ -470,7 +470,7 @@ public struct MockPage: KnowledgePageRepresentable, Hashable {
 
 // MARK: - Mock URL Protocol
 /// 单元测试专用：网络拦截服务协议，拦截全局 URLRequest 并返回自定义响应数据与 HTTP 状态码
-public final class TestMockURLProtocol: URLProtocol, @unchecked Sendable {
+public final class TestMockURLProtocol: URLProtocol {
     /// 模拟请求处理器，返回 HTTP 响应头与可选的 Body 载荷
     public static nonisolated(unsafe) var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
     
