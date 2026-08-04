@@ -20,6 +20,10 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
 MARKETPLACE_DIR = PROJECT_DIR / "Plugins" / "Marketplace"
 VALIDATOR_SCRIPT = PROJECT_DIR / "Tools" / "ios" / "check-code-plugin-validation.py"
 
+# 常量定义（避免魔鬼数字）
+REPORT_SEPARATOR_WIDTH = 60  # 报告分隔线宽度
+PLUGIN_SEPARATOR_WIDTH = 60  # 插件分隔线宽度
+
 
 def scan_marketplace():
     """扫描插件市场目录，对每个 .zyplugin 执行校验"""
@@ -48,7 +52,7 @@ def scan_marketplace():
 
     for plugin_path in plugin_paths:
         rel_path = Path(plugin_path).relative_to(PROJECT_DIR)
-        print(f"{'─' * 60}")
+        print(f"{'─' * PLUGIN_SEPARATOR_WIDTH}")
         print(f"🔍 校验: {rel_path}")
 
         # 调用校验脚本
@@ -67,9 +71,9 @@ def scan_marketplace():
             print(f"❌ 失败: {rel_path}\n")
 
     # 汇总报告
-    print("=" * 60)
+    print("=" * REPORT_SEPARATOR_WIDTH)
     print("📊 [Plugin Marketplace Scanner] 扫描结果汇总")
-    print("=" * 60)
+    print("=" * REPORT_SEPARATOR_WIDTH)
     print(f"  总插件数: {len(plugin_paths)}")
     print(f"  通过: {total_passed}")
     print(f"  失败: {total_failed}")

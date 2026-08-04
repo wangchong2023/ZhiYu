@@ -29,6 +29,10 @@ DOCS_DIR = PROJECT_DIR / "Docs"
 SOURCES_DIR = PROJECT_DIR / "Sources"
 TESTS_DIR = PROJECT_DIR / "Tests"
 
+# 常量定义（避免魔鬼数字）
+MAX_ABBREVIATION_LENGTH = 5  # 全大写缩写最大长度（如 URL/UUID/LLM）
+REPORT_SEPARATOR_WIDTH = 60  # 报告分隔线宽度
+
 # 跳过的全大写缩写（非 Swift 类型）
 SKIP_ABBREVIATIONS = {
     "URL", "UUID", "LLM", "RAG", "AI", "FTS", "DI", "SPM", "CI", "CD",
@@ -278,6 +282,89 @@ def collect_code_symbols():
     return symbols
 
 
+def is_skippable_reference(ref):
+    """判断引用是否应跳过（非 Swift 类型引用）"""
+    # 跳过全大写缩写
+    if ref.upper() == ref and len(ref) <= MAX_ABBREVIATION_LENGTH:
+        return True
+    if ref in SKIP_ABBREVIATIONS:
+        return True
+
+    # 跳过 Apple SDK / Swift 标准库符号
+    if ref in APPLE_SDK_SYMBOLS:
+        return True
+
+    # 跳过 snake_case 标识符（SQL 列名/表名/Python 变量，非 Swift 命名规范）
+    # 规则：含下划线且无大写字母 = snake_case
+    if "_" in ref and ref == ref.lower():
+        return True
+
+    return False
+
+
+def is_camelcase_word(ref, code_symbols):
+    """判断 camelCase 引用是否为普通英文单词（非代码符号）"""
+    if ref[0].islower() and "_" not in ref:
+        if ref not in code_symbols:
+            return True
+    return False
+
+
+def scan_doc_file(md_file, code_symbols, drift_issues):
+    """扫描单个 Markdown 文件的代码符号引用"""
+    refs_in_file = 0
+    try:
+        content = md_file.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return 0
+
+    rel_path = md_file.relative_to(PROJECT_DIR)
+
+    for m in IDENTIFIER_PATTERN.finditer(content):
+        ref = m.group(1)
+
+        if is_skippable_reference(ref):
+            continue
+
+        if is_camelcase_word(ref, code_symbols):
+            continue
+
+        refs_in_file += 1
+
+        if ref not in code_symbols:
+            drift_issues[str(rel_path)].append(ref)
+
+    return refs_in_file
+
+
+def print_drift_report(drift_issues, total_refs, total_docs):
+    """打印文档漂移报告"""
+    print(f"   扫描 {total_docs} 个文档，发现 {total_refs} 个代码符号引用\n")
+
+    if not drift_issues:
+        print("=" * REPORT_SEPARATOR_WIDTH)
+        print("✅ [Doc Drift Checker] 文档与代码一致性良好，未发现漂移。")
+        return 0
+
+    print("=" * REPORT_SEPARATOR_WIDTH)
+    print(f"⚠️  [Doc Drift Checker] 发现 {len(drift_issues)} 个文档存在幽灵引用：\n")
+
+    total_ghosts = 0
+    for doc_path, ghosts in sorted(drift_issues.items()):
+        unique_ghosts = sorted(set(ghosts))
+        total_ghosts += len(unique_ghosts)
+        print(f"  📄 {doc_path}")
+        for g in unique_ghosts:
+            print(f"     • `{g}` — 代码中未找到此符号")
+        print()
+
+    print("=" * REPORT_SEPARATOR_WIDTH)
+    print(f"⚠️  共 {total_ghosts} 个幽灵引用，分布于 {len(drift_issues)} 个文档。")
+    print("   这些引用可能指向已删除/重命名的类型，建议更新文档。")
+    print("   （本检查为 WARNING，不熔断 CI）")
+    return 0
+
+
 def scan_doc_drift():
     """扫描文档漂移"""
     print("📄 [Doc Drift Checker] 开始检测文档与代码漂移...\n")
@@ -303,71 +390,10 @@ def scan_doc_drift():
 
     for md_file in DOCS_DIR.rglob("*.md"):
         total_docs += 1
-        try:
-            content = md_file.read_text(encoding="utf-8", errors="ignore")
-        except Exception:
-            continue
-
-        rel_path = md_file.relative_to(PROJECT_DIR)
-
-        # 提取反引号标识符
-        for m in IDENTIFIER_PATTERN.finditer(content):
-            ref = m.group(1)
-
-            # 跳过全大写缩写
-            if ref.upper() == ref and len(ref) <= 5:
-                continue
-            if ref in SKIP_ABBREVIATIONS:
-                continue
-
-            # 跳过 Apple SDK / Swift 标准库符号
-            if ref in APPLE_SDK_SYMBOLS:
-                continue
-
-            # 跳过 snake_case 标识符（SQL 列名/表名/Python 变量，非 Swift 命名规范）
-            # 规则：含下划线且无大写字母 = snake_case
-            if "_" in ref and ref == ref.lower():
-                continue
-
-            # 跳过纯小写单词（可能是普通英文单词而非代码符号）
-            # 仅当首字母大写或包含下划线时才视为代码符号引用
-            if ref[0].islower() and "_" not in ref:
-                # camelCase：检查是否在代码符号中
-                if ref not in code_symbols:
-                    # 可能是普通英文单词，跳过
-                    continue
-
-            total_refs += 1
-
-            # 检查是否在代码中存在
-            if ref not in code_symbols:
-                drift_issues[str(rel_path)].append(ref)
+        total_refs += scan_doc_file(md_file, code_symbols, drift_issues)
 
     # 3. 报告
-    print(f"   扫描 {total_docs} 个文档，发现 {total_refs} 个代码符号引用\n")
-
-    if not drift_issues:
-        print("=" * 60)
-        print("✅ [Doc Drift Checker] 文档与代码一致性良好，未发现漂移。")
-        return 0
-
-    print("=" * 60)
-    print(f"⚠️  [Doc Drift Checker] 发现 {len(drift_issues)} 个文档存在幽灵引用：\n")
-
-    total_ghosts = 0
-    for doc_path, ghosts in sorted(drift_issues.items()):
-        unique_ghosts = sorted(set(ghosts))
-        total_ghosts += len(unique_ghosts)
-        print(f"  📄 {doc_path}")
-        for g in unique_ghosts:
-            print(f"     • `{g}` — 代码中未找到此符号")
-        print()
-
-    print("=" * 60)
-    print(f"⚠️  共 {total_ghosts} 个幽灵引用，分布于 {len(drift_issues)} 个文档。")
-    print("   这些引用可能指向已删除/重命名的类型，建议更新文档。")
-    print("   （本检查为 WARNING，不熔断 CI）")
-    return 0
+    return print_drift_report(drift_issues, total_refs, total_docs)
 
 
 if __name__ == "__main__":
