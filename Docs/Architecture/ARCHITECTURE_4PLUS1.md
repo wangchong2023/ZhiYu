@@ -36,7 +36,7 @@ classDiagram
         +recognizeText()
     }
     class SQLiteStore {
-        +repository: KnowledgePageStore
+        +repository: AnyPageStore
     }
     class LLMService {
         <<GodClass (正在拆解)>>
@@ -54,7 +54,7 @@ classDiagram
     AppStore --> SQLiteStore : 持久化委派
     AppStore --> LLMService : AI 能力
     AppStore --> VaultService : 外部库同步
-    SQLiteStore --> KnowledgePageStore : GRDB 封装
+    SQLiteStore --> AnyPageStore : GRDB 封装
 ```
 
 ---
@@ -244,7 +244,7 @@ graph TD
 
 ### 🔵 L1: 基础设施层 (Sources/Infrastructure)
 *   **职责**: 技术细节实现、数据持久化与 AI 引擎。
-*   **关键组件**: `LLMService`, `AppStore`, `SQLiteStore`, `EmbeddingManager`, `TextChunkerProcessor`, `OCRProcessor`, `PDFProcessor`。
+*   **关键组件**: `LLMService`, `AppStore`, `SQLiteStore`, `EmbeddingManager`, `TextChunkerProcessor`, `ImageExtractor`, `PDFProcessorProxy`。
 
 ### 🟣 L2: 业务功能层 (Sources/Features)
 *   **职责**: 垂直业务逻辑闭环。
@@ -280,7 +280,7 @@ graph TD
 *   **流程**：`LinkService` 同时触发两条链路查询，汇总后进行 RRF 打分，最后由 `LLMService` 对 Top-K 结果执行精排（Rerank）。
 
 ### 10.3 事件驱动通信 (Event-Driven Communication)
-通过 `WikiEventBus` 降低 L0 与 L3 之间的直接依赖：
+通过 `AppEventBus` 降低 L0 与 L3 之间的直接依赖：
 *   **发布订阅**：`SQLiteStore` 发布 `.pageUpdated`，`GraphView` 订阅该事件并自动重绘拓扑，无需 Facade 层显式分发。
 
 ### 10.4 响应式跨端架构 (Adaptive Layout)
@@ -513,7 +513,7 @@ const _intrinsicKeys = Object.getOwnPropertyNames(globalThis);
 在混合 RAG 查询与 AI 实验室的深度总结场景下，若直连云端大模型，本库私密内容（`#private`）中的实体词、机密键或人名可能会被明文传送至第三方服务器，造成企业/个人数据泄漏风险。
 
 #### 2. 双向伪装拓扑
-系统将在 L1.5 `ContextBuilder` 层实装“双向伪装过滤机制”：
+系统将在 L1.5 `LLMContextBuilder` 层实装“双向伪装过滤机制”：
 
 ```
 [原始私密 Context] ──► 1. 本地 CJK NER 识别敏感词 ──► 2. 映射哈希占位符 (A_ENTITY)

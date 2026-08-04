@@ -41,7 +41,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **SR-01/02** | 数据隔离与沙盒 | `SECURITY_DESIGN.md` | `VaultStorageSecurityService.swift`, `SQLiteStore.swift` | `VaultSecurityTests.swift` |
 | **SR-03/04** | 身份鉴权与插件沙盒 | `AuthArchitecture.md`, `PLUGIN_SDK.md` | `AuthService.swift`, `PluginRegistry.swift` | `AuthTests.swift`, `PluginSandboxTests.swift` |
-| **PR-01/02** | FTS5 与 RAG 性能 | `DETAILED_DESIGN.md`, `RAG_GOVERNANCE.md` | `KnowledgePageStore.swift`, `VectorIndexer.swift` | `SearchPerformanceTests.swift`, `RAGPipelineTests.swift` |
+| **PR-01/02** | FTS5 与 RAG 性能 | `DETAILED_DESIGN.md`, `RAG_GOVERNANCE.md` | `AnyPageStore.swift`, `VectorIndexer.swift` | `SearchPerformanceTests.swift`, `RAGPipelineTests.swift` |
 | **PR-05** | 数据库冷启动加载 | `ARCHITECTURE_4PLUS1.md` | `AppEnvironment.swift`, `SQLiteStore.swift` | `DatabaseStartupTests.swift` |
 | **RR-01/03** | ACID 与 内存管控 | `DETAILED_DESIGN.md` | `SQLiteStore.swift`, `PerformanceBenchmarker.swift` | `TransactionTests.swift`, `MemoryFootprintTests.swift` |
 

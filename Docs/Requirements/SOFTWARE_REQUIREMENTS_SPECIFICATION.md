@@ -124,7 +124,7 @@ iCloud 多端同步采用 **Lamport Last-Writer-Wins (LWW)** 策略：
 - **冲突检测**：`AppCloudSyncService.resolveSyncConflict()` 比较本地与远程页面的 `lamportTimestamp` 和 `updated` 时间戳
 - **合并策略**：高时间戳版本获胜；同时间戳但不同 UUID 的标题冲突保留本地版本
 - **用户回调**：`onConflictDetected` 闭包允许 UI 层介入自定义冲突解决策略
-- **决议枚举**：`ConflictResolution` 支持 `.keepLocal` / `.keepRemote` / `.merge`
+- **决议枚举**：`SyncConflictResolution` 支持 `.keepLocal` / `.keepRemote` / `.merge`
 
 ## 7. DFX 设计要求 (Design for X: Logging, Tracing & Metrics)
 

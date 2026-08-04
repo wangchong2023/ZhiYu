@@ -37,7 +37,7 @@
 
 | 后缀 | 层级 | 用途 | 示例 |
 |------|------|------|------|
-| `Store` | L1 | 数据持久化与存储库实现 | `SQLiteStore`, `KnowledgePageStore` |
+| `Store` | L1 | 数据持久化与存储库实现 | `SQLiteStore`, `AnyPageStore` |
 | `Service` | L1.5/L2 | 业务逻辑、领域行为或 UI 服务 | `LinkService`, `ChatService` |
 | `Manager` | L0.5 | 系统资源管理与 OS 能力封装 | `SecurityManager`, `DatabaseManager` |
 | `Provider` | — | 协议级功能或视图插件提供者 | `EmbeddingProvider`, `ViewProvider` |

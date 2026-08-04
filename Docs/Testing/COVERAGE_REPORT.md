@@ -23,7 +23,7 @@
 | **Domain/Models** | `94.5%` | `91.0%` | 🟢 优秀 | 覆盖了所有的实体属性及 `KnowledgePage` 的 LWW 合并算法。 |
 | **Domain/RAG** | `86.3%` | `82.4%` | 🟢 达标 | 覆盖了 `RAGOrchestrator` 与混合检索 `rrf` 融合算法。 |
 | **Domain/Services** | `85.1%` | `80.2%` | 🟢 达标 | 包含了新增的安全防线 `PrivacySanitizer` 的 PII 过滤测试。 |
-| **Infrastructure/Storage** | `78.4%` | `75.0%` | 🟡 良好 | 需进一步针对 `GlobalMigrator` 补全跨多版本的无损升级测试。 |
+| **Infrastructure/Storage** | `78.4%` | `75.0%` | 🟡 良好 | 需进一步针对 `DatabaseSchemaMigrator` 补全跨多版本的无损升级测试。 |
 | **Infrastructure/LLM** | `76.2%` | `72.8%` | 🟡 良好 | `MockLLMService` 覆盖较广，但缺乏网络层 500 异常与断点重试深度测试。 |
 | **Features (L2 UI)** | `58.9%` | `51.5%` | ⚪ 正常 | UI 层变动频繁，主要依赖 `SnapshotTesting` 保障，行覆盖率要求放宽。 |
 

@@ -57,6 +57,9 @@ THIRD_PARTY_SYMBOLS_CACHE = CACHE_DIR / "third_party_symbols.json"
 SOURCES_DIR = PROJECT_DIR / "Sources"
 TESTS_DIR = PROJECT_DIR / "Tests"
 
+# 本地 SPM 子包目录（ZhiYuAICore/UFPStorage/ZhiYuDomain 等）
+PACKAGES_DIR = PROJECT_DIR / "Packages"
+
 # 第三方库 checkout 目录（SPM）
 SPM_CHECKOUTS_DIR = PROJECT_DIR / ".build" / "checkouts"
 
@@ -78,6 +81,12 @@ TYPE_PATTERN = re.compile(
     r'\b(?:public\s+|internal\s+|private\s+|fileprivate\s+)?'
     r'(?:final\s+|open\s+)?'
     r'(class|struct|protocol|enum|actor|extension)\s+([A-Z][A-Za-z0-9_]*)'
+)
+
+# Swift typealias 正则（如 `public typealias ChatMessage = ChatMessageDTO`）
+TYPEALIAS_PATTERN = re.compile(
+    r'\b(?:public\s+|internal\s+|private\s+|fileprivate\s+)?'
+    r'typealias\s+([A-Z][A-Za-z0-9_]*)'
 )
 
 # Swift 方法声明正则
@@ -144,17 +153,27 @@ def get_expiry_check_symbols(whitelist_data):
 # ==============================================================================
 
 def collect_project_symbols():
-    """扫描 Sources/ + Tests/ 下所有 Swift 文件，收集类型/方法/属性名"""
+    """扫描 Sources/ + Tests/ + Packages/ 下所有 Swift 文件，收集类型/方法/属性名
+
+    覆盖三层：
+    - Sources/Tests：主工程代码
+    - Packages/：本地 SPM 子包（ZhiYuAICore/UFPStorage/ZhiYuDomain 等）
+    """
     symbols = set()
 
     search_dirs = [SOURCES_DIR]
     if TESTS_DIR.exists():
         search_dirs.append(TESTS_DIR)
+    if PACKAGES_DIR.exists():
+        search_dirs.append(PACKAGES_DIR)
 
     for search_dir in search_dirs:
         if not search_dir.exists():
             continue
         for swift_file in search_dir.rglob("*.swift"):
+            # 排除 SPM 子包的 .build/checkouts/ 目录（避免重复收集第三方库）
+            if ".build" in swift_file.parts:
+                continue
             symbols |= _collect_symbols_from_swift_file(swift_file)
 
     return symbols
@@ -279,7 +298,7 @@ def _collect_symbols_from_swift_file(swift_file):
     except Exception:
         return symbols
 
-    for pattern in [TYPE_PATTERN, FUNC_PATTERN, VAR_PATTERN, CASE_PATTERN]:
+    for pattern in [TYPE_PATTERN, TYPEALIAS_PATTERN, FUNC_PATTERN, VAR_PATTERN, CASE_PATTERN]:
         for m in pattern.finditer(content):
             symbol = m.group(2) if pattern == TYPE_PATTERN else m.group(1)
             symbols.add(symbol)

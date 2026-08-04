@@ -38,6 +38,9 @@ from exemption_registry import ExemptionRegistry
 REPORT_SEPARATOR_WIDTH = 60
 MAX_ABBREVIATION_LENGTH = 5  # 全大写缩写最大长度（URL/UUID/LLM/RAG/AI/FTS/DI/SPM/CI/CD）
 
+# 跳过漂移检测的目录（历史归档计划/规格文档，记录规划时名称，不应被检测）
+SKIPPED_DOC_DIRS = {"superpowers"}
+
 # 反引号标识符正则：仅 PascalCase 类型/协议名（`KnowledgePage`、`RouterProtocol`）
 # 刻意排除 camelCase 函数名（`processMemory()`）——函数是实现细节，
 # 文档应描述"做什么"而非"哪个函数做"，避免函数重命名导致白名单爆炸
@@ -143,6 +146,9 @@ def scan_doc_drift():
     total_docs = 0
 
     for md_file in DOCS_DIR.rglob("*.md"):
+        # 跳过历史归档目录（superpowers/plans/specs 记录规划时名称）
+        if any(part in SKIPPED_DOC_DIRS for part in md_file.relative_to(DOCS_DIR).parts):
+            continue
         total_docs += 1
         total_refs += scan_doc_file(md_file, registry, drift_issues)
 

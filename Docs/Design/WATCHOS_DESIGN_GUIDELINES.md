@@ -131,7 +131,7 @@ struct VoiceRecordCardView: View {
 [watchOS App] ──WCSession.transferUserInfo──► [iOS App (后台接收)]
                                                       │
                                                       ▼
-                                               [IngestQueueService]
+                                               [IngestQueue]
                                                       │
                                                       ▼
                                                [SQLiteStore (持久化)]

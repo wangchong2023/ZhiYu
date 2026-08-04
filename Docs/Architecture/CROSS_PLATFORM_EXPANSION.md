@@ -364,7 +364,7 @@ export interface KnowledgeRepositoryContract {
 |-----------|---------|--------|
 | `Sources/Domain/Protocols/*.swift`（40+ 协议） | 提取为 IDL，Swift 协议对齐 IDL（重命名为 `*Contract`） | 2-3 周 |
 | `Sources/Domain/Models/*.swift` | 数据模型提取为 IDL，Swift struct 对齐 | 1 周 |
-| 现有协议实现（如 `SQLiteKnowledgeRepository`） | 改协议名，实现不变 | 1 周 |
+| 现有协议实现（如 `KnowledgePageRepository`） | 改协议名，实现不变 | 1 周 |
 | **总计** | | **4-5 周** |
 
 **改造原则**：

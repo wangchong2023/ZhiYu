@@ -138,12 +138,12 @@
 | TC-UI-01 | `RecapTests` (Tests/Unit) | `testDailyRecapRefreshRecalculation` |
 | TC-SEC-01 | `ZhiYuUITests` (Tests/UI) | `testBiometricUnlockAuthSimulation` |
 | TC-SEC-02 | `KnowledgeRepositoryTests` (Tests/Unit/Storage) | `testPrivatePageContentIsEncryptedInDB` |
-| TC-GRF-01 | `GraphLayoutEngineTests` (Tests/Unit/Graph) | `testLayoutMultiplePagesCreatesNodesForAll`, `testLayoutNodePositionsAreDistinct` |
+| TC-GRF-01 | `GraphLayoutProcessorTests` (Tests/Unit/Graph) | `testLayoutMultiplePagesCreatesNodesForAll`, `testLayoutNodePositionsAreDistinct` |
 | TC-GRF-02 | `KnowledgeBaseUITests` | `testNavigateTo3DGraph` |
 | TC-GRF-03 | `GraphCanvasUITests` | `testGraphCanvasZoomAndPan` |
 | TC-GRF-04 | `GraphClusteringServiceTests` | `testGraphClusteringStability` |
 | TC-GRF-05 | `GraphNodeUITests` | `testGraphNodeSelectionAndHighlight` |
-| TC-GRF-06 | `GraphLayoutEngineTests` (Tests/Unit/Graph) | `testLayoutIsolatedNodeHasNoEdges` |
+| TC-GRF-06 | `GraphLayoutProcessorTests` (Tests/Unit/Graph) | `testLayoutIsolatedNodeHasNoEdges` |
 | TC-PLG-01 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testLoadPluginRegistersAndCallsOnLoad`, `testUnloadPluginRemovesAndCallsOnUnload` |
 | TC-PLG-02 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testInterceptionPluginIsRegisteredAsInterceptor` |
 | TC-PLG-03 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testPluginExceptionDoesNotCrashRegistry` |

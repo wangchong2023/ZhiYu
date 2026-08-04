@@ -38,7 +38,7 @@ swift test --package-path Packages/ZhiYuFeatures
 ## 2. Mock 注入最佳实践（基于 `ServiceContainer` DI）
 
 ### 2.1 核心原则
-**严禁在单元测试中直接使用具体实现类**（如 `SQLiteStore`、`OpenAIClient`），必须通过协议注入 Mock 对象。
+**严禁在单元测试中直接使用具体实现类**（如 `SQLiteStore`、`OpenAICompatibleAdapter`），必须通过协议注入 Mock 对象。
 
 ### 2.2 标准 Mock 注入模式
 

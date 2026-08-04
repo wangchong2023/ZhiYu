@@ -24,7 +24,7 @@ ZhiYu 全仓库存在 **333 处平台宏**（`#if os()` / `#if !os()` / `#if can
 | 物理目录分离 | Backyard Birds watchOS | watchOS 独立 target + 独立 ContentView，共享逻辑走 SPM Package |
 | 单一 Multiplatform Target | Food Truck | iOS/iPadOS/macOS 单 target，依赖 SwiftUI 自适应组件（不含 watchOS） |
 
-**Apple 关键代码**：`PrefersTabNavigationEnvironmentKey` 用 `UITraitBridgedEnvironmentKey` 从 `UITraitCollection.userInterfaceIdiom` 读取，ContentView 用 `@Environment(\.prefersTabNavigation)` 切换 Tab vs SplitView。
+**Apple 关键代码**：`PrefersTabNavigationKey` 用 `UITraitBridgedEnvironmentKey` 从 `UITraitCollection.userInterfaceIdiom` 读取，ContentView 用 `@Environment(\.prefersTabNavigation)` 切换 Tab vs SplitView。
 
 ### 1.3 ZhiYu 现状对比
 
@@ -271,7 +271,7 @@ ContentView()
 
 | # | 文件:行 | 原始宏 | 修复模式 | 用哪个 Trait / 机制 |
 |---|--------|--------|---------|-------------------|
-| 1 | `AIModuleRegistrar.swift:25` | `#if os(watchOS)` | A（`@Inject`） | 移到 `Platforms/watchOS/Registrar/WatchAIRegistrar.swift` |
+| 1 | `AIModuleRegistrar.swift:25` | `#if os(watchOS)` | A（`@Inject`） | 移到 `Platforms/watchOS/Registrar/WatchPlatformRegistrar.swift` |
 | 2 | `TaskCenterView.swift:55` | `#if os(watchOS)` | B | `interfaceIdiom` + ViewFactory |
 | 3 | `PromptWorkshopView.swift:35` | `#if os(watchOS)` | B | `interfaceIdiom` + ViewFactory |
 | 4 | `SynthesisSlidesView.swift:73` | `#if os(iOS)` | A（`@Environment`） | `interfaceIdiom` |

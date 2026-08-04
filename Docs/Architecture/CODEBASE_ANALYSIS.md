@@ -74,7 +74,7 @@
 
 - **文件**: `Sources/Domain/Protocols/RAGGovernanceRepository.swift:14-95`
 - **问题**: 协议包含 **22 个方法**，涵盖 Token 记录、调用日志、RAG 评估、检索快照、相关性标注、检索指标 (Hit Rate、MRR、NDCG、Recall、F1、MAP)、延迟百分位数、Token 效率及用户反馈
-- **建议**: 拆分为 `TokenUsageRepository`、`RAGEvaluationRepository`、`RetrievalMetricsRepository`、`LatencyRepository`、`FeedbackRepository`
+- **建议**: 拆分为 `RAGGovernanceSQLiteStore`、`RAGGovernanceSQLiteStore`、`RetrievalMetricsRepository`、`LatencyRepository`、`FeedbackRepository`
 
 ### P0-5: `KnowledgePage` 依赖 L1 基础设施
 
@@ -153,7 +153,7 @@
 
 - **文件**: `Sources/Core/Base/Protocols/EmbeddingProvider.swift`
 - **问题**: 13 个方法混合了缓存管理 (`clearCacheAndReload`, `loadInitialCache`)、查询/搜索 (`search`, `multiQuerySearch`, `hydeSearch`) 和 chunk 管理 (`indexChunks`, `vectorizeChunks`)
-- **建议**: 拆分为 `EmbeddingSearchProvider` 和 `EmbeddingIndexProvider`
+- **建议**: 拆分为 `EmbeddingProvider` 和 `VectorIndexableStore`
 
 ### 3.4 `AnyPageStore` 协议 ISP 违反
 
@@ -269,8 +269,8 @@
 ### 4.7 `KnowledgeIngestPipeline` 硬编码魔法数字
 
 - **文件**: `Sources/Domain/RAG/KnowledgeIngestPipeline.swift:73,148,190`
-- **问题**: `chunkSize: 1000`, `chunkOverlap: 200`, `questions.prefix(3)` 应使用 `BusinessConstants`
-- **建议**: 抽取到 BusinessConstants
+- **问题**: `chunkSize: 1000`, `chunkOverlap: 200`, `questions.prefix(3)` 应使用 `AppConstants`
+- **建议**: 抽取到 AppConstants
 
 ### 4.8 `PromptService` 硬编码 UserDefaults 键
 
@@ -639,7 +639,7 @@ Tests/                  93   0   5  12   6   🟡
 | 当前方式 | 问题 | 建议 |
 |----------|------|------|
 | `UIImpactFeedbackGenerator` 直用 | iOS-only | `HapticFeedbackProtocol` via @Inject |
-| `PlatformModifiers.swift` 13 个 #if os | 散落 | `AppPlatformAdapter` 协议 |
+| `PlatformModifiers.swift` 13 个 #if os | 散落 | `PlatformRegistrar` 协议 |
 | `MarkdownTextView` 3 个 #if os | 散落 | 环境注入 |
 
 ### 跨平台复用率

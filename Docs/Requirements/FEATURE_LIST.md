@@ -12,7 +12,7 @@
 | **多模型适配 (Adapter Pattern)** | ✅ 已上线 | 支持 OpenAI, DeepSeek, SiliconFlow 及本地 Ollama，通过 `LLMService` 统一协议适配 |
 | **智能编译 (Smart Ingest)** | ✅ 已上线 | 自动提取标签、摘要并重构 Markdown 内容，`IngestService` 完整实现 |
 | **混合检索 (Hybrid RAG)** | ✅ 已上线 | FTS5+向量 RRF 融合，`RAGOrchestrator` + `EmbeddingManager` 全链路就绪 |
-| **离线处理队列 (Ingest Queue)** | ✅ 已上线 | 后台异步处理大文件导入，`IngestQueueService` 实现 |
+| **离线处理队列 (Ingest Queue)** | ✅ 已上线 | 后台异步处理大文件导入，`IngestQueue` 实现 |
 | **端侧模型推理 (On-Device LLM)** | 🚧 开发中 | `OnDeviceLLMSettingsView` 就绪，端侧推理通道需端到端验证 |
 
 ## 2. 知识可视化 (Visualization)
@@ -40,7 +40,7 @@
 
 | 特性 | 状态 | 说明 |
 | :--- | :--- | :--- |
-| **生物识别金库 (FaceID/TouchID)** | ✅ 已上线 | `VaultSecurityService` + `KeychainService` 完整实现 |
+| **生物识别金库 (FaceID/TouchID)** | ✅ 已上线 | `VaultStorageSecurityService` + `KeychainService` 完整实现 |
 | **隐私模式（高斯模糊）** | ✅ 已上线 | `#private` 标签触发模糊处理，`PrivacyManager` 实现 |
 | **纯本地优先存储** | ✅ 已上线 | SQLite + `SQLiteStore` Actor，无强制云同步 |
 | **数据库静态加密** | 📋 规划中 | SQLCipher 方案尚未集成（见安全审计高风险项） |
@@ -68,8 +68,8 @@
 | 特性 | 状态 | 说明 |
 | :--- | :--- | :--- |
 | **OCR 扫描** | ✅ 已上线 | Vision 框架 OCR，`ingest.ocr` 按钮就绪，通过 UI 测试 |
-| **语音笔记** | ✅ 已上线 | 10+ 语言实时转写，`VoiceNoteService` 实现 |
-| **PDF 解析** | ✅ 已上线 | 原生 PDF 读取与结构化提取，`PDFProcessor` 完整实现 |
+| **语音笔记** | ✅ 已上线 | 10+ 语言实时转写，`SpeechServiceProtocol` 实现 |
+| **PDF 解析** | ✅ 已上线 | 原生 PDF 读取与结构化提取，`PDFProcessorProxy` 完整实现 |
 | **手动录入 (Manual Entry)** | ✅ 已上线 | `ingest.manual` 按钮与表单完整，通过 UI 测试 |
 | **高级导出 (PPTX/Word)** | 📋 规划中 | 将基于 Markdown AST 结构化树生成，尚未集成导出库 |
 

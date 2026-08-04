@@ -35,7 +35,7 @@
 
 | 文件 | 改动 |
 |------|------|
-| `Sources/Features/AI/AIModuleRegistrar.swift` | 移除内部 `#if os(watchOS)`，拆分到 `WatchAIRegistrar` |
+| `Sources/Features/AI/AIModuleRegistrar.swift` | 移除内部 `#if os(watchOS)`，拆分到 `WatchPlatformRegistrar` |
 | `Sources/Platforms/watchOS/Registrar/WatchPlatformRegistrar.swift` | 新增 watchOS OCR/Speech 注册 |
 | `Sources/Features/AI/Quiz/View/QuizPresentationModifier.swift` | `#if os(iOS) && !targetEnvironment(macCatalyst)` → `@Environment(\.interfaceIdiom)` |
 | `Sources/Features/AI/Synthesis/View/SynthesisSlidesView.swift` | `#if os(iOS)` → `@Environment(\.interfaceIdiom)` |

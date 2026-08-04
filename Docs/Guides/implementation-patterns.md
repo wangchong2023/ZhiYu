@@ -158,14 +158,14 @@ Chat 用户输入                    max_tokens = 1000               API 硬限�
 ### 流式 Chat 特殊处理
 
 流式 Chat（`LLMChatService.streamChat`）走独立管线：
-- **API 层**：`max_tokens: BusinessConstants.AI.maxOutputTokens`
+- **API 层**：`max_tokens: AppConstants.AI.maxOutputTokens`
 - **Prompt 层**：注入 `lengthHint` → `"Keep response within 1000 characters."`
 - **输入层**：`ChatCoordinator` 截断用户输入至 `maxUserInputLength`
 
 ### 非流式 generate() 特殊处理
 
 所有通过 `llm.generate()` 的调用（合成、摄取、检索、重构）：
-- `ChatRunner.generate()` 接受 `maxTokens` 参数，默认值 = `BusinessConstants.AI.maxOutputTokens`
+- `ChatRunner.generate()` 接受 `maxTokens` 参数，默认值 = `AppConstants.AI.maxOutputTokens`
 - 协议 `LLMChatServiceProtocol` 声明 `maxTokens:` 为必选参数
 - 所有现有调用方无需修改——默认值自动生效
 - 特殊需求（如 `LLMRefactorService`）可显式传参覆盖：
@@ -177,7 +177,7 @@ Chat 用户输入                    max_tokens = 1000               API 硬限�
 ### 如何调整
 
 ```swift
-// Sources/Domain/Models/BusinessConstants.swift
+// Sources/Domain/Models/AppConstants.swift
 public struct AI {
     public static let maxUserInputLength: Int = 1000     // ← 改这里
     public static let maxSynthesisInputLength: Int = 500 // ← 改这里

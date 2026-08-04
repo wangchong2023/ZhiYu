@@ -356,31 +356,6 @@ project_targets:
     added: 2026-08-04
     expiry_check: true
     category: [doc-drift]
-  - symbol: ZhiYuAICoreTests
-    reason: SPM 包测试 target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ZhiYuFeaturesTests
-    reason: SPM 包测试 target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UFPStorageTests
-    reason: SPM 包测试 target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UFPDesignSystemTests
-    reason: SPM 包测试 target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UFPCoreTests
-    reason: SPM 包测试 target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
   - symbol: UFPCoreTestMocks
     reason: SPM 包测试 mock target 名
     added: 2026-08-04
@@ -819,11 +794,6 @@ third_party_libraries:
     added: 2026-08-04
     expiry_check: false
     category: [doc-drift]
-  - symbol: AppLottieView
-    reason: Lottie 动画视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
   - symbol: SwiftJSONSanitizer
     reason: JSON 清洗库
     added: 2026-08-04
@@ -833,6 +803,11 @@ third_party_libraries:
     reason: WebSocket 协议/库
     added: 2026-08-04
     expiry_check: false
+    category: [doc-drift]
+  - symbol: PartialJSON
+    reason: swift-partial-json 库（JSONRepairProcessor 依赖）
+    added: 2026-08-04
+    expiry_check: true
     category: [doc-drift]
 
 # --- 其他 Apple 框架模块名（作为概念词引用） ---
@@ -1188,6 +1163,204 @@ ci_variables:
     category: [doc-drift]
   - symbol: AppNotifications
     reason: 通知概念词
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- 规划中类型（设计文档引用但尚未实现，expiry_check=false 永不过期） ---
+# 语义：这些类型在设计/需求文档中规划但尚未实现，文档引用是"设计意图"非"代码事实"
+# 当某类型被实现后，应主动移除此豁免（但 expiry_check=false 不强制检测）
+planned_types:
+  - symbol: GraphView
+    reason: 规划中图谱视图（实际为 GraphContainerView）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PlatformModifiers
+    reason: 规划中平台修饰符集合（实际为 extension View 方法）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PlatformCapabilities
+    reason: 规划中平台能力集合（实际为 BiometricAuthProviderProtocol 等）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PlatformTraits
+    reason: 规划中平台特征集合（实际为 InterfaceIdiom 枚举）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: RouterProtocol
+    reason: 规划中路由协议（实际由 final class Router 直接承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: WidgetEntry
+    reason: 规划中 Widget 通用 Entry（实际为各 Widget 专属 Entry）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: VectorStore
+    reason: 规划中向量存储（实际为 VectorIndexableStore 协议）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: VaultWidgetSyncManager
+    reason: 规划中 Widget 同步管理器（实际为 extension VaultService）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: RetrievalMetricsRepository
+    reason: 规划中检索指标仓储（实际由 RAGGovernanceSQLiteStore 承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: RecursiveChunker
+    reason: 规划中递归分块器（实际仅有 TextChunker 协议）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PrivacySanitizer
+    reason: 规划中隐私清洗器（实际由 isPrivacyModeEnabled 开关承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PrivacyManager
+    reason: 规划中隐私管理器（实际由 SettingsStore.isPrivacyModeEnabled 承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PrivacyCoverManager
+    reason: 规划中隐私覆盖管理器（未实现）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PrivacyBlurOverlayView
+    reason: 规划中隐私模糊视图（实际内联于 MarkdownRendererView）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PluginWatchdog
+    reason: 规划中插件看门狗（实际内嵌于 PluginSandboxGateway）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PluginRateLimiter
+    reason: 规划中插件限流器（未实现）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PageMetadata
+    reason: 规划中页面元数据类型（实际由 KnowledgePage 模型承载）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: MarkdownTextView
+    reason: 规划中 Markdown 视图（实际为 MarkdownTextViewRepresentable）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: LogServiceProtocol
+    reason: 规划中日志协议（实际由 Logger 单例承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: LogService
+    reason: 规划中日志服务（实际为 Logger）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: LatencyRepository
+    reason: 规划中延迟仓储（实际由 RAGGovernanceSQLiteStore.calculateRetrievalLatency 承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: KnowledgeGraphView
+    reason: 规划中知识图谱视图（实际为 GraphContainerView）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: KnowledgeBase
+    reason: 规划中知识库类型（实际为字符串常量+UI 测试基类名）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: HealthCheckService
+    reason: 规划中健康检查服务（实际由 LintService 承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: GlassStyle
+    reason: 规划中玻璃风格类型（实际为 GlassCardModifier）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: DatabaseSchemaMigrator
+    reason: 文件名/概念引用（实际为 extension DatabaseManager，非独立类型）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: ConflictResolverView
+    reason: 规划中冲突解决视图（实际内嵌于 iCloudSyncView）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: ChatViewModel
+    reason: 规划中 Chat 视图模型（实际由 ChatCoordinator+ChatService 承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AppCloudSyncService
+    reason: 规划中云同步服务（实际为 iCloudSyncService）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Adapter
+    reason: 概念词（适配器模式，非具体类型）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: ActivityLogService
+    reason: 规划中活动日志服务（实际由 Logger.addLog+LogEntry 承担）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- 规划中测试类（文档引用但尚未实现，expiry_check=false 永不过期） ---
+planned_test_classes:
+  - symbol: WatchOCRServiceTests
+    reason: 规划中 WatchOCR 测试类（实际为 WatchPlatformTests.testWatchOCRServiceStub）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: OnDeviceLLMServiceTests
+    reason: 规划中 OnDeviceLLM 测试类（未实现）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: RecapTests
+    reason: 规划中 Recap 测试类（实际为 DailyRecap 相关测试）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: GraphNodeUITests
+    reason: 规划中 GraphNode UI 测试类（未实现）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: GraphCanvasUITests
+    reason: 规划中 GraphCanvas UI 测试类（未实现）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: DatabaseIntegrityTests
+    reason: 规划中数据库完整性测试类（实际为 SecurityIntegrityTests）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AuditLoggerTests
+    reason: 规划中审计日志测试类（未实现）
     added: 2026-08-04
     expiry_check: false
     category: [doc-drift]

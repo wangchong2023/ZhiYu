@@ -175,7 +175,7 @@ sequenceDiagram
 
 智宇 (ZhiYu) 引入了行业标准的本地安全防线，确保绝密资产防窃听、防物理提取：
 
-- **LAContext 状态机隔离**: 认证流程通过 `BiometricAuthenticator` (位于 `Sources/Core/System/`) 进行封装。`LAContext` 在单次认证事务中进行生命周期销毁，避免上下文状态缓存泄露；在主线程 (`@MainActor`) 调用以保障 UI 交互线程安全性。
+- **LAContext 状态机隔离**: 认证流程通过 `BiometricAuthProviderProtocol` (位于 `Sources/Core/System/`) 进行封装。`LAContext` 在单次认证事务中进行生命周期销毁，避免上下文状态缓存泄露；在主线程 (`@MainActor`) 调用以保障 UI 交互线程安全性。
 - **Secure Enclave 与 Keychain 硬件级保护**:
   - 本地局部保险箱 (Vault) 的物理加密密钥不存储于常规沙盒。系统将派生出的 **DEK (Database Encryption Key)** 存入 iOS/macOS 的 **Keychain** 中。
   - 创建该 Keychain 节点时，强制附加 `SecAccessControl` 配置，将访问权限限定为 `kSecAccessControlBiometryAny` (即必须通过 FaceID 或 TouchID 活体检测)。
@@ -324,7 +324,7 @@ stateDiagram-v2
 
 ### 9.1 数据流向与 AppGroup 物理沙盒共享
 *   **物理文件墙屏障**：主 App 与 Widget 插件处于完全独立的进程沙盒内。Widget Target `ZhiYuWidgets` 物理禁止直接连接主 App 的 SQLite 数据库，防范锁死和多进程并发损坏。
-*   **AppGroup 中转数据缓存**：主 App 每次写入/删除页面时，在后台 Detached 任务中动态计算当前的 `KnowledgeStats` (知识元数据，包含总量与活跃增量)，将其以 JSON 字符串形式编码并写入 AppGroup 共享目录：`AppGroup/zhiyu_shared_stats.json`。
+*   **AppGroup 中转数据缓存**：主 App 每次写入/删除页面时，在后台 Detached 任务中动态计算当前的 `KnowledgeStatItem` (知识元数据，包含总量与活跃增量)，将其以 JSON 字符串形式编码并写入 AppGroup 共享目录：`AppGroup/zhiyu_shared_stats.json`。
 *   **小组件极速渲染**：`KnowledgeStatsWidget` 刷新时，不触发任何数据库连接或复杂的 RAG 检索，直接从 AppGroup 读取该极简 JSON 缓存并快速渲染，内存常驻极低 (<15MB，远低于系统 30MB 门限)。
 
 ### 9.2 物理多 Vault 切换瞬间的防竞争与防死锁退避
