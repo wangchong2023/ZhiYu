@@ -1,8 +1,8 @@
 # 智宇 (ZhiYu) 概要设计文档 (High Level Design)
 
-**版本**：2.1  
+**版本**：2.2  
 **作者**：架构师团队  
-**日期**：2026-06-23  
+**日期**：2026-08-04  
 
 ---
 
@@ -212,19 +212,19 @@ public protocol LLMServiceProtocol: Sendable {
 | 🟡 P1 | `Sources/Core/Base/Protocols/LLMProtocols.swift:29` | L0 协议引用 Domain 类型 |
 | 🟡 P1 | `Sources/Infrastructure/Storage/Sync/iCloudSyncCoordinator.swift:21-22` | L1 同步协调器引用 L3 AppStore |
 
-### 5.2 模块健康度矩阵（2026-06-23 更新）
+### 5.2 模块健康度矩阵（2026-08-04 更新）
 
 | 模块 | 文件数 | 主要改进方向 |
 |------|--------|-------------|
 | `Core/` | 76 | 并发安全 (@unchecked Sendable → actor) |
 | `Infrastructure/` | 99 | PluginRegistry SRP 拆分完成（706→159） |
-| `Domain/` | 53 | GRDB import 已清零 ✅ |
-| `Features/` | 208 | #if os 宏 46→10 ✅, 9 文件 SRP 重构完成 ✅ |
-| `Shared/` | 103 | PlatformModifiers 协议化, SRP 拆分（3 文件） |
+| `Domain/` | 53 | GRDB import 已清零 ✅, `#if os()` 宏已清零 ✅ |
+| `Features/` | 208 | `#if os()` 宏 46→0 彻底清零 ✅, 9 文件 SRP 重构完成 ✅ |
+| `Shared/` | 103 | PlatformModifiers 协议化 (20+ modifier), PlatformTraits 运行时 Trait (4 个), SRP 拆分（3 文件） |
 | `Platforms/` | 62 | 新增 12 个协议实现类 + 3 个 Registrar |
 | `App/` | 18 | AuthView/AuthService/SynthesisView 拆分 |
 | `Localization/` | 41 | — |
-| **合计** | **660** | P0/P1 全部清零 ✅ |
+| **合计** | **660** | P0/P1 全部清零 ✅, 平台宏彻底清零 ✅ |
 
 ### 5.3 已完成的代码质量修复
 
@@ -238,13 +238,50 @@ public protocol LLMServiceProtocol: Sendable {
 | P1 修复 | `@preconcurrency import SwiftUI` 清理 | 4 文件 |
 | P1 修复 | `iOSSpeechService` 宏密度降低（10→4 处） | 1 文件 → 2 文件 |
 | P1 修复 | 14 大文件 SRP 重构（9 主文件 → 34 新文件） | 9 文件 + 34 新文件 |
-| CI 增强 | 3 个新 Gatekeeper 脚本 + 12 个 CI 检查项全量通过 | Tools/scripts/ |
+| **平台宏清零** | **Phase 3+4：47 处 `#if !os(` + 2 处 `#if os(watchOS)` + 1 处 `#if targetEnvironment(macCatalyst)` + 1 处复合条件全部消除** | **Features/Domain 层** |
+| CI 增强 | 3 个新 Gatekeeper 脚本 + 15 个 CI 检查项全量通过 | Tools/scripts/ |
+| CI 增强 | `check-code-platform-macros.py` 正则漏洞修复（新增 `!os`/`elseif os`/`macCatalyst`/复合条件检测） | Tools/ios/ |
+| CI 增强 | PMD 7.x cpd `--files` 参数修复为 `--file-list` | Tools/ci/ |
 | 测试增强 | 17 个跨平台协议单元测试 + 852 全量测试通过 | Tests/Unit/ |
 | 文档更新 | 新增 `PLATFORM_PROTOCOL_ARCHITECTURE.md` + `srp-file-organization.md` | 2 新文档 |
 | Docker 清理 | 释放 206 GB (85%) — 清理 120+ 旧版镜像 | 3 个微服务 |
 | Mock 服务重构 | 抽取 mock_constants.py, 消除重复参数模板 | 4 Python 文件 (-191 行) |
 
 > **审计报告**：[`Tools/Audit/ZhiYu_Codebase_Audit_2026-06-22.md`](../../Tools/Audit/ZhiYu_Codebase_Audit_2026-06-22.md) — P0/P1 全部清零 ✅
+
+---
+
+## 5.5 平台宏清零成果（2026-08-04）
+
+智宇完成 **平台宏彻底清零**，业务层（Features/Domain）不再包含任何 `#if os()` / `#if !os()` / `#if targetEnvironment(macCatalyst)` 宏。
+
+### 清零规模
+
+| 类型 | 处理数 | 替代方案 |
+|------|--------|---------|
+| `#if !os(` 反向判定 | 47 | View modifier / ViewBuilder 分支 / DI 容器 / canImport |
+| `#if os(watchOS)` 正向判定 | 2 | 运行时 Trait `interfaceIdiom` |
+| `#if targetEnvironment(macCatalyst)` | 1 | `InterfaceIdiom.macCatalyst` 运行时判断 |
+| 复合条件含 `os()` | 1 | `#if canImport(GoogleSignIn)` 简化 |
+
+### 平台适配基础设施
+
+| 组件 | 位置 | 说明 |
+|------|------|------|
+| `PlatformTraits` | `Shared/` | 4 个运行时 Trait（interfaceIdiom/prefersTabNavigation/supportsTouch/supportsFullScreenImmersive） |
+| `PlatformModifiers` | `Shared/UIComponents/Modifiers/` | 20+ 语义化 View modifier |
+| `PlatformRegistrar` | `Platforms/{iOS,macOS,watchOS}/Registrar/` | DI 层平台服务分发 |
+| 5 个 L0 协议 | `Core/Base/Protocols/` | DeviceInfo/URLOpener/ShareSheet/Pasteboard/KeyStore |
+
+### CI 门禁
+
+`check-code-platform-macros.py` 已集成至 `Tools/ci/run-code-static-analysis.sh` 静态分析流水线，检测范围：
+- `#if os(` / `#if !os(` 正反向判定
+- `#elseif os(` / `#elseif !os(` 链式分支
+- `#if targetEnvironment(macCatalyst)` Catalyst 判定
+- 复合条件中嵌入 `os()` 判定（启发式正则）
+
+> **详细设计**：参见 [`Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md`](./PLATFORM_PROTOCOL_ARCHITECTURE.md)
 
 ---
 

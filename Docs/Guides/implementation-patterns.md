@@ -207,15 +207,136 @@ throw AppError.exportNotSupported()
 
 **已应用范围**: Insight(6处), Ingest(4处), Auth(10处), Synthesis(2处), Security(1处)
 
-## 平台适配模式 (v2.1 更新)
-
-### 协议驱动跨平台架构
+## 平台适配模式 (v2.2 更新 — 平台宏彻底清零)
 
 > 完整设计见 [`Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md`](../Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md)
 
-**核心原则**：业务层（Features/Domain）绝不使用 `#if os()` 宏。平台差异通过协议抽象 + DI 注入解决。
+**核心原则**：业务层（Features/Domain）绝不使用 `#if os()` / `#if !os()` / `#if targetEnvironment(macCatalyst)` 宏。平台差异通过 5 种替代方案解决。
 
-**协议定义** → `Core/Base/Protocols/`:
+### 平台宏策略
+
+| 禁止（Features/Domain 层） | 允许 |
+|--------------------------|------|
+| `#if os()` / `#if !os()` / `#elseif os()` | `#if canImport(框架)` 框架依赖判断 |
+| `#if targetEnvironment(macCatalyst)` | `#if targetEnvironment(simulator)` 运行环境判断 |
+| 复合条件含 `os()` 判定 | `#if os()` 在 Shared/Platforms/Core/Infrastructure/App 层 |
+
+### 5 种替代方案
+
+#### 方案 1：View modifier 语义化
+
+适用于 View 层修饰符链的平台差异。
+
+```swift
+// ❌ Before — 编译期宏
+#if !os(watchOS)
+    .listStyle(.sidebar)
+#endif
+#if os(iOS)
+    .pickerStyle(.segmented)
+#endif
+
+// ✅ After — 语义化 modifier
+.adaptiveListStyle()
+.segmentedPickerStyleIfAvailable()
+.insetGroupedListStyleIfIOS()
+.hiddenOnWatch()
+.skipOnWatch { $0.keyboardType(.numberPad) }
+```
+
+#### 方案 2：ViewBuilder 运行时分支
+
+适用于 SwiftUI 框架级类型差异（如 `NavigationStack` vs `NavigationView`）。
+
+```swift
+// ❌ Before — 编译期宏
+#if os(watchOS)
+NavigationView { content }
+#else
+NavigationStack { content }
+#endif
+
+// ✅ After — 运行时 Trait 分支
+@Environment(\.interfaceIdiom) private var idiom
+
+var body: some View {
+    if idiom == .watch {
+        NavigationView { content }
+    } else {
+        NavigationStack { content }
+    }
+}
+```
+
+#### 方案 3：DI 容器处理业务逻辑差异
+
+适用于服务能力的平台差异（watchOS 不支持某些服务）。
+
+```swift
+// ❌ Before — 业务逻辑被宏包裹
+#if !os(watchOS)
+func performShare(items: [Any]) async {
+    await shareSheet.presentShareSheet(items: items)
+}
+#endif
+
+// ✅ After — 移除宏，依赖 WatchPlatformRegistrar 不注册 ShareSheetProtocol
+func performShare(items: [Any]) async {
+    guard let shareSheet = ServiceContainer.shared.resolve(ShareSheetProtocol?.self) else {
+        return // watchOS 上未注册，自动跳过
+    }
+    await shareSheet.presentShareSheet(items: items)
+}
+```
+
+#### 方案 4：canImport 替代 !os(watchOS)
+
+适用于框架依赖判断（watchOS 缺少某些系统框架）。
+
+```swift
+// ❌ Before — 反向 os 判定
+#if !os(watchOS)
+import UIKit
+class GoogleAuthStrategy: AuthStrategy { ... }
+#endif
+
+// ✅ After — canImport 框架依赖判断
+#if canImport(UIKit)
+import UIKit
+class GoogleAuthStrategy: AuthStrategy { ... }
+#endif
+```
+
+#### 方案 5：InterfaceIdiom 运行时判断 Mac Catalyst
+
+适用于 Mac Catalyst 专属逻辑。
+
+```swift
+// ❌ Before — 编译期宏
+#if targetEnvironment(macCatalyst)
+let isCatalyst = true
+#endif
+
+// ✅ After — 运行时 Trait
+@Environment(\.interfaceIdiom) private var idiom
+let isCatalyst = (idiom == .macCatalyst)
+```
+
+### 复合条件简化
+
+```swift
+// ❌ Before — 复合条件含 os() 判定
+#if canImport(GoogleSignIn) && !os(watchOS)
+import GoogleSignIn
+#endif
+
+// ✅ After — GoogleSignIn 本身不支持 watchOS，canImport 已足够
+#if canImport(GoogleSignIn)
+import GoogleSignIn
+#endif
+```
+
+### 协议定义 → `Core/Base/Protocols/`
 | 协议 | 能力 |
 |------|------|
 | `DeviceInfoProtocol` | 系统版本、设备型号、屏幕高度 |
@@ -225,6 +346,21 @@ throw AppError.exportNotSupported()
 
 **平台实现** → `Platforms/{iOS,macOS,watchOS}/Services/` (共 12 个实现类)
 **DI 注册** → `Platforms/{iOS,macOS,watchOS}/Registrar/` (通过 `PlatformRegistrar` 模式)
+
+### PlatformTraits — 4 个运行时 Trait
+
+| Trait | 类型 | 说明 |
+|-------|------|------|
+| `interfaceIdiom` | `InterfaceIdiom` | `.phone` / `.pad` / `.mac` / `.macCatalyst` / `.watch` / `.tv` |
+| `prefersTabNavigation` | `Bool` | iPad/Mac 偏好 TabView |
+| `supportsTouch` | `Bool` | 触摸设备判定 |
+| `supportsFullScreenImmersive` | `Bool` | 全屏沉浸支持判定 |
+
+```swift
+@Environment(\.interfaceIdiom) private var idiom
+@Environment(\.prefersTabNavigation) private var prefersTab
+@Environment(\.supportsTouch) private var supportsTouch
+```
 
 ### PlatformModifiers — View 层平台差异封装
 
@@ -242,9 +378,10 @@ throw AppError.exportNotSupported()
 .toolbarIfNotWatchOS()                 // 非手表上渲染工具栏
 .adaptiveSidebarListStyle()            // macOS 自动 .sidebar
 .skipOnWatch { $0.keyboardType(.numberPad) } // watch 上安全跳过
+.insetGroupedListStyleIfIOS()          // iOS 专属 inset grouped
 ```
 
-**位置**: `Shared/UIComponents/Modifiers/PlatformModifiers.swift`
+**位置**: `Shared/UIComponents/Modifiers/PlatformModifiers.swift`（20+ modifier）
 
 ### PlatformRegistrar — DI 层平台分发
 
@@ -260,6 +397,15 @@ iOSPlatformRegistrar.registerServices(in: container)
 ```
 
 **各平台实现**: `Platforms/{iOS, macOS, watchOS}/{iOS, Mac, Watch}PlatformRegistrar.swift`
+
+### CI 门禁
+
+`check-code-platform-macros.py` 检测以下形式（任一发现即熔断构建）：
+- `#if os(` / `#if !os(` 正反向判定
+- `#elseif os(` / `#elseif !os(` 链式分支
+- `#if targetEnvironment(macCatalyst)` Catalyst 判定
+- 复合条件中嵌入 `os()` 判定（启发式正则）
+
 
 ## DesignSystem 常量迁移模式 (v2.0 新增)
 

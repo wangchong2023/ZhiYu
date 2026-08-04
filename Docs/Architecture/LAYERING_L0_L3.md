@@ -137,14 +137,14 @@ public final class ChatViewModel: ObservableObject {
 
 ### 红线 4：L0 基座层引用 L3 应用层类型
 
-> ✅ **已修复** (2026-06-24)：`ToolItem` 已下移至 `Domain/Models/ToolItem.swift` (L1.5)，L0 RouterProtocol 自然解析。`AppRoute`/`SidebarSelection` 属 L3 导航概念，RouterProtocol 已用 `#if !os(watchOS)` 隔离，维持现状。
+> ✅ **已修复** (2026-06-24)：`ToolItem` 已下移至 `Domain/Models/ToolItem.swift` (L1.5)，L0 RouterProtocol 自然解析。`AppRoute`/`SidebarSelection` 属 L3 导航概念，RouterProtocol 已用运行时 Trait `interfaceIdiom` 隔离（替代原 `#if !os(watchOS)` 宏）。
 
 *   **已修复**：
     - `ToolItem` 从 L3 `AppModels.swift` 移至 L1.5 `Domain/Models/ToolItem.swift` ✅
     - `RouterProtocol` 使用未限定 `ToolItem` → 自然解析至 L1.5 ✅
     - `AppStore.ToolItem` 替换为全局 `ToolItem` + `extension ToolItem { var route }` ✅
 *   **维持现状**：
-    - `AppRoute`、`SidebarSelection` — L3 导航概念，RouterProtocol 中已 `#if !os(watchOS)` 隔离
+    - `AppRoute`、`SidebarSelection` — L3 导航概念，RouterProtocol 中已用运行时 Trait `interfaceIdiom` 隔离（2026-08-04 平台宏清零后替代 `#if !os(watchOS)`）
     - `AppTab` — 已在 `Domain/Models/AppTab.swift` (L1.5)，L0→L1.5 合规 ⚠️ 审计误报
 
 ### 红线 5：L1-L2 领域/业务层直接 import 框架实现
@@ -187,18 +187,29 @@ public final class ChatViewModel: ObservableObject {
     - 不可变值类型 → 标注 `struct: Sendable`
     - 真正需要 `os_unfair_lock` 的场景 → 封装到独立的 `Locked<T>` 包装器中
 
-### 红线 7：业务层 (Features) 禁止直接使用 `#if os()` 平台宏
+### 红线 7：业务层 (Features/Domain) 禁止直接使用 `#if os()` 平台宏
 
-> ✅ **已修复** (2026-06-22)：经过 Phase 1+2 协议化改造，Features 层 `#if os()` 宏从 **46 处降至 10 处**（-78%）。剩余 10 处为 watchOS 结构性差异（如 `NavigationStack` vs `NavigationView`），属合理保留。
+> ✅ **已彻底清零** (2026-08-04)：经过 Phase 1+2+3+4 四阶段协议化改造，Features/Domain 层 `#if os()` / `#if !os()` / `#if targetEnvironment(macCatalyst)` 宏从 **46 处降至 0 处**（-100%）。剩余的 watchOS 结构性差异（如 `NavigationStack` vs `NavigationView`）已通过运行时 Trait `interfaceIdiom` + ViewBuilder 分支解决。
 
-*   **违规行为**：在 `Sources/Features/` 和 `Sources/Domain/` 的任何文件中使用 `#if os(iOS)`、`#if os(macOS)`、`#if os(watchOS)` 宏。
+*   **违规行为**：在 `Sources/Features/` 和 `Sources/Domain/` 的任何文件中使用以下宏：
+    - `#if os(iOS)` / `#if os(macOS)` / `#if os(watchOS)` 正向判定
+    - `#if !os(watchOS)` / `#if !os(macOS)` 反向判定
+    - `#elseif os()` / `#elseif !os()` 链式分支
+    - `#if targetEnvironment(macCatalyst)` Catalyst 判定
+    - 复合条件中嵌入 `os()` 判定（如 `canImport(X) && !os(watchOS)`）
 *   **危害**：将平台差异散落在业务逻辑中，导致代码分支膨胀、难以测试、新增平台时需修改大量业务文件。
-*   **最佳实践**（已验证生效）：
-    1. 在 `Core/Base/Protocols/` 定义平台能力协议（`DeviceInfoProtocol`、`URLOpenerProtocol`、`ShareSheetProtocol`、`PasteboardProtocol`）
-    2. 在 `Platforms/iOS/`、`Platforms/macOS/`、`Platforms/watchOS/` 分别实现（如 `iOSDeviceInfoService`、`MacURLOpenerService` 等共 12 个实现类）
-    3. 通过 `PlatformRegistrar` 注册到 `ServiceContainer`，业务层通过 `@Inject` 注入协议
-    4. UI 层面的平台差异使用 `PlatformModifiers` View extension（如 `adaptiveListStyle()`）
-*   **例外**：`Platforms/` 目录本身、`Sources/App/` 入口层可合理使用 `#if os()` 宏。
+*   **5 种替代方案**（已验证生效）：
+    1. **View modifier 语义化**：`PlatformModifiers`（`hiddenOnWatch()` / `skipOnWatch {}` / `insetGroupedListStyleIfIOS()` 等 20+ modifier）
+    2. **ViewBuilder 运行时分支**：`@Environment(\.interfaceIdiom) private var idiom` + `if idiom == .watch { ... } else { ... }`
+    3. **业务逻辑 DI 容器**：移除宏包裹，依赖 `WatchPlatformRegistrar` 不注册 watchOS 不支持的服务
+    4. **框架依赖 canImport**：`#if canImport(UIKit)` 替代 `#if !os(watchOS)`
+    5. **Mac Catalyst 运行时判断**：`InterfaceIdiom.macCatalyst` 替代 `#if targetEnvironment(macCatalyst)`
+*   **允许的宏形式**：
+    - `#if canImport(框架)` — 框架依赖判断（如 Auth Strategy 依赖 UIKit/AuthenticationServices）
+    - `#if targetEnvironment(simulator)` — 运行环境判断（模拟器 vs 真机）
+    - `#if os()` 在 `Shared/Platforms/Core/Infrastructure/App` 层 — 基础设施层平台分发
+*   **例外**：`Platforms/` 目录本身、`Sources/App/` 入口层、`Sources/Shared/`、`Sources/Core/`、`Sources/Infrastructure/` 可合理使用 `#if os()` 宏（基础设施层平台分发）。
+*   **CI 门禁**：`check-code-platform-macros.py` 检测正反向 `os()` 判定、`elseif os()` 链式分支、`targetEnvironment(macCatalyst)`、复合条件中的 `os()` 判定，任一发现即熔断构建。
 *   **详细设计**：参见 [`Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md`](./PLATFORM_PROTOCOL_ARCHITECTURE.md)
 
 ### 红线 8：View 文件必须标注为 [L3]，不是 [L2]
@@ -219,7 +230,7 @@ public final class ChatViewModel: ObservableObject {
 
 | # | 脚本 | 检测内容 | 路径 |
 |---|------|---------|------|
-| 1 | `check-code-platform-macros.py` | Features/Domain 层 `#if os()` 宏阻断 | `Tools/scripts/` |
+| 1 | `check-code-platform-macros.py` | Features/Domain 层 `#if os()` / `#if !os()` / `#elseif os()` / `#if targetEnvironment(macCatalyst)` / 复合条件含 `os()` 宏阻断 | `Tools/scripts/` |
 | 2 | `audit-code-magic-strings.py` | 硬编码 URL / UserDefaults key 检测 | `Tools/scripts/` |
 | 3 | `check-code-file-headers.py` | 文件层级标注 + 核心职责完整性验证 | `Tools/scripts/` |
 | 4 | `audit-arch-dependency.py` | L0-L3 跨层非法依赖扫描 | `Tools/ios/` |

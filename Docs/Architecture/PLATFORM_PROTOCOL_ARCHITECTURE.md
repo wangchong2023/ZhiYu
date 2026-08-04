@@ -1,18 +1,57 @@
 # 智宇 (ZhiYu) 跨平台协议分层架构设计
 
-**版本**：1.0  
-**日期**：2026-06-23  
+**版本**：2.0  
+**日期**：2026-08-04  
 **状态**：已实施验证 ✅
 
 ---
 
 ## 1. 设计目标
 
-消除业务层（Features/Domain）的平台差异硬编码，通过 **协议抽象 + DI 注入 + Registrar 分发** 三层机制，实现业务逻辑与平台实现的彻底解耦。
+消除业务层（Features/Domain）的平台差异硬编码，通过 **协议抽象 + DI 注入 + Registrar 分发 + 运行时 Trait** 四层机制，实现业务逻辑与平台实现的彻底解耦。
 
 ### 核心原则
 
-> **业务层绝不使用 `#if os()` 宏。平台差异通过协议在基础设施层封装。**
+> **业务层绝不使用 `#if os()` / `#if !os()` 宏。平台差异通过协议在基础设施层封装，或通过运行时 Trait 在 ViewBuilder 中分支。**
+
+---
+
+## 2. 平台宏策略（最终确定）
+
+### 2.1 禁止形式（Features/Domain 层）
+
+以下宏形式在 `Sources/Features/` 与 `Sources/Domain/` 中**绝对禁止**，由 CI 静态分析 `check-code-platform-macros.py` 硬阻断：
+
+| 禁止形式 | 替代方案 |
+|---------|---------|
+| `#if os(iOS)` / `#if os(macOS)` / `#if os(watchOS)` | 运行时 Trait (`interfaceIdiom`) 或 DI 容器 |
+| `#if !os(watchOS)` | `#if canImport(UIKit)` 或 `hiddenOnWatch()` modifier |
+| `#elseif os()` / `#elseif !os()` | ViewBuilder 运行时分支 |
+| `#if targetEnvironment(macCatalyst)` | `InterfaceIdiom.macCatalyst` 运行时判断 |
+
+### 2.2 允许形式
+
+| 允许形式 | 适用场景 | 说明 |
+|---------|---------|------|
+| `#if canImport(框架)` | 框架依赖判断 | 如 Auth Strategy 依赖 `UIKit`/`AuthenticationServices`，watchOS 无此框架 |
+| `#if targetEnvironment(simulator)` | 运行环境判断 | 模拟器 vs 真机（如 Keychain 测试桩、Metal 性能差异） |
+| `#if os()` 在 `Shared/Platforms/Core/Infrastructure/App` | 基础设施层 | 平台 Registrar 分发、平台特定服务实现 |
+
+### 2.3 复合条件简化原则
+
+复合 `#if` 条件中若包含 `os()` 判定，应优先用 `canImport` 替代：
+
+```swift
+// ❌ 旧模式 — 复合条件含 os() 判定
+#if canImport(GoogleSignIn) && !os(watchOS)
+import GoogleSignIn
+#endif
+
+// ✅ 新模式 — GoogleSignIn 本身不支持 watchOS，canImport 已足够
+#if canImport(GoogleSignIn)
+import GoogleSignIn
+#endif
+```
 
 ---
 
@@ -141,35 +180,99 @@ struct iOSPlatformRegistrar {
 
 ## 4. #if os() 宏协议化实战
 
-### 4.1 问题规模
+### 4.1 问题规模演进
 
-| 阶段 | Features 层 #if os() 数 | 变化 |
-|------|------------------------|------|
+| 阶段 | Features/Domain 层 #if os() 数 | 变化 |
+|------|------------------------------|------|
 | 原始审计 | **46 处** | — |
 | Phase 1 协议化 | **19 处** | -27 (-59%) |
 | Phase 2 UI 组件化 | **10 处** | -9 |
-| 最终 | **10 处** | **-36 (-78%)** |
+| Phase 3 watchOS Trait 化 | **2 处** | -8 |
+| **Phase 4 彻底清零** | **0 处** | **-46 (-100%)** ✅ |
 
-### 4.2 消除的 36 处分类
+### 4.2 Phase 4 彻底清零（2026-08-04）
+
+最终阶段消除剩余 47 处 `#if !os(` + 2 处 `#if os(watchOS)` + 1 处 `#if targetEnvironment(macCatalyst)` + 1 处复合条件，按 5 类方案处理：
+
+| 类型 | 处理数 | 替代方案 |
+|------|--------|---------|
+| View modifier 语义化 | 20+ | `PlatformModifiers`（`insetGroupedListStyleIfIOS()` / `segmentedPickerStyleIfAvailable()` / `skipOnWatch {}` / `hiddenOnWatch()` 等） |
+| ViewBuilder 运行时分支 | 6 | `@Environment(\.interfaceIdiom) private var idiom` + `if idiom == .watch { ... } else { ... }` |
+| 业务逻辑 DI 容器 | 12 | 移除宏包裹，依赖 `WatchPlatformRegistrar` 不注册 watchOS 不支持的服务 |
+| 框架依赖 canImport | 8 | `#if canImport(UIKit)` 替代 `#if !os(watchOS)` |
+| Mac Catalyst 运行时判断 | 1 | `InterfaceIdiom.macCatalyst` 替代 `#if targetEnvironment(macCatalyst)` |
+| 复合条件简化 | 1 | `#if canImport(GoogleSignIn)` 替代 `#if canImport(GoogleSignIn) && !os(watchOS)` |
+
+### 4.3 历史阶段消除明细
 
 | 类型 | 消除数 | 方案 |
 |------|--------|------|
 | 系统 API（DeviceInfo/URLOpener/ShareSheet/Pasteboard） | 27 | 4 个新协议 + 12 个平台实现 |
 | View 层 UI 差异（ListStyle/Keyboard/Navigation） | 6 | `PlatformModifiers` View extension |
-| 其他合理保留 | 3 | 标记为预已存在 |
+| watchOS 结构性差异（NavigationStack/TabView） | 8 | 运行时 Trait `interfaceIdiom` + ViewBuilder 分支 |
 
-### 4.3 剩余 10 处（合理保留）
+### 4.4 CI 静态分析增强
 
-剩余 10 处为 watchOS 结构性差异：
-- `NavigationStack` vs `NavigationView`
-- `TabView` vs `NavigationSplitView`
-- watchOS 专用的简化 UI 布局
+`check-code-platform-macros.py` 正则漏洞修复，新增对以下形式的检测：
 
-这些差异无法通过协议抽象（涉及 SwiftUI 框架级别的类型系统）。
+- `#if !os(` 反向判定
+- `#elseif os()` / `#elseif !os()` 链式分支
+- `#if targetEnvironment(macCatalyst)` Catalyst 判定
+- 复合条件中嵌入 `os()` 判定（如 `canImport(X) && !os(watchOS)`）
+
+该脚本已集成至 `Tools/ci/run-code-static-analysis.sh` 静态分析流水线，任一违规即熔断构建。
 
 ---
 
-## 5. PlatformModifiers 体系
+## 5. PlatformTraits 体系（运行时 Trait）
+
+业务层通过 `@Environment` 注入运行时 Trait，在 ViewBuilder 中执行平台分支，**无需任何 `#if os()` 宏**。
+
+### 5.1 四个核心 Trait
+
+| Trait | 类型 | 说明 |
+|-------|------|------|
+| `interfaceIdiom` | `InterfaceIdiom` (enum) | `.phone` / `.pad` / `.mac` / `.macCatalyst` / `.watch` / `.tv` |
+| `prefersTabNavigation` | `Bool` | iPad/Mac 偏好 TabView，iPhone/watch 偏好 NavigationStack |
+| `supportsTouch` | `Bool` | iPhone/iPad/watch 支持触摸，Mac/Catalyst 不支持 |
+| `supportsFullScreenImmersive` | `Bool` | iPhone/iPad 支持全屏沉浸，watch/Mac 不支持 |
+
+### 5.2 使用示例
+
+```swift
+@MainActor
+struct AdaptiveNavigationView: View {
+    @Environment(\.interfaceIdiom) private var idiom
+    @Environment(\.prefersTabNavigation) private var prefersTab
+
+    var body: some View {
+        if idiom == .watch {
+            WatchCompactLayout()
+        } else if prefersTab {
+            TabView { ... }
+        } else {
+            NavigationStack { ... }
+        }
+    }
+}
+```
+
+### 5.3 Mac Catalyst 运行时判断
+
+```swift
+// ❌ 旧模式 — 编译期宏
+#if targetEnvironment(macCatalyst)
+let isCatalyst = true
+#endif
+
+// ✅ 新模式 — 运行时 Trait
+@Environment(\.interfaceIdiom) private var idiom
+let isCatalyst = (idiom == .macCatalyst)
+```
+
+---
+
+## 6. PlatformModifiers 体系
 
 业务层 View 代码中的平台差异通过语义化 View Extension 消除：
 
@@ -183,7 +286,7 @@ struct iOSPlatformRegistrar {
     .adaptiveListStyle()
 ```
 
-### 已实现的 PlatformModifiers
+### 6.1 已实现的 PlatformModifiers（20+）
 
 | Modifier | 作用 | 定义位置 |
 |----------|------|---------|
@@ -195,12 +298,40 @@ struct iOSPlatformRegistrar {
 | `onHoverIfAvailable()` | macOS hover 效果 | `PlatformModifiers.swift` |
 | `hiddenOnWatch()` | watchOS 隐藏 | `PlatformModifiers.swift` |
 | `visibleOniOSOrMac()` | 非手表平台显示 | `PlatformModifiers.swift` |
+| `insetGroupedListStyleIfIOS()` | iOS 专属 inset grouped 样式 | `PlatformModifiers.swift` |
+| `segmentedPickerStyleIfAvailable()` | iOS/macOS 分段选择器 | `PlatformModifiers.swift` |
+| `inlineNavigationBarTitleIfAvailable()` | iOS 内联导航标题 | `PlatformModifiers.swift` |
+| `toolbarIfNotWatchOS()` | 非手表平台工具栏 | `PlatformModifiers.swift` |
+| `adaptiveSidebarListStyle()` | macOS 自动 `.sidebar` | `PlatformModifiers.swift` |
+| `skipOnWatch { $0.keyboardType(.numberPad) }` | watch 上安全跳过闭包 | `PlatformModifiers.swift` |
+| `navigationStackIfAvailable()` | iOS 16+ NavigationStack | `PlatformModifiers.swift` |
+| `searchableIfAvailable()` | iOS/macOS 搜索栏 | `PlatformModifiers.swift` |
+| `symbolRenderingModeIfAvailable()` | SF Symbol 多色渲染 | `PlatformModifiers.swift` |
+| `scrollDismissesKeyboardIfAvailable()` | iOS 16+ 滚动收键盘 | `PlatformModifiers.swift` |
+| `presentationDetentsIfIOS()` | iOS 16+ sheet detents | `PlatformModifiers.swift` |
+| `boldIfAvailable()` | macOS 12+ 加粗 | `PlatformModifiers.swift` |
 
 > **位置**：`Sources/Shared/UIComponents/Modifiers/PlatformModifiers.swift`
 
+### 6.2 skipOnWatch 闭包模式
+
+对于无法用单一 modifier 表达的平台差异，使用 `skipOnWatch` 闭包安全包裹：
+
+```swift
+// ❌ 旧模式
+#if !os(watchOS)
+TextField("输入", text: $text)
+    .keyboardType(.numberPad)
+#endif
+
+// ✅ 新模式
+TextField("输入", text: $text)
+    .skipOnWatch { $0.keyboardType(.numberPad) }
+```
+
 ---
 
-## 6. 业务层使用模式
+## 7. 业务层使用模式
 
 ```swift
 // L2 Features 层 View
@@ -232,28 +363,35 @@ struct SettingsView: View {
 
 ---
 
-## 7. CI 门禁体系
+## 8. CI 门禁体系
 
 为防止平台宏问题回退，配置以下自动化检测：
 
 | 脚本 | 检测内容 | 阻断条件 |
 |------|---------|---------|
-| `check-code-platform-macros.py` | Features/Domain 层 `#if os()` 宏 | 发现新增即阻断 |
+| `check-code-platform-macros.py` | Features/Domain 层 `#if os()` / `#if !os()` / `#elseif os()` / `#if targetEnvironment(macCatalyst)` 宏 | 发现新增即阻断 |
 | `audit-code-magic-strings.py` | 硬编码 URL / UserDefaults key | 发现即阻断 |
 | `check-code-file-headers.py` | 文件层级标注完整性 | 缺失 `系统层级` 即阻断 |
+
+**`check-code-platform-macros.py` 检测范围（v2.0 增强）**：
+- `#if os(` 正向判定
+- `#if !os(` 反向判定
+- `#elseif os(` / `#elseif !os(` 链式分支
+- `#if targetEnvironment(macCatalyst)` Catalyst 判定
+- 复合条件中嵌入 `os()` 判定（启发式正则）
 
 **运行方式**：
 ```bash
 # 单脚本运行
 python3 Tools/ios/check-code-platform-macros.py
 
-# 全量 CI 静态分析（12 项并行）
+# 全量 CI 静态分析（15 项并行）
 bash Tools/ci/run-code-static-analysis.sh
 ```
 
 ---
 
-## 8. 最佳实践
+## 9. 最佳实践
 
 ### ✅ DO
 
@@ -262,11 +400,15 @@ bash Tools/ci/run-code-static-analysis.sh
 - 在 `Platforms/{platform}/Registrar/` 统一注册
 - 业务层通过 `@Inject var service: any Protocol` 注入
 - View 层使用 `PlatformModifiers` 语义化 modifier
+- ViewBuilder 分支使用 `@Environment(\.interfaceIdiom)` 运行时 Trait
+- 框架依赖判断使用 `#if canImport(框架)`
 - 新增协议前检查是否可复用已有协议
 
 ### ❌ DON'T
 
-- 在 Features/Domain 层使用 `#if os()` 宏
+- 在 Features/Domain 层使用 `#if os()` / `#if !os()` 宏
+- 在 Features/Domain 层使用 `#if targetEnvironment(macCatalyst)` 宏
+- 在复合条件中嵌入 `os()` 判定（用 `canImport` 替代）
 - 在业务层直接 `import UIKit` / `import AppKit`
 - 在 View 中硬编码平台特定 API 调用
 - 在协议中暴露平台特定类型（用 `Any` 或泛型替代）
@@ -274,7 +416,7 @@ bash Tools/ci/run-code-static-analysis.sh
 
 ---
 
-## 9. 相关文档
+## 10. 相关文档
 
 - [`LAYERING_L0_L3.md`](./LAYERING_L0_L3.md) — 严格分层规范与 8 条红线
 - [`HIGH_LEVEL_DESIGN.md`](./HIGH_LEVEL_DESIGN.md) — 概要设计 v2.1
