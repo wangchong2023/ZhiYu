@@ -343,12 +343,6 @@ final class ChatHistoryStore: ObservableObject {
         messages.suffix(count)
     }
 
-    private func save() {
-        if let data = try? JSONEncoder().encode(messages) {
-            UserDefaults.standard.set(data, forKey: historyKey)
-        }
-    }
-
     private func load() {
         if let data = UserDefaults.standard.data(forKey: historyKey),
            let history = try? JSONDecoder().decode([ChatMessageDTO].self, from: data) {

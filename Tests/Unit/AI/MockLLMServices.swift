@@ -21,6 +21,7 @@ final class MockChatLLMService: LLMChatServiceProtocol, @unchecked Sendable {
     var chatStreamCallCount = 0
     
     var stubGenerateResult = "Mock Generated Result"
+    var stubGenerateError: Error?
     var stubChatResult = ChatMessageDTO(id: UUID(), role: .assistant, content: "Mock Chat Result", timestamp: Date(), relatedPageIDs: [])
     
     func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
@@ -40,6 +41,9 @@ final class MockChatLLMService: LLMChatServiceProtocol, @unchecked Sendable {
     
     func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         generateCallCount += 1
+        if let error = stubGenerateError {
+            throw error
+        }
         return stubGenerateResult
     }
 }

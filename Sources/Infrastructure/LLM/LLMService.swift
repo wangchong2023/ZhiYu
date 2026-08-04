@@ -241,6 +241,9 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
         initialDelaySeconds: Double = 0.5,
         operation: @Sendable () async throws -> T
     ) async throws -> T {
+        guard maxAttempts > 0 else {
+            throw LLMError.apiError(L10n.AI.Synthesis.Error.limitReached)
+        }
         var currentDelay = initialDelaySeconds
         for attempt in 1...maxAttempts {
             do {
@@ -255,6 +258,7 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
                 currentDelay *= 2.0
             }
         }
+        // 防御性兜底：理论上不可达，但保留以防逻辑变更遗漏
         throw LLMError.apiError(L10n.AI.Synthesis.Error.limitReached)
     }
 
