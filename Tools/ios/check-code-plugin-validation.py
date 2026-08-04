@@ -50,7 +50,15 @@ def validate_plugin(plugin_path):
             # 5. 检查推荐文件
             recommended_files = ['README.md', 'README.zh-Hans.md', 'LICENSE', 'CHANGELOG.md']
 
-            # 5a. 检查 manifest 中的 readmeFiles 声明
+            # 5a. 先解析 manifest 以便后续校验（manifest.json 在步骤 6 才正式校验，此处提前读取 readmeFiles）
+            manifest = {}
+            if 'manifest.json' in file_list:
+                try:
+                    manifest = json.loads(zf.read('manifest.json').decode('utf-8'))
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    pass  # 步骤 6 会报告详细错误
+
+            # 5b. 检查 manifest 中的 readmeFiles 声明
             if 'readmeFiles' in manifest:
                 info.append(f"✓ manifest.readmeFiles 已声明")
             else:

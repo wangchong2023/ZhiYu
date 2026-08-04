@@ -31,7 +31,9 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         if let resolved = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {
             self.llm = resolved
         } else {
-            self.llm = MainActor.assumeIsolated { LLMService.shared }
+            // LLMService.shared 是 @MainActor 隔离，actor init 可能从后台线程调用，
+            // 使用 runOnMainSync 安全桥接至主线程，避免 MainActor.assumeIsolated 在非主线程崩溃
+            self.llm = runOnMainSync { LLMService.shared }
         }
     }
 

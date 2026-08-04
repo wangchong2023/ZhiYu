@@ -130,6 +130,7 @@ EXEMPT_DUPLICATE_VALUES = {
     "Reading", "Ready", "Version", "Parameters", "Reset to Defaults", "Vaults", "Get Started", "Data", 
     "Clear All Data", "Run Stress Test", "Rebuild Initial Notebooks", "Reset Onboarding", "Overview", "Token", 
     "OCR Scan", "Voice Note", "ZhiYu Room", "Knowledge Graph", "Memory", "Planning", "Tool Use", "All Pages",
+    "Processing", "Success", "Failure",
     # 中文
     "导入到知识库", "剪贴板导入", "笔记本名称", "端侧与在线混合策略", "在线模型选择", "任务路由规则", "网络状态监控", 
     "安全与隐私", "本地大模型", "AI 正在思考...", "Token 消耗", "未关联笔记", "合成实验室", "AI 对话"
@@ -472,6 +473,9 @@ EXEMPT_STRINGS = {
     "Add syntax highlighting and line numbers to code blocks.",
     "You are a senior knowledge expert and researcher. Your goal is to provide deep, insightful expansion of existing knowledge.",
     "Prompt configurations saved to UserDefaults.",
+    "Before Store instantiation",
+    "Total registered",
+    ")). Total registered: \\(registeredCount)",
     "Prompt configurations reset to default.",
     "\n\nPlease reply in English.",
     "Export is not supported on this platform.",

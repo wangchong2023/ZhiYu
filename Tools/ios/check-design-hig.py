@@ -20,8 +20,8 @@ import sys
 # MARK: - 全局配置区
 # ==============================================================================
 
-# 项目根目录，相对于 Tools/scripts/Compliance 目录的上一级 (退3层)
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+# 项目根目录，相对于 Tools/ios 目录的上一级 (退2层)
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SOURCES_DIR = os.path.join(PROJECT_DIR, "Sources")
 
 # 排除扫描的文件夹

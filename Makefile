@@ -4,7 +4,7 @@
 -include Config/.env.local
 export
 
-.PHONY: all gen bootstrap ios mac watch test test-spm test-spm-all test-all audit lint help
+.PHONY: all gen bootstrap ios mac watch test test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift help
 
 help:
 	@echo "智宇 (ZhiYu) 快捷构建与自动化命令列表："
@@ -18,6 +18,10 @@ help:
 	@echo "  make test-all          - 运行全量 SPM 包单测 + 主 App 单元测试"
 	@echo "  make audit             - 运行 8 大 Gatekeeper 静态架构与依赖审计"
 	@echo "  make lint              - 运行 SwiftLint 严格代码校验"
+	@echo "  make perf              - 运行性能测试套件 + 性能回归比对"
+	@echo "  make perf-baseline     - 生成/刷新性能基线 (首次运行或基线漂移时使用)"
+	@echo "  make plugin-scan       - 扫描插件市场目录安全校验"
+	@echo "  make doc-drift         - 检测文档与代码的漂移 (类/协议/方法引用一致性)"
 
 gen: bootstrap
 
@@ -67,3 +71,38 @@ audit:
 
 lint:
 	@swiftlint --strict
+
+perf: gen
+	@echo "📊 运行性能测试套件..."
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu \
+		-destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+		-only-testing:ZhiYuTests/KnowledgeStorePerformanceTests \
+		-only-testing:ZhiYuTests/RAGPerformanceTests \
+		-only-testing:ZhiYuTests/SearchPerformanceTests \
+		-only-testing:ZhiYuTests/KnowledgeStoreStressTests \
+		CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+		-resultBundlePath build/Performance.xcresult 2>&1 | tail -20
+	@echo "📊 性能回归比对..."
+	@python3 Tools/CI/check-pipeline-perf-regression.py || \
+		echo "⚠️  无性能基线，请运行 'make perf-baseline' 建立基线"
+
+perf-baseline: gen
+	@echo "📊 生成性能基线..."
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu \
+		-destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+		-only-testing:ZhiYuTests/KnowledgeStorePerformanceTests \
+		-only-testing:ZhiYuTests/RAGPerformanceTests \
+		-only-testing:ZhiYuTests/SearchPerformanceTests \
+		-only-testing:ZhiYuTests/KnowledgeStoreStressTests \
+		CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+		-resultBundlePath build/Performance.xcresult 2>&1 | tail -5
+	@bash Tools/CI/generate-pipeline-perf-baseline.sh
+	@echo "✅ 性能基线已生成于 build/.perf_baselines/"
+
+plugin-scan:
+	@echo "🔌 扫描插件市场目录安全校验..."
+	@python3 Tools/CI/scan-plugin-marketplace.py
+
+doc-drift:
+	@echo "📄 检测文档与代码漂移..."
+	@python3 Tools/CI/check-doc-drift.py

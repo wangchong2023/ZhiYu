@@ -32,7 +32,7 @@ from gatekeeper_reporter import GatekeeperReporter
 # MARK: - 路径常量
 # ==============================================================================
 
-PROJECT_DIR = Path(__file__).resolve().parent.parent.parent.parent
+PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
 REGISTRY_FILE = PROJECT_DIR / "Config" / "opensource_dependencies.yml"
 TEMPLATE_FILE = PROJECT_DIR / "Config" / "project.yml.template"
 PACKAGES_DIR = PROJECT_DIR / "Packages"

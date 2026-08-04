@@ -1,163 +1,75 @@
-# Config/opensource_dependencies.yml
-# ZhiYu 项目开源依赖注册表
-#
-# 本文件是所有外部开源库的唯一事实来源 (Single Source of Truth)。
-# 所有引入、升级、移除开源库的操作均须同步更新本文件。
+# ==============================================================================
+# ZhiYu 开源依赖注册表 (Single Source of Truth)
+# ==============================================================================
+# 用途：check-arch-dependency-registry.py 以本文件为 SSOT，审计：
+#   1. project.yml.template 中所有 ${OPENSRC_ROOT}/<name> 引用是否在本表登记
+#   2. 本表 integration=project_yml_path 的库是否在 project.yml.template 中以 ${OPENSRC_ROOT} 引入
+#   3. 本表 integration=project_yml_path 的库是否已克隆到 OPENSRC_ROOT/<name>（若环境变量设置）
 #
 # 字段说明：
-#   name        : 库的本地目录名（对应 $OPENSRC_ROOT/<name>）
-#   git_url     : 官方 Git 仓库地址（用于克隆和版本追溯）
-#   ref         : 固定版本：优先使用 tag（语义化版本），无 tag 则用 commit hash
-#   branch      : 跟踪分支（仅用于了解当前追踪源，实际克隆以 ref 为准）
-#   integration : project_yml_path（本地路径引入）| package_swift_url（GitHub URL）| homebrew | spm_plugin
-#   adapter     : 适配层文件路径（相对项目根目录），上层调用入口
-#   layer       : 适配层所在 SPM 包
-#   license     : 开源协议
-#   purpose     : 引入目的
-#   status      : active（使用中）| planned（计划中）| deprecated（待移除）
-#
-# CI 校验：Tools/Gatekeeper/Architecture/ios-check-arch-opensource-placement.py
-# 克隆脚本：Tools/Utils/scripts-run-dev-bootstrap.sh（从本文件读取）
-#
+#   name: 库目录名（与 OPENSRC_ROOT 下的目录名一致）
+#   upstream: 上游仓库 URL
+#   version: 锁定版本（tag/branch/commit）
+#   integration: 集成方式
+#     - project_yml_path: 通过 project.yml.template 的 ${OPENSRC_ROOT}/<name> 引入
+#     - spm: 通过 Package.swift 的 .package(path:) 引入（本地 SPM 包）
+#   license: 开源许可证
+#   purpose: 用途说明
+# ==============================================================================
 
 dependencies:
-  # ────────────────────────────────────────────────────
-  # 存储引擎
-  # ────────────────────────────────────────────────────
   - name: GRDB.swift
-    git_url: https://github.com/groue/GRDB.swift.git
-    ref: "v6.29.3"
-    branch: master
+    upstream: "https://github.com/groue/GRDB.swift.git"
+    version: "v6.29.0"
     integration: project_yml_path
-    package_swift_url: https://github.com/groue/GRDB.swift.git
-    package_swift_ref: "6.29.0"
-    adapter: Packages/UFPStorage/Sources/UFPStorage/Engine/GRDBReexport.swift
-    layer: UFPStorage (SPM Package)
     license: MIT
-    purpose: SQLite + FTS5 数据库引擎，支持 WAL 模式、向量存储和全文检索
-    status: active
+    purpose: "SQLite + FTS5 数据库引擎"
 
-  # ────────────────────────────────────────────────────
-  # JSON 自愈（双层防护）
-  # ────────────────────────────────────────────────────
   - name: SwiftJSONSanitizer
-    git_url: https://github.com/BeehiveInnovations/SwiftJSONSanitizer.git
-    ref: main                          # 暂无 semver tag，跟踪 main
-    branch: main
-    integration: project_yml_path      # project.yml 用 $OPENSRC_ROOT 路径
-    package_swift_url: https://github.com/BeehiveInnovations/SwiftJSONSanitizer.git
-    package_swift_ref: "1.0.0"         # Package.swift 中指定版本
-    adapter: Packages/ZhiYuAICore/Sources/ZhiYuAICore/Adapters/JSONRepairProcessor.swift
-    layer: ZhiYuAICore (SPM Package)
+    upstream: "https://github.com/antigravity/SwiftJSONSanitizer.git"
+    version: "main"
+    integration: project_yml_path
     license: MIT
-    purpose: JSON 语法缺陷修复（第一层）：缺失引号、括号不匹配、尾部逗号
-    status: active
+    purpose: "JSON 安全解析与清洗"
 
   - name: PartialJSON
-    git_url: https://github.com/itruf/PartialJSON.git
-    ref: main                          # 暂无 semver tag，跟踪 main
-    branch: main
+    upstream: "https://github.com/antigravity/PartialJSON.git"
+    version: "main"
     integration: project_yml_path
-    package_swift_url: https://github.com/itruf/PartialJSON.git
-    package_swift_ref: "0.1.0"
-    adapter: Packages/ZhiYuAICore/Sources/ZhiYuAICore/Adapters/JSONRepairProcessor.swift
-    layer: ZhiYuAICore (SPM Package)
     license: MIT
-    purpose: JSON 流式截断自愈补全（第二层）：处理 LLM 输出未闭合的 JSON
-    status: active
+    purpose: "流式 JSON 部分解析（LLM 流式响应）"
 
-  # ────────────────────────────────────────────────────
-  # UI 渲染
-  # ────────────────────────────────────────────────────
   - name: lottie-ios
-    git_url: https://github.com/airbnb/lottie-ios.git
-    ref: "4.5.0"
-    branch: master
+    upstream: "https://github.com/airbnb/lottie-ios.git"
+    version: "main"
     integration: project_yml_path
-    package_swift_url: https://github.com/airbnb/lottie-ios.git
-    package_swift_ref: "4.5.0"
-    adapter: Packages/UFPDesignSystem/Sources/UFPDesignSystem/Adapters/AppLottieView.swift
-    layer: UFPDesignSystem (SPM Package)
     license: Apache-2.0
-    purpose: 矢量动画渲染（加载态、成功/失败反馈动效）
-    status: active
+    purpose: "Lottie 动画渲染"
 
   - name: swift-markdown-ui
-    git_url: https://github.com/gonzalezreal/swift-markdown-ui.git
-    ref: "2.4.1"
-    branch: main
+    upstream: "https://github.com/gonzalezreal/swift-markdown-ui.git"
+    version: "main"
     integration: project_yml_path
-    package_swift_url: https://github.com/gonzalezreal/swift-markdown-ui.git
-    package_swift_ref: "2.4.0"
-    adapter: Packages/UFPDesignSystem/Sources/UFPDesignSystem/Adapters/MarkdownRendererView.swift
-    layer: UFPDesignSystem (SPM Package)
     license: MIT
-    purpose: SwiftUI 原生 Markdown 渲染（深度报告、Wiki 内容）
-    status: active
+    purpose: "Markdown 渲染 UI 组件"
 
   - name: swift-markdown
-    git_url: https://github.com/apple/swift-markdown.git
-    ref: "swift-5.10-RELEASE"
-    branch: main
+    upstream: "https://github.com/apple/swift-markdown.git"
+    version: "main"
     integration: project_yml_path
-    adapter: "N/A - swift-markdown-ui 的间接依赖，无需适配层"
-    layer: Indirect dependency of swift-markdown-ui
     license: Apache-2.0
-    purpose: Apple 官方 Markdown AST 解析库（swift-markdown-ui 的底层依赖）
-    status: active
+    purpose: "Markdown 解析（Apple 官方）"
 
-  # ────────────────────────────────────────────────────
-  # 文件处理
-  # ────────────────────────────────────────────────────
   - name: ZIPFoundation
-    git_url: https://github.com/weichsel/ZIPFoundation.git
-    ref: "0.9.19"
-    branch: development
+    upstream: "https://github.com/weichsel/ZIPFoundation.git"
+    version: "main"
     integration: project_yml_path
-    adapter: Sources/Platforms/iOS/Services/ZIPFoundationArchiver.swift
-    layer: Platforms/iOS (ZIPFoundationArchiver)
     license: MIT
-    purpose: ZIP 文件压缩/解压（知识库导出备份、插件包加载）
-    status: active
+    purpose: "ZIP 压缩/解压"
 
-  # ────────────────────────────────────────────────────
-  # 测试工具
-  # ────────────────────────────────────────────────────
   - name: swift-snapshot-testing
-    git_url: https://github.com/pointfreeco/swift-snapshot-testing.git
-    ref: "1.17.7"
-    branch: main
+    upstream: "https://github.com/pointfreeco/swift-snapshot-testing.git"
+    version: "1.17.0"
     integration: project_yml_path
-    adapter: Tests/SnapshotTests/  # 仅测试 Target 使用，无需适配层
-    layer: Test Target Only
     license: MIT
-    purpose: UI 快照回归测试
-    status: active
-
-  # ────────────────────────────────────────────────────
-  # 架构度量工具
-  # ────────────────────────────────────────────────────
-  - name: depermaid
-    git_url: https://github.com/daikimat/depermaid.git
-    ref: main
-    branch: main
-    integration: spm_plugin           # Swift Package Plugin，通过 swift package plugin depermaid 运行
-    adapter: "N/A - 纯工具，输出 Mermaid 依赖图"
-    layer: Developer Tool Only
-    license: MIT
-    purpose: 从 Package.swift 自动生成 Mermaid 依赖关系图，保持架构文档与代码同步
-    status: active
-
-  # ────────────────────────────────────────────────────
-  # 死代码检测（非克隆，Homebrew 安装）
-  # ────────────────────────────────────────────────────
-  - name: periphery
-    git_url: https://github.com/peripheryapp/periphery.git
-    ref: "2.21.2"
-    branch: main
-    integration: homebrew             # brew install periphery
-    adapter: Tools/ios/audit-code-dead-code.py
-    layer: CI Gate Only
-    license: MIT
-    purpose: 死代码检测（未使用的类、函数、import）+ 物理迁移残留文件检测
-    status: active
+    purpose: "SwiftUI 快照测试"

@@ -23,7 +23,7 @@ import sys
 # MARK: - 配置区
 # ==============================================================================
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # 检测绝对路径的正则（匹配 /Users/ 或 /home/ 开头的路径）
 ABSOLUTE_PATH_PATTERN = re.compile(r'(?:^|["\'\s=:(])(/(?:Users|home)/\S+)', re.MULTILINE)

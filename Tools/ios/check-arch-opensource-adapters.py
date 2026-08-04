@@ -28,7 +28,7 @@ from gatekeeper_reporter import GatekeeperReporter
 # MARK: - 全局配置区
 # ==============================================================================
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SOURCES_DIR = os.path.join(PROJECT_DIR, "Sources")
 
 # 开源库注册表：每个库的允许引用白名单（只有这些路径可以直接 import）

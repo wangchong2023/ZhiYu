@@ -86,8 +86,10 @@ class SecurityManager: @unchecked Sendable {
             runOnMainSync { keyStore?.set(newValue, forKey: key) }
             return newValue
             #else
-            // 生产环境下安全存储故障是致命的
-            fatalError(" [SecurityManager] \(errorMessage)")
+            // 生产环境下安全存储故障：记录严重错误并返回内存中的临时密钥，
+            // 避免 fatalError 导致白屏崩溃，但此密钥不会持久化（重启后丢失）。
+            assertionFailure(" [SecurityManager] \(errorMessage)")
+            return newValue
             #endif
         }
     }
