@@ -497,6 +497,12 @@ class ExemptionRegistry:
             return set()
         return {item["symbol"] for item in items if isinstance(item, dict) and "symbol" in item}
 
+    def get_manual_symbols(self):
+        """获取所有手动白名单符号（扁平化）"""
+        if not self._loaded:
+            self.load()
+        return get_manual_symbols(self.whitelist_data)
+
     def check_stale(self):
         """反向校验：检测过期白名单项"""
         if not self._loaded:

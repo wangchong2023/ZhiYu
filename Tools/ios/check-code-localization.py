@@ -18,6 +18,10 @@ import re
 import sys
 import json
 
+# 导入统一免白名单注册中心
+sys.path.insert(0, str(os.path.join(os.path.dirname(__file__), "..", "CI")))
+from exemption_registry import ExemptionRegistry  # noqa: E402
+
 # ==============================================================================
 # MARK: - 全局配置区
 # ==============================================================================
@@ -67,15 +71,10 @@ COMMON_ENGLISH_WORDS = {
 }
 
 # 已知合法的 brand 驼峰命名，无需按 PascalCase 假翻译占位符拦截
-KNOWN_PROPER_NAMES = {
-    'VoiceOver', 'SiliconFlow', 'OpenAI', 'DeepSeek', 'MiniMax', 'Ollama',
-    'Anthropic', 'macOS', 'iOS', 'iPadOS', 'watchOS', 'iPhone', 'iPad',
-    'GitHub', 'GitLab', 'Bitbucket', 'ChatGPT', 'Claude', 'Gemini',
-    'CoreML', 'Xcode', 'SwiftUI', 'UIKit', 'AppKit', 'WebKit',
-    'CloudKit', 'HealthKit', 'MapKit', 'ARKit', 'RealityKit',
-    'Keychain', 'Keynote', 'Numbers', 'Pages',
-    'ZhiYu',  # 本应用名称
-}
+# 动态加载：从 ExemptionRegistry 获取 brand_proper_names 分类 + SDK 符号 + 项目符号
+_REGISTRY = ExemptionRegistry()
+_REGISTRY.load()
+KNOWN_PROPER_NAMES = _REGISTRY.get_manual_symbols_by_category("brand_proper_names") | _REGISTRY.sdk_symbols | _REGISTRY.project_symbols
 
 # 模块/文件前缀到 xcstrings 物理表名的强映射字典
 DOMAIN_MAP = {

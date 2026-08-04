@@ -17,6 +17,10 @@ import os
 import re
 import sys
 
+# 导入统一免白名单注册中心
+sys.path.insert(0, str(os.path.join(os.path.dirname(__file__), "..", "CI")))
+from exemption_registry import ExemptionRegistry  # noqa: E402
+
 # ==============================================================================
 # MARK: - 全局配置区
 # ==============================================================================
@@ -58,14 +62,11 @@ LAYER_PATHS = {
 # 忽略提取的通用 Swift 关键字与常见类型名（避免因同名匹配造成误报）
 # 注意：领域实体（PageChunk/KnowledgePage/Tag 等）不在此白名单中，
 # 以便 audit-arch-dependency 能拦截 L0→L1.5 跨层引用
-COMMON_KEYWORDS = {
-    "View", "Text", "Button", "Label", "Image", "String", "Int", "Double", "CGFloat",
-    "Bool", "UUID", "URL", "Task", "Color", "Font", "Spacer", "ZStack", "VStack", "HStack",
-    "ForEach", "EmptyView", "Binding", "Environment", "State", "Observable", "MainActor",
-    "App", "Scene", "Widget", "Capsule", "Circle", "Rectangle", "RoundedRectangle", "Empty",
-    "Done", "User", "Plan", "Theme", "Error", "Log", "Logger", "Date", "Data",
-    "Status", "Columns", "CodingKeys"
-}
+# 动态加载：从 ExemptionRegistry 获取 SDK 符号 + 项目符号 + 手动白名单
+# 此处仅保留无法被 Registry 覆盖的少量项目概念词（Done/Plan/Theme 等已在 manual_whitelist）
+_REGISTRY = ExemptionRegistry()
+_REGISTRY.load()
+COMMON_KEYWORDS = _REGISTRY.sdk_symbols | _REGISTRY.project_symbols | _REGISTRY.get_manual_symbols()
 
 # ==============================================================================
 # MARK: - 实体提取逻辑

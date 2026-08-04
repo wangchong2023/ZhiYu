@@ -22,6 +22,10 @@ SEPARATOR_WIDTH = 60
 # 每个缺失类型最多显示的文件引用数
 MAX_FILE_LOCATIONS = 3
 
+# 导入统一免白名单注册中心
+sys.path.insert(0, str(PROJECT_ROOT / "Tools" / "CI"))
+from exemption_registry import ExemptionRegistry  # noqa: E402
+
 
 def extract_inject_types() -> set:
     """从 @Inject 声明中提取所有依赖类型。"""
@@ -122,12 +126,13 @@ def main() -> int:
     inject_types = extract_inject_types()
     register_types = extract_register_types()
 
-    # 已知不需要注册的单例/直接访问类型（白名单）
+    # 从 ExemptionRegistry 加载 DI 注册豁免（di_registration_exempt 分类）
+    registry = ExemptionRegistry()
+    registry.load()
+    di_exempt_items = registry.whitelist_data.get("di_registration_exempt", [])
     whitelist = {
-        "DatabaseManager",  # 通过 .shared 直接访问
-        "LoggerProtocol",   # Logger.shared 全局单例
-        "AppStore",         # 通过 .environment() 注入
-        "AnyPageStore",     # 仅注册了 AnyPageStoreCapabilities，TagStore/DataCoordinator 注入 AnyPageStore 需后续调查
+        item["symbol"] for item in di_exempt_items
+        if isinstance(item, dict) and "symbol" in item
     }
 
     missing = find_missing_types(inject_types, register_types, whitelist)
