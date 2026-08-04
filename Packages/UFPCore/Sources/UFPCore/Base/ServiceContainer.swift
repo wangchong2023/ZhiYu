@@ -25,8 +25,9 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 服务注册表
     private var services: [String: Any] = [:]
 
-    /// 并发保护锁 (os_unfair_lock)，比 NSLock 更轻量且具备极佳的高并发性能
-    private let lockPointer: UnsafeMutablePointer<os_unfair_lock>
+    /// 并发保护锁 (OSAllocatedUnfairLock)
+    /// Swift 5.9+ 封装 os_unfair_lock，Sendable 安全，无需手动 allocate/deallocate
+    private let lock = OSAllocatedUnfairLock()
 
     /// 诊断计数器：累计 resolve 调用次数，用于定位全量测试中第几次 resolve 触发崩溃
     private var resolveCallCount: Int = 0
@@ -39,14 +40,9 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 上次 reset 的时间戳
     private var lastResetTimestamp: Date?
 
-    private init() {
-        lockPointer = UnsafeMutablePointer<os_unfair_lock>.allocate(capacity: 1)
-        lockPointer.initialize(to: os_unfair_lock())
-    }
+    private init() {}
 
-    deinit {
-        lockPointer.deallocate()
-    }
+    // 注：OSAllocatedUnfairLock 为值类型，无需 deinit 释放
 
     /// 注册服务
     /// - Parameters:
@@ -54,10 +50,10 @@ public final class ServiceContainer: @unchecked Sendable {
     ///   - type: 服务的协议或类类型
     public func register<T>(_ service: T, for type: T.Type) {
         let key = makeKey(for: type)
-        os_unfair_lock_lock(lockPointer)
-        services[key] = service
-        registerCallCount += 1
-        os_unfair_lock_unlock(lockPointer)
+        lock.withLock {
+            services[key] = service
+            registerCallCount += 1
+        }
         #if DEBUG
         Logger.shared.debug("DI: Registered [\(key)] with instance \(String(describing: service))")
         #endif
@@ -70,11 +66,11 @@ public final class ServiceContainer: @unchecked Sendable {
     public func markProductionChainComplete() {
         isProductionChainPopulated = true
         // 记录生产链完成时的诊断快照
-        os_unfair_lock_lock(lockPointer)
-        let keyCount = services.count
-        let allKeys = Array(services.keys)
-        os_unfair_lock_unlock(lockPointer)
-        let info = "[ServiceContainer] Production DI chain complete. Registered services: \(keyCount). Keys: \(allKeys.sorted().joined(separator: ", "))"
+        let info = lock.withLock { () -> String in
+            let keyCount = services.count
+            let allKeys = Array(services.keys)
+            return "[ServiceContainer] Production DI chain complete. Registered services: \(keyCount). Keys: \(allKeys.sorted().joined(separator: ", "))"
+        }
         os_log(.info, log: diLog, "%{public}@", info)
         Logger.shared.info(info)
     }
@@ -88,9 +84,7 @@ public final class ServiceContainer: @unchecked Sendable {
 
     /// 诊断属性：当前注册表快照
     public var diagnosticSnapshot: [String: Bool] {
-        os_unfair_lock_lock(lockPointer)
-        let keys = Array(services.keys)
-        os_unfair_lock_unlock(lockPointer)
+        let keys = lock.withLock { Array(services.keys) }
         var snapshot: [String: Bool] = [:]
         for key in keys { snapshot[key] = true }
         return snapshot
@@ -106,14 +100,23 @@ public final class ServiceContainer: @unchecked Sendable {
             Logger.shared.warning(msg)
             return
         }
-        os_unfair_lock_lock(lockPointer)
-        let removedCount = services.count
-        let removedKeys = Array(services.keys)
-        services.removeAll()
-        os_unfair_lock_unlock(lockPointer)
+        let (removedCount, removedKeys) = lock.withLock { () -> (Int, [String]) in
+            let count = services.count
+            let keys = Array(services.keys)
+            services.removeAll()
+            return (count, keys)
+        }
         lastResetInfo = "Removed \(removedCount) services: \(removedKeys.sorted().joined(separator: ", "))"
         lastResetTimestamp = Date()
         os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] reset() executed. \(lastResetInfo ?? "N/A")")
+    }
+
+    /// resolve 诊断快照（避免 large_tuple 违规，元组成员不超过 2）
+    private struct ResolveSnapshot {
+        let instance: Any?
+        let registeredKeys: [String]
+        let callCount: Int
+        let regCallCount: Int
     }
 
     /// 解析服务
@@ -121,30 +124,36 @@ public final class ServiceContainer: @unchecked Sendable {
         let key = makeKey(for: type)
 
         // 单次加锁：同时读取实例和诊断信息，消除两次加锁间的竞态窗口
-        os_unfair_lock_lock(lockPointer)
-        let instance = services[key]
-        let registeredKeys = Array(services.keys)
-        let callCount = resolveCallCount
-        resolveCallCount += 1
-        let regCallCount = registerCallCount
-        os_unfair_lock_unlock(lockPointer)
+        let snapshot = lock.withLock { () -> ResolveSnapshot in
+            let instance = services[key]
+            let registeredKeys = Array(services.keys)
+            let callCount = resolveCallCount
+            resolveCallCount += 1
+            let regCallCount = registerCallCount
+            return ResolveSnapshot(
+                instance: instance,
+                registeredKeys: registeredKeys,
+                callCount: callCount,
+                regCallCount: regCallCount
+            )
+        }
 
-        if let service = instance as? T {
+        if let service = snapshot.instance as? T {
             return service
         }
 
         // ── 服务未注册：输出多层次诊断信息 ──
         let rawTypeString = String(describing: type)
-        let readyHint = registeredKeys.isEmpty
+        let readyHint = snapshot.registeredKeys.isEmpty
             ? "[DI ERROR — resolve() called before any DI initialization]"
-            : "[error: \(registeredKeys.count) services registered — key '\(key)' not found]"
-        let errorSummary = "DI Error: Service [\(key)] not registered. \(readyHint) Type: \(rawTypeString). Keys (\(registeredKeys.count)): \(registeredKeys.sorted().joined(separator: ", "))"
+            : "[error: \(snapshot.registeredKeys.count) services registered — key '\(key)' not found]"
+        let errorSummary = "DI Error: Service [\(key)] not registered. \(readyHint) Type: \(rawTypeString). Keys (\(snapshot.registeredKeys.count)): \(snapshot.registeredKeys.sorted().joined(separator: ", "))"
 
         // 层级 1: os_log .fault — 崩溃后仍可在系统日志中检索
         os_log(.fault, log: diLog, "%{public}@", errorSummary)
         os_log(.fault, log: diLog,
                "DI resolve #%{public}d (register #%{public}d) | productionChainLocked: %{public}@ | lastReset: %{public}@ (%{public}@)",
-               callCount, regCallCount,
+               snapshot.callCount, snapshot.regCallCount,
                isProductionChainPopulated ? "YES" : "NO",
                lastResetTimestamp?.description ?? "never",
                lastResetInfo ?? "N/A")
@@ -156,11 +165,11 @@ public final class ServiceContainer: @unchecked Sendable {
         ╠══════════════════════════════════════════════════════════════╣
         ║  Key:        \(key)
         ║  Type:       \(rawTypeString)
-        ║  Call #:     \(callCount)  |  Register #: \(regCallCount)
+        ║  Call #:     \(snapshot.callCount)  |  Register #: \(snapshot.regCallCount)
         ║  Production: \(isProductionChainPopulated ? "YES" : "NO")
         ║  Last Reset: \(lastResetTimestamp?.description ?? "never")
         ║              \(lastResetInfo ?? "N/A")
-        ║  Keys (\(registeredKeys.count)): \(registeredKeys.sorted().joined(separator: ", "))
+        ║  Keys (\(snapshot.registeredKeys.count)): \(snapshot.registeredKeys.sorted().joined(separator: ", "))
         ╚══════════════════════════════════════════════════════════════╝
 
         """, stderr)
@@ -179,18 +188,14 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 尝试解析服务，如果未注册则返回 nil，不会触发断言或崩溃
     public func resolveOptional<T>(_ type: T.Type) -> T? {
         let key = makeKey(for: type)
-        os_unfair_lock_lock(lockPointer)
-        let instance = services[key]
-        os_unfair_lock_unlock(lockPointer)
+        let instance = lock.withLock { services[key] }
         return instance as? T
     }
 
     /// 类型擦除的服务解析（供 `@Inject` 可选检测使用）
     public func typeErasedResolve(_ type: Any.Type) -> Any? {
         let key = makeKey(forAny: type)
-        os_unfair_lock_lock(lockPointer)
-        let instance = services[key]
-        os_unfair_lock_unlock(lockPointer)
+        let instance = lock.withLock { services[key] }
         return instance
     }
 
@@ -242,18 +247,14 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 检查服务是否已注册
     public func hasService<T>(for type: T.Type) -> Bool {
         let key = makeKey(for: type)
-        os_unfair_lock_lock(lockPointer)
-        let exists = services[key] != nil
-        os_unfair_lock_unlock(lockPointer)
+        let exists = lock.withLock { services[key] != nil }
         return exists
     }
 
     /// 安全解析服务，未注册时返回 nil（不 fatalError）
     public func optionalResolve<T>(_ type: T.Type) -> T? {
         let key = makeKey(for: type)
-        os_unfair_lock_lock(lockPointer)
-        let service = services[key]
-        os_unfair_lock_unlock(lockPointer)
+        let service = lock.withLock { services[key] }
         return service as? T
     }
 }

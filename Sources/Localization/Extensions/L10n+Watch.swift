@@ -47,20 +47,21 @@ extension L10n {
         public static var briefingFailed: String { watchTr("watch.briefing.failed") }
 
         // ─── watchOS 功能占位文案（Task 5：7 处 #if os(watchOS) 物理隔离） ─────────
+        // 7 个 iPhone-only 功能在 watchOS 上统一展示同一占位提示，共用单一 key 避免重复翻译。
 
         /// TaskCenterView watchOS 占位提示
-        public static var taskCenterPlaceholder: String { watchTr("watch.placeholder.taskCenter") }
+        public static var taskCenterPlaceholder: String { watchTr("watch.placeholder.iphoneOnly") }
         /// PromptWorkshopView watchOS 占位提示
-        public static var promptWorkshopPlaceholder: String { watchTr("watch.placeholder.promptWorkshop") }
+        public static var promptWorkshopPlaceholder: String { watchTr("watch.placeholder.iphoneOnly") }
         /// GraphCanvasView watchOS 占位提示
-        public static var graphCanvasPlaceholder: String { watchTr("watch.placeholder.graphCanvas") }
+        public static var graphCanvasPlaceholder: String { watchTr("watch.placeholder.iphoneOnly") }
         /// Graph3DComponents watchOS 占位提示
-        public static var graph3DPlaceholder: String { watchTr("watch.placeholder.graph3D") }
+        public static var graph3DPlaceholder: String { watchTr("watch.placeholder.iphoneOnly") }
         /// IngestView watchOS 占位提示
-        public static var ingestPlaceholder: String { watchTr("watch.placeholder.ingest") }
+        public static var ingestPlaceholder: String { watchTr("watch.placeholder.iphoneOnly") }
         /// PDFReaderView watchOS 占位提示
-        public static var pdfReaderPlaceholder: String { watchTr("watch.placeholder.pdfReader") }
+        public static var pdfReaderPlaceholder: String { watchTr("watch.placeholder.iphoneOnly") }
         /// OCRScanView watchOS 占位提示
-        public static var ocrScanPlaceholder: String { watchTr("watch.placeholder.ocrScan") }
+        public static var ocrScanPlaceholder: String { watchTr("watch.placeholder.iphoneOnly") }
     }
 }
