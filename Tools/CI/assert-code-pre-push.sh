@@ -117,6 +117,11 @@ else
     echo -e "     ${SKIP} .gitlab-ci.yml 不存在，跳过"; SKIPPED=$((SKIPPED + 1)); TOTAL=$((TOTAL + 1))
 fi
 
+# 1.7 免白名单过期检测（非阻断，WARNING）
+run_check "免白名单过期检测" \
+    "python3 Tools/CI/exemption_registry.py check-stale" \
+    "false"
+
 # quick 模式在此结束
 if [ "$MODE" = "quick" ]; then
     summary && echo -e "${GREEN}${BOLD}✅ 快速门禁通过！${NC}" && exit 0

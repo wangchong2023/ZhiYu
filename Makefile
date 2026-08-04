@@ -4,7 +4,7 @@
 -include Config/.env.local
 export
 
-.PHONY: all gen bootstrap ios mac watch test test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift help
+.PHONY: all gen bootstrap ios mac watch test test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift exemptions-check exemptions-rebuild help
 
 help:
 	@echo "智宇 (ZhiYu) 快捷构建与自动化命令列表："
@@ -22,6 +22,8 @@ help:
 	@echo "  make perf-baseline     - 生成/刷新性能基线 (首次运行或基线漂移时使用)"
 	@echo "  make plugin-scan       - 扫描插件市场目录安全校验"
 	@echo "  make doc-drift         - 检测文档与代码的漂移 (类/协议/方法引用一致性)"
+	@echo "  make exemptions-check  - 免白名单注册中心：统计符号集 + 检测过期白名单项"
+	@echo "  make exemptions-rebuild - 重建 Apple SDK / 第三方库符号缓存"
 
 gen: bootstrap
 
@@ -106,3 +108,13 @@ plugin-scan:
 doc-drift:
 	@echo "📄 检测文档与代码漂移..."
 	@python3 Tools/CI/check-doc-drift.py
+
+exemptions-check:
+	@echo "📋 免白名单注册中心：统计 + 过期检测..."
+	@python3 Tools/CI/exemption_registry.py stats
+	@echo ""
+	@python3 Tools/CI/exemption_registry.py check-stale
+
+exemptions-rebuild:
+	@echo "🔄 重建 Apple SDK / 第三方库符号缓存..."
+	@python3 Tools/CI/exemption_registry.py rebuild-cache

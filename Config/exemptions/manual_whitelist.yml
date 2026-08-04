@@ -1,0 +1,928 @@
+# ==============================================================================
+# ZhiYu 免白名单注册表 — 手动维护部分 (Manual Whitelist SSOT)
+# ==============================================================================
+# 用途：exemption_registry.py 加载本文件，作为"无法自动收集"的豁免项 SSOT。
+#       自动收集的符号（Apple SDK / 第三方库 / 项目代码）不在此文件中登记。
+#
+# 动态维护机制：
+#   1. 自动收集：exemption_registry.py 运行时自动扫描 Sources/Tests/、
+#      xcrun swift-symbolgraph-extract、.build/checkouts/，生成动态符号集
+#   2. 反向校验：expiry_check=true 的项会被检测，若已在代码中实现则报告为"过期"
+#   3. Git 钩子：pre-push 时自动重建符号缓存 + 校验漂移 + 过期检测
+#
+# 字段说明：
+#   symbol: 豁免的符号名
+#   reason: 豁免理由（必填）
+#   added: 添加日期（YYYY-MM-DD）
+#   expiry_check: 是否参与过期检测
+#     - true: 若该符号已在代码/第三方库中实现，报告为过期，建议移除
+#     - false: 永不过期（概念词、SQL 列名、占位符等非代码符号）
+#   category: 分类标签（用于按审计域查询）
+# ==============================================================================
+
+# --- 概念词（非代码符号，永不过期） ---
+concept_words:
+  - symbol: Infrastructure
+    reason: 架构分层目录名，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift, arch]
+  - symbol: Sources
+    reason: UI 概念词（知识溯源区域），非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Base
+    reason: 架构分层目录名，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift, arch]
+  - symbol: Core
+    reason: 架构分层目录名，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift, arch]
+  - symbol: Logic
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Manager
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Delegate
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Service
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Store
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Repository
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Pages
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Panel
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Link
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Sync
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Measure
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Compile
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Imports
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Layouts
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Editors
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Protocols
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Observation
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Markdown
+    reason: 架构概念词，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AITasks
+    reason: xcstrings 分表名，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- SQL 列名/表名/迁移版本（非 Swift 符号，永不过期） ---
+sql_artifacts:
+  - symbol: v1_initial
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v2_fts
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v3_rag_chunks
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v4_unique_title
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v5_upgrade_page_chunks
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v6_resource_audit
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v7_enhanced_governance
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v8_karpathy_metadata
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: v9_distributed_sync
+    reason: 数据库迁移版本号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: SELECT
+    reason: SQL 关键字，非 Swift 符号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- 算法名/哈希名（非 Swift 类型，永不过期） ---
+algorithm_names:
+  - symbol: SHA256
+    reason: 哈希算法名称，非 Swift 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- UserDefaults key（非 Swift 符号，永不过期） ---
+userdefaults_keys:
+  - symbol: daily_recap_yyyyMMdd
+    reason: UserDefaults key 字符串，非 Swift 符号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- 文档示例占位符（永不过期） ---
+placeholders:
+  - symbol: XxxAdapter
+    reason: 文档示例占位符
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XxxPlugin
+    reason: 文档示例占位符
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XxxProtocol
+    reason: 文档示例占位符
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XxxProvider
+    reason: 文档示例占位符
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AnyXxx
+    reason: 文档示例占位符
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: MockProvider
+    reason: 文档示例占位符
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- CI/工具变量（Python/Shell，非 Swift 符号，永不过期） ---
+ci_variables:
+  - symbol: COMMON_KEYWORDS
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: forbidden_rules
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: exclude_suffixes
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: depends_on
+    reason: YAML/Python 字段名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: domain_all_entities
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: domain_models_entities
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: domain_services_entities
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: file_signatures
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: run_parallel_task
+    reason: Python 脚本变量名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: arch_exempt
+    reason: 行内豁免注释标记
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift, arch]
+  - symbol: inject_exempt
+    reason: 行内豁免注释标记
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift, arch]
+  - symbol: snake_case
+    reason: 命名规范术语，非 Swift 符号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: os_unfair_lock
+    reason: C 函数名，非 Swift 符号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: memset_s
+    reason: C 函数名，非 Swift 符号
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- 项目 target/模块名（非 Swift 类型，但文档常引用） ---
+# 注意：这些参与过期检测——若未来在代码中定义了同名类型，应移除此豁免
+project_targets:
+  - symbol: ZhiYu
+    reason: 项目 target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZhiYuMac
+    reason: macOS target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZhiYuWatch
+    reason: watchOS target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZhiYuWidgets
+    reason: Widget target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZhiYuTests
+    reason: 测试 target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZhiYuAICoreTests
+    reason: SPM 包测试 target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZhiYuFeaturesTests
+    reason: SPM 包测试 target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UFPStorageTests
+    reason: SPM 包测试 target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UFPDesignSystemTests
+    reason: SPM 包测试 target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UFPCoreTests
+    reason: SPM 包测试 target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UFPCoreTestMocks
+    reason: SPM 包测试 mock target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZhiYuDomainTestMocks
+    reason: SPM 包测试 mock target 名
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+
+# --- 构建变量（非 Swift 符号，永不过期） ---
+build_variables:
+  - symbol: BUILD_TIMESTAMP
+    reason: 构建时间戳环境变量
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: GIT_SHORT_HASH
+    reason: Git 短哈希环境变量
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: SUPPORTS_MACCATALYST
+    reason: 构建宏定义
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: WOODPECKER_LABELS
+    reason: CI 流水线标签
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- Apple SDK 补充符号（symbolgraph 未覆盖的泛型类型/协议） ---
+# 这些符号确实存在于 Apple SDK 中，但 swift-symbolgraph-extract 未输出
+# expiry_check=true：若未来 symbolgraph 覆盖了这些符号，应移除此豁免
+sdk_supplement:
+  - symbol: ZStack
+    reason: SwiftUI 泛型视图（symbolgraph 未输出）
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: AsyncStream
+    reason: Swift 标准库异步序列（symbolgraph 未输出）
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: AsyncSequence
+    reason: Swift 标准库异步序列协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: CheckedContinuation
+    reason: Swift 并发续体类型
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: GlobalActor
+    reason: Swift 并发全局 Actor 协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: Nonisolated
+    reason: Swift 并发隔离修饰符
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: Observable
+    reason: Swift Observation 框架宏
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: SceneStorage
+    reason: SwiftUI 场景存储属性包装器
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: NavigationSplitView
+    reason: SwiftUI 分栏导航视图
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UserInterfaceSizeClass
+    reason: UIKit 用户界面尺寸类
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: LocalizedStringResource
+    reason: Foundation 本地化字符串资源
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: Localizable
+    reason: SwiftUI 本地化协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: DynamicType
+    reason: UIKit 动态类型
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+
+# --- XCTest 框架（不在 macOS SDK，在 developer toolchain） ---
+xctest_framework:
+  - symbol: XCTest
+    reason: XCTest 测试框架（developer toolchain，不在 macOS SDK）
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTestCase
+    reason: XCTest 测试基类
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTestExpectation
+    reason: XCTest 异步期望
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCUIApplication
+    reason: XCTest UI 测试应用
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTAssert
+    reason: XCTest 断言函数族
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTAssertEqual
+    reason: XCTest 断言
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTAssertTrue
+    reason: XCTest 断言
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTAssertFalse
+    reason: XCTest 断言
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTAssertNil
+    reason: XCTest 断言
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTAssertThrowsError
+    reason: XCTest 断言
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: XCTAssertNoThrow
+    reason: XCTest 断言
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- Swift 并发原语（symbolgraph 未输出的内部模块符号） ---
+swift_concurrency:
+  - symbol: OSAllocatedUnfairLock
+    reason: Swift 并发锁（_Volatile 内部模块，symbolgraph 未输出）
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: GlobalActor
+    reason: Swift 并发全局 Actor 协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: Nonisolated
+    reason: Swift 并发隔离修饰符
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: Observable
+    reason: Swift Observation 框架宏
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: AsyncStream
+    reason: Swift 标准库异步序列
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+
+# --- SwiftUI/UIKit 泛型视图与协议（symbolgraph 未输出） ---
+swiftui_uikit_supplement:
+  - symbol: ZStack
+    reason: SwiftUI 泛型视图
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: GeometryReader
+    reason: SwiftUI 几何读取器泛型视图
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: EnvironmentKey
+    reason: SwiftUI 环境键协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: EnvironmentValue
+    reason: SwiftUI 环境值协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: SceneStorage
+    reason: SwiftUI 场景存储属性包装器
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: NavigationSplitView
+    reason: SwiftUI 分栏导航视图
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UITraitCollection
+    reason: UIKit 特征集合
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UITraitBridgedEnvironmentKey
+    reason: UIKit 特征桥接环境键
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UIUserInterfaceIdiom
+    reason: UIKit 用户界面习语枚举
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UIBlurEffect
+    reason: UIKit 模糊效果
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UIImpactFeedbackGenerator
+    reason: UIKit 触觉反馈生成器
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UIDocumentPicker
+    reason: UIKit 文档选择器
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UIPasteboard
+    reason: UIKit 剪贴板
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UIView
+    reason: UIKit 视图基类
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: UIWindow
+    reason: UIKit 窗口
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+
+# --- Foundation/CoreFoundation C 符号（symbolgraph 未输出 C 符号） ---
+foundation_c_symbols:
+  - symbol: CFAbsoluteTime
+    reason: CoreFoundation 时间类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: CFBundleShortVersionString
+    reason: CoreFoundation Bundle 版本键
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: CFBundleVersion
+    reason: CoreFoundation Bundle 构建号键
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: LSApplicationCategoryType
+    reason: LaunchServices 应用类别键
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: SecKeyVerifySignature
+    reason: Security 框架密钥签名验证 C 函数
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Signpost
+    reason: os.signpost 概念词
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- 第三方库符号（SPM checkouts 为空时手动登记） ---
+third_party_libraries:
+  - symbol: GRDBReexport
+    reason: GRDB 库重导出符号
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: FetchableRecord
+    reason: GRDB 协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: MutablePersistableRecord
+    reason: GRDB 协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: TableRecord
+    reason: GRDB 协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: DatabasePool
+    reason: GRDB 数据库池
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: SnapshotTesting
+    reason: swift-snapshot-testing 库
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ZIPFoundation
+    reason: ZIP 压缩库
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: PptxGenJS
+    reason: PPTX 生成 JS 库
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: WechatOpenSDK
+    reason: 微信开放平台 SDK
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ATAuthSDK
+    reason: 阿里云号码认证 SDK
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: XMLHttpRequest
+    reason: Web 标准 API
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AppLottieView
+    reason: Lottie 动画视图
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: SwiftJSONSanitizer
+    reason: JSON 清洗库
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: WebSocket
+    reason: WebSocket 协议/库
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- 其他 Apple 框架模块名（作为概念词引用） ---
+apple_framework_modules:
+  - symbol: AppIntents
+    reason: Apple AppIntents 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AppKit
+    reason: Apple AppKit 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: UIKit
+    reason: Apple UIKit 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: SwiftUI
+    reason: Apple SwiftUI 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Foundation
+    reason: Apple Foundation 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: NaturalLanguage
+    reason: Apple NaturalLanguage 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: LocalAuthentication
+    reason: Apple LocalAuthentication 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AuthenticationServices
+    reason: Apple AuthenticationServices 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: JavaScriptCore
+    reason: Apple JavaScriptCore 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: RealityKit
+    reason: Apple RealityKit 框架
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AVAudioRecorder
+    reason: AVFoundation 音频录制器
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: BGTaskScheduler
+    reason: BackgroundTasks 框架调度器
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: WCSession
+    reason: WatchConnectivity 会话
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: CLKComplicationDataSource
+    reason: ClockKit 表盘数据源协议
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+  - symbol: ModelEntity
+    reason: RealityKit 模型实体
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+
+# --- Swift 标准库内置类型（symbolgraph 未输出） ---
+swift_stdlib:
+  - symbol: Any
+    reason: Swift 标准库 Any 类型
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Function
+    reason: Swift 函数概念词
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Hash
+    reason: Swift Hash 概念词
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Text
+    reason: SwiftUI Text 视图
+    added: 2026-08-04
+    expiry_check: true
+    category: [doc-drift]
+
+# --- 项目模块名（非代码符号，作为概念词引用） ---
+project_modules:
+  - symbol: UFPCore
+    reason: 项目 SPM 包名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: UFPStorage
+    reason: 项目 SPM 包名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: UFPDesignSystem
+    reason: 项目 SPM 包名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: ZhiYuDomain
+    reason: 项目 SPM 包名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: ZhiYuAICore
+    reason: 项目 SPM 包名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: ZhiYuFeatures
+    reason: 项目 SPM 包名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: UIComponents
+    reason: 项目 UI 组件目录名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Makefile
+    reason: 构建文件名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: PlistBuddy
+    reason: macOS 系统工具名
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: SERVICE_TO_SWIFT
+    reason: 代码生成映射变量
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+
+# --- CI 环境变量（非 Swift 符号） ---
+ci_variables:
+  - symbol: CI_PIPELINE_STATUS
+    reason: CI 流水线状态环境变量
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: SKIP_TESTS
+    reason: CI 跳过测试环境变量
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: SOURCE_DATE_EPOCH
+    reason: SOURCE_DATE_EPOCH 环境变量
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: TERMINATED
+    reason: 进程状态概念词
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: Unauthorized
+    reason: HTTP 状态概念词
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]
+  - symbol: AppNotifications
+    reason: 通知概念词
+    added: 2026-08-04
+    expiry_check: false
+    category: [doc-drift]

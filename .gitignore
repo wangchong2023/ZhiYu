@@ -82,3 +82,4 @@ Config/.env.local
 # project.yml 由 bootstrap.sh 从 Config/project.yml.template 生成，不提交
 # 提交的是模板：Config/project.yml.template
 project.yml
+.exemption_cache/
