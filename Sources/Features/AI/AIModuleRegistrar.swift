@@ -9,8 +9,6 @@
 
 import Foundation
 
-#if !os(watchOS)
-
 // MARK: - AI 能力模块 (L2)
 
 /// AI 模块注册器：负责 LLM、RAG 编排、合成、Prompt 等 AI 核心服务 (@PR-02)
@@ -21,14 +19,9 @@ struct AIModuleRegistrar: ModuleRegistrar {
     static func register(in container: ServiceContainer) {
         Logger.shared.info("[DI] Starting registration of AI capability modules...")
 
-        // 平台特定 OCR / 语音服务
-        #if os(watchOS)
-        container.register(WatchOCRService(), for: (any OCRServiceProtocol).self)
-        container.register(WatchSpeechService(), for: (any SpeechServiceProtocol).self)
-        #else
+        // 平台特定 OCR / 语音服务（watchOS 由 WatchPlatformRegistrar 注册）
         container.register(iOSOCRService(), for: (any OCRServiceProtocol).self)
         container.register(iOSSpeechService(), for: (any SpeechServiceProtocol).self)
-        #endif
 
         // AI 基础设施
         container.register(LLMConfigManager(), for: LLMConfigManager.self)
@@ -70,5 +63,3 @@ struct AIModuleRegistrar: ModuleRegistrar {
         Logger.shared.info("[DI] AI capability module registration completed")
     }
 }
-
-#endif
