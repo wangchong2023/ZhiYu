@@ -19,6 +19,7 @@ struct SettingsView: View {
     @EnvironmentObject var onboardingService: OnboardingService
     @ObservedObject var themeManager: ThemeManager = ThemeManager.shared
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.interfaceIdiom) private var idiom
     
     /// 设置分类枚举，表示各个设置大类
     private enum SettingsSection: String, CaseIterable, Identifiable {
@@ -100,43 +101,40 @@ struct SettingsView: View {
         @Bindable var router = router
         
         Group {
-            #if targetEnvironment(macCatalyst)
-            // macOS Catalyst 下采用自定义的左右固定分栏 (HStack) 布局，符合 Mac 平台多窗口及大屏偏好设置的操作习惯
-            HStack(spacing: 0) {
-                sidebarColumn
-                    .frame(width: DesignSystem.Metrics.settingsSidebarWidth)
-                
-                Divider()
-                    .background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
-                
-                ZStack {
-                    themeManager.pageBackground()
-                        .ignoresSafeArea()
-                    
-                    NavigationStack {
-                        detailColumn(for: selectedSection, router: router)
-                    }
-                                    }
-                .frame(maxWidth: .infinity)
-            }
-            #else
-            // iOS、iPadOS 端一律采用平铺的单列表结构。在 iPad 居中 Sheet 弹窗（600x550 物理像素）中能够独享完整宽度，
-            // 规避分栏拥挤，且常用设置项一键直达，免除“左选分类、右改配置”的二级菜单操作，极大简化交互复杂度
-            NavigationStack {
-                ZStack {
-                    themeManager.pageBackground()
-                        .ignoresSafeArea()
+            if idiom == .macCatalyst {
+                HStack(spacing: 0) {
+                    sidebarColumn
+                        .frame(width: DesignSystem.Metrics.settingsSidebarWidth)
 
-                    compactList
+                    Divider()
+                        .background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
+
+                    ZStack {
+                        themeManager.pageBackground()
+                            .ignoresSafeArea()
+
+                        NavigationStack {
+                            detailColumn(for: selectedSection, router: router)
+                        }
+                                    }
+                    .frame(maxWidth: .infinity)
                 }
-                                .navigationTitle(L10n.Settings.title)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        doneButton(router: router)
+            } else {
+                NavigationStack {
+                    ZStack {
+                        themeManager.pageBackground()
+                            .ignoresSafeArea()
+
+                        compactList
+                    }
+                                    .navigationTitle(L10n.Settings.title)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            doneButton(router: router)
+                        }
                     }
                 }
             }
-            #endif
         }
         .environment(\.locale, router.currentLocale)
         // 绑定当前主题对应的 preferredColorScheme，使深色模式和浅色模式切换能立即在该视图层实时生效

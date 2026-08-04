@@ -26,7 +26,8 @@ CHECK_DIRS = [
 ]
 
 # 拦截平台条件编译宏的正则表达式
-# 覆盖形式：#if os( / #if !os( / #elseif os( / #elseif !os( / 复合条件中含 !os(
+# 覆盖形式：#if os( / #if !os( / #elseif os( / #elseif !os( / 复合条件中含 !os( / targetEnvironment(macCatalyst)
+# 允许形式：#if canImport( 框架依赖判断 / #if targetEnvironment(simulator) 运行环境判断
 OS_MACRO_PATTERNS = [
     re.compile(r'#if\s+os\('),
     re.compile(r'#if\s+!os\('),
@@ -36,6 +37,8 @@ OS_MACRO_PATTERNS = [
     re.compile(r'#if\s+.*\|\|\s*!os\('),
     re.compile(r'#elseif\s+.*&&\s*!os\('),
     re.compile(r'#elseif\s+.*\|\|\s*!os\('),
+    re.compile(r'#if\s+targetEnvironment\(\s*macCatalyst\s*\)'),
+    re.compile(r'#elseif\s+targetEnvironment\(\s*macCatalyst\s*\)'),
 ]
 
 
