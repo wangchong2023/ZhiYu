@@ -9,6 +9,7 @@
 //  核心职责：实现 Medal 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Combine
 
 /// 奖章系统服务：负责追踪用户成就并触发奖励弹窗

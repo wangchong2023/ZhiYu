@@ -10,6 +10,7 @@
 //
 
 import XCTest
+import UFPCore
 import Combine
 import UFPStorage
 @testable import ZhiYu

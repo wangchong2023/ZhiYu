@@ -9,6 +9,7 @@
 //  核心职责：构建 NotebookHub 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 @MainActor
 /// 笔记本工作台视图

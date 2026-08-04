@@ -9,6 +9,7 @@
 //  核心职责：实现 AISynthesis 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// AI 知识综合服务 (L1 领域层)
 /// 负责具体的业务 Prompt 编排与结果解析，解耦 LLMService。

@@ -9,6 +9,7 @@
 //  核心职责：文档处理器：Markdown 解析、文本分块、图谱布局、网页抓取。
 //
 import Foundation
+import UFPCore
 
 /// 基础设施层内部的文档处理通用协议
 protocol DocumentProcessor: Sendable {

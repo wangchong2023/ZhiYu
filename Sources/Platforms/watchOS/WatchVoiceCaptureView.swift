@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 #if os(watchOS)
 import WatchKit

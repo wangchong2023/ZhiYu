@@ -9,6 +9,7 @@
 //  核心职责：实现 IngestLLM 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// 知识库摄入与重构基础设施服务
 /// 遵循并实现 `LLMKnowledgeServiceProtocol` 契约，支持响应式参数配置。

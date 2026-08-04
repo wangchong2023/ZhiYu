@@ -9,6 +9,7 @@
 //  核心职责：macOS 平台实现：菜单栏、文件归档、辅助功能。
 //
 import Foundation
+import UFPCore
 import LocalAuthentication
 
 // MARK: - 生物识别

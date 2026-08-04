@@ -10,6 +10,7 @@
 //
 #if os(iOS) && !os(watchOS)
 import Foundation
+import UFPCore
 import WebKit
 import CoreSpotlight
 

@@ -9,6 +9,7 @@
 //  核心职责：全局搜索：混合 FTS5+向量检索、命令面板。
 //
 import Foundation
+import UFPCore
 import Observation
 import Combine
 

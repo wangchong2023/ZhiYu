@@ -40,6 +40,12 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 上次 reset 的时间戳
     private var lastResetTimestamp: Date?
 
+    /// 可注入的致命失败处理器（缺陷 #5 修复）
+    /// - 生产环境：默认 nil，走 assertionFailure + fatalError（fail-fast 契约）
+    /// - 测试环境：替换为非崩溃闭包，使失败路径可被单元测试覆盖
+    /// - 用法：`ServiceContainer.fatalFailureHandler = { msg in XCTFail(msg) }`
+    public static var fatalFailureHandler: ((String) -> Void)?
+
     private init() {}
 
     // 注：OSAllocatedUnfairLock 为值类型，无需 deinit 释放
@@ -55,7 +61,7 @@ public final class ServiceContainer: @unchecked Sendable {
             registerCallCount += 1
         }
         #if DEBUG
-        Logger.shared.debug("DI: Registered [\(key)] with instance \(String(describing: service))")
+        MinimalLogger.shared.debug("DI: Registered [\(key)] with instance \(String(describing: service))")
         #endif
     }
 
@@ -72,7 +78,7 @@ public final class ServiceContainer: @unchecked Sendable {
             return "[ServiceContainer] Production DI chain complete. Registered services: \(keyCount). Keys: \(allKeys.sorted().joined(separator: ", "))"
         }
         os_log(.info, log: diLog, "%{public}@", info)
-        Logger.shared.info(info)
+        MinimalLogger.shared.info(info)
     }
 
     /// DI 容器是否已就绪（生产注册链已完成）
@@ -97,9 +103,26 @@ public final class ServiceContainer: @unchecked Sendable {
         guard !isProductionChainPopulated else {
             let msg = "[ServiceContainer] reset() BLOCKED: production DI chain is complete. Call site:\n\(callSite)"
             os_log(.error, log: diLog, "%{public}@", msg)
-            Logger.shared.warning(msg)
+            MinimalLogger.shared.warning(msg)
             return
         }
+        performReset()
+    }
+
+    /// 强制重置（仅供测试套件隔离使用）
+    /// 与 `reset()` 的区别：会同时清空 `isProductionChainPopulated` 标记，
+    /// 解决 `markProductionChainComplete()` 不可逆导致 `shared` 单元被永久污染、
+    /// 后续测试 `reset()` 全部静默失效的隔离破坏问题。
+    /// 生产代码严禁调用此方法。
+    public func resetForTesting() {
+        let callSite = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+        os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] resetForTesting() called. Call site:\n\(callSite)")
+        isProductionChainPopulated = false
+        performReset()
+    }
+
+    /// reset() 与 resetForTesting() 共用的实际清空逻辑
+    private func performReset() {
         let (removedCount, removedKeys) = lock.withLock { () -> (Int, [String]) in
             let count = services.count
             let keys = Array(services.keys)
@@ -112,7 +135,7 @@ public final class ServiceContainer: @unchecked Sendable {
     }
 
     /// resolve 诊断快照（避免 large_tuple 违规，元组成员不超过 2）
-    private struct ResolveSnapshot {
+    internal struct ResolveSnapshot {
         let instance: Any?
         let registeredKeys: [String]
         let callCount: Int
@@ -142,47 +165,81 @@ public final class ServiceContainer: @unchecked Sendable {
             return service
         }
 
-        // ── 服务未注册：输出多层次诊断信息 ──
+        // ── 服务未注册：输出诊断信息并 fail-fast 崩溃 ──
+        let summary = buildResolveFailureDiagnostics(key: key, type: type, snapshot: snapshot).0
+        emitResolveFailureDiagnostics(key: key, type: type, snapshot: snapshot)
+        assertionFailure(summary)
+        fatalError(summary)
+    }
+
+    /// 输出 resolve 失败诊断信息（os_log + stderr + MinimalLogger）
+    /// 提取为可测试方法：单元测试可验证诊断输出不崩溃
+    internal func emitResolveFailureDiagnostics<T>(
+        key: String, type: T.Type, snapshot: ResolveSnapshot
+    ) {
+        let (errorSummary, diagnosticBlock) = buildResolveFailureDiagnostics(
+            key: key, type: type, snapshot: snapshot
+        )
+
+        // 层级 1: os_log .fault — 崩溃后仍可在系统日志中检索
+        os_log(.fault, log: diLog, "%{public}@", errorSummary)
+        diagnosticBlock(self)
+
+        #if DEBUG
+        MinimalLogger.shared.error(errorSummary)
+        #endif
+    }
+
+    /// 构建 resolve 失败诊断信息（可测试的纯函数）
+    /// - Returns: (错误摘要, 诊断输出闭包)
+    /// 注意：提取为独立方法使诊断逻辑可被单元测试覆盖，无需触发 fatalError
+    internal func buildResolveFailureDiagnostics<T>(
+        key: String, type: T.Type, snapshot: ResolveSnapshot
+    ) -> (String, (ServiceContainer) -> Void) {
         let rawTypeString = String(describing: type)
         let readyHint = snapshot.registeredKeys.isEmpty
             ? "[DI ERROR — resolve() called before any DI initialization]"
             : "[error: \(snapshot.registeredKeys.count) services registered — key '\(key)' not found]"
         let errorSummary = "DI Error: Service [\(key)] not registered. \(readyHint) Type: \(rawTypeString). Keys (\(snapshot.registeredKeys.count)): \(snapshot.registeredKeys.sorted().joined(separator: ", "))"
 
-        // 层级 1: os_log .fault — 崩溃后仍可在系统日志中检索
-        os_log(.fault, log: diLog, "%{public}@", errorSummary)
-        os_log(.fault, log: diLog,
-               "DI resolve #%{public}d (register #%{public}d) | productionChainLocked: %{public}@ | lastReset: %{public}@ (%{public}@)",
-               snapshot.callCount, snapshot.regCallCount,
-               isProductionChainPopulated ? "YES" : "NO",
-               lastResetTimestamp?.description ?? "never",
-               lastResetInfo ?? "N/A")
+        let diagBlock: (ServiceContainer) -> Void = { container in
+            os_log(.fault, log: diLog,
+                   "DI resolve #%{public}d (register #%{public}d) | productionChainLocked: %{public}@ | lastReset: %{public}@ (%{public}@)",
+                   snapshot.callCount, snapshot.regCallCount,
+                   container.isProductionChainPopulated ? "YES" : "NO",
+                   container.lastResetTimestamp?.description ?? "never",
+                   container.lastResetInfo ?? "N/A")
 
-        // 层级 2: stderr — 同步打印，不经过任何异步缓冲区
-        fputs("""
-        ╔══════════════════════════════════════════════════════════════╗
-        ║  DI RESOLVE FAILURE — Crash Imminent                        ║
-        ╠══════════════════════════════════════════════════════════════╣
-        ║  Key:        \(key)
-        ║  Type:       \(rawTypeString)
-        ║  Call #:     \(snapshot.callCount)  |  Register #: \(snapshot.regCallCount)
-        ║  Production: \(isProductionChainPopulated ? "YES" : "NO")
-        ║  Last Reset: \(lastResetTimestamp?.description ?? "never")
-        ║              \(lastResetInfo ?? "N/A")
-        ║  Keys (\(snapshot.registeredKeys.count)): \(snapshot.registeredKeys.sorted().joined(separator: ", "))
-        ╚══════════════════════════════════════════════════════════════╝
+            fputs("""
+            ╔══════════════════════════════════════════════════════════════╗
+            ║  DI RESOLVE FAILURE — Crash Imminent                        ║
+            ╠══════════════════════════════════════════════════════════════╣
+            ║  Key:        \(key)
+            ║  Type:       \(rawTypeString)
+            ║  Call #:     \(snapshot.callCount)  |  Register #: \(snapshot.regCallCount)
+            ║  Production: \(container.isProductionChainPopulated ? "YES" : "NO")
+            ║  Last Reset: \(container.lastResetTimestamp?.description ?? "never")
+            ║              \(container.lastResetInfo ?? "N/A")
+            ║  Keys (\(snapshot.registeredKeys.count)): \(snapshot.registeredKeys.sorted().joined(separator: ", "))
+            ╚══════════════════════════════════════════════════════════════╝
 
-        """, stderr)
+            """, stderr)
+        }
 
-        #if DEBUG
-        Logger.shared.error(errorSummary)
-        #endif
+        return (errorSummary, diagBlock)
+    }
 
-        // 使用断言而非 fatalError，在开发环境下更容易追踪
-        assertionFailure(errorSummary)
-
-        // 兜底返回（仅在非调试模式下运行到此）
-        fatalError(errorSummary)
+    /// 测试辅助：构造当前 DI 状态的 resolve 快照（不触发 resolve 计数器递增）
+    /// 仅供单元测试 buildResolveFailureDiagnostics 使用
+    internal func makeResolveSnapshotForTesting() -> ResolveSnapshot {
+        lock.withLock {
+            ResolveSnapshot(
+                instance: nil,
+                registeredKeys: Array(services.keys),
+                callCount: resolveCallCount,
+                regCallCount: registerCallCount
+            )
+        }
     }
 
     /// 尝试解析服务，如果未注册则返回 nil，不会触发断言或崩溃
@@ -199,48 +256,45 @@ public final class ServiceContainer: @unchecked Sendable {
         return instance
     }
 
-    /// 生成类型唯一的 Key，移除 existential type 和模块名前缀的干扰
+    /// 生成类型唯一的 Key。
+    /// 保留模块名前缀以避免跨模块同名类型 key 冲突
+    /// （例如 `UFPCore.Logger` 与 `ZhiYuDomain.Logger` 必须区分）。
+    /// 仅移除 existential type 前缀（`any `/`all `）和 Swift 内部修饰符。
     private func makeKey<T>(for type: T.Type) -> String {
-        var typeString = "\(type)"
-
-        // 1. 移除 "any " 或 "all " 前缀
-        if typeString.hasPrefix("any ") {
-            typeString.removeFirst(4)
-        } else if typeString.hasPrefix("all ") {
-            typeString.removeFirst(4)
-        }
-
-        // 2. 移除模块名前缀 (例如 "ZhiYu.LoggerProtocol" -> "LoggerProtocol")
-        if !typeString.contains("<") {
-            if let lastDot = typeString.lastIndex(of: ".") {
-                typeString = String(typeString[typeString.index(after: lastDot)...])
-            }
-        }
-
-        // 3. 移除 Swift 内部修饰符 (例如 "(unknown context at $109403...)")
-        if let bracketIndex = typeString.firstIndex(of: " ") {
-            typeString = String(typeString[..<bracketIndex])
-        }
-
-        return typeString
+        return Self.normalizeKey(type)
     }
 
     /// 非泛型版本的 Key 生成（供 `typeErasedResolve` 使用）
     private func makeKey(forAny type: Any.Type) -> String {
+        return Self.normalizeKey(type)
+    }
+
+    /// Key 归一化共用逻辑
+    private static func normalizeKey(_ type: Any.Type) -> String {
         var typeString = "\(type)"
+
+        // 1. 移除 "any " 或 "all " 前缀（existential type 标记，非类型身份的一部分）
         if typeString.hasPrefix("any ") {
             typeString.removeFirst(4)
         } else if typeString.hasPrefix("all ") {
             typeString.removeFirst(4)
         }
-        if !typeString.contains("<") {
-            if let lastDot = typeString.lastIndex(of: ".") {
-                typeString = String(typeString[typeString.index(after: lastDot)...])
+
+        // 2. 移除 Swift 内部上下文前缀 "(unknown context at $xxx)."
+        // 此前缀出现在测试文件内 private 嵌套类型的 String(describing:) 输出中，
+        // 不属于类型身份。保留其后的模块名 + 类型名（含 "."）。
+        // 注意：不能用 firstIndex(of: " ")，因为会误砍含空格的合法类型描述。
+        if typeString.hasPrefix("(unknown context at ") {
+            if let closeParen = typeString.firstIndex(of: ")") {
+                let afterClose = typeString.index(after: closeParen)
+                if afterClose < typeString.endIndex, typeString[afterClose] == "." {
+                    typeString = String(typeString[typeString.index(after: afterClose)...])
+                } else {
+                    typeString = String(typeString[afterClose...])
+                }
             }
         }
-        if let bracketIndex = typeString.firstIndex(of: " ") {
-            typeString = String(typeString[..<bracketIndex])
-        }
+
         return typeString
     }
 
@@ -251,11 +305,41 @@ public final class ServiceContainer: @unchecked Sendable {
         return exists
     }
 
-    /// 安全解析服务，未注册时返回 nil（不 fatalError）
-    public func optionalResolve<T>(_ type: T.Type) -> T? {
-        let key = makeKey(for: type)
-        let service = lock.withLock { services[key] }
-        return service as? T
+    /// 启动期断言：验证必需服务已注册，缺失时触发 assertionFailure
+    /// - Parameter requiredTypes: 必需服务的元类型列表
+    /// - Parameter context: 调用上下文描述（用于诊断信息）
+    public func assertRegistered(_ requiredTypes: [Any.Type], context: String) {
+        var missing: [String] = []
+        for type in requiredTypes {
+            let key = makeKey(forAny: type)
+            let exists = lock.withLock { services[key] != nil }
+            if !exists {
+                missing.append(String(describing: type))
+            }
+        }
+        if !missing.isEmpty {
+            let registeredCount = lock.withLock { services.count }
+            let summary = "[DI Startup Assertion] \(context): \(missing.count) required service(s) NOT registered: \(missing.joined(separator: ", ")). Total registered: \(registeredCount)"
+            os_log(.fault, log: diLog, "%{public}@", summary)
+            fputs("""
+            ╔══════════════════════════════════════════════════════════════╗
+            ║  DI STARTUP ASSERTION FAILURE                                ║
+            ╠══════════════════════════════════════════════════════════════╣
+            ║  Context:    \(context)
+            ║  Missing:    \(missing.count) service(s)
+            ║              \(missing.joined(separator: ", "))
+            ║  Registered: \(registeredCount) services total
+            ╚══════════════════════════════════════════════════════════════╝
+
+            """, stderr)
+            // 缺陷 #5 修复：可注入的失败处理器
+            // 测试时替换为非崩溃闭包，使 assertRegistered 失败路径可被单元测试覆盖
+            if let handler = ServiceContainer.fatalFailureHandler {
+                handler(summary)
+                return
+            }
+            assertionFailure(summary)
+        }
     }
 }
 

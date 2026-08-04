@@ -9,6 +9,7 @@
 //  核心职责：实现 WebViewExport 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// 导出服务门面 (L0 基础架构层)
 /// 负责协调底层平台的导出实现（如 WebKit 或 Stub）。

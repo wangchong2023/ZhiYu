@@ -9,6 +9,7 @@
 //  核心职责：构建 VoiceNote 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - 语音笔记入口
 /// 语音笔记功能主视图

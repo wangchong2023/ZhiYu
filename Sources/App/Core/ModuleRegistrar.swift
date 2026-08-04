@@ -9,6 +9,7 @@
 //  核心职责：App 模块的 ModuleRegistrar 实现。
 //
 import Foundation
+import UFPCore
 import UFPStorage
 
 // MARK: - 注册协议
@@ -72,6 +73,8 @@ struct StorageModuleRegistrar: ModuleRegistrar {
         
         let sqliteStore = SQLiteStore(dbWriter: writer)
         container.register(sqliteStore as any AnyPageStoreCapabilities, for: (any AnyPageStoreCapabilities).self)
+        // 同时注册纯 AnyPageStore 协议，供 DataCoordinator 等仅需页面访问能力的消费者使用
+        container.register(sqliteStore as any AnyPageStore, for: (any AnyPageStore).self)
         
         container.register(BackupService(), for: BackupService.self)
         container.register(VaultStorageSecurityService(), for: VaultStorageSecurityService.self)

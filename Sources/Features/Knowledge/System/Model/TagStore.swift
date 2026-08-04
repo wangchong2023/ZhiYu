@@ -9,6 +9,7 @@
 //  核心职责：数据模型与状态管理，定义数据结构与 @Observable 状态。
 //
 import Foundation
+import UFPCore
 import Observation
 
 /// 标签领域状态中心 (L2-Store)

@@ -9,6 +9,7 @@
 //  核心职责：导入→合成端到端全链路验证
 
 import XCTest
+import UFPCore
 import UFPStorage
 @testable import ZhiYu
 

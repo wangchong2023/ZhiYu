@@ -11,6 +11,7 @@
 //
 
 import XCTest
+import UFPCore
 #if os(watchOS)
 @testable import ZhiYuWatch
 #else

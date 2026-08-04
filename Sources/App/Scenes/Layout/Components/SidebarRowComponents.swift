@@ -9,6 +9,7 @@
 //  核心职责：SwiftUI 视图组件，构建应用的导航、侧边栏、布局等 UI 结构。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - Navigation Definitions
 

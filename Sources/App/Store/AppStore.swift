@@ -10,6 +10,7 @@
 //            本文件保留核心类型声明、DI 注入、初始化与事件订阅逻辑。
 //
 import SwiftUI
+import UFPCore
 import Combine
 import Observation
 import UFPStorage

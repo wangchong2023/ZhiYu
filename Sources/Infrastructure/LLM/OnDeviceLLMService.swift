@@ -11,6 +11,7 @@
 @preconcurrency import Foundation
 @preconcurrency import CoreML
 import Combine
+import UFPCore
 
 // MARK: - On-Device LLM Service
 /// 智宇端侧本地大模型推理服务中枢

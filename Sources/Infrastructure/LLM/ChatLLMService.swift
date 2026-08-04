@@ -9,6 +9,7 @@
 //  核心职责：实现 ChatLLM 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Combine
 
 /// 大模型对话与文本生成基础设施服务

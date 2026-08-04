@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import Combine
 
 /// 大语言模型知识处理服务 (IngestProcessor)

@@ -9,6 +9,7 @@
 //  核心职责：Vault 模块中枢协调器 — 持有核心状态、DI 依赖与路径计算，将生命周期/同步/数据操作委托至专用扩展文件。
 //
 import Foundation
+import UFPCore
 import Observation
 
 /// 知识笔记本/笔记本中枢服务（VaultService）。
@@ -22,13 +23,13 @@ public final class VaultService: VaultServiceProtocol {
     /// 注入笔记本元数据持久化仓储协议（vaultRepository），使用可选计算属性安全解析以规避单元测试单例污染崩溃。
     @ObservationIgnored
     var vaultRepository: (any VaultRepository)? {
-        ServiceContainer.shared.optionalResolve((any VaultRepository).self)
+        ServiceContainer.shared.resolveOptional((any VaultRepository).self)
     }
 
     /// 注入数据库切换契约（databaseSwitcher），使用可选计算属性安全解析以规避单元测试单例污染崩溃。
     @ObservationIgnored
     var databaseSwitcher: (any VaultDatabaseSwitcher)? {
-        ServiceContainer.shared.optionalResolve((any VaultDatabaseSwitcher).self)
+        ServiceContainer.shared.resolveOptional((any VaultDatabaseSwitcher).self)
     }
 
     /// 键值存储抽象，替代 UserDefaults.standard 访问。Factory 风格：标注可选由 @Inject 自动降级。

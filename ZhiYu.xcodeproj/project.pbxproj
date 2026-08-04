@@ -246,7 +246,6 @@
 		1DADE0130A98DC9C55395222 /* AudioSplitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2459260376744BE92F3B220 /* AudioSplitter.swift */; };
 		1DCD3B1B9B2D7F33C32834F8 /* UserProfileMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E90BD834EB38BF336501889 /* UserProfileMenu.swift */; };
 		1DF29DF983481D345F0EBF57 /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55265746376076E80467CC0A /* AuthSession.swift */; };
-		1DF8EB97FCF630631D77226E /* ServiceContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A69B75B9CBB20855C88F99D /* ServiceContainer.swift */; };
 		1DFE54BD8A46BE5062976870 /* VectorRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD2214415900B3744A6838B /* VectorRepository.swift */; };
 		1E0096AC573B9B488061AF54 /* System.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = ABD8CD4C32C6003E8BBDEC00 /* System.xcstrings */; };
 		1E6393A3BE830DBF950B33EB /* L10n+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B79DC94CEED2945F86341F1B /* L10n+Components.swift */; };
@@ -726,7 +725,6 @@
 		613C905B4A362B87FA30FBDF /* TagCloudDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02222DC1B182DDC71A0CB3D7 /* TagCloudDialogs.swift */; };
 		614FE8E9BC58D0E16A989395 /* ByteFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC051C72EA8F9E68F647745 /* ByteFormatterTests.swift */; };
 		6176696FEEDE4F1191B02C8D /* KnowledgeViewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07B60E3297B627ADFA4130B /* KnowledgeViewProvider.swift */; };
-		618C95B65A33D65F42F2DB80 /* ServiceContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A69B75B9CBB20855C88F99D /* ServiceContainer.swift */; };
 		6205C38772A57058ECE9E695 /* SchemaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A1995F8F53A28910294605 /* SchemaService.swift */; };
 		62084ADAC66C62FF5456BA86 /* L10n+Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64E6CCC52DA7086DDA516A9 /* L10n+Tag.swift */; };
 		62235F363E8F2F9F451927E5 /* LLMProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4480FE6AD06AC6C3ED746C0 /* LLMProtocols.swift */; };
@@ -1289,7 +1287,6 @@
 		ABA82A5252AFE1355FFFA8F3 /* survey_202606.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 2B80EDB5B57C50FF071BACEA /* survey_202606.pdf */; };
 		ABC3FD2735D96CE5AD22F448 /* SystemViewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E38F5B0F8D66661401F840 /* SystemViewProvider.swift */; };
 		ABC822AA0F629D494FC91BCF /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AD8F8969EFF35350ADACC3B /* AuthView.swift */; };
-		ABD20ECB188A1B06C3818EDA /* ServiceContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A69B75B9CBB20855C88F99D /* ServiceContainer.swift */; };
 		ABE65BB4F868A089030DDBB2 /* CrossPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B6F26341300A6C681D2CD3 /* CrossPlatform.swift */; };
 		ABFCD335CAB2D6D9CD43DFC8 /* SpotlightService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9942F81B14C0062D145574D /* SpotlightService.swift */; };
 		AC0340735BD1F3E90908652E /* FileImportFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF4BD4F7694F0BF3B57E3B /* FileImportFileStore.swift */; };
@@ -2376,7 +2373,6 @@
 		5A0BF4A7B03D89A64B55C171 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		5A23084D6EB0BD686B9A4A83 /* LLMContextSecurityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMContextSecurityTests.swift; sourceTree = "<group>"; };
 		5A282DE798084F26CEDD70A4 /* testSettingsView.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSettingsView.1.png; sourceTree = "<group>"; };
-		5A69B75B9CBB20855C88F99D /* ServiceContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceContainer.swift; sourceTree = "<group>"; };
 		5AD8F8969EFF35350ADACC3B /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		5AE7873D4D948C9EC112291C /* WebViewExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewExportService.swift; sourceTree = "<group>"; };
 		5C040577AF738BE3FC65BA9B /* MacPlatformTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPlatformTests.swift; sourceTree = "<group>"; };
@@ -4417,7 +4413,6 @@
 		7D686F9D14A51B29337EB20C /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				5A69B75B9CBB20855C88F99D /* ServiceContainer.swift */,
 				51FAD49CE8F1DF1692F29AE1 /* VersionInfoFormatter.swift */,
 				16B71FC405CB9AD441252D5E /* Constants */,
 				8E08A9CE8984AA2B863D4EDB /* Extensions */,
@@ -7265,7 +7260,6 @@
 				282C0CA34CA107271CED5591 /* SecurityManager.swift in Sources */,
 				33E3497E9E83B9489CCA5EF6 /* SecurityReinforcement.swift in Sources */,
 				50DD2AC933A90CC8E6E902B3 /* ServerConfigView.swift in Sources */,
-				1DF8EB97FCF630631D77226E /* ServiceContainer.swift in Sources */,
 				9F558D5C09226D8F90541BE1 /* SettingsComponents.swift in Sources */,
 				1120894812E0170ADC5BE99D /* SettingsStore.swift in Sources */,
 				F6DF275C3B72F3B8D0D2FB31 /* SettingsView.swift in Sources */,
@@ -8012,7 +8006,6 @@
 				A343F1E148FA398206EECA2E /* SecurityManager.swift in Sources */,
 				0AB77E203349F6F20442579B /* SecurityReinforcement.swift in Sources */,
 				D282DB2AC411932583E89B1C /* ServerConfigView.swift in Sources */,
-				ABD20ECB188A1B06C3818EDA /* ServiceContainer.swift in Sources */,
 				281216B0ED8CB8337E593EFC /* SettingsComponents.swift in Sources */,
 				2ABCBC8999BC528E4BC2F265 /* SettingsStore.swift in Sources */,
 				78B4A92E1970593C066DA47A /* SettingsView.swift in Sources */,
@@ -8284,7 +8277,6 @@
 				B667E1C638F1B092B5C99CBA /* SearchDiagnosticInfo.swift in Sources */,
 				F238D0571B36F731CB4B4383 /* SearchIndexerProtocol.swift in Sources */,
 				676BFA051005BFC70079BFC4 /* SecurityReinforcement.swift in Sources */,
-				618C95B65A33D65F42F2DB80 /* ServiceContainer.swift in Sources */,
 				A8D47BFE13B1CF6B89C12A79 /* ShareSheetProtocol.swift in Sources */,
 				F647738F6FCCAE7976889AEF /* Spacing.swift in Sources */,
 				C5139902D2D9B1CCE81F2B97 /* SpeechModels.swift in Sources */,

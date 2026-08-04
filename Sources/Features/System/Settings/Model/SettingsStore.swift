@@ -9,6 +9,7 @@
 //  核心职责：系统设置：LLM 配置、性能监控、插件管理、iCloud、备份。
 //
 import Foundation
+import UFPCore
 import Observation
 import Combine
 

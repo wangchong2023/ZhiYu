@@ -9,6 +9,7 @@
 //  核心职责：处理知识页面的核心 CRUD、插件处理器挂载及生命周期副作用 (事件总线、打快照)，隔离底层持久化细节。
 //
 import Foundation
+import UFPCore
 import Observation
 import Combine
 

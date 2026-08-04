@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import UFPCore
 
 // MARK: - AI 能力模块 (L2)
 

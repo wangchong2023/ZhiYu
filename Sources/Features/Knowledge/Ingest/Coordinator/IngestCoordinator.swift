@@ -10,6 +10,7 @@
 //            将文件导入、URL 导入委托至专用扩展文件。
 //
 import SwiftUI
+import UFPCore
 import Observation
 import UniformTypeIdentifiers
 

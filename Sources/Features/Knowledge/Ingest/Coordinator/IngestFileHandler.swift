@@ -8,6 +8,7 @@
 //  核心职责：文件导入处理 — 本地文档安全导入、OCR 图片提取、去重检测与后台任务编排。
 //
 import SwiftUI
+import UFPCore
 import UniformTypeIdentifiers
 
 // MARK: - 文件导入处理

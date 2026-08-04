@@ -9,6 +9,7 @@
 //  核心职责：仪表盘：页面列表、知识统计、每周洞察、回链视图。
 //
 import SwiftUI
+import UFPCore
 
 /// 页面详情元数据展示区
 struct PageDetailMetadataSection: View {

@@ -9,6 +9,7 @@
 //  核心职责：App 模块的 AppEnvironment 实现。
 //
 import SwiftUI
+import UFPCore
 import Observation
 import UFPStorage
 /// 应用程序全局环境
@@ -61,7 +62,8 @@ final class AppEnvironment {
         registerDIModules()
 
         // 2.1 DI 就绪断言：验证 Store 依赖的关键服务已全部注册
-        //     若断言失败，说明 ModuleRegistrar 注册顺序有误，需立即暴露而非延后到 Store 崩溃
+        //     仅校验 ModuleRegistrar 注册的服务；Store 自注册的服务（TagStore/KnowledgeStore 等）
+        //     在 :109 AppStore.init 内完成，不在此断言范围内
         ServiceContainer.shared.assertRegistered(
             [
                 (any LoggerProtocol).self,
@@ -73,7 +75,6 @@ final class AppEnvironment {
                 IngestService.self,
                 BackupService.self,
                 UndoService.self,
-                TagStore.self,
                 PerformanceService.self,
                 SettingsStore.self,
                 SnapshotService.self,
@@ -107,7 +108,21 @@ final class AppEnvironment {
         self.synthesisStore = SynthesisStore()
         self.store = AppStore()
 
-        // 3.1 补充注册 AppStore.init 未覆盖的 Store（IngestStore/SynthesisStore）
+        // 3.1 Store 自注册断言：验证 AppStore.init 内自注册的 Store 已全部就绪
+        //     若断言失败，说明 AppStore.init 自注册逻辑有遗漏
+        ServiceContainer.shared.assertRegistered(
+            [
+                AppStore.self,
+                SearchStore.self,
+                AIWorkflowStore.self,
+                AIInsightStore.self,
+                TagStore.self,
+                KnowledgeStore.self
+            ],
+            context: "After Store instantiation"
+        )
+
+        // 3.2 补充注册 AppStore.init 未覆盖的 Store（IngestStore/SynthesisStore）
         registerStoresToContainer()
 
         // 4. 配置全局 UI 样式与数据种子化及同步

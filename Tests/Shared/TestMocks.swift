@@ -9,6 +9,7 @@
 //  核心职责：为单元测试提供 TestMocks 仿真服务占位。
 //
 import Foundation
+import UFPCore
 import XCTest
 import Combine
 import UFPStorage

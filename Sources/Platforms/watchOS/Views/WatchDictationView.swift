@@ -9,6 +9,7 @@
 //  核心职责：构建 WatchDictation 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - 手表端语音采集
 /// Apple Watch 语音笔记采集视图

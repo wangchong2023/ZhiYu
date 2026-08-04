@@ -11,6 +11,7 @@
 //
 #if !os(watchOS)
 import Foundation
+import UFPCore
 #if canImport(Speech)
 import Speech
 #endif

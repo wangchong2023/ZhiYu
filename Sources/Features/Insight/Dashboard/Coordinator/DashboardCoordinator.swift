@@ -9,6 +9,7 @@
 //  核心职责：负责 Dashboard 业务流的导航路由与协作管理。
 //
 import SwiftUI
+import UFPCore
 import Observation
 
 @MainActor

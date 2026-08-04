@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import Combine
 
 /// 大语言模型检索与重排服务 (QueryReranker)

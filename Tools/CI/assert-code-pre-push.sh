@@ -89,6 +89,11 @@ run_check "架构分层依赖检查（L0-L3）" \
     "python3 Tools/ios/audit-arch-dependency.py" \
     || exit 1
 
+# 1.3.1 DI 注册完整性 — 提前发现 @Inject 依赖未注册、assertRegistered 列表含未注册类型
+run_check "DI 注册完整性检查" \
+    "python3 Tools/ios/check-arch-di-registration.py" \
+    || exit 1
+
 # 1.4 SwiftLint — 仅变更文件（有变更时才运行，非阻断）
 if [ -n "$CHANGED_SWIFT_FILES" ]; then
     CHANGED_COUNT=$(echo "$CHANGED_SWIFT_FILES" | wc -l | tr -d ' ')

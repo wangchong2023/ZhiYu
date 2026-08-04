@@ -9,6 +9,7 @@
 //  核心职责：实现 Keychain 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Security
 
 /// 钥匙串服务包装器 (@SR-03: 安全存储鉴权令牌)

@@ -9,6 +9,7 @@
 //  核心职责：用户反馈表单 + 历史记录
 
 import SwiftUI
+import UFPCore
 
 struct FeedbackView: View {
     @Environment(\.dismiss) private var dismiss

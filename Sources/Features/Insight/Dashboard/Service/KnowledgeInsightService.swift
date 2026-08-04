@@ -9,6 +9,7 @@
 //  核心职责：实现 KnowledgeInsight 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 /// 知识见解服务 (PM 视角：价值闭环)
 /// 负责生成知识周报与核心趋势分析。
 actor KnowledgeInsightService {

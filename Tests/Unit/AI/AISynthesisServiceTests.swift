@@ -18,6 +18,7 @@
 //
 
 import XCTest
+import UFPCore
 import Combine
 @testable import ZhiYu
 

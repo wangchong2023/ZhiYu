@@ -9,6 +9,7 @@
 //  核心职责：针对 ZhiYuE2E 开展自动化单元测试验证。
 //
 import XCTest
+import UFPCore
 import MultipeerConnectivity
 import UFPStorage
 @testable import ZhiYu

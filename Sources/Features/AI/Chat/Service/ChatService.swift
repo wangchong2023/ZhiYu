@@ -9,6 +9,7 @@
 //  核心职责：实现 Chat 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Combine
 
 @MainActor

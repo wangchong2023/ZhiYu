@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import UFPCore
 
 // MARK: - 知识管理模块 (L2)
 

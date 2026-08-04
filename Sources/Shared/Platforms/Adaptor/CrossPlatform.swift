@@ -9,6 +9,7 @@
 //  核心职责：跨平台适配器：统一不同平台的类型别名与 API 差异。
 //
 import Foundation
+import UFPCore
 
 /// 跨平台剪贴板包装器
 @MainActor

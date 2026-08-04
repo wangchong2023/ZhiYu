@@ -10,6 +10,7 @@
 //
 #if os(watchOS)
 import SwiftUI
+import UFPCore
 import AVFoundation
 
 /// 手表端语音简报收听界面

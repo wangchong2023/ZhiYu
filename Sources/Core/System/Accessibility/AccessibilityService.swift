@@ -9,6 +9,7 @@
 //  核心职责：实现 Accessibility 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Combine
 
 // MARK: - Accessibility Service

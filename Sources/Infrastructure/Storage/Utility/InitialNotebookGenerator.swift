@@ -12,6 +12,7 @@
 //
 
 import Foundation
+import UFPCore
 import UFPStorage
 
 /// 演示数据生成器

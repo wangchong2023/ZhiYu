@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import Observation
 
 /// 智宇核心状态中心协议 (L3-Facade 抽象接口)

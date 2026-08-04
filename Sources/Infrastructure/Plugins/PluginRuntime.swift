@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import Combine
 
 /// 插件运行时引擎：负责插件激活/停用、资源限流、安全熔断与内容拦截
@@ -119,7 +120,7 @@ final class PluginRuntime: ObservableObject {
         registry.eventListeners.removeAll(where: { $0.pluginID == id })
 
         // 安全注销页面处理器
-        if let store = ServiceContainer.shared.optionalResolve(KnowledgeStore.self) {
+        if let store = ServiceContainer.shared.resolveOptional(KnowledgeStore.self) {
             store.unregisterProcessors(for: id)
         }
 
@@ -352,7 +353,7 @@ private struct PluginContextImpl: PluginContext {
 
     /// 注册 PageProcessor
     func registerPageProcessor(_ processor: any KnowledgePageProcessor) {
-        guard let store = ServiceContainer.shared.optionalResolve(KnowledgeStore.self) else { return }
+        guard let store = ServiceContainer.shared.resolveOptional(KnowledgeStore.self) else { return }
         store.registerProcessor(processor, pluginID: manifest.id)
         log(": \(processor.name)")
     }

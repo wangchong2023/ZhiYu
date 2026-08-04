@@ -1128,11 +1128,6 @@ di_registration_exempt:
     added: 2026-08-04
     expiry_check: false
     category: [di-registration]
-  - symbol: AnyPageStore
-    reason: 仅注册了 AnyPageStoreCapabilities，TagStore/DataCoordinator 注入 AnyPageStore 需后续调查
-    added: 2026-08-04
-    expiry_check: false
-    category: [di-registration]
 
 # --- CI 环境变量（非 Swift 符号） ---
 ci_variables:

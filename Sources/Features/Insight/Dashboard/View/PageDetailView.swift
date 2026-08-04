@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 /// 页面详情视图
 struct PageDetailView: View {

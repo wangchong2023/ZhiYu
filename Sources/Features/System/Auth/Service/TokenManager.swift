@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 extension AuthService {
 

@@ -9,6 +9,7 @@
 //  核心职责：负责 Data 业务流的导航路由与协作管理。
 //
 import Foundation
+import UFPCore
 import Observation
 
 /// 数据协调器：编排存储变更与 AI 增强任务（如向量化）的联动。

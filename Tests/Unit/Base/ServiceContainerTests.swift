@@ -11,6 +11,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 // MARK: - 测试存根定义 (使用 ForDI 前缀防止与 TestMocks.swift 全局冲突)

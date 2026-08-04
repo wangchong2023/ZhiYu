@@ -9,6 +9,7 @@
 //  核心职责：实现 Workflow 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// 工作流服务：连接知识与外部系统（如提醒事项、日历）
 @MainActor

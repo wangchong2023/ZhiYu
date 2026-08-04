@@ -9,6 +9,7 @@
 //  核心职责：通用工具函数（向量数学、本地化辅助、ZIP 工具等）。
 //
 import Foundation
+import UFPCore
 import os
 
 /// 智宇系统支持的语言模式定义。

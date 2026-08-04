@@ -9,6 +9,7 @@
 //  核心职责：实现 LLM 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Combine
 
 /// AI 大模型调度门面中枢服务（LLMService）。

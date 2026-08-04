@@ -9,6 +9,7 @@
 //  核心职责：设计系统令牌：颜色、排版、间距、动画、图标等可视化常量。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - Theme Manager
 @MainActor

@@ -9,6 +9,7 @@
 //  核心职责：构建 Content 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 /// 应用程序根视图
 /// 负责全局导航分发（Tab/SplitView）、安全遮罩及全局弹窗调度

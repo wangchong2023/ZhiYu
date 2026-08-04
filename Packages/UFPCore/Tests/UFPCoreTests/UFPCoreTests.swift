@@ -26,7 +26,7 @@ final class UFPCoreTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        ServiceContainer.shared.reset()
+        ServiceContainer.shared.resetForTesting()
     }
 
     /// 校验 ServiceContainer 注册与解析功能
@@ -51,7 +51,7 @@ final class UFPCoreTests: XCTestCase {
         DispatchQueue.concurrentPerform(iterations: 100) { i in
             let service = DummyService()
             container.register(service as DummyServiceProtocol, for: DummyServiceProtocol.self)
-            let resolved = container.optionalResolve(DummyServiceProtocol.self)
+            let resolved = container.resolveOptional(DummyServiceProtocol.self)
             XCTAssertNotNil(resolved, "高并发注册与解析时不应出现锁竞争导致的空指针")
             expectation.fulfill()
         }
@@ -59,11 +59,11 @@ final class UFPCoreTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
 
-    /// 校验未注册服务时的 optionalResolve 安全逻辑
+    /// 校验未注册服务时的 resolveOptional 安全逻辑
     func testUnregisteredOptionalResolve() {
         let container = ServiceContainer.shared
-        let optionalResolved = container.optionalResolve(DummyServiceProtocol.self)
-        XCTAssertNil(optionalResolved, "未注册的服务在 optionalResolve 时必须安全返回 nil，不得断言崩溃")
+        let resolveOptionald = container.resolveOptional(DummyServiceProtocol.self)
+        XCTAssertNil(resolveOptionald, "未注册的服务在 resolveOptional 时必须安全返回 nil，不得断言崩溃")
     }
 
     /// 校验 MockLogger 存根功能

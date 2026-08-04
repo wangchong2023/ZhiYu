@@ -9,6 +9,7 @@
 //  核心职责：验证引导里程碑系统的正确性
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 @MainActor

@@ -10,6 +10,7 @@
 //
 #if os(macOS)
 import Foundation
+import UFPCore
 
 /// macOS 平台专用服务注册器
 @MainActor

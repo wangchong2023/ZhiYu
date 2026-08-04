@@ -9,6 +9,7 @@
 //  核心职责：针对 SearchPerformance 开展自动化单元测试验证。
 //
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 /// 性能基准测试 (Expert QA Item #4)

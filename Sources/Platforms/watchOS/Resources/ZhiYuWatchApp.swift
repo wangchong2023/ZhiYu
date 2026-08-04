@@ -9,6 +9,7 @@
 //  核心职责：watchOS 平台实现：语音听写、健康数据同步、紧凑 UI。
 //
 import SwiftUI
+import UFPCore
 
 /// Apple Watch 应用程序入口
 @main

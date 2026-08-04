@@ -19,8 +19,20 @@ public final class SwarmMemoryAdapter: MemoryEngineProtocol, @unchecked Sendable
     public init() {}
 
     public func processMemory(history: [ChatMessageDomainDTO], recentCount: Int) async -> (summary: String?, recentMessages: [ChatMessageDomainDTO]) {
+        // 与 NativeMemoryEngine 语义对齐：空 history 返回 nil summary
+        guard !history.isEmpty else {
+            return (nil, [])
+        }
+
         let recentMessages = Array(history.suffix(recentCount))
-        let summary = "Swarm Agent Memory Summary (\(history.count) items)"
+        let olderMessages = history.dropLast(recentMessages.count)
+
+        // 无 older 消息时不生成 summary（与 Native 一致）
+        guard !olderMessages.isEmpty else {
+            return (nil, recentMessages)
+        }
+
+        let summary = "Swarm Agent Memory Summary (\(olderMessages.count) prior items)"
         return (summary, recentMessages)
     }
 

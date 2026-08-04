@@ -9,6 +9,7 @@
 //  核心职责：针对 LLMService 开展自动化单元测试验证。
 //
 import XCTest
+import UFPCore
 import Combine
 @testable import ZhiYu
 

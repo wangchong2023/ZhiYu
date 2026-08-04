@@ -9,6 +9,7 @@
 //  核心职责：属于 SnapshotTests 模块，提供相关的结构体或工具支撑。
 //
 import XCTest
+import UFPCore
 import SwiftUI
 import SnapshotTesting
 import Combine

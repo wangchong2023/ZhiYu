@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import UFPCore
 
 // MARK: - 认证与系统模块 (L2)
 

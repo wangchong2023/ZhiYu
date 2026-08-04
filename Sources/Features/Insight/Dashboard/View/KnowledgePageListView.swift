@@ -9,6 +9,7 @@
 //  核心职责：构建 KnowledgePageList 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - Index View (entry point with NavigationStack)
 @MainActor

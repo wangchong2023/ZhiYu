@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import Combine
 
 /// 大语言模型对话专属运行器 (ChatRunner)

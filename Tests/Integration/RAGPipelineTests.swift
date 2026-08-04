@@ -9,6 +9,7 @@
 //  核心职责：针对 RAGPipeline 开展自动化单元测试验证。
 //
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 /// 系统集成测试：全链路 RAG 管道

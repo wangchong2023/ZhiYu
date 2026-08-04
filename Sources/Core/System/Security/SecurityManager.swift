@@ -9,6 +9,7 @@
 //  核心职责：安全基础设施：Keychain 密钥管理、Secure Enclave 加密、HMAC 签名。
 //
 import Foundation
+import UFPCore
 import CryptoKit
 import UFPStorage
 import os

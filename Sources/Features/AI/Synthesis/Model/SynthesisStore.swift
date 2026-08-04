@@ -9,6 +9,7 @@
 //  核心职责：AI 合成实验室：摘要、思维导图、测验、报告生成。
 //
 import Foundation
+import UFPCore
 import Observation
 import Combine
 

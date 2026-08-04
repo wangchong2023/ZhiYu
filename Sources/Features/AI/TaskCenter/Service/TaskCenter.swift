@@ -9,6 +9,7 @@
 //  核心职责：任务中心：后台 AI 任务调度与进度追踪。
 //
 import Foundation
+import UFPCore
 import Combine
 
 /// 任务类型

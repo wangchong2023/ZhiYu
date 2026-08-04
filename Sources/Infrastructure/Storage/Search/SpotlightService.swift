@@ -9,6 +9,7 @@
 //  核心职责：实现 Spotlight 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// Spotlight 索引服务 (Expert Design Item #3)
 /// 负责协调底层平台的系统搜索索引实现。

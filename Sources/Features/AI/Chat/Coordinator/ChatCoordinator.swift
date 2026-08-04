@@ -9,6 +9,7 @@
 //  核心职责：负责 Chat 业务流的导航路由与协作管理。
 //
 import SwiftUI
+import UFPCore
 import Observation
 import Combine
 

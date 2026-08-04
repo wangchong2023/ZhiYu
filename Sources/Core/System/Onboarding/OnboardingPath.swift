@@ -9,6 +9,7 @@
 //  核心职责：引导路径选择 + 里程碑触发系统
 
 import Foundation
+import UFPCore
 import SwiftUI
 
 // MARK: - 引导路径

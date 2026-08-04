@@ -10,6 +10,7 @@
 //
 #if os(watchOS)
 import Foundation
+import UFPCore
 import WatchConnectivity
 import Combine
 

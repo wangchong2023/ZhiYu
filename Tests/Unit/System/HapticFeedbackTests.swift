@@ -11,6 +11,7 @@
 
 #if os(iOS)
 import XCTest
+import UFPCore
 import SwiftUI
 @testable import ZhiYu
 

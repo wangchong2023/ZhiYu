@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 final class PPTXProcessorTests: XCTestCase {

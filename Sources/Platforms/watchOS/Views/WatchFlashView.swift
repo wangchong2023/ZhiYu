@@ -11,6 +11,7 @@
 
 #if os(watchOS)
 import SwiftUI
+import UFPCore
 
 public struct WatchFlashView: View {
     @Inject private var watchSync: any WatchSyncProtocol

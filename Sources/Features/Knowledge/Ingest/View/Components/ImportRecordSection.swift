@@ -9,6 +9,7 @@
 //  核心职责：导入原始内容分段 Tab + 卡片列表区域
 
 import SwiftUI
+import UFPCore
 import QuickLook
 
 struct ImportRecordSection: View {

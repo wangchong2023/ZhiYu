@@ -9,6 +9,7 @@
 //  核心职责：文档处理器：Markdown 解析、文本分块、图谱布局、网页抓取。
 //
 import Foundation
+import UFPCore
 
 /// 简易原生 PPTX 生成器 (OpenXML 架构)
 /// 遵循微软 OpenXML 标准，通过生成 XML 目录结构并使用系统 zip 工具打包。

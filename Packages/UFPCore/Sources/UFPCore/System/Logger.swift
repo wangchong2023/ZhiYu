@@ -12,8 +12,8 @@
 import Foundation
 import os
 
-public final class Logger: @unchecked Sendable {
-    public static let shared = Logger()
+public final class MinimalLogger: @unchecked Sendable {
+    public static let shared = MinimalLogger()
 
     private init() {}
 

@@ -9,6 +9,7 @@
 //  核心职责：大语言模型客户端：多提供商适配、流式响应解析、端侧推理。
 //
 import Foundation
+import UFPCore
 import NaturalLanguage
 
 // MARK: - LLM Context Builder

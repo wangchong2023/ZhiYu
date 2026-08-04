@@ -10,6 +10,7 @@
 //
 #if os(watchOS)
 import Foundation
+import UFPCore
 
 /// watchOS 平台专用服务注册器
 @MainActor

@@ -10,6 +10,7 @@
 //
 #if !os(watchOS)
 import SwiftUI
+import UFPCore
 import UIKit
 
 // MARK: - 场景代理（多窗口支持）

@@ -9,6 +9,7 @@
 //  核心职责：构建 DeveloperSettings 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 struct DeveloperSettingsView: View {
     @Environment(AppStore.self) var store

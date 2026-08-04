@@ -9,6 +9,7 @@
 //  核心职责：从 HTML/文档中提取图片 URL，下载并通过 OCR 识别嵌入文字到内容中
 
 import Foundation
+import UFPCore
 #if os(iOS)
 import UIKit
 #endif

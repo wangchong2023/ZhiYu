@@ -9,6 +9,7 @@
 //  核心职责：数据模型与状态管理，定义数据结构与 @Observable 状态。
 //
 import Foundation
+import UFPCore
 import Combine
 import Observation
 
@@ -153,8 +154,8 @@ public final class KnowledgeStore {
 
         // 🛡️ 防御性检查：在全量测试并发场景下，DI 容器可能被前置测试破坏
         // 使用 optionalResolve 避免因服务未注册导致 fatalError
-        guard let pageStore = ServiceContainer.shared.optionalResolve((any AnyPageStoreCapabilities).self),
-              let knowledgeRepo = ServiceContainer.shared.optionalResolve((any KnowledgeRepository).self) else {
+        guard let pageStore = ServiceContainer.shared.resolveOptional((any AnyPageStoreCapabilities).self),
+              let knowledgeRepo = ServiceContainer.shared.resolveOptional((any KnowledgeRepository).self) else {
             Logger.shared.warning("[KnowledgeStore] refresh() skipped: required services missing from DI container (likely due to test interference)")
             return
         }
@@ -173,7 +174,7 @@ public final class KnowledgeStore {
         }
 
         let duration = Date().timeIntervalSince(startTime)
-        if let perf = ServiceContainer.shared.optionalResolve(PerformanceService.self) {
+        if let perf = ServiceContainer.shared.resolveOptional(PerformanceService.self) {
             perf.record(.databaseLoad, duration: duration)
         }
     }

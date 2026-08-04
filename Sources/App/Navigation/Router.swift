@@ -9,6 +9,7 @@
 //  核心职责：App 模块的 Router 实现。
 //
 import SwiftUI
+import UFPCore
 import Observation
 
 /// 业务领域定义

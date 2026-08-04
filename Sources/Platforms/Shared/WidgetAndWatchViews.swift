@@ -9,6 +9,7 @@
 //  核心职责：SwiftUI 视图，负责 WidgetAndWatchs 界面的布局与渲染。
 //
 import SwiftUI
+import UFPCore
 import WidgetKit
 
 #if !os(watchOS)

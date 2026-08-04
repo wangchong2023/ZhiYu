@@ -9,6 +9,7 @@
 //  核心职责：针对 RAGPerformance 开展自动化单元测试验证。
 //
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 @MainActor

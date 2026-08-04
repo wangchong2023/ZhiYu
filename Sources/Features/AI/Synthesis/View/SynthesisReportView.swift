@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 // MARK: - 报告内容视图
 

@@ -9,6 +9,7 @@
 //  核心职责：实现 Maintenance 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Observation
 import UFPStorage
 

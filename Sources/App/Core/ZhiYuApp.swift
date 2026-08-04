@@ -9,6 +9,7 @@
 //  核心职责：App 模块的 ZhiYuApp 实现。
 //
 import SwiftUI
+import UFPCore
 
 struct ZhiYuApp: App {
     /// 状态持有：App 全局环境（负责所有后台服务的生命周期）

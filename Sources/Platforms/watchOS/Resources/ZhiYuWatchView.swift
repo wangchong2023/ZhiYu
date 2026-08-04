@@ -9,6 +9,7 @@
 //  核心职责：构建 ZhiYuWatch 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - 手表端专用颜色
 private extension Color {

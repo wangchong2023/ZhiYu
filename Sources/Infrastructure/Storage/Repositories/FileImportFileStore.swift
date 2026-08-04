@@ -9,6 +9,7 @@
 //  核心职责：导入原始文件持久化实现
 
 import Foundation
+import UFPCore
 
 final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
 

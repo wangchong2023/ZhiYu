@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import CryptoKit
 
 /// 插件加载器：负责从本地磁盘发现并解析插件文件

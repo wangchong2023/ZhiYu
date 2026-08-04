@@ -9,6 +9,7 @@
 //  核心职责：实现 AIAnalytics 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// AI 指标分析服务 (L1-Infra)
 public final class AIAnalyticsService: @unchecked Sendable {

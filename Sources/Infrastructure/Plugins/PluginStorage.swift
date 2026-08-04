@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 /// 插件存储管理器：封装插件私有数据与封禁状态的持久化操作
 @MainActor

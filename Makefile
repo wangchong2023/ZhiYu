@@ -4,7 +4,7 @@
 -include Config/.env.local
 export
 
-.PHONY: all gen bootstrap ios mac watch test test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift exemptions-check exemptions-rebuild help
+.PHONY: all gen bootstrap ios mac watch test test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift exemptions-check exemptions-rebuild coverage-spm help
 
 help:
 	@echo "智宇 (ZhiYu) 快捷构建与自动化命令列表："
@@ -24,6 +24,9 @@ help:
 	@echo "  make doc-drift         - 检测文档与代码的漂移 (类/协议/方法引用一致性)"
 	@echo "  make exemptions-check  - 免白名单注册中心：统计符号集 + 检测过期白名单项"
 	@echo "  make exemptions-rebuild - 重建 Apple SDK / 第三方库符号缓存"
+	@echo "  make coverage-spm     - 测量所有 SPM 包语句/分支覆盖率（对照 ≥90% 阈值）"
+	@echo "  make coverage-spm PKG=UFPCore  - 仅测量指定包覆盖率"
+	@echo "  make coverage-spm DETAILS=1    - 展示每文件覆盖率"
 
 gen: bootstrap
 
@@ -118,3 +121,7 @@ exemptions-check:
 exemptions-rebuild:
 	@echo "🔄 重建 Apple SDK / 第三方库符号缓存..."
 	@python3 Tools/CI/exemption_registry.py rebuild-cache
+
+coverage-spm:
+	@echo "📊 测量 SPM 包覆盖率..."
+	@python3 Tools/CI/coverage-spm.py $(if $(PKG),--pkg $(PKG),) $(if $(DETAILS),--details,)

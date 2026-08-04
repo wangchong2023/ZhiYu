@@ -24,19 +24,27 @@ import Lottie
 public struct AppLottieView: View {
     public let animationName: String
     public let loopMode: LottieLoopMode
+    public let bundle: Bundle
 
+    /// 创建 Lottie 动效播放组件
+    /// - Parameters:
+    ///   - name: Lottie 动画资源名（不含扩展名）
+    ///   - loopMode: 循环模式，默认 .loop
+    ///   - bundle: 资源所在 Bundle，默认 .main（测试时可注入测试 bundle）
     public init(
         name: String,
-        loopMode: LottieLoopMode = .loop
+        loopMode: LottieLoopMode = .loop,
+        bundle: Bundle = .main
     ) {
         self.animationName = name
         self.loopMode = loopMode
+        self.bundle = bundle
     }
 
     public var body: some View {
-        if Bundle.main.url(forResource: animationName, withExtension: "json") != nil {
+        if bundle.url(forResource: animationName, withExtension: "json") != nil {
             // 使用 LottieView 原生 SwiftUI 支持 (lottie-ios 4.x)
-            LottieView(animation: .named(animationName))
+            LottieView(animation: .named(animationName, bundle: bundle))
                 .looping()
         } else {
             // 找不到 Lottie 资源时优雅降级为 ProgressView

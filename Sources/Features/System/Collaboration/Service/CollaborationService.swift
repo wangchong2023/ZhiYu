@@ -9,6 +9,7 @@
 //  核心职责：实现 Collaboration 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 import Combine
 
 /// 协作服务代理协议

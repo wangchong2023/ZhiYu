@@ -73,18 +73,54 @@ def extract_register_types() -> set:
 
 
 def find_missing_types(inject_types: set, register_types: set, whitelist: set) -> list:
-    """交叉比对 @Inject 类型与已注册类型，返回未注册类型列表。"""
+    """交叉比对 @Inject 类型与已注册类型，返回未注册类型列表。
+
+    严格精确匹配：DI 容器的 makeKey 按类型字符串精确生成 key，
+    AnyPageStore 与 AnyPageStoreCapabilities 是不同的 key，不可模糊匹配。
+    """
     missing = []
     for t in sorted(inject_types):
         if t in whitelist:
             continue
         if t in register_types:
             continue
-        # 模糊匹配: 检查是否有同类名注册（如协议的不同模块声明）
-        if any(rt for rt in register_types if rt.endswith(t.split(".")[-1])):
-            continue
         missing.append(t)
     return missing
+
+
+def extract_assert_registered_types() -> set:
+    """从 ServiceContainer.shared.assertRegistered(...) 调用中提取所有断言类型。
+
+    断言列表中的类型必须在调用前已注册，否则触发 assertionFailure。
+    """
+    assert_types = set()
+    # 匹配 assertRegistered 调用块内的 .self 类型表达式
+    # 支持 (any Protocol).self 和 ConcreteType.self 两种形式
+    pattern = re.compile(r'\.self\b')
+    in_assert = False
+    brace_depth = 0
+
+    for root, _, files in os.walk(SOURCES_DIR):
+        if "Tests" in root:
+            continue
+        for f in files:
+            if not f.endswith(".swift"):
+                continue
+            filepath = os.path.join(root, f)
+            with open(filepath, "r", encoding="utf-8") as fh:
+                content = fh.read()
+            # 简化扫描：定位 assertRegistered( 调用，提取其后到 context: 之前的所有 .self 类型
+            for m in re.finditer(r'assertRegistered\s*\(\s*\[', content):
+                start = m.end()
+                # 找到匹配的 ] 或 context:
+                end_match = re.search(r'\](?:\s*,\s*context:|\s*\))', content[start:])
+                if not end_match:
+                    continue
+                block = content[start:start + end_match.start()]
+                # 提取 (any Protocol).self 或 ConcreteType.self
+                for tm in re.finditer(r'\(?\s*(?:any\s+)?([\w.]+)\s*\)?\.self', block):
+                    assert_types.add(tm.group(1))
+    return assert_types
 
 
 def find_files_with_inject_type(type_name: str) -> list:
@@ -137,12 +173,30 @@ def main() -> int:
 
     missing = find_missing_types(inject_types, register_types, whitelist)
 
+    # 额外校验：assertRegistered 列表中的类型必须已注册
+    # 这能提前发现"断言列表包含 Store 自注册服务"这类顺序错误
+    assert_types = extract_assert_registered_types()
+    assert_missing = []
+    for t in sorted(assert_types):
+        if t in whitelist or t in register_types:
+            continue
+        assert_missing.append(t)
+
     if missing:
         report_missing_types(missing)
         return 1
 
+    if assert_missing:
+        print(f"\n🚨 发现 {len(assert_missing)} 个 assertRegistered 列表中的类型未注册：")
+        print("   （这些类型在 assertRegistered 调用时必须已注册，否则触发 assertionFailure）")
+        for t in assert_missing:
+            print(f"    • {t}")
+        print("\n💡 请将类型加入 container.register，或从 assertRegistered 列表中移除。")
+        return 1
+
     total_registered = len(inject_types) - len(whitelist)
     print(f"\n✅ 所有 {total_registered} 个 @Inject 类型均已注册。")
+    print(f"✅ 所有 {len(assert_types)} 个 assertRegistered 断言类型均已注册。")
     return 0
 
 
