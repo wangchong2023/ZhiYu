@@ -625,8 +625,8 @@ WHITELIST = {
 
 ## 九、相关文档
 
-- [`Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md`](../../Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md) — 跨平台协议分层架构（将新增第 10 章）
-- [`Docs/Architecture/LAYERING_L0_L3.md`](../../Docs/Architecture/LAYERING_L0_L3.md) — 严格分层规范（红线 7 将更新）
-- [`Docs/Architecture/HIGH_LEVEL_DESIGN.md`](../../Docs/Architecture/HIGH_LEVEL_DESIGN.md) — 概要设计（P1 修复记录将更新）
-- [`Docs/Architecture/ADR.md`](../../Docs/Architecture/ADR.md) — 架构决策记录（将新增 ADR-006）
+- [`Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md`](../../Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md) — 跨平台协议分层架构（将新增第 10 章）
+- [`Docs/Architecture/LAYERING_L0_L3.md`](../../Architecture/LAYERING_L0_L3.md) — 严格分层规范（红线 7 将更新）
+- [`Docs/Architecture/HIGH_LEVEL_DESIGN.md`](../../Architecture/HIGH_LEVEL_DESIGN.md) — 概要设计（P1 修复记录将更新）
+- [`Docs/Architecture/ADR.md`](../../Architecture/ADR.md) — 架构决策记录（将新增 ADR-006）
 - [Apple Backyard Birds 示例](https://developer.apple.com/documentation/swiftui/backyard-birds-sample) — 运行时 Trait 模式参考

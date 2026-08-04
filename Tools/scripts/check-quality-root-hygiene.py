@@ -11,7 +11,7 @@
 import os
 import sys
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # ── 只拦截这些明确的垃圾 ──────────────────────────────────────────
 TEMP_EXTENSIONS = {".tmp", ".swp", ".swo", ".bak", ".orig", ".rej"}
