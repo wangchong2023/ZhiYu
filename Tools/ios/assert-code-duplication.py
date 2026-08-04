@@ -163,13 +163,18 @@ def try_pmd_cpd():
         return False
         
     print("\n[Code Duplication] Detected 'PMD' in system. Running PMD-CPD scan...")
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        f.write("Sources\n")
+        file_list_path = f.name
     res = subprocess.run([
         pmd_bin, "cpd",
         "--minimum-tokens", "50",
         "--language", "swift",
-        "--files", "Sources",
+        "--file-list", file_list_path,
         "--format", "text"
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    os.unlink(file_list_path)
     print(res.stdout)
     if res.stderr:
         print(res.stderr, file=sys.stderr)
