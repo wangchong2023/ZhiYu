@@ -377,6 +377,31 @@ extension DatabaseManager {
                 t.column(AuditLogRecord.CodingKeys.details.rawValue, .text)
                 t.column(AuditLogRecord.CodingKeys.createdAt.rawValue, .datetime).notNull().defaults(to: Date())
             }
+
+            // 5. 插件持久化记录表：插件元数据、安装状态及运行时统计
+            try db.create(table: AppConstants.Storage.Tables.pluginRecords) { t in
+                t.column(PluginRecord.Columns.id.rawValue, .text).primaryKey()
+                t.column(PluginRecord.Columns.name.rawValue, .text).notNull()
+                t.column(PluginRecord.Columns.version.rawValue, .text).notNull()
+                t.column(PluginRecord.Columns.author.rawValue, .text).notNull()
+                t.column(PluginRecord.Columns.source.rawValue, .text).notNull().defaults(to: "local")
+                t.column(PluginRecord.Columns.status.rawValue, .text).notNull().defaults(to: "active")
+                t.column(PluginRecord.Columns.permissionsJSON.rawValue, .text).notNull().defaults(to: "[]")
+                t.column(PluginRecord.Columns.loadDuration.rawValue, .double).notNull().defaults(to: 0)
+                t.column(PluginRecord.Columns.unloadDuration.rawValue, .double).notNull().defaults(to: 0)
+                t.column(PluginRecord.Columns.totalExecutionTime.rawValue, .double).notNull().defaults(to: 0)
+                t.column(PluginRecord.Columns.callCount.rawValue, .integer).notNull().defaults(to: 0)
+                t.column(PluginRecord.Columns.installedAt.rawValue, .datetime).notNull().defaults(to: Date())
+                t.column(PluginRecord.Columns.updatedAt.rawValue, .datetime).notNull().defaults(to: Date())
+                t.column(PluginRecord.Columns.manifestJSON.rawValue, .text).notNull().defaults(to: "")
+            }
+
+            // 6. 插件全文检索索引表（FTS5 external content）
+            try db.execute(sql: """
+                CREATE VIRTUAL TABLE IF NOT EXISTS \(AppConstants.Storage.Tables.pluginRecordsFTS) USING fts5(
+                    id UNINDEXED, name, author, description
+                )
+            """)
         }
         
         // V2: global_vaults 增加 page_count 列 (@P4: 列表页数展示)

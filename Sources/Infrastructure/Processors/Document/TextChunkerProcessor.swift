@@ -142,10 +142,22 @@ struct TextChunkerProcessor: Sendable {
     /// 当前分块溢出时触发刷新：保存当前 chunk，创建带重叠窗口的新缓冲区。
     /// 重叠窗口保证相邻 chunk 间存在语义连续性，避免关键信息被截断。
     private func flushChunkOnOverflow(lineWithNewline: String, config: Config, state: inout ChunkingState) {
-        state.chunks.append(Chunk(text: state.currentChunkText.trimmingCharacters(in: .whitespacesAndNewlines), startIndex: state.currentStartIndex, anchorPath: state.currentAnchor, breadcrumbPath: state.currentBreadcrumb, isCode: state.currentChunkText.contains("```")))
+        // 缺陷 #13 修复：append 前检查空文本，避免产生空 chunk
+        let trimmedText = state.currentChunkText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else {
+            // 当前缓冲区为空，直接将新行加入缓冲区
+            state.currentChunkText = lineWithNewline
+            return
+        }
+
+        state.chunks.append(Chunk(text: trimmedText, startIndex: state.currentStartIndex, anchorPath: state.currentAnchor, breadcrumbPath: state.currentBreadcrumb, isCode: state.currentChunkText.contains("```")))
+
+        // 缺陷 #12 修复：在修改 currentChunkText 前保存旧长度，用于正确计算 startIndex 偏移
+        let oldChunkTextCount = state.currentChunkText.count
         let overlapIndex = state.currentChunkText.index(state.currentChunkText.endIndex, offsetBy: -config.chunkOverlap, default: state.currentChunkText.startIndex)
         state.currentChunkText = String(state.currentChunkText[overlapIndex...]) + lineWithNewline
-        state.currentStartIndex += (state.currentChunkText.count - config.chunkOverlap)
+        // startIndex 偏移 = 旧 chunk 文本长度 - 重叠窗口大小
+        state.currentStartIndex += max(0, oldChunkTextCount - config.chunkOverlap)
     }
 }
 

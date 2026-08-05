@@ -40,21 +40,44 @@ public enum MermaidSanitizer {
 
     /// 行级节点文本引用与符号转义
     private static func sanitizeLineNodes(_ line: String) -> String {
-        // 匹配 NodeID[Label] 结构
-        let bracketRegex = try? NSRegularExpression(pattern: #"([A-Za-z0-9_\-]+)\[([^"\]]+)\]"#)
+        // 缺陷 #11 修复：正则 [^"\]]+ 不允许 ] 字符，导致含嵌套方括号的标签无法匹配
+        // 采用两步策略：
+        // 1. 先匹配不含 ] 的标准 NodeID[Label]（兼容原有行为）
+        // 2. 再匹配含嵌套 ] 的 NodeID[Label[...]]（新增支持）
+        let standardRegex = try? NSRegularExpression(pattern: #"([A-Za-z0-9_\-]+)\[([^"\]]+)\]"#)
+        let nestedRegex = try? NSRegularExpression(pattern: #"([A-Za-z0-9_\-]+)\[([^"\]]*\[[^\]]*\][^"\]]*)\]"#)
         var result = line
 
-        if let matches = bracketRegex?.matches(in: line, range: NSRange(line.startIndex..., in: line)) {
-            for match in matches.reversed() {
+        // 先处理嵌套方括号（更具体的模式优先）
+        if let nestedMatches = nestedRegex?.matches(in: line, range: NSRange(line.startIndex..., in: line)) {
+            for match in nestedMatches.reversed() {
                 guard let idRange = Range(match.range(at: 1), in: line),
                       let labelRange = Range(match.range(at: 2), in: line),
                       let fullRange = Range(match.range(at: 0), in: line) else { continue }
-                
+
                 let nodeID = String(line[idRange])
                 let labelText = String(line[labelRange]).trimmingCharacters(in: .whitespaces)
-                
-                // 如果包含特殊符号且尚未套引号，自动加双引号
-                if labelText.contains(":") || labelText.contains("(") || labelText.contains(")") || labelText.contains("[") || labelText.contains("]") {
+
+                let specialChars: [Character] = [":", "(", ")", "[", "]"]
+                if labelText.contains(where: { specialChars.contains($0) }) {
+                    let replacement = "\(nodeID)[\"\(labelText)\"]"
+                    result.replaceSubrange(fullRange, with: replacement)
+                }
+            }
+        }
+
+        // 再处理标准节点（在已处理后的 result 上重新匹配）
+        if let standardMatches = standardRegex?.matches(in: result, range: NSRange(result.startIndex..., in: result)) {
+            for match in standardMatches.reversed() {
+                guard let idRange = Range(match.range(at: 1), in: result),
+                      let labelRange = Range(match.range(at: 2), in: result),
+                      let fullRange = Range(match.range(at: 0), in: result) else { continue }
+
+                let nodeID = String(result[idRange])
+                let labelText = String(result[labelRange]).trimmingCharacters(in: .whitespaces)
+
+                let specialChars: [Character] = [":", "(", ")", "[", "]"]
+                if labelText.contains(where: { specialChars.contains($0) }) {
                     let replacement = "\(nodeID)[\"\(labelText)\"]"
                     result.replaceSubrange(fullRange, with: replacement)
                 }

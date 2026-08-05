@@ -22,32 +22,7 @@ final class PluginRepoEdgeTests: XCTestCase {
         dbQueue = try DatabaseQueue()
         try await DatabaseManager.shared.setupForTesting(with: dbQueue)
         let writer: any DatabaseWriter = await DatabaseManager.shared.globalWriter ?? dbQueue
-        // 缺陷 #9 绕过：globalMigrator 未创建 plugin_records 表，手动创建
-        try await writer.write { db in
-            try db.execute(sql: """
-                CREATE TABLE IF NOT EXISTS plugin_records (
-                    id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    version TEXT NOT NULL,
-                    author TEXT NOT NULL,
-                    source TEXT NOT NULL DEFAULT 'local',
-                    status TEXT NOT NULL DEFAULT 'active',
-                    permissions_json TEXT NOT NULL DEFAULT '[]',
-                    load_duration REAL NOT NULL DEFAULT 0,
-                    unload_duration REAL NOT NULL DEFAULT 0,
-                    total_execution_time REAL NOT NULL DEFAULT 0,
-                    call_count INTEGER NOT NULL DEFAULT 0,
-                    installed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    manifest_json TEXT NOT NULL DEFAULT ''
-                )
-                """)
-            try db.execute(sql: """
-                CREATE VIRTUAL TABLE IF NOT EXISTS plugin_records_fts USING fts5(
-                    id UNINDEXED, name, author, description
-                )
-                """)
-        }
+        // 缺陷 #9 已修复：globalMigrator 现已创建 plugin_records 表，无需手动建表
         pluginRepo = SQLitePluginRepository(dbWriter: writer)
     }
 

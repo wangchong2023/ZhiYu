@@ -107,12 +107,10 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
         }
     }
 
-    // MARK: - 缺陷 #9 回归测试：globalMigrator 缺失 plugin_records 表
+    // MARK: - 缺陷 #9 回归测试：globalMigrator 创建 plugin_records 表
 
-    /// 验证：globalMigrator 未创建 plugin_records 表（缺陷 #9 回归）。
-    /// 注意：此测试当前预期失败（表不存在），用于记录缺陷。
-    /// 修复后应改为 XCTAssertTrue。
-    func testGlobalMigratorMissingPluginRecordsTable_Bug9() async throws {
+    /// 验证：globalMigrator 已创建 plugin_records 表（缺陷 #9 已修复）。
+    func testGlobalMigratorCreatesPluginRecordsTable_Bug9() async throws {
         let writer = await DatabaseManager.shared.globalWriter
         guard let unwrappedWriter = writer else {
             XCTFail("globalWriter 不应为 nil")
@@ -123,10 +121,8 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
                 .map { $0["name"] as? String ?? "" }
         }
 
-        // 缺陷 #9：globalMigrator 未注册 plugin_records 表迁移
-        // GeneratedSQL.globalSchemaSQL 中定义了该表但未被引用
-        XCTAssertFalse(tables.contains("plugin_records"),
-                       "缺陷 #9：globalMigrator 当前未创建 plugin_records 表。修复后此断言应改为 XCTAssertTrue")
+        XCTAssertTrue(tables.contains("plugin_records"),
+                       "缺陷 #9 已修复：globalMigrator 应创建 plugin_records 表")
     }
 
     // MARK: - 迁移幂等性

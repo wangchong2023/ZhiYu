@@ -14,6 +14,35 @@ import ZhiYuAICore
 /// 专门处理知识测验数据的解析、转换与清洗
 enum QuizProcessor {
 
+    // MARK: - 常量定义（去魔鬼化）
+
+    /// 测验答案解析常量
+    enum AnswerParsing {
+        /// Answer 行的正则模式，精确提取 Answer: 后的首个字母/数字
+        static let pattern = #"Answer:\s*([A-Da-d1-4])"#
+        /// 选项字母 A 对应的索引
+        static let optionAIndex = 0
+        /// 选项字母 B 对应的索引
+        static let optionBIndex = 1
+        /// 选项字母 C 对应的索引
+        static let optionCIndex = 2
+        /// 选项字母 D 对应的索引
+        static let optionDIndex = 3
+        /// 选项字母集合（A-D）
+        static let letterOptions: [String] = ["A", "B", "C", "D"]
+        /// 选项数字集合（1-4）
+        static let numberOptions: [String] = ["1", "2", "3", "4"]
+        /// 字母/数字到索引的映射表
+        static let answerMap: [String: Int] = [
+            "A": optionAIndex, "1": optionAIndex,
+            "B": optionBIndex, "2": optionBIndex,
+            "C": optionCIndex, "3": optionCIndex,
+            "D": optionDIndex, "4": optionDIndex
+        ]
+        /// 默认答案索引（解析失败时回退）
+        static let defaultIndex = 0
+    }
+
     struct FlexibleQuizShell: Codable {
         let title: String?
         let quizTitle: String?
@@ -274,13 +303,13 @@ enum QuizProcessor {
     }
 
     private static func parseAnswerIndex(from line: String) -> Int {
-        if line.contains("B") || line.contains("1") {
-            return 1
-        } else if line.contains("C") || line.contains("2") {
-            return 2
-        } else if line.contains("D") || line.contains("3") {
-            return 3
+        // 缺陷 #10 修复：改用正则精确提取 Answer: 后的首个字母/数字，避免 contains 误匹配
+        guard let regex = try? NSRegularExpression(pattern: AnswerParsing.pattern, options: .caseInsensitive),
+              let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)),
+              let answerRange = Range(match.range(at: 1), in: line) else {
+            return AnswerParsing.defaultIndex
         }
-        return 0
+        let answerChar = String(line[answerRange]).uppercased()
+        return AnswerParsing.answerMap[answerChar] ?? AnswerParsing.defaultIndex
     }
 }
