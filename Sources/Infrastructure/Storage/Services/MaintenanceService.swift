@@ -50,7 +50,7 @@ public final class MaintenanceService {
             let targetEnglishName = Vault(name: config.name).englishName
             if !existingVaults.contains(where: { $0.englishName == targetEnglishName }) {
                 vaultService.createVault(name: config.name, icon: config.icon, description: config.description)
-                activeLogger.addLog(action: .create, target: config.name, details: "InitialNotebook_VaultCreated", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: config.name, details: StorageConstants.LogDetails.initialNotebookVaultCreated, module: StorageConstants.LogModule.maintenance)
             }
         }
 
@@ -81,9 +81,9 @@ public final class MaintenanceService {
                 totalCount += count
                 vaultDetails.append((name: vault.name, count: count))
                 await vaultService.refreshPageCount(for: vault.id)
-                activeLogger.addLog(action: .create, target: vault.name, details: "InitialNotebook_PageCountRefreshed", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: vault.name, details: "InitialNotebook_PageCountRefreshed", module: StorageConstants.LogModule.maintenance)
             } catch {
-                activeLogger.addLog(action: .error, target: vault.name, details: "InitialNotebook_Failed", module: "Maintenance")
+                activeLogger.addLog(action: .error, target: vault.name, details: StorageConstants.LogDetails.initialNotebookFailed, module: StorageConstants.LogModule.maintenance)
             }
         }
         return (total: totalCount, details: vaultDetails)
@@ -94,7 +94,7 @@ public final class MaintenanceService {
         guard pages.isEmpty else { return }
         
         // 是否处于自动化 UI 测试模式，用于自愈保护
-        let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
+        let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == StorageConstants.OperationStatus.true
         
         // 尝试获取当前选中笔记本名称（当 vaultName 为 nil 时兜底）
         let resolvedName: String? = vaultName ?? VaultService.shared.currentVault?.name
@@ -103,18 +103,18 @@ public final class MaintenanceService {
             if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains("Vault") == true)) {
                 // 默认知识管理笔记本 — 注入 AI 概念与 API 日志演示数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
-                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.defaultDemoData, details: "Seeded_default_content", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.defaultDemoData, details: StorageConstants.LogDetails.seededDefaultContent, module: StorageConstants.LogModule.maintenance)
             } else if resolvedName == L10n.Vault.researchName || resolvedName == L10n.Vault.researchNameZh || resolvedName == L10n.Vault.researchNameEn || resolvedName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains("Research") == true) {
                 // 项目调研笔记本 — 注入行业分析演示数据
                 _ = try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore)
-                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: "Seeded_research_content", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: StorageConstants.LogDetails.seededResearchContent, module: StorageConstants.LogModule.maintenance)
             } else if isTesting || resolvedName != nil {
                 // 兜底：不为空的笔记本都尝试注入默认数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
-                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.fallbackDemoData, details: "Seeded_fallback_content", module: "Maintenance")
+                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.fallbackDemoData, details: StorageConstants.LogDetails.seededFallbackContent, module: StorageConstants.LogModule.maintenance)
             }
         } catch {
-            activeLogger.addLog(action: .error, target: vaultName ?? L10n.InitialNotebook.Log.unknownVault, details: "Seed_Failed: \(error)", module: "Maintenance")
+            activeLogger.addLog(action: .error, target: vaultName ?? L10n.InitialNotebook.Log.unknownVault, details: StorageConstants.LogDetails.seedFailedPrefix + "\(error)", module: StorageConstants.LogModule.maintenance)
         }
     }
 

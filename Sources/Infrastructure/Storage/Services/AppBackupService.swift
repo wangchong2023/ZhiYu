@@ -9,6 +9,7 @@
 //  核心职责：实现 AppBackup 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 // MARK: - Backup Service
 /// Automatic data backup and crash recovery service.
@@ -117,11 +118,11 @@ final class BackupService: ObservableObject {
             Logger.shared.addLog(
                 action: .ingest,
                 target: fileName,
-                details: "AppBackup_Success1",
+                details: StorageConstants.LogDetails.appBackupSuccess1,
                 duration: endTime.timeIntervalSince(startTime),
                 startTime: startTime,
                 endTime: endTime,
-                module: "BackupService"
+                module: StorageConstants.LogModule.backupService
             )
         } catch {
             let endTime = Date()
@@ -132,7 +133,7 @@ final class BackupService: ObservableObject {
                 duration: endTime.timeIntervalSince(startTime),
                 startTime: startTime,
                 endTime: endTime,
-                module: "BackupService"
+                module: StorageConstants.LogModule.backupService
             )
         }
     }
@@ -154,11 +155,11 @@ final class BackupService: ObservableObject {
             Logger.shared.addLog(
                 action: .ingest,
                 target: entry.fileName,
-                details: "AppBackup_Success2",
+                details: StorageConstants.LogDetails.appBackupSuccess2,
                 duration: endTime.timeIntervalSince(startTime),
                 startTime: startTime,
                 endTime: endTime,
-                module: "BackupService"
+                module: StorageConstants.LogModule.backupService
             )
             return pages
         } catch {
@@ -170,7 +171,7 @@ final class BackupService: ObservableObject {
                 duration: endTime.timeIntervalSince(startTime),
                 startTime: startTime,
                 endTime: endTime,
-                module: "BackupService"
+                module: StorageConstants.LogModule.backupService
             )
             return nil
         }
@@ -192,7 +193,7 @@ final class BackupService: ObservableObject {
         let dirtyFlag = baseDirectory.appendingPathComponent(".knowledge-management_dirty")
 
         if FileManager.default.fileExists(atPath: dirtyFlag.path) {
-            Logger.shared.addLog(action: .systemInit, target: "BackupService", details: L10n.Backup.log.crashRecovery)
+            Logger.shared.addLog(action: .systemInit, target: StorageConstants.LogTarget.backupService, details: L10n.Backup.log.crashRecovery)
             // The dirty flag means the app crashed before completing a save
             // BackupService will make the latest backup available for recovery
             try? FileManager.default.removeItem(at: dirtyFlag)
@@ -241,7 +242,7 @@ final class BackupService: ObservableObject {
             let url = backupDirectory.appendingPathComponent("backup_index.json")
             try data.write(to: url, options: .atomicWrite)
         } catch {
-            Logger.shared.addLog(action: .error, target: "BackupService", details: String(format: L10n.Backup.log.saveIndexFailed, error.localizedDescription))
+            Logger.shared.addLog(action: .error, target: StorageConstants.LogTarget.backupService, details: String(format: L10n.Backup.log.saveIndexFailed, error.localizedDescription))
         }
     }
 
@@ -265,7 +266,7 @@ final class BackupService: ObservableObject {
         guard let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: [URLResourceKey.creationDateKey]) else { return }
 
         var entries: [BackupEntry] = []
-        for file in files where file.lastPathComponent.hasPrefix("backup_") && file.pathExtension == "json" {
+        for file in files where file.lastPathComponent.hasPrefix(StorageConstants.Backup.prefix) && file.pathExtension == SystemConstants.FileExtension.json {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
             if let data = try? Data(contentsOf: file),

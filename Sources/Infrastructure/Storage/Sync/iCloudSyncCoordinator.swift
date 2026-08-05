@@ -11,6 +11,7 @@
 #if ICLOUD_ENABLED
 import Foundation
 import Observation
+import UFPCore
 
 // MARK: - iCloud Sync Coordinator
 /// 负责 iCloud 同步的业务编排，将 View 层的同步逻辑提取到服务层。
@@ -227,7 +228,7 @@ final class iCloudSyncCoordinator {
     /// 解析本地与云端 JSON 中的 updatedAt 字段，较新者覆盖较旧者。
     func resolveConflictedMetadata(local: URL, remote: URL) -> Bool {
         // 仅处理 JSON 配置文件
-        guard local.pathExtension == "json" && remote.pathExtension == "json" else {
+        guard local.pathExtension == SystemConstants.FileExtension.json && remote.pathExtension == SystemConstants.FileExtension.json else {
             return false
         }
         

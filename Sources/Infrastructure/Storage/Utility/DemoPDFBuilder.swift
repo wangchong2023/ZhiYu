@@ -98,11 +98,11 @@ public struct DemoPDFBuilder {
             }
             if isTableSeparator(trimmed) { continue }
             
-            if trimmed.hasPrefix("# ") {
+            if trimmed.hasPrefix(StorageConstants.MarkdownSyntax.hashSpace) {
                 currentY = renderH1(trimmed, currentY: currentY, contentWidth: contentWidth)
-            } else if trimmed.hasPrefix("## ") {
+            } else if trimmed.hasPrefix(StorageConstants.MarkdownSyntax.hashHashSpace) {
                 currentY = renderH2(trimmed, currentY: currentY, contentWidth: contentWidth)
-            } else if trimmed.hasPrefix("> ") {
+            } else if trimmed.hasPrefix(StorageConstants.MarkdownSyntax.blockquoteSpace) {
                 currentY = renderQuoteBlock(trimmed, currentY: currentY, contentWidth: contentWidth, context: context)
             } else if trimmed.hasPrefix("|") && trimmed.hasSuffix("|") {
                 currentY = renderTableRow(trimmed, currentY: currentY, contentWidth: contentWidth, context: context)
@@ -115,7 +115,7 @@ public struct DemoPDFBuilder {
     }
 
     private static func renderH1(_ text: String, currentY: CGFloat, contentWidth: CGFloat) -> CGFloat {
-        let h1Text = sanitizeMarkdownText(text.replacingOccurrences(of: "# ", with: ""))
+        let h1Text = sanitizeMarkdownText(text.replacingOccurrences(of: StorageConstants.MarkdownSyntax.hashSpace, with: ""))
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 17),
             .foregroundColor: PDFTheme.h1Text
@@ -126,7 +126,7 @@ public struct DemoPDFBuilder {
     }
 
     private static func renderH2(_ text: String, currentY: CGFloat, contentWidth: CGFloat) -> CGFloat {
-        let h2Text = sanitizeMarkdownText(text.replacingOccurrences(of: "## ", with: ""))
+        let h2Text = sanitizeMarkdownText(text.replacingOccurrences(of: StorageConstants.MarkdownSyntax.hashHashSpace, with: ""))
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 14),
             .foregroundColor: PDFTheme.h2Text
@@ -137,7 +137,7 @@ public struct DemoPDFBuilder {
     }
 
     private static func renderQuoteBlock(_ text: String, currentY: CGFloat, contentWidth: CGFloat, context: UIGraphicsPDFRendererContext) -> CGFloat {
-        let quoteText = sanitizeMarkdownText(text.replacingOccurrences(of: "> ", with: ""))
+        let quoteText = sanitizeMarkdownText(text.replacingOccurrences(of: StorageConstants.MarkdownSyntax.blockquoteSpace, with: ""))
         let font = UIFont.systemFont(ofSize: 11) // Dynamic Type
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineSpacing = 4
@@ -192,7 +192,7 @@ public struct DemoPDFBuilder {
 
     private static func renderParagraph(_ text: String, currentY: CGFloat, contentWidth: CGFloat) -> CGFloat {
         var lineText = sanitizeMarkdownText(text)
-        if lineText.hasPrefix("- ") || lineText.hasPrefix("* ") {
+        if lineText.hasPrefix(StorageConstants.MarkdownSyntax.dashSpace) || lineText.hasPrefix(StorageConstants.MarkdownSyntax.asteriskSpace) {
             lineText = "• " + lineText.dropFirst(2)
         }
         
@@ -229,16 +229,16 @@ public struct DemoPDFBuilder {
     /// 清理裸 Markdown 规则符号，转义为清晰的干净文本
     private static func sanitizeMarkdownText(_ text: String) -> String {
         var clean = text
-        clean = clean.replacingOccurrences(of: "**", with: "")
-        clean = clean.replacingOccurrences(of: "[[", with: "「")
-        clean = clean.replacingOccurrences(of: "]]", with: "」")
+        clean = clean.replacingOccurrences(of: StorageConstants.MarkdownSyntax.bold, with: "")
+        clean = clean.replacingOccurrences(of: StorageConstants.MarkdownSyntax.wikilinkOpen, with: "「")
+        clean = clean.replacingOccurrences(of: StorageConstants.MarkdownSyntax.wikilinkClose, with: "」")
         clean = clean.replacingOccurrences(of: "`", with: "")
         return clean.trimmingCharacters(in: .whitespaces)
     }
 
     private static func isTableSeparator(_ line: String) -> Bool {
         let cleaned = line.replacingOccurrences(of: " ", with: "")
-        return cleaned.hasPrefix("|:") || cleaned.hasPrefix("|-") || (cleaned.contains("---") && cleaned.contains("|"))
+        return cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableSeparator) || cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableDelimiter) || (cleaned.contains("---") && cleaned.contains("|"))
     }
 }
 #else

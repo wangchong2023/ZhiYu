@@ -155,7 +155,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
             if let pattern = FTS5Pattern(matchingAnyTokenIn: query) {
                 let ftsResults = try KnowledgePage
                     .joining(required: KnowledgePage.contentSnapshot.filter(Column("pages_fts").match(pattern)))
-                    .order(sql: "rank")
+                    .order(sql: StorageConstants.SQL.rank)
                     .fetchAll(db)
                 if !ftsResults.isEmpty {
                     return ftsResults.map { self.decryptIfPrivate($0) }

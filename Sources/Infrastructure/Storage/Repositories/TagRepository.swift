@@ -25,9 +25,9 @@ public struct TagRepository: Sendable {
                let tags = try? JSONDecoder().decode([String].self, from: data) {
                  for tagName in tags {
                      // 建立基础标签记录 (如存在则忽略)
-                     try db.execute(sql: "INSERT OR" + " IGNORE INTO" + " \(TagRecord.databaseTableName)" + " (\(TagRecord.CodingKeys.id.rawValue)," + " \(TagRecord.CodingKeys.name.rawValue)," + " \(TagRecord.CodingKeys.createdAt.rawValue))" + " VALUES (?," + " ?, ?)", arguments: [tagName, tagName, Date()])
+                     try db.execute(sql: StorageConstants.SQL.insertOr + " IGNORE INTO" + " \(TagRecord.databaseTableName)" + " (\(TagRecord.CodingKeys.id.rawValue)," + " \(TagRecord.CodingKeys.name.rawValue)," + " \(TagRecord.CodingKeys.createdAt.rawValue))" + " VALUES (?," + " ?, ?)", arguments: [tagName, tagName, Date()])
                      // 绑定多对多关联
-                     try db.execute(sql: "INSERT OR" + " IGNORE INTO" + " \(PageTagRecord.databaseTableName)" + " (\(PageTagRecord.CodingKeys.pageID.rawValue)," + " \(PageTagRecord.CodingKeys.tagID.rawValue))" + " VALUES (?," + " ?)", arguments: [pageID, tagName])
+                     try db.execute(sql: StorageConstants.SQL.insertOr + " IGNORE INTO" + " \(PageTagRecord.databaseTableName)" + " (\(PageTagRecord.CodingKeys.pageID.rawValue)," + " \(PageTagRecord.CodingKeys.tagID.rawValue))" + " VALUES (?," + " ?)", arguments: [pageID, tagName])
                  }
             }
         }

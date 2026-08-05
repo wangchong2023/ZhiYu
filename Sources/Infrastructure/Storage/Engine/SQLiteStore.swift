@@ -215,8 +215,8 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         
         if let fileURLs = try? FileManager.default.contentsOfDirectory(at: vaultsDir, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) {
             for fileURL in fileURLs {
-                let isSqlite = fileURL.pathExtension == "sqlite3" || fileURL.pathExtension == "sqlite"
-                let isCompanion = fileURL.path.hasSuffix("-wal") || fileURL.path.hasSuffix("-shm")
+                let isSqlite = fileURL.pathExtension == StorageConstants.SQLiteExtension.sqlite3 || fileURL.pathExtension == StorageConstants.SQLiteExtension.sqlite
+                let isCompanion = fileURL.path.hasSuffix(StorageConstants.SQLiteExtension.walSuffix) || fileURL.path.hasSuffix(StorageConstants.SQLiteExtension.shmSuffix)
                 
                 if isSqlite || isCompanion {
                     // 排除已经累计过的当前活跃库路径

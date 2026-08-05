@@ -33,8 +33,8 @@ extension DatabaseManager {
                 t.column(KnowledgePage.Columns.content.rawValue, .text).notNull()
                 t.column(KnowledgePage.Columns.aliases.rawValue, .text) // JSON 字符串数组
                 t.column(KnowledgePage.Columns.tags.rawValue, .text)    // JSON 字符串数组
-                t.column(KnowledgePage.Columns.status.rawValue, .text).notNull().defaults(to: "active")
-                t.column(KnowledgePage.Columns.confidence.rawValue, .text).notNull().defaults(to: "medium")
+                t.column(KnowledgePage.Columns.status.rawValue, .text).notNull().defaults(to: StorageConstants.SyncStatus.active)
+                t.column(KnowledgePage.Columns.confidence.rawValue, .text).notNull().defaults(to: StorageConstants.Priority.medium)
                 t.column(KnowledgePage.Columns.sources.rawValue, .text) // JSON 引用数据
                 t.column(KnowledgePage.Columns.relatedPageIDs.rawValue, .text) // JSON 关联的 UUID 数组
                 t.column(KnowledgePage.Columns.isPinned.rawValue, .boolean).notNull().defaults(to: false)
@@ -178,9 +178,9 @@ extension DatabaseManager {
                    let tags = try? JSONDecoder().decode([String].self, from: data) {
                      for tagName in tags {
                          // 建立基础标签记录 (如存在则忽略)
-                         try db.execute(sql: "INSERT OR" + " IGNORE INTO" + " \(TagRecord.databaseTableName)" + " (\(TagRecord.CodingKeys.id.rawValue)," + " \(TagRecord.CodingKeys.name.rawValue)," + " \(TagRecord.CodingKeys.createdAt.rawValue))" + " VALUES (?," + " ?, ?)", arguments: [tagName, tagName, Date()])
+                         try db.execute(sql: StorageConstants.SQL.insertOr + " IGNORE INTO" + " \(TagRecord.databaseTableName)" + " (\(TagRecord.CodingKeys.id.rawValue)," + " \(TagRecord.CodingKeys.name.rawValue)," + " \(TagRecord.CodingKeys.createdAt.rawValue))" + " VALUES (?," + " ?, ?)", arguments: [tagName, tagName, Date()])
                          // 绑定多对多关联
-                         try db.execute(sql: "INSERT OR" + " IGNORE INTO" + " \(PageTagRecord.databaseTableName)" + " (\(PageTagRecord.CodingKeys.pageID.rawValue)," + " \(PageTagRecord.CodingKeys.tagID.rawValue))" + " VALUES (?," + " ?)", arguments: [pageID, tagName])
+                         try db.execute(sql: StorageConstants.SQL.insertOr + " IGNORE INTO" + " \(PageTagRecord.databaseTableName)" + " (\(PageTagRecord.CodingKeys.pageID.rawValue)," + " \(PageTagRecord.CodingKeys.tagID.rawValue))" + " VALUES (?," + " ?)", arguments: [pageID, tagName])
                      }
                 }
             }
@@ -239,7 +239,7 @@ extension DatabaseManager {
                 t.column(RelevanceJudgment.Columns.query.name, .text).notNull()
                 t.column(RelevanceJudgment.Columns.sourceID.name, .text).notNull()
                 t.column(RelevanceJudgment.Columns.relevanceLevel.name, .integer).notNull()
-                t.column(RelevanceJudgment.Columns.judgeSource.name, .text).notNull().defaults(to: "llm-auto")
+                t.column(RelevanceJudgment.Columns.judgeSource.name, .text).notNull().defaults(to: StorageConstants.SyncStatus.llmAuto)
                 t.column(RelevanceJudgment.Columns.evaluationID.name, .integer)
                     .references(RAGEvaluation.databaseTableName, column: RAGEvaluation.Columns.id.name, onDelete: .setNull)
                 t.column(RelevanceJudgment.Columns.createdAt.name, .datetime).notNull().defaults(to: Date())
@@ -252,7 +252,7 @@ extension DatabaseManager {
                 t.column(ImportRecord.CodingKeys.id.name, .text).primaryKey()
                 t.column(ImportRecord.CodingKeys.category.name, .text).notNull().indexed()
                 t.column(ImportRecord.CodingKeys.title.name, .text).notNull()
-                t.column(ImportRecord.CodingKeys.status.name, .text).notNull().defaults(to: "pending")
+                t.column(ImportRecord.CodingKeys.status.name, .text).notNull().defaults(to: StorageConstants.SyncStatus.pending)
                 t.column(ImportRecord.CodingKeys.rawText.name, .text)
                 t.column(ImportRecord.CodingKeys.sourceURL.name, .text)
                 t.column(ImportRecord.CodingKeys.filePath.name, .text)
@@ -384,9 +384,9 @@ extension DatabaseManager {
                 t.column(PluginRecord.Columns.name.rawValue, .text).notNull()
                 t.column(PluginRecord.Columns.version.rawValue, .text).notNull()
                 t.column(PluginRecord.Columns.author.rawValue, .text).notNull()
-                t.column(PluginRecord.Columns.source.rawValue, .text).notNull().defaults(to: "local")
-                t.column(PluginRecord.Columns.status.rawValue, .text).notNull().defaults(to: "active")
-                t.column(PluginRecord.Columns.permissionsJSON.rawValue, .text).notNull().defaults(to: "[]")
+                t.column(PluginRecord.Columns.source.rawValue, .text).notNull().defaults(to: StorageConstants.SyncStatus.local)
+                t.column(PluginRecord.Columns.status.rawValue, .text).notNull().defaults(to: StorageConstants.SyncStatus.active)
+                t.column(PluginRecord.Columns.permissionsJSON.rawValue, .text).notNull().defaults(to: StorageConstants.SyncStatus.emptyArray)
                 t.column(PluginRecord.Columns.loadDuration.rawValue, .double).notNull().defaults(to: 0)
                 t.column(PluginRecord.Columns.unloadDuration.rawValue, .double).notNull().defaults(to: 0)
                 t.column(PluginRecord.Columns.totalExecutionTime.rawValue, .double).notNull().defaults(to: 0)

@@ -810,6 +810,7 @@
 		6B4FF49757B0F5B7B48AB889 /* ocr_folder_scan.png in Resources */ = {isa = PBXBuildFile; fileRef = EEFE61D5D53416043F0E3F94 /* ocr_folder_scan.png */; };
 		6B695C989AA66AF29B09697B /* SettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB3A7F80EA833C5C6C54F8 /* SettingsUITests.swift */; };
 		6B7003CEDAFAE02CF60C80FD /* LocalAnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A6F2EB416DB8F75711F7D3 /* LocalAnalyticsService.swift */; };
+		6BC2396797145094793D3BF0 /* StorageConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8E60C3444790572FBEBD8AD /* StorageConstants.swift */; };
 		6C2C0C5393D93584E20E7A4D /* L10n+Insight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DCDD5BE706A85CC9913D62D /* L10n+Insight.swift */; };
 		6C4451B87770A6266F919B12 /* OAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D62770C897679694CEA210B9 /* OAuthService.swift */; };
 		6C58CB42917B7C6DF69F1B0C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9112DA748F39CA5018D59610 /* Assets.xcassets */; };
@@ -1162,6 +1163,7 @@
 		96D3141A663E95D6613B8C3F /* RelatedPageDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203D67A66A551D8C65E57B8C /* RelatedPageDropDelegate.swift */; };
 		9751F176D9ECE498E17C44C9 /* PageDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CB7960701EB8E99B58D925E /* PageDetailHeader.swift */; };
 		97536E7DD0CC483F2AB1D025 /* L10n+Collaboration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BA494344266B24AE4D1F44 /* L10n+Collaboration.swift */; };
+		975624E2B368E05B5845265B /* StorageConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8E60C3444790572FBEBD8AD /* StorageConstants.swift */; };
 		976843CEBAAAE0894E131CEA /* SearchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC79A2F4F885BE8E825148 /* SearchStore.swift */; };
 		97763B89E6601F9A0B6EA147 /* NotebookCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C90833F3FFA08D3AD1F87E35 /* NotebookCoverView.swift */; };
 		97A0D9C11448A84A9C54F766 /* DeepLinkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38979575F39F73EDCE64781D /* DeepLinkService.swift */; };
@@ -3058,6 +3060,7 @@
 		F8349889C5529E47A5FD8120 /* WidgetModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetModels.swift; sourceTree = "<group>"; };
 		F854391C926615E4B542DFA2 /* PlatformCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformCapabilities.swift; sourceTree = "<group>"; };
 		F883848C2B4B8495A951CC56 /* VaultStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultStorageService.swift; sourceTree = "<group>"; };
+		F8E60C3444790572FBEBD8AD /* StorageConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageConstants.swift; sourceTree = "<group>"; };
 		F8EB77236E5AA0B738EFEB10 /* iPadEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPadEnvironmentTests.swift; sourceTree = "<group>"; };
 		F98F2E9FCDCB05716F3143FA /* ModelLabMetricsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabMetricsPanel.swift; sourceTree = "<group>"; };
 		FB6960B3BA4EE62191C99D3D /* lottie-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "lottie-ios"; path = "../../opensrc/swift/lottie-ios"; sourceTree = SOURCE_ROOT; };
@@ -6013,6 +6016,7 @@
 		F3F66BC105D615E08A557A57 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				F8E60C3444790572FBEBD8AD /* StorageConstants.swift */,
 				8752917391832627DDC80ADC /* Engine */,
 				A75E11B6939E0B61C9E36F77 /* Export */,
 				AF85985086417BFCCC760B96 /* Extensions */,
@@ -7472,6 +7476,7 @@
 				0904DAA623C4E7FF2A8E384D /* SpotlightService.swift in Sources */,
 				C33C55315B18F24597C47586 /* StandardSection.swift in Sources */,
 				4D21A44CD9B861539C8C018C /* StatCard.swift in Sources */,
+				6BC2396797145094793D3BF0 /* StorageConstants.swift in Sources */,
 				D71B09DC24C8DE26E1415F2A /* StorageRecords.swift in Sources */,
 				2FD1E1666841220C34AEC15E /* StoreCapabilities.swift in Sources */,
 				75CA7911700DB02E4F4C2EC0 /* StoreKitService.swift in Sources */,
@@ -8222,6 +8227,7 @@
 				ABFCD335CAB2D6D9CD43DFC8 /* SpotlightService.swift in Sources */,
 				EB5FF2324846A5B0C4AE1EA8 /* StandardSection.swift in Sources */,
 				59E3BED14BD654AC6F5B3DF4 /* StatCard.swift in Sources */,
+				975624E2B368E05B5845265B /* StorageConstants.swift in Sources */,
 				F9B5F7271C8DD0AFC3E5C6F4 /* StorageRecords.swift in Sources */,
 				6C6FEB7A771D8ECA5C9E2EAD /* StoreCapabilities.swift in Sources */,
 				23E165D23A395B24F10FEE52 /* StoreKitService.swift in Sources */,

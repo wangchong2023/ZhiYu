@@ -38,9 +38,9 @@ final class DataCoordinator {
             // SQLiteStore 现在只负责通知数据已更新，由协调器决定后续动作
             self.logger.addLog(
                 action: .sync,
-                target: "DataCoordinator",
-                details: "DataCoordinator_Start",
-                module: "Core"
+                target: StorageConstants.LogTarget.dataCoordinator,
+                details: StorageConstants.LogDetails.dataCoordinatorStart,
+                module: StorageConstants.LogModule.core
             )
 
             // 2. 触发向量化同步 (@RR-01: 确保向量存储与主库最终一致性)
@@ -52,9 +52,9 @@ final class DataCoordinator {
 
             self.logger.addLog(
                 action: .sync,
-                target: "DataCoordinator",
-                details: "DataCoordinator_End",
-                module: "Core"
+                target: StorageConstants.LogTarget.dataCoordinator,
+                details: StorageConstants.LogDetails.dataCoordinatorEnd,
+                module: StorageConstants.LogModule.core
             )
         }
     }

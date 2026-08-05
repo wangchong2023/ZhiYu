@@ -34,7 +34,7 @@ final class VaultStorageService {
             return []
         }
 
-        for case let fileURL as URL in enumerator where fileURL.pathExtension.lowercased() == "md" {
+        for case let fileURL as URL in enumerator where fileURL.pathExtension.lowercased() == StorageConstants.SourceType.md {
                 if let page = processFile(at: fileURL) {
                     results.append(page)
                 }
@@ -58,7 +58,7 @@ final class VaultStorageService {
                 lastModified: modificationDate
             )
         } catch {
-            Logger.shared.addLog(action: .error, target: "VaultStorageService", details: "Vault_Failed1")
+            Logger.shared.addLog(action: .error, target: StorageConstants.LogTarget.vaultStorageService, details: StorageConstants.LogDetails.vaultFailed1)
             return nil
         }
     }
@@ -67,8 +67,8 @@ final class VaultStorageService {
         let lines = content.components(separatedBy: .newlines)
         for line in lines {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.hasPrefix("# ") {
-                return trimmed.replacingOccurrences(of: "# ", with: "").trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix(StorageConstants.MarkdownSyntax.hashSpace) {
+                return trimmed.replacingOccurrences(of: StorageConstants.MarkdownSyntax.hashSpace, with: "").trimmingCharacters(in: .whitespaces)
             }
         }
         return nil

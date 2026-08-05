@@ -121,7 +121,7 @@ EXEMPT_CATEGORY = "business_magic_exempt"
 
 # 纯转义字符白名单（这些是控制字符，无业务语义，不需抽取）
 ESCAPE_STRINGS = {
-    "\n", "\t", "\r", "\n\t", "\t\n", "\n\n", "\t\t",
+    "\\n", "\\t", "\\r", "\\n\\t", "\\t\\n", "\\n\\n", "\\t\\t",
 }
 
 # 短业务字符串长度范围
@@ -442,7 +442,8 @@ def _check_assignment_strings(code_part: str, rel_path: str, line_no: int, strip
     """模式 2: 字段赋值 field: "xxx" — 类型字段赋值。"""
     results: List[Finding] = []
     config_fields = ("nameKey", "icon", "id", "defaultModel", "baseURL", "apiKeyPlaceholder")
-    for m in re.finditer(r'(\w+):\s*"([^"]{2,30})"', code_part):
+    # (?<![\w"]) 确保 field 前面不是字母/下划线/引号（排除字符串内部的 "field:" 误匹配）
+    for m in re.finditer(r'(?<![\w"])(\w+):\s*"([^"]{2,30})"', code_part):
         field_name = m.group(1)
         s = m.group(2)
         if s in ESCAPE_STRINGS:
@@ -557,6 +558,11 @@ def _check_magic_strings_in_line(line: str, rel_path: str, line_no: int, strippe
     # 跳过 CodingKeys / 枚举 rawValue 行
     if _is_codingkeys_line(code_part) or _is_enum_raw_value_line(code_part):
         return []
+
+    # 移除 String(localized: "key", defaultValue: "xxx") 调用中的 key 和 defaultValue 参数
+    # Swift 原生本地化 API，key 必须是字符串字面量，不应被检测
+    code_part = re.sub(r'String\(localized:\s*"[^"]*"', 'String(localized: ""', code_part)
+    code_part = re.sub(r'defaultValue:\s*"[^"]*"', 'defaultValue: ""', code_part)
 
     # 跳过纯 L10n 调用行：移除所有 L10n.xxx 和 .tr(...) 调用后，若不再含字符串字面量则跳过
     line_without_l10n = re.sub(r'L10n\.[A-Za-z0-9_.]+', '', code_part)

@@ -18,7 +18,7 @@ public final class CloudKitSyncProvider: CloudStorageProvider {
     
     private let container: CKContainer
     private let database: CKDatabase
-    private let zoneID = CKRecordZone.ID(zoneName: "AppZone")
+    private let zoneID = CKRecordZone.ID(zoneName: StorageConstants.CloudKit.appZone)
     private let recordType = "AppData"
     private let recordName = "knowledge-management_main"
     
@@ -74,7 +74,7 @@ public final class CloudKitSyncProvider: CloudStorageProvider {
         
         guard let pagesData = record["pagesData"] as? Data,
               let logsData = record["logEntriesData"] as? Data else {
-            throw NSError(domain: "CloudKitSyncProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format in CloudKit"])
+            throw NSError(domain: StorageConstants.ErrorDomain.cloudKitSyncProvider, code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format in CloudKit"])
         }
         
         let pages = try JSONDecoder().decode([KnowledgePage].self, from: pagesData)

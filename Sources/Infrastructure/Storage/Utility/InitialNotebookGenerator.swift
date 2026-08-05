@@ -95,7 +95,7 @@ struct InitialNotebookGenerator {
             fallback: L10n.InitialNotebook.Fallback.methodology)
         let workflowURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.workflow, localName: L10n.InitialNotebook.FileNames.workflow, in: fileFolder,
             fallback: L10n.InitialNotebook.Fallback.workflow)
-        let ocrFolderURL = resolveFileURL(bundleName: "ocr_folder_scan.png", localName: L10n.InitialNotebook.FileNames.ocrFolderScan, in: ocrFolder,
+        let ocrFolderURL = resolveFileURL(bundleName: StorageConstants.BundleResource.ocrFolderScan, localName: L10n.InitialNotebook.FileNames.ocrFolderScan, in: ocrFolder,
             fallback: "")
         let voiceForgetURL = resolveFileURL(bundleName: "voice_note_forgetting_curve.mp3", localName: L10n.InitialNotebook.FileNames.voiceNoteForget, in: voiceFolder,
             fallback: "")
@@ -127,9 +127,9 @@ struct InitialNotebookGenerator {
             fallback: L10n.InitialNotebook.Fallback.luckin)
         let surveyURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.survey, localName: L10n.InitialNotebook.FileNames.survey, in: fileFolder,
             fallback: L10n.InitialNotebook.Fallback.survey)
-        let ocrStoreURL = resolveFileURL(bundleName: "ocr_store_manual.png", localName: L10n.InitialNotebook.FileNames.ocrStoreManual, in: ocrFolder,
+        let ocrStoreURL = resolveFileURL(bundleName: StorageConstants.BundleResource.ocrStoreManual, localName: L10n.InitialNotebook.FileNames.ocrStoreManual, in: ocrFolder,
             fallback: "")
-        let voiceProcureURL = resolveFileURL(bundleName: "voice_note_procurement.mp3", localName: L10n.InitialNotebook.FileNames.voiceNoteProcure, in: voiceFolder,
+        let voiceProcureURL = resolveFileURL(bundleName: StorageConstants.BundleResource.voiceNoteProcurement, localName: L10n.InitialNotebook.FileNames.voiceNoteProcure, in: voiceFolder,
             fallback: "")
         
         let seeds = buildResearchPageSeeds(
@@ -262,27 +262,27 @@ struct InitialNotebookGenerator {
             // 1. 个人知识图谱指南
             PageSeed(title: L10n.InitialNotebook.PKM.title1, type: .concept, content: L10n.InitialNotebook.PKM.content1,
                      tags: [L10n.InitialNotebook.Tags.knowledgeMgmt, L10n.InitialNotebook.Tags.methodology],
-                     sourceURL: methodologyURL, rawTextSnippet: methodologySnippet, sourceType: "markdown"),
+                     sourceURL: methodologyURL, rawTextSnippet: methodologySnippet, sourceType: StorageConstants.SourceType.markdown),
             
             // 2. 词条：什么是神经元
             PageSeed(title: L10n.InitialNotebook.PKM.title2, type: .entity, content: L10n.InitialNotebook.PKM.content2,
                      tags: [L10n.InitialNotebook.Tags.noteStyles, L10n.InitialNotebook.Tags.efficiency],
-                     sourceURL: ocrFolderURL, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmOcrFolder, sourceType: "ocr"),
+                     sourceURL: ocrFolderURL, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmOcrFolder, sourceType: StorageConstants.SourceType.ocr),
             
             // 3. 跨领域笔记枢纽指南
             PageSeed(title: L10n.InitialNotebook.PKM.title3, type: .concept, content: L10n.InitialNotebook.PKM.content3,
                      tags: [L10n.InitialNotebook.Tags.techPrinciple, L10n.InitialNotebook.Tags.association],
-                     sourceURL: AppConstants.URLs.exampleKarpathyLLM, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmRagLink, sourceType: "link"),
+                     sourceURL: AppConstants.URLs.exampleKarpathyLLM, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmRagLink, sourceType: StorageConstants.SourceType.link),
             
             // 4. 语音速记的未关联笔记
             PageSeed(title: L10n.InitialNotebook.PKM.title4, type: .source, content: L10n.InitialNotebook.PKM.content4,
                      tags: [L10n.InitialNotebook.Tags.cognitivePsych],
-                     sourceURL: voiceForgetURL, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmVoiceForget, sourceType: "voice"),
+                     sourceURL: voiceForgetURL, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmVoiceForget, sourceType: StorageConstants.SourceType.voice),
             
             // 5. 渐进式总结对比分析
             PageSeed(title: L10n.InitialNotebook.PKM.title5, type: .comparison, content: L10n.InitialNotebook.PKM.content5,
                      tags: [L10n.InitialNotebook.Tags.retrievalTech],
-                     sourceURL: workflowURL, rawTextSnippet: workflowSnippet, sourceType: "pdf"),
+                     sourceURL: workflowURL, rawTextSnippet: workflowSnippet, sourceType: StorageConstants.SourceType.pdf),
             
             // 6. 笔记的原子化解构
             PageSeed(title: String(localized: "demo.pkm.6.title", defaultValue: "笔记的原子化解构"), type: .concept,
@@ -371,31 +371,31 @@ struct InitialNotebookGenerator {
             PageSeed(title: L10n.InitialNotebook.Coffee.title1, type: .comparison,
                      content: L10n.InitialNotebook.Coffee.content1,
                      tags: [L10n.InitialNotebook.Tags.competitorAnalysis, L10n.InitialNotebook.Tags.marketResearch],
-                     sourceURL: luckinURL, rawTextSnippet: luckinSnippet, sourceType: "pdf"),
+                     sourceURL: luckinURL, rawTextSnippet: luckinSnippet, sourceType: StorageConstants.SourceType.pdf),
             
             // 2. 词条：什么是咖啡豆烘焙度
             PageSeed(title: L10n.InitialNotebook.Coffee.title2, type: .entity,
                      content: L10n.InitialNotebook.Coffee.content2,
                      tags: [L10n.InitialNotebook.Tags.productDesign, L10n.InitialNotebook.Tags.operation],
-                     sourceURL: ocrStoreURL, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeOcrManual, sourceType: "ocr"),
+                     sourceURL: ocrStoreURL, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeOcrManual, sourceType: StorageConstants.SourceType.ocr),
             
             // 3. 咖啡连锁行业选址规划
             PageSeed(title: L10n.InitialNotebook.Coffee.title3, type: .concept,
                      content: L10n.InitialNotebook.Coffee.content3,
                      tags: [L10n.InitialNotebook.Tags.userResearch],
-                     sourceURL: AppConstants.URLs.exampleCoffeeIndustry, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeRagLink, sourceType: "link"),
+                     sourceURL: AppConstants.URLs.exampleCoffeeIndustry, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeRagLink, sourceType: StorageConstants.SourceType.link),
             
             // 4. 语音速记：咖啡设备采购清单
             PageSeed(title: L10n.InitialNotebook.Coffee.title4, type: .source,
                      content: L10n.InitialNotebook.Coffee.content4,
                      tags: [L10n.InitialNotebook.Tags.infrastructure, L10n.InitialNotebook.Tags.decoration],
-                     sourceURL: voiceProcureURL, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeVoiceProcure, sourceType: "voice"),
+                     sourceURL: voiceProcureURL, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeVoiceProcure, sourceType: StorageConstants.SourceType.voice),
             
             // 5. 咖啡店日常运营手册
             PageSeed(title: L10n.InitialNotebook.Coffee.title5, type: .concept,
                      content: L10n.InitialNotebook.Coffee.content5,
                      tags: [L10n.InitialNotebook.Tags.finance, L10n.InitialNotebook.Tags.planning],
-                     sourceURL: surveyURL, rawTextSnippet: surveySnippet, sourceType: "markdown"),
+                     sourceURL: surveyURL, rawTextSnippet: surveySnippet, sourceType: StorageConstants.SourceType.markdown),
             
             // 6. Manner 扩张策略
             PageSeed(title: String(localized: "demo.coffee.6.title", defaultValue: "Manner 扩张策略"), type: .comparison,
@@ -481,12 +481,12 @@ struct InitialNotebookGenerator {
                 // 根据 PageSeed 中声明的 sourceType，将其映射到标准的 6 种 Ingest 导入分类中。
                 let category: String
                 if let st = seed.sourceType?.lowercased() {
-                    if ["ocr", "clipboard", "voice", "link", "manual"].contains(st) {
+                    if [StorageConstants.SourceType.ocr, StorageConstants.SourceType.clipboard, StorageConstants.SourceType.voice, StorageConstants.SourceType.link, StorageConstants.SourceType.manual].contains(st) {
                         category = st
-                    } else if st == "pdf" || st == "markdown" || st == "md" || st == "file" {
-                        category = "file"
+                    } else if st == StorageConstants.SourceType.pdf || st == StorageConstants.SourceType.markdown || st == StorageConstants.SourceType.md || st == StorageConstants.SourceType.file {
+                        category = StorageConstants.SourceType.file
                     } else {
-                        category = "manual"
+                        category = StorageConstants.SourceType.manual
                     }
                 } else if seed.sourceURL != nil {
                     category = "link"
@@ -505,7 +505,7 @@ struct InitialNotebookGenerator {
                     id: UUID().uuidString,
                     category: category,
                     title: seed.title,
-                    status: "done",
+                    status: StorageConstants.OperationStatus.done,
                     rawText: seed.rawTextSnippet,
                     sourceURL: seed.sourceURL,
                     filePath: filePath,
@@ -533,7 +533,7 @@ struct InitialNotebookGenerator {
             let latency = Int.random(in: minLatencyMS...maxLatencyMS)
             guard let date = calendar.date(byAdding: .hour, value: -Int.random(in: 1...pkmMaxHoursAgo), to: Date()) else { continue }
             var log = LLMCallLog(model: model, promptTokens: prompt, completionTokens: completion,
-                                 latencyMS: latency, status: "success", createdAt: date)
+                                 latencyMS: latency, status: StorageConstants.OperationStatus.success, createdAt: date)
             try log.insert(db)
             var usage = TokenUsage(model: model, promptTokens: prompt, completionTokens: completion, createdAt: date)
             try usage.insert(db)
@@ -550,7 +550,7 @@ struct InitialNotebookGenerator {
             let latency = Int.random(in: minLatencyMS...maxLatencyMS)
             guard let date = calendar.date(byAdding: .hour, value: -Int.random(in: 1...researchMaxHoursAgo), to: Date()) else { continue }
             var log = LLMCallLog(model: model, promptTokens: prompt, completionTokens: completion,
-                                 latencyMS: latency, status: "success", createdAt: date)
+                                 latencyMS: latency, status: StorageConstants.OperationStatus.success, createdAt: date)
             try log.insert(db)
             var usage = TokenUsage(model: model, promptTokens: prompt, completionTokens: completion, createdAt: date)
             try usage.insert(db)

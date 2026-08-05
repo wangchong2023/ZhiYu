@@ -87,8 +87,8 @@ final class DatabaseManager {
             try String.fetchAll(db, sql: ["SELECT", "name", "FROM", "sqlite_master", "WHERE", "type='table'"].joined(separator: " "))
         }
         Logger.shared.info(" [DatabaseManager] setupForTesting completed.")
-        Logger.shared.info(["-", "Vault", "Tables:", "\(tables)"].joined(separator: " "))
-        Logger.shared.info(["-", "Global", "Tables:", "\(globalTables)"].joined(separator: " "))
+        Logger.shared.info(["-", "Vault", "Tables:", "\(tables)"].joined(separator: StorageConstants.LogConcat.separator))
+        Logger.shared.info(["-", "Global", "Tables:", "\(globalTables)"].joined(separator: StorageConstants.LogConcat.separator))
     }
     
     /// 初始化全局共享的主配置库（global.sqlite3）连接。
@@ -112,7 +112,7 @@ final class DatabaseManager {
         self.globalWriter = globalPool
         
         try globalMigrator.migrate(globalPool)
-        Logger.shared.info(" [DatabaseManager]" + " Global main" + " configuration database" + " initialized successfully:" + " \(url.lastPathComponent)")
+        Logger.shared.info(" [DatabaseManager] Global main configuration database initialized successfully: \(url.lastPathComponent)")
     }
     
     /// 初始化激活默认专属数据库（vault.sqlite3）连接。
@@ -152,7 +152,7 @@ final class DatabaseManager {
             
             self.state = .ready
         } catch {
-            Logger.shared.error(" [DatabaseManager]" + " Database setup" + " failed, degrading" + " to in-memory:" + " \(error.localizedDescription)", error: error)
+            Logger.shared.error(" [DatabaseManager] Database setup failed, degrading to in-memory: \(error.localizedDescription)", error: error)
             self.state = .corrupted(error.localizedDescription)
             degradeToInMemory(error: error)
             throw error
@@ -175,7 +175,7 @@ final class DatabaseManager {
                     NotificationCenter.default.post(
                         name: .databaseIntegrityCheckFailed,
                         object: nil,
-                        userInfo: ["url": url]
+                        userInfo: [StorageConstants.JSONKey.url: url]
                     )
                 }
                 #endif
@@ -212,7 +212,7 @@ final class DatabaseManager {
             Logger.shared.info(" [DatabaseManager] Fallback in-memory database successfully initialized.")
         } catch {
             // 如果连内存数据库都无法初始化（极端资源限制），则进行最终崩溃
-            fatalError(" Fatal" + " recovery failure:" + " In-memory fallback" + " database could" + " not be" + " initialized: \(error.localizedDescription)")
+            fatalError(" Fatal recovery failure: In-memory fallback database could not be initialized: \(error.localizedDescription)")
         }
     }
     
@@ -220,7 +220,7 @@ final class DatabaseManager {
     /// - Important: 此方法为 `async throws`，替换了原 `semaphore.wait()` 同步阻塞实现，
     ///   消除了 @MainActor + 主线程信号量等待导致的死锁隐患。
     func switchDatabase(to vaultID: UUID, at url: URL) async throws {
-        Logger.shared.info(" [DatabaseManager]" + " Starting physical" + " multi-database hot" + " swap =>" + " Target: \(url.lastPathComponent)")
+        Logger.shared.info(" [DatabaseManager] Starting physical multi-database hot swap => Target: \(url.lastPathComponent)")
         
         // 0. 切换前对目标专属库进行完整性哈希签名防篡改校验
         if FileManager.default.fileExists(atPath: url.path) {
@@ -231,7 +231,7 @@ final class DatabaseManager {
                 Logger.shared.debug(" [DatabaseManager] DEBUG: Target_hash_verification_failed_during_hot_swap_realigning")
                 await SecurityManager.shared.updateSignature(for: url)
                 #else
-                throw NSError(domain: "DatabaseManager", code: 403, userInfo: [NSLocalizedDescriptionKey: L10n.Security.targetIntegrityVerificationFailed])
+                throw NSError(domain: StorageConstants.ErrorDomain.databaseManager, code: 403, userInfo: [NSLocalizedDescriptionKey: L10n.Security.targetIntegrityVerificationFailed])
                 #endif
             }
         }
@@ -257,7 +257,7 @@ final class DatabaseManager {
         // 旧数据库连接关闭后，WAL 已安全写回，异步更新物理防篡改 HMAC 签名
         if let oldURL = oldURL, FileManager.default.fileExists(atPath: oldURL.path) {
             await SecurityManager.shared.updateSignature(for: oldURL)
-            Logger.shared.info(" [DatabaseManager]" + " Closed database" + " connection and" + " updated signature" + " for: \(oldURL.lastPathComponent)")
+            Logger.shared.info(" [DatabaseManager] Closed database connection and updated signature for: \(oldURL.lastPathComponent)")
         }
         
         self.dbURL = url
@@ -275,7 +275,7 @@ final class DatabaseManager {
         
         // 4. 对新专属库自动运行 Schema 迁移
         try migrator.migrate(dbPool)
-        Logger.shared.info(" [DatabaseManager]" + " Exclusive physical" + " database successfully" + " switched and" + " remounted =>" + " \(url.lastPathComponent)")
+        Logger.shared.info(" [DatabaseManager] Exclusive physical database successfully switched and remounted => \(url.lastPathComponent)")
         
         // 5. 切换成功，异步刷新物理完整性指纹
         await SecurityManager.shared.updateSignature(for: url)
@@ -284,7 +284,7 @@ final class DatabaseManager {
         NotificationCenter.default.post(
             name: .databaseDidSwitch,
             object: nil,
-            userInfo: ["vaultID": vaultID]
+            userInfo: [StorageConstants.JSONKey.vaultID: vaultID]
         )
     }
     
@@ -343,7 +343,7 @@ final class DatabaseManager {
                 try dbPool.close()
                 Logger.shared.info(" [DatabaseManager] DatabasePool connection closed successfully.")
             } catch {
-                Logger.shared.error(" [DatabaseManager]" + " Failed to" + " close DatabasePool" + " connection: \(error.localizedDescription)", error: error)
+                Logger.shared.error(" [DatabaseManager] Failed to close DatabasePool connection: \(error.localizedDescription)", error: error)
             }
         }
     }
