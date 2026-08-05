@@ -29,9 +29,9 @@ final class LLMIngestService: Sendable {
     func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
         let prompt = contextBuilder.buildIngestPrompt(title: title, rawContent: rawContent, pages: pages)
         let body: [String: Any] = [
-            "model": model,
-            "messages": [["role": "user", "content": prompt]],
-            "temperature": 0.4
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
+            LLMConstants.APIKey.temperature: 0.4
         ]
 
         let response = try await client.sendRequest(body: body)

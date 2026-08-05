@@ -39,10 +39,10 @@ public final class LLMRefactorService: Sendable {
         """
 
         let body: [String: Any] = [
-            "model": model,
-            "messages": [["role": "user", "content": prompt]],
-            "temperature": 0.1,
-            "max_tokens": 500
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
+            LLMConstants.APIKey.temperature: 0.1,
+            LLMConstants.APIKey.maxTokens: 500
         ]
 
         let response = try await client.sendRequest(body: body)
@@ -65,10 +65,10 @@ public final class LLMRefactorService: Sendable {
         """
 
         let body: [String: Any] = [
-            "model": model,
-            "messages": [["role": "user", "content": prompt]],
-            "temperature": 0.2,
-            "max_tokens": 2000
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
+            LLMConstants.APIKey.temperature: 0.2,
+            LLMConstants.APIKey.maxTokens: 2000
         ]
 
         let response = try await client.sendRequest(body: body)
@@ -89,10 +89,10 @@ public final class LLMRefactorService: Sendable {
         """
 
         let body: [String: Any] = [
-            "model": model,
-            "messages": [["role": "user", "content": prompt]],
-            "temperature": AppConfig.AI.defaultTemperature,
-            "max_tokens": 1000
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
+            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature,
+            LLMConstants.APIKey.maxTokens: 1000
         ]
 
         let response = try await client.sendRequest(body: body)

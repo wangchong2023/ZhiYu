@@ -87,7 +87,7 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
         // VULN-013 修复 + 审查修复 MED-1: 强制 HTTPS，但对 loopback 地址豁免
         // 本地回环不经过网络，无明文泄露风险，支持本地 LLM 开发（如 Ollama/llama.cpp）
         let lowerURL = normalizedBaseURL.lowercased()
-        let isHTTPS = lowerURL.hasPrefix("https://")
+        let isHTTPS = lowerURL.hasPrefix(SystemConstants.URLScheme.https)
         let isLoopback = isLoopbackURL(lowerURL)
         guard isHTTPS || isLoopback else {
             throw LLMError.invalidURL
@@ -99,8 +99,8 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
         let cleanAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(SystemConstants.ContentType.applicationJSON, forHTTPHeaderField: SystemConstants.HTTPHeader.contentType)
+        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: SystemConstants.HTTPHeader.authorization)
         request.timeoutInterval = Self.defaultTimeout
 
         let httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -163,7 +163,7 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
     /// - Throws: 网络或 API 错误
     func sendStreamingRequest(body: [String: Any]) async throws -> URLSession.AsyncBytes {
         // VULN-013 修复：强制 HTTPS，防止 API key 明文传输
-        guard normalizedBaseURL.lowercased().hasPrefix("https://") else {
+        guard normalizedBaseURL.lowercased().hasPrefix(SystemConstants.URLScheme.https) else {
             throw LLMError.invalidURL
         }
         guard let url = URL(string: "\(normalizedBaseURL)/chat/completions") else {
@@ -173,8 +173,8 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
         let cleanAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(SystemConstants.ContentType.applicationJSON, forHTTPHeaderField: SystemConstants.HTTPHeader.contentType)
+        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: SystemConstants.HTTPHeader.authorization)
         request.timeoutInterval = Self.streamingTimeout
 
         let httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -230,7 +230,7 @@ final class SSEParser {
                         logDiagnosticLine(line: line, lineCount: lineCount, logger: logger, rawLines: &rawLinesForDiagnostic)
 
                         guard let dataString = extractDataString(from: line) else { continue }
-                        if dataString == "[DONE]" { break }
+                        if dataString == LLMConstants.SSEStream.doneMarker { break }
 
                         guard let json = parseJSONLine(dataString, logger: logger) else { continue }
                         if let content = extractContent(from: json) {
@@ -270,7 +270,7 @@ final class SSEParser {
     private static func extractDataString(from line: String) -> String? {
         let dataPrefix = "data:"
         guard line.hasPrefix(dataPrefix) else { return nil }
-        return String(line.dropFirst(line.hasPrefix("data: ") ? 6 : 5))
+        return String(line.dropFirst(line.hasPrefix(LLMConstants.SSEStream.dataPrefix) ? LLMConstants.SSEStream.dataPrefix.count : dataPrefix.count))
     }
 
     /// 将 SSE 数据行解析为 JSON 字典，非 JSON 行（如空行、注释）静默跳过。

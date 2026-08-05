@@ -30,9 +30,9 @@ final class LLMRetrievalService: Sendable {
     func rewriteQuery(_ query: String) async -> String {
         let prompt = contextBuilder.buildRewritePrompt(query: query)
         let body: [String: Any] = [
-            "model": model,
-            "messages": [["role": "user", "content": prompt]],
-            "temperature": 0.3
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
+            LLMConstants.APIKey.temperature: 0.3
         ]
         
         do {
@@ -45,14 +45,14 @@ final class LLMRetrievalService: Sendable {
 
     /// 对查询进行意图扩展，生成多个变体以提升召回率
     func expandQuery(_ query: String) async -> [String] {
-        let prompt = PromptService.shared.queryExpansionPrompt + "\n\nOriginal Query:" + " \(query)"
+        let prompt = "\(PromptService.shared.queryExpansionPrompt)\n\nOriginal Query: \(query)"
         let body: [String: Any] = [
-            "model": model,
-            "messages": [
-                ["role": "system", "content": "Return JSON array of strings only."],
-                ["role": "user", "content": prompt]
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [
+                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: "Return JSON array of strings only."],
+                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]
             ],
-            "temperature": 0.5
+            LLMConstants.APIKey.temperature: 0.5
         ]
         
         do {
@@ -75,9 +75,9 @@ final class LLMRetrievalService: Sendable {
         let prompt = PromptService.shared.rerankPrompt + "\n\nQuery: \(query)\n\nCandidates:\n\(titles)"
         
         let body: [String: Any] = [
-            "model": model,
-            "messages": [["role": "user", "content": prompt]],
-            "temperature": 0.2
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
+            LLMConstants.APIKey.temperature: 0.2
         ]
 
         let response = try await client.sendRequest(body: body)
@@ -104,12 +104,12 @@ final class LLMRetrievalService: Sendable {
         let prompt = L10n.AI.Prompt.rerankUserPrompt(query: query, context: context)
 
         let body: [String: Any] = [
-            "model": model,
-            "messages": [
-                ["role": "system", "content": L10n.AI.Prompt.rerankSystem],
-                ["role": "user", "content": prompt]
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [
+                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: L10n.AI.Prompt.rerankSystem],
+                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]
             ],
-            "temperature": 0.1
+            LLMConstants.APIKey.temperature: 0.1
         ]
 
         do {
@@ -142,12 +142,12 @@ final class LLMRetrievalService: Sendable {
     func generateHypotheticalDocument(query: String) async -> String {
         let prompt = L10n.AI.Prompt.hydeUserPrompt(query: query)
         let body: [String: Any] = [
-            "model": model,
-            "messages": [
-                ["role": "system", "content": L10n.AI.Prompt.hydeSystem],
-                ["role": "user", "content": prompt]
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: [
+                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: L10n.AI.Prompt.hydeSystem],
+                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]
             ],
-            "temperature": 0.7
+            LLMConstants.APIKey.temperature: 0.7
         ]
         
         do {

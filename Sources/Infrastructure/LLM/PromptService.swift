@@ -87,9 +87,9 @@ final class PromptService: ObservableObject, @unchecked Sendable {
         // We only initialize it in load() if it's empty.
         if userShortcuts.isEmpty {
             userShortcuts = [
-                ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: "prompt.shortcut.deepReview"),
-                ShortcutItem(text: L10n.AI.Prompt.Shortcut.findGaps, localizationKey: "prompt.shortcut.findGaps"),
-                ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: "prompt.shortcut.studyPath")
+                ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: L10n.AI.Prompt.Shortcut.Key.deepReview),
+                ShortcutItem(text: L10n.AI.Prompt.Shortcut.findGaps, localizationKey: L10n.AI.Prompt.Shortcut.Key.findGaps),
+                ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: L10n.AI.Prompt.Shortcut.Key.studyPath)
             ]
         }
         // 刷新其他提示词
@@ -147,9 +147,9 @@ final class PromptService: ObservableObject, @unchecked Sendable {
         self.expansionPrompt = L10n.AI.Prompt.Default.expansion
         
         self.userShortcuts = [
-            ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: "prompt.shortcut.deepReview"),
-            ShortcutItem(text: L10n.AI.Prompt.Shortcut.findGaps, localizationKey: "prompt.shortcut.findGaps"),
-            ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: "prompt.shortcut.studyPath")
+            ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: L10n.AI.Prompt.Shortcut.Key.deepReview),
+            ShortcutItem(text: L10n.AI.Prompt.Shortcut.findGaps, localizationKey: L10n.AI.Prompt.Shortcut.Key.findGaps),
+            ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: L10n.AI.Prompt.Shortcut.Key.studyPath)
         ]
         
         Logger.shared.info("Prompt configurations reset to default.")

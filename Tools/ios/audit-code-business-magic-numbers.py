@@ -110,6 +110,48 @@ MAX_LINE_PREVIEW_LEN = 120
 # ── 豁免分类名（在 manual_whitelist.yml 中登记）──
 EXEMPT_CATEGORY = "business_magic_exempt"
 
+# ── 短业务字符串检测：高风险模式 ──
+# 按模式优先级检测，避免误报
+# 1. == "xxx" / != "xxx" — 业务状态比较
+# 2. 字段赋值 field: "xxx" — 类型字段赋值（排除函数参数中的技术性字符串）
+# 3. hasPrefix("xxx") / hasSuffix("xxx") — 前缀/后缀判断
+# 4. replacingOccurrences(of: "xxx") — 字符串替换
+# 5. pathExtension == "xxx" — 文件类型判断
+# 6. JSON 字典 key ["xxx": — API 字段名
+
+# 纯转义字符白名单（这些是控制字符，无业务语义，不需抽取）
+ESCAPE_STRINGS = {
+    "\n", "\t", "\r", "\n\t", "\t\n", "\n\n", "\t\t",
+}
+
+# 短业务字符串长度范围
+MIN_STRING_LEN = 2
+MAX_STRING_LEN = 30
+
+# 排除的函数参数名（这些参数的字符串值通常是技术性的，不检测）
+TECHNICAL_PARAM_NAMES = {
+    "separator", "encoding", "format", "identifier", "withIdentifier",
+    "forKey", "withKey", "key",
+    "className", "selector", "forSelector",
+    "bundle", "inBundle", "loadBundle",
+    "table", "inTable",
+    "comment", "commentText",
+    "label", "accessibilityLabel", "accessibilityHint",
+    "predicate", "format",
+    "sortDescriptor", "sortKey",
+}
+
+# 排除的赋值字段名模式（这些字段的字符串值通常是技术性的）
+TECHNICAL_FIELD_PATTERNS = [
+    r"accessibilityLabel",
+    r"accessibilityHint",
+    r"accessibilityValue",
+    r"predicate",
+    r"sortDescriptor",
+    r"className",
+    r"selector",
+]
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -322,10 +364,223 @@ def _check_magic_numbers_in_line(line: str, rel_path: str, line_no: int, strippe
     return results
 
 
-def _process_line(line: str, stripped: str, in_multiline: bool, rel_path: str, line_no: int) -> Tuple[List[Finding], bool]:
+def _is_codingkeys_line(line: str) -> bool:
+    """判断该行是否为 CodingKeys 枚举声明行（如 ``case pageID = "page_id"``）。
+
+    :param line: 原始代码行
+    :return: 是 CodingKeys 映射行返回 True
+    """
+    stripped = line.strip()
+    # 匹配 `case xxx = "yyy"` 模式（Codable key 映射）
+    return bool(re.match(r'^case\s+\w+\s*=\s*"', stripped))
+
+
+def _is_l10n_call(line: str) -> bool:
+    """判断该行是否为 L10n 调用行（如 ``L10n.AI.Prompt.xxx`` 或 ``.tr("key")``）。
+
+    :param line: 原始代码行
+    :return: 是 L10n 调用行返回 True
+    """
+    return bool(re.search(r'L10n\.[A-Za-z0-9_.]+', line) or re.search(r'\.tr\(', line))
+
+
+def _strip_inline_comment(line: str) -> str:
+    """移除行内注释（// 之后的内容），保留字符串字面量内的 //。
+
+    简化策略：逐字符扫描，跟踪是否在字符串内部，遇到字符串外的 // 即截断。
+
+    :param line: 原始代码行
+    :return: 移除行内注释后的代码部分
+    """
+    in_string = False
+    i = 0
+    n = len(line)
+    while i < n:
+        c = line[i]
+        if c == '"' and (i == 0 or line[i - 1] != '\\'):
+            in_string = not in_string
+        elif not in_string and c == '/' and i + 1 < n and line[i + 1] == '/':
+            return line[:i].rstrip()
+        i += 1
+    return line
+
+
+def _is_technical_field(field_name: str) -> bool:
+    """判断字段名是否为技术性字段（不检测其字符串值）。
+
+    :param field_name: 字段名
+    :return: 是技术性字段返回 True
+    """
+    for pattern in TECHNICAL_FIELD_PATTERNS:
+        if re.search(pattern, field_name):
+            return True
+    return False
+
+
+def _check_comparison_strings(code_part: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """模式 1: == "xxx" / != "xxx" — 业务状态比较。"""
+    results: List[Finding] = []
+    for m in re.finditer(r'(==|!=)\s*"([^"]{2,30})"', code_part):
+        s = m.group(2)
+        if s in ESCAPE_STRINGS:
+            continue
+        results.append(Finding(
+            kind="magic_string",
+            file=rel_path,
+            line=line_no,
+            detail=f"业务状态比较 `{m.group(1)} \"{s}\"`，应抽取为强类型常量/枚举",
+            content=stripped[:MAX_LINE_PREVIEW_LEN]
+        ))
+    return results
+
+
+def _check_assignment_strings(code_part: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """模式 2: 字段赋值 field: "xxx" — 类型字段赋值。"""
+    results: List[Finding] = []
+    config_fields = ("nameKey", "icon", "id", "defaultModel", "baseURL", "apiKeyPlaceholder")
+    for m in re.finditer(r'(\w+):\s*"([^"]{2,30})"', code_part):
+        field_name = m.group(1)
+        s = m.group(2)
+        if s in ESCAPE_STRINGS:
+            continue
+        if field_name in TECHNICAL_PARAM_NAMES:
+            continue
+        if _is_technical_field(field_name):
+            continue
+        if field_name in config_fields:
+            continue
+        results.append(Finding(
+            kind="magic_string",
+            file=rel_path,
+            line=line_no,
+            detail=f"字段赋值 `{field_name}: \"{s}\"`，应抽取为强类型常量/枚举",
+            content=stripped[:MAX_LINE_PREVIEW_LEN]
+        ))
+    return results
+
+
+def _check_prefix_suffix_strings(code_part: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """模式 3: hasPrefix("xxx") / hasSuffix("xxx") — 前缀/后缀判断。"""
+    results: List[Finding] = []
+    for m in re.finditer(r'\.has(?:Prefix|Suffix)\("([^"]{2,30})"\)', code_part):
+        s = m.group(1)
+        if s in ESCAPE_STRINGS:
+            continue
+        results.append(Finding(
+            kind="magic_string",
+            file=rel_path,
+            line=line_no,
+            detail=f"前缀/后缀判断 `hasPrefix/hasSuffix(\"{s}\")`，应抽取为强类型常量",
+            content=stripped[:MAX_LINE_PREVIEW_LEN]
+        ))
+    return results
+
+
+def _check_replace_strings(code_part: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """模式 4: replacingOccurrences(of: "xxx") — 字符串替换。"""
+    results: List[Finding] = []
+    for m in re.finditer(r'replacingOccurrences\(of:\s*"([^"]{2,30})"', code_part):
+        s = m.group(1)
+        if s in ESCAPE_STRINGS:
+            continue
+        results.append(Finding(
+            kind="magic_string",
+            file=rel_path,
+            line=line_no,
+            detail=f"字符串替换 `replacingOccurrences(of: \"{s}\")`，应抽取为强类型常量",
+            content=stripped[:MAX_LINE_PREVIEW_LEN]
+        ))
+    return results
+
+
+def _check_path_extension_strings(code_part: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """模式 5: pathExtension == "xxx" — 文件类型判断。"""
+    results: List[Finding] = []
+    for m in re.finditer(r'pathExtension\s*==\s*"([^"]{2,30})"', code_part):
+        s = m.group(1)
+        if s in ESCAPE_STRINGS:
+            continue
+        results.append(Finding(
+            kind="magic_string",
+            file=rel_path,
+            line=line_no,
+            detail=f"文件类型判断 `pathExtension == \"{s}\"`，应抽取为强类型常量",
+            content=stripped[:MAX_LINE_PREVIEW_LEN]
+        ))
+    return results
+
+
+def _check_json_key_strings(code_part: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """模式 6: JSON 字典 key ["xxx": — API 字段名。"""
+    results: List[Finding] = []
+    for m in re.finditer(r'\["([^"]{2,30})"\s*:', code_part):
+        s = m.group(1)
+        if s in ESCAPE_STRINGS:
+            continue
+        results.append(Finding(
+            kind="magic_string",
+            file=rel_path,
+            line=line_no,
+            detail=f"JSON 字典 key `[\"{s}\":`，应集中定义为 API 常量",
+            content=stripped[:MAX_LINE_PREVIEW_LEN]
+        ))
+    return results
+
+
+def _check_magic_strings_in_line(line: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """检测单行中的短业务字符串字面量（魔鬼字符串）。
+
+    检测模式（按风险等级）：
+    1. == "xxx" / != "xxx" — 业务状态比较（HIGH）
+    2. 字段赋值 field: "xxx" — 类型字段赋值（HIGH）
+    3. hasPrefix("xxx") / hasSuffix("xxx") — 前缀/后缀判断（MEDIUM）
+    4. replacingOccurrences(of: "xxx") — 字符串替换（MEDIUM）
+    5. pathExtension == "xxx" — 文件类型判断（MEDIUM）
+    6. JSON 字典 key ["xxx": — API 字段名（LOW）
+
+    排除项：
+    - 行内注释中的字符串（// 之后的内容）
+    - CodingKeys 映射行（case xxx = "yyy"）
+    - L10n 调用行
+    - 枚举 rawValue 声明行
+    - 纯转义字符
+
+    :return: 发现的违规列表
+    """
+    # 移除行内注释（// 之后的内容），但保留字符串内的 //
+    code_part = _strip_inline_comment(line)
+
+    # 跳过 CodingKeys / 枚举 rawValue 行
+    if _is_codingkeys_line(code_part) or _is_enum_raw_value_line(code_part):
+        return []
+
+    # 跳过纯 L10n 调用行：移除所有 L10n.xxx 和 .tr(...) 调用后，若不再含字符串字面量则跳过
+    line_without_l10n = re.sub(r'L10n\.[A-Za-z0-9_.]+', '', code_part)
+    line_without_l10n = re.sub(r'\.tr\([^)]*\)', '', line_without_l10n)
+    if not re.search(r'"[^"]{2,30}"', line_without_l10n):
+        return []
+
+    # 提取所有双引号字符串字面量（长度 2-30）
+    string_literals = re.findall(r'"([^"]{2,30})"', code_part)
+    if not string_literals:
+        return []
+
+    # 依次执行 6 种检测模式
+    results: List[Finding] = []
+    results.extend(_check_comparison_strings(code_part, rel_path, line_no, stripped))
+    results.extend(_check_assignment_strings(code_part, rel_path, line_no, stripped))
+    results.extend(_check_prefix_suffix_strings(code_part, rel_path, line_no, stripped))
+    results.extend(_check_replace_strings(code_part, rel_path, line_no, stripped))
+    results.extend(_check_path_extension_strings(code_part, rel_path, line_no, stripped))
+    results.extend(_check_json_key_strings(code_part, rel_path, line_no, stripped))
+    return results
+
+
+def _process_line(line: str, stripped: str, in_multiline: bool, rel_path: str, line_no: int, check_magic_strings: bool = True) -> Tuple[List[Finding], bool]:
     """处理单行代码，返回该行的发现列表和更新后的多行字符串状态。
 
     :param in_multiline: 进入该行前的多行字符串状态
+    :param check_magic_strings: 是否检测短业务字符串（按层逐步启用）
     :return: (发现列表, 离开该行后的多行字符串状态)
     """
     findings: List[Finding] = []
@@ -355,13 +610,18 @@ def _process_line(line: str, stripped: str, in_multiline: bool, rel_path: str, l
     # 检测业务魔鬼数字
     findings.extend(_check_magic_numbers_in_line(line, rel_path, line_no, stripped))
 
+    # 检测业务魔鬼字符串（短业务字符串字面量）—— 按层逐步启用
+    if check_magic_strings:
+        findings.extend(_check_magic_strings_in_line(line, rel_path, line_no, stripped))
+
     return findings, in_multiline
 
 
-def scan_file(filepath: Path) -> List[Finding]:
+def scan_file(filepath: Path, magic_string_scope=None) -> List[Finding]:
     """扫描单个 Swift 源文件，返回该文件内所有业务层魔鬼数字/字符串发现。
 
     :param filepath: Swift 源文件绝对路径
+    :param magic_string_scope: 短字符串检测的目录前缀列表。None 表示全量扫描。
     :return: 该文件中发现的问题列表
     """
     findings: List[Finding] = []
@@ -370,6 +630,11 @@ def scan_file(filepath: Path) -> List[Finding]:
     # 常量定义文件跳过
     if filepath.name in CONSTANT_FILES:
         return findings
+
+    # 判断当前文件是否在短字符串检测范围内
+    check_magic_strings = True
+    if magic_string_scope is not None:
+        check_magic_strings = any(rel_path.startswith(prefix) for prefix in magic_string_scope)
 
     try:
         content = filepath.read_text(encoding="utf-8")
@@ -387,7 +652,7 @@ def scan_file(filepath: Path) -> List[Finding]:
         if stripped.startswith("//") or stripped.startswith("*"):
             continue
 
-        line_findings, in_multiline = _process_line(line, stripped, in_multiline, rel_path, i)
+        line_findings, in_multiline = _process_line(line, stripped, in_multiline, rel_path, i, check_magic_strings)
         findings.extend(line_findings)
 
     return findings
@@ -448,9 +713,11 @@ def check_stale_exemptions(exempt_items: List[dict], findings: List[Finding]) ->
     return stale
 
 
-def scan_all() -> List[Finding]:
+def scan_all(magic_string_scope=None) -> List[Finding]:
     """扫描所有业务逻辑层目录，返回全部发现项。
 
+    :param magic_string_scope: 短字符串检测的目录前缀列表（如 ["Sources/Infrastructure/LLM"]）。
+                               None 表示全量扫描。空列表表示跳过短字符串检测。
     :return: 全部审计发现列表
     """
     all_findings: List[Finding] = []
@@ -462,12 +729,13 @@ def scan_all() -> List[Finding]:
             # 排除目录
             if any(part in EXCLUDE_DIRS for part in filepath.parts):
                 continue
-            all_findings.extend(scan_file(filepath))
+            all_findings.extend(scan_file(filepath, magic_string_scope))
     return all_findings
 
 
 KIND_LABELS = {
     "magic_number": "业务魔鬼数字",
+    "magic_string": "业务魔鬼字符串",
     "hardcoded_prompt": "硬编码 Prompt 字符串",
     "hardcoded_regex": "硬编码复杂正则",
 }
@@ -496,9 +764,10 @@ def _print_fix_guidance() -> None:
     """打印修复指引。"""
     print("修复指引：")
     print("  1. 魔鬼数字 → 抽取到对应模块的 *Constants.swift 文件（如 RAGEvalConstants / IngestPipelineConstants）")
-    print("  2. 硬编码 Prompt → 迁移到 L10n.Prompt.* 或 PromptTemplates 常量")
-    print("  3. 硬编码正则 → 抽取为强类型常量或 Regex 枚举")
-    print(f"  4. 确需豁免的行，在 Config/exemptions/manual_whitelist.yml 的 `{EXEMPT_CATEGORY}` 分类下登记 file/line/reason")
+    print("  2. 魔鬼字符串 → 抽取为强类型常量/枚举（如 ChunkType / HTTPMethod / ProviderID）")
+    print("  3. 硬编码 Prompt → 迁移到 L10n.Prompt.* 或 PromptTemplates 常量")
+    print("  4. 硬编码正则 → 抽取为强类型常量或 Regex 枚举")
+    print(f"  5. 确需豁免的行，在 Config/exemptions/manual_whitelist.yml 的 `{EXEMPT_CATEGORY}` 分类下登记 file/line/reason")
     print()
 
 
@@ -517,13 +786,20 @@ def main() -> int:
     """
     parser = argparse.ArgumentParser(description="业务层魔鬼数字/字符串审计")
     parser.add_argument("--strict", action="store_true", help="违规视为构建失败（CI 模式）")
+    parser.add_argument(
+        "--magic-string-scope",
+        nargs="*",
+        default=None,
+        help="短字符串检测的扫描目录前缀（如 Sources/Infrastructure/LLM）。"
+             "未指定时扫描全部。已修复的层逐步加入，未列入的层跳过短字符串检测。",
+    )
     args = parser.parse_args()
 
     # 加载豁免
     exempt_keys, exempt_items = load_exemptions()
 
     # 扫描
-    all_findings = scan_all()
+    all_findings = scan_all(magic_string_scope=args.magic_string_scope)
 
     # 应用豁免：过滤掉已豁免的发现
     findings = [f for f in all_findings if (f.file, f.line) not in exempt_keys]

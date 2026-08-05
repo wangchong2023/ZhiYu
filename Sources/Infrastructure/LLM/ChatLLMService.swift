@@ -51,12 +51,12 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
         let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
         let sanitizedPrompt = PromptSanitizer.shared.sanitize(prompt)
         let body: [String: Any] = [
-            "model": configManager.model,
-            "messages": [
-                ["role": "system", "content": systemPrompt],
-                ["role": "user", "content": sanitizedPrompt]
+            LLMConstants.APIKey.model: configManager.model,
+            LLMConstants.APIKey.messages: [
+                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: systemPrompt],
+                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: sanitizedPrompt]
             ],
-            "temperature": AppConfig.AI.defaultTemperature
+            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature
         ]
         
         let startTime = Date()

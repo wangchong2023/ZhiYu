@@ -86,10 +86,10 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         var models: [OnDeviceModel] = []
 
         // 1. 扫描 App Bundle 中内置的专属 AppLLM.mlmodelc 模型
-        if let modelURL = Bundle.main.url(forResource: "AppLLM", withExtension: "mlmodelc") {
+        if let modelURL = Bundle.main.url(forResource: LLMConstants.BundleResource.appLLM, withExtension: SystemConstants.FileExtension.mlmodelC) {
             models.append(OnDeviceModel(
                 id: "bundled_zhiyu",
-                name: "Bundled_Model",
+                name: LLMConstants.OnDeviceModel.bundledName,
                 url: modelURL,
                 size: estimateModelSize(url: modelURL),
                 type: .bundled
@@ -101,10 +101,10 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         let modelsDir = docsDir.appendingPathComponent("MLModels")
 
         if let enumerator = FileManager.default.enumerator(at: modelsDir, includingPropertiesForKeys: [.fileSizeKey]) {
-            for case let fileURL as URL in enumerator where fileURL.pathExtension == "mlmodelc" {
+            for case let fileURL as URL in enumerator where fileURL.pathExtension == SystemConstants.FileExtension.mlmodelC {
                     let name = fileURL.deletingPathExtension().lastPathComponent
                     models.append(OnDeviceModel(
-                        id: "downloaded_\(name)",
+                        id: "\(LLMConstants.ModelIDPrefix.downloaded)\(name)",
                         name: name,
                         url: fileURL,
                         size: estimateModelSize(url: fileURL),
@@ -117,7 +117,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         if #available(iOS 18.1, *) {
             models.append(OnDeviceModel(
                 id: "apple_intelligence",
-                name: "Apple_Intelligence",
+                name: LLMConstants.OnDeviceModel.appleIntelligenceName,
                 url: nil,
                 size: 0,
                 type: .system
@@ -177,7 +177,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
 
             // 执行模型编译，若已是编译后的 mlmodelc 则直接读取
             let compiledURL: URL
-            if url.pathExtension == "mlmodelc" {
+            if url.pathExtension == SystemConstants.FileExtension.mlmodelC {
                 compiledURL = url
             } else {
                 compiledURL = try await compiler.compileModel(at: url)
@@ -219,8 +219,8 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         // 核心 Core ML 推理预测过程
         if currentModel is MLModel {
             // 动态从 InferenceParametersStore 中读取当前模型对应的调节参数
-            let modelId = selectedModelID.replacingOccurrences(of: "downloaded_", with: "")
-                .replacingOccurrences(of: "bundled_", with: "")
+            let modelId = selectedModelID.replacingOccurrences(of: LLMConstants.ModelIDPrefix.downloaded, with: "")
+                .replacingOccurrences(of: LLMConstants.ModelIDPrefix.bundled, with: "")
             
             let finalTemperature: Double
             let finalMaxTokens: Int
@@ -245,7 +245,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
                 let generatedTextResult = try await Task.detached(priority: .userInitiated) {
                     guard let model = modelToPredict else { throw LLMError.apiError("Model not loaded") }
                     let prediction = try model.prediction(from: provider)
-                    return prediction.featureValue(for: "generated_text")?.stringValue
+                    return prediction.featureValue(for: LLMConstants.MLFeature.generatedText)?.stringValue
                 }.value
 
                 if let generated = generatedTextResult {
@@ -359,7 +359,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         }
 
         // 如果传入的是未编译的 mlmodel 源文件，自动启动端侧编译器
-        if destURL.pathExtension == "mlmodel" {
+        if destURL.pathExtension == SystemConstants.FileExtension.mlmodel {
             let compiledURL = try await compiler.compileModel(at: destURL)
             try FileManager.default.removeItem(at: destURL)
             try FileManager.default.moveItem(at: compiledURL, to: destURL.appendingPathExtension("mlmodelc"))

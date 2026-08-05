@@ -58,9 +58,9 @@ public struct PromptSecuritySanitizer: Sendable {
     /// - Returns: 经过 XML 沙箱包装后的上下文字符串
     public func sanitizeContext(_ context: String) -> String {
         let escaped = context
-            .replacingOccurrences(of: "</context>", with: "[/context]")
-            .replacingOccurrences(of: "<context>", with: "[context]")
-        return "<context>\n\(escaped)\n</context>"
+            .replacingOccurrences(of: LLMConstants.PromptTag.contextClose, with: LLMConstants.PromptTag.contextCloseEscaped)
+            .replacingOccurrences(of: LLMConstants.PromptTag.contextOpen, with: LLMConstants.PromptTag.contextOpenEscaped)
+        return "\(LLMConstants.PromptTag.contextOpen)\n\(escaped)\n\(LLMConstants.PromptTag.contextClose)"
     }
 
     /// 使用 XML 标签对用户输入的 Query 进行沙箱包装，防止其伪造 System Prompt
@@ -68,8 +68,8 @@ public struct PromptSecuritySanitizer: Sendable {
     /// - Returns: 经过 XML 沙箱包装后的用户 Query
     public func sanitizeUserQuery(_ query: String) -> String {
         let escaped = query
-            .replacingOccurrences(of: "</user_query>", with: "[/user_query]")
-            .replacingOccurrences(of: "<user_query>", with: "[user_query]")
-        return "<user_query>\n\(escaped)\n</user_query>"
+            .replacingOccurrences(of: LLMConstants.PromptTag.userQueryClose, with: LLMConstants.PromptTag.userQueryCloseEscaped)
+            .replacingOccurrences(of: LLMConstants.PromptTag.userQueryOpen, with: LLMConstants.PromptTag.userQueryOpenEscaped)
+        return "\(LLMConstants.PromptTag.userQueryOpen)\n\(escaped)\n\(LLMConstants.PromptTag.userQueryClose)"
     }
 }

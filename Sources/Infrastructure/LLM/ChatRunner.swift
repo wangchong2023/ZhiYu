@@ -72,13 +72,13 @@ final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
         let (anonPrompt, mapping) = contextBuilder.anonymize(sanitizedPrompt, existingMapping: mapping1)
         
         let body: [String: Any] = [
-            "model": configManager.model,
-            "messages": [
-                ["role": "system", "content": anonSystemPrompt],
-                ["role": "user", "content": anonPrompt]
+            LLMConstants.APIKey.model: configManager.model,
+            LLMConstants.APIKey.messages: [
+                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: anonSystemPrompt],
+                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: anonPrompt]
             ],
-            "temperature": AppConfig.AI.defaultTemperature,
-            "max_tokens": maxTokens
+            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature,
+            LLMConstants.APIKey.maxTokens: maxTokens
         ]
  
         let startTime = Date()
@@ -114,7 +114,7 @@ final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
  
         // 1. 在 UI 层启动任务中心异步进度条
-        let taskID = TaskCenter.shared.addTask(type: .ai, name: "AI Chat", target: sanitizedQuery)
+        let taskID = TaskCenter.shared.addTask(type: .ai, name: LLMConstants.TaskName.aiChat, target: sanitizedQuery)
         TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
         
         // 2. 检索向量库及 FTS5 混合语义，构建保护双链的语义上下文
@@ -179,7 +179,7 @@ final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
                 }
  
                 let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
-                let taskID = TaskCenter.shared.addTask(type: .ai, name: "AI Chat Stream", target: sanitizedQuery)
+                let taskID = TaskCenter.shared.addTask(type: .ai, name: LLMConstants.TaskName.aiChatStream, target: sanitizedQuery)
                 
                 defer {
                     TaskCenter.shared.completeTask(id: taskID)
@@ -254,10 +254,10 @@ final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
     private func performPreflightCheck() async throws {
         let preflightClient = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
         let preflightBody: [String: Any] = [
-            "model": configManager.model,
-            "messages": [["role": "user", "content": "ping"]],
-            "max_tokens": 1,
-            "temperature": 0
+            LLMConstants.APIKey.model: configManager.model,
+            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: LLMConstants.HealthCheck.prompt]],
+            LLMConstants.APIKey.maxTokens: 1,
+            LLMConstants.APIKey.temperature: 0
         ]
         do {
             _ = try await preflightClient.sendRequest(body: preflightBody)

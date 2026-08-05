@@ -48,7 +48,7 @@ final class LLMRegistry {
 
     private func loadProviders() {
         // 首先尝试从 Bundle 加载（Apple 推荐方式）
-        if let url = Bundle.main.url(forResource: "LLMProviders", withExtension: "json"),
+        if let url = Bundle.main.url(forResource: LLMConstants.BundleResource.llmProviders, withExtension: SystemConstants.FileExtension.json),
            let data = try? Data(contentsOf: url),
            let list = try? JSONDecoder().decode([LLMProviderMetadata].self, from: data) {
             for item in list {
@@ -59,12 +59,12 @@ final class LLMRegistry {
 
         // 兜底方案：如果 JSON 未能加载（如尚未打包），使用硬编码数据（DeepSeek 第一位）
         let fallbacks: [LLMProviderMetadata] = [
-            .init(id: "deepseek", nameKey: "llm.provider.deepSeek", baseURL: AppConstants.URLs.llmProviderDeepSeek, defaultModel: "deepseek-v4-pro", suggestedModels: ["deepseek-v4-pro", "deepseek-v4-flash"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "wave.3.forward"),
+            .init(id: "deepseek", nameKey: "llm.provider.deepSeek", baseURL: AppConstants.URLs.llmProviderDeepSeek, defaultModel: "deepseek-v4-pro", suggestedModels: ["deepseek-v4-pro", "deepseek-v4-flash"], apiKeyPrefix: LLMConstants.APIKeySecret.prefix, apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "wave.3.forward"),
             .init(id: "zhipu", nameKey: "llm.provider.zhipu", baseURL: AppConstants.URLs.llmProviderZhipu, defaultModel: "glm-5.2", suggestedModels: ["glm-5.2", "glm-5", "glm-5-turbo", "glm-5v-turbo", "glm-4-flash"], apiKeyPrefix: "", apiKeyMinLength: 20, apiKeyPlaceholder: "your-api-key", icon: "sparkles"),
             .init(id: "minimax", nameKey: "llm.provider.minimax", baseURL: AppConstants.URLs.llmProviderMinimax, defaultModel: "abab7-chat", suggestedModels: ["abab7-chat", "abab6.5t-chat", "abab6.5s-chat"], apiKeyPrefix: "", apiKeyMinLength: 20, apiKeyPlaceholder: "your-api-key", icon: "cpu"),
-            .init(id: "qwen", nameKey: "llm.provider.qwen", baseURL: AppConstants.URLs.llmProviderQwen, defaultModel: "qwen3.7-max", suggestedModels: ["qwen3.7-max", "qwen3.8-max-preview", "qwen3.7-plus", "qwen3.7-flash"], apiKeyPrefix: "sk-", apiKeyMinLength: 25, apiKeyPlaceholder: "sk-...", icon: "cloud.fill"),
-            .init(id: "kimi", nameKey: "llm.provider.kimi", baseURL: AppConstants.URLs.llmProviderKimi, defaultModel: "kimi-k3", suggestedModels: ["kimi-k3", "kimi-k2.7", "moonshot-v1-128k", "moonshot-v1-32k", "moonshot-v1-8k"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "moon.fill"),
-            .init(id: "siliconflow", nameKey: "llm.provider.siliconflow", baseURL: AppConstants.URLs.llmProviderSiliconFlow, defaultModel: "deepseek-ai/DeepSeek-V4-Pro", suggestedModels: ["deepseek-ai/DeepSeek-V4-Lite", "Qwen/Qwen3.7-Max"], apiKeyPrefix: "sk-", apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "bolt.fill"),
+            .init(id: "qwen", nameKey: "llm.provider.qwen", baseURL: AppConstants.URLs.llmProviderQwen, defaultModel: "qwen3.7-max", suggestedModels: ["qwen3.7-max", "qwen3.8-max-preview", "qwen3.7-plus", "qwen3.7-flash"], apiKeyPrefix: LLMConstants.APIKeySecret.prefix, apiKeyMinLength: 25, apiKeyPlaceholder: "sk-...", icon: "cloud.fill"),
+            .init(id: "kimi", nameKey: "llm.provider.kimi", baseURL: AppConstants.URLs.llmProviderKimi, defaultModel: "kimi-k3", suggestedModels: ["kimi-k3", "kimi-k2.7", "moonshot-v1-128k", "moonshot-v1-32k", "moonshot-v1-8k"], apiKeyPrefix: LLMConstants.APIKeySecret.prefix, apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "moon.fill"),
+            .init(id: "siliconflow", nameKey: "llm.provider.siliconflow", baseURL: AppConstants.URLs.llmProviderSiliconFlow, defaultModel: "deepseek-ai/DeepSeek-V4-Pro", suggestedModels: ["deepseek-ai/DeepSeek-V4-Lite", "Qwen/Qwen3.7-Max"], apiKeyPrefix: LLMConstants.APIKeySecret.prefix, apiKeyMinLength: 30, apiKeyPlaceholder: "sk-...", icon: "bolt.fill"),
             .init(id: "custom", nameKey: "llm.provider.custom", baseURL: "", defaultModel: "", suggestedModels: [], apiKeyPrefix: "", apiKeyMinLength: 0, apiKeyPlaceholder: "sk-...", icon: "server.rack")
         ]
         for item in fallbacks {
@@ -354,7 +354,7 @@ final class LLMConfigStore: ObservableObject {
                     return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
                 }
                 // 3. 兼容合法格式的明文存储（如 sk- 开头且满足最小长度要求）
-                if trimmed.hasPrefix(LLMConstants.ApiKey.prefix) || trimmed.count >= LLMConstants.ApiKey.minLength {
+                if trimmed.hasPrefix(LLMConstants.APIKeySecret.prefix) || trimmed.count >= LLMConstants.APIKeySecret.minLength {
                     return trimmed
                 }
                 Logger.shared.error("[LLMConfigStore] API 密钥解密失败 (provider: \(provider))，请重新配置")

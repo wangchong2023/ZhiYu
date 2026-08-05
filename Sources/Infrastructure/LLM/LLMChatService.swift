@@ -31,32 +31,32 @@ final class LLMChatService: Sendable {
         // 注入回复篇幅控制指令，引导模型在可配区间内作答
         let lengthHint = "\nKeep response within \(PromptConstants.TokenLimits.defaultMaxOutputTokens) characters."
         let fullSystemPrompt = systemPrompt + PromptService.shared.languageInstruction + lengthHint
-        var messages: [[String: Any]] = [["role": "system", "content": fullSystemPrompt]]
+        var messages: [[String: Any]] = [[LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: fullSystemPrompt]]
         
         // 注入历史记录
         for msg in history {
-            messages.append(["role": msg.role.rawValue, "content": msg.content])
+            messages.append([LLMConstants.APIKey.role: msg.role.rawValue, LLMConstants.APIKey.content: msg.content])
         }
         
         // 注入当前查询
-        messages.append(["role": "user", "content": query])
+        messages.append([LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: query])
         return messages
     }
 
     /// 构造非流式请求体
     private func makeChatRequestBody(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [String: Any] {
         [
-            "model": model,
-            "messages": buildChatMessages(systemPrompt: systemPrompt, query: query, history: history),
-            "temperature": AppConfig.AI.defaultTemperature,
-            "max_tokens": PromptConstants.TokenLimits.defaultMaxOutputTokens
+            LLMConstants.APIKey.model: model,
+            LLMConstants.APIKey.messages: buildChatMessages(systemPrompt: systemPrompt, query: query, history: history),
+            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature,
+            LLMConstants.APIKey.maxTokens: PromptConstants.TokenLimits.defaultMaxOutputTokens
         ]
     }
 
     /// 构造流式请求体
     private func makeStreamingRequestBody(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [String: Any] {
         var body = makeChatRequestBody(systemPrompt: systemPrompt, query: query, history: history)
-        body["stream"] = true
+        body[LLMConstants.APIKey.stream] = true
         return body
     }
 

@@ -60,7 +60,7 @@ public enum LLMConstants {
     }
 
     /// API Key 校验常量
-    public enum ApiKey {
+    public enum APIKeySecret {
         /// 明文 API Key 合法前缀
         public static let prefix = "sk-"
         /// 明文 API Key 最小长度要求
@@ -87,5 +87,127 @@ public enum LLMConstants {
     public enum SmartIngest {
         /// 传入 Prompt 的现有页面标题最大数量
         public static let existingTitlesCount = 20
+    }
+
+    // MARK: - LLM API 请求体字段名 (API Request Keys)
+
+    /// LLM API 请求体 JSON 字段名常量集
+    public enum APIKey {
+        /// messages 数组的 role 字段名
+        public static let role: String = "role"
+        /// messages 数组的 content 字段名
+        public static let content: String = "content"
+        /// 顶层 model 字段名
+        public static let model: String = "model"
+        /// 顶层 messages 字段名
+        public static let messages: String = "messages"
+        /// 顶层 temperature 字段名
+        public static let temperature: String = "temperature"
+        /// 顶层 max_tokens 字段名
+        public static let maxTokens: String = "max_tokens"
+        /// 顶层 stream 字段名
+        public static let stream: String = "stream"
+        /// 顶层 prompt 字段名
+        public static let prompt: String = "prompt"
+    }
+
+    /// messages 中 role 字段的取值常量
+    public enum Role {
+        /// system 角色
+        public static let system: String = "system"
+        /// user 角色
+        public static let user: String = "user"
+        /// assistant 角色
+        public static let assistant: String = "assistant"
+    }
+
+    // MARK: - 模型 ID 前缀 (Model ID Prefixes)
+
+    /// 模型 ID 前缀常量集（用于区分模型来源）
+    public enum ModelIDPrefix {
+        /// 已下载模型 ID 前缀
+        public static let downloaded: String = "downloaded_"
+        /// 内置模型 ID 前缀
+        public static let bundled: String = "bundled_"
+    }
+
+    // MARK: - Prompt 沙箱标签 (Prompt Security Tags)
+
+    /// Prompt 沙箱转义标签常量集
+    public enum PromptTag {
+        /// 上下文开标签
+        public static let contextOpen: String = "<context>"
+        /// 上下文闭标签
+        public static let contextClose: String = "</context>"
+        /// 用户查询开标签
+        public static let userQueryOpen: String = "<user_query>"
+        /// 用户查询闭标签
+        public static let userQueryClose: String = "</user_query>"
+        /// 转义后的上下文开标签
+        public static let contextOpenEscaped: String = "[context]"
+        /// 转义后的上下文闭标签
+        public static let contextCloseEscaped: String = "[/context]"
+        /// 转义后的用户查询开标签
+        public static let userQueryOpenEscaped: String = "[user_query]"
+        /// 转义后的用户查询闭标签
+        public static let userQueryCloseEscaped: String = "[/user_query]"
+    }
+
+    // MARK: - 端侧模型名 (On-Device Model Names)
+
+    /// 端侧模型显示名常量集
+    public enum OnDeviceModel {
+        /// 内置模型显示名
+        public static let bundledName: String = "Bundled_Model"
+        /// Apple Intelligence 模型显示名
+        public static let appleIntelligenceName: String = "Apple_Intelligence"
+    }
+
+    // MARK: - SSE 流式响应标记 (SSE Stream Markers)
+
+    /// SSE 流式响应标记常量集
+    public enum SSEStream {
+        /// 流结束标记
+        public static let doneMarker: String = "[DONE]"
+        /// data 行前缀
+        public static let dataPrefix: String = "data: "
+    }
+
+    // MARK: - 任务中心任务名 (Task Center Names)
+
+    /// 任务中心任务名常量集
+    public enum TaskName {
+        /// AI 对话任务名
+        public static let aiChat: String = "AI Chat"
+        /// AI 流式对话任务名
+        public static let aiChatStream: String = "AI Chat Stream"
+    }
+
+    // MARK: - 健康检查 (Health Check)
+
+    /// LLM 健康检查常量集
+    public enum HealthCheck {
+        /// 健康检查 Prompt 内容
+        public static let prompt: String = "Hi"
+        /// 健康检查 SystemPrompt 内容
+        public static let systemPrompt: String = "Reply 'OK' only."
+    }
+
+    // MARK: - CoreML 特征名 (ML Feature Names)
+
+    /// CoreML 模型特征名常量集
+    public enum MLFeature {
+        /// 生成文本输出特征名
+        public static let generatedText: String = "generated_text"
+    }
+
+    // MARK: - Bundle 资源名 (Bundle Resources)
+
+    /// LLM 模块 Bundle 资源名常量集
+    public enum BundleResource {
+        /// LLM Providers 配置文件名
+        public static let llmProviders: String = "LLMProviders"
+        /// 端侧 CoreML 模型资源名
+        public static let appLLM: String = "AppLLM"
     }
 }

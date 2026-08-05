@@ -23,16 +23,16 @@ struct OpenAICompatibleAdapter: LLMAdapter {
     func generate(prompt: String, systemPrompt: String) async throws -> String {
         let client = LLMClient(baseURL: config.baseURL, apiKey: config.apiKey)
         let body: [String: Any] = [
-            "model": config.model,
-            "messages": [
-                ["role": "system", "content": systemPrompt],
-                ["role": "user", "content": prompt]
+            LLMConstants.APIKey.model: config.model,
+            LLMConstants.APIKey.messages: [
+                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: systemPrompt],
+                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]
             ],
-            "temperature": 0.7
+            LLMConstants.APIKey.temperature: 0.7
         ]
         let response = try await client.sendRequest(body: body)
         guard let choices = response["choices"] as? [[String: Any]],
-              let content = (choices.first?["message"] as? [String: Any])?["content"] as? String else {
+              let content = (choices.first?["message"] as? [String: Any])?[LLMConstants.APIKey.content] as? String else {
             throw LLMError.invalidResponse
         }
         return content

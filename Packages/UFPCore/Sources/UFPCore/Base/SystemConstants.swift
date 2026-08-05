@@ -36,4 +36,54 @@ public enum SystemConstants {
         /// 429 Too Many Requests
         public static let rateLimited: Int = 429
     }
+
+    // MARK: - HTTP 请求头 (HTTP Headers)
+    public enum HTTPHeader {
+        /// Content-Type 请求头字段名
+        public static let contentType: String = "Content-Type"
+        /// Authorization 请求头字段名
+        public static let authorization: String = "Authorization"
+        /// Accept 请求头字段名
+        public static let accept: String = "Accept"
+        /// User-Agent 请求头字段名
+        public static let userAgent: String = "User-Agent"
+    }
+
+    // MARK: - HTTP 内容类型 (Content Types)
+    public enum ContentType {
+        /// application/json
+        public static let applicationJSON: String = "application/json"
+        /// application/xml
+        public static let applicationXML: String = "application/xml"
+        /// text/plain
+        public static let textPlain: String = "text/plain"
+        /// text/html
+        public static let textHTML: String = "text/html"
+        /// application/x-www-form-urlencoded
+        public static let formURLEncoded: String = "application/x-www-form-urlencoded"
+    }
+
+    // MARK: - 文件扩展名 (File Extensions)
+    public enum FileExtension {
+        /// .json
+        public static let json: String = "json"
+        /// .mlmodelc（CoreML 编译后模型包）
+        public static let mlmodelC: String = "mlmodelc"
+        /// .mlmodel（CoreML 源模型）
+        public static let mlmodel: String = "mlmodel"
+        /// .md（Markdown 文档）
+        public static let markdown: String = "md"
+        /// .txt（纯文本）
+        public static let text: String = "txt"
+        /// .sqlite（SQLite 数据库）
+        public static let sqlite: String = "sqlite"
+    }
+
+    // MARK: - URL 协议 (URL Schemes)
+    public enum URLScheme {
+        /// https://
+        public static let https: String = "https://"
+        /// http://
+        public static let http: String = "http://"
+    }
 }

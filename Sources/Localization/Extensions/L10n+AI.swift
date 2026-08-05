@@ -401,6 +401,12 @@ extension L10n {
                 public static var deepReview: String { AI.tr("prompt.shortcut.deepReview") }
                 public static var findGaps: String { AI.tr("prompt.shortcut.findGaps") }
                 public static var studyPath: String { AI.tr("prompt.shortcut.studyPath") }
+
+                public enum Key {
+                    public static let deepReview: String = "prompt.shortcut.deepReview"
+                    public static let findGaps: String = "prompt.shortcut.findGaps"
+                    public static let studyPath: String = "prompt.shortcut.studyPath"
+                }
             }
 
             public enum reset {

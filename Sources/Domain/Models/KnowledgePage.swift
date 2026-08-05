@@ -167,7 +167,7 @@ public struct KnowledgePage: Identifiable, Codable, Hashable, Sendable, Knowledg
     
     /// 是否为存根页面 (内容过少)
     public var isStub: Bool {
-        content.count < SystemConstants.KnowledgePageThresholds.stubPageWordCount
+        content.count < DomainThresholds.KnowledgePageThresholds.stubPageWordCount
     }
     
     /// 获取存储文件夹名称

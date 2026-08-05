@@ -273,10 +273,10 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
 
         do {
             // 阶段 1：非流式快速探活
-            _ = try await generate(prompt: "Hi", systemPrompt: "Reply 'OK' only.")
+            _ = try await generate(prompt: LLMConstants.HealthCheck.prompt, systemPrompt: LLMConstants.HealthCheck.systemPrompt)
 
             // 阶段 2：流式信道验证 — 确保聊天管道可用
-            let stream = chatStream(query: "ping", history: [], pages: [])
+            let stream = chatStream(query: LLMConstants.HealthCheck.prompt, history: [], pages: [])
             for try await chunk in stream where !chunk.isEmpty {
                     streamTested = true
                     streamOK = true
