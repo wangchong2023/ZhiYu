@@ -236,9 +236,15 @@ def _is_hardcoded_prompt(line: str, in_multiline: bool) -> bool:
                 return True
 
     # 多行字符串内部：检测是否含指令性词汇
+    # 但排除已通过 L10n.* 调用的行（说明 Prompt 文本已本地化）
     if in_multiline:
+        # 跳过仅含 L10n 插值调用的行（如 \(L10n.AI.Prompt.xxx)）
+        # 检测行内是否有非 L10n 调用内的硬编码字符串
+        l10n_call_pattern = re.compile(r'L10n\.[A-Za-z0-9_.]+')
+        # 移除所有 L10n 调用后检查剩余内容
+        line_without_l10n = l10n_call_pattern.sub('', line)
         for keyword in PROMPT_KEYWORDS:
-            if keyword in line:
+            if keyword in line_without_l10n:
                 return True
 
     return False

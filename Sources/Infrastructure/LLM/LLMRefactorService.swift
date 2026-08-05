@@ -9,6 +9,7 @@
 //  核心职责：实现 LLMRefactor 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// LLM 知识重构服务
 /// 负责扫描知识库内容，通过语义分析建立双向链接并建议页面合并或拆分。
@@ -78,7 +79,7 @@ public final class LLMRefactorService: Sendable {
 
     /// 分析一组页面以获取重构建议（合并、拆分、重命名）
     func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestion] {
-        let pageData = pages.map { "\($0.title): \($0.content.prefix(150))..." }.joined(separator: "\n---\n")
+        let pageData = pages.map { "\($0.title): \($0.content.prefix(LLMConstants.LogPreview.refactorPageContentLength))..." }.joined(separator: "\n---\n")
 
         let prompt = """
         \(PromptService.shared.refactorPrompt)

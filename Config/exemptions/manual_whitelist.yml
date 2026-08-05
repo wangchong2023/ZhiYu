@@ -1,1974 +1,1934 @@
-# ==============================================================================
-# ZhiYu 免白名单注册表 — 手动维护部分 (Manual Whitelist SSOT)
-# ==============================================================================
-# 用途：exemption_registry.py 加载本文件，作为"无法自动收集"的豁免项 SSOT。
-#       自动收集的符号（Apple SDK / 第三方库 / 项目代码）不在此文件中登记。
-#
-# 动态维护机制：
-#   1. 自动收集：exemption_registry.py 运行时自动扫描 Sources/Tests/、
-#      xcrun swift-symbolgraph-extract、.build/checkouts/，生成动态符号集
-#   2. 反向校验：expiry_check=true 的项会被检测，若已在代码中实现则报告为"过期"
-#   3. Git 钩子：pre-push 时自动重建符号缓存 + 校验漂移 + 过期检测
-#
-# 字段说明：
-#   symbol: 豁免的符号名
-#   reason: 豁免理由（必填）
-#   added: 添加日期（YYYY-MM-DD）
-#   expiry_check: 是否参与过期检测
-#     - true: 若该符号已在代码/第三方库中实现，报告为过期，建议移除
-#     - false: 永不过期（概念词、SQL 列名、占位符等非代码符号）
-#   category: 分类标签（用于按审计域查询）
-# ==============================================================================
-
-# --- 概念词（非代码符号，永不过期） ---
 concept_words:
-  - symbol: Done
-    reason: 通用 UI 概念词（完成按钮/状态）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch-dependency]
-  - symbol: Plan
-    reason: 通用业务概念词（计划/方案）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch-dependency]
-  - symbol: Theme
-    reason: 通用 UI 概念词（主题）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch-dependency]
-  - symbol: Infrastructure
-    reason: 架构分层目录名，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch]
-  - symbol: Sources
-    reason: UI 概念词（知识溯源区域），非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Base
-    reason: 架构分层目录名，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch]
-  - symbol: Core
-    reason: 架构分层目录名，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch]
-  - symbol: Logic
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Manager
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Delegate
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Service
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Store
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Repository
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Pages
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Panel
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Link
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Sync
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Measure
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Compile
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Imports
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Layouts
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Editors
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Protocols
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Observation
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Markdown
-    reason: 架构概念词，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AITasks
-    reason: xcstrings 分表名，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- SQL 列名/表名/迁移版本（非 Swift 符号，永不过期） ---
+- symbol: Done
+  reason: 通用 UI 概念词（完成按钮/状态）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Plan
+  reason: 通用业务概念词（计划/方案）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Theme
+  reason: 通用 UI 概念词（主题）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Infrastructure
+  reason: 架构分层目录名，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+  - arch
+- symbol: Sources
+  reason: UI 概念词（知识溯源区域），非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Base
+  reason: 架构分层目录名，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+  - arch
+- symbol: Core
+  reason: 架构分层目录名，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+  - arch
+- symbol: Logic
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Manager
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Delegate
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Service
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Store
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Repository
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Pages
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Panel
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Link
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Sync
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Measure
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Compile
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Imports
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Layouts
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Editors
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Protocols
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Observation
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Markdown
+  reason: 架构概念词，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AITasks
+  reason: xcstrings 分表名，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 sql_artifacts:
-  - symbol: v1_initial
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v2_fts
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v3_rag_chunks
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v4_unique_title
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v5_upgrade_page_chunks
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v6_resource_audit
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v7_enhanced_governance
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v8_karpathy_metadata
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: v9_distributed_sync
-    reason: 数据库迁移版本号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SELECT
-    reason: SQL 关键字，非 Swift 符号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- 算法名/哈希名（非 Swift 类型，永不过期） ---
+- symbol: v1_initial
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v2_fts
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v3_rag_chunks
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v4_unique_title
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v5_upgrade_page_chunks
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v6_resource_audit
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v7_enhanced_governance
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v8_karpathy_metadata
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: v9_distributed_sync
+  reason: 数据库迁移版本号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SELECT
+  reason: SQL 关键字，非 Swift 符号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 algorithm_names:
-  - symbol: SHA256
-    reason: 哈希算法名称，非 Swift 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- UserDefaults key（非 Swift 符号，永不过期） ---
+- symbol: SHA256
+  reason: 哈希算法名称，非 Swift 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 userdefaults_keys:
-  - symbol: daily_recap_yyyyMMdd
-    reason: UserDefaults key 字符串，非 Swift 符号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- 文档示例占位符（永不过期） ---
+- symbol: daily_recap_yyyyMMdd
+  reason: UserDefaults key 字符串，非 Swift 符号
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 placeholders:
-  - symbol: XxxAdapter
-    reason: 文档示例占位符
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XxxPlugin
-    reason: 文档示例占位符
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XxxProtocol
-    reason: 文档示例占位符
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XxxProvider
-    reason: 文档示例占位符
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AnyXxx
-    reason: 文档示例占位符
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: MockProvider
-    reason: 文档示例占位符
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- CI/工具变量（Python/Shell，非 Swift 符号，永不过期） ---
+- symbol: XxxAdapter
+  reason: 文档示例占位符
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XxxPlugin
+  reason: 文档示例占位符
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XxxProtocol
+  reason: 文档示例占位符
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XxxProvider
+  reason: 文档示例占位符
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AnyXxx
+  reason: 文档示例占位符
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: MockProvider
+  reason: 文档示例占位符
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 ci_variables:
-  - symbol: COMMON_KEYWORDS
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: forbidden_rules
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: exclude_suffixes
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: depends_on
-    reason: YAML/Python 字段名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: domain_all_entities
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: domain_models_entities
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: domain_services_entities
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: file_signatures
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: run_parallel_task
-    reason: Python 脚本变量名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: arch_exempt
-    reason: 行内豁免注释标记
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch]
-  - symbol: inject_exempt
-    reason: 行内豁免注释标记
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift, arch]
-  - symbol: snake_case
-    reason: 命名规范术语，非 Swift 符号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: os_unfair_lock
-    reason: C 函数名，非 Swift 符号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: memset_s
-    reason: C 函数名，非 Swift 符号
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- 项目 target/模块名（非 Swift 类型，但文档常引用） ---
-# 注意：这些参与过期检测——若未来在代码中定义了同名类型，应移除此豁免
+- symbol: CI_PIPELINE_STATUS
+  reason: CI 流水线状态环境变量
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SKIP_TESTS
+  reason: CI 跳过测试环境变量
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SOURCE_DATE_EPOCH
+  reason: SOURCE_DATE_EPOCH 环境变量
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TERMINATED
+  reason: 进程状态概念词
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Unauthorized
+  reason: HTTP 状态概念词
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AppNotifications
+  reason: 通知概念词
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 project_targets:
-  - symbol: ZhiYu
-    reason: 项目 target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ZhiYuMac
-    reason: macOS target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ZhiYuWatch
-    reason: watchOS target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ZhiYuWidgets
-    reason: Widget target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ZhiYuTests
-    reason: 测试 target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UFPCoreTestMocks
-    reason: SPM 包测试 mock target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ZhiYuDomainTestMocks
-    reason: SPM 包测试 mock target 名
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-
-# --- 构建变量（非 Swift 符号，永不过期） ---
+- symbol: ZhiYu
+  reason: 项目 target 名
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ZhiYuMac
+  reason: macOS target 名
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ZhiYuWatch
+  reason: watchOS target 名
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ZhiYuWidgets
+  reason: Widget target 名
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ZhiYuTests
+  reason: 测试 target 名
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UFPCoreTestMocks
+  reason: SPM 包测试 mock target 名
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ZhiYuDomainTestMocks
+  reason: SPM 包测试 mock target 名
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
 build_variables:
-  - symbol: BUILD_TIMESTAMP
-    reason: 构建时间戳环境变量
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: GIT_SHORT_HASH
-    reason: Git 短哈希环境变量
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SUPPORTS_MACCATALYST
-    reason: 构建宏定义
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: WOODPECKER_LABELS
-    reason: CI 流水线标签
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- Apple SDK 补充符号（symbolgraph 未覆盖的泛型类型/协议） ---
-# 这些符号确实存在于 Apple SDK 中，但 swift-symbolgraph-extract 未输出
-# expiry_check=true：若未来 symbolgraph 覆盖了这些符号，应移除此豁免
+- symbol: BUILD_TIMESTAMP
+  reason: 构建时间戳环境变量
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GIT_SHORT_HASH
+  reason: Git 短哈希环境变量
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SUPPORTS_MACCATALYST
+  reason: 构建宏定义
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: WOODPECKER_LABELS
+  reason: CI 流水线标签
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 sdk_supplement:
-  - symbol: ZStack
-    reason: SwiftUI 泛型视图（symbolgraph 未输出）
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: AsyncStream
-    reason: Swift 标准库异步序列（symbolgraph 未输出）
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: AsyncSequence
-    reason: Swift 标准库异步序列协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: CheckedContinuation
-    reason: Swift 并发续体类型
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: GlobalActor
-    reason: Swift 并发全局 Actor 协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: Nonisolated
-    reason: Swift 并发隔离修饰符
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: Observable
-    reason: Swift Observation 框架宏
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: SceneStorage
-    reason: SwiftUI 场景存储属性包装器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: NavigationSplitView
-    reason: SwiftUI 分栏导航视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UserInterfaceSizeClass
-    reason: UIKit 用户界面尺寸类
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: LocalizedStringResource
-    reason: Foundation 本地化字符串资源
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: Localizable
-    reason: SwiftUI 本地化协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: DynamicType
-    reason: UIKit 动态类型
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: Image
-    reason: SwiftUI 图像视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: Font
-    reason: SwiftUI 字体
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: Spacer
-    reason: SwiftUI 间隔视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: VStack
-    reason: SwiftUI 垂直堆栈
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: HStack
-    reason: SwiftUI 水平堆栈
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: ForEach
-    reason: SwiftUI 循环视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: EmptyView
-    reason: SwiftUI 空视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: Binding
-    reason: SwiftUI 绑定属性包装器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: Environment
-    reason: SwiftUI 环境属性包装器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: State
-    reason: SwiftUI 状态属性包装器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: MainActor
-    reason: Swift 并发主 Actor
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: Capsule
-    reason: SwiftUI 胶囊形状
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: Circle
-    reason: SwiftUI 圆形形状
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: Rectangle
-    reason: SwiftUI 矩形形状
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: RoundedRectangle
-    reason: SwiftUI 圆角矩形形状
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-  - symbol: CGFloat
-    reason: CoreGraphics 浮点类型
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift, arch-dependency]
-
-# --- XCTest 框架（不在 macOS SDK，在 developer toolchain） ---
+- symbol: ZStack
+  reason: SwiftUI 泛型视图（symbolgraph 未输出）
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: AsyncStream
+  reason: Swift 标准库异步序列（symbolgraph 未输出）
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: AsyncSequence
+  reason: Swift 标准库异步序列协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: CheckedContinuation
+  reason: Swift 并发续体类型
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: GlobalActor
+  reason: Swift 并发全局 Actor 协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: Nonisolated
+  reason: Swift 并发隔离修饰符
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: Observable
+  reason: Swift Observation 框架宏
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: SceneStorage
+  reason: SwiftUI 场景存储属性包装器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: NavigationSplitView
+  reason: SwiftUI 分栏导航视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UserInterfaceSizeClass
+  reason: UIKit 用户界面尺寸类
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: LocalizedStringResource
+  reason: Foundation 本地化字符串资源
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: Localizable
+  reason: SwiftUI 本地化协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: DynamicType
+  reason: UIKit 动态类型
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: Image
+  reason: SwiftUI 图像视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Font
+  reason: SwiftUI 字体
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Spacer
+  reason: SwiftUI 间隔视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: VStack
+  reason: SwiftUI 垂直堆栈
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: HStack
+  reason: SwiftUI 水平堆栈
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: ForEach
+  reason: SwiftUI 循环视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: EmptyView
+  reason: SwiftUI 空视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Binding
+  reason: SwiftUI 绑定属性包装器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Environment
+  reason: SwiftUI 环境属性包装器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: State
+  reason: SwiftUI 状态属性包装器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: MainActor
+  reason: Swift 并发主 Actor
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Capsule
+  reason: SwiftUI 胶囊形状
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Circle
+  reason: SwiftUI 圆形形状
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: Rectangle
+  reason: SwiftUI 矩形形状
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: RoundedRectangle
+  reason: SwiftUI 圆角矩形形状
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
+- symbol: CGFloat
+  reason: CoreGraphics 浮点类型
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+  - arch-dependency
 xctest_framework:
-  - symbol: XCTest
-    reason: XCTest 测试框架（developer toolchain，不在 macOS SDK）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTestCase
-    reason: XCTest 测试基类
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTestExpectation
-    reason: XCTest 异步期望
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCUIApplication
-    reason: XCTest UI 测试应用
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTAssert
-    reason: XCTest 断言函数族
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTAssertEqual
-    reason: XCTest 断言
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTAssertTrue
-    reason: XCTest 断言
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTAssertFalse
-    reason: XCTest 断言
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTAssertNil
-    reason: XCTest 断言
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTAssertThrowsError
-    reason: XCTest 断言
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: XCTAssertNoThrow
-    reason: XCTest 断言
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- Swift 并发原语（symbolgraph 未输出的内部模块符号） ---
+- symbol: XCTest
+  reason: XCTest 测试框架（developer toolchain，不在 macOS SDK）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTestCase
+  reason: XCTest 测试基类
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTestExpectation
+  reason: XCTest 异步期望
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCUIApplication
+  reason: XCTest UI 测试应用
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssert
+  reason: XCTest 断言函数族
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssertEqual
+  reason: XCTest 断言
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssertTrue
+  reason: XCTest 断言
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssertFalse
+  reason: XCTest 断言
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssertNil
+  reason: XCTest 断言
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssertThrowsError
+  reason: XCTest 断言
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssertNoThrow
+  reason: XCTest 断言
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 swift_concurrency:
-  - symbol: OSAllocatedUnfairLock
-    reason: Swift 并发锁（_Volatile 内部模块，symbolgraph 未输出）
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: GlobalActor
-    reason: Swift 并发全局 Actor 协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: Nonisolated
-    reason: Swift 并发隔离修饰符
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: Observable
-    reason: Swift Observation 框架宏
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: AsyncStream
-    reason: Swift 标准库异步序列
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-
-# --- SwiftUI/UIKit 泛型视图与协议（symbolgraph 未输出） ---
+- symbol: OSAllocatedUnfairLock
+  reason: Swift 并发锁（_Volatile 内部模块，symbolgraph 未输出）
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: GlobalActor
+  reason: Swift 并发全局 Actor 协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: Nonisolated
+  reason: Swift 并发隔离修饰符
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: Observable
+  reason: Swift Observation 框架宏
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: AsyncStream
+  reason: Swift 标准库异步序列
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
 swiftui_uikit_supplement:
-  - symbol: ZStack
-    reason: SwiftUI 泛型视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: GeometryReader
-    reason: SwiftUI 几何读取器泛型视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: EnvironmentKey
-    reason: SwiftUI 环境键协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: EnvironmentValue
-    reason: SwiftUI 环境值协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: SceneStorage
-    reason: SwiftUI 场景存储属性包装器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: NavigationSplitView
-    reason: SwiftUI 分栏导航视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UITraitCollection
-    reason: UIKit 特征集合
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UITraitBridgedEnvironmentKey
-    reason: UIKit 特征桥接环境键
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UIUserInterfaceIdiom
-    reason: UIKit 用户界面习语枚举
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UIBlurEffect
-    reason: UIKit 模糊效果
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UIImpactFeedbackGenerator
-    reason: UIKit 触觉反馈生成器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UIDocumentPicker
-    reason: UIKit 文档选择器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UIPasteboard
-    reason: UIKit 剪贴板
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UIView
-    reason: UIKit 视图基类
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: UIWindow
-    reason: UIKit 窗口
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-
-# --- Foundation/CoreFoundation C 符号（symbolgraph 未输出 C 符号） ---
+- symbol: ZStack
+  reason: SwiftUI 泛型视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: GeometryReader
+  reason: SwiftUI 几何读取器泛型视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: EnvironmentKey
+  reason: SwiftUI 环境键协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: EnvironmentValue
+  reason: SwiftUI 环境值协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: SceneStorage
+  reason: SwiftUI 场景存储属性包装器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: NavigationSplitView
+  reason: SwiftUI 分栏导航视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UITraitCollection
+  reason: UIKit 特征集合
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UITraitBridgedEnvironmentKey
+  reason: UIKit 特征桥接环境键
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIUserInterfaceIdiom
+  reason: UIKit 用户界面习语枚举
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIBlurEffect
+  reason: UIKit 模糊效果
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIImpactFeedbackGenerator
+  reason: UIKit 触觉反馈生成器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIDocumentPicker
+  reason: UIKit 文档选择器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIPasteboard
+  reason: UIKit 剪贴板
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIView
+  reason: UIKit 视图基类
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIWindow
+  reason: UIKit 窗口
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
 foundation_c_symbols:
-  - symbol: CFAbsoluteTime
-    reason: CoreFoundation 时间类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: CFBundleShortVersionString
-    reason: CoreFoundation Bundle 版本键
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: CFBundleVersion
-    reason: CoreFoundation Bundle 构建号键
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: LSApplicationCategoryType
-    reason: LaunchServices 应用类别键
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SecKeyVerifySignature
-    reason: Security 框架密钥签名验证 C 函数
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Signpost
-    reason: os.signpost 概念词
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- 第三方库符号（SPM checkouts 为空时手动登记） ---
+- symbol: CFAbsoluteTime
+  reason: CoreFoundation 时间类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: CFBundleShortVersionString
+  reason: CoreFoundation Bundle 版本键
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: CFBundleVersion
+  reason: CoreFoundation Bundle 构建号键
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: LSApplicationCategoryType
+  reason: LaunchServices 应用类别键
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SecKeyVerifySignature
+  reason: Security 框架密钥签名验证 C 函数
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Signpost
+  reason: os.signpost 概念词
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 third_party_libraries:
-  - symbol: GRDBReexport
-    reason: GRDB 库重导出符号
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: FetchableRecord
-    reason: GRDB 协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: MutablePersistableRecord
-    reason: GRDB 协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: TableRecord
-    reason: GRDB 协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: DatabasePool
-    reason: GRDB 数据库池
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: SnapshotTesting
-    reason: swift-snapshot-testing 库
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ZIPFoundation
-    reason: ZIP 压缩库
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: PptxGenJS
-    reason: PPTX 生成 JS 库
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: WechatOpenSDK
-    reason: 微信开放平台 SDK
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ATAuthSDK
-    reason: 阿里云号码认证 SDK
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: XMLHttpRequest
-    reason: Web 标准 API
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SwiftJSONSanitizer
-    reason: JSON 清洗库
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: WebSocket
-    reason: WebSocket 协议/库
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PartialJSON
-    reason: swift-partial-json 库（JSONRepairProcessor 依赖）
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-
-# --- 其他 Apple 框架模块名（作为概念词引用） ---
+- symbol: GRDBReexport
+  reason: GRDB 库重导出符号
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: FetchableRecord
+  reason: GRDB 协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: MutablePersistableRecord
+  reason: GRDB 协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: TableRecord
+  reason: GRDB 协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: DatabasePool
+  reason: GRDB 数据库池
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: SnapshotTesting
+  reason: swift-snapshot-testing 库
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ZIPFoundation
+  reason: ZIP 压缩库
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: PptxGenJS
+  reason: PPTX 生成 JS 库
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: WechatOpenSDK
+  reason: 微信开放平台 SDK
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ATAuthSDK
+  reason: 阿里云号码认证 SDK
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: XMLHttpRequest
+  reason: Web 标准 API
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SwiftJSONSanitizer
+  reason: JSON 清洗库
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: WebSocket
+  reason: WebSocket 协议/库
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PartialJSON
+  reason: swift-partial-json 库（JSONRepairProcessor 依赖）
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
 apple_framework_modules:
-  - symbol: AppIntents
-    reason: Apple AppIntents 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AppKit
-    reason: Apple AppKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: UIKit
-    reason: Apple UIKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SwiftUI
-    reason: Apple SwiftUI 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Foundation
-    reason: Apple Foundation 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: NaturalLanguage
-    reason: Apple NaturalLanguage 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: LocalAuthentication
-    reason: Apple LocalAuthentication 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AuthenticationServices
-    reason: Apple AuthenticationServices 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: JavaScriptCore
-    reason: Apple JavaScriptCore 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: RealityKit
-    reason: Apple RealityKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AVAudioRecorder
-    reason: AVFoundation 音频录制器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: BGTaskScheduler
-    reason: BackgroundTasks 框架调度器
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: WCSession
-    reason: WatchConnectivity 会话
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: CLKComplicationDataSource
-    reason: ClockKit 表盘数据源协议
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-  - symbol: ModelEntity
-    reason: RealityKit 模型实体
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-
-# --- Swift 标准库内置类型（symbolgraph 未输出） ---
+- symbol: AppIntents
+  reason: Apple AppIntents 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AppKit
+  reason: Apple AppKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UIKit
+  reason: Apple UIKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SwiftUI
+  reason: Apple SwiftUI 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Foundation
+  reason: Apple Foundation 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NaturalLanguage
+  reason: Apple NaturalLanguage 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: LocalAuthentication
+  reason: Apple LocalAuthentication 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AuthenticationServices
+  reason: Apple AuthenticationServices 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: JavaScriptCore
+  reason: Apple JavaScriptCore 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: RealityKit
+  reason: Apple RealityKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AVAudioRecorder
+  reason: AVFoundation 音频录制器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: BGTaskScheduler
+  reason: BackgroundTasks 框架调度器
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: WCSession
+  reason: WatchConnectivity 会话
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: CLKComplicationDataSource
+  reason: ClockKit 表盘数据源协议
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: ModelEntity
+  reason: RealityKit 模型实体
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
 swift_stdlib:
-  - symbol: Any
-    reason: Swift 标准库 Any 类型
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Function
-    reason: Swift 函数概念词
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Hash
-    reason: Swift Hash 概念词
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Text
-    reason: SwiftUI Text 视图
-    added: 2026-08-04
-    expiry_check: true
-    category: [doc-drift]
-
-# --- 项目模块名（非代码符号，作为概念词引用） ---
+- symbol: Any
+  reason: Swift 标准库 Any 类型
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Function
+  reason: Swift 函数概念词
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Hash
+  reason: Swift Hash 概念词
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Text
+  reason: SwiftUI Text 视图
+  added: 2026-08-04
+  expiry_check: true
+  category:
+  - doc-drift
 project_modules:
-  - symbol: UFPCore
-    reason: 项目 SPM 包名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: UFPStorage
-    reason: 项目 SPM 包名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: UFPDesignSystem
-    reason: 项目 SPM 包名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: ZhiYuDomain
-    reason: 项目 SPM 包名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: ZhiYuAICore
-    reason: 项目 SPM 包名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: ZhiYuFeatures
-    reason: 项目 SPM 包名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: UIComponents
-    reason: 项目 UI 组件目录名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Makefile
-    reason: 构建文件名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PlistBuddy
-    reason: macOS 系统工具名
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SERVICE_TO_SWIFT
-    reason: 代码生成映射变量
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- 品牌专有名词（L10n 假翻译拦截豁免） ---
-# 这些是合法的 brand 驼峰命名，无需按 PascalCase 假翻译占位符拦截
-# expiry_check=false：品牌名永不过期
+- symbol: UFPCore
+  reason: 项目 SPM 包名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UFPStorage
+  reason: 项目 SPM 包名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UFPDesignSystem
+  reason: 项目 SPM 包名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ZhiYuDomain
+  reason: 项目 SPM 包名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ZhiYuAICore
+  reason: 项目 SPM 包名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ZhiYuFeatures
+  reason: 项目 SPM 包名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UIComponents
+  reason: 项目 UI 组件目录名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Makefile
+  reason: 构建文件名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PlistBuddy
+  reason: macOS 系统工具名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SERVICE_TO_SWIFT
+  reason: 代码生成映射变量
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 brand_proper_names:
-  - symbol: VoiceOver
-    reason: Apple 辅助功能品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: SiliconFlow
-    reason: AI 服务商品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: OpenAI
-    reason: AI 服务商品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: DeepSeek
-    reason: AI 服务商品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: MiniMax
-    reason: AI 服务商品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Ollama
-    reason: 本地 LLM 服务商品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Anthropic
-    reason: AI 服务商品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: macOS
-    reason: Apple 操作系统品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: iOS
-    reason: Apple 操作系统品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: iPadOS
-    reason: Apple 操作系统品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: watchOS
-    reason: Apple 操作系统品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: GitHub
-    reason: 代码托管平台品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: GitLab
-    reason: 代码托管平台品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Bitbucket
-    reason: 代码托管平台品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: ChatGPT
-    reason: AI 产品品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Claude
-    reason: AI 产品品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Gemini
-    reason: AI 产品品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: CoreML
-    reason: Apple 框架品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Xcode
-    reason: Apple IDE 品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: WebKit
-    reason: Apple WebKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: CloudKit
-    reason: Apple CloudKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: HealthKit
-    reason: Apple HealthKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: MapKit
-    reason: Apple MapKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: ARKit
-    reason: Apple ARKit 框架
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Keychain
-    reason: Apple Security 框架概念
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Keynote
-    reason: Apple 应用品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: Numbers
-    reason: Apple 应用品牌名
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-  - symbol: ZhiYu
-    reason: 本应用名称
-    added: 2026-08-04
-    expiry_check: false
-    category: [localization]
-
-# --- DI 注册豁免（已知不需要 container.register 的类型） ---
-# 注意：这些类型在项目代码中存在，但通过 .shared/.environment() 等方式注入
-# expiry_check=false：不参与"已在代码中定义"的过期检测（语义是"不需要注册"非"不存在"）
+- symbol: VoiceOver
+  reason: Apple 辅助功能品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: SiliconFlow
+  reason: AI 服务商品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: OpenAI
+  reason: AI 服务商品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: DeepSeek
+  reason: AI 服务商品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: MiniMax
+  reason: AI 服务商品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Ollama
+  reason: 本地 LLM 服务商品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Anthropic
+  reason: AI 服务商品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: macOS
+  reason: Apple 操作系统品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: iOS
+  reason: Apple 操作系统品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: iPadOS
+  reason: Apple 操作系统品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: watchOS
+  reason: Apple 操作系统品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: GitHub
+  reason: 代码托管平台品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: GitLab
+  reason: 代码托管平台品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Bitbucket
+  reason: 代码托管平台品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: ChatGPT
+  reason: AI 产品品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Claude
+  reason: AI 产品品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Gemini
+  reason: AI 产品品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: CoreML
+  reason: Apple 框架品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Xcode
+  reason: Apple IDE 品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: WebKit
+  reason: Apple WebKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: CloudKit
+  reason: Apple CloudKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: HealthKit
+  reason: Apple HealthKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: MapKit
+  reason: Apple MapKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: ARKit
+  reason: Apple ARKit 框架
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Keychain
+  reason: Apple Security 框架概念
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Keynote
+  reason: Apple 应用品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: Numbers
+  reason: Apple 应用品牌名
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
+- symbol: ZhiYu
+  reason: 本应用名称
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - localization
 di_registration_exempt:
-  - symbol: DatabaseManager
-    reason: 通过 .shared 直接访问，无需 DI 注册
-    added: 2026-08-04
-    expiry_check: false
-    category: [di-registration]
-  - symbol: LoggerProtocol
-    reason: Logger.shared 全局单例，无需 DI 注册
-    added: 2026-08-04
-    expiry_check: false
-    category: [di-registration]
-  - symbol: AppStore
-    reason: 通过 SwiftUI .environment() 注入，无需 DI 注册
-    added: 2026-08-04
-    expiry_check: false
-    category: [di-registration]
-
-# --- CI 环境变量（非 Swift 符号） ---
-ci_variables:
-  - symbol: CI_PIPELINE_STATUS
-    reason: CI 流水线状态环境变量
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SKIP_TESTS
-    reason: CI 跳过测试环境变量
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: SOURCE_DATE_EPOCH
-    reason: SOURCE_DATE_EPOCH 环境变量
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: TERMINATED
-    reason: 进程状态概念词
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Unauthorized
-    reason: HTTP 状态概念词
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AppNotifications
-    reason: 通知概念词
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- 规划中类型（设计文档引用但尚未实现，expiry_check=false 永不过期） ---
-# 语义：这些类型在设计/需求文档中规划但尚未实现，文档引用是"设计意图"非"代码事实"
-# 当某类型被实现后，应主动移除此豁免（但 expiry_check=false 不强制检测）
+- symbol: DatabaseManager
+  reason: 通过 .shared 直接访问，无需 DI 注册
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - di-registration
+- symbol: LoggerProtocol
+  reason: Logger.shared 全局单例，无需 DI 注册
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - di-registration
+- symbol: AppStore
+  reason: 通过 SwiftUI .environment() 注入，无需 DI 注册
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - di-registration
 planned_types:
-  - symbol: GraphView
-    reason: 规划中图谱视图（实际为 GraphContainerView）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PlatformModifiers
-    reason: 规划中平台修饰符集合（实际为 extension View 方法）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PlatformCapabilities
-    reason: 规划中平台能力集合（实际为 BiometricAuthProviderProtocol 等）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PlatformTraits
-    reason: 规划中平台特征集合（实际为 InterfaceIdiom 枚举）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: RouterProtocol
-    reason: 规划中路由协议（实际由 final class Router 直接承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: WidgetEntry
-    reason: 规划中 Widget 通用 Entry（实际为各 Widget 专属 Entry）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: VectorStore
-    reason: 规划中向量存储（实际为 VectorIndexableStore 协议）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: VaultWidgetSyncManager
-    reason: 规划中 Widget 同步管理器（实际为 extension VaultService）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: RetrievalMetricsRepository
-    reason: 规划中检索指标仓储（实际由 RAGGovernanceSQLiteStore 承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: RecursiveChunker
-    reason: 规划中递归分块器（实际仅有 TextChunker 协议）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PrivacySanitizer
-    reason: 规划中隐私清洗器（实际由 isPrivacyModeEnabled 开关承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PrivacyManager
-    reason: 规划中隐私管理器（实际由 SettingsStore.isPrivacyModeEnabled 承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PrivacyCoverManager
-    reason: 规划中隐私覆盖管理器（未实现）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PrivacyBlurOverlayView
-    reason: 规划中隐私模糊视图（实际内联于 MarkdownRendererView）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PluginWatchdog
-    reason: 规划中插件看门狗（实际内嵌于 PluginSandboxGateway）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PluginRateLimiter
-    reason: 规划中插件限流器（未实现）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: PageMetadata
-    reason: 规划中页面元数据类型（实际由 KnowledgePage 模型承载）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: MarkdownTextView
-    reason: 规划中 Markdown 视图（实际为 MarkdownTextViewRepresentable）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: LogServiceProtocol
-    reason: 规划中日志协议（实际由 Logger 单例承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: LogService
-    reason: 规划中日志服务（实际为 Logger）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: LatencyRepository
-    reason: 规划中延迟仓储（实际由 RAGGovernanceSQLiteStore.calculateRetrievalLatency 承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: KnowledgeGraphView
-    reason: 规划中知识图谱视图（实际为 GraphContainerView）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: KnowledgeBase
-    reason: 规划中知识库类型（实际为字符串常量+UI 测试基类名）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: HealthCheckService
-    reason: 规划中健康检查服务（实际由 LintService 承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: GlassStyle
-    reason: 规划中玻璃风格类型（实际为 GlassCardModifier）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: DatabaseSchemaMigrator
-    reason: 文件名/概念引用（实际为 extension DatabaseManager，非独立类型）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: ConflictResolverView
-    reason: 规划中冲突解决视图（实际内嵌于 iCloudSyncView）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: ChatViewModel
-    reason: 规划中 Chat 视图模型（实际由 ChatCoordinator+ChatService 承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AppCloudSyncService
-    reason: 规划中云同步服务（实际为 iCloudSyncService）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: Adapter
-    reason: 概念词（适配器模式，非具体类型）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: ActivityLogService
-    reason: 规划中活动日志服务（实际由 Logger.addLog+LogEntry 承担）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-
-# --- 规划中测试类（文档引用但尚未实现，expiry_check=false 永不过期） ---
+- symbol: GraphView
+  reason: 规划中图谱视图（实际为 GraphContainerView）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PlatformModifiers
+  reason: 规划中平台修饰符集合（实际为 extension View 方法）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PlatformCapabilities
+  reason: 规划中平台能力集合（实际为 BiometricAuthProviderProtocol 等）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PlatformTraits
+  reason: 规划中平台特征集合（实际为 InterfaceIdiom 枚举）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: RouterProtocol
+  reason: 规划中路由协议（实际由 final class Router 直接承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: WidgetEntry
+  reason: 规划中 Widget 通用 Entry（实际为各 Widget 专属 Entry）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: VectorStore
+  reason: 规划中向量存储（实际为 VectorIndexableStore 协议）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: VaultWidgetSyncManager
+  reason: 规划中 Widget 同步管理器（实际为 extension VaultService）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: RetrievalMetricsRepository
+  reason: 规划中检索指标仓储（实际由 RAGGovernanceSQLiteStore 承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: RecursiveChunker
+  reason: 规划中递归分块器（实际仅有 TextChunker 协议）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PrivacySanitizer
+  reason: 规划中隐私清洗器（实际由 isPrivacyModeEnabled 开关承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PrivacyManager
+  reason: 规划中隐私管理器（实际由 SettingsStore.isPrivacyModeEnabled 承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PrivacyCoverManager
+  reason: 规划中隐私覆盖管理器（未实现）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PrivacyBlurOverlayView
+  reason: 规划中隐私模糊视图（实际内联于 MarkdownRendererView）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PluginWatchdog
+  reason: 规划中插件看门狗（实际内嵌于 PluginSandboxGateway）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PluginRateLimiter
+  reason: 规划中插件限流器（未实现）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PageMetadata
+  reason: 规划中页面元数据类型（实际由 KnowledgePage 模型承载）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: MarkdownTextView
+  reason: 规划中 Markdown 视图（实际为 MarkdownTextViewRepresentable）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: LogServiceProtocol
+  reason: 规划中日志协议（实际由 Logger 单例承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: LogService
+  reason: 规划中日志服务（实际为 Logger）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: LatencyRepository
+  reason: 规划中延迟仓储（实际由 RAGGovernanceSQLiteStore.calculateRetrievalLatency 承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: KnowledgeGraphView
+  reason: 规划中知识图谱视图（实际为 GraphContainerView）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: KnowledgeBase
+  reason: 规划中知识库类型（实际为字符串常量+UI 测试基类名）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: HealthCheckService
+  reason: 规划中健康检查服务（实际由 LintService 承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GlassStyle
+  reason: 规划中玻璃风格类型（实际为 GlassCardModifier）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DatabaseSchemaMigrator
+  reason: 文件名/概念引用（实际为 extension DatabaseManager，非独立类型）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ConflictResolverView
+  reason: 规划中冲突解决视图（实际内嵌于 iCloudSyncView）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ChatViewModel
+  reason: 规划中 Chat 视图模型（实际由 ChatCoordinator+ChatService 承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AppCloudSyncService
+  reason: 规划中云同步服务（实际为 iCloudSyncService）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Adapter
+  reason: 概念词（适配器模式，非具体类型）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ActivityLogService
+  reason: 规划中活动日志服务（实际由 Logger.addLog+LogEntry 承担）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 planned_test_classes:
-  - symbol: WatchOCRServiceTests
-    reason: 规划中 WatchOCR 测试类（实际为 WatchPlatformTests.testWatchOCRServiceStub）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: OnDeviceLLMServiceTests
-    reason: 规划中 OnDeviceLLM 测试类（未实现）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: RecapTests
-    reason: 规划中 Recap 测试类（实际为 DailyRecap 相关测试）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: GraphNodeUITests
-    reason: 规划中 GraphNode UI 测试类（未实现）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: GraphCanvasUITests
-    reason: 规划中 GraphCanvas UI 测试类（未实现）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: DatabaseIntegrityTests
-    reason: 规划中数据库完整性测试类（实际为 SecurityIntegrityTests）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
-  - symbol: AuditLoggerTests
-    reason: 规划中审计日志测试类（未实现）
-    added: 2026-08-04
-    expiry_check: false
-    category: [doc-drift]
+- symbol: WatchOCRServiceTests
+  reason: 规划中 WatchOCR 测试类（实际为 WatchPlatformTests.testWatchOCRServiceStub）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: OnDeviceLLMServiceTests
+  reason: 规划中 OnDeviceLLM 测试类（未实现）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: RecapTests
+  reason: 规划中 Recap 测试类（实际为 DailyRecap 相关测试）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GraphNodeUITests
+  reason: 规划中 GraphNode UI 测试类（未实现）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GraphCanvasUITests
+  reason: 规划中 GraphCanvas UI 测试类（未实现）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DatabaseIntegrityTests
+  reason: 规划中数据库完整性测试类（实际为 SecurityIntegrityTests）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AuditLoggerTests
+  reason: 规划中审计日志测试类（未实现）
+  added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
 business_magic_exempt:
-  - file: Sources/Core/Base/Extensions/String+PhoneNumber.swift
-    line: 16
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Base/Extensions/String+PhoneNumber.swift
-    line: 17
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Base/Utils/AppError.swift
-    line: 55
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Base/Utils/SnapshotService.swift
-    line: 78
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Base/Utils/ZipUtility.swift
-    line: 48
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Base/Utils/ZipUtility.swift
-    line: 56
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Base/Utils/ZipUtility.swift
-    line: 66
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Base/Utils/ZipUtility.swift
-    line: 99
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Logger/Logger.swift
-    line: 383
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Logger/Logger.swift
-    line: 386
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Logger/Logger.swift
-    line: 387
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Logger/Logger.swift
-    line: 390
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Performance/PerformanceService.swift
-    line: 118
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Performance/PerformanceService.swift
-    line: 125
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Security/CoreMLModerationClassifier.swift
-    line: 46
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/System/Workflow/AudioSplitter.swift
-    line: 22
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Utils/RetryTask.swift
-    line: 29
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Utils/RetryTask.swift
-    line: 31
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Core/Utils/RetryTask.swift
-    line: 32
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/Adapters/NativeMemoryEngine.swift
-    line: 26
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/Adapters/NativeMemoryEngine.swift
-    line: 41
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/Adapters/SwarmMemoryAdapter.swift
-    line: 27
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/Adapters/SwarmMemoryAdapter.swift
-    line: 42
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/ChatLLMService.swift
-    line: 64
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/ChatRunner.swift
-    line: 86
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/ChatRunner.swift
-    line: 151
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/ChatRunner.swift
-    line: 367
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/ChatRunner.swift
-    line: 370
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMChatService.swift
-    line: 90
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMChatService.swift
-    line: 93
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMClient.swift
-    line: 114
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMClient.swift
-    line: 115
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMClient.swift
-    line: 117
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMClient.swift
-    line: 185
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMClient.swift
-    line: 260
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMClient.swift
-    line: 261
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMClient.swift
-    line: 280
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 123
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 217
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 218
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 219
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 220
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 221
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 222
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 223
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 224
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 261
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
-    line: 262
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMModels.swift
-    line: 356
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMRefactorService.swift
-    line: 81
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMRetrievalService.swift
-    line: 100
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMService.swift
-    line: 240
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMService.swift
-    line: 241
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMService.swift
-    line: 258
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMService.swift
-    line: 286
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/LLMService.swift
-    line: 296
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/OnDeviceLLMService.swift
-    line: 274
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/LLM/OnDeviceLLMService.swift
-    line: 293
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Network/ModelDownloadManager.swift
-    line: 199
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Network/ModelDownloadManager.swift
-    line: 319
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Network/NetworkClient.swift
-    line: 73
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Network/NetworkClient.swift
-    line: 158
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Network/NetworkClient.swift
-    line: 187
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Network/RemoteConfigService.swift
-    line: 41
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
-    line: 20
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
-    line: 27
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
-    line: 62
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
-    line: 65
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Plugins/JavaScriptPlugin.swift
-    line: 250
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Plugins/PluginLoader.swift
-    line: 87
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Plugins/PluginLoader.swift
-    line: 266
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Plugins/PluginMarketService.swift
-    line: 246
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Plugins/PluginMarketService.swift
-    line: 407
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Plugins/PluginSandboxGateway.swift
-    line: 34
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/DocumentSanitizerProtocol.swift
-    line: 28
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/DocumentSanitizerProtocol.swift
-    line: 30
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/ExcelProcessor.swift
-    line: 58
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor+BlockParsing.swift
-    line: 98
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor+BlockParsing.swift
-    line: 167
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
-    line: 285
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
-    line: 288
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
-    line: 291
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
-    line: 294
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
-    line: 297
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
-    line: 300
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Graph/GraphCommunityProcessor.swift
-    line: 280
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
-    line: 45
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
-    line: 66
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
-    line: 182
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
-    line: 192
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
-    line: 254
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 94
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 126
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 129
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 133
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 142
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 143
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 144
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 154
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 157
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 159
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 161
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 165
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 167
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-    line: 169
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 139
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 142
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 173
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 174
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 176
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 220
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 221
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
-    line: 225
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/QuizProcessor.swift
-    line: 291
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 117
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 396
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 399
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 419
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 427
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 430
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 456
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 489
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 494
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
-    line: 504
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Engine/SQLiteStore.swift
-    line: 27
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift
-    line: 299
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Repositories/RAGGovernanceSQLiteStore.swift
-    line: 429
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Repositories/RAGGovernanceSQLiteStore.swift
-    line: 485
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Repositories/SQLitePluginRepository.swift
-    line: 102
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
-    line: 17
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
-    line: 41
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
-    line: 44
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
-    line: 45
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
-    line: 20
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
-    line: 115
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
-    line: 208
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
-    line: 224
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
-    line: 43
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
-    line: 44
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
-    line: 96
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
-    line: 143
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
-    line: 168
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
-    line: 200
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift
-    line: 153
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift
-    line: 162
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift
-    line: 194
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/VectorDB/ContextReranker.swift
-    line: 29
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/VectorDB/ContextReranker.swift
-    line: 30
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/VectorDB/ContextReranker.swift
-    line: 47
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
-    line: 125
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
-    line: 147
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
-    line: 193
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
-  - file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
-    line: 194
-    reason: "存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）"
-    expiry_check: false
+- file: Sources/Core/Base/Extensions/String+PhoneNumber.swift
+  line: 16
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Base/Extensions/String+PhoneNumber.swift
+  line: 17
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Base/Utils/AppError.swift
+  line: 55
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Base/Utils/SnapshotService.swift
+  line: 78
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Base/Utils/ZipUtility.swift
+  line: 48
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Base/Utils/ZipUtility.swift
+  line: 56
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Base/Utils/ZipUtility.swift
+  line: 66
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Base/Utils/ZipUtility.swift
+  line: 99
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Logger/Logger.swift
+  line: 383
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Logger/Logger.swift
+  line: 386
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Logger/Logger.swift
+  line: 387
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Logger/Logger.swift
+  line: 390
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Performance/PerformanceService.swift
+  line: 118
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Performance/PerformanceService.swift
+  line: 125
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Security/CoreMLModerationClassifier.swift
+  line: 46
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/System/Workflow/AudioSplitter.swift
+  line: 22
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Utils/RetryTask.swift
+  line: 29
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Utils/RetryTask.swift
+  line: 31
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Core/Utils/RetryTask.swift
+  line: 32
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Network/ModelDownloadManager.swift
+  line: 199
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Network/ModelDownloadManager.swift
+  line: 319
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Network/NetworkClient.swift
+  line: 73
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Network/NetworkClient.swift
+  line: 158
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Network/NetworkClient.swift
+  line: 187
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Network/RemoteConfigService.swift
+  line: 41
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
+  line: 20
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
+  line: 27
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
+  line: 62
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
+  line: 65
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Plugins/JavaScriptPlugin.swift
+  line: 250
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Plugins/PluginLoader.swift
+  line: 87
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Plugins/PluginLoader.swift
+  line: 266
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Plugins/PluginMarketService.swift
+  line: 246
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Plugins/PluginMarketService.swift
+  line: 407
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Plugins/PluginSandboxGateway.swift
+  line: 34
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/DocumentSanitizerProtocol.swift
+  line: 28
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/DocumentSanitizerProtocol.swift
+  line: 30
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/ExcelProcessor.swift
+  line: 58
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor+BlockParsing.swift
+  line: 98
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor+BlockParsing.swift
+  line: 167
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
+  line: 285
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
+  line: 288
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
+  line: 291
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
+  line: 294
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
+  line: 297
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Document/MarkdownProcessor.swift
+  line: 300
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Graph/GraphCommunityProcessor.swift
+  line: 280
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
+  line: 45
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
+  line: 66
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
+  line: 182
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
+  line: 192
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
+  line: 254
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 94
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 126
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 129
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 133
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 142
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 143
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 144
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 154
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 157
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 159
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 161
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 165
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 167
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
+  line: 169
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 139
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 142
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 173
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 174
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 176
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 220
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 221
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift
+  line: 225
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/QuizProcessor.swift
+  line: 291
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 117
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 396
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 399
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 419
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 427
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 430
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 456
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 489
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 494
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Processors/Synthesis/SynthesisProcessor.swift
+  line: 504
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Engine/SQLiteStore.swift
+  line: 27
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift
+  line: 299
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Repositories/RAGGovernanceSQLiteStore.swift
+  line: 429
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Repositories/RAGGovernanceSQLiteStore.swift
+  line: 485
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Repositories/SQLitePluginRepository.swift
+  line: 102
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
+  line: 17
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
+  line: 41
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
+  line: 44
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoAudioBuilder.swift
+  line: 45
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
+  line: 20
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
+  line: 115
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
+  line: 208
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift
+  line: 224
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
+  line: 43
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
+  line: 44
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
+  line: 96
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
+  line: 143
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
+  line: 168
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift
+  line: 200
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift
+  line: 153
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift
+  line: 162
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift
+  line: 194
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/VectorDB/ContextReranker.swift
+  line: 29
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/VectorDB/ContextReranker.swift
+  line: 30
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/VectorDB/ContextReranker.swift
+  line: 47
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
+  line: 125
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
+  line: 147
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
+  line: 193
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false
+- file: Sources/Infrastructure/VectorDB/EmbeddingManager.swift
+  line: 194
+  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
+  expiry_check: false

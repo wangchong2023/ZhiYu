@@ -63,8 +63,8 @@ final class QueryRerankerDegradationTests: XCTestCase {
         config.apiKey = "test-key"
         let reranker = QueryReranker()
         let chunks = [
-            PageChunk(id: "test_0", pageID: UUID(), chunkType: "text", content: "c1", anchorPath: nil, index: 0),
-            PageChunk(id: "test_1", pageID: UUID(), chunkType: "text", content: "c2", anchorPath: nil, index: 1)
+            PageChunk(id: "test_0", pageID: UUID(), chunkType: .text, content: "c1", anchorPath: nil, index: 0),
+            PageChunk(id: "test_1", pageID: UUID(), chunkType: .text, content: "c2", anchorPath: nil, index: 1)
         ]
         let result = await reranker.rerankChunks(query: "Q", chunks: chunks)
         XCTAssertEqual(result.count, 2, "isEnabled=false 时应降级返回原始 chunks")

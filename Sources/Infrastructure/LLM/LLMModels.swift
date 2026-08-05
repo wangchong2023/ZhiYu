@@ -9,6 +9,7 @@
 //  核心职责：大语言模型客户端：多提供商适配、流式响应解析、端侧推理。
 //
 import Foundation
+import UFPCore
 
 // MARK: - LLM 提供商元数据
 
@@ -353,7 +354,7 @@ final class LLMConfigStore: ObservableObject {
                     return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
                 }
                 // 3. 兼容合法格式的明文存储（如 sk- 开头且满足最小长度要求）
-                if trimmed.hasPrefix("sk-") || trimmed.count >= 20 {
+                if trimmed.hasPrefix(LLMConstants.ApiKey.prefix) || trimmed.count >= LLMConstants.ApiKey.minLength {
                     return trimmed
                 }
                 Logger.shared.error("[LLMConfigStore] API 密钥解密失败 (provider: \(provider))，请重新配置")

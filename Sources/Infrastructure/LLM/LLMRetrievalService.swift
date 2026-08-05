@@ -9,6 +9,7 @@
 //  核心职责：实现 LLMRetrieval 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// LLM 检索增强服务
 /// 负责对原始查询进行优化，并对初步召回的结果执行语义精排。
@@ -97,7 +98,7 @@ final class LLMRetrievalService: Sendable {
     func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] {
         guard !chunks.isEmpty else { return chunks }
 
-        let candidates = chunks.prefix(10)
+        let candidates = chunks.prefix(LLMConstants.Rerank.candidateCount)
         let context = candidates.enumerated().map { "[\($0)] \($1.content)" }.joined(separator: "\n\n")
 
         let prompt = L10n.AI.Prompt.rerankUserPrompt(query: query, context: context)

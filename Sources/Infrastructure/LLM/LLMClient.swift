@@ -9,6 +9,7 @@
 //  核心职责：大语言模型客户端：多提供商适配、流式响应解析、端侧推理。
 //
 import Foundation
+import UFPCore
 
 // MARK: - LLM 客户端协议
 
@@ -111,10 +112,10 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
             throw LLMError.invalidResponse
         }
 
-        if httpResponse.statusCode == 401 { throw LLMError.unauthorized }
-        if httpResponse.statusCode == 429 { throw LLMError.rateLimited }
+        if httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.unauthorized { throw LLMError.unauthorized }
+        if httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.rateLimited { throw LLMError.rateLimited }
 
-        guard httpResponse.statusCode == 200 else {
+        guard httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok else {
             if let errorBody = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let error = errorBody["error"] as? [String: Any],
                let message = error["message"] as? String {
@@ -182,7 +183,7 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
         let (bytes, response) = try await URLSession.shared.bytes(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+              httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok else {
             throw LLMError.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)
         }
 
@@ -257,8 +258,8 @@ final class SSEParser {
 
     /// 诊断日志记录器：仅在前 15 行内记录 SSE 原始行内容供排查格式兼容问题。
     private static func logDiagnosticLine(line: String, lineCount: Int, logger: (any LoggerProtocol)?, rawLines: inout [String]) {
-        guard let logger, lineCount <= 15 else { return }
-        let preview = String(line.prefix(250))
+        guard let logger, lineCount <= LLMConstants.LogPreview.maxDiagnosticLines else { return }
+        let preview = String(line.prefix(LLMConstants.LogPreview.diagnosticLineLength))
         rawLines.append(preview)
         if !preview.isEmpty {
             logger.debug("[SSE] L\(lineCount): \(preview)")
@@ -277,7 +278,7 @@ final class SSEParser {
         guard let data = dataString.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             if let logger, !dataString.isEmpty {
-                logger.debug("[SSE] 跳过非 JSON 行: \(String(dataString.prefix(120)))")
+                logger.debug("[SSE] 跳过非 JSON 行: \(String(dataString.prefix(LLMConstants.LogPreview.sseNonJsonLength)))")
             }
             return nil
         }

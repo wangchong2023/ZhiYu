@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import os
 
 /// 自研生产级分层对话记忆引擎
@@ -23,7 +24,7 @@ public final class NativeMemoryEngine: MemoryEngineProtocol, @unchecked Sendable
 
     public func processMemory(
         history: [ChatMessageDTO],
-        recentCount: Int = 5
+        recentCount: Int = LLMConstants.Memory.recentCountDefault
     ) async -> (summary: String?, recentMessages: [ChatMessageDTO]) {
         guard !history.isEmpty else {
             return (nil, [])
@@ -38,7 +39,7 @@ public final class NativeMemoryEngine: MemoryEngineProtocol, @unchecked Sendable
         let recent = Array(history.suffix(recentCount))
 
         let summaryText = older.map { "\($0.role.rawValue): \($0.content)" }.joined(separator: " | ")
-        let summary = "[Conversation Background Summary: \(summaryText.prefix(300))]"
+        let summary = "[Conversation Background Summary: \(summaryText.prefix(LLMConstants.LogPreview.memorySummaryLength))]"
 
         return (summary, recent)
     }

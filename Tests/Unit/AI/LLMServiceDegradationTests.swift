@@ -124,7 +124,7 @@ final class LLMServiceDegradationTests: XCTestCase {
 
     func testRerankChunksReturnsOriginalWhenRerankerMissing() async {
         let service = LLMService()
-        let chunks = [PageChunk(id: "test_0", pageID: UUID(), chunkType: "text", content: "chunk", anchorPath: nil, index: 0)]
+        let chunks = [PageChunk(id: "test_0", pageID: UUID(), chunkType: .text, content: "chunk", anchorPath: nil, index: 0)]
         let result = await service.rerankChunks(query: "Q", chunks: chunks)
         XCTAssertEqual(result.count, 1, "未注册 Reranker 时 rerankChunks 应降级返回原始 chunks")
     }

@@ -271,15 +271,15 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     // MARK: - 端侧智能导入 (Smart Ingest)
     /// 借助本地大模型对原始碎片内容进行概念提取、标签归类与自动化格式对齐
     func smartIngestOnDevice(title: String, content: String, pages: [KnowledgePage]) async throws -> SmartIngestResult {
-        let existingTitles = pages.map(\.title).prefix(20).joined(separator: ", ")
+        let existingTitles = pages.map(\.title).prefix(LLMConstants.SmartIngest.existingTitlesCount).joined(separator: ", ")
 
         let prompt = """
-        \("Compile_to_knowledge:")\(existingTitles)
+        \(L10n.AI.OnDevice.Ingest.compileToKnowledge):\(existingTitles)
 
-        \("Title:")\(title)
-        \("Content:")\(content)
+        \(L10n.AI.OnDevice.Ingest.titleLabel):\(title)
+        \(L10n.AI.OnDevice.Ingest.contentLabel):\(content)
 
-        \("Retain_all_links_and_formats.")
+        \(L10n.AI.OnDevice.Ingest.retainLinks)
         """
 
         let generated = try await generate(prompt: prompt, maxTokens: Config.smartIngestMaxTokens)
@@ -288,9 +288,9 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
             title: title,
             compiledContent: generated,
             suggestedTags: extractTags(from: generated),
-            suggestedType: "concept",
+            suggestedType: PageType.concept.rawValue,
             relatedTitles: [],
-            summary: String(generated.prefix(100))
+            summary: String(generated.prefix(LLMConstants.LogPreview.smartIngestSummaryLength))
         )
     }
 

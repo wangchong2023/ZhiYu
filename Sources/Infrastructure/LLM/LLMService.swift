@@ -237,8 +237,8 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
     /// 带 Jitter 的指数退避重试回路 (Exponential Backoff with Jitter)
     /// 遭遇网络抖动或 503 超时，最多重试 3 次
     func executeWithBackoffRetry<T: Sendable>(
-        maxAttempts: Int = 3,
-        initialDelaySeconds: Double = 0.5,
+        maxAttempts: Int = LLMConstants.Retry.maxAttempts,
+        initialDelaySeconds: Double = LLMConstants.Retry.initialDelaySeconds,
         operation: @Sendable () async throws -> T
     ) async throws -> T {
         guard maxAttempts > 0 else {
@@ -255,7 +255,7 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
                 let jitter = Double.random(in: 0.8...1.2)
                 let sleepNanoseconds = UInt64(currentDelay * jitter * 1_000_000_000)
                 try? await Task.sleep(nanoseconds: sleepNanoseconds)
-                currentDelay *= 2.0
+                currentDelay *= LLMConstants.Retry.backoffMultiplier
             }
         }
         // 防御性兜底：理论上不可达，但保留以防逻辑变更遗漏
@@ -283,7 +283,7 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
                     break
             }
 
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
+            let latency = Int(Date().timeIntervalSince(start) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
             return ValidationResult(
                 isSuccess: true,
                 latencyMS: latency,
@@ -293,7 +293,7 @@ class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
                 errorMessage: nil
             )
         } catch {
-            let latency = Int(Date().timeIntervalSince(start) * 1000)
+            let latency = Int(Date().timeIntervalSince(start) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
             var code = "ERR"
             if let llmErr = error as? LLMError {
                 switch llmErr {

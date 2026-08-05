@@ -9,6 +9,7 @@
 //  核心职责：实现 LLMChat 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// LLM 对话服务
 /// 负责将系统提示词、用户查询及历史记录转换为 API 请求，并解析响应。
@@ -87,10 +88,10 @@ final class LLMChatService: Sendable {
         // 诊断日志：记录发送给模型的消息概览
         if let logger {
             let msgCount = (requestBody["messages"] as? [[String: Any]])?.count ?? 0
-            let sysPreview = String(systemPrompt.prefix(300))
+            let sysPreview = String(systemPrompt.prefix(LLMConstants.LogPreview.systemPromptLength))
             logger.debug("[LLMChat] 发送流式请求 — \(msgCount) 条消息, model=\(model)")
-            logger.debug("[LLMChat] SystemPrompt(前300): \(sysPreview)")
-            logger.debug("[LLMChat] Query: \(String(query.prefix(200)))")
+            logger.debug("[LLMChat] SystemPrompt(前\(LLMConstants.LogPreview.systemPromptLength)): \(sysPreview)")
+            logger.debug("[LLMChat] Query: \(String(query.prefix(LLMConstants.LogPreview.queryLength)))")
         }
 
         let task = Task {

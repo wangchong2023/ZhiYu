@@ -199,6 +199,14 @@ extension L10n {
                 public static var memory: String { AI.tr("ondevice.info.memory") }
             }
 
+            /// 端侧智能导入 Prompt 片段
+            public enum Ingest {
+                public static var compileToKnowledge: String { AI.tr("ondevice.ingest.compileToKnowledge") }
+                public static var titleLabel: String { AI.tr("ondevice.ingest.title") }
+                public static var contentLabel: String { AI.tr("ondevice.ingest.content") }
+                public static var retainLinks: String { AI.tr("ondevice.ingest.linkAndFormat") }
+            }
+
             /// error格式化
             /// - Parameter code: code
             /// - Returns: 字符串

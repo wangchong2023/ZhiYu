@@ -83,8 +83,8 @@ final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
  
         let startTime = Date()
         let response = try await client.sendRequest(body: body)
-        let latency = Int(Date().timeIntervalSince(startTime) * 1000)
- 
+        let latency = Int(Date().timeIntervalSince(startTime) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
+
         // 审计调用时长与 Token 开销
         analytics.recordUsage(model: configManager.model, response: response, latency: latency)
  
@@ -148,7 +148,7 @@ final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
         TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.8, stage: .synthesis))
         let startTime = Date()
         let response = try await chatService.chat(systemPrompt: anonSystemPrompt, query: anonQuery, history: anonHistory)
-        let latency = Int(Date().timeIntervalSince(startTime) * 1000)
+        let latency = Int(Date().timeIntervalSince(startTime) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
  
         // 🔓 端侧还原 (SR-12)
         let deanonymizedResponse = contextBuilder.deanonymize(response, mapping: currentMapping)
@@ -364,10 +364,10 @@ struct StreamDeanonymizer: Sendable {
                 } else {
                     // 没找到 ']'，说明可能占位符被分包切断了，剩下的缓存入 buffer
                     let remaining = String(text[openBracketRange.lowerBound...])
-                    if remaining.count > 25 {
-                        // 如果长度过长（如超过 25 字符），说明这不是一个合法的实体占位符，输出前段
-                        output += String(remaining.prefix(remaining.count - 10))
-                        buffer = String(remaining.suffix(10))
+                    if remaining.count > LLMConstants.EntityPlaceholder.maxRawLength {
+                        // 如果长度过长（如超过 \(LLMConstants.EntityPlaceholder.maxRawLength) 字符），说明这不是一个合法的实体占位符，输出前段
+                        output += String(remaining.prefix(remaining.count - LLMConstants.EntityPlaceholder.bufferSuffixLength))
+                        buffer = String(remaining.suffix(LLMConstants.EntityPlaceholder.bufferSuffixLength))
                     } else {
                         buffer = remaining
                     }

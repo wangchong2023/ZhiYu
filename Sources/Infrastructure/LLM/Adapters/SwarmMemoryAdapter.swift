@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import UFPCore
 import os
 
 /// 开源 Swarm / Wax 记忆框架挂载适配器
@@ -24,7 +25,7 @@ public final class SwarmMemoryAdapter: MemoryEngineProtocol, @unchecked Sendable
 
     public func processMemory(
         history: [ChatMessageDTO],
-        recentCount: Int = 5
+        recentCount: Int = LLMConstants.Memory.recentCountDefault
     ) async -> (summary: String?, recentMessages: [ChatMessageDTO]) {
         guard !history.isEmpty else {
             return (nil, [])
@@ -39,7 +40,7 @@ public final class SwarmMemoryAdapter: MemoryEngineProtocol, @unchecked Sendable
 
         // 模拟/封装开源 Swarm Agent 状态下的记忆切片提取
         let summaryText = older.map { "\($0.role.rawValue): \($0.content)" }.joined(separator: " | ")
-        let summary = "[Swarm Agent Memory State: \(summaryText.prefix(300))]"
+        let summary = "[Swarm Agent Memory State: \(summaryText.prefix(LLMConstants.LogPreview.memorySummaryLength))]"
 
         return (summary, recent)
     }

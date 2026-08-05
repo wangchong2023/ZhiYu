@@ -120,7 +120,7 @@ final class LLMContextBuilder: Sendable {
         for res in searchResults.sorted(by: { $0.score > $1.score }) {
             let chunkLen = res.chunk.content.count
             if currentLength + chunkLen > maxContextLength {
-                if res.chunk.chunkType == "summary" || res.score > 0.8 {
+                if res.chunk.chunkType == .summary || res.score > LLMConstants.ContextCompression.summaryScoreThreshold {
                     compressedResults.append(res)
                     currentLength += chunkLen
                 }
@@ -144,7 +144,7 @@ final class LLMContextBuilder: Sendable {
                 for (chunk, score) in results.sorted(by: { $0.score > $1.score }) {
                     let relevanceLabel = L10n.AI.Prompt.relevanceScore
                     let typeLabel = L10n.AI.Prompt.chunkType
-                    rawContext += "\n> [\(relevanceLabel): \(String(format: "%.4f", score)) | \(typeLabel): \(chunk.chunkType)]\n"
+                    rawContext += "\n> [\(relevanceLabel): \(String(format: "%.4f", score)) | \(typeLabel): \(chunk.chunkType.rawValue)]\n"
                     rawContext += chunk.content
                     rawContext += "\n"
                     
@@ -258,8 +258,8 @@ final class LLMContextBuilder: Sendable {
                     
                     // 仅对有效长度的敏感实体进行遮掩，避免过短噪音，且避免重复分配
                     if original.count >= 2 && reversedMapping[original] == nil {
-                        let character = Character(UnicodeScalar(UInt8(65 + (count % 26))))
-                        let suffix = count >= 26 ? "\(count / 26)" : ""
+                        let character = Character(UnicodeScalar(UInt8(LLMConstants.Anonymization.asciiUppercaseA) + UInt8(count % LLMConstants.Anonymization.alphabetSize)))
+                        let suffix = count >= LLMConstants.Anonymization.alphabetSize ? "\(count / LLMConstants.Anonymization.alphabetSize)" : ""
                         let placeholder = "[ENTITY_\(character)\(suffix)]"
                         
                         mapping[placeholder] = original

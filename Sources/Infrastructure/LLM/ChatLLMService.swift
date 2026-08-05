@@ -61,7 +61,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
         
         let startTime = Date()
         let response = try await client.sendRequest(body: body)
-        let latency = Int(Date().timeIntervalSince(startTime) * 1000)
+        let latency = Int(Date().timeIntervalSince(startTime) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
         
         analytics.recordUsage(model: configManager.model, response: response, latency: latency)
         

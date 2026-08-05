@@ -48,7 +48,7 @@ public struct ContextReranker: Sendable {
             }
 
             // 摘要类型切片赋予 1.1x 权重倾斜，避免局部噪点覆盖全文核心
-            let typeMultiplier: Float = item.chunk.chunkType == "summary" ? 1.1 : 1.0
+            let typeMultiplier: Float = item.chunk.chunkType == .summary ? 1.1 : 1.0
             let finalScore = (item.score + keywordBonus) * typeMultiplier
 
             return (chunk: item.chunk, score: finalScore)

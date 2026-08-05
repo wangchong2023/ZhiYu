@@ -17,7 +17,7 @@ public struct PageChunk: Identifiable, Codable, Sendable {
     public var id: String        // 格式: pageID_index 或特定前缀
     public var pageID: UUID
     public var parentID: String?  // 父块 ID (用于层级索引)
-    public var chunkType: String  // "regular", "summary", "qa_pair"
+    public var chunkType: ChunkType  // 分块类型枚举（regular/summary/child/qa_pair/paragraph/text）
     public var content: String
     public var anchorPath: String? // 语义层级路径 (例如: " > ")
     public var index: Int         // 排序索引
@@ -44,7 +44,7 @@ public struct PageChunk: Identifiable, Codable, Sendable {
         id: String,
         pageID: UUID,
         parentID: String? = nil,
-        chunkType: String = "regular",
+        chunkType: ChunkType = .regular,
         content: String,
         anchorPath: String? = nil,
         index: Int,

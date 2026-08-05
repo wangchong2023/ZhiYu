@@ -38,7 +38,7 @@ final class LLMContextBuilderPrecisionTests: XCTestCase {
             let chunk = PageChunk(
                 id: "chunk_neg_\(i)",
                 pageID: pageID,
-                chunkType: "paragraph",
+                chunkType: .paragraph,
                 content: "Unrelated noise text \(i)",
                 index: i
             )
