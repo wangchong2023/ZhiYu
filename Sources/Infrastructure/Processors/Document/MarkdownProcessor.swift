@@ -104,7 +104,7 @@ final class MarkdownProcessor: Sendable {
     /// - Parameter content: 需要解析的原始 Markdown 文本。
     /// - Returns: 解析完成后的 `BlockType` 物理块数组。
     func parse(_ content: String) -> [BlockType] {
-        let lines = content.components(separatedBy: "\n")
+        let lines = content.components(separatedBy: ProcessorConstants.Whitespace.newline)
         var blocks: [BlockType] = []
         var i = 0
 

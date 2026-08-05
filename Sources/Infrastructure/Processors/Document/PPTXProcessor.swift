@@ -71,13 +71,13 @@ final class PPTXProcessor {
     /// 将 Markdown 文本解析为 Slide 数组：按 `## ` 分割为幻灯片，提取标题与列表项。
     private func parseMarkdown(_ markdown: String) -> [Slide] {
         var slides: [Slide] = []
-        let parts = markdown.components(separatedBy: "\n## ")
+        let parts = markdown.components(separatedBy: ProcessorConstants.MarkdownSyntax.sectionBreak)
 
         for (index, part) in parts.enumerated() {
             let lines = part.components(separatedBy: .newlines)
-            let title = lines.first?.replacingOccurrences(of: "# ", with: "").trimmingCharacters(in: .whitespaces) ?? "Slide \(index + 1)"
-            let bullets = lines.dropFirst().filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("- ") || $0.trimmingCharacters(in: .whitespaces).hasPrefix("* ") }
-                .map { $0.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "- ", with: "").replacingOccurrences(of: "* ", with: "") }
+            let title = lines.first?.replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.h1Prefix, with: "").trimmingCharacters(in: .whitespaces) ?? "Slide \(index + 1)"
+            let bullets = lines.dropFirst().filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix(ProcessorConstants.MarkdownSyntax.bulletDash) || $0.trimmingCharacters(in: .whitespaces).hasPrefix(ProcessorConstants.MarkdownSyntax.bulletAsterisk) }
+                .map { $0.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.bulletDash, with: "").replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.bulletAsterisk, with: "") }
 
             slides.append(Slide(title: title, bullets: bullets))
         }

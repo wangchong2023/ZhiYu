@@ -25,7 +25,7 @@ public enum MermaidSanitizer {
             if trimmed.isEmpty { continue }
 
             // 保留标题、关键字、结构声明
-            if trimmed.hasPrefix("#") || trimmed.hasPrefix("```") || trimmed == "mindmap" || trimmed.hasPrefix("graph") || trimmed.hasPrefix("flowchart") {
+            if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.hash) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) || trimmed == ProcessorConstants.MermaidSyntax.mindmap || trimmed.hasPrefix(ProcessorConstants.MermaidSyntax.graph) || trimmed.hasPrefix(ProcessorConstants.MermaidSyntax.flowchart) {
                 sanitizedLines.append(line)
                 continue
             }
@@ -35,7 +35,7 @@ public enum MermaidSanitizer {
             sanitizedLines.append(sanitizedLine)
         }
 
-        return sanitizedLines.joined(separator: "\n")
+        return sanitizedLines.joined(separator: ProcessorConstants.Whitespace.newline)
     }
 
     /// 行级节点文本引用与符号转义
@@ -44,8 +44,8 @@ public enum MermaidSanitizer {
         // 采用两步策略：
         // 1. 先匹配不含 ] 的标准 NodeID[Label]（兼容原有行为）
         // 2. 再匹配含嵌套 ] 的 NodeID[Label[...]]（新增支持）
-        let standardRegex = try? NSRegularExpression(pattern: #"([A-Za-z0-9_\-]+)\[([^"\]]+)\]"#)
-        let nestedRegex = try? NSRegularExpression(pattern: #"([A-Za-z0-9_\-]+)\[([^"\]]*\[[^\]]*\][^"\]]*)\]"#)
+        let standardRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.mermaidNodeStandard)
+        let nestedRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.mermaidNodeNested)
         var result = line
 
         // 先处理嵌套方括号（更具体的模式优先）
@@ -58,9 +58,8 @@ public enum MermaidSanitizer {
                 let nodeID = String(line[idRange])
                 let labelText = String(line[labelRange]).trimmingCharacters(in: .whitespaces)
 
-                let specialChars: [Character] = [":", "(", ")", "[", "]"]
-                if labelText.contains(where: { specialChars.contains($0) }) {
-                    let replacement = "\(nodeID)[\"\(labelText)\"]"
+                if labelText.contains(where: { ProcessorConstants.Synthesis.mermaidSpecialChars.contains($0) }) {
+                    let replacement = "\(nodeID)\(ProcessorConstants.Synthesis.mermaidQuotedNodeOpen)\(labelText)\(ProcessorConstants.Synthesis.mermaidQuotedNodeClose)"
                     result.replaceSubrange(fullRange, with: replacement)
                 }
             }
@@ -76,9 +75,8 @@ public enum MermaidSanitizer {
                 let nodeID = String(result[idRange])
                 let labelText = String(result[labelRange]).trimmingCharacters(in: .whitespaces)
 
-                let specialChars: [Character] = [":", "(", ")", "[", "]"]
-                if labelText.contains(where: { specialChars.contains($0) }) {
-                    let replacement = "\(nodeID)[\"\(labelText)\"]"
+                if labelText.contains(where: { ProcessorConstants.Synthesis.mermaidSpecialChars.contains($0) }) {
+                    let replacement = "\(nodeID)\(ProcessorConstants.Synthesis.mermaidQuotedNodeOpen)\(labelText)\(ProcessorConstants.Synthesis.mermaidQuotedNodeClose)"
                     result.replaceSubrange(fullRange, with: replacement)
                 }
             }

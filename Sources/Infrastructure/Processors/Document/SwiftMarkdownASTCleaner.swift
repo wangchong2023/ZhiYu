@@ -21,20 +21,20 @@ public enum SwiftMarkdownASTCleaner {
         var result = markdown
 
         // 1. 自动补全未闭合的 ``` 代码块
-        let fenceCount = result.components(separatedBy: "```").count - 1
+        let fenceCount = result.components(separatedBy: ProcessorConstants.MarkdownSyntax.codeFence).count - 1
         if fenceCount % 2 != 0 {
-            result.append("\n```\n")
+            result.append(ProcessorConstants.Whitespace.newline + ProcessorConstants.MarkdownSyntax.codeFence + ProcessorConstants.Whitespace.newline)
         }
 
         // 2. 补全未闭合的粗体/斜体语法标记
-        let asteriskCount = result.components(separatedBy: "**").count - 1
+        let asteriskCount = result.components(separatedBy: ProcessorConstants.MarkdownSyntax.bold).count - 1
         if asteriskCount % 2 != 0 {
-            result.append("**")
+            result.append(ProcessorConstants.MarkdownSyntax.bold)
         }
 
         // 3. 规范连续多余空行
-        while result.contains("\n\n\n") {
-            result = result.replacingOccurrences(of: "\n\n\n", with: "\n\n")
+        while result.contains(ProcessorConstants.Whitespace.tripleNewline) {
+            result = result.replacingOccurrences(of: ProcessorConstants.Whitespace.tripleNewline, with: ProcessorConstants.Whitespace.doubleNewline)
         }
 
         return result

@@ -23,7 +23,7 @@ extension MarkdownProcessor {
     func parseDetailsBlock(lines: [String], startIndex: Int) -> (block: BlockType, nextIndex: Int)? {
         let trimmed = lines[startIndex].trimmingCharacters(in: .whitespaces)
         // 检查折叠标签的开端
-        guard trimmed.hasPrefix("<details>") else { return nil }
+        guard trimmed.hasPrefix(ProcessorConstants.HTMLTag.detailsOpen) else { return nil }
 
         var summary = ""
         var contentLines: [String] = []
@@ -32,21 +32,21 @@ extension MarkdownProcessor {
         // 持续向下扫描，直到抓取到配对的闭合标签
         while i < lines.count {
             let line = lines[i].trimmingCharacters(in: .whitespaces)
-            if line.hasPrefix("</details>") {
+            if line.hasPrefix(ProcessorConstants.HTMLTag.detailsClose) {
                 i += 1
                 break
             }
 
             // 精准抓取 summary 标题内容
-            if line.hasPrefix("<summary>") && line.contains("</summary>") {
-                summary = line.replacingOccurrences(of: "<summary>", with: "")
-                              .replacingOccurrences(of: "</summary>", with: "")
-            } else if line.hasPrefix("<summary>") {
+            if line.hasPrefix(ProcessorConstants.HTMLTag.summaryOpen) && line.contains(ProcessorConstants.HTMLTag.summaryClose) {
+                summary = line.replacingOccurrences(of: ProcessorConstants.HTMLTag.summaryOpen, with: "")
+                              .replacingOccurrences(of: ProcessorConstants.HTMLTag.summaryClose, with: "")
+            } else if line.hasPrefix(ProcessorConstants.HTMLTag.summaryOpen) {
                 // 处理极少见的多行 summary 头部开端
-                summary = line.replacingOccurrences(of: "<summary>", with: "")
-            } else if line.contains("</summary>") {
+                summary = line.replacingOccurrences(of: ProcessorConstants.HTMLTag.summaryOpen, with: "")
+            } else if line.contains(ProcessorConstants.HTMLTag.summaryClose) {
                 // 处理极少见的多行 summary 尾部闭合
-                summary += line.replacingOccurrences(of: "</summary>", with: "")
+                summary += line.replacingOccurrences(of: ProcessorConstants.HTMLTag.summaryClose, with: "")
             } else {
                 // 折叠块内的正文行，追加合并
                 contentLines.append(lines[i])
@@ -67,20 +67,20 @@ extension MarkdownProcessor {
     func parseCodeBlock(lines: [String], startIndex: Int) -> (block: BlockType, nextIndex: Int)? {
         let trimmed = lines[startIndex].trimmingCharacters(in: .whitespaces)
         // 代码块必须以三反引号引导
-        guard trimmed.hasPrefix("```") else { return nil }
+        guard trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) else { return nil }
 
         // 提取语法高亮语言标识 (e.g. ```swift -> swift)
-        let language = String(trimmed.dropFirst(3)).trimmingCharacters(in: .whitespaces)
+        let language = String(trimmed.dropFirst(ProcessorConstants.MarkdownSyntax.codeFence.count)).trimmingCharacters(in: .whitespaces)
         var codeLines: [String] = []
         var i = startIndex + 1
 
         // 循环收集代码行，直到遇见下一组闭合的反引号为止
-        while i < lines.count && !lines[i].trimmingCharacters(in: .whitespaces).hasPrefix("```") {
+        while i < lines.count && !lines[i].trimmingCharacters(in: .whitespaces).hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) {
             codeLines.append(lines[i])
             i += 1
         }
 
-        return (.codeBlock(code: codeLines.joined(separator: "\n"), language: language), i + 1)
+        return (.codeBlock(code: codeLines.joined(separator: ProcessorConstants.Whitespace.newline), language: language), i + 1)
     }
 
     /// 尝试解析 Markdown 标准标题（H1 - H6）。
@@ -88,10 +88,10 @@ extension MarkdownProcessor {
     /// - Returns: 若匹配成功，返回对应的 `BlockType.heading` 标题块；否则返回 `nil`。
     func parseHeading(_ line: String) -> BlockType? {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
-        guard trimmed.hasPrefix("#") else { return nil }
+        guard trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.hash) else { return nil }
 
         // 统计开头连续的井号个数以决定标题等级
-        let hashes = trimmed.prefix(while: { $0 == "#" })
+        let hashes = trimmed.prefix(while: { $0 == Character(ProcessorConstants.MarkdownSyntax.hash) })
         let level = hashes.count
 
         // 标题后面必须跟一个空格才是标准的 Markdown 标题且层级在 1 到 6 之间
@@ -101,7 +101,7 @@ extension MarkdownProcessor {
         guard contentStart < trimmed.endIndex else { return nil }
 
         let afterHashes = trimmed[contentStart...]
-        if afterHashes.hasPrefix(" ") {
+        if afterHashes.hasPrefix(ProcessorConstants.Whitespace.space) {
             return .heading(text: afterHashes.trimmingCharacters(in: .whitespaces), level: level)
         }
 
@@ -112,7 +112,7 @@ extension MarkdownProcessor {
     /// - Parameter line: 当前待匹配的去空格行。
     /// - Returns: 若匹配成功，返回 `BlockType.horizontalRule`；否则返回 `nil`。
     func parseHorizontalRule(_ line: String) -> BlockType? {
-        if line.hasPrefix("---") || line.hasPrefix("***") || line.hasPrefix("___") {
+        if line.hasPrefix(ProcessorConstants.MarkdownSyntax.horizontalRuleDash) || line.hasPrefix(ProcessorConstants.MarkdownSyntax.horizontalRuleAsterisk) || line.hasPrefix(ProcessorConstants.MarkdownSyntax.horizontalRuleUnderscore) {
             return .horizontalRule
         }
         return nil
@@ -126,9 +126,9 @@ extension MarkdownProcessor {
     func parseTaskList(lines: [String], startIndex: Int) -> (block: BlockType, nextIndex: Int)? {
         let trimmed = lines[startIndex].trimmingCharacters(in: .whitespaces)
         // 精准过滤各种复选框样式
-        guard trimmed.hasPrefix("- [ ] ") || trimmed.hasPrefix("- [x] ") ||
-              trimmed.hasPrefix("- [X] ") || trimmed.hasPrefix("* [ ] ") ||
-              trimmed.hasPrefix("* [x] ") || trimmed.hasPrefix("* [X] ") else {
+        guard trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.taskUncheckedDash) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedDashLower) ||
+              trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedDashUpper) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.taskUncheckedAsterisk) ||
+              trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedAsteriskLower) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedAsteriskUpper) else {
             return nil
         }
 
@@ -138,14 +138,14 @@ extension MarkdownProcessor {
         // 连续收拢复选框行，聚合成高内聚的任务物理块
         while i < lines.count {
             let taskLine = lines[i].trimmingCharacters(in: .whitespaces)
-            if taskLine.hasPrefix("- [ ] ") {
-                items.append((text: String(taskLine.dropFirst(6)), checked: false))
-            } else if taskLine.hasPrefix("- [x] ") || taskLine.hasPrefix("- [X] ") {
-                items.append((text: String(taskLine.dropFirst(6)), checked: true))
-            } else if taskLine.hasPrefix("* [ ] ") {
-                items.append((text: String(taskLine.dropFirst(6)), checked: false))
-            } else if taskLine.hasPrefix("* [x] ") || taskLine.hasPrefix("* [X] ") {
-                items.append((text: String(taskLine.dropFirst(6)), checked: true))
+            if taskLine.hasPrefix(ProcessorConstants.MarkdownSyntax.taskUncheckedDash) {
+                items.append((text: String(taskLine.dropFirst(ProcessorConstants.MarkdownSyntax.taskUncheckedDash.count)), checked: false))
+            } else if taskLine.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedDashLower) || taskLine.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedDashUpper) {
+                items.append((text: String(taskLine.dropFirst(ProcessorConstants.MarkdownSyntax.taskCheckedDashLower.count)), checked: true))
+            } else if taskLine.hasPrefix(ProcessorConstants.MarkdownSyntax.taskUncheckedAsterisk) {
+                items.append((text: String(taskLine.dropFirst(ProcessorConstants.MarkdownSyntax.taskUncheckedAsterisk.count)), checked: false))
+            } else if taskLine.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedAsteriskLower) || taskLine.hasPrefix(ProcessorConstants.MarkdownSyntax.taskCheckedAsteriskUpper) {
+                items.append((text: String(taskLine.dropFirst(ProcessorConstants.MarkdownSyntax.taskCheckedAsteriskLower.count)), checked: true))
             } else {
                 break // 遇见非复选框内容时打断连续合并
             }
@@ -161,9 +161,9 @@ extension MarkdownProcessor {
     func getIndentLevel(_ line: String) -> Int {
         var count = 0
         for char in line {
-            if char == " " {
+            if char == Character(ProcessorConstants.Whitespace.space) {
                 count += 1
-            } else if char == "\t" {
+            } else if char == Character(ProcessorConstants.Whitespace.tab) {
                 count += 4
             } else {
                 break
@@ -180,7 +180,7 @@ extension MarkdownProcessor {
     func parseBulletList(lines: [String], startIndex: Int) -> (block: BlockType, nextIndex: Int)? {
         let startLine = lines[startIndex]
         let trimmedStart = startLine.trimmingCharacters(in: .whitespaces)
-        let isBulletList = trimmedStart.hasPrefix("- ") || trimmedStart.hasPrefix("* ")
+        let isBulletList = trimmedStart.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletDash) || trimmedStart.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletAsterisk)
         let isNumberedList = isNumberedLine(trimmedStart)
 
         guard isBulletList || isNumberedList else { return nil }
@@ -197,14 +197,14 @@ extension MarkdownProcessor {
 
             if trimmed.isEmpty { break }
 
-            let isItem = trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ")
+            let isItem = trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletDash) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletAsterisk)
             let isNumItem = isNumberedLine(trimmed)
 
             if isItem || isNumItem {
                 if indent == startIndent {
                     if isBulletList && isItem {
                         items.append(String(trimmed.dropFirst(2)))
-                    } else if isNumberedList && isNumItem, let dotIndex = trimmed.firstIndex(of: ".") {
+                    } else if isNumberedList && isNumItem, let dotIndex = trimmed.firstIndex(of: Character(ProcessorConstants.MarkdownSyntax.dot)) {
                         let content = String(trimmed[trimmed.index(after: dotIndex)...]).trimmingCharacters(in: .whitespaces)
                         items.append(content)
                     } else {
@@ -224,7 +224,7 @@ extension MarkdownProcessor {
 
     /// 提取编号行开头的具体数字（如 "1. " -> 1, "3. " -> 3）
     private func extractNumberPrefix(_ trimmed: String) -> Int {
-        guard let dotIndex = trimmed.firstIndex(of: ".") else { return 1 }
+        guard let dotIndex = trimmed.firstIndex(of: Character(ProcessorConstants.MarkdownSyntax.dot)) else { return 1 }
         let prefix = trimmed[..<dotIndex]
         return Int(prefix) ?? 1
     }
@@ -233,7 +233,7 @@ extension MarkdownProcessor {
     private func isNumberedLine(_ trimmed: String) -> Bool {
         let maxDotPos = min(4, trimmed.count)
         guard maxDotPos > 0,
-              let dotIndex = trimmed.firstIndex(of: "."),
+              let dotIndex = trimmed.firstIndex(of: Character(ProcessorConstants.MarkdownSyntax.dot)),
               dotIndex < trimmed.index(trimmed.startIndex, offsetBy: maxDotPos) else { return false }
         let prefix = trimmed[..<dotIndex]
         return prefix.allSatisfy { $0.isNumber } && !prefix.isEmpty
@@ -243,7 +243,7 @@ extension MarkdownProcessor {
     /// - Parameter line: 当前待匹配的去空格行。
     /// - Returns: 若匹配成功，返回 `BlockType.blockquote` 引用块；否则返回 `nil`。
     func parseBlockquote(_ line: String) -> BlockType? {
-        if line.hasPrefix("> ") {
+        if line.hasPrefix(ProcessorConstants.MarkdownSyntax.blockquotePrefix) {
             return .blockquote(text: String(line.dropFirst(2)))
         }
         return nil
@@ -267,7 +267,7 @@ extension MarkdownProcessor {
         }
 
         // 剔除表格的分割对齐行（例如 |---| 或 |:---|）
-        let dataLines = tableLines.filter { !$0.hasPrefix("|-") && !$0.hasPrefix("| -") }
+        let dataLines = tableLines.filter { !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.tableSeparatorDash) && !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.tableSeparatorDashSpace) }
         guard !dataLines.isEmpty else { return nil }
 
         // 解析第一行为表头 headers
@@ -288,8 +288,8 @@ extension MarkdownProcessor {
     /// - Parameter line: 被检测的字符串行。
     /// - Returns: 若该行同时包含 "|" 且以 "|" 或数字开头，返回 true。
     func isTableLine(_ line: String) -> Bool {
-        let hasPipe = line.contains("|")
-        let isFormatLine = line.hasPrefix("|") || line.range(of: #"^\d+\. "#, options: .regularExpression) != nil
+        let hasPipe = line.contains(ProcessorConstants.MarkdownSyntax.tablePipe)
+        let isFormatLine = line.hasPrefix(ProcessorConstants.MarkdownSyntax.tablePipe) || line.range(of: #"^\d+\. "#, options: .regularExpression) != nil
         return hasPipe && isFormatLine
     }
 
@@ -297,8 +297,8 @@ extension MarkdownProcessor {
 	/// - Parameter line: 包含管线符的原始表格行。
 	/// - Returns: 过滤掉空单元格和对齐分隔符后的字符串数组。
     func parseTableCells(_ line: String) -> [String] {
-        line.split(separator: "|")
+        line.split(separator: Character(ProcessorConstants.MarkdownSyntax.tablePipe))
             .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty && !$0.hasPrefix("-") }
+            .filter { !$0.isEmpty && !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.dash) }
 }
 }

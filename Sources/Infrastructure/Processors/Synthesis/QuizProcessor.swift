@@ -19,7 +19,7 @@ enum QuizProcessor {
     /// 测验答案解析常量
     enum AnswerParsing {
         /// Answer 行的正则模式，精确提取 Answer: 后的首个字母/数字
-        static let pattern = #"Answer:\s*([A-Da-d1-4])"#
+        static let pattern = ProcessorConstants.RegexPattern.quizAnswer
         /// 选项字母 A 对应的索引
         static let optionAIndex = 0
         /// 选项字母 B 对应的索引
@@ -28,19 +28,6 @@ enum QuizProcessor {
         static let optionCIndex = 2
         /// 选项字母 D 对应的索引
         static let optionDIndex = 3
-        /// 选项字母集合（A-D）
-        static let letterOptions: [String] = ["A", "B", "C", "D"]
-        /// 选项数字集合（1-4）
-        static let numberOptions: [String] = ["1", "2", "3", "4"]
-        /// 字母/数字到索引的映射表
-        static let answerMap: [String: Int] = [
-            "A": optionAIndex, "1": optionAIndex,
-            "B": optionBIndex, "2": optionBIndex,
-            "C": optionCIndex, "3": optionCIndex,
-            "D": optionDIndex, "4": optionDIndex
-        ]
-        /// 默认答案索引（解析失败时回退）
-        static let defaultIndex = 0
     }
 
     struct FlexibleQuizShell: Codable {
@@ -147,20 +134,20 @@ enum QuizProcessor {
     /// 尝试将 JSON 测验转换为 Markdown 格式
     static func convertJSONToMarkdown(_ text: String) -> String? {
         if let model = parseToQuizModel(text) {
-            var md = "# \(model.title)\n\n"
+            var md = "\(ProcessorConstants.MarkdownSyntax.h1Prefix)\(model.title)\(ProcessorConstants.Whitespace.doubleNewline)"
             for (index, question) in model.questions.enumerated() {
-                md += "## \(index + 1). \(question.text)\n\n"
+                md += "\(ProcessorConstants.MarkdownSyntax.h2Prefix)\(index + 1)\(ProcessorConstants.Whitespace.dotSpace)\(question.text)\(ProcessorConstants.Whitespace.doubleNewline)"
                 for opt in question.options {
-                    md += "* \(opt)\n"
+                    md += "\(ProcessorConstants.MarkdownSyntax.bulletAsterisk)\(opt)\(ProcessorConstants.Whitespace.newline)"
                 }
-                md += "\n<details>\n<summary>\(L10n.Quiz.showAnswer)</summary>\n\n"
+                md += "\(ProcessorConstants.Whitespace.newline)\(ProcessorConstants.HTMLTag.detailsOpen)\(ProcessorConstants.Whitespace.newline)\(ProcessorConstants.HTMLTag.summaryOpen)\(L10n.Quiz.showAnswer)\(ProcessorConstants.HTMLTag.summaryClose)\(ProcessorConstants.Whitespace.doubleNewline)"
                 if question.answer < question.options.count {
-                    md += "**\(L10n.Quiz.correctAnswer):** \(question.options[question.answer])\n\n"
+                    md += "\(ProcessorConstants.MarkdownSyntax.bold)\(L10n.Quiz.correctAnswer):\(ProcessorConstants.MarkdownSyntax.bold) \(question.options[question.answer])\(ProcessorConstants.Whitespace.doubleNewline)"
                 }
                 if !question.explanation.isEmpty {
-                    md += "**\(L10n.AI.Prompt.Quiz.explanation):** \(question.explanation)\n\n"
+                    md += "\(ProcessorConstants.MarkdownSyntax.bold)\(L10n.AI.Prompt.Quiz.explanation):\(ProcessorConstants.MarkdownSyntax.bold) \(question.explanation)\(ProcessorConstants.Whitespace.doubleNewline)"
                 }
-                md += "</details>\n\n"
+                md += "\(ProcessorConstants.HTMLTag.detailsClose)\(ProcessorConstants.Whitespace.doubleNewline)"
             }
             return md
         }
@@ -205,23 +192,19 @@ enum QuizProcessor {
         return randomizeQuizAnswers(validModel)
     }
 
-    // MARK: - 常量定义（告别魔鬼数字）
-    private static let minOptionsForRandomization = 2
-    private static let defaultAnswerIndex = 0
-
     /// 自动纠偏与随机打乱测验题目答案选项（防止所有测验的正确选项固定为第一个选项 / Option A）
     static func randomizeQuizAnswers(_ model: QuizModel) -> QuizModel {
         let randomizedQuestions = model.questions.map { question -> QuizQuestion in
-            guard question.options.count >= minOptionsForRandomization else { return question }
+            guard question.options.count >= ProcessorConstants.Synthesis.quizMinOptionsForRandomization else { return question }
 
             // 1. 清洗选项的前缀（如 "A. ", "B. ", "1. "）
             let cleanOptions = question.options.map { opt in
-                opt.replacingOccurrences(of: #"^[A-D\d][\.\s、:]\s*"#, with: "", options: .regularExpression)
+                opt.replacingOccurrences(of: ProcessorConstants.RegexPattern.quizOptionPrefix, with: "", options: .regularExpression)
                    .trimmingCharacters(in: .whitespacesAndNewlines)
             }
 
             let isValidAnswer = (question.answer >= 0 && question.answer < cleanOptions.count)
-            let origAnswerIndex = isValidAnswer ? question.answer : defaultAnswerIndex
+            let origAnswerIndex = isValidAnswer ? question.answer : ProcessorConstants.Synthesis.quizDefaultIndex
             let correctAnswerText = cleanOptions[origAnswerIndex]
 
             // 2. 将选项洗牌打乱
@@ -229,7 +212,7 @@ enum QuizProcessor {
             shuffledOptions.shuffle()
 
             // 3. 计算洗牌后正确答案的新 index
-            let newAnswerIndex = shuffledOptions.firstIndex(of: correctAnswerText) ?? defaultAnswerIndex
+            let newAnswerIndex = shuffledOptions.firstIndex(of: correctAnswerText) ?? ProcessorConstants.Synthesis.quizDefaultIndex
 
             return QuizQuestion(
                 id: question.id,
@@ -255,17 +238,17 @@ enum QuizProcessor {
 
         for line in lines {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.hasPrefix("# ") && title == L10n.Quiz.title {
-                title = trimmed.replacingOccurrences(of: "# ", with: "")
+            if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.h1Prefix) && title == L10n.Quiz.title {
+                title = trimmed.replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.h1Prefix, with: "")
                 continue
             }
 
-            if trimmed.hasPrefix("## ") || (trimmed.first?.isNumber == true && (trimmed.contains(". ") || trimmed.contains("、"))) {
+            if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.h2Prefix) || (trimmed.first?.isNumber == true && (trimmed.contains(ProcessorConstants.Whitespace.dotSpace) || trimmed.contains(ProcessorConstants.Whitespace.ideographicComma))) {
                 if inQuestion && !currentQuestionText.isEmpty {
                     questions.append(QuizQuestion(
                         id: questions.count + 1,
                         text: currentQuestionText,
-                        options: currentOptions.isEmpty ? ["A", "B", "C", "D"] : currentOptions,
+                        options: currentOptions.isEmpty ? ProcessorConstants.Synthesis.quizLetterOptions : currentOptions,
                         answer: currentAnswer,
                         explanation: currentExplanation
                     ))
@@ -275,20 +258,20 @@ enum QuizProcessor {
                 }
                 inQuestion = true
                 currentQuestionText = trimmed
-                    .replacingOccurrences(of: "## ", with: "")
-                    .replacingOccurrences(of: "^[0-9]+[.\\s、]+", with: "", options: .regularExpression)
-            } else if trimmed.hasPrefix("* ") || trimmed.hasPrefix("- ") || (trimmed.prefix(2).range(of: "^[A-D][.\\s、:]", options: .regularExpression) != nil) {
-                let optText = trimmed.replacingOccurrences(of: "^[*\\-]\\s*", with: "", options: .regularExpression)
+                    .replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.h2Prefix, with: "")
+                    .replacingOccurrences(of: ProcessorConstants.RegexPattern.numberedList, with: "", options: .regularExpression)
+            } else if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletAsterisk) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletDash) || (trimmed.prefix(2).range(of: ProcessorConstants.RegexPattern.choiceOption, options: .regularExpression) != nil) {
+                let optText = trimmed.replacingOccurrences(of: ProcessorConstants.RegexPattern.quizOptionStrip, with: "", options: .regularExpression)
                 currentOptions.append(optText)
-            } else if trimmed.contains(L10n.Quiz.correctAnswer) || trimmed.contains("Answer:") {
+            } else if trimmed.contains(L10n.Quiz.correctAnswer) || trimmed.contains(ProcessorConstants.Synthesis.quizAnswerKeyword) {
                 currentAnswer = parseAnswerIndex(from: trimmed)
-            } else if trimmed.contains(L10n.Quiz.explanation) || trimmed.contains("Explanation:") {
+            } else if trimmed.contains(L10n.Quiz.explanation) || trimmed.contains(ProcessorConstants.Synthesis.quizExplanationKeyword) {
                 currentExplanation = trimmed
             }
         }
 
         if inQuestion && !currentQuestionText.isEmpty {
-            let defaultOpts = (0..<4).map { "\(L10n.AI.Prompt.Quiz.option) \($0 + 1)" }
+            let defaultOpts = (0..<ProcessorConstants.Synthesis.quizOptionCount).map { "\(L10n.AI.Prompt.Quiz.option) \($0 + 1)" }
             questions.append(QuizQuestion(
                 id: questions.count + 1,
                 text: currentQuestionText,
@@ -307,9 +290,9 @@ enum QuizProcessor {
         guard let regex = try? NSRegularExpression(pattern: AnswerParsing.pattern, options: .caseInsensitive),
               let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)),
               let answerRange = Range(match.range(at: 1), in: line) else {
-            return AnswerParsing.defaultIndex
+            return ProcessorConstants.Synthesis.quizDefaultIndex
         }
         let answerChar = String(line[answerRange]).uppercased()
-        return AnswerParsing.answerMap[answerChar] ?? AnswerParsing.defaultIndex
+        return ProcessorConstants.Synthesis.quizAnswerMap[answerChar] ?? ProcessorConstants.Synthesis.quizDefaultIndex
     }
 }

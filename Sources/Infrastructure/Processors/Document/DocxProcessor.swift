@@ -31,7 +31,7 @@ final class DocxProcessor: NSObject, XMLParserDelegate {
 
     /// XMLParserDelegate: 元素开始 — 检测到 w:t（文本运行）时标记进入文本元素。
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
-        if elementName == "w:t" {
+        if elementName == ProcessorConstants.OOXML.wordText {
             inTextElement = true
             currentText = ""
         }
@@ -46,19 +46,19 @@ final class DocxProcessor: NSObject, XMLParserDelegate {
 
     /// XMLParserDelegate: 元素结束 — w:t 闭合时追加文本（前加空格）；w:p 闭合时插入换行符。
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if elementName == "w:t" {
+        if elementName == ProcessorConstants.OOXML.wordText {
             if !currentText.isEmpty {
                 if lastWasText {
-                    extractedText += " "
+                    extractedText += ProcessorConstants.Whitespace.space
                 }
                 extractedText += currentText
                 lastWasText = true
             }
             inTextElement = false
             currentText = ""
-        } else if elementName == "w:p" {
+        } else if elementName == ProcessorConstants.OOXML.wordParagraph {
             if lastWasText {
-                extractedText += "\n"
+                extractedText += ProcessorConstants.Whitespace.newline
                 lastWasText = false
             }
         }

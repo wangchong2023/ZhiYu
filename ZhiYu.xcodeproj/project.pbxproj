@@ -558,6 +558,7 @@
 		49321503B121D0484046F0B1 /* Date+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6658DF413C53D918BE7A3DE /* Date+App.swift */; };
 		49554F9452718AB347F84C01 /* SynthesisProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C335CB2DD9CC746E68887C81 /* SynthesisProcessor.swift */; };
 		49870BD26505EFADF5125A2E /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C07B7A0CC9472463435C3701 /* Colors.swift */; };
+		49AB8166EB0B7E888F1A367B /* ProcessorConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1BE7B0074028C4A650D2A2 /* ProcessorConstants.swift */; };
 		49C19AE7302DD461D777C5A8 /* PhoneVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A899E9EF2345F70C8C3D6979 /* PhoneVerifyView.swift */; };
 		49C55E5482B9DADDB60F2972 /* AudioSplitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2459260376744BE92F3B220 /* AudioSplitter.swift */; };
 		49C5BC670F964F54C385D840 /* Common.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A01AF3C171DC66A175FF4832 /* Common.xcstrings */; };
@@ -853,6 +854,7 @@
 		711CA70F9E87E4DE7596D1A5 /* L10n+Transfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F9CCBC928E5F509DEC8C19F /* L10n+Transfer.swift */; };
 		71303B59D879DE29A87D3548 /* QuickActionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6596B3855C4AA12B94C925AF /* QuickActionRow.swift */; };
 		7141B1EFC6E588E308C2E8D0 /* iOSSpotlightIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8100844FD871419777AEE11 /* iOSSpotlightIndexer.swift */; };
+		7201EF4162A007721DB80C20 /* ProcessorConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1BE7B0074028C4A650D2A2 /* ProcessorConstants.swift */; };
 		720A5EE88CAFBFFE6B185655 /* TagStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E7740679EB46D84F660CEC /* TagStore.swift */; };
 		722F7B6499DE73A1DD19E21D /* ThinkingProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74B0CBB614B05B84E8A4D09E /* ThinkingProcessor.swift */; };
 		727BE5FC3DD8C1E7A3C61BDC /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D5E0CDBA62F45E8BE9BD2B7 /* AboutView.swift */; };
@@ -2874,6 +2876,7 @@
 		CAE1E65D6D6DCE1B46F1C0D9 /* DeveloperSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperSettingsView.swift; sourceTree = "<group>"; };
 		CBA2436351BCB581DC327308 /* TagCloudCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCloudCoordinatorTests.swift; sourceTree = "<group>"; };
 		CBDBFA5F5E296F45A4029D73 /* L10n+AI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+AI.swift"; sourceTree = "<group>"; };
+		CC1BE7B0074028C4A650D2A2 /* ProcessorConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessorConstants.swift; sourceTree = "<group>"; };
 		CC941AB0D64A37658EAA0D57 /* SQLitePluginRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLitePluginRepository.swift; sourceTree = "<group>"; };
 		CD5F91CE7F80255119929EC0 /* GlobalModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalModelManager.swift; sourceTree = "<group>"; };
 		CD6245A51DE1A01933A12ADF /* VaultThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultThemeTests.swift; sourceTree = "<group>"; };
@@ -5736,6 +5739,7 @@
 			children = (
 				3B3121C554F05877F9EA3995 /* FrontmatterParser.swift */,
 				E67B7AB3CAF9B4C0B3D23C99 /* ImageExtractor.swift */,
+				CC1BE7B0074028C4A650D2A2 /* ProcessorConstants.swift */,
 				6C9DA2E398E0B3FA0EE3FC42 /* Document */,
 				BE5412F4E15BC5C12839F073 /* Graph */,
 				D0B635F8EDC6733D30FC3348 /* Network */,
@@ -7385,6 +7389,7 @@
 				4BF4C080408C56FF3CEFDDD5 /* PluginSettingsGenerator.swift in Sources */,
 				C4D4E3C0A9DE27322F47EAE8 /* PluginStatsSection.swift in Sources */,
 				7B3A4F465FFF4B716D7177F4 /* PluginStorage.swift in Sources */,
+				49AB8166EB0B7E888F1A367B /* ProcessorConstants.swift in Sources */,
 				DCBF73D1C903955DAFBC5F06 /* PromptConstants.swift in Sources */,
 				8702ED957D5610502C720ED2 /* PromptRegistry.swift in Sources */,
 				4AF9791512877810DF7CE978 /* PromptSanitizer.swift in Sources */,
@@ -8134,6 +8139,7 @@
 				84EC2CD85C8FD4BC14098F13 /* PluginSettingsGenerator.swift in Sources */,
 				15955D32A1428A8E13DE60B5 /* PluginStatsSection.swift in Sources */,
 				F33D817B921A90CC9E3BB733 /* PluginStorage.swift in Sources */,
+				7201EF4162A007721DB80C20 /* ProcessorConstants.swift in Sources */,
 				A679E54E53269A8C9C6972B8 /* PromptConstants.swift in Sources */,
 				1110009B381635AA45FD2DC1 /* PromptRegistry.swift in Sources */,
 				A99763AE07C8CD74AE301E82 /* PromptSanitizer.swift in Sources */,

@@ -21,14 +21,14 @@ public enum CJKSpacingFormatter {
         var result = text
 
         // CJK 字符与英文/数字之间插入空格
-        let cjkAnsRegex = try? NSRegularExpression(pattern: #"([\u4e00-\u9fa5\u3040-\u30ff])([A-Za-z0-9@#\$%\^&\*\-\+\=])"#)
-        let ansCjkRegex = try? NSRegularExpression(pattern: #"([A-Za-z0-9@#\$%\^&\*\-\+\=])([\u4e00-\u9fa5\u3040-\u30ff])"#)
+        let cjkAnsRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.cjkAnsBoundary)
+        let ansCjkRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.ansCjkBoundary)
 
         if let regex = cjkAnsRegex {
-            result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "$1 $2")
+            result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: ProcessorConstants.RegexPattern.captureGroup12)
         }
         if let regex = ansCjkRegex {
-            result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "$1 $2")
+            result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: ProcessorConstants.RegexPattern.captureGroup12)
         }
 
         return result

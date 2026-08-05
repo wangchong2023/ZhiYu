@@ -28,12 +28,12 @@ struct SSRFGuard: Sendable {
         guard let host = url.host?.lowercased() else { return false }
 
         // 1. 拒绝环回地址
-        if host == "localhost" || host == "127.0.0.1" || host == "::1" || host == "[::1]" {
+        if host == ProcessorConstants.SSRFGuard.localhost || host == ProcessorConstants.SSRFGuard.loopbackIPv4 || host == ProcessorConstants.SSRFGuard.loopbackIPv6 || host == ProcessorConstants.SSRFGuard.loopbackIPv6Bracketed {
             return false
         }
 
         // 2. 拒绝链路本地地址（AWS/GCP 元数据端点）
-        if host.hasPrefix("169.254.") {
+        if host.hasPrefix(ProcessorConstants.SSRFGuard.linkLocalPrefix) {
             return false
         }
 
@@ -52,7 +52,7 @@ struct SSRFGuard: Sendable {
         }
 
         // 5. 拒绝 .local / .internal 等本地域名
-        if host.hasSuffix(".local") || host.hasSuffix(".internal") || host.hasSuffix(".localhost") {
+        if host.hasSuffix(ProcessorConstants.SSRFGuard.localDomainSuffix) || host.hasSuffix(ProcessorConstants.SSRFGuard.internalDomainSuffix) || host.hasSuffix(ProcessorConstants.SSRFGuard.localhostDomainSuffix) {
             return false
         }
 
@@ -105,7 +105,7 @@ struct SSRFGuard: Sendable {
 
     /// 解析单个 IP 段（支持十进制、八进制 0xxx、十六进制 0xXX）
     private static func parseIPOctet(_ trimmed: String) -> UInt32? {
-        if trimmed.hasPrefix("0x") || trimmed.hasPrefix("0X") {
+        if trimmed.hasPrefix(ProcessorConstants.SSRFGuard.hexPrefixLower) || trimmed.hasPrefix(ProcessorConstants.SSRFGuard.hexPrefixUpper) {
             // 十六进制段
             return UInt32(trimmed.dropFirst(2), radix: 16)
         } else if trimmed.hasPrefix("0") && trimmed.count > 1 {
@@ -180,12 +180,12 @@ struct SSRFGuard: Sendable {
             .lowercased()
 
         // fc00::/7 私有地址（fc, fd 开头）
-        if cleaned.hasPrefix("fc") || cleaned.hasPrefix("fd") {
+        if cleaned.hasPrefix(ProcessorConstants.SSRFGuard.ipv6UniqueLocalPrefixFC) || cleaned.hasPrefix(ProcessorConstants.SSRFGuard.ipv6UniqueLocalPrefixFD) {
             return true
         }
         // fe80::/10 链路本地地址（fe8, fe9, fea, feb 开头）
-        if cleaned.hasPrefix("fe8") || cleaned.hasPrefix("fe9") ||
-            cleaned.hasPrefix("fea") || cleaned.hasPrefix("feb") {
+        if cleaned.hasPrefix(ProcessorConstants.SSRFGuard.ipv6LinkLocalPrefixFE8) || cleaned.hasPrefix(ProcessorConstants.SSRFGuard.ipv6LinkLocalPrefixFE9) ||
+            cleaned.hasPrefix(ProcessorConstants.SSRFGuard.ipv6LinkLocalPrefixFEA) || cleaned.hasPrefix(ProcessorConstants.SSRFGuard.ipv6LinkLocalPrefixFEB) {
             return true
         }
         return false

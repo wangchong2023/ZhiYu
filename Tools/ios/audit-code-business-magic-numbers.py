@@ -222,6 +222,10 @@ def _extract_numbers_from_line(line: str) -> List[str]:
     # 去除行尾注释（粗略处理，避免注释中的数字被误判）
     code_part = line.split("//")[0]
 
+    # 移除字符串字面量内容（避免 UA/URL/版本号字符串内的数字被误判为魔鬼数字）
+    # 替换为空字符串占位，保留字符串边界以便后续模式匹配不受影响
+    code_part = re.sub(r'"[^"]*"', '""', code_part)
+
     # 单值常量定义整体跳过（static let xxx = 60 已有语义名）
     if _is_single_value_constant(code_part):
         return []

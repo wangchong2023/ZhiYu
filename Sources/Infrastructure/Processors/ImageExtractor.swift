@@ -48,7 +48,7 @@ final class ImageExtractor: Sendable {
     /// 从 PDF 文件提取页面图像并 OCR
     func extractImagesFromPDF(at url: URL, pdfService: any PDFServiceProtocol) async -> String {
         let images = await pdfService.extractImages(from: url)
-        return await ocrImageBatch(images, prefix: "pdf")
+        return await ocrImageBatch(images, prefix: ProcessorConstants.FileFormat.pdf)
     }
 
     // MARK: - Office (DOCX/XLSX ZIP)
@@ -70,7 +70,7 @@ final class ImageExtractor: Sendable {
             }
         }
         let limited = Array(allData.prefix(maxImages))
-        return await ocrImageBatch(limited, prefix: "office")
+        return await ocrImageBatch(limited, prefix: ProcessorConstants.FileFormat.office)
     }
 
     // MARK: - OCR 批处理
@@ -100,7 +100,7 @@ final class ImageExtractor: Sendable {
             guard let url = resolveURL(src, baseURL: baseURL) else { continue }
             // 过滤明显不是图片的 URL（SVG 跳过，图标太小）
             let ext = url.pathExtension.lowercased()
-            guard ext != "svg" else { continue }
+            guard ext != ProcessorConstants.FileFormat.svg else { continue }
             // VULN-007 修复：SSRF 防护 — 拒绝内网/环回/链路本地图片地址
             guard SSRFGuard.isSafeURL(url) else { continue }
             urls.append(url)
@@ -139,13 +139,13 @@ final class ImageExtractor: Sendable {
     // MARK: - Helpers
 
     private func resolveURL(_ src: String, baseURL: URL?) -> URL? {
-        if src.hasPrefix("http://") || src.hasPrefix("https://") {
+        if src.hasPrefix(SystemConstants.URLScheme.http) || src.hasPrefix(SystemConstants.URLScheme.https) {
             return URL(string: src)
         }
-        if src.hasPrefix("//") {
-            return URL(string: "https:\(src)")
+        if src.hasPrefix(ProcessorConstants.MarkdownSyntax.doubleSlash) {
+            return URL(string: "\(ProcessorConstants.WebScraper.httpsPrefix)\(src)")
         }
-        if src.hasPrefix("/"), let base = baseURL {
+        if src.hasPrefix(ProcessorConstants.MarkdownSyntax.slash), let base = baseURL {
             var components = URLComponents(url: base, resolvingAgainstBaseURL: true)
             components?.path = ""
             return components?.url?.appendingPathComponent(String(src.dropFirst()))

@@ -9,6 +9,7 @@
 //  核心职责：文档处理器：Markdown 解析、文本分块、图谱布局、网页抓取。
 //
 import Foundation
+import UFPCore
 
 /// 网页抓取处理器责任链接口
 protocol WebScraperHandler: Sendable {
@@ -32,11 +33,11 @@ extension WebScraperHandler {
         Logger.shared.addLog(
             action: .ingest,
             target: url.host ?? url.absoluteString,
-            details: "\(msg) (Length: \(length))",
+            details: String(format: ProcessorConstants.WebScraper.logDetailsTemplate, msg, length),
             duration: duration,
             startTime: startTime,
             endTime: Date(),
-            module: "WebScraper"
+            module: ProcessorConstants.Module.webScraper
         )
     }
 }
@@ -69,8 +70,8 @@ final class WebScraperProcessor: @unchecked Sendable {
     func fetchMarkdown(from urlString: String) async throws -> (markdown: String, title: String) {
         let startTime = Date()
         var normalizedString = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !normalizedString.lowercased().hasPrefix("http://") && !normalizedString.lowercased().hasPrefix("https://") {
-            normalizedString = "https://" + normalizedString
+        if !normalizedString.lowercased().hasPrefix(SystemConstants.URLScheme.http) && !normalizedString.lowercased().hasPrefix(SystemConstants.URLScheme.https) {
+            normalizedString = SystemConstants.URLScheme.https + normalizedString
         }
 
         guard let url = URL(string: normalizedString) else {
@@ -98,7 +99,7 @@ struct MockScraperHandler: WebScraperHandler {
     /// /// - Parameter startTime: 启动Time
     /// /// - Returns: 返回值
     func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
-        if url.host == "paywall-test.com" || url.absoluteString.contains("paywall-test") {
+        if url.host == ProcessorConstants.Module.paywallTestDomain || url.absoluteString.contains("paywall-test") {
 // swiftlint:disable:next force_unwrapping
             let mockData = Data(base64Encoded: "PGh0bWw+PGhlYWQ+PHRpdGxlPlBheXdhbGwgVGVzdCBBcnRpY2xlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+VGhpcyBpcyBtb2NrIHByZW1pdW0gY29udGVudCBieXBhc3Mgc3VjY2Vzcy48L3A+PHA+U2Vjb25kIHBhcmFncmFwaCBvZiB0aGUgcHJlbWl1bSBhcnRpY2xlLjwvcD48L2JvZHk+PC9odG1sPg==")!
 // swiftlint:disable:next force_unwrapping
@@ -136,16 +137,16 @@ struct JinaScraperHandler: WebScraperHandler {
             }
 
             var request = URLRequest(url: jinaURL)
-            request.timeoutInterval = 10
+            request.timeoutInterval = ProcessorConstants.WebScraper.jinaTimeoutInterval
 
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200,
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
                   let content = String(data: data, encoding: .utf8) else {
                 throw WebScraperProcessor.ScraperError.parsingFailed
             }
 
             let lines = content.components(separatedBy: .newlines)
-            let title = lines.first(where: { $0.hasPrefix("# ") })?.replacingOccurrences(of: "# ", with: "")
+            let title = lines.first(where: { $0.hasPrefix(ProcessorConstants.MarkdownSyntax.h1Prefix) })?.replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.h1Prefix, with: "")
                         ?? url.host ?? ""
 
             logScraper(url: url, msg: L10n.Ingest.Status.webscraperLevel1Success, length: content.count, startTime: startTime)
@@ -170,20 +171,20 @@ struct GooglebotScraperHandler: WebScraperHandler {
     func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
         do {
             var request = URLRequest(url: url)
-            request.timeoutInterval = 15
-            let ua = ["Mozilla/5.0", "(compatible;", "Googlebot/2.1;", "+http://www.google.com/bot.html)"].joined(separator: " ")
-            request.setValue(ua, forHTTPHeaderField: "User-Agent")
-            request.setValue("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", forHTTPHeaderField: "Accept")
+            request.timeoutInterval = ProcessorConstants.WebScraper.directTimeoutInterval
+            let ua = ["Mozilla/\(ProcessorConstants.WebScraper.mozillaVersion)", "(compatible;", "Googlebot/\(ProcessorConstants.WebScraper.googlebotVersion);", "+http://www.google.com/bot.html)"].joined(separator: ProcessorConstants.Whitespace.space)
+            request.setValue(ua, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
+            request.setValue("text/html,application/xhtml+xml,application/xml;q=\(ProcessorConstants.WebScraper.acceptQValueHigh),*/*;q=\(ProcessorConstants.WebScraper.acceptQValueLow)", forHTTPHeaderField: SystemConstants.HTTPHeader.accept)
             
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw WebScraperProcessor.ScraperError.parsingFailed
             }
             
-            let restrictedCodes = [401, 402, 403, 429]
+            let restrictedCodes = ProcessorConstants.WebScraper.restrictedStatusCodes
             if restrictedCodes.contains(httpResponse.statusCode) {
                 Logger.shared.warning(L10n.Ingest.Status.webscraperPaywallDetected(httpResponse.statusCode))
-                throw WebScraperProcessor.ScraperError.networkError(NSError(domain: "WebScraper", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Paywall_Blocked"]))
+                throw WebScraperProcessor.ScraperError.networkError(NSError(domain: ProcessorConstants.Module.webScraper, code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: ProcessorConstants.Module.paywallBlocked]))
             }
             
             guard let htmlContent = String(data: data, encoding: .utf8) else {
@@ -217,12 +218,12 @@ struct ArchiveScraperHandler: WebScraperHandler {
             }
             
             var archiveReq = URLRequest(url: archiveURL)
-            archiveReq.timeoutInterval = 20
-            let archiveUA = ["Mozilla/5.0", "(Macintosh;", "Intel", "Mac", "OS", "X", "10_15_7)", "AppleWebKit/537.36", "(KHTML,", "like", "Gecko)", "Chrome/125.0.0.0", "Safari/537.36"].joined(separator: " ")
-            archiveReq.setValue(archiveUA, forHTTPHeaderField: "User-Agent")
-            
+            archiveReq.timeoutInterval = ProcessorConstants.WebScraper.archiveTimeoutInterval
+            let archiveUA = ProcessorConstants.WebScraper.desktopUserAgent
+            archiveReq.setValue(archiveUA, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
+
             let (data, response) = try await URLSession.shared.data(for: archiveReq)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200,
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
                   let htmlContent = String(data: data, encoding: .utf8) else {
                 throw WebScraperProcessor.ScraperError.parsingFailed
             }
@@ -287,8 +288,8 @@ struct DumbExtractorHandler: WebScraperHandler {
         }
         
         // Step 3: 去除 <script> 和 <style> 标签
-        contentToParse = contentToParse.replacingOccurrences(of: "(?i)<script.*?>.*?</script>", with: "", options: .regularExpression)
-        contentToParse = contentToParse.replacingOccurrences(of: "(?i)<style.*?>.*?</style>", with: "", options: .regularExpression)
+        contentToParse = contentToParse.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.scriptBlock, with: "", options: .regularExpression)
+        contentToParse = contentToParse.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.styleBlockCaseInsensitive, with: "", options: .regularExpression)
         
         // Step 4: 提取所有 <p> 段落并清洗 HTML 标签
         let pPattern = "<p[^>]*>(.*?)</p>"
@@ -320,7 +321,7 @@ struct DumbExtractorHandler: WebScraperHandler {
     
     /// 清洗 HTML 标签与字符实体：去除所有尖括号标签，解码 &quot; / &amp; / &lt; 等 HTML 实体。
     static private func cleanHTMLTags(_ text: String) -> String {
-        var clean = text.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        var clean = text.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.allTags, with: "", options: .regularExpression)
         let entities = [
             "&quot;": "\"",
             "&amp;": "&",

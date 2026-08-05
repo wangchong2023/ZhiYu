@@ -47,7 +47,8 @@ ALLOW_NON_ASCII_FILES = {
     'PromptSecuritySanitizer.swift', # AI 提示词安全防护与越狱攻击特征词集
     'NativeMemoryEngine.swift',    # 自研分层对话记忆引擎断言与摘要
     'SwarmMemoryAdapter.swift',    # 开源 Swarm 框架记忆适配器数据
-    'PromptConstants.swift'        # Prompt 常量及 JSON Schema 结构描述定义
+    'PromptConstants.swift',        # Prompt 常量及 JSON Schema 结构描述定义
+    'ProcessorConstants.swift'      # 处理器常量集（含 ThinkingProcessor 中文 AI 输出检测关键词）
 }
 
 # 匹配模式： " ... " 字符串字面量

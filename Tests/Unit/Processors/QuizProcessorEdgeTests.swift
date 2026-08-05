@@ -336,10 +336,10 @@ final class QuizProcessorEdgeTests: XCTestCase {
     func testParseAnswerIndex_answerAB_returns0_bug10Fixed() {
         // 缺陷 #10 已修复："Answer: AB" 现在取首个字母 A，返回选项 A 的索引（而非旧的 B）
         // 注意：parseToQuizModel 会调用 randomizeQuizAnswers 打乱选项，无法直接验证 answer 值
-        // 此处验证 AnswerParsing.answerMap 的映射正确性（缺陷 #10 的核心修复点）
-        XCTAssertEqual(QuizProcessor.AnswerParsing.answerMap["A"], QuizProcessor.AnswerParsing.optionAIndex,
+        // 此处验证 ProcessorConstants.Synthesis.quizAnswerMap 的映射正确性（缺陷 #10 的核心修复点）
+        XCTAssertEqual(ProcessorConstants.Synthesis.quizAnswerMap["A"], QuizProcessor.AnswerParsing.optionAIndex,
             "字母 A 应映射到选项 A 的索引")
-        XCTAssertEqual(QuizProcessor.AnswerParsing.answerMap["B"], QuizProcessor.AnswerParsing.optionBIndex,
+        XCTAssertEqual(ProcessorConstants.Synthesis.quizAnswerMap["B"], QuizProcessor.AnswerParsing.optionBIndex,
             "字母 B 应映射到选项 B 的索引")
 
         // 验证模型被正确解析（不验证具体 answer 值，因随机化打乱）

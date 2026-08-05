@@ -42,16 +42,7 @@ public enum ThinkingProcessor {
     // MARK: - 私有解析辅助函数
 
     private static func extractEnclosedThinking(_ text: String) -> Result? {
-        let thinkPatterns = [
-            #"(?s)<think>(.*?)</think>"#,
-            #"(?s)<thinking>(.*?)</thinking>"#,
-            #"(?s)<thought>(.*?)</thought>"#,
-            #"(?s)\[think\](.*?)\[/think\]"#,
-            #"(?s)\[thinking\](.*?)\[/thinking\]"#,
-            #"(?s)\[思考过程\](.*?)\[/思考过程\]"#,
-            #"(?s)```think\s*\n(.*?)\n```"#
-        ]
-        for pattern in thinkPatterns {
+        for pattern in ProcessorConstants.Thinking.enclosedPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { continue }
             let range = NSRange(text.startIndex..<text.endIndex, in: text)
             if let match = regex.firstMatch(in: text, options: [], range: range),
@@ -66,11 +57,7 @@ public enum ThinkingProcessor {
     }
 
     private static func extractUnclosedThinking(_ text: String) -> Result? {
-        let unclosedPatterns = [
-            #"(?i)^<(think|thinking|thought)>(.*)"#,
-            #"(?i)^\[(think|thinking|thought|思考过程)\](.*)"#
-        ]
-        for pattern in unclosedPatterns {
+        for pattern in ProcessorConstants.Thinking.unclosedPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else { continue }
             let range = NSRange(text.startIndex..<text.endIndex, in: text)
             if let match = regex.firstMatch(in: text, options: [], range: range),
@@ -83,13 +70,8 @@ public enum ThinkingProcessor {
     }
 
     private static func extractPrefixThinking(_ text: String) -> Result? {
-        let prefixes = [
-            "思考过程：", "思考过程:", "思考：", "思考:",
-            "Thinking" + " Process:", "Thinking:", "Reasoning" + " Process:", "Reasoning:",
-            "思路分析：", "思路分析:"
-        ]
         let lowerText = text.lowercased()
-        for prefix in prefixes where lowerText.hasPrefix(prefix.lowercased()) {
+        for prefix in ProcessorConstants.Thinking.prefixes where lowerText.hasPrefix(prefix.lowercased()) {
             let afterPrefix = String(text.dropFirst(prefix.count)).trimmingCharacters(in: .whitespacesAndNewlines)
             if let dividerRange = findAnswerDivider(in: afterPrefix) {
                 let thinking = String(afterPrefix[..<dividerRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -102,14 +84,7 @@ public enum ThinkingProcessor {
     }
 
     private static func extractImplicitCoT(_ text: String) -> Result? {
-        let implicitCoTPrefixes = [
-            "我们被要求",
-            "用户需求：", "用户需求:",
-            "需求分析：", "需求分析:",
-            "分析用户",
-            "解构问题：", "解构问题:"
-        ]
-        for prefix in implicitCoTPrefixes where text.hasPrefix(prefix) {
+        for prefix in ProcessorConstants.Thinking.implicitCoTPrefixes where text.hasPrefix(prefix) {
             if let dividerRange = findAnswerDivider(in: text) {
                 let thinking = String(text[..<dividerRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
                 let main = String(text[dividerRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -122,16 +97,12 @@ public enum ThinkingProcessor {
     }
 
     private static func findAnswerDivider(in text: String) -> Range<String.Index>? {
-        let dividerKeywords = [
-            "\n\n根据", "\n\n建议", "\n\n以下是",
-            "\n\n1. ", "\n\n### ", "\n\n回答："
-        ]
-        for keyword in dividerKeywords {
+        for keyword in ProcessorConstants.Thinking.dividerKeywords {
             if let range = text.range(of: keyword),
-               let doubleNewline = text[range.lowerBound..<range.upperBound].range(of: "\n\n") {
+               let doubleNewline = text[range.lowerBound..<range.upperBound].range(of: ProcessorConstants.Whitespace.doubleNewline) {
                 return doubleNewline
             }
         }
-        return text.range(of: "\n\n")
+        return text.range(of: ProcessorConstants.Whitespace.doubleNewline)
     }
 }

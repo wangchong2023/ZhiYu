@@ -91,7 +91,7 @@ struct DocxProcessorProxy: DocumentProcessor {
             throw ProcessorError.invalidArchive
         }
 
-        guard let documentXML = archive["word/document.xml"] else {
+        guard let documentXML = archive[ProcessorConstants.OOXML.wordDocumentPath] else {
             throw ProcessorError.extractionFailed
         }
 
@@ -119,7 +119,7 @@ struct XlsxProcessorProxy: DocumentProcessor {
         var sharedStrings: [String] = []
 
         // Step 1: 提取共享字符串池（Excel 多单元格共享同一字符串以压缩体积）
-        if let sharedStringsXML = archive["xl/sharedStrings.xml"] {
+        if let sharedStringsXML = archive[ProcessorConstants.OOXML.sharedStringsPath] {
             let parser = XlsxSharedStringsParser(xmlData: sharedStringsXML)
             if parser.parse() {
                 sharedStrings = parser.strings
@@ -130,16 +130,16 @@ struct XlsxProcessorProxy: DocumentProcessor {
 
         // Step 2: 遍历提取每个子工作表中的文字，映射共享字符串索引
         for (path, data) in archive {
-            if path.hasPrefix("xl/worksheets/sheet") && path.hasSuffix(".xml") {
+            if path.hasPrefix(ProcessorConstants.OOXML.excelWorksheetPrefix) && path.hasSuffix(ProcessorConstants.OOXML.xmlExtension) {
                 let parser = ExcelProcessor(xmlData: data)
                 if parser.parse() {
                     // 解析共享字符串指针，映射回真实字符
                     for value in parser.values {
-                        if value.hasPrefix("[") && value.hasSuffix("]"),
+                        if value.hasPrefix(ProcessorConstants.OOXML.sharedStringIndexOpen) && value.hasSuffix(ProcessorConstants.OOXML.sharedStringIndexClose),
                            let index = Int(value.dropFirst().dropLast()),
                            index < sharedStrings.count {
                             allText.append(sharedStrings[index])
-                        } else if !value.isEmpty && !value.hasPrefix("[") {
+                        } else if !value.isEmpty && !value.hasPrefix(ProcessorConstants.OOXML.sharedStringIndexOpen) {
                             allText.append(value)
                         }
                     }

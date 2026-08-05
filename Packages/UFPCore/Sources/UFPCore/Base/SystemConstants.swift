@@ -86,4 +86,41 @@ public enum SystemConstants {
         /// http://
         public static let http: String = "http://"
     }
+
+    // MARK: - 基础字符 (Base Characters)
+    /// 与业务无关的单字符/双字符基础常量，业务层通过转接赋予语义名称
+    public enum Character {
+        public static let hash: String = "#"
+        public static let dash: String = "-"
+        public static let asterisk: String = "*"
+        public static let greaterThan: String = ">"
+        public static let pipe: String = "|"
+        public static let dot: String = "."
+        public static let comma: String = ","
+        public static let colon: String = ":"
+        public static let semicolon: String = ";"
+        public static let doubleQuote: String = "\""
+        public static let singleQuote: String = "'"
+        public static let slash: String = "/"
+        public static let doubleSlash: String = "//"
+        public static let backslash: String = "\\"
+        public static let underscore: String = "_"
+        public static let equals: String = "="
+        public static let at: String = "@"
+        public static let ampersand: String = "&"
+        public static let percent: String = "%"
+        public static let space: String = " "
+        public static let newline: String = "\n"
+        public static let tab: String = "\t"
+        public static let carriageReturn: String = "\r"
+        public static let plus: String = "+"
+        public static let questionMark: String = "?"
+        public static let openParen: String = "("
+        public static let closeParen: String = ")"
+        public static let openBracket: String = "["
+        public static let closeBracket: String = "]"
+        public static let openBrace: String = "{"
+        public static let closeBrace: String = "}"
+        public static let exclamation: String = "!"
+    }
 }

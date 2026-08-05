@@ -20705,71 +20705,6 @@
         }
       }
     },
-    "synthesis.fallback.expansionFutureHeader": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## 延伸思考与前沿趋势"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## 延伸思考与前沿趨勢"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "## Future Trends"
-          }
-        }
-      }
-    },
     "synthesis.fallback.expansionFutureBody": {
       "extractionState": "manual",
       "localizations": {
@@ -26981,6 +26916,1111 @@
           "stringUnit": {
             "state": "translated",
             "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.slidesSubtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇 AI 原生演示文稿"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智宇 AI 原生演示文稿"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZhiYu AI Native Presentation"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionPointTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "知识要点扩展 %lld"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "知识要点扩展 %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge Point Expansion %lld"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionBullet1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "深入提炼该主题的关键发现"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "深入提炼该主题的关键发现"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deeply refine the key findings of this topic"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionBullet2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结合知识库链接进行交叉验证"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结合知识库链接进行交叉验证"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-validate with knowledge base links"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.slideBullet1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心要点深化理解"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心要点深化理解"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deepen understanding of core points"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.slideBullet2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统梳理知识结构"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统梳理知识结构"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systematically organize knowledge structure"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.coreAnalysis": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心分析"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "核心分析"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Core Analysis"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.summaryReview": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "总结复盘"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "总结复盘"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary Review"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionSection1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 核心概念与理论机制"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 核心概念与理论机制"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Core Concepts and Theoretical Mechanisms"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionSection2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 结构解构与关键要素"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 结构解构与关键要素"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Structure Deconstruction and Key Elements"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionSection3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 实践应用与落地方法"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 实践应用与落地方法"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Practical Application and Implementation Methods"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionSection4": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 延伸思考与前沿趋势"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 延伸思考与前沿趋势"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Extended Thinking and Frontier Trends"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionBackgroundHeader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 知识背景与起源分析"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## 知识背景与起源分析"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## Knowledge Background and Origin Analysis"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.expansionFiller": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "围绕该主题，在实际应用场景中可结合知识库上下文进行深入实践与验证。通过原子化笔记与双向链接网络，促成不同主题之间的非线性网状碰撞与长时记忆巩固。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "围绕该主题，在实际应用场景中可结合知识库上下文进行深入实践与验证。通过原子化笔记与双向链接网络，促成不同主题之间的非线性网状碰撞与长时记忆巩固。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around this topic, in practical application scenarios, you can combine knowledge base context for in-depth practice and verification. Through atomic notes and bidirectional link networks, promote non-linear network collisions between different topics and long-term memory consolidation."
+          }
+        }
+      }
+    },
+    "synthesis.fallback.quizInsufficientTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - 暂无可用题目"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - 暂无可用题目"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ - No Questions Available"
+          }
+        }
+      }
+    },
+    "synthesis.fallback.quizInsufficientQuestion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前内容信息量不足，无法生成针对性题目。请补充更多上下文或关键要点后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前内容信息量不足，无法生成针对性题目。请补充更多上下文或关键要点后重试。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current content has insufficient information to generate targeted questions. Please add more context or key points and try again."
+          }
+        }
+      }
+    },
+    "synthesis.fallback.quizInsufficientExplanation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解析：回退题目，建议补充原文内容后重新生成。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解析：回退题目，建议补充原文内容后重新生成。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
           }
         }
       }

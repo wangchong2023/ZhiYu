@@ -56,9 +56,9 @@ public final class DocumentSanitationEngine: DocumentSanitizerProtocol {
 
     private func stripHTMLNoise(_ text: String) -> String {
         var clean = text
-        clean = clean.replacingOccurrences(of: "<script[^>]*>[\\s\\S]*?</script>", with: "", options: .regularExpression)
-        clean = clean.replacingOccurrences(of: "<style[^>]*>[\\s\\S]*?</style>", with: "", options: .regularExpression)
-        clean = clean.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        clean = clean.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.scriptBlock, with: "", options: .regularExpression)
+        clean = clean.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.styleBlock, with: "", options: .regularExpression)
+        clean = clean.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.allTags, with: "", options: .regularExpression)
         return clean
     }
 
@@ -72,21 +72,21 @@ public final class DocumentSanitationEngine: DocumentSanitizerProtocol {
                 merged.append("")
                 continue
             }
-            if trimmed.hasPrefix("#") || trimmed.hasPrefix("-") || trimmed.hasPrefix("*") || trimmed.hasPrefix(">") || trimmed.hasPrefix("```") {
+            if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.hash) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.dash) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.asterisk) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.greaterThan) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) {
                 merged.append(line)
                 continue
             }
-            if let last = merged.last, !last.isEmpty, !last.hasPrefix("#"), !last.hasPrefix("-"), !last.hasPrefix("*"), !last.hasPrefix(">"), !last.hasPrefix("```") {
-                merged[merged.count - 1] = last + " " + trimmed
+            if let last = merged.last, !last.isEmpty, !last.hasPrefix(ProcessorConstants.MarkdownSyntax.hash), !last.hasPrefix(ProcessorConstants.MarkdownSyntax.dash), !last.hasPrefix(ProcessorConstants.MarkdownSyntax.asterisk), !last.hasPrefix(ProcessorConstants.MarkdownSyntax.greaterThan), !last.hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) {
+                merged[merged.count - 1] = last + ProcessorConstants.Whitespace.space + trimmed
             } else {
                 merged.append(line)
             }
         }
-        return merged.joined(separator: "\n")
+        return merged.joined(separator: ProcessorConstants.Whitespace.newline)
     }
 
     private func stripLeadingChatter(_ text: String) -> String {
-        let lines = text.components(separatedBy: "\n")
+        let lines = text.components(separatedBy: ProcessorConstants.Whitespace.newline)
         guard let firstLine = lines.first?.trimmingCharacters(in: .whitespaces) else { return text }
 
         let lower = firstLine.lowercased()

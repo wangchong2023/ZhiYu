@@ -180,7 +180,7 @@ public enum MatrixValue: Codable, Sendable {
         case .imageList(let arr):
             try container.encode(arr)
         case .range(let min, let max):
-            try container.encode(["min": min, "max": max])
+            try container.encode([ProcessorConstants.Frontmatter.minKey: min, "max": max])
         case .null:
             try container.encodeNil()
         }
@@ -198,7 +198,7 @@ public enum FrontmatterParser {
         
         // 必须以 --- 或 ---json 开头
         guard let firstLine = lines.first?.trimmingCharacters(in: .whitespacesAndNewlines),
-              firstLine == "---" || firstLine == "---json" else {
+              firstLine == ProcessorConstants.Frontmatter.yamlDelimiter || firstLine == ProcessorConstants.Frontmatter.jsonDelimiter else {
             return (nil, content)
         }
         
@@ -209,7 +209,7 @@ public enum FrontmatterParser {
         for index in 1..<lines.count {
             let line = lines[index]
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !foundEnd && trimmed == "---" {
+            if !foundEnd && trimmed == ProcessorConstants.Frontmatter.yamlDelimiter {
                 foundEnd = true
                 continue
             }
@@ -225,8 +225,8 @@ public enum FrontmatterParser {
             return (nil, content)
         }
         
-        let fmString = frontmatterLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
-        let bodyString = bodyLines.joined(separator: "\n")
+        let fmString = frontmatterLines.joined(separator: ProcessorConstants.Whitespace.newline).trimmingCharacters(in: .whitespacesAndNewlines)
+        let bodyString = bodyLines.joined(separator: ProcessorConstants.Whitespace.newline)
         return (fmString.isEmpty ? nil : fmString, bodyString)
     }
     
@@ -275,14 +275,14 @@ public enum FrontmatterParser {
         
         for line in lines {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
-            
-            if trimmed.hasPrefix("-") {
+            if trimmed.isEmpty || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.hash) { continue }
+
+            if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.dash) {
                 processArrayItemLine(trimmed, currentObject: &currentObject, currentArray: &currentArray)
                 continue
             }
-            
-            if line.hasPrefix("  ") || line.hasPrefix("    ") {
+
+            if line.hasPrefix(ProcessorConstants.Whitespace.doubleSpace) || line.hasPrefix(ProcessorConstants.Whitespace.quadSpace) {
                 parseKeyValue(trimmed, into: &currentObject)
                 continue
             }
@@ -347,15 +347,15 @@ public enum FrontmatterParser {
             dict[key] = items
         } else if let num = Double(valueStr) {
             dict[key] = num
-        } else if valueStr == "true" {
+        } else if valueStr == ProcessorConstants.BoolString.true {
             dict[key] = true
-        } else if valueStr == "false" {
+        } else if valueStr == ProcessorConstants.BoolString.false {
             dict[key] = false
         } else {
             var cleanVal = valueStr
-            if cleanVal.hasPrefix("\"") && cleanVal.hasSuffix("\"") {
+            if cleanVal.hasPrefix(ProcessorConstants.MarkdownSyntax.doubleQuote) && cleanVal.hasSuffix(ProcessorConstants.MarkdownSyntax.doubleQuote) {
                 cleanVal = String(cleanVal.dropFirst().dropLast())
-            } else if cleanVal.hasPrefix("'") && cleanVal.hasSuffix("'") {
+            } else if cleanVal.hasPrefix(ProcessorConstants.MarkdownSyntax.singleQuote) && cleanVal.hasSuffix(ProcessorConstants.MarkdownSyntax.singleQuote) {
                 cleanVal = String(cleanVal.dropFirst().dropLast())
             }
             dict[key] = cleanVal

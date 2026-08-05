@@ -525,8 +525,30 @@ extension L10n {
                 public static var expansionBackgroundBody: String { AI.tr("synthesis.fallback.expansionBackgroundBody") }
                 public static var expansionDetailsHeader: String { AI.tr("synthesis.fallback.expansionDetailsHeader") }
                 public static func expansionDetailItem(_ index: Int, _ text: String) -> String { AI.trf("synthesis.fallback.expansionDetailItem", index, text) }
-                public static var expansionFutureHeader: String { AI.tr("synthesis.fallback.expansionFutureHeader") }
                 public static var expansionFutureBody: String { AI.tr("synthesis.fallback.expansionFutureBody") }
+
+                // 演示文稿回退
+                public static var slidesSubtitle: String { AI.tr("synthesis.fallback.slidesSubtitle") }
+                public static func expansionPointTitle(_ index: Int) -> String { AI.trf("synthesis.fallback.expansionPointTitle", index) }
+                public static var expansionBullet1: String { AI.tr("synthesis.fallback.expansionBullet1") }
+                public static var expansionBullet2: String { AI.tr("synthesis.fallback.expansionBullet2") }
+                public static var slideBullet1: String { AI.tr("synthesis.fallback.slideBullet1") }
+                public static var slideBullet2: String { AI.tr("synthesis.fallback.slideBullet2") }
+                public static var coreAnalysis: String { AI.tr("synthesis.fallback.coreAnalysis") }
+                public static var summaryReview: String { AI.tr("synthesis.fallback.summaryReview") }
+
+                // 知识扩充回退
+                public static var expansionSection1: String { AI.tr("synthesis.fallback.expansionSection1") }
+                public static var expansionSection2: String { AI.tr("synthesis.fallback.expansionSection2") }
+                public static var expansionSection3: String { AI.tr("synthesis.fallback.expansionSection3") }
+                public static var expansionSection4: String { AI.tr("synthesis.fallback.expansionSection4") }
+                public static var expansionBackgroundHeader: String { AI.tr("synthesis.fallback.expansionBackgroundHeader") }
+                public static var expansionFiller: String { AI.tr("synthesis.fallback.expansionFiller") }
+
+                // Quiz 回退（通用占位提示，不硬编码领域知识）
+                public static func quizInsufficientTitle(_ topic: String) -> String { AI.trf("synthesis.fallback.quizInsufficientTitle", topic) }
+                public static var quizInsufficientQuestion: String { AI.tr("synthesis.fallback.quizInsufficientQuestion") }
+                public static var quizInsufficientExplanation: String { AI.tr("synthesis.fallback.quizInsufficientExplanation") }
 
                 public static var chatterPrefixes: [String] {
                     [

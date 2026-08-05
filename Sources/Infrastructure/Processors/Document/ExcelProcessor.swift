@@ -32,11 +32,11 @@ final class ExcelProcessor: NSObject, XMLParserDelegate {
 
     /// XMLParserDelegate: 元素开始 — 检测单元格 <c> 和值节点 <v>，记录单元格类型 t 属性。
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
-        if elementName == "c" {
-            currentCellType = attributeDict["t"]
+        if elementName == ProcessorConstants.OOXML.cellElement {
+            currentCellType = attributeDict[ProcessorConstants.OOXML.cellTypeAttribute]
             inCellElement = true
             currentText = ""
-        } else if elementName == "v" {
+        } else if elementName == ProcessorConstants.OOXML.valueElement {
             inValueElement = true
             currentText = ""
         }
@@ -51,12 +51,12 @@ final class ExcelProcessor: NSObject, XMLParserDelegate {
 
     /// XMLParserDelegate: 元素结束 — <v> 关闭时停止累积；<c> 关闭时将共享字符串索引 (t="s") 记录为待映射值。
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if elementName == "v" {
+        if elementName == ProcessorConstants.OOXML.valueElement {
             inValueElement = false
-        } else if elementName == "c" {
-            if !currentText.isEmpty && (currentCellType == "s" || currentCellType == "inlineStr") {
-                if let value = Int(currentText), value < 10000 {
-                    values.append("[\(value)]")
+        } else if elementName == ProcessorConstants.OOXML.cellElement {
+            if !currentText.isEmpty && (currentCellType == ProcessorConstants.OOXML.cellTypeShared || currentCellType == ProcessorConstants.OOXML.cellTypeInlineString) {
+                if let value = Int(currentText), value < ProcessorConstants.OOXML.sharedStringIndexMax {
+                    values.append("\(ProcessorConstants.OOXML.sharedStringIndexOpen)\(value)\(ProcessorConstants.OOXML.sharedStringIndexClose)")
                 }
             }
             inCellElement = false
