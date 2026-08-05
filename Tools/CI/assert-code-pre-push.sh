@@ -132,6 +132,11 @@ run_check "文档漂移检测" \
     "python3 Tools/CI/check-doc-drift.py" \
     "false"
 
+# 1.9 业务层魔鬼数字/硬编码 Prompt 审计（阻断——AGENTS.md 红线 #4）
+run_check "业务层魔鬼数字审计" \
+    "python3 Tools/ios/audit-code-business-magic-numbers.py --strict" \
+    || exit 1
+
 # quick 模式在此结束
 if [ "$MODE" = "quick" ]; then
     summary && echo -e "${GREEN}${BOLD}✅ 快速门禁通过！${NC}" && exit 0

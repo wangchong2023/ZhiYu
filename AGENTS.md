@@ -74,6 +74,13 @@
 4. **🔢 彻底去魔鬼化数字 / 字符 / 字符串 (No Magic Numbers/Strings)**：
    - 业务逻辑、限制阈值、校验常量、Prompt 关键词组必须抽取为强类型常量枚举或 `L10n` 扩展。
    - 严禁在代码中出现内联魔鬼数字（如 `3`, `5`, `15`）或硬编码正则特征字面量。
+   - **三层守门全覆盖**（CI 静态分析 + pre-push 钩子，均阻断）：
+     - `audit-design-magic-numbers.py` — UI 设计令牌层（padding/frame/color）
+     - `audit-code-magic-strings.py` — Features/Platforms 字符串层（UserDefaults key/URL）
+     - `audit-code-business-magic-numbers.py` — **Domain/Infrastructure/Core 业务逻辑层**（业务阈值数字/硬编码 Prompt/硬编码正则）
+   - **协议常量也必须抽取**：HTTP 状态码（`200`→`HTTPStatusCode.ok`）、字节换算（`1024`→`BytesPerKB`）、位运算移位（`<< 24`→`BitShift.octet1`）、IP 段（`192.168`→`PrivateIPRange.classC`）等不通过文件白名单豁免。
+   - **复合表达式中的换算常量必须抽取**：`5 * 1024 * 1024` 应改为 `5 * BytesPerKB * BytesPerKB`，`1024` 不被「常量定义行」规则吞掉。
+   - **豁免统一走 ExemptionRegistry**：在 `Config/exemptions/manual_whitelist.yml` 的 `business_magic_exempt` 分类下登记，含 file/line/reason/expiry_check，不支持行注释豁免。
 
 ## 项目概览
 
