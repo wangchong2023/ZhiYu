@@ -70,6 +70,7 @@
 		0708E60DC333EC9DB0E0647D /* AccessibilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F48C4E48B268496207B4483 /* AccessibilityService.swift */; };
 		0777BB97B9F4EB93D6CC4DFF /* iOSURLOpenerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0EC918C039E857B37E7C4D /* iOSURLOpenerService.swift */; };
 		077CB3586F4CABC3AB9C43AE /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DDB12E0501C0083FE73E085B /* SnapshotTesting */; };
+		07858CA46ADCAE6D93512106 /* CoreConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526A6BD8E59AD3939C841264 /* CoreConstants.swift */; };
 		07980C00C2ABBDE9999AC871 /* AppChips.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BA716F925D2B7D2F354619 /* AppChips.swift */; };
 		079D3F008B0EF5482410257E /* FileArchiverProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA2420EB77613B5AE3641F /* FileArchiverProtocol.swift */; };
 		07C754855A73285795BE4AB1 /* ModuleRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27225A732EA9DEE5493E0E41 /* ModuleRegistrar.swift */; };
@@ -1112,6 +1113,7 @@
 		8FF76950B0924FF464B4075F /* PlatformModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDA25AC133D7889B154D8B2 /* PlatformModifiers.swift */; };
 		904435C0F8B5469DED84E233 /* PlatformModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDA25AC133D7889B154D8B2 /* PlatformModifiers.swift */; };
 		90811D8A6A32AF3946DDBBEA /* LintView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA48B99193A813CBF4C1A96 /* LintView.swift */; };
+		90B8558276F62E36FCFA9048 /* CoreConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526A6BD8E59AD3939C841264 /* CoreConstants.swift */; };
 		90CBE03DD3457AF4939B0BA9 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83F0A7A4D27CF5AE687F0D2 /* CachedAsyncImage.swift */; };
 		90DD9D73E12CAF153F5AA629 /* CrossPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B6F26341300A6C681D2CD3 /* CrossPlatform.swift */; };
 		9116E79DB44AC159718A78C2 /* AppModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AEF6FE252A1F56F7BF0E2E3 /* AppModels.swift */; };
@@ -1472,6 +1474,7 @@
 		BE9E4A7088E4C9B51EDDC9C5 /* ocr_store_manual.png in Resources */ = {isa = PBXBuildFile; fileRef = 36BE4E913C6DBD30BB7FDDDD /* ocr_store_manual.png */; };
 		BEA52BDEB72CC47A702B2C03 /* MemoryEngineAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733CCC3B730BBDE4E8D41F5D /* MemoryEngineAdapterTests.swift */; };
 		BEB5028BBA1B5202E8832620 /* pkm_methodology.md in Resources */ = {isa = PBXBuildFile; fileRef = AB57FA79A989F2B01487426B /* pkm_methodology.md */; };
+		BEBAF435F28CF72A3466EE0B /* CoreConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526A6BD8E59AD3939C841264 /* CoreConstants.swift */; };
 		BEC7FC4F645C6630CD48812D /* AppEmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA77275F3ACC64E00CAE8993 /* AppEmptyState.swift */; };
 		BF03D58486FF3416C8D5D8AA /* SwiftJSONSanitizerDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 190362FD93678CD8EF27A7B0 /* SwiftJSONSanitizerDynamic */; };
 		BF0C953AE9975691AAC12E1B /* MacDeviceInfoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C0BDF0EA4CB781835CFE270 /* MacDeviceInfoService.swift */; };
@@ -2396,6 +2399,7 @@
 		51FAD49CE8F1DF1692F29AE1 /* VersionInfoFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionInfoFormatter.swift; sourceTree = "<group>"; };
 		51FC5194BEA43CEE313B4E20 /* MacURLOpenerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacURLOpenerService.swift; sourceTree = "<group>"; };
 		52064BC9DACDD2ED3974F17F /* AppTooltip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTooltip.swift; sourceTree = "<group>"; };
+		526A6BD8E59AD3939C841264 /* CoreConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreConstants.swift; sourceTree = "<group>"; };
 		529137992AF281EB66172E2B /* swift-snapshot-testing */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-snapshot-testing"; path = "../../opensrc/swift/swift-snapshot-testing"; sourceTree = SOURCE_ROOT; };
 		5294BBBE0CB8D49758743DC3 /* ChatRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRunner.swift; sourceTree = "<group>"; };
 		52D8E143FC1868EC6ACE6C99 /* PromptSecurityGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptSecurityGuard.swift; sourceTree = "<group>"; };
@@ -3391,6 +3395,7 @@
 			children = (
 				1AB96971049540A59EAC1358 /* AppConfig.swift */,
 				751F592B285200694823E27F /* AppConstants.swift */,
+				526A6BD8E59AD3939C841264 /* CoreConstants.swift */,
 				8F4912BDEF2C5552443B5198 /* DocumentFormat.swift */,
 				E0147398F5DC7D4EBE943E60 /* LogAction.swift */,
 				44E5C0E3FCF268A2008C1889 /* LogEntry.swift */,
@@ -7012,6 +7017,7 @@
 				02CC7E9DE08A54325EA60B12 /* ContentModerationEngine.swift in Sources */,
 				4819AC70A664755799F737D5 /* ContentView.swift in Sources */,
 				5F14908570A4CCC04FB414F9 /* ContextReranker.swift in Sources */,
+				07858CA46ADCAE6D93512106 /* CoreConstants.swift in Sources */,
 				8D68F93B503AAA6471789117 /* CoreMLModerationClassifier.swift in Sources */,
 				1CC82D8C12E42ECC9A465AD5 /* CreateNotebookButton.swift in Sources */,
 				591ED03AA07014D515298B28 /* CreatePageView.swift in Sources */,
@@ -7771,6 +7777,7 @@
 				A8CF63AA0B2DC6A66D95F3B2 /* ContentModerationEngine.swift in Sources */,
 				3D48BE81634B2422949879A8 /* ContentView.swift in Sources */,
 				164E9BDCE80EF2BB004E22F3 /* ContextReranker.swift in Sources */,
+				90B8558276F62E36FCFA9048 /* CoreConstants.swift in Sources */,
 				8EA564850093F2F1F88CDAF8 /* CoreMLModerationClassifier.swift in Sources */,
 				9C28D5245AE4CA0DAF2F12AA /* CreateNotebookButton.swift in Sources */,
 				70E88B79CA49E78A81F74EC3 /* CreatePageView.swift in Sources */,
@@ -8381,6 +8388,7 @@
 				EECA864957335B9C96E6BE20 /* CollaborationModels.swift in Sources */,
 				01700C37ECFE63CE46072C74 /* CollaborationProviderProtocol.swift in Sources */,
 				49870BD26505EFADF5125A2E /* Colors.swift in Sources */,
+				BEBAF435F28CF72A3466EE0B /* CoreConstants.swift in Sources */,
 				90DD9D73E12CAF153F5AA629 /* CrossPlatform.swift in Sources */,
 				41BD81F7BFCC1A18EB77115F /* DTOs.swift in Sources */,
 				E74EF9BAFA331B0395AAA51A /* DatabaseManagerProtocol.swift in Sources */,

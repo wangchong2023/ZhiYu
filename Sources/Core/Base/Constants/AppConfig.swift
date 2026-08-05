@@ -9,6 +9,7 @@
 //  核心职责：应用级编译时常量定义（存储 key、超时、默认值等）。
 //
 import Foundation
+import UFPCore
 
 /// 智宇 (ZhiYu) 全局配置中心
 /// 采用“动态读取 + 静态分区”模式，确保系统的高可配置性与类型安全。
@@ -16,7 +17,7 @@ enum AppConfig {
     
     // MARK: - 动态配置加载器
     private nonisolated(unsafe) static var configData: [String: Any] = {
-        guard let url = Bundle.main.url(forResource: "AppConfig", withExtension: "json"),
+        guard let url = Bundle.main.url(forResource: CoreConstants.BundleResource.appConfig, withExtension: SystemConstants.FileExtension.json),
               let data = try? Data(contentsOf: url),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return [:]
@@ -97,10 +98,10 @@ enum AppConfig {
     static var jinaReaderURL: String { getNetwork(.jinaReaderBase) }
     
     /// Ollama 本地默认的大模型推理 API Base URL
-    static var ollamaDefaultURL: String { llmProviderURL(for: "ollama") }
+    static var ollamaDefaultURL: String { llmProviderURL(for: CoreConstants.LLMProvider.ollama) }
     
     /// DeepSeek 官方默认的大模型 API Base URL
-    static var deepseekDefaultURL: String { llmProviderURL(for: "deepseek") }
+    static var deepseekDefaultURL: String { llmProviderURL(for: CoreConstants.LLMProvider.deepseek) }
     
     static var backendBaseURL: String { getNetwork(.backendBaseURL) }
     
@@ -133,7 +134,7 @@ enum AppConfig {
         static var evaluatorModel: String { getPerformance(.evaluatorModel, default: AppModel.gpt4o.rawValue) }
         
         /// 默认大模型名称
-        static var defaultModel: String { getPerformance(.defaultModel, default: "deepseek-v4-pro") }
+        static var defaultModel: String { getPerformance(.defaultModel, default: CoreConstants.DefaultModel.deepseekV4Pro) }
 
         // MARK: - RAG 评估参数
         /// Hit Rate 评估的 Top-K 值

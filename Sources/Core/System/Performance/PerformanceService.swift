@@ -9,6 +9,7 @@
 //  核心职责：实现 Performance 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 #if canImport(MachO)
 import MachO
 #endif
@@ -103,7 +104,7 @@ final class PerformanceService: ObservableObject {
         default: break
         }
         
-        if label.contains("ai") || label.contains("llm") || label == "ragChain" {
+        if label.contains(CoreConstants.PerformanceLabel.ai) || label.contains(CoreConstants.PerformanceLabel.llm) || label == CoreConstants.PerformanceLabel.ragChain {
             metrics.llmCallCount += 1
         }
         
@@ -115,14 +116,14 @@ final class PerformanceService: ObservableObject {
     func updateMemoryUsage() {
         // Use task_info via Mach API
         var info = mach_task_basic_info()
-        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size) / 4
+        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / SystemConstants.bytesPerIntegerT)
         let kernReturn: kern_return_t = withUnsafeMutablePointer(to: &info) {
             $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
                 task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
             }
         }
         if kernReturn == KERN_SUCCESS {
-            metrics.memoryUsageMB = Double(info.resident_size) / 1024.0 / 1024.0
+            metrics.memoryUsageMB = Double(info.resident_size) / SystemConstants.bytesPerKB / SystemConstants.bytesPerKB
         }
     }
     

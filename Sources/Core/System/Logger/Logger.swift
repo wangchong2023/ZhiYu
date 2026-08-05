@@ -10,6 +10,7 @@
 //
 import Foundation
 import Combine
+import UFPCore
 
 // MARK: - Logger Protocol
 
@@ -224,7 +225,7 @@ public actor Logger: LoggerProtocol {
         // 审查修复 MED-7: 日志输出前脱敏
         print(" [ERROR]" + " [\(fileName):\(line)]" + " \(function)" + " -> \(LogMasker.mask(message))\(errDesc)")
         
-        addLog(action: .error, target: message, details: errDesc, module: "System", status: .failure, failureReason: error?.localizedDescription)
+        addLog(action: .error, target: message, details: errDesc, module: CoreConstants.LogModule.system, status: .failure, failureReason: error?.localizedDescription)
     }
 
     // MARK: - Structured Logging
@@ -342,7 +343,7 @@ public actor Logger: LoggerProtocol {
             let data = try encoder.encode(entries)
             try data.write(to: url, options: .atomicWrite)
         } catch {
-            print(" [Logger]" + " Failed to" + " save logs:" + " \(error.localizedDescription)")
+            print("\(CoreConstants.LogPrefix.logger) \(CoreConstants.LogDetails.failedTo) \(CoreConstants.LogDetails.saveLogs) \(error.localizedDescription)")
         }
     }
 
@@ -380,15 +381,15 @@ public actor Logger: LoggerProtocol {
 extension TimeInterval {
     /// 自动根据量级选择最合适的单位进行格式化 (µs, ms, s, m)
     public var formattedAdaptive: String {
-        if self < 0.001 {
-            return String(format: "%.0fµs", self * 1_000_000)
-        } else if self < 1.0 {
-            return String(format: "%.1fms", self * 1000)
-        } else if self < 60.0 {
+        if self < SystemConstants.microsecondThreshold {
+            return String(format: "%.0fµs", self * SystemConstants.microsecondsPerSecond)
+        } else if self < SystemConstants.secondThreshold {
+            return String(format: "%.1fms", self * SystemConstants.millisecondsPerSecond)
+        } else if self < SystemConstants.secondsPerMinute {
             return String(format: "%.2fs", self)
         } else {
-            let minutes = Int(self) / 60
-            let seconds = self.truncatingRemainder(dividingBy: 60)
+            let minutes = Int(self) / SystemConstants.secondsPerMinuteInt
+            let seconds = self.truncatingRemainder(dividingBy: SystemConstants.secondsPerMinute)
             return String(format: "%dm %.1fs", minutes, seconds)
         }
     }

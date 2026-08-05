@@ -50,7 +50,7 @@ final class LLMContextBuilderPrecisionTests: XCTestCase {
             let chunk = PageChunk(
                 id: "chunk_pos_\(i)",
                 pageID: pageID,
-                chunkType: i == 1 ? "summary" : "paragraph",
+                chunkType: i == 1 ? .summary : .paragraph,
                 content: "Kubernetes Server-Side Apply SSA managedFields detail \(i)",
                 index: 25 + i
             )

@@ -195,9 +195,9 @@ class SecurityManager: @unchecked Sendable {
             // 生产环境：签名持久化失败属于严重安全错误，不允许明文降级
             Logger.shared.addLog(
                 action: .error,
-                target: "SecurityManager",
-                details: "Critical: Failed" + " to persist" + " HMAC signature" + " securely: \(error.localizedDescription)",
-                module: "Security"
+                target: CoreConstants.SecurityLogTarget.securityManager,
+                details: "\(CoreConstants.SecurityLogDetails.criticalFailed) to persist HMAC signature securely: \(error.localizedDescription)",
+                module: CoreConstants.Security.logModule
             )
             #endif
         }
@@ -231,9 +231,9 @@ class SecurityManager: @unchecked Sendable {
             #else
             Logger.shared.addLog(
                 action: .error,
-                target: "SecurityManager",
+                target: CoreConstants.SecurityLogTarget.securityManager,
                 details: "Integrity check failed: no signature on file: \(fileURL.lastPathComponent)",
-                module: "Security"
+                module: CoreConstants.Security.logModule
             )
             return false
             #endif
@@ -253,7 +253,7 @@ class SecurityManager: @unchecked Sendable {
             let sig = try await calculateHMAC(for: fileURL)
             await saveSignature(sig, forFilePath: fileURL.path)
         } catch {
-            Logger.shared.addLog(action: .error, target: "SecurityManager", details: "Failed to" + " update signature:" + " \(error.localizedDescription)", module: "Security")
+            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.securityManager, details: "\(CoreConstants.SecurityLogDetails.failedTo) update signature: \(error.localizedDescription)", module: CoreConstants.Security.logModule)
         }
     }
 }

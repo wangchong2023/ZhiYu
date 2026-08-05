@@ -68,9 +68,9 @@ final class PromptSanitizer: Sendable {
                 // 记录安全警报日志
                 Logger.shared.addLog(
                     action: .error,
-                    target: "PromptSanitizer",
+                    target: CoreConstants.SecurityLogTarget.promptSanitizer,
                     details: L10n.Security.promptInjectionLog(pattern),
-                    module: "Security"
+                    module: CoreConstants.Security.logModule
                 )
 
                 // 将恶意指令替换为无害的安全警告占位符

@@ -89,27 +89,27 @@ internal struct Localized {
     static var currentLanguage: String {
         switch languageMode {
         case .auto:
-            let preferred = Bundle.main.preferredLocalizations.first ?? "en"
-            if preferred.hasPrefix("zh-Hant") || preferred.hasPrefix("zh-HK") || preferred.hasPrefix("zh-TW") || preferred.hasPrefix("zh-MO") {
-                return "zh-Hant"
-            } else if preferred.hasPrefix("zh") {
+            let preferred = Bundle.main.preferredLocalizations.first ?? CoreConstants.LanguageCode.en
+            if preferred.hasPrefix(CoreConstants.LanguageCode.zhHant) || preferred.hasPrefix(CoreConstants.LanguageCode.zhHK) || preferred.hasPrefix(CoreConstants.LanguageCode.zhTW) || preferred.hasPrefix(CoreConstants.LanguageCode.zhMO) {
+                return CoreConstants.LanguageCode.zhHant
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.zh) {
                 return "zh-Hans"
-            } else if preferred.hasPrefix("es") {
-                return "es"
-            } else if preferred.hasPrefix("fr") {
-                return "fr"
-            } else if preferred.hasPrefix("ar") {
-                return "ar"
-            } else if preferred.hasPrefix("ru") {
-                return "ru"
-            } else if preferred.hasPrefix("ko") {
-                return "ko"
-            } else if preferred.hasPrefix("ja") {
-                return "ja"
-            } else if preferred.hasPrefix("pt") {
-                return "pt"
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.es) {
+                return CoreConstants.LanguageCode.es
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.fr) {
+                return CoreConstants.LanguageCode.fr
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.ar) {
+                return CoreConstants.LanguageCode.ar
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.ru) {
+                return CoreConstants.LanguageCode.ru
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.ko) {
+                return CoreConstants.LanguageCode.ko
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.ja) {
+                return CoreConstants.LanguageCode.ja
+            } else if preferred.hasPrefix(CoreConstants.LanguageCode.pt) {
+                return CoreConstants.LanguageCode.pt
             }
-            return preferred.hasPrefix("en") ? "en" : preferred
+            return preferred.hasPrefix(CoreConstants.LanguageCode.en) ? CoreConstants.LanguageCode.en : preferred
         case .english: return "en"
         case .chinese: return "zh-Hans"
         case .traditionalChinese: return "zh-Hant"
@@ -131,7 +131,7 @@ internal struct Localized {
     
     /// 检查当前系统是否运行于中文（包括各种中文变体）语言环境下。
     static var isChinese: Bool {
-        currentLanguage.hasPrefix("zh")
+        currentLanguage.hasPrefix(CoreConstants.LanguageCode.zh)
     }
     
     /// 内存回退：当 KeyStoreProtocol 未就绪时（单测环境），用静态变量暂存语言偏好。
@@ -189,7 +189,7 @@ internal struct Localized {
 
             // 未击中缓存：执行物理路径扫描与重装载
             let bundle: Bundle
-            if let path = Bundle.main.path(forResource: currentLang, ofType: "lproj"),
+            if let path = Bundle.main.path(forResource: currentLang, ofType: CoreConstants.Localization.lproj),
                let b = Bundle(path: path) {
                 bundle = b
             } else {
@@ -262,8 +262,8 @@ internal struct Localized {
         var result = NSLocalizedString(key, tableName: resolvedTable, bundle: bundle, value: marker, comment: "")
         
         // 优雅 Fallback 降级检索：如果在特定的垂直领域表中未找到该 Key，自动降级至 Common 共享表重试
-        if result == marker && resolvedTable != "Common" {
-            result = NSLocalizedString(key, tableName: "Common", bundle: bundle, value: marker, comment: "")
+        if result == marker && resolvedTable != CoreConstants.Localization.commonTable {
+            result = NSLocalizedString(key, tableName: CoreConstants.Localization.commonTable, bundle: bundle, value: marker, comment: "")
         }
         
         // 若最终未命中，输出警示信息并返回 Missing 标签，防空崩溃
@@ -298,7 +298,7 @@ internal struct Localized {
         let marker = "MISSING_KEY_MARKER"
         
         for lang in Bundle.main.localizations {
-            guard let lprojPath = Bundle.main.path(forResource: lang, ofType: "lproj"),
+            guard let lprojPath = Bundle.main.path(forResource: lang, ofType: CoreConstants.Localization.lproj),
                   let langBundle = Bundle(path: lprojPath) else {
                 continue
             }
@@ -306,8 +306,8 @@ internal struct Localized {
             var value = NSLocalizedString(key, tableName: resolvedTable, bundle: langBundle, value: marker, comment: "")
             
             // Fallback 降级至 Common 共享表
-            if value == marker && resolvedTable != "Common" {
-                value = NSLocalizedString(key, tableName: "Common", bundle: langBundle, value: marker, comment: "")
+            if value == marker && resolvedTable != CoreConstants.Localization.commonTable {
+                value = NSLocalizedString(key, tableName: CoreConstants.Localization.commonTable, bundle: langBundle, value: marker, comment: "")
             }
             
             if value != marker && !results.contains(value) {

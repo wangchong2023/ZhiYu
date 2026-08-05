@@ -9,6 +9,7 @@
 //  核心职责：实现 DeepLink 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 // MARK: - Deep Link Service
 /// Handles deep links, universal links, and Spotlight indexing for Knowledge Base pages.
@@ -34,7 +35,7 @@ final class DeepLinkService: ObservableObject {
             Logger.shared.warning(" [DeepLinkService]" + " Rate limit" + " exceeded! Dropping" + " request: \(url.absoluteString)")
             return false
         }
-        guard url.scheme == "zhiyu" else { return false }
+        guard url.scheme == CoreConstants.DeepLink.scheme else { return false }
         return handleKnownHost(url.host, url: url)
     }
 
@@ -68,7 +69,7 @@ final class DeepLinkService: ObservableObject {
     /// - Parameter userActivity: userActivity
     /// - Returns: 是否成功
     func handleSpotlightActivity(_ userActivity: NSUserActivity) -> Bool {
-        guard userActivity.activityType == "com.zhiyu.app.openPage",
+        guard userActivity.activityType == CoreConstants.DeepLink.spotlightActivityType,
               let userInfo = userActivity.userInfo,
               let idString = userInfo["pageID"] as? String,
               let id = UUID(uuidString: idString) else {

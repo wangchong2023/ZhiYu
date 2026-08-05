@@ -9,6 +9,7 @@
 //  核心职责：实现 Snapshot 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// 知识版本快照服务 (Snapshot Service)
 /// 用于在页面发生重大变更（如智能折叠、重构）前后记录物理快照，提供“后悔药”机制。
@@ -60,7 +61,7 @@ final class SnapshotService {
         }
 
         return files
-            .filter { $0.pathExtension == "md" }
+            .filter { $0.pathExtension == SystemConstants.FileExtension.markdown }
             .compactMap { url -> SnapshotInfo? in
                 let timestamp = url.deletingPathExtension().lastPathComponent
                 guard let date = ISO8601DateFormatter().date(from: timestamp) else { return nil }
@@ -74,9 +75,9 @@ final class SnapshotService {
         guard let content = try? String(contentsOf: snapshot.url, encoding: .utf8) else { return nil }
         
         // 剥离 Frontmatter
-        let parts = content.components(separatedBy: "---")
-        if parts.count >= 3 {
-            return parts.dropFirst(2).joined(separator: "---").trimmingCharacters(in: .whitespacesAndNewlines)
+        let parts = content.components(separatedBy: CoreConstants.Frontmatter.separator)
+        if parts.count >= CoreConstants.Frontmatter.minPartCount {
+            return parts.dropFirst(CoreConstants.Frontmatter.dropFirstCount).joined(separator: CoreConstants.Frontmatter.separator).trimmingCharacters(in: .whitespacesAndNewlines)
         }
         return content
     }

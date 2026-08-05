@@ -39,7 +39,7 @@ public final class PIIMasker: Sendable {
         for pattern in piiPatterns {
             if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
                 let range = NSRange(location: 0, length: masked.utf16.count)
-                masked = regex.stringByReplacingMatches(in: masked, options: [], range: range, withTemplate: "[REDACTED_PII]")
+                masked = regex.stringByReplacingMatches(in: masked, options: [], range: range, withTemplate: CoreConstants.PIIMasking.redactedPII)
             }
         }
 

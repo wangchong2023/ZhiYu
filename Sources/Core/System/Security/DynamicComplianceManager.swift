@@ -46,7 +46,7 @@ public final class DynamicComplianceManager: @unchecked Sendable {
     public func getComplianceMessage(for category: ComplianceCategory) -> String {
         let custom = lock.withLock { () -> String? in
             let lang = Locale.preferredLanguages.first?.lowercased() ?? "en"
-            let langKey = lang.hasPrefix("zh") ? "zh-Hans" : "en"
+            let langKey = lang.hasPrefix(CoreConstants.LanguageCode.zh) ? "zh-Hans" : "en"
             if let langDict = remoteTextOverrides[langKey], let customMsg = langDict[category.rawValue], !customMsg.isEmpty {
                 return customMsg
             }

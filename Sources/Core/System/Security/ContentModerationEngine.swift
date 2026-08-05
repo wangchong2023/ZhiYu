@@ -57,25 +57,25 @@ public final class ContentModerationEngine: Sendable {
         // 1. 拦截级别 3 重度违规 (政治、黄色、暴恐、赌博毒品)
         let activePolitical = DynamicComplianceManager.shared.getPatterns(for: .politicalReactionary, fallback: politicalPatterns)
         if matchesAny(sanitizedText, rawText: text, patterns: activePolitical) {
-            Logger.shared.addLog(action: .error, target: "ContentModerationEngine", details: "Blocked political content", module: "Security")
+            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: CoreConstants.SecurityLogDetails.blockedPolitical, module: CoreConstants.Security.logModule)
             throw PromptComplianceError.contentViolatesPolicy(.politicalReactionary)
         }
 
         let activeNSFW = DynamicComplianceManager.shared.getPatterns(for: .adultNSFW, fallback: nsfwPatterns)
         if matchesAny(sanitizedText, rawText: text, patterns: activeNSFW) {
-            Logger.shared.addLog(action: .error, target: "ContentModerationEngine", details: "Blocked NSFW content", module: "Security")
+            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: CoreConstants.SecurityLogDetails.blockedNSFW, module: CoreConstants.Security.logModule)
             throw PromptComplianceError.contentViolatesPolicy(.adultNSFW)
         }
 
         let activeViolence = DynamicComplianceManager.shared.getPatterns(for: .violenceTerrorism, fallback: violencePatterns)
         if matchesAny(sanitizedText, rawText: text, patterns: activeViolence) {
-            Logger.shared.addLog(action: .error, target: "ContentModerationEngine", details: "Blocked violence content", module: "Security")
+            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: CoreConstants.SecurityLogDetails.blockedViolence, module: CoreConstants.Security.logModule)
             throw PromptComplianceError.contentViolatesPolicy(.violenceTerrorism)
         }
 
         let activeGamblingNarcotics = DynamicComplianceManager.shared.getPatterns(for: .gamblingNarcotics, fallback: gamblingNarcoticsPatterns)
         if matchesAny(sanitizedText, rawText: text, patterns: activeGamblingNarcotics) {
-            Logger.shared.addLog(action: .error, target: "ContentModerationEngine", details: "Blocked gambling/narcotics content", module: "Security")
+            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: "Blocked gambling/narcotics content", module: CoreConstants.Security.logModule)
             throw PromptComplianceError.contentViolatesPolicy(.gamblingNarcotics)
         }
 

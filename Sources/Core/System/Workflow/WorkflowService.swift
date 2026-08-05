@@ -48,28 +48,28 @@ final class WorkflowService: ObservableObject {
             .map { line -> String in
                 var cleaned = line
                 // 1. 剔除列表前缀
-                if cleaned.hasPrefix("- [ ] ") || cleaned.hasPrefix("- [x] ") || cleaned.hasPrefix("- [X] ") {
+                if cleaned.hasPrefix(CoreConstants.MarkdownSyntax.taskOpen) || cleaned.hasPrefix(CoreConstants.MarkdownSyntax.taskDone) || cleaned.hasPrefix(CoreConstants.MarkdownSyntax.taskDoneUpper) {
                     cleaned = String(cleaned.dropFirst(6))
-                } else if cleaned.hasPrefix("- ") || cleaned.hasPrefix("* ") {
+                } else if cleaned.hasPrefix(CoreConstants.MarkdownSyntax.dashSpace) || cleaned.hasPrefix(CoreConstants.MarkdownSyntax.asteriskSpace) {
                     cleaned = String(cleaned.dropFirst(2))
                 } else if let dotIndex = cleaned.firstIndex(of: "."), !cleaned.prefix(upTo: dotIndex).isEmpty, cleaned.prefix(upTo: dotIndex).allSatisfy({ $0.isNumber }) {
                     cleaned = String(cleaned[cleaned.index(after: dotIndex)...])
                 }
                 
                 // 2. 剔除 Markdown 样式标记（加粗、斜体、删除线、行内代码）
-                cleaned = cleaned.replacingOccurrences(of: "***", with: "") // 粗斜体
-                cleaned = cleaned.replacingOccurrences(of: "**", with: "")  // 加粗
-                cleaned = cleaned.replacingOccurrences(of: "__", with: "")  // 下划线加粗
+                cleaned = cleaned.replacingOccurrences(of: CoreConstants.MarkdownSyntax.boldItalic, with: "") // 粗斜体
+                cleaned = cleaned.replacingOccurrences(of: CoreConstants.MarkdownSyntax.bold, with: "")  // 加粗
+                cleaned = cleaned.replacingOccurrences(of: CoreConstants.MarkdownSyntax.italic, with: "")  // 下划线加粗
                 cleaned = cleaned.replacingOccurrences(of: "*", with: "")   // 斜体
                 cleaned = cleaned.replacingOccurrences(of: "_", with: "")   // 下划线斜体
-                cleaned = cleaned.replacingOccurrences(of: "~~", with: "")  // 删除线
+                cleaned = cleaned.replacingOccurrences(of: CoreConstants.MarkdownSyntax.strikethrough, with: "")  // 删除线
                 cleaned = cleaned.replacingOccurrences(of: "`", with: "")   // 行内代码
                 
                 return cleaned.trimmingCharacters(in: .whitespaces)
             }
             .filter { !$0.isEmpty }
         
-        Logger.shared.info(" [Workflow]" + " Extracted to-do" + " items: \(tasks.count)" + " items")
+        Logger.shared.info(" [Workflow] Extracted to-do items: \(tasks.count) items")
         
         guard !tasks.isEmpty else {
             Logger.shared.warning(" [Workflow] Failed to parse to-do items from text")
@@ -90,13 +90,13 @@ final class WorkflowService: ObservableObject {
                 )
             }
             
-            Logger.shared.info(" [Workflow]" + " Successfully synchronized" + " \(tasks.count)" + " items to" + " Reminders")
+            Logger.shared.info(" [Workflow] Successfully synchronized \(tasks.count) items to Reminders")
             ToastManager.shared.dismiss()
             // 重构：将成功同步的 Toast 提示转换为多语言强类型输出
             ToastManager.shared.show(type: .success, message: L10n.Workflow.syncSuccessMessage(tasks.count))
             HapticFeedback.shared.trigger(.success)
         } catch {
-            Logger.shared.error(" [Workflow]" + " Sync failed:" + " \(error.localizedDescription)", error: error)
+            Logger.shared.error(" [Workflow] Sync failed: \(error.localizedDescription)", error: error)
             ToastManager.shared.dismiss()
             // 重构：将失败同步的 Toast 错误描述转换为多语言强类型输出
             ToastManager.shared.show(type: .error, message: L10n.Workflow.syncErrorMessage(error.localizedDescription))

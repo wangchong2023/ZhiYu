@@ -18,6 +18,16 @@ public enum SystemConstants {
     // MARK: - 时间换算 (Time Conversion)
     /// 每秒对应的毫秒数
     public static let millisecondsPerSecond: Double = 1000.0
+    /// 每秒对应的微秒数
+    public static let microsecondsPerSecond: Double = 1_000_000.0
+    /// 每分钟对应的秒数
+    public static let secondsPerMinute: Double = 60.0
+    /// 每分钟对应的秒数（整型）
+    public static let secondsPerMinuteInt: Int = 60
+    /// 微秒阈值：小于此值视为微秒级
+    public static let microsecondThreshold: Double = 0.001
+    /// 秒阈值：小于此值视为毫秒级
+    public static let secondThreshold: Double = 1.0
 
     // MARK: - 字节换算 (Byte Conversion)
     /// 每 KB 对应的字节数
@@ -27,14 +37,22 @@ public enum SystemConstants {
     /// 每 GB 对应的字节数
     public static let bytesPerGB: Double = bytesPerKB * bytesPerKB * bytesPerKB
 
+    // MARK: - Mach API (Mach API Constants)
+    /// mach_msg_type_number_t 每个元素占用的 integer_t 字节数
+    public static let bytesPerIntegerT: Int = 4
+
     // MARK: - HTTP 状态码 (HTTP Status Codes)
     public enum HTTPStatusCode {
         /// 200 OK
         public static let ok: Int = 200
         /// 401 Unauthorized
         public static let unauthorized: Int = 401
+        /// 404 Not Found
+        public static let notFound: Int = 404
         /// 429 Too Many Requests
         public static let rateLimited: Int = 429
+        /// 501 Not Implemented
+        public static let notImplemented: Int = 501
     }
 
     // MARK: - HTTP 请求头 (HTTP Headers)
@@ -93,6 +111,7 @@ public enum SystemConstants {
         public static let hash: String = "#"
         public static let dash: String = "-"
         public static let asterisk: String = "*"
+        public static let lessThan: String = "<"
         public static let greaterThan: String = ">"
         public static let pipe: String = "|"
         public static let dot: String = "."

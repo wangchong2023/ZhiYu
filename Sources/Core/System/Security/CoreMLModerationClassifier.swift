@@ -52,11 +52,11 @@ public final class CoreMLModerationClassifier: @unchecked Sendable {
     /// - Returns: CoreML 深度分类安全结论
     public func classifyForDeepInspection(_ text: String) async -> CoreMLModerationResult {
         guard !text.isEmpty else {
-            return CoreMLModerationResult(isFlagged: false, category: nil, confidenceScore: 0.0, reason: "empty_text")
+            return CoreMLModerationResult(isFlagged: false, category: nil, confidenceScore: 0.0, reason: CoreConstants.ModerationReason.emptyText)
         }
 
         guard isSupportedOnDevice else {
-            return CoreMLModerationResult(isFlagged: false, category: nil, confidenceScore: 0.0, reason: "device_hw_bypass")
+            return CoreMLModerationResult(isFlagged: false, category: nil, confidenceScore: 0.0, reason: CoreConstants.ModerationReason.deviceHwBypass)
         }
 
         // 第二层语义分析模拟：识别如 "DAN", "ignore previous instructions", "pretend you are" 等经典 Prompt 注入越狱特征
@@ -71,18 +71,18 @@ public final class CoreMLModerationClassifier: @unchecked Sendable {
         for keyword in promptInjectionKeywords where lowercased.contains(keyword) {
             Logger.shared.addLog(
                 action: .error,
-                target: "CoreMLModerationClassifier",
+                target: CoreConstants.SecurityLogTarget.coreMLModerationClassifier,
                 details: "CoreML_deep_inspection_blocked_prompt_injection",
-                module: "Security"
+                module: CoreConstants.Security.logModule
             )
             return CoreMLModerationResult(
                 isFlagged: true,
                 category: .politicalReactionary,
                 confidenceScore: 0.98,
-                reason: "detected_prompt_injection"
+                reason: CoreConstants.ModerationReason.detectedPromptInjection
             )
         }
 
-        return CoreMLModerationResult(isFlagged: false, category: nil, confidenceScore: 0.05, reason: "clean")
+        return CoreMLModerationResult(isFlagged: false, category: nil, confidenceScore: 0.05, reason: CoreConstants.ModerationReason.clean)
     }
 }
