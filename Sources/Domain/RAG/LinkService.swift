@@ -144,7 +144,7 @@ actor LinkService {
         let results = sortedIDs.compactMap { id in pages.first { $0.id == id } }
 
         // Step 7: 构建诊断信息（Top-10 结果的详细排名）
-        let topDiagnostics = results.prefix(10).compactMap { page -> SearchDiagnosticInfo.ResultScore? in
+        let topDiagnostics = results.prefix(PromptConstants.SearchDiagnostics.topN).compactMap { page -> SearchDiagnosticInfo.ResultScore? in
             guard let ranks = diagMap[page.id] else { return nil }
             return SearchDiagnosticInfo.ResultScore(
                 id: page.id,
@@ -195,7 +195,7 @@ actor LinkService {
     /// Reciprocal Rank Fusion (RRF) 算法 — 融合关键词与语义排序结果。
     /// 公式: score = Σ 1 / (k + rank_i)，k 为平滑常数（默认 60）。
     /// 同一页面出现在两路结果中时分数累加，最终按 RRF 总分降序去重。
-    func rrf(keywordResults: [KnowledgePage], semanticResults: [KnowledgePage], k: Int = 60) -> [KnowledgePage] {
+    func rrf(keywordResults: [KnowledgePage], semanticResults: [KnowledgePage], k: Int = SearchConstants.rrfK) -> [KnowledgePage] {
         var scores: [UUID: Double] = [:]
 
         // Step 1: 关键词结果 RRF 打分

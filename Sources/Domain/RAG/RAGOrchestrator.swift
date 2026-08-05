@@ -47,7 +47,7 @@ public final class RAGOrchestrator {
             
             // 注意：此处直接调用底层 LLMService 的 generate 接口或 chat 接口（剥离了 RAG 逻辑后的版本）
             let response = try await llmService.generate(prompt: query, systemPrompt: systemPrompt)
-            let latency = Int(Date().timeIntervalSince(startTime) * 1000)
+            let latency = Int(Date().timeIntervalSince(startTime) * SystemConstants.millisecondsPerSecond)
  
             // 5. 异步指标记录（传入检索源以触发检索质量标注）
             let capturedSources = SourceStore.shared.activeSources

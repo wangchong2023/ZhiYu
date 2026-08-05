@@ -177,10 +177,10 @@ public struct InferenceParameters: Codable, Sendable, Equatable {
     public let maxTokens: Int
     
     public init(
-        temperature: Double = 0.7,
-        topP: Double = 0.9,
-        topK: Int = 40,
-        maxTokens: Int = 2048
+        temperature: Double = PromptConstants.InferenceDefaults.temperature,
+        topP: Double = PromptConstants.InferenceDefaults.topP,
+        topK: Int = PromptConstants.InferenceDefaults.topK,
+        maxTokens: Int = PromptConstants.InferenceDefaults.maxTokens
     ) {
         self.temperature = temperature
         self.topP = topP

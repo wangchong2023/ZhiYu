@@ -90,11 +90,11 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
                 do {
                     // 设置网络超时时间
                     var request = URLRequest(url: url)
-                    request.timeoutInterval = 5.0
+                    request.timeoutInterval = PromptConstants.PromptTemplate.remoteFetchTimeout
                     
                     let (data, response) = try await session.data(for: request)
                     
-                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200,
+                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
                        let fetchedContent = String(data: data, encoding: .utf8) {
                         // 校验拉取到的内容是否非空，若有效则写入沙盒缓存
                         if !fetchedContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -104,7 +104,7 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
                                 let computedHash = SHA256.hash(data: Data(fetchedContent.utf8))
                                 let computedHex = computedHash.map { String(format: "%02x", $0) }.joined()
                                 if computedHex != expectedHash.lowercased() {
-                                    Logger.shared.error("[PromptTemplateEngine] \(skill.skillId): 远程 Prompt 哈希不匹配，降级到本地模板 (expected: \(expectedHash.prefix(16))..., got: \(computedHex.prefix(16))...)")
+                                    Logger.shared.error("[PromptTemplateEngine] \(skill.skillId): 远程 Prompt 哈希不匹配，降级到本地模板 (expected: \(expectedHash.prefix(PromptConstants.PromptTemplate.hashLogPrefixLength))..., got: \(computedHex.prefix(PromptConstants.PromptTemplate.hashLogPrefixLength))...)")
                                     // 哈希不匹配，使用本地模板
                                 } else {
                                     rawPrompt = fetchedContent

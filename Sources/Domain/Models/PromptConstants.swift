@@ -70,8 +70,32 @@ public enum PromptConstants {
         public static let temperature: Double = 0.7
         public static let topP: Double = 0.9
         public static let topK: Int = 40
+        /// 单次推理生成的最大 Token 数量限制默认值
+        public static let maxTokens: Int = 2048
         public static let defaultTextModel: String = AppModel.gpt4o.rawValue
         public static let defaultEmbeddingModel: String = AppModel.appleNLv1.rawValue
+    }
+
+    // MARK: - 知识导入管线 (Ingest Pipeline) 常量
+    public struct IngestPipeline {
+        /// 生成全局摘要块时截取正文前 N 字符发送给 LLM
+        public static let summaryChunkCharLimit: Int = 2000
+        /// 每个 Chunk 反向 QA 提问的最大数量
+        public static let maxQAPairsPerChunk: Int = 3
+    }
+
+    // MARK: - 检索诊断 (Search Diagnostics) 常量
+    public struct SearchDiagnostics {
+        /// 诊断信息中保留的 Top-N 结果数
+        public static let topN: Int = 10
+    }
+
+    // MARK: - Prompt 模板引擎 (PromptTemplateEngine) 常量
+    public struct PromptTemplate {
+        /// 远程 Prompt 热更新拉取的网络超时时间（秒）
+        public static let remoteFetchTimeout: TimeInterval = 5.0
+        /// 哈希不匹配日志中截取的前缀长度
+        public static let hashLogPrefixLength: Int = 16
     }
 
     // MARK: - JSON Schema 结构约束描述 (Structured Output JSON Schemas)

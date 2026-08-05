@@ -103,7 +103,7 @@ actor KnowledgeIngestPipeline {
         do {
             try Task.checkCancellation()
             await TaskCenter.shared.addIngestSubLog(L10n.Ingest.Status.generatingSummary)
-            let summaryPrompt = PromptRegistry.Ingest.summary(content: String(content.prefix(2000)))
+            let summaryPrompt = PromptRegistry.Ingest.summary(content: String(content.prefix(PromptConstants.IngestPipeline.summaryChunkCharLimit)))
             if let summary = try? await llm.generate(prompt: summaryPrompt, systemPrompt: L10n.AI.Prompt.ingestManagementAssistant) {
                 try Task.checkCancellation()
                 return [PageChunk(
@@ -211,7 +211,7 @@ actor KnowledgeIngestPipeline {
         ), !Task.isCancelled else { return }
         let questions = qaResponse.components(separatedBy: .newlines)
             .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-        for (qIndex, question) in questions.prefix(3).enumerated() {
+        for (qIndex, question) in questions.prefix(PromptConstants.IngestPipeline.maxQAPairsPerChunk).enumerated() {
             chunkBatch.append(PageChunk(
                 id: "qa_\(parentChunkID)_\(qIndex)",
                 pageID: pageID,

@@ -134,7 +134,7 @@ public struct KnowledgePage: Identifiable, Codable, Hashable, Sendable, Knowledg
         self.rawTextSnippet = rawTextSnippet
         self.fileSize = fileSize ?? Int64(content.utf8.count)
         self.sourceType = sourceType
-        self.lamportTimestamp = lamportTimestamp ?? Int64(createdAt.timeIntervalSince1970 * 1000)
+        self.lamportTimestamp = lamportTimestamp ?? Int64(createdAt.timeIntervalSince1970 * SystemConstants.millisecondsPerSecond)
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -166,7 +166,7 @@ public struct KnowledgePage: Identifiable, Codable, Hashable, Sendable, Knowledg
     
     /// 是否为存根页面 (内容过少)
     public var isStub: Bool {
-        content.count < 100
+        content.count < SystemConstants.KnowledgePageThresholds.stubPageWordCount
     }
     
     /// 获取存储文件夹名称

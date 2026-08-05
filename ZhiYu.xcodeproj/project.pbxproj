@@ -108,6 +108,7 @@
 		0C54CBE267134DB8D8EEE0B7 /* L10n+Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BCDC80FE5EBCD4A93222C9 /* L10n+Settings.swift */; };
 		0C675600258320FE56B6D06A /* AIAnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF991F25B7C48C7D703220F4 /* AIAnalyticsService.swift */; };
 		0C79410ABE1E0B278F911A9F /* AppInputs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2857148257EB54A2E0862770 /* AppInputs.swift */; };
+		0C794849B04D2D3D86B6EBB1 /* SystemConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1D523113DD00483E198FDC /* SystemConstants.swift */; };
 		0C864DAB8DC46372E07B4B86 /* MacShareSheetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450C45C5F7A75C59D076B061 /* MacShareSheetService.swift */; };
 		0D1B2C05AD4EF75ADD432B05 /* DocxProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D7EE3D7837CBE8C68771FB5 /* DocxProcessor.swift */; };
 		0D78B5F5BBB1B19F71DF30A2 /* IngestProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405F3ECC6095FB6074AE8313 /* IngestProcessor.swift */; };
@@ -229,6 +230,7 @@
 		1B7E21FB7AEF5DF509B79100 /* LLMContextSecurityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A23084D6EB0BD686B9A4A83 /* LLMContextSecurityTests.swift */; };
 		1B829BEBD88BAD84FC38EAD3 /* luckin_vs_starbucks_report.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 92540B558EA255803C3306EF /* luckin_vs_starbucks_report.pdf */; };
 		1B87F45B8489063DA33ED7B6 /* VersionInfoFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAD49CE8F1DF1692F29AE1 /* VersionInfoFormatter.swift */; };
+		1BB4626D7E571FA527CFB3A1 /* SystemConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1D523113DD00483E198FDC /* SystemConstants.swift */; };
 		1BB62B222023710088F4C081 /* DesignSystem+Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B4C04654778AB7FF9E3DE5 /* DesignSystem+Action.swift */; };
 		1BB84563632BC532B9A54360 /* L10n+Workflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F4DB2B9A4A056F95ED1FF9 /* L10n+Workflow.swift */; };
 		1BD012DCF227022E27760722 /* Localized.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEBA23C20D4626F4A1208D7 /* Localized.swift */; };
@@ -1386,6 +1388,7 @@
 		B4247780944C15BDD07BFEC3 /* iOSPlatformCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8111B1E9C87555722915B80 /* iOSPlatformCapabilities.swift */; };
 		B46146C1B986263100C0095D /* L10n+ModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDA70BD2B1CDDF6346AB847 /* L10n+ModelManager.swift */; };
 		B469C4EB6B3BA4CE84DD762C /* iOSAppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C83D00472913635D100F8F9 /* iOSAppEnvironment.swift */; };
+		B4A2FE2DAAB36F5B6D12F4CC /* RAGEvalConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38EA1F141AB7D9176885360A /* RAGEvalConstants.swift */; };
 		B4A5D66EBB55A2B335B3F9AC /* LLMProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4480FE6AD06AC6C3ED746C0 /* LLMProtocols.swift */; };
 		B4A7A4E2A91AA40017EB62C0 /* KnowledgePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C61FA7A53FB23B68ABD52F /* KnowledgePage.swift */; };
 		B4FF6AB2ED24D4CF1EAF205C /* MacAppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD705F151924F0A583A6173C /* MacAppEnvironment.swift */; };
@@ -1454,6 +1457,7 @@
 		BCBC6F8CFAA92FB16EA9E194 /* PluginDetailDescriptionSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94044968C2BD5EAA3813CC1E /* PluginDetailDescriptionSection.swift */; };
 		BCD79AFC8E392561E0E22C83 /* FrontmatterParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3121C554F05877F9EA3995 /* FrontmatterParser.swift */; };
 		BCF89E397B2E8D6D5ED7A0FB /* SQLiteFeedbackRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D4D44B5B27FE4B95B49F5F2 /* SQLiteFeedbackRepository.swift */; };
+		BD40D047FD1A8897B2F2BCFB /* RAGEvalConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38EA1F141AB7D9176885360A /* RAGEvalConstants.swift */; };
 		BD547C70EEB50139F4E61009 /* SnapshotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C13FD257AEA923674A73611A /* SnapshotService.swift */; };
 		BDDA72C1380F713518DC4DFD /* GitHubAuthStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECD332478BCA833BF0058B4C /* GitHubAuthStrategy.swift */; };
 		BDEEEB09EB0DBE12ACCF0E17 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD5F0D652B175B7266ED04F1 /* DesignSystem.swift */; };
@@ -2268,6 +2272,7 @@
 		381847F883FD41ACE136561F /* GitHubAuthStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubAuthStrategyTests.swift; sourceTree = "<group>"; };
 		38979575F39F73EDCE64781D /* DeepLinkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkService.swift; sourceTree = "<group>"; };
 		38C26434AED9C0E9786BF222 /* KnowledgeBaseUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseUITests.swift; sourceTree = "<group>"; };
+		38EA1F141AB7D9176885360A /* RAGEvalConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RAGEvalConstants.swift; sourceTree = "<group>"; };
 		39184583D529EB25B781B5A8 /* WatchBriefingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBriefingView.swift; sourceTree = "<group>"; };
 		39741AE6C2261B9FA83739CA /* IngestManualFormSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestManualFormSection.swift; sourceTree = "<group>"; };
 		3986FEE941BF216B02A79CC6 /* HapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedback.swift; sourceTree = "<group>"; };
@@ -2494,6 +2499,7 @@
 		6CAB40648A8E6E47B8C83296 /* CarrierAuthStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierAuthStrategy.swift; sourceTree = "<group>"; };
 		6CE1CAB1B36AD355CF9F30A7 /* PluginSandboxGateway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginSandboxGateway.swift; sourceTree = "<group>"; };
 		6CFC33541D35D6704D22245D /* ModelLabChatPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabChatPanel.swift; sourceTree = "<group>"; };
+		6D1D523113DD00483E198FDC /* SystemConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemConstants.swift; sourceTree = "<group>"; };
 		6D4C9093B41FFA24A9749A0F /* FeedbackRepoEdgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackRepoEdgeTests.swift; sourceTree = "<group>"; };
 		6D4CFC46CAC8CEA2EA4183F8 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		6DB7001B34CD0E7E2B740E59 /* DesignSystem+Icons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Icons.swift"; sourceTree = "<group>"; };
@@ -4355,11 +4361,13 @@
 				CE0C529EA958CFC131B991B9 /* PluginRecord.swift */,
 				745B512E87AF766DF62F05E5 /* PluginRecordFTS.swift */,
 				65C1A8D7BB55003CDCDDF031 /* PromptConstants.swift */,
+				38EA1F141AB7D9176885360A /* RAGEvalConstants.swift */,
 				C5465B5B5BD62749AFBC0CE1 /* RAGModels.swift */,
 				CD73698C398E3440E46BBD64 /* SearchConstants.swift */,
 				A9505ECA5C1AE618FEB580D0 /* SearchDiagnosticInfo.swift */,
 				B3D44B09A36B0E23CCB13E2E /* SourceModels.swift */,
 				F792239E9B62B4E97AFA0FC8 /* SynthesisControlOptions.swift */,
+				6D1D523113DD00483E198FDC /* SystemConstants.swift */,
 				71E001A6666A88051EF36162 /* ToolItem.swift */,
 				C32F81C3F6525B04D0DF6F59 /* VaultTheme.swift */,
 			);
@@ -7389,6 +7397,7 @@
 				60D87D1E0DD230452544967F /* QuizView.swift in Sources */,
 				53F0A27675BC9A0CB0AA4FB2 /* RAGBenchmarkPanel.swift in Sources */,
 				FBA7C0B3346E45533800858E /* RAGConfigForm.swift in Sources */,
+				B4A2FE2DAAB36F5B6D12F4CC /* RAGEvalConstants.swift in Sources */,
 				43198DCC118C8C90EAC4AF6C /* RAGEvaluationService.swift in Sources */,
 				6443B64449C2294F2E324F40 /* RAGEvaluationView.swift in Sources */,
 				C59C475DDD1A97BB53A7C667 /* RAGGovernanceModels.swift in Sources */,
@@ -7482,6 +7491,7 @@
 				D57A5A70DE3B016B3A45B67E /* SynthesisStrategyProtocol.swift in Sources */,
 				FC2C41E0EBB3B625DC48EA29 /* SynthesisTimelineView.swift in Sources */,
 				8A9DF912FC49BB11250EBA6D /* SynthesisView.swift in Sources */,
+				1BB4626D7E571FA527CFB3A1 /* SystemConstants.swift in Sources */,
 				32294E775904351B47806E93 /* SystemStatsChartView.swift in Sources */,
 				C0065C24EB020843C404CCE1 /* SystemStatsCoordinator.swift in Sources */,
 				AE585FF4EF40839F4392F6A4 /* SystemStatsModels.swift in Sources */,
@@ -8135,6 +8145,7 @@
 				9DEE298994DE8A977235A850 /* QuizView.swift in Sources */,
 				BCA0437285899849910CB14F /* RAGBenchmarkPanel.swift in Sources */,
 				E0B5B766167DB3ABAA058D5B /* RAGConfigForm.swift in Sources */,
+				BD40D047FD1A8897B2F2BCFB /* RAGEvalConstants.swift in Sources */,
 				43F779AD6B40EAE3DD10DF38 /* RAGEvaluationService.swift in Sources */,
 				B0E41B46CBDB7C9DFAC1D6DF /* RAGEvaluationView.swift in Sources */,
 				DCA540F7FD6E82082BB95C70 /* RAGGovernanceModels.swift in Sources */,
@@ -8228,6 +8239,7 @@
 				FF1EDE6429ECBDF475790690 /* SynthesisStrategyProtocol.swift in Sources */,
 				CB332C5BD2FFE0613DBFFBCD /* SynthesisTimelineView.swift in Sources */,
 				4736CBC92D04A5E94364598E /* SynthesisView.swift in Sources */,
+				0C794849B04D2D3D86B6EBB1 /* SystemConstants.swift in Sources */,
 				CD9C46916112147D7CBC015F /* SystemStatsChartView.swift in Sources */,
 				74D65BB0E8620EE5EDA05434 /* SystemStatsCoordinator.swift in Sources */,
 				F980CD5D1737BCE6394280E8 /* SystemStatsModels.swift in Sources */,

@@ -139,16 +139,8 @@ actor AIContentEnricher {
 
     /// 增强表格语义
     private func enrichTable(_ table: String, llm: any LLMServiceProtocol) async -> String {
-        let systemPrompt = "你是一位资深的数据分析师与 Markdown 排版专家。"
-        let prompt = """
-        请分析以下 Markdown 表格数据，并用不超过 3 句话总结其核心洞察。
-        要求：
-        1. 语言专业、精炼。
-        2. 不要重复表格中的数据，而是给出趋势或结论。
-        3. 总结必须以 "> [数据洞察]: " 开头，且只返回这一行。
-        
-        \(table)
-        """
+        let systemPrompt = L10n.AI.Prompt.enrichTableSystem
+        let prompt = L10n.AI.Prompt.enrichTableUser(table)
 
         do {
             let insight = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
@@ -163,17 +155,8 @@ actor AIContentEnricher {
         let imageMarkdown = "![\(alt ?? "")](\(url))"
         guard let alt = alt, !alt.isEmpty else { return imageMarkdown }
 
-        let systemPrompt = "你是一位资深的视觉理解专家与文档优化师。"
-        let prompt = """
-        我有一张图片，其替代文本 (Alt Text) 是："\(alt)"
-        图片的 URL 是： "\(url)"
-
-        请基于此替代文本，想象并推断该图片可能传达的核心语义，并用一句话（不超过 50 字）进行专业描述。
-        要求：
-        1. 语言专业、精炼，符合说明文风格。
-        2. 不要包含“推测”、“可能”等不确定的词汇。
-        3. 必须以 "> [图片语义]: " 开头，且只返回这一行。
-        """
+        let systemPrompt = L10n.AI.Prompt.enrichImageSystem
+        let prompt = L10n.AI.Prompt.enrichImageUser(alt: alt, url: url)
 
         do {
             let description = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)

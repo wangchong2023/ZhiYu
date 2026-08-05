@@ -26594,6 +26594,331 @@
           }
         }
       }
+    },
+    "prompt.enrichTable.system": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一位资深的数据分析师与 Markdown 排版专家。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一位資深的數據分析師與 Markdown 排版專家。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior data analyst and Markdown formatting expert."
+          }
+        }
+      }
+    },
+    "prompt.enrichTable.user": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请分析以下 Markdown 表格数据，并用不超过 3 句话总结其核心洞察。\n要求：\n1. 语言专业、精炼。\n2. 不要重复表格中的数据，而是给出趋势或结论。\n3. 总结必须以 \"> [数据洞察]: \" 开头，且只返回这一行。\n\n%1$@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請分析以下 Markdown 表格數據，並用不超過 3 句話總結其核心洞察。\n要求：\n1. 語言專業、精煉。\n2. 不要重複表格中的數據，而是給出趨勢或結論。\n3. 總結必須以 \"> [數據洞察]: \" 開頭，且只返回這一行。\n\n%1$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please analyze the following Markdown table data and summarize its core insights in no more than 3 sentences.\nRequirements:\n1. Professional and concise language.\n2. Do not repeat the data in the table; provide trends or conclusions instead.\n3. The summary must start with \"> [Data Insight]: \" and return only this line.\n\n%1$@"
+          }
+        }
+      }
+    },
+    "prompt.enrichImage.system": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一位资深的视觉理解专家与文档优化师。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一位資深的視覺理解專家與文檔優化師。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a senior visual understanding expert and document optimizer."
+          }
+        }
+      }
+    },
+    "prompt.enrichImage.user": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我有一张图片，其替代文本 (Alt Text) 是：\"%1$@\"\n图片的 URL 是： \"%2$@\"\n\n请基于此替代文本，想象并推断该图片可能传达的核心语义，并用一句话（不超过 50 字）进行专业描述。\n要求：\n1. 语言专业、精炼，符合说明文风格。\n2. 不要包含“推测”、“可能”等不确定的词汇。\n3. 必须以 \"> [图片语义]: \" 开头，且只返回这一行。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我有一張圖片，其替代文本 (Alt Text) 是：\"%1$@\"\n圖片的 URL 是： \"%2$@\"\n\n請基於此替代文本，想像並推斷該圖片可能傳達的核心語義，並用一句話（不超過 50 字）進行專業描述。\n要求：\n1. 語言專業、精煉，符合說明文風格。\n2. 不要包含「推測」、「可能」等不確定的詞彙。\n3. 必須以 \"> [圖片語義]: \" 開頭，且只返回這一行。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have an image whose Alt Text is: \"%1$@\"\nThe URL of the image is: \"%2$@\"\n\nPlease infer the core semantics this image may convey based on the Alt Text, and describe it professionally in one sentence (no more than 50 words).\nRequirements:\n1. Professional and concise language, in an expository style.\n2. Do not include uncertain words such as \"speculate\" or \"possibly\".\n3. Must start with \"> [Image Semantics]: \" and return only this line."
+          }
+        }
+      }
+    },
+    "prompt.ragEval.judge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一个 RAG 系统评估专家。请对以下 AI 回答进行多维评分 (0.0 - 1.0) 并评估各检索源的相关性。\n\n## 检索到的文档源（共 %2$d 条，仅展示前 %3$d 条）\n%1$@\n\n## 合并后的上下文\n%4$@\n\n## 用户问题\n%5$@\n\n## AI 回答\n%6$@\n\n## 评分要求\n1. faithfulness: 回答是否完全基于上下文？（1.0 = 完美忠实）\n2. relevance: 回答是否直接解决用户问题？（1.0 = 完美匹配）\n3. precision: 上下文是否包含回答问题所需的知识？（1.0 = 完美覆盖）\n4. hallucination_rate: 回答中无上下文支撑的内容占比？（0.0 = 无幻觉）\n5. citation_accuracy: 引用准确度？（1.0 = 完全准确）\n6. relevance_scores: 对上述每个检索源 [0]...[N] 标注相关性：0=无关, 1=部分相关, 2=高度相关\n\n## 输出 JSON 格式\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"简要说明\"\n}"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一個 RAG 系統評估專家。請對以下 AI 回答進行多維評分 (0.0 - 1.0) 並評估各檢索源的相關性。\n\n## 檢索到的文檔源（共 %2$d 條，僅展示前 %3$d 條）\n%1$@\n\n## 合併後的上下文\n%4$@\n\n## 用戶問題\n%5$@\n\n## AI 回答\n%6$@\n\n## 評分要求\n1. faithfulness: 回答是否完全基於上下文？（1.0 = 完美忠實）\n2. relevance: 回答是否直接解決用戶問題？（1.0 = 完美匹配）\n3. precision: 上下文是否包含回答問題所需的知識？（1.0 = 完美覆蓋）\n4. hallucination_rate: 回答中無上下文支撐的內容佔比？（0.0 = 無幻覺）\n5. citation_accuracy: 引用準確度？（1.0 = 完全準確）\n6. relevance_scores: 對上述每個檢索源 [0]...[N] 標註相關性：0=無關, 1=部分相關, 2=高度相關\n\n## 輸出 JSON 格式\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"簡要說明\"\n}"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a RAG system evaluation expert. Please evaluate the following AI answer with multi-dimensional scoring (0.0 - 1.0) and assess the relevance of each retrieved source.\n\n## Retrieved document sources (total %2$d, showing first %3$d)\n%1$@\n\n## Merged context\n%4$@\n\n## User question\n%5$@\n\n## AI answer\n%6$@\n\n## Scoring requirements\n1. faithfulness: Is the answer fully grounded in the context? (1.0 = perfectly faithful)\n2. relevance: Does the answer directly address the user question? (1.0 = perfect match)\n3. precision: Does the context contain the knowledge needed to answer? (1.0 = perfect coverage)\n4. hallucination_rate: Proportion of answer content not supported by context? (0.0 = no hallucination)\n5. citation_accuracy: Citation accuracy? (1.0 = fully accurate)\n6. relevance_scores: For each retrieved source [0]...[N], label relevance: 0=irrelevant, 1=partially relevant, 2=highly relevant\n\n## Output JSON format\n{\n  \"faithfulness\": 0.9,\n  \"relevance\": 0.8,\n  \"precision\": 0.85,\n  \"hallucination_rate\": 0.1,\n  \"citation_accuracy\": 0.8,\n  \"relevance_scores\": [2, 1, 0, 2, ...],\n  \"reasoning\": \"brief explanation\"\n}"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

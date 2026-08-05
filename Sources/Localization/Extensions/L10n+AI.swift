@@ -319,6 +319,19 @@ extension L10n {
             /// 知识导入发现助手角色描述
             public static var ingestDiscoveryAssistant: String { AI.tr("prompt.ingestDiscoveryAssistant") }
 
+            /// 内容增强：表格语义分析系统角色描述
+            public static var enrichTableSystem: String { AI.tr("prompt.enrichTable.system") }
+            /// 内容增强：表格语义分析用户 Prompt 模板（参数：表格 Markdown 文本）
+            public static func enrichTableUser(_ table: String) -> String { AI.trf("prompt.enrichTable.user", table) }
+            /// 内容增强：图片语义推断系统角色描述
+            public static var enrichImageSystem: String { AI.tr("prompt.enrichImage.system") }
+            /// 内容增强：图片语义推断用户 Prompt 模板（参数：alt 文本、URL）
+            public static func enrichImageUser(alt: String, url: String) -> String { AI.trf("prompt.enrichImage.user", alt, url) }
+            /// RAG 评估：评判 Prompt 模板（参数：源列表、源总数、展示数、上下文、查询、回答）
+            public static func ragJudgePrompt(sourceList: String, sourceCount: Int, displayCount: Int, context: String, query: String, answer: String) -> String {
+                AI.trf("prompt.ragEval.judge", sourceList, sourceCount, displayCount, context, query, answer)
+            }
+
             public enum QueryRewrite {
                 public static var instruction: String { AI.tr("prompt.queryRewrite.instruction") }
                 public static var rules: String { AI.tr("prompt.queryRewrite.rules") }

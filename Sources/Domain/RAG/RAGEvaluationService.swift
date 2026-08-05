@@ -84,7 +84,7 @@ final class RAGEvaluationService {
                 rank: idx + 1,
                 sourceID: src.id.uuidString,
                 pageTitle: src.title,
-                snippet: String(src.snippet.prefix(200)),
+                snippet: String(src.snippet.prefix(RAGEvalConstants.snapshotSnippetPrefix)),
                 score: src.score
             )
         }
@@ -97,7 +97,7 @@ final class RAGEvaluationService {
                 level = max(0, min(2, scores[idx]))
             } else {
                 // 回退：基于相似度分数的启发式标注
-                if src.score >= 0.8 { level = 2 } else if src.score >= 0.5 { level = 1 } else { level = 0 }
+                if src.score >= RAGEvalConstants.HeuristicRelevance.highThreshold { level = 2 } else if src.score >= RAGEvalConstants.HeuristicRelevance.mediumThreshold { level = 1 } else { level = 0 }
             }
             return RelevanceJudgment(
                 queryHash: queryHash,
@@ -127,44 +127,20 @@ final class RAGEvaluationService {
         sources: [KnowledgeSource]
     ) -> String {
         var sourceList = ""
-        for (idx, src) in sources.prefix(20).enumerated() {
-            sourceList += "[\(idx)] \(src.title): \(String(src.snippet.prefix(150)))\n"
+        for (idx, src) in sources.prefix(RAGEvalConstants.JudgePrompt.maxSources).enumerated() {
+            sourceList += "[\(idx)] \(src.title): \(String(src.snippet.prefix(RAGEvalConstants.JudgePrompt.sourceSnippetPrefix)))\n"
         }
 
-        return """
-        你是一个 RAG 系统评估专家。请对以下 AI 回答进行多维评分 (0.0 - 1.0) 并评估各检索源的相关性。
-
-        ## 检索到的文档源（共 \(sources.count) 条，仅展示前 \(min(20, sources.count)) 条）
-        \(sourceList)
-
-        ## 合并后的上下文
-        \(String(context.prefix(3000)))
-
-        ## 用户问题
-        \(query)
-
-        ## AI 回答
-        \(answer)
-
-        ## 评分要求
-        1. faithfulness: 回答是否完全基于上下文？（1.0 = 完美忠实）
-        2. relevance: 回答是否直接解决用户问题？（1.0 = 完美匹配）
-        3. precision: 上下文是否包含回答问题所需的知识？（1.0 = 完美覆盖）
-        4. hallucination_rate: 回答中无上下文支撑的内容占比？（0.0 = 无幻觉）
-        5. citation_accuracy: 引用准确度？（1.0 = 完全准确）
-        6. relevance_scores: 对上述每个检索源 [0]...[N] 标注相关性：0=无关, 1=部分相关, 2=高度相关
-
-        ## 输出 JSON 格式
-        {
-          "faithfulness": 0.9,
-          "relevance": 0.8,
-          "precision": 0.85,
-          "hallucination_rate": 0.1,
-          "citation_accuracy": 0.8,
-          "relevance_scores": [2, 1, 0, 2, ...],
-          "reasoning": "简要说明"
-        }
-        """
+        let displayCount = min(RAGEvalConstants.JudgePrompt.maxSources, sources.count)
+        let truncatedContext = String(context.prefix(RAGEvalConstants.JudgePrompt.contextPrefix))
+        return L10n.AI.Prompt.ragJudgePrompt(
+            sourceList: sourceList,
+            sourceCount: sources.count,
+            displayCount: displayCount,
+            context: truncatedContext,
+            query: query,
+            answer: answer
+        )
     }
 
     /// 处理 LLM 评估 JSON 响应，解析六维评分并持久化到治理数据库。
@@ -196,9 +172,9 @@ final class RAGEvaluationService {
 
         // Step 3: 基于忠实度的三级状态判定
         let status: String
-        if faithfulnessScore < 0.5 {
+        if faithfulnessScore < RAGEvalConstants.FaithfulnessStatus.failThreshold {
             status = L10n.AI.Eval.Status.fail
-        } else if faithfulnessScore < 0.7 {
+        } else if faithfulnessScore < RAGEvalConstants.FaithfulnessStatus.warningThreshold {
             status = L10n.AI.Eval.Status.warning
         } else {
             status = L10n.AI.Eval.Status.pass

@@ -35,7 +35,7 @@ public final class DeviceHardwareGuard: Sendable {
     
     /// 获取以 GB 为单位的设备真实物理内存大小
     public var physicalMemoryInGb: Double {
-        return Double(totalPhysicalMemory) / (1024.0 * 1024.0 * 1024.0)
+        return Double(totalPhysicalMemory) / SystemConstants.bytesPerGB
     }
     
     /// 针对特定大模型 Manifest 评定其硬件兼容性等级
