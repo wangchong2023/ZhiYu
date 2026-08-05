@@ -71,10 +71,10 @@ public final class ServiceContainer: @unchecked Sendable {
     private var isProductionChainPopulated = false
 
     /// 标记生产链已完成，禁止 reset() 清空 / 标记 DI 生命周期就绪
+    /// 并发安全：isProductionChainPopulated 的写入在 lock 内，消除与 reset() 的竞态
     public func markProductionChainComplete() {
-        isProductionChainPopulated = true
-        // 记录生产链完成时的诊断快照
         let info = lock.withLock { () -> String in
+            isProductionChainPopulated = true
             let keyCount = services.count
             let allKeys = Array(services.keys)
             return "[ServiceContainer] Production DI chain complete. Registered services: \(keyCount). Keys: \(allKeys.sorted().joined(separator: ", "))"
@@ -85,10 +85,12 @@ public final class ServiceContainer: @unchecked Sendable {
 
     /// DI 容器是否已就绪（生产注册链已完成）
     /// 在 registerDIModules() 完成前访问 resolve() 的任何代码都是潜在崩溃源。
-    public var isReady: Bool { isProductionChainPopulated }
+    /// 并发安全：读取在 lock 内，消除与 markProductionChainComplete()/reset() 的竞态
+    public var isReady: Bool { lock.withLock { isProductionChainPopulated } }
 
     /// 诊断属性：是否被生产链锁定（公开只读）
-    public var isProductionChainLocked: Bool { isProductionChainPopulated }
+    /// 并发安全：读取在 lock 内
+    public var isProductionChainLocked: Bool { lock.withLock { isProductionChainPopulated } }
 
     /// 诊断属性：当前注册表快照
     public var diagnosticSnapshot: [String: Bool] {
@@ -100,15 +102,29 @@ public final class ServiceContainer: @unchecked Sendable {
 
     /// 重置所有服务（主要用于测试环境隔离）
     /// 生产注册链完成后调用此方法无效果，防止测试误清导致 @Inject 崩溃
+    /// 并发安全：isProductionChainPopulated 的检查与 services 的清空在同一次 lock 内原子执行，
+    /// 消除与 markProductionChainComplete() 的竞态窗口（问题 #8 真正修复）
+    /// 注意：之前的修复（两次 lock 调用）仍有竞态窗口，因为 mark 可能在两次 lock 之间执行。
     public func reset() {
         let callSite = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
-        guard !isProductionChainPopulated else {
+        let (shouldBlock, removedCount, removedKeys): (Bool, Int, [String]) = lock.withLock {
+            if isProductionChainPopulated {
+                return (true, 0, [])
+            }
+            let count = services.count
+            let keys = Array(services.keys)
+            services.removeAll()
+            return (false, count, keys)
+        }
+        if shouldBlock {
             let msg = "[ServiceContainer] reset() BLOCKED: production DI chain is complete. Call site:\n\(callSite)"
             os_log(.error, log: diLog, "%{public}@", msg)
             MinimalLogger.shared.warning(msg)
             return
         }
-        performReset()
+        lastResetInfo = "Removed \(removedCount) services: \(removedKeys.sorted().joined(separator: ", "))"
+        lastResetTimestamp = Date()
+        os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] reset() executed. \(lastResetInfo ?? "N/A")")
     }
 
     /// 强制重置（仅供测试套件隔离使用）
@@ -116,16 +132,12 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 解决 `markProductionChainComplete()` 不可逆导致 `shared` 单元被永久污染、
     /// 后续测试 `reset()` 全部静默失效的隔离破坏问题。
     /// 生产代码严禁调用此方法。
+    /// 并发安全：isProductionChainPopulated 的清空与 services 的清空在同一次 lock 内原子执行（问题 #8 真正修复）
     public func resetForTesting() {
         let callSite = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
         os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] resetForTesting() called. Call site:\n\(callSite)")
-        isProductionChainPopulated = false
-        performReset()
-    }
-
-    /// reset() 与 resetForTesting() 共用的实际清空逻辑
-    private func performReset() {
         let (removedCount, removedKeys) = lock.withLock { () -> (Int, [String]) in
+            isProductionChainPopulated = false
             let count = services.count
             let keys = Array(services.keys)
             services.removeAll()
@@ -133,7 +145,7 @@ public final class ServiceContainer: @unchecked Sendable {
         }
         lastResetInfo = "Removed \(removedCount) services: \(removedKeys.sorted().joined(separator: ", "))"
         lastResetTimestamp = Date()
-        os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] reset() executed. \(lastResetInfo ?? "N/A")")
+        os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] resetForTesting() executed. \(lastResetInfo ?? "N/A")")
     }
 
     /// resolve 诊断快照（避免 large_tuple 违规，元组成员不超过 2）
@@ -252,10 +264,16 @@ public final class ServiceContainer: @unchecked Sendable {
     }
 
     /// 尝试解析服务，如果未注册则返回 nil，不会触发断言或崩溃
+    ///
+    /// 并发安全：读取在 lock 内
+    /// 语义修复（问题 #13）：当 T 本身是 Optional 类型（如 Int?）时，
+    /// `nil as? T` 会返回 `.some(.none)` 而非 nil（Swift 语言陷阱）。
+    /// 此处先检查 instance 是否为 nil，避免未注册服务被误判为「已注册但值为 nil」。
     public func resolveOptional<T>(_ type: T.Type) -> T? {
         let key = makeKey(for: type)
         let instance = lock.withLock { services[key] }
-        return instance as? T
+        guard let nonNilInstance = instance else { return nil }
+        return nonNilInstance as? T
     }
 
     /// 类型擦除的服务解析（供 `@Inject` 可选检测使用）
@@ -349,6 +367,17 @@ public protocol OptionalDetectableProtocol {
 extension Optional: OptionalDetectableProtocol {
     public static var injectWrappedType: Any.Type { Wrapped.self }
     public static func injectWrap(_ value: Any) -> Any {
+        // 语义修复（问题 #10）：当 Wrapped 本身是 Optional 类型（嵌套 Optional 场景）时，
+        // `nil as? Wrapped` 会返回 .some(.none) 而非失败（Swift 语言陷阱）。
+        // 此处用反射检测 value 是否为 Optional.none，直接返回 .none 语义。
+        let mirror = Mirror(reflecting: value)
+        if mirror.displayStyle == .optional {
+            // value 是 Optional，检查是否为 .none
+            if mirror.children.isEmpty {
+                // value 是 Optional.none → 返回 .none
+                return (nil as Wrapped?) as Any
+            }
+        }
         // 尝试将值转型为 Wrapped，成功则包装为 .some，失败则返回 .none
         if let wrapped = value as? Wrapped {
             return Optional.some(wrapped) as Any

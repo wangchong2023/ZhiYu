@@ -87,3 +87,39 @@ $ cd Packages/UFPCore && swift test 2>&1 | grep "Registered \[" | grep -i "unkno
 - **是否解决**列已全部更新为 ✅，**解决方案**列已填写实际采用的修复方案
 - 问题 1 和问题 7 关联：修复问题 1 后，问题 7 的测试用例作为回归测试防止复发
 - 所有修复已通过 `swift test` 验证，82 个测试 0 失败
+
+---
+
+## 第二轮测试驱动问题发现（2026-08-06）
+
+> **方法论**：针对第一轮修复后的代码，进一步用并发竞态测试、类型边界测试、常量回归测试挖掘深层问题。
+>
+> **当前覆盖率**：语句 91.07%（第一轮后），目标通过第二轮测试进一步提升。
+
+| # | 严重度 | 文件:行 | 问题分类 | 问题描述 | 黑盒业务现象 | 业务影响 | 复现/验证 | 是否解决 | 解决方案 |
+|---|--------|---------|----------|----------|--------------|----------|-----------|----------|----------|
+| 8 | 🔴 严重 | `ServiceContainer.swift:107-117` | 并发竞态 / 数据竞争 | `reset()` 与 `markProductionChainComplete()` 存在竞态窗口。原始实现：`reset()` 锁外读 `isProductionChainPopulated`。第一轮修复：`reset()` 锁内读 + `performReset()` 锁内清空（两次 lock）。**两次 lock 之间 `mark` 可执行**：① reset 第一次 lock 读到 false → ② mark lock 设 true → ③ reset 第二次 lock 清空 services。结果：`isProductionChainPopulated=true` 但 services 为空（不一致状态）。 | 生产环境下，若 `AppEnvironment` 调用 `markProductionChainComplete()` 的同时，某处（如测试代码、热重载逻辑）调用 `reset()`，DI 容器进入不一致状态：标记为已锁定但服务已清空。后续 `@Inject` 解析失败崩溃，但 `isReady` 返回 true 误导诊断。 | **P0 级生产事故**：① DI 容器不一致状态导致 `@Inject` 崩溃但 `isReady=true` 误导排查；② 竞态触发概率约 12.8%（64/500 次复现），非偶发；③ 两次 lock 的修复给虚假安全感（测试通过但竞态仍在）；④ 违反 Swift 6 严格并发安全契约。 | 复现测试：`testResetReadsStaleValueThenMarkThenPerformReset`（500 轮并发），还原旧修复后 64/500 次失败。修复后 20 次全量测试 0 失败。 | ✅ 已解决 | `reset()` 和 `resetForTesting()` 都在**同一次 `lock.withLock`** 内完成「检查 `isProductionChainPopulated` + 清空 services」，消除两次 lock 之间的竞态窗口。删除不再使用的 `performReset()`。新增 3 个并发测试：① `testResetAfterMarkIsBlocked`（确定性，先 mark 后 reset）；② `testResetForTestingClearsLockAndServices`（确定性，resetForTesting 同时清空两者）；③ `testConcurrentMarkAndResetNoInconsistency`（压力测试，500 轮并发）。 |
+| 9 | 🟡 中等 | `ServiceContainer.swift:166-172` | 预期行为 / 契约设计 | `resolve<T>` 注册协议后用具体类型 resolve 触发 fatalError。例如 `register(x as Proto, for: Proto.self)` 后 `resolve(Impl.self)` 崩溃。 | 调用方用具体类型 resolve 协议注册的服务时崩溃。 | **P2 级契约清晰度**：调用方需理解「注册类型必须与 resolve 类型一致」。 | 代码审查 + 测试验证 | ✅ 预期行为 | **不修**。这是 fail-fast 契约：类型不匹配是调用方错误，`resolveOptional` 已安全返回 nil 供降级使用。`resolve<T>` 的 fatalError 是有意设计，防止类型不匹配的依赖被误用。 |
+| 10 | 🟡 中等 | `ServiceContainer.swift:383` | 嵌套 Optional 语义错误 | `@Inject var x: Int??`（嵌套 Optional）未注册时返回 `.some(.none)` 而非 nil。`XCTAssertNil` 判定非 nil，调用方 `if let` 不触发，行为违反直觉。 | 使用 `@Inject var x: Int??` 的代码，未注册时 `x != nil` 为 true，但 `x!` 是 `.none`，行为混乱。 | **P2 级语义错误**：① 嵌套 Optional 行为违反直觉；② 调用方 `if let` 降级逻辑失效；③ Swift 语言陷阱 `nil as? Optional<T>` 返回 `.some(.none)`。 | 测试验证：`InjectNestedOptionalTests` | ✅ 已解决 | `injectWrap` 用 `Mirror(reflecting:).displayStyle == .optional && children.isEmpty` 检测 `Optional.none`，直接返回 `.none`，避免 `nil as? Wrapped` 陷阱。 |
+| 11 | 🟠 低 | `SystemConstants.swift` | 测试缺口 | `SystemConstants` 的 16 个系统常量无任何测试覆盖。 | 无直接业务现象（测试缺口）。 | **P3 级质量风险**：常量值变更无回归保护。 | 代码审查：`SystemConstantsTests` 不存在 | ✅ 已解决 | 新增 `SystemConstantsTests.swift`，16 个常量回归测试。 |
+| 12 | 🟠 低 | `Logger.swift` | 测试缺口 | Logger 边界值（空消息、超长消息、unicode）未测试。 | 无直接业务现象（测试缺口）。 | **P3 级质量风险**：边界行为无回归保护。 | 代码审查：`LoggerBoundaryTests` 不存在 | ✅ 已解决 | 新增 `LoggerBoundaryTests.swift`，8 个边界值测试。 |
+| 13 | 🔴 严重 | `ServiceContainer.swift:185` | Optional 解析陷阱 | `resolveOptional<Int?>` 未注册时返回 `.some(.none)` 而非 nil。根因：`instance`（`Any?`）为 nil 时，`nil as? T`（T 是 `Int?`）返回 `.some(.none)` 而非 nil（Swift 语言陷阱）。 | 调用方 `if let x = resolveOptional<Int?>()` 降级逻辑失效——未注册时 `x` 是 `.some(.none)`，`if let` 不触发，但 `x!` 是 nil。 | **P0 级语义错误**：① `resolveOptional` 返回非 nil 但实际是空 Optional，调用方降级失效；② Swift 语言陷阱 `nil as? Optional<T>` 返回 `.some(.none)`；③ 与 `@Inject` 的 Optional 处理不一致。 | 测试验证：`ServiceContainerResolveTypeMismatchTests` | ✅ 已解决 | `resolveOptional` 加 `guard let nonNilInstance = instance else { return nil }`，避免 `nil as? T` 当 T 是 Optional 时返回 `.some(.none)`。 |
+
+### 问题 8 验证：竞态窗口复现
+
+**还原旧修复（两次 lock）后**，`testResetReadsStaleValueThenMarkThenPerformReset`（500 轮并发）：
+```
+XCTAssertEqual failed: ("64") is not equal to ("0") - 问题 #8 竞态未完全修复：64/500 次出现 isProductionChainLocked=true 但 services 为空的不一致状态
+```
+
+**应用真正修复（同一次 lock）后**，20 次全量测试（120 个测试）：
+```
+Run 1-20: Executed 120 tests, with 0 failures
+```
+
+### 关键教训
+
+1. **`lock.withLock { read }` + `lock.withLock { write }` ≠ 原子操作**：两次 lock 之间其他线程可修改共享状态。必须在**同一次** lock 内完成「检查 + 修改」。
+2. **Swift Optional 陷阱**：`nil as? Optional<T>` 返回 `.some(.none)` 而非 nil。处理 `Any?` 转 `T?` 时必须先 `guard let` 检查 nil。
+3. **并发测试非确定性**：竞态触发概率不稳定（12.8%），需高轮次（500+）+ 多次运行（20+）才能稳定复现。确定性测试（先 mark 后 reset）作为主要回归保护，压力测试作为补充。
+4. **测试目的是发现问题**：第一轮修复（两次 lock）测试通过但竞态仍在，说明「测试通过」≠「问题已修复」。必须用「还原修复 → 测试失败」验证测试有效性。
