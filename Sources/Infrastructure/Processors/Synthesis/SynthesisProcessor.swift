@@ -96,7 +96,7 @@ enum SynthesisProcessor {
             "\(ProcessorConstants.MarkdownSyntax.h1Prefix)\(rootName)",
             ProcessorConstants.Whitespace.empty,
             ProcessorConstants.MermaidSyntax.mindmap,
-            "\(ProcessorConstants.Synthesis.mermaidIndentLevel2)\(ProcessorConstants.MermaidSyntax.root)\(ProcessorConstants.MermaidSyntax.doubleParenOpen)\(rootName)\(ProcessorConstants.MermaidSyntax.doubleParenClose)"
+            "\(ProcessorConstants.Synthesis.mermaidIndentLevel2)\(ProcessorConstants.MermaidSyntax.mindmapRoot)\(ProcessorConstants.MermaidSyntax.doubleParenOpen)\(rootName)\(ProcessorConstants.MermaidSyntax.doubleParenClose)"
         ]
 
         var currentSection = ""

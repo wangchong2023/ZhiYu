@@ -177,6 +177,7 @@ enum ProcessorConstants {
         static let tb: String = "TB"
         static let bt: String = "BT"
         static let root: String = "Root"
+        static let mindmapRoot: String = "root"
         static let rootLabel: String = "Root[\""
         static let nodeLabel: String = "Node"
         static let arrow: String = " --> "
@@ -577,19 +578,19 @@ enum ProcessorConstants {
             dividerAnswer
         ]
         /// think 标签正则（含闭合）
-        static let thinkTagEnclosed: String = #"(?s)</think>(.*?)</think>"#
+        static let thinkTagEnclosed: String = #"<think>(.*?)</think>"#
         /// thinking 标签正则（含闭合）
-        static let thinkingTagEnclosed: String = #"(?s)<thinking>(.*?)</thinking>"#
+        static let thinkingTagEnclosed: String = #"<thinking>(.*?)</thinking>"#
         /// thought 标签正则（含闭合）
-        static let thoughtTagEnclosed: String = #"(?s)<thought>(.*?)</thought>"#
+        static let thoughtTagEnclosed: String = #"<thought>(.*?)</thought>"#
         /// [think] 标签正则（含闭合）
-        static let thinkBracketEnclosed: String = #"(?s)\[think\](.*?)\[/think\]"#
+        static let thinkBracketEnclosed: String = #"\[think\](.*?)\[/think\]"#
         /// [thinking] 标签正则（含闭合）
-        static let thinkingBracketEnclosed: String = #"(?s)\[thinking\](.*?)\[/thinking\]"#
+        static let thinkingBracketEnclosed: String = #"\[thinking\](.*?)\[/thinking\]"#
         /// [思考过程] 标签正则（含闭合）
-        static let thinkingProcessBracketEnclosed: String = #"(?s)\[思考过程\](.*?)\[/思考过程\]"#
+        static let thinkingProcessBracketEnclosed: String = #"\[思考过程\](.*?)\[/思考过程\]"#
         /// ```think 代码块正则
-        static let thinkCodeBlock: String = #"(?s)```think\s*\n(.*?)\n```"#
+        static let thinkCodeBlock: String = #"```think\s*\n(.*?)\n```"#
         /// 含闭合思考标签正则集合
         static let enclosedPatterns: [String] = [
             thinkTagEnclosed,

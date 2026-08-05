@@ -31,8 +31,12 @@ public enum ThinkingProcessor {
             return Result(thinkingContent: nil, mainContent: "")
         }
 
-        if let res = extractEnclosedThinking(text) { return res }
-        if let res = extractUnclosedThinking(text) { return res }
+        if let res = extractEnclosedThinking(text) {
+            return res
+        }
+        if let res = extractUnclosedThinking(text) {
+            return res
+        }
         if let res = extractPrefixThinking(text) { return res }
         if let res = extractImplicitCoT(text) { return res }
 
@@ -43,7 +47,7 @@ public enum ThinkingProcessor {
 
     private static func extractEnclosedThinking(_ text: String) -> Result? {
         for pattern in ProcessorConstants.Thinking.enclosedPatterns {
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { continue }
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators]) else { continue }
             let range = NSRange(text.startIndex..<text.endIndex, in: text)
             if let match = regex.firstMatch(in: text, options: [], range: range),
                let thinkRange = Range(match.range(at: 1), in: text) {
