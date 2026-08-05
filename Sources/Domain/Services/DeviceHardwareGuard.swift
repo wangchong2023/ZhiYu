@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 /// 硬件兼容性评估评估状态
 public enum DeviceEligibility: String, Codable, Sendable, Equatable {
@@ -35,7 +36,7 @@ public final class DeviceHardwareGuard: Sendable {
     
     /// 获取以 GB 为单位的设备真实物理内存大小
     public var physicalMemoryInGb: Double {
-        return Double(totalPhysicalMemory) / SystemConstants.bytesPerGB
+        return Double(totalPhysicalMemory) / UFPCore.SystemConstants.bytesPerGB
     }
     
     /// 针对特定大模型 Manifest 评定其硬件兼容性等级

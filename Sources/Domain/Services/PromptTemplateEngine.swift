@@ -11,6 +11,7 @@
 
 import Foundation
 import CryptoKit
+import UFPCore
 
 /// 动态提示词解析引擎，使用 Actor 隔离保证并发安全
 public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
@@ -94,7 +95,7 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
                     
                     let (data, response) = try await session.data(for: request)
                     
-                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
+                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok,
                        let fetchedContent = String(data: data, encoding: .utf8) {
                         // 校验拉取到的内容是否非空，若有效则写入沙盒缓存
                         if !fetchedContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

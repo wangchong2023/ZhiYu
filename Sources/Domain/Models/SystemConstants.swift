@@ -6,32 +6,15 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L1.5] 领域层
-//  核心职责：系统级换算常量与协议常量集（时间换算、字节换算、HTTP 状态码等）。
-//           避免业务代码中出现裸数字 1000/1024/200 等魔鬼数字。
+//  核心职责：领域业务阈值常量集。
+//           系统级换算常量（时间/字节/HTTP）定义在 UFPCore.SystemConstants，
+//           上层直接引用 UFPCore.SystemConstants.xxx，不在本文件重复定义或转接。
 //
 
 import Foundation
 
-/// 系统级换算与协议常量集
+/// 领域业务阈值常量集
 public enum SystemConstants {
-
-    // MARK: - 时间换算 (Time Conversion)
-    /// 每秒对应的毫秒数
-    public static let millisecondsPerSecond: Double = 1000.0
-
-    // MARK: - 字节换算 (Byte Conversion)
-    /// 每 KB 对应的字节数
-    public static let bytesPerKB: Double = 1024.0
-    /// 每 MB 对应的字节数
-    public static let bytesPerMB: Double = bytesPerKB * bytesPerKB
-    /// 每 GB 对应的字节数
-    public static let bytesPerGB: Double = bytesPerKB * bytesPerKB * bytesPerKB
-
-    // MARK: - HTTP 状态码 (HTTP Status Codes)
-    public enum HTTPStatusCode {
-        /// 200 OK
-        public static let ok: Int = 200
-    }
 
     // MARK: - 知识页面 (KnowledgePage) 业务阈值
     public struct KnowledgePageThresholds {

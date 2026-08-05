@@ -53,7 +53,6 @@
 		04BDD99685315B78B68BEB99 /* ModelManager.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 57B1A95817AE845F130FBE12 /* ModelManager.xcstrings */; };
 		04CABA5810A58AF9B24F0B8F /* LintService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3D19072B24D0A22351D269 /* LintService.swift */; };
 		0509280F3405149857900B4D /* DownloadProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC6A77523298F8CD859FBA0 /* DownloadProgressRing.swift */; };
-		0515C2B584DFC63FFACC3BD3 /* DomainConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7525E90E80DA02FB0037F223 /* DomainConstants.swift */; };
 		0521D0DBCC63662AD8CCDAA4 /* OverseasLoginCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1F053AD585ED33E6D766A /* OverseasLoginCardView.swift */; };
 		053E7C3A4E8447270EC81A50 /* IngestSanitationPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBBC5FE8B43C7C51FD555E2B /* IngestSanitationPipelineTests.swift */; };
 		05724A001DECF8E0746DCD8B /* ChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29FBE39C2BBE3AB9C88B58FF /* ChatService.swift */; };
@@ -153,7 +152,6 @@
 		11855263E5CA8D608CB377F8 /* RAGGovernanceSQLiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F336D65F0CD2ED7556ED3 /* RAGGovernanceSQLiteStore.swift */; };
 		1185D67376BA210148A44BAB /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EECD52D848C23BDD00E97C0 /* AppStore.swift */; };
 		11906450DE8FC04A32AC30A7 /* CJKSpacingFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC5933E517D072A2CF823B2B /* CJKSpacingFormatter.swift */; };
-		11C850EB0EB5D01ED154B90F /* DomainConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7525E90E80DA02FB0037F223 /* DomainConstants.swift */; };
 		11E2D2727D589414B2707C48 /* Plugin.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5C2DBF6A400C56160439D22F /* Plugin.xcstrings */; };
 		11E807F0610A22A832B68823 /* WatchVoiceCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5617CD95E62E73D799C5586E /* WatchVoiceCaptureView.swift */; };
 		121B14F8B5B176D90B7D68BB /* UINavigationController+PopGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = F222F3322366805595B60A89 /* UINavigationController+PopGesture.swift */; };
@@ -2545,7 +2543,6 @@
 		74F9CCEB89ADA73B622EA68B /* ModelLabManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabManagerTests.swift; sourceTree = "<group>"; };
 		751F592B285200694823E27F /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		7521F06EADA09410B0395E20 /* KnowledgeStorePerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeStorePerformanceTests.swift; sourceTree = "<group>"; };
-		7525E90E80DA02FB0037F223 /* DomainConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainConstants.swift; sourceTree = "<group>"; };
 		752A49D88453F76587407A2F /* WikiLinkExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WikiLinkExtractor.swift; sourceTree = "<group>"; };
 		753254F49750B91800CE0E1D /* MultipeerCollaborationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipeerCollaborationProvider.swift; sourceTree = "<group>"; };
 		757C3CA17076EBB0FAE7FACA /* TokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenManager.swift; sourceTree = "<group>"; };
@@ -4349,7 +4346,6 @@
 				2179BFDE3EEE56249DC8559C /* AITaskProgress.swift */,
 				94589743C22E4B620F5E914B /* AppTab.swift */,
 				2A64FFCFBB2B095EBDDF5C66 /* AsyncStatus.swift */,
-				7525E90E80DA02FB0037F223 /* DomainConstants.swift */,
 				119E06B638D57549C0C86513 /* GraphConstants.swift */,
 				E4C61FA7A53FB23B68ABD52F /* KnowledgePage.swift */,
 				E854D4FADA18B6F35D73EBD8 /* KnowledgePageFTS.swift */,
@@ -7055,7 +7051,6 @@
 				1384924BABF7481390158542 /* DocumentSanitationEngine.swift in Sources */,
 				144FB6309AA2E50DDA70F51D /* DocumentSanitizerProtocol.swift in Sources */,
 				2150787B5C4C3147ADEB036B /* DocxProcessor.swift in Sources */,
-				11C850EB0EB5D01ED154B90F /* DomainConstants.swift in Sources */,
 				8CF58A2C1C449BEBCE6B3083 /* DownloadProgressRing.swift in Sources */,
 				D9219CA9F542A4292A3827F0 /* DragDropComponents.swift in Sources */,
 				B6E9FE63AF60715F2E34F902 /* DummyActivityService.swift in Sources */,
@@ -7811,7 +7806,6 @@
 				601841F4E7D5F5A450C06A36 /* DocumentSanitationEngine.swift in Sources */,
 				BF804F782CD98D5D7EC1CCD0 /* DocumentSanitizerProtocol.swift in Sources */,
 				0D1B2C05AD4EF75ADD432B05 /* DocxProcessor.swift in Sources */,
-				0515C2B584DFC63FFACC3BD3 /* DomainConstants.swift in Sources */,
 				0509280F3405149857900B4D /* DownloadProgressRing.swift in Sources */,
 				596D7760033D936E8A294A56 /* DragDropComponents.swift in Sources */,
 				8073E8201362C9B29E475F52 /* DummyActivityService.swift in Sources */,

@@ -9,6 +9,7 @@
 //  核心职责：定义知识页面 (KnowledgePage) 的核心领域模型，包含页面内容、标签、置信度及关联来源。
 //
 import Foundation
+import UFPCore
 
 // MARK: - Knowledge Page
 /// 知识管理系统核心数据模型
@@ -134,7 +135,7 @@ public struct KnowledgePage: Identifiable, Codable, Hashable, Sendable, Knowledg
         self.rawTextSnippet = rawTextSnippet
         self.fileSize = fileSize ?? Int64(content.utf8.count)
         self.sourceType = sourceType
-        self.lamportTimestamp = lamportTimestamp ?? Int64(createdAt.timeIntervalSince1970 * SystemConstants.millisecondsPerSecond)
+        self.lamportTimestamp = lamportTimestamp ?? Int64(createdAt.timeIntervalSince1970 * UFPCore.SystemConstants.millisecondsPerSecond)
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
