@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 /// 远程配置拉取具体实现服务类
 public final class RemoteConfigService: RemoteConfigCapabilities, Sendable {
@@ -38,8 +39,8 @@ public final class RemoteConfigService: RemoteConfigCapabilities, Sendable {
         
         do {
             let (data, response) = try await session.data(from: url)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                throw NetworkError.serverError(500, "Fetch remote skills list failed.")
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok else {
+                throw NetworkError.serverError(SystemConstants.HTTPStatusCode.internalServerError, "Fetch remote skills list failed.")
             }
             
             let apiResponse = try decoder.decode(ApiResponse<[AgentSkill]>.self, from: data)
@@ -57,13 +58,13 @@ public final class RemoteConfigService: RemoteConfigCapabilities, Sendable {
     
     /// 从 model_allowlist.json 加载离线预设模型清单
     private func getFallbackLLMManifests() -> [LLMManifest] {
-        let preferredLanguage = Locale.preferredLanguages.first ?? "en"
-        let resourceName = preferredLanguage.hasPrefix("zh") ? "model_allowlist_zh-Hans" : "model_allowlist"
+        let preferredLanguage = Locale.preferredLanguages.first ?? CoreConstants.LanguageCode.en
+        let resourceName = preferredLanguage.hasPrefix(CoreConstants.LanguageCode.zh) ? CoreConstants.RemoteConfig.modelAllowlistZhHans : CoreConstants.RemoteConfig.modelAllowlist
         
-        guard let url = Bundle.main.url(forResource: resourceName, withExtension: "json") ?? Bundle.main.url(forResource: "model_allowlist", withExtension: "json"),
+        guard let url = Bundle.main.url(forResource: resourceName, withExtension: SystemConstants.FileExtension.json) ?? Bundle.main.url(forResource: CoreConstants.RemoteConfig.modelAllowlist, withExtension: SystemConstants.FileExtension.json),
               let data = try? Data(contentsOf: url),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let models = json["models"] as? [[String: Any]] else {
+              let models = json[CoreConstants.RemoteConfig.jsonKeyModels] as? [[String: Any]] else {
             return []
         }
         return models.compactMap { dict in
@@ -97,73 +98,31 @@ public final class RemoteConfigService: RemoteConfigCapabilities, Sendable {
         }
     }
 
-    /// (废弃：已迁移至 model_allowlist.json)
-    private func _getFallbackLLMManifests_old() -> [LLMManifest] {
-        return [
-            LLMManifest(
-                modelId: "gemma-2b-it",
-                displayName: "Gemma-2-2B-IT",
-                vendor: "Google",
-                fileSizeInBytes: 1530000000, // 约 1.4 GB
-                minDeviceMemoryInGb: 6.0,    // 最低 6GB 内存，iPhone 15+ 兼容良好
-                remoteURLString: AppConstants.URLs.cdnModelGemma,
-                sha256Checksum: "21dbdf737aa7134914101e4a42828a2a7134aa7e42828a2a7134914101e4a428",
-                parameterCount: "2B",
-                description: "",
-                defaultParameters: InferenceParameters(temperature: 0.7, topP: 0.9, topK: 40, maxTokens: 2048)
-            ),
-            LLMManifest(
-                modelId: "llama3-8b-instruct",
-                displayName: "Llama-3-8B-Instruct",
-                vendor: "Meta",
-                fileSizeInBytes: 4610000000, // 约 4.3 GB
-                minDeviceMemoryInGb: 12.0,   // 最低需要 12GB 物理内存，仅限 iPad M系列 / Mac
-                remoteURLString: AppConstants.URLs.cdnModelLlama,
-                sha256Checksum: "a7134aa7e42828a2a7134914101e4a42828a2a7134aa7e42828a2a7134914101e",
-                parameterCount: "8B",
-                description: "Meta ",
-                defaultParameters: InferenceParameters(temperature: 0.6, topP: 0.95, topK: 50, maxTokens: 4096)
-            ),
-            LLMManifest(
-                modelId: "phi3-mini-instruct",
-                displayName: "Phi-3-Mini-Instruct",
-                vendor: "Microsoft",
-                fileSizeInBytes: 2360000000, // 约 2.2 GB
-                minDeviceMemoryInGb: 8.0,    // 最低需要 8GB 内存，适合主流 iPhone 真机
-                remoteURLString: AppConstants.URLs.cdnModelPhi,
-                sha256Checksum: "31dbdf737aa7134914101e4a42828a2a7134aa7e42828a2a7134914101e4a428",
-                parameterCount: "3.8B",
-                description: " RAG ",
-                defaultParameters: InferenceParameters(temperature: 0.5, topP: 0.85, topK: 30, maxTokens: 2048)
-            )
-        ]
-    }
-    
     /// 获取本地物理预设的 Agent 智能技能灾备列表
     private func getFallbackAgentSkills() -> [AgentSkill] {
         return [
             AgentSkill(
-                skillId: "chunking_formatter",
-                displayName: " ",
+                skillId: CoreConstants.RemoteConfig.SkillID.chunkingFormatter,
+                displayName: CoreConstants.RemoteConfig.SkillDisplayName.chunkingFormatter,
                 description: "",
-                systemPromptTemplate: "\n{{input}}\n 3-5  JSON Schema ",
-                tags: ["Tagging", "Offline"],
+                systemPromptTemplate: CoreConstants.RemoteConfig.PromptTemplate.chunkingFormatter,
+                tags: [CoreConstants.RemoteConfig.SkillTag.tagging, CoreConstants.RemoteConfig.SkillTag.offline],
                 customParameters: InferenceParameters(temperature: 0.2, topP: 0.95, maxTokens: 1024)
             ),
             AgentSkill(
-                skillId: "presentation_generator",
-                displayName: "  Quiz ",
-                description: " Markdown ",
-                systemPromptTemplate: "\n{{input}}\n '# '  '## ' ",
-                tags: ["Synthesis", "Edge-Cloud"],
+                skillId: CoreConstants.RemoteConfig.SkillID.presentationGenerator,
+                displayName: CoreConstants.RemoteConfig.SkillDisplayName.presentationGenerator,
+                description: CoreConstants.RemoteConfig.SkillDescription.presentationGenerator,
+                systemPromptTemplate: CoreConstants.RemoteConfig.PromptTemplate.presentationGenerator,
+                tags: [CoreConstants.RemoteConfig.SkillTag.synthesis, CoreConstants.RemoteConfig.SkillTag.edgeCloud],
                 customParameters: InferenceParameters(temperature: 0.6, topP: 0.9, maxTokens: 3072)
             ),
             AgentSkill(
-                skillId: "link_discovery",
-                displayName: " ",
+                skillId: CoreConstants.RemoteConfig.SkillID.linkDiscovery,
+                displayName: CoreConstants.RemoteConfig.SkillDisplayName.linkDiscovery,
                 description: "",
-                systemPromptTemplate: "\n{{input}}\n [[]] ",
-                tags: ["Graph", "Offline"],
+                systemPromptTemplate: CoreConstants.RemoteConfig.PromptTemplate.linkDiscovery,
+                tags: [CoreConstants.RemoteConfig.SkillTag.graph, CoreConstants.RemoteConfig.SkillTag.offline],
                 customParameters: InferenceParameters(temperature: 0.3, topP: 0.8, maxTokens: 2048)
             )
         ]

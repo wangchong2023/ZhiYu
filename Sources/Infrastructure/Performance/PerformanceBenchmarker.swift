@@ -30,11 +30,11 @@ final class PerformanceBenchmarker {
             }
 
             _ = try? await store.createPage(
-                title: "Stress Test Page #\(i)",
+                title: "\(CoreConstants.Benchmark.stressTestPagePrefix)\(i)",
                 pageType: .raw,
                 customIcon: nil,
-                content: " \(i)" + "  SQLite" + " FTS5 \(UUID().uuidString)",
-                tags: ["benchmark", "stress-test"],
+                content: "\(CoreConstants.Benchmark.stressTestContentPrefix)\(i)" + CoreConstants.Benchmark.stressTestContentMiddle + "\(CoreConstants.Benchmark.stressTestContentSuffix)\(UUID().uuidString)",
+                tags: [CoreConstants.Benchmark.tagBenchmark, CoreConstants.Benchmark.tagStressTest],
                 sourceURL: nil,
                 rawSnippet: nil,
                 fileSize: nil,
@@ -52,7 +52,7 @@ final class PerformanceBenchmarker {
     }
 
     private func measureSearchPerformance(store: any AnyPageStore) async {
-        let query = "Stress Test"
+        let query = CoreConstants.Benchmark.searchQuery
         let startTime = CFAbsoluteTimeGetCurrent()
 
         let results = await store.searchPages(query: query)

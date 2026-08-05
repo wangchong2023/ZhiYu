@@ -114,7 +114,7 @@ public enum ImportRecordTagGrouper {
         for r in records {
             let tags: [String] = {
                 guard let t = r.tags, !t.isEmpty else { return [untaggedLabel] }
-                return t.components(separatedBy: ", ").filter { !$0.isEmpty }
+                return t.components(separatedBy: CoreConstants.TextSeparator.commaSpace).filter { !$0.isEmpty }
             }()
             for tag in tags {
                 groups[tag, default: []].append(r)

@@ -51,6 +51,8 @@ public enum SystemConstants {
         public static let notFound: Int = 404
         /// 429 Too Many Requests
         public static let rateLimited: Int = 429
+        /// 500 Internal Server Error
+        public static let internalServerError: Int = 500
         /// 501 Not Implemented
         public static let notImplemented: Int = 501
     }

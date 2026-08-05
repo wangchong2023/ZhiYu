@@ -134,6 +134,24 @@ public enum CoreConstants {
         public static let unsupportedMessage = "Export is not supported on this platform."
     }
 
+    // MARK: - 性能压测 (Benchmark)
+    public enum Benchmark {
+        /// 压测页面前缀
+        public static let stressTestPagePrefix = "Stress Test Page #"
+        /// 压测内容前缀
+        public static let stressTestContentPrefix = " "
+        /// 压测内容中段
+        public static let stressTestContentMiddle = "  SQLite"
+        /// 压测内容后缀模板
+        public static let stressTestContentSuffix = " FTS5 "
+        /// 压测标签
+        public static let tagBenchmark = "benchmark"
+        /// 压测标签
+        public static let tagStressTest = "stress-test"
+        /// 搜索查询关键词
+        public static let searchQuery = "Stress Test"
+    }
+
     // MARK: - Markdown 语法 (Markdown Syntax)
     public enum MarkdownSyntax {
         public static let taskOpen = "- [ ] "
@@ -150,6 +168,11 @@ public enum CoreConstants {
     // MARK: - 日志拼接符 (Log Concatenation)
     public enum LogConcat {
         public static let arrow = " + "
+    }
+
+    // MARK: - 文本分隔符 (Text Separator)
+    public enum TextSeparator {
+        public static let commaSpace = ", "
     }
 
     // MARK: - 错误域 (Error Domain)
@@ -263,5 +286,51 @@ public enum CoreConstants {
     // MARK: - 默认模型 (Default Model)
     public enum DefaultModel {
         public static let deepseekV4Pro = "deepseek-v4-pro"
+    }
+
+    // MARK: - 远程配置 (Remote Config)
+    public enum RemoteConfig {
+        /// 模型白名单资源名（默认/英文）
+        public static let modelAllowlist = "model_allowlist"
+        /// 模型白名单资源名（简体中文）
+        public static let modelAllowlistZhHans = "model_allowlist_zh-Hans"
+        /// JSON 顶层 models 字段
+        public static let jsonKeyModels = "models"
+
+        /// Agent 技能 ID
+        public enum SkillID {
+            public static let chunkingFormatter = "chunking_formatter"
+            public static let presentationGenerator = "presentation_generator"
+            public static let linkDiscovery = "link_discovery"
+        }
+
+        /// Agent 技能展示名（离线灾备占位）
+        public enum SkillDisplayName {
+            public static let chunkingFormatter = " "
+            public static let presentationGenerator = "  Quiz "
+            public static let linkDiscovery = " "
+        }
+
+        /// Agent 技能描述（离线灾备占位）
+        public enum SkillDescription {
+            public static let presentationGenerator = " Markdown "
+        }
+
+        /// Agent 技能标签
+        public enum SkillTag {
+            public static let tagging = "Tagging"
+            public static let offline = "Offline"
+            public static let synthesis = "Synthesis"
+            public static let edgeCloud = "Edge-Cloud"
+            public static let graph = "Graph"
+        }
+
+        /// Agent 技能 Prompt 模板占位符
+        public enum PromptTemplate {
+            public static let inputPlaceholder = "{{input}}"
+            public static let chunkingFormatter = "\n{{input}}\n 3-5  JSON Schema "
+            public static let presentationGenerator = "\n{{input}}\n '# '  '## ' "
+            public static let linkDiscovery = "\n{{input}}\n [[]] "
+        }
     }
 }
