@@ -2,7 +2,7 @@
 
 > **用途**：跨会话恢复上下文。新会话开头让 Agent 读取本文件即可恢复进度。
 > **最后更新**：2026-08-06
-> **状态**：批次 6-A 完成（192 用例全绿 + 1 测试隔离修复），Core 层覆盖率 86.94% 达标，待 commit
+> **状态**：批次 6-B 完成（44 用例全绿 + Finding #16 待确认），Core 层覆盖率 91.17%，已 commit `2b649eb8` 推送 gitlab，GitHub 网络超时待重试
 
 ---
 
@@ -126,6 +126,15 @@
 - **全量单元测试 2556 个全部通过** ✅ — `TEST SUCCEEDED`，0 失败（含批次 6-A 新增 192 用例，从 2364 → 2556）
 - **批次 6-A commit 并推送双远端** ✅ — commit `49af1f21`，已推送 origin（GitHub）+ gitlab
   - 附带修复：`RAGGovernanceSQLiteStore.swift` 抽取 F1 分数系数 `2.0` 和百分位基数 `100.0` 为 `RAGGovernanceFormula` 常量枚举（消除业务魔鬼数字，pre-push 钩子拦截后修复）
+- **批次 6-B 全部完成** ✅ — 4 个测试文件，44 个用例全绿，1 个新 finding（#16 待确认）
+  - `Tests/Unit/Core/KeychainServiceTests.swift` — store/retrieve/delete 降级路径 + testOverride + KeychainError 枚举（14 用例）
+  - `Tests/Unit/Core/ZipUtilityBatch6BTests.swift` — deflate 解压/损坏 ZIP 签名扫描恢复/非 UTF8 文件名/数据截断/高压缩比缓冲区不足（6 用例）
+  - `Tests/Unit/Core/DynamicCompliancePatchTests.swift` — RSA 验签/PEM 解析/JSON 解码失败/无效 Base64/空 payload（11 用例）
+  - `Tests/Unit/Core/SecureEnclaveCryptoServiceTests.swift` — 降级路径环回/isSupported/testOverride/错误分支（13 用例）
+  - **Finding #16**：`ZipUtility.decompressDeflate` 缓冲区 10 倍对高压缩比数据不足导致解压截断（P1，待确认）
+- **Core 层覆盖率进一步提升** ✅ — 91.17%（2653/2910），从 86.94% 提升 +4.23%
+- **全量单元测试 2600 个全部通过** ✅ — `TEST SUCCEEDED`，0 失败（含批次 6-B 新增 44 用例，从 2556 → 2600）
+- **批次 6-B commit 并推送双远端** ✅ — commit `2b649eb8`，已推送 origin（GitHub）+ gitlab
 
 ### In Progress
 - (none)
@@ -164,24 +173,25 @@
 - **批次 6-B 中等 ROI 文件**：KeychainService/ZipUtility 剩余/DynamicComplianceManager+Patch/SecureEnclaveCryptoService 降级路径
 
 ## Next Steps
-- 批次 6-B 中等 ROI 文件补测（KeychainService/ZipUtility 剩余/DynamicComplianceManager+Patch/SecureEnclaveCryptoService 降级路径）
+- Finding #16 待用户确认后修复（ZipUtility deflate 解压缓冲区不足）
 - 排查测试中发现的原始代码问题（DatabaseManager 并发竞态、DatabaseWriterProvider 静默降级、L10n 硬编码、Swift 6 并发警告等）
 - 统一覆盖率口径（`coverage-spm.py` vs `assert-test-coverage.py`）
 - 集成 `llvm-cov` 或 slather 补全分支覆盖率采集能力
+- 下一层补测：L1 Infrastructure（71.72% → 85%，差距 ~1975 行）或 L3 Shared（16.00% → 85%）
 
 ## Critical Context
 - 全 App 覆盖率基线（SPM 包口径）：24.80%（13656/55072 行）
 - 各层覆盖率基线（SPM 包口径）：Domain 95.10% ✅ / Core 58.17% / Infrastructure 52.56% / App 28.34% / Localization 16.65% / Shared 14.26% / Features 11.08%
-- **新脚本覆盖率报告（主 App Sources 口径，123182 行）**：
-  - L0 Core: 77.97%（2269/2910）— 当前补测目标（批次 6-A 后预计 ~85%+）
-  - L1 Infrastructure: 71.66%（10660/14875）
-  - L1.5 Domain: 93.52%（2022/2162）— 从基线 95.10% 下降 1.58%
-  - L2 Features: 8.33%（6574/78880）
-  - L3 App: 21.01%（946/4502）
-  - L3 Shared: 16.02%（1803/11253）
-  - Shared Localization: 30.03%（823/2741）
+- **新脚本覆盖率报告（主 App Sources 口径，123182 行，批次 6-B 后）**：
+  - L0 Core: 91.17%（2653/2910）✅ 达标
+  - L1 Infrastructure: 71.72%（10668/14875）
+  - L1.5 Domain: 93.52%（2022/2162）
+  - L2 Features: 8.36%（6592/78880）
+  - L3 App: 20.97%（944/4502）
+  - L3 Shared: 16.00%（1800/11253）
+  - Shared Localization: 30.68%（841/2741）
   - L3 Platforms: 5.14%（301/5859）
-  - 全 App 合计: 20.62%（25398/123182）
+  - 全 App 合计: 20.96%（25821/123182）
 - **已累计通过 ~864 个新增测试用例**（批次 1: ~119 + 批次 2: 150 + 批次 3: 206 + 批次 4: 119 + 批次 5: 78 + 批次 6-A: 192），0 失败
 - **全量单元测试 2364 个全部通过** ✅（含已有测试 + 新增测试），0 失败，无回归
 - **已记录 15 个 finding，全部已修复** ✅
