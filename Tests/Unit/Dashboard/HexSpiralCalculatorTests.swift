@@ -2,54 +2,115 @@
 //  HexSpiralCalculatorTests.swift
 //  ZhiYuTests
 //
-//  Created by Antigravity on 2026/06/21.
-//  Copyright © 2026 WangChong. All rights reserved.
-//
-//  系统层级：[L3] 表现层测试
-//  核心职责：验证六角蜂窝螺旋排布计算器（HexSpiralCalculator）坐标生成的唯一性、中心对齐与物理坐标转换的正确性。
+//  系统层级：[Tests] 单元测试层
+//  核心职责：验证六角蜂窝螺旋排布算法的坐标生成、物理坐标转换、边界条件等语义。
 //
 
 import XCTest
+import CoreGraphics
 @testable import ZhiYu
 
 final class HexSpiralCalculatorTests: XCTestCase {
-    
-    /// 验证螺旋生成的坐标点是否具备唯一性，没有重叠
-    func testSpiralCoordinatesUniqueness() {
-        let count = 50
-        let coords = HexSpiralCalculator.generateSpiralCoordinates(count: count)
-        
-        // 验证生成的坐标数量与请求数量完全对齐
-        XCTAssertEqual(coords.count, count, "生成的螺旋网格坐标数应当等于输入数量")
-        
-        // 验证去重后的唯一性，保证蜂窝格子之间不重叠
-        let uniqueCoords = Set(coords)
-        XCTAssertEqual(uniqueCoords.count, count, "所有生成的螺旋网格轴向坐标必须唯一，不能发生重叠")
+
+    // MARK: - generateSpiralCoordinates 边界
+
+    func testGenerateSpiralCoordinates_zeroCount_returnsEmpty() {
+        let result = HexSpiralCalculator.generateSpiralCoordinates(count: 0)
+        XCTAssertTrue(result.isEmpty)
     }
-    
-    /// 验证第 0 个标签（词频最高）是否精确锁定在几何中心原点 (0, 0)
-    func testCenterAlignment() {
-        let count = 10
-        let coords = HexSpiralCalculator.generateSpiralCoordinates(count: count)
-        
-        XCTAssertFalse(coords.isEmpty, "生成坐标列表不应为空")
-        XCTAssertEqual(coords[0].axialQ, 0, "首个高频标签 axialQ 轴应置于原点中心")
-        XCTAssertEqual(coords[0].axialR, 0, "首个高频标签 axialR 轴应置于原点中心")
+
+    func testGenerateSpiralCoordinates_negativeCount_returnsEmpty() {
+        let result = HexSpiralCalculator.generateSpiralCoordinates(count: -5)
+        XCTAssertTrue(result.isEmpty)
     }
-    
-    /// 验证物理映射坐标转换算法的正确性
-    func testPhysicalPointMapping() {
-        // 原点映射物理坐标应仍为原点
-        let centerCoord = HexCoordinate(axialQ: 0, axialR: 0)
-        let centerPoint = HexSpiralCalculator.convertToPhysicalPoint(coord: centerCoord, stepSize: 64.0)
-        XCTAssertEqual(centerPoint.x, 0.0, accuracy: 0.0001, "原点轴向坐标转换为物理坐标 x 必须为 0")
-        XCTAssertEqual(centerPoint.y, 0.0, accuracy: 0.0001, "原点轴向坐标转换为物理坐标 y 必须为 0")
-        
-        // 正交或倾斜位移转换校验
-        let offsetCoord = HexCoordinate(axialQ: 1, axialR: 0)
-        let offsetPoint = HexSpiralCalculator.convertToPhysicalPoint(coord: offsetCoord, stepSize: 64.0)
-        let expectedX = 64.0 * sqrt(3.0)
-        XCTAssertEqual(offsetPoint.x, expectedX, accuracy: 0.0001, "偏移坐标物理映射 x 坐标不符")
-        XCTAssertEqual(offsetPoint.y, 0.0, accuracy: 0.0001, "偏移坐标物理映射 r 轴为 0 时 y 必须为 0")
+
+    func testGenerateSpiralCoordinates_countOne_returnsOrigin() {
+        let result = HexSpiralCalculator.generateSpiralCoordinates(count: 1)
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result[0], HexCoordinate(axialQ: 0, axialR: 0))
+    }
+
+    // MARK: - generateSpiralCoordinates 数量
+
+    func testGenerateSpiralCoordinates_countSeven_returnsSevenCoords() {
+        let result = HexSpiralCalculator.generateSpiralCoordinates(count: 7)
+        XCTAssertEqual(result.count, 7, "7 个坐标 = 中心 + 第一圈 6 个")
+    }
+
+    func testGenerateSpiralCoordinates_countNineteen_returnsNineteenCoords() {
+        let result = HexSpiralCalculator.generateSpiralCoordinates(count: 19)
+        XCTAssertEqual(result.count, 19, "19 个坐标 = 中心 + 第一圈 6 + 第二圈 12")
+    }
+
+    func testGenerateSpiralCoordinates_exactRingBoundary() {
+        // 第一圈 7 个（含中心），第二圈 19 个（含中心+第一圈+第二圈）
+        let result7 = HexSpiralCalculator.generateSpiralCoordinates(count: 7)
+        XCTAssertEqual(result7.count, 7)
+
+        let result19 = HexSpiralCalculator.generateSpiralCoordinates(count: 19)
+        XCTAssertEqual(result19.count, 19)
+    }
+
+    // MARK: - generateSpiralCoordinates 去重
+
+    func testGenerateSpiralCoordinates_allCoordsUnique() {
+        let result = HexSpiralCalculator.generateSpiralCoordinates(count: 37)
+        let uniqueCoords = Set(result)
+        XCTAssertEqual(result.count, uniqueCoords.count, "所有坐标应唯一")
+    }
+
+    func testGenerateSpiralCoordinates_firstCoordIsOrigin() {
+        let result = HexSpiralCalculator.generateSpiralCoordinates(count: 10)
+        XCTAssertEqual(result[0], HexCoordinate(axialQ: 0, axialR: 0), "第一个坐标应为原点")
+    }
+
+    // MARK: - convertToPhysicalPoint
+
+    func testConvertToPhysicalPoint_origin_returnsZero() {
+        let coord = HexCoordinate(axialQ: 0, axialR: 0)
+        let point = HexSpiralCalculator.convertToPhysicalPoint(coord: coord, stepSize: 50)
+        XCTAssertEqual(point, CGPoint(x: 0, y: 0))
+    }
+
+    func testConvertToPhysicalPoint_qAxis_onlyQContributes() {
+        let coord = HexCoordinate(axialQ: 1, axialR: 0)
+        let stepSize: CGFloat = 10
+        let point = HexSpiralCalculator.convertToPhysicalPoint(coord: coord, stepSize: stepSize)
+        let expectedX = stepSize * CGFloat(sqrt(3.0))
+        XCTAssertEqual(point.x, expectedX, accuracy: 0.001)
+        XCTAssertEqual(point.y, 0, accuracy: 0.001)
+    }
+
+    func testConvertToPhysicalPoint_rAxis_bothContribute() {
+        let coord = HexCoordinate(axialQ: 0, axialR: 1)
+        let stepSize: CGFloat = 10
+        let point = HexSpiralCalculator.convertToPhysicalPoint(coord: coord, stepSize: stepSize)
+        let expectedX = stepSize * (sqrt(3.0) / 2.0)
+        let expectedY = stepSize * 1.5
+        XCTAssertEqual(point.x, expectedX, accuracy: 0.001)
+        XCTAssertEqual(point.y, expectedY, accuracy: 0.001)
+    }
+
+    func testConvertToPhysicalPoint_stepSizeScales() {
+        let coord = HexCoordinate(axialQ: 2, axialR: 3)
+        let point1 = HexSpiralCalculator.convertToPhysicalPoint(coord: coord, stepSize: 10)
+        let point2 = HexSpiralCalculator.convertToPhysicalPoint(coord: coord, stepSize: 20)
+        XCTAssertEqual(point2.x, point1.x * 2, accuracy: 0.001, "步长翻倍 x 应翻倍")
+        XCTAssertEqual(point2.y, point1.y * 2, accuracy: 0.001, "步长翻倍 y 应翻倍")
+    }
+
+    // MARK: - HexCoordinate Hashable
+
+    func testHexCoordinate_hashableAndEquatable() {
+        let c1 = HexCoordinate(axialQ: 1, axialR: -1)
+        let c2 = HexCoordinate(axialQ: 1, axialR: -1)
+        XCTAssertEqual(c1, c2)
+        XCTAssertEqual(c1.hashValue, c2.hashValue)
+    }
+
+    func testHexCoordinate_differentValues_notEqual() {
+        let c1 = HexCoordinate(axialQ: 1, axialR: 0)
+        let c2 = HexCoordinate(axialQ: 0, axialR: 1)
+        XCTAssertNotEqual(c1, c2)
     }
 }

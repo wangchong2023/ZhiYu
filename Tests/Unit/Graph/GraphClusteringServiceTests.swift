@@ -1,12 +1,9 @@
 //
 //  GraphClusteringServiceTests.swift
-//  ZhiYu
+//  ZhiYuTests
 //
-//  Created by Antigravity on 2026/06/11.
-//  Copyright © 2026 WangChong. All rights reserved.
-//
-//  系统层级：[Shared] 测试层
-//  核心职责：针对 GraphClusteringService 的 K-Means 聚类算法开展自动化单元测试。
+//  系统层级：[Tests] 单元测试层
+//  核心职责：验证 K-Means 聚类服务的质心初始化、聚类收敛、空输入处理等边界语义。
 //
 
 import XCTest
@@ -16,82 +13,101 @@ final class GraphClusteringServiceTests: XCTestCase {
 
     private let service = GraphClusteringService()
 
-    // MARK: - 基础聚类
+    // MARK: - 空输入与边界
 
-    func testCluster_basicKMeans() {
-        let pages = [
-            KnowledgePage(title: "A"),
-            KnowledgePage(title: "B"),
-            KnowledgePage(title: "C"),
-            KnowledgePage(title: "D"),
-            KnowledgePage(title: "E"),
-            KnowledgePage(title: "F")
-        ]
+    func testCluster_pagesFewerThanK_returnsEmpty() {
+        let pages = [KnowledgePage(title: "A")]
+        let embeddings: [UUID: [Float]] = [pages[0].id: [0.1, 0.2]]
+        let result = service.cluster(pages: pages, embeddings: embeddings, k: 5)
+        XCTAssertTrue(result.isEmpty, "页面数 < k 时应返回空")
+    }
+
+    func testCluster_emptyPages_returnsEmpty() {
+        let result = service.cluster(pages: [], embeddings: [:], k: 3)
+        XCTAssertTrue(result.isEmpty)
+    }
+
+    // MARK: - 基本聚类
+
+    func testCluster_twoGroups_separatesCorrectly() {
+        let pageA = KnowledgePage(title: "A")
+        let pageB = KnowledgePage(title: "B")
+        let pageC = KnowledgePage(title: "C")
+        let pageD = KnowledgePage(title: "D")
+
+        // A/B 在原点附近，C/D 在远处
         let embeddings: [UUID: [Float]] = [
-            pages[0].id: [1, 0],
-            pages[1].id: [1.1, 0],
-            pages[2].id: [0, 1],
-            pages[3].id: [0, 1.1],
-            pages[4].id: [10, 10],
-            pages[5].id: [10, 10.1]
+            pageA.id: [0.0, 0.0],
+            pageB.id: [0.1, 0.1],
+            pageC.id: [10.0, 10.0],
+            pageD.id: [10.1, 10.1]
         ]
-        let clusters = service.cluster(pages: pages, embeddings: embeddings, k: 3)
-        XCTAssertTrue(clusters.count > 0 && clusters.count <= 3, "应生成 1-3 个有效聚类")
-        for cluster in clusters {
-            XCTAssertFalse(cluster.pageIDs.isEmpty, "每个聚类应包含页面")
-            XCTAssertFalse(cluster.centroid.isEmpty, "质心不应为空")
+        let pages = [pageA, pageB, pageC, pageD]
+
+        let result = service.cluster(pages: pages, embeddings: embeddings, k: 2)
+        XCTAssertEqual(result.count, 2, "应产生 2 个聚类")
+
+        // 验证 A/B 在同一聚类，C/D 在另一聚类
+        let clusterAB = result.first { $0.pageIDs.contains(pageA.id) }
+        let clusterCD = result.first { $0.pageIDs.contains(pageC.id) }
+        XCTAssertNotNil(clusterAB)
+        XCTAssertNotNil(clusterCD)
+        XCTAssertNotEqual(clusterAB?.id, clusterCD?.id, "A/B 和 C/D 应在不同聚类")
+        XCTAssertTrue(clusterAB?.pageIDs.contains(pageB.id) == true, "A 和 B 应在同一聚类")
+        XCTAssertTrue(clusterCD?.pageIDs.contains(pageD.id) == true, "C 和 D 应在同一聚类")
+    }
+
+    // MARK: - 聚类属性
+
+    func testCluster_resultHasNameAndColor() {
+        let pages = (0..<6).map { KnowledgePage(title: "Page\($0)") }
+        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, [Float.random(in: 0...1), Float.random(in: 0...1)]) })
+        let result = service.cluster(pages: pages, embeddings: embeddings, k: 3)
+        for cluster in result {
+            XCTAssertFalse(cluster.name.isEmpty, "聚类名称不应为空")
+            XCTAssertFalse(cluster.colorName.isEmpty, "聚类颜色不应为空")
         }
     }
 
-    func testCluster_pagesLessThanK_returnsEmpty() {
+    func testCluster_centroidDimensions_matchEmbedding() {
+        let pages = (0..<6).map { KnowledgePage(title: "Page\($0)") }
+        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, [Float.random(in: 0...1), Float.random(in: 0...1), Float.random(in: 0...1)]) })
+        let result = service.cluster(pages: pages, embeddings: embeddings, k: 3)
+        for cluster in result {
+            XCTAssertEqual(cluster.centroid.count, 3, "质心维度应与嵌入维度一致")
+        }
+    }
+
+    // MARK: - k 值边界
+
+    func testCluster_kEqualsPageCount_returnsEmpty() {
         let pages = [KnowledgePage(title: "A"), KnowledgePage(title: "B")]
         let embeddings: [UUID: [Float]] = [
-            pages[0].id: [1, 2],
-            pages[1].id: [3, 4]
+            pages[0].id: [0.0, 0.0],
+            pages[1].id: [1.0, 1.0]
         ]
-        let clusters = service.cluster(pages: pages, embeddings: embeddings, k: 3)
-        XCTAssertTrue(clusters.isEmpty, "页面数少于 k 时应返回空")
+        let result = service.cluster(pages: pages, embeddings: embeddings, k: 2)
+        XCTAssertTrue(result.isEmpty, "pages.count == k 时应返回空（guard pages.count > k）")
     }
 
-    func testCluster_singleCluster() {
-        let pages = (0..<5).map { KnowledgePage(title: "\($0)") }
-        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues:
-            pages.map { ($0.id, [Float($0.id.hashValue % 10), Float($0.id.hashValue % 5)]) }
-        )
-        let clusters = service.cluster(pages: pages, embeddings: embeddings, k: 1)
-        XCTAssertEqual(clusters.count, 1)
-        XCTAssertEqual(clusters[0].pageIDs.count, 5, "所有页面应归入唯一聚类")
+    // MARK: - 聚类 ID 唯一性
+
+    func testCluster_clusterIDsUnique() {
+        let pages = (0..<10).map { KnowledgePage(title: "Page\($0)") }
+        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, [Float.random(in: 0...1), Float.random(in: 0...1)]) })
+        let result = service.cluster(pages: pages, embeddings: embeddings, k: 3)
+        let ids = result.map { $0.id }
+        XCTAssertEqual(ids.count, Set(ids).count, "聚类 ID 应唯一")
     }
 
-    func testCluster_consistentColors() {
-        let pages = (0..<10).map { KnowledgePage(title: "\($0)") }
-        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues:
-            pages.map { ($0.id, [Float.random(in: 0...10), Float.random(in: 0...10)]) }
-        )
-        let clusters = service.cluster(pages: pages, embeddings: embeddings, k: 3)
-        for cluster in clusters {
-            XCTAssertFalse(cluster.colorName.isEmpty, "每个聚类应有颜色")
-        }
-    }
+    // MARK: - pageIDs 覆盖
 
-    func testCluster_allPagesAccounted() {
-        let pages = (0..<6).map { KnowledgePage(title: "\($0)") }
-        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues:
-            pages.map { ($0.id, [Float($0.id.hashValue), Float($0.id.hashValue)]) }
-        )
-        let clusters = service.cluster(pages: pages, embeddings: embeddings, k: 2)
-        let allIDs = clusters.flatMap(\.pageIDs)
-        XCTAssertEqual(Set(allIDs).count, pages.count, "所有页面应被分配到某个聚类")
-    }
-
-    func testCluster_dimensionality() {
-        let pages = (0..<6).map { KnowledgePage(title: "\($0)") }
-        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues:
-            pages.map { ($0.id, [1, 2, 3, 4]) }
-        )
-        let clusters = service.cluster(pages: pages, embeddings: embeddings, k: 2)
-        for cluster in clusters {
-            XCTAssertEqual(cluster.centroid.count, 4, "质心维度应与 embedding 维度一致")
-        }
+    func testCluster_allPagesAssigned() {
+        let pages = (0..<8).map { KnowledgePage(title: "Page\($0)") }
+        let embeddings: [UUID: [Float]] = Dictionary(uniqueKeysWithValues: pages.map { ($0.id, [Float.random(in: 0...1), Float.random(in: 0...1)]) })
+        let result = service.cluster(pages: pages, embeddings: embeddings, k: 3)
+        let allAssigned = Set(result.flatMap { $0.pageIDs })
+        let allPageIDs = Set(pages.map { $0.id })
+        XCTAssertEqual(allAssigned, allPageIDs, "所有页面应被分配到聚类中")
     }
 }
