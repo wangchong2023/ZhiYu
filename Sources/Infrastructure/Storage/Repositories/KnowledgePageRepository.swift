@@ -16,13 +16,13 @@ import UFPStorage
 /// 知识库 页面存储：封装基于 GRDB 的高性能 CRUD 操作。
 final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     private var dbWriter: any DatabaseWriter {
-        get async {
+        get async throws {
             // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁
             if let writer = await DatabaseManager.shared.dbWriter {
                 return writer
             }
-            // DatabaseQueue() 创建在调用方 actor 上执行，不阻塞主线程
-            do { return try DatabaseQueue() } catch { fatalError("无法创建内存数据库(KnowledgeRepo): \(error)") }
+            // Finding #17：dbWriter 为 nil 时抛错，不再静默降级创建空内存库
+            throw DatabaseError.notReady
         }
     }
 
@@ -34,7 +34,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
 
     /// 保存单个页面
     func save(_ page: KnowledgePage) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         _ = try await writer.write { db in
             try self.save(page, in: db)
         }
@@ -86,7 +86,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// 删除
     /// - Parameter id: id
     func delete(id: UUID) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         _ = try await writer.write { db in
             try KnowledgePage.filter(KnowledgePage.Columns.id == id).deleteAll(db)
         }
@@ -97,7 +97,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// 拉取All
     /// - Returns: 列表
     func fetchAll() async throws -> [KnowledgePage] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
             return rawPages.map { self.decryptIfPrivate($0) }
@@ -108,7 +108,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// - Parameter id: id
     /// - Returns: 可选值
     func fetch(id: UUID) async throws -> KnowledgePage? {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let page = try KnowledgePage.filter(KnowledgePage.Columns.id == id).fetchOne(db)
             return page.map { self.decryptIfPrivate($0) }
@@ -119,7 +119,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// - Parameter title: title
     /// - Returns: 可选值
     func fetch(title: String) async throws -> KnowledgePage? {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let page = try KnowledgePage.filter(KnowledgePage.Columns.title == title).fetchOne(db)
             return page.map { self.decryptIfPrivate($0) }
@@ -130,7 +130,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// - Parameter limit: limit
     /// - Returns: 列表
     func fetchRecentlyUpdated(limit: Int) async throws -> [KnowledgePage] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc)
                 .limit(limit)
@@ -148,7 +148,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// - Parameter query: 搜索关键词，支持中英文及中英混合
     /// - Returns: 按相关度排序的页面列表
     func search(query: String) async throws -> [KnowledgePage] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             // 阶段一：FTS5 全文搜索（对英文及带空格的中文分词友好）
             // 注意：加密后的私密内容无法通过 FTS5 全文搜索，但标题仍可被搜索到
@@ -179,7 +179,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// 拉取Backlinks
     /// - Returns: 列表
     func fetchBacklinks(for targetID: UUID) async throws -> [UUID] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let links = try PageLink.filter(PageLink.Columns.targetID == targetID).fetchAll(db)
             return links.map { $0.sourceID }
@@ -200,7 +200,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
 
     /// 重命名Tag
     func renameTag(old oldTag: String, to newTag: String) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(oldTag)\"%")).fetchAll(db)
             for p in pagesToUpdate {
@@ -218,7 +218,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// 删除Tag
     /// - Parameter tag: tag
     func deleteTag(_ tag: String) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(tag)\"%")).fetchAll(db)
             for p in pagesToUpdate {
@@ -235,7 +235,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
 
     /// 删除All
     func deleteAll() async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         _ = try await writer.write { db in
             try KnowledgePage.deleteAll(db)
             try PageLink.deleteAll(db)
@@ -247,7 +247,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
     /// 计数
     /// - Returns: 数值
     func count() async throws -> Int {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try KnowledgePage.fetchCount(db)
         }

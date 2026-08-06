@@ -1304,6 +1304,7 @@
 		A579724555D4BA6821052A90 /* UFPDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 6EF263CD79839C69FB7160DD /* UFPDesignSystem */; };
 		A57DF0289C5FA73C19ABEE1B /* LocalizedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3C1492454F4BB1EDA65844 /* LocalizedTests.swift */; };
 		A57E48DC1714A13C56A713A6 /* Transfer.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 938D7456155DFBA2340DAE3B /* Transfer.xcstrings */; };
+		A58794BB2D957679EAB74184 /* TransactionGatekeeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40BC0C5CD694AD7B8296C369 /* TransactionGatekeeper.swift */; };
 		A5A3042278DD069758511AE8 /* SQLiteVaultRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1427E7628E9563C93D0D636E /* SQLiteVaultRepository.swift */; };
 		A5CE51FBE1BBD5E76C7B510E /* VaultBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912726C762F31F918625A562 /* VaultBadge.swift */; };
 		A5FAF1375FD0CA4C97765784 /* RemoteConfigCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E03DB6100E4D859848969D /* RemoteConfigCapabilities.swift */; };
@@ -1541,6 +1542,7 @@
 		C1E46E2FB9E761ED3BE501C2 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751F592B285200694823E27F /* AppConstants.swift */; };
 		C217EFF67D561F927EBB9C44 /* iOSShareSheetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C9998A20F42C77FFDC3800 /* iOSShareSheetService.swift */; };
 		C24394681DF471F275214DC4 /* ActivityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A964B6AE9A0AFE84A3535B2A /* ActivityRow.swift */; };
+		C263D7D80B6FE4ACA3FF300E /* TransactionGatekeeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40BC0C5CD694AD7B8296C369 /* TransactionGatekeeper.swift */; };
 		C270CFEEDCD0393ACDCADEEB /* TaskCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177B1A4B8E84CD6DD25475F3 /* TaskCenter.swift */; };
 		C27D706FFADB2510A4B27051 /* AI.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0B6DB367E4D68E0E5F447356 /* AI.xcstrings */; };
 		C28A61A18EA885334418B296 /* Network.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E6E55F434A971615DCAAE55E /* Network.xcstrings */; };
@@ -2391,6 +2393,7 @@
 		405F3ECC6095FB6074AE8313 /* IngestProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestProcessor.swift; sourceTree = "<group>"; };
 		40A42955F3D82BE0CBA1596A /* KnowledgeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeStoreTests.swift; sourceTree = "<group>"; };
 		40AC5366722D946F819F0231 /* GraphLayoutProcessorEdgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphLayoutProcessorEdgeTests.swift; sourceTree = "<group>"; };
+		40BC0C5CD694AD7B8296C369 /* TransactionGatekeeper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionGatekeeper.swift; sourceTree = "<group>"; };
 		40E74EDFF894F039D0B44003 /* MainActorBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainActorBridgeTests.swift; sourceTree = "<group>"; };
 		4167C31C2A73EB04EBBCDA79 /* iOSSpeechService+Speech.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "iOSSpeechService+Speech.swift"; sourceTree = "<group>"; };
 		419F2A478C76AE13E0152D47 /* QuizProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizProcessorTests.swift; sourceTree = "<group>"; };
@@ -4829,6 +4832,7 @@
 				591AA8355DE2F98AE94E85FA /* GeneratedSQL.swift */,
 				79A620414E80D0AC144E21FE /* global_schema.sql */,
 				64107641678BEE149996E9B5 /* init_schema.sql */,
+				40BC0C5CD694AD7B8296C369 /* TransactionGatekeeper.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -7829,6 +7833,7 @@
 				74CC64C704C27712C1F5446F /* TokenManager.swift in Sources */,
 				7526108414F9D4D4F7E7326E /* ToolItem.swift in Sources */,
 				B282A93B4D204EF20849BDD3 /* TooltipManager.swift in Sources */,
+				A58794BB2D957679EAB74184 /* TransactionGatekeeper.swift in Sources */,
 				9136F81061F8C19FFA0E59D5 /* Typography.swift in Sources */,
 				121B14F8B5B176D90B7D68BB /* UINavigationController+PopGesture.swift in Sources */,
 				5271FB32656159C30AD37E9D /* URLImportSheet.swift in Sources */,
@@ -8581,6 +8586,7 @@
 				16D1B5083C0263EC52B70AB3 /* TokenManager.swift in Sources */,
 				358EBEB5372F161A596F58C8 /* ToolItem.swift in Sources */,
 				F0EBAD1C310DECE8E42BF29D /* TooltipManager.swift in Sources */,
+				C263D7D80B6FE4ACA3FF300E /* TransactionGatekeeper.swift in Sources */,
 				F622B925453751875D6281A7 /* Typography.swift in Sources */,
 				50DE14EF0228ABA1ECA48341 /* UINavigationController+PopGesture.swift in Sources */,
 				6137B16F3B4FCAC5D4A70CF0 /* URLImportSheet.swift in Sources */,

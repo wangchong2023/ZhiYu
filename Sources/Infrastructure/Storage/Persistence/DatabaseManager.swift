@@ -27,20 +27,24 @@ final class DatabaseManager {
         }
     }
     
-    /// 并发活跃写入事务计数器，用于 Vault 热切换时的优雅连接排空（Draining）
-    /// 注：DatabaseManager 为 @MainActor，所有访问已在主线程串行化，无需额外同步。
-    private(set) var activeTransactionsCount: Int = 0
-    
-    /// 递增活跃写入事务数
-    func incrementActiveTransactions() {
-        activeTransactionsCount += 1
+    /// 事务门禁（Finding #18 修复）：用 actor 串行化事务计数，消除排空 TOCTOU 竞态。
+    let transactionGatekeeper = TransactionGatekeeper()
+
+    /// 并发活跃写入事务计数器（向后兼容，委托给 transactionGatekeeper）。
+    /// 注：实际计数在 actor 内串行化，此属性仅供测试同步观察。
+    var activeTransactionsCount: Int {
+        get async { await transactionGatekeeper.activeCount }
     }
-    
-    /// 递减活跃写入事务数
-    func decrementActiveTransactions() {
-        if activeTransactionsCount > 0 {
-            activeTransactionsCount -= 1
-        }
+
+    /// 递增活跃写入事务数（事务开始前调用）。
+    /// - Throws: `DatabaseError.draining` 如果正在排空。
+    func incrementActiveTransactions() async throws {
+        try await transactionGatekeeper.acquire()
+    }
+
+    /// 递减活跃写入事务数（事务结束后调用）。
+    func decrementActiveTransactions() async {
+        await transactionGatekeeper.release()
     }
     
     /// 专属笔记本数据库写入连接池（dbWriter）。
@@ -237,14 +241,9 @@ final class DatabaseManager {
         }
         
         // 1. 【安全核心步骤】：优雅连接排空，异步等待后台写事务结束
-        let maxWaitTime: Duration = .milliseconds(1500)
-        let interval: Duration = .milliseconds(50)
-        var waitedTime: Duration = .zero
-        while activeTransactionsCount > 0 && waitedTime < maxWaitTime {
-            try? await Task.sleep(for: interval)
-            waitedTime += interval
-        }
-        if activeTransactionsCount > 0 {
+        // Finding #18 修复：用 TransactionGatekeeper actor 排空，排空期间拒绝新事务（抛 draining）
+        let drained = await transactionGatekeeper.drain(maxWaitTime: .milliseconds(1500))
+        if !drained {
             Logger.shared.warning(" [DatabaseManager] switchDatabase warning: Transactions draining timed out. Forcing connection close.")
         } else {
             Logger.shared.info(" [DatabaseManager] switchDatabase: All active transactions drained successfully.")
@@ -392,6 +391,10 @@ extension Notification.Name {
 enum DatabaseError: Error {
     /// 数据库连接池配置或建立失败。
     case initializationFailed
+    /// 数据库未就绪（dbWriter 为 nil，如启动早期、Vault 热切换瞬态、reset 后）。
+    case notReady
+    /// 数据库正在排空（Vault 热切换中，拒绝新事务）。
+    case draining
 }
 
 /// 数据库中枢当前的运行状态。

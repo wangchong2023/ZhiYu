@@ -15,24 +15,24 @@ import UFPStorage
 /// 提供动态 `dbWriter` 计算属性的协议。
 ///
 /// 默认实现从 `DatabaseManager.shared.dbWriter` 获取当前活跃的数据库写入器，
-/// 支持多 Vault 热插拔切换。若尚未初始化（如测试冷启动），则降级创建内存数据库队列。
+/// 支持多 Vault 热插拔切换。若尚未初始化（如启动早期、Vault 热切换瞬态），
+/// 抛出 `DatabaseError.notReady`，由调用方决定降级策略（排队等待、提示用户重试）。
+///
+/// Finding #17 修复：原实现静默降级创建空内存 DatabaseQueue，数据写入临时库后丢失。
+/// 改为抛出明确错误，避免静默数据丢失。
 protocol DatabaseWriterProvider: AnyObject {
-    var dbWriter: any DatabaseWriter { get async }
+    var dbWriter: any DatabaseWriter { get async throws }
 }
 
 extension DatabaseWriterProvider {
     var dbWriter: any DatabaseWriter {
-        get async {
+        get async throws {
             // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁。
-            // MainActor.run 通过 withCheckedContinuation 显式调度任务，与 XCTest 自定义 run loop
-            // 冲突；而直接 await 使用 Swift 结构化并发的 actor hop，与 XCTest 协作更好。
             if let writer = await DatabaseManager.shared.dbWriter {
                 return writer
             }
-            // DatabaseQueue() 创建在调用方 actor 上执行，不阻塞主线程
-            do { return try DatabaseQueue() } catch {
-                fatalError("无法创建内存数据库(DatabaseWriterProvider): \(error)")
-            }
+            // Finding #17：dbWriter 为 nil 时抛错，不再静默降级创建空内存库
+            throw DatabaseError.notReady
         }
     }
 }

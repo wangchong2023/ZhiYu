@@ -19,10 +19,9 @@ final class DatabaseManagerBatch6CTests: XCTestCase {
     private var savedDbWriter: (any DatabaseWriter)?
     private var savedGlobalWriter: (any DatabaseWriter)?
     private var savedIsInTesting: Bool = false
-    private var savedActiveTransactionsCount: Int = 0
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("DatabaseManagerTests-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
@@ -30,29 +29,20 @@ final class DatabaseManagerBatch6CTests: XCTestCase {
         savedDbWriter = DatabaseManager.shared.dbWriter
         savedGlobalWriter = DatabaseManager.shared.globalWriter
         savedIsInTesting = DatabaseManager.shared.isInTesting
-        savedActiveTransactionsCount = DatabaseManager.shared.activeTransactionsCount
+        // 重置事务门禁（Finding #18 修复后的新机制）
+        await DatabaseManager.shared.transactionGatekeeper.reset()
         DatabaseManager.shared.reset()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         // 恢复 DatabaseManager 的 writer 和测试标志
         DatabaseManager.shared.dbWriter = savedDbWriter
         DatabaseManager.shared.globalWriter = savedGlobalWriter
         DatabaseManager.shared.isInTesting = savedIsInTesting
-        // 恢复 activeTransactionsCount（通过 decrement 回到保存值）
-        let currentCount = DatabaseManager.shared.activeTransactionsCount
-        if currentCount > savedActiveTransactionsCount {
-            for _ in 0..<(currentCount - savedActiveTransactionsCount) {
-                DatabaseManager.shared.decrementActiveTransactions()
-            }
-        } else if currentCount < savedActiveTransactionsCount {
-            for _ in 0..<(savedActiveTransactionsCount - currentCount) {
-                DatabaseManager.shared.incrementActiveTransactions()
-            }
-        }
+        await DatabaseManager.shared.transactionGatekeeper.reset()
         try? FileManager.default.removeItem(at: tempDir)
         tempDir = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     // MARK: - reset 后属性验证
@@ -65,49 +55,89 @@ final class DatabaseManagerBatch6CTests: XCTestCase {
         XCTAssertNil(DatabaseManager.shared.globalWriter, "reset 后 globalWriter 应为 nil")
     }
 
-    // MARK: - 事务计数（使用相对增量，避免依赖绝对初始值）
+    // MARK: - 事务计数（Finding #18 修复后：通过 TransactionGatekeeper actor 串行化）
 
-    func testIncrementActiveTransactions_计数递增() {
-        let before = DatabaseManager.shared.activeTransactionsCount
-        DatabaseManager.shared.incrementActiveTransactions()
-        XCTAssertEqual(DatabaseManager.shared.activeTransactionsCount, before + 1)
-        DatabaseManager.shared.incrementActiveTransactions()
-        XCTAssertEqual(DatabaseManager.shared.activeTransactionsCount, before + 2)
+    func testIncrementActiveTransactions_计数递增() async throws {
+        let before = await DatabaseManager.shared.activeTransactionsCount
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        let after1 = await DatabaseManager.shared.activeTransactionsCount
+        XCTAssertEqual(after1, before + 1)
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        let after2 = await DatabaseManager.shared.activeTransactionsCount
+        XCTAssertEqual(after2, before + 2)
+        // 清理
+        await DatabaseManager.shared.decrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
     }
 
-    func testDecrementActiveTransactions_计数递减() {
-        let before = DatabaseManager.shared.activeTransactionsCount
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        XCTAssertEqual(DatabaseManager.shared.activeTransactionsCount, before + 1)
+    func testDecrementActiveTransactions_计数递减() async throws {
+        let before = await DatabaseManager.shared.activeTransactionsCount
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
+        let after = await DatabaseManager.shared.activeTransactionsCount
+        XCTAssertEqual(after, before + 1)
+        // 清理
+        await DatabaseManager.shared.decrementActiveTransactions()
     }
 
-    func testDecrementActiveTransactions_计数为零时不变为负数() {
+    func testDecrementActiveTransactions_计数为零时不变为负数() async throws {
         // Finding #18 相关：decrement 的 if > 0 保护
         // 先 increment 到已知值，再连续 decrement 超过该值，验证不会变负
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        XCTAssertEqual(DatabaseManager.shared.activeTransactionsCount, 0, "计数为 0 时 decrement 不应变为负数")
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
+        let count = await DatabaseManager.shared.activeTransactionsCount
+        XCTAssertEqual(count, 0, "计数为 0 时 decrement 不应变为负数")
     }
 
-    func testDecrementActiveTransactions_incrementDecrement配对归零() {
-        let before = DatabaseManager.shared.activeTransactionsCount
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        XCTAssertEqual(DatabaseManager.shared.activeTransactionsCount, before, "配对的 increment/decrement 应保持计数不变")
+    func testDecrementActiveTransactions_incrementDecrement配对归零() async throws {
+        let before = await DatabaseManager.shared.activeTransactionsCount
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
+        await DatabaseManager.shared.decrementActiveTransactions()
+        let after = await DatabaseManager.shared.activeTransactionsCount
+        XCTAssertEqual(after, before, "配对的 increment/decrement 应保持计数不变")
     }
 
-    // MARK: - setupForTesting（避免调用以防止 DI 容器污染）
-    // 注：setupForTesting 会触发 databaseStateDidChange 通知，KnowledgeStore 监听后
-    // 尝试 refresh()，但测试环境 DI 未注册 AnyPageStore，导致 DI resolve 失败。
-    // 因此这些测试改用独立 DatabaseQueue 验证 migrate 逻辑，不通过 DatabaseManager.shared。
+    // MARK: - Finding #18 修复验证：TransactionGatekeeper 排空期间拒绝新事务
+
+    func testFinding18_排空期间拒绝新事务() async throws {
+        // 触发排空（drain），但因为有活跃事务会等待
+        try await DatabaseManager.shared.incrementActiveTransactions()
+        // 启动排空任务（在后台）
+        let drainTask = Task {
+            return await DatabaseManager.shared.transactionGatekeeper.drain(maxWaitTime: .milliseconds(500))
+        }
+        // 给 drain 一点时间设置 draining = true
+        try await Task.sleep(for: .milliseconds(50))
+        // 排空期间 acquire 应抛 draining
+        do {
+            try await DatabaseManager.shared.incrementActiveTransactions()
+            XCTFail("排空期间应抛 ZhiYu.DatabaseError.draining")
+        } catch {
+            if let dbError = error as? ZhiYu.DatabaseError, case .draining = dbError {
+                // 预期行为
+            } else {
+                XCTFail("应抛 ZhiYu.DatabaseError.draining，实际：\(error)")
+            }
+        }
+        // 释放活跃事务，让 drain 完成
+        await DatabaseManager.shared.decrementActiveTransactions()
+        let drained = await drainTask.value
+        XCTAssertTrue(drained, "释放事务后 drain 应成功")
+    }
+
+    func testFinding18_drain无活跃事务时立即成功() async throws {
+        let drained = await DatabaseManager.shared.transactionGatekeeper.drain(maxWaitTime: .milliseconds(100))
+        XCTAssertTrue(drained, "无活跃事务时 drain 应立即成功")
+    }
+
+    // MARK: - migrate（避免调用 setupForTesting 以防 DI 容器污染）
 
     func testMigrate_对内存库执行迁移_验证schema() throws {
         let memoryQueue = try DatabaseQueue()
@@ -133,83 +163,37 @@ final class DatabaseManagerBatch6CTests: XCTestCase {
         XCTAssertNil(DatabaseManager.shared.globalWriter, "reset 后 globalWriter 应为 nil")
     }
 
-    // MARK: - setup 物理数据库（避免调用 setup(at:) 以防 DI 容器污染）
-    // 注：setup(at:) 会设置 state=.ready 并广播 databaseStateDidChange 通知，
-    // 触发 KnowledgeStore.refresh()，但测试环境 DI 未注册 AnyPageStore 导致 crash。
-    // 这些测试在 stash 后全量通过，说明是本测试类的 setup/teardown 恢复机制与
-    // DatabaseSchemaMigratorEdgeTests 交互导致。改为不调用 setup(at:)。
+    // MARK: - Finding #17 修复验证：dbWriter 为 nil 时抛错而非静默降级
 
-    // MARK: - Finding #17：dbWriter 为 nil 时的静默降级
-
-    /// Finding #17 复现：dbWriter 为 nil 时，DatabaseWriterProvider 协议默认实现
-    /// 静默创建空内存 DatabaseQueue，数据写入临时库后丢失。
-    func testFinding17_dbWriter为Nil时_静默降级到内存库() async throws {
+    func testFinding17_dbWriter为Nil时_抛错而非降级() async throws {
         // 确保 dbWriter 为 nil
         DatabaseManager.shared.reset()
         XCTAssertNil(DatabaseManager.shared.dbWriter)
 
         // 模拟 Repository 通过 DatabaseWriterProvider 获取 writer
         let provider = TestWriterProvider()
-        let writer = await provider.dbWriter
 
-        // 降级创建了一个空内存库（非 nil）
-        XCTAssertNotNil(writer, "Finding #17：dbWriter 为 nil 时静默降级创建内存库，无错误抛出")
-
-        // 写入数据到降级内存库
-        try await writer.write { db in
-            try db.execute(sql: "CREATE TABLE test_finding17 (id INTEGER PRIMARY KEY, value TEXT)")
-            try db.execute(sql: "INSERT INTO test_finding17 (value) VALUES ('will_be_lost')")
-        }
-
-        // 验证数据写入了降级库
-        let count = try await writer.read { db in
-            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM test_finding17")
-        }
-        XCTAssertEqual(count, 1, "数据已写入降级内存库")
-
-        // Finding #17 核心问题：这个降级库是临时的，下次获取 dbWriter 时会创建新的空库
-        // 真实场景中 DatabaseManager.shared.dbWriter 恢复后，之前写入降级库的数据无法访问
-        let realWriter = try DatabaseQueue()
-        DatabaseManager.shared.dbWriter = realWriter
-
-        // 新的 writer 是不同的实例，之前写入降级库的数据丢失
-        let newCount: Int?
-        if let dbWriter = DatabaseManager.shared.dbWriter {
-            newCount = try await dbWriter.read { db in
-                try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM sqlite_master WHERE name='test_finding17'")
+        // Finding #17 修复后：应抛 ZhiYu.DatabaseError.notReady，而非静默降级创建内存库
+        do {
+            _ = try await provider.dbWriter
+            XCTFail("Finding #17 修复后：dbWriter 为 nil 时应抛 ZhiYu.DatabaseError.notReady")
+        } catch {
+            if let dbError = error as? ZhiYu.DatabaseError, case .notReady = dbError {
+                // 预期行为：抛错而非降级
+            } else {
+                XCTFail("应抛 ZhiYu.DatabaseError.notReady，实际：\(error)")
             }
-        } else {
-            newCount = nil
         }
-        XCTAssertEqual(newCount, 0, "Finding #17：降级库中的数据在 dbWriter 恢复后丢失，无任何错误提示")
     }
 
-    // MARK: - Finding #17 补充：switchDatabase 瞬态窗口
-    // 注：switchDatabase 依赖 setup(at:) 初始化，会触发 DI 污染，跳过此测试
-    // 相关行为由 testFinding17_dbWriter为Nil时_静默降级到内存库 覆盖核心降级逻辑
+    func testFinding17_dbWriter存在时_正常返回() async throws {
+        // 设置 dbWriter
+        let memoryQueue = try DatabaseQueue()
+        DatabaseManager.shared.dbWriter = memoryQueue
 
-    // MARK: - Finding #18：事务排空竞态
-
-    /// Finding #18 复现：decrementActiveTransactions 的 if > 0 保护在竞态下可能掩盖真实计数。
-    /// 此测试验证 decrement 在 count==0 时不变为负数（保护机制本身工作正常）。
-    func testFinding18_decrement在计数为零时不变为负数() {
-        // 连续 decrement 多次
-        for _ in 0..<5 {
-            DatabaseManager.shared.decrementActiveTransactions()
-        }
-        XCTAssertEqual(DatabaseManager.shared.activeTransactionsCount, 0, "Finding #18：decrement 保护机制工作，计数不会变为负数")
-    }
-
-    /// Finding #18 相关：increment/decrement 配对应保持计数不变
-    func testFinding18_incrementDecrement配对_计数不变() {
-        let before = DatabaseManager.shared.activeTransactionsCount
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.incrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        DatabaseManager.shared.decrementActiveTransactions()
-        XCTAssertEqual(DatabaseManager.shared.activeTransactionsCount, before, "配对的 increment/decrement 应保持计数不变")
+        let provider = TestWriterProvider()
+        let writer = try await provider.dbWriter
+        XCTAssertNotNil(writer, "dbWriter 存在时应正常返回")
     }
 
     // MARK: - releaseDatabaseConnection
@@ -243,17 +227,24 @@ final class DatabaseManagerBatch6CTests: XCTestCase {
         XCTAssertEqual(count, 0, "dbWriter 为 nil 时应返回 0")
     }
 
-    // 注：testCountPagesInCurrentVault_空数据库返回零 需 setupForTesting，会触发 DI 污染，跳过
-
-    // MARK: - migrate
-    // 注：testMigrate_对内存库执行迁移_验证schema 已在 setupForTesting 章节定义
-
     // MARK: - 通知名称存在性
 
     func testNotificationNames_已定义() {
         XCTAssertEqual(Notification.Name.databaseDidSwitch.rawValue, "databaseDidSwitch")
         XCTAssertEqual(Notification.Name.databaseIntegrityCheckFailed.rawValue, "databaseIntegrityCheckFailed")
         XCTAssertEqual(Notification.Name.databaseStateDidChange.rawValue, "databaseStateDidChange")
+    }
+
+    // MARK: - DatabaseError 新增 case
+
+    func testDatabaseError_notReady() {
+        let error = ZhiYu.DatabaseError.notReady
+        XCTAssertNotNil(error, "ZhiYu.DatabaseError.notReady 应存在")
+    }
+
+    func testDatabaseError_draining() {
+        let error = ZhiYu.DatabaseError.draining
+        XCTAssertNotNil(error, "ZhiYu.DatabaseError.draining 应存在")
     }
 }
 

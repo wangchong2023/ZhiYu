@@ -28,7 +28,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter promptTokens: promptTokens
     /// - Parameter completionTokens: completionTokens
     func logTokenUsage(model: String, promptTokens: Int, completionTokens: Int) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             var usage = TokenUsage(model: model, promptTokens: promptTokens, completionTokens: completionTokens)
             try usage.insert(db)
@@ -39,7 +39,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter days: days
     /// - Returns: 返回值
     func fetchTokenStats(days: Int) async throws -> TokenStats {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let calendar = Calendar.current
             let dateThreshold: Date
@@ -72,7 +72,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter days: days
     /// - Returns: 列表
     func fetchDailyAIStats(days: Int) async throws -> [DailyAIStat] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let calendar = Calendar.current
             let dateThreshold: Date
@@ -108,7 +108,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// 拉取MonthlyTokenStats
     /// - Returns: 列表
     func fetchMonthlyTokenStats() async throws -> [(month: String, total: Int)] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let monthExpr = SQL("strftime('%Y-%m', \(TokenUsage.Columns.createdAt))")
             let request = TokenUsage
@@ -137,7 +137,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter latencyMS: latencyMS
     /// - Parameter status: status
     func logCall(model: String, promptTokens: Int, completionTokens: Int, latencyMS: Int, status: String) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             var log = LLMCallLog(
                 model: model,
@@ -154,7 +154,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter limit: limit
     /// - Returns: 列表
     func fetchRecentLogs(limit: Int) async throws -> [LLMCallLog] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try LLMCallLog
                 .order(LLMCallLog.Columns.createdAt.desc)
@@ -170,7 +170,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// 保存RAGEvaluation
     /// - Parameter evaluation: evaluation
     func saveRAGEvaluation(_ evaluation: RAGEvaluation) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             var mutableEvaluation = evaluation
             try mutableEvaluation.insert(db)
@@ -181,7 +181,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter limit: limit
     /// - Returns: 列表
     func fetchRAGEvaluations(limit: Int) async throws -> [RAGEvaluation] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try RAGEvaluation
                 .order(RAGEvaluation.Columns.createdAt.desc)
@@ -194,7 +194,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter days: days
     /// - Returns: 六维均值元组
     func calculateAverageRAGScores(days: Int) async throws -> AverageRAGScores {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let dateThreshold = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
 
@@ -229,7 +229,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
 
     func saveRetrievalSnapshots(_ snapshots: [RetrievalSnapshot]) async throws {
         guard !snapshots.isEmpty else { return }
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             for var s in snapshots {
                 try s.insert(db)
@@ -238,7 +238,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     }
 
     func fetchRetrievalSnapshots(evaluationID: Int64) async throws -> [RetrievalSnapshot] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try RetrievalSnapshot
                 .filter(RetrievalSnapshot.Columns.evaluationID == evaluationID)
@@ -251,7 +251,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
 
     func saveRelevanceJudgments(_ judgments: [RelevanceJudgment]) async throws {
         guard !judgments.isEmpty else { return }
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             for var j in judgments {
                 // 同 query_hash + source_id 组合去重覆盖
@@ -265,7 +265,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// 计算 Hit@K — Top-K 检索结果中至少命中 1 条相关结果的比例。
     /// 算法：hit@K = (至少一条相关结果的查询数) / 总查询数。
     func calculateHitRate(days: Int, k: Int) async throws -> Double {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
 
@@ -301,7 +301,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// 计算 MRR (Mean Reciprocal Rank) — 首个相关结果的排名倒数均值。
     /// 算法：MRR = (1/n) * Σ(1 / rank_of_first_relevant)，值域 [0, 1]。
     func calculateMRR(days: Int) async throws -> Double {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
             let evals = try RAGEvaluation
@@ -341,7 +341,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter k: Top-K 截断深度，只考虑前 K 个检索结果
     /// - Returns: 所有查询 NDCG@K 的均值；无数据时返回 0.0
     func calculateNDCG(days: Int, k: Int) async throws -> Double {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
             let evals = try RAGEvaluation
@@ -397,7 +397,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     }
 
     func calculateRecall(days: Int, k: Int) async throws -> Double {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
             let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
@@ -423,7 +423,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     }
 
     func calculateF1Score(days: Int, k: Int) async throws -> Double {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
             let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
@@ -456,7 +456,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     // MARK: - MAP (Mean Average Precision)
 
     func calculateMAP(days: Int) async throws -> Double {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
             let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
@@ -491,7 +491,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     // MARK: - 检索延迟百分位
 
     func calculateRetrievalLatency(days: Int) async throws -> LatencyPercentiles {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
             let logs = try LLMCallLog
@@ -512,7 +512,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     // MARK: - Token 效率与成本
 
     func calculateTokenEfficiency(days: Int) async throws -> TokenEfficiency {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
             let statsRequest = TokenUsage
@@ -538,7 +538,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
 
     /// 更新评估记录的用户满意度评分
     func updateUserRating(evaluationID: Int64, rating: Int) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             guard var evaluation = try RAGEvaluation.fetchOne(db, key: evaluationID) else { return }
             evaluation.userRating = rating

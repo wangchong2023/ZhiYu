@@ -14,7 +14,7 @@ import UFPStorage
 final class SQLiteFeedbackRepository: FeedbackRepository, DatabaseWriterProvider, @unchecked Sendable {
 
     func save(_ entry: FeedbackEntry) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             var mutatedEntry = entry
             try mutatedEntry.save(db)
@@ -22,7 +22,7 @@ final class SQLiteFeedbackRepository: FeedbackRepository, DatabaseWriterProvider
     }
 
     func fetchAll(limit: Int) async throws -> [FeedbackEntry] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try FeedbackEntry
                 .order(FeedbackEntry.CodingKeys.createdAt.desc)
@@ -32,14 +32,14 @@ final class SQLiteFeedbackRepository: FeedbackRepository, DatabaseWriterProvider
     }
 
     func fetchByID(id: String) async throws -> FeedbackEntry? {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try FeedbackEntry.fetchOne(db, key: id)
         }
     }
 
     func updateStatus(id: String, status: FeedbackStatus) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             try db.execute(
                 sql: "UPDATE \(FeedbackEntry.databaseTableName) SET status = ? WHERE id = ?",

@@ -41,7 +41,7 @@ final class RAGPipelineTests: XCTestCase {
         
         // 1. 导入数据并提取语义结构 (Ingest)
         let testContent = "智宇 (ZhiYu) 是一款基于 RAG 架构的知识管理 software，支持双向链接。"
-        let page = await store.ingestService.ingestRawContent(
+        let page = try await store.ingestService.ingestRawContent(
             title: "智宇简介",
             content: testContent,
             forceDeepScan: true,
@@ -93,7 +93,7 @@ final class RAGPipelineTests: XCTestCase {
         ServiceContainer.shared.register(mockChatLLM as any LLMChatServiceProtocol, for: (any LLMChatServiceProtocol).self)
         
         // 导入一篇空页面/异常页面
-        _ = await store.ingestService.ingestRawContent(
+        _ = try await store.ingestService.ingestRawContent(
             title: "降级边界测试",
             content: "通用测试文本内容",
             forceDeepScan: false,

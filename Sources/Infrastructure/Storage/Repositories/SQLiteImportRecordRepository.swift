@@ -15,7 +15,7 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     // MARK: - ImportRecordRepository
 
     func save(_ record: ImportRecord) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             var r = record
             try r.save(db)
@@ -23,7 +23,7 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func fetchAll(category: String?, limit: Int) async throws -> [ImportRecord] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             var request = ImportRecord
                 .order(ImportRecord.CodingKeys.createdAt.desc)
@@ -35,14 +35,14 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func fetchByID(_ id: String) async throws -> ImportRecord? {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try ImportRecord.fetchOne(db, key: id)
         }
     }
 
     func updateStatus(id: String, status: String, completedAt: Date?) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
             record.status = status
@@ -52,7 +52,7 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func updatePageID(id: String, pageID: String) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
             record.pageID = pageID
@@ -61,7 +61,7 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func fetchInProgress() async throws -> [ImportRecord] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try ImportRecord
                 .filter(ImportRecord.CodingKeys.status == ImportRecordStatus.processing || ImportRecord.CodingKeys.status == ImportRecordStatus.pending)
@@ -71,7 +71,7 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func updateRawText(id: String, rawText: String) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
             record.rawText = rawText
@@ -80,7 +80,7 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func updateTags(id: String, tags: String) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         try await writer.write { db in
             guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
             record.tags = tags

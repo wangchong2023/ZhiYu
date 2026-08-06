@@ -21,7 +21,7 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
     
     // ── 物理写入器 ──
     private var dbWriter: any DatabaseWriter {
-        get async {
+        get async throws {
             // 等待 notebook 切换完成（selectVault 异步 Task 可能尚未完成）
             // 使用直接 await 避免 MainActor.run 在 XCTest 并行 worker 中死锁
             for _ in 0..<20 {
@@ -30,8 +30,8 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
                 }
                 try? await Task.sleep(nanoseconds: 50_000_000) // 50ms × 20 = 1s
             }
-            // 极端降级：DatabaseQueue() 创建在调用方 actor 上执行
-            do { return try DatabaseQueue() } catch { fatalError("无法创建内存数据库(SQLiteStore): \(error)") }
+            // Finding #17：重试 1s 后仍无 writer，抛错而非静默降级创建空内存库
+            throw DatabaseError.notReady
         }
     }
     
@@ -131,7 +131,7 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
 
     /// 重置Database
     public func resetDatabase() async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         // 核心步骤：直接使用绑定的局部 dbWriter 进行数据清空，不再强耦合 MainActor 全局单例
         try await writer.erase()
         _pages = []
@@ -282,7 +282,7 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
     
     /// 执行批量数据库写入操作 (在隔离环境内)
     public func performBatchWrite(_ block: @escaping @Sendable (Database) throws -> Void) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         // 核心步骤：直接使用局部的 dbWriter 执行写入，实现 100% 线程安全的隔离事务
         try await writer.write { db in try block(db) }
     }

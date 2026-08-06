@@ -42,11 +42,13 @@ actor IngestService {
         pageStore: any AnyPageStore,
         fileSize: Int64? = nil,
         sourceType: String? = nil
-    ) async -> KnowledgePage {
+    ) async throws -> KnowledgePage {
         let startTime = Date()
         let manager = dbManager  // 捕获以跨 actor 边界传递
-        await MainActor.run {
-            manager.incrementActiveTransactions()
+        // Finding #18 修复：通过 TransactionGatekeeper 获取事务许可，排空期间抛 draining
+        try await manager.incrementActiveTransactions()
+        defer {
+            Task { await manager.decrementActiveTransactions() }
         }
         let pageID = UUID()
 
@@ -92,9 +94,7 @@ actor IngestService {
             module: "IngestService"
         )
 
-        await MainActor.run {
-            manager.decrementActiveTransactions()
-        }
+        // decrementActiveTransactions 已由 defer 处理
         return page
     }
 
@@ -186,7 +186,7 @@ actor IngestService {
         // 使用统一的 RAG 摄入管道
         // 注意：ingestRawContent 内部现在已经包含了 pipeline 调用
 
-        return await ingestRawContent(
+        return try await ingestRawContent(
             title: result.title,
             content: content,
             type: .source,
@@ -233,7 +233,7 @@ actor IngestService {
         do {
             let text = try await docExtractor.extractText(from: url)
             if text.isEmpty { return nil }
-            return await ingestRawContent(title: extractedTitle, content: text, type: type, forceDeepScan: forceDeepScan, pageStore: pageStore)
+            return try await ingestRawContent(title: extractedTitle, content: text, type: type, forceDeepScan: forceDeepScan, pageStore: pageStore)
         } catch {
             Logger.shared.error("Failed to" + " extract text" + " from document" + " \(url.path):" + " \(error)", error: error)
             return nil

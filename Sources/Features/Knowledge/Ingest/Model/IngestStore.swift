@@ -201,7 +201,7 @@ final class IngestStore {
     }
 
     private func ingestWithFolding(title: String, content: String, type: PageType, forceDeepScan: Bool, fileSize: Int64? = nil, sourceType: String? = nil) async throws -> KnowledgePage {
-        return await ingestService.ingestRawContent(
+        return try await ingestService.ingestRawContent(
             title: title,
             content: content,
             type: type,

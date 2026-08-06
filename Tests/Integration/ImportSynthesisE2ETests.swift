@@ -37,10 +37,10 @@ final class ImportSynthesisE2ETests: XCTestCase {
 
     // MARK: - 导入→KnowledgePage 链路
 
-    func testImportCreatesKnowledgePage() async {
+    func testImportCreatesKnowledgePage() async throws {
         let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
         let content = "# E2E 测试\n\n端到端导入合成链路验证"
-        let page = await store.ingestService.ingestRawContent(
+        let page = try await store.ingestService.ingestRawContent(
             title: "E2E 导入测试",
             content: content,
             type: .source,
@@ -52,9 +52,9 @@ final class ImportSynthesisE2ETests: XCTestCase {
         XCTAssertEqual(page.pageType, .source)
     }
 
-    func testImportWithProvenanceMetadata() async {
+    func testImportWithProvenanceMetadata() async throws {
         let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
-        let page = await store.ingestService.ingestRawContent(
+        let page = try await store.ingestService.ingestRawContent(
             title: "溯源测试",
             content: "带溯源信息的内容",
             type: .source,
@@ -72,13 +72,13 @@ final class ImportSynthesisE2ETests: XCTestCase {
 
     // MARK: - 多页面合成输入构建
 
-    func testBuildSynthesisInputFromMultiplePages() async {
+    func testBuildSynthesisInputFromMultiplePages() async throws {
         let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
 
-        let p1 = await store.ingestService.ingestRawContent(
+        let p1 = try await store.ingestService.ingestRawContent(
             title: "页面1", content: "内容1", sourceURL: "https://a.com", pageStore: sqliteStore
         )
-        let p2 = await store.ingestService.ingestRawContent(
+        let p2 = try await store.ingestService.ingestRawContent(
             title: "页面2", content: "内容2", pageStore: sqliteStore, sourceType: "file"
         )
 
@@ -95,10 +95,10 @@ final class ImportSynthesisE2ETests: XCTestCase {
 
     // MARK: - 溯源元数据流入合成
 
-    func testProvenanceFlowsIntoSynthesisInput() async {
+    func testProvenanceFlowsIntoSynthesisInput() async throws {
         let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
 
-        let page = await store.ingestService.ingestRawContent(
+        let page = try await store.ingestService.ingestRawContent(
             title: "源页面", content: "正文",
             sourceURL: "https://origin.example.com",
             pageStore: sqliteStore, sourceType: "link"
@@ -116,13 +116,13 @@ final class ImportSynthesisE2ETests: XCTestCase {
 
     // MARK: - sourcePageIDs 追踪
 
-    func testSynthesisSourcePageIDsTracking() async {
+    func testSynthesisSourcePageIDsTracking() async throws {
         let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
 
         let pages = [
-            await store.ingestService.ingestRawContent(title: "S1", content: "C1", pageStore: sqliteStore),
-            await store.ingestService.ingestRawContent(title: "S2", content: "C2", pageStore: sqliteStore),
-            await store.ingestService.ingestRawContent(title: "S3", content: "C3", pageStore: sqliteStore)
+            try await store.ingestService.ingestRawContent(title: "S1", content: "C1", pageStore: sqliteStore),
+            try await store.ingestService.ingestRawContent(title: "S2", content: "C2", pageStore: sqliteStore),
+            try await store.ingestService.ingestRawContent(title: "S3", content: "C3", pageStore: sqliteStore)
         ]
         let sourceIDs = pages.map(\.id)
         XCTAssertEqual(sourceIDs.count, 3)
@@ -138,17 +138,17 @@ final class ImportSynthesisE2ETests: XCTestCase {
 
     // MARK: - 多类型导入合成
 
-    func testMixedImportTypesSynthesis() async {
+    func testMixedImportTypesSynthesis() async throws {
         let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
 
         // 模拟不同类型导入
-        let linkPage = await store.ingestService.ingestRawContent(
+        let linkPage = try await store.ingestService.ingestRawContent(
             title: "链接导入", content: "网页内容", sourceURL: "https://web.com", pageStore: sqliteStore, sourceType: "link"
         )
-        let filePage = await store.ingestService.ingestRawContent(
+        let filePage = try await store.ingestService.ingestRawContent(
             title: "文件导入", content: "文件内容", pageStore: sqliteStore, fileSize: 2048, sourceType: "pdf"
         )
-        let manualPage = await store.ingestService.ingestRawContent(
+        let manualPage = try await store.ingestService.ingestRawContent(
             title: "手动输入", content: "手动内容", pageStore: sqliteStore
         )
 
@@ -188,9 +188,9 @@ final class ImportSynthesisE2ETests: XCTestCase {
 
     // MARK: - 页面来源引用
 
-    func testPageSourceCitationData() async {
+    func testPageSourceCitationData() async throws {
         let sqliteStore = ServiceContainer.shared.resolve(SQLiteStore.self)
-        let page = await store.ingestService.ingestRawContent(
+        let page = try await store.ingestService.ingestRawContent(
             title: "引文页面", content: "内容",
             sourceURL: "https://cited.example.com",
             pageStore: sqliteStore, fileSize: 1024, sourceType: "web"

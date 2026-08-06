@@ -14,13 +14,13 @@ import UFPStorage
 /// [Infra] 向量存储实现
 final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     private var dbWriter: any DatabaseWriter {
-        get async {
+        get async throws {
             // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁
             if let writer = await DatabaseManager.shared.dbWriter {
                 return writer
             }
-            // DatabaseQueue() 创建在调用方 actor 上执行，不阻塞主线程
-            do { return try DatabaseQueue() } catch { fatalError("无法创建内存数据库(VectorDataRepo): \(error)") }
+            // Finding #17：dbWriter 为 nil 时抛错，不再静默降级创建空内存库
+            throw DatabaseError.notReady
         }
     }
 
@@ -35,7 +35,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     /// - Parameter vector: vector
     /// - Parameter modelName: modelName
     func saveEmbedding(id: UUID, vector: [Float], modelName: String) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         _ = try await writer.write { db in
             var entry = PageEmbedding(id: id, vector: vector, modelName: modelName)
             try entry.save(db)
@@ -45,7 +45,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     /// 拉取AllEmbeddings
     /// - Returns: 列表
     func fetchAllEmbeddings() async throws -> [UUID: [Float]] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             let records = try PageEmbedding.fetchAll(db)
             var dict: [UUID: [Float]] = [:]
@@ -61,7 +61,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     /// 拉取Chunks
     /// - Returns: 列表
     func fetchChunks(for pageID: UUID) async throws -> [PageChunk] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try PageChunk
                 .filter(PageChunk.Columns.pageID == pageID)
@@ -72,7 +72,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     /// 拉取AllChunksWithEmbeddings
     /// - Returns: 列表
     func fetchAllChunksWithEmbeddings() async throws -> [PageChunk] {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.read { db in
             try PageChunk
                 .filter(PageChunk.Columns.embedding != nil)
@@ -83,7 +83,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     /// 保存Chunks
     /// - Parameter chunks: chunks
     func saveChunks(_ chunks: [PageChunk], for pageID: UUID) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         _ = try await writer.write { db in
             // 物理删除旧分块，确保索引最新
             try PageChunk
@@ -101,7 +101,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
 
     /// 删除Chunks
     func deleteChunks(for pageID: UUID) async throws {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         _ = try await writer.write { db in
             try PageChunk
                 .filter(PageChunk.Columns.pageID == pageID)
@@ -112,7 +112,7 @@ final class VectorDataRepository: VectorRepository, @unchecked Sendable {
     /// cleanupOrphanedChunks
     /// - Returns: 数值
     func cleanupOrphanedChunks() async throws -> Int {
-        let writer = await dbWriter
+        let writer = try await dbWriter
         return try await writer.write { db in
             // 使用 Query Interface 的 subquery 方式替代原始 SQL
             let pages = KnowledgePage.select(KnowledgePage.Columns.id)
