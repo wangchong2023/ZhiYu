@@ -212,7 +212,7 @@
 ```bash
 xcodebuild test -only-testing:ZhiYuTests/<测试类> \
   -project ZhiYu.xcodeproj -scheme ZhiYu \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -derivedDataPath build/DerivedData-ios \
   -disableAutomaticPackageResolution
 ```
