@@ -1475,6 +1475,24 @@ planned_test_classes:
   expiry_check: false
   category:
   - doc-drift
+- symbol: TestProto
+  reason: UFPCore 测试用 Protocol（审计文档引用，非生产代码符号）
+  added: 2026-08-06
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTExpectFailure
+  reason: XCTest 框架 API（审计文档引用，非项目代码符号）
+  added: 2026-08-06
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTFail
+  reason: XCTest 框架 API（审计文档引用，非项目代码符号）
+  added: 2026-08-06
+  expiry_check: false
+  category:
+  - doc-drift
 business_magic_exempt:
 - file: Sources/Core/Base/Extensions/String+PhoneNumber.swift
   line: 16

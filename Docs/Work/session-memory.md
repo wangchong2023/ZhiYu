@@ -2,7 +2,7 @@
 
 > **用途**：跨会话恢复上下文。新会话开头让 Agent 读取本文件即可恢复进度。
 > **最后更新**：2026-08-06
-> **状态**：UFPCore 13 个问题已全部修复（第二轮），待提交 commit
+> **状态**：UFPCore 第二轮修复已提交（commit `3064c7bd`），UFPCore 测试驱动工作完结
 
 ---
 
@@ -29,7 +29,7 @@
   - 发现 7 个问题并全部修复，详见 `Docs/Audit/2026-08-05-ufpcore-test-findings.md`
   - 验证: `swift test` 82 通过 0 失败，pre-push 13 项全通过
   - 覆盖率: UFPCore 90.14% → 91.07%
-- **UFPCore 第二轮测试驱动问题发现与修复**（待提交）：
+- **UFPCore 第二轮测试驱动问题发现与修复**（commit `3064c7bd`，已提交待推送）：
   - 发现 6 个问题（#8-#13），5 个修复，1 个预期行为不修
   - 详见 `Docs/Audit/2026-08-05-ufpcore-test-findings.md` 第二轮章节
   - **问题 #8 (P0): `reset()` 与 `markProductionChainComplete()` 竞态** — 真正修复：`reset()`/`resetForTesting()` 在**同一次 `lock.withLock`** 内完成「检查 + 清空」，消除两次 lock 之间的竞态窗口。删除 `performReset()`。
@@ -43,7 +43,7 @@
   - 验证: `swift test` 120 通过 0 失败（20 次稳定），pre-push 13 项全通过
 
 ### In Progress
-- 提交第二轮修复 commit
+- (none)
 
 ### Blocked
 - (none)
@@ -57,7 +57,7 @@
 - `optionalNoneSentinel` 删除而非修复：`injectWrap` 已能安全构造 `Optional<Wrapped>.none`，`as? T` 必然成功，`optionalNoneSentinel` 是不必要的防御性 fallback
 - `normalizeKey` 死代码直接删除：类型描述（`String(describing: Type.self)`）不含 `(unknown context)`，只有实例描述含，分支永不触发
 - `fatalFailureHandler` 用 `nonisolated(unsafe)` 而非锁：实际使用场景（测试 setUp/tearDown 单线程设置）竞争概率低，`nonisolated(unsafe)` 是合理折中
-- 文档漂移检测的 3 个幽灵引用（`TestProto`/`XCTExpectFailure`/`XCTFail`）均为合法引用，不需要修复
+- 文档漂移检测的 3 个幽灵引用（`TestProto`/`XCTExpectFailure`/`XCTFail`）已加入 `manual_whitelist.yml` 的 `concept_words`（category: doc-drift），WARNING 已清零
 - **问题 #8 真正修复**：`reset()`/`resetForTesting()` 在**同一次 `lock.withLock`** 内完成「检查 + 清空」，删除 `performReset()`
 - **问题 #9 是预期行为**：`resolve<T>` fail-fast 契约，类型不匹配 fatalError 是调用方错误，`resolveOptional` 已安全返回 nil
 - **问题 #10 修复**：`injectWrap` 用 `Mirror(reflecting:).displayStyle == .optional && children.isEmpty` 检测 `Optional.none`
@@ -66,7 +66,8 @@
 - **关键教训**：`lock.withLock { read }` + `lock.withLock { write }` ≠ 原子操作，必须在同一次 lock 内完成「检查 + 修改」
 
 ## Next Steps
-- 提交第二轮修复 commit
+- UFPCore 测试驱动工作已完结（两轮共 13 个问题，12 修 1 不修）
+- 推送本地 30 个 commit 到远端（`git push`，当前 ahead of origin/main by 30 commits）
 - 后续规划主 App 测试覆盖率提升（23%→50%→80%→95%）
 
 ## Critical Context
@@ -105,7 +106,7 @@
 - [x] 恢复严格测试断言验证修复 (priority: high)
 - [x] 运行全量测试 + pre-push 门禁（20 次稳定通过） (priority: high)
 - [x] 更新 session-memory.md 和 findings 文档 (priority: medium)
-- [ ] 提交第二轮修复 commit (priority: high)
+- [x] 提交第二轮修复 commit (`3064c7bd`) (priority: high)
 
 ---
 
