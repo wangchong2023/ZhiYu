@@ -23,6 +23,8 @@
 | 6 | 🟢 P2 | `Sources/Core/System/Analytics/LocalAnalyticsService.swift:20` | 可测试性 | `private init` + 硬编码 logURL 阻止测试注入临时路径 | 测试写入真实日志路径，污染用户数据 | `private init` → `init(logURL:)` 可注入 | 已修复 | 批次1 |
 | 7 | 🟢 P2 | `Sources/Core/System/Workflow/WorkflowService.swift:17,20` | 可测试性 | `private init` + `@Inject` 阻止测试注入 Mock 依赖 | 测试只能用 shared 单例，无法隔离 ReminderService | `private init` → `init(reminderService:)` 可注入 | 已修复 | 批次1 |
 | 8 | 🟡 P1 | `Sources/Core/System/Workflow/WorkflowService.swift:46` | 逻辑缺陷 | 任务过滤用 `line.hasPrefix("-")` 会匹配 `- [x]`（已完成任务），导致已完成任务也被同步 | 已完成事项被重复同步到系统提醒，造成冗余提醒 | 在过滤条件中排除 `hasPrefix(CoreConstants.MarkdownSyntax.taskDone)` 和 `taskDoneUpper` | 已修复 | 批次1 |
+| 10 | 🟡 P1 | `Sources/Infrastructure/Processors/Graph/GraphCommunityProcessor.swift:98-142` | 算法缺陷 | Louvain 社区检测在全连通三角形图（3 节点 3 边）上无法合并社区，每个节点保持独立社区。`refineCommunities` 的 `calculateModularityGain` 公式可能在小图上增益计算不正确，导致 `bestGain` 始终为 0 | 全连通的知识图谱节点无法被识别为同一社区，社区发现功能在小规模全连通子图上失效 | 待确认 | 批次2 |
+| 11 | 🟡 P1 | `Sources/Infrastructure/LLM/OnDeviceLLMService.swift:417-438` | L10n 红线违规 | `OnDeviceError.errorDescription` 使用硬编码字符串（`"Model_not_found"`、`"Model_not_loaded"`、`"Not_supported"`、`"Inference_failed"`、`"Compilation_failed"`），违反 L10n 强约束红线（禁止硬编码文本，必须通过 `L10n.模块.属性` 强类型访问） | 端侧 LLM 错误信息无法本地化，所有语言用户看到相同的英文下划线文本 | 在 `L10n+OnDevice.swift` 中注册 `OnDeviceError` 的本地化属性，`errorDescription` 通过 `L10n.OnDevice.Error.*` 访问 | 待确认 | 批次2 |
 
 ## 处理状态说明
 

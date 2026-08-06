@@ -2515,3 +2515,45 @@ git push origin main && git push gitlab main
 - WorkflowService 通过有限重构（`init(reminderService:)` 可注入）实现 Mock 隔离，副作用通过观察 `ToastManager.shared.currentToast` @Published 属性验证
 - LocalAnalyticsService 通过有限重构（`init(logURL:)` 可注入）实现临时日志路径隔离
 - WorkflowService 当前实现 `line.hasPrefix("-")` 会匹配 `- [x]`（已完成任务），记录为 P1 finding 待用户确认
+
+---
+
+## 批次 2：Infrastructure 层（已完成）
+
+### 范围
+
+设计规格第 3.2 节定义的 14+ 个目标文件，按可测试性分三档：
+- **高可测试性**：DocxProcessor、ExcelProcessor、PluginSandboxError、FileSystemSyncService、VaultStorageService、InferenceParametersStore、GraphCommunityProcessor（补充）、PPTXProcessor（补充）
+- **中可测试性**：OnDeviceLLMService（状态操作+错误类型+DTO+Config 常量）、LLMModels（LLMError+LLMProvider+LLMRegistry+LLMProviderMetadata）
+- **低可测试性（跳过）**：ChatLLMService（依赖网络+DI）、LLMAdapters（依赖网络+LLMClient）、DemoImageBuilder（纯 UIKit 绘图）、DemoPDFBuilder（纯 PDFKit 绘图）、PerformanceBenchmarker（@MainActor+AnyPageStore+纯日志）
+
+### Task 记录
+
+| Task | 文件 | 用例数 | 状态 |
+|------|------|--------|------|
+| B2-1 | `InferenceParametersStoreTests` | 12 | ✅ |
+| B2-2 | `DocxProcessorTests` | 9 | ✅ |
+| B2-3 | `ExcelProcessorTests` | 11 | ✅ |
+| B2-4 | `FileSystemSyncServiceTests` | 8 | ✅ |
+| B2-5 | `PluginSandboxErrorTests` | 22 | ✅ |
+| B2-6 | `VaultStorageServiceTests` | 10 | ✅ |
+| B2-7 | `GraphCommunityProcessorSupplementTests` | 10 | ✅ |
+| B2-8 | `PPTXProcessorSupplementTests` | 8 | ✅ |
+| B2-9 | `OnDeviceLLMServiceTests` | 30 | ✅ |
+| B2-10 | `LLMModelsTests` | 30 | ✅ |
+| **合计** | **10 个测试文件** | **150** | **全绿** |
+
+### Findings
+
+| 序号 | 严重程度 | 文件 | 问题 | 状态 |
+|------|---------|------|------|------|
+| 10 | 🟡 P1 | GraphCommunityProcessor | Louvain 在全连通小图上无法合并社区 | 待确认 |
+| 11 | 🟡 P1 | OnDeviceLLMService | OnDeviceError.errorDescription 硬编码字符串违反 L10n 红线 | 待确认 |
+
+### 已知限制
+
+- ChatLLMService/LLMAdapters 跳过：`generate`/`chat`/`chatStream` 依赖 `@Inject` 的 `LLMConfigManager`/`AIAnalyticsService` 和网络请求，难以单元测试
+- DemoImageBuilder/DemoPDFBuilder 跳过：纯 UIKit/PDFKit 绘图，无可测试逻辑
+- PerformanceBenchmarker 跳过：`@MainActor` + `AnyPageStore` + 纯日志输出
+- OnDeviceLLMService 的 `generate`/`loadModel`/`discoverModels` 依赖 CoreML 和文件系统，仅测试状态操作和错误抛出
+- `xcodebuild -only-testing` 分隔符需用 `/`（`ZhiYuTests/ClassName`）而非 `:`
