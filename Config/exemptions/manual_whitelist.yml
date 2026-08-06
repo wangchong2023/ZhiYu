@@ -1510,22 +1510,6 @@ business_magic_exempt:
   line: 78
   reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
   expiry_check: false
-- file: Sources/Core/Base/Utils/ZipUtility.swift
-  line: 48
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Core/Base/Utils/ZipUtility.swift
-  line: 56
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Core/Base/Utils/ZipUtility.swift
-  line: 66
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Core/Base/Utils/ZipUtility.swift
-  line: 99
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
 - file: Sources/Core/System/Logger/Logger.swift
   line: 383
   reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）

@@ -12682,61 +12682,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "内部错误"
+            "value": "内部错误：%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "內部錯誤"
+            "value": "內部錯誤：%@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Internal Error"
+            "value": "Internal Error: %@"
           }
         }
       }

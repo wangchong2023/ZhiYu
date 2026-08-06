@@ -54,7 +54,11 @@ final class WorkflowService: ObservableObject {
         let tasks = lines.map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { line in
                 // 匹配列表项：- , * , 1. , - [ ]
-                line.hasPrefix("-") || line.hasPrefix("*") || (line.count > 2 && line.first?.isNumber == true && line.contains("."))
+                // 排除已完成任务（- [x] / - [X]），避免已完成事项被重复同步（finding #8）
+                let isCompletedTask = line.hasPrefix(CoreConstants.MarkdownSyntax.taskDone)
+                    || line.hasPrefix(CoreConstants.MarkdownSyntax.taskDoneUpper)
+                guard !isCompletedTask else { return false }
+                return line.hasPrefix("-") || line.hasPrefix("*") || (line.count > 2 && line.first?.isNumber == true && line.contains("."))
             }
             .map { line -> String in
                 var cleaned = line

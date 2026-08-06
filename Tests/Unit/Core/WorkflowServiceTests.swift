@@ -55,20 +55,18 @@ final class WorkflowServiceTests: XCTestCase {
         )
     }
 
-    /// 含已完成任务标记（- [x]）的 Markdown 也应被识别（当前实现不区分完成状态）
-    func testSyncToReminders_含已完成任务_当前实现也同步() async {
+    /// 含已完成任务标记（- [x]）的 Markdown 不应被同步（finding #8 已修复）
+    func testSyncToReminders_含已完成任务_不同步() async {
         let markdown = """
         # 测试页面
         - [x] 已完成事项
         """
         try? await service.syncToReminders(text: markdown, title: "测试页面")
 
-        // 注：当前实现 hasPrefix("-") 会匹配 "- [x]"，所以已完成任务也会被同步
-        // 这可能是 P1 问题（已完成任务不应同步），记录到 findings 待确认
-        XCTAssertGreaterThanOrEqual(
+        XCTAssertEqual(
             mockReminderService.createReminderCallCount,
-            1,
-            "当前实现会同步已完成任务（hasPrefix('-') 匹配）"
+            0,
+            "已完成任务（- [x]）不应被同步（finding #8 已修复）"
         )
     }
 

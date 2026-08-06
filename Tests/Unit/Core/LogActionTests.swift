@@ -29,24 +29,21 @@ final class LogActionTests: XCTestCase {
         }
     }
 
-    /// aiscanFailed/aiscanSkipped 当前前缀为 "log.action.aiscan."（记录为 P2 不一致）
-    func testRawValue_aiscan前缀_当前不一致() {
-        XCTAssertTrue(LogAction.aiscanFailed.rawValue.hasPrefix("log.action.aiscan."))
-        XCTAssertTrue(LogAction.aiscanSkipped.rawValue.hasPrefix("log.action.aiscan."))
-        // 注：此测试断言当前（不一致）行为，修复后应改为 hasPrefix("logAction.")
+    /// aiscanFailed/aiscanSkipped 前缀已统一为 "logAction.aiscan."（finding #1 已修复）
+    func testRawValue_aiscan前缀_已统一() {
+        XCTAssertTrue(LogAction.aiscanFailed.rawValue.hasPrefix("logAction.aiscan."))
+        XCTAssertTrue(LogAction.aiscanSkipped.rawValue.hasPrefix("logAction.aiscan."))
     }
 
-    /// export 当前前缀为 "action.export"（记录为 P2 不一致）
-    func testRawValue_export前缀_当前不一致() {
-        XCTAssertEqual(LogAction.export.rawValue, "action.export")
-        // 注：此测试断言当前（不一致）行为，修复后应改为 hasPrefix("logAction.")
+    /// export 前缀已统一为 "logAction.export"（finding #1 已修复）
+    func testRawValue_export前缀_已统一() {
+        XCTAssertEqual(LogAction.export.rawValue, "logAction.export")
     }
 
-    /// error/unknown 完全不符合前缀契约（记录为 P2 不一致）
-    func testRawValue_error和unknown_不符合前缀契约() {
-        XCTAssertEqual(LogAction.error.rawValue, "ERROR")
-        XCTAssertEqual(LogAction.unknown.rawValue, "unknown")
-        // 注：此测试断言当前（不一致）行为
+    /// error/unknown 已统一为 logAction.* 前缀（finding #1 已修复）
+    func testRawValue_error和unknown_已统一前缀() {
+        XCTAssertEqual(LogAction.error.rawValue, "logAction.error")
+        XCTAssertEqual(LogAction.unknown.rawValue, "logAction.unknown")
     }
 
     // MARK: - rawValue 唯一性

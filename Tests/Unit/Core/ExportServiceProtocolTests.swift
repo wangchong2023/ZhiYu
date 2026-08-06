@@ -28,21 +28,19 @@ final class ExportServiceProtocolTests: XCTestCase {
 
     // MARK: - internalError 关联值
 
-    /// internalError 的 errorDescription 当前不包含关联值消息（P1 缺陷：xcstrings 缺少 %@ 占位符）
-    /// 修复后应改为 XCTAssertTrue(desc?.contains(message) ?? false)
-    func testErrorDescription_internalError_当前不包含关联值() {
+    /// internalError 的 errorDescription 已包含关联值消息（finding #2 已修复：xcstrings 添加 %@ 占位符）
+    func testErrorDescription_internalError_包含关联值() {
         let message = "引擎崩溃详情"
         let desc = ExportError.internalError(message).errorDescription
         XCTAssertNotNil(desc)
-        XCTAssertFalse(desc?.contains(message) ?? true, "当前 errorDescription 不包含关联值（P1 缺陷）")
+        XCTAssertTrue(desc?.contains(message) ?? false, "errorDescription 应包含关联值消息")
     }
 
-    /// 不同关联值当前产生相同 errorDescription（P1 缺陷）
-    /// 修复后应改为 XCTAssertNotEqual
-    func testErrorDescription_internalError_当前不同关联值_相同描述() {
+    /// 不同关联值产生不同 errorDescription（finding #2 已修复）
+    func testErrorDescription_internalError_不同关联值_不同描述() {
         let desc1 = ExportError.internalError("错误A").errorDescription
         let desc2 = ExportError.internalError("错误B").errorDescription
-        XCTAssertEqual(desc1, desc2, "当前不同关联值返回相同描述（P1 缺陷）")
+        XCTAssertNotEqual(desc1, desc2, "不同关联值应返回不同描述")
     }
 
     // MARK: - Error 协议遵循

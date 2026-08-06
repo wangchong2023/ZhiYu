@@ -46,14 +46,15 @@ public final class JailbreakDetector: Sendable {
     }
     
     /// 物理扫描常用越狱工具物理文件及配置文件是否存在
+    /// 注：仅检测 iOS 专属越狱路径，不检测 macOS 自带路径（如 /bin/bash），
+    /// 避免 iOS 模拟器（运行在 macOS 上）误报越狱（finding #5）。
     private func checkCommonJailbreakFiles() -> Bool {
         let jbPaths = [
             "/Applications/Cydia.app",
             "/Library/MobileSubstrate/MobileSubstrate.dylib",
-            "/bin/bash",
-            "/usr/sbin/sshd",
             "/etc/apt",
-            "/usr/bin/ssh"
+            "/Applications/Sileo.app",
+            "/Applications/Zebra.app"
         ]
         for path in jbPaths where FileManager.default.fileExists(atPath: path) {
                 return true

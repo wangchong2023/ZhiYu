@@ -20,7 +20,7 @@ public enum LogAction: String, Codable, CaseIterable, Sendable {
     // 数据管理
     case ingest = "logAction.ingest"
     case smartIngest = "logAction.smartIngest"
-    case export = "action.export"
+    case export = "logAction.export"
     
     // PDF 增强
     case importPDF = "logAction.importPDF"
@@ -32,13 +32,13 @@ public enum LogAction: String, Codable, CaseIterable, Sendable {
     case lint = "logAction.lint"
     case healthCheck = "logAction.healthCheck"
     case systemInit = "logAction.systemInit"
-    case aiscanFailed = "log.action.aiscan.failed"
-    case aiscanSkipped = "log.action.aiscan.skipped"
+    case aiscanFailed = "logAction.aiscan.failed"
+    case aiscanSkipped = "logAction.aiscan.skipped"
     case sync = "logAction.sync"
     
     // 系统级
-    case error = "ERROR"
-    case unknown = "unknown"
+    case error = "logAction.error"
+    case unknown = "logAction.unknown"
 
     /// 本地化显示名称
     public var localizedName: String {

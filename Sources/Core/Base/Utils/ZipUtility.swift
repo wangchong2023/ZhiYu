@@ -14,6 +14,42 @@ import Compression
 /// ZIP 工具类：支持解压与解析 ZIP 存档中的特定文件。
 enum ZipUtility {
 
+    /// ZIP 格式常量（依据 APPNOTE.TXT 6.3.10 / PKWARE ZIP File Format Specification）
+    private enum ZipFormat {
+        /// Local File Header 固定部分长度（30 字节：签名 4 + 版本 2 + 标志 2 + 方法 2 + 时间 4 + CRC 4 + 压缩大小 4 + 未压缩大小 4 + 文件名长度 2 + 额外字段长度 2）
+        static let localFileHeaderSize = 30
+
+        /// Local File Header 签名（小端 `50 4B 03 04`）
+        static let localFileHeaderSignature: UInt32 = 0x04034B50
+
+        /// Central Directory 签名（小端 `50 4B 01 02`）
+        static let centralDirectorySignature: UInt32 = 0x02014B50
+
+        /// End of Central Directory 签名（小端 `50 4B 05 06`）
+        static let endOfCentralDirectorySignature: UInt32 = 0x06054B50
+
+        /// 压缩方法：Stored（无压缩）
+        static let compressionMethodStored: UInt16 = 0
+
+        /// 压缩方法：Deflate
+        static let compressionMethodDeflate: UInt16 = 8
+
+        /// Deflate 解压缓冲区放大倍数（预估未压缩大小为压缩数据的倍数）
+        static let deflateBufferMultiplier = 10
+
+        /// 签名扫描步长（逐字节搜索下一个文件头）
+        static let signatureScanStep = 1
+    }
+
+    /// Local File Header 字段偏移量（依据 ZIP 规范）
+    private enum LocalFileHeaderOffset {
+        static let signature = 0
+        static let compressionMethod = 8
+        static let compressedSize = 18
+        static let fileNameLength = 26
+        static let extraFieldLength = 28
+    }
+
     /// 读取 ZIP 存档并返回文件路径与二进制数据的映射。
     static func readZipArchive(at url: URL) -> [String: Data]? {
         guard let data = try? Data(contentsOf: url) else {
@@ -28,11 +64,11 @@ enum ZipUtility {
             var offset = 0
             let count = buffer.count
 
-            while offset + 30 < count {
+            while offset + ZipFormat.localFileHeaderSize < count {
                 let bytes = baseAddress.advanced(by: offset)
 
-                // Local file header signature
-                guard bytes.load(as: UInt32.self) == 0x04034b50 else {
+                // Local file header signature（使用 loadUnaligned 避免对齐违规崩溃）
+                guard bytes.loadUnaligned(as: UInt32.self) == ZipFormat.localFileHeaderSignature else {
                     // Try to find next file header
                     if let nextOffset = findNextLocalFileHeader(in: buffer, start: offset) {
                         offset = nextOffset
@@ -41,29 +77,43 @@ enum ZipUtility {
                     break
                 }
 
-                let fileNameLength = Int(bytes.load(fromByteOffset: 28, as: UInt16.self))
-                let extraFieldLength = Int(bytes.load(fromByteOffset: 30, as: UInt16.self))
-                let compressedSize = Int(bytes.load(fromByteOffset: 18, as: UInt32.self))
+                let fileNameLength = Int(bytes.loadUnaligned(
+                    fromByteOffset: LocalFileHeaderOffset.fileNameLength,
+                    as: UInt16.self
+                ))
+                let extraFieldLength = Int(bytes.loadUnaligned(
+                    fromByteOffset: LocalFileHeaderOffset.extraFieldLength,
+                    as: UInt16.self
+                ))
+                let compressedSize = Int(bytes.loadUnaligned(
+                    fromByteOffset: LocalFileHeaderOffset.compressedSize,
+                    as: UInt32.self
+                ))
 
-                let headerSize = 30 + fileNameLength + extraFieldLength
+                let headerSize = ZipFormat.localFileHeaderSize + fileNameLength + extraFieldLength
                 let dataOffset = offset + headerSize
 
                 guard dataOffset + compressedSize <= count else { break }
 
-                let nameBytes = UnsafeRawPointer(baseAddress).advanced(by: offset + 30)
+                let nameBytes = UnsafeRawPointer(baseAddress).advanced(
+                    by: offset + ZipFormat.localFileHeaderSize
+                )
                 let fileNameData = Data(bytes: nameBytes, count: fileNameLength)
                 guard let fileName = String(data: fileNameData, encoding: .utf8) else {
-                    offset += 4
+                    offset += MemoryLayout<UInt32>.size
                     continue
                 }
 
                 // Decompress if needed (method 0 = stored, 8 = deflate)
-                let compressionMethod = UInt16(bytes.load(fromByteOffset: 8, as: UInt16.self))
+                let compressionMethod = UInt16(bytes.loadUnaligned(
+                    fromByteOffset: LocalFileHeaderOffset.compressionMethod,
+                    as: UInt16.self
+                ))
                 let compressedData = Data(bytes: baseAddress.advanced(by: dataOffset), count: compressedSize)
 
-                if compressionMethod == 0 {
+                if compressionMethod == ZipFormat.compressionMethodStored {
                     archive[fileName] = compressedData
-                } else if compressionMethod == 8 {
+                } else if compressionMethod == ZipFormat.compressionMethodDeflate {
                     if let decompressed = decompressDeflate(data: compressedData) {
                         archive[fileName] = decompressed
                     }
@@ -81,13 +131,13 @@ enum ZipUtility {
     /// - Returns: 可选值
     private static func findNextLocalFileHeader(in buffer: UnsafeRawBufferPointer, start: Int) -> Int? {
         let count = buffer.count
-        var i = start + 4
-        while i + 4 <= count {
-            let sig = buffer.load(fromByteOffset: i, as: UInt32.self)
-            if sig == 0x04034b50 {
+        var i = start + MemoryLayout<UInt32>.size
+        while i + MemoryLayout<UInt32>.size <= count {
+            let sig = buffer.loadUnaligned(fromByteOffset: i, as: UInt32.self)
+            if sig == ZipFormat.localFileHeaderSignature {
                 return i
             }
-            i += 1
+            i += ZipFormat.signatureScanStep
         }
         return nil
     }
@@ -96,7 +146,7 @@ enum ZipUtility {
     /// - Parameter data: data
     /// - Returns: 可选值
     private static func decompressDeflate(data: Data) -> Data? {
-        let destinationBufferSize = data.count * 10
+        let destinationBufferSize = data.count * ZipFormat.deflateBufferMultiplier
         var destinationData = Data(count: destinationBufferSize)
 
         let result = destinationData.withUnsafeMutableBytes { destBuffer in
