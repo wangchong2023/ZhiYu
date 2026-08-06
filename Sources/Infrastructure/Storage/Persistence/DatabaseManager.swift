@@ -11,6 +11,12 @@
 import Foundation
 import UFPStorage
 
+/// DatabaseManager 业务常量（避免魔数）。
+private enum DatabaseManagerConstants {
+    /// WAL 读写分离连接池的最大并发读取线程数。
+    static let maximumReaderCount: Int = 5
+}
+
 /// 数据库中枢管理器（DatabaseManager）。
 /// 它是知识笔记本高内聚持久化层（Persistence）的基座大脑，托管了专属笔记本数据库（Workspace DB）
 /// 和全局共享设置数据库（Global DB）的双轨道生命周期。
@@ -295,7 +301,7 @@ final class DatabaseManager {
         var config = Configuration()
         
         // 1. 设置并发读取最大线程数（WAL 读写分离高阶连接池）
-        config.maximumReaderCount = 5
+        config.maximumReaderCount = DatabaseManagerConstants.maximumReaderCount
         // 2. 将读取线程的系统优先调度级别（QoS）调至用户高优先级，防范卡顿
         config.qos = .userInitiated
         
