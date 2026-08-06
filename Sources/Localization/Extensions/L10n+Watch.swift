@@ -32,7 +32,7 @@ extension L10n {
         public static var briefingGetToday: String { watchTr("watch.briefing.getToday") }
         public static var briefingGenerateNow: String { watchTr("watch.briefing.generateNow") }
         public static var briefingAudioBriefing: String { watchTr("watch.briefing.audioBriefing") }
-        public static var widgetCapture: String { watchTr("watch.widget.title") }
+        public static var widgetCapture: String { watchTr("watch.widget.displayName") }
         public static var widgetDescription: String { watchTr("watch.widget.desc") }
         
         public static var briefingNoNewContent: String { watchTr("watch.briefing.noNewContent") }
