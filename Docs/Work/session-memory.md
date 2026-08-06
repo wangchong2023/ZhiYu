@@ -124,9 +124,11 @@
   - **测试隔离修复**：`OnboardingServiceTests` setUp/tearDown 清理 UserDefaults，避免 `testFinish` 写入的 `hasCompletedOnboarding=true` 跨测试泄漏到 `testInit_DI未就绪`
 - **Core 层覆盖率达标** ✅ — 86.94%（2530/2910），从 77.97% 提升 +8.97%，超过 85% 红线
 - **全量单元测试 2556 个全部通过** ✅ — `TEST SUCCEEDED`，0 失败（含批次 6-A 新增 192 用例，从 2364 → 2556）
+- **批次 6-A commit 并推送双远端** ✅ — commit `49af1f21`，已推送 origin（GitHub）+ gitlab
+  - 附带修复：`RAGGovernanceSQLiteStore.swift` 抽取 F1 分数系数 `2.0` 和百分位基数 `100.0` 为 `RAGGovernanceFormula` 常量枚举（消除业务魔鬼数字，pre-push 钩子拦截后修复）
 
 ### In Progress
-- **commit 批次 6-A 并推送双远端** — Core 层覆盖率已确认 86.94% 达标，待 commit
+- (none)
 
 ### Blocked
 - (none)
@@ -162,8 +164,6 @@
 - **批次 6-B 中等 ROI 文件**：KeychainService/ZipUtility 剩余/DynamicComplianceManager+Patch/SecureEnclaveCryptoService 降级路径
 
 ## Next Steps
-- 重跑全量测试带 `-enableCodeCoverage YES`（上次被中断），生成覆盖率报告确认 Core 层达 85%
-- commit 批次 6-A 并推送双远端
 - 批次 6-B 中等 ROI 文件补测（KeychainService/ZipUtility 剩余/DynamicComplianceManager+Patch/SecureEnclaveCryptoService 降级路径）
 - 排查测试中发现的原始代码问题（DatabaseManager 并发竞态、DatabaseWriterProvider 静默降级、L10n 硬编码、Swift 6 并发警告等）
 - 统一覆盖率口径（`coverage-spm.py` vs `assert-test-coverage.py`）
@@ -184,7 +184,7 @@
   - 全 App 合计: 20.62%（25398/123182）
 - **已累计通过 ~864 个新增测试用例**（批次 1: ~119 + 批次 2: 150 + 批次 3: 206 + 批次 4: 119 + 批次 5: 78 + 批次 6-A: 192），0 失败
 - **全量单元测试 2364 个全部通过** ✅（含已有测试 + 新增测试），0 失败，无回归
-- **已记录 14 个 finding，全部已修复** ✅
+- **已记录 15 个 finding，全部已修复** ✅
 - **Domain 层覆盖率下降**：93.52% vs 基线 95.10%，5 个文件 0% 覆盖（`PageSchema.swift`/`AsyncStatus.swift`/`GlobalPromptRegistry.swift`/`UnsupportedSearchIndexer.swift`/`StoreCapabilities.swift`）
 - **测试暴露的原始代码问题**（用户追问后发现）：
   - 🔴 **MultiVaultSwitchTests 暴露并发竞态**：`DatabaseManager.shared` 全局单例在 12 并发 Task 高频切换时出现 `API call with NULL database connection pointer`、`SQLite error 21: out of memory - BEGIN DEFERRED TRANSACTION`、`no such table: pages`、`StorageModuleRegistrar dbWriter is transiently nil`；测试将这些问题"合理化"为"预期切换误差"和"全局单例竞态覆盖"放过了
@@ -223,7 +223,7 @@
 - `Docs/Work/session-memory.md` — 跨会话记忆（本文件）
 - `Docs/superpowers/specs/2026-08-06-mainapp-coverage-design.md` — 已批准的设计规格
 - `Docs/superpowers/plans/2026-08-06-mainapp-coverage.md` — 实现计划
-- `Docs/Audit/2026-08-06-mainapp-test-findings.md` — findings 表格（14 条记录，全部已修复）
+- `Docs/Audit/2026-08-06-mainapp-test-findings.md` — findings 表格（15 条记录，全部已修复）
 - `Tools/CI/assert-test-coverage.py` — v2.0 覆盖率熔断工具（全 App + 各模块双红线），commit `93c2d32b`
 - `Tools/CI/run-test-with-coverage.sh` — CI 测试+覆盖率流水线（调用 `assert-test-coverage.py`）
 - `Tools/CI/run-test-unit.sh` — 单元测试执行脚本（含 `-enableCodeCoverage YES`）
@@ -256,8 +256,9 @@
 ## Todo List
 - [x] Core 层补测分析：77.97% → 85%，需覆盖 ~203 行，16 个文件未达标 (priority: high)
 - [x] 批次 6-A: 高 ROI 纯逻辑文件补测（11 个文件，192 用例全绿） (priority: high)
-- [ ] 重跑覆盖率确认 Core 层达 85%（全量测试带覆盖率，耗时较长） (priority: high)
-- [ ] commit 批次 6-A 并推送双远端 (priority: high)
+- [x] 修复 OnboardingServiceTests 测试隔离问题（setUp/tearDown 清理 UserDefaults） (priority: high)
+- [x] 重跑全量测试带 -enableCodeCoverage YES 确认 Core 层达 85%（2556 测试全绿） (priority: high)
+- [x] commit 批次 6-A 并推送双远端（commit 49af1f21） (priority: high)
 - [ ] 批次 6-B: 中等 ROI 文件补测（KeychainService/ZipUtility 剩余/DynamicComplianceManager+Patch/SecureEnclaveCryptoService 降级路径） (priority: medium)
 - [ ] 排查测试中发现的原始代码问题（DatabaseManager 并发竞态、DatabaseWriterProvider 静默降级等） (priority: medium)
 - [ ] 统一覆盖率口径（coverage-spm.py vs assert-test-coverage.py） (priority: low)
@@ -272,7 +273,7 @@
 或直接：
 > "读 `Docs/Work/session-memory.md` 继续"
 
-**当前应继续的下一步**：重跑全量测试带 `-enableCodeCoverage YES` 确认 Core 层达 85%，然后 commit 批次 6-A。
+**当前应继续的下一步**：批次 6-B 中等 ROI 文件补测（KeychainService/ZipUtility 剩余/DynamicComplianceManager+Patch/SecureEnclaveCryptoService 降级路径）。
 命令参考：
 ```bash
 xcodebuild test \
