@@ -33,8 +33,14 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func fetchTokenStats(days: Int) async throws -> TokenStats {
         let writer = await dbWriter
         return try await writer.read { db in
-            let dateThreshold = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            
+            let calendar = Calendar.current
+            let dateThreshold: Date
+            if days <= 0 {
+                dateThreshold = calendar.startOfDay(for: Date())
+            } else {
+                dateThreshold = calendar.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+            }
+
             let request = TokenUsage
                 .filter(TokenUsage.Columns.createdAt >= dateThreshold)
                 .select(
@@ -42,7 +48,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
                     sum(TokenUsage.Columns.completionTokens),
                     sum(TokenUsage.Columns.totalTokens)
                 )
-            
+
             if let row = try Row.fetchOne(db, request) {
                 return TokenStats(
                     prompt: row[0] ?? 0,
@@ -60,7 +66,13 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func fetchDailyAIStats(days: Int) async throws -> [DailyAIStat] {
         let writer = await dbWriter
         return try await writer.read { db in
-            let dateThreshold = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+            let calendar = Calendar.current
+            let dateThreshold: Date
+            if days <= 0 {
+                dateThreshold = calendar.startOfDay(for: Date())
+            } else {
+                dateThreshold = calendar.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+            }
             
             let dayExpr = SQL("strftime('%Y-%m-%d', \(TokenUsage.Columns.createdAt))")
             let request = TokenUsage
