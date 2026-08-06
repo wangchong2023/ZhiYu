@@ -14,6 +14,7 @@
 
 | 序号 | 严重程度 | 文件:行号 | 问题类型 | 问题描述 | 黑盒影响 | 修改方案 | 处理状态 | 批次 |
 |------|---------|----------|---------|---------|---------|---------|---------|------|
+| 1 | 🟢 P2 | `Sources/Core/Base/Constants/LogAction.swift:23,35-36,40-41` | 契约不一致 | `export="action.export"`、`aiscanFailed/aiscanSkipped="log.action.aiscan.*"`、`error="ERROR"`、`unknown="unknown"` 不符合 `logAction.*` 前缀契约 | 日志分析时按 `logAction.` 前缀过滤会遗漏这些动作 | 统一改为 `logAction.export`/`logAction.aiscan.failed`/`logAction.aiscan.skipped`/`logAction.error`/`logAction.unknown` | 待确认 | 批次1 |
 
 ## 处理状态说明
 
