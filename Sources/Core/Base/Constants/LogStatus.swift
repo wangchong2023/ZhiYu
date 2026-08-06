@@ -11,7 +11,7 @@
 import Foundation
 
 /// 操作执行状态
-public enum LogStatus: String, Codable, Sendable {
+public enum LogStatus: String, Codable, CaseIterable, Sendable {
     case success
     case failure
     case processing

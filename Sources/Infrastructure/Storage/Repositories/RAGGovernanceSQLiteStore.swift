@@ -11,6 +11,14 @@
 import Foundation
 import UFPStorage
 
+/// RAG 治理统计公式常量
+private enum RAGGovernanceFormula {
+    /// F1 分数调和平均系数：F1 = 2 * P * R / (P + R)
+    static let f1HarmonicCoefficient: Double = 2.0
+    /// 百分位换算基数：rank = ceil(N * p / 100)
+    static let percentileBase: Double = 100.0
+}
+
 /// [Infra] RAG 全链路质量治理 SQLite 存储
 final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterProvider, @unchecked Sendable {
     // MARK: - Token 计费 (Usage)
@@ -438,7 +446,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
                 let recall = Double(retrievedRelevant) / Double(allRelevant.count)
                 let denominator = precision + recall
                 guard denominator > 0 else { continue }
-                totalF1 += 2.0 * precision * recall / denominator
+                totalF1 += RAGGovernanceFormula.f1HarmonicCoefficient * precision * recall / denominator
                 queryCount += 1
             }
             return queryCount > 0 ? totalF1 / Double(queryCount) : 0.0
@@ -494,7 +502,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
             let count = latencies.count
             /// nearest-rank 法：rank = ceil(N * p / 100)，索引 = rank - 1
             func percentile(_ p: Double) -> Int {
-                let rank = Int((Double(count) * p / 100.0).rounded(.up))
+                let rank = Int((Double(count) * p / RAGGovernanceFormula.percentileBase).rounded(.up))
                 return latencies[max(0, min(rank - 1, count - 1))]
             }
             return LatencyPercentiles(p50: percentile(50), p95: percentile(95), p99: percentile(99), sampleCount: count)
