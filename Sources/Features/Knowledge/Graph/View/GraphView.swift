@@ -74,7 +74,16 @@ struct GraphContainerView: View {
             themeManager.pageBackground()
                 .ignoresSafeArea()
 
-            if viewModel.nodes.isEmpty {
+            if viewModel.isLayouting {
+                // 首次加载中：显示加载指示器，避免闪烁空状态视图
+                VStack(spacing: DesignSystem.standardPadding) {
+                    ProgressView()
+                        .controlSize(.large)
+                    Text(L10n.Common.loading)
+                        .font(.subheadline)
+                        .foregroundStyle(.appSecondary)
+                }
+            } else if viewModel.nodes.isEmpty {
                 GraphEmptyStateView(selectedTab: $selectedTab)
             } else {
                 // 2. 主体布局：标题/过滤项 + 画布

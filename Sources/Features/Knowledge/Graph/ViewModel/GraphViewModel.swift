@@ -31,7 +31,9 @@ final class GraphViewModel {
             }
         }
     }
-    var isLayouting = false
+    /// 是否正在执行布局计算。初始为 true 表示"尚未完成首次加载"，
+    /// 避免首帧渲染时 nodes 为空被误判为"确认无数据"而闪烁空状态视图。
+    var isLayouting = true
     var showLegend = false
     var showInsights = false
     var useClustering = false
