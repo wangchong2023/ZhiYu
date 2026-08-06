@@ -424,15 +424,15 @@ public enum OnDeviceError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .modelNotFound:
-            return "Model_not_found"
+            return L10n.AI.OnDevice.Error.modelNotFound
         case .modelNotLoaded:
-            return "Model_not_loaded"
+            return L10n.AI.OnDevice.Error.modelNotLoaded
         case .notSupported:
-            return "Not_supported"
+            return L10n.AI.OnDevice.Error.notSupported
         case .inferenceFailed(let msg):
-            return "\("Inference_failed"): \(msg)"
+            return "\(L10n.AI.OnDevice.Error.inferenceFailed): \(msg)"
         case .compilationFailed:
-            return "Compilation_failed"
+            return L10n.AI.OnDevice.Error.compilationFailed
         }
     }
 }

@@ -240,7 +240,24 @@ extension GraphLayoutProcessor {
         return modularity / (2 * m)
     }
 
-    /// 计算将节点移动到目标社区的模块度增益
+    /// 计算将节点从当前社区移动到目标社区的净模块度增益
+    ///
+    /// 标准 Louvain 增益公式（净增益 = 加入目标社区增益 - 离开当前社区损失）：
+    ///   ΔQ = [k_i_in(C_target) - k_i_in(C_current)] / (2*m)
+    ///        - k_i * [Σ_tot(C_target) - Σ_tot(C_current) + k_i] / (2*m)²
+    ///
+    /// 简化形式（移除当前社区后加入目标社区）：
+    ///   ΔQ = k_i_in(C_target) / m
+    ///        - k_i * Σ_tot(C_target) / (2*m²)
+    ///        - [k_i_in(C_current) / m - k_i * Σ_tot(C_current) / (2*m²)]
+    ///
+    /// 其中：
+    ///   - k_i_in(C_target)：节点与目标社区内部节点的连接数
+    ///   - k_i_in(C_current)：节点与当前社区内部节点（不含自身）的连接数
+    ///   - k_i：节点 i 的度数
+    ///   - Σ_tot(C_target)：目标社区所有节点的度数之和（不含节点 i）
+    ///   - Σ_tot(C_current)：当前社区所有节点的度数之和（不含节点 i）
+    ///   - m：总边数
     private static func calculateModularityGain(
         nodeID: UUID,
         targetComm: Int,
@@ -255,25 +272,43 @@ extension GraphLayoutProcessor {
 
         let ki = Double(nodeDegree[nodeID] ?? 0)
 
-        // 计算目标社区的内部边数和度数
-        var targetInternalEdges = 0
-        var targetTotalDegree = 0
+        // k_i_in(C_target)：节点与目标社区内部节点的连接数
+        var kiInTarget = 0.0
+        // k_i_in(C_current)：节点与当前社区内部节点（不含自身）的连接数
+        var kiInCurrent = 0.0
+        // Σ_tot(C_target)：目标社区所有节点的度数之和（不含节点 i）
+        var sumTotTarget = 0.0
+        // Σ_tot(C_current)：当前社区所有节点的度数之和（不含节点 i）
+        var sumTotCurrent = 0.0
 
         if let neighbors = adjacency[nodeID] {
             for neighborID in neighbors {
-                if community[neighborID] == targetComm {
-                    targetInternalEdges += 1
+                let neighborComm = community[neighborID]
+                if neighborComm == targetComm {
+                    kiInTarget += 1
                 }
-                targetTotalDegree += nodeDegree[neighborID] ?? 0
+                if neighborComm == currentComm {
+                    kiInCurrent += 1
+                }
             }
         }
 
-        let kcInTarget = Double(targetInternalEdges)
-        let sumKjInTarget = Double(targetTotalDegree)
+        if let targetNodes = communityNodes[targetComm] {
+            for memberID in targetNodes where memberID != nodeID {
+                sumTotTarget += Double(nodeDegree[memberID] ?? 0)
+            }
+        }
 
-        // 模块度增益公式
-        let gain = (kcInTarget - (ki * sumKjInTarget) / (2 * m)) - (ki / (2 * m)) * (sumKjInTarget - ki)
-        return gain
+        if let currentNodes = communityNodes[currentComm] {
+            for memberID in currentNodes where memberID != nodeID {
+                sumTotCurrent += Double(nodeDegree[memberID] ?? 0)
+            }
+        }
+
+        // 净增益 = 加入目标社区的增益 - 离开当前社区的损失
+        let gainTarget = kiInTarget / m - (ki * sumTotTarget) / (2 * m * m)
+        let lossCurrent = kiInCurrent / m - (ki * sumTotCurrent) / (2 * m * m)
+        return gainTarget - lossCurrent
     }
 
     /// 获取低内聚力社区的节点 ID

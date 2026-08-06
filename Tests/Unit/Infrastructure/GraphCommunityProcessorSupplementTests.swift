@@ -108,11 +108,12 @@ final class GraphCommunityProcessorSupplementTests: XCTestCase {
         let result = GraphLayoutProcessor.detectCommunities(nodes: nodes, edges: edges)
 
         XCTAssertEqual(result.count, 3, "全连通三角形应保留全部节点")
+        let communityIDs = Set(result.compactMap { $0.communityID })
+        XCTAssertEqual(communityIDs.count, 1, "全连通三角形应合并为单一社区")
         for node in result {
             XCTAssertNotNil(node.communityID, "全连通图节点应被分配社区 ID")
             XCTAssertNotNil(node.communityCohesion, "全连通图节点应有内聚力值")
         }
-        // NOTE: Louvain 算法在全连通小图上可能无法合并社区（见 finding #10）
     }
 
     // MARK: - lowCohesionCommunities 默认阈值
@@ -174,10 +175,11 @@ final class GraphCommunityProcessorSupplementTests: XCTestCase {
         let result = GraphLayoutProcessor.detectCommunities(nodes: nodes, edges: edges)
 
         XCTAssertEqual(result.count, 2, "两节点一边应保留全部节点")
+        let communityIDs = Set(result.compactMap { $0.communityID })
+        XCTAssertEqual(communityIDs.count, 1, "两节点一边应合并为单一社区")
         for node in result {
             XCTAssertNotNil(node.communityID, "节点应被分配社区 ID")
             XCTAssertNotNil(node.communityCohesion, "节点应有内聚力值")
         }
-        // NOTE: Louvain 算法在两节点一边图上可能无法合并社区（见 finding #10）
     }
 }

@@ -216,6 +216,9 @@ extension L10n {
                 public static var loadFailed: String { AI.tr("ondevice.error.loadFailed") }
                 public static var compilationFailed: String { AI.tr("ondevice.error.compilationFailed") }
                 public static var inferenceFailed: String { AI.tr("ondevice.error.inferenceFailed") }
+                public static var modelNotFound: String { AI.tr("ondevice.error.modelNotFound") }
+                public static var modelNotLoaded: String { AI.tr("ondevice.error.modelNotLoaded") }
+                public static var notSupported: String { AI.tr("ondevice.error.notSupported") }
             }
         }
 

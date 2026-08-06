@@ -1663,7 +1663,7 @@ business_magic_exempt:
   reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
   expiry_check: false
 - file: Sources/Infrastructure/Processors/Graph/GraphCommunityProcessor.swift
-  line: 280
+  line: 315
   reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
   expiry_check: false
 - file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
