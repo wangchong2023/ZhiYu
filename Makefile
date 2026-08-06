@@ -54,11 +54,11 @@ test: gen
 
 test-unit: gen
 	@echo "🧪 仅运行单元测试（排除 UI 测试）..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 test-ui: gen
 	@echo "🧪 仅运行 UI 测试..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuUITests CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuUITests -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 test-spm:
 	@if [ -z "$(PKG)" ]; then \

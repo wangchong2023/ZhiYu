@@ -42,6 +42,7 @@
 		02F93C203B89362075C0FB1C /* KnowledgePageFTSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6AC282ADACE901FEB801E92 /* KnowledgePageFTSTests.swift */; };
 		032F66D436BE93B0F4B301AE /* SearchSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8E8530083486115D6CCAFA /* SearchSheets.swift */; };
 		034B9431F359B6154EFED00C /* iOSSpotlightIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8100844FD871419777AEE11 /* iOSSpotlightIndexer.swift */; };
+		0394AC29B7A7301B78EE77BF /* InfrastructurePureLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B61463142F452462B0A79A95 /* InfrastructurePureLogicTests.swift */; };
 		039B33599B7353590646EE7E /* WatchAppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339FC7901E120581444030C3 /* WatchAppEnvironment.swift */; };
 		03A55A54C4140CBAFC1F41AC /* PluginRecordFTS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745B512E87AF766DF62F05E5 /* PluginRecordFTS.swift */; };
 		03A9E70D42ACCD3006D3D852 /* EmbeddingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425E256B99BF6438233AD5DA /* EmbeddingProvider.swift */; };
@@ -2924,6 +2925,7 @@
 		B5FFC78A6A642EDBF8188FE1 /* FeedbackRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackRepository.swift; sourceTree = "<group>"; };
 		B60246812B9D5E39B7B892A8 /* LLMSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMSettingsView.swift; sourceTree = "<group>"; };
 		B605263F059EDE0CA6EC7CCF /* ModelLabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabView.swift; sourceTree = "<group>"; };
+		B61463142F452462B0A79A95 /* InfrastructurePureLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfrastructurePureLogicTests.swift; sourceTree = "<group>"; };
 		B63B9D96388374DC543ADDF0 /* WatchSyncProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSyncProtocol.swift; sourceTree = "<group>"; };
 		B6494FF2EA8291F5DC18EF35 /* SubscriptionFeatureGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionFeatureGrid.swift; sourceTree = "<group>"; };
 		B6539C10A53801DB12CA3253 /* 知识管理工作流.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = "知识管理工作流.md"; path = "zh-Hans.lproj/知识管理工作流.md"; sourceTree = "<group>"; };
@@ -6259,6 +6261,7 @@
 				ED92D30A34A9C576E9F39674 /* FrontmatterParserTests.swift */,
 				D6317AC4D2AC2087E51CE4F6 /* GraphCommunityProcessorSupplementTests.swift */,
 				4ED909269A4DC76049DF4BB0 /* InferenceParametersStoreTests.swift */,
+				B61463142F452462B0A79A95 /* InfrastructurePureLogicTests.swift */,
 				C3AF0BF37240ED5E5E04AAE3 /* LLMContextBuilderSupplementTests.swift */,
 				D179597D6B1716EFCBBF02BE /* LLMModelsTests.swift */,
 				49694734AE1B9648BB7E3E2B /* LLMRetrievalServiceSupplementTests.swift */,
@@ -7042,6 +7045,7 @@
 				1379C93F0FA7AEA1C736B963 /* ImportSynthesisE2ETests.swift in Sources */,
 				1F56E1D5A280E8B9AD7E11C6 /* ImportSynthesisLinkTests.swift in Sources */,
 				22CA942D58E08603A9525A75 /* InferenceParametersStoreTests.swift in Sources */,
+				0394AC29B7A7301B78EE77BF /* InfrastructurePureLogicTests.swift in Sources */,
 				12B22589D2115755E8728E31 /* IngestQueueTests.swift in Sources */,
 				6744498CD623B702DE578CC9 /* IngestSanitationPipelineEdgeTests.swift in Sources */,
 				053E7C3A4E8447270EC81A50 /* IngestSanitationPipelineTests.swift in Sources */,
