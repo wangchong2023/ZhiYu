@@ -34,8 +34,14 @@ enum ZipUtility {
         /// 压缩方法：Deflate
         static let compressionMethodDeflate: UInt16 = 8
 
-        /// Deflate 解压缓冲区放大倍数（预估未压缩大小为压缩数据的倍数）
-        static let deflateBufferMultiplier = 10
+        /// Deflate 解压缓冲区初始放大倍数（预估未压缩大小为压缩数据的倍数）
+        static let deflateBufferInitialMultiplier = 10
+
+        /// Deflate 解压缓冲区倍增因子（每次重试时缓冲区大小翻倍）
+        static let deflateBufferGrowthFactor = 2
+
+        /// Deflate 解压缓冲区最大容量上限（256MB，防止恶意 ZIP 导致内存耗尽）
+        static let deflateBufferMaxSize = 268435456
 
         /// 签名扫描步长（逐字节搜索下一个文件头）
         static let signatureScanStep = 1
@@ -142,31 +148,49 @@ enum ZipUtility {
         return nil
     }
 
-    /// 解压Deflate
-    /// - Parameter data: data
-    /// - Returns: 可选值
+    /// 解压 Deflate 数据
+    ///
+    /// Finding #16 修复：原实现用固定 10 倍缓冲区，对高压缩比数据（如重复字符串）
+    /// 会导致 `compression_decode_buffer` 返回值被截断。改为循环倍增重试策略：
+    /// 初始 10 倍，若返回值等于缓冲区大小（可能截断）则倍增重试，直到返回值 < 缓冲区
+    /// 大小（解压完整）或达到 256MB 上限。
+    /// - Parameter data: 压缩数据
+    /// - Returns: 解压后的数据，解压失败返回 nil
     private static func decompressDeflate(data: Data) -> Data? {
-        let destinationBufferSize = data.count * ZipFormat.deflateBufferMultiplier
-        var destinationData = Data(count: destinationBufferSize)
+        var destinationBufferSize = data.count * ZipFormat.deflateBufferInitialMultiplier
 
-        let result = destinationData.withUnsafeMutableBytes { destBuffer in
-            data.withUnsafeBytes { sourceBuffer -> Int? in
-                guard let sourcePointer = sourceBuffer.baseAddress,
-                      let destPointer = destBuffer.baseAddress else { return nil }
+        while destinationBufferSize <= ZipFormat.deflateBufferMaxSize {
+            var destinationData = Data(count: destinationBufferSize)
 
-                let size = compression_decode_buffer(
-                    destPointer.bindMemory(to: UInt8.self, capacity: destinationBufferSize),
-                    destinationBufferSize,
-                    sourcePointer.bindMemory(to: UInt8.self, capacity: data.count),
-                    data.count,
-                    nil,
-                    COMPRESSION_ZLIB
-                )
-                return size > 0 ? size : nil
+            let result = destinationData.withUnsafeMutableBytes { destBuffer in
+                data.withUnsafeBytes { sourceBuffer -> Int? in
+                    guard let sourcePointer = sourceBuffer.baseAddress,
+                          let destPointer = destBuffer.baseAddress else { return nil }
+
+                    let size = compression_decode_buffer(
+                        destPointer.bindMemory(to: UInt8.self, capacity: destinationBufferSize),
+                        destinationBufferSize,
+                        sourcePointer.bindMemory(to: UInt8.self, capacity: data.count),
+                        data.count,
+                        nil,
+                        COMPRESSION_ZLIB
+                    )
+                    return size > 0 ? size : nil
+                }
             }
+
+            guard let size = result else { return nil }
+
+            // 若返回值 < 缓冲区大小，解压完整；否则可能被截断，倍增重试
+            if size < destinationBufferSize {
+                return destinationData.prefix(size)
+            }
+
+            // 缓冲区不足，倍增重试
+            destinationBufferSize *= ZipFormat.deflateBufferGrowthFactor
         }
 
-        guard let size = result else { return nil }
-        return destinationData.prefix(size)
+        // 超过 256MB 上限仍未解压完整，返回 nil 避免内存耗尽
+        return nil
     }
 }

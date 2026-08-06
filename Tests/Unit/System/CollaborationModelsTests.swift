@@ -32,8 +32,11 @@ final class CollabModelsBatch3Tests: XCTestCase {
     }
 
     func testCollabUser_hashable() {
-        let user1 = CollabUser(id: "u1", displayName: "A", deviceName: "D", joinedAt: Date())
-        let user2 = CollabUser(id: "u1", displayName: "A", deviceName: "D", joinedAt: Date())
+        // Finding #19：原测试用 Date() 两次调用时间戳可能不同导致 hash 不同，
+        // 改用固定时间确保相同字段的 CollabUser 可去重
+        let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let user1 = CollabUser(id: "u1", displayName: "A", deviceName: "D", joinedAt: fixedDate)
+        let user2 = CollabUser(id: "u1", displayName: "A", deviceName: "D", joinedAt: fixedDate)
         let set: Set<CollabUser> = [user1, user2]
         XCTAssertEqual(set.count, 1, "相同字段的 CollabUser 应去重")
     }

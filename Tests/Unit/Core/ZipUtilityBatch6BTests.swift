@@ -73,13 +73,13 @@ final class ZipUtilityBatch6BTests: XCTestCase {
         XCTAssertNil(result, "损坏的 deflate 数据应导致 archive 为空，返回 nil")
     }
 
-    /// Finding #16：decompressDeflate 缓冲区倍数（10x）对高压缩比数据不足，
-    /// 导致解压结果被截断。此测试复现该问题：重复字符串压缩比高，
-    /// compressedSize * 10 < originalSize，解压数据不完整。
-    /// 源码 ZipUtility.swift:149 `data.count * ZipFormat.deflateBufferMultiplier`
-    func testReadZipArchive_deflate高压缩比数据_解压缓冲区不足导致截断() throws {
+    /// Finding #16 修复验证：decompressDeflate 改用循环倍增缓冲区后，
+    /// 高压缩比数据应正确完整解压（不再截断）。
+    /// 源码 ZipUtility.swift `decompressDeflate` 初始 10 倍，倍增重试直到完整或达 256MB 上限。
+    func testReadZipArchive_deflate高压缩比数据_循环倍增缓冲区完整解压() throws {
         let fileName = "high_ratio.txt"
         // 800 字节重复字符串，压缩后约 26 字节，10 倍缓冲区 = 260 < 800
+        // 修复后应倍增到 520 仍不足，再倍增到 1040 足够完整解压
         let originalData = Data(String(repeating: "Hello, Deflate! ", count: 50).utf8)
 
         guard let compressed = compressDeflate(originalData) else {
@@ -94,15 +94,9 @@ final class ZipUtilityBatch6BTests: XCTestCase {
         try zipData.write(to: zipURL)
 
         let result = ZipUtility.readZipArchive(at: zipURL)
-        // Finding #16：当前实现解压不完整，返回截断的 260 字节而非 800 字节
-        // 此测试记录该问题，修复后应改为 XCTAssertEqual(result?[fileName], originalData)
-        if let decompressed = result?[fileName] {
-            XCTAssertNotEqual(decompressed, originalData, "Finding #16：高压缩比数据解压应被截断（当前行为）")
-            XCTAssertEqual(decompressed.count, compressed.count * 10, "截断大小应等于缓冲区大小")
-        } else {
-            // 解压完全失败返回 nil 也是可能行为
-            XCTAssertNil(result, "高压缩比数据解压可能完全失败")
-        }
+        // 修复后应完整解压，不再截断
+        XCTAssertNotNil(result, "应成功解析 deflate ZIP")
+        XCTAssertEqual(result?[fileName], originalData, "Finding #16 修复后：高压缩比数据应完整解压，不再截断")
     }
 
     // MARK: - 损坏 ZIP 签名扫描恢复
