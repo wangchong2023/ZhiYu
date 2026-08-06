@@ -328,7 +328,7 @@ public enum FrontmatterParser {
             currentArrayKey = nil
         }
         
-        let parts = trimmed.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
+        let parts = trimmed.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
         guard parts.count == 2 else { return }
         let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
         let valueStr = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)

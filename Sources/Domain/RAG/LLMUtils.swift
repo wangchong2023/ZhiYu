@@ -13,11 +13,15 @@ import Foundation
 /// 全局共享的 LLM 工具集
 enum LLMUtils {
     /// 解析 LLM 输出中的 JSON 字符串数组，自动剥离 Markdown 代码块。
+    /// 兼容字符串数组 `["1","0"]` 和数字数组 `[1,0]`（数字会转为字符串）。
     static func parseJSONArray(_ text: String) -> [String] {
         let cleaned = stripMarkdown(text)
-        if let data = cleaned.data(using: .utf8),
-           let array = try? JSONDecoder().decode([String].self, from: data) {
+        guard let data = cleaned.data(using: .utf8) else { return [] }
+        if let array = try? JSONDecoder().decode([String].self, from: data) {
             return array
+        }
+        if let numbers = try? JSONDecoder().decode([Int].self, from: data) {
+            return numbers.map { String($0) }
         }
         return []
     }

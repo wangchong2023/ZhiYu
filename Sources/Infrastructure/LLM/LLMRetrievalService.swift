@@ -37,7 +37,8 @@ final class LLMRetrievalService: Sendable {
         
         do {
             let response = try await client.sendRequest(body: body)
-            return LLMUtils.extractContent(from: response) ?? query
+            let content = LLMUtils.extractContent(from: response)
+            return (content.flatMap { $0.isEmpty ? nil : $0 }) ?? query
         } catch {
             return query
         }
@@ -152,7 +153,8 @@ final class LLMRetrievalService: Sendable {
         
         do {
             let response = try await client.sendRequest(body: body)
-            return LLMUtils.extractContent(from: response) ?? query
+            let content = LLMUtils.extractContent(from: response)
+            return (content.flatMap { $0.isEmpty ? nil : $0 }) ?? query
         } catch {
             return query
         }
