@@ -18,8 +18,8 @@ import UIKit
 public final class JailbreakDetector: Sendable {
     /// 获取越狱检测器的共享单例
     public static let shared = JailbreakDetector()
-    
-    private init() {}
+
+    init() {}
     
     /// 检测当前设备是否已越狱。
     ///
