@@ -59,7 +59,7 @@ final class ToastManager: ObservableObject {
     @Published var currentToast: AppToast?
     private var timer: AnyCancellable?
     
-    private init() {}
+    init() {}
     
     /// 展示
     /// - Parameter type: type

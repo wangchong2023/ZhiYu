@@ -18,7 +18,7 @@ class TooltipManager: ObservableObject {
     @Published var activeTooltip: TooltipType?
     @Published var shownTooltips: Set<String> = []
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let shownKey = "app_shown_tooltips"
 
     enum TooltipType: String, CaseIterable {
@@ -63,7 +63,8 @@ class TooltipManager: ObservableObject {
         }
     }
 
-    private init() {
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         shownTooltips = Set(defaults.stringArray(forKey: shownKey) ?? [])
     }
 
