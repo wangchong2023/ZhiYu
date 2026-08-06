@@ -260,8 +260,24 @@ final class MockBackgroundTask: BackgroundTaskProtocol, @unchecked Sendable {
 /// Mock 提醒服务协议，用于测试环境 DI 容器注册
 @MainActor
 final class MockReminderService: ReminderServiceProtocol, @unchecked Sendable {
-    func requestAccess() async -> Bool { false }
-    func createReminder(title: String, notes: String) async throws {}
+    var requestAccessResult: Bool = false
+    var createReminderShouldThrow: Bool = false
+    var createReminderCallCount: Int = 0
+    var lastCreatedTitle: String?
+    var lastCreatedNotes: String?
+
+    func requestAccess() async -> Bool {
+        requestAccessResult
+    }
+
+    func createReminder(title: String, notes: String) async throws {
+        createReminderCallCount += 1
+        lastCreatedTitle = title
+        lastCreatedNotes = notes
+        if createReminderShouldThrow {
+            throw NSError(domain: "MockReminderService", code: 1)
+        }
+    }
 }
 
 // MARK: - XCTestCase Extension

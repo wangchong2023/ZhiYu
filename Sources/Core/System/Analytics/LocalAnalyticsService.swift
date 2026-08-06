@@ -14,14 +14,18 @@ import Foundation
 @MainActor
 final class LocalAnalyticsService: AnalyticsServiceProtocol, @unchecked Sendable {
     static let shared = LocalAnalyticsService()
-    
+
     private let logURL: URL
-    
-    private init() {
-        // 文档目录获取失败时降级到临时目录，避免启动崩溃（分析日志非关键路径）
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
-        self.logURL = docs.appendingPathComponent("analytics_log.json")
+
+    init(logURL: URL? = nil) {
+        if let customURL = logURL {
+            self.logURL = customURL
+        } else {
+            // 文档目录获取失败时降级到临时目录，避免启动崩溃（分析日志非关键路径）
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+                ?? FileManager.default.temporaryDirectory
+            self.logURL = docs.appendingPathComponent("analytics_log.json")
+        }
     }
     
     /// 追踪Event

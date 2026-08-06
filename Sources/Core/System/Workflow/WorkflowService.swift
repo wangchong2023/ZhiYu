@@ -15,9 +15,20 @@ import UFPCore
 @MainActor
 final class WorkflowService: ObservableObject {
     static let shared = WorkflowService()
-    
+
     @Inject private var appEnv: any AppEnvironmentProtocol
-    @Inject private var reminderService: any ReminderServiceProtocol
+    private let injectedReminderService: (any ReminderServiceProtocol)?
+
+    init(reminderService: (any ReminderServiceProtocol)? = nil) {
+        self.injectedReminderService = reminderService
+    }
+
+    private var reminderService: any ReminderServiceProtocol {
+        if let injected = injectedReminderService {
+            return injected
+        }
+        return ServiceContainer.shared.resolve((any ReminderServiceProtocol).self)
+    }
     
     enum WorkflowError: Error {
         case accessDenied

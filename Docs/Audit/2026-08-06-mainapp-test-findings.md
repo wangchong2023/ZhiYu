@@ -19,6 +19,9 @@
 | 3 | 🔴 P0 | `Sources/Core/Base/Utils/ZipUtility.swift:35,44-46,61` | 崩溃（对齐违规） | `UnsafeRawPointer.load(fromByteOffset:as:)` 用于读取 ZIP 头的 UInt16/UInt32 字段（偏移 8/18/28/30 均非对齐），在 ARM64 上触发 `EXC_BREAKPOINT` 崩溃 | 任何调用 `readZipArchive` 解析真实 ZIP 文件的场景都会崩溃（如导入 ZIP 备份） | 改用逐字节手动拼装（`UInt16(byte0) \| (UInt16(byte1) << 8)`）或 `withUnsafeBytes` + `loadUnaligned(fromByteOffset:as:)`（iOS 15+） | 待确认 | 批次1 |
 | 4 | 🟢 P2 | `Sources/Core/System/Security/JailbreakDetector.swift:22` | 可测试性 | `private init` 阻止测试构造独立实例，只能用 shared 单例无法隔离状态 | 测试无法独立构造实例验证 init 逻辑 | `private init` → `init`（internal） | 已修复 | 批次1 |
 | 5 | 🟡 P1 | `Sources/Core/System/Security/JailbreakDetector.swift:50-61` | 逻辑错误（模拟器误报） | `checkCommonJailbreakFiles()` 检测 `/bin/bash`、`/usr/sbin/sshd`、`/usr/bin/ssh` 等路径，但这些在 macOS 系统自带存在。iOS 模拟器运行在 macOS 上，导致 `isJailbroken()` 在模拟器上永远返回 true | 越狱检测在模拟器/开发环境下完全失效，开发者无法信任检测结果；可能影响依赖此检测的安全逻辑 | 1) 移除 macOS 自带的路径（`/bin/bash`、`/usr/sbin/sshd`、`/usr/bin/ssh`）；或 2) 用 `#if targetEnvironment(simulator)` 在模拟器下直接返回 false；或 3) 改用 iOS 专属路径（如 `/Applications/Cydia.app`、`/Library/MobileSubstrate/`） | 待确认 | 批次1 |
+| 6 | 🟢 P2 | `Sources/Core/System/Analytics/LocalAnalyticsService.swift:20` | 可测试性 | `private init` + 硬编码 logURL 阻止测试注入临时路径 | 测试写入真实日志路径，污染用户数据 | `private init` → `init(logURL:)` 可注入 | 已修复 | 批次1 |
+| 7 | 🟢 P2 | `Sources/Core/System/Workflow/WorkflowService.swift:17,20` | 可测试性 | `private init` + `@Inject` 阻止测试注入 Mock 依赖 | 测试只能用 shared 单例，无法隔离 ReminderService | `private init` → `init(reminderService:)` 可注入 | 已修复 | 批次1 |
+| 8 | 🟡 P1 | `Sources/Core/System/Workflow/WorkflowService.swift:46` | 逻辑缺陷 | 任务过滤用 `line.hasPrefix("-")` 会匹配 `- [x]`（已完成任务），导致已完成任务也被同步 | 已完成事项被重复同步到系统提醒，造成冗余提醒 | 在过滤条件中排除 `hasPrefix(CoreConstants.MarkdownSyntax.taskDone)` 和 `taskDoneUpper` | 待确认 | 批次1 |
 
 ## 处理状态说明
 
