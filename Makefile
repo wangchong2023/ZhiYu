@@ -4,7 +4,7 @@
 -include Config/.env.local
 export
 
-.PHONY: all gen bootstrap ios mac watch test test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift exemptions-check exemptions-rebuild coverage-spm help
+.PHONY: all gen bootstrap ios mac watch test test-unit test-ui test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift exemptions-check exemptions-rebuild coverage-spm help
 
 help:
 	@echo "智宇 (ZhiYu) 快捷构建与自动化命令列表："
@@ -12,7 +12,9 @@ help:
 	@echo "  make ios               - 构建 iOS Scheme"
 	@echo "  make mac               - 构建 macOS Catalyst Scheme"
 	@echo "  make watch             - 构建 watchOS Scheme"
-	@echo "  make test              - 运行主 App 单元测试"
+	@echo "  make test              - 运行主 App 全量测试（单元 + UI）"
+	@echo "  make test-unit         - 仅运行单元测试（排除 UI 测试，约 3 分钟）"
+	@echo "  make test-ui           - 仅运行 UI 测试"
 	@echo "  make test-spm PKG=包名  - 运行指定 SPM 本地包极速单测 (例: make test-spm PKG=UFPStorage)"
 	@echo "  make test-spm-all      - 运行所有 SPM 本地包极速单测 (UFPCore/Storage/DesignSystem/Domain/AICore/Features)"
 	@echo "  make test-all          - 运行全量 SPM 包单测 + 主 App 单元测试"
@@ -47,8 +49,16 @@ watch: gen
 	@xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 test: gen
-	@echo "🧪 运行主 App 单元测试..."
+	@echo "🧪 运行主 App 全量测试（单元 + UI）..."
 	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+test-unit: gen
+	@echo "🧪 仅运行单元测试（排除 UI 测试）..."
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests -enableCodeCoverage YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+test-ui: gen
+	@echo "🧪 仅运行 UI 测试..."
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuUITests CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 test-spm:
 	@if [ -z "$(PKG)" ]; then \

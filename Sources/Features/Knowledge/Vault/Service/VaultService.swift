@@ -55,7 +55,8 @@ public final class VaultService: VaultServiceProtocol {
 
     /// 私有化单例构造方法，防止外部直接实例化。
     private init() {
-        if NSClassFromString("XCTestCase") == nil {
+        let isUITesting = CommandLine.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
+        if NSClassFromString("XCTestCase") == nil || isUITesting {
             loadVaults()
         }
     }

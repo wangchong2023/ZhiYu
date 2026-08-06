@@ -22,12 +22,13 @@ extension VaultService {
                 Logger.shared.warning(" [VaultService] loadVaults 被跳过，因为 vaultRepository 未在 DI 注册")
                 // 降级兜底：即使持久化仓储不可用，也要确保 UI 至少有内存级演示笔记本可展示
                 self.vaults = buildFallbackDemoVaults()
+                autoSelectFirstVaultForUITestingIfNeeded()
                 return
             }
             do {
                 var loadedVaults = try await vaultRepository.fetchAllVaults()
 
-                // 1. 针对历史语言切换可能产生的重复内置笔记本（如简体“知识图谱”与繁体“知識圖譜”）进行物理去重合并
+                // 1. 针对历史语言切换可能产生的重复内置笔记本（如简体"知识图谱"与繁体"知識圖譜"）进行物理去重合并
                 var seenDemoEnglishNames = Set<String>()
                 var cleanedVaults: [Vault] = []
                 for vault in loadedVaults {
@@ -58,13 +59,24 @@ extension VaultService {
 
                 self.vaults = loadedVaults
                 await refreshAllPageCounts()
+                autoSelectFirstVaultForUITestingIfNeeded()
             } catch {
                 Logger.shared.error(" [VaultService] Failed to asynchronously load notebook metadata: \(error)", error: error)
                 self.vaults = buildFallbackDemoVaults()
+                autoSelectFirstVaultForUITestingIfNeeded()
             }
         }
 
         autoRestoreActiveVault()
+    }
+
+    /// UI 测试模式下自动选择第一个金库，跳过 NotebookHub 直接进入主界面。
+    /// 避免每个 UI 测试用例等待 TabBar 超时 15 秒 + 自愈逻辑 56 秒。
+    private func autoSelectFirstVaultForUITestingIfNeeded() {
+        let isUITesting = CommandLine.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
+        guard isUITesting, selectedVaultID == nil, let firstVault = vaults.first else { return }
+        selectedVaultID = firstVault.id
+        Logger.shared.info("[VaultService] UI 测试模式：自动选择第一个金库，跳过 NotebookHub")
     }
 
     /// 构建初始化的默认演示笔记本
