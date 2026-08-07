@@ -2,7 +2,7 @@
 
 > **用途**：跨会话恢复上下文。新会话开头让 Agent 读取本文件即可恢复进度。
 > **最后更新**：2026-08-07
-> **状态**：批次 7-H 完成（33 用例全绿），已 commit `4a047b68` 推送 gitlab。修复 MaintenanceServiceSeedContentTests 全量测试 crash（commit `ba0c2a56`）。全量测试后台运行中（PID 36910，脚本 `build/logs/coverage_7h.sh`，日志 `build/logs/coverage_7h.log`，xcresult `build/logs/coverage_7h.xcresult`），用于生成覆盖率报告
+> **状态**：批次 7-H 完成（33 用例全绿），已 commit `4a047b68` 推送 gitlab。覆盖率报告确认 Infrastructure 层 78.17% → 78.88%（+0.71%），缺口 915 行达 85%
 
 ---
 
@@ -126,7 +126,10 @@
   - **修复**：testEmptyStringMatchesEmptyPattern 失败（NSRegularExpression 空 pattern 行为）→改为 testEmptyStringWithEmptyPatternDoesNotCrash
 
 ### In Progress
-- 全量测试 + `-enableCodeCoverage YES` 后台运行中（PID 36910，脚本 `build/logs/coverage_7h.sh`，日志 `build/logs/coverage_7h.log`，xcresult `build/logs/coverage_7h.xcresult`），用于生成覆盖率报告确认批次 7-G/7-H 后提升情况
+- (none)
+
+### Blocked
+- GitHub 推送超时（用户指示暂时跳过 GitHub，继续任务）
 
 ### Blocked
 - GitHub 推送超时（用户指示暂时跳过 GitHub，继续任务）
@@ -139,12 +142,12 @@
 - **批次 7-E 避免重复测试**：`StreamDeanonymizer`/`ImageExtractor`/`ModelDownloadManager` 已有完整测试，不重复编写
 
 ## Next Steps
-- 等待全量测试（`coverage_7h.sh`，PID 36910）完成，运行 `python3 Tools/CI/assert-test-coverage.py --details` 确认 Infrastructure 层覆盖率提升
-- 若覆盖率仍不足 85%，规划批次 7-I：分析剩余低覆盖率文件（ChatRunner 14.3%、ChatLLMService 20.7%、PluginLoader 43.1%）
-- Infrastructure 层覆盖率提升至 85%（当前 78.17%，缺口约 1021 行）
+- Infrastructure 层覆盖率 78.88%，缺口 915 行达 85%
+- 低覆盖率文件 Top 5（按缺口）：ChatRunner(14.3%, 377行缺口)、OnDeviceLLMService(32.9%, 170行)、ChatLLMService(20.7%, 118行)、PluginLoader(48.4%, 165行)、ModelDownloadManager(53.0%, 181行)
+- 规划批次 7-I：聚焦 ChatRunner（377 行缺口最大，含 StreamDeanonymizer 已测，剩余 ChatRunner 主体逻辑）
 
 ## Critical Context
-- **覆盖率报告（批次 7-D + UI 修复后）**：L0 Core 91.17% ✅ / L1 Infrastructure 75.21%（需提升至 85%，缺口 1464 行）/ L1.5 Domain 93.54% ✅ / L2 Features 8.33% / L3 App 21.04% / 全 App 21.42%
+- **覆盖率报告（批次 7-H 后，纯单元测试）**：L0 Core 91.17% ✅ / L1 Infrastructure 78.88%（需提升至 85%，缺口 915 行）/ L1.5 Domain 94.18% ✅ / L2 Features 8.35% / L3 App 20.97% / 全 App 21.89%
 - **Infrastructure 低覆盖率文件明细**：
   - 0% 文件：`TagRepository`(16行)/`SpotlightService`(16行)/`SchemaService`(24行)/`XlsxStringsProcessor`(29行)/`IngestLLMService`(33行)/`DemoAudioBuilder`(39行)/`PerformanceBenchmarker`(48行)/`LLMAdapters`(79行)/`ChatLLMService`(184行)/`DemoPDFBuilder`(207行)/`DemoImageBuilder`(254行)
   - 低覆盖率：`DocumentProcessor`(1.0%,103行)/`DataCoordinator`(1.8%,56行)/`LLMChatService`(5.4%,93行)/`AIAnalyticsService`(9.5%,42行)/`ChatRunner`(14.3%,440行)/`OnDeviceLLMService`(28.7%,328行)/`MaintenanceService`(34.5%,116行)/`ImageExtractor`(35.5%,110行)/`PluginLoader`(43.1%,320行)/`ModelDownloadManager`(44.2%,385行)/`SQLiteStore`(49.8%,255行)
