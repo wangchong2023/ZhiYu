@@ -267,7 +267,7 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         return folderSize(at: cachesDir)
     }
 
-    private func folderSize(at dir: URL) -> Int64 {
+    func folderSize(at dir: URL) -> Int64 {
         var size: Int64 = 0
         if let enumerator = FileManager.default.enumerator(at: dir, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) {
             while let fileURL = enumerator.nextObject() as? URL {

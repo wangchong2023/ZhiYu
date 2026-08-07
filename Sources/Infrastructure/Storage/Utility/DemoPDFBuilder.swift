@@ -227,7 +227,7 @@ public struct DemoPDFBuilder {
     }
 
     /// 清理裸 Markdown 规则符号，转义为清晰的干净文本
-    private static func sanitizeMarkdownText(_ text: String) -> String {
+    static func sanitizeMarkdownText(_ text: String) -> String {
         var clean = text
         clean = clean.replacingOccurrences(of: StorageConstants.MarkdownSyntax.bold, with: "")
         clean = clean.replacingOccurrences(of: StorageConstants.MarkdownSyntax.wikilinkOpen, with: "「")
@@ -236,7 +236,7 @@ public struct DemoPDFBuilder {
         return clean.trimmingCharacters(in: .whitespaces)
     }
 
-    private static func isTableSeparator(_ line: String) -> Bool {
+    static func isTableSeparator(_ line: String) -> Bool {
         let cleaned = line.replacingOccurrences(of: " ", with: "")
         return cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableSeparator) || cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableDelimiter) || (cleaned.contains("---") && cleaned.contains("|"))
     }

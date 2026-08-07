@@ -331,7 +331,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     }
 
     // MARK: - 标签自动分析器
-    private func extractTags(from text: String) -> [String] {
+    func extractTags(from text: String) -> [String] {
         let pattern = "#(\\w+)"
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
         let nsText = text as NSString
