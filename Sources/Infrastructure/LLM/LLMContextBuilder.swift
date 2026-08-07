@@ -124,7 +124,7 @@ final class LLMContextBuilder: Sendable {
                     compressedResults.append(res)
                     currentLength += chunkLen
                 }
-                if currentLength > maxContextLength + 500 { break } 
+                if currentLength > maxContextLength + LLMConstants.ContextCompression.overflowTolerance { break }
             } else {
                 compressedResults.append(res)
                 currentLength += chunkLen
@@ -257,10 +257,10 @@ final class LLMContextBuilder: Sendable {
                     let original = String(text[tokenRange])
                     
                     // 仅对有效长度的敏感实体进行遮掩，避免过短噪音，且避免重复分配
-                    if original.count >= 2 && reversedMapping[original] == nil {
+                    if original.count >= LLMConstants.Anonymization.minEntityLength && reversedMapping[original] == nil {
                         let character = Character(UnicodeScalar(UInt8(LLMConstants.Anonymization.asciiUppercaseA) + UInt8(count % LLMConstants.Anonymization.alphabetSize)))
                         let suffix = count >= LLMConstants.Anonymization.alphabetSize ? "\(count / LLMConstants.Anonymization.alphabetSize)" : ""
-                        let placeholder = "[ENTITY_\(character)\(suffix)]"
+                        let placeholder = "\(LLMConstants.Anonymization.placeholderPrefix)\(character)\(suffix)\(LLMConstants.Anonymization.placeholderSuffix)"
                         
                         mapping[placeholder] = original
                         reversedMapping[original] = placeholder
@@ -305,7 +305,7 @@ final class LLMContextBuilder: Sendable {
 final class ChatHistoryStore: ObservableObject {
     var messages: [ChatMessageDTO] = []
 
-    private let historyKey = "zhiyu_chat_history"
+    private let historyKey = LLMConstants.ChatHistory.storageKey
 
     init() {
         load()

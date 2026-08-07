@@ -14,7 +14,21 @@ import Foundation
 
 /// 通用两阶段二次语义重排序引擎
 public struct ContextReranker: Sendable {
-    
+
+    /// 重排序参数常量集
+    public enum Constants {
+        /// 默认 Top-K 保留切片数量
+        public static let defaultTopK: Int = 5
+        /// 默认最低分数阈值（低于此值的候选被剪枝）
+        public static let defaultMinScore: Float = 0.35
+        /// 关键词精确覆盖密度加成权重
+        public static let keywordBonusWeight: Float = 0.25
+        /// 摘要类型切片权重倍数
+        public static let summaryMultiplier: Float = 1.1
+        /// 常规类型切片权重倍数
+        public static let regularMultiplier: Float = 1.0
+    }
+
     public init() {}
 
     /// 对一阶段召回的候选分块进行二次重排序与噪点剪枝
@@ -26,8 +40,8 @@ public struct ContextReranker: Sendable {
     public func rerank(
         query: String,
         candidates: [(chunk: PageChunk, score: Float)],
-        topK: Int = 5,
-        minScore: Float = 0.35
+        topK: Int = Constants.defaultTopK,
+        minScore: Float = Constants.defaultMinScore
     ) -> [(chunk: PageChunk, score: Float)] {
         guard !candidates.isEmpty else { return [] }
 
@@ -44,11 +58,11 @@ public struct ContextReranker: Sendable {
 
             if !queryTokens.isEmpty {
                 let matchCount = queryTokens.filter { chunkText.contains($0) }.count
-                keywordBonus = Float(matchCount) / Float(queryTokens.count) * 0.25
+                keywordBonus = Float(matchCount) / Float(queryTokens.count) * Constants.keywordBonusWeight
             }
 
             // 摘要类型切片赋予 1.1x 权重倾斜，避免局部噪点覆盖全文核心
-            let typeMultiplier: Float = item.chunk.chunkType == .summary ? 1.1 : 1.0
+            let typeMultiplier: Float = item.chunk.chunkType == .summary ? Constants.summaryMultiplier : Constants.regularMultiplier
             let finalScore = (item.score + keywordBonus) * typeMultiplier
 
             return (chunk: item.chunk, score: finalScore)

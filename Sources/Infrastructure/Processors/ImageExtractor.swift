@@ -36,7 +36,7 @@ final class ImageExtractor: Sendable {
             if data.count > maxImageSize { continue }
             guard let text = await ocrImage(data), !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
             okCount += 1
-            results.append("> ![img_\(okCount)]: \(text)")
+            results.append(String(format: ProcessorConstants.OCRAnnotation.htmlImageTemplate, okCount, text))
         }
 
         guard !results.isEmpty else { return "" }
@@ -83,7 +83,7 @@ final class ImageExtractor: Sendable {
             guard data.count <= maxImageSize, let text = await ocrImage(data),
                   !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
             okCount += 1
-            results.append("> ![\(prefix)_\(okCount)]: \(text)")
+            results.append(String(format: ProcessorConstants.OCRAnnotation.prefixedImageTemplate, prefix, okCount, text))
         }
         guard !results.isEmpty else { return "" }
         return "\n\n> \(L10n.Ingest.imageOCRLabel)\n\(results.joined(separator: "\n"))"
@@ -93,11 +93,12 @@ final class ImageExtractor: Sendable {
 
     /// 从 HTML 中提取所有 <img> 标签的 src 属性
     func parseImageURLs(from html: String, baseURL: URL?) -> [URL] {
-        let pattern = #/<img[^>]+src\s*=\s*["']([^"']+)["'][^>]*>/#
+        guard let pattern = try? Regex(ProcessorConstants.HTMLRegex.imgSrcTag) else { return [] }
         var urls: [URL] = []
         for match in html.matches(of: pattern) {
-            let src = String(match.output.1)
-            guard let url = resolveURL(src, baseURL: baseURL) else { continue }
+            let output = match.output
+            guard let src = output[output.startIndex.advanced(by: 1)].substring else { continue }
+            guard let url = resolveURL(String(src), baseURL: baseURL) else { continue }
             // 过滤明显不是图片的 URL（SVG 跳过，图标太小）
             let ext = url.pathExtension.lowercased()
             guard ext != ProcessorConstants.FileFormat.svg else { continue }

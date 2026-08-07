@@ -26,19 +26,9 @@ public enum PromptSecurityError: LocalizedError, Equatable {
 
 /// 通用提示词安全沙箱与越狱注入拦截器
 public struct PromptSecuritySanitizer: Sendable {
-    
+
     /// 常见的越狱注入攻击特征词集
-    private static let jailbreakPatterns: [String] = [
-        "ignore previous instructions",
-        "ignore all previous instructions",
-        "ignore above instructions",
-        "system override",
-        "jailbreak",
-        "dan mode",
-        "developer mode",
-        "forget all rules",
-        "you are now unfiltered"
-    ]
+    private static let jailbreakPatterns: [String] = LLMConstants.PromptSecurity.jailbreakPatterns
 
     public init() {}
 

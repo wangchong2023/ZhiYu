@@ -296,6 +296,8 @@ enum ProcessorConstants {
         static let mainTag: String = "(?i)<main[^>]*>(.*?)</main>"
         /// 匹配 <p> 段落标签内容
         static let paragraphTag: String = "<p[^>]*>(.*?)</p>"
+        /// 匹配 <img> 标签的 src 属性值
+        static let imgSrcTag: String = #"<img[^>]+src\s*=\s*["']([^"']+)["'][^>]*>"#
     }
 
     // MARK: - HTML 实体解码映射 (HTML Entity Decoding)
@@ -326,6 +328,16 @@ enum ProcessorConstants {
         static let pdf: String = "pdf"
         static let office: String = "office"
         static let svg: String = "svg"
+    }
+
+    // MARK: - OCR 图片标注模板 (OCR Image Annotation)
+
+    /// OCR 图片标注 Markdown 模板常量集
+    enum OCRAnnotation {
+        /// HTML 图片 OCR 标注模板（参数：序号, 识别文本）
+        static let htmlImageTemplate: String = "> ![img_%d]: %@"
+        /// PDF/Office 图片 OCR 标注模板（参数：前缀, 序号, 识别文本）
+        static let prefixedImageTemplate: String = "> ![%@_%d]: %@"
     }
 
     // MARK: - 布尔字面量 (Boolean String)

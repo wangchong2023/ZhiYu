@@ -49,6 +49,8 @@ public enum LLMConstants {
     public enum ContextCompression {
         /// Summary 分块或高分块强制纳入的分数阈值
         public static let summaryScoreThreshold: Float = 0.8
+        /// 上下文压缩时的溢出容忍字符数（超过 maxContextLength + 此值后停止追加）
+        public static let overflowTolerance: Int = 500
     }
 
     /// 实体匿名化（PII 遮掩）字母表常量
@@ -57,6 +59,12 @@ public enum LLMConstants {
         public static let asciiUppercaseA: UInt8 = 65
         /// 英文字母表大小
         public static let alphabetSize = 26
+        /// 敏感实体最小字符长度（低于此长度的实体不遮掩，避免短噪音）
+        public static let minEntityLength: Int = 2
+        /// 脱敏占位符前缀
+        public static let placeholderPrefix: String = "[ENTITY_"
+        /// 脱敏占位符后缀
+        public static let placeholderSuffix: String = "]"
     }
 
     /// API Key 校验常量
@@ -169,8 +177,10 @@ public enum LLMConstants {
     public enum SSEStream {
         /// 流结束标记
         public static let doneMarker: String = "[DONE]"
-        /// data 行前缀
+        /// data 行前缀（带空格）
         public static let dataPrefix: String = "data: "
+        /// data 行前缀（无空格，兼容部分提供商）
+        public static let dataPrefixNoSpace: String = "data:"
     }
 
     // MARK: - 任务中心任务名 (Task Center Names)
@@ -278,5 +288,45 @@ public enum LLMConstants {
         }
         /// 端侧 LLM chat prompt 中的 Question 标签
         public static let questionLabel: String = "Question"
+    }
+
+    // MARK: - 聊天历史持久化 Key (Chat History Storage)
+
+    /// 聊天历史持久化 UserDefaults Key 常量集
+    public enum ChatHistory {
+        /// 聊天记录持久化 Key
+        public static let storageKey: String = "zhiyu_chat_history"
+    }
+
+    // MARK: - Prompt 安全防护 (Prompt Security)
+
+    /// Prompt 越狱注入攻击特征词集
+    public enum PromptSecurity {
+        /// 常见的越狱注入攻击特征词集（中英文混合，覆盖主流攻击模式）
+        /// - Note: 安全检测特征词不经过 L10n 国际化，因为攻击者输入语言不可预测，
+        ///   需同时覆盖英文（LLM 注入主流语言）与中文（本地化攻击场景）。
+        public static let jailbreakPatterns: [String] = [
+            // 英文特征
+            "ignore previous instructions",
+            "ignore all previous instructions",
+            "ignore above instructions",
+            "system override",
+            "jailbreak",
+            "dan mode",
+            "developer mode",
+            "forget all rules",
+            "you are now unfiltered",
+            // 中文特征
+            "忽略之前的指令",
+            "忽略所有指令",
+            "忽略上述指令",
+            "忽略以上指令",
+            "系统覆盖",
+            "越狱模式",
+            "开发者模式",
+            "忘记所有规则",
+            "你现在不受限制",
+            "不受过滤"
+        ]
     }
 }

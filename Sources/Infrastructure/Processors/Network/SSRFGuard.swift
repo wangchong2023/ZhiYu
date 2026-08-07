@@ -57,8 +57,7 @@ struct SSRFGuard: Sendable {
         }
 
         // 6. 拒绝已知 DNS rebinding 服务域名
-        let rebindingSuffixes = [".nip.io", ".sslip.io", ".localtest.me", ".xip.io"]
-        for suffix in rebindingSuffixes where host.hasSuffix(suffix) {
+        for suffix in ProcessorConstants.SSRFGuard.rebindingSuffixes where host.hasSuffix(suffix) {
             return false
         }
 

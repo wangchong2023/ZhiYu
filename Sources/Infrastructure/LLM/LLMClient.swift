@@ -267,14 +267,13 @@ final class SSEParser {
     }
 
     /// 从 SSE 行提取 "data:" 前缀后的内容字符串，兼容 "data: " 和 "data:" 两种格式。
-    private static func extractDataString(from line: String) -> String? {
-        let dataPrefix = "data:"
-        guard line.hasPrefix(dataPrefix) else { return nil }
-        return String(line.dropFirst(line.hasPrefix(LLMConstants.SSEStream.dataPrefix) ? LLMConstants.SSEStream.dataPrefix.count : dataPrefix.count))
+    static func extractDataString(from line: String) -> String? {
+        guard line.hasPrefix(LLMConstants.SSEStream.dataPrefixNoSpace) else { return nil }
+        return String(line.dropFirst(line.hasPrefix(LLMConstants.SSEStream.dataPrefix) ? LLMConstants.SSEStream.dataPrefix.count : LLMConstants.SSEStream.dataPrefixNoSpace.count))
     }
 
     /// 将 SSE 数据行解析为 JSON 字典，非 JSON 行（如空行、注释）静默跳过。
-    private static func parseJSONLine(_ dataString: String, logger: (any LoggerProtocol)?) -> [String: Any]? {
+    static func parseJSONLine(_ dataString: String, logger: (any LoggerProtocol)?) -> [String: Any]? {
         guard let data = dataString.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             if let logger, !dataString.isEmpty {
@@ -287,7 +286,7 @@ final class SSEParser {
 
     /// 从 LLM 响应 JSON 的 choices[0] 中提取 content 或 reasoning_content。
     /// 兼容 delta（流式）和 message（非流式）两种 SSE 结构。
-    private static func extractContent(from json: [String: Any]) -> String? {
+    static func extractContent(from json: [String: Any]) -> String? {
         guard let choices = json["choices"] as? [[String: Any]],
               let first = choices.first else { return nil }
         let content: String?

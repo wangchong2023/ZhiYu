@@ -130,7 +130,7 @@ EXEMPT_DUPLICATE_VALUES = {
     "Reading", "Ready", "Version", "Parameters", "Reset to Defaults", "Vaults", "Get Started", "Data", 
     "Clear All Data", "Run Stress Test", "Rebuild Initial Notebooks", "Reset Onboarding", "Overview", "Token", 
     "OCR Scan", "Voice Note", "ZhiYu Room", "Knowledge Graph", "Memory", "Planning", "Tool Use", "All Pages",
-    "Processing", "Success", "Failure",
+    "Processing", "Success", "Failure", "Title",
     # 中文
     "导入到知识库", "剪贴板导入", "笔记本名称", "端侧与在线混合策略", "在线模型选择", "任务路由规则", "网络状态监控", 
     "安全与隐私", "本地大模型", "AI 正在思考...", "Token 消耗", "未关联笔记", "合成实验室", "AI 对话"
@@ -474,13 +474,41 @@ EXEMPT_STRINGS = {
     "You are a senior knowledge expert and researcher. Your goal is to provide deep, insightful expansion of existing knowledge.",
     "Prompt configurations saved to UserDefaults.",
     "Before Store instantiation",
+    "After Store instantiation",
     "Total registered",
     ")). Total registered: \\(registeredCount)",
+    # 安全审计日志详情常量（SecurityLogDetails/LogDetails，用于审计日志记录，保持英文以便跨语言一致性审计）
+    "Blocked political content",
+    "Blocked NSFW content",
+    "Blocked violence content",
+    "Blocked sensitive content",
+    "save logs:",
+    "Rate limit",
     "Prompt configurations reset to default.",
     "\n\nPlease reply in English.",
     "Export is not supported on this platform.",
     "Thinking Process:",
-    "Reasoning Process:"
+    "Reasoning Process:",
+    # PromptSecuritySanitizer 越狱检测特征词（安全检测特征，非 UI 文本，不走 L10n）
+    "ignore previous instructions",
+    "ignore all previous instructions",
+    "ignore above instructions",
+    "system override",
+    "jailbreak",
+    "dan mode",
+    "developer mode",
+    "forget all rules",
+    "you are now unfiltered",
+    "忽略之前的指令",
+    "忽略所有指令",
+    "忽略上述指令",
+    "忽略以上指令",
+    "系统覆盖",
+    "越狱模式",
+    "开发者模式",
+    "忘记所有规则",
+    "你现在不受限制",
+    "不受过滤"
 }
 
 class SourceCodeAuditor:
