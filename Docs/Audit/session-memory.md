@@ -78,18 +78,17 @@
   - `Packages/UFPCore/Sources/UFPCore/Base/TextAnalyzer.swift` — `wordCount(_:)` 中英混排字数统计
 
 ### In Progress
-- (none — 常量迁移与通用函数迁移全部完成，已推送 gitlab)
+- (none — 9 个问题全部修复并推送 gitlab，覆盖率基线已确认)
 
 ### Done (新增)
-- **pre-push 魔鬼数字修复（9 处）** ✅
-  - PluginMarketService: `200` → `SystemConstants.HTTPStatusCode.ok`（2 处）
-  - PluginSandboxGateway: `5` → `PluginConstants.Sandbox.maxResponseSizeMB`
-  - EmbeddingManager: `10`/`0.3`/`1000`/`1000.0`/`512` → `SearchDefaults` 命名空间（新增 public enum，含 defaultTopK/similarityThreshold/deterministicModulus/vectorDimension）
-  - SQLiteStore: `20`/`50_000_000` → `StorageConstants.WriterRetry.maxAttempts`/`intervalNanoseconds`
-  - AudioSplitter: `256` → `SplitDefaults.defaultChunkSizeKB`
-- **EmbeddingManager 编译错误修复** ✅ — `SearchDefaults` enum 改为 `public`，所有 `static let` 加 `public`（Swift 要求 public func 默认参数引用的符号必须 public）
-- **commit `b14ad1a1`** ✅ — amend 包含魔鬼数字修复，69 files changed, 2102 insertions(+), 682 deletions(-)
-- **推送 gitlab 成功** ✅ — 13 项 pre-push 门禁全通过（含 UFPCore 纯净化审计 706 文件 0 违规 + iOS 编译校验通过）
+- **Infrastructure 层 9 个问题全部修复** ✅ — commit `aa167438` + `bef459e1`，已推送 gitlab
+  - P0 (4): StreamDeanonymizer 截断丢失 `[` / verifySHA256 空哈希跳过校验 / 裸 .js 跳过签名 / ChatLLMService.chat 未脱敏
+  - P1 (5): cancelDownload 状态语义（新增 `.cancelled`）/ OnDeviceLLMService 错误信息误导（新增 `emptyResponse`）/ chatOnDevice 相关性匹配粗糙（token 化评分）/ generate 未传 maxTokens / constantTimeCompare 时序侧信道
+  - 测试更新：3 个旧测试匹配新行为（StreamDeanonymizerEdgeCaseTests/StringPhoneNumberTests/ModelDownloadManagerSHA256Tests）
+  - 新增 L10n key: `ondevice.error.emptyResponse`（10 语言）
+- **覆盖率基线确认** ✅ — Infrastructure 层 78.68% (11638/14792)，缺口 935 行达 85%
+  - 低覆盖率 Top 5: ChatRunner(14.3%)/ChatLLMService(20.7%)/OnDeviceLLMService(32.7%)/DocumentProcessor(31.1%)/MaintenanceService(34.5%)
+  - 0% 文件: SpotlightService/DemoAudioBuilder/PerformanceBenchmarker/LLMAdapters/DemoImageBuilder
 
 ### Done (历史)
 - **CI 检查 `audit-arch-ufpcore-purity.py` 建立完成** ✅
@@ -199,13 +198,16 @@
   - 回到 Infrastructure 覆盖率提升任务（78.79% → 85% 目标），**以发现问题为导向**，发现的问题列出表格（序号、问题描述、严重程度、修改方案、是否解决）
 
 ## Critical Context
-- **Infrastructure 层覆盖率（批次 7-I 后）**：78.79%（11778/14948），85% 目标需 12706 行，缺口约 928 行
-- **低覆盖率文件 Top 5（按缺口，批次 7-I 后）**：
-  - ChatRunner.swift: 14.3%（63/440），缺口 377 行 — `@MainActor` + `@Inject` DI
-  - ModelDownloadManager.swift: 53.2%（206/387），缺口 181 行 — `actor`
-  - OnDeviceLLMService.swift: 32.7%（108/330），缺口 170 行 — `@MainActor` + `@Inject compiler`
-  - PluginLoader.swift: 48.4%（155/320），缺口 165 行 — `@MainActor` + `@Inject archiver`
+- **Infrastructure 层覆盖率（9 个问题修复后）**：78.68%（11638/14792），85% 目标需 12573 行，缺口约 935 行
+- **低覆盖率文件 Top 5（按缺口，修复后）**：
+  - ChatRunner.swift: 14.3%（63/440），缺口 312 行 — `@MainActor` + `@Inject` DI
+  - OnDeviceLLMService.swift: 32.7%（108/330），缺口 172 行 — `@MainActor` + `@Inject compiler`
   - ChatLLMService.swift: 20.7%（38/184），缺口 118 行 — `@MainActor` + `@Inject`
+  - PluginLoader.swift: 48.4%（155/320），缺口 110 行 — `@MainActor` + `@Inject archiver`
+  - WebScraperProcessor.swift: 51.4%（114/222），缺口 54 行
+- **0% 文件**：SpotlightService(16行)/DemoAudioBuilder(39行)/PerformanceBenchmarker(48行)/LLMAdapters(79行)/DemoImageBuilder(254行)
+- **最新 commit**：`bef459e1`（test 修复）+ `aa167438`（9 个问题修复），已推送 gitlab
+- **问题清单文档**：`Docs/Audit/2026-08-07-infra-test-findings.md`（9 个问题全部标记已解决）
 - **通用基础函数审计结果摘要**：
   - P0 零依赖纯工具（已迁移）：Character+CJK / VectorMath / ByteFormatter / MainActorBridge / ZipUtility
   - P0 SSRFGuard 7 个函数（已迁移）：isSafeURL / isIPv6Format / normalizeIP / parseIPOctet / combineOctets / ipv4FromUInt32 / isPrivateIPv4 / isPrivateIPv6
@@ -324,5 +326,15 @@
 - [completed] 编译验证 + 测试验证 + commit + 推送 (priority: high)
 - [completed] pre-push 魔鬼数字修复（9 处）+ 推送 gitlab (priority: high)
 - [completed] 移除业务层兼容层文件（8 个文件删除 + 调用点更新 + 文档/CI 同步） (priority: high)
-- [in_progress] 运行覆盖率报告确认 Infrastructure 层当前状态（测试重跑中，修复 SSRFGuard 测试 import） (priority: medium)
+- [completed] 运行覆盖率报告确认 Infrastructure 层当前状态 — 基线 78.68% (11638/14792)，缺口 935 行达 85% (priority: medium)
 - [completed] Infrastructure 层问题驱动测试 — 已发现 9 个问题（3 P0 + 5 P1 + 1 设计问题），全部修复，记录于 Docs/Audit/2026-08-07-infra-test-findings.md (priority: high)
+
+## Next Steps
+- 针对 Infrastructure 层低覆盖率文件编写问题驱动测试（以发现问题为目标，非纯粹覆盖率提升）：
+  - ChatRunner.swift: 14.3% (63/440)，缺口 312 行 — 流式对话核心逻辑
+  - OnDeviceLLMService.swift: 32.7% (108/330)，缺口 172 行 — 端侧 LLM 推理
+  - ChatLLMService.swift: 20.7% (38/184)，缺口 118 行 — 云端 LLM 对话
+  - PluginLoader.swift: 48.4% (155/320)，缺口 110 行 — 插件加载与签名校验
+  - WebScraperProcessor.swift: 51.4% (114/222)，缺口 54 行 — 网页抓取
+- 0% 文件（Demo/Spotlight/PerformanceBenchmarker/LLMAdapters）可补测但收益有限
+- commit 修复 + 测试后推送 gitlab
