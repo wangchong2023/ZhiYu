@@ -62,6 +62,10 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         public static let chatMaxTokens: Int = 300
         public static let contextPageLimit: Int = 5
         public static let contentPreviewChars: Int = 200
+        public static let titleHitWeight: Int = 3
+        public static let tagHitWeight: Int = 2
+        public static let contentHitWeight: Int = 1
+        public static let minTokenLength: Int = 2
     }
 
     // MARK: - 初始化
@@ -267,7 +271,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         }
 
         isGenerating = false
-        throw OnDeviceError.modelNotLoaded
+        throw OnDeviceError.emptyResponse
     }
 
     // MARK: - 端侧智能导入 (Smart Ingest)
@@ -302,17 +306,66 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         var context = "Chat_Context"
 
         // 提取与 query 相关性最强的知识库内容作为端侧 Context
-        let relevant = pages.filter { page in
-            query.lowercased().contains(page.title.lowercased()) ||
-            page.tags.contains(where: { query.lowercased().contains($0.lowercased()) })
-        }
+        let relevant = Self.selectRelevantPages(query: query, from: pages, limit: Config.contextPageLimit)
 
-        for page in relevant.prefix(Config.contextPageLimit) {
+        for page in relevant {
             context += "\n\n## \(page.title)\n\(String(page.content.prefix(Config.contentPreviewChars)))"
         }
 
         let prompt = "\(context)\n\n\(LLMConstants.PromptInstruction.questionLabel): \(query)"
         return try await generate(prompt: prompt, maxTokens: Config.chatMaxTokens)
+    }
+
+    /// 基于关键词重叠度对知识库页面进行评分排序，返回相关性最高的若干页
+    /// 评分维度：标题命中 > 标签命中 > 内容片段命中
+    private static func selectRelevantPages(query: String, from pages: [KnowledgePage], limit: Int) -> [KnowledgePage] {
+        let queryTokens = Self.tokenize(query.lowercased())
+        guard !queryTokens.isEmpty else {
+            return Array(pages.prefix(limit))
+        }
+
+        let scored: [(page: KnowledgePage, score: Int)] = pages.map { page in
+            let titleTokens = Set(Self.tokenize(page.title.lowercased()))
+            let tagTokens = Set(page.tags.map { $0.lowercased() })
+            let contentLower = page.content.lowercased()
+
+            var score = 0
+            // 标题命中权重最高
+            for token in queryTokens where titleTokens.contains(token) {
+                score += Config.titleHitWeight
+            }
+            // 标签命中权重中等
+            for token in queryTokens where tagTokens.contains(token) {
+                score += Config.tagHitWeight
+            }
+            // 内容片段命中权重最低（子串匹配，覆盖未分词的复合词）
+            for token in queryTokens where contentLower.contains(token) {
+                score += Config.contentHitWeight
+            }
+            return (page, score)
+        }
+
+        return scored
+            .filter { $0.score > 0 }
+            .sorted { $0.score > $1.score }
+            .prefix(limit)
+            .map { $0.page }
+    }
+
+    /// 将文本按空白与标点切分为小写 token，过滤空串与单字符噪声
+    private static func tokenize(_ text: String) -> [String] {
+        text
+            .unicodeScalars
+            .map { scalar -> Character in
+                if CharacterSet.alphanumerics.contains(scalar) {
+                    return Character(scalar)
+                }
+                return " "
+            }
+            .reduce(into: "") { $0.append($1) }
+            .split { $0.isWhitespace }
+            .map { String($0).lowercased() }
+            .filter { $0.count >= Config.minTokenLength }
     }
 
     // MARK: - 强行取消生成
@@ -422,6 +475,7 @@ public enum OnDeviceError: LocalizedError {
     case notSupported
     case inferenceFailed(String)
     case compilationFailed
+    case emptyResponse
 
     public var errorDescription: String? {
         switch self {
@@ -435,6 +489,8 @@ public enum OnDeviceError: LocalizedError {
             return "\(L10n.AI.OnDevice.Error.inferenceFailed): \(msg)"
         case .compilationFailed:
             return L10n.AI.OnDevice.Error.compilationFailed
+        case .emptyResponse:
+            return L10n.AI.OnDevice.Error.emptyResponse
         }
     }
 }

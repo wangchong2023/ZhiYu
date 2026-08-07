@@ -300,7 +300,7 @@ public final class GlobalModelManager {
     public func cancelDownload(for modelId: String) {
         Task {
             try? await downloadManager.cancelDownload(modelId: modelId)
-            downloadStates[modelId] = .failed(error: "Cancelled")
+            downloadStates[modelId] = .cancelled
         }
     }
     

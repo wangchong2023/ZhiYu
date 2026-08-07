@@ -84,7 +84,7 @@ final class PluginLoader {
         }
 
         // 审查修复 MED-2: 使用常量时间比较，防御时序侧信道
-        guard constantTimeCompare(computedData, expectedData) else {
+        guard constantTimeCompare(computedData, b: expectedData) else {
             Logger.shared.error("[PluginRegistry] \(manifest.id): 拒绝加载 — 代码签名不匹配 (expected: \(expectedSignature.prefix(16))..., got: \(computedData.hexEncoded.prefix(16))...)")
             return false
         }
@@ -93,10 +93,11 @@ final class PluginLoader {
     }
 
     /// 常量时间字节比较（审查修复 MED-2）
-    static func constantTimeCompare(_ a: Data, _ b: Data) -> Bool {
-        guard a.count == b.count else { return false }
-        var result: UInt8 = 0
-        for i in 0..<a.count {
+    /// 长度不等时仍遍历较短数据的全部字节，避免基于响应时间推断长度的时序侧信道
+    static func constantTimeCompare(_ a: Data, b: Data) -> Bool {
+        let minCount = min(a.count, b.count)
+        var result: UInt8 = a.count == b.count ? 0 : 1
+        for i in 0..<minCount {
             result |= a[i] ^ b[i]
         }
         return result == 0
@@ -338,9 +339,14 @@ final class PluginLoader {
         }
     }
 
-    // MARK: - 裸 .js 加载（兼容旧格式）
+    // MARK: - 裸 .js 加载（兼容旧格式，仅 DEBUG 模式允许跳过签名）
 
     private func loadPluginFromRawJS(_ fileURL: URL) {
+        // 安全红线：裸 .js 无 manifest 签名，Release 模式下拒绝加载，防止恶意 JS 投递
+        #if !DEBUG
+        Logger.shared.error("[PluginRegistry] Release 模式禁止加载未签名裸 .js: \(fileURL.lastPathComponent)")
+        return
+        #else
         do {
             let scriptContent = try String(contentsOf: fileURL, encoding: .utf8)
             let displayName = fileURL.deletingPathExtension().lastPathComponent
@@ -353,7 +359,7 @@ final class PluginLoader {
                 descriptions: ["en": PluginConstants.DefaultManifest.descriptionEn]
             )
 
-            // 🛡️ VULN-001 修复 + 审查修复 HIGH-2: 本地 .js 插件通过 isTrustedLocal 豁免签名
+            // 🛡️ VULN-001 修复 + 审查修复 HIGH-2: DEBUG 模式下本地 .js 插件通过 isTrustedLocal 豁免签名
             // 仅此路径（内部生成 id）允许豁免，外部 manifest 的 local. 前缀会被拒绝
             guard Self.verifyPluginSignature(script: scriptContent, manifest: manifest, isTrustedLocal: true) else {
                 Logger.shared.error("[PluginRegistry] 拒绝加载未签名 .js: \(displayName)")
@@ -369,6 +375,7 @@ final class PluginLoader {
         } catch {
             Logger.shared.error("[PluginRegistry] Failed to load .js: \(fileURL.lastPathComponent)", error: error)
         }
+        #endif
     }
 }
 

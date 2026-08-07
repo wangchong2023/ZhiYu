@@ -21,11 +21,13 @@ struct ModelDownloadStatusBar: View {
     var body: some View {
         switch downloadState {
         case .failed(let error):
-            if error == "Not Downloaded" || error == "Cancelled" {
+            if error == "Not Downloaded" {
                 EmptyView()
             } else {
                 ringWithStatus(state: downloadState, statusText: error, color: .red)
             }
+        case .cancelled:
+            EmptyView()
         case .completed:
             EmptyView()
         default:

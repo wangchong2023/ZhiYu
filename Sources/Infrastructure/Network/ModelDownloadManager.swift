@@ -169,7 +169,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         activeTasks[modelId] = nil
         cleanPreviousFiles(for: modelId)
         
-        updateState(for: modelId, to: .failed(error: "Download cancelled by user."))
+        updateState(for: modelId, to: .cancelled)
     }
     
     /// 监听特定大模型任务的实时状态与进度变化流
@@ -318,7 +318,11 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     }
     
     nonisolated func verifySHA256(of fileURL: URL, expectedHash: String) -> Bool {
-        guard !expectedHash.isEmpty else { return true } // 如果白名单未配置哈希，视为跳过校验
+        // 安全红线：未注册 checksum 时必须拒绝安装，防止中间人篡改的模型文件通过校验
+        guard !expectedHash.isEmpty else {
+            Logger.shared.error("[ModelDownloadManager] 未注册 SHA256 校验和，拒绝安装未校验的模型文件。")
+            return false
+        }
         
         // 强制约束：标准的 SHA-256 十六进制哈希串必然是 64 字符。如果提供了非 64 位的占位符，直接判定校验失败，绝不放行不完整的大模型权重。
         guard expectedHash.count == Self.sha256HexLength else {

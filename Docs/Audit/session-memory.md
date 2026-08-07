@@ -324,5 +324,5 @@
 - [completed] 编译验证 + 测试验证 + commit + 推送 (priority: high)
 - [completed] pre-push 魔鬼数字修复（9 处）+ 推送 gitlab (priority: high)
 - [completed] 移除业务层兼容层文件（8 个文件删除 + 调用点更新 + 文档/CI 同步） (priority: high)
-- [in_progress] 运行覆盖率报告确认 Infrastructure 层当前状态 (priority: medium)
-- [pending] 回到 Infrastructure 覆盖率提升任务（78.79% → 85%，问题驱动） (priority: medium)
+- [in_progress] 运行覆盖率报告确认 Infrastructure 层当前状态（测试重跑中，修复 SSRFGuard 测试 import） (priority: medium)
+- [completed] Infrastructure 层问题驱动测试 — 已发现 9 个问题（3 P0 + 5 P1 + 1 设计问题），全部修复，记录于 Docs/Audit/2026-08-07-infra-test-findings.md (priority: high)

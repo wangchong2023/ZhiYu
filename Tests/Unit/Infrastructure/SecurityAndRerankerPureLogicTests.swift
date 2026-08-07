@@ -11,6 +11,7 @@
 
 import XCTest
 import Foundation
+import UFPCore
 @testable import ZhiYu
 
 // MARK: - PromptSecuritySanitizer 越狱检测与沙箱包装

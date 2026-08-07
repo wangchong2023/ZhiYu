@@ -365,10 +365,10 @@ struct StreamDeanonymizer: Sendable {
                     // 没找到 ']'，说明可能占位符被分包切断了，剩下的缓存入 buffer
                     let remaining = String(text[openBracketRange.lowerBound...])
                     if remaining.count >= LLMConstants.EntityPlaceholder.maxRawLength {
-                        // 如果长度过长（如达到 \(LLMConstants.EntityPlaceholder.maxRawLength) 字符），说明这不是一个合法的实体占位符，输出前段
-                        output += String(remaining.prefix(remaining.count - LLMConstants.EntityPlaceholder.bufferSuffixLength))
-                        buffer = String(remaining.suffix(LLMConstants.EntityPlaceholder.bufferSuffixLength))
+                        // 长度超过合法占位符上限，说明这不是实体占位符，直接全部输出（不缓存，避免丢失 '[' 导致后续还原失败）
+                        output += remaining
                     } else {
+                        // 可能是合法占位符被切断，全部缓存等待下次拼接
                         buffer = remaining
                     }
                     break

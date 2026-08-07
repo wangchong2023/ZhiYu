@@ -23,23 +23,23 @@ final class PluginLoaderSecurityLogicTests: XCTestCase {
     func testConstantTimeCompareEqualData() {
         let a = Data([0x01, 0x02, 0x03])
         let b = Data([0x01, 0x02, 0x03])
-        XCTAssertTrue(PluginLoader.constantTimeCompare(a, b))
+        XCTAssertTrue(PluginLoader.constantTimeCompare(a, b: b))
     }
 
     func testConstantTimeCompareDifferentData() {
         let a = Data([0x01, 0x02, 0x03])
         let b = Data([0x01, 0x02, 0x04])
-        XCTAssertFalse(PluginLoader.constantTimeCompare(a, b))
+        XCTAssertFalse(PluginLoader.constantTimeCompare(a, b: b))
     }
 
     func testConstantTimeCompareDifferentLength() {
         let a = Data([0x01, 0x02])
         let b = Data([0x01, 0x02, 0x03])
-        XCTAssertFalse(PluginLoader.constantTimeCompare(a, b))
+        XCTAssertFalse(PluginLoader.constantTimeCompare(a, b: b))
     }
 
     func testConstantTimeCompareEmptyData() {
-        XCTAssertTrue(PluginLoader.constantTimeCompare(Data(), Data()))
+        XCTAssertTrue(PluginLoader.constantTimeCompare(Data(), b: Data()))
     }
 
     // MARK: - Data(hexString:)
@@ -161,12 +161,12 @@ final class ModelDownloadManagerSHA256Tests: XCTestCase {
         try await super.tearDown()
     }
 
-    func testVerifySHA256EmptyHashSkipsCheck() async throws {
+    func testVerifySHA256EmptyHashRejected() async throws {
         let fileURL = tempDir.appendingPathComponent("test.bin")
         try Data("content".utf8).write(to: fileURL)
         let manager = ModelDownloadManager.shared
         let result = await manager.verifySHA256(of: fileURL, expectedHash: "")
-        XCTAssertTrue(result, "空 hash 应跳过校验返回 true")
+        XCTAssertFalse(result, "空 hash 应视为校验失败返回 false（防止中间人篡改）")
     }
 
     func testVerifySHA256Non64CharHashRejected() async throws {

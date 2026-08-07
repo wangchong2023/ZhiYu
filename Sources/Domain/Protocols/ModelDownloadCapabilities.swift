@@ -18,6 +18,7 @@ public enum DownloadState: Codable, Sendable, Equatable {
     case paused          // 暂停中 (包含断点续传数据已捕获)
     case verifying       // 校验签名与指纹中 (100% 下载完成)
     case completed(localURL: URL) // 下载且校验完成，模型已安全移入沙盒 Document 目录
+    case cancelled       // 用户主动取消下载
     case failed(error: String)  // 下载或校验失败，记录异常信息
 }
 

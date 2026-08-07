@@ -219,6 +219,7 @@ extension L10n {
                 public static var modelNotFound: String { AI.tr("ondevice.error.modelNotFound") }
                 public static var modelNotLoaded: String { AI.tr("ondevice.error.modelNotLoaded") }
                 public static var notSupported: String { AI.tr("ondevice.error.notSupported") }
+                public static var emptyResponse: String { AI.tr("ondevice.error.emptyResponse") }
             }
         }
 

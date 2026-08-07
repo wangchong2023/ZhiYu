@@ -56,7 +56,8 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
                 [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: systemPrompt],
                 [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: sanitizedPrompt]
             ],
-            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature
+            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature,
+            LLMConstants.APIKey.maxTokens: maxTokens
         ]
         
         let startTime = Date()
@@ -106,13 +107,28 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
         let sandboxedContext = PromptSanitizer.shared.wrapInSandbox(context)
         let systemPrompt = contextBuilder.buildSystemPrompt(pages: pages) + "\n\n" + sandboxedContext
         
+        // 🔒 端侧 NER 脱敏 (SR-12)：对齐 ChatRunner.chat，防止敏感信息发送给云端 LLM
+        let (anonSystemPrompt, mapping1) = contextBuilder.anonymize(systemPrompt)
+        let (anonQuery, mapping2) = contextBuilder.anonymize(sanitizedQuery, existingMapping: mapping1)
+        
+        var anonHistory: [ChatMessageDTO] = []
+        var currentMapping = mapping2
+        for msg in history {
+            let (anonContent, nextMapping) = contextBuilder.anonymize(msg.content, existingMapping: currentMapping)
+            currentMapping = nextMapping
+            anonHistory.append(ChatMessageDTO(role: msg.role, content: anonContent))
+        }
+        
         // 3. 调用底层的 chatService 执行物理会话
-        let content = try await chatService.chat(systemPrompt: systemPrompt, query: sanitizedQuery, history: history)
+        let response = try await chatService.chat(systemPrompt: anonSystemPrompt, query: anonQuery, history: anonHistory)
+        
+        // 🔓 端侧还原 (SR-12)
+        let deanonymizedResponse = contextBuilder.deanonymize(response, mapping: currentMapping)
         
         return ChatMessageDTO(
             id: UUID(),
             role: .assistant,
-            content: content,
+            content: deanonymizedResponse,
             timestamp: Date(),
             relatedPageIDs: pages.map { $0.id }
         )

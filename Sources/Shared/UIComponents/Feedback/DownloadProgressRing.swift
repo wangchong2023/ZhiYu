@@ -50,6 +50,8 @@ public struct DownloadProgressRing: View {
             return .theme.red
         case .paused:
             return .orange
+        case .cancelled:
+            return .secondary
         default:
             return .appAccent
         }
@@ -119,6 +121,8 @@ public struct DownloadProgressRing: View {
             EmptyView()
         case .completed:
             EmptyView()
+        case .cancelled:
+            EmptyView()
         }
     }
 
@@ -138,7 +142,7 @@ public struct DownloadProgressRing: View {
 
     @ViewBuilder
     private func failedContent(error: String) -> some View {
-        if error != "Not Downloaded" && error != "Cancelled" {
+        if error != "Not Downloaded" {
             Image(systemName: "exclamationmark.icloud.fill")
                 .font(.system(size: size * 0.32))
                 .foregroundStyle(.red)
