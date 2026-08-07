@@ -36,14 +36,14 @@
 |------|------|---------|
 | `Tests/Unit/Core/RetryTaskTests.swift` | 指数退避重试逻辑 | `Sources/Core/Utils/RetryTask.swift` |
 | `Tests/Unit/Core/AudioSplitterTests.swift` | 音频分片切割与重组 | `Sources/Core/System/Workflow/AudioSplitter.swift` |
-| `Tests/Unit/Core/StringPhoneNumberTests.swift` | 手机号掩码边界 | `Sources/Core/Base/Extensions/String+PhoneNumber.swift` |
-| `Tests/Unit/Core/DateAppExtensionsTests.swift` | 日期格式化常量 | `Sources/Core/Base/Extensions/Date+App.swift` |
+| `Tests/Unit/Core/StringPhoneNumberTests.swift` | 手机号掩码边界 | `Packages/UFPCore/Sources/UFPCore/Base/Extensions/String+Masking.swift`（已迁移） |
+| `Tests/Unit/Core/DateAppExtensionsTests.swift` | 日期格式化常量 | `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Date+Formatting.swift`（已迁移） |
 | `Tests/Unit/Core/DateExtensionsTests.swift` | 相对时间分支 | `Sources/Core/Base/Extensions/Date+Extensions.swift` |
 | `Tests/Unit/Core/LogActionTests.swift` | 日志动作枚举契约 | `Sources/Core/Base/Constants/LogAction.swift` |
 | `Tests/Unit/Core/ExportServiceProtocolTests.swift` | 导出错误枚举本地化 | `Sources/Core/Base/Protocols/ExportServiceProtocol.swift` |
 | `Tests/Unit/Core/UnsupportedServicesTests.swift` | 3 个 Unsupported 桩抛错 | `Sources/Core/Base/Stubs/Unsupported*.swift` |
 | `Tests/Unit/Core/StubServicesTests.swift` | 3 个 Stub 桩行为 + delegate | `Sources/Core/Base/Stubs/Stub*.swift` |
-| `Tests/Unit/Core/ZipUtilityTests.swift` | ZIP 解压边界 | `Sources/Core/Base/Utils/ZipUtility.swift` |
+| `Tests/Unit/Core/ZipUtilityTests.swift` | ZIP 解压边界 | `Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift`（已迁移） |
 | `Tests/Unit/Core/JailbreakDetectorTests.swift` | 越狱检测非越狱路径 | `Sources/Core/System/Security/JailbreakDetector.swift` |
 | `Tests/Unit/Core/LocalAnalyticsServiceTests.swift` | 本地分析持久化 | `Sources/Core/System/Analytics/LocalAnalyticsService.swift` |
 | `Tests/Unit/Core/WorkflowServiceTests.swift` | Markdown 解析 + 同步 | `Sources/Core/System/Workflow/WorkflowService.swift` |
@@ -493,7 +493,7 @@ git commit -m "test(core): AudioSplitter 分片切割与重组测试 11 用例"
 
 **Files:**
 - Create: `Tests/Unit/Core/StringPhoneNumberTests.swift`
-- Test: `Sources/Core/Base/Extensions/String+PhoneNumber.swift:11-19`
+- Test: `Packages/UFPCore/Sources/UFPCore/Base/Extensions/String+Masking.swift:11-19`（已迁移）
 
 **Interfaces:**
 - Consumes: `String.maskedPhoneNumber` 计算属性
@@ -590,7 +590,7 @@ Expected: PASS（9 个测试用例全绿）
 
 - [ ] **Step 3: 检查 findings**
 
-审查 `String+PhoneNumber.swift` 源码。当前审查结论：无问题（边界处理符合文档注释）。
+审查 `String+Masking.swift` 源码（原 `String+PhoneNumber.swift`，已迁移至 UFPCore）。当前审查结论：无问题（边界处理符合文档注释）。
 
 - [ ] **Step 4: Commit**
 
@@ -605,7 +605,7 @@ git commit -m "test(core): String.maskedPhoneNumber 掩码边界测试 9 用例"
 
 **Files:**
 - Create: `Tests/Unit/Core/DateAppExtensionsTests.swift`
-- Test: `Sources/Core/Base/Extensions/Date+App.swift:13-41`
+- Test: `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Date+Formatting.swift:13-41`（已迁移）
 
 **Interfaces:**
 - Consumes: `Date.AppFormat` 静态常量、`Date.formatted(as:)` 方法
@@ -700,7 +700,7 @@ Expected: PASS（7 个测试用例全绿）
 
 - [ ] **Step 3: 检查 findings**
 
-审查 `Date+App.swift` 源码。当前审查结论：无问题。
+审查 `Date+Formatting.swift` 源码（原 `Date+App.swift`，已迁移至 UFPCore）。当前审查结论：无问题。
 
 - [ ] **Step 4: Commit**
 
@@ -1597,7 +1597,7 @@ git commit -m "test(core): 3 个 Stub 桩服务行为测试 15 用例 + MockColl
 
 **Files:**
 - Create: `Tests/Unit/Core/ZipUtilityTests.swift`
-- Test: `Sources/Core/Base/Utils/ZipUtility.swift:13-122`
+- Test: `Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift:13-122`（已迁移）
 
 **Interfaces:**
 - Consumes: `ZipUtility.readZipArchive(at:) -> [String: Data]?` 静态方法

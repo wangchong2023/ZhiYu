@@ -9,7 +9,7 @@
 
 ## Constraints & Preferences
 - **测试以发现问题为目的，而非测试通过和纯粹的覆盖率提升**（用户最高优先级指示）
-- **发现的问题必须列出表格**（序号、问题描述、严重程度、修改方案、是否解决），解决后更新表格
+- **发现的问题必须列出表格**（序号、问题描述、黑盒影响性、严重程度、修改方案、是否解决），解决后更新表格
 - 测试目的是发现问题而非提高覆盖率，使用业界最佳实践
 - 发现源码问题直接修复源码 + 测试，任务完成后统一整理表格
 - pre-push hook 需全部通过（13 项门禁）
@@ -61,14 +61,14 @@
 - **新建 `NetworkConstants.swift`** ✅ — `Packages/UFPCore/Sources/UFPCore/Base/NetworkConstants.swift`
 - **通用基础函数全面审计完成** ✅ — subagent 审计发现 5 个 P0 零依赖纯工具 + SSRFGuard 7 个函数 + 4 个 P1 轻度依赖函数
 - **`ipv4FromUInt32` 改用 POSIX `inet_ntop`** ✅ — 添加 `import Darwin`，用 `inet_ntop(AF_INET, ...)` 替代手写位运算，返回 `String?`
-- **SSRFGuard 本体迁移到 UFPCore** ✅ — 新建 `Packages/UFPCore/Sources/UFPCore/Security/SSRFGuard.swift`，所有方法改为 `public`/`static`，引用 `NetworkConstants`；业务层 `Sources/Infrastructure/Processors/Network/SSRFGuard.swift` 改为 `typealias SSRFGuard = UFPCore.SSRFGuard` 兼容层
+- **SSRFGuard 本体迁移到 UFPCore** ✅ — 新建 `Packages/UFPCore/Sources/UFPCore/Security/SSRFGuard.swift`，所有方法改为 `public`/`static`，引用 `NetworkConstants`；业务层兼容层已删除（通过 `import UFPCore` 直接访问）
 - **阶段 1: 迁移 5 个 P0 零依赖纯工具到 UFPCore** ✅ — 编译通过
   - `Character+CJK.swift` → `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Character+CJK.swift`
   - `VectorMath.swift` → `Packages/UFPCore/Sources/UFPCore/Base/VectorMath.swift`
   - `ByteFormatter.swift` → `Packages/UFPCore/Sources/UFPCore/Base/ByteFormatter.swift`
   - `MainActorBridge.swift` → `Packages/UFPCore/Sources/UFPCore/Base/MainActorBridge.swift`
   - `ZipUtility.swift` → `Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift`
-  - 业务层 5 个原文件改为空兼容层（仅 `import UFPCore`）
+  - 业务层 5 个兼容层文件已删除（通过 `import UFPCore` 直接访问）
   - 13 个调用文件添加 `import UFPCore`（EmbeddingManager/Colors/JavaScriptPlugin/iOSDeviceInfoService 等）
   - 5 个测试文件添加 `import UFPCore`
 - **阶段 2: SSRFGuard 迁移** ✅ — 同上，编译通过
@@ -146,7 +146,18 @@
 - **SwiftLint 修复** ✅ — AppConstants 尾逗号 + PluginRecord 垂直对齐
 
 ### Blocked
-- 批次 7-J 推送 gitlab 被阻断（等常量迁移 + 通用函数迁移完成后一并推送）
+- (none — 兼容层移除完成，已推送 gitlab)
+
+### Done (兼容层移除)
+- **兼容层移除完成** ✅ — commit `5b389098`，删除 8 个兼容层文件
+  - 6 个纯空壳：Character+CJK/VectorMath/ByteFormatter/MainActorBridge/ZipUtility/String+PhoneNumber
+  - 2 个 typealias：SSRFGuard（`typealias SSRFGuard = UFPCore.SSRFGuard`）/ Date+App（`typealias AppFormat = Date.AppFormatStyle`）
+  - 调用点改为直接通过 `import UFPCore` 访问 public 类型
+  - `Date.AppFormat` → `Date.AppFormatStyle`（ChatComponents/LintIssueList/DateAppExtensionsTests）
+  - IngestURLHandler 补充 `import UFPCore`
+  - project.yml + project.yml.template 移除 Character+CJK 显式引用
+  - manual_whitelist.yml 移除 16 条已删除文件的豁免条目
+  - 13 项 pre-push 门禁全通过
 
 ## Key Decisions
 - 纯单元测试用 `-only-testing:ZhiYuTests` 替代全量测试获取覆盖率数据
@@ -173,7 +184,7 @@
 - **`AppConstants.Network` 保留兼容层**：常量值改为引用 `SystemConstants`，保持调用点不变
 - **通用基础函数迁移策略**：业务层原文件改为空兼容层（仅 `import UFPCore`），调用文件添加 `import UFPCore`，后续可逐步移除兼容层
 - **`ipv4FromUInt32` 用 POSIX `inet_ntop` 替代手写位运算**：`inet_ntop(AF_INET, &address, &buffer, socklen_t(INET_ADDRSTRLEN))`，需 `import Darwin`，返回 `String?`（nil 表示转换失败）
-- **SSRFGuard 迁移到 UFPCore/Security/**：`isSafeURL` 改为 `public static func`，内部方法保持 `static`（非 public），业务层用 `typealias SSRFGuard = UFPCore.SSRFGuard` 兼容
+- **SSRFGuard 迁移到 UFPCore/Security/**：`isSafeURL` 改为 `public static func`，内部方法保持 `static`（非 public），业务层通过 `import UFPCore` 直接访问（兼容层已删除）
 - **CI 检查设计（用户决策）**：白名单注册制 + 模式检测两者结合，覆盖函数/方法/常量/枚举/工具类/结构体/扩展方法四类，硬阻断
 - **POSIX `inet_pton`/`inet_ntop` 局限性**：只处理标准点分十进制，不支持 SSRFGuard 需要的编码绕过格式，因此 `normalizeIP`/`combineOctets`/`parseIPOctet` 需保持自实现
 - **SwiftNIO 过于重量级**：引入整个 NIOCore 仅为 IP 解析会带来大量不必要的依赖
@@ -182,11 +193,10 @@
 - **`PageContentUtility.calculateWordCount` 迁移策略**：`calculateWordCount` 是纯通用算法（中英混排字数统计），迁移到 UFPCore 的 `TextAnalyzer.wordCount`。`extractAllTags` 使用 `#标签` 正则，与业务（知识库标签）相关，保留在业务层 `PageContentUtility`。
 
 ## Next Steps
-- 常量迁移与通用函数迁移任务**全部完成**，已推送 gitlab（commit `b14ad1a1`）
-- 后续可选工作：
-  - 逐步移除业务层兼容层文件（typealias 转发层），改为直接 `import UFPCore`
-  - 运行覆盖率报告确认 Infrastructure 层提升
-  - 回到原 Infrastructure 覆盖率提升任务（78.79% → 85% 目标）
+- 常量迁移 + 通用函数迁移 + 兼容层移除任务**全部完成**，已推送 gitlab（commit `b14ad1a1`/`5b389098`）
+- 后续工作：
+  - 运行覆盖率报告确认 Infrastructure 层当前状态
+  - 回到 Infrastructure 覆盖率提升任务（78.79% → 85% 目标），**以发现问题为导向**，发现的问题列出表格（序号、问题描述、严重程度、修改方案、是否解决）
 
 ## Critical Context
 - **Infrastructure 层覆盖率（批次 7-I 后）**：78.79%（11778/14948），85% 目标需 12706 行，缺口约 928 行
@@ -205,14 +215,15 @@
   - `Base/Extensions/` — Character+CJK.swift / Date+Formatting.swift / String+Masking.swift
   - `Security/` — SSRFGuard.swift
   - `System/` — 原有
-- **业务层兼容层文件**（空壳，仅 `import UFPCore`）：
-  - `Sources/Core/Base/Utils/Character+CJK.swift`
-  - `Sources/Core/Base/Utils/VectorMath.swift`
-  - `Sources/Core/Base/Utils/ByteFormatter.swift`
-  - `Sources/Core/Base/Utils/MainActorBridge.swift`
-  - `Sources/Core/Base/Utils/ZipUtility.swift`
-  - `Sources/Infrastructure/Processors/Network/SSRFGuard.swift`（`typealias SSRFGuard = UFPCore.SSRFGuard`）
-  - 待改造：`Sources/Core/Base/Extensions/Date+App.swift` / `Sources/Core/Base/Extensions/String+PhoneNumber.swift`
+- **业务层兼容层文件**（已全部删除，通过 `import UFPCore` 直接访问）：
+  - ~~`Sources/Core/Base/Utils/Character+CJK.swift`~~（已删除）
+  - ~~`Sources/Core/Base/Utils/VectorMath.swift`~~（已删除）
+  - ~~`Sources/Core/Base/Utils/ByteFormatter.swift`~~（已删除）
+  - ~~`Sources/Core/Base/Utils/MainActorBridge.swift`~~（已删除）
+  - ~~`Sources/Core/Base/Utils/ZipUtility.swift`~~（已删除）
+  - ~~`Sources/Infrastructure/Processors/Network/SSRFGuard.swift`~~（已删除）
+  - ~~`Sources/Core/Base/Extensions/Date+App.swift`~~（已删除，调用点改为 `Date.AppFormatStyle`）
+  - ~~`Sources/Core/Base/Extensions/String+PhoneNumber.swift`~~（已删除）
 - **`AppError.swift` 依赖分析**：
   - `make(domain:code:description:)` — 通用方法，默认参数 `CoreConstants.ErrorCode.default = -1`
   - `insight`/`ingest`/`exportNotSupported`/`auth`/`synthesis`/`security` — 业务便捷方法，依赖 `CoreConstants.ErrorDomain.*` 和 `CoreConstants.Export.unsupportedMessage`
@@ -264,18 +275,18 @@
 - `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Date+Formatting.swift` — **已创建**，`Date.FormatStyle` + `formatted(as:)`
 - `Packages/UFPCore/Sources/UFPCore/Base/Extensions/String+Masking.swift` — **已创建**，`maskedPhoneNumber`
 - `Packages/UFPCore/Sources/UFPCore/Security/SSRFGuard.swift` — **已迁移**，SSRF 防护网关（`public struct SSRFGuard: Sendable`），用 POSIX `inet_ntop` 替代手写位运算
-- `Sources/Core/Base/Utils/Character+CJK.swift` — **兼容层**，空壳
-- `Sources/Core/Base/Utils/VectorMath.swift` — **兼容层**，空壳
-- `Sources/Core/Base/Utils/ByteFormatter.swift` — **兼容层**，空壳
-- `Sources/Core/Base/Utils/MainActorBridge.swift` — **兼容层**，空壳
-- `Sources/Core/Base/Utils/ZipUtility.swift` — **兼容层**，空壳
-- `Sources/Infrastructure/Processors/Network/SSRFGuard.swift` — **兼容层**，`typealias SSRFGuard = UFPCore.SSRFGuard`
+- ~~`Sources/Core/Base/Utils/Character+CJK.swift`~~ — **已删除**（兼容层移除）
+- ~~`Sources/Core/Base/Utils/VectorMath.swift`~~ — **已删除**（兼容层移除）
+- ~~`Sources/Core/Base/Utils/ByteFormatter.swift`~~ — **已删除**（兼容层移除）
+- ~~`Sources/Core/Base/Utils/MainActorBridge.swift`~~ — **已删除**（兼容层移除）
+- ~~`Sources/Core/Base/Utils/ZipUtility.swift`~~ — **已删除**（兼容层移除）
+- ~~`Sources/Infrastructure/Processors/Network/SSRFGuard.swift`~~ — **已删除**（兼容层移除）
+- ~~`Sources/Core/Base/Extensions/Date+App.swift`~~ — **已删除**（调用点改为 `Date.AppFormatStyle`）
+- ~~`Sources/Core/Base/Extensions/String+PhoneNumber.swift`~~ — **已删除**（兼容层移除）
 - `Sources/Core/Base/Constants/AppConstants.swift` — 已修改为引用 SystemConstants
 - `Sources/Core/Base/Constants/CoreConstants.swift` — 336 行，业务常量集，含 `ErrorCode.default = -1`，不适合整体迁移
-- `Sources/Core/Base/Extensions/Date+App.swift` — 41 行，`Date.AppFormat` + `formatted(as:)`，待改为兼容层
-- `Sources/Core/Base/Extensions/String+PhoneNumber.swift` — 19 行，`maskedPhoneNumber`，待改为兼容层
-- `Sources/Core/Base/Utils/AppError.swift` — 59 行，`make` 方法待迁移到 UFPCore，便捷方法保留
-- `Sources/Core/Base/Utils/PageContentUtility.swift` — 58 行，`calculateWordCount` 待改为调用 `TextAnalyzer.wordCount`，`extractAllTags` 保留
+- `Sources/Core/Base/Utils/AppError.swift` — 61 行，`make` 转发到 `AppErrorFactory`，业务便捷方法保留
+- `Sources/Core/Base/Utils/PageContentUtility.swift` — 41 行，`calculateWordCount` 转发到 `TextAnalyzer.wordCount`，`extractAllTags` 保留
 - `Sources/Infrastructure/Processors/ProcessorConstants.swift` — `SSRFGuard` enum 已改为引用 `NetworkConstants`
 - `Sources/Infrastructure/LLM/LLMConstants.swift` — 常量集
 - `Sources/Infrastructure/LLM/LLMClient.swift` — 304 行，static 方法在 `@testable import` 下不可见
@@ -312,5 +323,6 @@
 - [completed] 将 CI 检查集成到 pre-push hook + run-code-static-analysis.sh (priority: high)
 - [completed] 编译验证 + 测试验证 + commit + 推送 (priority: high)
 - [completed] pre-push 魔鬼数字修复（9 处）+ 推送 gitlab (priority: high)
-- [pending] 批次 7-J: 运行覆盖率报告确认提升 (priority: medium)
-- [pending] 可选：逐步移除业务层兼容层文件（typealias 转发层） (priority: low)
+- [completed] 移除业务层兼容层文件（8 个文件删除 + 调用点更新 + 文档/CI 同步） (priority: high)
+- [in_progress] 运行覆盖率报告确认 Infrastructure 层当前状态 (priority: medium)
+- [pending] 回到 Infrastructure 覆盖率提升任务（78.79% → 85%，问题驱动） (priority: medium)

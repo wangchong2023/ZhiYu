@@ -25,7 +25,6 @@ UNSAFE_PATTERNS = [
 ]
 
 ALLOWED_FILES = {
-    'Core/Base/Utils/MainActorBridge.swift',
     'Infrastructure/Plugins/JavaScriptPlugin.swift',
 }
 
@@ -85,7 +84,7 @@ def main():
         print(f"❌ 发现 {len(issues)} 处不安全的 @MainActor 访问：")
         for issue in issues:
             print(f"  {issue}")
-        print("\n💡 请使用 Sources/Core/Base/Utils/MainActorBridge.swift 中的 runOnMainSync() 替代。")
+        print("\n💡 请使用 UFPCore 中的 runOnMainSync() 替代（import UFPCore 后直接调用）。")
         sys.exit(1)
     else:
         print("✅ @MainActor 访问安全：所有跨线程桥接均通过 runOnMainSync")

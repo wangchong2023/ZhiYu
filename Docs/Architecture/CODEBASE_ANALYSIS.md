@@ -96,7 +96,7 @@
 
 ### P0-8: `ZipUtility` 自实现 ZIP 解析
 
-- **文件**: `Sources/Core/Base/Utils/ZipUtility.swift:17-77`
+- **文件**: `Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift:17-77`（已从业务层迁移至 UFPCore）
 - **问题**: 手动解析 ZIP 格式使用原始字节操作，有数据损坏风险
 - **建议**: 替换为 Foundation `NSFileCoordinator` 或 `ZIPFoundation` 库
 
@@ -366,7 +366,7 @@
 | 文件 | 问题 |
 |------|------|
 | `LinkService.swift:51-56,201-205` | JSDoc 风格 `@description` `@param` `@return` 与项目 `///` 风格不一致 |
-| `Date+App.swift:29-32` | JSDoc 遗留注释块 |
+| ~~`Date+App.swift:29-32`~~ | JSDoc 遗留注释块（文件已删除，迁移至 UFPCore `Date+Formatting.swift`） |
 | `TextChunkerProcessor.swift:49-53` | JSDoc 风格 |
 | `Animations.swift:49-53` | 过于冗长的弹簧参数变更历史注释 |
 | `AppStore.swift:211-258` | 参数中文占位符 |
@@ -789,7 +789,7 @@ Tests/                  93   0   5  12   6   🟡
 | 7 | 解耦 KnowledgePage L0 依赖 | `Domain/Models/KnowledgePage.swift` | 🔧 重构 |
 | 8 | 解耦 KnowledgeIngestPipeline → TaskCenter | `Domain/RAG/KnowledgeIngestPipeline.swift` | 🔧 重构 |
 | 9 | 实现 OllamaAdapter 或标记为未实现 | `Infrastructure/LLM/LLMAdapters.swift` | 🐛 修复 |
-| 10 | 替换 ZipUtility 为系统/三方库 | `Core/Base/Utils/ZipUtility.swift` | 🔧 重构 |
+| 10 | 替换 ZipUtility 为系统/三方库 | `Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift`（已迁移至 UFPCore） | 🔧 重构 |
 | 11 | 修复 KeychainService UserDefaults 回退安全性 | `Core/System/Security/KeychainService.swift` | 🔐 安全 |
 
 ### 阶段 2: Code Smell 修复 (P1, 预计 4-6 天)
