@@ -76,9 +76,20 @@
   - `Packages/UFPCore/Sources/UFPCore/Base/TextAnalyzer.swift` — `wordCount(_:)` 中英混排字数统计
 
 ### In Progress
-- (none)
+- (none — 常量迁移与通用函数迁移全部完成，已推送 gitlab)
 
 ### Done (新增)
+- **pre-push 魔鬼数字修复（9 处）** ✅
+  - PluginMarketService: `200` → `SystemConstants.HTTPStatusCode.ok`（2 处）
+  - PluginSandboxGateway: `5` → `PluginConstants.Sandbox.maxResponseSizeMB`
+  - EmbeddingManager: `10`/`0.3`/`1000`/`1000.0`/`512` → `SearchDefaults` 命名空间（新增 public enum，含 defaultTopK/similarityThreshold/deterministicModulus/vectorDimension）
+  - SQLiteStore: `20`/`50_000_000` → `StorageConstants.WriterRetry.maxAttempts`/`intervalNanoseconds`
+  - AudioSplitter: `256` → `SplitDefaults.defaultChunkSizeKB`
+- **EmbeddingManager 编译错误修复** ✅ — `SearchDefaults` enum 改为 `public`，所有 `static let` 加 `public`（Swift 要求 public func 默认参数引用的符号必须 public）
+- **commit `b14ad1a1`** ✅ — amend 包含魔鬼数字修复，69 files changed, 2102 insertions(+), 682 deletions(-)
+- **推送 gitlab 成功** ✅ — 13 项 pre-push 门禁全通过（含 UFPCore 纯净化审计 706 文件 0 违规 + iOS 编译校验通过）
+
+### Done (历史)
 - **CI 检查 `audit-arch-ufpcore-purity.py` 建立完成** ✅
   - 脚本位置：`Tools/ios/audit-arch-ufpcore-purity.py`
   - 策略：白名单注册制（`manual_whitelist.yml` 的 `ufpcore_pure_exempt` 分类）+ 模式检测（4 类违规）
@@ -169,9 +180,11 @@
 - **`PageContentUtility.calculateWordCount` 迁移策略**：`calculateWordCount` 是纯通用算法（中英混排字数统计），迁移到 UFPCore 的 `TextAnalyzer.wordCount`。`extractAllTags` 使用 `#标签` 正则，与业务（知识库标签）相关，保留在业务层 `PageContentUtility`。
 
 ## Next Steps
-- commit 常量迁移全部改动 + 推送 gitlab（含批次 7-J）
-- 运行覆盖率报告确认提升
-- 后续可逐步移除业务层兼容层文件（typealias 转发层）
+- 常量迁移与通用函数迁移任务**全部完成**，已推送 gitlab（commit `b14ad1a1`）
+- 后续可选工作：
+  - 逐步移除业务层兼容层文件（typealias 转发层），改为直接 `import UFPCore`
+  - 运行覆盖率报告确认 Infrastructure 层提升
+  - 回到原 Infrastructure 覆盖率提升任务（78.79% → 85% 目标）
 
 ## Critical Context
 - **Infrastructure 层覆盖率（批次 7-I 后）**：78.79%（11778/14948），85% 目标需 12706 行，缺口约 928 行
@@ -291,10 +304,11 @@
 - [completed] 用 inet_ntop 替代 ipv4FromUInt32 + 将 SSRFGuard 通用函数迁移到 UFPCore (priority: high)
 - [completed] 阶段 1: 迁移 5 个 P0 零依赖纯工具（Character+CJK/VectorMath/ByteFormatter/MainActorBridge/ZipUtility） (priority: high)
 - [completed] 阶段 2: 迁移 SSRFGuard 常量 + 本体到 UFPCore (priority: high)
-- [in_progress] 阶段 3: 迁移 4 个 P1 轻度依赖（Date+Formatting/String+Masking/AppError.make/TextAnalyzer.wordCount） (priority: high)
-- [pending] 常量迁移 P0-5~P0-9: FileFormatConstants/EncodingConstants/FormatConstants/散落常量去重 (priority: high)
-- [pending] 建立 CI 检查：白名单注册制 + 模式检测（audit-arch-ufpcore-purity.py） (priority: high)
-- [pending] 将 CI 检查集成到 pre-push hook + run-code-static-analysis.sh (priority: high)
-- [pending] 编译验证 + 测试验证 + commit + 推送 (priority: high)
-- [pending] 批次 7-J: 推送 gitlab（常量迁移完成后一并推送） (priority: high)
+- [completed] 阶段 3: 迁移 4 个 P1 轻度依赖（Date+Formatting/String+Masking/AppError.make/TextAnalyzer.wordCount） (priority: high)
+- [completed] 常量迁移 P0-5~P0-9: FileFormatConstants/EncodingConstants/FormatConstants/散落常量去重 (priority: high)
+- [completed] 建立 CI 检查：白名单注册制 + 模式检测（audit-arch-ufpcore-purity.py） (priority: high)
+- [completed] 将 CI 检查集成到 pre-push hook + run-code-static-analysis.sh (priority: high)
+- [completed] 编译验证 + 测试验证 + commit + 推送 (priority: high)
+- [completed] pre-push 魔鬼数字修复（9 处）+ 推送 gitlab (priority: high)
 - [pending] 批次 7-J: 运行覆盖率报告确认提升 (priority: medium)
+- [pending] 可选：逐步移除业务层兼容层文件（typealias 转发层） (priority: low)
