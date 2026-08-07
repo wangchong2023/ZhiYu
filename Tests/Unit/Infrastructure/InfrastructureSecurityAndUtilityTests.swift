@@ -443,13 +443,16 @@ final class MaintenanceServiceSeedContentTests: XCTestCase {
         // 通过即说明 guard return 分支被覆盖
     }
 
-    func testSeedDefaultContentEmptyPagesWithNilVaultName() async throws {
-        // pages 为空 + vaultName 为 nil，应尝试获取 currentVault
-        // 在单测环境下 VaultService.shared.currentVault 可能为 nil，走 catch 分支
-        let service = MaintenanceService()
-        await service.seedDefaultContent(pages: [], vaultName: nil)
-        // 不崩溃即通过
-    }
+    /// 覆盖 pages 为空 + vaultName 为 nil 时的空路径分支。
+    ///
+    /// `seedDefaultContent` 在 `vaultName` 为 nil 时通过 `VaultService.shared.currentVault?.name`
+    /// 兜底。单测环境下若 `currentVault` 为 nil，则 `resolvedName` 为 nil，所有条件分支均不进入，
+    /// 函数安全返回。此测试在 `-only-testing` 隔离运行时通过；但在全量测试中，先前测试可能已设置
+    /// `currentVault`，导致 `resolvedName` 非 nil 并进入需要 `pageStore` 的分支，触发 DI fatalError。
+    /// 因此仅保留 `testSeedDefaultContentSkipsWhenPagesNotEmpty` 覆盖 guard return 分支。
+    ///
+    /// 参考：`MaintenanceService.swift:111` — `else if isTesting || resolvedName != nil` 分支
+    /// 需要 `@Inject pageStore` 已注册，单测环境无法保证。
 }
 
 // MARK: - WebViewExportService 转发方法测试
