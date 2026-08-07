@@ -518,6 +518,7 @@
 		41ACDD2DE7A19C6E44BE4F44 /* DeepLinkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38979575F39F73EDCE64781D /* DeepLinkService.swift */; };
 		41BD81F7BFCC1A18EB77115F /* DTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC88E212F5C18CE800EA746A /* DTOs.swift */; };
 		420D5DE1D3EFC76C3B99A688 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59E0FEE3ED21BED7BA781DAB /* SearchView.swift */; };
+		421A18832E1A54CE27501640 /* ChatLLMServiceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B06976F9C736F1E1853179 /* ChatLLMServiceIntegrationTests.swift */; };
 		421F3C15A144B6241D070330 /* IconPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57A5760D19F7F1927ED221B /* IconPickerView.swift */; };
 		421FB6459E6FC80DB6B86ECE /* FileSignatureRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5796C4944A120A20F9CEF9 /* FileSignatureRepository.swift */; };
 		422BEB8BC6769981207FAFBD /* WikiLinkExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752A49D88453F76587407A2F /* WikiLinkExtractor.swift */; };
@@ -2778,6 +2779,7 @@
 		921DC7189A6BEF38CBB3A542 /* AppSyncOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSyncOrchestrator.swift; sourceTree = "<group>"; };
 		9245B921C06CFF0C54EB83D9 /* GraphDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphDataProvider.swift; sourceTree = "<group>"; };
 		9247214F117BFA1C9276765A /* NotebookListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookListRow.swift; sourceTree = "<group>"; };
+		92B06976F9C736F1E1853179 /* ChatLLMServiceIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLLMServiceIntegrationTests.swift; sourceTree = "<group>"; };
 		92B47FD5D792922CD9AA0907 /* testGraphNodeView.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testGraphNodeView.1.png; sourceTree = "<group>"; };
 		92B96108E888AF2F409492AD /* DesignSystem+Graph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Graph.swift"; sourceTree = "<group>"; };
 		92CA7A5551787D4E8EE19059 /* TagCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCapsule.swift; sourceTree = "<group>"; };
@@ -6238,6 +6240,7 @@
 			children = (
 				6F5A0CD42D8417CCD943315D /* BackupServiceTests.swift */,
 				318E218E3AAF60E90CE30936 /* Batch7IConstantsAndLogicTests.swift */,
+				92B06976F9C736F1E1853179 /* ChatLLMServiceIntegrationTests.swift */,
 				F08472AC20D340EEBCE098F8 /* ChatRunnerIntegrationTests.swift */,
 				4AF4465A872DBEC9F419A79F /* DatabaseManagerBatch6CTests.swift */,
 				C07856659F3A4390DA712FEB /* DatabaseWriterProviderBatch6CTests.swift */,
@@ -6978,6 +6981,7 @@
 				614FE8E9BC58D0E16A989395 /* ByteFormatterTests.swift in Sources */,
 				77717F81A0C9FA22A9F4351B /* CJKSpacingFormatterEdgeTests.swift in Sources */,
 				DF65EC537C5AB6224FAC578B /* CarrierAuthStrategyTests.swift in Sources */,
+				421A18832E1A54CE27501640 /* ChatLLMServiceIntegrationTests.swift in Sources */,
 				13264BE1E76D17E22894C74F /* ChatRunnerIntegrationTests.swift in Sources */,
 				02BE403AE5083C9801820601 /* ChatServiceTests.swift in Sources */,
 				99038BAE8CA8757719DC6FDE /* ChunkingAlgorithmTests.swift in Sources */,
