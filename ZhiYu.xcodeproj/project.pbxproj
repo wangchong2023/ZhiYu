@@ -1526,6 +1526,7 @@
 		BE06E1A52E2D45F825FBBA79 /* PDFComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559E9F429E77C0A17F61EF36 /* PDFComponents.swift */; };
 		BE2ABB1AFDE8EBE6E090E990 /* PluginSandboxError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E523B43B1EBF12BB24E9CFD7 /* PluginSandboxError.swift */; };
 		BE3CC267D227A5CA64135116 /* L10n+Creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37EA9F105DC32BF211B76A17 /* L10n+Creation.swift */; };
+		BE6674DF8249E9DEA192D431 /* PluginLoaderSupplementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68365D54EDAD658AB9E2CA03 /* PluginLoaderSupplementTests.swift */; };
 		BE94EDB748588FCD53270FD4 /* ExpansionSynthesisStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4AF37D0A6DCE53460BEEC03 /* ExpansionSynthesisStrategy.swift */; };
 		BE9E4A7088E4C9B51EDDC9C5 /* ocr_store_manual.png in Resources */ = {isa = PBXBuildFile; fileRef = 36BE4E913C6DBD30BB7FDDDD /* ocr_store_manual.png */; };
 		BEA52BDEB72CC47A702B2C03 /* MemoryEngineAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733CCC3B730BBDE4E8D41F5D /* MemoryEngineAdapterTests.swift */; };
@@ -2586,6 +2587,7 @@
 		67DF3E790A58E5B83C25CA33 /* AppButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppButtons.swift; sourceTree = "<group>"; };
 		68105AEB2D5B25240AF00E06 /* DesignSystem+IconSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+IconSize.swift"; sourceTree = "<group>"; };
 		6817EA46207274AD0B21785E /* TagStoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagStoreProtocol.swift; sourceTree = "<group>"; };
+		68365D54EDAD658AB9E2CA03 /* PluginLoaderSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginLoaderSupplementTests.swift; sourceTree = "<group>"; };
 		6845FFEEB79938A4FE9488AF /* AhoCorasickEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AhoCorasickEngine.swift; sourceTree = "<group>"; };
 		688887F0F40AED8EB3686992 /* ModelDownloadCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadCapabilities.swift; sourceTree = "<group>"; };
 		68A447DE9570B4231AE93656 /* VaultEnglishNameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEnglishNameTests.swift; sourceTree = "<group>"; };
@@ -6263,6 +6265,7 @@
 				D89469DD28BDEA92B2458653 /* PluginDataStoreTests.swift */,
 				6C39C23C8EC735CE2AF9848B /* PluginEnginePoolTests.swift */,
 				ED6916170D7BA997C72218BE /* PluginLoaderRegexTests.swift */,
+				68365D54EDAD658AB9E2CA03 /* PluginLoaderSupplementTests.swift */,
 				E6BDD1E2F4078AE3281F365A /* PluginRuntimeTests.swift */,
 				089CF1A873AFB78485E2BF27 /* PluginSandboxErrorTests.swift */,
 				E8F6BFF8C56FBB1CED69D788 /* PluginStorageTests.swift */,
@@ -7135,6 +7138,7 @@
 				34E32518194F5958BF7F635A /* PluginEnginePoolTests.swift in Sources */,
 				151E8EE0CE3E03E3AACD6E77 /* PluginLoadUnloadTests.swift in Sources */,
 				3C570FD76114E21BE4E9360D /* PluginLoaderRegexTests.swift in Sources */,
+				BE6674DF8249E9DEA192D431 /* PluginLoaderSupplementTests.swift in Sources */,
 				7DCB9982043893048951BBF0 /* PluginMarketServiceTests.swift in Sources */,
 				4D1AFA45C2EB079EC7D4DF9E /* PluginRecordFTSTests.swift in Sources */,
 				415A73052C4DBA8A779E5966 /* PluginRecordTests.swift in Sources */,
