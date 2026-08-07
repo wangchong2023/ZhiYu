@@ -31,13 +31,11 @@ final class StringPhoneNumberTests: XCTestCase {
 
     // MARK: - 边界值：长度 == 7（刚好满足阈值）
 
-    /// 长度 7 → 掩码（前 3 + **** + 后 4 = 11 字符）
+    /// 长度 7 → 掩码（前 3 + **** + 空 suffix = 7 字符）
+    /// 注：长度 7 时 index 7 = endIndex，suffix 为空，结果为 "123****"
     func testMaskedPhoneNumber_长度7_执行掩码() {
         let result = "1234567".maskedPhoneNumber
-        XCTAssertEqual(result.count, 11, "前3 + 4个* + 后4 = 11 字符")
-        XCTAssertTrue(result.hasPrefix("123"))
-        XCTAssertTrue(result.hasSuffix("4567"))
-        XCTAssertTrue(result.contains("****"))
+        XCTAssertEqual(result, "123****", "前3 + 4个* + 空 suffix（index 7 = endIndex）")
     }
 
     // MARK: - 标准手机号
@@ -54,16 +52,16 @@ final class StringPhoneNumberTests: XCTestCase {
 
     // MARK: - 超长号码
 
-    /// 长度 12 → 前 3 + **** + 后 4
-    func testMaskedPhoneNumber_长度12_前3后4掩码() {
+    /// 长度 12 → 前 3 + **** + 后 5（index 7 到末尾）
+    func testMaskedPhoneNumber_长度12_前3后5掩码() {
         let result = "180123466256".maskedPhoneNumber
-        XCTAssertEqual(result, "180****6256")
+        XCTAssertEqual(result, "180****66256", "前3 + 4个* + suffix(index 7..12)=66256")
     }
 
-    /// 长度 20 → 前 3 + **** + 后 4
-    func testMaskedPhoneNumber_长度20_前3后4掩码() {
+    /// 长度 20 → 前 3 + **** + 后 13（index 7 到末尾）
+    func testMaskedPhoneNumber_长度20_前3后13掩码() {
         let result = "18012345678901234567".maskedPhoneNumber
-        XCTAssertEqual(result, "180****4567")
+        XCTAssertEqual(result, "180****5678901234567", "前3 + 4个* + suffix(index 7..20)")
     }
 
     // MARK: - 非数字字符

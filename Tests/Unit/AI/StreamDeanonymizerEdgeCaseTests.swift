@@ -13,17 +13,17 @@ final class StreamDeanonymizerEdgeCaseTests: XCTestCase {
 
     // MARK: - 25 字符阈值分支
 
-    func testLongUnmatchedBracketOutputsPrefixAndBuffersSuffix() {
+    func testLongUnmatchedBracketOutputsAllWithoutBuffering() {
         var streamDecoder = StreamDeanonymizer(mapping: [:])
         // 构造一个超过 25 字符且无匹配 ']' 的文本
         let longText = "[这是一个非常非常非常非常非常非常长的未闭合占位符文本内容"
         let output = streamDecoder.process(chunk: longText)
 
-        // remaining.count > 25 时：输出前段（count - 10），缓存后 10 字符
-        XCTAssertFalse(output.isEmpty, "超过 25 字符的未匹配 '[' 应输出前段而非全部缓冲")
+        // remaining.count >= 25 时：全部输出不缓存（避免 '[' 在已输出部分导致后续还原失败）
+        XCTAssertFalse(output.isEmpty, "超过 25 字符的未匹配 '[' 应全部输出")
+        XCTAssertEqual(output, longText, "应原样输出全部文本")
         let finalRemaining = streamDecoder.finalize()
-        XCTAssertFalse(finalRemaining.isEmpty, "finalize 应返回缓冲的后 10 字符")
-        XCTAssertEqual(finalRemaining.count, 10, "应恰好缓冲后 10 字符")
+        XCTAssertEqual(finalRemaining, "", "超过阈值不应缓存，finalize 应返回空")
     }
 
     func testShortUnmatchedBracketFullyBuffered() {
