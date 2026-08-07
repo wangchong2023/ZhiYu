@@ -136,9 +136,8 @@ struct ImportRecordSection: View {
 
     /// 校验是否是纯文本文件后缀
     private func isTextFile(path: String) -> Bool {
-        let textExtensions = ["txt", "md", "json", "csv", "js", "py", "html", "xml", "css", "log", "swift", "yaml", "yml"]
         let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
-        return textExtensions.contains(ext)
+        return SystemConstants.FileExtension.textFileExtensions.contains(ext)
     }
 
     private func previewContent(_ record: ImportRecord, forceRaw: Bool = false) {
@@ -437,8 +436,7 @@ struct ImportPreviewHandler {
     }
 
     private func isTextFile(path: String) -> Bool {
-        let textExtensions = ["txt", "md", "json", "csv", "js", "py", "html", "xml", "css", "log", "swift", "yaml", "yml"]
         let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
-        return textExtensions.contains(ext)
+        return SystemConstants.FileExtension.textFileExtensions.contains(ext)
     }
 }

@@ -11,6 +11,7 @@
 import XCTest
 import SwiftUI
 import UFPStorage
+import UFPCore
 @testable import ZhiYu
 
 // MARK: - 知识页面模型单元测试

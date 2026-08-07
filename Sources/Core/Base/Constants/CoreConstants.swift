@@ -60,7 +60,8 @@ public enum CoreConstants {
         public static let blockedViolence = "Blocked violence content"
         public static let blockedSensitive = "Blocked sensitive content"
         public static let criticalFailed = "Critical: Failed"
-        public static let failedTo = "Failed to"
+        /// 引用 CoreConstants.LogDetails.failedTo，避免重复定义
+        public static let failedTo: String = CoreConstants.LogDetails.failedTo
     }
 
     // MARK: - ML 审核原因 (ML Moderation Reason)
@@ -153,26 +154,32 @@ public enum CoreConstants {
     }
 
     // MARK: - Markdown 语法 (Markdown Syntax)
+    /// 通用 Markdown 语法引用 SystemConstants.MarkdownSyntax，业务层转接为语义名称
     public enum MarkdownSyntax {
         public static let taskOpen = "- [ ] "
         public static let taskDone = "- [x] "
         public static let taskDoneUpper = "- [X] "
-        public static let dashSpace = "- "
-        public static let asteriskSpace = "* "
+        /// 引用 SystemConstants.MarkdownSyntax.bulletDash
+        public static let dashSpace: String = SystemConstants.MarkdownSyntax.bulletDash
+        /// 引用 SystemConstants.MarkdownSyntax.bulletAsterisk
+        public static let asteriskSpace: String = SystemConstants.MarkdownSyntax.bulletAsterisk
         public static let boldItalic = "***"
-        public static let bold = "**"
+        /// 引用 SystemConstants.MarkdownSyntax.bold
+        public static let bold: String = SystemConstants.MarkdownSyntax.bold
         public static let italic = "__"
         public static let strikethrough = "~~"
     }
 
     // MARK: - 日志拼接符 (Log Concatenation)
     public enum LogConcat {
-        public static let arrow = " + "
+        /// 引用 SystemConstants.Separator.arrow
+        public static let arrow: String = SystemConstants.Separator.arrow
     }
 
     // MARK: - 文本分隔符 (Text Separator)
     public enum TextSeparator {
-        public static let commaSpace = ", "
+        /// 引用 SystemConstants.Separator.commaSpace
+        public static let commaSpace: String = SystemConstants.Separator.commaSpace
     }
 
     // MARK: - 错误域 (Error Domain)
@@ -186,7 +193,8 @@ public enum CoreConstants {
 
     // MARK: - 错误码 (Error Code)
     public enum ErrorCode {
-        public static let `default` = -1
+        /// 引用 SystemConstants.ErrorCode.default，避免重复定义
+        public static let `default`: Int = SystemConstants.ErrorCode.default
     }
 
     // MARK: - 日志模块名 (Log Module)
@@ -265,7 +273,8 @@ public enum CoreConstants {
 
     // MARK: - Frontmatter 分隔符 (Frontmatter Separator)
     public enum Frontmatter {
-        public static let separator = "---"
+        /// 引用 SystemConstants.MarkdownDelimiter.horizontalRule，避免重复定义
+        public static let separator: String = SystemConstants.MarkdownDelimiter.horizontalRule
         /// 完整 Frontmatter 块的最小段数（起始分隔符 + 内容 + 结束分隔符）
         public static let minPartCount = 3
         /// 起始分隔符后跳过的段数

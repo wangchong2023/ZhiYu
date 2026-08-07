@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 // MARK: - 健康检查板块
 

@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import AuthenticationServices
 
 /// Apple ID 认证策略实现类

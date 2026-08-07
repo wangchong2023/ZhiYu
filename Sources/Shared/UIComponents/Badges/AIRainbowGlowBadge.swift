@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 /// 全局常驻发光 AI 呼吸指示微标
 @MainActor
@@ -188,7 +189,7 @@ public struct AIRainbowGlowBadge: View {
             .padding(.vertical, 4)
             
             // 3. 硬件安全与拦截计数
-            let memInGb = Double(modelManager.physicalMemory) / (1024 * 1024 * 1024)
+            let memInGb = Double(modelManager.physicalMemory) / SystemConstants.bytesPerGB
             HStack {
                 Image(systemName: "shield.checkered")
                     .foregroundStyle(Color.theme.green)

@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 #if canImport(UIKit)
 import UIKit
 #endif

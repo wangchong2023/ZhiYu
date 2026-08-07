@@ -12,6 +12,7 @@
 import Foundation
 import CoreML
 import os
+import UFPCore
 
 /// 深度 AI 意图分类结果
 public struct CoreMLModerationResult: Sendable {
@@ -43,7 +44,7 @@ public final class CoreMLModerationClassifier: @unchecked Sendable {
         return true
         #else
         // 需要拥有 Apple Neural Engine 硬件及至少 4GB 系统内存
-        return ProcessInfo.processInfo.physicalMemory >= 4 * 1024 * 1024 * 1024
+        return ProcessInfo.processInfo.physicalMemory >= UInt64(4.0 * SystemConstants.bytesPerGB)
         #endif
     }
 

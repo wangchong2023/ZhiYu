@@ -42,7 +42,8 @@ enum StorageConstants {
     enum OperationStatus {
         static let success = "success"
         static let done = "done"
-        static let `true` = "true"
+        /// 引用 SystemConstants.BooleanLiteral.true，避免重复定义
+        static let `true`: String = SystemConstants.BooleanLiteral.true
     }
 
     // MARK: - 日志模块名 (Log Module)
@@ -97,11 +98,12 @@ enum StorageConstants {
     }
 
     // MARK: - SQLite 文件扩展名 (SQLite File Extension)
+    /// 引用 SystemConstants.FileExtension，避免重复定义
     enum SQLiteExtension {
-        static let sqlite = "sqlite"
-        static let sqlite3 = "sqlite3"
-        static let walSuffix = "-wal"
-        static let shmSuffix = "-shm"
+        static let sqlite: String = SystemConstants.FileExtension.sqlite
+        static let sqlite3: String = SystemConstants.FileExtension.sqlite3
+        static let walSuffix: String = SystemConstants.FileExtension.walSuffix
+        static let shmSuffix: String = SystemConstants.FileExtension.shmSuffix
     }
 
     // MARK: - CloudKit (CloudKit Zone)
@@ -116,9 +118,10 @@ enum StorageConstants {
     }
 
     // MARK: - 日志拼接符 (Log Concatenation)
+    /// 引用 SystemConstants.Separator，避免重复定义
     enum LogConcat {
-        static let separator = ", "
-        static let arrow = " + "
+        static let separator: String = SystemConstants.Separator.commaSpace
+        static let arrow: String = SystemConstants.Separator.arrow
     }
 
     // MARK: - Bundle 资源名 (Bundle Resource)
@@ -133,13 +136,27 @@ enum StorageConstants {
         static let prefix = "backup_"
     }
 
+    // MARK: - 数据库写入器重试 (Database Writer Retry)
+    enum WriterRetry {
+        /// 最大重试次数（等待 notebook 切换完成）
+        static let maxAttempts: Int = 20
+        /// 单次重试间隔（纳秒，50ms）
+        static let intervalNanoseconds: UInt64 = 50_000_000
+    }
+
+    /// 引用 SystemConstants.MarkdownSyntax，避免重复定义
     enum MarkdownSyntax {
-        static let hashSpace = "# "
-        static let hashHashSpace = "## "
-        static let asteriskSpace = "* "
-        static let dashSpace = "- "
+        /// 引用 SystemConstants.MarkdownSyntax.h1Prefix
+        static let hashSpace: String = SystemConstants.MarkdownSyntax.h1Prefix
+        /// 引用 SystemConstants.MarkdownSyntax.h2Prefix
+        static let hashHashSpace: String = SystemConstants.MarkdownSyntax.h2Prefix
+        /// 引用 SystemConstants.MarkdownSyntax.bulletAsterisk
+        static let asteriskSpace: String = SystemConstants.MarkdownSyntax.bulletAsterisk
+        /// 引用 SystemConstants.MarkdownSyntax.bulletDash
+        static let dashSpace: String = SystemConstants.MarkdownSyntax.bulletDash
         static let blockquoteSpace = "> "
-        static let bold = "**"
+        /// 引用 SystemConstants.MarkdownSyntax.bold
+        static let bold: String = SystemConstants.MarkdownSyntax.bold
         static let wikilinkOpen = "[["
         static let wikilinkClose = "]]"
         static let tableDelimiter = "|-"

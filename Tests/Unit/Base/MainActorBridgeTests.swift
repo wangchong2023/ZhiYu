@@ -10,6 +10,7 @@
 //           后台线程安全调度、@MainActor 隔离代码访问、以及 Void/泛型两种重载。
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 final class MainActorBridgeTests: XCTestCase {

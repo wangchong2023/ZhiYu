@@ -9,6 +9,7 @@
 //  核心职责：应用级编译时常量定义（存储 key、超时、默认值等）。
 //
 import Foundation
+import UFPCore
 
 /// 智宇系统支持的外部导入文件格式定义 (DocumentFormat)
 /// 本枚举代表待摄入资料的排版文件类型。
@@ -32,15 +33,15 @@ public enum DocumentFormat: Sendable {
     public static func detectFormat(from url: URL) -> DocumentFormat {
         let pathExtension = url.pathExtension.lowercased()
         switch pathExtension {
-        case "md", "markdown":
+        case SystemConstants.FileExtension.markdown, SystemConstants.FileExtension.markdownLong:
             return .markdown
-        case "txt", "text":
+        case SystemConstants.FileExtension.text, SystemConstants.FileExtension.textLong:
             return .plainText
-        case "docx":
+        case SystemConstants.FileExtension.docx:
             return .docx
-        case "xlsx":
+        case SystemConstants.FileExtension.xlsx:
             return .xlsx
-        case "pdf":
+        case SystemConstants.FileExtension.pdf:
             return .pdf
         default:
             return .unknown

@@ -138,6 +138,11 @@ run_check "业务层魔鬼数字审计" \
     "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage" \
     || exit 1
 
+# 1.10 UFPCore 纯净化审计（阻断——通用基础能力不应泄漏到业务层）
+run_check "UFPCore 纯净化审计" \
+    "python3 Tools/ios/audit-arch-ufpcore-purity.py" \
+    || exit 1
+
 # quick 模式在此结束
 if [ "$MODE" = "quick" ]; then
     summary && echo -e "${GREEN}${BOLD}✅ 快速门禁通过！${NC}" && exit 0

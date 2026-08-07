@@ -1,0 +1,300 @@
+# 会话记忆 — 2026-08-07
+
+> 本文件用于跨会话恢复上下文。下次开新会话时说：`读取 Docs/Audit/session-memory.md 恢复会话`
+
+## Goal
+- 为 ZhiYu iOS/macOS 项目补测 Infrastructure 层文件，将覆盖率从 75.21% 逐步提升至 85%，过程中发现源码问题直接修复
+- 测试以发现问题为目标，在此过程中提升覆盖率
+- **当前阶段**：全面审计业务代码中与业务无关的常量和通用基础函数，统一提取到 UFPCore（L0 基础设施层），并建立 CI 检查防止通用基础能力泄漏到业务层
+
+## Constraints & Preferences
+- 测试目的是发现问题而非提高覆盖率，使用业界最佳实践
+- 发现源码问题直接修复源码 + 测试，任务完成后统一整理表格
+- pre-push hook 需全部通过（13 项门禁）
+- `make test` 耗时极长（60-75 分钟），需后台运行 + 日志轮询
+- xcodebuild 需用 `-derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution`
+- iOS Simulator 名称用 `iPhone 17 Pro`
+- Mock 扩展现有 `Tests/Shared/TestMocks.swift` 或按域放 `Tests/Unit/<域>/Mock*.swift`，不引入新框架
+- 按层分批，每批独立验证 + commit
+- 注释规范：统一简体中文，文档注释 `///`，实现注释 `//`
+- 单例有限重构策略（用户批准）：`private init` 改 `internal`/`init`，DI 依赖改为可注入
+- 远端：`origin`（GitHub）+ `gitlab`（本地 http://127.0.0.1:8480/constantine/ZhiYu.git）
+- **测试文件以语义方式命名，不以任务/批次名称命名**（用户明确指示）
+- xcodebuild `-only-testing` 格式：`Target/TestClass`（用 `/` 分隔），非 `Target/FileName`
+- xcodegen generate 需在新增测试文件后重新生成 xcodeproj
+- 全量测试需加 `-enableCodeCoverage YES` 才能生成覆盖率数据供 `assert-test-coverage.py` 使用
+- 全量测试需加 `-resultBundlePath` 指定输出路径，否则 crash 重启后 xcresult 被覆盖且覆盖率数据丢失
+- **纯单元测试用 `-only-testing:ZhiYuTests` 避免全量测试中 AuthIntegrationTests crash 导致单元测试中断**
+- **用户要求用 `make` 命令进行构建和测试**
+- **用户要求记录测试过程中发现的问题到表格（序号、问题描述、严重性、修改建议、处理状态），解决后更新表格**
+- **用户要求非业务常量放到 UFPCore 中，根据特点划分为不同的文件**（非全部堆在一个文件里）
+- **用户要求通用基础函数也放到 UFPCore 封装后暴露给业务使用**（不仅限于常量）
+- **CI 检查策略（用户决策）**：白名单注册制 + 模式检测两者结合，覆盖函数/方法、常量/枚举、工具类/结构体、扩展方法四类，硬阻断
+- **`ipv4FromUInt32` 改用 POSIX `inet_ntop`**（用户选择方案 1：减少自研代码，用系统库处理标准转换），SSRF 编码绕过检测逻辑保留自研
+
+## Progress
+### Done
+- **批次 7-E 完成** ✅ — commit `8eba39bf`，26 用例，已推送 gitlab
+- **批次 7-F 完成** ✅ — commit `5d37e2c2` 推送 gitlab，40 用例全绿
+- **批次 7-G 完成** ✅ — commit `ed913365` 推送 gitlab，49 用例全绿
+- **修复 MaintenanceServiceSeedContentTests 全量测试 crash** ✅ — commit `ba0c2a56`
+- **批次 7-H 完成** ✅ — commit `4a047b68` 推送 gitlab，33 用例全绿
+- **纯单元测试 coverage_unit.sh 完成** ✅ — 3044 passed, 4 failed
+- **覆盖率报告确认（批次 7-H 后）**：Infrastructure 层 78.17% → **78.88%**（+0.71%）
+- **批次 7-I 全部 23 条 Finding 修复完成** ✅ — commit `cac71de2`，19 files changed, 659 insertions(+), 85 deletions(-)
+- **批次 7-I 推送阻断问题修复** ✅ — `StorageConstants.Environment` → `LaunchEnvironment`；`PluginConstants.swift:25` 的 `5` → `maxResponseSizeMB`；`ModelDownloadManager.swift:212` 的 `0.5` → `downloadSpeedSampleIntervalSeconds`
+- **批次 7-I 测试用例编写完成** ✅ — 39 用例全绿
+- **批次 7-I 全量单元测试验证** ✅ — **3087 passed, 0 failed**
+- **批次 7-I 推送 gitlab 成功** ✅ — 13 项 pre-push 门禁全通过
+- **批次 7-I 覆盖率报告完成** ✅ — Infrastructure 层 **78.79%**（11778/14948）
+- **批次 7-J 源码修复完成** ✅ — 多项常量抽取 + 可测试性改造
+- **批次 7-J: 101 用例全绿** ✅ — `SecurityAndRerankerPureLogicTests.swift`，6 个 XCTestCase
+- **批次 7-J: 全量单元测试验证** ✅ — **3188 passed, 0 failed**
+- **批次 7-J: commit 76108121** ✅
+- **常量迁移审计完成** ✅ — subagent 审计 18 个 Constants 文件 + 20+ 非常量文件，~85 个非业务常量，~52 个需迁移
+- **常量迁移 P0-1: SystemConstants 扩充** ✅ — 新增 `HTTPMethod`/`HTTPAuthentication`/`MIMEType`/`Multipart`/`Time` 命名空间
+- **常量迁移 P0-2: AppConstants.Network 去重** ✅ — 引用 `SystemConstants`
+- **常量迁移 P0-3: ProcessorConstants.SSRFGuard 去重** ✅ — 引用 `NetworkConstants`
+- **常量迁移 P0-4: SSRFGuard.swift 散落魔鬼数字引用 NetworkConstants** ✅
+- **新建 `NetworkConstants.swift`** ✅ — `Packages/UFPCore/Sources/UFPCore/Base/NetworkConstants.swift`
+- **通用基础函数全面审计完成** ✅ — subagent 审计发现 5 个 P0 零依赖纯工具 + SSRFGuard 7 个函数 + 4 个 P1 轻度依赖函数
+- **`ipv4FromUInt32` 改用 POSIX `inet_ntop`** ✅ — 添加 `import Darwin`，用 `inet_ntop(AF_INET, ...)` 替代手写位运算，返回 `String?`
+- **SSRFGuard 本体迁移到 UFPCore** ✅ — 新建 `Packages/UFPCore/Sources/UFPCore/Security/SSRFGuard.swift`，所有方法改为 `public`/`static`，引用 `NetworkConstants`；业务层 `Sources/Infrastructure/Processors/Network/SSRFGuard.swift` 改为 `typealias SSRFGuard = UFPCore.SSRFGuard` 兼容层
+- **阶段 1: 迁移 5 个 P0 零依赖纯工具到 UFPCore** ✅ — 编译通过
+  - `Character+CJK.swift` → `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Character+CJK.swift`
+  - `VectorMath.swift` → `Packages/UFPCore/Sources/UFPCore/Base/VectorMath.swift`
+  - `ByteFormatter.swift` → `Packages/UFPCore/Sources/UFPCore/Base/ByteFormatter.swift`
+  - `MainActorBridge.swift` → `Packages/UFPCore/Sources/UFPCore/Base/MainActorBridge.swift`
+  - `ZipUtility.swift` → `Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift`
+  - 业务层 5 个原文件改为空兼容层（仅 `import UFPCore`）
+  - 13 个调用文件添加 `import UFPCore`（EmbeddingManager/Colors/JavaScriptPlugin/iOSDeviceInfoService 等）
+  - 5 个测试文件添加 `import UFPCore`
+- **阶段 2: SSRFGuard 迁移** ✅ — 同上，编译通过
+- **阶段 3 部分完成** ✅ — 已创建 3 个 UFPCore 文件：
+  - `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Date+Formatting.swift` — `Date.FormatStyle` + `formatted(as:)`
+  - `Packages/UFPCore/Sources/UFPCore/Base/Extensions/String+Masking.swift` — `maskedPhoneNumber`
+  - `Packages/UFPCore/Sources/UFPCore/Base/TextAnalyzer.swift` — `wordCount(_:)` 中英混排字数统计
+
+### In Progress
+- (none)
+
+### Done (新增)
+- **CI 检查 `audit-arch-ufpcore-purity.py` 建立完成** ✅
+  - 脚本位置：`Tools/ios/audit-arch-ufpcore-purity.py`
+  - 策略：白名单注册制（`manual_whitelist.yml` 的 `ufpcore_pure_exempt` 分类）+ 模式检测（4 类违规）
+  - 检测规则：
+    - A_FUNC_REDEFINE: 通用工具函数重新定义（maskedPhoneNumber/isCJKCharacter/wordCount 等）
+    - B_NAMESPACE_REDEFINE: 通用常量命名空间重新定义（SystemConstants/NetworkConstants）
+    - C_TYPE_REDEFINE: 通用工具类/结构体重新定义（SSRFGuard/VectorMath/ByteFormatter 等），排除纯常量命名空间
+    - D_EXTENSION_REDEFINE: 通用扩展方法/属性重新定义
+  - 兼容层自动豁免：`is_compatibility_layer()` 判断（< COMPAT_LAYER_MAX_LINES 行 + import UFPCore + typealias/转发）
+  - 纯常量命名空间豁免：`_is_pure_constant_namespace()` 判断（仅 static let 引用其他常量，无 func/计算属性）
+  - 已集成到 `run-code-static-analysis.sh`（pid32）+ `assert-code-pre-push.sh`（1.10 项，阻断）
+  - `manual_whitelist.yml` 新增 `ufpcore_pure_exempt` 分类（初始为空）
+  - 首次扫描 706 个业务层 Swift 文件，0 违规
+  - 脚本重构：拆分 `is_compatibility_layer`/`_is_pure_constant_namespace`/`check_file_purity` 降低圈复杂度，抽取 `COMPAT_LAYER_MAX_LINES` 常量
+- **阶段 A: UFPCore SystemConstants 新增命名空间** ✅
+  - `FileExtension`: markdownLong/textLong/pdf/docx/doc/xlsx/pptx/png/jpg/jpeg/gif/sqlite3/walSuffix/shmSuffix/textFileExtensions 集合
+  - `FileName`: manifestJSON
+  - `MarkdownDelimiter`: horizontalRule
+  - `MarkdownSyntax`: bold/h1Prefix/h2Prefix/bulletAsterisk/bulletDash
+  - `BooleanLiteral`: true/false
+  - `Separator`: commaSpace/arrow
+  - `Version`: defaultSemVer
+  - `UserAgent`: desktopSafari
+  - `CryptoProtocol`: apiKeyEncryptionV2/pluginSignatureV1
+- **阶段 B: 业务层 Constants 文件去重（P0-9 全部 21 条）** ✅
+  - CoreConstants: Frontmatter/SecurityLogDetails/TextSeparator/LogConcat/MarkdownSyntax/ErrorCode 引用 UFPCore
+  - AppConstants: Version.semVer/ImportLimits 引用 UFPCore
+  - ProcessorConstants: MarkdownSyntax/BoolString/Frontmatter/WebScraper 引用 UFPCore
+  - StorageConstants: OperationStatus/SQLiteExtension/LogConcat/MarkdownSyntax 引用 UFPCore
+  - PluginConstants: DefaultManifest.version/Localization 引用 UFPCore + 新增 CodingKey 命名空间
+  - DesignSystem.Icons: 新增 onDeviceBundled/onDeviceDownloaded/onDeviceSystem
+- **阶段 C: 业务层散落字面量替换** ✅
+  - ImportRecordSection: textExtensions → SystemConstants.FileExtension.textFileExtensions（2 处）
+  - SQLiteStore: -wal/-shm → SystemConstants.FileExtension.walSuffix/shmSuffix（4 处）
+  - PluginLoader: "local."/"manifest.json"/"zhiyu-plugin-signature-v1" → 常量引用（4 处）
+  - PluginMarketService: "manifest.json" → SystemConstants.FileName.manifestJSON（2 处）+ import UFPCore
+  - SecureEnclaveCryptoService: "zhiyu-apikey-encryption-v2" → SystemConstants.CryptoProtocol.apiKeyEncryptionV2
+  - DocumentFormat: detectFormat 扩展名 → SystemConstants.FileExtension.*
+  - AIRainbowGlowBadge: 1024*1024*1024 → SystemConstants.bytesPerGB
+  - SynthesisDocRow: formatByteSize → ByteFormatter.formatSmall
+  - CoreMLModerationClassifier: 4*1024*1024*1024 → SystemConstants.bytesPerGB
+  - IngestStore: 50*1024*1024 / 1024*1024*1024 → SystemConstants.bytesPerMB/bytesPerGB
+  - PluginSandboxGateway: 5*1024*1024 → SystemConstants.bytesPerMB
+  - ModelStoreView: 1024*1024*1024 → SystemConstants.bytesPerGB
+  - AudioSplitter: 256*1024 → SystemConstants.bytesPerKB
+  - ModelCardView: formattedSize → ByteFormatter.formatCustom
+- **阶段 D: 业务层统一收口** ✅
+  - CoreConstants.Workflow/Prefix 已存在，无散落引用
+  - PluginConstants.CodingKey 命名空间建立（8 个 key 字面量）
+  - ByteFormatter 新增 formatCustom/formatSmall 方法，业务层字节格式化函数统一收口
+- **阶段 E: 编译验证** ✅ — `make ios` BUILD SUCCEEDED，18 项门禁全通过（SwiftLint 0 violations + 脚本审计通过）
+- **SwiftLint 修复** ✅ — AppConstants 尾逗号 + PluginRecord 垂直对齐
+
+### Blocked
+- 批次 7-J 推送 gitlab 被阻断（等常量迁移 + 通用函数迁移完成后一并推送）
+
+## Key Decisions
+- 纯单元测试用 `-only-testing:ZhiYuTests` 替代全量测试获取覆盖率数据
+- `assert-test-coverage.py` 自动选最新 xcresult，需手动复制 xcresult 到 `build/DerivedData-ios/Logs/Test/` 目录
+- 测试文件以语义方式命名（如 `SecurityAndRerankerPureLogicTests.swift`），不用批次号
+- Mock 文本改为纯 ASCII 避免触发 `check-code-localization.py` L10n 检测
+- `LLMChatService` 三个构建方法从 `private` 改为 `internal` 以便测试覆盖
+- `WebScraperProcessor.cleanHTMLTags` 从 `private` 改为 `internal` 以便测试覆盖
+- `ModelDownloadManager` 添加 `sha256BufferSizeForTesting`/`sandboxAllocationFailedPrefixForTesting` internal 访问器
+- 新建 `PluginConstants.swift` 集中管理插件系统常量
+- `StorageConstants` 新增 `LaunchEnvironment` 命名空间（原 `Environment`，因与 SwiftUI 豁免冲突改名）
+- `ProcessorConstants` 新增 `HTMLRegex`/`HTMLEntity`/`OCRAnnotation` 命名空间
+- 模拟器 `server died` 错误（Mach Error -308）需 `xcrun simctl shutdown all` + `simctl boot` 重启解决
+- `make test-unit` 内部调用 `make gen`（bootstrap），可能因 Package Graph resolve 卡住；直接用 xcodebuild 更可靠
+- 批次 7-J 策略：重点覆盖可独立测试的纯逻辑组件，而非依赖 `@Inject` DI 的 `@MainActor` 类
+- **Jailbreak 检测特征词策略**：扩充为中英文混合特征集（不走 L10n），安全检测特征不应依赖语言环境切换
+- **Swift Regex `AnyRegexOutput` 访问方式**：需用 `output[output.startIndex.advanced(by: 1)].substring` 获取捕获组
+- **`@testable import` 与测试 target 直接编译 Sources 文件的冲突**：测试 target 直接包含了部分 `Sources` 文件，导致 `LLMClient` 等 internal class 的 static 方法在 `@testable import` 下不可见
+- **Swift Testing `@Suite`/`@Test` 与 XCTest 混用**：项目现有测试全部使用 XCTest，新文件也改为 XCTest 格式以保持一致
+- **安全审计日志详情常量不走 L10n**：通过 `EXEMPT_STRINGS` 豁免
+- **`ChatHistoryStore.recent(_:)` 返回 `ArraySlice`**：索引继承原数组，非从 0 开始。测试中用 `Array(recent)[0]` 或 `recent[recent.startIndex]`
+- **常量迁移策略（用户指示）**：与业务无关的常量统一提取到 UFPCore，按特点划分为不同文件
+- **`ProcessorConstants.SSRFGuard` 保留 typealias 兼容**：所有常量值改为引用 `NetworkConstants`，保持现有调用点不变
+- **`AppConstants.Network` 保留兼容层**：常量值改为引用 `SystemConstants`，保持调用点不变
+- **通用基础函数迁移策略**：业务层原文件改为空兼容层（仅 `import UFPCore`），调用文件添加 `import UFPCore`，后续可逐步移除兼容层
+- **`ipv4FromUInt32` 用 POSIX `inet_ntop` 替代手写位运算**：`inet_ntop(AF_INET, &address, &buffer, socklen_t(INET_ADDRSTRLEN))`，需 `import Darwin`，返回 `String?`（nil 表示转换失败）
+- **SSRFGuard 迁移到 UFPCore/Security/**：`isSafeURL` 改为 `public static func`，内部方法保持 `static`（非 public），业务层用 `typealias SSRFGuard = UFPCore.SSRFGuard` 兼容
+- **CI 检查设计（用户决策）**：白名单注册制 + 模式检测两者结合，覆盖函数/方法/常量/枚举/工具类/结构体/扩展方法四类，硬阻断
+- **POSIX `inet_pton`/`inet_ntop` 局限性**：只处理标准点分十进制，不支持 SSRFGuard 需要的编码绕过格式，因此 `normalizeIP`/`combineOctets`/`parseIPOctet` 需保持自实现
+- **SwiftNIO 过于重量级**：引入整个 NIOCore 仅为 IP 解析会带来大量不必要的依赖
+- **Swift 生态缺乏轻量级 IP 地址解析库**：GitHub 搜索结果稀少，无成熟的 Swift-native IP/CIDR 解析库
+- **`AppError.make` 迁移策略**：`CoreConstants` 是业务常量集（含 `PromptInjection`/`DeepLink`/`RemoteConfig` 等业务域常量），不适合整体迁移到 UFPCore。只迁移通用的 `make(domain:code:description:)` 方法到 UFPCore，默认参数 `CoreConstants.ErrorCode.default = -1` 改为在 `SystemConstants` 中新增 `ErrorCode.default`。业务层 `AppError` 保留便捷方法（`insight`/`ingest`/`exportNotSupported`/`auth`/`synthesis`/`security`），依赖 `CoreConstants.ErrorDomain` 等业务常量。
+- **`PageContentUtility.calculateWordCount` 迁移策略**：`calculateWordCount` 是纯通用算法（中英混排字数统计），迁移到 UFPCore 的 `TextAnalyzer.wordCount`。`extractAllTags` 使用 `#标签` 正则，与业务（知识库标签）相关，保留在业务层 `PageContentUtility`。
+
+## Next Steps
+- commit 常量迁移全部改动 + 推送 gitlab（含批次 7-J）
+- 运行覆盖率报告确认提升
+- 后续可逐步移除业务层兼容层文件（typealias 转发层）
+
+## Critical Context
+- **Infrastructure 层覆盖率（批次 7-I 后）**：78.79%（11778/14948），85% 目标需 12706 行，缺口约 928 行
+- **低覆盖率文件 Top 5（按缺口，批次 7-I 后）**：
+  - ChatRunner.swift: 14.3%（63/440），缺口 377 行 — `@MainActor` + `@Inject` DI
+  - ModelDownloadManager.swift: 53.2%（206/387），缺口 181 行 — `actor`
+  - OnDeviceLLMService.swift: 32.7%（108/330），缺口 170 行 — `@MainActor` + `@Inject compiler`
+  - PluginLoader.swift: 48.4%（155/320），缺口 165 行 — `@MainActor` + `@Inject archiver`
+  - ChatLLMService.swift: 20.7%（38/184），缺口 118 行 — `@MainActor` + `@Inject`
+- **通用基础函数审计结果摘要**：
+  - P0 零依赖纯工具（已迁移）：Character+CJK / VectorMath / ByteFormatter / MainActorBridge / ZipUtility
+  - P0 SSRFGuard 7 个函数（已迁移）：isSafeURL / isIPv6Format / normalizeIP / parseIPOctet / combineOctets / ipv4FromUInt32 / isPrivateIPv4 / isPrivateIPv6
+  - P1 轻度依赖（部分迁移）：Date+App（已迁移到 `Date+Formatting.swift`）/ String+PhoneNumber（已迁移到 `String+Masking.swift`）/ AppError.make（待迁移，需先在 SystemConstants 添加 ErrorCode）/ PageContentUtility.calculateWordCount（已迁移到 `TextAnalyzer.wordCount`）
+- **UFPCore 目录结构（迁移后）**：
+  - `Base/` — SystemConstants.swift / NetworkConstants.swift / ServiceContainer.swift / VectorMath.swift / ByteFormatter.swift / MainActorBridge.swift / ZipUtility.swift / TextAnalyzer.swift
+  - `Base/Extensions/` — Character+CJK.swift / Date+Formatting.swift / String+Masking.swift
+  - `Security/` — SSRFGuard.swift
+  - `System/` — 原有
+- **业务层兼容层文件**（空壳，仅 `import UFPCore`）：
+  - `Sources/Core/Base/Utils/Character+CJK.swift`
+  - `Sources/Core/Base/Utils/VectorMath.swift`
+  - `Sources/Core/Base/Utils/ByteFormatter.swift`
+  - `Sources/Core/Base/Utils/MainActorBridge.swift`
+  - `Sources/Core/Base/Utils/ZipUtility.swift`
+  - `Sources/Infrastructure/Processors/Network/SSRFGuard.swift`（`typealias SSRFGuard = UFPCore.SSRFGuard`）
+  - 待改造：`Sources/Core/Base/Extensions/Date+App.swift` / `Sources/Core/Base/Extensions/String+PhoneNumber.swift`
+- **`AppError.swift` 依赖分析**：
+  - `make(domain:code:description:)` — 通用方法，默认参数 `CoreConstants.ErrorCode.default = -1`
+  - `insight`/`ingest`/`exportNotSupported`/`auth`/`synthesis`/`security` — 业务便捷方法，依赖 `CoreConstants.ErrorDomain.*` 和 `CoreConstants.Export.unsupportedMessage`
+  - 迁移策略：`make` 迁移到 UFPCore，便捷方法保留在业务层
+- **`CoreConstants.swift` 结构**（336 行）：
+  - `LanguageCode` / `Localization` / `Security` / `SecurityLogTarget` / `SecurityLogDetails` / `ModerationReason` / `PIIMasking` / `PromptSecurity` / `Moderation` / `Workflow` / `ErrorType` / `Logger` / `Performance` / `Snapshot` / `Export` / `Benchmark` / `MarkdownSyntax` / `LogConcat` / `TextSeparator` / `ErrorDomain` / `ErrorCode`（`default = -1`）/ `LogModule` / `LogPrefix` / `LogDetails` / `DeepLink` / `PerformanceLabel` / `PromptInjection` / `Frontmatter` / `BundleResource` / `LLMProvider` / `DefaultModel` / `RemoteConfig`
+  - 整体是业务常量集，不适合迁移到 UFPCore
+- **`PageContentUtility.swift` 结构**（58 行）：
+  - `calculateWordCount(_:)` — 纯通用算法，已迁移到 `TextAnalyzer.wordCount`
+  - `extractAllTags(content:existingTags:)` — 使用 `#标签` 正则，与业务（知识库标签）相关，保留在业务层
+- **`Date+App.swift` 结构**（41 行）：`Date.AppFormat` 结构体 + `formatted(as:)` 方法，已迁移到 `Date+Formatting.swift` 的 `Date.FormatStyle`
+- **`String+PhoneNumber.swift` 结构**（19 行）：`maskedPhoneNumber` 计算属性，已迁移到 `String+Masking.swift`
+- **已添加 `import UFPCore` 的调用文件（13 个）**：
+  - `Sources/Infrastructure/VectorDB/EmbeddingManager.swift`
+  - `Sources/Shared/UIComponents/Menus/UserProfileMenu.swift`
+  - `Sources/Infrastructure/Plugins/JavaScriptPlugin.swift`
+  - `Sources/Core/Base/Utils/PageContentUtility.swift`
+  - `Sources/Shared/DesignSystem/Tokens/Colors.swift`
+  - `Sources/Platforms/iOS/Services/iOSDeviceInfoService.swift`
+  - 以及 5 个测试文件
+- **现有 CI 审计脚本模式**：
+  - `Tools/ios/audit-arch-dependency.py` — 分层依赖审计
+  - `Tools/ios/audit-arch-domain-purity.py` — Domain 层平台纯净化
+  - `Tools/ios/audit-code-business-magic-numbers.py` — 业务魔鬼数字
+  - `Tools/CI/run-code-static-analysis.sh` — 并行执行所有审计
+  - `Tools/CI/assert-code-pre-push.sh` — pre-push 门禁
+  - `Tools/CI/exemption_registry.py` — 统一白名单注册中心
+  - `Config/exemptions/manual_whitelist.yml` — 手动白名单
+- UFPCore Package.swift target 自动包含 `Sources/UFPCore/` 下所有 `.swift` 文件，新增文件无需修改 Package.swift
+- `Sources/Core` 和 `Sources/Infrastructure` 均已依赖 UFPCore（`import UFPCore` 可用）
+- `assert-test-coverage.py` 的 `SEARCH_DIR = "build/DerivedData-ios"`
+- `SystemConstants.bytesPerKB` 是 `Double` 类型
+- `OnDeviceModel` 是顶层 public struct
+- `PluginConstants` 是 `enum`（非 class），internal 访问级别
+- `LLMContextBuilder.buildIngestPrompt` 中仍有硬编码 Prompt 模板字符串，记录为后续批次处理项
+- `Regex(ProcessorConstants.HTMLRegex.imgSrcTag)` 需用 `try? Regex(...)` 因为字符串初始化可抛异常
+- `ProcessorConstants.SSRFGuard.rebindingSuffixes` 包含 `.nip.io`/`.sslip.io`/`.localtest.me`/`.xip.io`（带点前缀）
+
+## Relevant Files
+- `Packages/UFPCore/Sources/UFPCore/Base/SystemConstants.swift` — 系统级常量，已扩充 HTTPMethod/HTTPAuthentication/MIMEType/Multipart/Time 命名空间，待新增 ErrorCode.default
+- `Packages/UFPCore/Sources/UFPCore/Base/NetworkConstants.swift` — 网络协议常量集（IPv4PrivateRange/IPv4Octet/IPv4BitShift/IPv6PrivateRange/IPEncoding/Loopback/LocalDomainSuffix/DNSRebinding）
+- `Packages/UFPCore/Sources/UFPCore/Base/ServiceContainer.swift` — DI 容器
+- `Packages/UFPCore/Sources/UFPCore/Base/VectorMath.swift` — **已迁移**，vDSP 向量余弦相似度
+- `Packages/UFPCore/Sources/UFPCore/Base/ByteFormatter.swift` — **已迁移**，字节大小自动换算
+- `Packages/UFPCore/Sources/UFPCore/Base/MainActorBridge.swift` — **已迁移**，`runOnMainSync` 桥接函数
+- `Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift` — **已迁移**，ZIP 文件格式解析
+- `Packages/UFPCore/Sources/UFPCore/Base/TextAnalyzer.swift` — **已创建**，`wordCount(_:)` 中英混排字数统计
+- `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Character+CJK.swift` — **已迁移**，CJK 字符判定
+- `Packages/UFPCore/Sources/UFPCore/Base/Extensions/Date+Formatting.swift` — **已创建**，`Date.FormatStyle` + `formatted(as:)`
+- `Packages/UFPCore/Sources/UFPCore/Base/Extensions/String+Masking.swift` — **已创建**，`maskedPhoneNumber`
+- `Packages/UFPCore/Sources/UFPCore/Security/SSRFGuard.swift` — **已迁移**，SSRF 防护网关（`public struct SSRFGuard: Sendable`），用 POSIX `inet_ntop` 替代手写位运算
+- `Sources/Core/Base/Utils/Character+CJK.swift` — **兼容层**，空壳
+- `Sources/Core/Base/Utils/VectorMath.swift` — **兼容层**，空壳
+- `Sources/Core/Base/Utils/ByteFormatter.swift` — **兼容层**，空壳
+- `Sources/Core/Base/Utils/MainActorBridge.swift` — **兼容层**，空壳
+- `Sources/Core/Base/Utils/ZipUtility.swift` — **兼容层**，空壳
+- `Sources/Infrastructure/Processors/Network/SSRFGuard.swift` — **兼容层**，`typealias SSRFGuard = UFPCore.SSRFGuard`
+- `Sources/Core/Base/Constants/AppConstants.swift` — 已修改为引用 SystemConstants
+- `Sources/Core/Base/Constants/CoreConstants.swift` — 336 行，业务常量集，含 `ErrorCode.default = -1`，不适合整体迁移
+- `Sources/Core/Base/Extensions/Date+App.swift` — 41 行，`Date.AppFormat` + `formatted(as:)`，待改为兼容层
+- `Sources/Core/Base/Extensions/String+PhoneNumber.swift` — 19 行，`maskedPhoneNumber`，待改为兼容层
+- `Sources/Core/Base/Utils/AppError.swift` — 59 行，`make` 方法待迁移到 UFPCore，便捷方法保留
+- `Sources/Core/Base/Utils/PageContentUtility.swift` — 58 行，`calculateWordCount` 待改为调用 `TextAnalyzer.wordCount`，`extractAllTags` 保留
+- `Sources/Infrastructure/Processors/ProcessorConstants.swift` — `SSRFGuard` enum 已改为引用 `NetworkConstants`
+- `Sources/Infrastructure/LLM/LLMConstants.swift` — 常量集
+- `Sources/Infrastructure/LLM/LLMClient.swift` — 304 行，static 方法在 `@testable import` 下不可见
+- `Sources/Infrastructure/LLM/ChatRunner.swift` — 440 行，14.3% 覆盖率
+- `Sources/Infrastructure/LLM/ChatLLMService.swift` — 184 行，20.7% 覆盖率
+- `Sources/Infrastructure/LLM/OnDeviceLLMService.swift` — 330 行，32.7% 覆盖率
+- `Sources/Infrastructure/VectorDB/ContextReranker.swift` — public struct, Sendable
+- `Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift` — 326 行，51.4% 覆盖率
+- `Sources/Infrastructure/Processors/ImageExtractor.swift` — 159 行
+- `Sources/Infrastructure/Plugins/PluginConstants.swift` — 插件系统常量集
+- `Sources/Infrastructure/Plugins/PluginLoader.swift` — 320 行，48.4% 覆盖率
+- `Sources/Infrastructure/Network/ModelDownloadManager.swift` — 387 行，53.2% 覆盖率
+- `Sources/Infrastructure/Storage/StorageConstants.swift` — 已扩展 LaunchEnvironment 命名空间
+- `Sources/Domain/Models/PromptConstants.swift` — Prompt 常量集（待去重）
+- `Tests/Unit/Infrastructure/SecurityAndRerankerPureLogicTests.swift` — 批次 7-J 新增，101 用例
+- `Tests/Unit/Infrastructure/Batch7IConstantsAndLogicTests.swift` — 39 用例
+- `Docs/Audit/2026-08-06-mainapp-test-findings.md` — 问题清单表格（45 条 Finding 全部已修复）
+- `Tools/ios/audit-arch-dependency.py` — 分层依赖审计脚本
+- `Tools/ios/audit-arch-domain-purity.py` — Domain 层平台纯净化审计
+- `Tools/ios/audit-code-business-magic-numbers.py` — 业务魔鬼数字审计
+- `Tools/CI/run-code-static-analysis.sh` — 并行静态分析执行脚本
+- `Tools/CI/assert-code-pre-push.sh` — pre-push 门禁脚本
+- `Tools/CI/exemption_registry.py` — 统一白名单注册中心
+- `Config/exemptions/manual_whitelist.yml` — 白名单豁免配置
+
+## Todo List
+- [completed] 全面审计业务代码中与业务无关的通用基础函数（应迁移到 UFPCore） (priority: high)
+- [completed] 用 inet_ntop 替代 ipv4FromUInt32 + 将 SSRFGuard 通用函数迁移到 UFPCore (priority: high)
+- [completed] 阶段 1: 迁移 5 个 P0 零依赖纯工具（Character+CJK/VectorMath/ByteFormatter/MainActorBridge/ZipUtility） (priority: high)
+- [completed] 阶段 2: 迁移 SSRFGuard 常量 + 本体到 UFPCore (priority: high)
+- [in_progress] 阶段 3: 迁移 4 个 P1 轻度依赖（Date+Formatting/String+Masking/AppError.make/TextAnalyzer.wordCount） (priority: high)
+- [pending] 常量迁移 P0-5~P0-9: FileFormatConstants/EncodingConstants/FormatConstants/散落常量去重 (priority: high)
+- [pending] 建立 CI 检查：白名单注册制 + 模式检测（audit-arch-ufpcore-purity.py） (priority: high)
+- [pending] 将 CI 检查集成到 pre-push hook + run-code-static-analysis.sh (priority: high)
+- [pending] 编译验证 + 测试验证 + commit + 推送 (priority: high)
+- [pending] 批次 7-J: 推送 gitlab（常量迁移完成后一并推送） (priority: high)
+- [pending] 批次 7-J: 运行覆盖率报告确认提升 (priority: medium)

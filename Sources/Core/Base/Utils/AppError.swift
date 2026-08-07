@@ -6,7 +6,9 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L0] 基础设施层
-//  核心职责：统一的应用级错误工厂，消除重复的 NSError(domain:code:userInfo:) 样板代码。
+//  核心职责：应用级错误工厂的业务封装层。通用 `make` 转发至 `UFPCore.AppErrorFactory`，
+//           便捷方法依赖 `CoreConstants` 业务域常量，保留在业务层。
+//
 
 import Foundation
 import UFPCore
@@ -16,11 +18,11 @@ public enum AppError {
     /// 创建带本地化描述的 NSError
     /// - Parameters:
     ///   - domain: 错误域（如模块名）
-    ///   - code: 错误码，默认 -1
+    ///   - code: 错误码，默认 `CoreConstants.ErrorCode.default`
     ///   - description: 用户可读的错误描述
     /// - Returns: NSError 实例
     public static func make(domain: String, code: Int = CoreConstants.ErrorCode.default, description: String) -> NSError {
-        NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: description])
+        AppErrorFactory.make(domain: domain, code: code, description: description)
     }
 }
 

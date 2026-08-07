@@ -12,6 +12,7 @@ import SwiftUI
 
 #if targetEnvironment(macCatalyst)
 import UIKit
+import UFPCore
 
 /// Mac Catalyst 悬浮菜单窗口管理器
 /// 使用独立 UIWindow 替代 UIPopoverPresentationController，避免 UIKit 转场冲突

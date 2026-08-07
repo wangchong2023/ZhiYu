@@ -51,13 +51,17 @@ enum ProcessorConstants {
         static let cjkCloseQuote: String = "」"
 
         // 标题前缀
-        static let h1Prefix: String = "# "
-        static let h2Prefix: String = "## "
+        /// 引用 SystemConstants.MarkdownSyntax.h1Prefix
+        static let h1Prefix: String = SystemConstants.MarkdownSyntax.h1Prefix
+        /// 引用 SystemConstants.MarkdownSyntax.h2Prefix
+        static let h2Prefix: String = SystemConstants.MarkdownSyntax.h2Prefix
         static let h3Prefix: String = "### "
 
         // 列表标记
-        static let bulletDash: String = "- "
-        static let bulletAsterisk: String = "* "
+        /// 引用 SystemConstants.MarkdownSyntax.bulletDash
+        static let bulletDash: String = SystemConstants.MarkdownSyntax.bulletDash
+        /// 引用 SystemConstants.MarkdownSyntax.bulletAsterisk
+        static let bulletAsterisk: String = SystemConstants.MarkdownSyntax.bulletAsterisk
         static let bulletPlus: String = "+ "
 
         // 任务列表标记
@@ -76,11 +80,13 @@ enum ProcessorConstants {
         static let mermaidFence: String = "```mermaid"
 
         // 粗体/斜体
-        static let bold: String = "**"
+        /// 引用 SystemConstants.MarkdownSyntax.bold
+        static let bold: String = SystemConstants.MarkdownSyntax.bold
         static let boldItalic: String = "***"
 
         // 水平线
-        static let horizontalRuleDash: String = "---"
+        /// 引用 SystemConstants.MarkdownDelimiter.horizontalRule
+        static let horizontalRuleDash: String = SystemConstants.MarkdownDelimiter.horizontalRule
         static let horizontalRuleAsterisk: String = "***"
         static let horizontalRuleUnderscore: String = "___"
 
@@ -128,35 +134,37 @@ enum ProcessorConstants {
     }
 
     // MARK: - SSRF 防护地址 (SSRF Guard)
+    // 所有 SSRF 防护相关常量已迁移至 UFPCore/NetworkConstants.swift
+    // 此处保留 typealias 以兼容现有引用，实际定义见 NetworkConstants
     enum SSRFGuard {
-        // 环回地址
-        static let localhost: String = "localhost"
-        static let loopbackIPv4: String = "127.0.0.1"
-        static let loopbackIPv6: String = "::1"
-        static let loopbackIPv6Bracketed: String = "[::1]"
+        // 环回地址（引用 NetworkConstants.Loopback）
+        static let localhost: String = NetworkConstants.Loopback.localhost
+        static let loopbackIPv4: String = NetworkConstants.Loopback.loopbackIPv4
+        static let loopbackIPv6: String = NetworkConstants.Loopback.loopbackIPv6
+        static let loopbackIPv6Bracketed: String = NetworkConstants.Loopback.loopbackIPv6Bracketed
 
-        // 链路本地地址前缀（AWS/GCP 元数据端点）
-        static let linkLocalPrefix: String = "169.254."
+        // 链路本地地址前缀（引用 NetworkConstants.Loopback）
+        static let linkLocalPrefix: String = NetworkConstants.Loopback.linkLocalPrefix
 
-        // 本地域名后缀
-        static let localDomainSuffix: String = ".local"
-        static let internalDomainSuffix: String = ".internal"
-        static let localhostDomainSuffix: String = ".localhost"
+        // 本地域名后缀（引用 NetworkConstants.LocalDomainSuffix）
+        static let localDomainSuffix: String = NetworkConstants.LocalDomainSuffix.local
+        static let internalDomainSuffix: String = NetworkConstants.LocalDomainSuffix.internalSuffix
+        static let localhostDomainSuffix: String = NetworkConstants.LocalDomainSuffix.localhost
 
-        // DNS rebinding 服务后缀
-        static let rebindingSuffixes: [String] = [".nip.io", ".sslip.io", ".localtest.me", ".xip.io"]
+        // DNS rebinding 服务后缀（引用 NetworkConstants.DNSRebinding）
+        static let rebindingSuffixes: [String] = NetworkConstants.DNSRebinding.suffixes
 
-        // IPv6 私有地址前缀
-        static let ipv6UniqueLocalPrefixFC: String = "fc"
-        static let ipv6UniqueLocalPrefixFD: String = "fd"
-        static let ipv6LinkLocalPrefixFE8: String = "fe8"
-        static let ipv6LinkLocalPrefixFE9: String = "fe9"
-        static let ipv6LinkLocalPrefixFEA: String = "fea"
-        static let ipv6LinkLocalPrefixFEB: String = "feb"
+        // IPv6 私有地址前缀（引用 NetworkConstants.IPv6PrivateRange）
+        static let ipv6UniqueLocalPrefixFC: String = NetworkConstants.IPv6PrivateRange.uniqueLocalPrefixFC
+        static let ipv6UniqueLocalPrefixFD: String = NetworkConstants.IPv6PrivateRange.uniqueLocalPrefixFD
+        static let ipv6LinkLocalPrefixFE8: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFE8
+        static let ipv6LinkLocalPrefixFE9: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFE9
+        static let ipv6LinkLocalPrefixFEA: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFEA
+        static let ipv6LinkLocalPrefixFEB: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFEB
 
-        // IP 编码前缀
-        static let hexPrefixLower: String = "0x"
-        static let hexPrefixUpper: String = "0X"
+        // IP 编码前缀（引用 NetworkConstants.IPEncoding）
+        static let hexPrefixLower: String = NetworkConstants.IPEncoding.hexPrefixLower
+        static let hexPrefixUpper: String = NetworkConstants.IPEncoding.hexPrefixUpper
     }
 
     // MARK: - Mermaid 图表语法 (Mermaid Syntax)
@@ -280,8 +288,8 @@ enum ProcessorConstants {
         static let restrictedStatusCodes: [Int] = [401, 402, 403, 429]
         /// HTTPS 协议前缀（不带 //）
         static let httpsPrefix: String = "https:"
-        /// 通用桌面浏览器 UA（不硬编码具体版本号，避免维护负担）
-        static let desktopUserAgent: String = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
+        /// 通用桌面浏览器 UA（引用 SystemConstants.UserAgent.desktopSafari）
+        static let desktopUserAgent: String = SystemConstants.UserAgent.desktopSafari
         /// Mock 测试用无效主机域名（用于验证本地灾难恢复流程）
         static let invalidHostTestDomain: String = "invalid-host-domain-never-exist.example.com"
     }
@@ -341,14 +349,16 @@ enum ProcessorConstants {
     }
 
     // MARK: - 布尔字面量 (Boolean String)
+    /// 引用 SystemConstants.BooleanLiteral，避免重复定义
     enum BoolString {
-        static let `true`: String = "true"
-        static let `false`: String = "false"
+        static let `true`: String = SystemConstants.BooleanLiteral.true
+        static let `false`: String = SystemConstants.BooleanLiteral.false
     }
 
     // MARK: - Frontmatter 语法 (Frontmatter Syntax)
     enum Frontmatter {
-        static let yamlDelimiter: String = "---"
+        /// 引用 SystemConstants.MarkdownDelimiter.horizontalRule，避免重复定义
+        static let yamlDelimiter: String = SystemConstants.MarkdownDelimiter.horizontalRule
         static let jsonDelimiter: String = "---json"
         static let minKey: String = "min"
     }

@@ -10,6 +10,7 @@
 
 #if os(iOS) && !os(watchOS)
 import UIKit
+import UFPCore
 
 /// iOS 设备信息服务
 final class iOSDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {

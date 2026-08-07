@@ -29,14 +29,14 @@ enum PluginConstants {
 
     // MARK: - 本地化语言要求 (Localization)
     enum Localization {
-        /// 插件 README 强制要求的语言列表
-        static let requiredLocales: [String] = ["en", "zh-Hans"]
+        /// 插件 README 强制要求的语言列表（引用 CoreConstants.LanguageCode）
+        static let requiredLocales: [String] = [CoreConstants.LanguageCode.en, "zh-Hans"]
     }
 
     // MARK: - 默认 Manifest 值 (Default Manifest Values)
     enum DefaultManifest {
-        /// 裸 .js 插件的默认版本号
-        static let version: String = "1.0.0"
+        /// 裸 .js 插件的默认版本号（引用 SystemConstants.Version.defaultSemVer）
+        static let version: String = SystemConstants.Version.defaultSemVer
         /// 裸 .js 插件的默认作者名
         static let author: String = "Local Developer"
         /// 裸 .js 插件的默认权限列表
@@ -45,5 +45,26 @@ enum PluginConstants {
         static let descriptionEn: String = "Legacy .js plugin (migrate to .zyplugin format)"
         /// 裸 .js 插件的 ID 前缀
         static let idPrefix: String = "local."
+    }
+
+    // MARK: - CodingKey 字面量 (Coding Keys)
+    /// 插件记录持久化 CodingKey 字面量常量集，避免 PluginRecord 与 GRDB 扩展重复定义
+    enum CodingKey {
+        /// manifestJSON 字段的序列化 key
+        static let manifestJSON: String = "manifest_json"
+        /// permissionsJSON 字段的序列化 key
+        static let permissionsJSON: String = "permissions_json"
+        /// loadDuration 字段的序列化 key
+        static let loadDuration: String = "load_duration"
+        /// unloadDuration 字段的序列化 key
+        static let unloadDuration: String = "unload_duration"
+        /// totalExecutionTime 字段的序列化 key
+        static let totalExecutionTime: String = "total_execution_time"
+        /// callCount 字段的序列化 key
+        static let callCount: String = "call_count"
+        /// installedAt 字段的序列化 key
+        static let installedAt: String = "installed_at"
+        /// updatedAt 字段的序列化 key
+        static let updatedAt: String = "updated_at"
     }
 }

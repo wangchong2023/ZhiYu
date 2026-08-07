@@ -11,6 +11,7 @@
 
 import Foundation
 import Combine
+import UFPCore
 
 /// 插件市场条目模型
 @MainActor
@@ -243,7 +244,7 @@ final class PluginMarketService: ObservableObject {
             let (data, response) = try await URLSession.shared.data(from: url)
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
 
-            guard statusCode == 200 else {
+            guard statusCode == SystemConstants.HTTPStatusCode.ok else {
                 throw NSError(domain: "PluginMarketService", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(statusCode)"])
             }
 
@@ -369,8 +370,8 @@ final class PluginMarketService: ObservableObject {
     private func buildDownloadTasks(baseURL: URL, destinationFolderURL: URL) -> [FileDownloadTask] {
         return [
             FileDownloadTask(
-                remoteURL: baseURL.appendingPathComponent("manifest.json"),
-                localURL: destinationFolderURL.appendingPathComponent("manifest.json"),
+                remoteURL: baseURL.appendingPathComponent(SystemConstants.FileName.manifestJSON),
+                localURL: destinationFolderURL.appendingPathComponent(SystemConstants.FileName.manifestJSON),
                 isRequired: true
             ),
             FileDownloadTask(
@@ -404,7 +405,7 @@ final class PluginMarketService: ObservableObject {
                     do {
                         let (tempURL, response) = try await URLSession.shared.download(from: task.remoteURL)
                         let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                        guard statusCode == 200 else {
+                        guard statusCode == SystemConstants.HTTPStatusCode.ok else {
                             throw NSError(
                                 domain: "PluginMarketService",
                                 code: statusCode,

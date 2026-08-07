@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 /// 页面内容处理工具集 (PageContentUtility)
 /// 贯彻 SRP 原则，将模型层中的复杂正则与统计算法剥离至此。
@@ -17,26 +18,9 @@ public enum PageContentUtility {
     
     /// 计算字数 (支持中英混排)
     /// 逻辑：中文按字符计费；英文按单词计数。
+    /// 通用算法已迁移至 `UFPCore.TextAnalyzer.wordCount`，此处转发以维持调用点不变。
     public static func calculateWordCount(_ content: String) -> Int {
-        var count = 0
-        var inEnglishWord = false
-        
-        for char in content {
-            if char.isCJKCharacter {
-                if inEnglishWord {
-                    count += 1
-                    inEnglishWord = false
-                }
-                count += 1
-            } else if char.isLetter || char.isNumber {
-                inEnglishWord = true
-            } else if inEnglishWord {
-                count += 1
-                inEnglishWord = false
-            }
-        }
-        if inEnglishWord { count += 1 }
-        return count
+        TextAnalyzer.wordCount(content)
     }
     
     /// 获取所有标签（包括元数据标签和内容中的 #标签）

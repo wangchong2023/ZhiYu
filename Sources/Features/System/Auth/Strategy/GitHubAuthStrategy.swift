@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import AuthenticationServices
 #if canImport(UIKit)
 import UIKit

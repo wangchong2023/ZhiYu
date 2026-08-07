@@ -10,6 +10,7 @@
 import XCTest
 @testable import ZhiYu
 import Compression
+import UFPCore
 
 final class ZipUtilityBatch6BTests: XCTestCase {
 

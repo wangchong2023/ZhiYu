@@ -10,6 +10,7 @@
 //
 import Foundation
 import CryptoKit
+import UFPCore
 
 /// 硬件安全芯片加解密服务 (SecureEnclaveCryptoService)
 /// 专为第三方敏感令牌提供 Secure Enclave 物理层级锁死，杜绝文件级破解与异地克隆。
@@ -26,7 +27,8 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
     /// HKDF 盐值持久化 Key（VULN-003 修复：非空盐 + 上下文绑定，杜绝自协商确定性密钥）
     private let hkdfSaltPath = "com.zhiyu.secure_enclave.hkdf_salt"
     /// HKDF 上下文绑定信息（固定值，区分不同用途的密钥派生）
-    private let hkdfSharedInfo = Data("zhiyu-apikey-encryption-v2".utf8)
+    /// 引用 SystemConstants.CryptoProtocol.apiKeyEncryptionV2
+    private let hkdfSharedInfo = Data(SystemConstants.CryptoProtocol.apiKeyEncryptionV2.utf8)
     /// 旧版 ECDH 自协商公钥持久化路径（迁移用，迁移完成后可清理）
     private let legacyECDHPublicKeyPath = "com.zhiyu.secure_enclave.legacy_pub"
     

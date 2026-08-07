@@ -12,6 +12,7 @@ import SwiftUI
 
 #if canImport(UIKit)
 import UIKit
+import UFPCore
 #endif
 
 /// 智宇颜色令牌 (Color Tokens)

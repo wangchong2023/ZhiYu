@@ -199,6 +199,14 @@ extension DesignSystem {
         public static let cpuOutline = Typography.Icons.cpuOutline
         public static let bolt = Typography.Icons.bolt
         public static let antenna = Typography.Icons.antenna
+
+        // ── 端侧模型图标 (On-Device Model Icons) ──
+        /// 内置模型图标
+        public static let onDeviceBundled = "cube.box.fill"
+        /// 已下载模型图标
+        public static let onDeviceDownloaded = "arrow.down.circle.fill"
+        /// 系统模型图标
+        public static let onDeviceSystem = "apple.logo"
         
         // ── 业务/特性专用 ──
         public static let knowledge = Typography.Icons.knowledge

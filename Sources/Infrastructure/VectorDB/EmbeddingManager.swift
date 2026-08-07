@@ -10,6 +10,7 @@
 //
 import Foundation
 import NaturalLanguage
+import UFPCore
 
 /// 向量管理中心
 /// 负责知识分块的异步向量化、持久化同步及高性能语义检索。
@@ -27,6 +28,18 @@ public actor EmbeddingManager: EmbeddingProvider {
     private var chunkVectorCache: [String: [Float]] = [:]
     /// 内存缓存：分块元数据
     private var chunkMetadata: [String: PageChunk] = [:]
+
+    /// 向量检索默认参数常量
+    public enum SearchDefaults {
+        /// 默认召回候选数量
+        public static let defaultTopK: Int = 10
+        /// 语义相似度阈值（低于此值视为不相关）
+        public static let similarityThreshold: Float = 0.3
+        /// 确定性向量生成的模数（用于归一化哈希值到 [0, 1) 区间）
+        public static let deterministicModulus: Float = 1000
+        /// 确定性向量维度（与 NLEmbedding 512 维对齐）
+        public static let vectorDimension: Int = 512
+    }
 
     /// 获取所有已缓存的页面嵌入向量
     public func getAllEmbeddings() async -> [UUID: [Float]] {
@@ -122,7 +135,7 @@ public actor EmbeddingManager: EmbeddingProvider {
     ///   - query: 查询关键字或句。
     ///   - topK: 最多召回的候选数量。
     /// - Returns: 匹配命中的页面 UUID 标识和相似度得分列表。
-    public func search(query: String, topK: Int = 10) async -> [(id: UUID, score: Float)] {
+    public func search(query: String, topK: Int = SearchDefaults.defaultTopK) async -> [(id: UUID, score: Float)] {
         let queryVector = getVector(for: query)
         var results: [(id: UUID, score: Float)] = []
         
@@ -144,7 +157,7 @@ public actor EmbeddingManager: EmbeddingProvider {
         
         for (idString, vector) in chunkVectorCache {
             let score = EmbeddingManager.cosineSimilarity(queryVector, vector)
-            if score > 0.3, let metadata = chunkMetadata[idString] {
+            if score > SearchDefaults.similarityThreshold, let metadata = chunkMetadata[idString] {
                 results.append((metadata, score))
             }
         }
@@ -189,9 +202,9 @@ public actor EmbeddingManager: EmbeddingProvider {
         var hasher = Hasher()
         hasher.combine(text)
         let seed = hasher.finalize()
-        var deterministicVector = [Float](repeating: 0, count: 512)
-        for i in 0..<512 {
-            deterministicVector[i] = Float((seed ^ i) % 1000) / 1000.0
+        var deterministicVector = [Float](repeating: 0, count: SearchDefaults.vectorDimension)
+        for i in 0..<SearchDefaults.vectorDimension {
+            deterministicVector[i] = Float((seed ^ i) % Int(SearchDefaults.deterministicModulus)) / SearchDefaults.deterministicModulus
         }
         return deterministicVector
     }

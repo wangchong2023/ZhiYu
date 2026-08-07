@@ -9,6 +9,7 @@
 //  核心职责：AI 合成实验室：摘要、思维导图、测验、报告生成。
 //
 import SwiftUI
+import UFPCore
 
 /// 合成文档条目行组件
 /// 负责展示单个生成文档的详情、预览入口及重命名/删除等交互操作
@@ -136,9 +137,6 @@ struct SynthesisDocRow: View {
     }
 
     private func formatByteSize(_ bytes: Int) -> String {
-        let b = Double(bytes)
-        if b < 1024 { return "\(bytes) B" }
-        if b < 1024 * 1024 { return String(format: "%.1f KB", b / 1024) }
-        return String(format: "%.1f MB", b / (1024 * 1024))
+        ByteFormatter.formatSmall(bytes)
     }
 }

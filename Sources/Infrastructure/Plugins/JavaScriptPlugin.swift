@@ -12,6 +12,7 @@
 
 import Foundation
 import JavaScriptCore
+import UFPCore
 
 /// 基于 JS 脚本的动态插件，已接入 PluginEnginePool 缓存连接池
 final class JavaScriptPlugin: InterceptionPlugin {

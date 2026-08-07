@@ -1934,3 +1934,11 @@ business_magic_exempt:
   line: 194
   reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
   expiry_check: false
+
+# ==============================================================================
+# UFPCore 纯净化审计豁免 (audit-arch-ufpcore-purity.py)
+# ==============================================================================
+# 登记业务层中允许保留的通用基础能力（已迁移到 UFPCore 但因兼容性暂保留）。
+# 每项含: file（相对项目根目录）+ reason + expiry_check
+# 兼容层文件（仅 import UFPCore + typealias/转发）自动豁免，无需登记。
+ufpcore_pure_exempt: []

@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 /// 智宇海外国际区专用登录表单卡片
 struct OverseasLoginCardView: View {

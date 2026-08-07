@@ -246,13 +246,13 @@ final class IngestStore {
         // 文件大小限制 (单文件 50MB)
         if let resources = try? url.resourceValues(forKeys: [.fileSizeKey]),
            let fileSize = resources.fileSize {
-            let singleLimit = 50 * 1024 * 1024
+            let singleLimit = 50 * Int(SystemConstants.bytesPerMB)
             if fileSize > singleLimit {
                 throw AppError.ingest(L10n.Ingest.fileTooLarge, code: 2)
             }
 
             // 全局容量限制 (1GB)
-            let totalLimit: Int64 = 1024 * 1024 * 1024
+            let totalLimit: Int64 = Int64(SystemConstants.bytesPerGB)
             let currentTotal = await pageStore.pages.reduce(0) { $0 + ($1.fileSize ?? 0) }
             if currentTotal + Int64(fileSize) > totalLimit {
                 throw AppError.ingest(L10n.Ingest.storageFull, code: 4)

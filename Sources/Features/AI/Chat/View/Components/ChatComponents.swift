@@ -9,6 +9,7 @@
 //  核心职责：AI 对话功能：多轮对话、流式响应、聊天历史管理。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - Chat Bubble View
 /// 聊天气泡视图

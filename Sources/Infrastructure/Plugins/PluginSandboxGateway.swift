@@ -9,6 +9,7 @@
 //  核心职责：插件系统：JavaScript 沙箱、市场服务、插件注册与生命周期。
 //
 import Foundation
+import UFPCore
 #if os(iOS) || os(macOS) || os(tvOS)
 import JavaScriptCore
 #endif
@@ -30,8 +31,8 @@ func JSContextGroupSetExecutionTimeLimit(
 /// 插件沙盒双向通信安全网关 (PluginSandboxGateway)
 /// 作为 JavaScript 运行环境与 Swift 原生系统的安全屏障，实施全量网络与持久化数据的 DLP 深度审计，并监控运行时资源。
 struct PluginSandboxGateway {
-    /// 统一物理限制大小：5MB 载荷上限
-    private static let maxPayloadSize = 5 * 1024 * 1024
+    /// 统一物理限制大小：载荷上限（引用 PluginConstants.Sandbox.maxResponseSizeMB * SystemConstants.bytesPerMB）
+    private static let maxPayloadSize = PluginConstants.Sandbox.maxResponseSizeMB * Int(SystemConstants.bytesPerMB)
     
     /// 限制本地存储 Key 最大长度
     private static let maxKeyLength = 256

@@ -83,6 +83,7 @@ run_parallel_task "Inject Safety" "inject_safety" "python3 Tools/ios/check-code-
 run_parallel_task "Doc Drift" "doc_drift" "python3 Tools/CI/check-doc-drift.py --strict" & pid29=$!
 run_parallel_task "Exemption Stale" "exemption_stale" "python3 Tools/CI/exemption_registry.py check-stale --strict" & pid30=$!
 run_parallel_task "Business Magic Numbers" "business_magic" "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM" & pid31=$!
+run_parallel_task "UFPCore Purity" "ufpcore_purity" "python3 Tools/ios/audit-arch-ufpcore-purity.py" & pid32=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -115,6 +116,7 @@ wait $pid28 || EXIT_CODE=1
 wait $pid29 || EXIT_CODE=1
 wait $pid30 || EXIT_CODE=1
 wait $pid31 || EXIT_CODE=1
+wait $pid32 || EXIT_CODE=1
 
 
 echo ""

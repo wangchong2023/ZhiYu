@@ -9,6 +9,7 @@
 //  核心职责：应用级编译时常量定义（存储 key、超时、默认值等）。
 //
 import Foundation
+import UFPCore
 
 /// [L0] 底层基座层：硬编码常量配置 (AppConstants)
 public struct AppConstants {
@@ -21,40 +22,40 @@ public struct AppConstants {
         /// 单次请求超时时长（秒）
         public static let requestTimeout: TimeInterval = 30.0
 
-        // MARK: - Header 键名
+        // MARK: - Header 键名（引用 SystemConstants.HTTPHeader）
         /// Content-Type 请求头字段名
-        public static let headerContentType = "Content-Type"
+        public static let headerContentType: String = SystemConstants.HTTPHeader.contentType
         /// Authorization 请求头字段名
-        public static let headerAuthorization = "Authorization"
+        public static let headerAuthorization: String = SystemConstants.HTTPHeader.authorization
 
-        // MARK: - Content-Type 值
+        // MARK: - Content-Type 值（引用 SystemConstants.ContentType / MIMEType）
         /// JSON 请求体 MIME 类型
-        public static let contentTypeJSON = "application/json"
+        public static let contentTypeJSON: String = SystemConstants.ContentType.applicationJSON
         /// multipart/form-data 前缀（boundary 拼接后缀）
-        public static let contentTypeMultipartPrefix = "multipart/form-data; boundary="
+        public static let contentTypeMultipartPrefix: String = SystemConstants.ContentType.multipartFormDataPrefix
         /// 图片 PNG MIME 类型
-        public static let mimeTypePNG = "image/png"
+        public static let mimeTypePNG: String = SystemConstants.MIMEType.png
         /// 图片 JPEG MIME 类型
-        public static let mimeTypeJPEG = "image/jpeg"
+        public static let mimeTypeJPEG: String = SystemConstants.MIMEType.jpeg
 
-        // MARK: - HTTP 方法
-        public static let methodGET = "GET"
-        public static let methodPOST = "POST"
-        public static let methodPUT = "PUT"
-        public static let methodDELETE = "DELETE"
-        public static let methodPATCH = "PATCH"
+        // MARK: - HTTP 方法（引用 SystemConstants.HTTPMethod）
+        public static let methodGET: String = SystemConstants.HTTPMethod.get
+        public static let methodPOST: String = SystemConstants.HTTPMethod.post
+        public static let methodPUT: String = SystemConstants.HTTPMethod.put
+        public static let methodDELETE: String = SystemConstants.HTTPMethod.delete
+        public static let methodPATCH: String = SystemConstants.HTTPMethod.patch
 
-        // MARK: - Multipart 构造字符
+        // MARK: - Multipart 构造字符（引用 SystemConstants.Multipart）
         /// multipart boundary 分隔符前缀
-        public static let multipartBoundaryPrefix = "Boundary-"
+        public static let multipartBoundaryPrefix: String = SystemConstants.Multipart.boundaryPrefix
         /// multipart body 字段名（文件表单 field name）
-        public static let multipartFieldName = "file"
+        public static let multipartFieldName: String = SystemConstants.Multipart.defaultFieldName
         /// HTTP 换行符
-        public static let crlf = "\r\n"
+        public static let crlf: String = SystemConstants.Multipart.crlf
 
-        // MARK: - Bearer Token 格式
+        // MARK: - Bearer Token 格式（引用 SystemConstants.HTTPAuthentication）
         /// Authorization header 中 Bearer 前缀
-        public static let bearerPrefix = "Bearer "
+        public static let bearerPrefix: String = SystemConstants.HTTPAuthentication.bearerPrefix
         
         // MARK: - API 路径
         /// Token 刷新接口路径
@@ -282,14 +283,14 @@ public struct AppConstants {
         // MARK: - 导入限制
 
         public enum ImportLimits {
-            /// Lite 版单文件最大大小：10 MB
-            public static let liteMaxFileSizeBytes: Int64 = 10 * 1_024 * 1_024
-            /// Pro 版单文件最大大小：50 MB
-            public static let maxFileSizeBytes: Int64 = 50 * 1_024 * 1_024
+            /// Lite 版单文件最大大小：10 MB（引用 SystemConstants.bytesPerMB）
+            public static let liteMaxFileSizeBytes: Int64 = 10 * Int64(SystemConstants.bytesPerMB)
+            /// Pro 版单文件最大大小：50 MB（引用 SystemConstants.bytesPerMB）
+            public static let maxFileSizeBytes: Int64 = 50 * Int64(SystemConstants.bytesPerMB)
             /// 语音录制最大时长：15 分钟
             public static let maxVoiceDurationSeconds: TimeInterval = 15 * 60
-            /// OCR 图片最大大小：5 MB
-            public static let maxOCRImageSizeBytes: Int64 = 5 * 1_024 * 1_024
+            /// OCR 图片最大大小：5 MB（引用 SystemConstants.bytesPerMB）
+            public static let maxOCRImageSizeBytes: Int64 = 5 * Int64(SystemConstants.bytesPerMB)
             /// AI 标签分析截取字符数
             public static let aiTagSnippetLength: Int = 3000
             /// 导入冷却间隔（秒）
@@ -298,8 +299,8 @@ public struct AppConstants {
             public static let dismissDelayNS: UInt64 = 400_000_000
             /// 批量导入 URL 最大数量
             public static let maxURLCount: Int = 10
-            /// 图片提取：单张最大大小（5 MB）
-            public static let maxImageSizeBytes: Int64 = 5 * 1_024 * 1_024
+            /// 图片提取：单张最大大小（5 MB，引用 SystemConstants.bytesPerMB）
+            public static let maxImageSizeBytes: Int64 = 5 * Int64(SystemConstants.bytesPerMB)
             /// 图片提取：每页最多数量
             public static let maxImagesPerPage: Int = 10
             /// 图片提取：下载超时（秒）
@@ -308,12 +309,21 @@ public struct AppConstants {
             public static let pdfRenderScale: CGFloat = 0.5
             /// 图片 JPEG 压缩质量
             public static let imageJPEGQuality: CGFloat = 0.8
-            /// 支持图片提取的 Office 文件扩展名
-            public static let officeExtensions: Set<String> = ["docx", "xlsx", "pptx"]
-            /// 支持的图片格式扩展名
-            public static let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif"]
-            /// 支持图片提取的 PDF 扩展名
-            public static let pdfExtension: String = "pdf"
+            /// 支持图片提取的 Office 文件扩展名（引用 SystemConstants.FileExtension）
+            public static let officeExtensions: Set<String> = [
+                SystemConstants.FileExtension.docx,
+                SystemConstants.FileExtension.xlsx,
+                SystemConstants.FileExtension.pptx
+            ]
+            /// 支持的图片格式扩展名（引用 SystemConstants.FileExtension）
+            public static let imageExtensions: Set<String> = [
+                SystemConstants.FileExtension.png,
+                SystemConstants.FileExtension.jpg,
+                SystemConstants.FileExtension.jpeg,
+                SystemConstants.FileExtension.gif
+            ]
+            /// 支持图片提取的 PDF 扩展名（引用 SystemConstants.FileExtension）
+            public static let pdfExtension: String = SystemConstants.FileExtension.pdf
             /// Office ZIP 中排除的图片路径关键词（页眉页脚背景通常为装饰性图像）
             public static let officeImageExcludeKeywords: Set<String> = ["header", "footer", "background"]
         }
@@ -390,7 +400,8 @@ extension AppConstants {
     /// 应用版本号常量定义（构建时由 inject_version.sh 自动注入）
     public struct Version {
         /// 语义化版本号（SemVer），发布时需与 git tag 同步更新
-        public static let semVer = "1.0.0"
+        /// 引用 SystemConstants.Version.defaultSemVer 作为默认值
+        public static let semVer: String = SystemConstants.Version.defaultSemVer
         /// Git 短提交哈希（构建时自动注入）
         public static let gitShortHash = "6ad301d4"
         /// 构建时间戳 ISO 8601（构建时自动注入）

@@ -11,6 +11,7 @@
 import Foundation
 import Combine
 import UFPStorage
+import UFPCore
 
 /// 核心持久化存储引擎 (L1Actor)
 /// 采用 actor 模式确保多端并发下的数据一致性，封装复杂的 SQL 事务。
@@ -24,11 +25,11 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         get async throws {
             // 等待 notebook 切换完成（selectVault 异步 Task 可能尚未完成）
             // 使用直接 await 避免 MainActor.run 在 XCTest 并行 worker 中死锁
-            for _ in 0..<20 {
+            for _ in 0..<StorageConstants.WriterRetry.maxAttempts {
                 if let writer = await DatabaseManager.shared.dbWriter {
                     return writer
                 }
-                try? await Task.sleep(nanoseconds: 50_000_000) // 50ms × 20 = 1s
+                try? await Task.sleep(nanoseconds: StorageConstants.WriterRetry.intervalNanoseconds)
             }
             // Finding #17：重试 1s 后仍无 writer，抛错而非静默降级创建空内存库
             throw DatabaseError.notReady
@@ -192,8 +193,8 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         if !dbPath.isEmpty {
             totalDbSize += (try? FileManager.default.attributesOfItem(atPath: dbPath)[.size] as? Int64) ?? 0
             
-            let walPath = dbPath + "-wal"
-            let shmPath = dbPath + "-shm"
+            let walPath = dbPath + SystemConstants.FileExtension.walSuffix
+            let shmPath = dbPath + SystemConstants.FileExtension.shmSuffix
             totalDbSize += (try? FileManager.default.attributesOfItem(atPath: walPath)[.size] as? Int64) ?? 0
             totalDbSize += (try? FileManager.default.attributesOfItem(atPath: shmPath)[.size] as? Int64) ?? 0
         }
@@ -202,8 +203,8 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         if !globalDBPath.isEmpty {
             totalDbSize += (try? FileManager.default.attributesOfItem(atPath: globalDBPath)[.size] as? Int64) ?? 0
             
-            let globalWalPath = globalDBPath + "-wal"
-            let globalShmPath = globalDBPath + "-shm"
+            let globalWalPath = globalDBPath + SystemConstants.FileExtension.walSuffix
+            let globalShmPath = globalDBPath + SystemConstants.FileExtension.shmSuffix
             totalDbSize += (try? FileManager.default.attributesOfItem(atPath: globalWalPath)[.size] as? Int64) ?? 0
             totalDbSize += (try? FileManager.default.attributesOfItem(atPath: globalShmPath)[.size] as? Int64) ?? 0
         }

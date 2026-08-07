@@ -9,6 +9,7 @@
 //  核心职责：用户认证：多平台登录（Apple/Google/GitHub/微信/运营商）。
 //
 import Foundation
+import UFPCore
 #if canImport(UIKit)
 import UIKit
 

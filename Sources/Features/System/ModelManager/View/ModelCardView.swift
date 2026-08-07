@@ -8,6 +8,7 @@
 //  核心职责：大模型卡片渲染 — 标题/参数/能力标签展示、硬件护栏 Banner、展开式 Spec Sheet 规格面板。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - 大模型卡片组件
 
@@ -307,14 +308,7 @@ struct ModelCardView: View {
 
     /// 格式化大小
     private func formattedSize(_ bytes: Int64) -> String {
-        let kb = Double(bytes) / 1024
-        let mb = kb / 1024
-        let gb = mb / 1024
-        if gb >= 1.0 {
-            return String(format: "%.2f GB", gb)
-        } else {
-            return String(format: "%.1f MB", mb)
-        }
+        ByteFormatter.formatCustom(bytes)
     }
 
     // MARK: - 任务标签

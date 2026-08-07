@@ -8,6 +8,7 @@
 //  核心职责：中国大陆手机号一键登录面板 — 掩码展示、操作按钮与用户协议勾选。
 //
 import SwiftUI
+import UFPCore
 
 /// 国内手机号一键登录面板
 struct AuthPhonePanel: View {

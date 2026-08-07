@@ -23,7 +23,8 @@ final class PluginLoader {
     /// 插件签名密钥的 Keychain 存储键（审查修复 HIGH-3：不再硬编码盐值）
     private static let signatureKeychainKey = "com.zhiyu.plugin.signature_key"
     /// 内置插件签名密钥标识（首次启动时生成随机密钥并存入 Keychain）
-    private static let signatureKeyInfo = Data("zhiyu-plugin-signature-v1".utf8)
+    /// 引用 SystemConstants.CryptoProtocol.pluginSignatureV1
+    private static let signatureKeyInfo = Data(SystemConstants.CryptoProtocol.pluginSignatureV1.utf8)
 
     // MARK: - 插件签名校验（VULN-001 修复）
 
@@ -59,7 +60,7 @@ final class PluginLoader {
         }
 
         // 外部 manifest 的 local. 前缀视为可疑，拒绝加载
-        if manifest.id.hasPrefix("local.") {
+        if manifest.id.hasPrefix(PluginConstants.DefaultManifest.idPrefix) {
             Logger.shared.error("[PluginRegistry] \(manifest.id): 外部插件使用 local. 前缀，视为可疑，拒绝加载")
             return false
         }
@@ -251,7 +252,7 @@ final class PluginLoader {
             try archiver.extractContents(from: archiveURL, to: tempDir)
 
             // 读取提取的文件
-            let manifestURL = tempDir.appendingPathComponent("manifest.json")
+            let manifestURL = tempDir.appendingPathComponent(SystemConstants.FileName.manifestJSON)
             let scriptURL = tempDir.appendingPathComponent("index.js")
 
             guard FileManager.default.fileExists(atPath: manifestURL.path),
@@ -296,7 +297,7 @@ final class PluginLoader {
     /// - Parameter directoryURL: 物理子目录 URL 路径
     private func loadPluginFromDirectory(_ directoryURL: URL) {
         let fileManager = FileManager.default
-        let manifestURL = directoryURL.appendingPathComponent("manifest.json")
+        let manifestURL = directoryURL.appendingPathComponent(SystemConstants.FileName.manifestJSON)
         let scriptURL = directoryURL.appendingPathComponent("index.js")
 
         // 🛡️ 核心安全性静态核验：必须同时存在声明式配置清单与核心 JS 逻辑

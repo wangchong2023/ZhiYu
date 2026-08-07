@@ -9,6 +9,7 @@
 //  核心职责：大模型市场容器视图 — 持有 @State 状态树，编排列表展示与导航。
 //
 import SwiftUI
+import UFPCore
 
 /// 动态端侧大模型市场面板视图
 @MainActor
@@ -66,7 +67,7 @@ public struct ModelStoreView: View {
         .inlineNavigationBarTitleIfAvailable()
         .alert(item: $alertManifest) { manifest in
             let requiredGb = String(format: "%.1f", manifest.minDeviceMemoryInGb)
-            let currentGb = String(format: "%.1f", Double(modelManager.physicalMemory) / (1024 * 1024 * 1024))
+            let currentGb = String(format: "%.1f", Double(modelManager.physicalMemory) / SystemConstants.bytesPerGB)
             return Alert(
                 title: Text(L10n.ModelManager.Alert.oomTitle),
                 message: Text(L10n.ModelManager.Alert.oomMessage(manifest.displayName, requiredGb, currentGb)),
