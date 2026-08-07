@@ -2,7 +2,7 @@
 
 > **用途**：跨会话恢复上下文。新会话开头让 Agent 读取本文件即可恢复进度。
 > **最后更新**：2026-08-07
-> **状态**：批次 7-F 完成（40 用例全绿），Infrastructure 层 75.21% → 待运行覆盖率报告确认提升，已 commit `5d37e2c2` 推送 gitlab（13 项门禁全通过）
+> **状态**：批次 7-G 完成（49 用例全绿），已 commit `ed913365` 推送 gitlab（13 项门禁全通过）。Infrastructure 层 75.21% → 78.17%（批次 7-F 后），批次 7-G 覆盖率提升待运行覆盖率报告确认
 
 ---
 
@@ -97,14 +97,26 @@
   - `SQLiteStoreStorageStatsTests` (5): folderSize/getStorageStats/addLog no-op
   - **访问级别调整**（private → internal）：DemoPDFBuilder.sanitizeMarkdownText/isTableSeparator、OnDeviceLLMService.extractTags、SQLiteStore.folderSize
   - **修复**：UUID.data 不存在 → 直接传 UUID（GRDB 原生 blob 持久化）；SwiftLint force_unwrapping → XCTUnwrap + Data(_:utf8)；3 个测试方法缺少 throws 签名
-- **全量单元测试 2927 个全部通过** ✅ — `TEST SUCCEEDED`，0 失败，170 秒（含批次 7-E 新增 26 用例）
+- **全量单元测试 2967 个全部通过** ✅ — `TEST SUCCEEDED`，0 失败，182 秒（含批次 7-F 新增 40 用例）
+- **覆盖率报告**：Infrastructure 层 75.21% → 78.17%（+2.96%），缺口约 1021 行达 85%
+- **批次 7-G 全部完成** ✅ — 1 个新测试文件，49 个用例全绿，commit `ed913365` 推送 gitlab（13 项门禁全通过）
+  - `Tests/Unit/Infrastructure/InfrastructureSecurityAndUtilityTests.swift`（语义化命名）
+  - `PluginLoaderSecurityLogicTests` (17): constantTimeCompare 4 用例/Data(hexString:) 7 用例/hexEncoded 2 用例/verifyPluginSignature 5 分支
+  - `ModelDownloadManagerSHA256Tests` (6): 空 hash 跳过/非 64 字符拒绝/文件不存在/正确 hash/错误 hash/actor 隔离
+  - `ImportRecordTagGrouperTests` (10): 单标签/多标签逗号分隔/nil 标签/空字符串/混合/空组件过滤/单条多标签/untaggedLabel/空数组/特殊字符
+  - `SpeechErrorDescriptionTests` (4): 3 个 case errorDescription 非空 + 区分性
+  - `AIAnalyticsTokenCalculationTests` (5): token 计算公式 4 用例 + recordRAGMetrics 不崩溃
+  - `ChatLLMServiceUITestingTests` (2): notConfigured 分支（UITesting 分支不可注入 ProcessInfo）
+  - `MaintenanceServiceSeedContentTests` (2): pages 非空 guard return + nil vaultName catch 分支
+  - `WebViewExportServiceForwardingTests` (3): exportToPDF/exportMindmapToPDF/exportToPPTX 转发验证
+  - **访问级别调整**（private → internal）：PluginLoader.verifyPluginSignature/constantTimeCompare/Data(hexString:)/hexEncoded、ModelDownloadManager.verifySHA256
+  - **修复**：verifySHA256256 笔误→verifySHA256；LLMError 未遵循 Equatable→if case 模式匹配；MockExportService 无 stub 属性→直接验证返回 URL 路径；ImportRecordTagGrouper 分割符 ", "→修正测试输入；@MainActor 隔离→PluginLoader/ChatLLMService/MaintenanceService 测试类加 @MainActor
 
 ### In Progress
 - (none)
 
 ### Blocked
 - GitHub 推送超时（用户指示暂时跳过 GitHub，继续任务）
-
 ## Key Decisions
 - **UI 测试加速方案**：在 `VaultService.init()` 和 `VaultDataCoordinator.loadVaults()` 中添加 UI 测试模式自动选择金库逻辑，跳过 NotebookHub
 - **Makefile `test-unit`/`test-ui` 目标**：含 `-derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution`，`test-unit` 含 `-enableCodeCoverage YES`
@@ -114,9 +126,9 @@
 - **批次 7-E 避免重复测试**：`StreamDeanonymizer`/`ImageExtractor`/`ModelDownloadManager` 已有完整测试，不重复编写
 
 ## Next Steps
-- 运行覆盖率报告确认 Infrastructure 层提升情况（75.21% → 目标 85%）
-- 分析剩余低覆盖率文件，规划批次 7-G（如 ChatRunner 440 行 14.3%、MaintenanceService 116 行 34.5%、DataCoordinator 56 行 1.8%）
-- Infrastructure 层覆盖率提升至 85%（当前 75.21%，缺口 ~1464 行）
+- 运行覆盖率报告确认批次 7-G 后 Infrastructure 层提升情况（78.17% → 目标 85%）
+- 分析剩余低覆盖率文件，规划批次 7-H（如 ChatRunner 440 行 14.3%、OnDeviceLLMService 32.9%、ChatLLMService 20.7%）
+- Infrastructure 层覆盖率提升至 85%（当前 78.17%，缺口约 1021 行）
 
 ## Critical Context
 - **覆盖率报告（批次 7-D + UI 修复后）**：L0 Core 91.17% ✅ / L1 Infrastructure 75.21%（需提升至 85%，缺口 1464 行）/ L1.5 Domain 93.54% ✅ / L2 Features 8.33% / L3 App 21.04% / 全 App 21.42%
