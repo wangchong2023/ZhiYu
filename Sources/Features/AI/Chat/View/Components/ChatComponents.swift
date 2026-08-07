@@ -53,7 +53,7 @@ struct ChatBubbleView: View {
     }
     
     private var timestampString: String {
-        message.timestamp.formatted(as: Date.AppFormat.slashDetailed)
+        message.timestamp.formatted(as: Date.AppFormatStyle.slashDetailed)
     }
     
     private var userBubble: some View {

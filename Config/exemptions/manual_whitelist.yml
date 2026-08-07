@@ -1494,14 +1494,6 @@ planned_test_classes:
   category:
   - doc-drift
 business_magic_exempt:
-- file: Sources/Core/Base/Extensions/String+PhoneNumber.swift
-  line: 16
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Core/Base/Extensions/String+PhoneNumber.swift
-  line: 17
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
 - file: Sources/Core/Base/Utils/AppError.swift
   line: 55
   reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
@@ -1684,62 +1676,6 @@ business_magic_exempt:
   expiry_check: false
 - file: Sources/Infrastructure/Processors/Graph/GraphLayoutProcessor.swift
   line: 254
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 94
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 126
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 129
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 133
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 142
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 143
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 144
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 154
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 157
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 159
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 161
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 165
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 167
-  reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
-  expiry_check: false
-- file: Sources/Infrastructure/Processors/Network/SSRFGuard.swift
-  line: 169
   reason: 存量违规，待 A 任务统一修复（抽取常量/L10n/Regex 枚举）
   expiry_check: false
 - file: Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift

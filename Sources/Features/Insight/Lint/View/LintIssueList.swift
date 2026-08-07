@@ -23,7 +23,7 @@ struct LintHealthCheckSection: View {
 
     var formattedLastDate: String {
         if let date = aiStore.lastLintDate {
-            return date.formatted(as: Date.AppFormat.slashDetailed)
+            return date.formatted(as: Date.AppFormatStyle.slashDetailed)
         }
         return L10n.Lint.lastCheckNever
     }

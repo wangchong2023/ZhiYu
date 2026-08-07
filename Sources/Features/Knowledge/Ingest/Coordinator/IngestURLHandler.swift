@@ -8,6 +8,7 @@
 //  核心职责：URL/剪贴板导入处理 — 网页抓取、批量 URL 任务编排与剪贴板内容导入。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - URL / 剪贴板导入处理
 

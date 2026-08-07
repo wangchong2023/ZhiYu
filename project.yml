@@ -219,7 +219,6 @@ targets:
       # ServiceContainer 由 UFPCore SPM 包提供（方案 A：消除重复源码）
       - path: Sources/Core/Base/Utils/Localized.swift
       - path: Sources/Core/Base/Utils/PageContentUtility.swift
-      - path: Sources/Core/Base/Utils/Character+CJK.swift
       - path: Sources/Core/Base/Constants
       - path: Sources/Core/Base/Stubs
       - path: Sources/Core/Base/Protocols
