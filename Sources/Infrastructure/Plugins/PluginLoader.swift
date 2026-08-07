@@ -50,7 +50,7 @@ final class PluginLoader {
     ///   - manifest: 插件清单（含 codeSignature 字段）
     ///   - isTrustedLocal: 是否为内部生成的可信本地插件（loadPluginFromRawJS 路径）
     /// - Returns: true 表示签名有效或为内置信任插件；false 表示签名缺失或不匹配
-    private static func verifyPluginSignature(script: String, manifest: PluginManifest, isTrustedLocal: Bool = false) -> Bool {
+    static func verifyPluginSignature(script: String, manifest: PluginManifest, isTrustedLocal: Bool = false) -> Bool {
         // 审查修复 HIGH-2: local. 豁免仅限 loadPluginFromRawJS 内部生成路径
         // 外部 manifest（.zyplugin / 明文目录）的 local. 前缀视为可疑，强制要求签名
         if isTrustedLocal {
@@ -92,7 +92,7 @@ final class PluginLoader {
     }
 
     /// 常量时间字节比较（审查修复 MED-2）
-    private static func constantTimeCompare(_ a: Data, _ b: Data) -> Bool {
+    static func constantTimeCompare(_ a: Data, _ b: Data) -> Bool {
         guard a.count == b.count else { return false }
         var result: UInt8 = 0
         for i in 0..<a.count {
@@ -383,7 +383,7 @@ extension String {
 }
 
 /// 审查修复 MED-2: Data hex 编解码辅助
-private extension Data {
+extension Data {
     /// 从 hex 字符串构造 Data
     init?(hexString: String) {
         let cleaned = hexString.lowercased().replacingOccurrences(of: " ", with: "")

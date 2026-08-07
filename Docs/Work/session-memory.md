@@ -2,7 +2,7 @@
 
 > **用途**：跨会话恢复上下文。新会话开头让 Agent 读取本文件即可恢复进度。
 > **最后更新**：2026-08-07
-> **状态**：批次 7-E 完成（26 用例全绿），Infrastructure 层 75.21% → 待提升至 85%，已 commit `8eba39bf` 推送 gitlab（GitHub 超时待重试）
+> **状态**：批次 7-F 完成（40 用例全绿），Infrastructure 层 75.21% → 待运行覆盖率报告确认提升，已 commit `5d37e2c2` 推送 gitlab（13 项门禁全通过）
 
 ---
 
@@ -87,6 +87,16 @@
   - `LLMChatServiceTests` (5): chat 成功/失败路径、Mock LLMClient 注入、历史记录、空 choices
   - `DocumentExtractionServiceTests` (9): canExtract 格式白名单、TextProcessorProxy 文本提取、不支持格式错误
   - **避免重复测试**：删除了与现有 `StreamDeanonymizerTests`/`ImageExtractorTests`/`ModelDownloadManagerTests` 重复的测试类
+- **批次 7-F 全部完成** ✅ — 1 个新测试文件，40 个用例全绿，commit `5d37e2c2` 推送 gitlab
+  - `Tests/Unit/Infrastructure/LLMDegradationAndStorageUtilityTests.swift`（语义化命名）
+  - `DemoPDFBuilderLogicTests` (14): sanitizeMarkdownText/isTableSeparator/ensurePDFExists
+  - `OnDeviceLLMServiceLogicTests` (12): extractTags/状态变更/OnDeviceModel 计算属性
+  - `IngestLLMServiceDegradationTests` (4): 未配置时降级返回语义
+  - `ChatLLMServiceDegradationTests` (4): isEnabled/generate/chat/chatStream 降级
+  - `TagRepositoryMigrationTests` (3): migrateLegacyTags 提取/空标签/幂等性
+  - `SQLiteStoreStorageStatsTests` (5): folderSize/getStorageStats/addLog no-op
+  - **访问级别调整**（private → internal）：DemoPDFBuilder.sanitizeMarkdownText/isTableSeparator、OnDeviceLLMService.extractTags、SQLiteStore.folderSize
+  - **修复**：UUID.data 不存在 → 直接传 UUID（GRDB 原生 blob 持久化）；SwiftLint force_unwrapping → XCTUnwrap + Data(_:utf8)；3 个测试方法缺少 throws 签名
 - **全量单元测试 2927 个全部通过** ✅ — `TEST SUCCEEDED`，0 失败，170 秒（含批次 7-E 新增 26 用例）
 
 ### In Progress
@@ -104,8 +114,8 @@
 - **批次 7-E 避免重复测试**：`StreamDeanonymizer`/`ImageExtractor`/`ModelDownloadManager` 已有完整测试，不重复编写
 
 ## Next Steps
-- 批次 7-F 补测第二梯队文件（OnDeviceLLMService/DemoPDFBuilder/IngestLLMService/ChatLLMService/TagRepository/SQLiteStore）
-- 批次 7-E commit 推送 gitlab（已 commit `8eba39bf`，推送超时待重试）
+- 运行覆盖率报告确认 Infrastructure 层提升情况（75.21% → 目标 85%）
+- 分析剩余低覆盖率文件，规划批次 7-G（如 ChatRunner 440 行 14.3%、MaintenanceService 116 行 34.5%、DataCoordinator 56 行 1.8%）
 - Infrastructure 层覆盖率提升至 85%（当前 75.21%，缺口 ~1464 行）
 
 ## Critical Context
@@ -149,8 +159,10 @@
 
 ## Todo List
 - [x] 批次 7-E: 补测 Infrastructure 第一梯队纯逻辑文件（XlsxStringsProcessor/SchemaService/LLMChatService/DocumentExtractionService） (priority: high)
-- [in_progress] 批次 7-E: 全量测试验证 + commit + 推送 gitlab（已 commit `8eba39bf`，推送超时待重试） (priority: high)
-- [ ] 批次 7-F: 补测 Infrastructure 第二梯队（OnDeviceLLMService/DemoPDFBuilder/IngestLLMService/ChatLLMService/TagRepository/SQLiteStore） (priority: medium)
+- [x] 批次 7-E: 全量测试验证 + commit + 推送 gitlab（已 commit `8eba39bf`，推送超时待重试） (priority: high)
+- [x] 批次 7-F: 补测 Infrastructure 第二梯队（OnDeviceLLMService/DemoPDFBuilder/IngestLLMService/ChatLLMService/TagRepository/SQLiteStore） (priority: medium)
+- [ ] 运行覆盖率报告确认 Infrastructure 层提升情况 (priority: high)
+- [ ] 规划批次 7-G：剩余低覆盖率文件（ChatRunner/MaintenanceService/DataCoordinator 等） (priority: medium)
 
 ---
 
@@ -161,7 +173,7 @@
 或直接：
 > "读 `Docs/Work/session-memory.md` 继续"
 
-**当前应继续的下一步**：批次 7-F 补测 Infrastructure 第二梯队文件（OnDeviceLLMService/DemoPDFBuilder/IngestLLMService/ChatLLMService/TagRepository/SQLiteStore）。
+**当前应继续的下一步**：运行覆盖率报告确认 Infrastructure 层提升情况，然后规划批次 7-G 补测剩余低覆盖率文件（ChatRunner 440 行 14.3%、MaintenanceService 116 行 34.5%、DataCoordinator 56 行 1.8% 等）。
 命令参考：
 ```bash
 # 全量单元测试（排除 UI 测试，~3 分钟）

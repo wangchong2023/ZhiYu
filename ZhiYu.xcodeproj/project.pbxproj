@@ -831,6 +831,7 @@
 		69B1A06C27F1EE60DC1373F4 /* LLMConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FB00671B8090A4261724DEF /* LLMConstants.swift */; };
 		69C402C4518A0A60655253E7 /* PDFHighlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD22E3945F837CBDA45D34C /* PDFHighlightTests.swift */; };
 		69D72AC7CFFDDD47E44207E0 /* L10n+Onboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DA32F892D576087073212F /* L10n+Onboarding.swift */; };
+		6A85C837B5324AA523D665C3 /* InfrastructureSecurityAndUtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C01123985A7D4DB5A117DF /* InfrastructureSecurityAndUtilityTests.swift */; };
 		6A861878EB2A3305E590DE6D /* LabChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51F201DC0018DF72813AD5A /* LabChatMessage.swift */; };
 		6A9B103684ED5DE6119A88C8 /* TaskRoutingRulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82A776814B680F25744CB385 /* TaskRoutingRulesView.swift */; };
 		6AD7012008BE45A2E3B56D85 /* RAGGovernanceStoreEdgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91EFD22EBD0EC8660D028CDE /* RAGGovernanceStoreEdgeTests.swift */; };
@@ -2306,6 +2307,7 @@
 		27225A732EA9DEE5493E0E41 /* ModuleRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleRegistrar.swift; sourceTree = "<group>"; };
 		276DC2A74280CCA69536B960 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		27BC44AFD8B08B3832ECDF5C /* en */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = en; path = en.lproj/ocr_folder_scan.png; sourceTree = "<group>"; };
+		27C01123985A7D4DB5A117DF /* InfrastructureSecurityAndUtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfrastructureSecurityAndUtilityTests.swift; sourceTree = "<group>"; };
 		280DB8883AFC664FF9B7CB09 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = "zh-Hans"; path = "zh-Hans.lproj/pkm_workflow.md"; sourceTree = "<group>"; };
 		283392E7911FC70AC432C463 /* SynthesisSlidesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthesisSlidesView.swift; sourceTree = "<group>"; };
 		28377D943D32A86B47EBFDED /* OCRImageContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRImageContentView.swift; sourceTree = "<group>"; };
@@ -6264,6 +6266,7 @@
 				D6317AC4D2AC2087E51CE4F6 /* GraphCommunityProcessorSupplementTests.swift */,
 				4ED909269A4DC76049DF4BB0 /* InferenceParametersStoreTests.swift */,
 				B61463142F452462B0A79A95 /* InfrastructurePureLogicTests.swift */,
+				27C01123985A7D4DB5A117DF /* InfrastructureSecurityAndUtilityTests.swift */,
 				C3AF0BF37240ED5E5E04AAE3 /* LLMContextBuilderSupplementTests.swift */,
 				BECF52489AC9351317EA62B8 /* LLMDegradationAndStorageUtilityTests.swift */,
 				D179597D6B1716EFCBBF02BE /* LLMModelsTests.swift */,
@@ -7049,6 +7052,7 @@
 				1F56E1D5A280E8B9AD7E11C6 /* ImportSynthesisLinkTests.swift in Sources */,
 				22CA942D58E08603A9525A75 /* InferenceParametersStoreTests.swift in Sources */,
 				0394AC29B7A7301B78EE77BF /* InfrastructurePureLogicTests.swift in Sources */,
+				6A85C837B5324AA523D665C3 /* InfrastructureSecurityAndUtilityTests.swift in Sources */,
 				12B22589D2115755E8728E31 /* IngestQueueTests.swift in Sources */,
 				6744498CD623B702DE578CC9 /* IngestSanitationPipelineEdgeTests.swift in Sources */,
 				053E7C3A4E8447270EC81A50 /* IngestSanitationPipelineTests.swift in Sources */,

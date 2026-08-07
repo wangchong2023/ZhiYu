@@ -301,7 +301,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         try? FileManager.default.removeItem(at: destinationURL)
     }
     
-    nonisolated fileprivate func verifySHA256(of fileURL: URL, expectedHash: String) -> Bool {
+    nonisolated func verifySHA256(of fileURL: URL, expectedHash: String) -> Bool {
         guard !expectedHash.isEmpty else { return true } // 如果白名单未配置哈希，视为跳过校验
         
         // 强制约束：标准的 SHA-256 十六进制哈希串必然是 64 字符。如果提供了非 64 位的占位符，直接判定校验失败，绝不放行不完整的大模型权重。
