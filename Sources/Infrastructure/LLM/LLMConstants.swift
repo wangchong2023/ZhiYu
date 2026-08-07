@@ -210,4 +210,73 @@ public enum LLMConstants {
         /// 端侧 CoreML 模型资源名
         public static let appLLM: String = "AppLLM"
     }
+
+    // MARK: - UI 自动化测试 Mock 参数 (UITesting Mock Parameters)
+
+    /// UI 自动化测试模式下 Mock 响应参数常量集
+    /// 集中管理 `--uitesting` 自愈分支的延迟、Mock 文本与流式 chunks
+    public enum UITesting {
+        /// 纳秒与秒的换算系数
+        public static let nanosecondsPerSecond: Double = 1_000_000_000
+        /// 非流式 Mock 响应初始延迟（秒）
+        public static let mockNonStreamDelaySeconds: Double = 0.5
+        /// 流式 Mock 响应初始延迟（秒），模拟 RAG 检索/思考状态
+        public static let mockStreamInitialDelaySeconds: Double = 1.5
+        /// 流式 Mock 字间吐字延迟（秒）
+        public static let mockStreamChunkDelaySeconds: Double = 0.15
+
+        /// 非流式 Mock 大模型回复内容（纯 ASCII，避免 L10n 红线）
+        public static let mockNonStreamReply: String = "Mock non-stream LLM reply for UI testing."
+        /// Mock RAG 回复内容（纯 ASCII，避免 L10n 红线）
+        public static let mockRAGReply: String = "Mock non-stream RAG reply for UI testing."
+
+        /// 流式 Mock 打字机 chunks 数组（纯 ASCII，避免 L10n 红线）
+        public static let mockStreamChunks: [String] = [
+            "Mock", " stream", " LLM", " reply", " for", " UI", " testing.",
+            " Supports", " RAG", " deep", " citation", " retrieval", " auto-heal."
+        ]
+    }
+
+    // MARK: - 端侧模型 ID 字面量 (On-Device Model ID Literals)
+
+    /// 端侧模型 ID 字面量常量集（补充 ModelIDPrefix 未覆盖的完整 ID）
+    public enum OnDeviceModelID {
+        /// 内置 ZhiYu 模型 ID
+        public static let bundledZhiyu: String = "bundled_zhiyu"
+        /// Apple Intelligence 模型 ID
+        public static let appleIntelligence: String = "apple_intelligence"
+    }
+
+    // MARK: - 端侧模型持久化 Key (On-Device Storage Key)
+
+    /// 端侧模型偏好持久化 UserDefaults Key
+    public enum OnDeviceStorage {
+        /// 本地选型偏好持久化 Key
+        public static let configKey: String = "zhiyu_ondevice_config"
+    }
+
+    // MARK: - 端侧模型 SF Symbol 图标名 (On-Device Icon Names)
+
+    /// 端侧模型 SF Symbol 图标名常量集
+    public enum OnDeviceIcon {
+        /// 内置模型图标
+        public static let bundled: String = "cube.box.fill"
+        /// 已下载模型图标
+        public static let downloaded: String = "arrow.down.circle.fill"
+        /// 系统模型图标
+        public static let system: String = "apple.logo"
+    }
+
+    // MARK: - Prompt 指令模板 (Prompt Instruction Templates)
+
+    /// Prompt 指令模板常量集
+    public enum PromptInstruction {
+        /// 回复篇幅控制指令模板（注入 systemPrompt 末尾）
+        /// - Parameter maxChars: 最大字符数
+        public static func lengthHint(_ maxChars: Int) -> String {
+            "\nKeep response within \(maxChars) characters."
+        }
+        /// 端侧 LLM chat prompt 中的 Question 标签
+        public static let questionLabel: String = "Question"
+    }
 }

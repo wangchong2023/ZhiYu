@@ -63,6 +63,7 @@ enum StorageConstants {
     enum LogDetails {
         static let initialNotebookVaultCreated = "InitialNotebook_VaultCreated"
         static let initialNotebookFailed = "InitialNotebook_Failed"
+        static let initialNotebookPageCountRefreshed = "InitialNotebook_PageCountRefreshed"
         static let seededDefaultContent = "Seeded_default_content"
         static let seededResearchContent = "Seeded_research_content"
         static let seededFallbackContent = "Seeded_fallback_content"
@@ -73,6 +74,14 @@ enum StorageConstants {
         static let appBackupSuccess2 = "AppBackup_Success2"
         static let vaultFailed1 = "Vault_Failed1"
         static let errorPlaceholder = "%@"
+    }
+
+    // MARK: - 环境变量与启动参数 (Launch Environment & Arguments)
+    enum LaunchEnvironment {
+        /// UI 自动化测试环境变量 Key
+        static let uitestingEnvKey = "UITesting"
+        /// UI 自动化测试启动参数
+        static let uitestingLaunchArg = "--uitesting"
     }
 
     // MARK: - 错误域 (Error Domain)

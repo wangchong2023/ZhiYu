@@ -55,7 +55,7 @@ final class ImageExtractor: Sendable {
 
     /// 从 DOCX/XLSX 文件中提取嵌入图片并 OCR
     func extractImagesFromOfficeFile(at url: URL) async -> String {
-        let imageFolders = ["word/media", "xl/media", "ppt/media"]
+        let imageFolders = ProcessorConstants.OOXML.imageMediaFolders
         var allData: [Data] = []
 
         guard let archive = ZipUtility.readZipArchive(at: url) else { return "" }

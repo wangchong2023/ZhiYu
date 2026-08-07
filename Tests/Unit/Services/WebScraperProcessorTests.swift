@@ -43,8 +43,8 @@ final class WebScraperProcessorTests: XCTestCase {
     /// 验证当 Jina API 与直连抓取都失败（模拟 Jina 挂掉）时，级联自愈落入 Level 4 兜底备份模板 (TC-ING-03)
     func testCascadeGrabDisasterRecovery() async throws {
         // 使用一个由于域名无法解析必然失败的无效地址
-        let failedURL = "http://invalid-host-domain-never-exist-112233.com"
-        
+        let failedURL = "http://\(ProcessorConstants.WebScraper.invalidHostTestDomain)"
+
         let (markdown, title) = try await scraper.fetchMarkdown(from: failedURL)
         
         // 验证系统没有抛出异常，而是自愈性落入 Level 4 的灾备恢复模板

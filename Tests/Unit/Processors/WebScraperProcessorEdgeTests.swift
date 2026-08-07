@@ -118,7 +118,7 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
 
     func testMockHandler_invalidHostDomain_returnsMockRecovery() async throws {
         let processor = WebScraperProcessor()
-        let result = try await processor.fetchMarkdown(from: "invalid-host-domain-never-exist-112233.com")
+        let result = try await processor.fetchMarkdown(from: ProcessorConstants.WebScraper.invalidHostTestDomain)
         XCTAssertTrue(result.markdown.contains("recovered content"))
         XCTAssertEqual(result.title, "Recovered Article Title")
     }

@@ -107,7 +107,7 @@ struct MockScraperHandler: WebScraperHandler {
             return DumbExtractorHandler.extractFromHTML(mockPaywallHTML)
         }
         
-        if url.host == "invalid-host-domain-never-exist-112233.com" {
+        if url.host == ProcessorConstants.WebScraper.invalidHostTestDomain {
 // swiftlint:disable:next force_unwrapping
             let mockData = Data(base64Encoded: "PGh0bWw+PGhlYWQ+PHRpdGxlPlJlY292ZXJlZCBBcnRpY2xlIFRpdGxlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+VGhpcyBpcyByZWNvdmVyZWQgY29udGVudC4gVGhlIHdlYnNpdGUgYmxvY2tlZCBhdXRvbWF0ZWQgc2NyYXBpbmcsIGJ1dCB0aGUgc3lzdGVtIHN1Y2Nlc3NmdWxseSBieXBhc3NlZCBpdCB1c2luZyBsb2NhbCBkaXNhc3RlciByZWNvdmVyeSB0ZW1wbGF0ZXMuPC9wPjwvYm9keT48L2h0bWw+")!
 // swiftlint:disable:next force_unwrapping
@@ -261,41 +261,37 @@ struct DumbExtractorHandler: WebScraperHandler {
     /// - Returns: (markdown文本, 标题)
     static func extractFromHTML(_ html: String) -> (markdown: String, title: String) {
         // Step 1: 提取 <title>
-        let titlePattern = "<title>(.*?)</title>"
-        let titleRegex = try? NSRegularExpression(pattern: titlePattern, options: [.caseInsensitive, .dotMatchesLineSeparators])
+        let titleRegex = try? NSRegularExpression(pattern: ProcessorConstants.HTMLRegex.titleTag, options: [.caseInsensitive, .dotMatchesLineSeparators])
         var title = ""
-        
+
         if let regex = titleRegex,
            let match = regex.firstMatch(in: html, options: [], range: NSRange(html.startIndex..., in: html)) {
             if let titleRange = Range(match.range(at: 1), in: html) {
                 title = String(html[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
-        
+
         // Step 2: 优先提取 <article>，回退到 <main>，最终使用全文
         var contentToParse = html
-        let articlePattern = "(?i)<article[^>]*>(.*?)</article>"
-        let mainPattern = "(?i)<main[^>]*>(.*?)</main>"
-        
-        if let articleRegex = try? NSRegularExpression(pattern: articlePattern, options: [.caseInsensitive, .dotMatchesLineSeparators]),
+
+        if let articleRegex = try? NSRegularExpression(pattern: ProcessorConstants.HTMLRegex.articleTag, options: [.caseInsensitive, .dotMatchesLineSeparators]),
            let match = articleRegex.firstMatch(in: html, options: [], range: NSRange(html.startIndex..., in: html)),
            let articleRange = Range(match.range(at: 1), in: html) {
             contentToParse = String(html[articleRange])
-        } else if let mainRegex = try? NSRegularExpression(pattern: mainPattern, options: [.caseInsensitive, .dotMatchesLineSeparators]),
-                  let match = mainRegex.firstMatch(in: html, options: [], range: NSRange(html.startIndex..., in: html)),
-                  let mainRange = Range(match.range(at: 1), in: html) {
+        } else if let mainRegex = try? NSRegularExpression(pattern: ProcessorConstants.HTMLRegex.mainTag, options: [.caseInsensitive, .dotMatchesLineSeparators]),
+                   let match = mainRegex.firstMatch(in: html, options: [], range: NSRange(html.startIndex..., in: html)),
+                   let mainRange = Range(match.range(at: 1), in: html) {
             contentToParse = String(html[mainRange])
         }
-        
+
         // Step 3: 去除 <script> 和 <style> 标签
         contentToParse = contentToParse.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.scriptBlock, with: "", options: .regularExpression)
         contentToParse = contentToParse.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.styleBlockCaseInsensitive, with: "", options: .regularExpression)
-        
+
         // Step 4: 提取所有 <p> 段落并清洗 HTML 标签
-        let pPattern = "<p[^>]*>(.*?)</p>"
-        let pRegex = try? NSRegularExpression(pattern: pPattern, options: [.caseInsensitive, .dotMatchesLineSeparators])
+        let pRegex = try? NSRegularExpression(pattern: ProcessorConstants.HTMLRegex.paragraphTag, options: [.caseInsensitive, .dotMatchesLineSeparators])
         var paragraphs: [String] = []
-        
+
         if let regex = pRegex {
             let matches = regex.matches(in: contentToParse, options: [], range: NSRange(contentToParse.startIndex..., in: contentToParse))
             for match in matches {
@@ -308,30 +304,21 @@ struct DumbExtractorHandler: WebScraperHandler {
                 }
             }
         }
-        
+
         var markdown = "# \(title)\n\n"
         if paragraphs.isEmpty {
             markdown += ""
         } else {
             markdown += paragraphs.joined(separator: "\n\n")
         }
-        
+
         return (markdown, title)
     }
-    
+
     /// 清洗 HTML 标签与字符实体：去除所有尖括号标签，解码 &quot; / &amp; / &lt; 等 HTML 实体。
-    static private func cleanHTMLTags(_ text: String) -> String {
+    static func cleanHTMLTags(_ text: String) -> String {
         var clean = text.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.allTags, with: "", options: .regularExpression)
-        let entities = [
-            "&quot;": "\"",
-            "&amp;": "&",
-            "&lt;": "<",
-            "&gt;": ">",
-            "&nbsp;": " ",
-            "&apos;": "'",
-            "&#39;": "'"
-        ]
-        for (entity, char) in entities {
+        for (entity, char) in ProcessorConstants.HTMLEntity.decodeMap {
             clean = clean.replacingOccurrences(of: entity, with: char)
         }
         return clean.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -230,6 +230,8 @@ enum ProcessorConstants {
         static let sharedStringIndexOpen: String = "["
         static let sharedStringIndexClose: String = "]"
         static let sharedStringIndexMax: Int = 10000
+        // Office 文档嵌入图片的媒体目录路径
+        static let imageMediaFolders: [String] = ["word/media", "xl/media", "ppt/media"]
     }
 
     // MARK: - 空白字符 (Whitespace)
@@ -280,6 +282,43 @@ enum ProcessorConstants {
         static let httpsPrefix: String = "https:"
         /// 通用桌面浏览器 UA（不硬编码具体版本号，避免维护负担）
         static let desktopUserAgent: String = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
+        /// Mock 测试用无效主机域名（用于验证本地灾难恢复流程）
+        static let invalidHostTestDomain: String = "invalid-host-domain-never-exist.example.com"
+    }
+
+    // MARK: - HTML 提取正则模式 (HTML Extraction Regex)
+    enum HTMLRegex {
+        /// 匹配 <title> 标签内容
+        static let titleTag: String = "<title>(.*?)</title>"
+        /// 匹配 <article> 标签内容（大小写不敏感）
+        static let articleTag: String = "(?i)<article[^>]*>(.*?)</article>"
+        /// 匹配 <main> 标签内容（大小写不敏感）
+        static let mainTag: String = "(?i)<main[^>]*>(.*?)</main>"
+        /// 匹配 <p> 段落标签内容
+        static let paragraphTag: String = "<p[^>]*>(.*?)</p>"
+    }
+
+    // MARK: - HTML 实体解码映射 (HTML Entity Decoding)
+    enum HTMLEntity {
+        /// HTML 实体 → 字符映射表（覆盖常见命名实体与数字实体）
+        static let decodeMap: [String: String] = [
+            "&quot;": "\"",
+            "&amp;": "&",
+            "&lt;": "<",
+            "&gt;": ">",
+            "&nbsp;": " ",
+            "&apos;": "'",
+            "&#39;": "'",
+            "&#34;": "\"",
+            "&#60;": "<",
+            "&#62;": ">",
+            "&hellip;": "…",
+            "&mdash;": "—",
+            "&ndash;": "–",
+            "&trade;": "™",
+            "&copy;": "©",
+            "&reg;": "®"
+        ]
     }
 
     // MARK: - 文件格式 (File Format)

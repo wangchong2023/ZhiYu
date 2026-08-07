@@ -27,24 +27,24 @@ final class LLMChatService: Sendable {
     // MARK: - 请求构造
 
     /// 构建标准对话消息数组
-    private func buildChatMessages(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [[String: Any]] {
+    func buildChatMessages(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [[String: Any]] {
         // 注入回复篇幅控制指令，引导模型在可配区间内作答
-        let lengthHint = "\nKeep response within \(PromptConstants.TokenLimits.defaultMaxOutputTokens) characters."
+        let lengthHint = LLMConstants.PromptInstruction.lengthHint(PromptConstants.TokenLimits.defaultMaxOutputTokens)
         let fullSystemPrompt = systemPrompt + PromptService.shared.languageInstruction + lengthHint
         var messages: [[String: Any]] = [[LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: fullSystemPrompt]]
-        
+
         // 注入历史记录
         for msg in history {
             messages.append([LLMConstants.APIKey.role: msg.role.rawValue, LLMConstants.APIKey.content: msg.content])
         }
-        
+
         // 注入当前查询
         messages.append([LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: query])
         return messages
     }
 
     /// 构造非流式请求体
-    private func makeChatRequestBody(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [String: Any] {
+    func makeChatRequestBody(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [String: Any] {
         [
             LLMConstants.APIKey.model: model,
             LLMConstants.APIKey.messages: buildChatMessages(systemPrompt: systemPrompt, query: query, history: history),
@@ -54,7 +54,7 @@ final class LLMChatService: Sendable {
     }
 
     /// 构造流式请求体
-    private func makeStreamingRequestBody(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [String: Any] {
+    func makeStreamingRequestBody(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [String: Any] {
         var body = makeChatRequestBody(systemPrompt: systemPrompt, query: query, history: history)
         body[LLMConstants.APIKey.stream] = true
         return body
@@ -73,6 +73,9 @@ final class LLMChatService: Sendable {
         return content
     }
 
+    /// Sendable 包装器：将非 Sendable 的 `[String: Any]` 请求体跨 actor 边界传递。
+    /// `@unchecked Sendable` 的前提条件：body 仅含 Sendable 类型（String/Int/Double/Bool/Array/嵌套字典），
+    /// 不含引用类型或非 Sendable 值。调用方 `makeStreamingRequestBody` 保证此约束。
     private struct SendableBody: @unchecked Sendable {
         let dict: [String: Any]
     }

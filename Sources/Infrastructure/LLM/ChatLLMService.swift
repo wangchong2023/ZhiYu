@@ -41,8 +41,8 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
     public func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         // UI 自动化测试靶场下的智能自愈：直接返回本地 Mock 保证 100% 绿通
         if ProcessInfo.processInfo.arguments.contains("--uitesting") {
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-            return "\u{8FD9}\u{662F}\u{9488}\u{5BF9}UI\u{6D4B}\u{8BD5}\u{7684}\u{975E}\u{6D41}\u{5F0F}Mock\u{5927}\u{6A21}\u{578B}\u{56DE}\u{590D}\u{5185}\u{5BB9}\u{3002}"
+            try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockNonStreamDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
+            return LLMConstants.UITesting.mockNonStreamReply
         }
         
         guard isEnabled, !configManager.apiKey.isEmpty else {
@@ -81,11 +81,11 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
     public func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         // UI 自动化测试靶场下的智能自愈：直接返回本地 RAG Mock 保证 100% 绿通
         if ProcessInfo.processInfo.arguments.contains("--uitesting") {
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
+            try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockNonStreamDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
             return ChatMessageDTO(
                 id: UUID(),
                 role: .assistant,
-                content: "\u{8FD9}\u{662F}UI\u{6D4B}\u{8BD5}\u{4E0B}Mock\u{7684}\u{975E}\u{6D41}\u{5F0F}RAG\u{56DE}\u{7B54}\u{3002}",
+                content: LLMConstants.UITesting.mockRAGReply,
                 timestamp: Date(),
                 relatedPageIDs: pages.map { $0.id }
             )
@@ -131,16 +131,16 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
             return AsyncThrowingStream { continuation in
                 Task {
                     // 模拟在发送大语言模型请求之前的 RAG 检索/思考状态，以留出时间给 UI 测试捕获骨架屏
-                    try? await Task.sleep(nanoseconds: UInt64(1.5 * 1_000_000_000))
-                    
-                    let mockChunks = ["\u{8FD9}\u{662F}", "\u{5728}", "UI", "\u{6D4B}\u{8BD5}", "\u{4E0B}", "\u{6D41}\u{5F0F}", "\u{751F}\u{6210}", "\u{7684}", "Mock", "\u{5927}\u{6A21}\u{578B}", "\u{56DE}\u{590D}", "\u{5185}\u{5BB9}\u{3002}", "\u{652F}\u{6301}", "RAG", "\u{6DF1}\u{5EA6}", "\u{5F15}\u{7528}", "\u{68C0}\u{7D22}", "\u{81EA}\u{6108}\u{3002}"]
+                    try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockStreamInitialDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
+
+                    let mockChunks = LLMConstants.UITesting.mockStreamChunks
                     for chunk in mockChunks {
                         if Task.isCancelled {
                             break
                         }
                         continuation.yield(chunk)
                         // 模拟字间吐字延迟
-                        try? await Task.sleep(nanoseconds: UInt64(0.15 * 1_000_000_000))
+                        try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockStreamChunkDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
                     }
                     continuation.finish()
                 }

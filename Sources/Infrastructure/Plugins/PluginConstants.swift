@@ -1,0 +1,49 @@
+//
+//  PluginConstants.swift
+//  ZhiYu
+//
+//  Created by Antigravity on 2026/08/07.
+//  Copyright © 2026 WangChong. All rights reserved.
+//
+//  系统层级：[L1] 基础设施层
+//  核心职责：插件系统模块的强类型常量集。
+//           消除 JS 沙箱时间限制、载荷大小、本地化语言、
+//           默认 manifest 值等散落的魔鬼数字与字符串。
+//
+
+import Foundation
+import UFPCore
+
+/// 插件系统模块常量集
+enum PluginConstants {
+
+    // MARK: - JS 沙箱限制 (Sandbox Limits)
+    enum Sandbox {
+        /// JSContextGroup 单次执行时间限制（秒）
+        static let jsExecutionTimeLimitSeconds: Double = 0.5
+        /// 插件预处理/后处理响应最大载荷 MB 数
+        static let maxResponseSizeMB: Int = 5
+        /// 插件预处理/后处理响应最大字节数（maxResponseSizeMB * KB²）
+        static let maxResponseSizeBytes: Int = maxResponseSizeMB * Int(SystemConstants.bytesPerKB) * Int(SystemConstants.bytesPerKB)
+    }
+
+    // MARK: - 本地化语言要求 (Localization)
+    enum Localization {
+        /// 插件 README 强制要求的语言列表
+        static let requiredLocales: [String] = ["en", "zh-Hans"]
+    }
+
+    // MARK: - 默认 Manifest 值 (Default Manifest Values)
+    enum DefaultManifest {
+        /// 裸 .js 插件的默认版本号
+        static let version: String = "1.0.0"
+        /// 裸 .js 插件的默认作者名
+        static let author: String = "Local Developer"
+        /// 裸 .js 插件的默认权限列表
+        static let permissions: [String] = ["log", "writeContent"]
+        /// 裸 .js 插件的默认描述（英文）
+        static let descriptionEn: String = "Legacy .js plugin (migrate to .zyplugin format)"
+        /// 裸 .js 插件的 ID 前缀
+        static let idPrefix: String = "local."
+    }
+}

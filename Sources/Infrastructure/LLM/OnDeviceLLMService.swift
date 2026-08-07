@@ -49,7 +49,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     private var currentModel: AnyObject?
     
     /// 本地选型偏好持久化 Key
-    private let configKey = "zhiyu_ondevice_config"
+    private let configKey = LLMConstants.OnDeviceStorage.configKey
     
     /// 注入的模型编译器，用于处理平台差异化编译与沙盒物理转换
     @ObservationIgnored @Inject var compiler: MLModelCompilerProtocol
@@ -88,7 +88,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         // 1. 扫描 App Bundle 中内置的专属 AppLLM.mlmodelc 模型
         if let modelURL = Bundle.main.url(forResource: LLMConstants.BundleResource.appLLM, withExtension: SystemConstants.FileExtension.mlmodelC) {
             models.append(OnDeviceModel(
-                id: "bundled_zhiyu",
+                id: LLMConstants.OnDeviceModelID.bundledZhiyu,
                 name: LLMConstants.OnDeviceModel.bundledName,
                 url: modelURL,
                 size: estimateModelSize(url: modelURL),
@@ -116,7 +116,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         // 3. 针对 iOS 18.1+ 设备，自动追加系统级 Apple Intelligence 支持标签
         if #available(iOS 18.1, *) {
             models.append(OnDeviceModel(
-                id: "apple_intelligence",
+                id: LLMConstants.OnDeviceModelID.appleIntelligence,
                 name: LLMConstants.OnDeviceModel.appleIntelligenceName,
                 url: nil,
                 size: 0,
@@ -250,7 +250,9 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
 
                 if let generated = generatedTextResult {
                     let elapsed = Date().timeIntervalSince(startTime)
-                    let tokenCount = generated.split(separator: " ").count
+                    // 按字符数估算 token（约 4 字符/Token），与 AIAnalyticsService 估算方式一致，
+                    // 避免空格分割对中文/日文等无空格分隔语言的严重低估
+                    let tokenCount = max(1, generated.count / PromptConstants.TokenLimits.charactersPerToken)
                     inferenceSpeed = Double(tokenCount) / elapsed
 
                     generatedText = generated
@@ -309,7 +311,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
             context += "\n\n## \(page.title)\n\(String(page.content.prefix(Config.contentPreviewChars)))"
         }
 
-        let prompt = "\(context)\n\n\("Question"): \(query)"
+        let prompt = "\(context)\n\n\(LLMConstants.PromptInstruction.questionLabel): \(query)"
         return try await generate(prompt: prompt, maxTokens: Config.chatMaxTokens)
     }
 
@@ -406,9 +408,9 @@ public struct OnDeviceModel: Identifiable, Sendable {
 
     public var icon: String {
         switch type {
-        case .bundled: return "cube.box.fill"
-        case .downloaded: return "arrow.down.circle.fill"
-        case .system: return "apple.logo"
+        case .bundled: return LLMConstants.OnDeviceIcon.bundled
+        case .downloaded: return LLMConstants.OnDeviceIcon.downloaded
+        case .system: return LLMConstants.OnDeviceIcon.system
         }
     }
 }

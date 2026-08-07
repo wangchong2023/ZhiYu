@@ -166,7 +166,7 @@ final class PluginLoader {
         }
 
         // 强制要求至少 en 和 zh-Hans
-        let requiredLocales = ["en", "zh-Hans"]
+        let requiredLocales = PluginConstants.Localization.requiredLocales
         for locale in requiredLocales {
             guard let filename = readmeMap[locale] else {
                 Logger.shared.warning("[PluginRegistry] \(manifest.id): readmeFiles 缺少 \(locale) 语言")
@@ -344,12 +344,12 @@ final class PluginLoader {
             let scriptContent = try String(contentsOf: fileURL, encoding: .utf8)
             let displayName = fileURL.deletingPathExtension().lastPathComponent
             let manifest = PluginManifest(
-                id: "local.\(displayName)",
-                version: "1.0.0",
-                author: "Local Developer",
-                permissions: ["log", "writeContent"],
+                id: "\(PluginConstants.DefaultManifest.idPrefix)\(displayName)",
+                version: PluginConstants.DefaultManifest.version,
+                author: PluginConstants.DefaultManifest.author,
+                permissions: PluginConstants.DefaultManifest.permissions,
                 names: ["en": displayName],
-                descriptions: ["en": "Legacy .js plugin (migrate to .zyplugin format)"]
+                descriptions: ["en": PluginConstants.DefaultManifest.descriptionEn]
             )
 
             // 🛡️ VULN-001 修复 + 审查修复 HIGH-2: 本地 .js 插件通过 isTrustedLocal 豁免签名

@@ -11,13 +11,29 @@
 
 import Foundation
 import CommonCrypto
+import UFPCore
 
 /// 大模型权重文件后台静默下载与状态管理器
 public actor ModelDownloadManager: ModelDownloadCapabilities {
-    
+
     /// 标准 SHA-256 十六进制哈希串字符数
     private static let sha256HexLength = 64
-    
+
+    /// SHA256 校验流式读取的缓冲区大小（1MB，防止加载数 GB 模型撑爆运行内存）
+    private static let sha256BufferSize = Int(SystemConstants.bytesPerKB) * Int(SystemConstants.bytesPerKB)
+
+    /// 沙盒存储分配失败错误消息前缀
+    private static let sandboxAllocationFailedPrefix = "Sandbox storage allocation failed:"
+
+    /// 下载速度采样最小间隔（秒），避免高频采样抖动
+    private static let downloadSpeedSampleIntervalSeconds: Double = 0.5
+
+    /// 测试用访问器：暴露 private sha256BufferSize 供单元测试验证常量抽取
+    internal static var sha256BufferSizeForTesting: Int { sha256BufferSize }
+
+    /// 测试用访问器：暴露 private sandboxAllocationFailedPrefix 供单元测试验证常量抽取
+    internal static var sandboxAllocationFailedPrefixForTesting: String { sandboxAllocationFailedPrefix }
+
     /// 全局单例注入，便于在 App 顶层会话绑定
     public static let shared = ModelDownloadManager()
     
@@ -196,7 +212,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         var calculatedSpeed: Double = 0
         if let tracker = downloadSpeedTrackers[modelId] {
             let timeDiff = now.timeIntervalSince(tracker.lastTime)
-            if timeDiff >= 0.5 {
+            if timeDiff >= Self.downloadSpeedSampleIntervalSeconds {
                 let bytesDiff = Double(totalBytesWritten - tracker.lastBytes)
                 calculatedSpeed = max(0, bytesDiff / timeDiff)
                 downloadSpeedTrackers[modelId] = SpeedTrackerState(lastBytes: totalBytesWritten, lastTime: now, currentSpeed: calculatedSpeed)
@@ -245,7 +261,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
                 await manager.updateState(for: modelId, to: .completed(localURL: destinationURL))
                 await manager.clearActiveTask(for: modelId)
             } catch {
-                await manager.updateState(for: modelId, to: .failed(error: "Sandbox storage" + " allocation failed:" + " \(error.localizedDescription)"))
+                await manager.updateState(for: modelId, to: .failed(error: "\(Self.sandboxAllocationFailedPrefix) \(error.localizedDescription)"))
             }
         }
     }
@@ -316,7 +332,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         var context = CC_SHA256_CTX()
         CC_SHA256_Init(&context)
         
-        let bufferSize = 1024 * 1024 // 1MB 内存分片读取，防止加载数 GB 模型把运行内存撑爆 (防爆读)
+        let bufferSize = Self.sha256BufferSize // 1MB 内存分片读取，防止加载数 GB 模型把运行内存撑爆 (防爆读)
         while true {
             let data = file.readData(ofLength: bufferSize)
             if data.isEmpty { break }

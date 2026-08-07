@@ -81,7 +81,7 @@ public final class MaintenanceService {
                 totalCount += count
                 vaultDetails.append((name: vault.name, count: count))
                 await vaultService.refreshPageCount(for: vault.id)
-                activeLogger.addLog(action: .create, target: vault.name, details: "InitialNotebook_PageCountRefreshed", module: StorageConstants.LogModule.maintenance)
+                activeLogger.addLog(action: .create, target: vault.name, details: StorageConstants.LogDetails.initialNotebookPageCountRefreshed, module: StorageConstants.LogModule.maintenance)
             } catch {
                 activeLogger.addLog(action: .error, target: vault.name, details: StorageConstants.LogDetails.initialNotebookFailed, module: StorageConstants.LogModule.maintenance)
             }
@@ -94,7 +94,7 @@ public final class MaintenanceService {
         guard pages.isEmpty else { return }
         
         // 是否处于自动化 UI 测试模式，用于自愈保护
-        let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == StorageConstants.OperationStatus.true
+        let isTesting = ProcessInfo.processInfo.arguments.contains(StorageConstants.LaunchEnvironment.uitestingLaunchArg) || ProcessInfo.processInfo.environment[StorageConstants.LaunchEnvironment.uitestingEnvKey] == StorageConstants.OperationStatus.true
         
         // 尝试获取当前选中笔记本名称（当 vaultName 为 nil 时兜底）
         let resolvedName: String? = vaultName ?? VaultService.shared.currentVault?.name

@@ -221,7 +221,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
         try? executeInContext { ctx in
             if let onLoadFunc = ctx.objectForKeyedSubscript("onLoad"), !onLoadFunc.isUndefined {
                 let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, 0.5, { _, _ in return 1 }, nil)
+                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
                 defer {
                     JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
                     JSGarbageCollect(ctx.jsGlobalContextRef)
@@ -236,7 +236,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
         try? executeInContext { ctx in
             if let onUnloadFunc = ctx.objectForKeyedSubscript("onUnload"), !onUnloadFunc.isUndefined {
                 let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, 0.5, { _, _ in return 0 }, nil)
+                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 0 }, nil)
                 defer {
                     JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
                     JSGarbageCollect(ctx.jsGlobalContextRef)
@@ -247,7 +247,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
         self.pluginContext = nil
     }
     
-    private let maxResponseSize = 5 * 1024 * 1024 // 5MB 限制
+    private let maxResponseSize = PluginConstants.Sandbox.maxResponseSizeBytes
     
     /// pre处理
     /// - Parameter content: content
@@ -256,7 +256,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
         return try executeInContext { ctx in
             if let preProcessFunc = ctx.objectForKeyedSubscript("preProcess"), !preProcessFunc.isUndefined {
                 let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, 0.5, { _, _ in return 1 }, nil)
+                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
                 
                 defer {
                     JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
@@ -287,7 +287,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
         return try executeInContext { ctx in
             if let postProcessFunc = ctx.objectForKeyedSubscript("postProcess"), !postProcessFunc.isUndefined {
                 let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, 0.5, { _, _ in return 1 }, nil)
+                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
                 
                 defer {
                     JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
