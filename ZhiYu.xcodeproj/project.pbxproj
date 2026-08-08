@@ -1840,6 +1840,7 @@
 		E57664F667B10141DDD5A5BF /* NotebookFormSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B6127538C7A56887F9F647 /* NotebookFormSheet.swift */; };
 		E5847ADE77C8A561DDBD3339 /* survey_202606.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 2B80EDB5B57C50FF071BACEA /* survey_202606.pdf */; };
 		E58B1DD30E886A2A16435907 /* iOSWatchSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6603AC61F80F212CEAB29F9 /* iOSWatchSyncService.swift */; };
+		E5B8C8960D8CDCE6FA41ABCC /* ModelDownloadManagerStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B5F8D1966A78D44D50C1354 /* ModelDownloadManagerStateTests.swift */; };
 		E5BA6D0D0AF491627960457B /* KnowledgeIngestPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85475C1E8A636EFD9557FF67 /* KnowledgeIngestPipeline.swift */; };
 		E5D5C94BCDE309817A4DD97E /* AuthDTOsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C79DED9E3F0D39EAB6D8BAF /* AuthDTOsTests.swift */; };
 		E6108CBF64A6BA2DDA8A9EF2 /* WatchPasteboardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78BB63AAB505CDF2FC00F5D /* WatchPasteboardService.swift */; };
@@ -2260,6 +2261,7 @@
 		1A3336EA4AF6935884DC08A7 /* KnowledgeRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeRepositoryTests.swift; sourceTree = "<group>"; };
 		1AB96971049540A59EAC1358 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		1B4E177D380B1493529156A3 /* PlatformContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformContextTests.swift; sourceTree = "<group>"; };
+		1B5F8D1966A78D44D50C1354 /* ModelDownloadManagerStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadManagerStateTests.swift; sourceTree = "<group>"; };
 		1BA6B888313581CB16E217BC /* PluginRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRegistry.swift; sourceTree = "<group>"; };
 		1BA9609E0D4C687C9B10DD76 /* ContextReranker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextReranker.swift; sourceTree = "<group>"; };
 		1BCC089BA8CF7523B396E06F /* ModelLabManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabManager.swift; sourceTree = "<group>"; };
@@ -6298,6 +6300,7 @@
 				E8D61CDEAB62D3820A458F91 /* LLMProviderMetadataTests.swift */,
 				49694734AE1B9648BB7E3E2B /* LLMRetrievalServiceSupplementTests.swift */,
 				2EE19CF7861FDC65D1EDDC67 /* LLMServicePropertyAccessTests.swift */,
+				1B5F8D1966A78D44D50C1354 /* ModelDownloadManagerStateTests.swift */,
 				B7A903535E451F8241FD6530 /* ModelDownloadManagerTests.swift */,
 				9276ED17FBF567BE017AF822 /* NetworkClientCoverageTests.swift */,
 				DA6283DFE8CA4E444D60DD51 /* OnDeviceLLMServiceSupplementTests.swift */,
@@ -7166,6 +7169,7 @@
 				ADBB179F7D916642707AE16B /* MermaidSanitizerEdgeTests.swift in Sources */,
 				243DDAE8234CA96DEE925976 /* MockCollaborationProviderDelegate.swift in Sources */,
 				7AA77BC48F89889A0303FE6B /* MockLLMServices.swift in Sources */,
+				E5B8C8960D8CDCE6FA41ABCC /* ModelDownloadManagerStateTests.swift in Sources */,
 				AB7300F930346FF2C702FF4D /* ModelDownloadManagerTests.swift in Sources */,
 				4ECD5AD4EE651A3D7B8FC33A /* ModelLabManagerTests.swift in Sources */,
 				473A06C0B9564939D265430F /* ModelStoreConfigTests.swift in Sources */,
