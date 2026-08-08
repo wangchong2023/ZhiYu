@@ -14,6 +14,12 @@ project: ZhiYu.xcodeproj
 schemes:
   - ZhiYu
 
+# 需要扫描的 Target（Xcode 项目必填）
+# 包含 ZhiYuTests 让测试中引用的生产代码不被误报为死代码
+targets:
+  - ZhiYu
+  - ZhiYuTests
+
 # 输出格式（xcode 格式方便 CI 解析）
 format: xcode
 
