@@ -197,7 +197,7 @@ final class PluginRuntime: ObservableObject {
             let start = CFAbsoluteTimeGetCurrent()
 
             // 安全校验：权限检查
-            if !intercepter.manifest.permissions.contains("writeContent") {
+            if !intercepter.manifest.permissions.contains(PluginConstants.Permission.writeContent) {
                 Logger.shared.error(" []  \(intercepter.manifest.name)  writeContent ", error: nil)
                 continue
             }
@@ -320,7 +320,7 @@ private struct PluginContextImpl: PluginContext {
 
     /// 请求 AI 访问
     func requestAIAccess(prompt: String) async -> String? {
-        guard manifest.permissions.contains("llm") else {
+        guard manifest.permissions.contains(PluginConstants.Permission.llm) else {
             Logger.shared.error(" []" + "  \(manifest.id)" + "  LLM" + " manifest " + " 'llm' ", error: nil)
             return nil
         }
@@ -329,7 +329,7 @@ private struct PluginContextImpl: PluginContext {
 
     /// 查询页面
     func queryPages(matching query: String) async -> [KnowledgePage] {
-        guard manifest.permissions.contains("pages.read") else {
+        guard manifest.permissions.contains(PluginConstants.Permission.pagesRead) else {
             Logger.shared.error(" []  \(manifest.id)  'pages.read' ", error: nil)
             return []
         }

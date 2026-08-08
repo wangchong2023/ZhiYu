@@ -30,6 +30,8 @@ public enum PluginSandboxError: Error, LocalizedError {
     case invalidSignature
     /// JS 脚本语法不合规
     case scriptSyntaxError(String)
+    /// 插件未声明所需权限即尝试调用受保护能力
+    case permissionDenied(String)
 
     // MARK: - 标准 HTTP 风格错误码
 
@@ -45,6 +47,7 @@ public enum PluginSandboxError: Error, LocalizedError {
         case .payloadTooLarge: return 413
         case .keyLengthExceeded: return 400
         case .invalidSignature: return 403
+        case .permissionDenied: return 403
         }
     }
 
@@ -68,6 +71,8 @@ public enum PluginSandboxError: Error, LocalizedError {
             return L10n.Plugin.Error.preProcessException("Invalid signature")
         case .scriptSyntaxError(let detail):
             return L10n.Plugin.Error.preProcessException(detail)
+        case .permissionDenied(let permission):
+            return L10n.Plugin.Error.permissionDenied(permission)
         }
     }
 }

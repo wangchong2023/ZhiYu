@@ -192,7 +192,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
                 Task {
                     do {
                         let allowed = self.manifest.allowedDomains ?? []
-                        let request = try PluginSandboxGateway.auditFetch(url: url, options: options, allowedDomains: allowed)
+                        let request = try PluginSandboxGateway.auditFetch(url: url, options: options, allowedDomains: allowed, permissions: self.manifest.permissions)
                         let (data, _) = try await URLSession.shared.data(for: request)
                         let responseString = String(data: data, encoding: .utf8) ?? ""
                         try? self.executeInContext { ctx in

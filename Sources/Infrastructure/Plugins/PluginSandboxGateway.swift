@@ -47,9 +47,16 @@ struct PluginSandboxGateway {
     ///   - urlString: 目标 URL
     ///   - options: 附加请求选项 (Headers, Body 等)
     ///   - allowedDomains: 插件 manifest 中声明的允许域名白名单列表
+    ///   - permissions: 插件 manifest 中声明的权限列表
     /// - Returns: 净化并构建好的安全 URLRequest
-    /// - Throws: 包含域名拦截或大小超限的安全错误说明
-    static func auditFetch(url urlString: String, options: [String: Any]?, allowedDomains: [String]) throws -> URLRequest {
+    /// - Throws: 包含权限缺失、域名拦截或大小超限的安全错误说明
+    static func auditFetch(url urlString: String, options: [String: Any]?, allowedDomains: [String], permissions: [String] = []) throws -> URLRequest {
+        // 权限校验：插件必须声明 network 权限才能发起网络请求
+        // 与 requestAIAccess（检查 "llm"）、queryPages（检查 "pages.read"）保持一致
+        guard permissions.contains(PluginConstants.Permission.network) else {
+            throw PluginSandboxError.permissionDenied(PluginConstants.Permission.network)
+        }
+
         guard let requestURL = URL(string: urlString), let host = requestURL.host else {
             throw PluginSandboxError.invalidURL(urlString)
         }

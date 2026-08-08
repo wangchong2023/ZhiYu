@@ -67,4 +67,20 @@ enum PluginConstants {
         /// updatedAt 字段的序列化 key
         static let updatedAt: String = "updated_at"
     }
+
+    // MARK: - 权限字面量 (Permission Strings)
+    /// 插件权限字符串常量，与 PluginPermission 枚举 rawValue 对齐
+    /// 消除业务代码中 .contains("network") / .contains("llm") 等魔鬼字符串
+    enum Permission {
+        /// 网络访问权限
+        static let network: String = "network"
+        /// LLM 调用权限
+        static let llm: String = "llm"
+        /// 页面读取权限
+        static let pagesRead: String = "pages.read"
+        /// 内容写入权限
+        static let writeContent: String = "writeContent"
+        /// 日志权限
+        static let log: String = "log"
+    }
 }

@@ -22,7 +22,7 @@ final class PluginSandboxSecurityTests: XCTestCase {
         let allowedDomains = ["api.zhiyu.app", "trusted.org"]
 
         XCTAssertThrowsError(
-            try PluginSandboxGateway.auditFetch(url: unauthorizedURL, options: nil, allowedDomains: allowedDomains),
+            try PluginSandboxGateway.auditFetch(url: unauthorizedURL, options: nil, allowedDomains: allowedDomains, permissions: [PluginConstants.Permission.network]),
             "未授权域名发包必须被沙箱网关熔断"
         ) { error in
             guard case PluginSandboxError.dlpFetchBlocked(let blockedHost) = error else {
@@ -39,7 +39,7 @@ final class PluginSandboxSecurityTests: XCTestCase {
         let allowedDomains = ["trusted.org"]
 
         XCTAssertThrowsError(
-            try PluginSandboxGateway.auditFetch(url: spoofedURL, options: nil, allowedDomains: allowedDomains),
+            try PluginSandboxGateway.auditFetch(url: spoofedURL, options: nil, allowedDomains: allowedDomains, permissions: [PluginConstants.Permission.network]),
             "前缀伪造子域请求必须被拦截"
         ) { error in
             guard case PluginSandboxError.dlpFetchBlocked = error else {
@@ -59,7 +59,7 @@ final class PluginSandboxSecurityTests: XCTestCase {
         let options: [String: Any] = ["body": hugeBody, "method": "POST"]
 
         XCTAssertThrowsError(
-            try PluginSandboxGateway.auditFetch(url: validURL, options: options, allowedDomains: allowedDomains),
+            try PluginSandboxGateway.auditFetch(url: validURL, options: options, allowedDomains: allowedDomains, permissions: [PluginConstants.Permission.network]),
             "超过 5MB 的超大载荷必须被拦截"
         ) { error in
             guard case PluginSandboxError.payloadTooLarge = error else {

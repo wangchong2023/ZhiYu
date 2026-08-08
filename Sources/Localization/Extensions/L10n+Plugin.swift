@@ -232,6 +232,11 @@ extension L10n {
             /// - Parameter limit: limit
             /// - Returns: 字符串
             public static func keyLengthExceeded(_ limit: Int) -> String { Plugin.trf("plugin.error.keyLengthExceeded", limit) }
+
+            /// permissionDenied
+            /// - Parameter permission: permission
+            /// - Returns: 字符串
+            public static func permissionDenied(_ permission: String) -> String { Plugin.trf("plugin.error.permissionDenied", permission) }
         }
     }
 }
