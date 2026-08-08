@@ -76,7 +76,7 @@ final class LLMClientSecurityTests: XCTestCase {
         }
     }
 
-    // MARK: - 流式请求 HTTPS 强制（无 loopback 豁免）
+    // MARK: - 流式请求 HTTPS 强制（含 loopback 豁免）
 
     func testStreamingHTTPURLThrowsInvalidURL() async {
         let client = LLMClient(baseURL: "http://api.example.com/v1", apiKey: "sk-test")
@@ -90,16 +90,29 @@ final class LLMClientSecurityTests: XCTestCase {
         }
     }
 
-    func testStreamingLoopbackThrowsInvalidURL() async {
-        // 注意：sendStreamingRequest 不豁免 loopback（与非流式不同）
+    func testStreamingLoopbackDoesNotThrowInvalidURL() async {
+        // sendStreamingRequest 豁免 loopback（与非流式一致），支持本地 LLM 流式对话
         let client = LLMClient(baseURL: "http://localhost:1234/v1", apiKey: "sk-test")
         do {
             _ = try await client.sendStreamingRequest(body: ["model": "test"])
-            XCTFail("流式请求 loopback 应抛出 invalidURL（无豁免）")
+            XCTFail("应抛出网络连接错误而非成功")
         } catch LLMError.invalidURL {
-            // 预期路径：sendStreamingRequest 不豁免 loopback
+            XCTFail("流式请求 loopback 应豁免 HTTPS 强制校验")
         } catch {
-            XCTFail("应抛出 LLMError.invalidURL，实际：\(error)")
+            // 预期：网络连接错误（NSURLErrorCannotConnectToHost 等）
+        }
+    }
+
+    func testStreamingLoopback127DoesNotThrowInvalidURL() async {
+        // sendStreamingRequest 豁免 127.0.0.1（与非流式一致）
+        let client = LLMClient(baseURL: "http://127.0.0.1:1234/v1", apiKey: "sk-test")
+        do {
+            _ = try await client.sendStreamingRequest(body: ["model": "test"])
+            XCTFail("应抛出网络连接错误而非成功")
+        } catch LLMError.invalidURL {
+            XCTFail("流式请求 127.0.0.1 应豁免 HTTPS 强制校验")
+        } catch {
+            // 预期：网络连接错误
         }
     }
 

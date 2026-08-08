@@ -162,8 +162,12 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
     /// - Returns: 异步字节流
     /// - Throws: 网络或 API 错误
     func sendStreamingRequest(body: [String: Any]) async throws -> URLSession.AsyncBytes {
-        // VULN-013 修复：强制 HTTPS，防止 API key 明文传输
-        guard normalizedBaseURL.lowercased().hasPrefix(SystemConstants.URLScheme.https) else {
+        // VULN-013 修复 + 审查修复 MED-1: 强制 HTTPS，但对 loopback 地址豁免
+        // 本地回环不经过网络，无明文泄露风险，支持本地 LLM 开发（如 Ollama/llama.cpp）
+        let lowerURL = normalizedBaseURL.lowercased()
+        let isHTTPS = lowerURL.hasPrefix(SystemConstants.URLScheme.https)
+        let isLoopback = isLoopbackURL(lowerURL)
+        guard isHTTPS || isLoopback else {
             throw LLMError.invalidURL
         }
         guard let url = URL(string: "\(normalizedBaseURL)/chat/completions") else {
