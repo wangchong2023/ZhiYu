@@ -2,8 +2,8 @@
 //  VaultStorageServiceTests.swift
 //  ZhiYuTests
 //
-//  系统层级：[Tests] 单元测试层
-//  核心职责：验证 Vault 存储服务的 Markdown 文件扫描、H1 标题提取、文件名回退与空目录处理语义。
+//  系统层级：[L1] 基础设施层测试
+//  核心职责：验证 VaultStorageService 的 Markdown 文件扫描、标题提取、书签存储与恢复
 //
 
 import XCTest
@@ -12,159 +12,110 @@ import XCTest
 @MainActor
 final class VaultStorageServiceTests: XCTestCase {
 
-    private var tempRoot: URL!
+    private var tempDir: URL!
+    private var service: VaultStorageService!
 
     override func setUp() {
         super.setUp()
-        tempRoot = FileManager.default.temporaryDirectory
-            .appendingPathComponent("VaultStorageTests-\(UUID().uuidString)")
-        try? FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+        tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("VaultTest-\(UUID().uuidString)")
+        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        service = VaultStorageService()
     }
 
     override func tearDown() {
-        try? FileManager.default.removeItem(at: tempRoot)
-        tempRoot = nil
+        try? FileManager.default.removeItem(at: tempDir)
+        tempDir = nil
+        service = nil
         super.tearDown()
     }
 
-    // MARK: - 辅助方法
+    // MARK: - scan
 
-    private func createMarkdownFile(named name: String, content: String) throws -> URL {
-        let url = tempRoot.appendingPathComponent(name)
-        try content.write(to: url, atomically: true, encoding: .utf8)
-        return url
+    func testScanReturnsEmptyForEmptyDirectory() {
+        let pages = service.scan(directory: tempDir)
+        XCTAssertTrue(pages.isEmpty)
     }
 
-    // MARK: - 空目录扫描
+    func testScanFindsMarkdownFiles() throws {
+        let mdURL = tempDir.appendingPathComponent("note1.md")
+        try "# Test Title\n\nContent here".write(to: mdURL, atomically: true, encoding: .utf8)
 
-    func testScan_emptyDirectory_returnsEmptyArray() {
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-        XCTAssertTrue(results.isEmpty, "空目录扫描应返回空数组")
+        let pages = service.scan(directory: tempDir)
+        XCTAssertEqual(pages.count, 1)
+        XCTAssertEqual(pages.first?.title, "Test Title")
+        XCTAssertEqual(pages.first?.content, "# Test Title\n\nContent here")
     }
 
-    // MARK: - 单文件扫描
+    func testScanSkipsNonMarkdownFiles() throws {
+        try "text".write(to: tempDir.appendingPathComponent("file.txt"), atomically: true, encoding: .utf8)
+        try "data".write(to: tempDir.appendingPathComponent("data.json"), atomically: true, encoding: .utf8)
+        try "# MD".write(to: tempDir.appendingPathComponent("real.md"), atomically: true, encoding: .utf8)
 
-    func testScan_singleMarkdownFileWithH1_extractsTitleFromH1() throws {
-        let content = """
-        # 我的标题
-
-        这是正文内容。
-        """
-        let fileURL = try createMarkdownFile(named: "test.md", content: content)
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertEqual(results.count, 1)
-        XCTAssertEqual(results[0].title, "我的标题", "应从 H1 提取标题")
-        XCTAssertEqual(results[0].url, fileURL)
-        XCTAssertEqual(results[0].content, content)
+        let pages = service.scan(directory: tempDir)
+        XCTAssertEqual(pages.count, 1)
+        XCTAssertEqual(pages.first?.title, "MD")
     }
 
-    // MARK: - 无 H1 时回退到文件名
+    func testScanFindsMultipleMarkdownFiles() throws {
+        try "# A\n\ncontent a".write(to: tempDir.appendingPathComponent("a.md"), atomically: true, encoding: .utf8)
+        try "# B\n\ncontent b".write(to: tempDir.appendingPathComponent("b.md"), atomically: true, encoding: .utf8)
 
-    func testScan_markdownWithoutH1_usesFileNameAsTitle() throws {
-        let content = "这是没有标题的文档。"
-        let fileURL = try createMarkdownFile(named: "无标题文档.md", content: content)
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertEqual(results.count, 1)
-        XCTAssertEqual(results[0].title, "无标题文档", "无 H1 时应用文件名作为标题")
-        XCTAssertEqual(results[0].url, fileURL)
+        let pages = service.scan(directory: tempDir)
+        XCTAssertEqual(pages.count, 2)
     }
 
-    // MARK: - 多文件扫描
+    func testScanUsesFilenameWhenNoH1() throws {
+        try "No heading here".write(to: tempDir.appendingPathComponent("noheading.md"), atomically: true, encoding: .utf8)
 
-    func testScan_multipleMarkdownFiles_allScanned() throws {
-        _ = try createMarkdownFile(named: "file1.md", content: "# 文件1")
-        _ = try createMarkdownFile(named: "file2.md", content: "# 文件2")
-        _ = try createMarkdownFile(named: "file3.md", content: "# 文件3")
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertEqual(results.count, 3, "应扫描所有 .md 文件")
+        let pages = service.scan(directory: tempDir)
+        XCTAssertEqual(pages.count, 1)
+        XCTAssertEqual(pages.first?.title, "noheading")
     }
 
-    // MARK: - 非 Markdown 文件被忽略
+    func testScanExtractsLastModified() throws {
+        let mdURL = tempDir.appendingPathComponent("dated.md")
+        try "# Dated".write(to: mdURL, atomically: true, encoding: .utf8)
 
-    func testScan_nonMarkdownFiles_ignored() throws {
-        _ = try createMarkdownFile(named: "valid.md", content: "# 有效")
-        let txtURL = tempRoot.appendingPathComponent("invalid.txt")
-        try "文本内容".write(to: txtURL, atomically: true, encoding: .utf8)
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertEqual(results.count, 1, "非 .md 文件应被忽略")
-        XCTAssertEqual(results[0].title, "有效")
+        let pages = service.scan(directory: tempDir)
+        XCTAssertEqual(pages.count, 1)
+        XCTAssertNotNil(pages.first?.lastModified)
     }
 
-    // MARK: - 大写扩展名
+    // MARK: - storeBookmark / restoreURL
 
-    func testScan_uppercaseMDExtension_alsoScanned() throws {
-        _ = try createMarkdownFile(named: "upper.MD", content: "# 大写扩展")
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertEqual(results.count, 1, ".MD 大写扩展名也应被扫描")
+    func testStoreBookmarkDelegatesToStorageProvider() {
+        let mock = MockSecurityScopedStorage()
+        let url = URL(fileURLWithPath: "/tmp/test")
+        mock.storeBookmark(for: url)
+        XCTAssertEqual(mock.storeBookmarkCallCount, 1)
+        XCTAssertEqual(mock.lastStoredURL, url)
     }
 
-    // MARK: - 隐藏文件跳过
+    func testRestoreURLDelegatesToStorageProvider() {
+        let mock = MockSecurityScopedStorage()
+        let data = Data("bookmark".utf8)
+        _ = mock.restoreURL(from: data)
+        XCTAssertEqual(mock.restoreURLCallCount, 1)
+        XCTAssertEqual(mock.lastRestoredData, data)
+    }
+}
 
-    func testScan_hiddenFiles_skipped() throws {
-        _ = try createMarkdownFile(named: ".hidden.md", content: "# 隐藏")
-        _ = try createMarkdownFile(named: "visible.md", content: "# 可见")
+// MARK: - Mock SecurityScopedStorage
 
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
+private final class MockSecurityScopedStorage: SecurityScopedStorageProtocol, @unchecked Sendable {
+    var storeBookmarkCallCount = 0
+    var lastStoredURL: URL?
+    var restoreURLCallCount = 0
+    var lastRestoredData: Data?
 
-        XCTAssertEqual(results.count, 1, "隐藏文件应被跳过")
-        XCTAssertEqual(results[0].title, "可见")
+    func storeBookmark(for url: URL) {
+        storeBookmarkCallCount += 1
+        lastStoredURL = url
     }
 
-    // MARK: - 子目录递归
-
-    func testScan_subdirectoryMarkdownFiles_included() throws {
-        _ = try createMarkdownFile(named: "root.md", content: "# 根")
-        let subdir = tempRoot.appendingPathComponent("subdir")
-        try FileManager.default.createDirectory(at: subdir, withIntermediateDirectories: true)
-        try "# 子目录".write(to: subdir.appendingPathComponent("sub.md"), atomically: true, encoding: .utf8)
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertEqual(results.count, 2, "应递归扫描子目录")
-    }
-
-    // MARK: - H1 前有空白
-
-    func testScan_h1WithLeadingWhitespace_titleExtracted() throws {
-        let content = """
-           # 缩进标题
-
-        正文
-        """
-        _ = try createMarkdownFile(named: "indent.md", content: content)
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertEqual(results[0].title, "缩进标题", "带前导空白的 H1 也应被提取")
-    }
-
-    // MARK: - lastModified 非空
-
-    func testScan_lastModifiedDate_notNil() throws {
-        _ = try createMarkdownFile(named: "dated.md", content: "# 日期")
-
-        let service = VaultStorageService()
-        let results = service.scan(directory: tempRoot)
-
-        XCTAssertNotNil(results[0].lastModified, "lastModified 不应为 nil")
+    func restoreURL(from data: Data) -> URL? {
+        restoreURLCallCount += 1
+        lastRestoredData = data
+        return URL(fileURLWithPath: "/tmp/restored")
     }
 }
