@@ -236,6 +236,8 @@ targets:
       - path: Sources/Domain/Models/SearchConstants.swift
       - path: Sources/Domain/Models/SearchDiagnosticInfo.swift
       - path: Sources/Domain/Models/RAGModels.swift
+      - path: Sources/Domain/Models/ChunkType.swift
+      - path: Sources/Domain/Models/DomainThresholds.swift
       - path: Sources/Domain/Models/PromptConstants.swift
       - path: Sources/Domain/Protocols/IngestServiceProtocol.swift
       - path: Sources/Domain/Protocols/EmbeddingProvider.swift
@@ -252,6 +254,7 @@ targets:
       # L1 基础设施模型
       - path: Sources/Infrastructure/Models/SpeechModels.swift
       - path: Sources/Infrastructure/Models/PDFModels.swift
+      - path: Sources/Infrastructure/LLM/LLMConstants.swift
       - path: Sources/Infrastructure/LLM/LLMModels.swift
       # 协作模型（DiscoveredRoom/CollabUser，MultipeerConnectivity 已条件编译隔离）
       - path: Sources/Features/System/Collaboration/Model/CollaborationModels.swift

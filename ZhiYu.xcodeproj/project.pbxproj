@@ -678,6 +678,7 @@
 		576332C0AC569ED221F1B0FB /* ModelLabMetricsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98F2E9FCDCB05716F3143FA /* ModelLabMetricsPanel.swift */; };
 		578A1B1FA1D6487F5488CFB3 /* AppLinkProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04434B2108D3CAD90067B99 /* AppLinkProcessor.swift */; };
 		5797EB05CBB61E79A70BBB0D /* VaultDataPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152BCF81FB7AE3E16E17A343 /* VaultDataPersistenceTests.swift */; };
+		57BC752B0CF2C69F6AE73BBF /* DomainThresholds.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4746D6106D094CEE034331 /* DomainThresholds.swift */; };
 		57CEDBFA14616FE30F024680 /* DesignSystem+SpacingToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57D6EFD678A07BDE43E8B965 /* DesignSystem+SpacingToken.swift */; };
 		57D0C8C59A3227186B0072DC /* DocumentExtractionServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67DE50BA0FFE5B3B502051A /* DocumentExtractionServiceProtocol.swift */; };
 		57FB0D21FBA9BA532A1E08E6 /* SearchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB86F371DB19E2B342D7DE0B /* SearchUITests.swift */; };
@@ -1163,6 +1164,7 @@
 		92DBACB9B476D6ADF4318D58 /* RetryTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09455162A4B32A61FAEE9535 /* RetryTask.swift */; };
 		9313BE3D36C5DC0F97CA3341 /* BackgroundTaskProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE7DA0E60E88EBFC1DAE8EB /* BackgroundTaskProtocol.swift */; };
 		932EC9D926A59A295DBF3AEF /* AISynthesisServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C938EB171E03B137FD3AB5D /* AISynthesisServiceTests.swift */; };
+		93489456C12BF6AA86737AE5 /* LLMConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FB00671B8090A4261724DEF /* LLMConstants.swift */; };
 		934EC1B96DE3886A46CEE906 /* WebScraperProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE1B65474599658CFBB22F /* WebScraperProcessor.swift */; };
 		93A600313B280F364B3D7158 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = C13F2DF2F43DB257AE289945 /* Markdown */; };
 		93C6B67DDA17F4F9AE144083 /* KnowledgeStoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AAF7055A24EF9D1C8DD66F5 /* KnowledgeStoreProtocol.swift */; };
@@ -1587,6 +1589,7 @@
 		C79991064AF41CD1CE1D3DD1 /* DynamicCompliancePatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2940AB9CE7135DEAB3CA7468 /* DynamicCompliancePatchTests.swift */; };
 		C7C13B833D5B63F46185B49B /* voice_note_procurement.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 7BFDB9C20370A2454A47289B /* voice_note_procurement.m4a */; };
 		C7C5D9F875F68526D0B1AF53 /* ZhiYuCoreServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452B2A5E7971AB085DF6F73B /* ZhiYuCoreServiceTests.swift */; };
+		C7D2B6200508A78D8458173D /* ChunkType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB442FBD10FAA985B03AE24 /* ChunkType.swift */; };
 		C7E69531B4E9A5942743971F /* HapticFeedbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED425736696179D8EC3C024 /* HapticFeedbackTests.swift */; };
 		C7EC34187C4FDF5302E48379 /* KnowledgePageListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486560C5BD5242F271F8ACA1 /* KnowledgePageListView.swift */; };
 		C7FAA6FC87C9939A010374B5 /* PluginDetailMetadataSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C75745A91C84A1B37373AE /* PluginDetailMetadataSection.swift */; };
@@ -3530,7 +3533,6 @@
 				FE2C1B3C13C361AB1193FA7A /* Platforms */,
 				57148EA5322D7614DA0AEEF9 /* Shared */,
 				ECFA5484081E1F0D51159905 /* SnapshotTests */,
-				94B64D55CE283A76AA919867 /* Tools */,
 				397E947241385676BFD9A7D8 /* UI */,
 				DDEB2ACB133FFD59BF0F04CD /* Unit */,
 			);
@@ -4500,7 +4502,6 @@
 				28377D943D32A86B47EBFDED /* OCRImageContentView.swift */,
 				EA3E52E1FB6342DFA948DAE5 /* PageDetailAIMenuButton.swift */,
 				E203A9E4DF95CF56C6459C53 /* PageDetailMetaSectionView.swift */,
-				8B8B7E76C6CFBC3B627DACE5 /* Accessibility */,
 				F2BC2C8AE6DC9F2FDE0DAF70 /* Backgrounds */,
 				9240E7EAF07BE9B1CBC985EF /* Badges */,
 				600606E7B3411E32DC5BCE60 /* Banners */,
@@ -4830,13 +4831,6 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		8B8B7E76C6CFBC3B627DACE5 /* Accessibility */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Accessibility;
-			sourceTree = "<group>";
-		};
 		8BA1B7E3EEF0EFC9D4792A75 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
@@ -5030,13 +5024,6 @@
 				CAA9A29DA6622EF301FD23C4 /* SwarmMemoryAdapter.swift */,
 			);
 			path = Adapters;
-			sourceTree = "<group>";
-		};
-		94B64D55CE283A76AA919867 /* Tools */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Tools;
 			sourceTree = "<group>";
 		};
 		9514F0E0D07C94132CE19784 /* Layout */ = {
@@ -8668,6 +8655,7 @@
 				ACA7DE081F4138B1C4B7AD5C /* AppNotifications.swift in Sources */,
 				1DADE0130A98DC9C55395222 /* AudioSplitter.swift in Sources */,
 				E2F54023B81F72A39D1E57F4 /* BackgroundTaskProtocol.swift in Sources */,
+				C7D2B6200508A78D8458173D /* ChunkType.swift in Sources */,
 				EECA864957335B9C96E6BE20 /* CollaborationModels.swift in Sources */,
 				01700C37ECFE63CE46072C74 /* CollaborationProviderProtocol.swift in Sources */,
 				49870BD26505EFADF5125A2E /* Colors.swift in Sources */,
@@ -8689,6 +8677,7 @@
 				E87604D245E2EDDE90F8C0D0 /* DeviceInfoProtocol.swift in Sources */,
 				57D0C8C59A3227186B0072DC /* DocumentExtractionServiceProtocol.swift in Sources */,
 				188B1EAD1C45E33D0C54FC38 /* DocumentFormat.swift in Sources */,
+				57BC752B0CF2C69F6AE73BBF /* DomainThresholds.swift in Sources */,
 				535C48F200A77394DF8BADDE /* DummyActivityService.swift in Sources */,
 				BBC30EBA8167BE9461E81874 /* EmbeddingProvider.swift in Sources */,
 				8BFF0EFA98631B7FB3C367F1 /* ExportServiceProtocol.swift in Sources */,
@@ -8738,6 +8727,7 @@
 				42B870D9ACA5ECEFE9D63B20 /* L10n+Watch.swift in Sources */,
 				20090050BD82720CC89EBD34 /* L10n+Widget.swift in Sources */,
 				1BB84563632BC532B9A54360 /* L10n+Workflow.swift in Sources */,
+				93489456C12BF6AA86737AE5 /* LLMConstants.swift in Sources */,
 				C8A3EFD2D21F2B84B5070709 /* LLMModels.swift in Sources */,
 				68254ACAFEDA889DCF66BED7 /* LLMServiceProtocol.swift in Sources */,
 				F00BBD68F53752AD28EEFD2E /* LinkService.swift in Sources */,
