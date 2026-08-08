@@ -77,7 +77,7 @@ public struct DemoImageBuilder {
     }
 
     /// 绘制 PKM 神经元主题的高精图表与大字
-    private static func drawNeuronKnowledgeOCR(cgContext: CGContext, title: String, size: CGSize) {
+    private static func drawNeuronKnowledgeOCR(cgContext _: CGContext, title _: String, size: CGSize) {
         // 1. 顶栏标题
         let headerAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 20, weight: .semibold), // Dynamic Type
@@ -170,7 +170,7 @@ public struct DemoImageBuilder {
     }
 
     /// 绘制商业/选址 SOP 主题的高精图表与大字
-    private static func drawCoffeeSOPOCR(cgContext: CGContext, title: String, size: CGSize) {
+    private static func drawCoffeeSOPOCR(cgContext _: CGContext, title _: String, size: CGSize) {
         // 1. 顶栏标题
         let headerAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 20, weight: .semibold), // Dynamic Type

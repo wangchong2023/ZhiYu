@@ -107,14 +107,6 @@ final class IngestStore {
         await pdfService.extractText(from: url, pageRange: pageRange) ?? ""
     }
 
-    struct ExtractedURLContent { let title: String; let content: String }
-
-    /// 从 URL 抓取内容
-    func fetchURLContent(urlString: String) async throws -> ExtractedURLContent {
-        let result = try await ingestService.scraper.fetchMarkdown(from: urlString)
-        return ExtractedURLContent(title: result.title, content: result.markdown)
-    }
-
     /// 确认并完成智能摄入
     func finalizeSmartIngest(title: String, result: SmartIngestResult, customIcon: String?) async -> KnowledgePage {
         let type: PageType = PageType(rawValue: result.suggestedType) ?? .concept
@@ -211,61 +203,5 @@ final class IngestStore {
             fileSize: fileSize,
             sourceType: sourceType
         )
-    }
-
-    /// 从外部文件直接导入（拖拽/文件选择器），异步处理
-    func importFile(at url: URL) async {
-        logger.debug(" [IngestStore] \(url.lastPathComponent)")
-        guard let content = try? String(contentsOf: url) else {
-            logger.error(" [IngestStore] \(url.path)")
-            return
-        }
-
-        let p = await pageStore.pages
-        IngestQueue.shared.enqueue(
-            title: url.deletingPathExtension().lastPathComponent,
-            content: content,
-            llmService: llmService,
-            pages: p
-        ) { [weak self] page in
-            guard let self = self else { return }
-            var p = page
-            p.id = UUID()
-            Task { await self.pageStore.syncRemotePage(p) }
-        }
-    }
-
-    /// 处理文件导入流程（含提取与安全校验）
-    struct FileUploadResult { var title: String; var content: String; var size: Int64; var type: String }
-    func handleFileUpload(at url: URL) async throws -> FileUploadResult {
-        guard url.startAccessingSecurityScopedResource() else {
-            throw AppError.ingest("Permission denied", code: 1)
-        }
-        defer { url.stopAccessingSecurityScopedResource() }
-
-        // 文件大小限制 (单文件 50MB)
-        if let resources = try? url.resourceValues(forKeys: [.fileSizeKey]),
-           let fileSize = resources.fileSize {
-            let singleLimit = 50 * Int(SystemConstants.bytesPerMB)
-            if fileSize > singleLimit {
-                throw AppError.ingest(L10n.Ingest.fileTooLarge, code: 2)
-            }
-
-            // 全局容量限制 (1GB)
-            let totalLimit: Int64 = Int64(SystemConstants.bytesPerGB)
-            let currentTotal = await pageStore.pages.reduce(0) { $0 + ($1.fileSize ?? 0) }
-            if currentTotal + Int64(fileSize) > totalLimit {
-                throw AppError.ingest(L10n.Ingest.storageFull, code: 4)
-            }
-        }
-
-        guard let extracted = await ingestService.ingestDocument(at: url, pageStore: pageStore) else {
-            throw AppError.ingest(L10n.Ingest.error, code: 3)
-        }
-
-        let fileSize = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map { Int64($0) } ?? 0
-        let fileType = url.pathExtension.lowercased()
-
-        return FileUploadResult(title: extracted.title, content: extracted.content, size: fileSize, type: fileType)
     }
 }

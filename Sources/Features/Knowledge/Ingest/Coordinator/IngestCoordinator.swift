@@ -134,7 +134,7 @@ final class IngestCoordinator {
     }
 
     /// 预备保存导入的多媒体及文本文件
-    func prepareImportFiles(recordID: String) -> (savedPath: String?, rawText: String)? {
+    func prepareImportFiles(recordID _: String) -> (savedPath: String?, rawText: String)? {
         let content = newContent
         let sourceName = sourceHint.displayName
 

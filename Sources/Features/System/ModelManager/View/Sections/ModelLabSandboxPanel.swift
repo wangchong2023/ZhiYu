@@ -55,35 +55,6 @@ extension ModelLabView {
         .ignoresSafeArea(.keyboard) // 仅忽略键盘，不忽略容器安全区
     }
 
-    /// 实验室沙盒面板的顶部导航与配置栏视图
-    /// - Parameter useCase: 当前使用的用例类型
-    /// - Returns: 顶部状态和配置项的 HStack 视图
-    func useCaseDetailHeader(for useCase: UseCaseType) -> some View {
-        HStack {
-            Spacer().frame(width: DesignSystem.Metrics.largeIconBoxSize)
-            
-            Spacer()
-
-            Text(useCase.title)
-                .font(.headline.bold())
-                .foregroundStyle(.appText)
-
-            Spacer()
-
-            Button(action: {
-                HapticFeedback.shared.trigger(.selection)
-                labManager.stopSimulation()
-                labManager.selectedUseCase = nil
-            }) {
-                Text(L10n.Common.done)
-                    .font(.body.bold())
-                    .foregroundStyle(.cyan)
-                    .frame(width: DesignSystem.Metrics.largeIconBoxSize, alignment: .trailing)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
     /// 实验室沙盒面板的模型选择下拉菜单视图，仅列出本地已下载就绪的模型
     /// - Parameter useCase: 当前使用的用例类型
     /// - Returns: 模型选择的 Menu 下拉视图

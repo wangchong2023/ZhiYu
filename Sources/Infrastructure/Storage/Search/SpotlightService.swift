@@ -21,28 +21,8 @@ final class SpotlightService {
     
     private init() {}
     
-    /// 索引单张页面
-    func indexPage(_ page: KnowledgePage) {
-        indexer.indexPage(page)
-    }
-    
     /// 批量索引页面
     func indexPages(_ pages: [KnowledgePage]) {
         indexer.indexPages(pages)
-    }
-    
-    /// 移除页面索引
-    func removeIndex(for pageID: UUID) {
-        indexer.removeIndex(for: pageID)
-    }
-    
-    /// 移除所有页面索引
-    func deindexAll() {
-        indexer.deindexAll()
-    }
-    
-    /// 全量重新索引
-    func reindexAll(pages: [KnowledgePage]) {
-        indexer.reindexAll(pages: pages)
     }
 }

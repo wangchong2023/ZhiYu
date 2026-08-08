@@ -28,43 +28,6 @@ private struct GraphLegendRow: View {
     }
 }
 
-// MARK: - Graph Legend
-/// 图谱图例，支持类型与聚类两种模式。
-/// 图谱图例组件
-/// 负责展示节点颜色所代表的含义（如页面类型或聚类分组），增强图谱的可解释性
-struct GraphLegend: View {
-    let useClustering: Bool
-    let clusters: [GraphClusteringService.Cluster]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) {
-                Image(systemName: DesignSystem.Icons.listBulletRectanglePortrait)
-                    .font(.caption)
-                    .foregroundStyle(.appAccent)
-                Text(L10n.Graph.legend)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.appText)
-            }
-            .padding(.bottom, DesignSystem.atomic)
-            
-            if useClustering {
-                ForEach(clusters) { cluster in
-                    GraphLegendRow(color: .fromModelColorName(cluster.colorName), title: cluster.name)
-                }
-            } else {
-                // 遍历展示用户可见页面类型的图例，屏蔽内部 raw 类型
-                ForEach(PageType.allVisibleCases) { type in
-                    GraphLegendRow(color: .fromModelColorName(type.colorName), title: type.displayName)
-                }
-            }
-        }
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-        .shadow(color: Color.theme.black.opacity(DesignSystem.glassOpacity * 2), radius: DesignSystem.smallRadius)
-    }
-}
-
 // MARK: - Graph Selected Node Card
 /// 选中节点的详情卡片。
 /**

@@ -209,7 +209,7 @@ internal struct Localized {
     ///   - key: 本地化键名。
     ///   - table: 默认或请求传入的表名。
     /// - Returns: 经过强路由映射后，真实对应的 `.xcstrings` 表名。
-    private static func resolveTableName(for key: String, defaultTable table: String) -> String {
+    private static func resolveTableName(for _: String, defaultTable table: String) -> String {
         // 1. 全量核心领域路由表映射 (Core Domain Mapping)
         let domainMap: [String: String] = [
             L10nTable.localizable: L10nTable.common,
@@ -316,15 +316,6 @@ internal struct Localized {
         }
         
         return results
-    }
-    
-    /// 从 Common 默认表中高性能获取特定本地化格式化词条文本。
-    /// - Parameters:
-    ///   - key: 本地化 Key。
-    ///   - args: 动态格式化参数。
-    /// - Returns: 动态格式化完成后的本地化多语言文本。
-    static func trf(_ key: String, _ args: CVarArg...) -> String {
-        return trf(key, table: "Common", arguments: args)
     }
     
     /// 在指定的本地化表中高性能获取词条文本并以传入参数完成格式化。

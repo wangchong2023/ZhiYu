@@ -22,7 +22,6 @@ struct ComparisonDetailBodyView: View {
     // 布局微调常数，防止魔鬼数字与 frame 写死
     private static let borderGradientWidth: CGFloat = 1.0
     private static let ratingMaxStars: Int = 5
-    private static let ratingScale: Double = 5.0
     private static let maxSubjectsCount = 3
     
     private static let detailFontSize: CGFloat = 8

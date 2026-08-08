@@ -133,6 +133,5 @@ public enum DesignSystem {
     public typealias EmptyState = AppEmptyState
     public typealias LoadingOverlay = AppLoadingOverlay
     public typealias Toast = AppToast
-    public typealias Tooltip = AppTooltip
     #endif
 }

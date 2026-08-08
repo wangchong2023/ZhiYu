@@ -47,27 +47,6 @@ enum PluginConstants {
         static let idPrefix: String = "local."
     }
 
-    // MARK: - CodingKey 字面量 (Coding Keys)
-    /// 插件记录持久化 CodingKey 字面量常量集，避免 PluginRecord 与 GRDB 扩展重复定义
-    enum CodingKey {
-        /// manifestJSON 字段的序列化 key
-        static let manifestJSON: String = "manifest_json"
-        /// permissionsJSON 字段的序列化 key
-        static let permissionsJSON: String = "permissions_json"
-        /// loadDuration 字段的序列化 key
-        static let loadDuration: String = "load_duration"
-        /// unloadDuration 字段的序列化 key
-        static let unloadDuration: String = "unload_duration"
-        /// totalExecutionTime 字段的序列化 key
-        static let totalExecutionTime: String = "total_execution_time"
-        /// callCount 字段的序列化 key
-        static let callCount: String = "call_count"
-        /// installedAt 字段的序列化 key
-        static let installedAt: String = "installed_at"
-        /// updatedAt 字段的序列化 key
-        static let updatedAt: String = "updated_at"
-    }
-
     // MARK: - 权限字面量 (Permission Strings)
     /// 插件权限字符串常量，与 PluginPermission 枚举 rawValue 对齐
     /// 消除业务代码中 .contains("network") / .contains("llm") 等魔鬼字符串
@@ -80,8 +59,6 @@ enum PluginConstants {
         static let pagesRead: String = "pages.read"
         /// 内容写入权限
         static let writeContent: String = "writeContent"
-        /// 日志权限
-        static let log: String = "log"
     }
 
     // MARK: - 插件市场 JSON 文件名 (Market JSON Filenames)

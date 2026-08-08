@@ -133,51 +133,6 @@ final class CollaborationService: NSObject, ObservableObject, @unchecked Sendabl
     }
 
     // MARK: - Data Transmission
-    /// broadcastEdit
-    /// - Parameter pageID: pageID
-    /// - Parameter field: field
-    /// - Parameter oldValue: oldValue
-    /// - Parameter newValue: newValue
-    func broadcastEdit(pageID: UUID, field: String, oldValue: String, newValue: String) {
-        guard isJoined, role != .viewer else { return }
-
-        let edit = CollabEdit(
-            id: UUID().uuidString,
-            userID: userName, // 简化标识
-            pageID: pageID,
-            field: field,
-            oldValue: oldValue,
-            newValue: newValue,
-            timestamp: Date()
-        )
-        appendEdit(edit)
-        if let data = try? JSONEncoder().encode(edit) {
-            provider.broadcast(data: data)
-        }
-    }
-
-    /// broadcastPage
-    /// - Parameter page: page
-    func broadcastPage(_ page: KnowledgePage) {
-        guard isJoined, role != .viewer else { return }
-
-        let payload: [String: Any] = [
-            "type": "pageSync",
-            "page": [
-                "id": page.id.uuidString,
-                "title": page.title,
-                "content": page.content,
-                "type": page.pageType.rawValue,
-                "tags": page.tags,
-                "status": page.status.rawValue,
-                "updated": page.updatedAt.timeIntervalSince1970
-            ]
-        ]
-
-        if let data = try? JSONSerialization.data(withJSONObject: payload) {
-            provider.broadcast(data: data)
-        }
-    }
 
     /// setUserName
     /// - Parameter name: name

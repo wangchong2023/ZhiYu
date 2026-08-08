@@ -52,8 +52,6 @@ public final class AIInsightStore {
     @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
     @ObservationIgnored @Inject private var logger: any LoggerProtocol
 
-    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
-
     public init() {}
 
     /// 更新全局统计指标

@@ -47,13 +47,10 @@ public final class CarrierAuthStrategy: AuthStrategy {
     // MARK: - SDK 全局状态
 
     private static var isInitialized = false
-    private static var lastEnvCheckResult: (available: Bool, carrierName: String?)?
-    private static var initializationError: String?
-
     // MARK: - 初始化
 
     /// 初始化运营商 SDK（当前为 Mock 实现）
-    public static func initializeSDK(with schemeCode: String) {
+    public static func initializeSDK(with _: String) {
         // Mock implementation
         isInitialized = true
     }

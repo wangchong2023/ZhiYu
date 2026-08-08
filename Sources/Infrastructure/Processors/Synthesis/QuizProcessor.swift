@@ -24,10 +24,6 @@ enum QuizProcessor {
         static let optionAIndex = 0
         /// 选项字母 B 对应的索引
         static let optionBIndex = 1
-        /// 选项字母 C 对应的索引
-        static let optionCIndex = 2
-        /// 选项字母 D 对应的索引
-        static let optionDIndex = 3
     }
 
     struct FlexibleQuizShell: Codable {

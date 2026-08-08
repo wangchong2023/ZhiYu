@@ -29,7 +29,7 @@ extension GraphLayoutProcessor {
     static func detectInsights(
         nodes: [GraphNode],
         edges: [GraphEdge],
-        pages: [KnowledgePage]
+        pages _: [KnowledgePage]
     ) -> InsightResults {
         // 性能优化：建立节点查找索引
         let nodeMap = Dictionary(uniqueKeysWithValues: nodes.map { ($0.id, $0) })
@@ -53,7 +53,7 @@ extension GraphLayoutProcessor {
 
     /// 检测桥接节点：连接 >= 3 个不同社区的节点
     private static func detectBridgeNodes(
-        nodes: [GraphNode],
+        nodes _: [GraphNode],
         edges: [GraphEdge],
         nodeMap: [UUID: GraphNode]
     ) -> [UUID] {

@@ -57,3 +57,96 @@ retain_public: true
 
 # 保留遵循已知协议的声明（防止 Protocol Witness 误报）
 retain_unused_protocol_func_params: true
+
+# 保留只赋值未读取的属性（数据模型/预留字段，非死代码）
+retain_assign_only_properties: true
+
+# ==============================================================================
+# 文件级保留（retain-files）
+# 保留整个文件中的所有声明，适用于：
+# - 协议定义文件（Periphery 误报 redundant 协议方法为 unused）
+# - 预留工具/API 文件（当前未接入但保留架构层）
+# ==============================================================================
+retain_files:
+  # 协议定义文件（协议方法被报为 unused，但协议是架构契约）
+  - "Sources/Infrastructure/LLM/LLMProtocols.swift"
+  - "Sources/Infrastructure/LLM/LLMAdapters.swift"
+  - "Sources/Infrastructure/Plugins/PluginProtocols.swift"
+  - "Sources/Infrastructure/Plugins/PluginRuntime.swift"
+  - "Sources/Infrastructure/Plugins/PluginRegistry.swift"
+  - "Sources/Infrastructure/Processors/Network/WebScraperProcessor.swift"
+  - "Sources/Infrastructure/Plugins/PluginSandboxGateway.swift"
+
+  # 预留工具/API（当前未接入但保留架构层）
+  - "Sources/Infrastructure/Performance/PerformanceBenchmarker.swift"
+
+  # 常量文件（Periphery 误报被动态调用的常量为 unused）
+  - "Sources/Infrastructure/Storage/StorageConstants.swift"
+  - "Sources/Infrastructure/Plugins/PluginConstants.swift"
+
+  # GRDB 协议方法（willUpdate 的 columns 参数未使用但协议要求保留签名）
+  - "Sources/Infrastructure/Storage/Extensions/PluginRecord+GRDB.swift"
+
+  # Demo 图片构建器（Periphery 误报 size/cgContext/title 参数为 unused）
+  - "Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift"
+
+  # ==============================================================================
+  # 死代码清理批次保留文件（2026-08-08）
+  # ==============================================================================
+
+  # App 层 — SwiftUI @State/@Environment 属性或架构契约
+  - "Sources/App/Core/AppEnvironment.swift"
+  - "Sources/App/Lifecycle/AppWindowSceneDelegate.swift"
+  - "Sources/App/Scenes/Layout/Components/AppLayoutComponents.swift"
+  - "Sources/App/Scenes/Layout/Components/SidebarRowComponents.swift"
+  - "Sources/App/Store/AppStore+Knowledge.swift"
+
+  # Core 层 — 架构契约协议
+  - "Sources/Core/Base/Protocols/CollaborationProviderProtocol.swift"
+
+  # Domain 层 — 架构契约协议
+  - "Sources/Domain/Protocols/AppStoreProtocol.swift"
+  - "Sources/Domain/Protocols/LLMServiceProtocol.swift"
+
+  # Platforms 层 — 预留跨平台实现
+  - "Sources/Platforms/Shared/WidgetAndWatchViews.swift"
+  - "Sources/Platforms/iOS/Collaboration/MultipeerCollaborationProvider.swift"
+  - "Sources/Platforms/iOS/Tools/PencilManager.swift"
+
+  # Features/AI — SwiftUI @State/@Environment 属性
+  - "Sources/Features/AI/Chat/View/ChatView.swift"
+  - "Sources/Features/AI/Chat/View/ChatWelcomeView.swift"
+  - "Sources/Features/AI/Synthesis/View/PromptWorkshopView.swift"
+  - "Sources/Features/AI/Synthesis/View/SynthesisView.swift"
+
+  # Features/Insight — SwiftUI @State/@Environment 属性
+  - "Sources/Features/Insight/Dashboard/View/BacklinksView.swift"
+  - "Sources/Features/Insight/Dashboard/View/Subviews/ConceptDetailBodyView.swift"
+  - "Sources/Features/Insight/Dashboard/View/TagCloudView.swift"
+
+  # Features/Knowledge — 协议方法或 SwiftUI @State/@Environment 属性
+  - "Sources/Features/Knowledge/Graph/Service/GraphDataProvider.swift"
+  - "Sources/Features/Knowledge/Graph/View/Graph3DView.swift"
+  - "Sources/Features/Knowledge/Ingest/View/OCRScanView.swift"
+  - "Sources/Features/Knowledge/Ingest/View/PDFReaderView.swift"
+
+  # Features/System — SwiftUI @State/@StateObject/@Environment 属性
+  - "Sources/Features/System/Auth/View/UserProfileView.swift"
+  - "Sources/Features/System/ModelManager/GlobalModelManager.swift"
+  - "Sources/Features/System/ModelManager/View/InferenceParametersView.swift"
+  - "Sources/Features/System/ModelManager/View/LocalModelManagerView.swift"
+  - "Sources/Features/System/ModelManager/View/ModelLabView.swift"
+  - "Sources/Features/System/ModelManager/View/ModelStoreView.swift"
+  - "Sources/Features/System/ModelManager/View/ServerConfigView.swift"
+  - "Sources/Features/System/ModelManager/View/SmartRoutingView.swift"
+  - "Sources/Features/System/Settings/View/Components/PerformanceDashboardView.swift"
+  - "Sources/Features/System/Settings/View/LLM/OnDeviceLLMSettingsView.swift"
+  - "Sources/Features/System/Settings/View/Plugins/LocalPluginDetailView.swift"
+  - "Sources/Features/System/Settings/View/System/BackupView.swift"
+
+  # Shared 层 — SwiftUI @State/@Environment 属性或 UI 测试引用
+  - "Sources/Shared/UIComponents/Banners/AIProcessingStatusBanner.swift"
+  - "Sources/Shared/UIComponents/Editors/MermaidWebView.swift"
+  - "Sources/Shared/UIComponents/Navigation/FloatingContextCapsule.swift"
+  - "Sources/Shared/UIComponents/Menus/UserProfileMenu.swift"
+  - "Sources/Shared/UIComponents/Navigation/AdaptiveSidebarView.swift"

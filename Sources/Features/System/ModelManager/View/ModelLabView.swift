@@ -18,13 +18,6 @@ public struct ModelLabView: View {
 
     // MARK: - 环境与外部依赖
 
-    enum Constants {
-        static let chatScrollHeight: CGFloat = 280
-        static let stopIconSize: CGFloat = 20
-        static let stopPadding: CGFloat = 10
-        static let chatBubblePadding: CGFloat = 14
-    }
-
     @State var modelManager = GlobalModelManager.shared
     @State var labManager = ModelLabManager()
     @StateObject private var themeManager = ThemeManager.shared
@@ -49,8 +42,6 @@ public struct ModelLabView: View {
 
     @State var selectedConfigTab: Int = 0
     @State var systemPromptText: String = L10n.ModelManager.Lab.defaultSystemPrompt
-
-    private let parametersStore = InferenceParametersStore.shared
 
     var matchedPreset: ParameterPreset? {
         for p in ParameterPreset.allCases {

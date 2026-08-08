@@ -32,7 +32,6 @@ struct TagCloudViewContent: View {
     // ── 外部依赖 ──
     @Environment(AppStore.self) var store
     @Inject var appEnv: any AppEnvironmentProtocol
-    @Inject var deviceInfo: any DeviceInfoProtocol
 
     // 使用协调器管理状态与交互
     @State var coordinator: TagCloudCoordinator
@@ -43,20 +42,14 @@ struct TagCloudViewContent: View {
 
     enum DisplayMode {
         case list
-        case bubble
     }
 
     // ── 顶部工具栏重构排版与透明度设计常量 (杜绝魔鬼数字与 swiftlint 禁用) ──
-    let pickerBtnPaddingV: CGFloat = 8.0
-    let pickerBtnPaddingH: CGFloat = 14.0
-    let pickerInnerPadding: CGFloat = 3.0
     let actionBtnDiameter: CGFloat = 36.0
     let toolbarCornerRadius: CGFloat = 22.0
     let bubbleCanvasMinHeight: CGFloat = 280.0
     let viewModeFontSize: CGFloat = 13.0
     let actionBtnIconFontSize: CGFloat = 14.0
-    let pickerSelectedBgOpacity = 0.85
-    let pickerUnselectedBgOpacity = 0.18
     let actionBtnBgOpacity = 0.6
     let actionBtnBorderOpacity = 0.3
     let toolbarBgOpacity = 0.45

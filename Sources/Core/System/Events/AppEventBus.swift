@@ -23,12 +23,7 @@ final class AppEventBus {
         case pageUpdated(id: UUID, nodeCount: Int, linkCount: Int)
         case pageDeleted(id: UUID)
         case pagesCleared
-        case storeReloaded // 存储库已重新加载（如从备份恢复或初始化完成）
         case clearAllDataRequested // 新增：全局数据清理请求
-        case aiTaskStarted(type: String)
-        case aiTaskCompleted(type: String, success: Bool)
-        case securityStateChanged(isLocked: Bool)
-        case vaultMounted(url: URL)
         case graphRelayoutRequested
     }
 

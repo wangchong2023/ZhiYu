@@ -18,8 +18,6 @@ struct ImportRecordCard: View {
     var onEdit: (() -> Void)?
 
     private var categoryValue: ImportCategory? { ImportCategory(rawValue: record.category) }
-    private var canPreview: Bool { record.filePath != nil || record.rawText != nil || record.sourceURL != nil }
-    private var canViewPage: Bool { record.pageID != nil && record.status == ImportRecordStatus.done }
     private var canOpenFile: Bool { record.filePath != nil }
     private var tagList: [String] {
         record.tags?.components(separatedBy: ", ").filter { !$0.isEmpty } ?? []

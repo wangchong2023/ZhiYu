@@ -31,10 +31,6 @@ public final class NotebookHubViewModel {
     /// 排序方式
     public enum SortOption {
         case date, name
-        
-        var icon: String {
-            self == .date ? DesignSystem.Icons.sortDate : DesignSystem.Icons.sortName
-        }
     }
     
     /// 当前显示模式

@@ -22,16 +22,6 @@ extension AppStore {
     func applyRefactorSuggestion(_ suggestion: RefactorSuggestion) async {
         await knowledgeStore.applyRefactorSuggestion(suggestion)
     }
-
-    /// 重命名Page
-    func renamePage(_ page: KnowledgePage, to newTitle: String) async {
-        await knowledgeStore.renamePage(page, to: newTitle)
-    }
-
-    /// 导入摄取Folder
-    func ingestFolder(at url: URL) async {
-        await knowledgeStore.ingestFolder(at: url)
-    }
 }
 
 // MARK: - 笔记本种子生成

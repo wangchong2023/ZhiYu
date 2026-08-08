@@ -53,7 +53,7 @@ public final class LLMRefactorService: Sendable {
     // MARK: - 智能折叠 (Smart Folding)
 
     /// 增量折叠：将新资料合并至现有页面，避免重复
-    func foldContent(existingContent: String, newContent: String, title: String) async throws -> String {
+    func foldContent(existingContent: String, newContent: String, title _: String) async throws -> String {
         let prompt = """
         \(PromptService.shared.foldingPrompt)
 

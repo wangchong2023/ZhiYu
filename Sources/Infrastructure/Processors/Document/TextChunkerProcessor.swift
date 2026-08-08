@@ -110,7 +110,7 @@ struct TextChunkerProcessor: Sendable {
     }
 
     /// 将当前累积的文本刷新为一个新的 Chunk 实体，重置缓冲区。
-    private func flushCurrentChunk(lines: [String], state: inout ChunkingState, text: String) {
+    private func flushCurrentChunk(lines _: [String], state: inout ChunkingState, text _: String) {
         let trimmedPrev = state.currentChunkText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPrev.isEmpty else { return }
         state.chunks.append(Chunk(text: trimmedPrev, startIndex: state.currentStartIndex, anchorPath: state.currentAnchor, breadcrumbPath: state.currentBreadcrumb, isCode: state.currentChunkText.contains(ProcessorConstants.MarkdownSyntax.codeFence)))

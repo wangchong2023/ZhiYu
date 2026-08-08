@@ -470,22 +470,3 @@ private var emptyView: some View {
     }
     .frame(maxWidth: .infinity, minHeight: DesignSystem.Metrics.chartHeight)
 }
-
-/// 💡 极奢精细虚线，用于无损呈现大厂直角坐标轴 (Y轴最左侧垂直虚线)
-private struct DashedLine: Shape {
-    let isVertical: Bool
-    
-    /// path
-    /// - Returns: 返回值
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        if isVertical {
-            path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
-        } else {
-            path.move(to: CGPoint(x: rect.minX, y: rect.midY))
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
-        }
-        return path
-    }
-}

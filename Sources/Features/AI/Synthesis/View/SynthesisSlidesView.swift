@@ -110,7 +110,7 @@ struct SynthesisSlidesView: View {
         }
     }
 
-    private func slideCard(content: String, pageIndex: Int) -> some View {
+    private func slideCard(content: String, pageIndex _: Int) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 MarkdownRendererView(content: content, isPrivate: false, onLinkTap: { _ in })

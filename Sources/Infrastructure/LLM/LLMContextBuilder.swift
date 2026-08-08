@@ -27,10 +27,6 @@ final class LLMContextBuilder: Sendable {
     private static let maxRecentOverview = PromptConstants.RAGPrompt.maxRecentOverview
     /// Content preview length per page in system prompt.
     private static let contentPreviewLength = PromptConstants.RAGPrompt.contentPreviewLength
-    /// Max pages included in the relevant context for a query.
-    private static let maxContextPages = PromptConstants.RAGPrompt.maxContextPages
-    /// Content preview length per page in query context.
-    private static let contextPreviewLength = PromptConstants.RAGPrompt.contextPreviewLength
 
     private let sanitizer = PromptSecuritySanitizer()
     private let reranker = ContextReranker()

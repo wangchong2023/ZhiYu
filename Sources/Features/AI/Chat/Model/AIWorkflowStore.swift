@@ -66,7 +66,6 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         }
     }
 
-    @ObservationIgnored @Inject private var insightService: KnowledgeInsightService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     /// [L1.5] 知识库领域仓储 — 遵循 DIP，L2 不再直接依赖 L1 SQLiteStore
     @ObservationIgnored @Inject private var knowledgeRepository: any KnowledgeRepository  // inject_exempt: DI 就绪后由 AppEnvironment 实例化

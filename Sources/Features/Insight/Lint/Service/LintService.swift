@@ -42,7 +42,7 @@ public final class LintService: @unchecked Sendable {
     private static let stalePageThresholdDays = 30
 
     /// Run all lint checks and return the list of issues found.
-    func runLint(pages: [KnowledgePage], linkService: LinkService) async -> [LintIssue] {
+    func runLint(pages: [KnowledgePage], linkService _: LinkService) async -> [LintIssue] {
         var issues: [LintIssue] = []
 
         // 1. 性能预优化：构建查找索引 (使用 uniquingKeysWith 避免因重复标题导致的崩溃)

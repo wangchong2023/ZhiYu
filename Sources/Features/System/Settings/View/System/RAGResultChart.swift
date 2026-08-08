@@ -99,7 +99,7 @@ struct RAGCostPanel: View {
         .appCardStyle()
     }
 
-    private func tokenMetricCard(id: String, title: String, value: String) -> some View {
+    private func tokenMetricCard(id _: String, title: String, value: String) -> some View {
         VStack(spacing: DesignSystem.tightPadding) {
             Text(value).font(.system(size: FontSize.tokenValue, weight: .bold, design: .rounded)).foregroundStyle(.primary)
             HStack(spacing: 2) {

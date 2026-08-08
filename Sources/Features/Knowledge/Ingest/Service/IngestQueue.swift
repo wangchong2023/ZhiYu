@@ -20,9 +20,6 @@ final class IngestQueue: ObservableObject {
     @Published var pendingCount: Int = 0
     @Published var isProcessing: Bool = false
 
-    /// 注入的后台任务调度器
-    @Inject private var taskProvider: any BackgroundTaskProtocol
-
     private let operationQueue: OperationQueue = {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 2 
@@ -51,16 +48,6 @@ final class IngestQueue: ObservableObject {
         activeTasks.removeAll()
         pendingCount = 0
         isProcessing = false
-    }
-
-    /// 注册后台处理任务
-    func registerBackgroundTasks() {
-        taskProvider.register { [weak self] in
-            guard let self = self else { return }
-            if self.pendingCount == 0 {
-                // 如果没有待处理任务，可以执行一些清理工作
-            }
-        }
     }
 
     /// 将导入任务加入队列
@@ -110,12 +97,6 @@ final class IngestQueue: ObservableObject {
         if pendingCount == 0 {
             isProcessing = false
         }
-    }
-
-    /// 调度App刷新
-    func scheduleAppRefresh() {
-        guard pendingCount > 0 else { return }
-        taskProvider.schedule()
     }
 }
 

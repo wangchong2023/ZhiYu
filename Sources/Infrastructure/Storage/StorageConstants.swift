@@ -74,7 +74,6 @@ enum StorageConstants {
         static let appBackupSuccess1 = "AppBackup_Success1"
         static let appBackupSuccess2 = "AppBackup_Success2"
         static let vaultFailed1 = "Vault_Failed1"
-        static let errorPlaceholder = "%@"
     }
 
     // MARK: - 环境变量与启动参数 (Launch Environment & Arguments)
@@ -130,7 +129,6 @@ enum StorageConstants {
     /// 引用 SystemConstants.Separator，避免重复定义
     enum LogConcat {
         static let separator: String = SystemConstants.Separator.commaSpace
-        static let arrow: String = SystemConstants.Separator.arrow
     }
 
     // MARK: - Bundle 资源名 (Bundle Resource)

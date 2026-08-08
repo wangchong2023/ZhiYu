@@ -91,7 +91,7 @@ struct GraphCanvasView: View {
         .opacity(isDimmed ? DesignSystem.dimmedOpacity : DesignSystem.fullOpacity)
     }
     
-    private func drawEdges(in context: GraphicsContext, size: CGSize) {
+    private func drawEdges(in context: GraphicsContext, size _: CGSize) {
         let nodeLookup = Dictionary(uniqueKeysWithValues: nodes.map { ($0.id, $0) })
         let isAnySelected = selectedNodeID != nil
         

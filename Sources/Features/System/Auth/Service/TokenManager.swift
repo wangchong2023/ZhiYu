@@ -146,18 +146,6 @@ extension AuthService {
         keyStore?.set(isGuest, forKey: AppConstants.Keys.Storage.authIsGuest)
     }
 
-    /// 获取或生成设备唯一标识（用于后端设备绑定）
-    /// - Returns: 设备 UUID 字符串
-    internal func getDeviceId() -> String {
-        let key = "zhiyu_device_id"
-        if let savedId = keyStore?.string(forKey: key) {
-            return savedId
-        }
-        let newId = UUID().uuidString
-        keyStore?.set(newId, forKey: key)
-        return newId
-    }
-
     // MARK: - 用户资料刷新
 
     /// 从后端拉取最新个人资料并更新本地 User 缓存

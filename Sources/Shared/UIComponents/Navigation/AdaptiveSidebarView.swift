@@ -72,12 +72,6 @@ struct AdaptiveSidebarView: View {
         router.navigateToTool(.taskCenter)
     }
 
-    /// 触发侧边栏单行点击切换逻辑，提供单元测试直接调用的入口
-    /// - Parameter tab: 被点击选中的 AppTab
-    func handleSidebarRowClick(for tab: AppTab) {
-        selectedTab = tab
-    }
-    
     /// 渲染侧边栏中的单个导航行
     /// - Parameter tab: 要渲染的 AppTab 类型项
     /// - Returns: 返回挂载了唯一定位测试标识符 "SidebarTab_\(tab.rawValue)" 的视图行

@@ -31,7 +31,7 @@ public final class GlobalPromptRegistry: Sendable {
     ///   - domain: 业务领域 (Chat, Synthesis, Ingest, RAG, Refactor, VoiceNote)
     ///   - key: 场景主键
     /// - Returns: 本地化及版本管理后的 System Prompt 字符串
-    public func getPrompt(domain: PromptDomain, key: String) -> String {
+    public func getPrompt(domain: PromptDomain, key _: String) -> String {
         switch domain {
         case .chat:
             return PromptService.shared.expansionSystemPrompt

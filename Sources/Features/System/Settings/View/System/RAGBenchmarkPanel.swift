@@ -87,17 +87,10 @@ enum TagVisual {
     static let horizontalPadding: CGFloat = 4
     static let verticalPadding: CGFloat = 1
     static let cornerRadius: CGFloat = 3
-    static let fontSize: CGFloat = 10
 }
 
 enum TooltipVisual {
     static let iconHitTarget: CGFloat = 24
-    static let animationDuration: TimeInterval = 0.2
-    static let shadowOpacity: Double = 0.1
-    static let shadowRadius: CGFloat = 5
-    static let shadowOffsetY: CGFloat = 2
-    static let popupOffsetY: CGFloat = -30
-    static let maxZIndex: Double = 100
 }
 
 // MARK: - 标签缩写
@@ -106,7 +99,6 @@ enum MetricTag {
     static let faithfulness = "F"
     static let relevance = "R"
     static let hallucination = "H"
-    static let precision = "P"
     static let citation = "C"
     static let correctness = "A"
     static let contextSufficiency = "S"
@@ -131,7 +123,6 @@ enum FormatPattern {
 
 enum MetricTitle {
     static func hitRate(_ k: Int) -> String { "Hit@\(k)" }
-    static let mrr = String(localized: "dashboard.stats.mrrTitle", defaultValue: "MRR", table: "Insight")
     static func ndcg(_ k: Int) -> String { "NDCG@\(k)" }
 }
 
@@ -248,7 +239,7 @@ struct RAGRetrievalPanel: View {
 
     // MARK: - 环形百分比卡片
 
-    func scoreCard(id: String, title: String, score: Double, icon: String,
+    func scoreCard(id: String, title: String, score: Double, icon _: String,
                    inverted: Bool = false, tip: String) -> some View {
         let color = inverted ? invertedScoreColor(score) : scoreColor(score)
         return VStack(spacing: DesignSystem.tightPadding) {

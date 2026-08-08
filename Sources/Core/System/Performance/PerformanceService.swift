@@ -19,7 +19,6 @@ import MachO
 @MainActor
 final class PerformanceService: ObservableObject {
     @Published var metrics: PerformanceMetrics = PerformanceMetrics()
-    @Published var isMonitoring: Bool = false
     
     /// 性能指标类型
     enum MetricType: Sendable {

@@ -22,9 +22,6 @@ final class PluginLoader {
 
     /// 插件签名密钥的 Keychain 存储键（审查修复 HIGH-3：不再硬编码盐值）
     private static let signatureKeychainKey = "com.zhiyu.plugin.signature_key"
-    /// 内置插件签名密钥标识（首次启动时生成随机密钥并存入 Keychain）
-    /// 引用 SystemConstants.CryptoProtocol.pluginSignatureV1
-    private static let signatureKeyInfo = Data(SystemConstants.CryptoProtocol.pluginSignatureV1.utf8)
 
     // MARK: - 插件签名校验（VULN-001 修复）
 

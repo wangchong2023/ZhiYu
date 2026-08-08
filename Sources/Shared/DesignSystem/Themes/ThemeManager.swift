@@ -63,13 +63,6 @@ class ThemeManager: ObservableObject {
         }
     }
 
-    /// setAccentColor
-    /// - Parameter color: color
-    func setAccentColor(_ color: String) {
-        keyStore?.set(color, forKey: AppConstants.Keys.Storage.accentColor)
-        objectWillChange.send()
-    }
-
     /// Live color: reads from UserDefaults on every access (no cache).
     /// @AppStorage already handles observation via Combine.
     var accentColor: Color {

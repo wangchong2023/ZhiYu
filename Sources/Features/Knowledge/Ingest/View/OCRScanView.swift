@@ -162,21 +162,6 @@ struct OCRScanView: View {
     private func copyToClipboard() {
         AppPasteboard.string = recognizedText
     }
-    
-    private func saveToApp() {
-        let imageData = selectedImage?.jpegData(compressionQuality: 0.9)
-        onFinish?(targetTitle, recognizedText, imageData)
-        dismiss()
-    }
-    
-    private func removeTag(_ tag: String) {
-        targetTags.removeAll { $0 == tag }
-    }
-    
-    private func addTag() {
-        newTagText = ""
-        showAddTagInput = true
-    }
 
     private func commitNewTag() {
         let trimmed = newTagText.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -16,7 +16,6 @@ import UFPCore
 final class WorkflowService: ObservableObject {
     static let shared = WorkflowService()
 
-    @Inject private var appEnv: any AppEnvironmentProtocol
     private let injectedReminderService: (any ReminderServiceProtocol)?
 
     init(reminderService: (any ReminderServiceProtocol)? = nil) {
@@ -32,7 +31,6 @@ final class WorkflowService: ObservableObject {
     
     enum WorkflowError: Error {
         case accessDenied
-        case saveFailed
     }
     
     /// 请求提醒事项权限

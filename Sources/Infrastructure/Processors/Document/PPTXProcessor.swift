@@ -19,7 +19,6 @@ import UFPCore
 /// 生产环境使用 `shared` 单例（从 DI 容器解析 archiver），
 /// 测试环境直接构造专用实例注入 Mock/真实 archiver。
 final class PPTXProcessor {
-    nonisolated(unsafe) static let shared = PPTXProcessor(archiver: ServiceContainer.shared.resolve((any FileArchiverProtocol).self))
 
     /// 压缩归档器（构造函数注入，隔离全局 DI 容器状态）
     private let archiver: any FileArchiverProtocol

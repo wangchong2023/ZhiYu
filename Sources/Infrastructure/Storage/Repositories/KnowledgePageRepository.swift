@@ -26,7 +26,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
         }
     }
 
-    init(dbWriter: any DatabaseWriter) {
+    init(dbWriter _: any DatabaseWriter) {
         // 保留原构造函数，但内部实际上不持有静态 dbWriter，使用动态计算属性以支持多笔记本笔记本无缝热切换并消除 closed 连接挂起隐慢
     }
 

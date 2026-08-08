@@ -38,12 +38,6 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         }
     }
 
-    // 由于 ServiceContainer.register 需要在主线程或确保安全，我们在外层注册
-    /// 注册
-    static func register(in container: ServiceContainer) {
-        container.register(shared, for: AISynthesisService.self)
-    }
-
     #if DEBUG
     /// [仅测试] 替换 actor 内部的 LLM 实现，解决单例持旧 Mock 引用导致测试失效的问题
     func updateLLMForTesting(_ newLLM: any LLMServiceProtocol) {
@@ -100,11 +94,6 @@ actor AISynthesisService: AISynthesisServiceProtocol {
             return cleaned
         }
         return SynthesisProcessor.generateFallbackPresentation(from: content, title: L10n.AI.Prompt.Expert.Slides.title)
-    }
-
-    /// 将 Markdown 转换为 PPTX 文件
-    func convertToPPTX(markdown: String, title: String) async throws -> URL {
-        return try await WebViewExportService.shared.exportToPPTX(markdown: markdown, fileName: title)
     }
 
     /// 生成测验题
@@ -269,17 +258,6 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         case .expansion:
             updateStatus(L10n.AI.Status.digging)
             return try await expandKnowledge(content: content)
-        }
-    }
-
-    private func getInitialStatus(for type: SynthesisStore.SynthesisType) -> String {
-        switch type {
-        case .mindmap: return L10n.AI.Status.structuring
-        case .quiz: return L10n.AI.Status.extracting
-        case .slides: return L10n.AI.Status.organizing
-        case .report: return L10n.AI.Status.synthesizing
-        case .infographic: return L10n.AI.Status.visualizing
-        case .expansion: return L10n.AI.Status.digging
         }
     }
 

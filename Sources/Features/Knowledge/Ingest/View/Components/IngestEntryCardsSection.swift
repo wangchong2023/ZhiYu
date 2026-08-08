@@ -24,11 +24,6 @@ struct IngestEntryCardsSection: View {
     let onLLMNotConfigured: () -> Void
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    /// iPad 大屏幕下副标题从 10pt 升到 12pt
-    private var subtitleFont: Font {
-        horizontalSizeClass == .regular ? .caption : .caption2
-    }
-
     /// 响应式列配置：iPhone 2列，iPad 自适应多列
     private var columns: [GridItem] {
         if horizontalSizeClass == .regular {

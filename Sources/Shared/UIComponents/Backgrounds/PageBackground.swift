@@ -80,7 +80,7 @@ public struct MeshGradientView: View {
     }
     
     @ViewBuilder
-    private func legacyCanvasBackground(size: CGSize) -> some View {
+    private func legacyCanvasBackground(size _: CGSize) -> some View {
         Canvas { context, size in
             let gridPadding: CGFloat = 40
             let rows = Int(size.height / gridPadding)

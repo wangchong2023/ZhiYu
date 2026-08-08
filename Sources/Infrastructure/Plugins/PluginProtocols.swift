@@ -57,14 +57,6 @@ struct PluginManifest: Codable {
     }
 }
 
-/// 插件权限定义
-enum PluginPermission: String, Codable {
-    case readContent    // 读取内容
-    case writeContent   // 修改内容
-    case network        // 网络访问
-    case aiAccess       // 调用 LLM 服务
-}
-
 /// 插件商业化信息
 struct MonetizationInfo: Codable {
     enum Model: String, Codable {

@@ -25,13 +25,11 @@ enum ProcessorConstants {
         static let dash: String = SystemConstants.Character.dash
         static let asterisk: String = SystemConstants.Character.asterisk
         static let greaterThan: String = SystemConstants.Character.greaterThan
-        static let pipe: String = SystemConstants.Character.pipe
         static let dot: String = SystemConstants.Character.dot
         static let doubleQuote: String = SystemConstants.Character.doubleQuote
         static let singleQuote: String = SystemConstants.Character.singleQuote
         static let slash: String = SystemConstants.Character.slash
         static let doubleSlash: String = SystemConstants.Character.doubleSlash
-        static let plus: String = SystemConstants.Character.plus
         static let colon: String = SystemConstants.Character.colon
         static let questionMark: String = SystemConstants.Character.questionMark
         static let underscore: String = SystemConstants.Character.underscore
@@ -39,23 +37,15 @@ enum ProcessorConstants {
         static let closeParen: String = SystemConstants.Character.closeParen
         static let openBracket: String = SystemConstants.Character.openBracket
         static let closeBracket: String = SystemConstants.Character.closeBracket
-        static let openBrace: String = SystemConstants.Character.openBrace
-        static let closeBrace: String = SystemConstants.Character.closeBrace
-        static let exclamation: String = SystemConstants.Character.exclamation
-        static let semicolon: String = SystemConstants.Character.semicolon
 
         // CJK 标点
         static let cjkOpenBracket: String = "【"
-        static let cjkCloseBracket: String = "】"
-        static let cjkOpenQuote: String = "「"
-        static let cjkCloseQuote: String = "」"
 
         // 标题前缀
         /// 引用 SystemConstants.MarkdownSyntax.h1Prefix
         static let h1Prefix: String = SystemConstants.MarkdownSyntax.h1Prefix
         /// 引用 SystemConstants.MarkdownSyntax.h2Prefix
         static let h2Prefix: String = SystemConstants.MarkdownSyntax.h2Prefix
-        static let h3Prefix: String = "### "
 
         // 列表标记
         /// 引用 SystemConstants.MarkdownSyntax.bulletDash
@@ -82,7 +72,6 @@ enum ProcessorConstants {
         // 粗体/斜体
         /// 引用 SystemConstants.MarkdownSyntax.bold
         static let bold: String = SystemConstants.MarkdownSyntax.bold
-        static let boldItalic: String = "***"
 
         // 水平线
         /// 引用 SystemConstants.MarkdownDelimiter.horizontalRule
@@ -133,40 +122,6 @@ enum ProcessorConstants {
         static let styleBlockCaseInsensitive: String = "(?i)<style.*?>.*?</style>"
     }
 
-    // MARK: - SSRF 防护地址 (SSRF Guard)
-    // 所有 SSRF 防护相关常量已迁移至 UFPCore/NetworkConstants.swift
-    // 此处保留 typealias 以兼容现有引用，实际定义见 NetworkConstants
-    enum SSRFGuard {
-        // 环回地址（引用 NetworkConstants.Loopback）
-        static let localhost: String = NetworkConstants.Loopback.localhost
-        static let loopbackIPv4: String = NetworkConstants.Loopback.loopbackIPv4
-        static let loopbackIPv6: String = NetworkConstants.Loopback.loopbackIPv6
-        static let loopbackIPv6Bracketed: String = NetworkConstants.Loopback.loopbackIPv6Bracketed
-
-        // 链路本地地址前缀（引用 NetworkConstants.Loopback）
-        static let linkLocalPrefix: String = NetworkConstants.Loopback.linkLocalPrefix
-
-        // 本地域名后缀（引用 NetworkConstants.LocalDomainSuffix）
-        static let localDomainSuffix: String = NetworkConstants.LocalDomainSuffix.local
-        static let internalDomainSuffix: String = NetworkConstants.LocalDomainSuffix.internalSuffix
-        static let localhostDomainSuffix: String = NetworkConstants.LocalDomainSuffix.localhost
-
-        // DNS rebinding 服务后缀（引用 NetworkConstants.DNSRebinding）
-        static let rebindingSuffixes: [String] = NetworkConstants.DNSRebinding.suffixes
-
-        // IPv6 私有地址前缀（引用 NetworkConstants.IPv6PrivateRange）
-        static let ipv6UniqueLocalPrefixFC: String = NetworkConstants.IPv6PrivateRange.uniqueLocalPrefixFC
-        static let ipv6UniqueLocalPrefixFD: String = NetworkConstants.IPv6PrivateRange.uniqueLocalPrefixFD
-        static let ipv6LinkLocalPrefixFE8: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFE8
-        static let ipv6LinkLocalPrefixFE9: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFE9
-        static let ipv6LinkLocalPrefixFEA: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFEA
-        static let ipv6LinkLocalPrefixFEB: String = NetworkConstants.IPv6PrivateRange.linkLocalPrefixFEB
-
-        // IP 编码前缀（引用 NetworkConstants.IPEncoding）
-        static let hexPrefixLower: String = NetworkConstants.IPEncoding.hexPrefixLower
-        static let hexPrefixUpper: String = NetworkConstants.IPEncoding.hexPrefixUpper
-    }
-
     // MARK: - Mermaid 图表语法 (Mermaid Syntax)
     enum MermaidSyntax {
         static let flowchart: String = "flowchart"
@@ -181,9 +136,6 @@ enum ProcessorConstants {
         static let pie: String = "pie"
         static let timeline: String = "timeline"
         static let td: String = "TD"
-        static let lr: String = "LR"
-        static let tb: String = "TB"
-        static let bt: String = "BT"
         static let root: String = "Root"
         static let mindmapRoot: String = "root"
         static let rootLabel: String = "Root[\""
@@ -227,7 +179,6 @@ enum ProcessorConstants {
         // Excel OOXML
         static let xmlExtension: String = ".xml"
         static let excelWorksheetPrefix: String = "xl/worksheets/sheet"
-        static let inlineString: String = "inlineStr"
         static let sharedStringsPath: String = "xl/sharedStrings.xml"
         static let wordDocumentPath: String = "word/document.xml"
         static let cellElement: String = "c"
@@ -254,7 +205,6 @@ enum ProcessorConstants {
         static let tab: String = SystemConstants.Character.tab
         static let doubleSpace: String = "  "
         static let quadSpace: String = "    "
-        static let commaSeparator: String = ", "
         static let dotSpace: String = ". "
         static let ideographicComma: String = "、"
     }
@@ -371,14 +321,10 @@ enum ProcessorConstants {
         static let numberedList: String = "^[0-9]+[.\\s、]+"
         /// 匹配选择题选项前缀（如 "A. " 或 "B:"）
         static let choiceOption: String = "^[A-D][.\\s、:]"
-        /// 匹配无序列表前缀（- 或 * 后跟空白）
-        static let bulletList: String = "^[*\\-]\\s*"
         /// 正则替换中的捕获组引用
         static let captureGroup12: String = "$1 $2"
         /// 多行匹配标志前缀
         static let multilineFlag: String = "(?s)"
-        /// 大小写不敏感标志前缀
-        static let caseInsensitiveFlag: String = "(?i)"
         /// 匹配 Markdown 行首项目符号/标题前缀（- * + # 数字.）
         static let markdownBulletStrip: String = #"^[\-\*\+\#\d\.]+\s*"#
         /// 匹配 Markdown 标题井号前缀
@@ -445,22 +391,12 @@ enum ProcessorConstants {
             promptKeywordFormat,
             promptKeywordRequirements
         ]
-        /// Quiz 选项前缀 A
-        static let quizOptionPrefixA: String = "A. "
-        /// Quiz 选项前缀 B
-        static let quizOptionPrefixB: String = "B. "
-        /// Quiz 选项前缀 C
-        static let quizOptionPrefixC: String = "C. "
-        /// Quiz 选项前缀 D
-        static let quizOptionPrefixD: String = "D. "
         /// Quiz Answer 关键字
         static let quizAnswerKeyword: String = "Answer:"
         /// Quiz Explanation 关键字
         static let quizExplanationKeyword: String = "Explanation:"
         /// Quiz 选项字母集合
         static let quizLetterOptions: [String] = ["A", "B", "C", "D"]
-        /// Quiz 选项数字集合
-        static let quizNumberOptions: [String] = ["1", "2", "3", "4"]
         /// Quiz 答案映射表
         static let quizAnswerMap: [String: Int] = [
             "A": 0, "1": 0,
@@ -478,19 +414,9 @@ enum ProcessorConstants {
         static let mermaidIndentLevel1: String = "    "
         /// Mermaid 节点缩进（二级）
         static let mermaidIndentLevel2: String = "      "
-        /// Mermaid root 节点模板
-        static let mermaidRootTemplate: String = "  root(("
-        /// Mermaid root 节点后缀
-        static let mermaidRootSuffix: String = "))"
         /// Mermaid 节点引号包裹模板
         static let mermaidQuotedNodeOpen: String = "[\""
         static let mermaidQuotedNodeClose: String = "\"]"
-        /// Mermaid 双括号节点
-        static let mermaidDoubleParenOpen: String = "(("
-        static let mermaidDoubleParenClose: String = "))"
-        /// Mermaid 花括号节点
-        static let mermaidDoubleBraceOpen: String = "{{"
-        static let mermaidDoubleBraceClose: String = "}}"
         /// Mermaid 危险字符集合
         static let mermaidDangerChars: [String] = [
             SystemConstants.Character.colon,
@@ -537,14 +463,6 @@ enum ProcessorConstants {
         static let expansionPrefixLines: Int = 3
         /// 知识扩充最小每节行数
         static let expansionMinLinesPerSection: Int = 2
-        /// Quiz 有效知识点最小长度
-        static let quizPointMinLength: Int = 6
-        /// Quiz 有效知识点最大长度
-        static let quizPointMaxLength: Int = 60
-        /// Quiz 最小有效知识点数
-        static let quizMinValidPoints: Int = 3
-        /// Quiz 回退题目数
-        static let quizFallbackQuestionCount: Int = 3
         /// Quiz JSON 字段名：title
         static let quizTitleKey: String = "quizTitle"
         /// Quiz JSON 字段名：questions

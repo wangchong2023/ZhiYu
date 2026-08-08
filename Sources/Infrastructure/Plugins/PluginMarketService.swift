@@ -10,7 +10,6 @@
 //
 
 import Foundation
-import Combine
 import UFPCore
 
 /// 插件市场条目模型
@@ -152,8 +151,6 @@ final class PluginMarketService: ObservableObject {
     @Published var isLoading = false
     @Published var downloadingPluginID: String?
     @Published var errorMessage: String?
-
-    private var cancellables = Set<AnyCancellable>()
 
     // 生产环境 (GitHub)
     private let registryGitHub: URL = {

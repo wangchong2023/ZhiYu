@@ -20,10 +20,6 @@ struct ExternalPage {
 }
 
 final class VaultStorageService {
-    nonisolated(unsafe) static let shared = VaultStorageService()
-    
-    /// 注入的平台安全存储提供者
-    @ObservationIgnored @Inject var storageProvider: SecurityScopedStorageProtocol
 
     /// 扫描指定文件夹下的所有 Markdown 文件
     func scan(directory: URL) -> [ExternalPage] {
@@ -72,15 +68,5 @@ final class VaultStorageService {
             }
         }
         return nil
-    }
-
-    /// 存储书签以备持久化访问
-    func storeBookmark(for url: URL) {
-        storageProvider.storeBookmark(for: url)
-    }
-
-    /// 从书签恢复 URL 访问权限
-    func restoreURL(from data: Data) -> URL? {
-        storageProvider.restoreURL(from: data)
     }
 }

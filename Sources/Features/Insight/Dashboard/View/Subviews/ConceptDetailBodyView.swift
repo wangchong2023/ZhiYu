@@ -29,9 +29,7 @@ struct ConceptDetailBodyView: View {
     private static let nodeDotSize: CGFloat = 6
     private static let derivedDotSize: CGFloat = 4
     private static let tagIconSize: CGFloat = 8
-    private static let tagTextSize: CGFloat = 9
     private static let insightBadgeSize: CGFloat = 9
-    private static let centralNodePadding: CGFloat = Spacing.small
     private static let connectionLineWidth: CGFloat = 1.5
     private static let centralNodeShadowRadius: CGFloat = 6.0
     private static let neighborNodeBorderWidth: CGFloat = 1.0

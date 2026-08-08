@@ -472,7 +472,7 @@ enum SynthesisProcessor {
 
     /// 柔性自愈：生成知识测验 (Quiz JSON)。
     /// 当 AI 生成失败时，返回通用占位提示，不硬编码任何领域知识。
-    static func generateFallbackQuiz(from text: String, title: String) -> String {
+    static func generateFallbackQuiz(from _: String, title: String) -> String {
         let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let rootName = cleanTitle.isEmpty ? L10n.AI.Prompt.Quiz.defaultTitle : cleanTitle
 

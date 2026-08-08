@@ -26,7 +26,7 @@ public final class RAGOrchestrator {
     public init() {}
 
     /// 执行增强对话 (RAG Chat)
-    public func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
+    public func chat(query: String, history _: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         return try await perf.measureAsync("ragChain") {
             // 1. 任务注册
             let taskID = TaskCenter.shared.addTask(type: .ai, name: "AI Chat", target: query)

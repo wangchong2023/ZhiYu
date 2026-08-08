@@ -110,24 +110,6 @@ struct MermaidWebView: View {
         webView?.scrollView.setZoomScale(1.0, animated: true)
         #endif
     }
-
-    private func exportToPDF() {
-        #if canImport(WebKit) && os(iOS)
-        guard let webView = webView else { return }
-        
-        let config = WKPDFConfiguration()
-        webView.createPDF(configuration: config) { result in
-            switch result {
-            case .success(let data):
-                let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(L10n.AI.Synthesis.Mindmap.title).pdf")
-                try? data.write(to: tempURL)
-                self.identifiablePDFURL = IdentifiableURL(url: tempURL)
-            case .failure(let error):
-                ToastManager.shared.show(type: .error, message: error.localizedDescription)
-            }
-        }
-        #endif
-    }
 }
 
 #if canImport(WebKit)

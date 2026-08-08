@@ -33,9 +33,6 @@ public struct CoreMLModerationResult: Sendable {
 public final class CoreMLModerationClassifier: @unchecked Sendable {
     public static let shared = CoreMLModerationClassifier()
 
-    private let lock = OSAllocatedUnfairLock()
-    private var isCoreMLModelLoaded: Bool = false
-
     private init() {}
 
     /// 检查当前设备硬件能力是否支持加载 CoreML 语义分类小模型

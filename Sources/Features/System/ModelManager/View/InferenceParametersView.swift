@@ -151,40 +151,6 @@ public struct InferenceParametersView: View {
 
     // MARK: - 子视图组件
 
-    /// 当前模型选择器
-    private var currentModelSelector: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Text(L10n.ModelManager.Parameters.currentModel)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.appText)
-
-            Menu {
-                Picker(L10n.ModelManager.Parameters.currentModel, selection: Binding(
-                    get: { modelManager.activeModelId },
-                    set: { newId in
-                        modelManager.activeModelId = newId
-                        loadParametersForModel(newId)
-                    }
-                )) {
-                    ForEach(modelManager.remoteManifests.filter { modelManager.isModelLocalReady(for: $0.modelId) }) { manifest in
-                        Text(manifest.displayName).tag(manifest.modelId)
-                    }
-                }
-            } label: {
-                HStack {
-                    Text(getActiveModelName())
-                        .foregroundStyle(.appText)
-                    Spacer()
-                    Image(systemName: "chevron.down")
-                        .foregroundStyle(.appSecondary)
-                }
-                .padding()
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-            }
-        }
-    }
-
     /// 预设模板选择器（预设锁定 + 自定义按钮）
     private var presetSelector: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
@@ -429,21 +395,6 @@ public struct InferenceParametersView: View {
 
         // 触发成功反馈
         HapticFeedback.shared.trigger(.success)
-    }
-
-    /// 根据参数值匹配最接近的预设
-    private func matchPreset(temperature: Double, topP: Double, topK: Int, maxTokens: Int) -> ParameterPreset {
-        for preset in ParameterPreset.allCases {
-            let params = preset.parameters
-            if abs(params.temperature - temperature) < 0.01 &&
-               abs(params.topP - topP) < 0.01 &&
-               params.topK == topK &&
-               params.maxTokens == maxTokens {
-                return preset
-            }
-        }
-        // 如果没有完全匹配，返回 balanced 作为默认
-        return .balanced
     }
 }
 

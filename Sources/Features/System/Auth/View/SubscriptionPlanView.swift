@@ -33,7 +33,6 @@ public struct SubscriptionPlanView: View {
 
     private enum Constants {
         static let barHeight: CGFloat = 6
-        static let featureIconSize: CGFloat = 80
         static let popoverWidth: CGFloat = 280
     }
 

@@ -75,7 +75,7 @@ struct VaultBadge: View {
     }
     
     @ViewBuilder
-    private func badgeLabel(currentVault: any VaultProtocol) -> some View {
+    private func badgeLabel(currentVault _: any VaultProtocol) -> some View {
         HStack(spacing: DesignSystem.tiny) {
             Image(systemName: DesignSystem.Icons.booksVerticalFill)
                 .imageScale(.small)

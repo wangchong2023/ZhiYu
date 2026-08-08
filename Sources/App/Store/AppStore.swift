@@ -74,16 +74,12 @@ public final class AppStore {
 
     // ── 核心依赖 (DI) ──
     @ObservationIgnored @Inject var pageStore: any AnyPageStoreCapabilities  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var pageManager: KnowledgePageManager  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     /// Factory 风格：可选依赖，测试环境或 DI 未就绪时为 nil
     @ObservationIgnored @Inject var maintenanceService: MaintenanceService?
-    @ObservationIgnored @Inject var logger: any LoggerProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject var performanceService: PerformanceService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject var llmService: any LLMServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject var settingsStore: SettingsStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject var linkService: LinkService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var backupService: BackupService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var undoService: UndoService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject var ingestService: IngestService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject var securityService: VaultStorageSecurityService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject var snapshotService: SnapshotService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
@@ -187,7 +183,7 @@ public final class AppStore {
         rawSnippet: String? = nil,
         fileSize: Int64? = nil,
         sourceType: String? = nil,
-        forceDeepScan: Bool = false
+        forceDeepScan _: Bool = false
     ) async -> KnowledgePage {
         await knowledgeStore.createPage(
             title: title,
@@ -206,7 +202,7 @@ public final class AppStore {
     public func getBacklinks(for id: UUID) async -> [KnowledgePage] { await pageStore.fetchBacklinksByID(for: id) }
 
     /// 更新Page
-    public func updatePage(_ page: KnowledgePage, forceDeepScan: Bool) async {
+    public func updatePage(_ page: KnowledgePage, forceDeepScan _: Bool) async {
         await knowledgeStore.updatePage(page)
     }
 
@@ -233,11 +229,6 @@ public final class AppStore {
     /// 保存ToDisk
     func saveToDisk() async {
         await knowledgeStore.saveToDisk()
-    }
-
-    /// 加载FromDisk
-    func loadFromDisk() async {
-        await knowledgeStore.loadFromDisk()
     }
 
     /// 请求Relayout

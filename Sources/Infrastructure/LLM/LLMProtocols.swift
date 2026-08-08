@@ -22,10 +22,3 @@ protocol LLMAdapter: Sendable {
     /// 执行流式生成任务
     func chatStream(messages: [[String: Any]]) -> AsyncThrowingStream<String, Error>
 }
-
-/// AI 任务上下文信息
-struct LLMTaskContext: Sendable {
-    let query: String
-    let relevantPages: [KnowledgePage]
-    let systemPrompt: String
-}

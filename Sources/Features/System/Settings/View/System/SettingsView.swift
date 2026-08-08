@@ -370,7 +370,7 @@ struct SettingsView: View {
         }
     }
     
-    private func securitySection(store: AppStore) -> some View {
+    private func securitySection(store _: AppStore) -> some View {
         @Bindable var settingsStore = settingsStore
         let hasFeature = AuthSession.shared.currentUser?.hasPrivacySecurity == true
         let showBiometric = appEnv.platformEnv.interactionStyle == .touch

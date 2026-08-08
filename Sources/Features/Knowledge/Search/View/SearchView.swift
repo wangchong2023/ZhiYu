@@ -388,17 +388,3 @@ struct FilterPill: View {
         .accessibilityIdentifier(accessibilityIdentifier ?? title)
     }
 }
-
-struct SearchBadgeView: View {
-    let label: String
-    let color: Color
-    var body: some View {
-        Text(label)
-            .font(.caption2.weight(.bold))
-            .padding(.horizontal, Spacing.Chip.horizontalPadding) // 6
-            .padding(.vertical, Spacing.Chip.verticalPadding) // 3
-            .background(color.opacity(DesignSystem.Opacity.subtle)) // 0.12
-            .foregroundStyle(color)
-            .clipShape(Capsule())
-    }
-}
