@@ -170,6 +170,7 @@
 		128A3EF2BEA43BC76AE0B70E /* AIInsightStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82D75250B05D42D61C137E8 /* AIInsightStore.swift */; };
 		12B22589D2115755E8728E31 /* IngestQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2573B77A8EA35FFB90A476D2 /* IngestQueueTests.swift */; };
 		12E00428A4B30A0DE288EC3F /* PDFComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559E9F429E77C0A17F61EF36 /* PDFComponents.swift */; };
+		12F3C334A7AC57BE5B3DCB00 /* StreamDeanonymizerLiteralCollisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBBF97F5E082CF36CB6CF49D /* StreamDeanonymizerLiteralCollisionTests.swift */; };
 		13264BE1E76D17E22894C74F /* ChatRunnerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08472AC20D340EEBCE098F8 /* ChatRunnerIntegrationTests.swift */; };
 		13313AC7B6F554E62351C114 /* DesignSystem+Radius.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10230744FA21B40BB6D04E5 /* DesignSystem+Radius.swift */; };
 		1364186A74917DE3F6F36016 /* FrontmatterParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3121C554F05877F9EA3995 /* FrontmatterParser.swift */; };
@@ -3043,6 +3044,7 @@
 		CAC6A77523298F8CD859FBA0 /* DownloadProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressRing.swift; sourceTree = "<group>"; };
 		CAE1E65D6D6DCE1B46F1C0D9 /* DeveloperSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperSettingsView.swift; sourceTree = "<group>"; };
 		CBA2436351BCB581DC327308 /* TagCloudCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCloudCoordinatorTests.swift; sourceTree = "<group>"; };
+		CBBF97F5E082CF36CB6CF49D /* StreamDeanonymizerLiteralCollisionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamDeanonymizerLiteralCollisionTests.swift; sourceTree = "<group>"; };
 		CBDBFA5F5E296F45A4029D73 /* L10n+AI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+AI.swift"; sourceTree = "<group>"; };
 		CC1BE7B0074028C4A650D2A2 /* ProcessorConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessorConstants.swift; sourceTree = "<group>"; };
 		CC941AB0D64A37658EAA0D57 /* SQLitePluginRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLitePluginRepository.swift; sourceTree = "<group>"; };
@@ -6317,6 +6319,7 @@
 				FC821038861F61BE6248CF90 /* SecurityAndRerankerPureLogicTests.swift */,
 				8FF1A373446FB3D514AE2BC6 /* StorageRecordsTests.swift */,
 				0313ED6CAD35BB74A64FDCAD /* StreamDeanonymizerAndOnDeviceLogicTests.swift */,
+				CBBF97F5E082CF36CB6CF49D /* StreamDeanonymizerLiteralCollisionTests.swift */,
 				9A5CAE014B26DC24D655D762 /* StreamDeanonymizerTests.swift */,
 				54203038159920F05F95B826 /* VaultStorageServiceTests.swift */,
 				0DB2AF8EB03127EFB59578AD /* VectorIndexerTests.swift */,
@@ -7246,6 +7249,7 @@
 				2C3742595C420E6EEB276BD5 /* StorageRecordsTests.swift in Sources */,
 				77BD634B21A995102564DF1D /* StreamDeanonymizerAndOnDeviceLogicTests.swift in Sources */,
 				3222BC746BC7E34916B0B4B0 /* StreamDeanonymizerEdgeCaseTests.swift in Sources */,
+				12F3C334A7AC57BE5B3DCB00 /* StreamDeanonymizerLiteralCollisionTests.swift in Sources */,
 				C07DBF9E6A8CCD6642E878A4 /* StreamDeanonymizerTests.swift in Sources */,
 				34DE40B5C447CC80DC7C3193 /* StringPhoneNumberTests.swift in Sources */,
 				52438D57C3BAE3DC7C8B7744 /* StubServicesTests.swift in Sources */,

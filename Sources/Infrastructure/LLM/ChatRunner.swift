@@ -354,10 +354,13 @@ struct StreamDeanonymizer: Sendable {
                 // 查找对应的结束标识 ']'
                 if let closeBracketRange = text[openBracketRange.upperBound...].range(of: "]") {
                     let placeholder = String(text[openBracketRange.lowerBound..<closeBracketRange.upperBound])
-                    if let original = mapping[placeholder] {
+                    // 仅对匹配脱敏占位符前缀 [ENTITY_ 的方括号片段查 mapping 还原；
+                    // 非前缀的普通方括号文本（如 Markdown 链接、代码块）直接输出，避免误还原 LLM 生成的字面量
+                    if placeholder.hasPrefix(LLMConstants.Anonymization.placeholderPrefix),
+                       let original = mapping[placeholder] {
                         output += original
                     } else {
-                        // 如果映射中没有，说明是非敏感占位符，直接输出
+                        // 非占位符或映射中不存在，直接输出原文
                         output += placeholder
                     }
                     currentIndex = closeBracketRange.upperBound
