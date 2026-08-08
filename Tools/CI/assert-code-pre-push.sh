@@ -133,9 +133,9 @@ run_check "文档漂移检测" \
     "false"
 
 # 1.9 业务层魔鬼数字/硬编码 Prompt 审计（阻断——AGENTS.md 红线 #4）
-# 短字符串检测按层逐步启用：当前 LLM + Processors + Storage 层已修复，后续每修一层就加入该层前缀
+# 短字符串检测按层逐步启用：当前 LLM + Processors + Storage + Plugins 层已修复，后续每修一层就加入该层前缀
 run_check "业务层魔鬼数字审计" \
-    "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage" \
+    "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins" \
     || exit 1
 
 # 1.10 UFPCore 纯净化审计（阻断——通用基础能力不应泄漏到业务层）

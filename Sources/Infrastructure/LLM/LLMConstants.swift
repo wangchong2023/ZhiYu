@@ -171,6 +171,21 @@ public enum LLMConstants {
         public static let appleIntelligenceName: String = "Apple_Intelligence"
     }
 
+    // MARK: - Loopback 地址检测标记 (Loopback URL Markers)
+
+    /// Loopback 地址检测常量集
+    /// 用于 `isLoopbackURL` 判断，豁免 HTTPS 强制校验
+    public enum Loopback {
+        /// localhost 回环地址标记
+        public static let localhostMarker: String = "://localhost"
+        /// IPv4 回环地址标记
+        public static let ipv4LoopbackMarker: String = "://127.0.0.1"
+        /// IPv6 回环地址标记
+        public static let ipv6LoopbackMarker: String = "://[::1]"
+        /// 任意地址绑定标记（0.0.0.0）
+        public static let anyAddressMarker: String = "://0.0.0.0"
+    }
+
     // MARK: - SSE 流式响应标记 (SSE Stream Markers)
 
     /// SSE 流式响应标记常量集
@@ -226,6 +241,8 @@ public enum LLMConstants {
     /// UI 自动化测试模式下 Mock 响应参数常量集
     /// 集中管理 `--uitesting` 自愈分支的延迟、Mock 文本与流式 chunks
     public enum UITesting {
+        /// UI 自动化测试启动参数标记
+        public static let launchArg: String = "--uitesting"
         /// 纳秒与秒的换算系数
         public static let nanosecondsPerSecond: Double = 1_000_000_000
         /// 非流式 Mock 响应初始延迟（秒）

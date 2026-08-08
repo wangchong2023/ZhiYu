@@ -355,8 +355,8 @@ final class PluginLoader {
                 version: PluginConstants.DefaultManifest.version,
                 author: PluginConstants.DefaultManifest.author,
                 permissions: PluginConstants.DefaultManifest.permissions,
-                names: ["en": displayName],
-                descriptions: ["en": PluginConstants.DefaultManifest.descriptionEn]
+                names: [CoreConstants.LanguageCode.en: displayName],
+                descriptions: [CoreConstants.LanguageCode.en: PluginConstants.DefaultManifest.descriptionEn]
             )
 
             // 🛡️ VULN-001 修复 + 审查修复 HIGH-2: DEBUG 模式下本地 .js 插件通过 isTrustedLocal 豁免签名

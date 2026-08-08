@@ -118,6 +118,7 @@ EXEMPT_CATEGORY = "business_magic_exempt"
 # 4. replacingOccurrences(of: "xxx") — 字符串替换
 # 5. pathExtension == "xxx" — 文件类型判断
 # 6. JSON 字典 key ["xxx": — API 字段名
+# 7. .contains("xxx") — 数组/字符串 contains 调用（权限、ID、语法标记等）
 
 # 纯转义字符白名单（这些是控制字符，无业务语义，不需抽取）
 ESCAPE_STRINGS = {
@@ -532,6 +533,34 @@ def _check_json_key_strings(code_part: str, rel_path: str, line_no: int, strippe
     return results
 
 
+def _check_contains_strings(code_part: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
+    """模式 7: .contains("xxx") — 数组/字符串 contains 调用。
+
+    检测所有 .contains("xxx") 形式的字符串字面量调用。
+    包括权限检查（permissions.contains("network")）、ID 匹配
+    （id.contains("toc-generator")）、语法检测（content.contains("| --- |")）、
+    命令行参数（arguments.contains("--uitesting")）等。
+
+    技术性调用（如 --uitesting、://localhost、Asia/Shanghai）也会被检测，
+    开发者应将其抽取为常量或登记豁免。
+
+    :return: 发现的违规列表
+    """
+    results: List[Finding] = []
+    for m in re.finditer(r'\.contains\("([^"]{2,30})"\)', code_part):
+        s = m.group(1)
+        if s in ESCAPE_STRINGS:
+            continue
+        results.append(Finding(
+            kind="magic_string",
+            file=rel_path,
+            line=line_no,
+            detail=f"contains 调用 `.contains(\"{s}\")`，应抽取为强类型常量",
+            content=stripped[:MAX_LINE_PREVIEW_LEN]
+        ))
+    return results
+
+
 def _check_magic_strings_in_line(line: str, rel_path: str, line_no: int, stripped: str) -> List[Finding]:
     """检测单行中的短业务字符串字面量（魔鬼字符串）。
 
@@ -542,6 +571,7 @@ def _check_magic_strings_in_line(line: str, rel_path: str, line_no: int, strippe
     4. replacingOccurrences(of: "xxx") — 字符串替换（MEDIUM）
     5. pathExtension == "xxx" — 文件类型判断（MEDIUM）
     6. JSON 字典 key ["xxx": — API 字段名（LOW）
+    7. .contains("xxx") — 数组/字符串 contains 调用（MEDIUM）
 
     排除项：
     - 行内注释中的字符串（// 之后的内容）
@@ -575,7 +605,7 @@ def _check_magic_strings_in_line(line: str, rel_path: str, line_no: int, strippe
     if not string_literals:
         return []
 
-    # 依次执行 6 种检测模式
+    # 依次执行 7 种检测模式
     results: List[Finding] = []
     results.extend(_check_comparison_strings(code_part, rel_path, line_no, stripped))
     results.extend(_check_assignment_strings(code_part, rel_path, line_no, stripped))
@@ -583,6 +613,7 @@ def _check_magic_strings_in_line(line: str, rel_path: str, line_no: int, strippe
     results.extend(_check_replace_strings(code_part, rel_path, line_no, stripped))
     results.extend(_check_path_extension_strings(code_part, rel_path, line_no, stripped))
     results.extend(_check_json_key_strings(code_part, rel_path, line_no, stripped))
+    results.extend(_check_contains_strings(code_part, rel_path, line_no, stripped))
     return results
 
 
@@ -798,10 +829,11 @@ def main() -> int:
     parser.add_argument("--strict", action="store_true", help="违规视为构建失败（CI 模式）")
     parser.add_argument(
         "--magic-string-scope",
-        nargs="*",
+        action="append",
         default=None,
         help="短字符串检测的扫描目录前缀（如 Sources/Infrastructure/LLM）。"
-             "未指定时扫描全部。已修复的层逐步加入，未列入的层跳过短字符串检测。",
+             "可多次传递以指定多个目录。未指定时扫描全部。"
+             "已修复的层逐步加入，未列入的层跳过短字符串检测。",
     )
     args = parser.parse_args()
 

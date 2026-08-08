@@ -264,6 +264,8 @@ enum ProcessorConstants {
         static let webScraper: String = "WebScraper"
         static let paywallBlocked: String = "Paywall_Blocked"
         static let paywallTestDomain: String = "paywall-test.com"
+        /// paywall 测试标记子串（用于 URL 子串匹配）
+        static let paywallTestMarker: String = "paywall-test"
     }
 
     // MARK: - 网页抓取器 (Web Scraper)

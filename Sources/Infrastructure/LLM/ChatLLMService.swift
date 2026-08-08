@@ -40,7 +40,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
     /// - Returns: 生成纯文本结果
     public func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         // UI 自动化测试靶场下的智能自愈：直接返回本地 Mock 保证 100% 绿通
-        if ProcessInfo.processInfo.arguments.contains("--uitesting") {
+        if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
             try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockNonStreamDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
             return LLMConstants.UITesting.mockNonStreamReply
         }
@@ -81,7 +81,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
     /// - Returns: 会话响应数据
     public func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         // UI 自动化测试靶场下的智能自愈：直接返回本地 RAG Mock 保证 100% 绿通
-        if ProcessInfo.processInfo.arguments.contains("--uitesting") {
+        if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
             try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockNonStreamDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
             return ChatMessageDTO(
                 id: UUID(),
@@ -143,7 +143,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
     /// - Returns: 流式字符串抛出流
     public func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
         // UI 自动化测试靶场下的智能自愈：模拟流式打字机延迟吐字，验证骨架屏 (Skeleton) 与流中止 (Stop-flow) 机制
-        if ProcessInfo.processInfo.arguments.contains("--uitesting") {
+        if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
             return AsyncThrowingStream { continuation in
                 Task {
                     // 模拟在发送大语言模型请求之前的 RAG 检索/思考状态，以留出时间给 UI 测试捕获骨架屏

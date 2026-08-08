@@ -85,6 +85,15 @@ enum StorageConstants {
         static let uitestingLaunchArg = "--uitesting"
     }
 
+    // MARK: - 测试名称匹配标记 (Test Name Markers)
+    /// 测试环境下笔记本名称子串匹配标记
+    enum TestName {
+        /// 默认知识管理笔记本名称标记
+        static let vaultMarker: String = "Vault"
+        /// 项目调研笔记本名称标记
+        static let researchMarker: String = "Research"
+    }
+
     // MARK: - 错误域 (Error Domain)
     enum ErrorDomain {
         static let databaseManager = "DatabaseManager"
@@ -161,5 +170,7 @@ enum StorageConstants {
         static let wikilinkClose = "]]"
         static let tableDelimiter = "|-"
         static let tableSeparator = "|:"
+        /// 引用 SystemConstants.MarkdownSyntax.tableRowSeparator
+        static let tableRowSeparator: String = SystemConstants.MarkdownSyntax.tableRowSeparator
     }
 }

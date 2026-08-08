@@ -80,7 +80,7 @@ final class PluginRuntime: ObservableObject {
         }
 
         // 版本兼容性检查
-        if plugin.manifest.version.hasPrefix("1.") {
+        if plugin.manifest.version.hasPrefix(PluginConstants.PluginID.v1VersionPrefix) {
             Logger.shared.debug(" [Adapter]  1.x  \(plugin.manifest.name) v1_Compatibility_Shim")
         }
 
@@ -98,7 +98,7 @@ final class PluginRuntime: ObservableObject {
             pluginResourceUsage[plugin.manifest.id] = ResourceUsage()
         }
 
-        registry.analytics?.trackEvent("plugin_loaded", properties: ["id": plugin.manifest.id])
+        registry.analytics?.trackEvent("plugin_loaded", properties: [PluginConstants.AnalyticsKey.id: plugin.manifest.id])
     }
 
     /// 卸载插件：从内存移除并删除磁盘文件，防止重启后重新加载
@@ -127,7 +127,7 @@ final class PluginRuntime: ObservableObject {
         // 删除磁盘上的插件文件，防止重启后重新加载
         removePluginFilesFromDisk(pluginID: id)
 
-        registry.analytics?.trackEvent("plugin_unloaded", properties: ["id": id])
+        registry.analytics?.trackEvent("plugin_unloaded", properties: [PluginConstants.AnalyticsKey.id: id])
     }
 
     /// 标记并持久化封禁插件
@@ -216,7 +216,7 @@ final class PluginRuntime: ObservableObject {
                 if duration > pluginTimeout {
                     Logger.shared.error(" [Watchdog]  \(intercepter.manifest.name)  (\(String(format: "%.2f", duration))s)")
                     suspendPlugin(pluginID) // 物理封禁并持久化
-                    registry.analytics?.trackEvent("plugin_circuit_break", properties: ["id": pluginID, "duration": duration])
+                    registry.analytics?.trackEvent("plugin_circuit_break", properties: [PluginConstants.AnalyticsKey.id: pluginID, PluginConstants.AnalyticsKey.duration: duration])
                     continue // 丢弃该插件结果
                 }
 
@@ -230,7 +230,7 @@ final class PluginRuntime: ObservableObject {
                 ])
             } catch {
                 Logger.shared.error(" []  \(intercepter.manifest.name) ", error: error)
-                registry.analytics?.trackEvent("plugin_crash", properties: ["id": pluginID, "error": error.localizedDescription])
+                registry.analytics?.trackEvent("plugin_crash", properties: [PluginConstants.AnalyticsKey.id: pluginID, PluginConstants.AnalyticsKey.error: error.localizedDescription])
             }
         }
 
@@ -288,7 +288,7 @@ final class PluginRuntime: ObservableObject {
         // 以及包含规范 ID 核心 Slug 片段的任何残留，防止应用重启时扫描器自动重新加载。
         do {
             let files = try fileManager.contentsOfDirectory(at: pluginsDir, includingPropertiesForKeys: nil)
-            let idSlug = pluginID.replacingOccurrences(of: "com.zhiyu.plugin.", with: "")
+            let idSlug = pluginID.replacingOccurrences(of: PluginConstants.PluginID.officialPrefix, with: "")
             for file in files {
                 let name = file.deletingPathExtension().lastPathComponent
                 // 1. 完全一致

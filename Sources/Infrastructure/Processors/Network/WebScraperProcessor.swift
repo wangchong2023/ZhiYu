@@ -99,7 +99,7 @@ struct MockScraperHandler: WebScraperHandler {
     /// /// - Parameter startTime: 启动Time
     /// /// - Returns: 返回值
     func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
-        if url.host == ProcessorConstants.Module.paywallTestDomain || url.absoluteString.contains("paywall-test") {
+        if url.host == ProcessorConstants.Module.paywallTestDomain || url.absoluteString.contains(ProcessorConstants.Module.paywallTestMarker) {
 // swiftlint:disable:next force_unwrapping
             let mockData = Data(base64Encoded: "PGh0bWw+PGhlYWQ+PHRpdGxlPlBheXdhbGwgVGVzdCBBcnRpY2xlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+VGhpcyBpcyBtb2NrIHByZW1pdW0gY29udGVudCBieXBhc3Mgc3VjY2Vzcy48L3A+PHA+U2Vjb25kIHBhcmFncmFwaCBvZiB0aGUgcHJlbWl1bSBhcnRpY2xlLjwvcD48L2JvZHk+PC9odG1sPg==")!
 // swiftlint:disable:next force_unwrapping

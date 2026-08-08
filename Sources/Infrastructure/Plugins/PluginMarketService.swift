@@ -126,29 +126,6 @@ struct MarketPlugin: Codable, Identifiable {
         }
         self.descriptions = resolvedDescs
     }
-
-    /// 根据插件 ID 智能映射默认 of SF Symbol 兜底图标，防止在未解压或无本地物理图片时各插件展示单一的拼图块
-    private static func defaultIcon(for id: String) -> String {
-        if id.contains("toc-generator") {
-            return "list.bullet.rectangle.portrait"
-        } else if id.contains("word-counter") {
-            return "character.textbox"
-        } else if id.contains("smart-cleaner") {
-            return "wand.and.stars"
-        } else if id.contains("ai-summary") {
-            return "brain.head.profile"
-        } else if id.contains("code-highlighter") {
-            return "curlybraces"
-        } else if id.contains("link-preview") {
-            return "link"
-        } else if id.contains("ai-translator") {
-            return "translate"
-        } else if id.contains("markdown-beautifier") {
-            return "doc.text.magnifyingglass"
-        } else {
-            return "puzzlepiece.extension.fill"
-        }
-    }
 }
 
 /// community-plugins.json 条目（Obsidian 风格，扩展支持多语言元数据）
@@ -216,7 +193,7 @@ final class PluginMarketService: ObservableObject {
         var urls: [URL] = []
         
         // 优先将对应语言的本地化 community-plugins_zh-Hans.json 加入抓取队列中以优先尝试
-        if preferredLanguage.hasPrefix("zh") {
+        if preferredLanguage.hasPrefix(PluginConstants.LanguagePrefix.zh) {
             let zhURL = registryGitHub.deletingLastPathComponent().appendingPathComponent("community-plugins_zh-Hans.json")
             urls.append(zhURL)
         }
@@ -245,7 +222,7 @@ final class PluginMarketService: ObservableObject {
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
 
             guard statusCode == SystemConstants.HTTPStatusCode.ok else {
-                throw NSError(domain: "PluginMarketService", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(statusCode)"])
+                throw NSError(domain: PluginConstants.MarketError.domain, code: statusCode, userInfo: [NSLocalizedDescriptionKey: "\(PluginConstants.MarketError.httpPrefix)\(statusCode)"])
             }
 
             Logger.shared.info("[PluginMarket] 成功拉取插件元数据，大小: \(data.count) 字节")
@@ -263,12 +240,12 @@ final class PluginMarketService: ObservableObject {
         if let communityPlugins = try? decoder.decode([CommunityPluginEntry].self, from: data) {
             let currentTargetURL = targetURL
             let rawURLString: String
-            if currentTargetURL.absoluteString.contains("community-plugins.json") {
-                rawURLString = currentTargetURL.absoluteString.replacingOccurrences(of: "community-plugins.json", with: "plugins")
-            } else if currentTargetURL.absoluteString.contains("community-plugins_zh-Hans.json") {
-                rawURLString = currentTargetURL.absoluteString.replacingOccurrences(of: "community-plugins_zh-Hans.json", with: "plugins")
-            } else if currentTargetURL.absoluteString.contains("community.json") {
-                rawURLString = currentTargetURL.absoluteString.replacingOccurrences(of: "community.json", with: "plugins")
+            if currentTargetURL.absoluteString.contains(PluginConstants.MarketJSON.communityPlugins) {
+                rawURLString = currentTargetURL.absoluteString.replacingOccurrences(of: PluginConstants.MarketJSON.communityPlugins, with: PluginConstants.MarketJSON.pluginsPathSegment)
+            } else if currentTargetURL.absoluteString.contains(PluginConstants.MarketJSON.communityPluginsZhHans) {
+                rawURLString = currentTargetURL.absoluteString.replacingOccurrences(of: PluginConstants.MarketJSON.communityPluginsZhHans, with: PluginConstants.MarketJSON.pluginsPathSegment)
+            } else if currentTargetURL.absoluteString.contains(PluginConstants.MarketJSON.community) {
+                rawURLString = currentTargetURL.absoluteString.replacingOccurrences(of: PluginConstants.MarketJSON.community, with: PluginConstants.MarketJSON.pluginsPathSegment)
             } else {
                 rawURLString = currentTargetURL.deletingLastPathComponent().appendingPathComponent("plugins").absoluteString
             }
@@ -351,9 +328,9 @@ final class PluginMarketService: ObservableObject {
     private func prepareDestinationFolder(for pluginID: String, fileManager: FileManager) throws -> URL {
         guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
             throw NSError(
-                domain: "PluginMarketService",
+                domain: PluginConstants.MarketError.domain,
                 code: 404,
-                userInfo: [NSLocalizedDescriptionKey: "Failed to locate documents directory"]
+                userInfo: [NSLocalizedDescriptionKey: PluginConstants.MarketError.documentsNotFound]
             )
         }
         let pluginsDirectory = documentsURL.appendingPathComponent("Plugins")
@@ -407,9 +384,9 @@ final class PluginMarketService: ObservableObject {
                         let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
                         guard statusCode == SystemConstants.HTTPStatusCode.ok else {
                             throw NSError(
-                                domain: "PluginMarketService",
+                                domain: PluginConstants.MarketError.domain,
                                 code: statusCode,
-                                userInfo: [NSLocalizedDescriptionKey: "HTTP \(statusCode)"]
+                                userInfo: [NSLocalizedDescriptionKey: "\(PluginConstants.MarketError.httpPrefix)\(statusCode)"]
                             )
                         }
                         
@@ -451,19 +428,19 @@ final class PluginMarketService: ObservableObject {
     ) -> [URL] {
         guard let downloadURL = URL(string: downloadURLString) else { return [] }
         let base = downloadURL.deletingLastPathComponent()
-        let preferredLanguage = preferredLanguages.first ?? "en"
+        let preferredLanguage = preferredLanguages.first ?? PluginConstants.LanguagePrefix.en
         
         var urlsToTry: [URL] = []
-        if preferredLanguage.hasPrefix("zh") {
+        if preferredLanguage.hasPrefix(PluginConstants.LanguagePrefix.zh) {
             urlsToTry.append(base.appendingPathComponent("\(pluginID)_zh-Hans.md"))
-        } else if preferredLanguage.hasPrefix("en") {
+        } else if preferredLanguage.hasPrefix(PluginConstants.LanguagePrefix.en) {
             urlsToTry.append(base.appendingPathComponent("\(pluginID)_en.md"))
         } else {
             let cleanLang = preferredLanguage.components(separatedBy: "-").first ?? preferredLanguage
             urlsToTry.append(base.appendingPathComponent("\(pluginID)_\(cleanLang).md"))
         }
         
-        if !preferredLanguage.hasPrefix("en") {
+        if !preferredLanguage.hasPrefix(PluginConstants.LanguagePrefix.en) {
             urlsToTry.append(base.appendingPathComponent("\(pluginID)_en.md"))
         }
         

@@ -92,7 +92,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
             "loadData": unsafeBitCast(makeLoadDataBlock(pluginCtx: pluginCtx), to: AnyObject.self),
             "fetch": unsafeBitCast(makeFetchBlock(pluginCtx: pluginCtx), to: AnyObject.self)
         ]
-        context.setObject(jsContextObj, forKeyedSubscript: "ZhiYu" as NSString)
+        context.setObject(jsContextObj, forKeyedSubscript: PluginConstants.JSGlobal.hostBridge as NSString)
     }
 
     private func makeLogBlock(pluginCtx: PluginContext) -> @convention(block) (String) -> Void {

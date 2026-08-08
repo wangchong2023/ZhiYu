@@ -238,7 +238,7 @@ public struct DemoPDFBuilder {
 
     static func isTableSeparator(_ line: String) -> Bool {
         let cleaned = line.replacingOccurrences(of: " ", with: "")
-        return cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableSeparator) || cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableDelimiter) || (cleaned.contains("---") && cleaned.contains("|"))
+        return cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableSeparator) || cleaned.hasPrefix(StorageConstants.MarkdownSyntax.tableDelimiter) || (cleaned.contains(StorageConstants.MarkdownSyntax.tableRowSeparator) && cleaned.contains("|"))
     }
 }
 #else

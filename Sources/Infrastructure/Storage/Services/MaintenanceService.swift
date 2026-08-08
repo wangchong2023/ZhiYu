@@ -100,11 +100,11 @@ public final class MaintenanceService {
         let resolvedName: String? = vaultName ?? VaultService.shared.currentVault?.name
         
         do {
-            if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains("Vault") == true)) {
+            if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains(StorageConstants.TestName.vaultMarker) == true)) {
                 // 默认知识管理笔记本 — 注入 AI 概念与 API 日志演示数据
                 _ = try await InitialNotebookGenerator.generate(in: pageStore)
                 activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.defaultDemoData, details: StorageConstants.LogDetails.seededDefaultContent, module: StorageConstants.LogModule.maintenance)
-            } else if resolvedName == L10n.Vault.researchName || resolvedName == L10n.Vault.researchNameZh || resolvedName == L10n.Vault.researchNameEn || resolvedName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains("Research") == true) {
+            } else if resolvedName == L10n.Vault.researchName || resolvedName == L10n.Vault.researchNameZh || resolvedName == L10n.Vault.researchNameEn || resolvedName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains(StorageConstants.TestName.researchMarker) == true) {
                 // 项目调研笔记本 — 注入行业分析演示数据
                 _ = try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore)
                 activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: StorageConstants.LogDetails.seededResearchContent, module: StorageConstants.LogModule.maintenance)

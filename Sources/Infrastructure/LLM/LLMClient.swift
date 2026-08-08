@@ -200,10 +200,10 @@ class LLMClient: LLMClientProtocol, @unchecked Sendable {
     /// loopback 不经过网络，无明文泄露风险，豁免 HTTPS 强制校验
     private func isLoopbackURL(_ urlString: String) -> Bool {
         let lower = urlString.lowercased()
-        return lower.contains("://localhost") ||
-               lower.contains("://127.0.0.1") ||
-               lower.contains("://[::1]") ||
-               lower.contains("://0.0.0.0")
+        return lower.contains(LLMConstants.Loopback.localhostMarker) ||
+               lower.contains(LLMConstants.Loopback.ipv4LoopbackMarker) ||
+               lower.contains(LLMConstants.Loopback.ipv6LoopbackMarker) ||
+               lower.contains(LLMConstants.Loopback.anyAddressMarker)
     }
 }
 

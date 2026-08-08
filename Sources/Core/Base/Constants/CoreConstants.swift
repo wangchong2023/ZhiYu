@@ -14,6 +14,7 @@ public enum CoreConstants {
     // MARK: - 语言代码 (Language Code)
     public enum LanguageCode {
         public static let zh = "zh"
+        public static let zhHans = "zh-Hans"
         public static let zhHant = "zh-Hant"
         public static let zhHK = "zh-HK"
         public static let zhTW = "zh-TW"

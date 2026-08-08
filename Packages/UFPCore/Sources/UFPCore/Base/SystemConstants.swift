@@ -217,6 +217,8 @@ public enum SystemConstants {
         public static let bulletAsterisk: String = "* "
         /// 无序列表项标记（短横线）
         public static let bulletDash: String = "- "
+        /// 表格行分隔符（Markdown 表格分隔行 `---`）
+        public static let tableRowSeparator: String = "---"
     }
 
     // MARK: - 布尔字面量 (Boolean Literals)

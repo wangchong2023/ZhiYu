@@ -30,7 +30,7 @@ enum PluginConstants {
     // MARK: - 本地化语言要求 (Localization)
     enum Localization {
         /// 插件 README 强制要求的语言列表（引用 CoreConstants.LanguageCode）
-        static let requiredLocales: [String] = [CoreConstants.LanguageCode.en, "zh-Hans"]
+        static let requiredLocales: [String] = [CoreConstants.LanguageCode.en, CoreConstants.LanguageCode.zhHans]
     }
 
     // MARK: - 默认 Manifest 值 (Default Manifest Values)
@@ -82,5 +82,65 @@ enum PluginConstants {
         static let writeContent: String = "writeContent"
         /// 日志权限
         static let log: String = "log"
+    }
+
+    // MARK: - 插件市场 JSON 文件名 (Market JSON Filenames)
+    /// 插件市场元数据 JSON 文件名常量集
+    enum MarketJSON {
+        /// 默认社区插件列表文件名
+        static let communityPlugins: String = "community-plugins.json"
+        /// 简体中文社区插件列表文件名
+        static let communityPluginsZhHans: String = "community-plugins_zh-Hans.json"
+        /// 旧版社区插件列表文件名
+        static let community: String = "community.json"
+        /// 替换后的 plugins 路径段
+        static let pluginsPathSegment: String = "plugins"
+    }
+
+    // MARK: - 语言前缀标记 (Language Prefix Markers)
+    /// 语言代码前缀匹配标记
+    enum LanguagePrefix {
+        /// 中文语言前缀
+        static let zh: String = "zh"
+        /// 英文语言前缀
+        static let en: String = "en"
+    }
+
+    // MARK: - 插件市场错误域 (Error Domain)
+    /// 插件市场服务错误域与描述常量集
+    enum MarketError {
+        /// NSError domain 字段值
+        static let domain: String = "PluginMarketService"
+        /// HTTP 错误描述前缀
+        static let httpPrefix: String = "HTTP "
+        /// 文档目录定位失败描述
+        static let documentsNotFound: String = "Failed to locate documents directory"
+    }
+
+    // MARK: - 插件 ID 前缀 (Plugin ID Prefix)
+    /// 规范插件 ID 前缀，用于 replacingOccurrences 清理
+    enum PluginID {
+        /// 规范插件 ID 前缀
+        static let officialPrefix: String = "com.zhiyu.plugin."
+        /// v1.x 版本前缀（兼容性检测）
+        static let v1VersionPrefix: String = "1."
+    }
+
+    // MARK: - JS 全局对象名 (JS Global Object Name)
+    /// JSContext 注入的全局对象名常量集
+    enum JSGlobal {
+        /// ZhiYu 全局对象名（插件通过 ZhiYu.xxx 访问宿主 API）
+        static let hostBridge: String = "ZhiYu"
+    }
+
+    // MARK: - 分析事件参数 Key (Analytics Event Keys)
+    /// 插件分析事件 properties 字典 key 常量集
+    enum AnalyticsKey {
+        /// 插件 ID 字段 key
+        static let id: String = "id"
+        /// 事件持续时长字段 key
+        static let duration: String = "duration"
+        /// 错误描述字段 key
+        static let error: String = "error"
     }
 }
