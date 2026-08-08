@@ -302,7 +302,12 @@ final class JavaScriptPlugin: InterceptionPlugin {
                     throw PluginSandboxError.postProcessException(exception.toString() ?? "unknown")
                 }
                 
-                return result?.toString() ?? content
+                let resultString = result?.toString() ?? content
+                // 安全防护：postProcess 返回值也应检查大小限制，与 preProcess 保持一致
+                if resultString.count > maxResponseSize {
+                    throw PluginSandboxError.payloadTooLarge
+                }
+                return resultString
             }
             return content
         }
