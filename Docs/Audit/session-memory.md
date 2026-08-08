@@ -78,7 +78,12 @@
   - `Packages/UFPCore/Sources/UFPCore/Base/TextAnalyzer.swift` — `wordCount(_:)` 中英混排字数统计
 
 ### In Progress
-- (none — 9 个问题全部修复并推送 gitlab，覆盖率基线已确认)
+- **全量覆盖率报告运行中**（后台 PID 14693）— 验证 3 个新测试文件（43 个测试）对 Infrastructure 层覆盖率的提升效果
+- **3 个新测试文件已通过验证** ✅ — commit `464e89c6`，已推送 gitlab
+  - `LLMAdaptersChatStreamTests.swift` — 18 个测试（SSEParser 静态方法 11 + chatStream 流式 4 + OllamaAdapter 3）
+  - `ChatHistoryStorePersistenceTests.swift` — 10 个测试（ChatHistoryStore 持久化）
+  - `VaultStorageServiceTests.swift` — 8 个测试（Vault 扫描/bookmark/restore）
+  - OllamaAdapter.chatStream 占位实现 `AsyncThrowingStream { _ in }` 不调用 finish()，测试需加 2 秒超时保护
 
 ### Done (新增)
 - **Infrastructure 层 9 个问题全部修复** ✅ — commit `aa167438` + `bef459e1`，已推送 gitlab
@@ -193,9 +198,11 @@
 
 ## Next Steps
 - 常量迁移 + 通用函数迁移 + 兼容层移除任务**全部完成**，已推送 gitlab（commit `b14ad1a1`/`5b389098`）
+- **Infrastructure 覆盖率提升任务进行中**（83.04% → 85% 目标，缺口 291 行）
 - 后续工作：
-  - 运行覆盖率报告确认 Infrastructure 层当前状态
-  - 回到 Infrastructure 覆盖率提升任务（78.79% → 85% 目标），**以发现问题为导向**，发现的问题列出表格（序号、问题描述、严重程度、修改方案、是否解决）
+  - 等待全量覆盖率报告完成，确认 3 个新测试文件的覆盖率提升效果
+  - 如仍未达标 85%，继续针对低覆盖率文件编写测试（如 `NetworkClient.swift` 78 行未覆盖、`LLMContextBuilder.swift` 57 行未覆盖、`DatabaseManager.swift` 46 行未覆盖）
+  - **以发现问题为导向**，发现的问题列出表格（序号、问题描述、严重程度、修改方案、是否解决）
 
 ## Critical Context
 - **Infrastructure 层覆盖率（9 个问题修复后）**：78.68%（11638/14792），85% 目标需 12573 行，缺口约 935 行
