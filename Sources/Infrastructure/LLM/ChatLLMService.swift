@@ -172,9 +172,9 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
         let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
         let chatService = LLMChatService(client: client, model: configManager.model)
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
-        
+
         let (stream, continuation) = AsyncThrowingStream<String, Error>.makeStream()
-        
+
         // 1. 使用后台异步任务生成上下文与启动流式返回
         Task {
             do {
@@ -182,17 +182,31 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked 
                 let (context, _) = await contextBuilder.buildRelevantContext(query: sanitizedQuery)
                 let sandboxedContext = PromptSanitizer.shared.wrapInSandbox(context)
                 let systemPrompt = contextBuilder.buildSystemPrompt(pages: pages) + "\n\n" + sandboxedContext
-                
-                let sseStream = chatService.streamChat(systemPrompt: systemPrompt, query: sanitizedQuery, history: history)
+
+                // 🔒 端侧 NER 脱敏 (SR-12)：对齐 chat 方法，防止敏感信息发送给云端 LLM
+                let (anonSystemPrompt, mapping1) = contextBuilder.anonymize(systemPrompt)
+                let (anonQuery, mapping2) = contextBuilder.anonymize(sanitizedQuery, existingMapping: mapping1)
+
+                var anonHistory: [ChatMessageDTO] = []
+                var currentMapping = mapping2
+                for msg in history {
+                    let (anonContent, nextMapping) = contextBuilder.anonymize(msg.content, existingMapping: currentMapping)
+                    currentMapping = nextMapping
+                    anonHistory.append(ChatMessageDTO(role: msg.role, content: anonContent))
+                }
+
+                let sseStream = chatService.streamChat(systemPrompt: anonSystemPrompt, query: anonQuery, history: anonHistory)
                 for try await chunk in sseStream {
-                    continuation.yield(chunk)
+                    // 🔓 端侧还原 (SR-12)：流式逐 chunk 还原占位符
+                    let deanonymizedChunk = contextBuilder.deanonymize(chunk, mapping: currentMapping)
+                    continuation.yield(deanonymizedChunk)
                 }
                 continuation.finish()
             } catch {
                 continuation.finish(throwing: error)
             }
         }
-        
+
         return stream
     }
 }

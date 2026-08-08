@@ -352,4 +352,93 @@ final class ChatLLMServiceIntegrationTests: XCTestCase {
             XCTFail("应抛出 LLMError.httpError(500)，实际：\(error)")
         }
     }
+
+    // MARK: - chatStream 脱敏验证（问题 #14：流式对话已修复 NER 脱敏）
+
+    func testChatStreamAnonymizesQuery() async {
+        // 问题 #14 修复后：chatStream 应脱敏 query 中的敏感实体
+        let chunk = #"data: {"choices":[{"delta":{"content":"好的"}}]}"#
+        ChatLLMServiceMockURLProtocol.sseBody = "\(chunk)\n\ndata: [DONE]\n\n"
+        ChatLLMServiceMockURLProtocol.statusCode = 200
+
+        // 使用 NLTagger 可识别的人名
+        let stream = service.chatStream(query: "张三丰的武功如何", history: [], pages: [])
+        do {
+            for try await _ in stream {
+                // 消费流
+            }
+        } catch {
+            // 忽略错误，关注请求体
+        }
+
+        // 验证修复：请求体中不应包含原始敏感数据"张三丰"
+        guard let bodyData = ChatLLMServiceMockURLProtocol.capturedRequestBody,
+              let bodyString = String(data: bodyData, encoding: .utf8) else {
+            XCTFail("应捕获请求体")
+            return
+        }
+
+        XCTAssertFalse(bodyString.contains("张三丰"), "问题 #14 修复后：chatStream 应脱敏，'张三丰'不应出现在请求体")
+    }
+
+    func testChatStreamAnonymizesHistory() async {
+        // 问题 #14 修复后：chatStream 应脱敏 history
+        let chunk = #"data: {"choices":[{"delta":{"content":"好的"}}]}"#
+        ChatLLMServiceMockURLProtocol.sseBody = "\(chunk)\n\ndata: [DONE]\n\n"
+        ChatLLMServiceMockURLProtocol.statusCode = 200
+
+        let history: [ChatMessageDTO] = [
+            ChatMessageDTO(role: .user, content: "我想了解张三丰的武功"),
+            ChatMessageDTO(role: .assistant, content: "已记录")
+        ]
+
+        let stream = service.chatStream(query: "继续", history: history, pages: [])
+        do {
+            for try await _ in stream {
+                // 消费流
+            }
+        } catch {
+            // 忽略错误
+        }
+
+        guard let bodyData = ChatLLMServiceMockURLProtocol.capturedRequestBody,
+              let bodyString = String(data: bodyData, encoding: .utf8) else {
+            XCTFail("应捕获请求体")
+            return
+        }
+
+        XCTAssertFalse(bodyString.contains("张三丰"), "问题 #14 修复后：chatStream 应脱敏 history，'张三丰'不应出现在请求体")
+    }
+
+    func testChatAndChatStreamBothAnonymizeQuery() async {
+        // 对比测试：chat 和 chatStream 都应脱敏
+        ChatLLMServiceMockURLProtocol.jsonBody = makeChoicesResponse(content: "好的")
+        ChatLLMServiceMockURLProtocol.statusCode = 200
+
+        // 1. chat 路径：应脱敏
+        _ = try? await service.chat(query: "张三丰的武功", history: [], pages: [])
+        let chatBody = ChatLLMServiceMockURLProtocol.capturedRequestBody
+        let chatBodyString = chatBody.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+        XCTAssertFalse(chatBodyString.contains("张三丰"), "chat 路径应脱敏，'张三丰'不应出现在请求体")
+
+        // 重置
+        ChatLLMServiceMockURLProtocol.reset()
+        let chunk = #"data: {"choices":[{"delta":{"content":"好的"}}]}"#
+        ChatLLMServiceMockURLProtocol.sseBody = "\(chunk)\n\ndata: [DONE]\n\n"
+        ChatLLMServiceMockURLProtocol.statusCode = 200
+
+        // 2. chatStream 路径：修复后也应脱敏
+        let stream = service.chatStream(query: "张三丰的武功", history: [], pages: [])
+        do {
+            for try await _ in stream {
+                // 消费流
+            }
+        } catch {
+            // 忽略
+        }
+
+        let streamBody = ChatLLMServiceMockURLProtocol.capturedRequestBody
+        let streamBodyString = streamBody.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+        XCTAssertFalse(streamBodyString.contains("张三丰"), "chatStream 路径修复后应脱敏，'张三丰'不应出现在请求体")
+    }
 }
