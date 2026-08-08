@@ -1787,6 +1787,7 @@
 		DFF4BA74F291263A755D6967 /* VectorDataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DCE29060A0BD520D46D87D3 /* VectorDataRepository.swift */; };
 		DFF5A487ED17A8388DF755DC /* ModelLabSandboxPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C86BF18E4460295082302D /* ModelLabSandboxPanel.swift */; };
 		E007B51D92C199080EB1CAA1 /* PromptTemplateEngineCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE772266B27F02A64CBBAD7 /* PromptTemplateEngineCapabilities.swift */; };
+		E05144DCB7DED3E4C90435BB /* LLMContextBuilderPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579CA584891D3923A3466309 /* LLMContextBuilderPromptTests.swift */; };
 		E08F03CC2F89D9ED72F781EF /* SystemViewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E38F5B0F8D66661401F840 /* SystemViewProvider.swift */; };
 		E0B5B766167DB3ABAA058D5B /* RAGConfigForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130BC126943F180E2802F7F5 /* RAGConfigForm.swift */; };
 		E0B6942EFC32D9D6C9A798C2 /* SubscriptionFeatureGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6494FF2EA8291F5DC18EF35 /* SubscriptionFeatureGrid.swift */; };
@@ -2527,6 +2528,7 @@
 		5714EF992FFA9DF10881DDCA /* AIWorkflowCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIWorkflowCapabilities.swift; sourceTree = "<group>"; };
 		573791390C21B384E83649DF /* QuickLookPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookPreview.swift; sourceTree = "<group>"; };
 		578D18D6CB7D5E03DF676B8E /* ZIPFoundation */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ZIPFoundation; path = ../../opensrc/swift/ZIPFoundation; sourceTree = SOURCE_ROOT; };
+		579CA584891D3923A3466309 /* LLMContextBuilderPromptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMContextBuilderPromptTests.swift; sourceTree = "<group>"; };
 		57B1A95817AE845F130FBE12 /* ModelManager.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = ModelManager.xcstrings; sourceTree = "<group>"; };
 		57CE7CF3C9DFDAB720CC5000 /* PromptSecuritySanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptSecuritySanitizerTests.swift; sourceTree = "<group>"; };
 		57D6EFD678A07BDE43E8B965 /* DesignSystem+SpacingToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+SpacingToken.swift"; sourceTree = "<group>"; };
@@ -6276,6 +6278,7 @@
 				27C01123985A7D4DB5A117DF /* InfrastructureSecurityAndUtilityTests.swift */,
 				0A00EE28505E42E33CDB1E11 /* LLMAdaptersChatStreamTests.swift */,
 				12C9CFA70D441A81EF29051F /* LLMConfigManagerTests.swift */,
+				579CA584891D3923A3466309 /* LLMContextBuilderPromptTests.swift */,
 				C3AF0BF37240ED5E5E04AAE3 /* LLMContextBuilderSupplementTests.swift */,
 				BECF52489AC9351317EA62B8 /* LLMDegradationAndStorageUtilityTests.swift */,
 				D179597D6B1716EFCBBF02BE /* LLMModelsTests.swift */,
@@ -7108,6 +7111,7 @@
 				520B336A9E6119844B49AD89 /* LLMConfigStoreTests.swift in Sources */,
 				239F1AA4044721B9C94FF98E /* LLMContextBuilderEdgeCaseTests.swift in Sources */,
 				FC860A9A959123F97922EBB6 /* LLMContextBuilderPrecisionTests.swift in Sources */,
+				E05144DCB7DED3E4C90435BB /* LLMContextBuilderPromptTests.swift in Sources */,
 				7D9F07255D2DF6937A9E9880 /* LLMContextBuilderSupplementTests.swift in Sources */,
 				022E00CC34B25DBCC408E64F /* LLMContextBuilderTests.swift in Sources */,
 				1B7E21FB7AEF5DF509B79100 /* LLMContextSecurityTests.swift in Sources */,
