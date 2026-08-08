@@ -14,3 +14,4 @@
 | 7 | `PluginLoader.loadPluginFromRawJS` 裸 .js 文件 `isTrustedLocal: true` 跳过签名校验 | 用户将任意 .js 文件放入 Plugins 目录即可加载执行，恶意 JS 在沙箱内执行任意逻辑 | 🔴 P0 | 裸 .js 也要求签名，或至少限制为开发者模式 + 白名单路径 | 是 |
 | 8 | `ChatLLMService.generate` 接收 maxTokens 参数但构建请求 body 时未包含该字段 | 调用方指定 maxTokens 限制生成长度，但实际请求未包含，模型使用默认值，Token 浪费 + API 费用增加 | 🟡 P1 | body 中添加 `LLMConstants.APIKey.maxTokens: maxTokens` | 是 |
 | 9 | `ChatLLMService.chat` 未做 NER 脱敏（anonymize/deanonymize），直接把 query 发给云端 LLM | 用户输入的敏感信息（姓名、电话、邮箱）直接发送给云端 LLM API，隐私泄露风险 | 🔴 P0 | 对齐 ChatRunner.chat，添加 anonymize/deanonymize 流程 | 是 |
+| 10 | `DatabaseManager.degradeToInMemory` 成功初始化内存数据库后，`state` 仍为 `.corrupted`（setup catch 块第 166 行设置），未恢复为 `.ready` 或新增 `.degraded` 状态 | 降级后 app 正常运行（内存数据库可用），但 UI 层持续显示"数据库损坏"警告，用户困惑：明明能用为何显示损坏？用户可能误以为数据丢失而清除 app | 🟡 P1 | `degradeToInMemory` 成功后将 `state` 更新为 `.ready`（或新增 `.degraded` 状态区分"真损坏"和"已降级"） | 是 |

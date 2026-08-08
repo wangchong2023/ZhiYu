@@ -220,6 +220,10 @@ final class DatabaseManager {
             try globalMigrator.migrate(memoryGlobalQueue)
             
             Logger.shared.info(" [DatabaseManager] Fallback in-memory database successfully initialized.")
+
+            // 4. 降级成功后恢复 state 为 .ready，避免 UI 层持续显示损坏警告
+            //    内存数据库已正常工作，用户应看到正常界面而非损坏提示
+            self.state = .ready
         } catch {
             // 如果连内存数据库都无法初始化（极端资源限制），则进行最终崩溃
             fatalError(" Fatal recovery failure: In-memory fallback database could not be initialized: \(error.localizedDescription)")
