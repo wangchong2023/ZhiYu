@@ -766,6 +766,7 @@
 		613C905B4A362B87FA30FBDF /* TagCloudDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02222DC1B182DDC71A0CB3D7 /* TagCloudDialogs.swift */; };
 		614F6EF11930972C73D87D7A /* DocxProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADA7D58C66AA1D6BA36B876 /* DocxProcessorTests.swift */; };
 		614FE8E9BC58D0E16A989395 /* ByteFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC051C72EA8F9E68F647745 /* ByteFormatterTests.swift */; };
+		6152A99AC29C97ABCC203993 /* LLMProviderMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D61CDEAB62D3820A458F91 /* LLMProviderMetadataTests.swift */; };
 		6176696FEEDE4F1191B02C8D /* KnowledgeViewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E07B60E3297B627ADFA4130B /* KnowledgeViewProvider.swift */; };
 		6205C38772A57058ECE9E695 /* SchemaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A1995F8F53A28910294605 /* SchemaService.swift */; };
 		62084ADAC66C62FF5456BA86 /* L10n+Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64E6CCC52DA7086DDA516A9 /* L10n+Tag.swift */; };
@@ -3157,6 +3158,7 @@
 		E854D4FADA18B6F35D73EBD8 /* KnowledgePageFTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgePageFTS.swift; sourceTree = "<group>"; };
 		E87F59C2597F17DB070ED607 /* AhoCorasickEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AhoCorasickEngineTests.swift; sourceTree = "<group>"; };
 		E8D14ADB5C4739B4B13175F5 /* UserDefaultsKeyStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeyStoreTests.swift; sourceTree = "<group>"; };
+		E8D61CDEAB62D3820A458F91 /* LLMProviderMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProviderMetadataTests.swift; sourceTree = "<group>"; };
 		E8F6BFF8C56FBB1CED69D788 /* PluginStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginStorageTests.swift; sourceTree = "<group>"; };
 		E9081600A56F76E9C593D050 /* TagCloudSubViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCloudSubViews.swift; sourceTree = "<group>"; };
 		E92A3DD3844EF70EDC0F0AAD /* MacFileArchiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacFileArchiver.swift; sourceTree = "<group>"; };
@@ -6284,6 +6286,7 @@
 				C3AF0BF37240ED5E5E04AAE3 /* LLMContextBuilderSupplementTests.swift */,
 				BECF52489AC9351317EA62B8 /* LLMDegradationAndStorageUtilityTests.swift */,
 				D179597D6B1716EFCBBF02BE /* LLMModelsTests.swift */,
+				E8D61CDEAB62D3820A458F91 /* LLMProviderMetadataTests.swift */,
 				49694734AE1B9648BB7E3E2B /* LLMRetrievalServiceSupplementTests.swift */,
 				2EE19CF7861FDC65D1EDDC67 /* LLMServicePropertyAccessTests.swift */,
 				B7A903535E451F8241FD6530 /* ModelDownloadManagerTests.swift */,
@@ -7121,6 +7124,7 @@
 				2A800B39F84C9DA4957DFC61 /* LLMDegradationAndStorageUtilityTests.swift in Sources */,
 				62B80BC1103870B131621821 /* LLMIngestServiceErrorPathTests.swift in Sources */,
 				3055A3049A980CEC5463A38F /* LLMModelsTests.swift in Sources */,
+				6152A99AC29C97ABCC203993 /* LLMProviderMetadataTests.swift in Sources */,
 				260D8F79BD4620D4BE839BCA /* LLMProviderValidationTests.swift in Sources */,
 				CBE4A13309C448681DD8C3B9 /* LLMRefactorServiceErrorPathTests.swift in Sources */,
 				B641E34D471E032B3CE41587 /* LLMRetrievalServiceSupplementTests.swift in Sources */,
