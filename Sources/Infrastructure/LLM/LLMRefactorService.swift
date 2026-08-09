@@ -72,7 +72,8 @@ public final class LLMRefactorService: Sendable {
         ]
 
         let response = try await client.sendRequest(body: body)
-        return LLMUtils.extractContent(from: response) ?? (existingContent + "\n\n" + newContent)
+        let folded = LLMUtils.extractContent(from: response) ?? ""
+        return folded.isEmpty ? (existingContent + "\n\n" + newContent) : folded
     }
 
     // MARK: - 架构重构建议
