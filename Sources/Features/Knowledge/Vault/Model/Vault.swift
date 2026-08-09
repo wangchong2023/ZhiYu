@@ -10,6 +10,14 @@
 //
 import Foundation
 
+/// 内置演示笔记本的英文标识常量
+public enum BuiltinVaultEnglishName {
+    /// 个人知识管理笔记本
+    public static let personalKM = "Personal_KM"
+    /// 项目调研笔记本
+    public static let projectResearch = "Project_Research"
+}
+
 /// 笔记本/库基础协议
 public protocol VaultProtocol: Sendable {
     var id: UUID { get }
@@ -36,13 +44,13 @@ public struct Vault: Identifiable, Codable, Hashable, VaultProtocol {
         
         // 1. 内置演示笔记本全语言（简体、繁体、英文）映射，保证跨语言环境下的目录与唯一 ID 识别稳定性
         let defaultNames: Set<String> = [
-            "Personal_KM",
+            BuiltinVaultEnglishName.personalKM,
             L10n.Vault.defaultName,
             L10n.Vault.defaultNameZh,
             L10n.Vault.defaultNameEn
         ]
         let researchNames: Set<String> = [
-            "Project_Research",
+            BuiltinVaultEnglishName.projectResearch,
             L10n.Vault.researchName,
             L10n.Vault.researchNameZh,
             L10n.Vault.researchNameEn,
@@ -50,10 +58,10 @@ public struct Vault: Identifiable, Codable, Hashable, VaultProtocol {
         ]
         
         if defaultNames.contains(trimmedName) {
-            return "Personal_KM"
+            return BuiltinVaultEnglishName.personalKM
         }
         if researchNames.contains(trimmedName) {
-            return "Project_Research"
+            return BuiltinVaultEnglishName.projectResearch
         }
         
         // 2. 自定义笔记本拼音转译与字符清洗
@@ -68,9 +76,9 @@ public struct Vault: Identifiable, Codable, Hashable, VaultProtocol {
             let cleaned = regex.stringByReplacingMatches(in: spaced, options: [], range: range, withTemplate: "")
             let cleanResult = cleaned.replacingOccurrences(of: "_+", with: "_", options: .regularExpression)
             let trimmedResult = cleanResult.trimmingCharacters(in: CharacterSet(charactersIn: "_"))
-            return trimmedResult.isEmpty ? "Vault_\(id.uuidString.prefix(8))" : trimmedResult
+            return trimmedResult.isEmpty ? "Vault_\(id.uuidString.prefix(AppConstants.Keys.ImportLimits.uuidPrefixLength))" : trimmedResult
         }
-        return "Vault_\(id.uuidString.prefix(8))"
+        return "Vault_\(id.uuidString.prefix(AppConstants.Keys.ImportLimits.uuidPrefixLength))"
     }
     
     public init(

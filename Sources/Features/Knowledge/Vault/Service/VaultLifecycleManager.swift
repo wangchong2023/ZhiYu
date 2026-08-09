@@ -86,13 +86,9 @@ extension VaultService {
             icon: icon,
             description: description
         )
+        saveVaultToDatabase(newVault)
         vaults.append(newVault)
-        do {
-            try saveVaultToDatabase(newVault)
-            keyStore?.set(true, forKey: "\(AppConstants.Keys.Storage.seededVaultPrefix)\(newVault.id.uuidString)")
-        } catch {
-            Logger.shared.error(" [VaultService] Failed to write new notebook to database: \(error)", error: error)
-        }
+        keyStore?.set(true, forKey: "\(AppConstants.Keys.Storage.seededVaultPrefix)\(newVault.id.uuidString)")
     }
 
     /// 更新已存在笔记本的配置元数据。
@@ -103,11 +99,7 @@ extension VaultService {
             vaults[index].description = description
             vaults[index].updatedAt = Date()
 
-            do {
-                try saveVaultToDatabase(vaults[index])
-            } catch {
-                Logger.shared.error(" [VaultService] Failed to write updated notebook metadata to database: \(error)", error: error)
-            }
+            saveVaultToDatabase(vaults[index])
         }
     }
 
@@ -117,11 +109,7 @@ extension VaultService {
             vaults[index].name = newName
             vaults[index].updatedAt = Date()
 
-            do {
-                try saveVaultToDatabase(vaults[index])
-            } catch {
-                Logger.shared.error(" [VaultService] Failed to write renamed notebook to database: \(error)", error: error)
-            }
+            saveVaultToDatabase(vaults[index])
         }
     }
 
@@ -145,13 +133,13 @@ extension VaultService {
             } catch {
                 Logger.shared.error(" [VaultService] Failed to delete notebook record from global metadata database: \(error)", error: error)
             }
-        }
 
-        let dbURL = getVaultDatabaseURL(for: id)
-        let folderURL = dbURL.deletingLastPathComponent()
-        if FileManager.default.fileExists(atPath: folderURL.path) {
-            try? FileManager.default.removeItem(at: folderURL)
-            Logger.shared.info(" [VaultService] Physically erased notebook sandbox storage: \(id.uuidString)")
+            let dbURL = getVaultDatabaseURL(for: id)
+            let folderURL = dbURL.deletingLastPathComponent()
+            if FileManager.default.fileExists(atPath: folderURL.path) {
+                try? FileManager.default.removeItem(at: folderURL)
+                Logger.shared.info(" [VaultService] Physically erased notebook sandbox storage: \(id.uuidString)")
+            }
         }
     }
 }

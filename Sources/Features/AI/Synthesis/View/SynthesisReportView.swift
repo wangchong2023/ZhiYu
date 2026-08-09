@@ -14,6 +14,12 @@ import UFPCore
 
 // MARK: - 报告内容视图
 
+/// Markdown 链接定界符（点击链接时清除方括号，提取纯文本目标）
+private enum MarkdownLinkDelimiter {
+    static let openBracket: String = SystemConstants.Character.openBracket
+    static let closeBracket: String = SystemConstants.Character.closeBracket
+}
+
 /// 以 Markdown 渲染器展示合成文档内容的通用回退视图
 struct SynthesisReportView: View {
     let doc: SynthesisStore.SynthesisDocument
@@ -35,8 +41,8 @@ struct SynthesisReportView: View {
     }
 
     private func handleLinkTap(_ target: String) {
-        let cleanTarget = target.replacingOccurrences(of: "[", with: "")
-                               .replacingOccurrences(of: "]", with: "")
+        let cleanTarget = target.replacingOccurrences(of: MarkdownLinkDelimiter.openBracket, with: "")
+                               .replacingOccurrences(of: MarkdownLinkDelimiter.closeBracket, with: "")
                                .trimmingCharacters(in: .whitespacesAndNewlines)
         if let targetPage = store.pages.first(where: { $0.title.lowercased() == cleanTarget.lowercased() }) {
             router.navigate(to: .pageDetail(id: targetPage.id))

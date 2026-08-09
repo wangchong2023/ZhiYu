@@ -157,7 +157,7 @@ final class AppEnvironment {
     private func prepareDatabase() {
         do {
             let fileManager = FileManager.default
-            let appGroupIdentifier = "group.com.zhiyu.app"
+            let appGroupIdentifier = AppConstants.Storage.appGroupIdentifier
 
             // 旧的沙盒独立路径
             guard let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {

@@ -136,7 +136,7 @@ struct SubscriptionPurchaseFlow: View {
     private func handleRestorePurchases() async {
         let success = await storeKitService.restorePurchases()
         if success {
-            if authService.currentUser?.planKey == "pro" {
+            if authService.currentUser?.isPro ?? false {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                     isUpgradeSuccess = true
                 }
@@ -156,16 +156,17 @@ struct SubscriptionPurchaseFlow: View {
 
     private func updateSessionToPro() {
         if let user = authService.currentUser {
+            let proQuota = User.DefaultQuotas.proQuota
             let proUser = User(
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
                 avatarURL: user.avatarURL,
-                planKey: "pro",
-                maxVaults: 10,
-                maxPages: 50000,
-                maxPlugins: 999999,
+                planKey: PlanKey.pro,
+                maxVaults: proQuota.maxVaults,
+                maxPages: proQuota.maxPages,
+                maxPlugins: proQuota.maxPlugins,
                 gender: user.gender,
                 birthday: user.birthday
             )

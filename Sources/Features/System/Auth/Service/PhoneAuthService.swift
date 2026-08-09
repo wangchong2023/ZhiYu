@@ -38,7 +38,7 @@ extension AuthService {
         let req = LoginRequest.password(username: identity, password: password)
         do {
             let response: LoginResponse = try await NetworkClient.shared.request(
-                path: "/api/v1/auth/login",
+                path: APIPaths.phoneLoginPath,
                 method: "POST",
                 body: req,
                 requiresAuth: false
@@ -63,7 +63,7 @@ extension AuthService {
         let req = SendSmsRequest(phone: phone, scene: scene)
         do {
             let _: EmptyData = try await NetworkClient.shared.request(
-                path: "/api/v1/auth/sms/send",
+                path: APIPaths.smsSendPath,
                 method: "POST",
                 body: req,
                 requiresAuth: false
@@ -88,7 +88,7 @@ extension AuthService {
         let req = LoginRequest.sms(phone: phone, code: code)
         do {
             let response: LoginResponse = try await NetworkClient.shared.request(
-                path: "/api/v1/auth/login",
+                path: APIPaths.phoneLoginPath,
                 method: "POST",
                 body: req,
                 requiresAuth: false

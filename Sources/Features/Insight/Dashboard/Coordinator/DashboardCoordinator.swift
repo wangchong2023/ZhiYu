@@ -32,6 +32,12 @@ final class DashboardCoordinator {
     @ObservationIgnored @Inject private var aiStore: AIInsightStore
     @ObservationIgnored @Inject private var logger: any LoggerProtocol
 
+    /// Dashboard 配置常量
+    private enum DashboardConfig {
+        /// 密度数据 Top N 条数
+        static let densityTopN: Int = 5
+    }
+
     init() {}
 
     // ── 业务动作 ──
@@ -50,15 +56,16 @@ final class DashboardCoordinator {
 
     /// 仅触发 AI 洞察刷新并同步追踪状态
     func refreshInsights() async {
-        // 同步启动生成状态
+        // 同步启动生成状态，defer 确保异常时也能重置
         self.isGeneratingInsights = true
-        
+        defer {
+            // 将底层状态实时同步至本地追踪属性，触发 UI 重新渲染
+            self.dailyRecap = aiStore.dailyRecap
+            self.isGeneratingInsights = aiStore.isGeneratingDailyRecap
+        }
+
         // 异步调用底层 AI 洞察商店的生成动作
         await aiStore.generateDailyRecap(forceRefresh: false)
-        
-        // 将底层状态实时同步至本地追踪属性，触发 UI 重新渲染
-        self.dailyRecap = aiStore.dailyRecap
-        self.isGeneratingInsights = aiStore.isGeneratingDailyRecap
     }
 
     /// 计算知识库核心统计指标（反链、密度等）
@@ -81,21 +88,21 @@ final class DashboardCoordinator {
         // 2. 计算总链接数
         let links = pages.reduce(0) { $0 + $1.outgoingLinks.count }
         
-        // 3. 计算重要度 (In + Out) Top 5 密度数据
+        // 3. 计算重要度 (In + Out) Top N 密度数据
         let density = pages.map { page in
             let inbound = backlinkMap[page.title, default: 0]
             let outbound = page.outgoingLinks.count
             return DensityInfo(name: page.title, inbound: Double(inbound), outbound: Double(outbound))
         }
         .sorted { ($0.inbound + $0.outbound) > ($1.inbound + $1.outbound) }
-        .prefix(5)
+        .prefix(DashboardConfig.densityTopN)
         .map { $0 }
-        
+
         // 更新状态
         self.totalLinks = links
         self.densityData = density
-        
-        logger.debug(" [Dashboard] : \(links) , \(density.count) ")
+
+        logger.debug("[Dashboard] totalLinks=\(links) densityCount=\(density.count)")
     }
 
     /// 聚合标签分布

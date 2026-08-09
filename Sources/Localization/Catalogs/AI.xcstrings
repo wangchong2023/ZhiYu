@@ -3675,6 +3675,51 @@
         }
       }
     },
+    "chat.exportRoleUser": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "You" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "我" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "我" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Tú" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Vous" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Du" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "あなた" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "나" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Você" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Вы" } }
+      }
+    },
+    "chat.exportRoleAI": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "AI" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI" } },
+        "es": { "stringUnit": { "state": "translated", "value": "IA" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "IA" } },
+        "de": { "stringUnit": { "state": "translated", "value": "KI" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "AI" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "AI" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "IA" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "ИИ" } }
+      }
+    },
+    "chat.exportFileName": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Chat_Export" } }
+      }
+    },
     "chat.exportConversation": {
       "extractionState": "manual",
       "localizations": {

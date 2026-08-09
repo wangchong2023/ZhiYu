@@ -328,5 +328,19 @@ extension DesignSystem {
                 "💡", "🎯", "🚀", "⭐", "🔧", "🎨", "📐", "💭"
             ]
         }
+
+        /// 存储统计分类图标
+        public enum StorageStats {
+            /// 数据库
+            public static let database = "cylinder.split.1x2.fill"
+            /// 日志
+            public static let logs = "doc.text.below.ecg.fill"
+            /// 导入
+            public static let storageImport = "books.vertical.fill"
+            /// 导出
+            public static let storageExport = "square.and.arrow.up.fill"
+            /// 兜底
+            public static let fallback = "folder.fill"
+        }
     }
 }

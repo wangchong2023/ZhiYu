@@ -36,7 +36,7 @@ final class PageDetailCoordinator {
 
     var backlinks: [KnowledgePage] {
         store.pages.filter { page in
-            page.content.contains("[[\(self.page.title)]]") || page.content.contains("[[\(self.page.title)|")
+            WikiLinkExtractor.extractLinks(from: page.content).contains { $0.targetTitle == self.page.title }
         }
     }
 
@@ -57,61 +57,44 @@ final class PageDetailCoordinator {
 
     // ── AI 任务编排 ──
 
-    /// 生成Summary
-    func generateSummary() {
+    /// 通用 AI 任务执行模板，统一处理 Toast/Haptic/错误提示
+    /// - Parameter operation: 异步 AI 操作
+    private func runAIOperation(_ operation: @escaping () async throws -> Void) {
         Task {
             ToastManager.shared.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
             do {
-                _ = try await aiStore.runPageAISummary(content: page.content)
+                try await operation()
                 HapticFeedback.shared.trigger(.success)
                 ToastManager.shared.dismiss()
             } catch {
                 ToastManager.shared.show(type: .error, message: error.localizedDescription)
             }
         }
+    }
+
+    /// 生成Summary
+    /// - Note: 返回值由 `aiStore` 内部状态持有，coordinator 无需保存
+    func generateSummary() {
+        runAIOperation { _ = try await self.aiStore.runPageAISummary(content: self.page.content) }
     }
 
     /// 提取Actions
+    /// - Note: 返回值由 `aiStore` 内部状态持有，coordinator 无需保存
     func extractActions() {
-        Task {
-            ToastManager.shared.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
-            do {
-                _ = try await aiStore.runPageAIExtractActions(content: page.content)
-                HapticFeedback.shared.trigger(.success)
-                ToastManager.shared.dismiss()
-            } catch {
-                ToastManager.shared.show(type: .error, message: error.localizedDescription)
-            }
-        }
+        runAIOperation { _ = try await self.aiStore.runPageAIExtractActions(content: self.page.content) }
     }
 
     /// expandContent
+    /// - Note: 返回值由 `aiStore` 内部状态持有，coordinator 无需保存
     func expandContent() {
-        Task {
-            ToastManager.shared.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
-            do {
-                _ = try await aiStore.runPageAIExpansion(content: page.content)
-                HapticFeedback.shared.trigger(.success)
-                ToastManager.shared.dismiss()
-            } catch {
-                ToastManager.shared.show(type: .error, message: error.localizedDescription)
-            }
-        }
+        runAIOperation { _ = try await self.aiStore.runPageAIExpansion(content: self.page.content) }
     }
 
     /// 执行Synthesis
     /// - Parameter type: type
+    /// - Note: 返回值由 `aiStore` 内部状态持有，coordinator 无需保存
     func performSynthesis(type: SynthesisStore.SynthesisType) {
-        Task {
-            ToastManager.shared.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
-            do {
-                _ = try await aiStore.performPageSynthesis(type: type, title: page.title, content: page.content)
-                HapticFeedback.shared.trigger(.success)
-                ToastManager.shared.dismiss()
-            } catch {
-                ToastManager.shared.show(type: .error, message: error.localizedDescription)
-            }
-        }
+        runAIOperation { _ = try await self.aiStore.performPageSynthesis(type: type, title: self.page.title, content: self.page.content) }
     }
     
     /// 查找RelatedLinks

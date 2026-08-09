@@ -95,11 +95,11 @@ public final class AuthService: AuthServiceProtocol {
         let task = Task {
             Logger.shared.debug("[AuthService] Logout Task started")
             // 尝试通知后端登出并吊销 RefreshToken
-            if let refreshToken = try? KeychainService.shared.retrieve(key: "refresh_token") {
+            if let refreshToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey) {
                 Logger.shared.debug("[AuthService] Revoking token on backend...")
                 let req = RefreshRequest(refreshToken: refreshToken)
                 let result: EmptyData? = try? await NetworkClient.shared.request(
-                    path: "/api/v1/auth/logout",
+                    path: APIPaths.logoutPath,
                     method: "POST",
                     body: req,
                     requiresAuth: true
@@ -112,7 +112,7 @@ public final class AuthService: AuthServiceProtocol {
             // 清理本地状态
             Logger.shared.debug("[AuthService] Deleting tokens from Keychain...")
             try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
-            try? KeychainService.shared.delete(key: "refresh_token")
+            try? KeychainService.shared.delete(key: AppConstants.Network.refreshTokenKey)
             Logger.shared.debug("[AuthService] Logout Task completed")
         }
         
@@ -164,7 +164,7 @@ public final class AuthService: AuthServiceProtocol {
         let req = ProfileUpdateRequest(nick: nickname, avatar: avatar, gender: gender, birthday: birthday)
         do {
             let response: UserProfileResponse = try await NetworkClient.shared.request(
-                path: "/api/v1/user/profile",
+                path: APIPaths.userProfilePath,
                 method: "PUT",
                 body: req,
                 requiresAuth: true
@@ -201,17 +201,17 @@ public final class AuthService: AuthServiceProtocol {
         #if DEBUG
         if isMockBackend {
             // Mock 模式：返回随机头像 URL
-            return "\(AppConstants.URLs.multiAvatarAPI)/\(UUID().uuidString).png"
+            return "\(APIPaths.multiAvatarAPI)/\(UUID().uuidString).png"
         }
         #endif
         
         do {
             // 调用 NetworkClient 的 multipart 上传接口
             let avatarUrl: String = try await NetworkClient.shared.uploadFile(
-                path: "/api/v1/user/profile/avatar",
+                path: APIPaths.avatarUploadPath,
                 fileData: imageData,
-                fileName: "avatar.png",
-                mimeType: "image/png",
+                fileName: AppConstants.Network.avatarFileName,
+                mimeType: AppConstants.Network.avatarMimeType,
                 requiresAuth: true
             )
             return avatarUrl
@@ -237,7 +237,7 @@ public final class AuthService: AuthServiceProtocol {
                     name: user.name,
                     email: user.email,
                     avatarURL: user.avatarURL,
-                    planKey: "pro",
+                    planKey: PlanKey.pro,
                     maxVaults: User.DefaultQuotas.proMaxVaults,
                     maxPages: User.DefaultQuotas.proMaxPages,
                     maxPlugins: User.DefaultQuotas.proMaxPlugins
@@ -264,7 +264,7 @@ public final class AuthService: AuthServiceProtocol {
         let body = VerifyRequest(productId: productId, receiptData: receiptData, orderNo: orderNo)
         do {
             let _: VerifyResponse = try await NetworkClient.shared.request(
-                path: "/api/v1/subscriptions/apple/verify",
+                path: APIPaths.subscriptionAppleVerifyPath,
                 method: "POST",
                 body: body,
                 requiresAuth: true

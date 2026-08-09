@@ -12,6 +12,13 @@
 import SwiftUI
 import AVFoundation
 import NaturalLanguage
+import UFPCore
+
+/// 语音笔记时间戳定界符（首行 [00:00] 格式标记）
+private enum VoiceTimestampDelimiter {
+    static let openBracket: String = SystemConstants.Character.openBracket
+    static let closeBracket: String = SystemConstants.Character.closeBracket
+}
 
 struct VoiceAudioPlayerView: View {
     let title: String
@@ -240,7 +247,7 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
         var cleanText = text
         if let firstLineEnd = cleanText.firstIndex(of: "\n") {
             let firstLine = cleanText[..<firstLineEnd]
-            if firstLine.hasPrefix("🎙️") || (firstLine.contains("[") && firstLine.contains("]")) {
+            if firstLine.hasPrefix("🎙️") || (firstLine.contains(VoiceTimestampDelimiter.openBracket) && firstLine.contains(VoiceTimestampDelimiter.closeBracket)) {
                 cleanText = String(cleanText[firstLineEnd...]).trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }

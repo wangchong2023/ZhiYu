@@ -46,6 +46,18 @@ final class GraphViewModel {
 
     private var simulationTask: Task<Void, Never>?
 
+    /// 物理仿真配置常量
+    private enum SimulationConfig {
+        /// 大规模节点阈值，超过此值降低温度以减少复杂度
+        static let largeNodeThreshold: Int = 500
+        /// 大规模节点温度
+        static let lowTemperature: CGFloat = 0.02
+        /// 普通节点温度
+        static let highTemperature: CGFloat = 0.08
+        /// 帧间隔（约 60FPS），单位纳秒
+        static let frameIntervalNanoseconds: UInt64 = 16_000_000
+    }
+
     /// 获取FilteredNodes
     /// - Returns: 列表
     func getFilteredNodes() -> [GraphNode] {
@@ -79,7 +91,7 @@ final class GraphViewModel {
                 guard !currentNodes.isEmpty else { break }
                 
                 // 性能优化：节点过多时，降低物理模拟的复杂度
-                let iterationTemp: CGFloat = currentNodes.count > 500 ? 0.02 : 0.08
+                let iterationTemp: CGFloat = currentNodes.count > SimulationConfig.largeNodeThreshold ? SimulationConfig.lowTemperature : SimulationConfig.highTemperature
                 
                 var updatedNodes = currentNodes
                 GraphLayoutProcessor.applyForces(
@@ -100,7 +112,7 @@ final class GraphViewModel {
                 }
                 
                 // 控制帧率约 60FPS
-                try? await Task.sleep(for: .nanoseconds(16_000_000))
+                try? await Task.sleep(for: .nanoseconds(SimulationConfig.frameIntervalNanoseconds))
             }
         }
     }

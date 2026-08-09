@@ -22,6 +22,7 @@ final class IngestCoordinator {
     @ObservationIgnored @Inject var ingestStore: IngestStore
     @ObservationIgnored @Inject var llmService: any LLMServiceProtocol
     @ObservationIgnored @Inject var importRecordRepo: any ImportRecordRepository
+    @ObservationIgnored @Inject private var logger: any LoggerProtocol
 
     // ── 频控 ──
     let importCooldownSeconds = AppConstants.Keys.ImportLimits.importCooldownSeconds
@@ -134,7 +135,7 @@ final class IngestCoordinator {
     }
 
     /// 预备保存导入的多媒体及文本文件
-    func prepareImportFiles(recordID _: String) -> (savedPath: String?, rawText: String)? {
+    func prepareImportFiles(recordID: String) -> (savedPath: String?, rawText: String)? {
         let content = newContent
         let sourceName = sourceHint.displayName
 
@@ -143,6 +144,14 @@ final class IngestCoordinator {
 
         if sourceHint == .ocr, let imgData = pendingImageData {
             if imgData.count > AppConstants.Keys.ImportLimits.maxOCRImageSizeBytes {
+                // OCR 超限时仍保存 ImportRecord 标记为 failed，保留导入历史
+                let failedRecord = ImportRecord(
+                    id: recordID, category: sourceHint.rawValue, title: newTitle,
+                    status: ImportRecordStatus.failed, rawText: rawText,
+                    sourceURL: nil, filePath: textPath,
+                    vaultID: VaultService.shared.selectedVaultID?.uuidString
+                )
+                Task { try? await importRecordRepo.save(failedRecord) }
                 pendingImageData = nil
                 isIngesting = false
                 lastImportTime = .distantPast
@@ -173,12 +182,16 @@ final class IngestCoordinator {
                 let json = extractJSON(from: result.content)
                 if let tags = json["tags"] as? [String], !tags.isEmpty {
                     try? await importRecordRepo.updateTags(id: id, tags: tags.joined(separator: ", "))
+                } else if json["tags"] != nil {
+                    logger.warning("[IngestCoordinator] AI 标签类型转换失败：\(String(describing: json["tags"]))")
                 }
                 if let alias = json["aliasTitle"] as? String, !alias.isEmpty {
                     if var r = try? await importRecordRepo.fetchByID(id) {
                         r.title = alias
                         try? await importRecordRepo.save(r)
                     }
+                } else if json["aliasTitle"] != nil {
+                    logger.warning("[IngestCoordinator] AI aliasTitle 类型转换失败：\(String(describing: json["aliasTitle"]))")
                 }
                 await MainActor.run {
                     ToastManager.shared.show(type: .success, message: L10n.Ingest.aiTagSuccess)
@@ -193,17 +206,7 @@ final class IngestCoordinator {
 
     /// 从 LLM 返回文本中提取 JSON
     func extractJSON(from text: String) -> [String: Any] {
-        let stripped = text
-            .replacingOccurrences(of: "```json", with: "")
-            .replacingOccurrences(of: "```", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let start = stripped.firstIndex(of: "{"),
-              let end = stripped.lastIndex(of: "}"),
-              start < end else { return [:] }
-        let jsonStr = String(stripped[start...end])
-        guard let data = jsonStr.data(using: .utf8),
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
-        return obj
+        JSONExtractor.extractJSONDictionary(from: text)
     }
 
     /// 重置Form
@@ -225,7 +228,7 @@ final class IngestCoordinator {
         if let raw = record.rawText {
             let lines = raw.components(separatedBy: .newlines)
             if let firstLine = lines.first, firstLine.hasPrefix(">") {
-                self.newContent = lines.dropFirst(2).joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+                self.newContent = lines.dropFirst(AppConstants.Keys.ImportLimits.manualFormHeaderSkipLines).joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
             } else {
                 self.newContent = raw
             }

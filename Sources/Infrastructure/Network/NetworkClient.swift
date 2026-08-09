@@ -256,14 +256,14 @@ public actor NetworkClient {
             }
             
             // 拿到长效 Refresh Token
-            guard let refreshToken = try? KeychainService.shared.retrieve(key: "refresh_token") else {
+            guard let refreshToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey) else {
                 NotificationCenter.default.post(name: .userAuthExpired, object: nil)
                 return .failure(NetworkError.unauthorized(L10n.Network.missingRefreshToken))
             }
             
             // 发起刷新请求
             let req = RefreshRequest(refreshToken: refreshToken)
-            let refreshURL = AppConfig.backendBaseURL + AppConstants.Network.refreshPath
+            let refreshURL = AppConfig.backendBaseURL + APIPaths.refreshPath
             var request = URLRequest(url: URL(string: refreshURL) ?? URL(string: "about:blank")!)
             request.httpMethod = AppConstants.Network.methodPOST
             request.addValue(AppConstants.Network.contentTypeJSON, forHTTPHeaderField: AppConstants.Network.headerContentType)
@@ -278,14 +278,14 @@ public actor NetworkClient {
                     // 更新 Keychain
                     try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: loginData.accessToken)
                     if let newRefresh = loginData.refreshToken {
-                        try KeychainService.shared.store(key: "refresh_token", value: newRefresh)
+                        try KeychainService.shared.store(key: AppConstants.Network.refreshTokenKey, value: newRefresh)
                     }
                     return .success(loginData.accessToken)
                 } else {
                     Logger.shared.debug("[NetworkClient] Token refresh failed, code=\(response.code)")
                     // 刷新失败（如重放攻击 40103，或者已过期），强制退登
                     try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
-                    try? KeychainService.shared.delete(key: "refresh_token")
+                    try? KeychainService.shared.delete(key: AppConstants.Network.refreshTokenKey)
                     NotificationCenter.default.post(name: .userAuthExpired, object: nil)
                     return .failure(NetworkError.unauthorized(L10n.Network.sessionInvalidated))
                 }

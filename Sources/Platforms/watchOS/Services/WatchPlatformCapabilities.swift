@@ -11,6 +11,13 @@
 import Foundation
 import LocalAuthentication
 
+/// watchOS 平台错误域与错误码常量
+private enum WatchPlatformErrorSpec {
+    static let modelCompilerDomain = "WatchModelCompiler"
+    static let noModelCode = -1
+    static let noModelDescription = "watchOS_NoModel"
+}
+
 // MARK: - 生物识别
 
 /// watchOS 平台的鉴权提供者（使用设备密码）
@@ -48,7 +55,7 @@ struct WatchModelCompiler: MLModelCompilerProtocol {
     /// 编译Model
     /// - Returns: 链接
     func compileModel(at url: URL) async throws -> URL {
-        throw NSError(domain: "WatchModelCompiler", code: -1, userInfo: [NSLocalizedDescriptionKey: "watchOS_NoModel"])
+        throw NSError(domain: WatchPlatformErrorSpec.modelCompilerDomain, code: WatchPlatformErrorSpec.noModelCode, userInfo: [NSLocalizedDescriptionKey: WatchPlatformErrorSpec.noModelDescription])
     }
 }
 

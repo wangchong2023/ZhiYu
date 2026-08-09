@@ -119,7 +119,7 @@ extension IngestCoordinator {
         forceDeepScan: Bool
     ) {
         Task {
-            let existing = (try? await importRecordRepo.fetchAll(category: ImportCategory.file.rawValue, limit: 1000)) ?? []
+            let existing = (try? await importRecordRepo.fetchAll(category: ImportCategory.file.rawValue, limit: AppConstants.Keys.ImportLimits.dedupFetchLimit)) ?? []
             if existing.contains(where: { $0.filePath == record.filePath && $0.status == ImportRecordStatus.done }) {
                 await MainActor.run {
                     ToastManager.shared.show(type: .info, message: L10n.Ingest.duplicateFile(record.title))
@@ -154,6 +154,9 @@ extension IngestCoordinator {
             if !ocrText.isEmpty, var existingText = textContent {
                 existingText += ocrText
                 try? await importRecordRepo.updateRawText(id: recordID, rawText: existingText)
+            } else if ocrText.isEmpty, textContent == nil || textContent?.isEmpty == true {
+                // OCR 失败且文件本身无文本内容时，记录 warning
+                Logger.shared.warning("[IngestFileHandler] OCR 提取失败且文件无文本内容，可能影响导入质量: \(url.lastPathComponent)")
             }
             let page = await store.ingestService.ingestDocument(at: url, type: type, forceDeepScan: forceDeepScan, pageStore: store)
             await MainActor.run {

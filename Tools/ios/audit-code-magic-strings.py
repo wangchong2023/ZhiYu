@@ -8,8 +8,10 @@
 #  Copyright © 2026 WangChong. All rights reserved.
 #
 #  系统层级：[Tools/ios] 守卫网关
-#  核心职责：检查 Sources/Features/ 和 Sources/Platforms/ 中硬编码的 UserDefaults key 和 URL。
-#           硬编码的 forKey 字符串和 https?:// URL 应使用 AppConstants.URLs / AppConstants.Keys.Storage 常量。
+#  核心职责：检查 Sources/Features/ 和 Sources/Platforms/ 中硬编码的 UserDefaults key、URL
+#           以及单字符字面量（花括号/引号/反斜杠等）。
+#           硬编码的 forKey 字符串、https?:// URL 应使用 AppConstants.URLs / AppConstants.Keys.Storage 常量；
+#           单字符字面量应使用 UFPCore.SystemConstants.Character.* 常量。
 #
 
 import sys
@@ -32,6 +34,41 @@ URL_EXCLUDE_PATTERNS = [
     re.compile(r'hasPrefix\("http'),
 ]
 
+# 应走 SystemConstants.Character 的单字符字面量
+# 仅检测明确应该用常量的 API 调用中的单字符字面量，避免字符串插值误报
+# key: (字面量正则, 业务语义描述), value: 推荐常量名
+SINGLE_CHAR_LITERALS = {
+    (r'"\{"', "JSON 对象起始符 / 代码块起始符"): 'SystemConstants.Character.openBrace',
+    (r'"\}"', "JSON 对象结束符 / 代码块结束符"): 'SystemConstants.Character.closeBrace',
+    (r'"\("', "函数参数列表起始符 / 分组起始符"): 'SystemConstants.Character.openParen',
+    (r'"\)"', "函数参数列表结束符 / 分组结束符"): 'SystemConstants.Character.closeParen',
+    (r'"\["', "数组下标起始符 / Markdown 链接起始符"): 'SystemConstants.Character.openBracket',
+    (r'"\]"', "数组下标结束符 / Markdown 链接结束符"): 'SystemConstants.Character.closeBracket',
+    (r'"\\\\"', "转义符 / 路径分隔符"): 'SystemConstants.Character.backslash',
+    (r'\\"\\\\"', "字符串定界符"): 'SystemConstants.Character.doubleQuote',
+}
+
+# 仅在这些 API 调用上下文中检测单字符字面量（避免字符串插值误报）
+SINGLE_CHAR_API_PATTERNS = [
+    re.compile(r'replacingOccurrences\(of:\s*'),
+    re.compile(r'firstIndex\(of:\s*'),
+    re.compile(r'lastIndex\(of:\s*'),
+    re.compile(r'\.contains\(\s*"'),
+    re.compile(r'hasPrefix\(\s*"'),
+    re.compile(r'hasSuffix\(\s*"'),
+    re.compile(r'==\s*"[\{\}\(\)\[\]\\\\]"\s*'),
+    re.compile(r'!=\s*"[\{\}\(\)\[\]\\\\]"\s*'),
+]
+
+# 单字符字面量检测的排除模式（合理保留场景）
+SINGLE_CHAR_EXCLUDE_PATTERNS = [
+    re.compile(r'SystemConstants\.Character\.'),
+    re.compile(r'ProcessorConstants\.MarkdownSyntax\.'),
+    re.compile(r'^\s*//'),  # 注释行
+    re.compile(r'^\s*\*'),  # 文档注释续行
+    re.compile(r'/// '),  # 文档注释
+]
+
 CHECK_DIRS = [
     SOURCES_DIR / "Features",
     SOURCES_DIR / "Platforms",
@@ -46,17 +83,63 @@ def _should_exclude_url(content: str) -> bool:
     return False
 
 
-def _scan_directory(check_dir: Path) -> tuple[list, list]:
+def _should_exclude_single_char(content: str) -> bool:
+    """判断单字符字面量行是否属于合理保留场景（已用常量、注释等）。"""
+    for pat in SINGLE_CHAR_EXCLUDE_PATTERNS:
+        if pat.search(content):
+            return True
+    return False
+
+
+def _is_in_char_api_context(content: str) -> bool:
+    """判断该行是否处于应使用常量的 API 调用上下文中（避免字符串插值误报）。"""
+    for pat in SINGLE_CHAR_API_PATTERNS:
+        if pat.search(content):
+            return True
+    return False
+
+
+def _scan_line_for_violations(line: str, rel_path: Path, line_no: int) -> tuple[list, list, list]:
     """
-    扫描目录中所有 Swift 文件的硬编码 UserDefaults key 和 URL。
-    
-    :param check_dir: 扫描目录
-    :return: (UD 违规列表, URL 违规列表)
+    扫描单行代码的三类违规：UserDefaults key、URL、单字符字面量。
+
+    :param line: 单行代码内容
+    :param rel_path: 文件相对路径
+    :param line_no: 行号
+    :return: (UD 违规列表, URL 违规列表, 单字符违规列表)
     """
     ud_violations = []
     url_violations = []
+    char_violations = []
+
+    if UD_KEY_PATTERN.search(line) and 'AppConstants' not in line:
+        ud_violations.append((rel_path, line_no, line.strip()))
+
+    if URL_PATTERN.search(line) and not _should_exclude_url(line):
+        url_violations.append((rel_path, line_no, line.strip()))
+
+    # 单字符字面量检测：仅在 API 上下文中检测，避免字符串插值误报
+    if not _should_exclude_single_char(line) and _is_in_char_api_context(line):
+        for (pattern, semantic), const_name in SINGLE_CHAR_LITERALS.items():
+            if re.search(pattern, line):
+                char_violations.append((rel_path, line_no, line.strip(), const_name, semantic))
+
+    return ud_violations, url_violations, char_violations
+
+
+def _scan_directory(check_dir: Path) -> tuple[list, list, list]:
+    """
+    扫描目录中所有 Swift 文件的硬编码 UserDefaults key、URL 和单字符字面量。
+
+    :param check_dir: 扫描目录
+    :return: (UD 违规列表, URL 违规列表, 单字符违规列表)
+    """
+    all_ud = []
+    all_url = []
+    all_char = []
     if not check_dir.exists():
-        return ud_violations, url_violations
+        return all_ud, all_url, all_char
+
     for swift_file in check_dir.rglob("*.swift"):
         rel_path = swift_file.relative_to(PROJECT_ROOT)
         try:
@@ -65,17 +148,18 @@ def _scan_directory(check_dir: Path) -> tuple[list, list]:
         except Exception:
             continue
         for i, line in enumerate(lines, 1):
-            if UD_KEY_PATTERN.search(line) and 'AppConstants' not in line:
-                ud_violations.append((rel_path, i, line.strip()))
-            if URL_PATTERN.search(line) and not _should_exclude_url(line):
-                url_violations.append((rel_path, i, line.strip()))
-    return ud_violations, url_violations
+            uds, urls, chars = _scan_line_for_violations(line, rel_path, i)
+            all_ud.extend(uds)
+            all_url.extend(urls)
+            all_char.extend(chars)
+
+    return all_ud, all_url, all_char
 
 
 def _report_violations(label: str, hint: str, items: list) -> int:
     """
     打印违规报告。
-    
+
     :param label: 违规类别标签
     :param hint: 修复提示
     :param items: 违规条目列表
@@ -83,22 +167,69 @@ def _report_violations(label: str, hint: str, items: list) -> int:
     """
     print(f"❌ {label}: {len(items)} 处硬编码")
     print(f"  {hint}")
-    for rel_path, line_no, content in items:
+    for entry in items:
+        rel_path, line_no, content = entry[0], entry[1], entry[2]
         print(f"    {rel_path}:L{line_no} → {content}")
     return 1
 
 
+def _report_char_violations(items: list) -> int:
+    """
+    打印单字符字面量违规报告（含业务语义化修复指引）。
+
+    修复策略（两层常量体系）：
+    - L0 层 UFPCore.SystemConstants.Character.* = 通用基础字符（无业务语义，直接可用）
+    - 业务层桥接 = 赋予业务语义，使代码自文档化
+
+    示例（JSON 解析场景）：
+        // L0 通用基础（UFPCore 已提供）
+        SystemConstants.Character.openBrace  // 通用 "{" 字符
+
+        // 业务层桥接（在业务常量文件定义 1 次，赋予 JSON 语义）
+        enum JSONSyntax {
+            /// JSON 对象起始符
+            static let objectStart: String = SystemConstants.Character.openBrace
+            /// JSON 对象结束符
+            static let objectEnd: String = SystemConstants.Character.closeBrace
+        }
+
+        // 使用点引用业务桥接常量（语义明确）
+        text.firstIndex(of: Character(JSONSyntax.objectStart))
+
+    :param items: 违规条目列表 (rel_path, line_no, content, const_name, semantic)
+    :return: 1（始终返回非零）
+    """
+    print(f"❌ 单字符字面量: {len(items)} 处硬编码")
+    print("  修复指引（两层常量体系）：")
+    print("    L0 通用层: UFPCore.SystemConstants.Character.*（通用基础字符，无业务语义）")
+    print("    业务桥接层: 在业务常量文件桥接 1 次，赋予业务语义，使代码自文档化")
+    print("    示例:")
+    print("      enum JSONSyntax {")
+    print("          /// JSON 对象起始符")
+    print("          static let objectStart = SystemConstants.Character.openBrace")
+    print("      }")
+    print("      text.firstIndex(of: Character(JSONSyntax.objectStart))")
+    for rel_path, line_no, content, const_name, semantic in items:
+        print(f"    {rel_path}:L{line_no}")
+        print(f"      业务语义: {semantic}")
+        print(f"      L0 基础: {const_name}")
+        print(f"      代码: {content}")
+    return 1
+
+
 def main():
-    """扫描业务层硬编码 UserDefaults key 和 URL，验证是否已用 AppConstants 常量替代。"""
+    """扫描业务层硬编码 UserDefaults key、URL 和单字符字面量，验证是否已用常量替代。"""
     all_ud = []
     all_url = []
+    all_char = []
     for check_dir in CHECK_DIRS:
-        uds, urls = _scan_directory(check_dir)
+        uds, urls, chars = _scan_directory(check_dir)
         all_ud.extend(uds)
         all_url.extend(urls)
+        all_char.extend(chars)
 
-    if not all_ud and not all_url:
-        print("✅ PASS: 无硬编码 UserDefaults key 或 URL")
+    if not all_ud and not all_url and not all_char:
+        print("✅ PASS: 无硬编码 UserDefaults key、URL 或单字符字面量")
         return 0
 
     exit_code = 0
@@ -112,6 +243,9 @@ def main():
             "URL",
             "应使用 AppConstants.URLs.* 常量",
             all_url)
+        exit_code = exit_code or ec
+    if all_char:
+        ec = _report_char_violations(all_char)
         exit_code = exit_code or ec
     return exit_code
 

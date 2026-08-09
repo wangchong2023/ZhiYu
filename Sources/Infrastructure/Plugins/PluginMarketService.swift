@@ -154,7 +154,7 @@ final class PluginMarketService: ObservableObject {
 
     // 生产环境 (GitHub)
     private let registryGitHub: URL = {
-        guard let url = URL(string: AppConstants.URLs.communityPluginsJSON) else {
+        guard let url = URL(string: APIPaths.communityPluginsJSON) else {
             preconditionFailure("Invalid GitHub registry URL")
         }
         return url

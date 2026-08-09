@@ -99,6 +99,9 @@ struct GlobalTask: Identifiable, Equatable {
 class TaskCenter: ObservableObject {
     static let shared = TaskCenter()
 
+    /// 单个任务保留的最大子日志条数（超出后从头部丢弃）
+    private static let maxSubLogCount: Int = 50
+
     @Published var tasks: [GlobalTask] = []
     @Published var latestStatus: String = ""
     private var cancellables = Set<AnyCancellable>()
@@ -247,7 +250,7 @@ class TaskCenter: ObservableObject {
     func addSubLog(id: UUID, log: String) {
         if let index = self.tasks.firstIndex(where: { $0.id == id }) {
             self.tasks[index].subLogs.append(log)
-            if self.tasks[index].subLogs.count > 50 {
+            if self.tasks[index].subLogs.count > Self.maxSubLogCount {
                 self.tasks[index].subLogs.removeFirst()
             }
             self.objectWillChange.send()

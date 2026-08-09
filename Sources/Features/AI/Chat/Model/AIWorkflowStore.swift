@@ -79,6 +79,18 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
+    /// AI 扫描配置常量
+    private enum AIScanConfig {
+        /// 单页扫描时最近更新页面前缀数量
+        static let recentScanPrefix: Int = 5
+        /// 全局扫描时采样页面前缀数量
+        static let globalScanPrefix: Int = 10
+        /// 扫描任务名称
+        static let scanTaskName: String = "Scan_Task"
+        /// 系统级目标标识
+        static let systemTarget: String = "System"
+    }
+
     public init() {
         AppEventBus.shared.subscribe()
             .sink { [weak self] in if case .clearAllDataRequested = $0 { self?.clearAll() } }
@@ -89,7 +101,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
     /// 运行Lint
     public func runLint() async {
-        let taskID = TaskCenter.shared.addTask(type: .healthCheck, name: L10n.Common.Sidebar.healthCheck, target: "System")
+        let taskID = TaskCenter.shared.addTask(type: .healthCheck, name: L10n.Common.Sidebar.healthCheck, target: AIScanConfig.systemTarget)
         let pages = (try? await knowledgeRepository.fetchAll()) ?? []
         let issues = await lintService.runLint(pages: pages, linkService: linkService)
         lintIssues = issues
@@ -100,13 +112,13 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
     /// 运行AI扫描
     public func runAIScan(forPage specificPage: KnowledgePage? = nil) async {
         guard llmService.isEnabled else {
-            logger.addLog(action: .aiscanSkipped, target: specificPage?.title ?? "System", details: "LLM service disabled")
+            logger.addLog(action: .aiscanSkipped, target: specificPage?.title ?? AIScanConfig.systemTarget, details: "LLM service disabled")
             return
         }
 
         isScanningAI = true
-        let taskTarget = specificPage?.title ?? "System"
-        let taskID = TaskCenter.shared.addTask(type: .ai, name: "Scan_Task", target: taskTarget)
+        let taskTarget = specificPage?.title ?? AIScanConfig.systemTarget
+        let taskID = TaskCenter.shared.addTask(type: .ai, name: AIScanConfig.scanTaskName, target: taskTarget)
 
         do {
             let allPages = (try? await knowledgeRepository.fetchAll()) ?? []
@@ -116,7 +128,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
             if let spec = specificPage {
                 pagesToScan = [spec]
             } else {
-                pagesToScan = Array(allPages.sorted(by: { $0.updatedAt > $1.updatedAt }).prefix(5))
+                pagesToScan = Array(allPages.sorted(by: { $0.updatedAt > $1.updatedAt }).prefix(AIScanConfig.recentScanPrefix))
             }
 
             var tempLinks: [PotentialLinkSuggestion] = []
@@ -124,7 +136,8 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
             for page in pagesToScan {
                 let found = try await llmService.discoverPotentialLinks(content: page.content, existingTitles: existingTitles)
                 for title in Set(found) {
-                    let linkKey = "\(page.id.uuidString)-\(title)"
+                    // 用 null 字符作分隔符避免 title 含 "-" 时碰撞
+                    let linkKey = "\(page.id.uuidString)\u{0}\(title)"
                     if !seenLinks.contains(linkKey) && !page.content.contains("[[\(title)]]") {
                         seenLinks.insert(linkKey)
                         tempLinks.append(PotentialLinkSuggestion(sourcePageID: page.id, sourceTitle: page.title, targetTitle: title))
@@ -139,7 +152,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
                 potentialLinks = currentLinks + tempLinks
             } else {
                 // 全局扫描
-                let samplePages = Array(allPages.prefix(10))
+                let samplePages = Array(allPages.prefix(AIScanConfig.globalScanPrefix))
                 let suggestions = try await llmService.analyzeForRefactoring(pages: samplePages)
                 refactorSuggestions = suggestions
                 potentialLinks = tempLinks

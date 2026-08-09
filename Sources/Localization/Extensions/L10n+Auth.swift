@@ -30,6 +30,14 @@ extension L10n {
         public static var thirdParty: String { tr("thirdParty") }
         public static var guestMode: String { tr("guestMode") }
         public static var authFailed: String { tr("auth.failed") }
+
+        // MARK: - 运营商认证错误
+        public static var carrierSDKNotInitialized: String { tr("auth.carrier.sdkNotInitialized") }
+        public static var carrierFailed: String { tr("auth.carrier.failed") }
+        public static var carrierUserCancelled: String { tr("auth.carrier.userCancelled") }
+        public static var carrierNoSIM: String { tr("auth.carrier.noSIM") }
+        public static var carrierNoNetwork: String { tr("auth.carrier.noNetwork") }
+        public static var carrierTimeout: String { tr("auth.carrier.timeout") }
         
         /// 微信登录开发中提示文案
         public static var wechatDeveloping: String { tr("auth.wechatDeveloping") }

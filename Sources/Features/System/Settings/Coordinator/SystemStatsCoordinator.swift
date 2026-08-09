@@ -108,9 +108,10 @@ final class SystemStatsCoordinator {
     }
 
     private func fetchAIDailyStats() async {
-        guard let daily = try? await governanceRepo.fetchDailyAIStats(days: 30) else { return }
+        guard let daily = try? await governanceRepo.fetchDailyAIStats(days: AppConstants.Keys.Stats.dailyStatsDays) else { return }
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.dateFormat = AppConstants.Keys.Stats.dailyDateFormat
+        dateFormatter.locale = Locale(identifier: Localized.currentLanguage)
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let components = calendar.dateComponents([.year, .month], from: today)
@@ -136,7 +137,6 @@ final class SystemStatsCoordinator {
         if let monthly = try? await governanceRepo.fetchMonthlyTokenStats() {
             self.monthlyStats = monthly.map { MonthlyToken(month: $0.month, total: $0.total) }
         }
-        _ = try? await governanceRepo.calculateAverageRAGScores(days: 30)
     }
 
     private func fetchStorageStats() async {
@@ -150,22 +150,22 @@ final class SystemStatsCoordinator {
         
         for record in records {
             let size = record.fileSize ?? 0
-            if record.category == "voice" {
+            if record.category == ImportCategory.voice.rawValue {
                 voiceStats.count += 1
                 voiceStats.size += size
-            } else if record.category == "ocr" {
+            } else if record.category == ImportCategory.ocr.rawValue {
                 ocrStats.count += 1
                 ocrStats.size += size
-            } else if record.category == "file" {
+            } else if record.category == ImportCategory.file.rawValue {
                 fileStats.count += 1
                 fileStats.size += size
             }
         }
-        
+
         self.assetCategoryStats = [
-            "voice": voiceStats,
-            "ocr": ocrStats,
-            "file": fileStats
+            ImportCategory.voice.rawValue: voiceStats,
+            ImportCategory.ocr.rawValue: ocrStats,
+            ImportCategory.file.rawValue: fileStats
         ]
         
         let modelManagerSize = GlobalModelManager.shared.modelStorageUsage.values.reduce(Int64(0), +)
@@ -177,7 +177,7 @@ final class SystemStatsCoordinator {
             StorageCategory(label: L10n.Dashboard.System.models, value: effectiveModelsSize, count: modelCount, color: .purple),
             StorageCategory(label: L10n.Dashboard.System.plugins, value: stats.pluginsSize, count: 0, color: .indigo),
             StorageCategory(label: L10n.Dashboard.System.logs, value: stats.logsSize, count: allLogEntries.count, color: .orange),
-            StorageCategory(label: L10n.Dashboard.stats.storageImport, value: (try? await importRecordRepo.totalStorageSize()) ?? 0, count: (try? await importRecordRepo.fetchAll(category: nil, limit: 2000).count) ?? 0, color: .green),
+            StorageCategory(label: L10n.Dashboard.stats.storageImport, value: (try? await importRecordRepo.totalStorageSize()) ?? 0, count: records.count, color: .green),
             StorageCategory(label: L10n.Dashboard.stats.storageExport, value: stats.exportsSize, count: allLogEntries.filter { $0.action == .export }.count, color: .pink),
             StorageCategory(label: L10n.Dashboard.System.caches, value: stats.cachesSize, count: 0, color: .gray)
         ]
@@ -233,10 +233,10 @@ final class SystemStatsCoordinator {
 
     /// 标签图标选择器
     func iconForCategory(_ label: String) -> String {
-        if label == L10n.Dashboard.System.database { return "cylinder.split.1x2.fill" }
-        if label == L10n.Dashboard.System.logs { return "doc.text.below.ecg.fill" }
-        if label == L10n.Dashboard.stats.storageImport { return "books.vertical.fill" }
-        if label == L10n.Dashboard.stats.storageExport { return "square.and.arrow.up.fill" }
-        return "folder.fill"
+        if label == L10n.Dashboard.System.database { return DesignSystem.Icons.StorageStats.database }
+        if label == L10n.Dashboard.System.logs { return DesignSystem.Icons.StorageStats.logs }
+        if label == L10n.Dashboard.stats.storageImport { return DesignSystem.Icons.StorageStats.storageImport }
+        if label == L10n.Dashboard.stats.storageExport { return DesignSystem.Icons.StorageStats.storageExport }
+        return DesignSystem.Icons.StorageStats.fallback
     }
 }

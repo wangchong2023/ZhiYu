@@ -43,7 +43,7 @@ extension AuthService {
         do {
             // 2. 发起 GET 请求拉取服务器上用户的最新 Profile 资料
             let response: UserProfileResponse = try await NetworkClient.shared.request(
-                path: AppConstants.Network.userProfilePath,
+                path: APIPaths.userProfilePath,
                 method: AppConstants.Network.methodGET,
                 requiresAuth: true
             )
@@ -78,7 +78,7 @@ extension AuthService {
             // 写入本地安全区
             try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: response.accessToken)
             if let refresh = response.refreshToken {
-                try KeychainService.shared.store(key: "refresh_token", value: refresh)
+                try KeychainService.shared.store(key: AppConstants.Network.refreshTokenKey, value: refresh)
             }
         } catch {
             Logger.shared.error("[AuthService] Token storage failed", error: error)
@@ -110,7 +110,7 @@ extension AuthService {
 
         do {
             let profileResponse: UserProfileResponse = try await NetworkClient.shared.request(
-                path: AppConstants.Network.userProfilePath,
+                path: APIPaths.userProfilePath,
                 method: AppConstants.Network.methodGET,
                 requiresAuth: true
             )
@@ -157,7 +157,7 @@ extension AuthService {
             requiresAuth: true
         )
 
-        var currentPlanKey: String? = "free"
+        var currentPlanKey: String? = PlanKey.free
         var parsedQuotas: RefreshPlanQuotas?
         var parsedFeatures: [String] = []
 
@@ -167,7 +167,7 @@ extension AuthService {
                 method: "GET",
                 requiresAuth: true
             )
-            currentPlanKey = sub.planKey ?? "free"
+            currentPlanKey = sub.planKey ?? PlanKey.free
 
             if let quotasStr = sub.quotasJson, let data = quotasStr.data(using: .utf8) {
                 parsedQuotas = try? JSONDecoder().decode(RefreshPlanQuotas.self, from: data)

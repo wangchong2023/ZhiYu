@@ -10,8 +10,17 @@
 //
 
 import SwiftUI
+import UFPCore
 
 // MARK: - 思维导图内容视图
+
+/// Mermaid 节点语法冲突字符（标题净化时需清除，避免破坏图表语法）
+private enum MermaidConflictChar {
+    static let openParen: String = SystemConstants.Character.openParen
+    static let closeParen: String = SystemConstants.Character.closeParen
+    static let openBracket: String = SystemConstants.Character.openBracket
+    static let closeBracket: String = SystemConstants.Character.closeBracket
+}
 
 /// 渲染思维导图 / 信息图类型的合成文档内容
 /// 从文档 Markdown 内容中提取标题与 Mermaid 代码，驱动 MermaidWebView 进行可视化渲染
@@ -100,15 +109,15 @@ struct SynthesisMindmapView: View {
         // 自动自愈补充基础思维导图/架构图声明
         if doc.type == .mindmap {
             let sanitizedTitle = (extractTitle(from: content) ?? L10n.AI.Synthesis.title)
-                .replacingOccurrences(of: "(", with: "")
-                .replacingOccurrences(of: ")", with: "")
-                .replacingOccurrences(of: "[", with: "")
-                .replacingOccurrences(of: "]", with: "")
+                .replacingOccurrences(of: MermaidConflictChar.openParen, with: "")
+                .replacingOccurrences(of: MermaidConflictChar.closeParen, with: "")
+                .replacingOccurrences(of: MermaidConflictChar.openBracket, with: "")
+                .replacingOccurrences(of: MermaidConflictChar.closeBracket, with: "")
             let sanitizedBody = filtered
-                .replacingOccurrences(of: "(", with: "")
-                .replacingOccurrences(of: ")", with: "")
-                .replacingOccurrences(of: "[", with: "")
-                .replacingOccurrences(of: "]", with: "")
+                .replacingOccurrences(of: MermaidConflictChar.openParen, with: "")
+                .replacingOccurrences(of: MermaidConflictChar.closeParen, with: "")
+                .replacingOccurrences(of: MermaidConflictChar.openBracket, with: "")
+                .replacingOccurrences(of: MermaidConflictChar.closeBracket, with: "")
                 .replacingOccurrences(of: "：", with: " ")
                 .replacingOccurrences(of: ":", with: " ")
                 .replacingOccurrences(of: "\n", with: "\n    ")

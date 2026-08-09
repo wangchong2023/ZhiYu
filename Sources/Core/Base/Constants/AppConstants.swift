@@ -19,6 +19,16 @@ public struct AppConstants {
         // MARK: - Token 与超时
         /// Keychain 中存储 JWT access token 的 key
         public static let jwtTokenKey = "jwt_token_key"
+        /// Keychain 中存储 refresh token 的 key
+        public static let refreshTokenKey = "refresh_token"
+
+        // MARK: - 头像上传
+        /// 默认头像文件名
+        public static let avatarFileName: String = "avatar.png"
+        /// 默认头像 MIME 类型
+        public static let avatarMimeType: String = "image/png"
+        /// OAuth 回调 URL Scheme
+        public static let oauthCallbackScheme: String = "zhiyu"
         /// 单次请求超时时长（秒）
         public static let requestTimeout: TimeInterval = 30.0
 
@@ -56,12 +66,6 @@ public struct AppConstants {
         // MARK: - Bearer Token 格式（引用 SystemConstants.HTTPAuthentication）
         /// Authorization header 中 Bearer 前缀
         public static let bearerPrefix: String = SystemConstants.HTTPAuthentication.bearerPrefix
-        
-        // MARK: - API 路径
-        /// Token 刷新接口路径
-        public static let refreshPath = "/api/v1/auth/refresh"
-        /// 用户资料接口路径
-        public static let userProfilePath = "/api/v1/user/profile"
     }
     
     // MARK: - 存储与基础配置
@@ -74,6 +78,10 @@ public struct AppConstants {
         public static let vaultDatabaseName: String = "vault.sqlite3"
         /// 笔记本沙盒存储子目录名称
         public static let vaultsDirectoryName: String = "Vaults"
+        /// App Group 标识符（用于 Widget / Watch 共享数据）
+        public static let appGroupIdentifier: String = "group.com.zhiyu.app"
+        /// Widget 统计快照文件名
+        public static let widgetStatsFileName: String = "widget_stats.json"
         /// 间隔重复算法(SRS)默认易用度因子 (SuperMemo-2 经典默认值)
         public static let defaultEaseFactor: Double = 2.5
         /// 日志文件名
@@ -232,6 +240,7 @@ public struct AppConstants {
             public static let lastLintIssues = "lastLintIssues"
             public static let earnedMedals = "earned_medals"
             public static let dailyRecapPrefix = "daily_recap_"
+            public static let weeklyInsightPrefix = "weekly_insight_cache_"
             
             // ── 协作与同步 ──
             public static let vaultBookmarkPrefix = "vault_bookmark_"
@@ -326,6 +335,24 @@ public struct AppConstants {
             public static let pdfExtension: String = SystemConstants.FileExtension.pdf
             /// Office ZIP 中排除的图片路径关键词（页眉页脚背景通常为装饰性图像）
             public static let officeImageExcludeKeywords: Set<String> = ["header", "footer", "background"]
+            /// 去重查询时拉取的最近导入记录数量
+            public static let dedupFetchLimit: Int = 1000
+            /// 统计查询时拉取的导入记录数量
+            public static let statsFetchLimit: Int = 2000
+            /// 剪贴板导入时标题截取长度
+            public static let clipboardTitleLength: Int = 20
+            /// 手工录入二次编辑时跳过的引用头行数（首行 `>` + 空行）
+            public static let manualFormHeaderSkipLines: Int = 2
+            /// UUID 字符串截取前缀长度（用于日志/默认名称简写）
+            public static let uuidPrefixLength: Int = 8
+        }
+
+        /// 系统统计相关常量
+        public enum Stats {
+            /// AI 日报统计的天数范围
+            public static let dailyStatsDays: Int = 30
+            /// 日报日期格式化模板
+            public static let dailyDateFormat: String = "yyyy-MM-dd"
         }
     }
 }
@@ -351,46 +378,6 @@ extension AppConstants {
         public static let yearlyProductId  = "com.zhiyu.pro.yearly"
         /// 所有内购商品 ID 集合（用于批量拉取）
         public static let allProductIds: Set<String> = [monthlyProductId, yearlyProductId]
-    }
-}
-
-// MARK: - 外部服务 URL 常量
-
-extension AppConstants {
-    /// 外部服务与 API 的 URL 常量
-    public struct URLs {
-        // ── 应用官网 ──
-        public static let officialWebsite = "https://www.izhiyu.top"
-        
-        // ── 认证与 OAuth ──
-        public static let multiAvatarAPI = "https://api.multiavatar.com"
-        public static let gitHubOAuthAuthorize = "https://github.com/login/oauth/authorize"
-        
-        // ── LLM 提供商 ──
-        public static let llmProviderZhipu = "https://open.bigmodel.cn/api/paas/v4"
-        public static let llmProviderMinimax = "https://api.minimax.chat/v1"
-        public static let llmProviderQwen = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-        public static let llmProviderDeepSeek = "https://api.deepseek.com/v1"
-        public static let llmProviderKimi = "https://api.moonshot.cn/v1"
-        public static let llmProviderSiliconFlow = "https://api.siliconflow.cn/v1"
-        
-        // ── 插件市场 ──
-        public static let communityPluginsJSON = "https://raw.githubusercontent.com/wangchong2023/zhiyu-releases/master/community-plugins.json"
-        
-        // ── 模型下载 CDN ──
-        public static let cdnModelGemma = "https://cdn.zhiyu.app/models/gemma-2b-it-q4.bin"
-        public static let cdnModelLlama = "https://cdn.zhiyu.app/models/llama-3-8b-q4.bin"
-        public static let cdnModelPhi = "https://cdn.zhiyu.app/models/phi-3-mini-q4.bin"
-        
-        // ── Web 存档 ──
-        public static let webArchivePrefix = "https://web.archive.org/web/2/"
-        
-        // ── 示例链接 ──
-        public static let exampleKarpathyLLM = "https://github.com/karpathy/llm.c"
-        public static let exampleCoffeeIndustry = "https://finance.sina.com.cn/coffee-industry"
-        
-        // ── 本地开发 ──
-        public static let localhostDefault = "http://localhost:8000"
     }
 }
 

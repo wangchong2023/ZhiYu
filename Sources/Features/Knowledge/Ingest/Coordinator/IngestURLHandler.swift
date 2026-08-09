@@ -82,7 +82,8 @@ extension IngestCoordinator {
                 } else if ok == 0 {
                     TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
                 } else {
-                    TaskCenter.shared.updateTask(taskID, status: .completed)
+                    // 部分失败：标记为 failed 但消息说明部分成功，避免 UI 误显示"全部完成"
+                    TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.batchResult(ok, fail)))
                 }
                 ToastManager.shared.show(type: ok > 0 ? .success : .error, message: L10n.Ingest.batchResult(ok, fail))
             }
@@ -123,10 +124,16 @@ extension IngestCoordinator {
             }
         }
 
-        await MainActor.run {
-            TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.imageExtracting): \(title)")
+        // 抓取失败时跳过 OCR（对空内容做 OCR 无意义）
+        let ocrText: String
+        if rawResult != nil {
+            await MainActor.run {
+                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.imageExtracting): \(title)")
+            }
+            ocrText = (try? await self.extractImagesFromURL(urlString)) ?? ""
+        } else {
+            ocrText = ""
         }
-        let ocrText = (try? await self.extractImagesFromURL(urlString)) ?? ""
 
         let rawBody = rawResult.map { "> \(L10n.Ingest.urlSourcePrefix)\(urlString)\n> \(L10n.Ingest.scrapeTimePrefix)\(Date().formatted(date: .numeric, time: .shortened))\n\n\($0.markdown)" }
         let rawMarkdown = rawBody.map { $0 + ocrText }
@@ -161,7 +168,7 @@ extension IngestCoordinator {
     func performClipboardImport() {
         if let content = AppPasteboard.string, !content.isEmpty {
             self.sourceHint = .clipboard
-            self.newTitle = String(content.prefix(20))
+            self.newTitle = String(content.prefix(AppConstants.Keys.ImportLimits.clipboardTitleLength))
             self.newContent = content
             self.manualFormTitle = L10n.Ingest.clipboardImport
             self.showManualForm = true

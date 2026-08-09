@@ -11,6 +11,17 @@
 #if canImport(WebKit)
 import Foundation
 import WebKit
+import UFPCore
+
+/// JS 模板字面量转义符（注入 WebView 前需转义反斜杠/反引号/美元符号）
+private enum JSTemplateEscape {
+    static let backslash: String = SystemConstants.Character.backslash
+    static let doubleBackslash: String = "\\\\"
+    static let backtick: String = "`"
+    static let escapedBacktick: String = "\\`"
+    static let dollar: String = "$"
+    static let escapedDollar: String = "\\$"
+}
 
 /// iOS 导出服务实现
 @MainActor
@@ -93,9 +104,9 @@ final class iOSExportService: NSObject, ExportServiceProtocol, @unchecked Sendab
 
         guard let webView = webView else { throw ExportError.engineNotReady }
         
-        let escapedMarkdown = markdown.replacingOccurrences(of: "\\", with: "\\\\")
-                                      .replacingOccurrences(of: "`", with: "\\`")
-                                      .replacingOccurrences(of: "$", with: "\\$")
+        let escapedMarkdown = markdown.replacingOccurrences(of: JSTemplateEscape.backslash, with: JSTemplateEscape.doubleBackslash)
+                                      .replacingOccurrences(of: JSTemplateEscape.backtick, with: JSTemplateEscape.escapedBacktick)
+                                      .replacingOccurrences(of: JSTemplateEscape.dollar, with: JSTemplateEscape.escapedDollar)
         
         let js = """
         (async () => {
@@ -137,9 +148,9 @@ final class iOSExportService: NSObject, ExportServiceProtocol, @unchecked Sendab
 
         guard let webView = webView else { throw ExportError.engineNotReady }
         
-        let escapedCode = mermaidCode.replacingOccurrences(of: "\\", with: "\\\\")
-                                     .replacingOccurrences(of: "`", with: "\\`")
-                                     .replacingOccurrences(of: "$", with: "\\$")
+        let escapedCode = mermaidCode.replacingOccurrences(of: JSTemplateEscape.backslash, with: JSTemplateEscape.doubleBackslash)
+                                     .replacingOccurrences(of: JSTemplateEscape.backtick, with: JSTemplateEscape.escapedBacktick)
+                                     .replacingOccurrences(of: JSTemplateEscape.dollar, with: JSTemplateEscape.escapedDollar)
         
         let js = """
         (async () => {

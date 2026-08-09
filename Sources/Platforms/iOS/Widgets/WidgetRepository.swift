@@ -16,14 +16,14 @@ enum WidgetRepository {
 
     // MARK: - 路径解析
 
-    private static let appGroupID = "group.com.zhiyu.app"
+    private static let appGroupID = AppConstants.Storage.appGroupIdentifier
 
     private static var groupURL: URL? {
         FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
     }
 
     private static var widgetStatsURL: URL? {
-        groupURL?.appendingPathComponent("widget_stats.json")
+        groupURL?.appendingPathComponent(AppConstants.Storage.widgetStatsFileName)
     }
 
     // MARK: - 查询 API（从 App Group JSON 快照读取，由主 App 写入）

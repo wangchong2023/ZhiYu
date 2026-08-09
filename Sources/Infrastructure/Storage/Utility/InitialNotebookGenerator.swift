@@ -272,7 +272,7 @@ struct InitialNotebookGenerator {
             // 3. 跨领域笔记枢纽指南
             PageSeed(title: L10n.InitialNotebook.PKM.title3, type: .concept, content: L10n.InitialNotebook.PKM.content3,
                      tags: [L10n.InitialNotebook.Tags.techPrinciple, L10n.InitialNotebook.Tags.association],
-                     sourceURL: AppConstants.URLs.exampleKarpathyLLM, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmRagLink, sourceType: StorageConstants.SourceType.link),
+                     sourceURL: APIPaths.exampleKarpathyLLM, rawTextSnippet: L10n.InitialNotebook.Snippet.pkmRagLink, sourceType: StorageConstants.SourceType.link),
             
             // 4. 语音速记的未关联笔记
             PageSeed(title: L10n.InitialNotebook.PKM.title4, type: .source, content: L10n.InitialNotebook.PKM.content4,
@@ -383,7 +383,7 @@ struct InitialNotebookGenerator {
             PageSeed(title: L10n.InitialNotebook.Coffee.title3, type: .concept,
                      content: L10n.InitialNotebook.Coffee.content3,
                      tags: [L10n.InitialNotebook.Tags.userResearch],
-                     sourceURL: AppConstants.URLs.exampleCoffeeIndustry, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeRagLink, sourceType: StorageConstants.SourceType.link),
+                     sourceURL: APIPaths.exampleCoffeeIndustry, rawTextSnippet: L10n.InitialNotebook.Snippet.coffeeRagLink, sourceType: StorageConstants.SourceType.link),
             
             // 4. 语音速记：咖啡设备采购清单
             PageSeed(title: L10n.InitialNotebook.Coffee.title4, type: .source,

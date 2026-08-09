@@ -50,12 +50,12 @@ struct AboutView: View {
                         Text(L10n.Settings.About.website)
                             .foregroundStyle(.primary)
                         Spacer()
-                        if let url = URL(string: AppConstants.URLs.officialWebsite) {
-                            Link(AppConstants.URLs.officialWebsite, destination: url)
+                        if let url = URL(string: APIPaths.officialWebsite) {
+                            Link(APIPaths.officialWebsite, destination: url)
                                 .font(.body)
                                 .foregroundColor(Color.theme.blue) // 采用高亮蓝色以暗示可交互的超链接属性
                         } else {
-                            Text(AppConstants.URLs.officialWebsite)
+                            Text(APIPaths.officialWebsite)
                                 .foregroundStyle(.appSecondary)
                         }
                     }

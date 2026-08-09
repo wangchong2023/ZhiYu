@@ -22,7 +22,7 @@ extension VaultService {
         }
         do {
             let count = try await databaseSwitcher.countPagesInCurrentVault()
-            Logger.shared.info("[VaultService] refreshPageCount: vault=\(vaultID.uuidString.prefix(8)) count=\(count)")
+            Logger.shared.info("[VaultService] refreshPageCount: vault=\(vaultID.uuidString.prefix(AppConstants.Keys.ImportLimits.uuidPrefixLength)) count=\(count)")
             if let index = vaults.firstIndex(where: { $0.id == vaultID }) {
                 vaults[index].pageCount = count
                 try await vaultRepository.saveVault(vaults[index])
@@ -44,20 +44,20 @@ extension VaultService {
         distribution: [String: Double] = ["source": 0.4, "concept": 0.3, "entity": 0.2, "map": 0.1]
     ) async {
         guard let groupURL = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: "group.com.zhiyu.app"
+            forSecurityApplicationGroupIdentifier: AppConstants.Storage.appGroupIdentifier
         ) else { return }
 
         let snapshot: [String: Any] = [
-            "pageCount": pageCount,
-            "linkCount": linkCount,
-            "tagCount": tagCount,
-            "dailyInsightTitle": dailyInsightTitle,
-            "dailyInsightContent": dailyInsightContent,
-            "flashThoughtSummary": flashThoughtSummary,
-            "distribution": distribution,
-            "recentPages": []
+            WidgetSnapshotKey.pageCount: pageCount,
+            WidgetSnapshotKey.linkCount: linkCount,
+            WidgetSnapshotKey.tagCount: tagCount,
+            WidgetSnapshotKey.dailyInsightTitle: dailyInsightTitle,
+            WidgetSnapshotKey.dailyInsightContent: dailyInsightContent,
+            WidgetSnapshotKey.flashThoughtSummary: flashThoughtSummary,
+            WidgetSnapshotKey.distribution: distribution,
+            WidgetSnapshotKey.recentPages: []
         ]
-        let url = groupURL.appendingPathComponent("widget_stats.json")
+        let url = groupURL.appendingPathComponent(AppConstants.Storage.widgetStatsFileName)
         do {
             let data = try JSONSerialization.data(withJSONObject: snapshot)
             try data.write(to: url, options: .atomic)
@@ -114,4 +114,18 @@ extension VaultService {
             Logger.shared.error("[VaultService] refreshPageCountFromMainDB failed", error: error)
         }
     }
+}
+
+// MARK: - Widget 快照 JSON Key
+
+/// Widget 统计快照 JSON 序列化 key 常量
+enum WidgetSnapshotKey {
+    static let pageCount = "pageCount"
+    static let linkCount = "linkCount"
+    static let tagCount = "tagCount"
+    static let dailyInsightTitle = "dailyInsightTitle"
+    static let dailyInsightContent = "dailyInsightContent"
+    static let flashThoughtSummary = "flashThoughtSummary"
+    static let distribution = "distribution"
+    static let recentPages = "recentPages"
 }

@@ -74,7 +74,7 @@ public struct SubscriptionPlanView: View {
 
             ScrollView {
                 VStack(spacing: DesignSystem.large) {
-                    if authService.currentUser?.planKey != "pro" && !isUpgradeSuccess {
+                    if !(authService.currentUser?.isPro ?? false) && !isUpgradeSuccess {
                         // 标题
                         VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                             Text(L10n.Auth.upgradeToPro)

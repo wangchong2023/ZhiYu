@@ -212,7 +212,7 @@ struct ArchiveScraperHandler: WebScraperHandler {
     /// /// - Returns: 返回值
     func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
         do {
-            let archiveURLString = "\(AppConstants.URLs.webArchivePrefix)\(url.absoluteString)"
+            let archiveURLString = "\(APIPaths.webArchivePrefix)\(url.absoluteString)"
             guard let archiveURL = URL(string: archiveURLString) else {
                 throw WebScraperProcessor.ScraperError.invalidURL
             }

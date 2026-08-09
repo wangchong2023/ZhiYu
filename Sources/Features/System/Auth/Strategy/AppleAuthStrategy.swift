@@ -13,6 +13,12 @@ import Foundation
 import UFPCore
 import AuthenticationServices
 
+/// Apple 认证错误域与错误码常量
+private enum AppleAuthErrorSpec {
+    static let domain = "AppleAuthStrategy"
+    static let tokenExtractFailedCode = -1
+}
+
 /// Apple ID 认证策略实现类
 /// 负责在 iOS 设备上启动原生 Apple 授权对话框，并将结果转换为统一的 AuthCredential 模型。
 @MainActor
@@ -83,7 +89,7 @@ extension AppleAuthStrategy: ASAuthorizationControllerDelegate {
         guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
               let tokenData = credential.identityToken,
               let tokenString = String(data: tokenData, encoding: .utf8) else {
-            let error = AppError.auth(domain: "AppleAuthStrategy", code: -1, description: L10n.Auth.appleTokenExtractFailed)
+            let error = AppError.auth(domain: AppleAuthErrorSpec.domain, code: AppleAuthErrorSpec.tokenExtractFailedCode, description: L10n.Auth.appleTokenExtractFailed)
             continuation?.resume(throwing: error)
             return
         }

@@ -56,6 +56,8 @@ public final class VaultService: VaultServiceProtocol {
     /// 私有化单例构造方法，防止外部直接实例化。
     private init() {
         let isUITesting = CommandLine.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
+        // 加载条件：非单元测试环境（XCTestCase 未加载）或 UI 测试环境
+        // 单元测试时跳过加载，由测试用例自行注入数据
         if NSClassFromString("XCTestCase") == nil || isUITesting {
             loadVaults()
         }
@@ -77,13 +79,18 @@ public final class VaultService: VaultServiceProtocol {
     // MARK: - 内部持久化辅助
 
     /// 将笔记本元数据变更原子写回全局配置表中。
-    func saveVaultToDatabase(_ vault: Vault) throws {
+    /// - Note: 异步执行，错误通过日志记录而非抛出（调用方无法 await）。
+    func saveVaultToDatabase(_ vault: Vault) {
         Task {
             guard let vaultRepository = vaultRepository else {
                 Logger.shared.warning(" [VaultService] saveVaultToDatabase 被跳过，因为 vaultRepository 未在 DI 注册")
                 return
             }
-            try await vaultRepository.saveVault(vault)
+            do {
+                try await vaultRepository.saveVault(vault)
+            } catch {
+                Logger.shared.error(" [VaultService] saveVaultToDatabase 失败：\(error)")
+            }
         }
     }
 }

@@ -14,11 +14,19 @@ import CryptoKit
 /// 媒体存储器
 /// 专门物理托管特定笔记本（Vault）沙盒目录下的非文本型多媒体二进制资产。
 public final class MediaStore: Sendable {
+    /// 媒体存储配置常量
+    private enum MediaConfig {
+        /// 附件存储相对子目录名
+        static let attachmentsDirectoryName = "Attachments"
+        /// MD5 哈希十六进制格式字符串
+        static let md5HexFormat = "%02hhx"
+    }
+
     /// 目标笔记本的根路径
     public let vaultURL: URL
-    
+
     /// 附件存储相对子路径
-    private let attachmentsDirectoryName = "Attachments"
+    private let attachmentsDirectoryName = MediaConfig.attachmentsDirectoryName
     
     /// 获取物理存储目录的绝对路径 URL
     public var attachmentsDirectoryURL: URL {
@@ -54,8 +62,9 @@ public final class MediaStore: Sendable {
     /// - Throws: 物理写入失败时抛出错误
     public func saveMedia(data: Data, fileExtension: String) throws -> String {
         // 1. 计算二进制数据的 MD5 校验和作为唯一文件名
+        // 注：MD5 仅用于去重命名，非安全用途，无需迁移至 SHA256
         let hash = Insecure.MD5.hash(data: data)
-        let hexString = hash.map { String(format: "%02hhx", $0) }.joined()
+        let hexString = hash.map { String(format: MediaConfig.md5HexFormat, $0) }.joined()
         let fileName = "\(hexString).\(fileExtension.lowercased())"
         
         let destinationURL = attachmentsDirectoryURL.appendingPathComponent(fileName)
@@ -69,10 +78,11 @@ public final class MediaStore: Sendable {
     /// 根据相对路径或文件名，读取物理附件数据。
     ///
     /// - Parameter fileName: 存储的唯一文件名
-    /// - Returns: 物理文件的二进制数据，若文件不存在返回 nil
-    public func loadMedia(fileName: String) -> Data? {
+    /// - Returns: 物理文件的二进制数据
+    /// - Throws: 文件不存在或读取失败时抛出 `CocoaError` 或 `URLError`
+    public func loadMedia(fileName: String) throws -> Data {
         let fileURL = attachmentsDirectoryURL.appendingPathComponent(fileName)
-        return try? Data(contentsOf: fileURL)
+        return try Data(contentsOf: fileURL)
     }
     
     /// 从沙盒中物理删除指定的附件。

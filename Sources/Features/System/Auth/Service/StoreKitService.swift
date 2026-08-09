@@ -153,6 +153,9 @@ public final class StoreKitService {
                 // 保留本地 Pro 权益，待下次刷新时重试验证。
                 Logger.shared.warning("[StoreKitService] 后端收据验证失败，保留本地权益待重试")
             }
+        } else {
+            // 未知 productId：记录 warning 便于排查配置不一致
+            Logger.shared.warning("[StoreKitService] 收到未知 productId: \(productId)，未在 allProductIds 中注册")
         }
         
         // 标记交易已完成（防止重复处理）
@@ -164,7 +167,7 @@ public final class StoreKitService {
     /// 将当前用户降级为 Lite 配额（订阅过期 / 退款时调用）
     private func downgradeToLite() {
         guard let user = AuthSession.shared.currentUser,
-              user.planKey == "pro" else { return }
+              user.isPro else { return }
         
         let lite = User(
             id: user.id,
@@ -172,7 +175,7 @@ public final class StoreKitService {
             email: user.email,
             phone: user.phone,
             avatarURL: user.avatarURL,
-            planKey: "lite",
+            planKey: PlanKey.lite,
             maxVaults: user.maxVaults,
             maxPages: User.DefaultQuotas.liteMaxPages,
             maxPlugins: User.DefaultQuotas.liteMaxPlugins,

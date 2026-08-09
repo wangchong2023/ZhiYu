@@ -16,6 +16,15 @@ import AuthenticationServices
 import UIKit
 #endif
 
+/// GitHub 认证配置与错误域常量
+private enum GitHubAuthConfig {
+    static let domain = "GitHubAuthStrategy"
+    static let authFailedCode = -99
+    static let urlInvalidCode = -1
+    static let callbackInvalidCode = -2
+    static let oauthScope = "read:user,user:email"
+}
+
 /// GitHub 认证策略实现类
 @MainActor
 public final class GitHubAuthStrategy: NSObject, AuthStrategy {
@@ -25,7 +34,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
     // MARK: - 配置
     // 从 AppConfig.json 读取 GitHub OAuth Client ID
     private let clientId = AppConfig.gitHubOAuthClientId
-    private let callbackScheme = "zhiyu" // 需与 URL Types 保持一致
+    private let callbackScheme = AppConstants.Network.oauthCallbackScheme // 需与 URL Types 保持一致
     
     public override init() {}
     
@@ -50,13 +59,13 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                     return
                 }
                 #endif
-                continuation.resume(throwing: AppError.auth(domain: "GitHubAuthStrategy", code: -99, description: L10n.Auth.authFailed))
+                continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed))
                 return
             }
             
-            let urlString = "\(AppConstants.URLs.gitHubOAuthAuthorize)?client_id=\(clientId)&state=\(state)&scope=read:user,user:email"
+            let urlString = "\(APIPaths.gitHubOAuthAuthorize)?client_id=\(clientId)&state=\(state)&scope=\(GitHubAuthConfig.oauthScope)"
             guard let url = URL(string: urlString) else {
-                continuation.resume(throwing: AppError.auth(domain: "GitHubAuthStrategy", code: -1, description: "GitHub URL Error"))
+                continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.urlInvalidCode, description: "GitHub URL Error"))
                 return
             }
             
@@ -70,7 +79,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                       let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: true),
                       let queryItems = components.queryItems,
                       let code = queryItems.first(where: { $0.name == "code" })?.value else {
-                    continuation.resume(throwing: AppError.auth(domain: "GitHubAuthStrategy", code: -2, description: "GitHub Callback Error"))
+                    continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.callbackInvalidCode, description: "GitHub Callback Error"))
                     return
                 }
                 

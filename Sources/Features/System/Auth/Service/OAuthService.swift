@@ -83,16 +83,16 @@ extension AuthService {
     /// - Returns: 包含请求路径及请求体数据的结构体
     private func resolveAuthRequestInfo(_ cred: AuthCredential) -> AuthRequestInfo {
         switch cred.identityType {
-        // 苹果登录：后端 API 路径为 /api/v1/auth/oauth/apple
-        case "apple": return AuthRequestInfo(path: "/api/v1/auth/oauth/apple", body: OAuthAppleRequest(code: cred.credential, state: cred.extraInfo?["state"], idToken: cred.extraInfo?["idToken"]))
-        // 微信登录：后端 API 路径为 /api/v1/auth/oauth/wechat
-        case "wechat": return AuthRequestInfo(path: "/api/v1/auth/oauth/wechat", body: OAuthWeChatRequest(code: cred.credential, state: cred.extraInfo?["state"]))
-        // 谷歌登录：后端 API 路径为 /api/v1/auth/oauth/google
-        case "google": return AuthRequestInfo(path: "/api/v1/auth/oauth/google", body: OAuthGoogleRequest(code: cred.credential, idToken: cred.extraInfo?["idToken"] ?? ""))
-        // GitHub 登录：后端 API 路径为 /api/v1/auth/oauth/github
-        case "github": return AuthRequestInfo(path: "/api/v1/auth/oauth/github", body: OAuthGitHubRequest(code: cred.credential, state: cred.extraInfo?["state"]))
-        // 运营商一键免密登录：后端 API 路径为 /api/v1/auth/carrier
-        case "carrier": return AuthRequestInfo(path: "/api/v1/auth/carrier", body: CarrierAuthRequest(carrierToken: cred.extraInfo?["carrierToken"] ?? "", appKey: cred.extraInfo?["appKey"] ?? "", privacyConsent: cred.extraInfo?["privacyConsent"] == "true"))
+        // 苹果登录
+        case "apple": return AuthRequestInfo(path: APIPaths.oauthApplePath, body: OAuthAppleRequest(code: cred.credential, state: cred.extraInfo?["state"], idToken: cred.extraInfo?["idToken"]))
+        // 微信登录
+        case "wechat": return AuthRequestInfo(path: APIPaths.oauthWeChatPath, body: OAuthWeChatRequest(code: cred.credential, state: cred.extraInfo?["state"]))
+        // 谷歌登录
+        case "google": return AuthRequestInfo(path: APIPaths.oauthGooglePath, body: OAuthGoogleRequest(code: cred.credential, idToken: cred.extraInfo?["idToken"] ?? ""))
+        // GitHub 登录
+        case "github": return AuthRequestInfo(path: APIPaths.oauthGitHubPath, body: OAuthGitHubRequest(code: cred.credential, state: cred.extraInfo?["state"]))
+        // 运营商一键免密登录
+        case "carrier": return AuthRequestInfo(path: APIPaths.carrierAuthPath, body: CarrierAuthRequest(carrierToken: cred.extraInfo?["carrierToken"] ?? "", appKey: cred.extraInfo?["appKey"] ?? "", privacyConsent: cred.extraInfo?["privacyConsent"] == "true"))
         default:
             Logger.shared.error("未支持的登录渠道类型: \(cred.identityType)")
             return AuthRequestInfo(path: "", body: "")

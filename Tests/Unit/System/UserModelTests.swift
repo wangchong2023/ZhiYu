@@ -263,4 +263,99 @@ final class UserModelTests: XCTestCase {
         let user2 = User(id: user.id, name: "A", email: "")
         XCTAssertEqual(user.id, user2.id)
     }
+
+    // MARK: - PlanTier 等级枚举
+
+    func testPlanTier_comparableOrdering() {
+        XCTAssertLessThan(PlanTier.free, PlanTier.lite)
+        XCTAssertLessThan(PlanTier.lite, PlanTier.pro)
+        XCTAssertLessThan(PlanTier.free, PlanTier.pro)
+    }
+
+    func testPlanTier_fromPlanKey_knownValues() {
+        XCTAssertEqual(PlanTier.from(planKey: "free"), .free)
+        XCTAssertEqual(PlanTier.from(planKey: "lite"), .lite)
+        XCTAssertEqual(PlanTier.from(planKey: "pro"), .pro)
+    }
+
+    func testPlanTier_fromPlanKey_nil_returnsFree() {
+        XCTAssertEqual(PlanTier.from(planKey: nil), .free)
+    }
+
+    func testPlanTier_fromPlanKey_unknown_returnsFree() {
+        // 未知字符串降级为 .free（按 Lite 权益处理，策安全）
+        XCTAssertEqual(PlanTier.from(planKey: "team"), .free)
+        XCTAssertEqual(PlanTier.from(planKey: "enterprise"), .free)
+        XCTAssertEqual(PlanTier.from(planKey: ""), .free)
+    }
+
+    func testPlanTier_defaultQuotas_freeEqualsLite() {
+        // free 和 lite 的默认配额相同（free 按 Lite 权益处理）
+        XCTAssertEqual(PlanTier.free.defaultQuotas.maxVaults, PlanTier.lite.defaultQuotas.maxVaults)
+        XCTAssertEqual(PlanTier.free.defaultQuotas.maxPages, PlanTier.lite.defaultQuotas.maxPages)
+        XCTAssertEqual(PlanTier.free.defaultQuotas.maxPlugins, PlanTier.lite.defaultQuotas.maxPlugins)
+    }
+
+    func testPlanTier_defaultQuotas_proGreaterThanLite() {
+        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxVaults, PlanTier.lite.defaultQuotas.maxVaults)
+        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxPages, PlanTier.lite.defaultQuotas.maxPages)
+        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxPlugins, PlanTier.lite.defaultQuotas.maxPlugins)
+    }
+
+    // MARK: - User.planTier 计算属性
+
+    func testPlanTier_planKeyPro_returnsPro() {
+        let user = User(name: "A", email: "", planKey: "pro")
+        XCTAssertEqual(user.planTier, .pro)
+    }
+
+    func testPlanTier_planKeyFree_returnsFree() {
+        let user = User(name: "A", email: "", planKey: "free")
+        XCTAssertEqual(user.planTier, .free)
+    }
+
+    func testPlanTier_planKeyLite_returnsLite() {
+        let user = User(name: "A", email: "", planKey: "lite")
+        XCTAssertEqual(user.planTier, .lite)
+    }
+
+    func testPlanTier_planKeyNil_returnsFree() {
+        let user = User(name: "A", email: "", planKey: nil)
+        XCTAssertEqual(user.planTier, .free)
+    }
+
+    func testPlanTier_planKeyUnknown_returnsFree() {
+        let user = User(name: "A", email: "", planKey: "unknown_plan")
+        XCTAssertEqual(user.planTier, .free)
+    }
+
+    // MARK: - User.isAtLeast 等级门槛判断
+
+    func testIsAtLeast_proUser_isAtLeastPro() {
+        let user = User(name: "A", email: "", planKey: "pro")
+        XCTAssertTrue(user.isAtLeast(.pro))
+        XCTAssertTrue(user.isAtLeast(.lite))
+        XCTAssertTrue(user.isAtLeast(.free))
+    }
+
+    func testIsAtLeast_liteUser_isAtLeastLiteButNotPro() {
+        let user = User(name: "A", email: "", planKey: "lite")
+        XCTAssertFalse(user.isAtLeast(.pro))
+        XCTAssertTrue(user.isAtLeast(.lite))
+        XCTAssertTrue(user.isAtLeast(.free))
+    }
+
+    func testIsAtLeast_freeUser_isAtLeastFreeOnly() {
+        let user = User(name: "A", email: "", planKey: "free")
+        XCTAssertFalse(user.isAtLeast(.pro))
+        XCTAssertFalse(user.isAtLeast(.lite))
+        XCTAssertTrue(user.isAtLeast(.free))
+    }
+
+    func testIsAtLeast_unknownPlanKey_treatedAsFree() {
+        let user = User(name: "A", email: "", planKey: "mystery")
+        XCTAssertFalse(user.isAtLeast(.pro))
+        XCTAssertFalse(user.isAtLeast(.lite))
+        XCTAssertTrue(user.isAtLeast(.free))
+    }
 }

@@ -26,12 +26,12 @@ public enum AuthError: Error, LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .carrierSDKNotInitialized: return "Carrier SDK Not Initialized"
-        case .carrierFailed:            return "Carrier Failed"
-        case .userCancelled:            return "User Cancelled"
-        case .carrierNoSIM:             return "No SIM Card"
-        case .carrierNoNetwork:         return "No Network"
-        case .carrierTimeout:           return "Timeout"
+        case .carrierSDKNotInitialized: return L10n.Auth.carrierSDKNotInitialized
+        case .carrierFailed:            return L10n.Auth.carrierFailed
+        case .userCancelled:            return L10n.Auth.carrierUserCancelled
+        case .carrierNoSIM:             return L10n.Auth.carrierNoSIM
+        case .carrierNoNetwork:         return L10n.Auth.carrierNoNetwork
+        case .carrierTimeout:           return L10n.Auth.carrierTimeout
         }
     }
 }

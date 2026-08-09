@@ -53,7 +53,7 @@ public final class NotebookHubViewModel {
     }
     
     /// 新笔记本图标 (Emoji)
-    public var newNotebookIcon: String = DesignSystem.Icons.Notebook.options.first ?? "📚"
+    public var newNotebookIcon: String = DesignSystem.Icons.Notebook.options.first ?? DesignSystem.Icons.Notebook.fallback
     
     /// 新笔记本描述
     public var newNotebookDescription: String = ""
@@ -150,7 +150,7 @@ public final class NotebookHubViewModel {
         
         // 重置状态
         newNotebookName = ""
-        newNotebookIcon = DesignSystem.Icons.Notebook.options.first ?? "📚"
+        newNotebookIcon = DesignSystem.Icons.Notebook.options.first ?? DesignSystem.Icons.Notebook.fallback
         newNotebookDescription = ""
         isShowingCreateSheet = false
     }

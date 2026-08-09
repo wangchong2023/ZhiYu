@@ -124,6 +124,11 @@ enum ProcessorConstants {
 
     // MARK: - Mermaid 图表语法 (Mermaid Syntax)
     enum MermaidSyntax {
+        /// Mermaid 节点语法冲突字符（标题净化时需清除）
+        static let conflictOpenParen: String = SystemConstants.Character.openParen
+        static let conflictCloseParen: String = SystemConstants.Character.closeParen
+        static let conflictOpenBracket: String = SystemConstants.Character.openBracket
+        static let conflictCloseBracket: String = SystemConstants.Character.closeBracket
         static let flowchart: String = "flowchart"
         static let graph: String = "graph"
         static let graphTD: String = "graph TD"

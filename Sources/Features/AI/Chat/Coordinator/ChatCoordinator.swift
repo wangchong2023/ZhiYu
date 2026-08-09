@@ -57,8 +57,9 @@ final class ChatCoordinator {
 
     /// 加载InsightfulQuestions
     /// - Parameter pages: pages
-    func loadInsightfulQuestions(pages: [KnowledgePage]) async {
-        guard !pages.isEmpty && llmService.isEnabled && insightfulQuestions.isEmpty && !isGeneratingAIQuestions else { return }
+    /// - Parameter forceRefresh: 是否强制刷新（忽略已有问题）
+    func loadInsightfulQuestions(pages: [KnowledgePage], forceRefresh: Bool = false) async {
+        guard !pages.isEmpty && llmService.isEnabled && (forceRefresh || insightfulQuestions.isEmpty) && !isGeneratingAIQuestions else { return }
         
         isGeneratingAIQuestions = true
         do {
@@ -165,13 +166,22 @@ final class ChatCoordinator {
         // 1. 寻找最后一次用户提问
         guard let lastUserMsgIndex = chatHistory.lastIndex(where: { $0.role == .user }) else { return }
         let lastUserQuery = chatHistory[lastUserMsgIndex].content
-        
-        // 2. 驱逐该提问后面的所有消息 (如已生成了一半的 AI 消息)
-        if lastUserMsgIndex + 1 < chatHistory.count {
-            chatHistory.removeSubrange((lastUserMsgIndex + 1)...)
+
+        // 2. 保留至用户提问（不含），驱逐该提问及后面的所有消息
+        let retainedHistory = Array(chatHistory[..<lastUserMsgIndex])
+
+        // 3. 同步更新内存与持久化（清空后重写保留部分，sendMessage 会重新保存用户提问）
+        chatHistory = retainedHistory
+        chatService.clearHistory()
+        for msg in retainedHistory {
+            if msg.role == .user {
+                chatService.saveUserMessage(msg.content)
+            } else {
+                chatService.saveAssistantMessage(msg.content)
+            }
         }
-        
-        // 3. 重新执行流式提问发送
+
+        // 4. 重新执行流式提问发送
         await sendMessage(query: lastUserQuery, pages: pages)
     }
 
@@ -193,11 +203,11 @@ final class ChatCoordinator {
         isExporting = true
         do {
             let md: String = history.map { msg in
-                let role = msg.role == .user ? "You" : "AI"
+                let role = msg.role == .user ? L10n.Chat.exportRoleUser : L10n.Chat.exportRoleAI
                 return "## \(role)\n\n\(msg.content)"
             }.joined(separator: "\n\n---\n\n")
 
-            let url = try await WebViewExportService.shared.exportToPDF(markdown: md, fileName: "Chat_Export")
+            let url = try await WebViewExportService.shared.exportToPDF(markdown: md, fileName: L10n.Chat.exportFileName)
             self.exportURL = IdentifiableURL(url: url)
         } catch {
             errorMessage = error.localizedDescription

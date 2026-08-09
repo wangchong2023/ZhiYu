@@ -61,6 +61,9 @@ extension L10n {
         public static var inputPlaceholder: String { tr("chat.inputPlaceholder") }
         public static var explorationAndPrompts: String { tr("chat.explorationAndPrompts") }
         public static var exportConversation: String { tr("chat.exportConversation") }
+        public static var exportRoleUser: String { tr("chat.exportRoleUser") }
+        public static var exportRoleAI: String { tr("chat.exportRoleAI") }
+        public static var exportFileName: String { tr("chat.exportFileName") }
         public static var llmSettings: String { tr("chat.llmSettings") }
         public static var selectToExport: String { tr("chat.selectToExport") }
         public static var exportSelectedPDF: String { tr("chat.exportSelectedPDF") }

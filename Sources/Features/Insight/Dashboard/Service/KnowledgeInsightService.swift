@@ -10,6 +10,29 @@
 //
 import Foundation
 import UFPCore
+
+/// 知识见解服务配置常量
+private enum InsightConfig {
+    /// 每日召回内容截断长度
+    static let contentPrefixLength = 500
+    /// 最近修改天数阈值
+    static let recentDays = 3
+    /// 长期记忆最小天数
+    static let longTermMinDays = 90
+    /// 长期记忆最大天数
+    static let longTermMaxDays = 30
+    /// 周报回看天数
+    static let weeklyDays = 7
+    /// 爆发式增长阈值
+    static let explosiveGrowthThreshold = 5
+    /// Top 关键词数量
+    static let topKeywordsCount = 5
+    /// 日期格式（缓存 key）
+    static let cacheDateFormat = "yyyyMMdd"
+    /// 错误码
+    static let errorCode = -2
+}
+
 /// 知识见解服务 (PM 视角：价值闭环)
 /// 负责生成知识周报与核心趋势分析。
 actor KnowledgeInsightService {
@@ -63,25 +86,21 @@ actor KnowledgeInsightService {
         
         let now = Date()
         let calendar = Calendar.current
-        guard let recentThreshold = calendar.date(byAdding: .day, value: -3, to: now) else {
-            throw AppError.insight(L10n.Insight.dateCalculationFailed, code: -2)
+        guard let recentThreshold = calendar.date(byAdding: .day, value: -InsightConfig.recentDays, to: now) else {
+            throw AppError.insight(L10n.Insight.dateCalculationFailed, code: InsightConfig.errorCode)
         }
         let recentPages = pages.filter { $0.updatedAt >= recentThreshold }
         let recentFocus = recentPages.isEmpty ? L10n.Insight.InsightSection.Daily.noUpdate : recentPages.map { $0.title }.joined(separator: " ")
 
-        let prompt = L10n.Dashboard.insight.daily.promptRecent(recentFocus, target.title, String(target.content.prefix(500)))
+        let prompt = L10n.Dashboard.insight.daily.promptRecent(recentFocus, target.title, String(target.content.prefix(InsightConfig.contentPrefixLength)))
 
-        do {
-            let response = try await llmService.generate(prompt: prompt, systemPrompt: L10n.Dashboard.insight.daily.systemPrompt)
-            updateStatus(L10n.AI.Status.generating)
+        let response = try await llmService.generate(prompt: prompt, systemPrompt: L10n.Dashboard.insight.daily.systemPrompt)
+        updateStatus(L10n.AI.Status.generating)
 
-            // 4. 提取并解析 LLM 的回复
-            let recap = parseDailyRecapResponse(response, target: target)
-            await saveCachedDailyRecap(recap)
-            return recap
-        } catch {
-            throw error
-        }
+        // 4. 提取并解析 LLM 的回复
+        let recap = parseDailyRecapResponse(response, target: target)
+        await saveCachedDailyRecap(recap)
+        return recap
     }
 
     /// 载入满足测试用例状态或数据完整度的今日见解缓存
@@ -97,14 +116,16 @@ actor KnowledgeInsightService {
     private func selectTargetPage(pages: [KnowledgePage]) throws -> KnowledgePage {
         let now = Date()
         let calendar = Calendar.current
-        guard let longTermMin = calendar.date(byAdding: .day, value: -90, to: now),
-              let longTermMax = calendar.date(byAdding: .day, value: -30, to: now) else {
-            throw AppError.insight(L10n.Insight.dateCalculationFailed, code: -2)
+        guard let longTermMin = calendar.date(byAdding: .day, value: -InsightConfig.longTermMinDays, to: now),
+              let longTermMax = calendar.date(byAdding: .day, value: -InsightConfig.longTermMaxDays, to: now) else {
+            throw AppError.insight(L10n.Insight.dateCalculationFailed, code: InsightConfig.errorCode)
         }
 
         let candidates = pages.filter { $0.updatedAt >= longTermMin && $0.updatedAt <= longTermMax }
+        // 改用确定性排序（按 updatedAt 升序）取最久未更新的页面，保证同一数据每次调用结果相同
+        let sortedCandidates = candidates.sorted { $0.updatedAt < $1.updatedAt }
         let fallback = pages.sorted { $0.updatedAt < $1.updatedAt }.first
-        guard let target = candidates.randomElement() ?? fallback else {
+        guard let target = sortedCandidates.first ?? fallback else {
             throw AppError.insight(L10n.Dashboard.insight.addPagesFirst)
         }
         return target
@@ -112,11 +133,8 @@ actor KnowledgeInsightService {
 
     /// 解析大语言模型返回的召回结果 JSON
     private func parseDailyRecapResponse(_ response: String, target: KnowledgePage) -> DailyRecap {
-        var jsonString: String?
-        if let firstBrace = response.firstIndex(of: "{"),
-           let lastBrace = response.lastIndex(of: "}") {
-            jsonString = String(response[firstBrace...lastBrace])
-        }
+        // 用花括号配对方式提取第一个完整 JSON 对象，避免 firstIndex/lastIndex 在多个 JSON 场景下包含中间非 JSON 文本
+        let jsonString = JSONExtractor.extractFirstJSONObject(from: response)
 
         if let jsonData = jsonString?.data(using: .utf8),
            let json = try? JSONDecoder().decode([String: String].self, from: jsonData) {
@@ -136,9 +154,10 @@ actor KnowledgeInsightService {
         }
     }
 
+    /// 从字符串中提取第一个完整 JSON 对象（花括号配对）
     private func cacheKey() -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd"
+        formatter.dateFormat = InsightConfig.cacheDateFormat
         let lang = Localized.currentLanguage
         return "\(AppConstants.Keys.Storage.dailyRecapPrefix)\(formatter.string(from: Date()))_\(lang)"
     }
@@ -166,10 +185,12 @@ actor KnowledgeInsightService {
     private func weeklyCacheKey() -> String {
         let calendar = Calendar.current
         let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        let year = comps.yearForWeekOfYear ?? 2026
-        let week = comps.weekOfYear ?? 1
+        // 用当前日期的 year/week 作为 fallback，避免硬编码 2026/1
+        let nowComps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        let year = comps.yearForWeekOfYear ?? nowComps.yearForWeekOfYear ?? 1970
+        let week = comps.weekOfYear ?? nowComps.weekOfYear ?? 1
         let lang = Localized.currentLanguage
-        return "weekly_insight_cache_\(year)_\(week)_\(lang)"
+        return "\(AppConstants.Keys.Storage.weeklyInsightPrefix)\(year)_\(week)_\(lang)"
     }
 
     private func loadCachedWeeklyInsight() async -> WeeklyInsight? {
@@ -198,7 +219,7 @@ actor KnowledgeInsightService {
 
         updateStatus(L10n.AI.Status.synthesizing)
         let calendar = Calendar.current
-        let lastWeek = calendar.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+        let lastWeek = calendar.date(byAdding: .day, value: -InsightConfig.weeklyDays, to: Date()) ?? Date()
 
         let newPages = pages.filter { $0.createdAt >= lastWeek }
         let newTitles = newPages.map { $0.title }.joined(separator: ", ")
@@ -207,7 +228,7 @@ actor KnowledgeInsightService {
 
         let summary = try await llmService.generate(prompt: prompt, systemPrompt: L10n.Dashboard.insight.weekly.systemPrompt)
         let allTags = newPages.flatMap { $0.tags }
-        let keywords = Array(Set(allTags)).sorted().prefix(5).map { String($0) }
+        let keywords = Array(Set(allTags)).sorted().prefix(InsightConfig.topKeywordsCount).map { String($0) }
 
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -219,7 +240,7 @@ actor KnowledgeInsightService {
             totalNewPages: newPages.count,
             topKeywords: keywords,
             aiSummary: summary,
-            growthTraction: newPages.count > 5 ? L10n.Dashboard.insight.growth.explosive : L10n.Dashboard.insight.growth.steady
+            growthTraction: newPages.count > InsightConfig.explosiveGrowthThreshold ? L10n.Dashboard.insight.growth.explosive : L10n.Dashboard.insight.growth.steady
         )
 
         await saveCachedWeeklyInsight(insight)
