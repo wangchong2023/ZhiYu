@@ -13,6 +13,12 @@ import Foundation
 import Security
 import CryptoKit
 
+/// 合规策略验签测试公钥魔数
+private enum ComplianceTestKey {
+    /// 测试公钥标识（生产环境提取 SecKey 验签，PEM 含此串时做测试校验）
+    static let validTestPublicKeyMarker = "VALID_TEST_PUBLIC_KEY"
+}
+
 extension DynamicComplianceManager {
 
     /// 校验云端策略 JSON 包的 RSA / ECDSA 数字签名并合并 Delta Patch
@@ -94,8 +100,8 @@ extension DynamicComplianceManager {
     ) -> Bool {
         guard let signatureData = Data(base64Encoded: signatureBase64) else { return false }
 
-        // 模拟测试公钥魔数判断 (生产环境提取 SecKey 验签，当 PEM 包含 "VALID_TEST_PUBLIC_KEY" 时做测试校验)
-        if publicKeyPEM.contains("VALID_TEST_PUBLIC_KEY") {
+        // 模拟测试公钥魔数判断 (生产环境提取 SecKey 验签，当 PEM 包含测试标识时做测试校验)
+        if publicKeyPEM.contains(ComplianceTestKey.validTestPublicKeyMarker) {
             return !signatureData.isEmpty
         }
 

@@ -51,8 +51,8 @@ public enum JSONExtractor {
     /// - Returns: 解析后的字典，失败返回空字典
     public static func extractJSONDictionary(from text: String) -> [String: Any] {
         let stripped = text
-            .replacingOccurrences(of: "```json", with: "")
-            .replacingOccurrences(of: "```", with: "")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.codeFence, with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard let jsonStr = extractFirstJSONObject(from: stripped),
               let data = jsonStr.data(using: .utf8),

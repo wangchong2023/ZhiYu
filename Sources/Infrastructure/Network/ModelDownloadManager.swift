@@ -13,6 +13,18 @@ import Foundation
 import CommonCrypto
 import UFPCore
 
+/// 下载状态错误消息常量
+private enum DownloadErrorMessage {
+    /// 无续传数据文件
+    static let noResumeData = "No resume data file available."
+    /// 空闲状态占位
+    static let idle = "Idle"
+    /// 临时副本生成失败前缀
+    static let temporaryCopyFailedPrefix = "Temporary copy"
+    /// 生成失败连接符
+    static let generationFailedConnector = " generation failed:"
+}
+
 /// 大模型权重文件后台静默下载与状态管理器
 public actor ModelDownloadManager: ModelDownloadCapabilities {
 
@@ -140,7 +152,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         let fileURL = resumeDataURL(for: modelId)
         guard FileManager.default.fileExists(atPath: fileURL.path),
               let data = try? Data(contentsOf: fileURL) else {
-            updateState(for: modelId, to: .failed(error: "No resume data file available."))
+            updateState(for: modelId, to: .failed(error: DownloadErrorMessage.noResumeData))
             return
         }
         
@@ -179,7 +191,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
             continuations[modelId] = continuation
             
             // 首次订阅时推送当前已有状态
-            let currentState = downloadStates[modelId] ?? .failed(error: "Idle")
+            let currentState = downloadStates[modelId] ?? .failed(error: DownloadErrorMessage.idle)
             continuation.yield(currentState)
             
             // 订阅断开时自动清理
@@ -410,7 +422,7 @@ private final class ModelDownloadDelegateHelper: NSObject, URLSessionDownloadDel
             }
         } catch {
             Task {
-                await manager.updateState(for: modelId, to: .failed(error: "Temporary copy" + " generation failed:" + " \(error.localizedDescription)"))
+                await manager.updateState(for: modelId, to: .failed(error: DownloadErrorMessage.temporaryCopyFailedPrefix + DownloadErrorMessage.generationFailedConnector + " \(error.localizedDescription)"))
             }
         }
     }

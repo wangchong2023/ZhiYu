@@ -9,6 +9,7 @@
 //  核心职责：实现 Link 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPCore
 
 /// [L1] 领域层：处理链接解析、反向链接、搜索与标签聚合
 /// Actor 模式确保大规模并发下的线程安全。
@@ -261,10 +262,12 @@ actor LinkService {
         modifiedPages.append(updatedMainPage)
 
         // 2. 扫描并替换其他页面中的反向链接
+        let oldLink = SystemConstants.MarkdownSyntax.wikiLinkOpen + oldTitle + SystemConstants.MarkdownSyntax.wikiLinkClose
+        let newLink = SystemConstants.MarkdownSyntax.wikiLinkOpen + newTitle + SystemConstants.MarkdownSyntax.wikiLinkClose
         for p in allPages where p.id != page.id {
-            if p.content.contains("[[\(oldTitle)]]") {
+            if p.content.contains(oldLink) {
                 var refPage = p
-                refPage.content = refPage.content.replacingOccurrences(of: "[[\(oldTitle)]]", with: "[[\(newTitle)]]")
+                refPage.content = refPage.content.replacingOccurrences(of: oldLink, with: newLink)
                 refPage.updatedAt = Date()
                 modifiedPages.append(refPage)
             }

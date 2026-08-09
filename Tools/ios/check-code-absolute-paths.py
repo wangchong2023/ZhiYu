@@ -59,6 +59,7 @@ ALLOWED_PATTERNS = [
     r"^\s*#",                       # 纯注释行（Python/Shell）
     r"^\s*//",                      # 纯注释行（Swift）
     r"debug\.yaml",                 # SPM 构建产物
+    r"opensrc/swift",               # Package.swift 中本地 SPM 开源库根目录 fallback（环境特定）
 ]
 
 

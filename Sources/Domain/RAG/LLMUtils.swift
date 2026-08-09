@@ -9,6 +9,7 @@
 //  核心职责：RAG 检索增强生成管道：语义搜索、链接发现、内容增强、评估。
 //
 import Foundation
+import UFPCore
 
 /// 全局共享的 LLM 工具集
 enum LLMUtils {
@@ -55,8 +56,8 @@ enum LLMUtils {
 
     /// 剥离 Markdown 语法标记（如 ```json 等）并修剪空白。
     static func stripMarkdown(_ text: String) -> String {
-        text.replacingOccurrences(of: "```json", with: "")
-            .replacingOccurrences(of: "```", with: "")
+        text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.codeFence, with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

@@ -14,6 +14,13 @@ import Observation
 
 /// RAG 业务编排器 (L1.5-Domain)
 /// 负责将“检索”与“生成”逻辑串联，实现高阶 AI 业务。
+
+/// RAG 任务命名常量
+private enum RAGTaskName {
+    static let chat = "AI Chat"
+    static let chatStream = "AI Chat Stream"
+}
+
 @MainActor
 public final class RAGOrchestrator {
     
@@ -29,7 +36,7 @@ public final class RAGOrchestrator {
     public func chat(query: String, history _: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         return try await perf.measureAsync("ragChain") {
             // 1. 任务注册
-            let taskID = TaskCenter.shared.addTask(type: .ai, name: "AI Chat", target: query)
+            let taskID = TaskCenter.shared.addTask(type: .ai, name: RAGTaskName.chat, target: query)
             
             // 2. 构建 RAG 上下文
             TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
@@ -64,7 +71,7 @@ public final class RAGOrchestrator {
         AsyncThrowingStream { continuation in
             Task { @MainActor in
                 // Step 1: 任务注册
-                let taskID = TaskCenter.shared.addTask(type: .ai, name: "AI Chat Stream", target: query)
+                let taskID = TaskCenter.shared.addTask(type: .ai, name: RAGTaskName.chatStream, target: query)
                 
                 do {
                     // Step 2: 构建 RAG 上下文（上下文检索 + 语义重排）

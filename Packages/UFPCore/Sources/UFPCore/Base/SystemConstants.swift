@@ -219,6 +219,14 @@ public enum SystemConstants {
         public static let bulletDash: String = "- "
         /// 表格行分隔符（Markdown 表格分隔行 `---`）
         public static let tableRowSeparator: String = "---"
+        /// 代码块围栏标记（```）
+        public static let codeFence: String = "```"
+        /// JSON 代码块围栏标记（```json）
+        public static let jsonCodeFence: String = "```json"
+        /// Wiki 链接左括号 `[[`
+        public static let wikiLinkOpen: String = "[["
+        /// Wiki 链接右括号 `]]`
+        public static let wikiLinkClose: String = "]]"
     }
 
     // MARK: - 布尔字面量 (Boolean Literals)

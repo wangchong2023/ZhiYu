@@ -19,6 +19,24 @@ public enum AuthRegion: String, Codable, CaseIterable, Sendable {
     case international = "INTL"
 }
 
+/// 区域检测相关常量
+private enum AuthRegionSpec {
+    /// 区域能力配置文件名（不含扩展名）
+    static let capabilitiesFileName = "region_capabilities"
+    /// 区域能力配置文件扩展名
+    static let capabilitiesFileExtension = "json"
+    /// 中国大陆时区标识列表
+    static let chinaTimeZoneIdentifiers = ["Asia/Shanghai", "Asia/Chongqing", "Asia/Harbin", "Asia/Urumqi"]
+    /// 中国大陆 ISO 国家码
+    static let chinaISOCode = "CN"
+    /// 美国 ISO 国家码（兜底）
+    static let usISOCode = "US"
+    /// JSON 配置中的默认区域键
+    static let defaultRegionKey = "default"
+    /// JSON 配置中本地化登录页标识
+    static let localizedLoginPageType = "localized"
+}
+
 /// 用户登录环境及地区探测服务类
 public final class AuthRegionDetector: @unchecked Sendable {
     
@@ -41,7 +59,7 @@ public final class AuthRegionDetector: @unchecked Sendable {
     
     /// 载入本地打包的 region_capabilities.json 映射规则
     public func loadCapabilities() {
-        guard let url = Bundle.main.url(forResource: "region_capabilities", withExtension: "json") else {
+        guard let url = Bundle.main.url(forResource: AuthRegionSpec.capabilitiesFileName, withExtension: AuthRegionSpec.capabilitiesFileExtension) else {
             return
         }
         do {
@@ -70,22 +88,19 @@ public final class AuthRegionDetector: @unchecked Sendable {
         
         // 3. 第三优先级：检查当前时区，兜底判断是否为非中国区时区
         let timeZone = TimeZone.current
-        let isChinaTimeZone = timeZone.identifier.contains("Asia/Shanghai")
-            || timeZone.identifier.contains("Asia/Chongqing")
-            || timeZone.identifier.contains("Asia/Harbin")
-            || timeZone.identifier.contains("Asia/Urumqi")
-        
+        let isChinaTimeZone = AuthRegionSpec.chinaTimeZoneIdentifiers.contains { timeZone.identifier.contains($0) }
+
         // 合并提取出来的检测目标 ISO 国家码，若依然不存在则根据时区关系做兜底判断
-        let targetCode = isoCode ?? (isChinaTimeZone ? "CN" : "US")
-        
+        let targetCode = isoCode ?? (isChinaTimeZone ? AuthRegionSpec.chinaISOCode : AuthRegionSpec.usISOCode)
+
         // 4. 读取 JSON 配置，匹配具体的区域信息
         if let capabilities = cachedCapabilities, let info = capabilities.regions[targetCode] {
-            return info.loginPageType == "localized" ? .china : .international
+            return info.loginPageType == AuthRegionSpec.localizedLoginPageType ? .china : .international
         }
-        
+
         // 5. 无法直接匹配时，尝试匹配 JSON 中声明的 default 兜底项
-        if let capabilities = cachedCapabilities, let defaultInfo = capabilities.regions["default"] {
-            return defaultInfo.loginPageType == "localized" ? .china : .international
+        if let capabilities = cachedCapabilities, let defaultInfo = capabilities.regions[AuthRegionSpec.defaultRegionKey] {
+            return defaultInfo.loginPageType == AuthRegionSpec.localizedLoginPageType ? .china : .international
         }
         
         // 极度异常环境下的硬编码硬兜底：为了保证现有系统零退化，默认返回中国区

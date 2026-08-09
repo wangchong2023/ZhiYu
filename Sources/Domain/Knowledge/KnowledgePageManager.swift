@@ -15,6 +15,21 @@ import Combine
 
 /// 知识页面管理服务 (L1.5-Domain)
 /// 负责页面生命周期管理及跨服务逻辑协同。
+
+/// 日志模块名与操作详情前缀常量
+private enum KnowledgeLogSpec {
+    /// 日志模块名
+    static let module = "Knowledge"
+    /// 重命名操作详情前缀
+    static let renamedFromPrefix = "Renamed from"
+    /// 应用潜在链接详情前缀
+    static let appliedPotentialLinkPrefix = "Applied potential"
+    /// 应用潜在链接详情中段
+    static let linkToConnector = " link to"
+    /// 重构建议类型：重命名
+    static let refactorTypeRename = "rename"
+}
+
 @MainActor
 public final class KnowledgePageManager {
     
@@ -187,7 +202,7 @@ public final class KnowledgePageManager {
         try await pageStore.performBatchWrite { db in
             for p in modifiedPages { try p.save(db) }
         }
-        logger.addLog(action: .update, target: newTitle, details: "Renamed from" + " \(oldTitle)", module: "Knowledge")
+        logger.addLog(action: .update, target: newTitle, details: KnowledgeLogSpec.renamedFromPrefix + " \(oldTitle)", module: KnowledgeLogSpec.module)
         backupService.markDirty()
     }
 
@@ -224,20 +239,20 @@ public final class KnowledgePageManager {
         let oldContent = page.content
         let newContent = oldContent.replacingOccurrences(
             of: suggestion.targetTitle,
-            with: "[[\(suggestion.targetTitle)]]",
+            with: SystemConstants.MarkdownSyntax.wikiLinkOpen + suggestion.targetTitle + SystemConstants.MarkdownSyntax.wikiLinkClose,
             options: .caseInsensitive
         )
-        
+
         if oldContent != newContent {
             page.content = newContent
             try await updatePage(page, currentPages: currentPages)
-            logger.addLog(action: .update, target: page.title, details: "Applied potential" + " link to" + " [[\(suggestion.targetTitle)]]", module: "Knowledge")
+            logger.addLog(action: .update, target: page.title, details: KnowledgeLogSpec.appliedPotentialLinkPrefix + KnowledgeLogSpec.linkToConnector + " \(SystemConstants.MarkdownSyntax.wikiLinkOpen)\(suggestion.targetTitle)\(SystemConstants.MarkdownSyntax.wikiLinkClose)", module: KnowledgeLogSpec.module)
         }
     }
 
     /// 应用 AI 重构建议
     public func applyRefactorSuggestion(_ suggestion: RefactorSuggestion, currentPages: [KnowledgePage]) async throws {
-        if suggestion.type == "rename", let page = currentPages.first(where: { $0.title == suggestion.target }) {
+        if suggestion.type == KnowledgeLogSpec.refactorTypeRename, let page = currentPages.first(where: { $0.title == suggestion.target }) {
             try await renamePage(page, to: suggestion.suggestion, currentPages: currentPages)
         }
         aiWorkflowStore.removeRefactorSuggestion(id: suggestion.id)

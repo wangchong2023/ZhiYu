@@ -9,10 +9,23 @@
 //  核心职责：RAG 检索增强生成管道：语义搜索、链接发现、内容增强、评估。
 //
 import Foundation
+import UFPCore
 
 /// AI 内容增强处理器
 /// 负责在 RAG 流程中对原始内容进行语义丰富化。
 /// 通过将文档拆分为逻辑块（文本、表格、图片），利用并行任务进行针对性的语义提取。
+
+/// 内容增强触发标记常量
+private enum ContentEnrichmentMarker {
+    /// Markdown 表格分隔行（含空格变体 `| --- |`）
+    static let tableSeparator = "| \(SystemConstants.MarkdownSyntax.tableRowSeparator) |"
+    /// 空图片占位符 `![]`
+    static let emptyImage = "[]"
+    /// 图片起始标记 `![`
+    static let imageStart = "!["
+    /// 图片 URL 起始标记 `](`
+    static let imageURLStart = "]("
+}
 actor AIContentEnricher {
 
     static let shared = AIContentEnricher()
@@ -33,7 +46,7 @@ actor AIContentEnricher {
     /// - Returns: 增强后的文本
     func enrich(_ content: String, llm: any LLMServiceProtocol) async -> String {
         // 1. 快速判断是否需要增强
-        let needsEnrichment = content.contains("| --- |") || content.contains("![]") || content.contains("![")
+        let needsEnrichment = content.contains(ContentEnrichmentMarker.tableSeparator) || content.contains(ContentEnrichmentMarker.emptyImage) || content.contains(ContentEnrichmentMarker.imageStart)
         guard needsEnrichment else { return content }
 
         // 2. 将内容拆分为逻辑块
@@ -95,7 +108,7 @@ actor AIContentEnricher {
                 currentTable = ""
                 isInsideTable = false
                 currentText += line + "\n"
-            } else if line.contains("![") && line.contains("](") {
+            } else if line.contains(ContentEnrichmentMarker.imageStart) && line.contains(ContentEnrichmentMarker.imageURLStart) {
                 // 图片识别 (Markdown 格式: ![alt](url))
                 if !currentText.isEmpty {
                     blocks.append(.text(currentText.trimmingCharacters(in: .whitespacesAndNewlines)))

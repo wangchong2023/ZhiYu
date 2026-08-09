@@ -13,6 +13,16 @@ import UFPCore
 
 // MARK: - Knowledge Page
 /// 知识管理系统核心数据模型
+
+/// 页面来源类型与隐私标签常量
+private enum PageSourceSpec {
+    static let privateTag = "private"
+    static let fileSchemePrefix = "file://"
+    static let sourceTypePDF = "pdf"
+    static let sourceTypeMarkdown = "markdown"
+    static let sourceTypeMD = "md"
+    static let sourceTypeText = "txt"
+}
 public struct KnowledgePage: Identifiable, Codable, Hashable, Sendable, KnowledgePageRepresentable {
     public static let databaseTableName: String = AppConstants.Storage.Tables.pages
     
@@ -183,7 +193,7 @@ public struct KnowledgePage: Identifiable, Codable, Hashable, Sendable, Knowledg
 
     /// 隐私敏感判定
     public var isPrivate: Bool {
-        getAllTags().contains("private")
+        getAllTags().contains(PageSourceSpec.privateTag)
     }
 
     /// 获取所有标签（包括元数据标签和内容中的 #标签）
@@ -197,7 +207,7 @@ extension KnowledgePage {
     /// 是否为本地文件来源
     public var isLocalFileSource: Bool {
         guard let urlStr = sourceURL else { return false }
-        return urlStr.lowercased().hasPrefix("file://")
+        return urlStr.lowercased().hasPrefix(PageSourceSpec.fileSchemePrefix)
     }
     
     /// 来源在 UI 上的友好展示名称
@@ -240,9 +250,9 @@ extension KnowledgePage {
         guard let type = sourceType?.lowercased() else {
             return isLocalFileSource ? "doc.fill" : "safari"
         }
-        if type == "pdf" {
+        if type == PageSourceSpec.sourceTypePDF {
             return "doc.text.fill"
-        } else if type == "markdown" || type == "md" || type == "txt" {
+        } else if type == PageSourceSpec.sourceTypeMarkdown || type == PageSourceSpec.sourceTypeMD || type == PageSourceSpec.sourceTypeText {
             return "doc.text"
         } else {
             return isLocalFileSource ? "doc.fill" : "safari"

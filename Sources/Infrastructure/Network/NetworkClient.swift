@@ -264,7 +264,10 @@ public actor NetworkClient {
             // 发起刷新请求
             let req = RefreshRequest(refreshToken: refreshToken)
             let refreshURL = AppConfig.backendBaseURL + APIPaths.refreshPath
-            var request = URLRequest(url: URL(string: refreshURL) ?? URL(string: "about:blank")!)
+            guard let refreshEndpoint = URL(string: refreshURL) else {
+                return .failure(NetworkError.invalidURL)
+            }
+            var request = URLRequest(url: refreshEndpoint)
             request.httpMethod = AppConstants.Network.methodPOST
             request.addValue(AppConstants.Network.contentTypeJSON, forHTTPHeaderField: AppConstants.Network.headerContentType)
             

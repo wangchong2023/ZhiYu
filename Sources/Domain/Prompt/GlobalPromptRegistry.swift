@@ -10,6 +10,14 @@
 //
 import Foundation
 
+/// Prompt 变量插值标记常量
+private enum PromptVariableSyntax {
+    /// 变量占位符左定界符 `{{`
+    static let openDelimiter = "{{"
+    /// 变量占位符右定界符 `}}`
+    static let closeDelimiter = "}}"
+}
+
 /// 业务 Prompt 模块领域划分
 public enum PromptDomain: String, Sendable, CaseIterable {
     case chat
@@ -54,7 +62,7 @@ public final class GlobalPromptRegistry: Sendable {
         for (varKey, varVal) in variables {
             // 转义并安全插值
             let safeVal = PromptSecurityGuard.shared.sanitize(varVal)
-            base = base.replacingOccurrences(of: "{{\(varKey)}}", with: safeVal)
+            base = base.replacingOccurrences(of: PromptVariableSyntax.openDelimiter + varKey + PromptVariableSyntax.closeDelimiter, with: safeVal)
         }
         return base
     }
