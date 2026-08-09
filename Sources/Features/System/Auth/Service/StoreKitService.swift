@@ -149,9 +149,9 @@ public final class StoreKitService {
             if success {
                 Logger.shared.info("[StoreKitService] 后端收据验证成功，Pro 权益已激活")
             } else {
-                // 后端验证失败时，本地降级保险
-                Logger.shared.warning("[StoreKitService] 后端收据验证失败，降级为本地 Lite 配额")
-                downgradeToLite()
+                // 后端验证失败时，不立即降级（可能是网络波动）。
+                // 保留本地 Pro 权益，待下次刷新时重试验证。
+                Logger.shared.warning("[StoreKitService] 后端收据验证失败，保留本地权益待重试")
             }
         }
         

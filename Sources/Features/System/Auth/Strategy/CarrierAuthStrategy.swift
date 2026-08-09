@@ -62,7 +62,7 @@ public final class CarrierAuthStrategy: AuthStrategy {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--uitesting") || NSClassFromString("XCTestCase") != nil {
             // SDK 未初始化时安全降级为 Mock 凭证，保障本地开发/测试环境流程不中断
-            let fallbackToken = "mock_carrier_token_\\(UUID().uuidString)"
+            let fallbackToken = "mock_carrier_token_\(UUID().uuidString)"
             return AuthCredential(
                 identityType: identityType,
                 identifier: "",
@@ -80,7 +80,7 @@ public final class CarrierAuthStrategy: AuthStrategy {
             throw AuthError.carrierSDKNotInitialized
         }
 
-        let mockToken = "mock_carrier_token_\\(UUID().uuidString)"
+        let mockToken = "mock_carrier_token_\(UUID().uuidString)"
         return AuthCredential(
             identityType: identityType,
             identifier: "",

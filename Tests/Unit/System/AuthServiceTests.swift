@@ -419,6 +419,145 @@ final class AuthServiceTests: XCTestCase {
         await awaitAllLogoutTasks()
         await fulfillment(of: [expectation], timeout: 2.0)
     }
+
+    // MARK: - refreshUserProfile 空字符串覆盖测试（修复 #93 / #92）
+
+    /// 验证修复 #93：后端返回空字符串 email 时，不应覆盖本地非空 email
+    /// 修复前 `email: profile.email ?? user.email`，空字符串覆盖本地非空 email
+    func testRefreshUserProfileEmptyEmailDoesNotOverrideLocal() async throws {
+        #if DEBUG
+        AuthService.forceMockBackend = false
+        #endif
+
+        // 1. 注入 Token 并设置本地用户（含非空 email 和 phone）
+        try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "valid_jwt_token")
+        AuthSession.shared.update(user: User(
+            id: UUID(),
+            name: "Local User",
+            email: "local@example.com",
+            phone: "13800138000"
+        ))
+
+        // 2. Mock 后端返回空 email 和空 mobile
+        TestMockURLProtocol.requestHandler = { request in
+            let url = try XCTUnwrap(request.url)
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            ))
+
+            if request.url?.path == "/api/v1/user/profile" {
+                // 后端返回空字符串 email 和 mobile
+                let json: [String: Any] = [
+                    "code": 0,
+                    "message": "success",
+                    "data": [
+                        "userId": 10001,
+                        "username": "test_user",
+                        "nick": "Backend User",
+                        "avatar": NSNull(),
+                        "email": "",
+                        "mobile": ""
+                    ],
+                    "requestId": "test_req_id",
+                    "timestamp": 123456789
+                ]
+                let data = try JSONSerialization.data(withJSONObject: json)
+                return (response, data)
+            } else if request.url?.path == "/api/v1/subscriptions/me" {
+                let json: [String: Any] = [
+                    "code": 0,
+                    "message": "success",
+                    "data": [
+                        "planKey": "free",
+                        "quotasJson": NSNull(),
+                        "featuresJson": NSNull()
+                    ],
+                    "requestId": "test_req_id",
+                    "timestamp": 123456789
+                ]
+                let data = try JSONSerialization.data(withJSONObject: json)
+                return (response, data)
+            }
+            return (response, Data())
+        }
+
+        // 3. 执行 refreshUserProfile
+        try await AuthService.shared.refreshUserProfile()
+
+        // 4. 验证：空字符串不应覆盖本地非空值
+        let updated = AuthSession.shared.currentUser
+        XCTAssertEqual(updated?.email, "local@example.com", "后端返回空字符串 email 时应保留本地 email")
+        XCTAssertEqual(updated?.phone, "13800138000", "后端返回空字符串 mobile 时应保留本地 phone")
+        XCTAssertEqual(updated?.name, "Backend User", "nick 应正常更新")
+    }
+
+    /// 验证修复 #92：后端返回非空 mobile 时，应正常更新本地 phone
+    func testRefreshUserProfileNonEmptyMobileUpdatesLocal() async throws {
+        #if DEBUG
+        AuthService.forceMockBackend = false
+        #endif
+
+        try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "valid_jwt_token")
+        AuthSession.shared.update(user: User(
+            id: UUID(),
+            name: "Local User",
+            email: "local@example.com",
+            phone: "13800138000"
+        ))
+
+        TestMockURLProtocol.requestHandler = { request in
+            let url = try XCTUnwrap(request.url)
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            ))
+
+            if request.url?.path == "/api/v1/user/profile" {
+                let json: [String: Any] = [
+                    "code": 0,
+                    "message": "success",
+                    "data": [
+                        "userId": 10001,
+                        "username": "test_user",
+                        "nick": "Backend User",
+                        "avatar": NSNull(),
+                        "email": "new@example.com",
+                        "mobile": "13900139000"
+                    ],
+                    "requestId": "test_req_id",
+                    "timestamp": 123456789
+                ]
+                let data = try JSONSerialization.data(withJSONObject: json)
+                return (response, data)
+            } else if request.url?.path == "/api/v1/subscriptions/me" {
+                let json: [String: Any] = [
+                    "code": 0,
+                    "message": "success",
+                    "data": [
+                        "planKey": "pro",
+                        "quotasJson": NSNull(),
+                        "featuresJson": NSNull()
+                    ],
+                    "requestId": "test_req_id",
+                    "timestamp": 123456789
+                ]
+                let data = try JSONSerialization.data(withJSONObject: json)
+                return (response, data)
+            }
+            return (response, Data())
+        }
+
+        try await AuthService.shared.refreshUserProfile()
+
+        let updated = AuthSession.shared.currentUser
+        XCTAssertEqual(updated?.email, "new@example.com", "后端返回非空 email 应更新本地")
+        XCTAssertEqual(updated?.phone, "13900139000", "后端返回非空 mobile 应更新本地 phone")
+    }
 }
 
 // MARK: - URLRequest 扩展辅助测试

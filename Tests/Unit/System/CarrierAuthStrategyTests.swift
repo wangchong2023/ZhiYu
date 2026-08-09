@@ -52,4 +52,22 @@ final class CarrierAuthStrategyTests: XCTestCase {
         }
         #endif
     }
+
+    /// 验证修复 #76：Mock token 应为动态 UUID 插值，而非字面字符串
+    /// 修复前 `"mock_carrier_token_\\(UUID().uuidString)"` 因 `\\(` 被转义，每次返回相同字面量
+    func testAcquireCredentialsReturnsUniqueTokenEachCall() async {
+        #if DEBUG
+        do {
+            let cred1 = try await strategy.acquireCredentials()
+            let cred2 = try await strategy.acquireCredentials()
+            let token1 = cred1.extraInfo?["carrierToken"]
+            let token2 = cred2.extraInfo?["carrierToken"]
+            XCTAssertNotNil(token1)
+            XCTAssertNotNil(token2)
+            XCTAssertNotEqual(token1, token2, "两次调用应返回不同的动态 token，而非相同字面字符串")
+        } catch {
+            XCTFail("Debug 模式下不应抛出错误: \(error)")
+        }
+        #endif
+    }
 }

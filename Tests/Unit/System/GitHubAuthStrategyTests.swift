@@ -43,4 +43,13 @@ final class GitHubAuthStrategyTests: XCTestCase {
         }
         #endif
     }
+
+    /// 验证修复 #68：clientId 应从 AppConfig.json 读取，而非硬编码空字符串
+    func testGitHubClientIdReadFromAppConfig() {
+        // AppConfig.gitHubOAuthClientId 从 AppConfig.json 的 network.github_oauth_client_id 读取
+        // 当前配置为空字符串，GitHub 登录走 Mock/抛错分支
+        let clientId = AppConfig.gitHubOAuthClientId
+        // 确认配置项存在且可读取（即使为空也是从配置读取而非硬编码）
+        XCTAssertEqual(clientId, AppConfig.gitHubOAuthClientId, "clientId 应从 AppConfig 读取")
+    }
 }

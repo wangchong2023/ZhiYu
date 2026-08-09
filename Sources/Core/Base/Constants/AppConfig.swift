@@ -32,6 +32,8 @@ enum AppConfig {
             case pluginMarketProduction = "plugin_market_production"
             case jinaReaderBase = "jina_reader_base"
             case backendBaseURL = "backend_base_url"
+            /// GitHub OAuth Client ID
+            case gitHubOAuthClientId = "github_oauth_client_id"
         }
         
         enum Performance: String {
@@ -104,6 +106,9 @@ enum AppConfig {
     static var deepseekDefaultURL: String { llmProviderURL(for: CoreConstants.LLMProvider.deepseek) }
     
     static var backendBaseURL: String { getNetwork(.backendBaseURL) }
+    
+    /// GitHub OAuth Client ID（从 AppConfig.json 读取，为空时 GitHub 登录不可用）
+    static var gitHubOAuthClientId: String { getNetwork(.gitHubOAuthClientId) }
     
     // MARK: - 性能参数
     static var searchDebounceMS: Int { getPerformance(.searchDebounce, default: 300) }

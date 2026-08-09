@@ -195,7 +195,8 @@ extension AuthService {
             let updated = User(
                 id: user.id,
                 name: profile.nick,
-                email: profile.email ?? user.email,
+                email: profile.email.flatMap { $0.isEmpty ? nil : $0 } ?? user.email,
+                phone: profile.mobile.flatMap { $0.isEmpty ? nil : $0 } ?? user.phone,
                 avatarURL: profile.avatar.flatMap { URL(string: $0) },
                 planKey: currentPlanKey,
                 maxVaults: quotasToUse.maxVaults,
@@ -217,6 +218,7 @@ private struct RefreshProfileResponse: Codable {
     let nick: String
     let avatar: String?
     let email: String?
+    let mobile: String?
 }
 
 /// 用户订阅套餐信息响应体

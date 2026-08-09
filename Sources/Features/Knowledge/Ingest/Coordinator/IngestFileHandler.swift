@@ -55,11 +55,7 @@ extension IngestCoordinator {
             return
         }
 
-        let textContent: String? = {
-            let ext = url.pathExtension.lowercased()
-            guard ["md", "txt", "markdown", "rtf"].contains(ext) else { return nil }
-            return try? String(contentsOf: url, encoding: .utf8)
-        }()
+        let textContent = extractTextContent(from: url)
 
         guard let savedPath = fileStore.copyFile(at: url, category: .file) else {
             lastImportTime = .distantPast
@@ -91,6 +87,27 @@ extension IngestCoordinator {
             targetType: targetType,
             forceDeepScan: forceDeepScan
         )
+    }
+
+    /// 从文件提取文本内容（支持 md/txt/markdown 纯文本和 RTF 富文本）
+    private func extractTextContent(from url: URL) -> String? {
+        let ext = url.pathExtension.lowercased()
+        if ["md", "txt", "markdown"].contains(ext) {
+            return try? String(contentsOf: url, encoding: .utf8)
+        }
+        // RTF 文件需用 NSAttributedString 解析为纯文本，不能用 String(contentsOf:) 读取源码
+        if ext == "rtf" {
+            #if canImport(UIKit) || canImport(AppKit)
+            return try? NSAttributedString(
+                url: url,
+                options: [.documentType: NSAttributedString.DocumentType.rtf],
+                documentAttributes: nil
+            ).string
+            #else
+            return nil
+            #endif
+        }
+        return nil
     }
 
     /// 保存导入记录并触发异步后台任务

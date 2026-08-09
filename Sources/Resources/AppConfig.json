@@ -2,7 +2,8 @@
   "network": {
     "backend_base_url": "https://10.211.55.4:30443",
     "plugin_market_production": "https://raw.githubusercontent.com/knowledge-management/plugins/main/community.json",
-    "jina_reader_base": "https://r.jina.ai/"
+    "jina_reader_base": "https://r.jina.ai/",
+    "github_oauth_client_id": ""
   },
   "llm_providers": {
     "openai": "https://api.openai.com/v1",

@@ -24,7 +24,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
     
     // MARK: - 配置
     // 从 AppConfig.json 读取 GitHub OAuth Client ID
-    private let clientId = ""
+    private let clientId = AppConfig.gitHubOAuthClientId
     private let callbackScheme = "zhiyu" // 需与 URL Types 保持一致
     
     public override init() {}
