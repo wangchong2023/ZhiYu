@@ -16,7 +16,7 @@ import Combine
 /// 负责协调与编排各项大语言模型（LLM）的底层子能力，维护全局 AI 运行生命周期及状态，
 /// 它是整个系统所有 AI 能力与 RAG 检索管线的统一门面接口。
 @MainActor
-class LLMService: ObservableObject, LLMServiceProtocol, @unchecked Sendable {
+class LLMService: ObservableObject, LLMServiceProtocol {
 
     /// 全局唯一的线程安全单例实例。
     @MainActor public static let shared = LLMService()

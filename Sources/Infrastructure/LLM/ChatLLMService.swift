@@ -15,7 +15,7 @@ import Combine
 /// 大模型对话与文本生成基础设施服务
 /// 遵循并实现 `LLMChatServiceProtocol` 契约，支持响应式状态变化。
 @MainActor
-public final class ChatLLMService: NSObject, LLMChatServiceProtocol, @unchecked Sendable {
+public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
     /// 配置管理器，热重载 API 参数
     @ObservationIgnored @Inject private var configManager: LLMConfigManager
     

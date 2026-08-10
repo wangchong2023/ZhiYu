@@ -197,7 +197,7 @@ final class AuthServiceTests: XCTestCase {
         let responseData = try JSONEncoder().encode(apiResponse)
 
         TestMockURLProtocol.requestHandler = { request in
-            XCTAssertEqual(request.url?.path, AppConstants.Network.userProfilePath)
+            XCTAssertEqual(request.url?.path, APIPaths.userProfilePath)
             XCTAssertEqual(request.value(forHTTPHeaderField: AppConstants.Network.headerAuthorization), "Bearer valid_jwt_token")
 
             let url = try XCTUnwrap(request.url)
@@ -309,7 +309,7 @@ final class AuthServiceTests: XCTestCase {
                 let apiResponse: ApiResponse<EmptyData> = ApiResponse(code: 40101, message: "Unauthorized", data: nil, requestId: "req", timestamp: 123)
                 let data = try JSONEncoder().encode(apiResponse)
                 return (response, data)
-            } else if request.url?.path == AppConstants.Network.refreshPath {
+            } else if request.url?.path == APIPaths.refreshPath {
                 // 刷新也失败，返回 401 错误 JSON
                 let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 401, httpVersion: nil, headerFields: nil))
                 let apiResponse: ApiResponse<EmptyData> = ApiResponse(code: 40103, message: "Refresh token expired", data: nil, requestId: "req", timestamp: 123)

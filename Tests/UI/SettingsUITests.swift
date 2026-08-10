@@ -227,47 +227,28 @@ final class SettingsE2ETests: KnowledgeBaseUITests {
 
     /// 验证语言切换控件可交互
     func testLanguageSwitching() async {
-        // 1. 找到用户头像入口并点击
-        let profileButton = app.buttons["userProfileMenuButton"]
-        XCTAssertTrue(profileButton.waitForExistence(timeout: 15), "用户头像入口应当存在")
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 等待转场与淡入动画彻底静止
-        
-        let settingsMenuButton = app.buttons["settingsMenuButton"]
-        // 使用自愈点击弹窗，防御高负荷下的点击静默失败
-        let tapped = tap(profileButton, waitingFor: settingsMenuButton, timeout: 3.0)
-        XCTAssertTrue(tapped, "系统设置菜单入口应当存在")
-
-        try? await Task.sleep(nanoseconds: 1_000_000_000) // 等待 Popover 菜单淡入完成
-        settingsMenuButton.tap()
-
+        // 通过 Tab 栏进入设置，绕过 SwiftUI Menu 菜单项在 XCTest 中 accessibility 不可见的问题
+        tapTab(named: "设置")
         try? await Task.sleep(nanoseconds: 1_500_000_000)
 
-        // 3. 语言切换测试
+        // 语言切换测试
         let langPicker = app.pickerWheels.firstMatch
         if langPicker.exists && langPicker.isHittable {
             langPicker.adjust(toPickerWheelValue: "English")
             try? await Task.sleep(nanoseconds: 500_000_000)
         }
+
+        // 验证应用未崩溃
+        XCTAssertTrue(app.exists, "语言切换后应用应仍在运行")
     }
 
     /// 验证主题颜色按钮可交互
     func testThemeAccentColorChange() async {
-        // 1. 找到用户头像入口并点击
-        let profileButton = app.buttons["userProfileMenuButton"]
-        XCTAssertTrue(profileButton.waitForExistence(timeout: 15), "用户头像入口应当存在")
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 等待转场与淡入动画彻底静止
-        
-        let settingsMenuButton = app.buttons["settingsMenuButton"]
-        // 使用自愈点击弹窗，防御高负荷下的点击静默失败
-        let tapped = tap(profileButton, waitingFor: settingsMenuButton, timeout: 3.0)
-        XCTAssertTrue(tapped, "系统设置菜单入口应当存在")
-
-        try? await Task.sleep(nanoseconds: 1_000_000_000) // 等待 Popover 菜单淡入完成
-        settingsMenuButton.tap()
-
+        // 通过 Tab 栏进入设置，绕过 SwiftUI Menu 菜单项在 XCTest 中 accessibility 不可见的问题
+        tapTab(named: "设置")
         try? await Task.sleep(nanoseconds: 1_500_000_000)
 
-        // 3. 主题色变更测试
+        // 主题色变更测试
         let colorButtons = app.buttons.matching(
             NSPredicate(format: "identifier CONTAINS 'accent' OR identifier CONTAINS 'color'")
         ).allElementsBoundByIndex

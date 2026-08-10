@@ -283,6 +283,7 @@ L10n 扩展属性测试：验证属性返回非空、key 格式正确、无重�
 | 103 | `logger.debug(" [Dashboard] : \(links) , \(density.count) ")` 日志格式混乱（line 98） | — | P2 | 规范日志格式 | — | 是 |
 | 104 | `refreshInsights` 状态同步，异常时 `isGeneratingInsights` 永远 true（line 52-62） | `aiStore.generateDailyRecap` 抛异常时状态不重置 | P1 | 用 `defer { isGeneratingInsights = false }` | 异常后 isGeneratingInsights 为 false | 是 |
 | 105 | `calculateStats` 的 `backlinkMap[page.title]` 用 title 作 key（line 86） | 同名 page 会导致计数错误 | P1 | 用 UUID 或 pageID 作 key | 同名 page 反链计数正确 | 是（降级 P2，wiki link 用 title 引用是固有限制） |
+| 106 | KnowledgeInsightService `loadValidCache` 非测试模式不校验缓存中 targetPageID 是否仍在 pages 列表 | 用户删除页面后仍看到引用已删除页面 ID 的过期"今日洞察"，黑盒可见的错误引用 | P1 | `loadValidCache` 移除 `isTesting` 分支，统一校验 `pages.contains(where: { $0.id == cached.targetPageID })` | 删除页面后缓存自动失效，重新生成 | 是 |
 
 ---
 
@@ -290,10 +291,10 @@ L10n 扩展属性测试：验证属性返回非空、key 格式正确、无重�
 
 | 严重程度 | 数量 | 占比 |
 |---------|------|------|
-| P0（功能性 bug/数据损坏/安全） | 8 | 7.6% |
-| P1（逻辑错误/降级缺失/体验问题） | 38 | 36.2% |
-| P2（代码质量/魔鬼数字/硬编码） | 59 | 56.2% |
-| **合计** | **105** | 100% |
+| P0（功能性 bug/数据损坏/安全） | 8 | 7.5% |
+| P1（逻辑错误/降级缺失/体验问题） | 39 | 36.8% |
+| P2（代码质量/魔鬼数字/硬编码） | 59 | 55.7% |
+| **合计** | **106** | 100% |
 
 ### P0 问题清单（重新评估后 5 个，需优先修复）
 
@@ -313,4 +314,293 @@ L10n 扩展属性测试：验证属性返回非空、key 格式正确、无重�
 
 ### 第一批：KnowledgeInsightService（0% → ?）
 
-（待测试后记录）
+- **测试文件**：`Tests/Unit/Insight/KnowledgeInsightServiceTests.swift`
+- **测试数量**：10 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - `generateDailyRecap`：空页面抛错、forceRefresh 跳过缓存、非 JSON 回退、缓存命中跳过 LLM、缓存中页面被删除后重新生成
+  - `generateWeeklyInsight`：基本生成、缓存命中、爆发式增长阈值、稳定增长、无新增页面
+- **发现问题**：#106（P1，已修复）— `loadValidCache` 非测试模式不校验缓存 targetPageID 是否仍存在，导致删除页面后仍显示过期洞察
+- **修复**：移除 `isTesting` 分支，统一校验 `pages.contains(where: { $0.id == cached.targetPageID })`
+
+### 第二批：GraphViewModel（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/GraphViewModelTests.swift`
+- **测试数量**：13 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - `getFilteredNodes`：无过滤返回全部、按 concept/entity 过滤、空列表
+  - `getFilteredEdges`：无过滤返回全部、过滤后仅保留两端都在集合中的边、同类型节点间边保留
+  - 仿真启停：`isAnimating=true` 启动并更新节点位置、`isAnimating=false` 停止、空节点自动退出
+  - 状态管理：初始状态、`selectedNodeID` 设置、`filterType` 切换
+- **发现问题**：无新问题（仿真逻辑健壮，过滤逻辑正确）
+
+### 第三批：IngestFileHandler（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/IngestFileHandlerTests.swift`
+- **测试数量**：10 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - `isImporting` 频控：初始 false、刚导入 true、冷却后 false
+  - `handleFileImport`：冷却期跳过、failure 设置错误、空 success 不报错
+  - `extractImagesFromFile`：未知扩展名/md/txt 返回空
+  - `isLLMConfigured`：apiKey 为空时 false
+- **发现问题**：无新问题（频控与错误分支逻辑正确）
+- **基础设施改进**：`TestMocks.swift` 新增 `MockImportFileStore` 并注册到 `setupFullMockEnvironment`，后续 IngestCoordinator 相关测试可复用
+
+### 第四批：IngestURLHandler（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/IngestURLHandlerTests.swift`
+- **测试数量**：9 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - `extractImagesFromURL` SSRF 防护：无效 URL、内网 IP、环回地址、链路本地、file:// scheme、ftp:// scheme
+  - `handleBatchURLImport`：冷却期跳过、关闭面板、空列表不崩溃
+- **发现问题**：无新问题（SSRF 防护逻辑健壮，频控正确）
+
+### 第五批：MediaStore（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/MediaStoreTests.swift`
+- **测试数量**：13 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始化：自动创建 Attachments 目录、`attachmentsDirectoryURL` 正确、`vaultURL` 存储
+  - `saveMedia`：MD5 命名、扩展名转小写、物理写入、相同内容去重、不同内容不同名
+  - `loadMedia`：读取已保存文件、不存在文件抛错
+  - `deleteMedia`：删除已保存文件、不存在文件不抛错
+  - 完整循环：save → load → delete → 再读失败
+- **发现问题**：无新问题（MD5 去重命名逻辑正确，文件系统操作健壮）
+
+### 第六批：VaultDataCoordinator（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/VaultDataCoordinatorTests.swift`
+- **测试数量**：12 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - `buildDefaultDemoVaults`：返回 2 个、englishName 映射、pageCount=0、icon 非空、description 非空、ID 不同
+  - `buildFallbackDemoVaults`：返回 2 个、englishName 映射、pageCount=0
+  - englishName 映射：defaultName→personalKM、researchName→projectResearch
+- **发现问题**：无新问题（演示笔记本构建与 englishName 映射逻辑正确）
+
+### 第七批：StoreKitService（0% → ?）
+
+- **测试文件**：`Tests/Unit/System/StoreKitServiceTests.swift`
+- **测试数量**：4 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：`isRestoring=false`、`restoreMessage=nil`
+  - `startListening` 幂等性（重复调用不崩溃）
+  - `stopListening` 多次调用不崩溃
+- **跳过场景**：`restorePurchases`（`AppStore.sync()` 在模拟器无沙盒账号时挂起超时，CI 不可靠）
+- **发现问题**：无新问题（生命周期管理逻辑正确）
+
+### 第八批：IngestStore（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/IngestStoreTests.swift`
+- **测试数量**：16 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - PDF 元数据 CRUD：load（空/非空）、save（新增/更新同 ID）、batch save、delete（按对象/按 fileName）
+  - PDF 物理文件：save data 返回 URL、load by fileName 返回 URL/nil、delete by fileName 成功/失败
+  - PDF 文本提取：全量提取、页范围提取、空范围返回空字符串、nil 返回空字符串
+- **Mock 增强**：新增 `MockPDFService`（内存版 PDFServiceProtocol），注册到 `setupFullMockEnvironment`
+- **发现问题**：无新问题（PDF 元数据 CRUD 与文本提取转发逻辑正确）
+
+### 第九批：VaultLifecycleManager（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/VaultLifecycleManagerTests.swift`
+- **测试数量**：16 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - createVault：添加到列表、唯一 UUID、默认 icon/description nil、pageCount=0、seeded 标记
+  - updateVault：更新字段、更新时间戳、不存在 ID 不崩溃
+  - renameVault：仅更新名称、不存在 ID 不崩溃
+  - selectVault/exitVault：设置/清除 selectedVaultID
+  - deleteVault：从列表移除、删除选中时清除 selectedVaultID、删除非选中时保留、不存在 ID 不崩溃
+- **发现问题**：无新问题（生命周期管理逻辑正确）
+
+### 第十批：SystemStatsCoordinator（0% → ?）
+
+- **测试文件**：`Tests/Unit/System/SystemStatsCoordinatorTests.swift`
+- **测试数量**：17 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - formatBytes：0/KB/MB/负数
+  - iconForCategory：database/logs/import/export/未知标签 fallback
+  - loadStats：isLoading→false、totalPages 非负、storageCategories 非空、totalStorage=各分类之和、dailyStats 非空、rawStorageStats 被设置
+  - 初始状态：isLoading=true、totalStorage=0
+- **Mock 增强**：新增 `MockImportRecordRepository`（内存版），注册到 `setupFullMockEnvironment`
+- **发现问题**：无新问题（统计加载与格式化逻辑正确）
+
+### 第十一批：ChatCoordinator（0% → ?）
+
+- **测试文件**：`Tests/Unit/AI/ChatCoordinatorTests.swift`
+- **测试数量**：17 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：inputText/chatHistory/isProcessing/isSelectionMode/selectedMessageIDs/predictedQuestions/errorMessage
+  - clearChatHistory：清空 chatHistory + predictedQuestions
+  - toggleSelectionMode：切换标志 + 关闭时清空 selectedMessageIDs
+  - toggleMessageSelection：添加/移除 ID
+  - cancelCurrentRequest：isProcessing→false + streamingContent 清空
+  - sendMessage 空输入保护：空字符串/nil+空 input 不处理
+- **Mock 增强**：注册 `AISynthesisService.shared` 到 `setupFullMockEnvironment`
+- **发现问题**：无新问题（状态管理与空输入保护逻辑正确）
+
+### 第十二批：NotebookHubViewModel（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/NotebookHubViewModelTests.swift`
+- **测试数量**：23 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：displayMode/sortOption/isShowingCreateSheet/newNotebookName/searchText
+  - toggleDisplayMode：grid↔list 切换
+  - 名称长度限制：newNotebookName/editingName 超长截断
+  - notebooks 过滤排序：按日期倒序、按名称、searchText 过滤（大小写不敏感）、空 searchText 返回全部
+  - createNotebook：空名称不创建、有效名称创建+重置状态、空白 icon 转 nil
+  - deleteNotebook：删除指定笔记本
+  - prepareEdit/confirmEdit：填充字段、保存更新、无 editingVault 不崩溃
+  - prepareRename/confirmRename：设置状态、执行重命名、无 editingVault 不崩溃
+- **发现问题**：无新问题（过滤排序与 CRUD 逻辑正确）
+
+### 第十三批：PageDetailCoordinator（0% → ?）
+
+- **测试文件**：`Tests/Unit/Insight/PageDetailCoordinatorTests.swift`
+- **测试数量**：18 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：isEditing/showBacklinks/showDeleteConfirmation/hasScannedForLinks/newAlias
+  - backlinks 计算属性：空 content 不崩溃、找到引用页、排除非引用页、大小写敏感
+  - deletePage：从 store 删除
+  - togglePin：false→true、true→false、同步到 store
+  - findRelatedLinks：设置 hasScannedForLinks 标志
+  - generateSummary/extractActions/expandContent/performSynthesis：不崩溃（AI 操作异步 Task 包装）
+- **发现问题**：无新问题（backlinks 计算与状态管理逻辑正确）
+- **编译修复**：
+  - `page` 声明从 `KnowledgePage!` 改为 `KnowledgePage?`（SwiftLint force_unwrapping）
+  - `SynthesisType.summary` 改为 `.mindmap`（枚举无 `.summary` case）
+
+### 第十四批：AIWorkflowStore（0% → ?）
+
+- **测试文件**：`Tests/Unit/AI/AIWorkflowStoreTests.swift`
+- **测试数量**：20 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：isScanningAI/refactorSuggestions/potentialLinks/activePageAIResult/isProcessingPageAI/activeQuiz/lastLintScore/lastLintDate
+  - clearAll：重置所有状态 + 清空 lintIssues
+  - removePotentialLink：匹配 ID 删除、非匹配保留
+  - removeRefactorSuggestion：匹配 ID 删除、非匹配保留
+  - runLint：更新 lastLintDate、空页面不崩溃
+  - runAIScan：LLM disabled 时不操作
+  - runPageAISummary/runPageAIExtractActions/runPageAIExpansion：设置 activePageAIResult + isProcessingPageAI 复位
+  - performPageSynthesis：设置 activePageAIResult（.report 类型不经 mermaid 格式化）
+- **发现问题**：无新问题（状态管理与 AI 操作逻辑正确）
+- **编译修复**：
+  - `import UFPCore` 添加（ServiceContainer 在 UFPCore 中）
+  - 闭包参数用 `_`（SwiftLint unused_closure_parameter）
+- **L10n 审计修复**：
+  - `KnowledgePageManager.swift` 日志常量 `"Applied potential"`/`" link to"` 添加到 `EXEMPT_STRINGS` 白名单
+  - `AI.xcstrings` `chat.exportFileName` 的 `"Chat_Export"` 添加到 `EXEMPT_IDENTICAL_VALUES` 白名单（文件名前缀不翻译）
+- **Periphery 死代码审计脚本修复**：
+  - `audit-code-dead-code.py` 的 `IGNORE_PATTERNS` 新增 9 类编译器警告过滤（immutable value/is test/async/mutation/Sendable/actor-isolated/L10n Audit 等），避免误计为死代码
+
+### 第十五批：VaultWidgetSyncManager（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/VaultWidgetSyncManagerTests.swift`
+- **测试数量**：10 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - writeWidgetStatsSnapshot：App Group 不可用时不崩溃、默认参数、零计数
+  - refreshPageCount：空 vaults、匹配 vault 更新 pageCount、非匹配 vault 保留
+  - refreshAllPageCounts：空 vaults、无 DB 文件走主库兜底
+  - refreshPageCountFromMainDB：不崩溃、非匹配 vault 保留
+- **发现问题**：无新问题（Widget 快照写入与页面计数刷新逻辑正确，依赖未注册时静默返回）
+- **编译修复**：`Vault` init 参数顺序 `createdAt` 在 `pageCount` 之前
+
+### 第十六批：TagCloudCoordinator（已存在 8 个测试）
+
+- **测试文件**：`Tests/Unit/Dashboard/TagCloudCoordinatorTests.swift`（已存在）
+- **测试数量**：8 个（已存在）
+- **结果**：跳过新建，已有测试覆盖核心场景 ✅
+- **覆盖场景**：初始化、fetchData、filteredTags、filteredPages、addTag、renameTag、deleteTag、bulkDeleteTags
+
+### 第十七批：SearchStore（0% → ?）
+
+- **测试文件**：`Tests/Unit/Knowledge/SearchStoreTests.swift`
+- **测试数量**：14 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：searchText/searchResults/isSearching/isAdvancedSearching/lastSearchDiagnostic
+  - clearAll：重置所有属性
+  - searchText didSet：空字符串清除结果
+  - performAdvancedSearch：空查询返回空、isSearching 状态、更新 lastSearchDiagnostic
+- **发现问题**：无新问题
+
+### 第十八批：AIInsightStore（0% → ?）
+
+- **测试文件**：`Tests/Unit/AI/AIInsightStoreTests.swift`
+- **测试数量**：19 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：brokenLinkCount/orphanPageCount/totalConnectionCount/sourceCount/entityCount/conceptCount/growthSeries/weeklyInsight/dailyRecap/isGeneratingDailyRecap
+  - InsightMetric：initWithTrend/withoutTrend/uniqueID
+  - updateStatistics：无页面不崩溃
+  - generateWeeklyInsight/generateDailyRecap：不崩溃、forceRefresh、isGeneratingDailyRecap 重置
+- **发现问题**：无新问题
+
+### 第十九批：TaskCenter（0% → ?）
+
+- **测试文件**：`Tests/Unit/AI/TaskCenterTests.swift`
+- **测试数量**：40 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：tasks/latestStatus/unreadCount
+  - TaskType：icon/defaultColor/localizedName 非空
+  - TaskStatus Equatable：pending/completed/running/failed 相等与不等
+  - addTask：插入首位、唯一 ID、pending 状态、更新 latestStatus
+  - updateTask：running/completed/failed/associatedPageID/不存在 ID
+  - completeTask/failTask
+  - addSubLog：追加、更新 latestStatus、不存在 ID、50 条上限裁剪
+  - addIngestSubLog：追加到 ingest 任务、无 ingest 任务 no-op
+  - markAsRead/markAllAsRead
+  - removeTask
+  - unreadCount：completed/failed 计数、pending/running 排除、已读排除
+  - metrics：按类型统计、无任务
+  - updateLatestStatus
+  - reset：清空 tasks/latestStatus
+  - 任务上限 20 条裁剪
+- **发现问题**：无新问题
+
+### 第二十批：GlobalModelManager（0% → ?）
+
+- **测试文件**：`Tests/Unit/AI/GlobalModelManagerTests.swift`
+- **测试数量**：19 个
+- **结果**：全部通过 ✅
+- **覆盖场景**：
+  - 初始状态：physicalMemory/remoteManifests/downloadStates/modelStorageUsage/modelCallCounts
+  - activeModelId：默认值 "gemma-4-e2b-it"、setter 持久化
+  - isCloudEscalationEnabled：默认 false、setter 持久化
+  - activeCloudModelId：默认值 "gpt-4o"、setter 持久化
+  - downloadedModelIds：初始空、markModelAsDownloaded/markModelAsRemoved/幂等
+  - isChinaRegionOverride：true/false 不崩溃
+  - reload/refreshLocalModelFiles：不崩溃
+- **发现问题**：无新问题
+
+### 第二十一批：OAuthService / PhoneAuthService（已存在测试）
+
+- **测试文件**：`Tests/Unit/System/AuthServiceTests.swift`（已存在 19 个测试）
+- **结果**：跳过新建，已有测试覆盖 OAuth/密码/短信/自动登录 ✅
+- **覆盖场景**：carrier/github/wechat 策略登录、密码登录、短信验证码、tryAutoLogin
+
+---
+
+## 新发现问题
+
+### #107 TokenManager 硬编码 API 路径
+
+- **序号**：#107
+- **问题描述**：`TokenManager.refreshUserProfile()` 第 155 行硬编码 `"/api/v1/user/profile"`，第 166 行硬编码 `"/api/v1/subscriptions/me"`，未使用 `APIPaths` 常量
+- **黑盒影响性**：无直接影响（路径与 `APIPaths.userProfilePath` 一致），但违反 No Magic Strings 红线
+- **严重程度**：P1
+- **修改方案**：`APIPaths` 新增 `subscriptionsMePath` 常量，`TokenManager` 引用 `APIPaths.userProfilePath` 和 `APIPaths.subscriptionsMePath`
+- **是否解决**：是（`APIPaths.subscriptionsMePath` 新增，`TokenManager` 引用 `APIPaths.userProfilePath`/`APIPaths.subscriptionsMePath`，`methodGET` 替换硬编码 `"GET"`，`Data(_:.utf8)` 替换 `.data(using: .utf8)`）

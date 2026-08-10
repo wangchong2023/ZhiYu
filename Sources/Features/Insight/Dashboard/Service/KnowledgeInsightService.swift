@@ -60,7 +60,7 @@ actor KnowledgeInsightService {
         let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
 
         // 1. 尝试从本地加载有效缓存
-        if let cached = await loadValidCache(pages: pages, forceRefresh: forceRefresh, isTesting: isTesting) {
+        if let cached = await loadValidCache(pages: pages, forceRefresh: forceRefresh) {
             return cached
         }
 
@@ -103,13 +103,13 @@ actor KnowledgeInsightService {
         return recap
     }
 
-    /// 载入满足测试用例状态或数据完整度的今日见解缓存
-    private func loadValidCache(pages: [KnowledgePage], forceRefresh: Bool, isTesting: Bool) async -> DailyRecap? {
+    /// 载入满足数据完整度的今日见解缓存
+    /// 缓存命中需同时满足：非强制刷新 + 缓存存在 + 缓存中的目标页面仍在当前页面列表中
+    /// 最后一条校验避免用户删除页面后仍看到引用已删除页面 ID 的过期洞察
+    private func loadValidCache(pages: [KnowledgePage], forceRefresh: Bool) async -> DailyRecap? {
         guard !forceRefresh, let cached = await loadCachedDailyRecap() else { return nil }
-        if !isTesting || pages.contains(where: { $0.id == cached.targetPageID }) {
-            return cached
-        }
-        return nil
+        guard pages.contains(where: { $0.id == cached.targetPageID }) else { return nil }
+        return cached
     }
 
     /// 筛选当前知识页面，找到 30~90 天内最近修改的页面或冷页面作为主动召回靶标

@@ -15,11 +15,13 @@ final class PromptSecuritySanitizerTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        await MainActor.run { resetPersistentTestState() }
         sanitizer = PromptSecuritySanitizer()
     }
 
     override func tearDown() async throws {
         sanitizer = nil
+        await MainActor.run { resetPersistentTestState() }
         try await super.tearDown()
     }
 

@@ -19,12 +19,12 @@ final class DocumentImageExtractorTests: XCTestCase {
     // MARK: - PDF 图片提取
 
     func testPDFExtractImagesProtocolExists() {
-        let service = MockPDFService()
+        let service = DocumentImageMockPDFService()
         XCTAssertTrue(service.extractImagesCalled == false)
     }
 
     func testPDFExtractImagesDelegatesToService() async {
-        let service = MockPDFService()
+        let service = DocumentImageMockPDFService()
         let images = await service.extractImages(from: URL(fileURLWithPath: "/tmp/test.pdf"))
         XCTAssertEqual(images.count, 3, "Mock 应返回 3 张模拟图片")
         XCTAssertTrue(service.extractImagesCalled)
@@ -121,7 +121,7 @@ final class DocumentImageExtractorTests: XCTestCase {
 
 // MARK: - Mock PDF Service
 
-private final class MockPDFService: PDFServiceProtocol {
+private final class DocumentImageMockPDFService: PDFServiceProtocol {
     var extractImagesCalled = false
 
     func savePDF(data: Data, fileName: String) -> URL? { nil }

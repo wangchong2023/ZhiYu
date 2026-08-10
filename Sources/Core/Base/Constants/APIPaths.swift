@@ -43,6 +43,8 @@ public enum APIPaths {
 
     /// Apple 订阅验证接口路径
     public static let subscriptionAppleVerifyPath = "/api/v1/subscriptions/apple/verify"
+    /// 当前用户订阅信息接口路径
+    public static let subscriptionsMePath = "/api/v1/subscriptions/me"
 
     // MARK: - 外部服务 URL
 

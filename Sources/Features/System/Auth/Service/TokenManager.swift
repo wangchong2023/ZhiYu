@@ -152,8 +152,8 @@ extension AuthService {
     /// 在登录成功或支付激活后调用，保证本地数据与后端同步
     public func refreshUserProfile() async throws {
         let profile: RefreshProfileResponse = try await NetworkClient.shared.request(
-            path: "/api/v1/user/profile",
-            method: "GET",
+            path: APIPaths.userProfilePath,
+            method: AppConstants.Network.methodGET,
             requiresAuth: true
         )
 
@@ -163,17 +163,19 @@ extension AuthService {
 
         do {
             let sub: RefreshSubscriptionResponse = try await NetworkClient.shared.request(
-                path: "/api/v1/subscriptions/me",
-                method: "GET",
+                path: APIPaths.subscriptionsMePath,
+                method: AppConstants.Network.methodGET,
                 requiresAuth: true
             )
             currentPlanKey = sub.planKey ?? PlanKey.free
 
-            if let quotasStr = sub.quotasJson, let data = quotasStr.data(using: .utf8) {
+            if let quotasStr = sub.quotasJson {
+                let data = Data(quotasStr.utf8)
                 parsedQuotas = try? JSONDecoder().decode(RefreshPlanQuotas.self, from: data)
             }
 
-            if let featuresStr = sub.featuresJson, let data = featuresStr.data(using: .utf8) {
+            if let featuresStr = sub.featuresJson {
+                let data = Data(featuresStr.utf8)
                 if let decodedFeatures = try? JSONDecoder().decode([String].self, from: data) {
                     parsedFeatures = decodedFeatures
                 }

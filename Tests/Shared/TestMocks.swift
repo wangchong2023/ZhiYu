@@ -39,7 +39,8 @@ final class MockLogger: LoggerProtocol, @unchecked Sendable {
 // MARK: - Mock LLM Service
 @MainActor
 final class MockLLMService: LLMService, @unchecked Sendable {
-    override var isEnabled: Bool { get { _isEnabled } set { _isEnabled = newValue } }
+    override var isEnabled: Bool { get { _isEnabled } set { _isEnabled = newValue     }
+}
     private var _isEnabled = true
     
     var generateHandler: (@Sendable (String, String) async throws -> String)?
@@ -473,6 +474,10 @@ extension XCTestCase {
 
         ServiceContainer.shared.register(MockFileArchiver() as any FileArchiverProtocol, for: (any FileArchiverProtocol).self)
         ServiceContainer.shared.register(MockExportService() as any ExportServiceProtocol, for: (any ExportServiceProtocol).self)
+        ServiceContainer.shared.register(MockImportFileStore() as any ImportFileStore, for: (any ImportFileStore).self)
+        ServiceContainer.shared.register(MockPDFService() as any PDFServiceProtocol, for: (any PDFServiceProtocol).self)
+        ServiceContainer.shared.register(MockImportRecordRepository() as any ImportRecordRepository, for: (any ImportRecordRepository).self)
+        ServiceContainer.shared.register(AISynthesisService.shared as any AISynthesisServiceProtocol, for: (any AISynthesisServiceProtocol).self)
     }
 }
 
@@ -592,7 +597,8 @@ final class MockExportService: ExportServiceProtocol, @unchecked Sendable {
 
 /// 内存字典实现的 Keychain Mock，绕过 errSecMissingEntitlement -34018 限制
 final class MockKeychainService: KeychainService, @unchecked Sendable {
-    private var store: [String: String] = [:]
+    /// 内部存储（internal 供测试隔离工具重置）
+    private(set) var store: [String: String] = [:]
 
     override func store(key: String, value: String) throws {
         store[key] = value
@@ -626,5 +632,189 @@ final class MockSecurityManager: SecurityManager, @unchecked Sendable {
 
     override func decrypt(_ base64Combined: String) throws -> String {
         base64Combined
+    }
+}
+
+/// 内存版 ImportFileStore Mock，避免测试触碰真实文件系统
+final class MockImportFileStore: ImportFileStore, @unchecked Sendable {
+    /// copyFile 返回的固定路径前缀
+    static let sandboxPrefix = "/tmp/mock_sandbox/"
+
+    func saveContent(_ content: String, category: ImportCategory, ext: String) -> String? {
+        "\(Self.sandboxPrefix)\(UUID().uuidString).\(ext)"
+    }
+
+    func saveData(_ data: Data, category: ImportCategory, ext: String) -> String? {
+        "\(Self.sandboxPrefix)\(UUID().uuidString).\(ext)"
+    }
+
+    func copyFile(at url: URL, category: ImportCategory) -> String? {
+        "\(Self.sandboxPrefix)\(url.lastPathComponent)"
+    }
+}
+
+/// 内存版 PDFService Mock，避免测试触碰真实文件系统与 PDFKit
+final class MockPDFService: PDFServiceProtocol, @unchecked Sendable {
+    /// 内存元数据存储
+    private var documentsInfo: [PDFDocumentInfo] = []
+    /// 内存 PDF 文件名集合（模拟物理文件存在性）
+    private var fileNames: Set<String> = []
+    /// extractText 返回的固定文本
+    var stubExtractedText: String = "stub pdf text"
+    /// extractImages 返回的固定数据
+    var stubExtractedImages: [Data] = []
+
+    func savePDF(data: Data, fileName: String) async -> URL? {
+        fileNames.insert(fileName)
+        return URL(fileURLWithPath: "/tmp/mock_pdf/\(fileName)")
+    }
+
+    func deletePDF(fileName: String) async -> Bool {
+        let existed = fileNames.remove(fileName) != nil
+        return existed
+    }
+
+    func allPDFFilenames() async -> [String] {
+        Array(fileNames)
+    }
+
+    func getPDFURL(fileName: String) -> URL? {
+        guard fileNames.contains(fileName) else { return nil }
+        return URL(fileURLWithPath: "/tmp/mock_pdf/\(fileName)")
+    }
+
+    func extractText(from url: URL) async -> String? {
+        stubExtractedText
+    }
+
+    func extractText(from url: URL, pageRange: Range<Int>) async -> String? {
+        guard !pageRange.isEmpty else { return nil }
+        return stubExtractedText
+    }
+
+    func extractImages(from url: URL) async -> [Data] {
+        stubExtractedImages
+    }
+
+    func saveDocumentsInfo(_ docs: [PDFDocumentInfo]) async {
+        documentsInfo = docs
+    }
+
+    func loadDocumentsInfo() async -> [PDFDocumentInfo] {
+        documentsInfo
+    }
+}
+
+/// 内存版 ImportRecordRepository Mock，避免测试触碰真实数据库
+final class MockImportRecordRepository: ImportRecordRepository, @unchecked Sendable {
+    private var records: [ImportRecord] = []
+
+    func save(_ record: ImportRecord) async throws {
+        records.append(record)
+    }
+
+    func fetchAll(category: String?, limit: Int) async throws -> [ImportRecord] {
+        let filtered = category.map { categoryValue in records.filter { $0.category == categoryValue } } ?? records
+        return Array(filtered.prefix(limit))
+    }
+
+    func fetchByID(_ id: String) async throws -> ImportRecord? {
+        records.first { $0.id == id }
+    }
+
+    func updateStatus(id: String, status: String, completedAt: Date?) async throws {
+        if let idx = records.firstIndex(where: { $0.id == id }) {
+            records[idx].status = status
+            records[idx].completedAt = completedAt
+        }
+    }
+
+    func updatePageID(id: String, pageID: String) async throws {
+        if let idx = records.firstIndex(where: { $0.id == id }) {
+            records[idx].pageID = pageID
+        }
+    }
+
+    func updateRawText(id: String, rawText: String) async throws {
+        if let idx = records.firstIndex(where: { $0.id == id }) {
+            records[idx].rawText = rawText
+        }
+    }
+
+    func updateTags(id: String, tags: String) async throws {
+        if let idx = records.firstIndex(where: { $0.id == id }) {
+            records[idx].tags = tags
+        }
+    }
+
+    func fetchInProgress() async throws -> [ImportRecord] {
+        records.filter { $0.status == "processing" || $0.status == "pending" }
+    }
+
+    func totalStorageSize() async throws -> Int64 {
+        records.reduce(0) { $0 + ($1.fileSize ?? 0) }
+    }
+}
+
+// MARK: - 测试状态隔离工具
+
+/// 集中清理跨测试残留的持久化状态，确保每个测试在干净环境下运行。
+///
+/// 解决以下根因：
+/// 1. `UserDefaultsKeyStore.shared` 使用 `UserDefaults.standard` 单例，跨测试残留
+///    `activeModelId`/`activeCloudModelId`/`isCloudEscalationEnabled` 等值
+/// 2. `LLMConfigStore` 硬编码 `UserDefaults.standard`，`zhiyu_llm_config` 残留
+/// 3. `KeychainService.testOverride` 单例内部 store 残留 apiKey
+extension XCTestCase {
+
+    /// 清理所有跨测试残留的持久化状态（UserDefaults + Keychain mock）
+    ///
+    /// 应在 `setUp` 开头与 `tearDown` 结尾调用，确保测试隔离。
+    @MainActor
+    func resetPersistentTestState() {
+        let defaults = UserDefaults.standard
+
+        // 1. GlobalModelManager 持久化属性
+        defaults.removeObject(forKey: AppConstants.Keys.Storage.activeModelId)
+        defaults.removeObject(forKey: AppConstants.Keys.Storage.activeCloudModelId)
+        defaults.removeObject(forKey: AppConstants.Keys.Storage.isCloudEscalationEnabled)
+
+        // 2. GlobalModelManager 下载模型 ID 列表
+        defaults.removeObject(forKey: "zhiyu_downloaded_model_ids")
+
+        // 3. LLMConfigStore 配置块
+        defaults.removeObject(forKey: "zhiyu_llm_config")
+
+        // 4. LLMConfigStore 各提供商绑定的 baseURL / model（custom 提供商）
+        //    官方提供商的 baseURL/model 由 provider.defaultBaseURL/defaultModel 计算，不持久化
+        for providerKey in ["deepseek", "zhipu", "minimax", "qwen", "openai", "custom"] {
+            defaults.removeObject(forKey: "llm_base_url_\(providerKey)")
+            defaults.removeObject(forKey: "llm_model_\(providerKey)")
+        }
+
+        // 5. Localized.languageMode 持久化值
+        //    setter 内部 Task { @MainActor } 异步写入 UserDefaults，defer 还原 _inMemoryFallback
+        //    但 UserDefaults 残留的 portuguese/japanese 等值会被 loadCachedLanguageMode 读取
+        defaults.removeObject(forKey: AppConstants.Keys.Storage.languageMode)
+
+        // 6. 重置 KeychainService mock 内部 store，清除残留 apiKey
+        //    testOverride 在 setupFullMockEnvironment 中首次设置后不再重建，
+        //    需主动清理其内部存储，避免跨测试 apiKey 残留
+        if let mock = KeychainService.testOverride as? MockKeychainService {
+            mock.resetStore()
+        }
+
+        // 7. 重置 Localized._inMemoryFallback 跨测试残留
+        //    某些测试会设置 Localized.languageMode（如 LocalizationTests.testLanguageSwitchingLogic），
+        //    若未清理会污染后续测试的 locale 依赖行为
+        Localized.resetForTesting()
+    }
+}
+
+/// MockKeychainService 内部 store 重置能力
+extension MockKeychainService {
+    /// 清空内部 store，供测试隔离使用
+    func resetStore() {
+        store.removeAll()
     }
 }

@@ -280,6 +280,10 @@ final class MarkdownProcessor: Sendable {
 
 // MARK: - 正则表达式拓展
 
+// fatalError 审查结论（任务 8）：以下 6 处 fatalError 均为程序员错误 — 正则模式是编译期硬编码字面量，
+// 若初始化失败说明开发者写错了正则语法。NSRegularExpression 静态初始化不能 throws，
+// fatalError 是合理选择。测试期可通过单元测试覆盖正则有效性。
+
 extension NSRegularExpression {
     static let appLinkRegex: NSRegularExpression = {
         do { return try NSRegularExpression(pattern: "(?<!\\\\)\\[\\[(.+?)\\]\\]") } catch { fatalError("MarkdownProcessor: 无效正则 appLinkRegex — \(error)") }

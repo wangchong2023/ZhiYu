@@ -25,6 +25,14 @@ class KnowledgeBaseUITests: XCTestCase {
     /// 被测应用实例
     var app: XCUIApplication!
 
+    /// 子类可 override 此属性，追加 UI 测试专用 launch argument（如路由注入）
+    /// 基类 launch 时会合并这些参数，避免子类重复 launch
+    var extraLaunchArguments: [String] { [] }
+
+    /// 子类可 override 为 true，跳过基类的 vault 自愈逻辑
+    /// 用于通过路由注入直接打开 sheet 的测试（如 --open-ai-settings）
+    var skipVaultAutoSelect: Bool { false }
+
     // MARK: - Setup & Teardown
 
     /// 每个测试用例启动前初始化 XCUIApplication
@@ -40,13 +48,15 @@ class KnowledgeBaseUITests: XCTestCase {
 
         continueAfterFailure = true
         app = XCUIApplication()
-        app.launchArguments = ["--uitesting", "--reset-state", "-ResetUserDefaults", "-UITest_MockData"]
+        app.launchArguments = ["--uitesting", "--reset-state", "-ResetUserDefaults", "-UITest_MockData"] + extraLaunchArguments
         app.launchEnvironment = ["UITesting": "true"]
         app.launch()
 
         // [自适应金库工作台跳转保护] 如果启动后处于冷启动 NotebookHub 笔记本工作台界面（不存在 TabBar）
         // 必须先自动进入第一个可用金库，以展现出应用主界面及底座 TabBar，防止 UI 单测乱点或找不到元素崩溃
         // 注意：先等待 15 秒让 App 充分加载，防止长时间测试后模拟器启动缓慢导致即时判断误判
+        // 跳过条件：子类通过路由注入直接打开 sheet（如 --open-ai-settings），无需进入 vault
+        guard !skipVaultAutoSelect else { return }
         _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
         // 结合 userProfileMenuButton 状态共同判定，防止 XCTest 假阳性缓存误判导致自愈逻辑被跳过
         if !app.tabBars.firstMatch.exists || !app.buttons["userProfileMenuButton"].exists {

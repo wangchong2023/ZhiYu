@@ -16,7 +16,7 @@ import Combine
 /// 大语言模型检索与重排服务 (QueryReranker)
 /// 实现 LLMRetrievalServiceProtocol，负责对提问重写、扩展以及二次精排。
 @MainActor
-final class QueryReranker: LLMRetrievalServiceProtocol, @unchecked Sendable {
+final class QueryReranker: LLMRetrievalServiceProtocol {
     
     // MARK: - 依赖注入
     

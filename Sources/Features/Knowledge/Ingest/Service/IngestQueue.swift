@@ -99,6 +99,3 @@ final class IngestQueue: ObservableObject {
         }
     }
 }
-
-// MARK: - Sendable 合规声明
-extension IngestQueue: @unchecked Sendable {}

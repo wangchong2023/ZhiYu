@@ -129,7 +129,7 @@ struct LocalPluginDetailView: View {
                     ForEach(manifest.permissions, id: \.self) { perm in
                         HStack(spacing: DesignSystem.medium) {
                             Image(systemName: permIcon(for: perm)).foregroundStyle(.appAccent)
-                            Text(L10n.Plugin.permTitle(for: perm)).font(.subheadline).foregroundStyle(.appText)
+                            Text(L10n.Plugin.permTitle(perm)).font(.subheadline).foregroundStyle(.appText)
                         }
                         .padding(DesignSystem.medium).frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))

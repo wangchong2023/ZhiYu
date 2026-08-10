@@ -143,6 +143,11 @@ run_check "UFPCore 纯净化审计" \
     "python3 Tools/ios/audit-arch-ufpcore-purity.py" \
     || exit 1
 
+# 1.11 测试耦合反模式检测（非阻断 WARNING——历史遗留需逐步清理）
+run_check "测试耦合反模式检测" \
+    "python3 Tools/ios/check-code-test-coupling.py" \
+    "false"
+
 # quick 模式在此结束
 if [ "$MODE" = "quick" ]; then
     summary && echo -e "${GREEN}${BOLD}✅ 快速门禁通过！${NC}" && exit 0

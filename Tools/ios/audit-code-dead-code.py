@@ -35,6 +35,18 @@ IGNORE_PATTERNS = [
     r"is declared public, but not used outside",      # 跨模块公开 API
     r"protocol .* conformance is redundant",           # 协议冗余声明
     r"retained, but never used",                       # 保留字段
+    # ── Swift 编译器警告（非 Periphery 死代码）──
+    r"immutable value .* was never used",              # 未使用变量
+    r"initialization of immutable value .* was never used",  # 未使用初始化
+    r"'is' test is always true",                       # 恒真类型检查
+    r"no 'async' operations occur within 'await'",    # 多余 await
+    r"mutation of captured var .* in concurrently-executing",  # 并发捕获可变变量
+    r"reference to captured var .* in concurrently-executing",  # 并发引用捕获变量
+    r"coercion of implicitly unwrappable value",       # 隐式解包强制转换
+    r"result of call to '.*' is unused",               # 未使用返回值
+    r"\[L10n Audit\]",                                 # L10n 审计警告
+    r"main actor-isolated class property .* can not be referenced",  # MainActor 隔离引用
+    r"stored property .* of 'Sendable'-conforming class .* is mutable",  # Sendable 可变属性
 ]
 
 # ── 物理迁移残留检测规则 ──

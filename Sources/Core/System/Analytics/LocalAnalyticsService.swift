@@ -12,7 +12,7 @@ import Foundation
 
 /// 基础分析服务实现：目前仅打印日志，未来可接入端侧埋点或 Firebase
 @MainActor
-final class LocalAnalyticsService: AnalyticsServiceProtocol, @unchecked Sendable {
+final class LocalAnalyticsService: AnalyticsServiceProtocol {
     static let shared = LocalAnalyticsService()
 
     private let logURL: URL

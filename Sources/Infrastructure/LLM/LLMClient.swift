@@ -28,7 +28,7 @@ protocol LLMClientProtocol: Sendable {
 // MARK: - LLM 网络客户端
 
 /// 负责与兼容 OpenAI 协议的 LLM API 进行所有网络通信。
-class LLMClient: LLMClientProtocol, @unchecked Sendable {
+class LLMClient: LLMClientProtocol, Sendable {
 
     // MARK: - Properties
     private let baseURL: String

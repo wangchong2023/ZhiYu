@@ -225,7 +225,10 @@ final class DatabaseManager {
             //    内存数据库已正常工作，用户应看到正常界面而非损坏提示
             self.state = .ready
         } catch {
-            // 如果连内存数据库都无法初始化（极端资源限制），则进行最终崩溃
+            // fatalError 审查结论（任务 8）：不可恢复 — 内存数据库是最后的降级手段，
+            // 若连内存数据库都无法初始化（极端资源限制/系统损坏），应用无法继续运行。
+            // 此场景概率极低，保留 fatalError 确保开发者能从崩溃日志定位问题。
+            Logger.shared.error("[DatabaseManager] 内存回退数据库初始化失败，应用无法继续运行: \(error)", error: error)
             fatalError(" Fatal recovery failure: In-memory fallback database could not be initialized: \(error.localizedDescription)")
         }
     }

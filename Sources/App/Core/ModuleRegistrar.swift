@@ -67,6 +67,9 @@ struct StorageModuleRegistrar: ModuleRegistrar {
         
         // @RR-01: 初始化 SQLite 核心存储层
         // 智宇架构核心：数据库必须在 Storage 模块注册前就绪，否则视为不可恢复的配置错误
+        // fatalError 审查结论（任务 8）：程序员错误 — 启动顺序配置错误，非运行时可恢复故障。
+        // DatabaseManager.shared.setup(at:) 必须在 StorageModuleRegistrar.register 之前完成，
+        // 若 dbWriter 为 nil 说明 AppEnvironment.init() 初始化链条错误，需开发者修复而非降级。
         guard let writer = DatabaseManager.shared.dbWriter else {
             fatalError("[DI] Database initialization failed: dbWriter is nil. Please check the DatabaseManager initialization sequence.")
         }

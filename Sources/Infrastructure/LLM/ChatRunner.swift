@@ -16,7 +16,7 @@ import Combine
 /// 大语言模型对话专属运行器 (ChatRunner)
 /// 实现 LLMChatServiceProtocol，负责多轮对话、流式推理以及通用内容生成。
 @MainActor
-final class ChatRunner: LLMChatServiceProtocol, @unchecked Sendable {
+final class ChatRunner: LLMChatServiceProtocol {
     
     // MARK: - 依赖注入
     

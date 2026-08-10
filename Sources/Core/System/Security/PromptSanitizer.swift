@@ -120,6 +120,6 @@ final class PromptSanitizer: Sendable {
         let cleanContent = sanitizeContext(content)
         
         // 构造由 String Catalog 强类型多语言自适应支持的物理金沙箱
-        return L10n.Security.sandboxInstructions(with: cleanContent)
+        return L10n.Security.sandboxInstructions(cleanContent)
     }
 }

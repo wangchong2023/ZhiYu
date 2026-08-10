@@ -16,7 +16,7 @@ import Combine
 /// 大语言模型知识处理服务 (IngestProcessor)
 /// 实现 LLMKnowledgeServiceProtocol，负责结构化导入、关系发现与内容整理。
 @MainActor
-final class IngestProcessor: LLMKnowledgeServiceProtocol, @unchecked Sendable {
+final class IngestProcessor: LLMKnowledgeServiceProtocol {
     
     // MARK: - 依赖注入
     

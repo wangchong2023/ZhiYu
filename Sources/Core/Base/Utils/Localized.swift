@@ -166,7 +166,15 @@ internal struct Localized {
         let rawValue = keyStore.string(forKey: AppConstants.Keys.Storage.languageMode)
         _inMemoryFallback = rawValue
     }
-    
+
+    /// 重置本地化状态供测试隔离使用。
+    /// 清理 `_inMemoryFallback` 跨测试残留与 Bundle 缓存，确保每个测试从干净状态开始。
+    @MainActor
+    static func resetForTesting() {
+        _inMemoryFallback = nil
+        clearBundleCache()
+    }
+
     /// 清除当前的 Bundle 缓存，迫使下一次翻译查找时执行磁盘装载。
     private static func clearBundleCache() {
         cacheLock.withLock {

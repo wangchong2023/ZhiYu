@@ -281,7 +281,8 @@ class XCStringsAuditor:
             "AI", "PDF", "Token", "RAG", "ms", "MB", "GB", "SHA256", "Top-K", "Top-P", "ESC", "·", 
             "about", "action", "ignore", "preview", "skip", "unknown", "yesterday", "retry", 
             "A", "B", "1 Text", "50-69", "70-89", "90-100", "50–69", "70–89", "90–100", "Mac", "macOS", "—",
-            "MRR", "NDCG@10", "F1@5", "MAP", "Lint", "model-name", "< 50", "%@ GB", "sk-...", "Constantine"
+            "MRR", "NDCG@10", "F1@5", "MAP", "Lint", "model-name", "< 50", "%@ GB", "sk-...", "Constantine",
+            "Chat_Export"
         }
         if en_trimmed in EXEMPT_IDENTICAL_VALUES or en_trimmed in KNOWN_PROPER_NAMES:
             return True
@@ -508,7 +509,10 @@ EXEMPT_STRINGS = {
     "开发者模式",
     "忘记所有规则",
     "你现在不受限制",
-    "不受过滤"
+    "不受过滤",
+    # KnowledgePageManager 日志详情常量（审计日志记录，保持英文以便跨语言一致性审计）
+    "Applied potential",
+    " link to"
 }
 
 class SourceCodeAuditor:

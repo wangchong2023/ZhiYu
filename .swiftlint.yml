@@ -99,6 +99,7 @@ type_name:
     - UI
     - iOSAccessibilityService
     - iOSAppEnvironment
+    - iOSAppEnvironmentTests
     - iOSBackgroundTaskProvider
     - iOSBiometricAuthProvider
     - iOSExportService

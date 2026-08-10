@@ -25,6 +25,20 @@ struct ZhiYuApp: App {
     /// 引导状态持有
     @StateObject private var onboardingService = OnboardingService()
     
+    /// UI 测试路由注入：解析 launch argument，在启动时直接跳转到目标页面
+    /// 避免在视图/服务层散布 `if isUITesting` 分叉渲染
+    private let uiTestRoute: UITestRoute?
+    
+    init() {
+        uiTestRoute = UITestRoute.fromLaunchArguments()
+        if let route = uiTestRoute {
+            let router = AppEnvironment.shared.router
+            Task { @MainActor in
+                route.apply(to: router)
+            }
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -150,6 +164,31 @@ struct AppLauncher {
             }
             
             ZhiYuApp.main()
+        }
+    }
+}
+
+/// UI 测试路由注入枚举 — 在 @main 入口解析 launch argument，直接跳转到目标页面。
+/// 避免在视图/服务层散布 `if isUITesting` 分叉渲染（测试耦合反模式）。
+enum UITestRoute {
+    case aiSettings
+    case settings
+
+    /// 从 CommandLine.arguments 解析 UI 测试路由
+    static func fromLaunchArguments() -> UITestRoute? {
+        if CommandLine.arguments.contains("--open-ai-settings") { return .aiSettings }
+        if CommandLine.arguments.contains("--open-settings") { return .settings }
+        return nil
+    }
+
+    /// 将路由应用到 Router 状态
+    @MainActor
+    func apply(to router: Router) {
+        switch self {
+        case .aiSettings:
+            router.isShowingAISettingsSheet = true
+        case .settings:
+            router.isShowingSettingsSheet = true
         }
     }
 }

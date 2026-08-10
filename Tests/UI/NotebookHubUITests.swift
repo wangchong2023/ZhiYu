@@ -38,7 +38,6 @@ final class NotebookHubUITests: KnowledgeBaseUITests {
         app.launchArguments = ["--uitesting", "--reset-state", "-ResetUserDefaults", "-UITest_MockData"]
         app.launchEnvironment = ["UITesting": "true"]
         app.launch()
-
         // 关键差异：不自动进入 vault。
         // 基类 setUp 在检测到无 TabBar 时会自动点击卡片进入 vault，
         // 但 NotebookHub 测试需要在工作台界面上验证卡片数量和交互。

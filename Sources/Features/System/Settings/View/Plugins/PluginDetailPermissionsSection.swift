@@ -44,10 +44,10 @@ extension PluginDetailView {
                                 .frame(width: DesignSystem.IconSize.small)
 
                             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                                Text(L10n.Plugin.permTitle(for: perm))
+                                Text(L10n.Plugin.permTitle(perm))
                                     .font(.subheadline.weight(.medium))
                                     .foregroundStyle(.appText)
-                                Text(L10n.Plugin.permDesc(for: perm))
+                                Text(L10n.Plugin.permDesc(perm))
                                     .font(.caption)
                                     .foregroundStyle(.appSecondary)
                             }

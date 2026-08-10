@@ -29,7 +29,7 @@ protocol CollaborationDelegate: AnyObject {
 // MARK: - Collaboration Service
 /// 实时多用户协作服务（逻辑编排层）
 @MainActor
-final class CollaborationService: NSObject, ObservableObject, @unchecked Sendable {
+final class CollaborationService: NSObject, ObservableObject {
     @Published var isAvailable: Bool = false
     @Published var isHosting: Bool = false
     @Published var isJoined: Bool = false

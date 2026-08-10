@@ -13,7 +13,7 @@ import UFPCore
 import Combine
 
 @MainActor
-final class ChatService: ChatServiceProtocol, @unchecked Sendable {
+final class ChatService: ChatServiceProtocol {
     static let shared = ChatService()
     
     private let historyStore = ChatHistoryStore()

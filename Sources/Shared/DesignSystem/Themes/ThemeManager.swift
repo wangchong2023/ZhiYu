@@ -97,5 +97,3 @@ class ThemeManager: ObservableObject {
         PageBackgroundView(accentColor: accentColor)
     }
 }
-
-extension ThemeManager: @unchecked Sendable {}

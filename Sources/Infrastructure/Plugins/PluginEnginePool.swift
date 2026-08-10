@@ -51,6 +51,10 @@ final class PluginEnginePool: @unchecked Sendable {
         }
 
         guard let newContext = JSContext() else {
+            // fatalError 审查结论（任务 8）：运行时错误但不可降级 — JSContext 创建失败仅在不支持 JavaScriptCore 的平台发生，
+            // borrowContext() 返回非可选类型，改为 throws/可选会级联影响所有调用方。
+            // 实际触发概率极低（iOS/macOS 均支持 JSContext），保留 fatalError 并记录日志便于诊断。
+            Logger.shared.error("[PluginEnginePool] JSContext 创建失败 — 当前平台可能不支持 JavaScriptCore")
             fatalError("Cannot create JSContext")
         }
 

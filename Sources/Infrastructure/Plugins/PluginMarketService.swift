@@ -452,5 +452,3 @@ private struct FileDownloadTask: Sendable {
     let localURL: URL
     let isRequired: Bool
 }
-
-extension PluginMarketService: @unchecked Sendable {}

@@ -223,6 +223,7 @@ final class IngestLLMServiceDegradationTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         ServiceContainer.shared.reset()
         config = LLMConfigManager()
         // 默认未配置 apiKey 且 isEnabled=false
@@ -233,6 +234,7 @@ final class IngestLLMServiceDegradationTests: XCTestCase {
     override func tearDown() async throws {
         service = nil
         config = nil
+        resetPersistentTestState()
         ServiceContainer.shared.reset()
         try await super.tearDown()
     }

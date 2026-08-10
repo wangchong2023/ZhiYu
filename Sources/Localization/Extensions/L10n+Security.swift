@@ -32,7 +32,7 @@ extension L10n {
         }
         
         /// XML 沙箱包裹参考上下文时的引导词模板（支持 %1$@ 包裹的参考资料）
-        public static func sandboxInstructions(with content: String) -> String {
+        public static func sandboxInstructions(_ content: String) -> String {
             trf("security.sandbox.instructions", content)
         }
 

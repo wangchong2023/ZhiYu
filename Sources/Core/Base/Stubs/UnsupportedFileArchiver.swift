@@ -11,7 +11,7 @@
 import Foundation
 
 /// 不支持的文件归档服务占位符
-public final class UnsupportedFileArchiver: FileArchiverProtocol, @unchecked Sendable {
+public final class UnsupportedFileArchiver: FileArchiverProtocol, Sendable {
     public init() {}
 
     /// zip

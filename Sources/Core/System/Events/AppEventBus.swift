@@ -41,5 +41,3 @@ final class AppEventBus {
         subject.eraseToAnyPublisher()
     }
 }
-
-extension AppEventBus: @unchecked Sendable {}

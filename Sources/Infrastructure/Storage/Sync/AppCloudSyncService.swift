@@ -158,7 +158,4 @@ public final class iCloudSyncService: ObservableObject {
         return try await pullFromCloud()
     }
 }
-
-@MainActor
-extension iCloudSyncService: @unchecked Sendable {}
 #endif // ICLOUD_ENABLED

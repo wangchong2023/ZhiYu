@@ -14,6 +14,16 @@ import XCTest
 
 final class ContentModerationEngineTests: XCTestCase {
 
+    override func setUp() {
+        super.setUp()
+        MainActor.assumeIsolated { resetPersistentTestState() }
+    }
+
+    override func tearDown() {
+        MainActor.assumeIsolated { resetPersistentTestState() }
+        super.tearDown()
+    }
+
     /// 1. 测试“防误杀”正向放行：学术、历史、医学与法律科普文本不应被误杀拦截
     func testContentModerationEngine_EducationalAndHistoricalQueries_NotBlocked() {
         let safeQueries = [

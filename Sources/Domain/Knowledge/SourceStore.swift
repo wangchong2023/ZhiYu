@@ -12,8 +12,9 @@ import Foundation
 import Observation
 
 /// [L1.5] 信源状态存储器
+@MainActor
 @Observable
-public final class SourceStore: @unchecked Sendable {
+public final class SourceStore {
     public static let shared = SourceStore()
     
     /// 当前活跃的信源列表 (对标 NotebookLM 的 Sources 面板)

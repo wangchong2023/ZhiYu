@@ -19,7 +19,7 @@ extension L10n {
 
         /// permTitle — 全显式 case，杜绝动态拼接，所有 key 都可被静态分析检测
         /// - Returns: 本地化权限名称
-        public static func permTitle(for perm: String) -> String {
+        public static func permTitle(_ perm: String) -> String {
             switch perm {
             case "writeContent", "content":
                 return Localized.tr("plugin.perm.content", table: t)
@@ -41,7 +41,7 @@ extension L10n {
 
         /// permDesc — 全显式 case，禁止 default 分支动态构造 key
         /// - Returns: 权限详细说明
-        public static func permDesc(for perm: String) -> String {
+        public static func permDesc(_ perm: String) -> String {
             switch perm {
             case "writeContent", "content":
                 return Plugin.tr("plugin.perm.content.desc")

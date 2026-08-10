@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 final class KeychainServiceTests: XCTestCase {
@@ -16,11 +17,18 @@ final class KeychainServiceTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        // 注册 KeyStoreProtocol mock，让 KeychainService 在模拟器无 entitlements 时
+        // 可降级到 KeyStore 缓存路径（errSecMissingEntitlement -34018 回退）
+        ServiceContainer.shared.register(
+            UserDefaultsKeyStore.shared as any KeyStoreProtocol,
+            for: (any KeyStoreProtocol).self
+        )
         service = KeychainService()
     }
 
     override func tearDown() {
         service = nil
+        ServiceContainer.shared.resetForTesting()
         super.tearDown()
     }
 

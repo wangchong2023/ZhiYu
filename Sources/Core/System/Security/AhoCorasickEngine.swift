@@ -34,7 +34,7 @@ private final class AhoNode: @unchecked Sendable {
 }
 
 /// AC 自动机多模式匹配引擎 (Aho-Corasick Automaton)
-public final class AhoCorasickEngine: @unchecked Sendable {
+public final class AhoCorasickEngine: Sendable {
 
     private let root: AhoNode
     private let isBuilt: Bool

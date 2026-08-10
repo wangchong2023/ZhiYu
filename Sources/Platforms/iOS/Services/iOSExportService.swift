@@ -25,7 +25,7 @@ private enum JSTemplateEscape {
 
 /// iOS 导出服务实现
 @MainActor
-final class iOSExportService: NSObject, ExportServiceProtocol, @unchecked Sendable {
+final class iOSExportService: NSObject, ExportServiceProtocol {
     private var webView: WKWebView?
     private var isExporting = false
     

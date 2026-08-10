@@ -57,7 +57,7 @@ final class SecurityExpertTests: XCTestCase {
         
         XCTAssertTrue(sandboxed.contains("<context_sandbox>"), "必须包含 context_sandbox 开始标签")
         XCTAssertTrue(sandboxed.contains("</context_sandbox>"), "必须包含 context_sandbox 闭合标签")
-        XCTAssertEqual(sandboxed, L10n.Security.sandboxInstructions(with: rawContent), "沙盒包装后的结果必须与本地化沙盒模板完全一致")
+        XCTAssertEqual(sandboxed, L10n.Security.sandboxInstructions(rawContent), "沙盒包装后的结果必须与本地化沙盒模板完全一致")
         XCTAssertTrue(sandboxed.contains(rawContent), "原本的内容必须安全密封在沙盒内部")
     }
     

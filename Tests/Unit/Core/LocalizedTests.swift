@@ -11,6 +11,16 @@ import XCTest
 
 final class LocalizedTests: XCTestCase {
 
+    override func setUp() {
+        super.setUp()
+        MainActor.assumeIsolated { resetPersistentTestState() }
+    }
+
+    override func tearDown() {
+        MainActor.assumeIsolated { resetPersistentTestState() }
+        super.tearDown()
+    }
+
     // MARK: - LanguageMode 枚举
 
     func testLanguageMode_allCases_包含11种语言() {
