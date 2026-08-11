@@ -1306,91 +1306,391 @@
     "auth.carrier.sdkNotInitialized": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Carrier SDK Not Initialized" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "运营商 SDK 未初始化" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "電信 SDK 未初始化" } },
-        "es": { "stringUnit": { "state": "translated", "value": "SDK de operador no inicializado" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "SDK opérateur non initialisé" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "لم يتم تهيئة SDK للمشغل" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "SDK оператора не инициализирован" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "통신사 SDK가 초기화되지 않음" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "通信SDKが初期化されていません" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "SDK da operadora não inicializado" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrier SDK Not Initialized"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运营商 SDK 未初始化"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "電信 SDK 未初始化"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SDK de operador no inicializado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SDK opérateur non initialisé"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم تهيئة SDK للمشغل"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SDK оператора не инициализирован"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "통신사 SDK가 초기화되지 않음"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通信SDKが初期化されていません"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SDK da operadora não inicializado"
+          }
+        }
       }
     },
     "auth.carrier.failed": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Carrier Authentication Failed" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "运营商认证失败" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "電信認證失敗" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Autenticación de operador fallida" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Échec de l'authentification opérateur" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "فشل مصادقة المشغل" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Ошибка аутентификации оператора" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "통신사 인증 실패" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "通信認証に失敗しました" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Autenticação da operadora falhou" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrier Authentication Failed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运营商认证失败"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "電信認證失敗"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autenticación de operador fallida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échec de l'authentification opérateur"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فشل مصادقة المشغل"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ошибка аутентификации оператора"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "통신사 인증 실패"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通信認証に失敗しました"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autenticação da operadora falhou"
+          }
+        }
       }
     },
     "auth.carrier.userCancelled": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "User Cancelled" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "用户已取消" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "使用者已取消" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Usuario cancelado" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Utilisateur annulé" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "ألغى المستخدم" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Пользователь отменил" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "사용자가 취소함" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "ユーザーがキャンセルしました" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Utilizador cancelado" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User Cancelled"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户已取消"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用者已取消"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario cancelado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilisateur annulé"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ألغى المستخدم"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пользователь отменил"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용자가 취소함"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ユーザーがキャンセルしました"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilizador cancelado"
+          }
+        }
       }
     },
     "auth.carrier.noSIM": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No SIM Card" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无 SIM 卡" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "無 SIM 卡" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Sin tarjeta SIM" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Aucune carte SIM" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "لا توجد بطاقة SIM" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Нет SIM-карты" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "SIM 카드 없음" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "SIMカードがありません" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Sem cartão SIM" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No SIM Card"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无 SIM 卡"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無 SIM 卡"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin tarjeta SIM"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune carte SIM"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد بطاقة SIM"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет SIM-карты"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIM 카드 없음"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SIMカードがありません"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem cartão SIM"
+          }
+        }
       }
     },
     "auth.carrier.noNetwork": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No Network" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无网络连接" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "無網路連線" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Sin red" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Aucun réseau" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "لا توجد شبكة" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Нет сети" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "네트워크 없음" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "ネットワークなし" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Sem rede" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Network"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无网络连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無網路連線"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin red"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun réseau"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد شبكة"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сети"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "네트워크 없음"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ネットワークなし"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem rede"
+          }
+        }
       }
     },
     "auth.carrier.timeout": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Timeout" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "超时" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "逾時" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Tiempo agotado" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Délai dépassé" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "انتهاء المهلة" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Тайм-аут" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "시간 초과" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "タイムアウト" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Tempo esgotado" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timeout"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "超时"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "逾時"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo agotado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Délai dépassé"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "انتهاء المهلة"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тайм-аут"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시간 초과"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "タイムアウト"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo esgotado"
+          }
+        }
       }
     },
     "auth.feature.aiSynth": {
@@ -6564,61 +6864,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "数据解析失败"
+            "value": "数据解析失败：%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "資料解析失敗"
+            "value": "資料解析失敗：%@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Decode Failed"
+            "value": "Decode Failed: %@"
           }
         }
       }
@@ -6629,61 +6929,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP 错误"
+            "value": "HTTP 错误（code=%d）"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP 錯誤"
+            "value": "HTTP 錯誤（code=%d）"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "HTTP Error"
+            "value": "HTTP Error (code=%d)"
           }
         }
       }
@@ -6824,61 +7124,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "服务器错误"
+            "value": "服务器错误（code=%d）：%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "伺服器錯誤"
+            "value": "伺服器錯誤（code=%d）：%@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server Error"
+            "value": "Server Error (code=%d): %@"
           }
         }
       }
@@ -6954,61 +7254,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "未授权"
+            "value": "未授权：%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "未授權"
+            "value": "未授權：%@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unauthorized"
+            "value": "Unauthorized: %@"
           }
         }
       }
@@ -7019,61 +7319,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "未知错误"
+            "value": "未知错误：%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "未知錯誤"
+            "value": "未知錯誤：%@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unexpected Error"
+            "value": "Unexpected Error: %@"
           }
         }
       }
