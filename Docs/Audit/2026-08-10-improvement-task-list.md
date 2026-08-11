@@ -120,7 +120,7 @@
 
 **来源**: 审计报告 P1 #3、改进路线图 Phase 2
 **优先级**: P1
-**状态**: 进行中（2026-08-11）— Synthesis View 15 个 + Dashboard View 14 个 + TaskCenter View 7 个快照测试已完成并全部通过；`.snapshotEnvironment()` 统一注入 + CI 门禁已落地
+**状态**: 进行中（2026-08-11）— Synthesis View 15 + Dashboard View 14 + TaskCenter View 7 + MedalWall 5 + Graph 4 + Ingest 8 + Subscription 2 + ModelManager 3 = 58 个快照测试已完成并全部通过；`.snapshotEnvironment()` 统一注入 + CI 门禁已落地
 **估时**: 3-5 天
 **依赖**: 无
 **风险**: 中（快照测试需多设备/多语言/多主题配置）
@@ -154,12 +154,24 @@
 - ✅ 改造全部 4 个快照测试文件（`ComponentSnapshots`/`SynthesisViewSnapshots`/`DashboardViewSnapshots`/`TaskCenterViewSnapshots`）统一使用 `.snapshotEnvironment()`
 - ✅ 新增 CI 门禁 `Tools/ios/check-code-snapshot-environment.py`，禁止快照测试中手动 `.environment()`/`.environmentObject()` 调用，已注册到 `make audit` + pre-push hook（`--strict` 硬阻断）
 - ✅ 46/46 全部快照测试通过
+- ✅ **第二批快照测试**：新增 5 个测试文件，22 个测试用例
+  - `Tests/SnapshotTests/MedalWallViewSnapshots.swift`（5 个测试）：MedalCard 已解锁/未解锁/连接类 + MedalRewardPopup 默认/连接类
+  - `Tests/SnapshotTests/GraphViewSnapshots.swift`（4 个测试）：GraphEmptyStateView + GraphFilterPillsView 无选中/concept/entity
+  - `Tests/SnapshotTests/IngestViewSnapshots.swift`（8 个测试）：ImportRecordCard 链接/文件/无标签/处理中/失败 + IngestTimelineView 提取/向量化/空日志
+  - `Tests/SnapshotTests/SubscriptionViewSnapshots.swift`（2 个测试）：SubscriptionPlanCard 年付/月付
+  - `Tests/SnapshotTests/ModelManagerViewSnapshots.swift`（3 个测试）：ModelCardView 折叠/展开/大参数模型
+- ✅ 68/68 全部快照测试通过（既有 46 + 新增 22）
 
 **验收标准**:
-- [ ] 新增 10+ 个快照测试文件
+- [x] 新增 10+ 个快照测试文件（已新增 8 个：Synthesis/Dashboard/TaskCenter/MedalWall/Graph/Ingest/Subscription/ModelManager）
 - [x] Synthesis View 快照测试文件已新增（15 个测试）
 - [x] Dashboard View 快照测试文件已新增（14 个测试）
 - [x] TaskCenter View 快照测试文件已新增（7 个测试）
+- [x] MedalWall 快照测试文件已新增（5 个测试）
+- [x] Graph 快照测试文件已新增（4 个测试）
+- [x] Ingest 快照测试文件已新增（8 个测试）
+- [x] Subscription 快照测试文件已新增（2 个测试）
+- [x] ModelManager 快照测试文件已新增（3 个测试）
 - [ ] 覆盖核心 View：ChatView/SynthesisView/TaskCenterView/DashboardView/NotebookHubView
 - [x] Synthesis View 已覆盖
 - [x] Dashboard View 子组件已覆盖
