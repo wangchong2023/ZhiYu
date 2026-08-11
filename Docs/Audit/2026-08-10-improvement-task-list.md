@@ -120,7 +120,7 @@
 
 **来源**: 审计报告 P1 #3、改进路线图 Phase 2
 **优先级**: P1
-**状态**: 进行中（2026-08-11）— Synthesis View 15 个快照测试已完成并全部通过
+**状态**: 进行中（2026-08-11）— Synthesis View 15 个 + Dashboard View 13 个快照测试已完成并全部通过
 **估时**: 3-5 天
 **依赖**: 无
 **风险**: 中（快照测试需多设备/多语言/多主题配置）
@@ -141,20 +141,26 @@
 - ✅ 覆盖 6 个 Synthesis View 组件：ErrorStateView/DocRow/ReportView/SlidesView/MindmapView/ControlSheet/TimelineView
 - ✅ 修复 `precision: 0.95` 魔鬼数字（27 处）→ `SnapshotConfig.defaultPrecision` 公共常量
 - ✅ 修复 `SynthesisSlidesView` 快照测试崩溃（注入 `AppStore` 到 Environment，缺陷 S9-18）
-- ✅ 15/15 测试全部通过
+- ✅ 15/15 Synthesis View 测试全部通过
+- ✅ 新增 `Tests/SnapshotTests/DashboardViewSnapshots.swift`（13 个测试用例）
+- ✅ 覆盖 7 个 Dashboard View 组件：PageDetailHeader/PageDetailContentSection/EntityDetailBodyView/ConceptDetailBodyView/ComparisonDetailBodyView/SourceDetailBodyView/PageDetailMetadataSection
+- ✅ 修复 `testPageDetailContentSection_EditingMode` 崩溃（`MarkdownEditorView` 通过 `OCRPickerModifier` 间接依赖 `@Environment(IngestStore.self)`，注入 `IngestStore` 实例修复）
+- ✅ 13/13 Dashboard View 测试全部通过
 
 **验收标准**:
 - [ ] 新增 10+ 个快照测试文件
 - [x] Synthesis View 快照测试文件已新增（15 个测试）
+- [x] Dashboard View 快照测试文件已新增（13 个测试）
 - [ ] 覆盖核心 View：ChatView/SynthesisView/TaskCenterView/DashboardView/NotebookHubView
 - [x] Synthesis View 已覆盖
+- [x] Dashboard View 子组件已覆盖
 - [ ] 快照测试在 iPhone 17 Pro / iPad / Mac 三种设备上通过
 - [ ] View 层覆盖率提升至 30%+
 
 **执行步骤**:
 1. ✅ 盘点 Features 层核心 View（按功能域分组）
 2. ✅ 为 Synthesis View 编写快照测试（15 个测试用例）
-3. ⏳ 为 Dashboard View 编写快照测试
+3. ✅ 为 Dashboard View 编写快照测试（13 个测试用例）
 4. ⏳ 为 TaskCenter View 编写快照测试
 5. ⏳ 配置多设备/多语言/多主题快照
 6. ⏳ 运行快照测试验证
