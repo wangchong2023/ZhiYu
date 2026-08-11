@@ -43,7 +43,9 @@ final class NotebookHubUITests: KnowledgeBaseUITests {
         // 但 NotebookHub 测试需要在工作台界面上验证卡片数量和交互。
         // 如果 app 启动后意外进入了 vault（比如 KeyStore 残留状态），
         // 则通过 returnToNotebookHub() 退出到工作台。
-        if app.tabBars.firstMatch.exists {
+        // 注意：必须等待 TabBar 充分渲染后再判断，避免冷启动时 TabBar
+        // 尚未出现导致误判为"已在 NotebookHub"，随后 TabBar 出现破坏测试。
+        if app.tabBars.firstMatch.waitForExistence(timeout: 10) {
             returnToNotebookHub()
         }
     }

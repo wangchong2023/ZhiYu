@@ -122,12 +122,17 @@ final class AuthUITests: XCTestCase {
         takeScreenshot(name: "TC01_03_HomeView_Loaded")
 
         // 5. 打开个人资料菜单
-        app.buttons["userProfileMenuButton"].tap()
+        // 注意：SwiftUI Menu 展开后内部按钮的 accessibilityIdentifier
+        // 在模拟器负载高时可能延迟出现，需增加等待时间并重试点击
+        let profileButton = app.buttons["userProfileMenuButton"]
+        XCTAssertTrue(profileButton.waitForExistence(timeout: 5), "个人资料菜单按钮应存在")
+        profileButton.tap()
 
         // 6. 等待菜单中的退出按钮（logoutButton 是 accessibilityIdentifier，与本地化无关）
+        // SwiftUI Menu 展开动画在模拟器高负载时可能较慢，给予充足等待时间
         let logoutButton = app.buttons["logoutButton"]
         XCTAssertTrue(
-            logoutButton.waitForExistence(timeout: 5),
+            logoutButton.waitForExistence(timeout: 10),
             "菜单展开后应有退出按钮（accessibilityIdentifier: logoutButton）"
         )
         takeScreenshot(name: "TC01_04_ProfileMenu_Opened")

@@ -25,10 +25,17 @@ extension IngestCoordinator {
     }
 
     /// 批量导入 URL
-    func handleBatchURLImport(_ urls: [URL]) {
+    ///
+    /// 返回值：承载批量导入编排的 `Task` handle，供调用方（主要是测试）等待完成或取消。
+    /// 生产环境调用方可忽略返回值（fire-and-forget 语义不变）。
+    /// 架构修复：此前方法内部启动未结构化 `Task` 且无 handle 返回，导致调用方无法感知
+    /// 异步副作用生命周期；测试环境 `tearDown` 清空 DI 后异步任务继续访问 `@Inject` 属性
+    /// 触发 `fatalError`。返回 Task handle 后测试可 `await task.value` 等待完成再清理 DI。
+    @discardableResult
+    func handleBatchURLImport(_ urls: [URL]) -> Task<Void, Never> {
         guard !isImporting else {
             ToastManager.shared.show(type: .info, message: L10n.Ingest.importCooldown)
-            return
+            return Task { }
         }
         showURLImport = false
         lastImportTime = Date()
@@ -40,7 +47,7 @@ extension IngestCoordinator {
             target: L10n.Ingest.validURLCount(totalCount, totalCount)
         )
 
-        Task {
+        return Task {
             let scraper = WebScraperProcessor()
             let vaultID = VaultService.shared.selectedVaultID?.uuidString
             let store = fileStore
@@ -99,6 +106,11 @@ extension IngestCoordinator {
         vaultID: String?,
         store: any ImportFileStore
     ) async -> Bool {
+        // 防御性 DI 就绪检查：异步任务可能跨 DI 生命周期边界（如测试 tearDown 清空 DI 后
+        // 异步 Task 仍在运行），此时访问 @Inject 属性会触发 fatalError。
+        // 用 typeErasedResolve 非崩溃 API 预检查，未就绪则降级返回 false 并记录日志。
+        guard await isDIReadyForImport(taskID: taskID, urlString: urlString) else { return false }
+
         await MainActor.run {
             TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.fetchingURL): \(urlString)")
         }
@@ -113,16 +125,7 @@ extension IngestCoordinator {
 
         let rawResult = try? await scraper.fetchMarkdown(from: urlString)
         let title = rawResult?.title ?? urlString
-
-        if rawResult != nil {
-            await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Success): \(title)")
-            }
-        } else {
-            await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Failed): \(urlString)")
-            }
-        }
+        await logFetchResult(rawResult: rawResult, title: title, urlString: urlString, taskID: taskID)
 
         // 抓取失败时跳过 OCR（对空内容做 OCR 无意义）
         let ocrText: String
@@ -135,6 +138,51 @@ extension IngestCoordinator {
             ocrText = ""
         }
 
+        return await persistImportedURL(
+            rawResult: rawResult, urlString: urlString, title: title,
+            ocrText: ocrText, recordID: recordID, taskID: taskID,
+            vaultID: vaultID, store: store
+        )
+    }
+
+    /// DI 就绪检查 — 异步任务跨 DI 生命周期边界时防御性降级
+    private func isDIReadyForImport(taskID: UUID, urlString: String) async -> Bool {
+        guard
+            ServiceContainer.shared.typeErasedResolve(AppStore.self) != nil,
+            ServiceContainer.shared.typeErasedResolve((any ImportRecordRepository).self) != nil
+        else {
+            await MainActor.run {
+                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): DI not ready [\(urlString)]")
+            }
+            return false
+        }
+        return true
+    }
+
+    /// 记录网页抓取结果日志
+    private func logFetchResult(rawResult: (markdown: String, title: String)?, title: String, urlString: String, taskID: UUID) async {
+        if rawResult != nil {
+            await MainActor.run {
+                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Success): \(title)")
+            }
+        } else {
+            await MainActor.run {
+                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Failed): \(urlString)")
+            }
+        }
+    }
+
+    /// 持久化导入的 URL 内容并触发 ingest
+    private func persistImportedURL(
+        rawResult: (markdown: String, title: String)?,
+        urlString: String,
+        title: String,
+        ocrText: String,
+        recordID: String,
+        taskID: UUID,
+        vaultID: String?,
+        store: any ImportFileStore
+    ) async -> Bool {
         let rawBody = rawResult.map { "> \(L10n.Ingest.urlSourcePrefix)\(urlString)\n> \(L10n.Ingest.scrapeTimePrefix)\(Date().formatted(date: .numeric, time: .shortened))\n\n\($0.markdown)" }
         let rawMarkdown = rawBody.map { $0 + ocrText }
         let filePath = rawMarkdown.flatMap { store.saveContent($0, category: .link, ext: "md") }

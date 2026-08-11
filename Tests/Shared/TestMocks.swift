@@ -477,6 +477,9 @@ extension XCTestCase {
         ServiceContainer.shared.register(MockImportFileStore() as any ImportFileStore, for: (any ImportFileStore).self)
         ServiceContainer.shared.register(MockPDFService() as any PDFServiceProtocol, for: (any PDFServiceProtocol).self)
         ServiceContainer.shared.register(MockImportRecordRepository() as any ImportRecordRepository, for: (any ImportRecordRepository).self)
+        // 注册 FeedbackRepository 和 DeviceInfoProtocol，防止 FeedbackView 等视图的 @Inject 解析崩溃
+        ServiceContainer.shared.register(MockFeedbackRepository() as any FeedbackRepository, for: (any FeedbackRepository).self)
+        ServiceContainer.shared.register(MockDeviceInfoService() as any DeviceInfoProtocol, for: (any DeviceInfoProtocol).self)
         ServiceContainer.shared.register(AISynthesisService.shared as any AISynthesisServiceProtocol, for: (any AISynthesisServiceProtocol).self)
     }
 }
@@ -702,6 +705,29 @@ final class MockPDFService: PDFServiceProtocol, @unchecked Sendable {
 
     func loadDocumentsInfo() async -> [PDFDocumentInfo] {
         documentsInfo
+    }
+}
+
+/// 内存版 FeedbackRepository Mock，避免测试触碰真实数据库
+final class MockFeedbackRepository: FeedbackRepository, @unchecked Sendable {
+    private var entries: [FeedbackEntry] = []
+
+    func save(_ entry: FeedbackEntry) async throws {
+        entries.append(entry)
+    }
+
+    func fetchAll(limit: Int) async throws -> [FeedbackEntry] {
+        Array(entries.sorted { $0.createdAt > $1.createdAt }.prefix(limit))
+    }
+
+    func fetchByID(id: String) async throws -> FeedbackEntry? {
+        entries.first { $0.id == id }
+    }
+
+    func updateStatus(id: String, status: FeedbackStatus) async throws {
+        if let idx = entries.firstIndex(where: { $0.id == id }) {
+            entries[idx].status = status
+        }
     }
 }
 

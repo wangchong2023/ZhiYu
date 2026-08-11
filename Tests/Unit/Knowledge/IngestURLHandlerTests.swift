@@ -18,17 +18,27 @@ final class IngestURLHandlerTests: XCTestCase {
 
     /// 被测协调器
     private var coordinator: IngestCoordinator!
+    /// 持有 handleBatchURLImport 返回的 Task handle，供 tearDown 等待异步任务完成后再清理 DI
+    /// 架构修复：此前 handleBatchURLImport 内部启动未结构化 Task 无 handle 返回，
+    /// tearDown 的 50ms sleep 不足以等待网络请求完成，DI 清空后异步任务访问 @Inject 触发 fatalError
+    private var pendingImportTask: Task<Void, Never>?
 
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
         _ = AppStore()
         coordinator = IngestCoordinator()
+        pendingImportTask = nil
     }
 
     override func tearDown() async throws {
+        // 先等待 handleBatchURLImport 启动的异步任务完成，再清理 DI
+        // 避免异步任务在 DI 清空后访问 @Inject 属性触发 fatalError
+        if let task = pendingImportTask {
+            await task.value
+            pendingImportTask = nil
+        }
         coordinator = nil
-        try? await Task.sleep(nanoseconds: 50_000_000)
         DatabaseManager.shared.reset()
         ServiceContainer.shared.reset()
         try await super.tearDown()
@@ -65,7 +75,7 @@ final class IngestURLHandlerTests: XCTestCase {
     /// 验证冷却期内调用 handleBatchURLImport 跳过导入
     func testHandleBatchURLImportCooldownSkipsImport() {
         coordinator.lastImportTime = Date()
-        coordinator.handleBatchURLImport([URL(string: "https://example.com")!])
+        pendingImportTask = coordinator.handleBatchURLImport([URL(string: "https://example.com")!])
 
         // 冷却期内应跳过，showURLImport 不被改变（保持默认 false）
         XCTAssertFalse(coordinator.showURLImport, "冷却期内应跳过导入，showURLImport 保持 false")
@@ -75,7 +85,7 @@ final class IngestURLHandlerTests: XCTestCase {
     func testHandleBatchURLImportClosesPanel() {
         coordinator.lastImportTime = .distantPast
         coordinator.showURLImport = true
-        coordinator.handleBatchURLImport([URL(string: "https://example.com")!])
+        pendingImportTask = coordinator.handleBatchURLImport([URL(string: "https://example.com")!])
 
         XCTAssertFalse(coordinator.showURLImport, "导入开始后应关闭 URL 导入面板")
     }
@@ -83,7 +93,7 @@ final class IngestURLHandlerTests: XCTestCase {
     /// 验证空 URL 列表不触发导入（totalCount=0）
     func testHandleBatchURLImportEmptyListNoError() {
         coordinator.lastImportTime = .distantPast
-        coordinator.handleBatchURLImport([])
+        pendingImportTask = coordinator.handleBatchURLImport([])
 
         // 空 list 不应崩溃，showURLImport 仍被关闭
         XCTAssertFalse(coordinator.showURLImport, "空列表应关闭面板")
