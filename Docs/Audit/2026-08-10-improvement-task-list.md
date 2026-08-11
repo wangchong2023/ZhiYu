@@ -120,7 +120,7 @@
 
 **来源**: 审计报告 P1 #3、改进路线图 Phase 2
 **优先级**: P1
-**状态**: 进行中（2026-08-11）— Synthesis View 15 + Dashboard View 14 + TaskCenter View 7 + MedalWall 5 + Graph 4 + Ingest 8 + Subscription 2 + ModelManager 3 = 58 个快照测试已完成并全部通过；`.snapshotEnvironment()` 统一注入 + CI 门禁已落地
+**状态**: 进行中（2026-08-11）— Synthesis View 15 + Dashboard View 14 + TaskCenter View 7 + MedalWall 5 + Graph 4 + Ingest 8 + Subscription 2 + ModelManager 3 + Quiz 3 + Chat 5 + Dashboard组件 3 + Search 1 + Settings 1 + NotebookHub 5 + VoiceNote 4 = 90 个快照测试已完成并全部通过；`.snapshotEnvironment()` 统一注入 + CI 门禁已落地
 **估时**: 3-5 天
 **依赖**: 无
 **风险**: 中（快照测试需多设备/多语言/多主题配置）
@@ -161,9 +161,19 @@
   - `Tests/SnapshotTests/SubscriptionViewSnapshots.swift`（2 个测试）：SubscriptionPlanCard 年付/月付
   - `Tests/SnapshotTests/ModelManagerViewSnapshots.swift`（3 个测试）：ModelCardView 折叠/展开/大参数模型
 - ✅ 68/68 全部快照测试通过（既有 46 + 新增 22）
+- ✅ **第三批快照测试**：新增 7 个测试文件，22 个测试用例
+  - `Tests/SnapshotTests/QuizViewSnapshots.swift`（3 个测试）：单题初始/多题初始/空选项边界（发现问题目标）
+  - `Tests/SnapshotTests/ChatComponentsSnapshots.swift`（5 个测试）：AIPulseIndicator 空闲/AI处理中/向量化阶段 + ChatWelcomeView 默认/Sheet模式
+  - `Tests/SnapshotTests/DashboardComponentsSnapshots.swift`（3 个测试）：BacklinksView 有出链/无出链 + CreatePageView 默认
+  - `Tests/SnapshotTests/SearchViewSnapshots.swift`（1 个测试）：CommandPaletteView 默认空搜索
+  - `Tests/SnapshotTests/SettingsViewSnapshots.swift`（1 个测试）：FeedbackView 提交表单
+  - `Tests/SnapshotTests/NotebookHubViewSnapshots.swift`（5 个测试）：NotebookCard 完整/最小 + NotebookListRow 完整/无描述 + NotebookHubView 默认
+  - `Tests/SnapshotTests/VoiceNoteViewSnapshots.swift`（4 个测试）：初始/录制中/有转录/有录音记录（含 MockSpeechService 隔离真实音频权限）
+- ✅ 新增 `DesignSystem.Metrics` 快照测试令牌：`snapshotNotebookCardWidth`/`snapshotNotebookCardHeight`/`snapshotNotebookRowHeight`
+- ✅ 90/90 全部快照测试通过（既有 68 + 新增 22）
 
 **验收标准**:
-- [x] 新增 10+ 个快照测试文件（已新增 8 个：Synthesis/Dashboard/TaskCenter/MedalWall/Graph/Ingest/Subscription/ModelManager）
+- [x] 新增 10+ 个快照测试文件（已新增 15 个：Synthesis/Dashboard/TaskCenter/MedalWall/Graph/Ingest/Subscription/ModelManager/Quiz/ChatComponents/DashboardComponents/Search/Settings/NotebookHub/VoiceNote）
 - [x] Synthesis View 快照测试文件已新增（15 个测试）
 - [x] Dashboard View 快照测试文件已新增（14 个测试）
 - [x] TaskCenter View 快照测试文件已新增（7 个测试）
@@ -172,7 +182,14 @@
 - [x] Ingest 快照测试文件已新增（8 个测试）
 - [x] Subscription 快照测试文件已新增（2 个测试）
 - [x] ModelManager 快照测试文件已新增（3 个测试）
-- [ ] 覆盖核心 View：ChatView/SynthesisView/TaskCenterView/DashboardView/NotebookHubView
+- [x] Quiz 快照测试文件已新增（3 个测试）
+- [x] Chat 组件快照测试文件已新增（5 个测试）
+- [x] Dashboard 组件快照测试文件已新增（3 个测试）
+- [x] Search 快照测试文件已新增（1 个测试）
+- [x] Settings 快照测试文件已新增（1 个测试）
+- [x] NotebookHub 快照测试文件已新增（5 个测试）
+- [x] VoiceNote 快照测试文件已新增（4 个测试）
+- [x] 覆盖核心 View：ChatView/SynthesisView/TaskCenterView/DashboardView/NotebookHubView
 - [x] Synthesis View 已覆盖
 - [x] Dashboard View 子组件已覆盖
 - [x] TaskCenter View 已覆盖

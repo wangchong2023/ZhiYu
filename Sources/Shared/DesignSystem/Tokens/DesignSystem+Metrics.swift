@@ -151,5 +151,11 @@ extension DesignSystem {
         public static let snapshotPadLandscapeWidth: CGFloat = 1024
         /// 空图像占位尺寸 (10pt)，用于测试空画布安全转换
         public static let snapshotEmptyImageSize: CGFloat = 10
+        /// 笔记本卡片快照宽度 (180pt)
+        public static let snapshotNotebookCardWidth: CGFloat = 180
+        /// 笔记本卡片快照高度 (220pt)
+        public static let snapshotNotebookCardHeight: CGFloat = 220
+        /// 笔记本列表行快照高度 (80pt)
+        public static let snapshotNotebookRowHeight: CGFloat = 80
     }
 }
