@@ -9,6 +9,7 @@
 //  核心职责：属于 Support 模块，提供相关的结构体或工具支撑。
 //
 import SwiftUI
+@testable import ZhiYu
 
 // MARK: - 快照测试公共配置
 
@@ -20,6 +21,49 @@ enum SnapshotConfig {
     /// 用于 `assertSnapshot(of:as:.image(precision:))` 调用，
     /// 统一全项目快照测试的精度标准，避免魔鬼数字重复硬编码。
     static let defaultPrecision: Float = 0.95
+}
+
+// MARK: - 快照测试统一环境注入
+
+extension View {
+
+    /// 快照测试专用：一次性注入项目全部 `@Environment` / `@EnvironmentObject` 依赖。
+    ///
+    /// **背景**：SwiftUI 的 `@Environment` 是隐式依赖，编译器不检查，
+    /// 测试中遗漏注入会导致运行时崩溃（`EnvironmentValues.subscript.getter` → `_assertionFailure`）。
+    /// 此 modifier 统一维护全量依赖列表，杜绝快照测试遗漏注入。
+    ///
+    /// **使用方式**：
+    /// ```swift
+    /// assertSnapshot(of: MyView().snapshotEnvironment(), as: .image(...))
+    /// ```
+    ///
+    /// **维护方式**：新增 `@Environment` 依赖类型时，只需在此处追加一行 `.environment(...)`。
+    /// 全量依赖清单通过 `rg "@Environment\([A-Z].*\.(self|shared)\)" Sources/` 盘点。
+    func snapshotEnvironment() -> some View {
+        self
+            // MARK: @Environment（@Observable 类型，共 15 个）
+            .environment(AppStore())
+            .environment(Router.shared)
+            .environment(VaultService.shared)
+            .environment(AuthService.shared)
+            .environment(AppEnvironment.shared)
+            .environment(SettingsStore())
+            .environment(KnowledgeStore())
+            .environment(IngestStore())
+            .environment(SynthesisStore())
+            .environment(SearchStore())
+            .environment(AIWorkflowStore())
+            .environment(AIInsightStore())
+            .environment(ChatCoordinator())
+            .environment(LLMConfigManager())
+            .environment(NotebookHubViewModel())
+            // MARK: @EnvironmentObject（ObservableObject 类型，共 4 个）
+            .environmentObject(ThemeManager.shared)
+            .environmentObject(OnboardingService.shared)
+            .environmentObject(LLMService.shared)
+            .environmentObject(MedalService.shared)
+    }
 }
 
 /// 轻量级快照测试助手

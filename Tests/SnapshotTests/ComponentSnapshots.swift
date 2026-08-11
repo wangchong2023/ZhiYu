@@ -34,13 +34,12 @@ final class ComponentSnapshots: XCTestCase {
     func testAIPulseIndicator() {
         // 配置 Mock 环境
         setupMockEnvironment()
-        
-        let store = AppStore()
+
         let view = AIPulseIndicator()
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotMediumComponentSize, height: DesignSystem.Metrics.progressHeight)
             .background(Color.appBackground)
-        
+
         // 记录/验证 iOS 布局
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -91,29 +90,13 @@ final class ComponentSnapshots: XCTestCase {
     /// 测试 AI 助手聊天视图 (ChatView) 的视觉一致性
     func testChatView() {
         setupMockEnvironment()
-        let store = AppStore()
-        let router = Router.shared
-        
-        let vaultService = VaultService.shared
-        let authService = AuthService.shared
-        let themeManager = ThemeManager.shared
-        let onboardingService = OnboardingService.shared
-        
-        // 注入单例 LLMService，支持解耦后的 ChatView 正常解析
-        let llm = LLMService.shared
         var selectedTab = AppTab.chat
-        
+
         let view = ChatView(selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 }))
-            .environment(store)
-            .environment(router)
-            .environment(vaultService)
-            .environment(authService)
-            .environmentObject(llm)
-            .environmentObject(themeManager)
-            .environmentObject(onboardingService)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
-        
+
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
     
@@ -126,22 +109,11 @@ final class ComponentSnapshots: XCTestCase {
             content: "# 这是一个测试页面\n用来进行视觉快照比对验证。",
             tags: ["测试", "快照"]
         )
-        let store = AppStore()
-        let aiStore = AIWorkflowStore()
-        let router = Router.shared
-        let authService = AuthService.shared
-        let themeManager = ThemeManager.shared
-        let onboardingService = OnboardingService.shared
 
         let view = SnapshotContainer { namespace in
             PageDetailView(page: page, heroNamespace: namespace)
         }
-        .environment(store)
-        .environment(aiStore)
-        .environment(router)
-        .environment(authService)
-        .environmentObject(themeManager)
-        .environmentObject(onboardingService)
+        .snapshotEnvironment()
         .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
@@ -151,51 +123,31 @@ final class ComponentSnapshots: XCTestCase {
     /// 测试系统设置页 (SettingsView) 的视觉一致性
     func testSettingsView() {
         setupMockEnvironment()
-        let store = AppStore()
-        let router = Router.shared
-        let appEnv = AppEnvironment.shared
-        let settingsStore = SettingsStore()
-        let onboarding = OnboardingService.shared
-        
+
         let view = SettingsView()
-            .environment(store)
-            .environment(router)
-            .environment(appEnv)
-            .environment(settingsStore)
-            .environmentObject(onboarding)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
-        
+
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     /// 测试响应式侧边栏组件的视觉一致性与代码覆盖率提升
     func testAdaptiveSidebarView() {
         setupMockEnvironment()
-        let store = AppStore()
-        let router = Router.shared
-        let authService = AuthService.shared
-        let onboardingService = OnboardingService.shared
-        let themeManager = ThemeManager.shared
         var selectedTab = AppTab.knowledge
         var selection: SidebarSelection? = .tool(.lint)
-        
+
         // 1. 测试 AdaptiveSidebarView 基础渲染
         let rawSidebarView = AdaptiveSidebarView(selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 }))
-        
+
         let view = rawSidebarView
-            .environment(store)
-            .environment(router)
-            .environment(authService)
-            .environment(VaultService.shared)
-            .environmentObject(onboardingService)
-            .environmentObject(themeManager)
-            .environment(AIWorkflowStore())
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotSidebarWidth, height: DesignSystem.Metrics.snapshotPadWidth)
             .background(Color.appBackground)
-        
+
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSidebarWidth, height: DesignSystem.Metrics.snapshotPadWidth)))
-        
+
         // 2. 历经所有 AppTab 的 case 分支，榨干 switch-case 覆盖率死角
         for tab in AppTab.allCases {
             // 注意：不向共享 Router 推入路由 — NavigationStack 在 snapshot 模式下
@@ -212,13 +164,7 @@ final class ComponentSnapshots: XCTestCase {
 
                 return detailView
             }
-            .environment(store)
-            .environment(router)
-            .environment(authService)
-            .environment(VaultService.shared)
-            .environmentObject(onboardingService)
-            .environmentObject(themeManager)
-            .environment(AIWorkflowStore())
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotDetailWidth, height: DesignSystem.Metrics.snapshotPadWidth)
             .background(Color.appBackground)
 

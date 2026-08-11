@@ -160,9 +160,8 @@ final class SynthesisViewSnapshots: XCTestCase {
             size: 100
         )
 
-        let store = AppStore()
         let view = SynthesisReportView(doc: doc)
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
@@ -183,9 +182,8 @@ final class SynthesisViewSnapshots: XCTestCase {
             size: 100
         )
 
-        let store = AppStore()
         let view = SynthesisSlidesView(doc: doc)
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
@@ -201,9 +199,8 @@ final class SynthesisViewSnapshots: XCTestCase {
             size: 50
         )
 
-        let store = AppStore()
         let view = SynthesisSlidesView(doc: doc)
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 

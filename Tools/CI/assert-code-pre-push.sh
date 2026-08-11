@@ -148,6 +148,11 @@ run_check "测试耦合反模式检测" \
     "python3 Tools/ios/check-code-test-coupling.py" \
     "false"
 
+# 1.12 快照测试环境注入检查（阻断——@Environment 遗漏注入会导致运行时崩溃）
+run_check "快照测试环境注入检查" \
+    "python3 Tools/ios/check-code-snapshot-environment.py --strict" \
+    || exit 1
+
 # quick 模式在此结束
 if [ "$MODE" = "quick" ]; then
     summary && echo -e "${GREEN}${BOLD}✅ 快速门禁通过！${NC}" && exit 0

@@ -83,6 +83,7 @@ audit:
 	@python3 Tools/ios/check-arch-opensource-adapters.py
 	@python3 Tools/ios/check-arch-dependency-registry.py
 	@python3 Tools/ios/check-code-absolute-paths.py
+	@python3 Tools/ios/check-code-snapshot-environment.py --strict
 
 lint:
 	@swiftlint --strict

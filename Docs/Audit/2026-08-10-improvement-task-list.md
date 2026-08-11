@@ -120,7 +120,7 @@
 
 **来源**: 审计报告 P1 #3、改进路线图 Phase 2
 **优先级**: P1
-**状态**: 进行中（2026-08-11）— Synthesis View 15 个 + Dashboard View 13 个快照测试已完成并全部通过
+**状态**: 进行中（2026-08-11）— Synthesis View 15 个 + Dashboard View 14 个 + TaskCenter View 7 个快照测试已完成并全部通过；`.snapshotEnvironment()` 统一注入 + CI 门禁已落地
 **估时**: 3-5 天
 **依赖**: 无
 **风险**: 中（快照测试需多设备/多语言/多主题配置）
@@ -142,29 +142,41 @@
 - ✅ 修复 `precision: 0.95` 魔鬼数字（27 处）→ `SnapshotConfig.defaultPrecision` 公共常量
 - ✅ 修复 `SynthesisSlidesView` 快照测试崩溃（注入 `AppStore` 到 Environment，缺陷 S9-18）
 - ✅ 15/15 Synthesis View 测试全部通过
-- ✅ 新增 `Tests/SnapshotTests/DashboardViewSnapshots.swift`（13 个测试用例）
+- ✅ 新增 `Tests/SnapshotTests/DashboardViewSnapshots.swift`（14 个测试用例）
 - ✅ 覆盖 7 个 Dashboard View 组件：PageDetailHeader/PageDetailContentSection/EntityDetailBodyView/ConceptDetailBodyView/ComparisonDetailBodyView/SourceDetailBodyView/PageDetailMetadataSection
 - ✅ 修复 `testPageDetailContentSection_EditingMode` 崩溃（`MarkdownEditorView` 通过 `OCRPickerModifier` 间接依赖 `@Environment(IngestStore.self)`，注入 `IngestStore` 实例修复）
-- ✅ 13/13 Dashboard View 测试全部通过
+- ✅ S9-19 生产侧根治：`MarkdownEditorView` 与 `OCRPickerModifier` 的 `IngestStore` 依赖改为可选降级
+- ✅ 14/14 Dashboard View 测试全部通过
+- ✅ 新增 `Tests/SnapshotTests/TaskCenterViewSnapshots.swift`（7 个测试用例）
+- ✅ 修复 `TaskCenterView` 快照测试崩溃（`appSubPageToolbar` → `VaultBadge`/`UserProfileMenu` 传递依赖 `VaultService`/`AuthService`/`OnboardingService` 未注入）
+- ✅ 7/7 TaskCenter View 测试全部通过
+- ✅ **根治 `@Environment` 遗漏注入问题（缺陷 S9-20）**：新增 `View.snapshotEnvironment()` 统一 modifier，一次性注入项目全部 15 个 `@Environment` + 4 个 `@EnvironmentObject` 依赖
+- ✅ 改造全部 4 个快照测试文件（`ComponentSnapshots`/`SynthesisViewSnapshots`/`DashboardViewSnapshots`/`TaskCenterViewSnapshots`）统一使用 `.snapshotEnvironment()`
+- ✅ 新增 CI 门禁 `Tools/ios/check-code-snapshot-environment.py`，禁止快照测试中手动 `.environment()`/`.environmentObject()` 调用，已注册到 `make audit` + pre-push hook（`--strict` 硬阻断）
+- ✅ 46/46 全部快照测试通过
 
 **验收标准**:
 - [ ] 新增 10+ 个快照测试文件
 - [x] Synthesis View 快照测试文件已新增（15 个测试）
-- [x] Dashboard View 快照测试文件已新增（13 个测试）
+- [x] Dashboard View 快照测试文件已新增（14 个测试）
+- [x] TaskCenter View 快照测试文件已新增（7 个测试）
 - [ ] 覆盖核心 View：ChatView/SynthesisView/TaskCenterView/DashboardView/NotebookHubView
 - [x] Synthesis View 已覆盖
 - [x] Dashboard View 子组件已覆盖
+- [x] TaskCenter View 已覆盖
 - [ ] 快照测试在 iPhone 17 Pro / iPad / Mac 三种设备上通过
 - [ ] View 层覆盖率提升至 30%+
 
 **执行步骤**:
 1. ✅ 盘点 Features 层核心 View（按功能域分组）
 2. ✅ 为 Synthesis View 编写快照测试（15 个测试用例）
-3. ✅ 为 Dashboard View 编写快照测试（13 个测试用例）
-4. ⏳ 为 TaskCenter View 编写快照测试
-5. ⏳ 配置多设备/多语言/多主题快照
-6. ⏳ 运行快照测试验证
-7. ⏳ 生成覆盖率报告确认提升
+3. ✅ 为 Dashboard View 编写快照测试（14 个测试用例）
+4. ✅ 为 TaskCenter View 编写快照测试（7 个测试用例）
+5. ✅ 根治 `@Environment` 遗漏注入：`.snapshotEnvironment()` 统一 modifier + CI 门禁
+6. ⏳ 为 VoiceNote View 等其他 Features 层 View 编写快照测试
+7. ⏳ 配置多设备/多语言/多主题快照
+8. ⏳ 运行快照测试验证
+9. ⏳ 生成覆盖率报告确认提升
 
 ---
 

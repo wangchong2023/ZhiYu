@@ -258,13 +258,12 @@ final class DashboardViewSnapshots: XCTestCase {
     /// @Environment(IngestStore.self)，需注入 IngestStore 实例。
     func testPageDetailContentSection_EditingMode() {
         var page = makeRawPage()
-        let ingestStore = IngestStore()
         let view = PageDetailContentSection(
             page: .constant(page),
             isEditing: .constant(true),
             onLinkTap: { _ in }
         )
-        .environment(ingestStore)
+        .snapshotEnvironment()
         .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
@@ -305,13 +304,12 @@ final class DashboardViewSnapshots: XCTestCase {
     /// 注意：MarkdownRendererView 依赖 @Environment(AppStore.self)，需注入 AppStore
     func testPageDetailContentSection_RawType() {
         let page = makeRawPage()
-        let store = AppStore()
         let view = PageDetailContentSection(
             page: .constant(page),
             isEditing: .constant(false),
             onLinkTap: { _ in }
         )
-        .environment(store)
+        .snapshotEnvironment()
         .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
@@ -324,9 +322,8 @@ final class DashboardViewSnapshots: XCTestCase {
     /// 注意：EntityDetailBodyView 内部使用 MarkdownRendererView，需注入 AppStore
     func testEntityDetailBodyView_WithFrontmatter() {
         let page = makeEntityPage()
-        let store = AppStore()
         let view = EntityDetailBodyView(page: page, onLinkTap: { _ in })
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
@@ -340,9 +337,8 @@ final class DashboardViewSnapshots: XCTestCase {
             pageType: .entity,
             content: "# 纯文本词条\n\n这是不含 frontmatter 的词条内容。"
         )
-        let store = AppStore()
         let view = EntityDetailBodyView(page: page, onLinkTap: { _ in })
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
@@ -355,9 +351,8 @@ final class DashboardViewSnapshots: XCTestCase {
     /// 注意：ConceptDetailBodyView 内部使用 MarkdownRendererView，需注入 AppStore
     func testConceptDetailBodyView_WithFrontmatter() {
         let page = makeConceptPage()
-        let store = AppStore()
         let view = ConceptDetailBodyView(page: page, onLinkTap: { _ in })
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
@@ -370,9 +365,8 @@ final class DashboardViewSnapshots: XCTestCase {
     /// 注意：ComparisonDetailBodyView 内部使用 MarkdownRendererView，需注入 AppStore
     func testComparisonDetailBodyView_WithFrontmatter() {
         let page = makeComparisonPage()
-        let store = AppStore()
         let view = ComparisonDetailBodyView(page: page, onLinkTap: { _ in })
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
@@ -385,9 +379,8 @@ final class DashboardViewSnapshots: XCTestCase {
     /// 注意：SourceDetailBodyView 内部使用 MarkdownRendererView，需注入 AppStore
     func testSourceDetailBodyView_VoiceType() {
         let page = makeSourcePage()
-        let store = AppStore()
         let view = SourceDetailBodyView(page: page, onLinkTap: { _ in })
-            .environment(store)
+            .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
