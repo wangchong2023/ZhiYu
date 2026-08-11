@@ -42,7 +42,7 @@ final class ComponentSnapshots: XCTestCase {
             .background(Color.appBackground)
         
         // 记录/验证 iOS 布局
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
     
     /// 统一配置 Mock 测试环境并控制快照录制模式
@@ -85,7 +85,7 @@ final class ComponentSnapshots: XCTestCase {
         .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
         .background(Color.appBackground)
         
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
     }
     
     /// 测试 AI 助手聊天视图 (ChatView) 的视觉一致性
@@ -114,7 +114,7 @@ final class ComponentSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
         
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
     
     /// 测试知识点详情页 (PageDetailView) 的视觉一致性
@@ -145,7 +145,7 @@ final class ComponentSnapshots: XCTestCase {
         .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     /// 测试系统设置页 (SettingsView) 的视觉一致性
@@ -166,7 +166,7 @@ final class ComponentSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
         
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     /// 测试响应式侧边栏组件的视觉一致性与代码覆盖率提升
@@ -194,7 +194,7 @@ final class ComponentSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotSidebarWidth, height: DesignSystem.Metrics.snapshotPadWidth)
             .background(Color.appBackground)
         
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotSidebarWidth, height: DesignSystem.Metrics.snapshotPadWidth)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSidebarWidth, height: DesignSystem.Metrics.snapshotPadWidth)))
         
         // 2. 历经所有 AppTab 的 case 分支，榨干 switch-case 覆盖率死角
         for tab in AppTab.allCases {
@@ -223,7 +223,7 @@ final class ComponentSnapshots: XCTestCase {
             .background(Color.appBackground)
 
             if tab == .knowledge {
-                assertSnapshot(of: detailViewForTab, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotDetailWidth, height: DesignSystem.Metrics.snapshotPadWidth)))
+                assertSnapshot(of: detailViewForTab, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotDetailWidth, height: DesignSystem.Metrics.snapshotPadWidth)))
             } else {
                 let controller = UIHostingController(rootView: detailViewForTab)
                 _ = controller.view
@@ -251,7 +251,7 @@ final class ComponentSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)
             .background(Color.appBackground)
             
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)))
     }
 
     /// 测试关于页面 (AboutView) 的视觉一致性，验证版本号从 Info.plist 正确渲染
@@ -262,7 +262,7 @@ final class ComponentSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     // MARK: - RAG 质量评估视图快照
@@ -275,7 +275,7 @@ final class ComponentSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     /// 测试 RAGEvaluationView 数据就绪后的完整展示
@@ -298,7 +298,7 @@ final class ComponentSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: 0.95, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
     }
 }
 

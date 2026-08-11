@@ -10,6 +10,18 @@
 //
 import SwiftUI
 
+// MARK: - 快照测试公共配置
+
+/// 快照测试公共配置常量
+enum SnapshotConfig {
+
+    /// 默认像素精度阈值（0.95 = 允许 5% 像素偏差）
+    ///
+    /// 用于 `assertSnapshot(of:as:.image(precision:))` 调用，
+    /// 统一全项目快照测试的精度标准，避免魔鬼数字重复硬编码。
+    static let defaultPrecision: Float = 0.95
+}
+
 /// 轻量级快照测试助手
 /// 原理：将视图渲染为 Image，并对比 Base64 哈希值
 final class SnapshotHelper {

@@ -116,10 +116,11 @@
 
 ## P1 — 高优先级（1-2 周）
 
-### 任务 3：SwiftUI View 层快照测试补强
+### 任务 3：SwiftUI View 层快照测试补强（进行中）
 
 **来源**: 审计报告 P1 #3、改进路线图 Phase 2
 **优先级**: P1
+**状态**: 进行中（2026-08-11）— Synthesis View 15 个快照测试已完成并全部通过
 **估时**: 3-5 天
 **依赖**: 无
 **风险**: 中（快照测试需多设备/多语言/多主题配置）
@@ -134,22 +135,34 @@
 - Features/AI.VoiceNote.View 覆盖率 0%
 - Features/Insight.Dashboard.View 覆盖率 5.8%
 
+**已完成**:
+- ✅ 盘点 42 个无测试 View 文件，识别 13 个高优先级+低依赖目标
+- ✅ 新增 `Tests/SnapshotTests/SynthesisViewSnapshots.swift`（15 个测试用例）
+- ✅ 覆盖 6 个 Synthesis View 组件：ErrorStateView/DocRow/ReportView/SlidesView/MindmapView/ControlSheet/TimelineView
+- ✅ 修复 `precision: 0.95` 魔鬼数字（27 处）→ `SnapshotConfig.defaultPrecision` 公共常量
+- ✅ 修复 `SynthesisSlidesView` 快照测试崩溃（注入 `AppStore` 到 Environment，缺陷 S9-18）
+- ✅ 15/15 测试全部通过
+
 **验收标准**:
 - [ ] 新增 10+ 个快照测试文件
+- [x] Synthesis View 快照测试文件已新增（15 个测试）
 - [ ] 覆盖核心 View：ChatView/SynthesisView/TaskCenterView/DashboardView/NotebookHubView
+- [x] Synthesis View 已覆盖
 - [ ] 快照测试在 iPhone 17 Pro / iPad / Mac 三种设备上通过
 - [ ] View 层覆盖率提升至 30%+
 
 **执行步骤**:
-1. 盘点 Features 层核心 View（按功能域分组）
-2. 为每个核心 View 编写快照测试（使用 `swift-snapshot-testing`）
-3. 配置多设备/多语言/多主题快照
-4. 运行快照测试验证
-5. 生成覆盖率报告确认提升
+1. ✅ 盘点 Features 层核心 View（按功能域分组）
+2. ✅ 为 Synthesis View 编写快照测试（15 个测试用例）
+3. ⏳ 为 Dashboard View 编写快照测试
+4. ⏳ 为 TaskCenter View 编写快照测试
+5. ⏳ 配置多设备/多语言/多主题快照
+6. ⏳ 运行快照测试验证
+7. ⏳ 生成覆盖率报告确认提升
 
 ---
 
-### 任务 4：App/Core 覆盖率提升至 80%
+### 任务 4：App/Core 覆盖率提升至 80% ✅
 
 **来源**: 审计报告 P1 #4、改进路线图 Phase 2
 **优先级**: P1
@@ -166,15 +179,23 @@
 - `Sources/App/Core/AppEnvironment.swift`
 
 **验收标准**:
-- [ ] 新增 3+ 个测试文件
-- [ ] App/Core 覆盖率 ≥ 80%
+- [x] 新增 3+ 个测试文件
+- [ ] App/Core 覆盖率 ≥ 80%（待任务 7 覆盖率报告验证）
 - [ ] 覆盖率报告确认提升
 
 **执行步骤**:
-1. 分析 `ModuleRegistrar`/`ZhiYuApp`/`AppEnvironment` 未覆盖路径
-2. 编写单元测试覆盖启动顺序、DI 注册、环境初始化
-3. 运行测试验证
-4. 生成覆盖率报告确认
+1. ✅ 分析 `ModuleRegistrar`/`ZhiYuApp`/`AppEnvironment` 未覆盖路径
+2. ✅ 编写单元测试覆盖启动顺序、DI 注册、环境初始化
+3. ✅ 运行测试验证（26 个测试全部通过）
+4. ⏳ 生成覆盖率报告确认（任务 7 统一执行）
+
+**完成情况** (2026-08-11):
+- 新增 `Tests/Unit/App/UITestRouteTests.swift`（5 个测试）：验证 `UITestRoute.apply(to:)` 路由注入逻辑
+- 新增 `Tests/Unit/App/ModuleRegistrarTests.swift`（11 个测试）：验证 `CoreModuleRegistrar`/`AppModuleRegistrar` 注册后服务可解析
+- 新增 `Tests/Unit/App/AppEnvironmentTests.swift`（10 个测试）：验证 `AppEnvironment.shared` 单例初始化后的状态完整性
+- `StorageModuleRegistrar` 依赖 `DatabaseManager.shared.dbWriter`（fatalError），不单独测试，由 `AppEnvironment` 集成测试覆盖
+- `ZhiYuApp`/`TestApp`/`AppLauncher` 是 `@main` 入口和 SwiftUI App 结构，难以单元测试，由 UI 测试覆盖
+- `UITestRoute.fromLaunchArguments()` 读进程级 `CommandLine.arguments`，无法单元测试，由 UI 测试 launch argument 覆盖
 
 ---
 
