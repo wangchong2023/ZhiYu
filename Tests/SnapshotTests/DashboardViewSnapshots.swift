@@ -272,6 +272,21 @@ final class DashboardViewSnapshots: XCTestCase {
         _ = page
     }
 
+    /// 测试内容区 — 编辑模式（IngestStore 缺失降级路径）
+    /// 验证 S9-19 根治：IngestStore 未注入时 MarkdownEditorView 不崩溃，OCR 按钮禁用。
+    func testPageDetailContentSection_EditingMode_NoIngestStoreFallback() {
+        let page = makeRawPage()
+        let view = PageDetailContentSection(
+            page: .constant(page),
+            isEditing: .constant(true),
+            onLinkTap: { _ in }
+        )
+        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .background(Color.appBackground)
+
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
+    }
+
     /// 测试内容区 — 空状态
     func testPageDetailContentSection_EmptyState() {
         let page = KnowledgePage(title: "空页面", pageType: .concept, content: "")

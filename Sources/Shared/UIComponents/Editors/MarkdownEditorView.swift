@@ -16,6 +16,9 @@ struct MarkdownEditorView: View {
     @Binding var text: String
     let placeholder: String
     
+    /// 可选依赖：IngestStore 缺失时禁用 OCR 按钮，避免组件崩溃
+    @Environment(IngestStore.self) private var ingestStore: IngestStore?
+    
     @State private var showOCRScanner = false
     
     var body: some View {
@@ -32,7 +35,7 @@ struct MarkdownEditorView: View {
                 .scrollContentBackground(.hidden)
                 .background(Color.clear)
         }
-        .modifier(OCRPickerModifier(isPresented: $showOCRScanner) { recognizedText in
+        .modifier(OCRPickerModifier(ingestStore: ingestStore, isPresented: $showOCRScanner) { recognizedText in
             if !recognizedText.isEmpty {
                 text += "\n\(recognizedText)"
             }
@@ -42,6 +45,7 @@ struct MarkdownEditorView: View {
                 Button(action: { showOCRScanner = true }) {
                     Label(L10n.Ingest.ocr.title, systemImage: DesignSystem.Icons.ocr)
                 }
+                .disabled(ingestStore == nil)
                 
                 Button(action: { text += "**" }) {
                     Image(systemName: DesignSystem.Icons.bold)
@@ -62,7 +66,8 @@ struct MarkdownEditorView: View {
 // MARK: - OCR 辅助
 @MainActor
 struct OCRPickerModifier: ViewModifier {
-    @Environment(IngestStore.self) var ingestStore
+    /// 可选依赖：由父视图传入，nil 时跳过 OCR 调用
+    let ingestStore: IngestStore?
     @Binding var isPresented: Bool
     let onResult: (String) -> Void
     #if !os(watchOS)
@@ -78,6 +83,11 @@ struct OCRPickerModifier: ViewModifier {
             .photosPicker(isPresented: $isPresented, selection: $selectedItem, matching: .images)
             .onChange(of: selectedItem) { _, newValue in
                 guard let newItem = newValue else { return }
+                guard let ingestStore else {
+                    // IngestStore 缺失时清理选择项，不执行 OCR
+                    selectedItem = nil
+                    return
+                }
                 Task {
                     if let data = try? await newItem.loadTransferable(type: Data.self),
                        let image = AppImage(data: data) {
