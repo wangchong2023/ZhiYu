@@ -273,5 +273,7 @@ final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
 // MARK: - GRDB 关联定义
 
 extension KnowledgePage {
+    // GRDB 关联声明要求 static let，且 GRDB 的 belongsTo 返回类型非 Sendable。
+    // 该常量仅在 GRDB 查询构建时使用，无并发变异风险。
     nonisolated(unsafe) static let contentSnapshot = belongsTo(KnowledgePageFTS.self, using: ForeignKey(["id"], to: ["id"]))
 }

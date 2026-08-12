@@ -112,4 +112,14 @@
 ## 备注
 
 - 两个缺陷均为"中"严重程度，不影响核心功能可用性，但影响审计准确性与错误语义清晰度。
+
+## AppModel 迁移根因分析缺陷（2026-08-12）
+
+> 来源：7 个全量测试顺序依赖失败根因分析 → 21 个有状态单例盘点 → 架构级缺陷。
+
+| 序号 | 问题描述 | 黑盒影响性 | 严重程度 | 修改方案 | 是否解决 |
+|------|----------|------------|----------|----------|----------|
+| S9-24 | `PluginEnginePool.returnContext`（`Sources/Infrastructure/Plugins/PluginEnginePool.swift`）缺少 context 健康检查，前序测试（如 `JSPluginPostProcessSizeTests`）在 context 中留下 `TypeError` 异常状态后，`returnContext` 直接回收污染的 context 入池，后续测试复用时继承异常状态 | `PluginEnginePoolTests` 2 个测试失败：`testPoolReusesContextAcrossOperations`/`testPoolMaxSizeEnforced`，池中 context 被 `TypeError` 破坏后后续操作全部失败；生产环境中插件执行异常后池化 context 不自愈 | 中 | `returnContext()` 新增 `1+1` 健康检查，执行异常的 context 丢弃不入池；新增 `resetPoolForTesting()` 测试隔离方法 | 是 |
+| S9-25 | `IngestQueueTests.testQueueProcessingStatusFlow`（`Tests/Integration/IngestQueueTests.swift`）中 `XCTestExpectation` 被多次 fulfill，`IngestQueue.shared` 单例 `isProcessing` 在测试期间多次变为 `false`，XCTest 延迟归因到后续 `VaultLifecycleManagerTests`，掩盖真实失败原因 | `VaultLifecycleManagerTests` 4 个测试失败：`testVaultLifecycleManagerHandlesEmptyVaults`/`testVaultLifecycleManagerHandlesSingleVault`/`testVaultLifecycleManagerHandlesMultipleVaults`/`testVaultLifecycleManagerPreservesVaultOrder`，实际是 `IngestQueueTests` 的 expectation 多次 fulfill 导致 XCTest 框架报错延迟到后续测试 | 中 | `IngestQueueTests` 新增 `tearDown` 清理 `cancellables`（`cancellables.removeAll()` + `store = nil` + `llmService = nil`），避免 `IngestQueue.shared` 单例状态泄漏 | 是 |
+| S9-26 | 21 个 `@MainActor` 有状态单例（`VaultService`/`TaskCenter`/`OnboardingService`/`DatabaseManager`/`ThemeManager`/`TooltipManager`/`ToastManager`/`GlobalModelManager`/`AuthSession`/`StoreKitService`/`IngestQueue`/`PluginRegistry`/`MedalService`/`AppEnvironment`/`LLMService`/`SourceStore`/`SchemaService`/`PencilManager`/`ActivityService`/`VoiceSpeechState`/`Router`）公开 `var` 属性 + `static let shared` 单例模式，`setupFullMockEnvironment()` 仅重置其中 3 个，其余 18 个跨测试残留可变全局状态 | 全量单元测试 7 个失败（测试顺序依赖）：`PluginEnginePoolTests` 2 个 + `VaultLifecycleManagerTests` 4 个 + `NotebookHubViewSnapshots` 1 个，根因全部是单例可变全局状态泄漏；快照测试精度漂移至 `0.870784`（`NotebookHubView` 依赖 `OnboardingService.shared` + `Localized.languageMode` + `VaultService.shared.vaults` 三个全局状态）；测试隔离不可能，`setupFullMockEnvironment()` 无法重置全部 21 个单例 | 高 | 架构级重构：迁移到 `@Observable AppModel` + `@Dependency`（swift-dependencies），21 个单例拆为 `XxxState`（数据）+ `XxxService`（方法），`AppModel` 持有 State，`@Dependency` 注入 Service，测试用 `AppModel.preview()` + `withDependencies { $0 = .mock }` 一行构造确定性状态。详见 `Docs/Architecture/2026-08-12-appmodel-migration-design.md` | 否（架构级缺陷，列入任务 23-30 迁移计划） |
 - 修复时需同步更新对应单元测试，确保行为符合预期。

@@ -77,9 +77,9 @@ final class VaultLifecycleManagerTests: XCTestCase {
         service.createVault(name: "标记测试")
         let id = firstVault().id
         let key = "\(AppConstants.Keys.Storage.seededVaultPrefix)\(id.uuidString)"
-        // keyStore 是 UserDefaultsKeyStore.shared，检查值
-        let value = UserDefaults.standard.bool(forKey: key)
-        XCTAssertTrue(value, "createVault 应设置 seeded 标记")
+        // P2-1 迁移：从 DI 容器获取隔离的 KeyStore 实例检查值，而非 UserDefaults.standard
+        let keyStore = ServiceContainer.shared.resolve((any KeyStoreProtocol).self)
+        XCTAssertTrue(keyStore.bool(forKey: key), "createVault 应设置 seeded 标记")
     }
 
     // MARK: - updateVault

@@ -77,29 +77,54 @@ final class PluginEnginePool: @unchecked Sendable {
     }
 
     /// 归还 JSContext 到池中
+    ///
+    /// 若 context 在借出期间因插件脚本异常（如 TypeError）导致内部状态被破坏，
+    /// 健康检查会失败，该 context 将被丢弃而非归还，避免污染后续复用。
     func returnContext(_ context: JSContext) {
         os_unfair_lock_lock(lockPointer)
         defer { os_unfair_lock_unlock(lockPointer) }
 
-        if availableContexts.count < maxPoolSize {
-            context.exception = nil
-            // 清理非初始全局属性（纯 JS 语法）
-            context.evaluateScript("""
-            (function() {
-                if (globalThis.__zhiyu_initial_keys) {
-                    var keys = Object.getOwnPropertyNames(globalThis);
-                    for (var i = 0; i < keys.length; i++) {
-                        var k = keys[i];
-                        if (!globalThis.__zhiyu_initial_keys.has(k) && k !== '__zhiyu_initial_keys') {
-                            try { delete globalThis[k]; } catch(e) {}
-                        }
+        guard availableContexts.count < maxPoolSize else { return }
+
+        context.exception = nil
+
+        // 健康检查：验证 context 基本算术运算是否正常
+        // 若插件脚本抛出 TypeError 等异常破坏了 context 内部状态，
+        // evaluateScript("1+1") 会返回 0 或 nil，此时丢弃该 context
+        let healthCheck = context.evaluateScript("1 + 1")
+        guard healthCheck?.toNumber().intValue == 2 else {
+            Logger.shared.warning("[PluginEnginePool] 丢弃状态异常的 JSContext（健康检查失败），不归还到池中")
+            return
+        }
+
+        // 清理非初始全局属性（纯 JS 语法）
+        context.evaluateScript("""
+        (function() {
+            if (globalThis.__zhiyu_initial_keys) {
+                var keys = Object.getOwnPropertyNames(globalThis);
+                for (var i = 0; i < keys.length; i++) {
+                    var k = keys[i];
+                    if (!globalThis.__zhiyu_initial_keys.has(k) && k !== '__zhiyu_initial_keys') {
+                        try { delete globalThis[k]; } catch(e) {}
                     }
                 }
-            })();
-            """)
-            availableContexts.append(context)
-        }
+            }
+        })();
+        """)
+        availableContexts.append(context)
     }
+
+    #if DEBUG
+    /// 重置连接池状态（仅供测试隔离使用）
+    ///
+    /// 清空池中所有缓存的 JSContext，确保后续 `borrowContext` 创建全新 context。
+    /// 生产环境不应调用此方法。
+    func resetPoolForTesting() {
+        os_unfair_lock_lock(lockPointer)
+        defer { os_unfair_lock_unlock(lockPointer) }
+        availableContexts.removeAll()
+    }
+    #endif
 }
 
 #endif

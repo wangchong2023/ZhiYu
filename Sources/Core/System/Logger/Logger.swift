@@ -141,6 +141,8 @@ public actor Logger: LoggerProtocol {
     public static let shared = Logger()
     
     private var _logEntries: [LogEntry] = []
+    // Combine Subject 需在 nonisolated 上下文暴露 publisher 供外部订阅。
+    // Subject 本身是线程安全的（Combine 保证），所有 send 调用均在 actor 内部隔离。
     private nonisolated(unsafe) let entriesSubject = CurrentValueSubject<[LogEntry], Never>([])
     
     public nonisolated var logEntriesPublisher: AnyPublisher<[LogEntry], Never> {

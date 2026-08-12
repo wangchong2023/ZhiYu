@@ -19,6 +19,7 @@ class SecurityManager: @unchecked Sendable {
     /// 真实单例（内部持有）
     private static let _shared = SecurityManager()
     /// 测试覆盖：设置非 nil 值后 shared 返回 Mock 实例；在 tearDown 中置 nil 恢复
+    /// 仅在测试套件中写入，生产代码只读；测试串行执行，无并发冲突。
     nonisolated(unsafe) static var testOverride: SecurityManager?
     /// 全局单例入口：测试模式下可被替换
     static var shared: SecurityManager { testOverride ?? _shared }
@@ -44,9 +45,7 @@ class SecurityManager: @unchecked Sendable {
     init() {}
 
     // MARK: - 缓存
-    // 使用 nonisolated(unsafe) 配合 actor 同步访问或确保单线程访问
-    // 此处由于 SecurityManager 是 Sendable 且 singleton，我们采用锁或 MainActor 隔离来保护缓存
-    // 为简化实现且保证性能，我们将缓存操作也放在辅助方法中
+    // 使用 OSAllocatedUnfairLock 保护缓存，确保并发安全
     private let lock = OSAllocatedUnfairLock()
     private var _cachedPassphrase: String?
     private var cachedPassphrase: String? {

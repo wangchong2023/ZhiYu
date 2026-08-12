@@ -10,6 +10,7 @@ import XCTest
 import UFPCore
 @testable import ZhiYu
 
+@MainActor
 final class KeychainServiceTests: XCTestCase {
 
     /// 测试用 KeychainService 实例（不依赖真实 Keychain entitlements）
@@ -19,8 +20,13 @@ final class KeychainServiceTests: XCTestCase {
         super.setUp()
         // 注册 KeyStoreProtocol mock，让 KeychainService 在模拟器无 entitlements 时
         // 可降级到 KeyStore 缓存路径（errSecMissingEntitlement -34018 回退）
+        // P2-1 迁移：创建独立 UserDefaults 实例，避免 .shared 跨测试残留
+        guard let testDefaults = UserDefaults(suiteName: "KeychainServiceTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
+        }
         ServiceContainer.shared.register(
-            UserDefaultsKeyStore.shared as any KeyStoreProtocol,
+            UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol,
             for: (any KeyStoreProtocol).self
         )
         service = KeychainService()

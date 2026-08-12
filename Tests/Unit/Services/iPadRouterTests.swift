@@ -10,6 +10,7 @@
 //
 import XCTest
 import SwiftUI
+import UFPCore
 @testable import ZhiYu
 
 @MainActor
@@ -247,7 +248,12 @@ final class iPadRouterTests: XCTestCase {
         
         // 5. 校验 selectedTab 读写 UserDefaults 落地
         router.selectedTab = .chat
-        let storedTab = UserDefaults.standard.string(forKey: AppConstants.Keys.Storage.selectedTab)
+        // P2-1 迁移：Router 通过 ServiceContainer 解析 KeyStoreProtocol 持久化，
+        //           setupFullMockEnvironment() 注册的是独立 UserDefaults 实例，
+        //           因此从同一 KeyStore 读取，而非 UserDefaults.standard。
+        let storedTab = ServiceContainer.shared
+            .resolveOptional((any KeyStoreProtocol).self)?
+            .string(forKey: AppConstants.Keys.Storage.selectedTab)
         XCTAssertEqual(storedTab, "chat", "selectedTab 在被 didSet 时应该写入到 UserDefaults")
     }
     

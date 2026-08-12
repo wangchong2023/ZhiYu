@@ -303,9 +303,15 @@ extension XCTestCase {
         ServiceContainer.shared.register(iOSHapticService() as any HapticFeedbackProtocol, for: (any HapticFeedbackProtocol).self)
         #endif
         
-        // KeyStore — 键值存储抽象（测试环境使用标准 UserDefaults 实现）
+        // KeyStore — 键值存储抽象（测试环境使用独立 UserDefaults 实例，避免 .standard 跨测试残留）
         // ⚠️ 必须在 Router.shared 之前注册：Router.init() 依赖 KeyStoreProtocol 恢复上次选中的 Tab。
-        ServiceContainer.shared.register(UserDefaultsKeyStore.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
+        // P2-1 迁移：原 UserDefaultsKeyStore.shared 绑定 UserDefaults.standard，导致跨测试状态泄漏。
+        //           改为每次创建独立 suiteName 实例，测试间完全隔离。
+        guard let testDefaults = UserDefaults(suiteName: "ZhiYuTest-\(UUID().uuidString)") else {
+            fatalError("无法创建测试用 UserDefaults")
+        }
+        let testKeyStore = UserDefaultsKeyStore(defaults: testDefaults)
+        ServiceContainer.shared.register(testKeyStore as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
 
         // KeychainService.testOverride — 统一注入 MockKeychainService
         // 绕过 CI 模拟器环境 errSecMissingEntitlement -34018 限制

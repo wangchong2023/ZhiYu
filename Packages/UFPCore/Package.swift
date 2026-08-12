@@ -32,11 +32,19 @@ let package = Package(
             targets: ["UFPCoreTestMocks"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        // swift-dependencies：@Dependency 属性包装器 + DependencyKey 注册体系
+        // 离线优先：本地克隆到 ${OPENSRC_ROOT}/swift-dependencies
+        // 传递依赖：combine-schedulers, swift-clocks, swift-concurrency-extras,
+        //          xctest-dynamic-overlay, swift-syntax（均已本地克隆）
+        .package(path: "../../../../opensrc/swift/swift-dependencies")
+    ],
     targets: [
         .target(
             name: "UFPCore",
-            dependencies: []
+            dependencies: [
+                .product(name: "Dependencies", package: "swift-dependencies")
+            ]
         ),
         .target(
             name: "UFPCoreTestMocks",

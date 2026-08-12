@@ -29,6 +29,13 @@ final class NotebookHubViewSnapshots: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
+        // 重置共享单例状态，避免前序测试修改导致快照精度漂移
+        VaultService.shared.vaults = []
+        VaultService.shared.selectedVaultID = nil
+        OnboardingService.shared.reset()
+        // 重置本地化语言模式，避免 LocalizedTests/LocalizationTests 修改 languageMode
+        // 导致 L10n 文本变化、快照与基准图不一致
+        Localized.languageMode = .auto
     }
 
     // MARK: - 测试数据工厂

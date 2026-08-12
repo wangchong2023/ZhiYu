@@ -163,7 +163,12 @@ final class ChatLLMServiceIntegrationTests: XCTestCase {
         let embeddingManager = EmbeddingManager(repository: vectorRepo)
         ServiceContainer.shared.register(embeddingManager as any EmbeddingProvider, for: (any EmbeddingProvider).self)
 
-        ServiceContainer.shared.register(UserDefaultsKeyStore.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
+        // P2-1 迁移：创建独立 UserDefaults 实例，避免 .shared 跨测试残留
+        guard let testDefaults = UserDefaults(suiteName: "ChatLLMServiceIntegrationTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
+        }
+        ServiceContainer.shared.register(UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
         if KeychainService.testOverride == nil {
             KeychainService.testOverride = MockKeychainService()
         }

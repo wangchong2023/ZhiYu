@@ -17,22 +17,20 @@ final class OnboardingMilestoneTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        // 确保 KeyStoreProtocol 在 DI 中注册，否则 markAsShown() / hasBeenShown 操作无实际存储
-        if ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) == nil {
-            ServiceContainer.shared.register(
-                UserDefaultsKeyStore.shared as any KeyStoreProtocol,
-                for: (any KeyStoreProtocol).self
-            )
+        // P2-1 迁移：每个测试强制注册独立 UserDefaults 实例，确保测试间完全隔离。
+        //           不再用 if ... == nil 条件注册（会复用前一个测试的有状态实例）。
+        guard let testDefaults = UserDefaults(suiteName: "OnboardingMilestoneTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
         }
-        OnboardingMilestone.allCases.forEach {
-            UserDefaults.standard.removeObject(forKey: "onboarding.milestone.\($0.rawValue)")
-        }
+        ServiceContainer.shared.register(
+            UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol,
+            for: (any KeyStoreProtocol).self
+        )
     }
 
     override func tearDown() {
-        OnboardingMilestone.allCases.forEach {
-            UserDefaults.standard.removeObject(forKey: "onboarding.milestone.\($0.rawValue)")
-        }
+        ServiceContainer.shared.resetForTesting()
         super.tearDown()
     }
 

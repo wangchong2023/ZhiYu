@@ -15,8 +15,7 @@ import UFPCore
 
 /// LLM 提供商元数据
 /// 包含 API 端点、默认模型及 UI 展示参数。
-@MainActor
-struct LLMProviderMetadata: Codable {
+struct LLMProviderMetadata: Codable, Sendable {
     /// 唯一标识符
     let id: String
     /// 本地化名称键值
@@ -38,23 +37,24 @@ struct LLMProviderMetadata: Codable {
 }
 
 // MARK: - LLM Registry
-final class LLMRegistry {
-    nonisolated(unsafe) static let shared = LLMRegistry()
-    private var providers: [String: LLMProviderMetadata] = [:]
+final class LLMRegistry: Sendable {
+    static let shared = LLMRegistry()
+    private let providers: [String: LLMProviderMetadata]
 
     private init() {
-        loadProviders()
+        providers = LLMRegistry.loadProviders()
     }
 
-    private func loadProviders() {
+    private static func loadProviders() -> [String: LLMProviderMetadata] {
+        var result: [String: LLMProviderMetadata] = [:]
         // 首先尝试从 Bundle 加载（Apple 推荐方式）
         if let url = Bundle.main.url(forResource: LLMConstants.BundleResource.llmProviders, withExtension: SystemConstants.FileExtension.json),
            let data = try? Data(contentsOf: url),
            let list = try? JSONDecoder().decode([LLMProviderMetadata].self, from: data) {
             for item in list {
-                providers[item.id] = item
+                result[item.id] = item
             }
-            return
+            return result
         }
 
         // 兜底方案：如果 JSON 未能加载（如尚未打包），使用硬编码数据（DeepSeek 第一位）
@@ -68,8 +68,9 @@ final class LLMRegistry {
             .init(id: "custom", nameKey: "llm.provider.custom", baseURL: "", defaultModel: "", suggestedModels: [], apiKeyPrefix: "", apiKeyMinLength: 0, apiKeyPlaceholder: "sk-...", icon: "server.rack")
         ]
         for item in fallbacks {
-            providers[item.id] = item
+            result[item.id] = item
         }
+        return result
     }
 
     /// 根据 ID 获取提供商元数据

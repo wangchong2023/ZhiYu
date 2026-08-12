@@ -27,6 +27,15 @@ final class IngestQueueTests: XCTestCase {
         llmService = MockLLMService()
         cancellables = []
     }
+
+    override func tearDown() async throws {
+        // 清理 Combine 订阅，避免 IngestQueue.shared.isProcessing 变化
+        // 触发已失效的 sink 闭包（跨测试残留导致 XCTestExpectation 多次 fulfill）
+        cancellables.removeAll()
+        store = nil
+        llmService = nil
+        try await super.tearDown()
+    }
     
     /// 模拟异步处理流程中的状态流转
     func testQueueProcessingStatusFlow() async throws {

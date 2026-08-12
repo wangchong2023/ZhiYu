@@ -4,8 +4,9 @@
 > **制定方法**: superpowers（brainstorming → writing-plans → 任务清单）
 > **制定日期**: 2026-08-10
 > **目标**: 将综合评分从 8.65 提升至 9.5（A+）
-> **任务总数**: 22 个任务项（P0×2 + P1×8 + P2×7 + P3×5）
+> **任务总数**: 31 个任务项（P0×2 + P1×17 + P2×7 + P3×5）
 > **扣分项覆盖**: 14/14（100%）
+> **追加任务**: 任务 23-30（AppModel + swift-dependencies 迁移，2026-08-12）+ 任务 31（文档更新，2026-08-12）
 
 ---
 
@@ -18,7 +19,7 @@
 | 3 | 69 处 `@unchecked Sendable` | -0.5 | 任务 9 | ✅ 已完成（降至 48 处） |
 | 4 | 未运行动态安全扫描 | -0.5 | 任务 19 | 待执行 |
 | 5 | 插件校验脚本需手动传入 | -0.2 | 任务 15/20 | 待执行 |
-| 6 | 14 处 `nonisolated(unsafe)` | -0.5 | 任务 10 | 待执行 |
+| 6 | 14 处 `nonisolated(unsafe)` | -0.5 | 任务 10 | ✅ 已完成（降至 5 处） |
 | 7 | 整体覆盖率 36.19% | -1.5 | 任务 7 | ✅ 已完成（提升至 51.86%，+15.67%） |
 | 8 | 12 个测试失败 | -0.5 | 任务 1/2 | ✅ 已完成 |
 | 9 | SwiftUI View 层覆盖率极低 | -0.5 | 任务 3 | ✅ 已完成（90 个快照测试） |
@@ -35,7 +36,7 @@
 | 优先级 | 任务数 | 目标 |
 |--------|--------|------|
 | P0 紧急 | 2 | 修复测试失败 + 覆盖率门禁 |
-| P1 高 | 8 | 覆盖率补强 + 并发安全 + 健壮性 |
+| P1 高 | 17 | 覆盖率补强 + 并发安全 + 健壮性 + AppModel 迁移（任务 23-30）+ 文档更新（任务 31） |
 | P2 中 | 7 | 技术债务清理 + 性能 CI + 分层纯度 |
 | P3 低 | 5 | 自动化补全 + 长期优化 |
 
@@ -461,42 +462,47 @@
 
 ---
 
-### 任务 10：14 处 `nonisolated(unsafe)` 评估
+### 任务 10：14 处 `nonisolated(unsafe)` 评估 ✅
 
 **来源**: 审计报告 P2 #12、改进路线图 Phase 3
 **优先级**: P1
 **估时**: 4 小时
 **依赖**: 无
 **风险**: 中
+**状态**: 已完成（2026-08-11）— `nonisolated(unsafe)` 从 14 处降至 5 处（-64%），低于目标 8 处
 
 **目标**:
 评估 14 处 `nonisolated(unsafe)` 是否可改为 `@MainActor` 或其他安全方案。
 
-**`nonisolated(unsafe)` 清单**:
-| # | 文件 | 用途 | 初判 |
-|---|------|------|------|
-| 1-3 | KeychainService/SecurityManager/SecureEnclaveCryptoService | testOverride 单例 | 可改 `@MainActor` |
-| 4 | AppConfig | configData 静态缓存 | 可改 actor |
-| 5-7 | Localized | cachedBundle/cachedLanguage/_inMemoryFallback | 可改 actor |
-| 8 | ThemeManager | didMigrate | 可改 `@MainActor` |
-| 9 | LLMModels | LLMRegistry.shared | 可改 actor |
-| 10 | Logger | entriesSubject | 可改 actor |
-| 11 | ActivityService | activeActivities | 可改 actor |
-| 12 | FileTextPreviewView | 迭代状态变异 | 保留（文档说明） |
-| 13 | KnowledgePageRepository | contentSnapshot | 保留（GRDB 声明） |
-| 14 | SecurityManager | 注释行 | 非代码 |
+**`nonisolated(unsafe)` 清单与处理结论**:
+| # | 文件 | 用途 | 处理方案 |
+|---|------|------|---------|
+| 1 | KeychainService | testOverride 单例 | 保留 + 添加注释（测试专用，生产只读） |
+| 2 | SecurityManager | testOverride 单例 | 保留 + 添加注释（测试专用，生产只读） |
+| 3 | SecureEnclaveCryptoService | testOverride 单例 | 保留 + 添加注释（测试专用，生产只读） |
+| 4 | AppConfig | configData 静态缓存 | ✅ 改为 `let`（只读，闭包初始化） |
+| 5 | Localized | cachedBundle | ✅ 移除 `nonisolated(unsafe)`，由 `cacheLock` 保护 |
+| 6 | Localized | cachedLanguage | ✅ 移除 `nonisolated(unsafe)`，由 `cacheLock` 保护 |
+| 7 | Localized | _inMemoryFallback | ✅ 移除 `nonisolated(unsafe)`，新增 `fallbackLock` 保护 |
+| 8 | ThemeManager | didMigrate | ✅ 改为 `@MainActor private static var` |
+| 9 | LLMModels | LLMRegistry.shared | ✅ LLMRegistry 标记 Sendable + providers 改 `let` |
+| 10 | Logger | entriesSubject | 保留 + 添加注释（Combine Subject 跨 actor 标准模式） |
+| 11 | ActivityService | activeActivities | ✅ 移除 `nonisolated(unsafe)`，由 `@MainActor` 类级隔离保护 |
+| 12 | FileTextPreviewView | ReferenceBox 注释 | ✅ 修正误导性注释（实际是 `@unchecked Sendable`） |
+| 13 | KnowledgePageRepository | contentSnapshot | 保留 + 添加注释（GRDB 框架约束） |
+| 14 | SecurityManager | 注释行 | ✅ 清理误导性注释 |
 
 **验收标准**:
-- [ ] 14 处 `nonisolated(unsafe)` 逐个评估并记录结论
-- [ ] 可改 `@MainActor` 或 actor 的完成迁移
-- [ ] 保留的添加注释说明理由
-- [ ] `nonisolated(unsafe)` 数量降至 8 以下
+- [x] 14 处 `nonisolated(unsafe)` 逐个评估并记录结论
+- [x] 可改 `@MainActor` 或 actor 的完成迁移
+- [x] 保留的添加注释说明理由
+- [x] `nonisolated(unsafe)` 数量降至 8 以下（实际 5 处）
 
-**执行步骤**:
-1. 逐个评估 14 处 `nonisolated(unsafe)`
-2. 可改 `@MainActor` 或 actor 的完成迁移
-3. 保留的添加注释说明理由
-4. 运行编译验证
+**执行结果**:
+- `nonisolated(unsafe)` 从 14 处降至 5 处（-64%）
+- 5 处保留：3 处 testOverride（测试专用）+ 1 处 Logger entriesSubject（Combine 跨 actor）+ 1 处 GRDB contentSnapshot（框架约束）
+- 编译通过，0 个 SwiftLint violation
+- 4263 个测试，7 个失败（全部是已知测试顺序依赖，非本轮改动引入）
 
 ---
 
@@ -834,6 +840,385 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 3. **门禁验证**: 通过 `Tools/CI/assert-code-pre-push.sh`
 4. **文档更新**: 更新本任务清单状态
 5. **commit 规范**: `fix:`/`test:`/`refactor:`/`perf:`/`docs:` 前缀
+
+---
+
+## AppModel + swift-dependencies 迁移任务（2026-08-12）
+
+> **来源**: 第三次深度审计 → 21 个有状态单例导致测试顺序依赖
+> **设计文档**: `Docs/Architecture/2026-08-12-appmodel-migration-design.md`
+> **方法论**: superpowers（brainstorming → writing-plans → 实施）
+> **方案**: 方案 A — 全量迁移 + CI 门禁（用户确认）
+> **目标**: 根治测试顺序依赖 + CI 防复发 + 综合评分 8.65 → 9.5（A+）
+> **总工时**: 6-8 周
+
+### 迁移阶段总览
+
+| 阶段 | 名称 | 工时 | CI 门禁 | 验证标准 |
+|------|------|------|---------|----------|
+| P1 | 基建搭建 | 3 天 | 无 | `swift-dependencies` 编译通过 + `AppModel`/`DependencyContainer` 骨架就绪 |
+| P2 | 低风险迁移 | 1 周 | CI-1 上线 | 6 个低引用单例迁移完成 + 白名单减少 6 项 |
+| P3 | 中风险迁移 | 1.5 周 | CI-2 上线 | 4 个中引用单例迁移完成 + `@EnvironmentObject` 白名单减少 4 项 |
+| P4 | 已半迁移收尾 | 1 周 | CI-3 上线 | 4 个已半迁移单例收尾 + `UserDefaults.standard` 白名单减少 3 项 |
+| P5 | 高风险迁移 | 2 周 | 无 | 4 个高引用单例迁移完成 + `DatabaseManager` 测试改造 |
+| P6 | 极高风险迁移 | 2 周 | 无 | 3 个极高频单例迁移完成 + 全量测试零失败 |
+| P7 | 收尾清理 | 1 周 | CI-4 上线 | `@Inject`/`ServiceContainer`/`testOverride`/`Localized` 静态缓存全部删除 |
+| P8 | 最终验证 | 3 天 | 全部门禁 | 综合评分 9.5 + 全量测试零失败 + 快照零漂移 |
+
+---
+
+### 任务 23：P1 基建搭建 — 引入 swift-dependencies + AppModel 骨架
+
+**来源**: AppModel 迁移设计 Section 4.2
+**优先级**: P1
+**状态**: 待执行
+**估时**: 3 天
+**依赖**: 无
+**风险**: 低（仅新增骨架，不改动现有代码）
+
+**目标**:
+引入 `swift-dependencies` SPM 依赖，创建 `AppModel` + `DependencyContainer` + `DependencyValues` 注册骨架，`ZhiYuApp` 注入新容器，现有功能不受影响。
+
+**任务分解**:
+| # | 任务 | 文件 | 验证 |
+|---|------|------|------|
+| P1-1 | 新增 `swift-dependencies` SPM 依赖 | `Packages/UFPCore/Package.swift` | `swift build` 通过 |
+| P1-2 | 创建 `AppModel` 骨架 | `Sources/App/AppModel.swift` | 编译通过，21 个 State 占位 |
+| P1-3 | 创建 `DependencyContainer` 骨架 | `Sources/Core/DependencyContainer.swift` | 编译通过，21 个 `@Dependency` 占位 |
+| P1-4 | 创建 `DependencyValues` 注册入口 | `Sources/Core/Dependencies/Register.swift` | 编译通过，21 个 DependencyKey 占位 |
+| P1-5 | `ZhiYuApp` 注入 `AppModel` + `DependencyContainer` | `Sources/App/ZhiYuApp.swift` | App 启动正常 |
+| P1-6 | 创建 `AppModel.preview()` + `DependencyContainer.mock()` | `Sources/App/AppModel.swift` | 快照测试可调用 |
+
+**验收标准**:
+- [ ] `swift build` 编译通过
+- [ ] `make ios` 构建通过
+- [ ] App 启动正常，现有功能不受影响
+- [ ] `AppModel.preview()` 可调用
+- [ ] `DependencyContainer.mock()` 可调用
+- [ ] 现有测试全部通过（无回归）
+
+---
+
+### 任务 24：P2 低风险迁移 — 6 个低引用单例迁移
+
+**来源**: AppModel 迁移设计 Section 4.3
+**优先级**: P1
+**状态**: 待执行
+**估时**: 1 周
+**依赖**: 任务 23（P1 基建）
+**风险**: 低（引用频次 ≤4）
+
+**目标**:
+迁移 6 个低引用单例到 `@Dependency`，上线 CI-1 门禁脚本冻结单例白名单。
+
+**迁移对象**:
+| # | 单例 | Sources/ 引用 | 迁移策略 |
+|---|------|---------------|----------|
+| P2-1 | `ActivityService` | 1 | 最简单，先做 |
+| P2-2 | `AppEnvironment` | 2 | 已半迁移 |
+| P2-3 | `MedalService` | 2 | `@EnvironmentObject` → `@Environment` |
+| P2-4 | `StoreKitService` | 3 | IAP 服务 |
+| P2-5 | `TooltipManager` | 2 | UI 提示状态 |
+| P2-6 | `VoiceSpeechState` | 4 | 语音状态 |
+
+**CI 门禁**:
+- 新增 `Tools/ios/audit-singleton-frozen.py`
+- 新增 `Config/exemptions/singleton_whitelist.yml`（21 项存量白名单）
+- 集成到 `make audit` + pre-push hook `--full` 模式
+- 迁移完成后白名单从 21 项减少到 15 项
+
+**验收标准**:
+- [ ] 6 个单例全部迁移完成
+- [ ] `audit-singleton-frozen.py` 通过（白名单 15 项）
+- [ ] `make test` 全部通过
+- [ ] `make ios` 构建通过
+- [ ] 快照测试零精度漂移
+- [ ] CI-1 门禁集成到 `make audit` + pre-push hook
+
+---
+
+### 任务 25：P3 中风险迁移 — 4 个中引用单例迁移
+
+**来源**: AppModel 迁移设计 Section 4.4
+**优先级**: P1
+**状态**: 待执行
+**估时**: 1.5 周
+**依赖**: 任务 24（P2 低风险迁移）
+**风险**: 中（引用频次 5-10，含 `LLMService` 双重注入）
+
+**目标**:
+迁移 4 个中引用单例到 `@Dependency`，上线 CI-2 门禁脚本禁止 `@EnvironmentObject`。
+
+**迁移对象**:
+| # | 单例 | Sources/ 引用 | 特殊处理 |
+|---|------|---------------|----------|
+| P3-1 | `Router` | 6 | `@Observable` 已有，改 `@Environment` |
+| P3-2 | `GlobalModelManager` | 7 | `activeModelId`/`activeCloudModelId` 状态 |
+| P3-3 | `LLMService` | 7 | `@EnvironmentObject` → `@Environment` + `@Dependency` |
+| P3-4 | `SourceStore` | 7 | 知识源存储 |
+
+**CI 门禁**:
+- 新增 `Tools/ios/audit-environment-object.py`
+- 新增 `Config/exemptions/environment_object_whitelist.yml`（4 项存量白名单）
+- 集成到 `make audit` + pre-push hook `--full` 模式
+- 迁移完成后白名单从 4 项减少到 1 项
+
+**验收标准**:
+- [ ] 4 个单例全部迁移完成
+- [ ] `audit-environment-object.py` 通过（白名单 1 项）
+- [ ] `audit-singleton-frozen.py` 通过（白名单 11 项）
+- [ ] `make test` 全部通过
+- [ ] 快照测试零精度漂移
+- [ ] CI-2 门禁集成到 `make audit` + pre-push hook
+
+---
+
+### 任务 26：P4 已半迁移收尾 — 4 个已半迁移单例收尾
+
+**来源**: AppModel 迁移设计 Section 4.5
+**优先级**: P1
+**状态**: 待执行
+**估时**: 1 周
+**依赖**: 任务 25（P3 中风险迁移）
+**风险**: 低（Sources/ 引用为 0，已通过 `@Environment`/`@EnvironmentObject` 部分迁移）
+
+**目标**:
+收尾 4 个已半迁移单例，上线 CI-3 门禁脚本禁止 `UserDefaults.standard` 直接调用。`NotebookHubViewSnapshots` 精度漂移问题应在此阶段根治。
+
+**迁移对象**:
+| # | 单例 | Sources/ 引用 | 特殊处理 |
+|---|------|---------------|----------|
+| P4-1 | `OnboardingService` | 0 | `@EnvironmentObject` → `@Environment` |
+| P4-2 | `IngestQueue` | 0 | `@Published isProcessing` → `@Observable` |
+| P4-3 | `SchemaService` | 0 | Schema 状态 |
+| P4-4 | `PencilManager` | 0 | Pencil 状态 |
+
+**CI 门禁**:
+- 新增 `Tools/ios/audit-userdefaults-standard.py`
+- 新增 `Config/exemptions/userdefaults_whitelist.yml`（3 项存量白名单）
+- 集成到 `make audit` + pre-push hook `--full` 模式
+- 迁移完成后白名单从 3 项减少到 1 项
+
+**验收标准**:
+- [ ] 4 个单例全部迁移完成
+- [ ] `audit-userdefaults-standard.py` 通过（白名单 1 项）
+- [ ] `audit-environment-object.py` 通过（白名单 0 项，硬阻断）
+- [ ] `audit-singleton-frozen.py` 通过（白名单 7 项）
+- [ ] `make test` 全部通过
+- [ ] `NotebookHubViewSnapshots` 零精度漂移（关键验证点）
+- [ ] CI-3 门禁集成到 `make audit` + pre-push hook
+
+---
+
+### 任务 27：P5 高风险迁移 — 4 个高引用单例迁移
+
+**来源**: AppModel 迁移设计 Section 4.6
+**优先级**: P1
+**状态**: 待执行
+**估时**: 2 周
+**依赖**: 任务 26（P4 已半迁移收尾）
+**风险**: 高（引用频次 15-25，含 `DatabaseManager` 204 次测试引用）
+
+**目标**:
+迁移 4 个高引用单例到 `@Dependency`，`DatabaseManager` 保留 `shared` + `private(set)` + `@testable reset()`。
+
+**迁移对象**:
+| # | 单例 | Sources/ 引用 | Tests/ 引用 | 特殊处理 |
+|---|------|---------------|-------------|----------|
+| P5-1 | `VaultService` | 18 | ~30 | `vaults`/`selectedVaultID` 状态 |
+| P5-2 | `ThemeManager` | 17 | ~20 | `@EnvironmentObject` → `@Environment` |
+| P5-3 | `AuthSession` | 23 | ~40 | 认证状态 |
+| P5-4 | `DatabaseManager` | 21 | **204** | 保留 `shared` + `private(set)` + `@testable reset()` |
+
+**验收标准**:
+- [ ] 4 个单例全部迁移完成
+- [ ] `audit-singleton-frozen.py` 通过（白名单 4 项，含 `DatabaseManager` 例外）
+- [ ] `make test` 全部通过
+- [ ] `DatabaseManager` 测试改造完成（204 次引用迁移）
+- [ ] 快照测试零精度漂移
+
+---
+
+### 任务 28：P6 极高风险迁移 — 3 个极高频单例迁移
+
+**来源**: AppModel 迁移设计 Section 4.7
+**优先级**: P1
+**状态**: 待执行
+**估时**: 2 周
+**依赖**: 任务 27（P5 高风险迁移）
+**风险**: 极高（引用频次 42-76，迁移期间易引入回归）
+
+**目标**:
+迁移 3 个极高频单例到 `@Dependency`，分批替换 + 每批回归测试。
+
+**迁移对象**:
+| # | 单例 | Sources/ 引用 | 特殊处理 |
+|---|------|---------------|----------|
+| P6-1 | `TaskCenter` | 76 | 任务中心，最高频 |
+| P6-2 | `PluginRegistry` | 46 | 插件注册表 |
+| P6-3 | `ToastManager` | 42 | Toast 提示 |
+
+**迁移策略**:
+- 每个单例迁移流程：Day 1-2 拆分 State + Service + 注册 `@Dependency` → Day 3-4 分批替换 `.shared` 引用（每批 10 文件）→ Day 5 回归测试 → Day 6-7 修复回归 + 从白名单删除
+
+**验收标准**:
+- [ ] 3 个单例全部迁移完成
+- [ ] `audit-singleton-frozen.py` 通过（白名单 1 项，仅剩 `DatabaseManager`）
+- [ ] `make test` 全部通过
+- [ ] 全量测试零失败（关键验证点）
+- [ ] 快照测试零精度漂移
+
+---
+
+### 任务 29：P7 收尾清理 — 删除 @Inject + ServiceContainer + testOverride
+
+**来源**: AppModel 迁移设计 Section 4.8
+**优先级**: P1
+**状态**: 待执行
+**估时**: 1 周
+**依赖**: 任务 28（P6 极高风险迁移）
+**风险**: 中（删除基础设施代码，需全量回归测试）
+
+**目标**:
+删除 `@Inject` 属性包装器 + `ServiceContainer` 注册体系 + 3 个 `testOverride` + `Localized` 静态缓存，上线 CI-4 门禁脚本。
+
+**任务分解**:
+| # | 任务 | 文件 | 验证 |
+|---|------|------|------|
+| P7-1 | 删除 `@Inject` 属性包装器 | `Packages/UFPCore/Sources/UFPCore/Base/ServiceContainer.swift` | 全量替换为 `@Dependency` |
+| P7-2 | 删除 `ServiceContainer` 注册代码 | `Sources/App/ModuleRegistrar.swift` | `ModuleRegistrar` 改为 `DependencyRegistrar` |
+| P7-3 | 删除 `setupFullMockEnvironment()` | `Tests/Shared/TestMocks.swift` | 替换为 `withDependencies { $0 = .mock }` |
+| P7-4 | 删除 3 个 `testOverride` | `KeychainService`/`SecurityManager`/`SecureEnclaveCryptoService` | 改为 `@Dependency` |
+| P7-5 | 迁移 `Localized` 静态缓存 | `Sources/Core/Base/Utils/Localized.swift` | `languageMode`/`cachedBundle`/`cachedLanguage` → `@Dependency` |
+| P7-6 | 删除 `resetPersistentTestState()` | `Tests/Shared/TestMocks.swift` | 不再需要手动重置 |
+| P7-7 | 删除 `NotebookHubViewSnapshots.setUp` 手动重置 | `Tests/SnapshotTests/NotebookHubViewSnapshots.swift` | 改为 `AppModel.preview()` |
+| P7-8 | 删除 `IngestQueueTests.tearDown` 手动清理 | `Tests/Integration/IngestQueueTests.swift` | 改为 `withDependencies` |
+
+**CI 门禁**:
+- 新增 `Tools/ios/audit-inject-deprecated.py`
+- 集成到 `make audit` + pre-push hook `--full` 模式
+
+**验收标准**:
+- [ ] `@Inject` 完全删除
+- [ ] `ServiceContainer` 完全删除
+- [ ] `setupFullMockEnvironment()` 完全删除
+- [ ] 3 个 `testOverride` 完全删除
+- [ ] `Localized` 静态缓存迁移完成
+- [ ] `audit-inject-deprecated.py` 通过
+- [ ] `audit-singleton-frozen.py` 通过（白名单 1 项，仅 `DatabaseManager`）
+- [ ] `make test` 全部通过
+- [ ] CI-4 门禁集成到 `make audit` + pre-push hook
+
+---
+
+### 任务 30：P8 最终验证 — 综合评分 9.5 + 全量测试零失败
+
+**来源**: AppModel 迁移设计 Section 4.9
+**优先级**: P1
+**状态**: 待执行
+**估时**: 3 天
+**依赖**: 任务 29（P7 收尾清理）
+**风险**: 低（仅验证，不改动代码）
+
+**目标**:
+全量验证迁移成果，综合评分提升至 9.5（A+），全量测试零失败，快照测试零精度漂移。
+
+**验证清单**:
+| # | 验证项 | 命令 | 期望结果 |
+|---|--------|------|----------|
+| P8-1 | 全量测试 | `make test` | 零失败 |
+| P8-2 | 全量 SPM 单测 | `make test-spm-all` | 零失败 |
+| P8-3 | 架构审计 | `make audit` | 12 项门禁全通过 |
+| P8-4 | iOS 构建 | `make ios` | 通过 |
+| P8-5 | macOS 构建 | `make mac` | 通过 |
+| P8-6 | watchOS 构建 | `make watch` | 通过 |
+| P8-7 | 快照测试 | `make test-snapshots` | 零精度漂移 |
+| P8-8 | 综合评分 | 第四次审计 | 9.5/10 |
+| P8-9 | pre-push hook | `Tools/git/pre-push-hook.sh --full` | 13 项门禁全通过 |
+
+**交付物**:
+- 第四次深度审计报告（综合评分 9.5）
+- 改进任务清单全部完成
+- 缺陷文档 S9-1 ~ S9-26 全部关闭
+- CI 4 个新门禁脚本上线
+- 白名单最终态：仅 `DatabaseManager` 例外
+
+**验收标准**:
+- [ ] 全量测试零失败
+- [ ] 全量 SPM 单测零失败
+- [ ] `make audit` 12 项门禁全通过
+- [ ] iOS/macOS/watchOS 三平台构建通过
+- [ ] 快照测试零精度漂移
+- [ ] 综合评分 9.5/10
+- [ ] pre-push hook 13 项门禁全通过
+
+---
+
+### 任务 31：P8 文档更新 — 架构文档 + AGENTS.md + 开发指南全面同步
+
+**来源**: AppModel 迁移设计（用户要求文档更新）
+**优先级**: P1
+**状态**: 待执行
+**估时**: 2 天
+**依赖**: 任务 29（P7 收尾清理）— 文档需反映迁移后的实际架构
+**风险**: 低（仅文档变更，不改动代码）
+
+**目标**:
+迁移完成后，全面更新项目文档，反映 AppModel + swift-dependencies 新架构，确保文档与代码同步，避免新开发者按旧模式（`@Inject`/`ServiceContainer`/`.shared`）贡献代码。
+
+**任务分解**:
+
+#### 31-1: 架构文档更新
+
+| # | 文档 | 更新内容 |
+|---|------|----------|
+| 1 | `Docs/Architecture/HIGH_LEVEL_DESIGN.md` | L0-L3 分层图更新：DI 容器从 `ServiceContainer` 改为 `DependencyContainer`（swift-dependencies）；状态管理从 21 个单例改为 `AppModel` 集中持有；数据流图更新 |
+| 2 | `Docs/Architecture/LAYERING_L0_L3.md` | 依赖规则更新：`@Dependency` 注册位置（L0 UFPCore）；`AppModel` 位置（L3 App 层）；新增"禁止 `static let shared`"红线 |
+| 3 | `Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md` | 跨平台协议分层更新：`@Dependency` 在跨平台适配中的应用 |
+| 4 | `Docs/Architecture/ARCHITECTURE_4PLUS1.md` | 4+1 视图更新：逻辑视图（AppModel 状态树）、实现视图（DependencyContainer）、进程视图（DI 解析流程） |
+
+#### 31-2: AGENTS.md 更新
+
+| # | 章节 | 更新内容 |
+|---|------|----------|
+| 1 | 关键模式 → 启动顺序与依赖注入 | 删除 `ServiceContainer` 注册链条，改为 `DependencyContainer` + `DependencyValues` 注册；初始化顺序更新 |
+| 2 | 关键模式 → `@Inject` 属性包装器 | 删除整节，替换为 `@Dependency` 属性包装器说明 + `withDependencies` 测试覆盖用法 |
+| 3 | 关键模式 → 模块化注册 | `ModuleRegistrar` 改为 `DependencyRegistrar`；四个注册器按序执行说明更新 |
+| 4 | 关键模式 → 跨层协议定义位置 | DI 双注册规则更新：`DependencyKey` 注册（live/test/preview 三态） |
+| 5 | 四大强制质量红线 | 红线 3（架构分层）新增："禁止 `static let shared` 可变单例（白名单仅 `DatabaseManager` 基础设施层例外）" |
+| 6 | 项目结构 → 关键路径 | 新增 `Sources/App/AppModel.swift`、`Sources/Core/DependencyContainer.swift`、`Sources/Core/Dependencies/Register.swift` |
+
+#### 31-3: 开发指南更新
+
+| # | 文档 | 更新内容 |
+|---|------|----------|
+| 1 | `Docs/Guides/swift-coding-style.md` | 新增"依赖注入规范"章节：`@Dependency` 使用规范、禁止 `@Inject`/`.shared`/`@EnvironmentObject`；新增"状态管理规范"章节：`AppModel` + `XxxState` 拆分模式 |
+| 2 | `Docs/Guides/implementation-patterns.md` | 新增"AppModel 模式"章节：State + Service 拆分、`preview()` 工厂、`@Environment` 注入；更新"测试模式"章节：`withDependencies { $0 = .mock }` 替代 `setupFullMockEnvironment()` |
+| 3 | `Docs/Guides/config-conventions.md` | 新增 `Config/exemptions/singleton_whitelist.yml` 配置规范；新增 4 个 CI 门禁脚本配置说明 |
+| 4 | `Docs/Guides/srp-file-organization.md` | 新增"State + Service 拆分"文件组织规范：`XxxState.swift`（数据）+ `XxxService.swift`（方法）+ `XxxDependencyKey.swift`（注册） |
+
+#### 31-4: CI/CD 文档更新
+
+| # | 文档 | 更新内容 |
+|---|------|----------|
+| 1 | `Docs/Architecture/CI_CD_WORKFLOW.md` | CI 8 大门禁 → 12 大门禁；新增 4 个门禁脚本说明（`audit-singleton-frozen.py`/`audit-environment-object.py`/`audit-userdefaults-standard.py`/`audit-inject-deprecated.py`）；白名单管理流程 |
+
+#### 31-5: 测试指南更新
+
+| # | 文档 | 更新内容 |
+|---|------|----------|
+| 1 | `Docs/Testing/UNIT_TEST_GUIDE.md` | 新增"依赖注入测试"章节：`withDependencies { $0 = .mock }` 用法、`AppModel.preview()` 快照测试用法；删除 `setupFullMockEnvironment()`/`resetPersistentTestState()` 说明 |
+| 2 | `Docs/Testing/TEST_CASES.md` | 新增 AppModel 迁移相关测试用例（State 隔离、DependencyKey 三态、白名单收缩验证） |
+
+**验收标准**:
+- [ ] 4 个架构文档全部更新（HIGH_LEVEL_DESIGN/LAYERING_L0_L3/PLATFORM_PROTOCOL/4PLUS1）
+- [ ] AGENTS.md 6 个章节全部更新
+- [ ] 4 个开发指南全部更新（swift-coding-style/implementation-patterns/config-conventions/srp-file-organization）
+- [ ] CI_CD_WORKFLOW.md 更新（12 大门禁）
+- [ ] 2 个测试文档全部更新（UNIT_TEST_GUIDE/TEST_CASES）
+- [ ] 文档中无残留 `@Inject`/`ServiceContainer`/`setupFullMockEnvironment()` 旧模式引用
+- [ ] `make audit` 通过（含文档漂移检测，如有）
+- [ ] 文档变更通过 code review
 
 ---
 

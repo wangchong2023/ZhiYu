@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 @MainActor
@@ -16,15 +17,16 @@ final class OnboardingServiceTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        // 清理持久化状态，避免前序测试写入的 hasCompletedOnboarding 跨测试泄漏
-        // （OnboardingService.init 会从共享 KeyStore 读取该值）
-        UserDefaults.standard.removeObject(forKey: AppConstants.Keys.Storage.hasCompletedOnboarding)
+        // P2-1 迁移：强制清理 DI，确保 testInit_DI未就绪 测试语义正确。
+        //           OnboardingService.init 从 ServiceContainer 解析 KeyStoreProtocol，
+        //           若前序测试注册了有状态的 KeyStore，hasCompletedOnboarding 会继承残留。
+        ServiceContainer.shared.resetForTesting()
         service = OnboardingService()
     }
 
     override func tearDown() {
         service = nil
-        UserDefaults.standard.removeObject(forKey: AppConstants.Keys.Storage.hasCompletedOnboarding)
+        ServiceContainer.shared.resetForTesting()
         super.tearDown()
     }
 

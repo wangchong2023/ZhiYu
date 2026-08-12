@@ -10,6 +10,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 /// 系统设置与偏好存储单元测试类（SettingsStoreTests）
@@ -53,29 +54,34 @@ final class SettingsStoreTests: XCTestCase {
     
     /// 测试核心业务：验证修改各项设置属性时，数据能够正确且安全地持久化写入 UserDefaults 存储引擎中。
     func testSettingsModificationAndPersistence() {
+        // P2-1 迁移：SettingsStore 通过 ServiceContainer 解析 KeyStoreProtocol，
+        //           setupFullMockEnvironment() 注册的是独立 UserDefaults 实例，
+        //           因此断言应从同一 KeyStore 读取，而非 UserDefaults.standard。
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+
         // 1. 修改并验证隐私与安全设置
         settingsStore.isPrivacyModeEnabled = false
         XCTAssertFalse(settingsStore.isPrivacyModeEnabled, "修改隐私模式状态应当成功")
-        XCTAssertFalse(UserDefaults.standard.bool(forKey: AppConstants.Keys.Storage.isPrivacyModeEnabled), "UserDefaults 中的对应值也应当同步为 false")
-        
+        XCTAssertFalse(keyStore?.bool(forKey: AppConstants.Keys.Storage.isPrivacyModeEnabled) ?? true, "UserDefaults 中的对应值也应当同步为 false")
+
         settingsStore.isBiometricEnabled = false
         XCTAssertFalse(settingsStore.isBiometricEnabled, "修改生物识别状态应当成功")
-        XCTAssertFalse(UserDefaults.standard.bool(forKey: AppConstants.Keys.Storage.isBiometricEnabled), "UserDefaults 中的对应值也应当同步为 false")
-        
+        XCTAssertFalse(keyStore?.bool(forKey: AppConstants.Keys.Storage.isBiometricEnabled) ?? true, "UserDefaults 中的对应值也应当同步为 false")
+
         // 2. 修改并验证 iCloud 偏好
         settingsStore.iCloudConflictResolution = "keepLocal"
         XCTAssertEqual(settingsStore.iCloudConflictResolution, "keepLocal", "修改 iCloud 冲突策略应当成功")
-        XCTAssertEqual(UserDefaults.standard.string(forKey: AppConstants.Keys.Storage.iCloudConflictResolution), "keepLocal", "UserDefaults 中的冲突策略值应当同步写入")
-        
+        XCTAssertEqual(keyStore?.string(forKey: AppConstants.Keys.Storage.iCloudConflictResolution), "keepLocal", "UserDefaults 中的冲突策略值应当同步写入")
+
         settingsStore.iCloudAutoSync = true
         XCTAssertTrue(settingsStore.iCloudAutoSync, "启用 iCloud 自动同步应当成功")
-        XCTAssertTrue(UserDefaults.standard.bool(forKey: AppConstants.Keys.Storage.iCloudAutoSync), "UserDefaults 中的自动同步值应当同步写入")
-        
+        XCTAssertTrue(keyStore?.bool(forKey: AppConstants.Keys.Storage.iCloudAutoSync) ?? false, "UserDefaults 中的自动同步值应当同步写入")
+
         // 3. 修改并验证协作信息
         settingsStore.collabUsername = "Antigravity Architect"
         XCTAssertEqual(settingsStore.collabUsername, "Antigravity Architect", "修改协作用户名应当成功")
-        XCTAssertEqual(UserDefaults.standard.string(forKey: AppConstants.Keys.Storage.userName), "Antigravity Architect", "UserDefaults 中的协作用户名应当同步写入")
-        
+        XCTAssertEqual(keyStore?.string(forKey: AppConstants.Keys.Storage.userName), "Antigravity Architect", "UserDefaults 中的协作用户名应当同步写入")
+
         // 4. 修改调试配置
         settingsStore.showPerfDashboard = true
         XCTAssertTrue(settingsStore.showPerfDashboard, "启用性能面板状态应当成功")

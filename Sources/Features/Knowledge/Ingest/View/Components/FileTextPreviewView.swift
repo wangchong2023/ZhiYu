@@ -22,7 +22,8 @@ public struct FileChunkSequence: AsyncSequence, Sendable {
         let filePath: String
         let chunkSize: Int
         
-        // 标记为 nonisolated(unsafe) 以支持迭代状态变异，内部在 Task.detached 等异步线程执行，天然规避并发冲突
+        // 迭代器状态通过 ReferenceBox 装箱（@unchecked Sendable），
+        // 支持 mutating next() 方法跨 await 边界变异；AsyncIterator 实例单线程使用，无并发冲突。
         private let currentOffset = ReferenceBox<UInt64>(0)
         private let isEOF = ReferenceBox<Bool>(false)
         

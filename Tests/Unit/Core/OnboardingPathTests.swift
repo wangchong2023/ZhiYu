@@ -7,10 +7,22 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 @MainActor
 final class OnboardingPathTests: XCTestCase {
+
+    override func setUp() {
+        super.setUp()
+        // P2-1 迁移：强制清理 DI，确保 hasBeenShown 在 DI 未就绪时返回 false
+        ServiceContainer.shared.resetForTesting()
+    }
+
+    override func tearDown() {
+        ServiceContainer.shared.resetForTesting()
+        super.tearDown()
+    }
 
     // MARK: - OnboardingPath 枚举
 

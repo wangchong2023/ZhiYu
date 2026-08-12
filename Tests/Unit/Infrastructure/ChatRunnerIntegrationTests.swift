@@ -149,7 +149,12 @@ final class ChatRunnerIntegrationTests: XCTestCase {
         ServiceContainer.shared.register(embeddingManager as any EmbeddingProvider, for: (any EmbeddingProvider).self)
 
         // 注册 PromptSanitizer 依赖的 KeyStore（避免 Keychain 调用）
-        ServiceContainer.shared.register(UserDefaultsKeyStore.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
+        // P2-1 迁移：创建独立 UserDefaults 实例，避免 .shared 跨测试残留
+        guard let testDefaults = UserDefaults(suiteName: "ChatRunnerIntegrationTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
+        }
+        ServiceContainer.shared.register(UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
         if KeychainService.testOverride == nil {
             KeychainService.testOverride = MockKeychainService()
         }

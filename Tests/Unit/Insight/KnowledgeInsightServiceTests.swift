@@ -33,7 +33,12 @@ final class KnowledgeInsightServiceTests: XCTestCase {
         setupFullMockEnvironment()
         service = KnowledgeInsightService()
         llm = MockLLMService()
-        keyStore = UserDefaultsKeyStore.shared
+        // P2-1 迁移：创建独立 UserDefaults 实例，避免 .shared 跨测试残留
+        guard let testDefaults = UserDefaults(suiteName: "KnowledgeInsightTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
+        }
+        keyStore = UserDefaultsKeyStore(defaults: testDefaults)
         // 清理可能残留的缓存
         clearInsightCaches()
     }

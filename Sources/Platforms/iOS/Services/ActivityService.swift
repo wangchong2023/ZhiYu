@@ -21,7 +21,8 @@ final class ActivityService: LiveActivityProtocol {
 
     #if os(iOS) && !targetEnvironment(macCatalyst)
     /// 任务 ID 与实时活动的映射表，支持多任务并发展示
-    nonisolated(unsafe) private var activeActivities: [UUID: Activity<AIProcessingAttributes>] = [:]
+    /// `Activity` 非 Sendable，但所有访问均在 `@MainActor` 上下文，由类级隔离保证线程安全。
+    private var activeActivities: [UUID: Activity<AIProcessingAttributes>] = [:]
     #endif
 
     private init() {}

@@ -17,6 +17,12 @@ struct ZhiYuApp: App {
     
     /// 状态持有：主题管理器
     @StateObject private var themeManager = ThemeManager.shared
+
+    /// 状态持有：ZhiYuAppModel — 集中持有 21 个单例的 UI 可观察状态（P1 骨架，P2-P6 逐步填充）
+    @State private var appModel = ZhiYuAppModel()
+
+    /// 状态持有：DependencyContainer — 集中持有 21 个服务依赖（P1 骨架，P2-P6 逐步填充）
+    @State private var dependencies = DependencyContainer()
     
     /// 状态持有：闪屏页可见性
     /// UI 测试时直接设为 true 跳过闪屏，避免遮挡 AuthView 导致 agreementCheckbox 等元素超时
@@ -58,6 +64,9 @@ struct ZhiYuApp: App {
                     .environment(appEnv.router)
                     .environment(appEnv.ingestStore)
                     .environment(appEnv.synthesisStore)
+                    // P1 骨架注入：AppModel + DependencyContainer（P2-P6 阶段逐步替换上方 .environment 调用）
+                    .environment(appModel)
+                    .environment(dependencies)
                     .environmentObject(themeManager)
                     .environmentObject(ServiceContainer.shared.resolve(LLMService.self))
                     .environmentObject(onboardingService)

@@ -16,7 +16,7 @@ import UFPCore
 enum AppConfig {
     
     // MARK: - 动态配置加载器
-    private nonisolated(unsafe) static var configData: [String: Any] = {
+    private static let configData: [String: Any] = {
         guard let url = Bundle.main.url(forResource: CoreConstants.BundleResource.appConfig, withExtension: SystemConstants.FileExtension.json),
               let data = try? Data(contentsOf: url),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {

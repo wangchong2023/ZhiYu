@@ -1,0 +1,68 @@
+# UserDefaults.standard 冻结白名单
+# 策略：冻结现状，禁止新增。后续 P5-P6 阶段逐步迁移到 KeyStoreProtocol。
+# 登记总数：32 项
+
+  - file: "Sources/App/Core/ZhiYuApp.swift"
+    line: 153
+  - file: "Sources/App/Core/ZhiYuApp.swift"
+    line: 166
+  - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
+    line: 355
+  - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
+    line: 406
+  - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
+    line: 409
+  - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
+    line: 362
+  - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
+    line: 366
+  - file: "Sources/Features/System/ModelManager/GlobalModelManager.swift"
+    line: 131
+  - file: "Sources/Features/System/ModelManager/GlobalModelManager.swift"
+    line: 135
+  - file: "Sources/Features/System/ModelManager/View/ServerConfigView.swift"
+    line: 141
+  - file: "Sources/Features/System/ModelManager/View/ServerConfigView.swift"
+    line: 145
+  - file: "Sources/Infrastructure/LLM/InferenceParametersStore.swift"
+    line: 120
+  - file: "Sources/Infrastructure/LLM/InferenceParametersStore.swift"
+    line: 127
+  - file: "Sources/Infrastructure/LLM/InferenceParametersStore.swift"
+    line: 149
+  - file: "Sources/Infrastructure/LLM/LLMContextBuilder.swift"
+    line: 333
+  - file: "Sources/Infrastructure/LLM/LLMContextBuilder.swift"
+    line: 343
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 255
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 291
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 300
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 309
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 313
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 324
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 338
+  - file: "Sources/Infrastructure/LLM/LLMModels.swift"
+    line: 383
+  - file: "Sources/Infrastructure/LLM/OnDeviceLLMService.swift"
+    line: 134
+  - file: "Sources/Infrastructure/LLM/OnDeviceLLMService.swift"
+    line: 203
+  - file: "Sources/Infrastructure/LLM/PromptService.swift"
+    line: 36
+  - file: "Sources/Infrastructure/LLM/PromptService.swift"
+    line: 104
+  - file: "Sources/Infrastructure/LLM/PromptService.swift"
+    line: 120
+  - file: "Sources/Infrastructure/LLM/PromptService.swift"
+    line: 135
+  - file: "Sources/Infrastructure/Storage/Sync/iCloudSyncManager.swift"
+    line: 49
+  - file: "Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift"
+    line: 224

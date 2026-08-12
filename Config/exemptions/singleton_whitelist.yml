@@ -1,0 +1,272 @@
+# 单例白名单 — audit-singleton-frozen.py 门禁使用
+# 
+# 规则：
+# - 仅白名单内列出的 file+class 组合允许保留 `static let shared`
+# - 白名单外的 `static let shared` 声明将导致 CI 阻断
+# - 迁移完成后从此文件删除对应条目，即完成"冻结"
+# - DatabaseManager 为基础设施层永久例外（SQLite 连接池单例）
+#
+# 当前状态：P2 阶段，白名单 21 项（含 DatabaseManager 永久例外）
+# 目标状态：P7 完成后，白名单仅剩 DatabaseManager 1 项
+
+singleton_whitelist:
+  # === L3 表现层 ===
+  - file: Sources/App/Navigation/Router.swift
+    class: Router
+    reason: P3 阶段迁移
+    added: 2026-08-12
+    expiry_check: P3
+
+  - file: Sources/Core/System/Onboarding/OnboardingService.swift
+    class: OnboardingService
+    reason: P4 阶段迁移（已半迁移）
+    added: 2026-08-12
+    expiry_check: P4
+
+  - file: Sources/Shared/DesignSystem/Theme/ThemeManager.swift
+    class: ThemeManager
+    reason: P4 阶段迁移（已半迁移）
+    added: 2026-08-12
+    expiry_check: P4
+
+  - file: Sources/Core/Base/Utils/Localized.swift
+    class: Localized
+    reason: P4 阶段迁移（静态缓存）
+    added: 2026-08-12
+    expiry_check: P4
+
+  - file: Sources/Shared/UIComponents/Feedback/TooltipManager.swift
+    class: TooltipManager
+    reason: P2 阶段迁移
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Core/System/Toast/ToastManager.swift
+    class: ToastManager
+    reason: P6 阶段迁移（42 次引用）
+    added: 2026-08-12
+    expiry_check: P6
+
+  - file: Sources/Features/Knowledge/Ingest/View/Components/VoiceAudioPlayerView.swift
+    class: VoiceSpeechState
+    reason: P2 阶段迁移
+    added: 2026-08-12
+    expiry_check: P2
+
+  # === L2 业务层 ===
+  - file: Sources/Features/Knowledge/Vault/Service/VaultService.swift
+    class: VaultService
+    reason: P4 阶段迁移（已半迁移）
+    added: 2026-08-12
+    expiry_check: P4
+
+  - file: Sources/Features/AI/TaskCenter/Service/TaskCenter.swift
+    class: TaskCenter
+    reason: P6 阶段迁移（76 次引用）
+    added: 2026-08-12
+    expiry_check: P6
+
+  - file: Sources/Features/Insight/MedalWall/Service/MedalService.swift
+    class: MedalService
+    reason: P2 阶段迁移
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Platforms/iOS/Services/ActivityService.swift
+    class: ActivityService
+    reason: P2 阶段迁移
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Features/System/Auth/Service/AuthService.swift
+    class: AuthService
+    reason: P5 阶段迁移
+    added: 2026-08-12
+    expiry_check: P5
+
+  - file: Sources/Features/System/Auth/Service/StoreKitService.swift
+    class: StoreKitService
+    reason: P2 阶段迁移
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/App/Core/AppEnvironment.swift
+    class: AppEnvironment
+    reason: P3 阶段迁移（12 次测试引用）
+    added: 2026-08-12
+    expiry_check: P3
+
+  # === L1 服务层 ===
+  - file: Sources/Infrastructure/LLM/LLMModels.swift
+    class: GlobalModelManager
+    reason: P3 阶段迁移
+    added: 2026-08-12
+    expiry_check: P3
+
+  - file: Sources/Infrastructure/LLM/LLMModels.swift
+    class: LLMConfigStore
+    reason: P3 阶段迁移
+    added: 2026-08-12
+    expiry_check: P3
+
+  - file: Sources/Infrastructure/LLM/LLMService.swift
+    class: LLMService
+    reason: P5 阶段迁移
+    added: 2026-08-12
+    expiry_check: P5
+
+  - file: Sources/Features/Knowledge/Source/SourceManager.swift
+    class: SourceManager
+    reason: P5 阶段迁移
+    added: 2026-08-12
+    expiry_check: P5
+
+  - file: Sources/Features/Knowledge/Schema/SchemaManager.swift
+    class: SchemaManager
+    reason: P5 阶段迁移
+    added: 2026-08-12
+    expiry_check: P5
+
+  - file: Sources/Features/Knowledge/Ingest/Service/IngestQueue.swift
+    class: IngestQueue
+    reason: P5 阶段迁移
+    added: 2026-08-12
+    expiry_check: P5
+
+  - file: Sources/Infrastructure/Plugins/PluginRegistry.swift
+    class: PluginRegistry
+    reason: P6 阶段迁移（46 次引用）
+    added: 2026-08-12
+    expiry_check: P6
+
+  - file: Sources/Infrastructure/Plugins/PluginEnginePool.swift
+    class: PluginEnginePool
+    reason: P6 阶段迁移
+    added: 2026-08-12
+    expiry_check: P6
+
+  # === L0 基础设施层（永久例外）===
+  - file: Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift
+    class: DatabaseManager
+    reason: 基础设施层永久例外（SQLite 连接池单例，204 次测试引用）
+    added: 2026-08-12
+    expiry_check: never
+
+  # === 补充盘点遗漏的单例（2026-08-12 二次盘点）===
+
+  # L3 表现层补充
+  - file: Sources/Platforms/iOS/Tools/PencilManager.swift
+    class: PencilManager
+    reason: P2 阶段迁移（Sources/ 零外部引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Shared/UIComponents/Menus/UserProfileMenu.swift
+    class: CatalystFloatingMenuManager
+    reason: P2 阶段迁移（Sources/ 零外部引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Shared/DesignSystem/Themes/ThemeManager.swift
+    class: ThemeManager
+    reason: P3 阶段迁移（17 次引用，注意此文件非 Shared/DesignSystem/Theme/ 路径）
+    added: 2026-08-12
+    expiry_check: P3
+
+  - file: Sources/Shared/UIComponents/Feedback/AppToast.swift
+    class: ToastManager
+    reason: P7 永久例外（41 次引用，全局 Toast 入口）
+    added: 2026-08-12
+    expiry_check: never
+
+  # L2 业务层补充
+  - file: Sources/Features/AI/Chat/Service/ChatService.swift
+    class: ChatService
+    reason: P2 阶段迁移（2 次引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  # L1 服务层补充
+  - file: Sources/Core/System/Security/IntentRateLimiter.swift
+    class: IntentRateLimiter
+    reason: P2 阶段迁移（1 次引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Core/System/Security/PromptSanitizer.swift
+    class: PromptSanitizer
+    reason: P2 阶段迁移（13 次引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Core/System/Workflow/WorkflowService.swift
+    class: WorkflowService
+    reason: P2 阶段迁移（1 次引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Core/System/Haptic/HapticFeedback.swift
+    class: HapticFeedback
+    reason: P7 永久例外（162 次引用，全局触觉反馈入口）
+    added: 2026-08-12
+    expiry_check: never
+
+  - file: Sources/Core/System/Events/AppEventBus.swift
+    class: AppEventBus
+    reason: P3 阶段迁移（18 次引用）
+    added: 2026-08-12
+    expiry_check: P3
+
+  - file: Sources/Core/System/Analytics/LocalAnalyticsService.swift
+    class: LocalAnalyticsService
+    reason: P2 阶段迁移（1 次引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Core/Base/Services/UserDefaultsKeyStore.swift
+    class: UserDefaultsKeyStore
+    reason: P2 阶段迁移（1 次引用，11 次测试引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Infrastructure/LLM/LLMModels.swift
+    class: LLMRegistry
+    reason: P2 阶段迁移（Sources/ 零外部引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Infrastructure/LLM/PromptService.swift
+    class: PromptService
+    reason: P2 阶段迁移（26 次引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Infrastructure/Storage/Search/SpotlightService.swift
+    class: SpotlightService
+    reason: P2 阶段迁移（1 次引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Infrastructure/Storage/Sync/iCloudSyncManager.swift
+    class: iCloudSyncManager
+    reason: P2 阶段迁移（Sources/ 零外部引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Infrastructure/Storage/Export/WebViewExportService.swift
+    class: WebViewExportService
+    reason: P4 阶段迁移（4 次引用）
+    added: 2026-08-12
+    expiry_check: P4
+
+  - file: Sources/Infrastructure/Storage/Services/SchemaService.swift
+    class: SchemaService
+    reason: P2 阶段迁移（Sources/ 零外部引用）
+    added: 2026-08-12
+    expiry_check: P2
+
+  - file: Sources/Infrastructure/Performance/PerformanceBenchmarker.swift
+    class: PerformanceBenchmarker
+    reason: P2 阶段迁移（Sources/ 零外部引用，疑似死代码）
+    added: 2026-08-12
+    expiry_check: P2

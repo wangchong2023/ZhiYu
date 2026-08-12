@@ -18,6 +18,7 @@ class KeychainService: @unchecked Sendable {
     /// 真实单例（内部持有）
     private static let _shared = KeychainService()
     /// 测试覆盖：设置非 nil 值后 shared 返回 Mock 实例；在 tearDown 中置 nil 恢复
+    /// 仅在测试套件中写入，生产代码只读；测试串行执行，无并发冲突。
     nonisolated(unsafe) static var testOverride: KeychainService?
     /// 全局单例入口：测试模式下可被替换
     static var shared: KeychainService { testOverride ?? _shared }

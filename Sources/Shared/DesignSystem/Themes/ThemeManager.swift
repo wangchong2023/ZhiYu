@@ -28,7 +28,7 @@ class ThemeManager: ObservableObject {
     }
 
     /// Migrate legacy isDarkMode key on first access
-    private nonisolated(unsafe) static var didMigrate = false
+    @MainActor private static var didMigrate = false
 
     var colorSchemeMode: ColorSchemeMode {
         get {

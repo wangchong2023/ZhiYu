@@ -73,3 +73,45 @@ dependencies:
     integration: project_yml_path
     license: MIT
     purpose: "SwiftUI 快照测试"
+
+  - name: swift-dependencies
+    upstream: "https://github.com/pointfreeco/swift-dependencies.git"
+    version: "main"
+    integration: spm
+    license: MIT
+    purpose: "@Dependency 属性包装器 + DependencyKey 注册体系（替代 @Inject + ServiceContainer）"
+
+  - name: combine-schedulers
+    upstream: "https://github.com/pointfreeco/combine-schedulers.git"
+    version: "main"
+    integration: spm
+    license: MIT
+    purpose: "swift-dependencies 传递依赖（Combine 调度器）"
+
+  - name: swift-clocks
+    upstream: "https://github.com/pointfreeco/swift-clocks.git"
+    version: "main"
+    integration: spm
+    license: MIT
+    purpose: "swift-dependencies 传递依赖（时钟抽象）"
+
+  - name: swift-concurrency-extras
+    upstream: "https://github.com/pointfreeco/swift-concurrency-extras.git"
+    version: "main"
+    integration: spm
+    license: MIT
+    purpose: "swift-dependencies 传递依赖（并发工具）"
+
+  - name: xctest-dynamic-overlay
+    upstream: "https://github.com/pointfreeco/xctest-dynamic-overlay.git"
+    version: "main"
+    integration: spm
+    license: MIT
+    purpose: "swift-dependencies 传递依赖（XCTest 动态覆盖）"
+
+  - name: swift-syntax
+    upstream: "https://github.com/swiftlang/swift-syntax.git"
+    version: "509.0.0"
+    integration: spm
+    license: Apache-2.0
+    purpose: "swift-dependencies 传递依赖（Swift 语法树，宏支持）"

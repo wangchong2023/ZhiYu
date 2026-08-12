@@ -17,13 +17,16 @@ final class MedalServiceTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        // 确保 KeyStoreProtocol 已注册（MedalService @Inject 依赖）
-        if ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) == nil {
-            ServiceContainer.shared.register(
-                UserDefaultsKeyStore.shared as any KeyStoreProtocol,
-                for: (any KeyStoreProtocol).self
-            )
+        // P2-1 迁移：每个测试强制注册独立 UserDefaults 实例，确保测试间完全隔离。
+        //           不再用 if ... == nil 条件注册（会复用前一个测试的有状态实例）。
+        guard let testDefaults = UserDefaults(suiteName: "MedalServiceTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
         }
+        ServiceContainer.shared.register(
+            UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol,
+            for: (any KeyStoreProtocol).self
+        )
         // 注册 MockHapticFeedback，避免 markAsEarned → HapticFeedback.shared.trigger
         // → @Inject 解析 HapticFeedbackProtocol 失败导致 fatalError
         ServiceContainer.shared.register(
@@ -35,6 +38,7 @@ final class MedalServiceTests: XCTestCase {
 
     override func tearDown() async throws {
         service.reset()
+        ServiceContainer.shared.resetForTesting()
         try await super.tearDown()
     }
 

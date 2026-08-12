@@ -80,10 +80,12 @@ internal struct Localized {
     private static let cacheLock = OSAllocatedUnfairLock()
     
     /// 缓存的已加载本地化 Bundle 实例，实现内存级常驻。
-    nonisolated(unsafe) private static var cachedBundle: Bundle?
+    /// 由 `cacheLock` 保护，所有读写必须在 `cacheLock.withLock { }` 内执行。
+    private static var cachedBundle: Bundle?
     
     /// 当前缓存的 Bundle 对应的语言标识码（如 "zh-Hans" 或 "en"）。
-    nonisolated(unsafe) private static var cachedLanguage: String?
+    /// 由 `cacheLock` 保护，所有读写必须在 `cacheLock.withLock { }` 内执行。
+    private static var cachedLanguage: String?
     
     /// 获取当前应用处于激活状态的首选语言代码（如 "zh-Hans", "zh-Hant", "en", "es", "fr", "ar", "ru", "ko", "ja", "pt"）。
     static var currentLanguage: String {
@@ -135,7 +137,9 @@ internal struct Localized {
     }
     
     /// 内存回退：当 KeyStoreProtocol 未就绪时（单测环境），用静态变量暂存语言偏好。
-    nonisolated(unsafe) private static var _inMemoryFallback: String?
+    /// 由 `fallbackLock` 保护，所有读写必须在 `fallbackLock.withLock { }` 内执行。
+    private static let fallbackLock = OSAllocatedUnfairLock()
+    private static var _inMemoryFallback: String?
 
     /// 用户在应用偏好设置中手动指定的语言模式。
     /// getter 始终从线程安全的内存缓存读取，避免跨 actor 访问 keyStore 导致 crash。
@@ -143,11 +147,11 @@ internal struct Localized {
     static var languageMode: LanguageMode {
         get {
             // 仅依赖 _inMemoryFallback（setter 始终同步写入，线程安全）
-            LanguageMode(rawValue: _inMemoryFallback ?? "auto") ?? .auto
+            fallbackLock.withLock { LanguageMode(rawValue: _inMemoryFallback ?? "auto") ?? .auto }
         }
         set {
             let value = newValue.rawValue
-            _inMemoryFallback = value
+            fallbackLock.withLock { _inMemoryFallback = value }
             // 持久化写入委托至 @MainActor，避免 assumeIsolated 在非主线程 crash
             Task { @MainActor in
                 if let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) {
@@ -164,14 +168,14 @@ internal struct Localized {
     static func loadCachedLanguageMode() {
         guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
         let rawValue = keyStore.string(forKey: AppConstants.Keys.Storage.languageMode)
-        _inMemoryFallback = rawValue
+        fallbackLock.withLock { _inMemoryFallback = rawValue }
     }
 
     /// 重置本地化状态供测试隔离使用。
     /// 清理 `_inMemoryFallback` 跨测试残留与 Bundle 缓存，确保每个测试从干净状态开始。
     @MainActor
     static func resetForTesting() {
-        _inMemoryFallback = nil
+        fallbackLock.withLock { _inMemoryFallback = nil }
         clearBundleCache()
     }
 

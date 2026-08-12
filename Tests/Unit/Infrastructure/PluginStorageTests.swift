@@ -24,7 +24,10 @@ final class PluginStorageTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        ServiceContainer.shared.register(UserDefaultsKeyStore.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
+        // P2-1 迁移：创建独立 UserDefaults 实例，避免 .shared 跨测试残留
+        if let testDefaults = UserDefaults(suiteName: "PluginStorageTests-\(UUID().uuidString)") {
+            ServiceContainer.shared.register(UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
+        }
         storage = nil
         mockKeyStore = nil
         try await super.tearDown()
