@@ -162,3 +162,21 @@ final class PerformanceService: ObservableObject {
         """
     }
 }
+
+// MARK: - DependencyKey
+import Dependencies
+
+/// PerformanceService 依赖注入键
+@MainActor
+enum PerformanceServiceKey: DependencyKey {
+    @MainActor
+    static var liveValue: PerformanceService { ServiceContainer.shared.resolve(PerformanceService.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    var performanceService: PerformanceService {
+        get { self[PerformanceServiceKey.self] }
+        set { self[PerformanceServiceKey.self] = newValue }
+    }
+}

@@ -34,16 +34,16 @@ private enum KnowledgeLogSpec {
 @MainActor
 public final class KnowledgePageManager {
     
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
-    @ObservationIgnored @Inject private var linkService: LinkService
-    @ObservationIgnored @Inject private var undoService: UndoService
-    @ObservationIgnored @Inject private var backupService: BackupService
-    @ObservationIgnored @Inject private var ingestService: IngestService
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
-    @ObservationIgnored @Inject private var tagStore: TagStore
-    @ObservationIgnored @Inject private var aiWorkflowStore: any AIWorkflowCapabilities
-    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
-    @ObservationIgnored @Inject private var embeddingProvider: any EmbeddingProvider
+    @ObservationIgnored @Dependency(\.pageStoreCapabilities) private var pageStore: any AnyPageStoreCapabilities
+    @ObservationIgnored @Dependency(\.linkService) private var linkService: LinkService
+    @ObservationIgnored @Dependency(\.undoService) private var undoService: UndoService?
+    @ObservationIgnored @Dependency(\.backupService) private var backupService: BackupService
+    @ObservationIgnored @Dependency(\.ingestService) private var ingestService: any IngestServiceProtocol
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.tagStore) private var tagStore: TagStore
+    @ObservationIgnored @Dependency(\.aiWorkflowCapabilities) private var aiWorkflowStore: any AIWorkflowCapabilities
+    @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Dependency(\.embeddingProvider) private var embeddingProvider: any EmbeddingProvider
     @ObservationIgnored @Dependency(\.pluginRegistry) private var pluginRegistry
 
     // MARK: - 动态处理器 (Phase 3)
@@ -115,7 +115,7 @@ public final class KnowledgePageManager {
         sourceType: String? = nil,
         currentPages: [KnowledgePage]
     ) async throws -> KnowledgePage {
-        undoService.pushSnapshot(currentPages)
+        undoService?.pushSnapshot(currentPages)
 
         // 构造初始页面并执行处理器
         let initialPage = KnowledgePage(
@@ -153,7 +153,7 @@ public final class KnowledgePageManager {
 
     /// 更新页面
     public func updatePage(_ page: KnowledgePage, currentPages: [KnowledgePage]) async throws {
-        undoService.pushSnapshot(currentPages)
+        undoService?.pushSnapshot(currentPages)
         
         // 执行处理器增强
         let processedPage = await applyProcessors(to: page)
@@ -190,7 +190,7 @@ public final class KnowledgePageManager {
 
     /// 删除页面
     public func deletePage(_ page: KnowledgePage, currentPages: [KnowledgePage]) async throws {
-        undoService.pushSnapshot(currentPages)
+        undoService?.pushSnapshot(currentPages)
         try await pageStore.deletePage(page)
         AppEventBus.shared.publish(.pageDeleted(id: page.id))
         pluginRegistry.emitEvent("onPageDelete", data: page.id.uuidString)
@@ -214,7 +214,7 @@ public final class KnowledgePageManager {
     /// - Parameter currentPages: 当前内存状态快照
     /// - Returns: 回滚后的新快照集合
     public func undo(currentPages: [KnowledgePage]) async throws -> [KnowledgePage]? {
-        if let prev = undoService.undo(currentPages: currentPages) {
+        if let prev = undoService?.undo(currentPages: currentPages) {
             await pageStore.replaceAllPages(prev)
             return prev
         }
@@ -225,7 +225,7 @@ public final class KnowledgePageManager {
     /// - Parameter currentPages: 当前内存状态快照
     /// - Returns: 重做后的新快照集合
     public func redo(currentPages: [KnowledgePage]) async throws -> [KnowledgePage]? {
-        if let next = undoService.redo(currentPages: currentPages) {
+        if let next = undoService?.redo(currentPages: currentPages) {
             await pageStore.replaceAllPages(next)
             return next
         }
@@ -262,7 +262,7 @@ public final class KnowledgePageManager {
 
     /// 导入文件夹
     public func ingestFolder(at url: URL, pageStore: any AnyPageStore) async {
-        _ = await ingestService.ingestFolder(at: url, pageStore: pageStore)
+        _ = await ingestService.ingestFolder(at: url, type: .source, pageStore: pageStore)
     }
 
     // MARK: - 标签管理转发

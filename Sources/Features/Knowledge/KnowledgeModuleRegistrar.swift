@@ -21,7 +21,9 @@ struct KnowledgeModuleRegistrar: ModuleRegistrar {
         Logger.shared.info("[DI] Starting registration of knowledge modules...")
 
         container.register(LinkService(), for: LinkService.self)
-        container.register(IngestService(), for: IngestService.self)
+        let ingestService = IngestService()
+        container.register(ingestService, for: IngestService.self)
+        container.register(ingestService as any IngestServiceProtocol, for: (any IngestServiceProtocol).self)
         container.register(LintService(), for: LintService.self)
         container.register(UndoService(), for: UndoService.self)
         container.register(KnowledgeInsightService(), for: KnowledgeInsightService.self)

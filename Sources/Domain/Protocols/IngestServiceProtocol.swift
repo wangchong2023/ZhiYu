@@ -22,3 +22,21 @@ public protocol IngestServiceProtocol: Sendable {
     /// - Returns: 新生成的知识库页面列表
     func ingestFolder(at url: URL, type: PageType, pageStore: any AnyPageStore) async -> [KnowledgePage]
 }
+
+// MARK: - DependencyKey
+import Dependencies
+import UFPCore
+
+/// IngestServiceProtocol 依赖注入键
+public enum IngestServiceKey: DependencyKey {
+    public static var liveValue: any IngestServiceProtocol {
+        ServiceContainer.shared.resolve((any IngestServiceProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    public var ingestService: any IngestServiceProtocol {
+        get { self[IngestServiceKey.self] }
+        set { self[IngestServiceKey.self] = newValue }
+    }
+}
