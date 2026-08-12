@@ -11,12 +11,14 @@
 
 import Foundation
 import Combine
+import Dependencies
+import UFPCore
 
 /// 插件注册中心 (L2 层：中枢管理)
 /// 组合 PluginLoader / PluginRuntime / PluginStorage 三大子模块
 @MainActor
-final class PluginRegistry: ObservableObject {
-    static let shared = PluginRegistry()
+@Observable
+final class PluginRegistry: @unchecked Sendable {
 
     // MARK: - 子模块
 
@@ -26,11 +28,11 @@ final class PluginRegistry: ObservableObject {
 
     // MARK: - 已发布的插件注册表
 
-    @Published var plugins: [KnowledgePlugin] = []
-    @Published var commands: [PluginCommand] = []
-    @Published var ribbonItems: [PluginRibbonItem] = []
-    @Published var settingTabs: [PluginSettingTab] = []
-    @Published var customViews: [PluginCustomView] = []
+    var plugins: [KnowledgePlugin] = []
+    var commands: [PluginCommand] = []
+    var ribbonItems: [PluginRibbonItem] = []
+    var settingTabs: [PluginSettingTab] = []
+    var customViews: [PluginCustomView] = []
 
     // MARK: - 资源使用（委托至 PluginRuntime）
 
@@ -41,7 +43,6 @@ final class PluginRegistry: ObservableObject {
 
     // MARK: - 内部状态
 
-    private var cancellables = Set<AnyCancellable>()
     var eventListeners: [PluginEventListener] = []
     var intercepters: [InterceptionPlugin] = []
 
@@ -66,15 +67,10 @@ final class PluginRegistry: ObservableObject {
 
     // MARK: - 初始化
 
-    private init() {
+    public init() {
+        runtime.registry = self
+        loader.registry = self
         runtime.suspendedPluginIDs = storage.loadSuspendedPluginIDs()
-
-        // Relay runtime.objectWillChange to registry.objectWillChange
-        // so that SwiftUI views observing PluginRegistry re-render when
-        // runtime's published properties (e.g. pluginResourceUsage) change.
-        runtime.objectWillChange.sink { [weak self] _ in
-            self?.objectWillChange.send()
-        }.store(in: &cancellables)
 
         // 异步扫描加载本地已安装的插件，保证重启后状态与已发现插件能被自动唤醒和展示
         Task {
@@ -160,5 +156,20 @@ final class PluginRegistry: ObservableObject {
     /// 获取插件的所有持久化数据（解密后）
     func loadAllPluginData(pluginID: String) -> [String: String] {
         storage.loadAllPluginData(pluginID: pluginID)
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+private enum PluginRegistryKey: DependencyKey {
+    static var liveValue: PluginRegistry { ServiceContainer.shared.resolve(PluginRegistry.self) }
+    static var testValue: PluginRegistry { MainActor.assumeIsolated { PluginRegistry() } }
+    static var previewValue: PluginRegistry { MainActor.assumeIsolated { PluginRegistry() } }
+}
+
+extension DependencyValues {
+    var pluginRegistry: PluginRegistry {
+        get { self[PluginRegistryKey.self] }
+        set { self[PluginRegistryKey.self] = newValue }
     }
 }

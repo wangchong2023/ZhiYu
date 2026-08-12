@@ -9,12 +9,14 @@
 //  核心职责：构建 CommandPalette 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Dependencies
 
 /// 全局指令中枢 (Command Palette)
 /// 满足硬核用户 Cmd+K 盲操需求，极大缩短交互路径。
 struct CommandPaletteView: View {
     @Environment(KnowledgeStore.self) var store
     @Environment(\.dismiss) var dismiss
+    @Dependency(\.pluginRegistry) var registry
     @State private var searchText = ""
     @FocusState private var isFocused: Bool
     
@@ -51,8 +53,8 @@ struct CommandPaletteView: View {
                 }
                 
                 // 插件指令板块
-                if !PluginRegistry.shared.commands.isEmpty {
-                    let filteredCommands = PluginRegistry.shared.commands.filter { 
+                if !registry.commands.isEmpty {
+                    let filteredCommands = registry.commands.filter { 
                         searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) 
                     }
                     

@@ -37,7 +37,7 @@ final class PluginCenterViewTests: XCTestCase {
     func testPluginDetailViewInstantiation() {
         let store = AppStore()
         let router = Router.shared
-        let marketService = PluginMarketService()
+        let marketService = PluginMarketService(registry: PluginRegistry())
         
         let mockPlugin = MarketPlugin(
             id: "test.plugin.detail",

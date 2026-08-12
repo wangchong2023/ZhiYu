@@ -9,8 +9,8 @@
 //  核心职责：针对 PluginSandbox 开展自动化单元测试验证。
 //
 import XCTest
-import UFPCore
-@preconcurrency @testable import ZhiYu
+@testable import ZhiYu
+@testable import UFPCore
 
 /// 插件沙箱安全测试
 /// 验证 PluginRegistry 的加载/卸载、权限拦截、崩溃隔离及流控降级。
@@ -28,7 +28,7 @@ final class PluginSandboxTests: XCTestCase {
         // 避免 LLMConfigStore.loadAPIKey 调用真实 Keychain 失败导致测试间状态污染
         KeychainService.testOverride = MockKeychainService()
 
-        registry = PluginRegistry.shared
+        registry = ServiceContainer.shared.resolve(PluginRegistry.self)
         registry.reset()
     }
 

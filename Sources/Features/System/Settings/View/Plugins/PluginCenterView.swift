@@ -10,20 +10,27 @@
 //
 
 import SwiftUI
+import Dependencies
 
 /// 插件中心 (Stub: 为未来生态预留位置)
 struct PluginCenterView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(Router.self) var router
-    @StateObject private var registry = PluginRegistry.shared
-    @StateObject private var marketService = PluginMarketService()
-    
+    @Dependency(\.pluginRegistry) var registry
+    @StateObject private var marketService: PluginMarketService
+
     @State private var selectedTab = 0
     @State private var searchText = ""
     @State private var isSafeModeOn = true
     @State private var showSafeModeWarning = false
     @State private var showFileImporter = false
     @State private var selectedCategory: String?
+
+    /// 初始化插件中心视图，注入 PluginMarketService 依赖
+    init() {
+        @Dependency(\.pluginRegistry) var registry: PluginRegistry
+        _marketService = StateObject(wrappedValue: PluginMarketService(registry: registry))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -376,7 +383,7 @@ struct PluginCard: View {
         }
     }
 
-    @ObservedObject private var registry = PluginRegistry.shared
+    @Dependency(\.pluginRegistry) var registry
     @State private var localIcon: UIImage?
 
     /// 自适应计算插件的展示版本号，已安装则优先显示真实本地版本号
@@ -503,7 +510,7 @@ struct PluginCard: View {
                     $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id) 
                 })?.manifest.id ?? id
                 
-                if let url = PluginRegistry.shared.iconURL(for: targetID) {
+                if let url = registry.iconURL(for: targetID) {
                     // 使用后台异步线程在非 UI 线程中读取物理图片数据，避免直接读取 I/O 导致 UI 卡顿
                     Task.detached(priority: .background) {
                         if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {

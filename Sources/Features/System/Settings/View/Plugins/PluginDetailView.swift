@@ -11,12 +11,13 @@
 //
 
 import SwiftUI
+import Dependencies
 
 /// 插件详情页（参照 VS Code 扩展商店 / Obsidian 社区插件标准）
 struct PluginDetailView: View {
     let plugin: MarketPlugin
     @ObservedObject var marketService: PluginMarketService
-    @ObservedObject var registry = PluginRegistry.shared
+    @Dependency(\.pluginRegistry) var registry
 
     @Environment(\.dismiss) var dismiss
     @State var isInstalling = false
@@ -87,14 +88,14 @@ struct PluginDetailView: View {
         .background(PageBackgroundView(accentColor: .appAccent))
         .task {
             // 异步加载本地图标和 README，支持包名 ID（如 com.zhiyu.plugin...）与市场简短 ID 的模糊联通匹配，避免主线程 I/O 阻塞
-            let targetID = PluginRegistry.shared.plugins.first(where: {
+            let targetID = registry.plugins.first(where: {
                 $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
             })?.manifest.id ?? plugin.id
 
-            if let url = PluginRegistry.shared.iconURL(for: targetID) {
+            if let url = registry.iconURL(for: targetID) {
                 localIcon = UIImage(data: (try? Data(contentsOf: url)) ?? Data())
             }
-            localReadme = PluginRegistry.shared.localizedReadme(for: targetID)
+            localReadme = registry.localizedReadme(for: targetID)
 
             // 异步拉取云端多语言 README
             await fetchRemoteReadme()

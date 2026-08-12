@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Observation
+import Dependencies
 
 /// 业务领域定义
 public enum FeatureDomain: String, CaseIterable, Sendable {
@@ -160,8 +161,9 @@ public enum AppRoute: Hashable, Identifiable {
 final class Router {
     /// 全局单例，方便非视图层级调用（如 DeepLink 处理）
     static let shared = Router()
-    
+
     // keyStore 已全部通过 resolveOptional() 手动解析，不再使用 @Inject 声明
+    @ObservationIgnored @Dependency(\.pluginRegistry) private var pluginRegistry
 
     /// 核心导航路径
     var path = NavigationPath()
@@ -179,7 +181,7 @@ final class Router {
                 
                 // 触发插件事件：页面打开
                 if case .page(let id) = selection {
-                    PluginRegistry.shared.emitEvent("onFileOpen", data: id.uuidString)
+                    pluginRegistry.emitEvent("onFileOpen", data: id.uuidString)
                 }
             }
         }

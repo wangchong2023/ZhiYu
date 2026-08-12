@@ -11,6 +11,7 @@
 import XCTest
 import CryptoKit
 @testable import ZhiYu
+@testable import UFPCore
 
 final class MockURLProtocol: URLProtocol {
     static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
@@ -45,17 +46,21 @@ final class MockURLProtocol: URLProtocol {
 @MainActor
 final class PluginMarketServiceTests: XCTestCase {
     var service: PluginMarketService!
-    
+    private var registry: PluginRegistry!
+
     override func setUp() {
         super.setUp()
         URLProtocol.registerClass(MockURLProtocol.self)
-        service = PluginMarketService()
+        registry = PluginRegistry()
+        ServiceContainer.shared.register(registry, for: PluginRegistry.self)
+        service = PluginMarketService(registry: registry)
     }
-    
+
     override func tearDown() {
         URLProtocol.unregisterClass(MockURLProtocol.self)
         MockURLProtocol.requestHandler = nil
         service = nil
+        registry = nil
         super.tearDown()
     }
     
@@ -440,8 +445,8 @@ final class PluginMarketServiceTests: XCTestCase {
         let realManifestID = "com.zhiyu.plugin.toc-generator"
         
         // 彻底清除可能因为之前测试残留于内存或物理磁盘中的同名插件，保证单测环境的绝对隔离性
-        PluginRegistry.shared.unloadPlugin(id: realManifestID)
-        PluginRegistry.shared.unloadPlugin(id: "com.zhiyu.plugin.local.toc-generator")
+        registry.unloadPlugin(id: realManifestID)
+        registry.unloadPlugin(id: "com.zhiyu.plugin.local.toc-generator")
         
         let destFolder = pluginsDir.appendingPathComponent(marketID)
         try? fileManager.removeItem(at: destFolder)
@@ -514,13 +519,13 @@ final class PluginMarketServiceTests: XCTestCase {
         XCTAssertTrue(success, "插件下载安装应当成功")
         
         // 2. 验证通过后缀匹配和相等匹配能否探测到已安装状态
-        let isInstalled = PluginRegistry.shared.plugins.contains(where: {
+        let isInstalled = registry.plugins.contains(where: {
             $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
         })
         XCTAssertTrue(isInstalled, "系统应当能识别不一致 ID 的已安装状态")
         
         // 3. 验证能否获取正确的展示版本号
-        if let localPlugin = PluginRegistry.shared.plugins.first(where: {
+        if let localPlugin = registry.plugins.first(where: {
             $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
         }) {
             XCTAssertEqual(localPlugin.manifest.version, "0.0.1")
@@ -529,13 +534,13 @@ final class PluginMarketServiceTests: XCTestCase {
         }
         
         // 4. 执行卸载并验证
-        let targetID = PluginRegistry.shared.plugins.first(where: { 
+        let targetID = registry.plugins.first(where: { 
             $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id) 
         })?.manifest.id ?? plugin.id
         
-        PluginRegistry.shared.unloadPlugin(id: targetID)
+        registry.unloadPlugin(id: targetID)
         
-        let isStillInstalled = PluginRegistry.shared.plugins.contains(where: {
+        let isStillInstalled = registry.plugins.contains(where: {
             $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
         })
         XCTAssertFalse(isStillInstalled, "卸载后应当标记为未安装")

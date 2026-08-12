@@ -12,6 +12,7 @@ import Foundation
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 /// 知识页面管理服务 (L1.5-Domain)
 /// 负责页面生命周期管理及跨服务逻辑协同。
@@ -43,6 +44,7 @@ public final class KnowledgePageManager {
     @ObservationIgnored @Inject private var aiWorkflowStore: any AIWorkflowCapabilities
     @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
     @ObservationIgnored @Inject private var embeddingProvider: any EmbeddingProvider
+    @ObservationIgnored @Dependency(\.pluginRegistry) private var pluginRegistry
 
     // MARK: - 动态处理器 (Phase 3)
     
@@ -183,7 +185,7 @@ public final class KnowledgePageManager {
     /// 保存页面 (含插件事件触发)
     public func savePage(_ page: KnowledgePage, currentPages: [KnowledgePage]) async throws {
         try await updatePage(page, currentPages: currentPages)
-        PluginRegistry.shared.emitEvent("onPageSave", data: page.id.uuidString)
+        pluginRegistry.emitEvent("onPageSave", data: page.id.uuidString)
     }
 
     /// 删除页面
@@ -191,7 +193,7 @@ public final class KnowledgePageManager {
         undoService.pushSnapshot(currentPages)
         try await pageStore.deletePage(page)
         AppEventBus.shared.publish(.pageDeleted(id: page.id))
-        PluginRegistry.shared.emitEvent("onPageDelete", data: page.id.uuidString)
+        pluginRegistry.emitEvent("onPageDelete", data: page.id.uuidString)
     }
 
     /// 重命名页面 (处理双向链接)

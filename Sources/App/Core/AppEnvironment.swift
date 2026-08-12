@@ -210,7 +210,8 @@ final class AppEnvironment {
         StorageModuleRegistrar.register(in: ServiceContainer.shared)
 
         // L1 插件系统
-        ServiceContainer.shared.register(PluginRegistry.shared, for: PluginRegistry.self)
+        let pluginRegistry = PluginRegistry()
+        ServiceContainer.shared.register(pluginRegistry, for: PluginRegistry.self)
 
         // L2 领域模块 — 按依赖顺序：Auth → Knowledge → AI
         AuthModuleRegistrar.register(in: ServiceContainer.shared)

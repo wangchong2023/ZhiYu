@@ -13,9 +13,14 @@ import Foundation
 import UFPCore
 import Combine
 
-/// 插件运行时引擎：负责插件激活/停用、资源限流、安全熔断与内容拦截
+/// 插件运行时引擎：负责插件激活/停用、资源限流、安全熔断与内容拦截管道
 @MainActor
-final class PluginRuntime: ObservableObject {
+@Observable
+final class PluginRuntime: @unchecked Sendable {
+
+    /// 父注册中心弱引用（避免循环引用）
+    @ObservationIgnored
+    weak var registry: PluginRegistry!
 
     // MARK: - 资源监控
 
@@ -65,7 +70,6 @@ final class PluginRuntime: ObservableObject {
     /// 加载插件到注册中心
     /// - Parameter plugin: 待加载的插件实例
     func loadPlugin(_ plugin: KnowledgePlugin) {
-        let registry = PluginRegistry.shared
 
         // 去重检查：防止重复加载已存在的插件
         guard !registry.plugins.contains(where: { $0.manifest.id == plugin.manifest.id }) else {
@@ -85,7 +89,7 @@ final class PluginRuntime: ObservableObject {
         }
 
         // 创建沙盒上下文
-        let context = PluginContextImpl(manifest: plugin.manifest)
+        let context = PluginContextImpl(manifest: plugin.manifest, registry: registry)
 
         plugin.onLoad(context: context)
         registry.plugins.append(plugin)
@@ -104,7 +108,6 @@ final class PluginRuntime: ObservableObject {
     /// 卸载插件：从内存移除并删除磁盘文件，防止重启后重新加载
     /// - Parameter id: 插件 ID
     func unloadPlugin(id: String) {
-        let registry = PluginRegistry.shared
 
         if let index = registry.plugins.firstIndex(where: { $0.manifest.id == id }) {
             registry.plugins[index].onUnload()
@@ -132,7 +135,6 @@ final class PluginRuntime: ObservableObject {
 
     /// 标记并持久化封禁插件
     func suspendPlugin(_ id: String) {
-        let registry = PluginRegistry.shared
 
         suspendedPluginIDs.insert(id)
         let array = Array(suspendedPluginIDs)
@@ -162,7 +164,6 @@ final class PluginRuntime: ObservableObject {
 
     /// 分发事件给插件监听器
     func emitEvent(_ event: String, data: Any? = nil) {
-        let registry = PluginRegistry.shared
         let relevant = registry.eventListeners.filter { $0.event == event }
         for listener in relevant {
             listener.callback(data)
@@ -171,7 +172,6 @@ final class PluginRuntime: ObservableObject {
 
     /// 执行全量拦截过滤 (含超时熔断逻辑)
     func applyPreProcess(to content: String) -> String {
-        let registry = PluginRegistry.shared
         var result = content
 
         for intercepter in registry.plugins.compactMap({ $0 as? InterceptionPlugin }) {
@@ -239,7 +239,6 @@ final class PluginRuntime: ObservableObject {
 
     /// 重置运行时状态（仅用于测试）
     func reset() {
-        let registry = PluginRegistry.shared
         for plugin in registry.plugins {
             plugin.onUnload()
         }
@@ -311,6 +310,7 @@ final class PluginRuntime: ObservableObject {
 @MainActor
 private struct PluginContextImpl: PluginContext {
     let manifest: PluginManifest
+    weak var registry: PluginRegistry!
     var hostVersion: String { "2.0.0" }
 
     /// 记录日志
@@ -333,21 +333,21 @@ private struct PluginContextImpl: PluginContext {
             Logger.shared.error(" []  \(manifest.id)  'pages.read' ", error: nil)
             return []
         }
-        let pages = PluginRegistry.shared.pagesProvider?() ?? []
+        let pages = registry.pagesProvider?() ?? []
         return await ServiceContainer.shared.resolve(LinkService.self).search(query: query, in: pages)
     }
 
     /// 注册 Command
     func registerCommand(id: String, name: String, callback: @escaping @MainActor () -> Void) {
         let command = PluginCommand(id: id, pluginID: manifest.id, name: name, action: callback)
-        PluginRegistry.shared.commands.append(command)
+        registry.commands.append(command)
         log(": \(name)")
     }
 
     /// 注册 RibbonItem
     func registerRibbonItem(icon: String, title: String, callback: @escaping @MainActor () -> Void) {
         let item = PluginRibbonItem(pluginID: manifest.id, icon: icon, title: title, action: callback)
-        PluginRegistry.shared.ribbonItems.append(item)
+        registry.ribbonItems.append(item)
         log(": \(title)")
     }
 
@@ -361,31 +361,31 @@ private struct PluginContextImpl: PluginContext {
     /// 注册 SettingTab
     func registerSettingTab(name: String, schema: String?, callback: @escaping @MainActor (String?) -> Void) {
         let tab = PluginSettingTab(pluginID: manifest.id, name: name, schema: schema, action: callback)
-        PluginRegistry.shared.settingTabs.append(tab)
+        registry.settingTabs.append(tab)
         log(": \(name)")
     }
 
     /// 注册 View
     func registerView(id: String, title: String, icon: String, callback: @escaping @MainActor () -> Void) {
         let view = PluginCustomView(id: id, pluginID: manifest.id, title: title, icon: icon, action: callback)
-        PluginRegistry.shared.customViews.append(view)
+        registry.customViews.append(view)
         log(": \(title)")
     }
 
     /// 添加 EventListener
     func addEventListener(event: String, callback: @escaping @MainActor (Any?) -> Void) {
         let listener = PluginEventListener(pluginID: manifest.id, event: event, callback: callback)
-        PluginRegistry.shared.eventListeners.append(listener)
+        registry.eventListeners.append(listener)
         log(": \(event)")
     }
 
     /// 保存 Data
     func saveData(key: String, value: String) {
-        PluginRegistry.shared.savePluginData(pluginID: manifest.id, key: key, value: value)
+        registry.savePluginData(pluginID: manifest.id, key: key, value: value)
     }
 
     /// 加载 Data
     func loadData(key: String) -> String? {
-        return PluginRegistry.shared.loadPluginData(pluginID: manifest.id, key: key)
+        return registry.loadPluginData(pluginID: manifest.id, key: key)
     }
 }

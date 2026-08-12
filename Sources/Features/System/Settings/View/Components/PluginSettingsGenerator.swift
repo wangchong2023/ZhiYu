@@ -9,11 +9,13 @@
 //  核心职责：系统设置：LLM 配置、性能监控、插件管理、iCloud、备份。
 //
 import SwiftUI
+import Dependencies
 
 /// 插件自定义设置详情视图
 struct PluginCustomSettingsView: View {
     let tab: PluginSettingTab
     @Environment(\.dismiss) var dismiss
+    @Dependency(\.pluginRegistry) var registry
     
     // 自动双向绑定状态
     @State private var configData: [String: String] = [:]
@@ -55,7 +57,7 @@ struct PluginCustomSettingsView: View {
     
     private func loadInitialData() {
         // 从加密 Storage 中预加载该插件的所有数据
-        self.configData = PluginRegistry.shared.loadAllPluginData(pluginID: tab.pluginID)
+        self.configData = registry.loadAllPluginData(pluginID: tab.pluginID)
     }
     
     private func parseSchema() {
@@ -78,7 +80,7 @@ struct PluginCustomSettingsView: View {
                     set: { newValue in
                         let stringVal = newValue ? "true" : "false"
                         configData[item.key] = stringVal
-                        PluginRegistry.shared.savePluginData(pluginID: tab.pluginID, key: item.key, value: stringVal)
+                        registry.savePluginData(pluginID: tab.pluginID, key: item.key, value: stringVal)
                     }
                 ))
             case "text":
@@ -86,7 +88,7 @@ struct PluginCustomSettingsView: View {
                     get: { configData[item.key] ?? "" },
                     set: { newValue in
                         configData[item.key] = newValue
-                        PluginRegistry.shared.savePluginData(pluginID: tab.pluginID, key: item.key, value: newValue)
+                        registry.savePluginData(pluginID: tab.pluginID, key: item.key, value: newValue)
                     }
                 ))
             case "info":

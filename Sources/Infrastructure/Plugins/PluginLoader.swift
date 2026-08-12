@@ -17,6 +17,9 @@ import CryptoKit
 @MainActor
 final class PluginLoader {
 
+    /// 父注册中心弱引用（避免循环引用）
+    weak var registry: PluginRegistry!
+
     /// ZIPFoundation 适配层注入（通过 FileArchiverProtocol 间接调用，不直接 import ZIPFoundation）
     @Inject private var archiver: any FileArchiverProtocol
 
@@ -277,7 +280,7 @@ final class PluginLoader {
 
             #if canImport(JavaScriptCore) && !os(watchOS)
             if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
-                PluginRegistry.shared.loadPlugin(jsPlugin)
+                registry.loadPlugin(jsPlugin)
                 Logger.shared.info("[PluginRegistry] Loaded: \(manifest.name)")
             } else {
                 Logger.shared.error("[PluginRegistry] Init failed: \(manifest.name)")
@@ -325,7 +328,7 @@ final class PluginLoader {
 
             #if canImport(JavaScriptCore) && !os(watchOS)
             if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
-                PluginRegistry.shared.loadPlugin(jsPlugin)
+                registry.loadPlugin(jsPlugin)
                 Logger.shared.info("[PluginRegistry] 从明文目录成功加载: \(manifest.name)")
             } else {
                 Logger.shared.error("[PluginRegistry] 实例化 JS 插件失败: \(manifest.name)")
@@ -365,7 +368,7 @@ final class PluginLoader {
 
             #if canImport(JavaScriptCore) && !os(watchOS)
             if let jsPlugin = JavaScriptPlugin(script: scriptContent, manifest: manifest) {
-                PluginRegistry.shared.loadPlugin(jsPlugin)
+                registry.loadPlugin(jsPlugin)
                 Logger.shared.info("[PluginRegistry] Loaded legacy .js: \(displayName)")
             }
             #endif

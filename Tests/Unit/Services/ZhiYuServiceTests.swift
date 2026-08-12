@@ -9,10 +9,10 @@
 //  核心职责：针对 ZhiYuService 开展自动化单元测试验证。
 //
 import XCTest
-import UFPCore
 import SwiftUI
 import UFPStorage
 @preconcurrency @testable import ZhiYu
+@testable import UFPCore
 
 // MARK: - BackupService Tests
 @MainActor
@@ -648,7 +648,7 @@ final class PluginRegistryTests: XCTestCase {
     
     @MainActor
     func testMultiPluginInterceptorConsistency() {
-        let registry = PluginRegistry.shared
+        let registry = ServiceContainer.shared.resolve(PluginRegistry.self)
         
         // Mock Plugin 1: Adds a prefix
         let p1 = MockPlugin(id: "p1", preProcessor: { "P1: " + $0 })

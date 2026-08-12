@@ -9,6 +9,7 @@
 //  核心职责：展示已安装本地插件的详细信息（manifest 数据 + 卸载操作）。
 
 import SwiftUI
+import Dependencies
 
 /// 本地已安装插件详情页（基于 PluginManifest，无需网络）
 @MainActor
@@ -16,12 +17,13 @@ struct LocalPluginDetailView: View {
     let manifest: PluginManifest
 
     @Environment(\.dismiss) private var dismiss
+    @Dependency(\.pluginRegistry) var registry
     @State private var showUninstallConfirm = false
     @State private var localIcon: UIImage?
     @State private var localReadme: String?
 
     private var isInstalled: Bool {
-        PluginRegistry.shared.plugins.contains(where: { $0.manifest.id == manifest.id })
+        registry.plugins.contains(where: { $0.manifest.id == manifest.id })
     }
 
     /// 根据插件 ID 智能映射默认 of SF Symbol 兜底图标，防止在未解压或无本地物理图片时各插件展示单一的拼图块
@@ -95,7 +97,7 @@ struct LocalPluginDetailView: View {
 
                 // MARK: - 操作
                 Button(role: .destructive, action: {
-                    PluginRegistry.shared.unloadPlugin(id: manifest.id)
+                    registry.unloadPlugin(id: manifest.id)
                     dismiss()
                 }) {
                     Label(L10n.Plugin.Action.uninstall, systemImage: "trash")
@@ -147,8 +149,8 @@ struct LocalPluginDetailView: View {
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .task {
-            if let url = PluginRegistry.shared.iconURL(for: manifest.id), let data = try? Data(contentsOf: url) { localIcon = UIImage(data: data) }
-            localReadme = PluginRegistry.shared.localizedReadme(for: manifest.id)
+            if let url = registry.iconURL(for: manifest.id), let data = try? Data(contentsOf: url) { localIcon = UIImage(data: data) }
+            localReadme = registry.localizedReadme(for: manifest.id)
         }
         .navigationTitle(manifest.name)
         .appNavigationBarTitleDisplayMode(.inline)

@@ -10,6 +10,7 @@
 //
 import XCTest
 @testable import ZhiYu
+@testable import UFPCore
 
 // MARK: - 模拟拦截器插件
 /// 用于模拟各种安全行为和性能指标的看门狗测试专用 Mock 插件
@@ -94,7 +95,7 @@ final class PluginWatchdogTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
-        registry = PluginRegistry.shared
+        registry = ServiceContainer.shared.resolve(PluginRegistry.self)
         registry.reset() // 重置为初始空白状态
     }
     

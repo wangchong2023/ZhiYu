@@ -14,13 +14,16 @@ import XCTest
 final class PluginRuntimeTests: XCTestCase {
 
     private var runtime: PluginRuntime!
+    private var registry: PluginRegistry!
     private var mockKeyStore: MockKeyStoreForPlugins!
 
     override func setUp() async throws {
         try await super.setUp()
         mockKeyStore = MockKeyStoreForPlugins()
         ServiceContainer.shared.register(mockKeyStore as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
-        runtime = PluginRuntime()
+        registry = PluginRegistry()
+        ServiceContainer.shared.register(registry, for: PluginRegistry.self)
+        runtime = registry.runtime
         runtime.reset()
     }
 
@@ -28,6 +31,7 @@ final class PluginRuntimeTests: XCTestCase {
         runtime.reset()
         ServiceContainer.shared.register(UserFaultsKeyStoreFallback.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
         runtime = nil
+        registry = nil
         mockKeyStore = nil
         try await super.tearDown()
     }
@@ -44,7 +48,7 @@ final class PluginRuntimeTests: XCTestCase {
         let plugin = MockKnowledgePlugin(manifest: makeManifest(id: "load.test"))
         runtime.loadPlugin(plugin)
 
-        XCTAssertTrue(PluginRegistry.shared.plugins.contains(where: { $0.manifest.id == "load.test" }))
+        XCTAssertTrue(registry.plugins.contains(where: { $0.manifest.id == "load.test" }))
         XCTAssertTrue(plugin.didCallOnLoad)
     }
 
@@ -55,7 +59,7 @@ final class PluginRuntimeTests: XCTestCase {
         runtime.loadPlugin(plugin1)
         runtime.loadPlugin(plugin2)
 
-        XCTAssertEqual(PluginRegistry.shared.plugins.filter { $0.manifest.id == "dup.test" }.count, 1)
+        XCTAssertEqual(registry.plugins.filter { $0.manifest.id == "dup.test" }.count, 1)
         XCTAssertFalse(plugin2.didCallOnLoad)
     }
 
@@ -64,7 +68,7 @@ final class PluginRuntimeTests: XCTestCase {
         runtime.suspendPlugin("suspended.test")
 
         runtime.loadPlugin(plugin)
-        XCTAssertFalse(PluginRegistry.shared.plugins.contains(where: { $0.manifest.id == "suspended.test" }))
+        XCTAssertFalse(registry.plugins.contains(where: { $0.manifest.id == "suspended.test" }))
         XCTAssertFalse(plugin.didCallOnLoad)
     }
 
@@ -90,7 +94,7 @@ final class PluginRuntimeTests: XCTestCase {
         runtime.loadPlugin(plugin)
 
         runtime.unloadPlugin(id: "unload.test")
-        XCTAssertFalse(PluginRegistry.shared.plugins.contains(where: { $0.manifest.id == "unload.test" }))
+        XCTAssertFalse(registry.plugins.contains(where: { $0.manifest.id == "unload.test" }))
         XCTAssertTrue(plugin.didCallOnUnload)
     }
 
@@ -104,7 +108,7 @@ final class PluginRuntimeTests: XCTestCase {
         runtime.loadPlugin(plugin)
 
         runtime.unloadPlugin(id: "ext.test")
-        XCTAssertFalse(PluginRegistry.shared.intercepters.contains(where: { $0.manifest.id == "ext.test" }))
+        XCTAssertFalse(registry.intercepters.contains(where: { $0.manifest.id == "ext.test" }))
     }
 
     // MARK: - suspendPlugin
@@ -126,7 +130,7 @@ final class PluginRuntimeTests: XCTestCase {
         runtime.loadPlugin(plugin)
 
         runtime.suspendPlugin("ban.remove")
-        XCTAssertFalse(PluginRegistry.shared.plugins.contains(where: { $0.manifest.id == "ban.remove" }))
+        XCTAssertFalse(registry.plugins.contains(where: { $0.manifest.id == "ban.remove" }))
         XCTAssertTrue(plugin.didCallOnUnload)
     }
 
@@ -219,7 +223,7 @@ final class PluginRuntimeTests: XCTestCase {
         runtime.suspendPlugin("extra.ban")
 
         runtime.reset()
-        XCTAssertTrue(PluginRegistry.shared.plugins.isEmpty)
+        XCTAssertTrue(registry.plugins.isEmpty)
         XCTAssertTrue(runtime.suspendedPluginIDs.isEmpty)
         XCTAssertTrue(runtime.pluginResourceUsage.isEmpty)
     }

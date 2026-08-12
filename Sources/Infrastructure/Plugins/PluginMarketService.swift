@@ -152,6 +152,9 @@ final class PluginMarketService: ObservableObject {
     @Published var downloadingPluginID: String?
     @Published var errorMessage: String?
 
+    /// 持有 PluginRegistry 弱引用，避免循环引用；由 init 注入保证测试隔离
+    weak var registry: PluginRegistry!
+
     // 生产环境 (GitHub)
     private let registryGitHub: URL = {
         guard let url = URL(string: APIPaths.communityPluginsJSON) else {
@@ -163,6 +166,12 @@ final class PluginMarketService: ObservableObject {
     /// 插件市场目标请求 URL 地址，统一为 GitHub 生产环境发布地址
     private var targetURL: URL {
         return registryGitHub
+    }
+
+    /// 创建插件市场服务实例
+    /// - Parameter registry: 插件注册表，用于安装/卸载插件；生产环境由 AppEnvironment 注入，测试环境由 setUp 注入
+    init(registry: PluginRegistry) {
+        self.registry = registry
     }
 
     /// 从云端抓取插件元数据并更新可用的插件列表
@@ -309,7 +318,7 @@ final class PluginMarketService: ObservableObject {
             }
             
             // 扫描并重新加载插件以供系统挂载
-            PluginRegistry.shared.scanAndLoadLocalPlugins()
+            registry.scanAndLoadLocalPlugins()
             return true
         } catch {
             performDownloadRollback(for: plugin.id, fileManager: fileManager)

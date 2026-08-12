@@ -11,6 +11,7 @@
 
 import SwiftUI
 import StoreKit
+import Dependencies
 
 /// 订阅周期
 enum BillingCycle {
@@ -30,6 +31,7 @@ public struct SubscriptionPlanView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthService.self) private var authService
     @Environment(ThemeManager.self) var themeManager
+    @Dependency(\.pluginRegistry) var registry
 
     private enum Constants {
         static let barHeight: CGFloat = 6
@@ -158,7 +160,7 @@ public struct SubscriptionPlanView: View {
                 let pagesMax = authService.currentUser?.maxPages ?? 1000
                 glassQuotaCard(title: L10n.Auth.pagesUsage, icon: "doc.text", current: pagesCount, max: pagesMax)
 
-                let pluginsCount = PluginRegistry.shared.plugins.count
+                let pluginsCount = registry.plugins.count
                 let pluginsMax = authService.currentUser?.maxPlugins ?? 3
                 glassQuotaCard(title: L10n.Auth.pluginsUsage, icon: "puzzlepiece", current: pluginsCount, max: pluginsMax)
             }

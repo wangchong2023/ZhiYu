@@ -9,11 +9,12 @@
 //  核心职责：系统设置：LLM 配置、性能监控、插件管理、iCloud、备份。
 //
 import SwiftUI
+import Dependencies
 
 // MARK: - 插件扩展组件
 
 struct PluginExtensionsSection: View {
-    @ObservedObject var registry = PluginRegistry.shared
+    @Dependency(\.pluginRegistry) var registry
 
     var body: some View {
         if !registry.settingTabs.isEmpty {
@@ -37,7 +38,7 @@ struct PluginExtensionsSection: View {
 
 /// 插件扩展详情视图：有已安装插件时展示设置列表，无插件时展示空状态引导
 struct PluginExtensionsDetailView: View {
-    @ObservedObject var registry = PluginRegistry.shared
+    @Dependency(\.pluginRegistry) var registry
     @State private var showPluginCenter = false
 
     var body: some View {

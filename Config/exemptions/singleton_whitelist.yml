@@ -121,12 +121,6 @@ singleton_whitelist:
     added: 2026-08-12
     expiry_check: P5
 
-  - file: Sources/Infrastructure/Plugins/PluginRegistry.swift
-    class: PluginRegistry
-    reason: P6 阶段迁移（46 次引用）
-    added: 2026-08-12
-    expiry_check: P6
-
   - file: Sources/Infrastructure/Plugins/PluginEnginePool.swift
     class: PluginEnginePool
     reason: P6 阶段迁移

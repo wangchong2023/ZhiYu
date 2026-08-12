@@ -466,7 +466,7 @@ struct SidebarListStyleModifier: ViewModifier {
 // MARK: - 插件扩展入口
 
 struct PluginRibbonSection: View {
-    @ObservedObject var registry = PluginRegistry.shared
+    @Dependency(\.pluginRegistry) var registry
     
     var body: some View {
         if !registry.ribbonItems.isEmpty {
@@ -490,7 +490,7 @@ struct PluginRibbonSection: View {
 }
 
 struct PluginCustomViewsSection: View {
-    @ObservedObject var registry = PluginRegistry.shared
+    @Dependency(\.pluginRegistry) var registry
     
     var body: some View {
         ForEach(registry.customViews) { view in

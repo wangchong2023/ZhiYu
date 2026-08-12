@@ -444,7 +444,7 @@ extension XCTestCase {
         let evaluationService = RAGEvaluationService(llmService: llm, governanceStore: governanceRepo)
         ServiceContainer.shared.register(evaluationService, for: RAGEvaluationService.self)
         
-        ServiceContainer.shared.register(PluginRegistry.shared, for: PluginRegistry.self)
+        ServiceContainer.shared.register(PluginRegistry(), for: PluginRegistry.self)
         
         #if os(iOS)
         ServiceContainer.shared.register(iOSOCRService() as any OCRServiceProtocol, for: (any OCRServiceProtocol).self)

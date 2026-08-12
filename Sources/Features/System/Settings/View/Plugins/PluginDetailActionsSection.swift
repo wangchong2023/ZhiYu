@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import Dependencies
 
 // MARK: - 操作按钮
 
@@ -21,10 +22,10 @@ extension PluginDetailView {
             Button(action: {
                 if isInstalled {
                     // 解析出沙盒加载的真实 ID（例如 com.zhiyu.plugin.local.toc-generator）以便成功物理注销
-                    let targetID = PluginRegistry.shared.plugins.first(where: {
+                    let targetID = registry.plugins.first(where: {
                         $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
                     })?.manifest.id ?? plugin.id
-                    PluginRegistry.shared.unloadPlugin(id: targetID)
+                    registry.unloadPlugin(id: targetID)
                     HapticFeedback.shared.trigger(.success)
                 } else {
                     HapticFeedback.shared.trigger(.selection)

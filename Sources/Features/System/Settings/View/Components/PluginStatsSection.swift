@@ -11,9 +11,10 @@
 
 import SwiftUI
 import Charts
+import Dependencies
 
 struct PluginStatsSection: View {
-    @ObservedObject var registry = PluginRegistry.shared
+    @Dependency(\.pluginRegistry) var registry
 
     var body: some View {
         StandardSection(title: L10n.Plugin.Stats.resourceUsage) {
