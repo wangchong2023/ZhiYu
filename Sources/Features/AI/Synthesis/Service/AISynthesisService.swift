@@ -20,6 +20,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     @Inject private var logger: any LoggerProtocol
     private var llm: any LLMServiceProtocol
     @ObservationIgnored private let promptService: PromptService
+    @ObservationIgnored private let taskCenter: TaskCenter
 
     /// 动态解析最新的 LLMService 实例，防止持有失效句柄
     private var currentLLM: any LLMServiceProtocol {
@@ -39,6 +40,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
             self.llm = runOnMainSync { LLMService.shared }
         }
         self.promptService = PromptService(defaults: .standard)
+        self.taskCenter = runOnMainSync { TaskCenter(activityService: ActivityService.shared) }
     }
 
     #if DEBUG
@@ -266,7 +268,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     private func updateStatus(_ text: String) {
         Task { @MainActor in
-            TaskCenter.shared.updateLatestStatus(text)
+            taskCenter.updateLatestStatus(text)
         }
     }
 }

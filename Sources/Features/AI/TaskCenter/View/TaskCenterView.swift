@@ -9,12 +9,13 @@
 //  核心职责：构建 TaskCenter 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Dependencies
 
 // MARK: - 任务中心入口
 /// 任务中心主视图
 /// 负责全局异步任务（如 AI 扫描、文档导入、知识合成）的队列监控、状态管理与历史追溯
 struct TaskCenterView: View {
-    @ObservedObject var taskCenter = TaskCenter.shared
+    @Dependency(\.taskCenter) var taskCenter
     @Environment(AppStore.self) var store
     @Environment(ThemeManager.self) var themeManager
     @Environment(Router.self) var router

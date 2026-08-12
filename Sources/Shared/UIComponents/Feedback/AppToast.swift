@@ -55,7 +55,7 @@ public struct AppToast: Identifiable, Equatable {
 /// 轻提示管理器
 /// 负责 Toast 的队列调度、生命周期计时（自动隐藏）及并发状态管理，确保 UI 层的非阻塞反馈
 @Observable
-public final class ToastManager {
+public final class ToastManager: @unchecked Sendable {
     @ObservationIgnored private var timer: AnyCancellable?
 
     public var currentToast: AppToast?

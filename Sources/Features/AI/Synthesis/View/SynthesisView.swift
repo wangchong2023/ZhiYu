@@ -23,7 +23,7 @@ struct SynthesisView: View {
     @Environment(Router.self) var router
     @Environment(SynthesisStore.self) var synthesisStore
     @EnvironmentObject var llmService: LLMService
-    @ObservedObject var taskCenter = TaskCenter.shared
+    @Dependency(\.taskCenter) var taskCenter
     @State private var showOutput = false
     @State private var outputType: SynthesisStore.SynthesisType = .mindmap
     @State private var selectedDoc: SynthesisStore.SynthesisDocument?

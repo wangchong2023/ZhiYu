@@ -11,6 +11,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 任务类型
 public enum TaskType: String, CaseIterable, Sendable {
@@ -82,35 +83,34 @@ public enum TaskStatus: Equatable, Sendable {
 }
 
 /// 全球异步任务模型
-struct GlobalTask: Identifiable, Equatable {
-    let id = UUID()
-    let type: TaskType
-    let name: String                // 任务名称
-    let target: String              // 目标对象
-    var status: TaskStatus          // 当前状态
-    let startTime = Date()          // 启动时间
-    var isRead: Bool = false        // 用户是否已读
-    var associatedPageID: UUID? // 关联页面
-    var subLogs: [String] = []      // 细粒度子状态日志 (消除信息真空)
+public struct GlobalTask: Identifiable, Equatable {
+    public let id = UUID()
+    public let type: TaskType
+    public let name: String                // 任务名称
+    public let target: String              // 目标对象
+    public var status: TaskStatus          // 当前状态
+    public let startTime = Date()          // 启动时间
+    public var isRead: Bool = false        // 用户是否已读
+    public var associatedPageID: UUID? // 关联页面
+    public var subLogs: [String] = []      // 细粒度子状态日志 (消除信息真空)
 }
 
-/// 全局任务管理中心 (单例)
+/// 全局任务管理中心
 @MainActor
-class TaskCenter: ObservableObject {
-    static let shared = TaskCenter()
-
+@Observable
+public final class TaskCenter: @unchecked Sendable {
     /// 单个任务保留的最大子日志条数（超出后从头部丢弃）
     private static let maxSubLogCount: Int = 50
 
-    @Published var tasks: [GlobalTask] = []
-    @Published var latestStatus: String = ""
-    private var cancellables = Set<AnyCancellable>()
+    public var tasks: [GlobalTask] = []
+    public var latestStatus: String = ""
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     
     /// 注入实时活动能力，支持跨平台解耦
-    /// 使用 resolveOptional 优雅降级：DI 容器未就绪时静默跳过，避免启动崩溃。
-    private lazy var activityService: (any LiveActivityProtocol)? = ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
+    @ObservationIgnored private var activityService: (any LiveActivityProtocol)?
 
-    init() {
+    public init(activityService: (any LiveActivityProtocol)? = nil) {
+        self.activityService = activityService ?? ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
         setupSubscriptions()
     }
 
@@ -127,9 +127,9 @@ class TaskCenter: ObservableObject {
 
     /// 更新LatestStatus
     /// - Parameter text: text
-    func updateLatestStatus(_ text: String) {
+    public func updateLatestStatus(_ text: String) {
         self.latestStatus = text
-        // 实时同步到当前“最活跃”的灵动岛（如果平台支持）
+        // 实时同步到当前"最活跃"的灵动岛（如果平台支持）
         if let firstRunningTask = tasks.first(where: { if case .running = $0.status { return true }; return false }) {
             Task {
                 if case .running(let progress, _) = firstRunningTask.status {
@@ -141,16 +141,16 @@ class TaskCenter: ObservableObject {
         }
     }
 
-    struct TaskMetrics {
-        let total: Int
-        let completed: Int
-        let running: Int
-        let failed: Int
+    public struct TaskMetrics {
+        public let total: Int
+        public let completed: Int
+        public let running: Int
+        public let failed: Int
     }
 
     /// metrics
     /// - Returns: 返回值
-    func metrics(for type: TaskType) -> TaskMetrics {
+    public func metrics(for type: TaskType) -> TaskMetrics {
         let relevant = tasks.filter { $0.type == type }
         let completed = relevant.filter { $0.status == .completed }.count
         let running = relevant.filter {
@@ -163,7 +163,7 @@ class TaskCenter: ObservableObject {
         return TaskMetrics(total: relevant.count, completed: completed, running: running, failed: failed)
     }
 
-    var unreadCount: Int {
+    public var unreadCount: Int {
         tasks.filter { task in
             if task.isRead { return false }
             switch task.status {
@@ -178,7 +178,7 @@ class TaskCenter: ObservableObject {
     /// - Parameter name: name
     /// - Parameter target: target
     /// - Returns: 唯一标识
-    func addTask(type: TaskType = .ai, name: String, target: String) -> UUID {
+    public func addTask(type: TaskType = .ai, name: String, target: String) -> UUID {
         let task = GlobalTask(type: type, name: name, target: target, status: .pending)
         self.tasks.insert(task, at: 0)
         self.latestStatus = L10n.AI.Task.starting( name, target)
@@ -192,7 +192,7 @@ class TaskCenter: ObservableObject {
     /// - Parameter id: id
     /// - Parameter status: status
     /// - Parameter associatedPageID: associatedPageID
-    func updateTask(_ id: UUID, status: TaskStatus, associatedPageID: UUID? = nil) {
+    public func updateTask(_ id: UUID, status: TaskStatus, associatedPageID: UUID? = nil) {
         if let index = self.tasks.firstIndex(where: { $0.id == id }) {
             self.tasks[index].status = status
             if let pageID = associatedPageID {
@@ -233,34 +233,33 @@ class TaskCenter: ObservableObject {
     /// completeTask
     /// - Parameter id: id
     /// - Parameter associatedPageID: associatedPageID
-    func completeTask(id: UUID, associatedPageID: UUID? = nil) {
+    public func completeTask(id: UUID, associatedPageID: UUID? = nil) {
         updateTask(id, status: .completed, associatedPageID: associatedPageID)
     }
 
     /// failTask
     /// - Parameter id: id
     /// - Parameter error: error
-    func failTask(id: UUID, error: String) {
+    public func failTask(id: UUID, error: String) {
         updateTask(id, status: .failed(error: error))
     }
 
     /// 向指定任务追加一条细粒度子状态日志
     /// - Parameter id: 任务ID
     /// - Parameter log: 详细状态描述文本
-    func addSubLog(id: UUID, log: String) {
+    public func addSubLog(id: UUID, log: String) {
         if let index = self.tasks.firstIndex(where: { $0.id == id }) {
             self.tasks[index].subLogs.append(log)
             if self.tasks[index].subLogs.count > Self.maxSubLogCount {
                 self.tasks[index].subLogs.removeFirst()
             }
-            self.objectWillChange.send()
             self.latestStatus = "\(self.tasks[index].name): \(log)"
         }
     }
 
     /// 向当前活跃的 Ingest 任务中快捷追加子状态日志
     /// - Parameter log: 状态描述文本
-    func addIngestSubLog(_ log: String) {
+    public func addIngestSubLog(_ log: String) {
         if let task = self.tasks.first(where: { $0.type == .ingest }) {
             self.addSubLog(id: task.id, log: log)
         }
@@ -268,16 +267,14 @@ class TaskCenter: ObservableObject {
 
     /// markAsRead
     /// - Parameter id: id
-    func markAsRead(_ id: UUID) {
-        DispatchQueue.main.async {
-            if let index = self.tasks.firstIndex(where: { $0.id == id }) {
-                self.tasks[index].isRead = true
-            }
+    public func markAsRead(_ id: UUID) {
+        if let index = self.tasks.firstIndex(where: { $0.id == id }) {
+            self.tasks[index].isRead = true
         }
     }
 
     /// markAllAsRead
-    func markAllAsRead() {
+    public func markAllAsRead() {
         for i in 0..<self.tasks.count {
             self.tasks[i].isRead = true
         }
@@ -285,16 +282,36 @@ class TaskCenter: ObservableObject {
 
     /// 移除Task
     /// - Parameter id: id
-    func removeTask(_ id: UUID) {
-        DispatchQueue.main.async {
-            self.tasks.removeAll(where: { $0.id == id })
-        }
+    public func removeTask(_ id: UUID) {
+        self.tasks.removeAll(where: { $0.id == id })
     }
 
     /// 重置
-    func reset() {
+    public func reset() {
         self.tasks.removeAll()
         self.latestStatus = ""
+    }
+}
+
+// MARK: - TaskCenter DependencyKey
+
+private enum TaskCenterKey: DependencyKey {
+    @MainActor
+    static var liveValue: TaskCenter {
+        TaskCenter(activityService: ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self))
+    }
+    @MainActor
+    static let testValue: TaskCenter = TaskCenter(activityService: nil)
+    @MainActor
+    static let previewValue: TaskCenter = TaskCenter(activityService: nil)
+}
+
+extension DependencyValues {
+    /// 任务中心依赖（原 TaskCenter.shared）
+    @MainActor
+    public var taskCenter: TaskCenter {
+        get { self[TaskCenterKey.self] }
+        set { self[TaskCenterKey.self] = newValue }
     }
 }
 

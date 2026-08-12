@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 知识见解服务配置常量
 private enum InsightConfig {
@@ -36,6 +37,12 @@ private enum InsightConfig {
 /// 知识见解服务 (PM 视角：价值闭环)
 /// 负责生成知识周报与核心趋势分析。
 actor KnowledgeInsightService {
+    @ObservationIgnored private let taskCenter: TaskCenter
+
+    init() {
+        self.taskCenter = runOnMainSync { TaskCenter(activityService: ActivityService.shared) }
+    }
+
     public struct WeeklyInsight: Codable, Equatable {
         public let dateRange: String
         public let totalNewPages: Int
@@ -249,7 +256,7 @@ actor KnowledgeInsightService {
 
     private func updateStatus(_ text: String) {
         Task { @MainActor in
-            TaskCenter.shared.updateLatestStatus(text)
+            taskCenter.updateLatestStatus(text)
         }
     }
 }

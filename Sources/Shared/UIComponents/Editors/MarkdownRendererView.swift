@@ -9,6 +9,7 @@
 //  核心职责：构建 MarkdownRenderer 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Dependencies
 
 // MARK: - Markdown Renderer View
 /// Renders structured Markdown blocks using MarkdownProcessor.
@@ -16,6 +17,7 @@ import SwiftUI
 @MainActor
 struct MarkdownRendererView: View {
     @Environment(AppStore.self) var store
+    @Dependency(\.taskCenter) private var taskCenter
     let content: String
     let isPrivate: Bool
     let onLinkTap: (String) -> Void
@@ -32,7 +34,7 @@ struct MarkdownRendererView: View {
 
     var body: some View {
         Group {
-            if content.isEmpty && TaskCenter.shared.tasks.contains(where: { task in
+            if content.isEmpty && taskCenter.tasks.contains(where: { task in
                 if case .running = task.status {
                     return task.type == .ai || task.type == .synthesis
                 }

@@ -11,11 +11,13 @@
 import Foundation
 import UFPCore
 import Compression
+import Dependencies
 
 // MARK: - Ingest Service (Knowledge Ingestion)
 actor IngestService {
     @Inject private var docExtractor: any DocumentExtractionServiceProtocol
     @Inject private var dbManager: DatabaseManager
+    @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
     let scraper = WebScraperProcessor()
 
     /// 将原始内容摄入知识库：执行安全脱敏、进行 RAG 分块与向量索引、自动抽取并链接已知页面概念。
@@ -270,7 +272,7 @@ actor IngestService {
         let totalCount = enumeratorArray.count
         
         // 接入 TaskCenter (由 TaskCenter 统一触发灵动岛)
-        let taskID = await TaskCenter.shared.addTask(
+        let taskID = await taskCenter.addTask(
             type: .ingest, 
             name: L10n.AI.Task.typeIngest, 
             target: url.lastPathComponent
@@ -303,12 +305,12 @@ actor IngestService {
                 // 更新任务中心与灵动岛
                 let progress = Double(currentIndex) / Double(totalCount)
                 let status = L10n.AI.Status.indexing(currentIndex, totalCount, filename)
-                await TaskCenter.shared.updateTask(taskID, status: .running(progress: progress, stage: .extraction))
-                await TaskCenter.shared.updateLatestStatus(status)
+                await taskCenter.updateTask(taskID, status: .running(progress: progress, stage: .extraction))
+                await taskCenter.updateLatestStatus(status)
             }
             
             // 完成任务
-            await TaskCenter.shared.completeTask(id: taskID)
+            await taskCenter.completeTask(id: taskID)
             
             return results
         }

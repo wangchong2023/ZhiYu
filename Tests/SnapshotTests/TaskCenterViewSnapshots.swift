@@ -10,10 +10,13 @@ import XCTest
 import SwiftUI
 import SnapshotTesting
 import UFPCore
+import Dependencies
 @testable import ZhiYu
 
 @MainActor
 final class TaskCenterViewSnapshots: XCTestCase {
+
+    @Dependency(\.taskCenter) var taskCenter
 
     /// 依据环境变量判断快照录制策略
     private static var recordMode: SnapshotTestingConfiguration.Record {
@@ -30,11 +33,11 @@ final class TaskCenterViewSnapshots: XCTestCase {
         try await super.setUp()
         setupFullMockEnvironment()
         // 清空 TaskCenter 单例，确保空状态测试不受残留任务影响
-        TaskCenter.shared.reset()
+        taskCenter.reset()
     }
 
     override func tearDown() async throws {
-        TaskCenter.shared.reset()
+        taskCenter.reset()
         try await super.tearDown()
     }
 
@@ -70,7 +73,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
 
     /// 测试有任务状态 — 包含多种类型与状态的任务列表
     func testTaskCenterView_WithTasks() {
-        TaskCenter.shared.tasks = [
+        taskCenter.tasks = [
             makeCompletedTask(),
             makeRunningTask(progress: 0.3),
             makeFailedTask(),
@@ -82,7 +85,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
 
     /// 测试全部完成的稳定状态
     func testTaskCenterView_AllCompleted() {
-        TaskCenter.shared.tasks = [
+        taskCenter.tasks = [
             makeCompletedTask(type: .ai, name: "AI 扫描完成"),
             makeCompletedTask(type: .ingest, name: "文档导入完成"),
             makeCompletedTask(type: .healthCheck, name: "健康检查完成"),
@@ -94,7 +97,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
 
     /// 测试运行中状态 — 展示进度条与运行中指标
     func testTaskCenterView_RunningState() {
-        TaskCenter.shared.tasks = [
+        taskCenter.tasks = [
             makeRunningTask(progress: 0.2, type: .ingest),
             makeRunningTask(progress: 0.7, type: .aiScan),
             makeRunningTask(progress: 0.9, type: .synthesis)
@@ -105,7 +108,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
 
     /// 测试失败状态 — 展示错误信息
     func testTaskCenterView_FailedState() {
-        TaskCenter.shared.tasks = [
+        taskCenter.tasks = [
             makeFailedTask(error: "网络连接超时"),
             GlobalTask(type: .synthesis, name: "合成失败", target: "概念图", status: .failed(error: "LLM 响应异常")),
             GlobalTask(type: .ingest, name: "导入失败", target: "损坏文件.pdf", status: .failed(error: "文件格式不支持"))
@@ -120,7 +123,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
         completedTask.isRead = true
         var failedTask = makeFailedTask()
         failedTask.isRead = true
-        TaskCenter.shared.tasks = [completedTask, failedTask]
+        taskCenter.tasks = [completedTask, failedTask]
         let view = makeTaskCenterView()
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -129,7 +132,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
     func testTaskCenterView_WithAssociatedPage() {
         var task = makeCompletedTask()
         task.associatedPageID = UUID()
-        TaskCenter.shared.tasks = [task]
+        taskCenter.tasks = [task]
         let view = makeTaskCenterView()
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }

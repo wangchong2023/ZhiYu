@@ -54,12 +54,6 @@ singleton_whitelist:
     added: 2026-08-12
     expiry_check: P4
 
-  - file: Sources/Features/AI/TaskCenter/Service/TaskCenter.swift
-    class: TaskCenter
-    reason: P6 阶段迁移（76 次引用）
-    added: 2026-08-12
-    expiry_check: P6
-
   - file: Sources/Features/Insight/MedalWall/Service/MedalService.swift
     class: MedalService
     reason: P2 阶段迁移

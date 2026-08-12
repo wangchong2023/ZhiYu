@@ -11,10 +11,12 @@
 #if !os(watchOS)
 import Foundation
 import PDFKit
+import Dependencies
 
 /// iOS/macOS PDF 处理实现
 final class iOSPDFService: PDFServiceProtocol {
     private let documentsDirectory: URL
+    @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
     init() {
         documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -103,7 +105,9 @@ final class iOSPDFService: PDFServiceProtocol {
         for i in start..<end {
             if let page = document.page(at: i) {
                 // 实时推送当前正在处理的 PDF 物理页状态
-                TaskCenter.shared.addIngestSubLog("Extracting_Page_\(i + 1)_of_\(document.pageCount)")
+                Task { @MainActor in
+                    taskCenter.addIngestSubLog("Extracting_Page_\(i + 1)_of_\(document.pageCount)")
+                }
                 
                 // 2. 在提取当前页面文本前，织入当前页关联的大纲层级标题
                 if let outlines = pageOutlines[i], !outlines.isEmpty {

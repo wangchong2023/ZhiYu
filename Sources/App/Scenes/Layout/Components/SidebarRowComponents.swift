@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - Navigation Definitions
 
@@ -210,7 +211,7 @@ struct PinnedSection: View {
 
 struct ToolsSection: View {
     @Environment(AppStore.self) var appStore
-    @ObservedObject var taskCenter = TaskCenter.shared
+    @Dependency(\.taskCenter) var taskCenter
     
     var body: some View {
         Section {

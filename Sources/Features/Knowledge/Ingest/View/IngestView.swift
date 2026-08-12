@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import UniformTypeIdentifiers
+import Dependencies
 
 // MARK: - 视图核心
 struct IngestView: View {
@@ -18,6 +19,7 @@ struct IngestView: View {
     @Environment(IngestStore.self) var ingestStore
     @Environment(Router.self) var router
     @EnvironmentObject var llmService: LLMService
+    @Dependency(\.taskCenter) private var taskCenter
     @Environment(ThemeManager.self) var themeManager
     @Binding var selectedTab: AppTab
     
@@ -35,7 +37,7 @@ struct IngestView: View {
                         onAITag: { record in coordinator.triggerAITagging(for: record) },
                         onManualEdit: { record in coordinator.openManualForm(with: record) }
                     )
-                    if !TaskCenter.shared.tasks.filter({ $0.type == .ingest }).isEmpty { taskCenterLinkSection }
+                    if !taskCenter.tasks.filter({ $0.type == .ingest }).isEmpty { taskCenterLinkSection }
                     recentActivitiesSection
                 }
                 .padding(.horizontal)
@@ -90,7 +92,7 @@ struct IngestView: View {
 
     /// 动态渲染的玻璃态 Ingest 细粒度子状态反馈面板
     private var ingestProgressPanel: some View {
-        let runningIngestTasks = TaskCenter.shared.tasks.filter { $0.type == .ingest && isRunning(status: $0.status) }
+        let runningIngestTasks = taskCenter.tasks.filter { $0.type == .ingest && isRunning(status: $0.status) }
         guard let activeTask = runningIngestTasks.first else { return AnyView(EmptyView()) }
         
         let (progress, currentStage) = {
@@ -165,7 +167,7 @@ struct IngestView: View {
             HStack {
                 Image(systemName: DesignSystem.Icons.history).font(.subheadline.bold()).foregroundStyle(.appAccent)
                 VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                    let runningCount = TaskCenter.shared.tasks.filter({ $0.type == .ingest && isRunning(status: $0.status) }).count
+                    let runningCount = taskCenter.tasks.filter({ $0.type == .ingest && isRunning(status: $0.status) }).count
                     Text(L10n.Ingest.activeTasks(runningCount)).font(.caption.weight(.bold)).foregroundStyle(.appText)
                     Text(L10n.Ingest.recentActivity).font(.system(size: DesignSystem.microFontSize)).foregroundStyle(.appSecondary)
                 }
@@ -177,7 +179,7 @@ struct IngestView: View {
     }
 
     private var recentActivitiesSection: some View {
-        let ingestTasks = TaskCenter.shared.tasks.filter { $0.type == .ingest }
+        let ingestTasks = taskCenter.tasks.filter { $0.type == .ingest }
         return VStack(alignment: .leading, spacing: DesignSystem.medium) {
             AppSectionHeader(title: L10n.Ingest.recent, icon: DesignSystem.Icons.listBulletRectangle).padding(.horizontal, DesignSystem.tiny)
             if ingestTasks.isEmpty {

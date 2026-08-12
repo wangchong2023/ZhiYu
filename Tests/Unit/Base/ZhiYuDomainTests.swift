@@ -23,14 +23,16 @@ final class ZhiYuDomainTests: XCTestCase {
         setupFullMockEnvironment()
         
         // 确保在 DI 注册就绪后再重置/访问单例状态，规避初始化时由于容器缺失服务导致的 assertion 闪退
-        TaskCenter.shared.reset()
+        @Dependency(\.taskCenter) var taskCenter
+        taskCenter.reset()
         @Dependency(\.promptService) var promptService
         promptService.reset()
     }
     
     @MainActor
     override func tearDown() async throws {
-        TaskCenter.shared.reset()
+        @Dependency(\.taskCenter) var taskCenter
+        taskCenter.reset()
         @Dependency(\.promptService) var promptService
         promptService.reset()
         DatabaseManager.shared.reset()
@@ -71,7 +73,7 @@ final class ZhiYuDomainTests: XCTestCase {
     // MARK: - TaskCenter Tests
     @MainActor
     func testTaskCenterManagement() {
-        let center = TaskCenter.shared
+        @Dependency(\.taskCenter) var center
         let initialCount = center.tasks.count
         
         let taskID = center.addTask(name: "测试任务", target: "测试目标")
@@ -537,7 +539,7 @@ final class ZhiYuDomainTests: XCTestCase {
     // MARK: - Batch Ingest & TaskCenter Integration Tests
     @MainActor
     func testUrlBatchImportTaskCenterTracking() {
-        let center = TaskCenter.shared
+        @Dependency(\.taskCenter) var center
         center.reset()
         
         let taskID = center.addTask(

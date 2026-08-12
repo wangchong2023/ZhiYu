@@ -10,10 +10,13 @@ import XCTest
 import SwiftUI
 import SnapshotTesting
 import UFPCore
+import Dependencies
 @testable import ZhiYu
 
 @MainActor
 final class ChatComponentsSnapshots: XCTestCase {
+
+    @Dependency(\.taskCenter) var taskCenter
 
     /// 依据环境变量判断快照录制策略
     private static var recordMode: SnapshotTestingConfiguration.Record {
@@ -30,11 +33,11 @@ final class ChatComponentsSnapshots: XCTestCase {
         try await super.setUp()
         setupFullMockEnvironment()
         // 清空 TaskCenter 单例，确保 AIPulseIndicator 空闲状态
-        TaskCenter.shared.reset()
+        taskCenter.reset()
     }
 
     override func tearDown() async throws {
-        TaskCenter.shared.reset()
+        taskCenter.reset()
         try await super.tearDown()
     }
 
@@ -50,7 +53,7 @@ final class ChatComponentsSnapshots: XCTestCase {
 
     /// 测试 AIPulseIndicator AI 处理中状态 — 有运行中 AI 任务
     func testAIPulseIndicator_AIProcessing() {
-        TaskCenter.shared.tasks = [
+        taskCenter.tasks = [
             GlobalTask(type: .ai, name: "AI 扫描", target: "全库", status: .running(progress: 0.5, stage: .synthesis))
         ]
         let view = AIPulseIndicator()
@@ -61,7 +64,7 @@ final class ChatComponentsSnapshots: XCTestCase {
 
     /// 测试 AIPulseIndicator 向量化阶段 — embedding 阶段颜色
     func testAIPulseIndicator_EmbeddingStage() {
-        TaskCenter.shared.tasks = [
+        taskCenter.tasks = [
             GlobalTask(type: .ai, name: "向量化", target: "文档", status: .running(progress: 0.3, stage: .embedding))
         ]
         let view = AIPulseIndicator()

@@ -10,15 +10,17 @@
 //
 import XCTest
 import UFPCore
+import Dependencies
 @testable import ZhiYu
 
 @MainActor
 final class RAGOrchestratorTests: XCTestCase {
-    
+    @Dependency(\.taskCenter) var taskCenter
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
-        TaskCenter.shared.reset()
+        taskCenter.reset()
     }
     
     // MARK: - RAG Chat 同步编排测试
@@ -47,7 +49,7 @@ final class RAGOrchestratorTests: XCTestCase {
         XCTAssertEqual(result.content, "量子力学是研究微观粒子的物理学分支。")
         
         // 5. 验证 TaskCenter 任务是否成功完成
-        let tasks = TaskCenter.shared.tasks
+        let tasks = taskCenter.tasks
         XCTAssertFalse(tasks.isEmpty)
         if let lastTask = tasks.last {
             XCTAssertEqual(lastTask.name, "AI Chat")
@@ -95,7 +97,7 @@ final class RAGOrchestratorTests: XCTestCase {
         XCTAssertEqual(gatheredResponse, "量子力学是微观物理学")
         
         // 5. 验证 TaskCenter 中的任务是否成功注册并完成
-        let tasks = TaskCenter.shared.tasks
+        let tasks = taskCenter.tasks
         XCTAssertFalse(tasks.isEmpty)
         if let streamTask = tasks.first(where: { $0.name == "AI Chat Stream" }) {
             XCTAssertEqual(streamTask.target, query)
@@ -142,7 +144,7 @@ final class RAGOrchestratorTests: XCTestCase {
         }
         
         // 3. 验证 TaskCenter 任务是否标记为失败
-        let tasks = TaskCenter.shared.tasks
+        let tasks = taskCenter.tasks
         if let failedTask = tasks.first(where: { $0.name == "AI Chat Stream" && $0.target == query }) {
             switch failedTask.status {
             case .failed(let reason):

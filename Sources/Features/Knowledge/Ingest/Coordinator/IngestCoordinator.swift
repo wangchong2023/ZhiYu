@@ -19,6 +19,7 @@ import Dependencies
 @Observable
 final class IngestCoordinator {
     @ObservationIgnored @Dependency(\.toastService) var toastManager
+    @ObservationIgnored @Dependency(\.taskCenter) var taskCenter
     // ── 基础设施依赖 ──
     @ObservationIgnored @Inject var store: AppStore
     @ObservationIgnored @Inject var ingestStore: IngestStore

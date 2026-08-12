@@ -10,13 +10,15 @@
 //
 import SwiftUI
 import Observation
+import Dependencies
 
 /// AI 脉搏指示器
 /// 负责增强用户对 AI 处理状态（如思考、全库扫描）的感知，提供动态波纹动画及实时状态文本展示
 struct AIPulseIndicator: View {
     @Environment(AppStore.self) var store
+    @Dependency(\.taskCenter) private var taskCenter
     private var isAIProcessing: Bool {
-        TaskCenter.shared.tasks.contains(where: { task in
+        taskCenter.tasks.contains(where: { task in
             if case .running = task.status {
                 return task.type == .ai || task.type == .synthesis
             }
@@ -29,7 +31,7 @@ struct AIPulseIndicator: View {
     }
     
     private var currentStage: TaskStage {
-        if let runningTask = TaskCenter.shared.tasks.first(where: { if case .running = $0.status { return true }; return false }) {
+        if let runningTask = taskCenter.tasks.first(where: { if case .running = $0.status { return true }; return false }) {
             if case .running(_, let stage) = runningTask.status {
                 return stage
             }
@@ -80,8 +82,8 @@ struct AIPulseIndicator: View {
                         .font(.system(size: DesignSystem.microFontSize, weight: .bold, design: .rounded)) // 10
                         .foregroundStyle(pulseColor)
                     
-                    if !TaskCenter.shared.latestStatus.isEmpty {
-                        Text(TaskCenter.shared.latestStatus)
+                    if !taskCenter.latestStatus.isEmpty {
+                        Text(taskCenter.latestStatus)
                             .font(.system(size: DesignSystem.microFontSize - 2, design: .monospaced)) // 8
                             .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.prominent)) // 0.8
                             .lineLimit(1)
@@ -98,7 +100,7 @@ struct AIPulseIndicator: View {
                 .fill(Color.appCard.opacity(DesignSystem.Opacity.prominent)) // 0.8
                 .shadow(color: .black.opacity(DesignSystem.shadowOpacity / 2), radius: DesignSystem.borderWidth * 2) // 0.05, 2
         )
-        .animation(.spring(response: DesignSystem.Animation.standardDuration * 1.2), value: TaskCenter.shared.latestStatus) // 0.3
+        .animation(.spring(response: DesignSystem.Animation.standardDuration * 1.2), value: taskCenter.latestStatus) // 0.3
         .animation(.spring(), value: isActive)
         .onChange(of: isActive) { _, newValue in
             if newValue {

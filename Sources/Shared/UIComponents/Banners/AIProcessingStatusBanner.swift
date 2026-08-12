@@ -9,10 +9,11 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import Dependencies
 
 /// 全局 AI 任务处理状态条
 struct AIProcessingStatusBanner: View {
-    @ObservedObject var taskCenter = TaskCenter.shared
+    @Dependency(\.taskCenter) var taskCenter
     @State private var rotationAngle: Double = 0
     @State private var isAnimating = false
     

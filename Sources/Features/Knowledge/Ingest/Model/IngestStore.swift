@@ -12,6 +12,7 @@ import Foundation
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 /// 摄入业务存储，专门负责文件导入、智能提取及摄入工作流管理。
 /// 实现从“原始数据”到“系统页面”的转换逻辑。
@@ -24,6 +25,7 @@ final class IngestStore {
     @ObservationIgnored @Inject private var ingestService: IngestService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject private var pdfService: any PDFServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject private var ocrService: any OCRServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
     init() {}
 
@@ -154,7 +156,7 @@ final class IngestStore {
         fileSize: Int64? = nil,
         sourceType: String? = nil
     ) async throws -> KnowledgePage {
-        let taskID = TaskCenter.shared.addTask(type: .ingest, name: L10n.Ingest.manualEntry, target: title)
+        let taskID = taskCenter.addTask(type: .ingest, name: L10n.Ingest.manualEntry, target: title)
 
         do {
             let page: KnowledgePage
@@ -182,12 +184,12 @@ final class IngestStore {
                 _ = try? await pageStore.updatePage(updatedPage)
             }
 
-            TaskCenter.shared.updateTask(taskID, status: .completed, associatedPageID: page.id)
+            taskCenter.updateTask(taskID, status: .completed, associatedPageID: page.id)
             HapticFeedback.shared.trigger(.success)
             await pageStore.reloadFromDisk() // 确保数据同步
             return page
         } catch {
-            TaskCenter.shared.updateTask(taskID, status: .failed(error: error.localizedDescription))
+            taskCenter.updateTask(taskID, status: .failed(error: error.localizedDescription))
             throw error
         }
     }

@@ -15,7 +15,7 @@ import Dependencies
 // MARK: - Theme Manager
 @MainActor
 @Observable
-public final class ThemeManager {
+public final class ThemeManager: @unchecked Sendable {
     @ObservationIgnored private var keyStore: (any KeyStoreProtocol)?
 
     /// 色彩方案模式原始值（替代 @AppStorage，手动读写 KeyStore）

@@ -12,10 +12,12 @@ import Foundation
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 @MainActor
 @Observable
 public final class SynthesisStore {
+    @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
     public struct SynthesisDocument: Codable, Identifiable, Sendable {
         public let id: UUID
         public let type: SynthesisType
@@ -222,7 +224,7 @@ public final class SynthesisStore {
         withMutation(keyPath: \.synthesisStates) {
             _synthesisStates[type] = SynthesisStatus.generating
         }
-        let taskID = TaskCenter.shared.addTask(type: .synthesis, name: type.title, target: L10n.Common.Sidebar.synthesis)
+        let taskID = taskCenter.addTask(type: .synthesis, name: type.title, target: L10n.Common.Sidebar.synthesis)
 
         let controlInstruction = options.promptInstruction
 
@@ -256,14 +258,14 @@ public final class SynthesisStore {
                 throw AppError.synthesis(invalidError, code: -3)
             }
             Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] [SynthesisStatus: Success] Saved doc \(savedDoc.id)")
-            TaskCenter.shared.completeTask(id: taskID)
+            taskCenter.completeTask(id: taskID)
             return savedDoc
         } catch {
             Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] [SynthesisStatus: Error] \(error.localizedDescription)")
             withMutation(keyPath: \.synthesisStates) {
                 self._synthesisStates[type] = SynthesisStatus.error(error.localizedDescription)
             }
-            TaskCenter.shared.failTask(id: taskID, error: error.localizedDescription)
+            taskCenter.failTask(id: taskID, error: error.localizedDescription)
             throw error
         }
     }

@@ -12,6 +12,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 大语言模型对话专属运行器 (ChatRunner)
 /// 实现 LLMChatServiceProtocol，负责多轮对话、流式推理以及通用内容生成。
@@ -24,6 +25,7 @@ final class ChatRunner: LLMChatServiceProtocol {
     @ObservationIgnored @Inject private var analytics: AIAnalyticsService
     @ObservationIgnored @Inject private var logger: any LoggerProtocol
     @ObservationIgnored @Inject private var reranker: any LLMRetrievalServiceProtocol
+    @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
     // MARK: - 内部属性
     
@@ -114,8 +116,8 @@ final class ChatRunner: LLMChatServiceProtocol {
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
  
         // 1. 在 UI 层启动任务中心异步进度条
-        let taskID = TaskCenter.shared.addTask(type: .ai, name: LLMConstants.TaskName.aiChat, target: sanitizedQuery)
-        TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
+        let taskID = taskCenter.addTask(type: .ai, name: LLMConstants.TaskName.aiChat, target: sanitizedQuery)
+        taskCenter.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
         
         // 2. 检索向量库及 FTS5 混合语义，构建保护双链的语义上下文
         let (context, sources) = await contextBuilder.buildRelevantContext(query: sanitizedQuery)
@@ -123,7 +125,7 @@ final class ChatRunner: LLMChatServiceProtocol {
         let capturedSources = sources  // 捕获用于异步评估
         
         // 3. 执行语义重排，精简检索召回的冗余分块
-        TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.5, stage: .retrieval))
+        taskCenter.updateTask(taskID, status: .running(progress: 0.5, stage: .retrieval))
         
         // 获取 Reranker 服务以进行语义重排
         let rankedPages = (try? await reranker.rerank(query: sanitizedQuery, candidates: pages)) ?? pages
@@ -145,7 +147,7 @@ final class ChatRunner: LLMChatServiceProtocol {
         }
         
         // 4. 调用大模型，记录耗时指标并触发 RAG 自评估
-        TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.8, stage: .synthesis))
+        taskCenter.updateTask(taskID, status: .running(progress: 0.8, stage: .synthesis))
         let startTime = Date()
         let response = try await chatService.chat(systemPrompt: anonSystemPrompt, query: anonQuery, history: anonHistory)
         let latency = Int(Date().timeIntervalSince(startTime) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
@@ -155,7 +157,7 @@ final class ChatRunner: LLMChatServiceProtocol {
         
         analytics.recordRAGMetrics(query: sanitizedQuery, response: deanonymizedResponse, context: context, sources: capturedSources, systemPrompt: systemPrompt, modelName: configManager.model, latency: latency)
         
-        TaskCenter.shared.completeTask(id: taskID)
+        taskCenter.completeTask(id: taskID)
         return ChatMessageDTO(role: .assistant, content: deanonymizedResponse)
     }
     
@@ -179,10 +181,10 @@ final class ChatRunner: LLMChatServiceProtocol {
                 }
  
                 let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
-                let taskID = TaskCenter.shared.addTask(type: .ai, name: LLMConstants.TaskName.aiChatStream, target: sanitizedQuery)
+                let taskID = taskCenter.addTask(type: .ai, name: LLMConstants.TaskName.aiChatStream, target: sanitizedQuery)
                 
                 defer {
-                    TaskCenter.shared.completeTask(id: taskID)
+                    taskCenter.completeTask(id: taskID)
                 }
  
                 do {

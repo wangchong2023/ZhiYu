@@ -16,7 +16,7 @@ import SwiftUI
 /// 渲染当前正在执行的合成任务列表，每个任务以进度卡片形式展示
 /// 并监听任务状态变更以触发 VoiceOver 主动语音公告
 struct SynthesisTimelineView: View {
-    @ObservedObject var taskCenter: TaskCenter
+    @Bindable var taskCenter: TaskCenter
 
     var body: some View {
         let tasks = taskCenter.tasks.filter { task in

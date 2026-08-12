@@ -43,7 +43,7 @@ extension IngestCoordinator {
         }
         let fileName = url.lastPathComponent
         lastImportTime = Date()
-        let taskID = TaskCenter.shared.addTask(type: .ingest, name: L10n.Ingest.importingFile, target: fileName)
+        let taskID = taskCenter.addTask(type: .ingest, name: L10n.Ingest.importingFile, target: fileName)
         let recordID = UUID().uuidString
 
         let fileSize: Int64? = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize.map(Int64.init)
@@ -52,7 +52,7 @@ extension IngestCoordinator {
             Task { @MainActor in
                 toastManager.show(type: .error, message: L10n.Ingest.fileTooLarge)
             }
-            TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.fileTooLarge))
+            taskCenter.updateTask(taskID, status: .failed(error: L10n.Ingest.fileTooLarge))
             return
         }
 
@@ -63,7 +63,7 @@ extension IngestCoordinator {
             Task { @MainActor in
                 toastManager.show(type: .error, message: L10n.Ingest.importFailed)
             }
-            TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
+            taskCenter.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
             return
         }
 
@@ -125,7 +125,7 @@ extension IngestCoordinator {
                 await MainActor.run {
                     toastManager.show(type: .info, message: L10n.Ingest.duplicateFile(record.title))
                 }
-                TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.duplicateFile(record.title)))
+                taskCenter.updateTask(taskID, status: .failed(error: L10n.Ingest.duplicateFile(record.title)))
                 return
             }
             try? await importRecordRepo.save(record)
@@ -166,13 +166,13 @@ extension IngestCoordinator {
                         try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
                         try? await importRecordRepo.updatePageID(id: recordID, pageID: page.id.uuidString)
                     }
-                    TaskCenter.shared.updateTask(taskID, status: .completed)
+                    taskCenter.updateTask(taskID, status: .completed)
                     HapticFeedback.shared.trigger(.success)
                 } else {
                     Task { @MainActor in
                         try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
                     }
-                    TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
+                    taskCenter.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
                     HapticFeedback.shared.trigger(.error)
                 }
             }

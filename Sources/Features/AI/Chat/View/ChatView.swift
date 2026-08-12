@@ -28,6 +28,7 @@ struct ChatViewContent: View {
     @Environment(Router.self) var router
     @EnvironmentObject var llmService: LLMService
     @Dependency(\.promptService) private var promptService
+    @Dependency(\.taskCenter) private var taskCenter
     @Binding var selectedTab: AppTab
     
     // 使用协调器管理状态与交互
@@ -235,7 +236,7 @@ struct ChatViewContent: View {
                 if coordinator.streamingContent.isEmpty {
                     // 获取当前活跃任务的阶段
                     let stage: TaskStage = {
-                        if let runningTask = TaskCenter.shared.tasks.first(where: { if case .running = $0.status { return true }; return false }) {
+                        if let runningTask = taskCenter.tasks.first(where: { if case .running = $0.status { return true }; return false }) {
                             if case .running(_, let stage) = runningTask.status {
                                 return stage
                             }

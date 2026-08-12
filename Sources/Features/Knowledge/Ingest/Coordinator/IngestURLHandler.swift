@@ -42,7 +42,7 @@ extension IngestCoordinator {
         lastImportTime = Date()
 
         let totalCount = urls.count
-        let taskID = TaskCenter.shared.addTask(
+        let taskID = taskCenter.addTask(
             type: .ingest,
             name: L10n.Ingest.urlImport,
             target: L10n.Ingest.validURLCount(totalCount, totalCount)
@@ -76,7 +76,7 @@ extension IngestCoordinator {
                     processedCount += 1
                     let progress = Double(processedCount) / Double(totalCount)
                     await MainActor.run {
-                        TaskCenter.shared.updateTask(taskID, status: .running(progress: progress, stage: .extraction))
+                        taskCenter.updateTask(taskID, status: .running(progress: progress, stage: .extraction))
                     }
                 }
                 return results
@@ -86,12 +86,12 @@ extension IngestCoordinator {
             let fail = completed.count - ok
             await MainActor.run {
                 if fail == 0 {
-                    TaskCenter.shared.updateTask(taskID, status: .completed)
+                    taskCenter.updateTask(taskID, status: .completed)
                 } else if ok == 0 {
-                    TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
+                    taskCenter.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
                 } else {
                     // 部分失败：标记为 failed 但消息说明部分成功，避免 UI 误显示"全部完成"
-                    TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.batchResult(ok, fail)))
+                    taskCenter.updateTask(taskID, status: .failed(error: L10n.Ingest.batchResult(ok, fail)))
                 }
                 toastManager.show(type: ok > 0 ? .success : .error, message: L10n.Ingest.batchResult(ok, fail))
             }
@@ -113,13 +113,13 @@ extension IngestCoordinator {
         guard await isDIReadyForImport(taskID: taskID, urlString: urlString) else { return false }
 
         await MainActor.run {
-            TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.fetchingURL): \(urlString)")
+            taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.fetchingURL): \(urlString)")
         }
 
         // VULN-005 修复：SSRF 防护 — 拒绝内网/环回/链路本地地址
         if let url = URL(string: urlString), !SSRFGuard.isSafeURL(url) {
             await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.fetchingURL): \(urlString) [blocked]")
+                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.fetchingURL): \(urlString) [blocked]")
             }
             return false
         }
@@ -132,7 +132,7 @@ extension IngestCoordinator {
         let ocrText: String
         if rawResult != nil {
             await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.imageExtracting): \(title)")
+                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.imageExtracting): \(title)")
             }
             ocrText = (try? await self.extractImagesFromURL(urlString)) ?? ""
         } else {
@@ -153,7 +153,7 @@ extension IngestCoordinator {
             ServiceContainer.shared.typeErasedResolve((any ImportRecordRepository).self) != nil
         else {
             await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): DI not ready [\(urlString)]")
+                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): DI not ready [\(urlString)]")
             }
             return false
         }
@@ -164,11 +164,11 @@ extension IngestCoordinator {
     private func logFetchResult(rawResult: (markdown: String, title: String)?, title: String, urlString: String, taskID: UUID) async {
         if rawResult != nil {
             await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Success): \(title)")
+                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Success): \(title)")
             }
         } else {
             await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Failed): \(urlString)")
+                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.webscraperLevel1Failed): \(urlString)")
             }
         }
     }
@@ -201,13 +201,13 @@ extension IngestCoordinator {
             try? await self.importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
             try? await self.importRecordRepo.updatePageID(id: recordID, pageID: page.id.uuidString)
             await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.completed): \(title)")
+                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.Status.completed): \(title)")
             }
             return true
         } else {
             try? await self.importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
             await MainActor.run {
-                TaskCenter.shared.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): \(title)")
+                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): \(title)")
             }
             return false
         }

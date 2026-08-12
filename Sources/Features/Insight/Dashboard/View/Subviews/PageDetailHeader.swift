@@ -9,6 +9,7 @@
 //  核心职责：仪表盘：页面列表、知识统计、每周洞察、回链视图。
 //
 import SwiftUI
+import Dependencies
 
 // MARK: - Page Detail Header
 /// Page detail header displaying type/status/confidence badges, title, aliases, tags, and meta info.
@@ -19,7 +20,7 @@ import SwiftUI
 struct PageDetailHeader: View {
     let page: KnowledgePage
     var heroNamespace: Namespace.ID?
-    @ObservedObject private var taskCenter = TaskCenter.shared
+    @Dependency(\.taskCenter) private var taskCenter
     
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {

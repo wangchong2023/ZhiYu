@@ -11,6 +11,7 @@
 import Foundation
 import UFPCore
 import Observation
+import Dependencies
 
 /// RAG 业务编排器 (L1.5-Domain)
 /// 负责将“检索”与“生成”逻辑串联，实现高阶 AI 业务。
@@ -27,6 +28,7 @@ public final class RAGOrchestrator {
     @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
     @ObservationIgnored @Inject private var analytics: AIAnalyticsService
     @ObservationIgnored @Inject private var perf: PerformanceService
+    @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
     
     private let contextBuilder = LLMContextBuilder()
     
@@ -36,20 +38,20 @@ public final class RAGOrchestrator {
     public func chat(query: String, history _: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         return try await perf.measureAsync("ragChain") {
             // 1. 任务注册
-            let taskID = TaskCenter.shared.addTask(type: .ai, name: RAGTaskName.chat, target: query)
+            let taskID = taskCenter.addTask(type: .ai, name: RAGTaskName.chat, target: query)
             
             // 2. 构建 RAG 上下文
-            TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
+            taskCenter.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
             let (context, sources) = await contextBuilder.buildRelevantContext(query: query)
             SourceStore.shared.updateSources(sources)
             
             // 3. 语义重排
-            TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.5, stage: .retrieval))
+            taskCenter.updateTask(taskID, status: .running(progress: 0.5, stage: .retrieval))
             let rankedPages = (try? await llmService.rerank(query: query, candidates: pages)) ?? pages
             let systemPrompt = contextBuilder.buildSystemPrompt(pages: rankedPages) + "\n\n" + context
  
             // 4. 调用生成 (Synthesis)
-            TaskCenter.shared.updateTask(taskID, status: .running(progress: 0.8, stage: .synthesis))
+            taskCenter.updateTask(taskID, status: .running(progress: 0.8, stage: .synthesis))
             let startTime = Date()
             
             // 注意：此处直接调用底层 LLMService 的 generate 接口或 chat 接口（剥离了 RAG 逻辑后的版本）
@@ -60,7 +62,7 @@ public final class RAGOrchestrator {
             let capturedSources = SourceStore.shared.activeSources
             analytics.recordRAGMetrics(query: query, response: response, context: context, sources: capturedSources, systemPrompt: systemPrompt, modelName: AppConfig.AI.defaultModel, latency: latency)
             
-            TaskCenter.shared.completeTask(id: taskID)
+            taskCenter.completeTask(id: taskID)
             return ChatMessageDTO(role: .assistant, content: response)
         }
     }
@@ -71,7 +73,7 @@ public final class RAGOrchestrator {
         AsyncThrowingStream { continuation in
             Task { @MainActor in
                 // Step 1: 任务注册
-                let taskID = TaskCenter.shared.addTask(type: .ai, name: RAGTaskName.chatStream, target: query)
+                let taskID = taskCenter.addTask(type: .ai, name: RAGTaskName.chatStream, target: query)
                 
                 do {
                     // Step 2: 构建 RAG 上下文（上下文检索 + 语义重排）
@@ -89,11 +91,11 @@ public final class RAGOrchestrator {
                     // Step 4: 异步指标记录（含检索源，触发检索质量标注）
                     let capturedSources = SourceStore.shared.activeSources
                     analytics.recordRAGMetrics(query: query, response: fullResponse, context: context, sources: capturedSources, systemPrompt: systemPrompt, modelName: AppConfig.AI.defaultModel, latency: 0)
-                    TaskCenter.shared.completeTask(id: taskID)
+                    taskCenter.completeTask(id: taskID)
                     continuation.finish()
                 } catch {
                     // Step 5: 异常路径 — 标记任务失败并向上游抛出错误
-                    TaskCenter.shared.failTask(id: taskID, error: error.localizedDescription)
+                    taskCenter.failTask(id: taskID, error: error.localizedDescription)
                     continuation.finish(throwing: error)
                 }
             }

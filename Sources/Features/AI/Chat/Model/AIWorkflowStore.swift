@@ -12,11 +12,14 @@ import Foundation
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 /// AI 工作流存储，管理 AI 扫描状态、洞察及建议。
 @MainActor
 @Observable
 public final class AIWorkflowStore: AIWorkflowCapabilities {
+    @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
+
     // ── 子 Store 聚合 ──
     public var insightStore: AIInsightStore = AIInsightStore()
 
@@ -101,12 +104,12 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
     /// 运行Lint
     public func runLint() async {
-        let taskID = TaskCenter.shared.addTask(type: .healthCheck, name: L10n.Common.Sidebar.healthCheck, target: AIScanConfig.systemTarget)
+        let taskID = taskCenter.addTask(type: .healthCheck, name: L10n.Common.Sidebar.healthCheck, target: AIScanConfig.systemTarget)
         let pages = (try? await knowledgeRepository.fetchAll()) ?? []
         let issues = await lintService.runLint(pages: pages, linkService: linkService)
         lintIssues = issues
         lastLintDate = Date()
-        TaskCenter.shared.updateTask(taskID, status: .completed)
+        taskCenter.updateTask(taskID, status: .completed)
     }
 
     /// 运行AI扫描
@@ -118,7 +121,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
         isScanningAI = true
         let taskTarget = specificPage?.title ?? AIScanConfig.systemTarget
-        let taskID = TaskCenter.shared.addTask(type: .ai, name: AIScanConfig.scanTaskName, target: taskTarget)
+        let taskID = taskCenter.addTask(type: .ai, name: AIScanConfig.scanTaskName, target: taskTarget)
 
         do {
             let allPages = (try? await knowledgeRepository.fetchAll()) ?? []
@@ -159,11 +162,11 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
             }
 
             isScanningAI = false
-            TaskCenter.shared.updateTask(taskID, status: .completed)
+            taskCenter.updateTask(taskID, status: .completed)
         } catch {
             logger.addLog(action: .aiscanFailed, target: taskTarget, details: error.localizedDescription)
             isScanningAI = false
-            TaskCenter.shared.updateTask(taskID, status: .failed(error: error.localizedDescription))
+            taskCenter.updateTask(taskID, status: .failed(error: error.localizedDescription))
         }
     }
 
@@ -230,10 +233,10 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         isProcessingPageAI = true
         defer { isProcessingPageAI = false }
         
-        let taskID = TaskCenter.shared.addTask(type: .ai, name: type.title, target: title)
+        let taskID = taskCenter.addTask(type: .ai, name: type.title, target: title)
         do {
             let result = try await AISynthesisService.shared.synthesize(type: type, content: content)
-            TaskCenter.shared.completeTask(id: taskID)
+            taskCenter.completeTask(id: taskID)
             
             // 🛡️ 持久化落盘存入 SynthesisDocument 数组，确保在合成列表中可查
             synthesisStore.saveSynthesisResult(type: type, content: result)
@@ -250,7 +253,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
             }
             return result
         } catch {
-            TaskCenter.shared.failTask(id: taskID, error: error.localizedDescription)
+            taskCenter.failTask(id: taskID, error: error.localizedDescription)
             throw error
         }
     }

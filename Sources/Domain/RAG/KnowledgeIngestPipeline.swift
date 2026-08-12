@@ -9,6 +9,8 @@
 //  核心职责：RAG 检索增强生成管道：语义搜索、链接发现、内容增强、评估。
 //
 import Foundation
+import UFPCore
+import Dependencies
 
 /// 知识摄入管道 - RAG 流程的统一入口
 actor KnowledgeIngestPipeline {
@@ -18,8 +20,11 @@ actor KnowledgeIngestPipeline {
 
     private let enricher = AIContentEnricher.shared
     private let chunker = TextChunkerProcessor()
+    @ObservationIgnored private let taskCenter: TaskCenter
 
-    private init() {}
+    private init() {
+        self.taskCenter = runOnMainSync { TaskCenter(activityService: ActivityService.shared) }
+    }
 
     /// 执行完整的 Advanced RAG 摄入流程
     /// 包含：语义增强 -> 全局摘要 -> 父子块切分 -> 反向提问 (Q&A) -> 向量化
@@ -80,8 +85,8 @@ actor KnowledgeIngestPipeline {
             for (pIndex, pChunk) in parentChunks.enumerated() {
                 group.addTask {
                     do {
-                        try Task.checkCancellation()
-                        await TaskCenter.shared.addIngestSubLog(L10n.Ingest.Status.processingChunk)
+                    try Task.checkCancellation()
+                    await self.taskCenter.addIngestSubLog(L10n.Ingest.Status.processingChunk)
                         return try await self.processParentChunk(pChunk, pIndex: pIndex, pageID: pageID, llm: llm)
                     } catch {
                         return []
@@ -102,7 +107,7 @@ actor KnowledgeIngestPipeline {
     private func generateSummaryChunk(content: String, pageID: UUID, llm: any LLMServiceProtocol) async -> [PageChunk] {
         do {
             try Task.checkCancellation()
-            await TaskCenter.shared.addIngestSubLog(L10n.Ingest.Status.generatingSummary)
+            await taskCenter.addIngestSubLog(L10n.Ingest.Status.generatingSummary)
             let summaryPrompt = PromptRegistry.Ingest.summary(content: String(content.prefix(PromptConstants.IngestPipeline.summaryChunkCharLimit)))
             if let summary = try? await llm.generate(prompt: summaryPrompt, systemPrompt: L10n.AI.Prompt.ingestManagementAssistant) {
                 try Task.checkCancellation()
@@ -138,10 +143,10 @@ actor KnowledgeIngestPipeline {
 
     /// 更新任务中心的进度条与子日志，保持 UI 流水线进度视图实时同步。
     private func updateProgress(stage: TaskStage, progress: Double, log: String) async {
-        if let task = await TaskCenter.shared.tasks.first(where: { $0.type == .ingest }) {
-            await TaskCenter.shared.updateTask(task.id, status: .running(progress: progress, stage: stage))
+        if let task = await taskCenter.tasks.first(where: { $0.type == .ingest }) {
+            await taskCenter.updateTask(task.id, status: .running(progress: progress, stage: stage))
         }
-        await TaskCenter.shared.addIngestSubLog(log)
+        await taskCenter.addIngestSubLog(log)
     }
 
     /// 处理单个父分块，生成子分块与反向 Q&A 块
