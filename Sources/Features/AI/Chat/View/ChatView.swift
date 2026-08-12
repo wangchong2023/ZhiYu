@@ -9,6 +9,7 @@
 //  核心职责：构建 Chat 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Dependencies
 #if canImport(WebKit)
 import WebKit
 #endif
@@ -26,7 +27,7 @@ struct ChatViewContent: View {
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
     @EnvironmentObject var llmService: LLMService
-    @StateObject private var promptService = PromptService.shared
+    @Dependency(\.promptService) private var promptService
     @Binding var selectedTab: AppTab
     
     // 使用协调器管理状态与交互

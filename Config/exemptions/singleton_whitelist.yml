@@ -217,12 +217,6 @@ singleton_whitelist:
     added: 2026-08-12
     expiry_check: P2
 
-  - file: Sources/Infrastructure/LLM/PromptService.swift
-    class: PromptService
-    reason: P2 阶段迁移（26 次引用）
-    added: 2026-08-12
-    expiry_check: P2
-
   - file: Sources/Infrastructure/Storage/Search/SpotlightService.swift
     class: SpotlightService
     reason: P2 阶段迁移（1 次引用）

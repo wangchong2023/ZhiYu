@@ -14,6 +14,7 @@ import SwiftUI
 import SnapshotTesting
 import Combine
 import UFPStorage
+import Dependencies
 @testable import ZhiYu
 
 @MainActor
@@ -53,7 +54,8 @@ final class ComponentSnapshots: XCTestCase {
         ChatService.shared.clearHistory()
         
         // 重置提示词服务到默认状态，防止设置修改污染快照
-        PromptService.shared.reset()
+        @Dependency(\.promptService) var promptService: PromptService
+        promptService.reset()
     }
     
     /// 测试图谱节点的视觉一致性

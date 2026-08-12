@@ -10,19 +10,21 @@
 //
 import Foundation
 import Combine
+import Dependencies
 
 /// [L2] 领域服务：统一 Prompt 资产管理中心
 /// 实现提示词与逻辑代码的解耦，便于后续调优与多语言适配。
-final class PromptService: ObservableObject, @unchecked Sendable {
-    static let shared = PromptService()
-    
-    private var cancellables = Set<AnyCancellable>()
+@Observable
+public final class PromptService: @unchecked Sendable {
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private var defaults: UserDefaults
 
-    private init() {
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         reload()
         setupObservers()
     }
-    
+
     private func setupObservers() {
         NotificationCenter.default.publisher(for: .languageChanged)
             .receive(on: RunLoop.main)
@@ -33,7 +35,6 @@ final class PromptService: ObservableObject, @unchecked Sendable {
     }
 
     private func load() {
-        let defaults = UserDefaults.standard
         if let savedMindmap = defaults.string(forKey: "prompt_mindmap") { self.mindmapPrompt = savedMindmap }
         if let savedQuiz = defaults.string(forKey: "prompt_quiz") { self.quizPrompt = savedQuiz }
         if let savedSlides = defaults.string(forKey: "prompt_slides") { self.slidesPrompt = savedSlides }
@@ -48,43 +49,41 @@ final class PromptService: ObservableObject, @unchecked Sendable {
 
     // MARK: - 检索增强 (RAG) 相关
 
-    @Published var queryRewritePrompt: String = L10n.AI.Prompt.queryRewrite
+    public var queryRewritePrompt: String = L10n.AI.Prompt.queryRewrite
 
-    @Published var rerankPrompt: String = L10n.AI.Prompt.rerank
+    public var rerankPrompt: String = L10n.AI.Prompt.rerank
 
-    @Published var queryExpansionPrompt: String = L10n.AI.Prompt.queryExpansion
+    public var queryExpansionPrompt: String = L10n.AI.Prompt.queryExpansion
 
     // MARK: - 知识维护相关
 
-    @Published var potentialLinksPrompt: String = L10n.AI.Prompt.potentialLinks
+    public var potentialLinksPrompt: String = L10n.AI.Prompt.potentialLinks
 
-    @Published var foldingPrompt: String = L10n.AI.Prompt.folding
+    public var foldingPrompt: String = L10n.AI.Prompt.folding
 
-    @Published var refactorPrompt: String = L10n.AI.Prompt.refactor
+    public var refactorPrompt: String = L10n.AI.Prompt.refactor
 
     // MARK: - 知识合成 (Synthesis) 相关
 
-    @Published var fixSuggestionPrompt: String = L10n.AI.Prompt.fixSuggestion
+    public var fixSuggestionPrompt: String = L10n.AI.Prompt.fixSuggestion
 
-    @Published var mindmapPrompt: String = L10n.AI.Prompt.Default.mindmap
-    @Published var quizPrompt: String = L10n.AI.Prompt.Default.quiz
-    @Published var slidesPrompt: String = L10n.AI.Prompt.Default.slides
-    @Published var summaryPrompt: String = L10n.AI.Prompt.Default.summary
-    @Published var actionPrompt: String = L10n.AI.Prompt.Default.actions
-    @Published var infographicPrompt: String = L10n.AI.Prompt.Default.infographic
-    @Published var insightQuestionsPrompt: String = L10n.AI.Prompt.Default.insightQuestions
-    @Published var reportPrompt: String = L10n.AI.Prompt.Default.report
-    @Published var expansionPrompt: String = L10n.AI.Prompt.Default.expansion
-    @Published var expansionSystemPrompt: String = "You are a senior knowledge expert and researcher. Your goal is to provide deep, insightful expansion of existing knowledge."
+    public var mindmapPrompt: String = L10n.AI.Prompt.Default.mindmap
+    public var quizPrompt: String = L10n.AI.Prompt.Default.quiz
+    public var slidesPrompt: String = L10n.AI.Prompt.Default.slides
+    public var summaryPrompt: String = L10n.AI.Prompt.Default.summary
+    public var actionPrompt: String = L10n.AI.Prompt.Default.actions
+    public var infographicPrompt: String = L10n.AI.Prompt.Default.infographic
+    public var insightQuestionsPrompt: String = L10n.AI.Prompt.Default.insightQuestions
+    public var reportPrompt: String = L10n.AI.Prompt.Default.report
+    public var expansionPrompt: String = L10n.AI.Prompt.Default.expansion
+    public var expansionSystemPrompt: String = "You are a senior knowledge expert and researcher. Your goal is to provide deep, insightful expansion of existing knowledge."
 
     // MARK: - 用户资产
 
-    @Published var userShortcuts: [ShortcutItem] = []
+    public var userShortcuts: [ShortcutItem] = []
 
     /// 更新Localizables
-    func updateLocalizables() {
-        // Notice: with the new localized ShortcutItem, we don't need to overwrite userShortcuts here.
-        // We only initialize it in load() if it's empty.
+    public func updateLocalizables() {
         if userShortcuts.isEmpty {
             userShortcuts = [
                 ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: L10n.AI.Prompt.Shortcut.Key.deepReview),
@@ -92,7 +91,6 @@ final class PromptService: ObservableObject, @unchecked Sendable {
                 ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: L10n.AI.Prompt.Shortcut.Key.studyPath)
             ]
         }
-        // 刷新其他提示词
         queryRewritePrompt = L10n.AI.Prompt.queryRewrite
         rerankPrompt = L10n.AI.Prompt.rerank
         potentialLinksPrompt = L10n.AI.Prompt.potentialLinks
@@ -100,8 +98,7 @@ final class PromptService: ObservableObject, @unchecked Sendable {
         refactorPrompt = L10n.AI.Prompt.refactor
         fixSuggestionPrompt = L10n.AI.Prompt.fixSuggestion
 
-        // 默认提示词（如果没有保存过）
-        let defaults = UserDefaults.standard
+        let defaults = self.defaults
         if defaults.string(forKey: "prompt_mindmap") == nil { mindmapPrompt = L10n.AI.Prompt.Default.mindmap }
         if defaults.string(forKey: "prompt_quiz") == nil { quizPrompt = L10n.AI.Prompt.Default.quiz }
         if defaults.string(forKey: "prompt_slides") == nil { slidesPrompt = L10n.AI.Prompt.Default.slides }
@@ -110,14 +107,13 @@ final class PromptService: ObservableObject, @unchecked Sendable {
     }
 
     /// reload
-    func reload() {
+    public func reload() {
         load()
         updateLocalizables()
     }
 
     /// 保存
-    func save() {
-        let defaults = UserDefaults.standard
+    public func save() {
         defaults.set(mindmapPrompt, forKey: "prompt_mindmap")
         defaults.set(quizPrompt, forKey: "prompt_quiz")
         defaults.set(slidesPrompt, forKey: "prompt_slides")
@@ -131,8 +127,7 @@ final class PromptService: ObservableObject, @unchecked Sendable {
     }
 
     /// 重置
-    func reset() {
-        let defaults = UserDefaults.standard
+    public func reset() {
         defaults.removeObject(forKey: "prompt_mindmap")
         defaults.removeObject(forKey: "prompt_quiz")
         defaults.removeObject(forKey: "prompt_slides")
@@ -156,18 +151,41 @@ final class PromptService: ObservableObject, @unchecked Sendable {
     }
 
     /// 根据当前客户端界面语言动态生成的 AI 多语言回复 Prompt 指令
-    var languageInstruction: String {
+    public var languageInstruction: String {
         let langCode = Localized.currentLanguage
         return "\n\nPlease reply in the user's current locale language (\(langCode))."
     }
 }
 
-struct ShortcutItem: Identifiable, Equatable, Codable {
-    var id = UUID()
-    var rawText: String
-    var localizationKey: String?
+// MARK: - PromptService DependencyKey
+
+private enum PromptServiceKey: DependencyKey {
+    static var liveValue: PromptService {
+        PromptService(defaults: .standard)
+    }
+    static let testValue: PromptService = {
+        guard let defaults = UserDefaults(suiteName: "test") else {
+            return PromptService(defaults: .standard)
+        }
+        return PromptService(defaults: defaults)
+    }()
+    static let previewValue: PromptService = PromptService(defaults: .standard)
+}
+
+extension DependencyValues {
+    /// Prompt 服务依赖（原 PromptService.shared）
+    public var promptService: PromptService {
+        get { self[PromptServiceKey.self] }
+        set { self[PromptServiceKey.self] = newValue }
+    }
+}
+
+public struct ShortcutItem: Identifiable, Equatable, Codable {
+    public var id = UUID()
+    public var rawText: String
+    public var localizationKey: String?
     
-    var text: String {
+    public var text: String {
         get {
             if let key = localizationKey {
                 return Localized.tr(key, table: "AI")
@@ -180,7 +198,7 @@ struct ShortcutItem: Identifiable, Equatable, Codable {
         }
     }
     
-    init(text: String, localizationKey: String? = nil) {
+    public init(text: String, localizationKey: String? = nil) {
         self.rawText = text
         self.localizationKey = localizationKey
     }

@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// LLM 对话服务
 /// 负责将系统提示词、用户查询及历史记录转换为 API 请求，并解析响应。
@@ -17,11 +18,13 @@ final class LLMChatService: Sendable {
     private let client: any LLMClientProtocol
     private let model: String
     private let logger: (any LoggerProtocol)?
+    @ObservationIgnored private let promptService: PromptService
 
-    init(client: any LLMClientProtocol, model: String, logger: (any LoggerProtocol)? = nil) {
+    init(client: any LLMClientProtocol, model: String, logger: (any LoggerProtocol)? = nil, promptService: PromptService? = nil) {
         self.client = client
         self.model = model
         self.logger = logger
+        self.promptService = promptService ?? PromptService(defaults: .standard)
     }
 
     // MARK: - 请求构造
@@ -30,7 +33,7 @@ final class LLMChatService: Sendable {
     func buildChatMessages(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [[String: Any]] {
         // 注入回复篇幅控制指令，引导模型在可配区间内作答
         let lengthHint = LLMConstants.PromptInstruction.lengthHint(PromptConstants.TokenLimits.defaultMaxOutputTokens)
-        let fullSystemPrompt = systemPrompt + PromptService.shared.languageInstruction + lengthHint
+        let fullSystemPrompt = systemPrompt + promptService.languageInstruction + lengthHint
         var messages: [[String: Any]] = [[LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: fullSystemPrompt]]
 
         // 注入历史记录

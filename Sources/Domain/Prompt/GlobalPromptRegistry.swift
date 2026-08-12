@@ -9,6 +9,7 @@
 //  核心职责：应用级 Prompt 统一集中注册中心，覆盖 Chat、Synthesis、Ingest、RAG、Refactor、VoiceNote。
 //
 import Foundation
+import Dependencies
 
 /// Prompt 变量插值标记常量
 private enum PromptVariableSyntax {
@@ -32,7 +33,16 @@ public enum PromptDomain: String, Sendable, CaseIterable {
 public final class GlobalPromptRegistry: Sendable {
     public static let shared = GlobalPromptRegistry()
 
-    private init() {}
+    @ObservationIgnored private let promptService: PromptService
+
+    private init() {
+        self.promptService = PromptService(defaults: .standard)
+    }
+
+    /// 测试/自定义注入构造器
+    public init(promptService: PromptService) {
+        self.promptService = promptService
+    }
 
     /// 获取特定领域及场景Key的系统提示词
     /// - Parameters:
@@ -42,15 +52,15 @@ public final class GlobalPromptRegistry: Sendable {
     public func getPrompt(domain: PromptDomain, key _: String) -> String {
         switch domain {
         case .chat:
-            return PromptService.shared.expansionSystemPrompt
+            return promptService.expansionSystemPrompt
         case .synthesis:
-            return PromptService.shared.mindmapPrompt
+            return promptService.mindmapPrompt
         case .ingest:
             return "You are a professional knowledge curator. Structure, summarize, and extract key entities from incoming content."
         case .ragRetrieval:
-            return PromptService.shared.queryExpansionPrompt
+            return promptService.queryExpansionPrompt
         case .knowledgeRefactor:
-            return PromptService.shared.refactorPrompt
+            return promptService.refactorPrompt
         case .voiceNote:
             return "You are a voice note summarizer. Organize transcriptions into concise bullet points and action items."
         }

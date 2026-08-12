@@ -9,12 +9,13 @@
 //  核心职责：构建 ChatWelcome 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Dependencies
 
 struct ChatWelcomeView: View {
     let isSheet: Bool
     @Environment(ChatCoordinator.self) var coordinator
     @Environment(AppStore.self) var store
-    @StateObject private var promptService = PromptService.shared
+    @Dependency(\.promptService) private var promptService
 
     init(isSheet: Bool = false) {
         self.isSheet = isSheet

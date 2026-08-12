@@ -9,10 +9,11 @@
 //  核心职责：构建 PromptWorkshop 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Dependencies
 
 struct PromptWorkshopView: View {
     /// 全局提示词管理服务
-    @StateObject private var promptService = PromptService.shared
+    @Dependency(\.promptService) private var promptService
     
     /// 视图 dismiss 环境变量
     @Environment(\.dismiss) private var dismiss
@@ -30,6 +31,7 @@ struct PromptWorkshopView: View {
     @State private var showResetAlert = false
     
     var body: some View {
+        @Bindable var bindablePromptService = promptService
         if idiom == .watch {
             WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.promptWorkshopPlaceholder)
         } else {
@@ -70,7 +72,7 @@ struct PromptWorkshopView: View {
 
                 // ── 模块 1：我的快捷指令 (默认展开) ──
                 Section {
-                    ForEach($promptService.userShortcuts) { $item in
+                    ForEach($bindablePromptService.userShortcuts) { $item in
                         HStack {
                             TextField(L10n.AI.Prompt.workshop.input.placeholder, text: $item.text)
                                 .font(.subheadline)

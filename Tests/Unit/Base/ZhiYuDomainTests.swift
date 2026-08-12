@@ -11,6 +11,7 @@
 import XCTest
 import UFPCore
 import UFPStorage
+import Dependencies
 @testable import ZhiYu
 
 final class ZhiYuDomainTests: XCTestCase {
@@ -23,13 +24,15 @@ final class ZhiYuDomainTests: XCTestCase {
         
         // 确保在 DI 注册就绪后再重置/访问单例状态，规避初始化时由于容器缺失服务导致的 assertion 闪退
         TaskCenter.shared.reset()
-        PromptService.shared.reset()
+        @Dependency(\.promptService) var promptService
+        promptService.reset()
     }
     
     @MainActor
     override func tearDown() async throws {
         TaskCenter.shared.reset()
-        PromptService.shared.reset()
+        @Dependency(\.promptService) var promptService
+        promptService.reset()
         DatabaseManager.shared.reset()
         ServiceContainer.shared.reset()
         try await super.tearDown()
@@ -92,15 +95,16 @@ final class ZhiYuDomainTests: XCTestCase {
     }
 
     // MARK: - PromptService Tests
+    @MainActor
     func testPromptServicePersistence() {
-        let service = PromptService.shared
+        @Dependency(\.promptService) var service: PromptService
         let originalMindmap = service.mindmapPrompt
         
         service.mindmapPrompt = "New Custom Prompt"
         service.save()
         
-        // 模拟重启（使用 shared 实例，因为 init 已私有）
-        let newService = PromptService.shared
+        // 模拟重启（通过 DI 重新解析实例）
+        @Dependency(\.promptService) var newService: PromptService
         XCTAssertEqual(newService.mindmapPrompt, "New Custom Prompt")
         
         service.reset()

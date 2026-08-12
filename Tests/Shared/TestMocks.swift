@@ -440,8 +440,7 @@ extension XCTestCase {
         #if !os(watchOS)
         ServiceContainer.shared.register(AISynthesisService.shared, for: AISynthesisService.self)
         #endif
-        ServiceContainer.shared.register(PromptService.shared, for: PromptService.self)
-        
+
         let evaluationService = RAGEvaluationService(llmService: llm, governanceStore: governanceRepo)
         ServiceContainer.shared.register(evaluationService, for: RAGEvaluationService.self)
         

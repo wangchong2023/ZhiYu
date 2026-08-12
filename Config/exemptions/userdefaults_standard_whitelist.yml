@@ -54,14 +54,6 @@
     line: 134
   - file: "Sources/Infrastructure/LLM/OnDeviceLLMService.swift"
     line: 203
-  - file: "Sources/Infrastructure/LLM/PromptService.swift"
-    line: 36
-  - file: "Sources/Infrastructure/LLM/PromptService.swift"
-    line: 104
-  - file: "Sources/Infrastructure/LLM/PromptService.swift"
-    line: 120
-  - file: "Sources/Infrastructure/LLM/PromptService.swift"
-    line: 135
   - file: "Sources/Infrastructure/Storage/Sync/iCloudSyncManager.swift"
     line: 49
   - file: "Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift"

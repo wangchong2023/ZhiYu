@@ -47,7 +47,6 @@ struct AIModuleRegistrar: ModuleRegistrar {
         container.register(llm, for: LLMService.self)
         container.register(AISynthesisService.shared as any AISynthesisServiceProtocol, for: (any AISynthesisServiceProtocol).self)
         container.register(AISynthesisService.shared, for: AISynthesisService.self)
-        container.register(PromptService.shared, for: PromptService.self)
 
         // RAG 评估服务 — 依赖 RAGGovernanceRepository (L1 已注册)
         Logger.shared.info("[DI] Initializing RAGEvaluationService...")

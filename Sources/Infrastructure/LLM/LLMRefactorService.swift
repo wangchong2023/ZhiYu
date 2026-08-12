@@ -10,16 +10,19 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// LLM 知识重构服务
 /// 负责扫描知识库内容，通过语义分析建立双向链接并建议页面合并或拆分。
 public final class LLMRefactorService: Sendable {
     private let client: any LLMClientProtocol
     private let model: String
+    @ObservationIgnored private let promptService: PromptService
 
-    init(client: any LLMClientProtocol, model: String) {
+    init(client: any LLMClientProtocol, model: String, promptService: PromptService? = nil) {
         self.client = client
         self.model = model
+        self.promptService = promptService ?? PromptService(defaults: .standard)
     }
 
     // MARK: - 链接发现 (Link Discovery)
@@ -27,7 +30,7 @@ public final class LLMRefactorService: Sendable {
     /// 扫描文本以发现潜在的内部链接建议
     func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] {
         let prompt = """
-        \(PromptService.shared.potentialLinksPrompt)
+        \(promptService.potentialLinksPrompt)
 
         
         \(existingTitles.joined(separator: ", "))
@@ -55,7 +58,7 @@ public final class LLMRefactorService: Sendable {
     /// 增量折叠：将新资料合并至现有页面，避免重复
     func foldContent(existingContent: String, newContent: String, title _: String) async throws -> String {
         let prompt = """
-        \(PromptService.shared.foldingPrompt)
+        \(promptService.foldingPrompt)
 
         
         \(existingContent)
@@ -83,7 +86,7 @@ public final class LLMRefactorService: Sendable {
         let pageData = pages.map { "\($0.title): \($0.content.prefix(LLMConstants.LogPreview.refactorPageContentLength))..." }.joined(separator: "\n---\n")
 
         let prompt = """
-        \(PromptService.shared.refactorPrompt)
+        \(promptService.refactorPrompt)
 
         
         \(pageData)

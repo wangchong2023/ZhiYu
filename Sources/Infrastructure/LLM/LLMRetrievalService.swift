@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// LLM 检索增强服务
 /// 负责对原始查询进行优化，并对初步召回的结果执行语义精排。
@@ -17,11 +18,13 @@ final class LLMRetrievalService: Sendable {
     private let client: any LLMClientProtocol
     private let model: String
     private let contextBuilder: LLMContextBuilder
+    @ObservationIgnored private let promptService: PromptService
 
-    init(client: any LLMClientProtocol, model: String, contextBuilder: LLMContextBuilder) {
+    init(client: any LLMClientProtocol, model: String, contextBuilder: LLMContextBuilder, promptService: PromptService? = nil) {
         self.client = client
         self.model = model
         self.contextBuilder = contextBuilder
+        self.promptService = promptService ?? PromptService(defaults: .standard)
     }
 
     // MARK: - 查询优化 (Query Optimization)
@@ -46,7 +49,7 @@ final class LLMRetrievalService: Sendable {
 
     /// 对查询进行意图扩展，生成多个变体以提升召回率
     func expandQuery(_ query: String) async -> [String] {
-        let prompt = "\(PromptService.shared.queryExpansionPrompt)\n\nOriginal Query: \(query)"
+        let prompt = "\(promptService.queryExpansionPrompt)\n\nOriginal Query: \(query)"
         let body: [String: Any] = [
             LLMConstants.APIKey.model: model,
             LLMConstants.APIKey.messages: [
@@ -73,7 +76,7 @@ final class LLMRetrievalService: Sendable {
         guard !candidates.isEmpty else { return candidates }
 
         let titles = candidates.map { "\($0.title) (ID: \($0.id))" }.joined(separator: "\n")
-        let prompt = PromptService.shared.rerankPrompt + "\n\nQuery: \(query)\n\nCandidates:\n\(titles)"
+        let prompt = promptService.rerankPrompt + "\n\nQuery: \(query)\n\nCandidates:\n\(titles)"
         
         let body: [String: Any] = [
             LLMConstants.APIKey.model: model,

@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// AI 知识综合服务 (L1 领域层)
 /// 负责具体的业务 Prompt 编排与结果解析，解耦 LLMService。
@@ -18,6 +19,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     @Inject private var logger: any LoggerProtocol
     private var llm: any LLMServiceProtocol
+    @ObservationIgnored private let promptService: PromptService
 
     /// 动态解析最新的 LLMService 实例，防止持有失效句柄
     private var currentLLM: any LLMServiceProtocol {
@@ -36,6 +38,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
             // 使用 runOnMainSync 安全桥接至主线程，避免 MainActor.assumeIsolated 在非主线程崩溃
             self.llm = runOnMainSync { LLMService.shared }
         }
+        self.promptService = PromptService(defaults: .standard)
     }
 
     #if DEBUG
@@ -54,7 +57,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Parameter content: content
     /// - Returns: 字符串
     func summarize(content: String) async throws -> String {
-        let prompt = PromptService.shared.summaryPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.summaryPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.summarize
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
@@ -62,7 +65,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     /// 生成思维导图 (Mermaid)
     func generateMindMap(content: String) async throws -> String {
-        let prompt = PromptService.shared.mindmapPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.mindmapPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.mindmap
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: "mindmap")
@@ -76,7 +79,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Parameter content: content
     /// - Returns: 字符串
     func extractActions(content: String) async throws -> String {
-        let prompt = PromptService.shared.actionPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.actionPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.actions
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         return SynthesisProcessor.cleanMarkdown(result)
@@ -86,7 +89,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Parameter content: content
     /// - Returns: 字符串
     func generatePresentation(content: String) async throws -> String {
-        let prompt = PromptService.shared.slidesPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.slidesPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.slides
         let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
         let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
@@ -99,7 +102,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// 生成测验题
     func generateQuiz(content: String) async throws -> String {
         let schemaInstruction = "\n\nPlease output valid raw JSON adhering to the JSON Schema below (no markdown block tags):\n" + PromptConstants.Schemas.quizJSONSchema
-        let prompt = PromptService.shared.quizPrompt + PromptService.shared.languageInstruction + schemaInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.quizPrompt + promptService.languageInstruction + schemaInstruction + "\n\n\n\(truncated(content))"
         let quizTitle = L10n.AI.Prompt.Quiz.defaultTitle
 
         let systemPrompt = L10n.AI.Prompt.System.quiz(quizTitle)
@@ -123,7 +126,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     /// 生成信息图表 (Mermaid)
     func generateInfographic(content: String) async throws -> String {
-        let prompt = PromptService.shared.infographicPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.infographicPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.infographic
         let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
         let formatted = SynthesisProcessor.formatMermaid(rawResult, fallbackPrefix: "graph TD")
@@ -137,7 +140,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Parameter content: content
     /// - Returns: 字符串
     func generateReport(content: String) async throws -> String {
-        let prompt = PromptService.shared.reportPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.reportPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.report
         let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
         let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
@@ -149,7 +152,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     /// 知识深度扩充：对现有内容进行多维度深挖与背景补充
     func expandKnowledge(content: String) async throws -> String {
-        let prompt = PromptService.shared.expansionPrompt + PromptService.shared.languageInstruction + "\n\n\n\(truncated(content))"
+        let prompt = promptService.expansionPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.expansion
         let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
         let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
@@ -166,8 +169,8 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         let otherTitles = pages.map { $0.title }.filter { $0 != pageTitle }
 
         let prompt = """
-        \(PromptService.shared.fixSuggestionPrompt)
-        \(PromptService.shared.languageInstruction)
+        \(promptService.fixSuggestionPrompt)
+        \(promptService.languageInstruction)
 
         \(L10n.AI.LLM.Prompt.pageTitle)\(pageTitle)
         \(L10n.AI.LLM.Prompt.issueDesc)\(issue.message)
@@ -196,8 +199,8 @@ actor AISynthesisService: AISynthesisServiceProtocol {
             .joined(separator: "\n")
 
         let prompt = """
-        \(PromptService.shared.insightQuestionsPrompt)
-        \(PromptService.shared.languageInstruction)
+        \(promptService.insightQuestionsPrompt)
+        \(promptService.languageInstruction)
 
 
         \(pageSummaries)
