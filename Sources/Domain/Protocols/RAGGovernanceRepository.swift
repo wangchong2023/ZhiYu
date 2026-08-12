@@ -9,6 +9,8 @@
 //  核心职责：领域层协议定义（Repository、Service、Strategy 等抽象）。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// [Domain] RAG 全链路质量治理仓储协议（评估、Token 审计、调用日志）
 public protocol RAGGovernanceRepository: Sendable {
@@ -176,5 +178,22 @@ public struct TokenEfficiency: Sendable, Equatable {
         self.queryCount = queryCount
         self.avgTokensPerQuery = avgTokensPerQuery
         self.estimatedCostUSD = estimatedCostUSD
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// RAGGovernanceRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum RAGGovernanceRepositoryKey: DependencyKey {
+    public static var liveValue: any RAGGovernanceRepository {
+        ServiceContainer.shared.resolve((any RAGGovernanceRepository).self)
+    }
+}
+
+extension DependencyValues {
+    /// RAG 治理仓储依赖
+    public var ragGovernanceRepository: any RAGGovernanceRepository {
+        get { self[RAGGovernanceRepositoryKey.self] }
+        set { self[RAGGovernanceRepositoryKey.self] = newValue }
     }
 }

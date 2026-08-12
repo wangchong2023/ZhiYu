@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 基础设施层内部的文档处理通用协议
 protocol DocumentProcessor: Sendable {
@@ -69,7 +70,7 @@ public final class DocumentExtractionService: DocumentExtractionServiceProtocol 
 /// PDF 格式处理器代理
 struct PDFProcessorProxy: DocumentProcessor {
     /// 注入底层系统级 PDF 处理能力
-    @Inject private var pdfService: any PDFServiceProtocol
+    @Dependency(\.pdfService) private var pdfService: any PDFServiceProtocol
 
     /// 提取Text
     /// - Returns: 字符串

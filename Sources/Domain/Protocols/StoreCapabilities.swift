@@ -10,6 +10,8 @@
 //
 import Foundation
 import UFPStorage
+import Dependencies
+import UFPCore
 
 /// 具备向量化与语义嵌入检索能力的底层存储协议。
 public protocol VectorIndexableStore: Sendable {
@@ -222,3 +224,33 @@ public struct StorageStats: Sendable, Equatable {
 
 /// 聚合了页面存取与语义向量检索的复合存储能力协议 (L0-Base 核心大脑)。
 public typealias AnyPageStoreCapabilities = AnyPageStore & VectorIndexableStore
+
+// MARK: - DependencyKey 注册
+
+/// AnyPageStore 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum AnyPageStoreKey: DependencyKey {
+    public static var liveValue: any AnyPageStore {
+        ServiceContainer.shared.resolve((any AnyPageStore).self)
+    }
+}
+
+/// AnyPageStoreCapabilities 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum AnyPageStoreCapabilitiesKey: DependencyKey {
+    public static var liveValue: any AnyPageStoreCapabilities {
+        ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
+    }
+}
+
+extension DependencyValues {
+    /// 页面存储服务依赖
+    public var pageStore: any AnyPageStore {
+        get { self[AnyPageStoreKey.self] }
+        set { self[AnyPageStoreKey.self] = newValue }
+    }
+
+    /// 页面存储能力服务依赖
+    public var pageStoreCapabilities: any AnyPageStoreCapabilities {
+        get { self[AnyPageStoreCapabilitiesKey.self] }
+        set { self[AnyPageStoreCapabilitiesKey.self] = newValue }
+    }
+}

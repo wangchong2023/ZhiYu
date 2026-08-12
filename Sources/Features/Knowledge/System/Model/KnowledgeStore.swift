@@ -327,3 +327,21 @@ public final class KnowledgeStore {
         }
     }
 }
+
+// MARK: - DependencyKey 注册
+
+/// KnowledgeStore 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum KnowledgeStoreKey: DependencyKey {
+    @MainActor
+    public static var liveValue: KnowledgeStore {
+        ServiceContainer.shared.resolve(KnowledgeStore.self)
+    }
+}
+
+extension DependencyValues {
+    /// 知识存储依赖
+    public var knowledgeStore: KnowledgeStore {
+        get { self[KnowledgeStoreKey.self] }
+        set { self[KnowledgeStoreKey.self] = newValue }
+    }
+}

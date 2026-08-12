@@ -13,6 +13,7 @@
 
 import Foundation
 import UFPCore
+import Dependencies
 import UFPStorage
 
 /// 演示数据生成器
@@ -458,7 +459,8 @@ struct InitialNotebookGenerator {
         additionalWrites: @escaping @Sendable (Database) throws -> Void
     ) async throws {
         let activeVaultID = await MainActor.run {
-            ServiceContainer.shared.resolve((any VaultServiceProtocol).self).selectedVaultID?.uuidString
+            @Dependency(\.vaultService) var vaultService: any VaultServiceProtocol
+            return vaultService.selectedVaultID?.uuidString
         }
         
         try await store.performBatchWrite { db in

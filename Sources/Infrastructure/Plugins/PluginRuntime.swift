@@ -12,6 +12,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 插件运行时引擎：负责插件激活/停用、资源限流、安全熔断与内容拦截管道
 @MainActor
@@ -21,6 +22,12 @@ final class PluginRuntime: @unchecked Sendable {
     /// 父注册中心弱引用（避免循环引用）
     @ObservationIgnored
     weak var registry: PluginRegistry!
+
+    // MARK: - 依赖注入
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
+    @ObservationIgnored @Dependency(\.knowledgeStore) private var knowledgeStore: KnowledgeStore
+    @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Dependency(\.linkService) private var linkService: LinkService
 
     // MARK: - 资源监控
 
@@ -40,13 +47,25 @@ final class PluginRuntime: @unchecked Sendable {
     var pluginResourceUsage: [String: ResourceUsage] = [:]
 
     /// 已挂起的插件 ID (Security Watchdog)，采用持久化存储
-    var suspendedPluginIDs: Set<String> = {
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else {
-            return []
+    private var _suspendedPluginIDs: Set<String>?
+    var suspendedPluginIDs: Set<String> {
+        get {
+            if let existing = _suspendedPluginIDs {
+                return existing
+            }
+            let saved = keyStore?.object(forKey: AppConstants.Keys.Storage.suspendedPlugins) as? [String] ?? []
+            let set = Set(saved)
+            _suspendedPluginIDs = set
+            return set
         }
-        let saved = keyStore.object(forKey: AppConstants.Keys.Storage.suspendedPlugins) as? [String] ?? []
-        return Set(saved)
-    }()
+        set {
+            _suspendedPluginIDs = newValue
+        }
+    }
+
+    // MARK: - 初始化
+
+    init() {}
 
     /// 限流计数器
     private var pluginCallCounts: [String: Int] = [:]
@@ -123,7 +142,7 @@ final class PluginRuntime: @unchecked Sendable {
         registry.eventListeners.removeAll(where: { $0.pluginID == id })
 
         // 安全注销页面处理器
-        if let store = ServiceContainer.shared.resolveOptional(KnowledgeStore.self) {
+        if let store = knowledgeStore as KnowledgeStore? {
             store.unregisterProcessors(for: id)
         }
 
@@ -138,9 +157,7 @@ final class PluginRuntime: @unchecked Sendable {
 
         suspendedPluginIDs.insert(id)
         let array = Array(suspendedPluginIDs)
-        if let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) {
-            keyStore.set(array, forKey: AppConstants.Keys.Storage.suspendedPlugins)
-        }
+        keyStore?.set(array, forKey: AppConstants.Keys.Storage.suspendedPlugins)
 
         // 物理回收：从活跃插件列表中彻底移除，释放 JSContext 内存
         if let index = registry.plugins.firstIndex(where: { $0.manifest.id == id }) {
@@ -250,9 +267,7 @@ final class PluginRuntime: @unchecked Sendable {
         registry.customViews.removeAll()
         registry.eventListeners.removeAll()
         suspendedPluginIDs.removeAll()
-        if let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) {
-            keyStore.removeObject(forKey: AppConstants.Keys.Storage.suspendedPlugins)
-        }
+        keyStore?.removeObject(forKey: AppConstants.Keys.Storage.suspendedPlugins)
         pluginCallCounts.removeAll()
         pluginResourceUsage.removeAll()
     }
@@ -313,6 +328,11 @@ private struct PluginContextImpl: PluginContext {
     weak var registry: PluginRegistry!
     var hostVersion: String { "2.0.0" }
 
+    // MARK: - 依赖注入
+    @Dependency(\.knowledgeStore) private var knowledgeStore: KnowledgeStore
+    @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+    @Dependency(\.linkService) private var linkService: LinkService
+
     /// 记录日志
     func log(_ message: String) {
         Logger.shared.debug(" [Plugin:\(manifest.id)] \(message)")
@@ -324,7 +344,7 @@ private struct PluginContextImpl: PluginContext {
             Logger.shared.error(" []" + "  \(manifest.id)" + "  LLM" + " manifest " + " 'llm' ", error: nil)
             return nil
         }
-        return try? await ServiceContainer.shared.resolve((any LLMServiceProtocol).self).generate(prompt: prompt, systemPrompt: "")
+        return try? await llmService.generate(prompt: prompt, systemPrompt: "")
     }
 
     /// 查询页面
@@ -334,7 +354,7 @@ private struct PluginContextImpl: PluginContext {
             return []
         }
         let pages = registry.pagesProvider?() ?? []
-        return await ServiceContainer.shared.resolve(LinkService.self).search(query: query, in: pages)
+        return await linkService.search(query: query, in: pages)
     }
 
     /// 注册 Command
@@ -353,8 +373,7 @@ private struct PluginContextImpl: PluginContext {
 
     /// 注册 PageProcessor
     func registerPageProcessor(_ processor: any KnowledgePageProcessor) {
-        guard let store = ServiceContainer.shared.resolveOptional(KnowledgeStore.self) else { return }
-        store.registerProcessor(processor, pluginID: manifest.id)
+        knowledgeStore.registerProcessor(processor, pluginID: manifest.id)
         log(": \(processor.name)")
     }
 

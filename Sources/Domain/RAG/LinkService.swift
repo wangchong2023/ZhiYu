@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// [L1] 领域层：处理链接解析、反向链接、搜索与标签聚合
 /// Actor 模式确保大规模并发下的线程安全。
@@ -274,5 +275,22 @@ actor LinkService {
         }
 
         return modifiedPages
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// LinkService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum LinkServiceKey: DependencyKey {
+    public static var liveValue: LinkService {
+        ServiceContainer.shared.resolve(LinkService.self)
+    }
+}
+
+extension DependencyValues {
+    /// 链接服务依赖
+    var linkService: LinkService {
+        get { self[LinkServiceKey.self] }
+        set { self[LinkServiceKey.self] = newValue }
     }
 }

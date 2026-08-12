@@ -47,6 +47,12 @@ IGNORE_PATTERNS = [
     r"\[L10n Audit\]",                                 # L10n 审计警告
     r"main actor-isolated class property .* can not be referenced",  # MainActor 隔离引用
     r"stored property .* of 'Sendable'-conforming class .* is mutable",  # Sendable 可变属性
+    # ── swift-dependencies Swift 6 Sendable 警告（非死代码）──
+    r"type 'KeyPath<DependencyValues, .*>' does not conform to the 'Sendable' protocol",  # DependencyKey KeyPath Sendable
+    r"conformance of '.*Key' to protocol '.*DependencyKey' crosses into main actor-isolated",  # DependencyKey MainActor 隔离
+    r"cannot form key path to main actor-isolated property",  # MainActor 属性 KeyPath
+    r"non-Sendable type '.*' of property '.*' cannot exit main actor-isolated context",  # MainActor 非 Sendable 退出
+    r"non-final class '.*' cannot conform to the 'Sendable' protocol",  # 非最终类 Sendable
 ]
 
 # ── 物理迁移残留检测规则 ──

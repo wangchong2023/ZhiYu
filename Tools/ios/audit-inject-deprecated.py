@@ -55,13 +55,75 @@ def load_whitelist():
         sys.exit(1)
 
 
+def _detect_violations(content, rel_path, whitelist):
+    """检测单个文件中的 @Inject 和 ServiceContainer.shared 违规"""
+    found = []
+
+    # 预计算 DependencyKey liveValue/testValue/previewValue 的行范围，自动豁免
+    # 这些是 P7 过渡期的合法用法（DependencyKey 从 ServiceContainer 解析）
+    exempt_ranges = _compute_dependency_key_ranges(content)
+
+    # 预计算注释行（/// 或 //），跳过注释中的匹配
+    comment_lines = _compute_comment_lines(content)
+
+    for match in INJECT_PATTERN.finditer(content):
+        line_num = content[:match.start()].count("\n") + 1
+        if line_num in comment_lines:
+            continue
+        if (rel_path, line_num) not in whitelist:
+            found.append({"file": rel_path, "line": line_num, "type": "@Inject"})
+
+    for match in SERVICE_CONTAINER_PATTERN.finditer(content):
+        line_num = content[:match.start()].count("\n") + 1
+        if line_num in comment_lines:
+            continue
+        if (rel_path, line_num) not in whitelist:
+            # 豁免 DependencyKey liveValue/testValue/previewValue 内的调用
+            if any(start <= line_num <= end for start, end in exempt_ranges):
+                continue
+            found.append({"file": rel_path, "line": line_num, "type": "ServiceContainer.shared"})
+
+    return found
+
+
+def _compute_comment_lines(content):
+    """计算注释行的行号集合（/// 或 // 开头的行，跳过字符串内的）"""
+    lines = content.split("\n")
+    comment_lines = set()
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("//") or stripped.startswith("///"):
+            comment_lines.add(i + 1)  # 1-indexed
+    return comment_lines
+
+
+def _compute_dependency_key_ranges(content):
+    """计算 DependencyKey liveValue/testValue/previewValue 属性的行范围（自动豁免）"""
+    ranges = []
+    lines = content.split("\n")
+    # 匹配 static var liveValue / testValue / previewValue 的起始行
+    pattern = re.compile(r'^\s*(?:public\s+)?static\s+var\s+(liveValue|testValue|previewValue)\b')
+    for i, line in enumerate(lines):
+        if pattern.match(line):
+            # 找到属性体的结束（简单的括号匹配或下一个属性/方法）
+            start = i + 1  # 1-indexed
+            depth = 0
+            end = start
+            for j in range(i, len(lines)):
+                depth += lines[j].count("{") - lines[j].count("}")
+                end = j + 1  # 1-indexed
+                if depth <= 0 and j > i:
+                    break
+            ranges.append((start, end))
+    return ranges
+
+
 def scan_swift_files():
     """扫描所有 Swift 文件，检测 @Inject 和 ServiceContainer.shared 使用"""
     whitelist = load_whitelist()
     violations = []
 
     for root, dirs, files in os.walk(SOURCES_DIR):
-        # 跳过隐藏目录
         dirs[:] = [d for d in dirs if not d.startswith(".")]
         for filename in files:
             if not filename.endswith(".swift"):
@@ -75,27 +137,7 @@ def scan_swift_files():
             except Exception:
                 continue
 
-            # 检测 @Inject
-            for match in INJECT_PATTERN.finditer(content):
-                line_num = content[:match.start()].count("\n") + 1
-                key = (rel_path, line_num)
-                if key not in whitelist:
-                    violations.append({
-                        "file": rel_path,
-                        "line": line_num,
-                        "type": "@Inject",
-                    })
-
-            # 检测 ServiceContainer.shared
-            for match in SERVICE_CONTAINER_PATTERN.finditer(content):
-                line_num = content[:match.start()].count("\n") + 1
-                key = (rel_path, line_num)
-                if key not in whitelist:
-                    violations.append({
-                        "file": rel_path,
-                        "line": line_num,
-                        "type": "ServiceContainer.shared",
-                    })
+            violations.extend(_detect_violations(content, rel_path, whitelist))
 
     return violations, len(whitelist)
 

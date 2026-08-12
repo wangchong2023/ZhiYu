@@ -12,6 +12,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 大语言模型知识处理服务 (IngestProcessor)
 /// 实现 LLMKnowledgeServiceProtocol，负责结构化导入、关系发现与内容整理。
@@ -20,7 +21,7 @@ final class IngestProcessor: LLMKnowledgeServiceProtocol {
     
     // MARK: - 依赖注入
     
-    @ObservationIgnored @Inject private var configManager: LLMConfigManager
+    @ObservationIgnored @Dependency(\.llmConfigManager) private var configManager: LLMConfigManager
     
     // MARK: - 内部属性
     

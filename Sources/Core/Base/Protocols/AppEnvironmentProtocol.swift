@@ -9,6 +9,8 @@
 //  核心职责：定义 AppEnvironment 模块的抽象契约接口。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 屏幕布局类别
 public enum ScreenClass: Sendable {
@@ -53,4 +55,41 @@ public protocol AppEnvironmentProtocol: Sendable {
     
     /// 硬件特权：是否支持 iCloud 同步 (考虑模拟器限制与 entitlements)
     var isCloudSyncSupported: Bool { get }
+}
+
+// MARK: - DependencyKey 注册
+
+/// AppEnvironmentProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum AppEnvironmentKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any AppEnvironmentProtocol {
+        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
+    }
+    @MainActor
+    public static var testValue: any AppEnvironmentProtocol { NoOpAppEnvironment() }
+    @MainActor
+    public static var previewValue: any AppEnvironmentProtocol { NoOpAppEnvironment() }
+}
+
+extension DependencyValues {
+    /// 平台环境依赖
+    public var appEnvironment: any AppEnvironmentProtocol {
+        get { self[AppEnvironmentKey.self] }
+        set { self[AppEnvironmentKey.self] = newValue }
+    }
+}
+
+/// 无操作平台环境（测试/预览占位）
+@MainActor
+public final class NoOpAppEnvironment: AppEnvironmentProtocol, @unchecked Sendable {
+    public init() {}
+    public var screenClass: ScreenClass { .compact }
+    public var interactionStyle: InteractionStyle { .touch }
+    public var deviceName: String { "Test Device" }
+    public var supportsPencil: Bool { false }
+    public var hasCamera: Bool { false }
+    public var isMobile: Bool { true }
+    public var platformName: String { "Test" }
+    public var appVersion: String { "0.0.0" }
+    public var isCloudSyncSupported: Bool { false }
 }

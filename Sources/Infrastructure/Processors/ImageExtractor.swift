@@ -10,6 +10,7 @@
 
 import Foundation
 import UFPCore
+import Dependencies
 #if os(iOS)
 import UIKit
 #endif
@@ -19,6 +20,7 @@ final class ImageExtractor: Sendable {
 
     private let maxImageSize = AppConstants.Keys.ImportLimits.maxImageSizeBytes
     private let maxImages = AppConstants.Keys.ImportLimits.maxImagesPerPage
+    @Dependency(\.ocrService) private var ocrService: any OCRServiceProtocol
 
     // MARK: - HTML
 
@@ -130,8 +132,7 @@ final class ImageExtractor: Sendable {
     private func ocrImage(_ data: Data) async -> String? {
         #if os(iOS)
         guard let image = AppImage(data: data) else { return nil }
-        guard let service = ServiceContainer.shared.resolveOptional((any OCRServiceProtocol).self) else { return nil }
-        return try? await service.recognizeText(from: image)
+        return try? await ocrService.recognizeText(from: image)
         #else
         return nil
         #endif

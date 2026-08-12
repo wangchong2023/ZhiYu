@@ -11,6 +11,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// AI 大模型调度门面中枢服务（LLMService）。
 /// 负责协调与编排各项大语言模型（LLM）的底层子能力，维护全局 AI 运行生命周期及状态，
@@ -24,19 +25,23 @@ class LLMService: ObservableObject, LLMServiceProtocol {
     // MARK: - 安全延迟解析底层子服务 (DIP 解耦 + 崩溃防御)
     
     private var configManager: LLMConfigManager? {
-        ServiceContainer.shared.resolveOptional(LLMConfigManager.self)
+        @Dependency(\.llmConfigManager) var resolved: LLMConfigManager
+        return resolved
     }
 
     private var chatRunner: (any LLMChatServiceProtocol)? {
-        ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self)
+        @Dependency(\.llmChatService) var resolved: any LLMChatServiceProtocol
+        return resolved
     }
     
     private var ingestProcessor: (any LLMKnowledgeServiceProtocol)? {
-        ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self)
+        @Dependency(\.llmKnowledgeService) var resolved: any LLMKnowledgeServiceProtocol
+        return resolved
     }
     
     private var queryReranker: (any LLMRetrievalServiceProtocol)? {
-        ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self)
+        @Dependency(\.llmRetrievalService) var resolved: any LLMRetrievalServiceProtocol
+        return resolved
     }
 
     // MARK: - UI 状态属性 (透传转发至 configManager)

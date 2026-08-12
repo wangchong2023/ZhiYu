@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 // MARK: - Backup Service
 /// Automatic data backup and crash recovery service.
@@ -283,5 +284,23 @@ final class BackupService: ObservableObject {
         }
         backupEntries = entries.sorted { $0.timestamp > $1.timestamp }
         lastBackupDate = backupEntries.first?.timestamp
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// BackupService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum BackupServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: BackupService {
+        ServiceContainer.shared.resolve(BackupService.self)
+    }
+}
+
+extension DependencyValues {
+    /// 备份服务依赖
+    var backupService: BackupService {
+        get { self[BackupServiceKey.self] }
+        set { self[BackupServiceKey.self] = newValue }
     }
 }

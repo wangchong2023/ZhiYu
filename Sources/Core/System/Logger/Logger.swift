@@ -11,6 +11,7 @@
 import Foundation
 import Combine
 import UFPCore
+import Dependencies
 
 // MARK: - Logger Protocol
 
@@ -395,4 +396,39 @@ extension TimeInterval {
             return String(format: "%dm %.1fs", minutes, seconds)
         }
     }
+}
+
+// MARK: - DependencyKey 注册
+
+/// LoggerProtocol 的 DependencyKey（P7 迁移：liveValue 直接使用 Logger.shared）
+public enum LoggerKey: DependencyKey {
+    public static var liveValue: any LoggerProtocol { Logger.shared }
+    public static var testValue: any LoggerProtocol { NoOpLogger() }
+    public static var previewValue: any LoggerProtocol { NoOpLogger() }
+}
+
+extension DependencyValues {
+    /// 日志服务依赖
+    public var logger: any LoggerProtocol {
+        get { self[LoggerKey.self] }
+        set { self[LoggerKey.self] = newValue }
+    }
+}
+
+/// 无操作日志服务（测试/预览占位）
+public final class NoOpLogger: LoggerProtocol, @unchecked Sendable {
+    public init() {}
+    public func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?, startTime: Date?, endTime: Date?, module: String?, status: LogStatus?, failureReason: String?) {}
+    public func debug(_ message: String, file: String, function: String, line: Int) {}
+    public func info(_ message: String, file: String, function: String, line: Int) {}
+    public func warning(_ message: String, file: String, function: String, line: Int) {}
+    public func error(_ message: String, error: Error?, file: String, function: String, line: Int) {}
+    public func logTimed<T>(action: LogAction, target: String, module: String?, details: String, operation: () throws -> T) rethrows -> T {
+        try operation()
+    }
+    public func saveToDisk() async {}
+    public func loadFromDisk() async {}
+    public func clearAllLogs() async {}
+    public func getLogEntries() async -> [LogEntry] { [] }
+    public var logEntriesPublisher: AnyPublisher<[LogEntry], Never> { Just([]).eraseToAnyPublisher() }
 }

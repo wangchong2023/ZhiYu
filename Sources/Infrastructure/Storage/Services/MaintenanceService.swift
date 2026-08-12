@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 import Observation
 import UFPStorage
 
@@ -18,11 +19,11 @@ import UFPStorage
 @MainActor
 public final class MaintenanceService {
     
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
-    @ObservationIgnored @Inject private var vaultService: any VaultServiceProtocol
-    @ObservationIgnored @Inject private var backupService: BackupService
-    @ObservationIgnored @Inject private var logger: (any LoggerProtocol)?
-    @ObservationIgnored @Inject private var undoService: UndoService?
+    @ObservationIgnored @Dependency(\.pageStoreCapabilities) private var pageStore: any AnyPageStoreCapabilities
+    @ObservationIgnored @Dependency(\.vaultService) private var vaultService: any VaultServiceProtocol
+    @ObservationIgnored @Dependency(\.backupService) private var backupService: BackupService
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.undoService) private var undoService: UndoService?
 
     private var activeLogger: any LoggerProtocol {
         logger ?? Logger.shared

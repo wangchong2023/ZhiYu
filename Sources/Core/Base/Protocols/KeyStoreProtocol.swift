@@ -9,6 +9,8 @@
 //  核心职责：键值存储抽象协议 — 统一 UserDefaults / iCloud KVS / 测试 Mock 访问。
 
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 键值存储抽象协议
 ///
@@ -28,4 +30,26 @@ public protocol KeyStoreProtocol: AnyObject, Sendable {
     func set(_ value: Bool, forKey key: String)
     func removeObject(forKey key: String)
     func dictionaryRepresentation() -> [String: Any]
+}
+
+// MARK: - DependencyKey 注册
+
+/// KeyStoreProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析，可选）
+public enum KeyStoreKey: DependencyKey {
+    @MainActor
+    public static var liveValue: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+    }
+    @MainActor
+    public static var testValue: (any KeyStoreProtocol)? { nil }
+    @MainActor
+    public static var previewValue: (any KeyStoreProtocol)? { nil }
+}
+
+extension DependencyValues {
+    /// 键值存储服务依赖（可选，DI 未就绪时返回 nil）
+    public var keyStore: (any KeyStoreProtocol)? {
+        get { self[KeyStoreKey.self] }
+        set { self[KeyStoreKey.self] = newValue }
+    }
 }

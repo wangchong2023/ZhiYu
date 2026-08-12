@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 import Observation
 
 /// 数据协调器：编排存储变更与 AI 增强任务（如向量化）的联动。
@@ -17,9 +18,9 @@ import Observation
 /// @SRS-7.2: 性能指标监控起点
 @MainActor
 final class DataCoordinator {
-    @ObservationIgnored @Inject private var sqliteStore: any AnyPageStore
-    @ObservationIgnored @Inject private var embeddingProvider: any EmbeddingProvider
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.pageStore) private var sqliteStore: any AnyPageStore
+    @ObservationIgnored @Dependency(\.embeddingProvider) private var embeddingProvider: any EmbeddingProvider
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
     
     /// 同步任务句柄
     private var syncTask: Task<Void, Never>?

@@ -10,6 +10,8 @@
 //
 import Foundation
 import Combine
+import UFPCore
+import Dependencies
 
 // MARK: - Undo Service
 /// Manages undo/redo for AppStore operations using snapshot-based approach.
@@ -69,5 +71,23 @@ final class UndoService: ObservableObject {
     private func updatePublishedState() {
         canUndo = !undoStack.isEmpty
         canRedo = !redoStack.isEmpty
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// UndoService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析，可选）
+enum UndoServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: UndoService? {
+        ServiceContainer.shared.resolveOptional(UndoService.self)
+    }
+}
+
+extension DependencyValues {
+    /// 撤销服务依赖（可选）
+    var undoService: UndoService? {
+        get { self[UndoServiceKey.self] }
+        set { self[UndoServiceKey.self] = newValue }
     }
 }

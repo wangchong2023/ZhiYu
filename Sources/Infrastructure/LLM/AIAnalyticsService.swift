@@ -10,11 +10,12 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// AI 指标分析服务 (L1-Infra)
 public final class AIAnalyticsService: Sendable {
-    @Inject private var governance: any RAGGovernanceRepository
-    @Inject private var evalService: RAGEvaluationService
+    @Dependency(\.ragGovernanceRepository) private var governance: any RAGGovernanceRepository
+    @Dependency(\.ragEvaluationService) private var evalService: RAGEvaluationService
 
     public init() {}
 
@@ -58,5 +59,22 @@ public final class AIAnalyticsService: Sendable {
             _ = try? await governance.logTokenUsage(model: modelName, promptTokens: promptTokens, completionTokens: completionTokens)
             _ = await evalService.evaluate(query: query, answer: response, context: context, sources: sources)
         }
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// AIAnalyticsService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum AIAnalyticsServiceKey: DependencyKey {
+    public static var liveValue: AIAnalyticsService {
+        ServiceContainer.shared.resolve(AIAnalyticsService.self)
+    }
+}
+
+extension DependencyValues {
+    /// AI 指标分析服务依赖
+    public var aiAnalyticsService: AIAnalyticsService {
+        get { self[AIAnalyticsServiceKey.self] }
+        set { self[AIAnalyticsServiceKey.self] = newValue }
     }
 }

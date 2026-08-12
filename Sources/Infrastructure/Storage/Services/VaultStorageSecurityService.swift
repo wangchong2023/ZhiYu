@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 import LocalAuthentication
 import Observation
 
@@ -30,7 +31,7 @@ final class VaultStorageSecurityService {
     }
 
     /// 注入的平台策略提供者
-    @ObservationIgnored @Inject var provider: BiometricAuthProviderProtocol
+    @ObservationIgnored @Dependency(\.biometricAuthProvider) var provider: any BiometricAuthProviderProtocol
 
     /**
      * @description: 初始化安全服务
