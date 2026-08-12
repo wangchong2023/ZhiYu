@@ -72,3 +72,21 @@ public final class TagStore {
         logger.addLog(action: .update, target: tag, details: "New tag registered", module: "TagStore")
     }
 }
+
+// MARK: - DependencyKey
+import Dependencies
+
+/// TagStore 依赖注入键
+@MainActor
+public enum TagStoreKey: DependencyKey {
+    @MainActor
+    public static var liveValue: TagStore { ServiceContainer.shared.resolve(TagStore.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var tagStore: TagStore {
+        get { self[TagStoreKey.self] }
+        set { self[TagStoreKey.self] = newValue }
+    }
+}

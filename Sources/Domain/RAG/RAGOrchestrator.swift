@@ -25,9 +25,9 @@ private enum RAGTaskName {
 @MainActor
 public final class RAGOrchestrator {
     
-    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
-    @ObservationIgnored @Inject private var analytics: AIAnalyticsService
-    @ObservationIgnored @Inject private var perf: PerformanceService
+    @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Dependency(\.aiAnalyticsService) private var analytics: AIAnalyticsService
+    @ObservationIgnored @Dependency(\.performanceService) private var perf: PerformanceService
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
     
     private let contextBuilder = LLMContextBuilder()

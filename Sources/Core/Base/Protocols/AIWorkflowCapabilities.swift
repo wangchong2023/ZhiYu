@@ -23,3 +23,24 @@ public protocol AIWorkflowCapabilities: AnyObject, Sendable {
     /// - Parameter id: 优化建议的唯一标识符 (String)
     func removeRefactorSuggestion(id: String)
 }
+
+// MARK: - DependencyKey
+import Dependencies
+import UFPCore
+
+/// AIWorkflowCapabilities 依赖注入键
+@MainActor
+public enum AIWorkflowCapabilitiesKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any AIWorkflowCapabilities {
+        ServiceContainer.shared.resolve((any AIWorkflowCapabilities).self)
+    }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var aiWorkflowCapabilities: any AIWorkflowCapabilities {
+        get { self[AIWorkflowCapabilitiesKey.self] }
+        set { self[AIWorkflowCapabilitiesKey.self] = newValue }
+    }
+}
