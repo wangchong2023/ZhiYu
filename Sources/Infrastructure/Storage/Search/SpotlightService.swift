@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// Spotlight 索引服务 (Expert Design Item #3)
 /// 负责协调底层平台的系统搜索索引实现。
@@ -17,7 +18,7 @@ import UFPCore
 final class SpotlightService {
     static let shared = SpotlightService()
     
-    @Inject private var indexer: any SearchIndexerProtocol
+    @Dependency(\.searchIndexer) private var indexer: any SearchIndexerProtocol
     
     private init() {}
     

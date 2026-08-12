@@ -9,6 +9,8 @@
 //  核心职责：领域层协议定义（Repository、Service、Strategy 等抽象）。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 身份认证服务协议
 @MainActor
@@ -125,4 +127,22 @@ protocol ChatServiceProtocol: Sendable {
     
     /// 保存用户消息
     func saveUserMessage(_ content: String)
+}
+
+// MARK: - DependencyKey 注册
+
+/// VaultServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum VaultServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any VaultServiceProtocol {
+        ServiceContainer.shared.resolve((any VaultServiceProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    /// Vault 服务依赖
+    public var vaultService: any VaultServiceProtocol {
+        get { self[VaultServiceKey.self] }
+        set { self[VaultServiceKey.self] = newValue }
+    }
 }

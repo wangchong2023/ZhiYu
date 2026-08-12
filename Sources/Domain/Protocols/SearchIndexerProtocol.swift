@@ -9,6 +9,8 @@
 //  核心职责：定义 SearchIndexer 模块的抽象契约接口。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 搜索索引服务协议
 public protocol SearchIndexerProtocol: Sendable {
@@ -26,4 +28,23 @@ public protocol SearchIndexerProtocol: Sendable {
     
     /// 全量重新索引
     func reindexAll(pages: [KnowledgePage])
+}
+
+// MARK: - DependencyKey 注册
+
+/// SearchIndexerProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum SearchIndexerKey: DependencyKey {
+    public static var liveValue: any SearchIndexerProtocol {
+        ServiceContainer.shared.resolveOptional((any SearchIndexerProtocol).self) ?? UnsupportedSearchIndexer()
+    }
+    public static var testValue: any SearchIndexerProtocol { UnsupportedSearchIndexer() }
+    public static var previewValue: any SearchIndexerProtocol { UnsupportedSearchIndexer() }
+}
+
+extension DependencyValues {
+    /// 搜索索引服务依赖
+    public var searchIndexer: any SearchIndexerProtocol {
+        get { self[SearchIndexerKey.self] }
+        set { self[SearchIndexerKey.self] = newValue }
+    }
 }

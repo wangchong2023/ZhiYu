@@ -12,6 +12,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 大语言模型检索与重排服务 (QueryReranker)
 /// 实现 LLMRetrievalServiceProtocol，负责对提问重写、扩展以及二次精排。
@@ -20,7 +21,7 @@ final class QueryReranker: LLMRetrievalServiceProtocol {
     
     // MARK: - 依赖注入
     
-    @ObservationIgnored @Inject private var configManager: LLMConfigManager
+    @ObservationIgnored @Dependency(\.llmConfigManager) private var configManager: LLMConfigManager
     
     // MARK: - 内部属性
     

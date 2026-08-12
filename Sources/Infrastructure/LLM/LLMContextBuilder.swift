@@ -10,11 +10,16 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 import NaturalLanguage
 
 // MARK: - LLM Context Builder
 /// 构建系统提示词并为 LLM 查询检索相关知识库上下文。
 final class LLMContextBuilder: Sendable {
+
+    // MARK: - 依赖注入
+    @Dependency(\.embeddingProvider) private var embeddingProvider: any EmbeddingProvider
+    @Dependency(\.knowledgePageRepository) private var pageRepository: KnowledgePageRepository
 
     // MARK: - Configuration Constants
     /// Max entities listed in the system prompt overview.
@@ -96,7 +101,7 @@ final class LLMContextBuilder: Sendable {
         // 0. 越狱注入攻击扫描
         try? sanitizer.scanJailbreakAttempt(in: query)
 
-        let embeddingProvider = ServiceContainer.shared.resolve((any EmbeddingProvider).self)
+        let embeddingProvider = self.embeddingProvider
 
         // 1. 执行多路召回
         let rawResults = await embeddingProvider.multiQuerySearch(query: query, topK: AppConfig.AI.topKResults)
@@ -133,7 +138,7 @@ final class LLMContextBuilder: Sendable {
         let groupedResults = Dictionary(grouping: compressedResults) { $0.chunk.pageID }
 
         for (pageID, results) in groupedResults {
-            let store = ServiceContainer.shared.resolve(KnowledgePageRepository.self)
+            let store = self.pageRepository
             if let page = try? await store.fetch(id: pageID) {
                 rawContext += "\n---\n## \(page.title) [\(L10n.AI.LLM.Prompt.typeLabel): \(page.pageType.displayName)]\n"
 

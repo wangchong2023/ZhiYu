@@ -9,6 +9,8 @@
 //  核心职责：跨层协议定义，建立 L0-L3 各层间的抽象契约。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 抽象的文本嵌入向量化（Embedding）服务提供商协议。
 public protocol EmbeddingProvider: Sendable {
@@ -52,4 +54,21 @@ public protocol EmbeddingProvider: Sendable {
     
     /// 物理清空内存向量缓存并重载
     func clearCacheAndReload() async
+}
+
+// MARK: - DependencyKey 注册
+
+/// EmbeddingProvider 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum EmbeddingProviderKey: DependencyKey {
+    public static var liveValue: any EmbeddingProvider {
+        ServiceContainer.shared.resolve((any EmbeddingProvider).self)
+    }
+}
+
+extension DependencyValues {
+    /// 嵌入向量化服务依赖
+    public var embeddingProvider: any EmbeddingProvider {
+        get { self[EmbeddingProviderKey.self] }
+        set { self[EmbeddingProviderKey.self] = newValue }
+    }
 }

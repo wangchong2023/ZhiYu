@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 导出服务门面 (L0 基础架构层)
 /// 负责协调底层平台的导出实现（如 WebKit 或 Stub）。
@@ -17,7 +18,7 @@ import UFPCore
 final class WebViewExportService {
     static let shared = WebViewExportService()
     
-    @Inject private var exportService: any ExportServiceProtocol
+    @Dependency(\.exportService) private var exportService: any ExportServiceProtocol
     
     private init() {}
     

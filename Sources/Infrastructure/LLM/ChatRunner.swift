@@ -21,10 +21,10 @@ final class ChatRunner: LLMChatServiceProtocol {
     
     // MARK: - 依赖注入
     
-    @ObservationIgnored @Inject private var configManager: LLMConfigManager
-    @ObservationIgnored @Inject private var analytics: AIAnalyticsService
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
-    @ObservationIgnored @Inject private var reranker: any LLMRetrievalServiceProtocol
+    @ObservationIgnored @Dependency(\.llmConfigManager) private var configManager: LLMConfigManager
+    @ObservationIgnored @Dependency(\.aiAnalyticsService) private var analytics: AIAnalyticsService
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.llmRetrievalService) private var reranker: any LLMRetrievalServiceProtocol
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
     // MARK: - 内部属性

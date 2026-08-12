@@ -10,6 +10,8 @@
 //
 import Foundation
 import LocalAuthentication
+import Dependencies
+import UFPCore
 
 // MARK: - 生物识别能力
 
@@ -48,4 +50,35 @@ public protocol SecurityScopedStorageProtocol: Sendable {
     
     /// 从书签数据恢复具有访问权限的 URL
     func restoreURL(from data: Data) -> URL?
+}
+
+// MARK: - DependencyKey 注册
+
+/// BiometricAuthProviderProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum BiometricAuthProviderKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any BiometricAuthProviderProtocol {
+        ServiceContainer.shared.resolve((any BiometricAuthProviderProtocol).self)
+    }
+}
+
+/// MLModelCompilerProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum MLModelCompilerKey: DependencyKey {
+    public static var liveValue: any MLModelCompilerProtocol {
+        ServiceContainer.shared.resolve((any MLModelCompilerProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    /// 生物识别服务依赖
+    public var biometricAuthProvider: any BiometricAuthProviderProtocol {
+        get { self[BiometricAuthProviderKey.self] }
+        set { self[BiometricAuthProviderKey.self] = newValue }
+    }
+
+    /// 模型编译服务依赖
+    public var modelCompiler: any MLModelCompilerProtocol {
+        get { self[MLModelCompilerKey.self] }
+        set { self[MLModelCompilerKey.self] = newValue }
+    }
 }

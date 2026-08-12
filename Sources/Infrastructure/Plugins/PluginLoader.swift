@@ -11,6 +11,7 @@
 
 import Foundation
 import UFPCore
+import Dependencies
 import CryptoKit
 
 /// 插件加载器：负责从本地磁盘发现并解析插件文件
@@ -21,7 +22,7 @@ final class PluginLoader {
     weak var registry: PluginRegistry!
 
     /// ZIPFoundation 适配层注入（通过 FileArchiverProtocol 间接调用，不直接 import ZIPFoundation）
-    @Inject private var archiver: any FileArchiverProtocol
+    @Dependency(\.fileArchiver) private var archiver: any FileArchiverProtocol
 
     /// 插件签名密钥的 Keychain 存储键（审查修复 HIGH-3：不再硬编码盐值）
     private static let signatureKeychainKey = "com.zhiyu.plugin.signature_key"

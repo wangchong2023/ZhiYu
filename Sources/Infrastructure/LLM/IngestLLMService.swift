@@ -10,13 +10,14 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 知识库摄入与重构基础设施服务
 /// 遵循并实现 `LLMKnowledgeServiceProtocol` 契约，支持响应式参数配置。
 @MainActor
 public final class IngestLLMService: NSObject, LLMKnowledgeServiceProtocol {
     /// 配置管理器，热重载 API 参数
-    @ObservationIgnored @Inject private var configManager: LLMConfigManager
+    @ObservationIgnored @Dependency(\.llmConfigManager) private var configManager: LLMConfigManager
     
     /// 初始化摄入服务
     public override init() {

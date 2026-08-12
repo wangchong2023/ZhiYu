@@ -12,6 +12,7 @@
 @preconcurrency import CoreML
 import Combine
 import UFPCore
+import Dependencies
 
 // MARK: - On-Device LLM Service
 /// 智宇端侧本地大模型推理服务中枢
@@ -52,7 +53,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     private let configKey = LLMConstants.OnDeviceStorage.configKey
     
     /// 注入的模型编译器，用于处理平台差异化编译与沙盒物理转换
-    @ObservationIgnored @Inject var compiler: MLModelCompilerProtocol
+    @ObservationIgnored @Dependency(\.modelCompiler) var compiler: any MLModelCompilerProtocol
 
     // MARK: - 常量参数定义
     nonisolated public enum Config {

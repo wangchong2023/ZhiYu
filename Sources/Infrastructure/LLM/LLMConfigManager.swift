@@ -11,6 +11,8 @@
 import Foundation
 import Observation
 import Combine
+import UFPCore
+import Dependencies
 
 /// LLM 配置管理器 (L1-Infra)
 @MainActor
@@ -80,5 +82,23 @@ public final class LLMConfigManager {
         for handler in refreshHandlers {
             handler()
         }
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// LLMConfigManager 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum LLMConfigManagerKey: DependencyKey {
+    @MainActor
+    public static var liveValue: LLMConfigManager {
+        ServiceContainer.shared.resolve(LLMConfigManager.self)
+    }
+}
+
+extension DependencyValues {
+    /// LLM 配置管理器依赖
+    public var llmConfigManager: LLMConfigManager {
+        get { self[LLMConfigManagerKey.self] }
+        set { self[LLMConfigManagerKey.self] = newValue }
     }
 }

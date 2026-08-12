@@ -10,6 +10,8 @@
 //
 import Foundation
 import Combine
+import Dependencies
+import UFPCore
 
 // MARK: - LLM 对话服务协议 (核心推理与对话)
 
@@ -165,5 +167,65 @@ extension LLMChatServiceProtocol {
     /// generate() 的 maxTokens 默认值，所有调用方无需显式传参
     func generate(prompt: String, systemPrompt: String) async throws -> String {
         try await generate(prompt: prompt, systemPrompt: systemPrompt, maxTokens: PromptConstants.TokenLimits.defaultMaxOutputTokens)
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// LLMChatServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum LLMChatServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any LLMChatServiceProtocol {
+        ServiceContainer.shared.resolve((any LLMChatServiceProtocol).self)
+    }
+}
+
+/// LLMKnowledgeServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum LLMKnowledgeServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any LLMKnowledgeServiceProtocol {
+        ServiceContainer.shared.resolve((any LLMKnowledgeServiceProtocol).self)
+    }
+}
+
+/// LLMRetrievalServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum LLMRetrievalServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any LLMRetrievalServiceProtocol {
+        ServiceContainer.shared.resolve((any LLMRetrievalServiceProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    /// LLM 对话服务依赖
+    var llmChatService: any LLMChatServiceProtocol {
+        get { self[LLMChatServiceKey.self] }
+        set { self[LLMChatServiceKey.self] = newValue }
+    }
+
+    /// LLM 知识处理服务依赖
+    var llmKnowledgeService: any LLMKnowledgeServiceProtocol {
+        get { self[LLMKnowledgeServiceKey.self] }
+        set { self[LLMKnowledgeServiceKey.self] = newValue }
+    }
+
+    /// LLM 检索增强服务依赖
+    var llmRetrievalService: any LLMRetrievalServiceProtocol {
+        get { self[LLMRetrievalServiceKey.self] }
+        set { self[LLMRetrievalServiceKey.self] = newValue }
+    }
+
+    /// LLM 综合服务依赖
+    var llmService: any LLMServiceProtocol {
+        get { self[LLMServiceKey.self] }
+        set { self[LLMServiceKey.self] = newValue }
+    }
+}
+
+/// LLMServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum LLMServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any LLMServiceProtocol {
+        ServiceContainer.shared.resolve((any LLMServiceProtocol).self)
     }
 }

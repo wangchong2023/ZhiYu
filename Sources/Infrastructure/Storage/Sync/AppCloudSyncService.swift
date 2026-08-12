@@ -11,6 +11,7 @@
 #if ICLOUD_ENABLED
 import Foundation
 import UFPCore
+import Dependencies
 import CloudKit
 import Combine
 
@@ -39,7 +40,7 @@ public final class iCloudSyncService: ObservableObject {
     /// 当同步链路中检测到云端有更新的数据，发生同步冲突时的双向问询回调。
     public var onConflictDetected: (([KnowledgePage], [LogEntry], [KnowledgePage], [LogEntry]) async -> ConflictResolution)?
 
-    @Inject private var appEnv: any AppEnvironmentProtocol
+    @Dependency(\.appEnvironment) private var appEnv: any AppEnvironmentProtocol
 
     public init(provider: any CloudStorageProvider = CloudKitSyncProvider(), resolver: any SyncConflictResolver = LWWSyncConflictResolver()) {
         self.provider = provider

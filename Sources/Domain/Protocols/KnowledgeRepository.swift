@@ -10,6 +10,8 @@
 //
 import Foundation
 import Combine
+import Dependencies
+import UFPCore
 
 /// [Domain] 知识库仓库协议
 /// 负责处理所有与 KnowledgePage 相关的持久化操作。
@@ -47,4 +49,21 @@ public protocol KnowledgeRepository: Sendable {
 
     /// 计数
     func count() async throws -> Int
+}
+
+// MARK: - DependencyKey 注册
+
+/// KnowledgePageRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum KnowledgePageRepositoryKey: DependencyKey {
+    public static var liveValue: KnowledgePageRepository {
+        ServiceContainer.shared.resolve(KnowledgePageRepository.self)
+    }
+}
+
+extension DependencyValues {
+    /// 知识页仓储依赖
+    var knowledgePageRepository: KnowledgePageRepository {
+        get { self[KnowledgePageRepositoryKey.self] }
+        set { self[KnowledgePageRepositoryKey.self] = newValue }
+    }
 }

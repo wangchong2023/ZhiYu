@@ -11,16 +11,17 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 大模型对话与文本生成基础设施服务
 /// 遵循并实现 `LLMChatServiceProtocol` 契约，支持响应式状态变化。
 @MainActor
 public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
     /// 配置管理器，热重载 API 参数
-    @ObservationIgnored @Inject private var configManager: LLMConfigManager
+    @ObservationIgnored @Dependency(\.llmConfigManager) private var configManager: LLMConfigManager
     
     /// AI 吞吐指标记录器
-    @ObservationIgnored @Inject private var analytics: AIAnalyticsService
+    @ObservationIgnored @Dependency(\.aiAnalyticsService) private var analytics: AIAnalyticsService
     
     /// 指示当前大模型服务是否使能开启
     public var isEnabled: Bool {

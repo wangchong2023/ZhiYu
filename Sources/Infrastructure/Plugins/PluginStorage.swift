@@ -11,6 +11,7 @@
 
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 插件存储管理器：封装插件私有数据与封禁状态的持久化操作
 @MainActor
@@ -23,7 +24,7 @@ final class PluginStorage {
 
     // MARK: - 封禁列表持久化
 
-    @Inject private var keyStore: (any KeyStoreProtocol)?
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     /// 从持久化存储加载已挂起的插件 ID 集合
     func loadSuspendedPluginIDs() -> Set<String> {

@@ -10,6 +10,8 @@
 //
 import Foundation
 import CryptoKit
+import Dependencies
+import UFPCore
 
 /// RAG 质量评估报告模型
 struct EvaluationReport: Identifiable {
@@ -217,5 +219,22 @@ final class RAGEvaluationService {
             citationAccuracy: citationAccuracy,
             status: status
         )
+    }
+}
+
+// MARK: - DependencyKey 注册
+
+/// RAGEvaluationService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum RAGEvaluationServiceKey: DependencyKey {
+    static var liveValue: RAGEvaluationService {
+        ServiceContainer.shared.resolve(RAGEvaluationService.self)
+    }
+}
+
+extension DependencyValues {
+    /// RAG 评估服务依赖
+    var ragEvaluationService: RAGEvaluationService {
+        get { self[RAGEvaluationServiceKey.self] }
+        set { self[RAGEvaluationServiceKey.self] = newValue }
     }
 }

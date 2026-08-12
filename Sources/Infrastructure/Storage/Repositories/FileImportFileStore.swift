@@ -10,6 +10,7 @@
 
 import Foundation
 import UFPCore
+import Dependencies
 
 final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
 
@@ -17,8 +18,8 @@ final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
         // 无需预先创建 recordsDir，全部采用动态延迟计算
     }
 
-    /// Factory 风格：属性类型标注为可选（T?），@Inject 自动使用 resolveOptional
-    @Inject private var keyStore: (any KeyStoreProtocol)?
+    /// Factory 风格：属性类型标注为可选（T?），@Dependency 自动使用 resolveOptional
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     private func getCategoryDirName(for category: ImportCategory) -> String {
         switch category {
