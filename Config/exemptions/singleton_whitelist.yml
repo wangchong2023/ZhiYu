@@ -23,12 +23,6 @@ singleton_whitelist:
     added: 2026-08-12
     expiry_check: P4
 
-  - file: Sources/Shared/DesignSystem/Theme/ThemeManager.swift
-    class: ThemeManager
-    reason: P4 阶段迁移（已半迁移）
-    added: 2026-08-12
-    expiry_check: P4
-
   - file: Sources/Core/Base/Utils/Localized.swift
     class: Localized
     reason: P4 阶段迁移（静态缓存）
