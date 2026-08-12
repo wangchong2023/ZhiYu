@@ -85,6 +85,10 @@ run_parallel_task "Exemption Stale" "exemption_stale" "python3 Tools/CI/exemptio
 run_parallel_task "Business Magic Numbers" "business_magic" "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins" & pid31=$!
 run_parallel_task "UFPCore Purity" "ufpcore_purity" "python3 Tools/ios/audit-arch-ufpcore-purity.py" & pid32=$!
 run_parallel_task "Test Coupling Anti-Pattern" "test_coupling" "python3 Tools/ios/check-code-test-coupling.py --strict" & pid33=$!
+run_parallel_task "Singleton Frozen" "singleton_frozen" "python3 Tools/ios/audit-singleton-frozen.py" & pid34=$!
+run_parallel_task "Environment Object Frozen" "env_object_frozen" "python3 Tools/ios/audit-environment-object.py" & pid35=$!
+run_parallel_task "UserDefaults Standard Frozen" "userdefaults_frozen" "python3 Tools/ios/audit-userdefaults-standard.py" & pid36=$!
+run_parallel_task "Inject Deprecated" "inject_deprecated" "python3 Tools/ios/audit-inject-deprecated.py" & pid37=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -119,6 +123,10 @@ wait $pid30 || EXIT_CODE=1
 wait $pid31 || EXIT_CODE=1
 wait $pid32 || EXIT_CODE=1
 wait $pid33 || EXIT_CODE=1
+wait $pid34 || EXIT_CODE=1
+wait $pid35 || EXIT_CODE=1
+wait $pid36 || EXIT_CODE=1
+wait $pid37 || EXIT_CODE=1
 
 
 echo ""

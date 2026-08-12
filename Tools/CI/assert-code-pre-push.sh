@@ -153,6 +153,26 @@ run_check "快照测试环境注入检查" \
     "python3 Tools/ios/check-code-snapshot-environment.py --strict" \
     || exit 1
 
+# 1.13 单例冻结审计（阻断——P6 迁移后禁止新增 static let shared）
+run_check "单例冻结审计" \
+    "python3 Tools/ios/audit-singleton-frozen.py" \
+    || exit 1
+
+# 1.14 @EnvironmentObject 冻结审计（阻断——P3 迁移后禁止新增 @EnvironmentObject）
+run_check "@EnvironmentObject 冻结审计" \
+    "python3 Tools/ios/audit-environment-object.py" \
+    || exit 1
+
+# 1.15 UserDefaults.standard 冻结审计（阻断——P4 迁移后禁止新增 UserDefaults.standard）
+run_check "UserDefaults.standard 冻结审计" \
+    "python3 Tools/ios/audit-userdefaults-standard.py" \
+    || exit 1
+
+# 1.16 废弃注入审计（阻断——P7 迁移后禁止新增 @Inject / ServiceContainer.shared）
+run_check "废弃注入审计" \
+    "python3 Tools/ios/audit-inject-deprecated.py" \
+    || exit 1
+
 # quick 模式在此结束
 if [ "$MODE" = "quick" ]; then
     summary && echo -e "${GREEN}${BOLD}✅ 快速门禁通过！${NC}" && exit 0

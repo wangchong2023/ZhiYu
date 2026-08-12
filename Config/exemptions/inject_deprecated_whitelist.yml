@@ -1,0 +1,931 @@
+inject_deprecated_whitelist:
+- file: Sources/Platforms/macOS/MacOSPlatformCapabilities.swift
+  line: 54
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/watchOS/WatchVoiceCaptureView.swift
+  line: 20
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/watchOS/Resources/ZhiYuWatchView.swift
+  line: 101
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/watchOS/Resources/ZhiYuWatchApp.swift
+  line: 19
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/watchOS/Views/WatchFlashView.swift
+  line: 17
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/watchOS/Views/WatchDictationView.swift
+  line: 19
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/watchOS/Views/WatchBriefingView.swift
+  line: 20
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/watchOS/Services/WatchWatchSyncService.swift
+  line: 29
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/Shared/WidgetAndWatchViews.swift
+  line: 99
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/iOS/Services/iOSSpeechService.swift
+  line: 145
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/iOS/Services/iOSSpeechService.swift
+  line: 149
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
+  line: 24
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
+  line: 71
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
+  line: 72
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Security/KeychainService.swift
+  line: 30
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Security/SecurityManager.swift
+  line: 37
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Security/SecurityManager.swift
+  line: 32
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Workflow/WorkflowService.swift
+  line: 31
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Haptic/HapticFeedback.swift
+  line: 18
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Accessibility/AccessibilityService.swift
+  line: 67
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Onboarding/OnboardingService.swift
+  line: 22
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Onboarding/OnboardingService.swift
+  line: 35
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Onboarding/OnboardingPath.swift
+  line: 55
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Onboarding/OnboardingPath.swift
+  line: 61
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/System/Onboarding/OnboardingPath.swift
+  line: 67
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/Base/DependencyContainer.swift
+  line: 2
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/Base/Utils/Localized.swift
+  line: 157
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Core/Base/Utils/Localized.swift
+  line: 169
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Scenes/ContentView.swift
+  line: 33
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Scenes/ContentView.swift
+  line: 35
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Scenes/Layout/SidebarView.swift
+  line: 27
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Scenes/Layout/Components/SidebarRowComponents.swift
+  line: 57
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/ZhiYuApp.swift
+  line: 40
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/ZhiYuApp.swift
+  line: 75
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 42
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 67
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 100
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 103
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 113
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 209
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 210
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 214
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 217
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 218
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 219
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 222
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 229
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 249
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 255
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Lifecycle/AppWindowSceneDelegate.swift
+  line: 28
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Lifecycle/AppWindowSceneDelegate.swift
+  line: 29
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Navigation/Router.swift
+  line: 216
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Navigation/Router.swift
+  line: 276
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/App/Store/AppStore.swift
+  line: 110
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/TagCloudView.swift
+  line: 34
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/KnowledgePageListView.swift
+  line: 33
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/PageDetailView.swift
+  line: 27
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/PageDetailView.swift
+  line: 29
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/PageDetailView.swift
+  line: 33
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/TagCapsuleView.swift
+  line: 31
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/Subviews/PageDetailAISection.swift
+  line: 57
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/View/Subviews/PageDetailMetadataSection.swift
+  line: 21
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/Service/KnowledgeInsightService.swift
+  line: 174
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/Service/KnowledgeInsightService.swift
+  line: 186
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/Service/KnowledgeInsightService.swift
+  line: 205
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/Dashboard/Service/KnowledgeInsightService.swift
+  line: 215
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Insight/MedalWall/Service/MedalService.swift
+  line: 22
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 31
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 45
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 51
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 65
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 76
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 79
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 85
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 88
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 93
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 96
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 102
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 105
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/Model/SettingsStore.swift
+  line: 114
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/View/System/FeedbackView.swift
+  line: 27
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/View/System/FeedbackView.swift
+  line: 29
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/View/System/RAGEvaluationView.swift
+  line: 22
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Settings/View/System/DeveloperSettingsView.swift
+  line: 168
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Collaboration/View/CollaborationView.swift
+  line: 37
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Collaboration/Service/CollaborationService.swift
+  line: 47
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Collaboration/Service/CollaborationService.swift
+  line: 48
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Collaboration/Service/CollaborationService.swift
+  line: 50
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/Auth/Service/TokenManager.swift
+  line: 138
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/ModelManager/GlobalModelManager.swift
+  line: 161
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/System/ModelManager/View/ModelDownloadSection.swift
+  line: 135
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/Coordinator/IngestFileHandler.swift
+  line: 187
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/Coordinator/IngestURLHandler.swift
+  line: 152
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/Coordinator/IngestURLHandler.swift
+  line: 153
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/View/IngestView.swift
+  line: 243
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/View/Components/ImportRecordSection.swift
+  line: 26
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/View/Components/ImportRecordSection.swift
+  line: 28
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/View/Components/ImportRecordSection.swift
+  line: 29
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/Service/IngestService.swift
+  line: 18
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Ingest/Service/IngestService.swift
+  line: 19
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/NotebookHub/View/NotebookHubView.swift
+  line: 24
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/System/Model/KnowledgeStore.swift
+  line: 64
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/System/Model/KnowledgeStore.swift
+  line: 65
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/System/Model/KnowledgeStore.swift
+  line: 112
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/System/Model/KnowledgeStore.swift
+  line: 157
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/System/Model/KnowledgeStore.swift
+  line: 158
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/System/Model/KnowledgeStore.swift
+  line: 177
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/System/Model/KnowledgeStore.swift
+  line: 317
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Vault/Service/VaultService.swift
+  line: 26
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/Knowledge/Vault/Service/VaultService.swift
+  line: 32
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Chat/Model/AIWorkflowStore.swift
+  line: 52
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Chat/Service/ChatService.swift
+  line: 20
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Chat/Service/ChatService.swift
+  line: 21
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/Model/SynthesisStore.swift
+  line: 146
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/Model/SynthesisStore.swift
+  line: 353
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/Model/SynthesisStore.swift
+  line: 404
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/View/SynthesisReportView.swift
+  line: 26
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/View/SynthesisView.swift
+  line: 538
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/Service/AISynthesisService.swift
+  line: 19
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/Service/AISynthesisService.swift
+  line: 27
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/Synthesis/Service/AISynthesisService.swift
+  line: 35
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/VoiceNote/View/VoiceNoteView.swift
+  line: 18
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/TaskCenter/Service/TaskCenter.swift
+  line: 113
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Features/AI/TaskCenter/Service/TaskCenter.swift
+  line: 301
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Shared/DesignSystem/Themes/ThemeManager.swift
+  line: 115
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Shared/DesignSystem/Themes/ThemeManager.swift
+  line: 146
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Shared/Platforms/Adaptor/CrossPlatform.swift
+  line: 28
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Shared/UIComponents/Badges/VaultBadge.swift
+  line: 20
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
+  line: 99
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/LLMContextBuilder.swift
+  line: 136
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/LLMService.swift
+  line: 27
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/LLMService.swift
+  line: 31
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/LLMService.swift
+  line: 35
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/LLMService.swift
+  line: 39
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/AIAnalyticsService.swift
+  line: 16
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/LLM/AIAnalyticsService.swift
+  line: 17
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginLoader.swift
+  line: 24
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRegistry.swift
+  line: 165
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRuntime.swift
+  line: 44
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRuntime.swift
+  line: 126
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRuntime.swift
+  line: 141
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRuntime.swift
+  line: 253
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRuntime.swift
+  line: 327
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRuntime.swift
+  line: 337
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginRuntime.swift
+  line: 356
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Plugins/PluginStorage.swift
+  line: 25
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Storage/Repositories/FileImportFileStore.swift
+  line: 21
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Storage/Search/SpotlightService.swift
+  line: 19
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Storage/Sync/AppCloudSyncService.swift
+  line: 41
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Storage/Export/WebViewExportService.swift
+  line: 19
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift
+  line: 461
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Processors/ImageExtractor.swift
+  line: 133
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Processors/Document/PPTXProcessor.swift
+  line: 18
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Infrastructure/Processors/Document/DocumentProcessor.swift
+  line: 72
+  type: '@Inject'
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
+- file: Sources/Domain/Protocols/AppStoreProtocol.swift
+  line: 71
+  type: ServiceContainer.shared
+  reason: P7 渐进式迁移存量
+  added: '2026-08-12'
+  expiry_check: P7
