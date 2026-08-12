@@ -30,7 +30,7 @@ class AppWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
 
         let contentView = ContentView()
             .environment(store)
-            .environmentObject(themeManager)
+            .environment(themeManager)
             .environmentObject(llmService)
             .tint(themeManager.accentColor)
 

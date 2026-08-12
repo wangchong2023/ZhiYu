@@ -51,7 +51,7 @@ final class HapticFeedbackTests: XCTestCase {
             .environment(store)
             .environment(router)
             .environmentObject(onboardingService)
-            .environmentObject(themeManager)
+            .environment(themeManager)
         
         XCTAssertNotNil(menu)
     }

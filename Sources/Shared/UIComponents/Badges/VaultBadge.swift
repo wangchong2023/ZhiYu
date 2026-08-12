@@ -18,7 +18,7 @@ import UFPCore
 struct VaultBadge: View {
     @Environment(VaultService.self) var vaultService
     @Inject var platformEnv: any AppEnvironmentProtocol // 使用 DI 注入平台环境能力集
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
 
     /// UI 测试模式下使用直通 Button 替代 Menu（XCUITest 对 SwiftUI Menu 交互不可靠）
     private var isUITesting: Bool {

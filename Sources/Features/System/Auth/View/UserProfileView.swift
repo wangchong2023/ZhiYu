@@ -17,7 +17,7 @@ import PhotosUI
 public struct UserProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthService.self) private var authService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(AppStore.self) private var store
     @Environment(KnowledgeStore.self) private var knowledgeStore
     @Environment(VaultService.self) private var vaultService

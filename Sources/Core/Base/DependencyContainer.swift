@@ -29,7 +29,7 @@ public final class DependencyContainer {
     /// 引导服务（原 OnboardingService.shared）
     public var onboardingService: Any?
     /// 主题服务（原 ThemeManager.shared）
-    public var themeService: Any?
+    public var themeService: ThemeManager?
     /// 本地化服务（原 Localized 静态属性）
     public var localizationService: Any?
     /// Tooltip 服务（原 TooltipManager.shared）

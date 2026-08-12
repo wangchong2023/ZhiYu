@@ -8,9 +8,12 @@
 
 import XCTest
 import SwiftUI
+import Dependencies
 @testable import ZhiYu
 
 final class ThemeManagerTests: XCTestCase {
+
+    @Dependency(\.themeService) var themeManager
 
     // MARK: - colorForName 静态映射
 
@@ -64,9 +67,8 @@ final class ThemeManagerTests: XCTestCase {
     // MARK: - 实例方法包装
 
     func testColorForName_实例方法与静态方法一致() {
-        let manager = ThemeManager.shared
         for name in ["blue", "purple", "green", "orange", "pink", "red", "teal", "indigo", "unknown"] {
-            XCTAssertEqual(manager.colorForName(name), ThemeManager.colorForName(name),
+            XCTAssertEqual(themeManager.colorForName(name), ThemeManager.colorForName(name),
                           "实例方法应与静态方法返回一致")
         }
     }

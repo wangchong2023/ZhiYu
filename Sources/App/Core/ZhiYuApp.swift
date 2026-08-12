@@ -16,7 +16,7 @@ struct ZhiYuApp: App {
     @State private var appEnv = AppEnvironment.shared
     
     /// 状态持有：主题管理器
-    @StateObject private var themeManager = ThemeManager.shared
+    @State private var themeManager: ThemeManager
 
     /// 状态持有：ZhiYuAppModel — 集中持有 21 个单例的 UI 可观察状态（P1 骨架，P2-P6 逐步填充）
     @State private var appModel = ZhiYuAppModel()
@@ -36,6 +36,10 @@ struct ZhiYuApp: App {
     private let uiTestRoute: UITestRoute?
     
     init() {
+        // 从 DI 解析 KeyStore，创建 ThemeManager 实例
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        self._themeManager = State(initialValue: ThemeManager(keyStore: keyStore))
+
         uiTestRoute = UITestRoute.fromLaunchArguments()
         if let route = uiTestRoute {
             let router = AppEnvironment.shared.router
@@ -67,7 +71,7 @@ struct ZhiYuApp: App {
                     // P1 骨架注入：AppModel + DependencyContainer（P2-P6 阶段逐步替换上方 .environment 调用）
                     .environment(appModel)
                     .environment(dependencies)
-                    .environmentObject(themeManager)
+                    .environment(themeManager)
                     .environmentObject(ServiceContainer.shared.resolve(LLMService.self))
                     .environmentObject(onboardingService)
                     .environmentObject(MedalService.shared)

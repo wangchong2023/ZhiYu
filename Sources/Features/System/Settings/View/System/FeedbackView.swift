@@ -15,6 +15,7 @@ import Dependencies
 struct FeedbackView: View {
     @Dependency(\.toastService) private var toastManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(ThemeManager.self) var themeManager
     @State private var selectedTab = 0
     @State private var titleText = ""
     @State private var selectedCategory = FeedbackCategory.bug
@@ -34,7 +35,7 @@ struct FeedbackView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ThemeManager.shared.pageBackground().ignoresSafeArea()
+                themeManager.pageBackground().ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     Picker("", selection: $selectedTab) {

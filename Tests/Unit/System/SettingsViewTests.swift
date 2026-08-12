@@ -11,13 +11,16 @@
 
 import XCTest
 import SwiftUI
+import Dependencies
 @testable import ZhiYu
 
 /// 系统设置视图单元测试类
 /// 专职验证 `SettingsView` 的依赖解析，防止由于 SwiftUI 环境（Environment）缺失导致运行时发生致命的 Coredump 崩溃。
 @MainActor
 final class SettingsViewTests: XCTestCase {
-    
+
+    @Dependency(\.themeService) var themeManager
+
     /// 在每次测试执行前重置 Mock 环境
     @MainActor
     override func setUp() {
@@ -33,7 +36,6 @@ final class SettingsViewTests: XCTestCase {
         let router = Router.shared
         let appEnvironment = AppEnvironment.shared
         let onboardingService = OnboardingService()
-        let themeManager = ThemeManager.shared
         
         // 模拟实例化 SettingsView 并链式注入所有关联的环境变量与环境对象
         let settingsView = SettingsView()
@@ -42,7 +44,7 @@ final class SettingsViewTests: XCTestCase {
             .environment(appEnvironment)
             .environment(store.settingsStore)
             .environmentObject(onboardingService)
-            .environmentObject(themeManager)
+            .environment(themeManager)
         
         // 验证视图实例是否生成成功，不应为 nil
         XCTAssertNotNil(settingsView, "SettingsView 应当能够被成功实例化并且不为 nil")

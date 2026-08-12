@@ -1039,31 +1039,34 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 
 ---
 
-### 任务 28：P6 极高风险迁移 — 3 个极高频单例迁移
+### 任务 28：P6 极高风险迁移 — 5 个极高频单例迁移
 
 **来源**: AppModel 迁移设计 Section 4.7
 **优先级**: P1
-**状态**: 待执行
+**状态**: 执行中（P6-1/P6-2 已完成，P6-3/P6-4/P6-5 待执行）
 **估时**: 2 周
 **依赖**: 任务 27（P5 高风险迁移）
-**风险**: 极高（引用频次 42-76，迁移期间易引入回归）
+**风险**: 极高（引用频次 17-76，迁移期间易引入回归）
 
 **目标**:
-迁移 3 个极高频单例到 `@Dependency`，分批替换 + 每批回归测试。
+迁移 5 个极高频单例到 `@Dependency`，分批替换 + 每批回归测试。
 
-**迁移对象**:
-| # | 单例 | Sources/ 引用 | 特殊处理 |
-|---|------|---------------|----------|
-| P6-1 | `TaskCenter` | 76 | 任务中心，最高频 |
-| P6-2 | `PluginRegistry` | 46 | 插件注册表 |
-| P6-3 | `ToastManager` | 42 | Toast 提示 |
+**迁移对象**（按风险从低到高排序，实际执行顺序）:
+| # | 单例 | Sources/ 引用 | 特殊处理 | 状态 |
+|---|------|---------------|----------|------|
+| P6-1 | `ToastManager` | 42 | Toast 提示，最低风险 | ✅ 已完成，已合入 main |
+| P6-2 | `ThemeManager` | 17 | @AppStorage + static var didMigrate | 🔄 执行中 |
+| P6-3 | `PromptService` | 26 | private init + UserDefaults.standard | ⏳ 待执行 |
+| P6-4 | `TaskCenter` | 76 | AppEventBus 订阅 + activityService | ⏳ 待执行 |
+| P6-5 | `PluginRegistry` | 46 | 3 个子模块 + Task 异步加载 | ⏳ 待执行 |
 
 **迁移策略**:
-- 每个单例迁移流程：Day 1-2 拆分 State + Service + 注册 `@Dependency` → Day 3-4 分批替换 `.shared` 引用（每批 10 文件）→ Day 5 回归测试 → Day 6-7 修复回归 + 从白名单删除
+- 每个单例迁移流程：拆分 State + Service + 注册 `@Dependency` → 替换 `.shared` 引用 → 回归测试 → 从白名单删除
+- **每个 P6 子任务完成后立即合入 main**（用户要求，不积压）
 
 **验收标准**:
-- [ ] 3 个单例全部迁移完成
-- [ ] `audit-singleton-frozen.py` 通过（白名单 1 项，仅剩 `DatabaseManager`）
+- [ ] 5 个单例全部迁移完成
+- [ ] `audit-singleton-frozen.py` 通过（白名单仅剩 `DatabaseManager`）
 - [ ] `make test` 全部通过
 - [ ] 全量测试零失败（关键验证点）
 - [ ] 快照测试零精度漂移

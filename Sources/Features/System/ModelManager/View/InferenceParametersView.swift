@@ -19,7 +19,7 @@ public struct InferenceParametersView: View {
         static let popoverWidth: CGFloat = 240.0
     }
 
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(ThemeManager.self) private var themeManager
     @State private var modelManager = GlobalModelManager.shared
 
     // MARK: - 状态管理
@@ -403,6 +403,6 @@ public struct InferenceParametersView: View {
 #if DEBUG
 #Preview {
     InferenceParametersView()
-        .environmentObject(ThemeManager.shared)
+        .environment(ThemeManager())
 }
 #endif

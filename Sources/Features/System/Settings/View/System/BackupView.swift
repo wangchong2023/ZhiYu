@@ -14,7 +14,7 @@ import SwiftUI
 struct BackupView: View {
     @Environment(AppStore.self) var store
     @StateObject private var backupService = BackupService()
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(\.dismiss) private var dismiss
     @State private var showRestoreConfirmation = false
     @State private var selectedEntry: BackupService.BackupEntry?

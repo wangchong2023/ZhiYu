@@ -17,7 +17,7 @@ import UFPCore
 struct ContentView: View {
     // MARK: - Environment & Dependencies
     @Environment(AppStore.self) var store
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(Router.self) var router
     @Environment(AuthService.self) var authService
     @Environment(VaultService.self) var vaultService
@@ -89,7 +89,7 @@ struct ContentView: View {
                 .environment(appEnvironment)
                 .environment(settingsStore)
                 .environmentObject(onboardingService)
-                .environmentObject(themeManager)
+                .environment(themeManager)
                 .environment(\.locale, router.currentLocale)
                 .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
         }
@@ -99,7 +99,7 @@ struct ContentView: View {
             }
             .environment(store)
             .environment(router)
-            .environmentObject(themeManager)
+            .environment(themeManager)
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
             .applyPagePresentationSizing()
         }
@@ -109,7 +109,7 @@ struct ContentView: View {
                 UserProfileView()
             }
             .environment(authService)
-            .environmentObject(themeManager)
+            .environment(themeManager)
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
             .applyPresentationSizing()
         }
@@ -118,7 +118,7 @@ struct ContentView: View {
                 SubscriptionPlanView()
             }
             .environment(authService)
-            .environmentObject(themeManager)
+            .environment(themeManager)
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
             .applyPagePresentationSizing()
         }
@@ -134,7 +134,7 @@ struct ContentView: View {
                 AboutView()
             }
             .environment(store)
-            .environmentObject(themeManager)
+            .environment(themeManager)
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
             .applyPresentationSizing()
         }
@@ -203,7 +203,7 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(AppStore())
-        .environmentObject(ThemeManager())
+        .environment(ThemeManager())
 }
 
 // MARK: - View Extension for Compatibility

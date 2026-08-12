@@ -19,7 +19,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(SettingsStore.self) var settingsStore
     @EnvironmentObject var onboardingService: OnboardingService
-    @ObservedObject var themeManager: ThemeManager = ThemeManager.shared
+    @Environment(ThemeManager.self) var themeManager
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.interfaceIdiom) private var idiom
     
@@ -255,7 +255,7 @@ struct SettingsView: View {
                     AboutView()
                 case .feedback:
                     FeedbackView()
-                        .environmentObject(themeManager)
+                        .environment(themeManager)
                 case .plugins:
                     PluginExtensionsDetailView()
                 #if DEBUG
@@ -290,8 +290,9 @@ struct SettingsView: View {
     }
     
     private var appearanceSection: some View {
-        Section {
-            Picker(selection: $themeManager.colorSchemeMode) {
+        @Bindable var bindableThemeManager = themeManager
+        return Section {
+            Picker(selection: $bindableThemeManager.colorSchemeMode) {
                 ForEach(ColorSchemeMode.allCases, id: \.self) { mode in
                     Text(mode.displayName).tag(mode)
                 }
@@ -435,7 +436,7 @@ struct SettingsView: View {
         Section {
             NavigationLink {
                 FeedbackView()
-                    .environmentObject(themeManager)
+                    .environment(themeManager)
             } label: {
                 Label(L10n.Settings.Feedback.title, systemImage: "bubble.left.and.bubble.right.fill")
                     .labelStyle(ColorfulIconLabelStyle(color: .blue))

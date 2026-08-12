@@ -178,7 +178,7 @@ struct RawPageRow: View {
 struct RawStorageListView: View {
     @Environment(KnowledgeStore.self) var store
     @Environment(Router.self) var router
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     @State private var searchText = ""
     @State private var expandedCategories: Set<RawCategoryType> = Set(RawCategoryType.allCases)
@@ -358,7 +358,7 @@ struct RawStorageListView: View {
 /// [L3] 表现层：原始页面具体内容查看详情视图
 struct RawPageDetailView: View {
     let page: KnowledgePage
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     // 布局常量与默认值，彻底消除魔鬼数字与硬编码
     private static let maxSourceURLLines = 2

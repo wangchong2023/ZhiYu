@@ -15,7 +15,7 @@ struct KnowledgeDashboardView: View {
     @Dependency(\.toastService) private var toastManager
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     // 使用协调器管理状态与交互

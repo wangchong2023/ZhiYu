@@ -20,7 +20,7 @@ public struct LocalModelManagerView: View {
 
     @Environment(AppStore.self) private var store
     @Environment(Router.self) private var router
-    @StateObject private var themeManager = ThemeManager.shared
+    @Environment(ThemeManager.self) private var themeManager
 
     // MARK: - 状态管理
 
@@ -95,13 +95,13 @@ public struct LocalModelManagerView: View {
     NavigationStack {
         ZStack {
             // 在预览模式下在最外层包裹背景，确保预览效果与真机运行时一致
-            ThemeManager.shared.pageBackground()
+            ThemeManager().pageBackground()
                 .ignoresSafeArea()
             LocalModelManagerView()
         }
         .environment(AppStore())
         .environment(Router())
-        .environmentObject(ThemeManager.shared)
+        .environment(ThemeManager())
     }
 }
 #endif

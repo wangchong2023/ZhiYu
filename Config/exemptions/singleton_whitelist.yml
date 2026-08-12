@@ -161,12 +161,6 @@ singleton_whitelist:
     added: 2026-08-12
     expiry_check: P2
 
-  - file: Sources/Shared/DesignSystem/Themes/ThemeManager.swift
-    class: ThemeManager
-    reason: P3 阶段迁移（17 次引用，注意此文件非 Shared/DesignSystem/Theme/ 路径）
-    added: 2026-08-12
-    expiry_check: P3
-
   # L2 业务层补充
   - file: Sources/Features/AI/Chat/Service/ChatService.swift
     class: ChatService

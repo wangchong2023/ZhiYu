@@ -14,7 +14,7 @@ import SwiftUI
 /// 集成了侧边栏开关、当前笔记本标识及数据洞察入口
 struct FloatingContextCapsule: View {
     @Environment(VaultService.self) var vaultService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     var onToggleSidebar: (() -> Void)?
     var onShowInsights: (() -> Void)?

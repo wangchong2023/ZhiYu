@@ -15,7 +15,7 @@ import SwiftUI
 @MainActor
 public struct SmartRoutingView: View {
 
-    @StateObject private var themeManager = ThemeManager.shared
+    @Environment(ThemeManager.self) private var themeManager
     @State private var modelManager = GlobalModelManager.shared
 
     public init() {}
@@ -172,10 +172,10 @@ public struct SmartRoutingView: View {
 #Preview {
     ZStack {
         // 在预览模式下在最外层包裹背景，确保预览效果与真机运行时一致
-        ThemeManager.shared.pageBackground()
+        ThemeManager().pageBackground()
             .ignoresSafeArea()
         SmartRoutingView()
     }
-    .environmentObject(ThemeManager.shared)
+    .environment(ThemeManager())
 }
 #endif

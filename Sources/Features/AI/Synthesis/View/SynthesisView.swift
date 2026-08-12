@@ -27,7 +27,7 @@ struct SynthesisView: View {
     @State private var showOutput = false
     @State private var outputType: SynthesisStore.SynthesisType = .mindmap
     @State private var selectedDoc: SynthesisStore.SynthesisDocument?
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @State private var pdfURL: IdentifiableURL?
 
     @State private var exportError: String?

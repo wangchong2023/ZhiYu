@@ -12,7 +12,7 @@ import SwiftUI
 
 struct VisionProSpatialView: View {
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     var body: some View {
         ZStack {
@@ -106,6 +106,6 @@ struct SpatialFeatureRow: View {
 #Preview {
     NavigationStack {
         VisionProSpatialView()
-            .environmentObject(ThemeManager.shared)
+            .environment(ThemeManager())
     }
 }

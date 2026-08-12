@@ -21,7 +21,7 @@ struct GraphContainerView: View {
     @Environment(Router.self) var router
     var heroNamespace: Namespace.ID
     @Binding var selectedTab: AppTab
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @State private var viewModel = GraphViewModel()
     @StateObject private var tooltipManager = TooltipManager.shared
 

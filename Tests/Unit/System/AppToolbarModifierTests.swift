@@ -11,11 +11,14 @@
 
 import XCTest
 import SwiftUI
+import Dependencies
 @testable import ZhiYu
 
 /// 工具栏修饰符及头像图标布局单元测试套件
 @MainActor
 final class AppToolbarModifierTests: XCTestCase {
+
+    @Dependency(\.themeService) var themeManager
 
     override func setUp() {
         super.setUp()
@@ -27,7 +30,6 @@ final class AppToolbarModifierTests: XCTestCase {
         let store = AppStore()
         let router = Router.shared
         let onboardingService = OnboardingService()
-        let themeManager = ThemeManager.shared
 
         let testView = Text("Test View")
             .appTabToolbar(title: "测试标题") {
@@ -36,7 +38,7 @@ final class AppToolbarModifierTests: XCTestCase {
             .environment(store)
             .environment(router)
             .environmentObject(onboardingService)
-            .environmentObject(themeManager)
+            .environment(themeManager)
 
         XCTAssertNotNil(testView, "应用主标签页工具栏修饰符应成功构建")
     }
@@ -46,13 +48,12 @@ final class AppToolbarModifierTests: XCTestCase {
         let store = AppStore()
         let router = Router.shared
         let onboardingService = OnboardingService()
-        let themeManager = ThemeManager.shared
 
         let hubView = NotebookHubView()
             .environment(store)
             .environment(router)
             .environmentObject(onboardingService)
-            .environmentObject(themeManager)
+            .environment(themeManager)
 
         XCTAssertNotNil(hubView, "NotebookHubView 应成功构建并包含 topBarTrailing 的头像与工具栏")
     }
@@ -63,14 +64,13 @@ final class AppToolbarModifierTests: XCTestCase {
         let router = Router.shared
         let authService = AuthService.shared
         let onboardingService = OnboardingService()
-        let themeManager = ThemeManager.shared
 
         let content = UserProfileMenuSheetContent(isShowingPopover: .constant(true))
             .environment(authService)
             .environment(store)
             .environment(router)
             .environmentObject(onboardingService)
-            .environmentObject(themeManager)
+            .environment(themeManager)
 
         XCTAssertNotNil(content, "UserProfileMenu 弹出气泡内容应成功初始化")
     }

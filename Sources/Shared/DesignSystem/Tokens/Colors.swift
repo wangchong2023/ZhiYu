@@ -9,6 +9,7 @@
 //  核心职责：设计系统令牌：颜色、排版、间距、动画、图标等可视化常量。
 //
 import SwiftUI
+import Dependencies
 
 #if canImport(UIKit)
 import UIKit
@@ -113,6 +114,11 @@ public enum Colors {
     }
 }
 
+/// 主题颜色解析器：通过 @Dependency 解析 ThemeManager，替代已删除的 ThemeManager.shared
+private struct ThemeColorResolver {
+    @Dependency(\.themeService) var theme
+}
+
 // MARK: - Color 扩展 (Semantic Colors)
 extension Color {
     
@@ -150,7 +156,7 @@ extension Color {
         #if os(watchOS)
         return .blue // watchOS 暂不支持复杂的 ThemeManager 逻辑
         #else
-        return runOnMainSync { ThemeManager.shared.accentColor }
+        return runOnMainSync { ThemeColorResolver().theme.accentColor }
         #endif
     }
     

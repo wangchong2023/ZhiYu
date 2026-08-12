@@ -10,30 +10,39 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - Theme Manager
 @MainActor
-class ThemeManager: ObservableObject {
-    static let shared = ThemeManager()
-    
-    @AppStorage(AppConstants.Keys.Storage.colorSchemeMode) var colorSchemeModeRaw: String = ColorSchemeMode.dark.rawValue
+@Observable
+public final class ThemeManager {
+    @ObservationIgnored private var keyStore: (any KeyStoreProtocol)?
 
-    /// Factory 风格：属性类型标注为可选（T?），@Inject 自动使用 resolveOptional
-    @Inject nonisolated private var keyStore: (any KeyStoreProtocol)?
+    /// 色彩方案模式原始值（替代 @AppStorage，手动读写 KeyStore）
+    public var colorSchemeModeRaw: String
 
-    var accentColorRaw: String {
-        get {
-            keyStore?.string(forKey: AppConstants.Keys.Storage.accentColor) ?? "blue"
+    /// 迁移标记（从 static var 改为实例属性，避免全局可变状态）
+    @ObservationIgnored private var didMigrate = false
+
+    public init(keyStore: (any KeyStoreProtocol)? = nil) {
+        self.keyStore = keyStore
+        // 初始化时从 KeyStore 读取 colorSchemeModeRaw
+        if let ks = keyStore,
+           let saved = ks.string(forKey: AppConstants.Keys.Storage.colorSchemeMode) {
+            self.colorSchemeModeRaw = saved
+        } else {
+            self.colorSchemeModeRaw = ColorSchemeMode.dark.rawValue
         }
     }
 
-    /// Migrate legacy isDarkMode key on first access
-    @MainActor private static var didMigrate = false
+    public var accentColorRaw: String {
+        keyStore?.string(forKey: AppConstants.Keys.Storage.accentColor) ?? "blue"
+    }
 
     var colorSchemeMode: ColorSchemeMode {
         get {
-            if !Self.didMigrate {
-                Self.didMigrate = true
+            if !didMigrate {
+                didMigrate = true
                 // Migrate: if old key exists and new key is default
                 if keyStore?.object(forKey: AppConstants.Keys.Storage.Legacy.isDarkMode) != nil,
                    keyStore?.string(forKey: AppConstants.Keys.Storage.colorSchemeMode) == nil {
@@ -59,18 +68,18 @@ class ThemeManager: ObservableObject {
         }
         set {
             colorSchemeModeRaw = newValue.rawValue
-            objectWillChange.send()
+            // 持久化到 KeyStore
+            keyStore?.set(newValue.rawValue, forKey: AppConstants.Keys.Storage.colorSchemeMode)
         }
     }
 
     /// Live color: reads from UserDefaults on every access (no cache).
-    /// @AppStorage already handles observation via Combine.
     var accentColor: Color {
         ThemeManager.colorForName(accentColorRaw)
     }
 
     /// Maps a color name string (stored in UserDefaults) to a system Color.
-    nonisolated static func colorForName(_ name: String) -> Color {
+    nonisolated public static func colorForName(_ name: String) -> Color {
         switch name {
         case "blue": return .blue
         case "purple": return .purple
@@ -96,4 +105,53 @@ class ThemeManager: ObservableObject {
     func pageBackground() -> some View {
         PageBackgroundView(accentColor: accentColor)
     }
+}
+
+// MARK: - ThemeManager DependencyKey
+
+private enum ThemeManagerKey: DependencyKey {
+    @MainActor
+    static var liveValue: ThemeManager {
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        return ThemeManager(keyStore: keyStore)
+    }
+    @MainActor
+    static let testValue: ThemeManager = {
+        guard let defaults = UserDefaults(suiteName: "test") else {
+            return ThemeManager(keyStore: nil)
+        }
+        return ThemeManager(keyStore: UserDefaultsKeyStore(defaults: defaults))
+    }()
+    @MainActor
+    static let previewValue: ThemeManager = ThemeManager(keyStore: nil)
+}
+
+extension DependencyValues {
+    /// 主题服务依赖（原 ThemeManager.shared）
+    var themeService: ThemeManager {
+        get { self[ThemeManagerKey.self] }
+        set { self[ThemeManagerKey.self] = newValue }
+    }
+
+    /// KeyStore 服务依赖（用于 ThemeManager 注入 KeyStoreProtocol）
+    var keyStoreService: (any KeyStoreProtocol)? {
+        get { self[KeyStoreServiceKey.self] }
+        set { self[KeyStoreServiceKey.self] = newValue }
+    }
+}
+
+private enum KeyStoreServiceKey: DependencyKey {
+    @MainActor
+    static var liveValue: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+    }
+    @MainActor
+    static let testValue: (any KeyStoreProtocol)? = {
+        guard let defaults = UserDefaults(suiteName: "test") else {
+            return nil as (any KeyStoreProtocol)?
+        }
+        return UserDefaultsKeyStore(defaults: defaults)
+    }()
+    @MainActor
+    static let previewValue: (any KeyStoreProtocol)? = nil
 }

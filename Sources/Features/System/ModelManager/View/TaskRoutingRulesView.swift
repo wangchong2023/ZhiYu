@@ -14,7 +14,7 @@ import SwiftUI
 /// 任务路由规则子视图
 public struct TaskRoutingRulesView: View {
 
-    @StateObject private var themeManager = ThemeManager.shared
+    @Environment(ThemeManager.self) private var themeManager
 
     public init() {}
 

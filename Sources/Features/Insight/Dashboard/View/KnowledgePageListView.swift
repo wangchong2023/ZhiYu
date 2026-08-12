@@ -25,7 +25,7 @@ struct KnowledgePageListView: View {
 struct KnowledgePageListContent: View {
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     var filterType: PageType?
     
     /// 全局注入的平台设备环境

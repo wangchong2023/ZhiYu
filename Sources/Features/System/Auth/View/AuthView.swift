@@ -15,7 +15,7 @@ import Dependencies
 struct AuthView: View {
     @Dependency(\.toastService) private var toastManager
     @Environment(AuthService.self) var authService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
 
     // MARK: - 区域感知与3D翻转状态
     @State private var currentRegion: AuthRegion = AuthRegionDetector.shared.detectDefaultRegion()

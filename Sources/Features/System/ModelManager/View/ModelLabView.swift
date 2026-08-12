@@ -21,7 +21,7 @@ public struct ModelLabView: View {
 
     @State var modelManager = GlobalModelManager.shared
     @State var labManager = ModelLabManager()
-    @StateObject private var themeManager = ThemeManager.shared
+    @Environment(ThemeManager.self) private var themeManager
     @Dependency(\.toastService) var toastManager
 
     /// 当需要跳回商店时的外部闭包回调

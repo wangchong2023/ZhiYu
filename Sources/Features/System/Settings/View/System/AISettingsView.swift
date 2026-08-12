@@ -15,7 +15,7 @@ import SwiftUI
 @MainActor
 struct AISettingsView: View {
     @Environment(AppStore.self) var store
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(\.dismiss) var dismiss
     
     @State private var selectedTab = 0

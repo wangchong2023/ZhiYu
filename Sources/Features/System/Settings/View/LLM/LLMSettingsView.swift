@@ -14,7 +14,7 @@ import SwiftUI
 @MainActor
 struct LLMSettingsView: View {
     @Environment(AppStore.self) var store
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(Router.self) var router
     @EnvironmentObject var llmService: LLMService
     @Environment(LLMConfigManager.self) var config

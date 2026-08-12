@@ -17,7 +17,7 @@ public struct ServerConfigView: View {
 
     // MARK: - 环境注入
 
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(ThemeManager.self) private var themeManager
 
     // MARK: - 状态管理
 
@@ -217,7 +217,7 @@ public struct ServerConfigView: View {
 
 private struct ServerEditSheet: View {
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(ThemeManager.self) private var themeManager
 
     let server: MockServerConfig?
     let onSave: (MockServerConfig) -> Void
@@ -378,7 +378,7 @@ public struct MockServerConfig: Codable, Identifiable {
 #if DEBUG
 #Preview {
     ServerConfigView()
-        .environmentObject(ThemeManager.shared)
+        .environment(ThemeManager())
 }
 #endif
 

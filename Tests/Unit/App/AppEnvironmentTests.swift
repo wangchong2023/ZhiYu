@@ -42,9 +42,9 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertTrue(AppEnvironment.shared.router === Router.shared, "router 应为 Router.shared 单例")
     }
 
-    /// 验证 shared.themeManager 是 ThemeManager.shared 单例
-    func testShared_ThemeManagerIsSharedSingleton() {
-        XCTAssertTrue(AppEnvironment.shared.themeManager === ThemeManager.shared, "themeManager 应为 ThemeManager.shared 单例")
+    /// 验证 shared.themeManager 是 ThemeManager 实例
+    func testShared_ThemeManagerIsThemeManagerInstance() {
+        XCTAssertNotNil(AppEnvironment.shared.themeManager as ThemeManager?, "themeManager 应为 ThemeManager 实例")
     }
 
     /// 验证 shared.llmService 是 LLMService.shared 单例

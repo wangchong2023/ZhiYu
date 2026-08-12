@@ -148,7 +148,7 @@ struct OverseasLoginCardView: View {
         }
     }
     
-    private var themeManager: ThemeManager { ThemeManager.shared }
+    @Environment(ThemeManager.self) var themeManager
     
     // MARK: - 登录动作
     

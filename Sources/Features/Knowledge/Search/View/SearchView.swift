@@ -22,7 +22,7 @@ struct SearchView: View {
     @State private var filterType: PageType?
     @State private var filterStatus: PageStatus?
     @State private var sortBy: SortOption = .updated
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @State private var previewPage: KnowledgePage?
     @State private var advancedResults: [KnowledgePage] = []
     @State private var useAdvancedSearch = false

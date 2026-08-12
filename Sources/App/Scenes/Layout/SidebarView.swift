@@ -19,7 +19,7 @@ struct SidebarView: View {
     @Environment(VaultService.self) var vaultService
     @Environment(IngestStore.self) var ingestStore
     @Environment(Router.self) var router
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     /// 全局注入的平台设备环境

@@ -24,7 +24,7 @@ struct LogView: View {
 /// 负责从存储引擎加载日志条目，处理清空逻辑，并管理条目的展开/折叠状态
 struct LogViewContent: View {
     @Environment(AppStore.self) var store
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @State private var expandedEntryIDs: Set<UUID> = []
     @State private var showConfirmation = false
 

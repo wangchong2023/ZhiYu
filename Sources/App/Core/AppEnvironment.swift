@@ -39,7 +39,7 @@ final class AppEnvironment {
     private init() {
         // ── 0. 仅初始化不依赖 DI 的 stored properties（Swift 要求在调用 self 方法前完成）──
         self.router = Router.shared
-        self.themeManager = ThemeManager.shared
+        self.themeManager = ThemeManager(keyStore: ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self))
         self.llmConfig = LLMConfigManager()
 
         Logger.shared.info("[AppEnvironment] Starting initialization...")

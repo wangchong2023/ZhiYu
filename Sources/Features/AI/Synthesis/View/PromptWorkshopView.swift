@@ -18,7 +18,7 @@ struct PromptWorkshopView: View {
     @Environment(\.dismiss) private var dismiss
     
     /// 全局主题管理器，用于获取统一的高级毛玻璃背景
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
 
     @Environment(\.interfaceIdiom) private var idiom
 

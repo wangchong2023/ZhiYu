@@ -155,7 +155,7 @@ private struct CatalystMenuContent: View {
             .environment(authService)
             .environment(store)
             .environment(router)
-            .environmentObject(themeManager)
+            .environment(themeManager)
             .environmentObject(onboardingService)
             .frame(width: menuWidth)
             .padding(.top, topPadding)
@@ -170,7 +170,7 @@ struct UserProfileMenu: View {
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
     @EnvironmentObject var onboardingService: OnboardingService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     @State private var isShowingPopover = false
     @State private var showWatchMenu = false
@@ -336,7 +336,7 @@ struct UserProfileMenuSheetContent: View {
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
     @EnvironmentObject var onboardingService: OnboardingService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     @Binding var isShowingPopover: Bool
     @State private var pendingMenuAction: UserProfileMenu.MenuAction?
@@ -368,7 +368,7 @@ struct UserProfileMenuSheetContent: View {
         .environment(authService)
         .environment(store)
         .environment(router)
-        .environmentObject(themeManager)
+        .environment(themeManager)
         .environmentObject(onboardingService)
         .onDisappear {
             isShowingPopover = false
@@ -401,7 +401,7 @@ struct UserProfileMenuSheetContent: View {
 // MARK: - 自定义个人中心悬浮弹窗
 struct CustomProfilePopover: View {
     @Environment(AuthService.self) var authService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     @MainActor
     fileprivate enum Constants {

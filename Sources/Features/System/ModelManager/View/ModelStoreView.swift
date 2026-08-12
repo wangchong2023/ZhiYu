@@ -19,7 +19,7 @@ public struct ModelStoreView: View {
 
     @Environment(AppStore.self) private var store
     @Environment(Router.self) private var router
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(ThemeManager.self) private var themeManager
 
     /// 全局大模型市场中台管理器
     @State private var modelManager = GlobalModelManager.shared

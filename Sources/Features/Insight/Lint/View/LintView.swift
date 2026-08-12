@@ -33,7 +33,7 @@ struct LintViewContent: View {
     @Environment(AppStore.self) var store
     @Environment(AIWorkflowStore.self) var aiStore
     @Environment(Router.self) var router
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(\.dismiss) var dismiss
     @State private var isRunning = false
     @State private var selectedTab = 0 // 0: 健康检查, 1: AI 建议

@@ -17,7 +17,7 @@ import SwiftUI
 /// 知识库页面的快速预览表单
 struct PagePreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(ThemeManager.self) private var themeManager
     
     /// 待预览的知识卡片页面数据模型
     let page: KnowledgePage
@@ -153,7 +153,7 @@ struct PagePreviewSheet: View {
 /// 集中式多维度混合检索与 AI 重写查询的诊断卡片弹出页
 struct SearchDiagnosticSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(ThemeManager.self) private var themeManager
     
     /// 诊断数据包结构体
     let info: SearchDiagnosticInfo

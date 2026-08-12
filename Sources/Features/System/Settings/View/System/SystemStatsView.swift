@@ -17,7 +17,7 @@ import Charts
 struct SystemStatsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppStore.self) var store
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     // 使用协调器管理状态与交互
     @State private var coordinator = SystemStatsCoordinator()

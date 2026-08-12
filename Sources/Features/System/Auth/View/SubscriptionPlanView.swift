@@ -29,7 +29,7 @@ struct PlanFeature {
 public struct SubscriptionPlanView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthService.self) private var authService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
 
     private enum Constants {
         static let barHeight: CGFloat = 6

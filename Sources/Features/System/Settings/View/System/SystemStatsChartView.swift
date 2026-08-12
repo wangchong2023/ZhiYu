@@ -20,7 +20,7 @@ struct ChartView: View {
     
     let stats: [DailyAIUsage]
     let type: ChartType
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @State private var selectedDate: Date?
     
     var body: some View {

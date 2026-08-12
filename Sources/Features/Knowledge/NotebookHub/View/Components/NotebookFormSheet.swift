@@ -50,7 +50,7 @@ struct NotebookFormSheet: View {
     var onSubmit: () -> Void
     
     @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     /// 笔记本可供选择的高品质 Emoji 图标数组，引用自 Shared 设计令牌
     private let iconOptions = DesignSystem.Icons.Notebook.options
     

@@ -23,7 +23,7 @@ public struct OnDeviceLLMSettingsView: View {
     @Environment(AppStore.self) var store
     
     /// 全局主题美学管理器，驱动毛玻璃材质投影
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     
     /// 兼容引入全局云端 LLM 服务，便于后续做端云混合调度
     @EnvironmentObject var llmService: LLMService

@@ -16,7 +16,7 @@ import SwiftUI
 struct TaskCenterView: View {
     @ObservedObject var taskCenter = TaskCenter.shared
     @Environment(AppStore.self) var store
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Environment(Router.self) var router
     @Environment(\.interfaceIdiom) private var idiom
     @State private var showClearConfirm = false

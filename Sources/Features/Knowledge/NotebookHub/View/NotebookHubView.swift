@@ -19,7 +19,7 @@ public struct NotebookHubView: View {
     @State private var viewModel = NotebookHubViewModel()
     @State private var showLintSheet = false   // 控制知识巡检面板弹出
     @Environment(Router.self) var router
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @EnvironmentObject var onboardingService: OnboardingService
     @Inject var appEnv: any AppEnvironmentProtocol // 注入环境能力
     @Environment(\.interfaceIdiom) private var idiom

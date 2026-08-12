@@ -9,6 +9,7 @@
 //  核心职责：属于 Support 模块，提供相关的结构体或工具支撑。
 //
 import SwiftUI
+import Dependencies
 @testable import ZhiYu
 
 // MARK: - 快照测试公共配置
@@ -41,8 +42,9 @@ extension View {
     /// **维护方式**：新增 `@Environment` 依赖类型时，只需在此处追加一行 `.environment(...)`。
     /// 全量依赖清单通过 `rg "@Environment\([A-Z].*\.(self|shared)\)" Sources/` 盘点。
     func snapshotEnvironment() -> some View {
-        self
-            // MARK: @Environment（@Observable 类型，共 15 个）
+        @Dependency(\.themeService) var themeManager
+        return self
+            // MARK: @Environment（@Observable 类型，共 16 个）
             .environment(AppStore())
             .environment(Router.shared)
             .environment(VaultService.shared)
@@ -58,8 +60,8 @@ extension View {
             .environment(ChatCoordinator())
             .environment(LLMConfigManager())
             .environment(NotebookHubViewModel())
-            // MARK: @EnvironmentObject（ObservableObject 类型，共 4 个）
-            .environmentObject(ThemeManager.shared)
+            .environment(themeManager)
+            // MARK: @EnvironmentObject（ObservableObject 类型，共 3 个）
             .environmentObject(OnboardingService.shared)
             .environmentObject(LLMService.shared)
             .environmentObject(MedalService.shared)

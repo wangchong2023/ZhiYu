@@ -18,7 +18,7 @@ struct IngestView: View {
     @Environment(IngestStore.self) var ingestStore
     @Environment(Router.self) var router
     @EnvironmentObject var llmService: LLMService
-    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(ThemeManager.self) var themeManager
     @Binding var selectedTab: AppTab
     
     // 使用专门的协调器管理状态与流程
