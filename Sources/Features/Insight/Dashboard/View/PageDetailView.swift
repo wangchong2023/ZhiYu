@@ -11,9 +11,11 @@
 
 import SwiftUI
 import UFPCore
+import Dependencies
 
 /// 页面详情视图
 struct PageDetailView: View {
+    @Dependency(\.toastService) private var toastManager
     let page: KnowledgePage
     @State private var coordinator: PageDetailCoordinator?
     var heroNamespace: Namespace.ID?
@@ -481,7 +483,7 @@ struct PageDetailView: View {
                 Task {
                     await store.applyPotentialLink(link)
                     aiStore.removePotentialLink(id: link.id)
-                    ToastManager.shared.show(type: .success, message: L10n.Lint.apply)
+                    toastManager.show(type: .success, message: L10n.Lint.apply)
                 }
             }) {
                 Text(L10n.Lint.apply)

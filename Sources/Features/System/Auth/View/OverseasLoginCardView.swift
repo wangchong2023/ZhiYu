@@ -11,9 +11,11 @@
 
 import SwiftUI
 import UFPCore
+import Dependencies
 
 /// 智宇海外国际区专用登录表单卡片
 struct OverseasLoginCardView: View {
+    @Dependency(\.toastService) private var toastManager
     /// 身份认证后台数据服务
     @Environment(AuthService.self) var authService
     /// 加载中状态
@@ -153,7 +155,7 @@ struct OverseasLoginCardView: View {
     /// 处理 Passkey 一键生物特征认证
     private func handlePasskeyLogin() {
         guard isAgreementChecked else {
-            ToastManager.shared.show(type: .error, message: L10n.Auth.agreementRequired)
+            toastManager.show(type: .error, message: L10n.Auth.agreementRequired)
             HapticFeedback.shared.trigger(.error)
             return
         }

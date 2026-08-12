@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Combine
+import Dependencies
 
 // MARK: - App Toast Type
 /// 轻提示类型枚举
@@ -51,25 +52,25 @@ public struct AppToast: Identifiable, Equatable {
 
 // MARK: - 提示管理器
 @MainActor
-/// 轻提示全局管理单例
+/// 轻提示管理器
 /// 负责 Toast 的队列调度、生命周期计时（自动隐藏）及并发状态管理，确保 UI 层的非阻塞反馈
-final class ToastManager: ObservableObject {
-    static let shared = ToastManager()
-    
-    @Published var currentToast: AppToast?
-    private var timer: AnyCancellable?
-    
-    init() {}
-    
+@Observable
+public final class ToastManager {
+    @ObservationIgnored private var timer: AnyCancellable?
+
+    public var currentToast: AppToast?
+
+    public init() {}
+
     /// 展示
     /// - Parameter type: type
     /// - Parameter message: message
     /// - Parameter duration: duration
-    func show(type: AppToastType, message: String, duration: Double = 3.0) {
+    public func show(type: AppToastType, message: String, duration: Double = 3.0) {
         withAnimation(.spring(response: DesignSystem.Animation.standardDuration * 1.6, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
             currentToast = AppToast(type: type, message: message, duration: duration)
         }
-        
+
         timer?.cancel()
         if duration > 0 {
             timer = Just(())
@@ -79,12 +80,31 @@ final class ToastManager: ObservableObject {
                 }
         }
     }
-    
+
     /// 关闭
-    func dismiss() {
+    public func dismiss() {
         withAnimation(.spring(response: DesignSystem.Animation.standardDuration * 1.6, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
             currentToast = nil
         }
+    }
+}
+
+// MARK: - ToastManager DependencyKey
+
+private enum ToastManagerKey: DependencyKey {
+    @MainActor
+    static let liveValue: ToastManager = ToastManager()
+    @MainActor
+    static let testValue: ToastManager = ToastManager()
+    @MainActor
+    static let previewValue: ToastManager = ToastManager()
+}
+
+extension DependencyValues {
+    /// Toast 服务依赖（原 ToastManager.shared）
+    var toastService: ToastManager {
+        get { self[ToastManagerKey.self] }
+        set { self[ToastManagerKey.self] = newValue }
     }
 }
 
@@ -144,15 +164,15 @@ struct AppToastView: View {
 /// 轻提示视图修饰符
 /// 负责将 Toast 展示层注入到视图树的最顶层，实现跨页面的即时消息提示能力
 struct AppToastModifier: ViewModifier {
-    @StateObject private var manager = ToastManager.shared
-    
+    @Dependency(\.toastService) private var manager
+
     /// 视图主体
     /// - Parameter content: content
     /// - Returns: 返回值
     func body(content: Content) -> some View {
         ZStack(alignment: .top) {
             content
-            
+
             if let toast = manager.currentToast {
                 AppToastView(toast: toast) {
                     manager.dismiss()

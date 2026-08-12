@@ -9,6 +9,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - URL / 剪贴板导入处理
 
@@ -34,7 +35,7 @@ extension IngestCoordinator {
     @discardableResult
     func handleBatchURLImport(_ urls: [URL]) -> Task<Void, Never> {
         guard !isImporting else {
-            ToastManager.shared.show(type: .info, message: L10n.Ingest.importCooldown)
+            toastManager.show(type: .info, message: L10n.Ingest.importCooldown)
             return Task { }
         }
         showURLImport = false
@@ -92,7 +93,7 @@ extension IngestCoordinator {
                     // 部分失败：标记为 failed 但消息说明部分成功，避免 UI 误显示"全部完成"
                     TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.batchResult(ok, fail)))
                 }
-                ToastManager.shared.show(type: ok > 0 ? .success : .error, message: L10n.Ingest.batchResult(ok, fail))
+                toastManager.show(type: ok > 0 ? .success : .error, message: L10n.Ingest.batchResult(ok, fail))
             }
         }
     }

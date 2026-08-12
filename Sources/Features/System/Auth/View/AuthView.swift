@@ -9,9 +9,11 @@
 //  核心职责：Auth 界面容器 — 持有 @State 状态树、3D 翻转动画调度与认证逻辑编排。
 //
 import SwiftUI
+import Dependencies
 
 /// 身份认证主视图
 struct AuthView: View {
+    @Dependency(\.toastService) private var toastManager
     @Environment(AuthService.self) var authService
     @EnvironmentObject var themeManager: ThemeManager
 
@@ -222,7 +224,7 @@ struct AuthView: View {
 
     private func handleAuth() {
         if !isAgreementChecked {
-            ToastManager.shared.show(type: .error, message: L10n.Auth.agreementRequired)
+            toastManager.show(type: .error, message: L10n.Auth.agreementRequired)
             HapticFeedback.shared.trigger(.error)
             return
         }
@@ -247,7 +249,7 @@ struct AuthView: View {
     /// 触发第三方账号授权登录逻辑
     func handleThirdPartyLogin(using strategy: any AuthStrategy) {
         if !isAgreementChecked {
-            ToastManager.shared.show(type: .error, message: L10n.Auth.agreementRequired)
+            toastManager.show(type: .error, message: L10n.Auth.agreementRequired)
             HapticFeedback.shared.trigger(.error)
             return
         }

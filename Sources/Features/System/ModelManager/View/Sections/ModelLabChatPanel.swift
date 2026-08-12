@@ -97,7 +97,7 @@ extension ModelLabView {
                 ForEach(labManager.attachmentOptions) { option in
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
-                        ToastManager.shared.show(type: .success, message: option.successMessage)
+                        toastManager.show(type: .success, message: option.successMessage)
                     }) {
                         Label(option.title, systemImage: option.icon)
                     }

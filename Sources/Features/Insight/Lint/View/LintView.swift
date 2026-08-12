@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import Dependencies
 
 // MARK: - 治理中心入口
 
@@ -27,6 +28,7 @@ struct LintView: View {
 /// 知识治理核心内容视图
 /// 负责健康得分看板（Dashboard）渲染、结构化问题分析、AI 治理建议展示及自动化修复逻辑
 struct LintViewContent: View {
+    @Dependency(\.toastService) private var toastManager
     @Binding var selection: SidebarSelection?
     @Environment(AppStore.self) var store
     @Environment(AIWorkflowStore.self) var aiStore
@@ -121,7 +123,7 @@ struct LintViewContent: View {
             await MainActor.run {
                 isRunning = false
                 HapticFeedback.shared.trigger(.success)
-                ToastManager.shared.show(type: .success, message: L10n.Lint.scanComplete)
+                toastManager.show(type: .success, message: L10n.Lint.scanComplete)
             }
         }
     }
@@ -129,7 +131,7 @@ struct LintViewContent: View {
     private func runAIScan() {
         guard aiStore.isLLMEnabled else {
             HapticFeedback.shared.trigger(.error)
-            ToastManager.shared.show(type: .error, message: L10n.Lint.aiDisabledHint)
+            toastManager.show(type: .error, message: L10n.Lint.aiDisabledHint)
             return
         }
 
@@ -137,7 +139,7 @@ struct LintViewContent: View {
             await aiStore.runAIScan()
             await MainActor.run {
                 HapticFeedback.shared.trigger(.success)
-                ToastManager.shared.show(type: .success, message: L10n.Lint.aiScanComplete)
+                toastManager.show(type: .success, message: L10n.Lint.aiScanComplete)
             }
         }
     }

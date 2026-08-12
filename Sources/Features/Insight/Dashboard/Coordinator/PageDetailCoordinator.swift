@@ -11,10 +11,12 @@
 import SwiftUI
 import UFPCore
 import Observation
+import Dependencies
 
 @MainActor
 @Observable
 final class PageDetailCoordinator {
+    @ObservationIgnored @Dependency(\.toastService) private var toastManager
     var page: KnowledgePage
     var isEditing = false
     var showBacklinks = false
@@ -61,13 +63,13 @@ final class PageDetailCoordinator {
     /// - Parameter operation: 异步 AI 操作
     private func runAIOperation(_ operation: @escaping () async throws -> Void) {
         Task {
-            ToastManager.shared.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
+            toastManager.show(type: .processing, message: L10n.Common.aiThinking, duration: 0)
             do {
                 try await operation()
                 HapticFeedback.shared.trigger(.success)
-                ToastManager.shared.dismiss()
+                toastManager.dismiss()
             } catch {
-                ToastManager.shared.show(type: .error, message: error.localizedDescription)
+                toastManager.show(type: .error, message: error.localizedDescription)
             }
         }
     }

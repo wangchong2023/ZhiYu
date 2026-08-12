@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-CI-3 门禁：UserDefaults.standard 冻结审计
+智宇 (ZhiYu) UserDefaults.standard 冻结门禁工具 (audit-userdefaults-standard.py)
 
-策略：白名单注册制 + 禁止新增。
-- 现有 ~30 处 UserDefaults.standard 直接调用登记在白名单中。
-- 白名单外新增 UserDefaults.standard 即 CI 阻断。
-- 目标：推动后续 P5-P6 阶段逐步迁移到 KeyStoreProtocol（DI 注入）。
+功能说明:
+1. 扫描 Sources/ 目录下所有 Swift 文件，检测 `UserDefaults.standard` 直接调用。
+2. 仅允许白名单 (Config/exemptions/userdefaults_standard_whitelist.yml) 内列出的 file+line 组合保留。
+3. 白名单外的 `UserDefaults.standard` 调用将导致 CI 阻断（error）。
+4. 兼容 Xcode 编译器报错输出格式，如有违规在 Xcode 编译时直接以 error 标红并阻断构建。
 
-豁免：
-- 注释行（// 开头）
-- KeyStoreProtocol.swift / UserDefaultsKeyStore.swift（协议定义和适配器本身）
-- 字符串中引用（如 "UserDefaults.standard" 出现在文档注释中）
+使用方法:
+    python3 Tools/ios/audit-userdefaults-standard.py
 
-触发场景：CI/CD 流水线 + pre-push 钩子。
+退出码:
+    0: 审计通过（所有 UserDefaults.standard 均在白名单内）
+    1: 审计失败（发现未注册的 UserDefaults.standard 调用）
 """
 
 from __future__ import annotations
@@ -74,6 +76,7 @@ def scan_sources() -> list[tuple[str, int, str]]:
 
 
 def main() -> int:
+    """主审计入口：加载白名单、扫描源码、比对白名单、输出违规项并返回退出码。"""
     whitelist = load_whitelist()
     sources_usage = scan_sources()
 

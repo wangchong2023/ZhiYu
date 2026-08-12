@@ -12,13 +12,16 @@ import Foundation
 import UFPCore
 import Combine
 import Observation
+import Dependencies
 
 /// 知识页面状态存储中心 (L2-Feature Store)
 /// 负责管理全量页面状态、搜索缓存及 UI 交互状态。
 @Observable
 @MainActor
 public final class KnowledgeStore {
-    
+
+    @ObservationIgnored @Dependency(\.toastService) private var toastManager
+
     // MARK: - 状态属性
     
     /// 全量页面镜像
@@ -229,7 +232,7 @@ public final class KnowledgeStore {
         // 里程碑检查
         if let milestone = OnboardingMilestone.checkPageCountMilestone(totalPages) {
             if !milestone.hasBeenShown {
-                ToastManager.shared.show(type: .success, message: milestone.toastMessage)
+                toastManager.show(type: .success, message: milestone.toastMessage)
                 milestone.markAsShown()
             }
         }

@@ -10,6 +10,7 @@
 import SwiftUI
 import UFPCore
 import UniformTypeIdentifiers
+import Dependencies
 
 // MARK: - 文件导入处理
 
@@ -18,7 +19,7 @@ extension IngestCoordinator {
     /// 处理File导入
     func handleFileImport(_ result: Result<[URL], Error>) {
         guard !isImporting else {
-            ToastManager.shared.show(type: .info, message: L10n.Ingest.importCooldown)
+            toastManager.show(type: .info, message: L10n.Ingest.importCooldown)
             return
         }
         switch result {
@@ -49,7 +50,7 @@ extension IngestCoordinator {
         if let size = fileSize, size > AppConstants.Keys.ImportLimits.maxFileSizeBytes {
             lastImportTime = .distantPast
             Task { @MainActor in
-                ToastManager.shared.show(type: .error, message: L10n.Ingest.fileTooLarge)
+                toastManager.show(type: .error, message: L10n.Ingest.fileTooLarge)
             }
             TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.fileTooLarge))
             return
@@ -60,12 +61,12 @@ extension IngestCoordinator {
         guard let savedPath = fileStore.copyFile(at: url, category: .file) else {
             lastImportTime = .distantPast
             Task { @MainActor in
-                ToastManager.shared.show(type: .error, message: L10n.Ingest.importFailed)
+                toastManager.show(type: .error, message: L10n.Ingest.importFailed)
             }
             TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
             return
         }
-        
+
         let actualPath = savedPath
         let sandboxURL = URL(fileURLWithPath: savedPath)
 
@@ -122,7 +123,7 @@ extension IngestCoordinator {
             let existing = (try? await importRecordRepo.fetchAll(category: ImportCategory.file.rawValue, limit: AppConstants.Keys.ImportLimits.dedupFetchLimit)) ?? []
             if existing.contains(where: { $0.filePath == record.filePath && $0.status == ImportRecordStatus.done }) {
                 await MainActor.run {
-                    ToastManager.shared.show(type: .info, message: L10n.Ingest.duplicateFile(record.title))
+                    toastManager.show(type: .info, message: L10n.Ingest.duplicateFile(record.title))
                 }
                 TaskCenter.shared.updateTask(taskID, status: .failed(error: L10n.Ingest.duplicateFile(record.title)))
                 return

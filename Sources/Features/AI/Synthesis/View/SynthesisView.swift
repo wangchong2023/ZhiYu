@@ -11,10 +11,12 @@
 
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - 合成视图入口
 
 struct SynthesisView: View {
+    @Dependency(\.toastService) private var toastManager
     @Binding var selection: SidebarSelection?
     @Binding var selectedTab: AppTab
     @Environment(AppStore.self) var store
@@ -324,7 +326,7 @@ struct SynthesisView: View {
                                     router.navigateToPage(id: pageID)
                                 }
                             } else {
-                                ToastManager.shared.show(type: .info, message: L10n.AI.Synthesis.Error.pageNotFound)
+                                toastManager.show(type: .info, message: L10n.AI.Synthesis.Error.pageNotFound)
                             }
                         }
                     )

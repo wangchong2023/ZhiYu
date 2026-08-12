@@ -10,7 +10,9 @@
 //
 import SwiftUI
 import Charts
+import Dependencies
 struct KnowledgeDashboardView: View {
+    @Dependency(\.toastService) private var toastManager
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
     @EnvironmentObject var themeManager: ThemeManager
@@ -267,7 +269,7 @@ struct KnowledgeDashboardView: View {
                         if store.pages.contains(where: { $0.id == recap.targetPageID }) {
                             router.navigateToPage(id: recap.targetPageID)
                         } else {
-                            ToastManager.shared.show(type: .info, message: L10n.Dashboard.insightsPageDeleted)
+                            toastManager.show(type: .info, message: L10n.Dashboard.insightsPageDeleted)
                         }
                     }) {
                         VStack(alignment: .leading, spacing: DesignSystem.small) {

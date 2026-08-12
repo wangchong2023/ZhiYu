@@ -10,12 +10,14 @@
 //
 import SwiftUI
 import SceneKit
+import Dependencies
 
 // MARK: - 3D 图谱容器
 /// 3D 知识图谱视图
 /// 负责在 3D 空间（SceneKit）中渲染知识节点与关联线条，提供力导向布局、自动旋转及空间交互体验
 @MainActor
 struct Graph3DView: View {
+    @Dependency(\.toastService) private var toastManager
     @Environment(KnowledgeStore.self) var store
     @Environment(Router.self) var router
     @State private var scene: SCNScene?
@@ -78,7 +80,7 @@ struct Graph3DView: View {
             // 节点数超出 2000 个时智能降级至 2D 拓扑
             if store.pages.count > 2000 {
                 isFullScreen = false
-                ToastManager.shared.show(type: .info, message: L10n.Graph.nodesLimitDegradeHint)
+                toastManager.show(type: .info, message: L10n.Graph.nodesLimitDegradeHint)
                 return
             }
             

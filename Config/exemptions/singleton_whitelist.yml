@@ -41,12 +41,6 @@ singleton_whitelist:
     added: 2026-08-12
     expiry_check: P2
 
-  - file: Sources/Core/System/Toast/ToastManager.swift
-    class: ToastManager
-    reason: P6 阶段迁移（42 次引用）
-    added: 2026-08-12
-    expiry_check: P6
-
   - file: Sources/Features/Knowledge/Ingest/View/Components/VoiceAudioPlayerView.swift
     class: VoiceSpeechState
     reason: P2 阶段迁移
@@ -172,12 +166,6 @@ singleton_whitelist:
     reason: P3 阶段迁移（17 次引用，注意此文件非 Shared/DesignSystem/Theme/ 路径）
     added: 2026-08-12
     expiry_check: P3
-
-  - file: Sources/Shared/UIComponents/Feedback/AppToast.swift
-    class: ToastManager
-    reason: P7 永久例外（41 次引用，全局 Toast 入口）
-    added: 2026-08-12
-    expiry_check: never
 
   # L2 业务层补充
   - file: Sources/Features/AI/Chat/Service/ChatService.swift

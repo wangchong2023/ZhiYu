@@ -10,8 +10,10 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 struct DeveloperSettingsView: View {
+    @Dependency(\.toastService) private var toastManager
     @Environment(AppStore.self) var store
     @Environment(KnowledgeStore.self) var knowledgeStore
     @Environment(SettingsStore.self) var settingsStore
@@ -113,7 +115,7 @@ struct DeveloperSettingsView: View {
             Section {
                 Button {
                     onboardingService.hasCompletedOnboarding = false
-                    ToastManager.shared.show(type: .success, message: L10n.Settings.developer.resetOnboardingDone)
+                    toastManager.show(type: .success, message: L10n.Settings.developer.resetOnboardingDone)
                 } label: {
                     Label(L10n.Settings.developer.showWelcomeBanner, systemImage: "sparkles")
                 }

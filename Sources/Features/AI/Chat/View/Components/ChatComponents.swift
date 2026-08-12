@@ -10,11 +10,13 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - Chat Bubble View
 /// 聊天气泡视图
 /// 支持用户消息（右侧、渐变背景）与 AI 消息（左侧、卡片背景）的差异化渲染
 struct ChatBubbleView: View {
+    @Dependency(\.toastService) private var toastManager
     let message: ChatMessage
     let pages: [KnowledgePage]
     @Environment(AppStore.self) var store
@@ -168,7 +170,7 @@ struct ChatBubbleView: View {
                     HapticFeedback.shared.trigger(.selection)
                     let processed = ThinkingProcessor.process(message.content)
                     AppPasteboard.string = processed.mainContent
-                    ToastManager.shared.show(type: .success, message: L10n.Chat.copied)
+                    toastManager.show(type: .success, message: L10n.Chat.copied)
                 }) {
                     Image(systemName: "doc.on.doc")
                         .font(.caption)

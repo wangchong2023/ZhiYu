@@ -9,8 +9,10 @@
 //  核心职责：构建 Settings 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Dependencies
 
 struct SettingsView: View {
+    @Dependency(\.toastService) private var toastManager
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
     @Environment(AppEnvironment.self) var appEnv
@@ -163,9 +165,9 @@ struct SettingsView: View {
                             vaultsDesc += detail.name + String(detail.count) + suffix
                         }
                         let msg = prefix + vaultsDesc
-                        ToastManager.shared.show(type: .success, message: msg)
+                        toastManager.show(type: .success, message: msg)
                     } else {
-                        ToastManager.shared.show(type: .error, message: L10n.Settings.InjectDemo.errorMessage)
+                        toastManager.show(type: .error, message: L10n.Settings.InjectDemo.errorMessage)
                     }
                 }
             }

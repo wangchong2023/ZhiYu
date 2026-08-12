@@ -13,10 +13,12 @@ import SwiftUI
 import UFPCore
 import Observation
 import UniformTypeIdentifiers
+import Dependencies
 
 @MainActor
 @Observable
 final class IngestCoordinator {
+    @ObservationIgnored @Dependency(\.toastService) var toastManager
     // ── 基础设施依赖 ──
     @ObservationIgnored @Inject var store: AppStore
     @ObservationIgnored @Inject var ingestStore: IngestStore
@@ -70,7 +72,7 @@ final class IngestCoordinator {
     /// 执行导入摄取
     func performIngest() {
         guard !isImporting else {
-            ToastManager.shared.show(type: .info, message: L10n.Ingest.importCooldown)
+            toastManager.show(type: .info, message: L10n.Ingest.importCooldown)
             return
         }
         isIngesting = true
@@ -173,7 +175,7 @@ final class IngestCoordinator {
         let id = record.id
         Task {
             await MainActor.run {
-                ToastManager.shared.show(type: .info, message: L10n.Ingest.aiTagging)
+                toastManager.show(type: .info, message: L10n.Ingest.aiTagging)
             }
             let snippet = String(rawText.prefix(AppConstants.Keys.ImportLimits.aiTagSnippetLength))
             let prompt = L10n.Ingest.aiTagPrompt(snippet)
@@ -194,11 +196,11 @@ final class IngestCoordinator {
                     logger.warning("[IngestCoordinator] AI aliasTitle 类型转换失败：\(String(describing: json["aliasTitle"]))")
                 }
                 await MainActor.run {
-                    ToastManager.shared.show(type: .success, message: L10n.Ingest.aiTagSuccess)
+                    toastManager.show(type: .success, message: L10n.Ingest.aiTagSuccess)
                 }
             } catch {
                 await MainActor.run {
-                    ToastManager.shared.show(type: .error, message: L10n.Ingest.aiTagFailed)
+                    toastManager.show(type: .error, message: L10n.Ingest.aiTagFailed)
                 }
             }
         }

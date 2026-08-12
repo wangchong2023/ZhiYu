@@ -10,8 +10,10 @@
 
 import SwiftUI
 import UFPCore
+import Dependencies
 
 struct FeedbackView: View {
+    @Dependency(\.toastService) private var toastManager
     @Environment(\.dismiss) private var dismiss
     @State private var selectedTab = 0
     @State private var titleText = ""
@@ -180,7 +182,7 @@ struct FeedbackView: View {
                 isSubmitting = false
                 titleText = ""; contentText = ""; rating = DesignSystem.Domain.Feedback.defaultRating
                 HapticFeedback.shared.trigger(.success)
-                ToastManager.shared.show(type: .success, message: L10n.Settings.Feedback.submitted)
+                toastManager.show(type: .success, message: L10n.Settings.Feedback.submitted)
                 Task { await loadHistory() }
                 selectedTab = 1
             }

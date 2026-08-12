@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-CI-2 门禁：@EnvironmentObject 冻结审计
+智宇 (ZhiYu) @EnvironmentObject 冻结门禁工具 (audit-environment-object.py)
 
-策略：白名单注册制 + 禁止新增。
-- 现有 51 处 @EnvironmentObject 登记在白名单中（Config/exemptions/environment_object_whitelist.yml）。
-- 白名单外新增 @EnvironmentObject 即 CI 阻断。
-- 目标：推动后续 P4-P6 阶段逐步迁移到 @Environment（SwiftUI 推荐）。
+功能说明:
+1. 扫描 Sources/ 目录下所有 Swift 文件，检测 `@EnvironmentObject` 属性包装器使用。
+2. 仅允许白名单 (Config/exemptions/environment_object_whitelist.yml) 内列出的 file+class 组合保留。
+3. 白名单外的 `@EnvironmentObject` 声明将导致 CI 阻断（error）。
+4. 兼容 Xcode 编译器报错输出格式，如有违规在 Xcode 编译时直接以 error 标红并阻断构建。
 
-触发场景：CI/CD 流水线 + pre-push 钩子。
+使用方法:
+    python3 Tools/ios/audit-environment-object.py
+
+退出码:
+    0: 审计通过（所有 @EnvironmentObject 均在白名单内）
+    1: 审计失败（发现未注册的 @EnvironmentObject 声明）
 """
 
 from __future__ import annotations
@@ -63,6 +70,7 @@ def scan_sources() -> dict[str, list[tuple[str, str]]]:
 
 
 def main() -> int:
+    """主审计入口：加载白名单、扫描源码、比对白名单、输出违规项并返回退出码。"""
     whitelist = load_whitelist()
     sources_usage = scan_sources()
 

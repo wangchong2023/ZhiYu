@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 工作流服务：连接知识与外部系统（如提醒事项、日历）
 @MainActor
@@ -17,6 +18,7 @@ final class WorkflowService: ObservableObject {
     static let shared = WorkflowService()
 
     private let injectedReminderService: (any ReminderServiceProtocol)?
+    @Dependency(\.toastService) private var toastManager
 
     init(reminderService: (any ReminderServiceProtocol)? = nil) {
         self.injectedReminderService = reminderService
@@ -43,7 +45,7 @@ final class WorkflowService: ObservableObject {
         let hasAccess = await requestAccess()
         guard hasAccess else {
             // 重构：将 Toast 硬编码文字替换为 L10n 强类型多语言接口
-            ToastManager.shared.show(type: .error, message: L10n.Workflow.accessDeniedMessage)
+            toastManager.show(type: .error, message: L10n.Workflow.accessDeniedMessage)
             throw WorkflowError.accessDenied 
         }
         
@@ -87,12 +89,12 @@ final class WorkflowService: ObservableObject {
         guard !tasks.isEmpty else {
             Logger.shared.warning(" [Workflow] Failed to parse to-do items from text")
             // 重构：将 Toast 硬编码文字替换为 L10n 强类型多语言接口
-            ToastManager.shared.show(type: .info, message: L10n.Workflow.noTasksFoundMessage)
+            toastManager.show(type: .info, message: L10n.Workflow.noTasksFoundMessage)
             return
         }
         
         // 重构：将带有插值的 Toast 消息转换为强类型格式化本地化输出
-        ToastManager.shared.show(type: .processing, message: L10n.Workflow.syncingMessage(tasks.count), duration: 0)
+        toastManager.show(type: .processing, message: L10n.Workflow.syncingMessage(tasks.count), duration: 0)
         
         do {
             for task in tasks {
@@ -104,15 +106,15 @@ final class WorkflowService: ObservableObject {
             }
             
             Logger.shared.info(" [Workflow] Successfully synchronized \(tasks.count) items to Reminders")
-            ToastManager.shared.dismiss()
+            toastManager.dismiss()
             // 重构：将成功同步的 Toast 提示转换为多语言强类型输出
-            ToastManager.shared.show(type: .success, message: L10n.Workflow.syncSuccessMessage(tasks.count))
+            toastManager.show(type: .success, message: L10n.Workflow.syncSuccessMessage(tasks.count))
             HapticFeedback.shared.trigger(.success)
         } catch {
             Logger.shared.error(" [Workflow] Sync failed: \(error.localizedDescription)", error: error)
-            ToastManager.shared.dismiss()
+            toastManager.dismiss()
             // 重构：将失败同步的 Toast 错误描述转换为多语言强类型输出
-            ToastManager.shared.show(type: .error, message: L10n.Workflow.syncErrorMessage(error.localizedDescription))
+            toastManager.show(type: .error, message: L10n.Workflow.syncErrorMessage(error.localizedDescription))
             throw error
         }
     }

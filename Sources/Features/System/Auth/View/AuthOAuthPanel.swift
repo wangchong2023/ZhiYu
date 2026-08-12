@@ -8,9 +8,11 @@
 //  核心职责：第三方 OAuth 登录面板 — Apple/Google/GitHub 图标按钮组与分隔线装饰。
 //
 import SwiftUI
+import Dependencies
 
 /// 第三方 OAuth 登录面板
 struct AuthOAuthPanel: View {
+    @Dependency(\.toastService) private var toastManager
     @Environment(AuthService.self) var authService
     @Binding var isLoading: Bool
     @Binding var isAgreementChecked: Bool
@@ -47,7 +49,7 @@ struct AuthOAuthPanel: View {
                     if authService.isMockMode {
                         handleThirdPartyLogin(GoogleAuthStrategy())
                     } else {
-                        ToastManager.shared.show(type: .info, message: L10n.Auth.googleDeveloping)
+                        toastManager.show(type: .info, message: L10n.Auth.googleDeveloping)
                     }
                     #endif
                 }
@@ -58,7 +60,7 @@ struct AuthOAuthPanel: View {
                     if authService.isMockMode {
                         handleThirdPartyLogin(GitHubAuthStrategy())
                     } else {
-                        ToastManager.shared.show(type: .info, message: L10n.Auth.githubDeveloping)
+                        toastManager.show(type: .info, message: L10n.Auth.githubDeveloping)
                     }
                     #endif
                 }

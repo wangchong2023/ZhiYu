@@ -35,7 +35,7 @@ public final class DependencyContainer {
     /// Tooltip 服务（原 TooltipManager.shared）
     public var tooltipService: Any?
     /// Toast 服务（原 ToastManager.shared）
-    public var toastService: Any?
+    public var toastService: ToastManager?
     /// Pencil 服务（原 PencilManager.shared）
     public var pencilService: Any?
     /// 语音服务（原 VoiceSpeechManager.shared）

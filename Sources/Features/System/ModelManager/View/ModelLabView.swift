@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import Dependencies
 
 /// 大模型测试实验室主视图
 @MainActor
@@ -21,6 +22,7 @@ public struct ModelLabView: View {
     @State var modelManager = GlobalModelManager.shared
     @State var labManager = ModelLabManager()
     @StateObject private var themeManager = ThemeManager.shared
+    @Dependency(\.toastService) var toastManager
 
     /// 当需要跳回商店时的外部闭包回调
     public var onGoToStore: () -> Void

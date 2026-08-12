@@ -9,10 +9,12 @@
 //  核心职责：AI 合成实验室：摘要、思维导图、测验、报告生成。
 //
 import SwiftUI
+import Dependencies
 
 /// 合成操作启动按钮组件
 /// 负责单个合成任务（如思维导图生成）的触发逻辑、前置校验、生成进度展示及超限状态控制
 struct SynthesisActionButton: View {
+    @Dependency(\.toastService) private var toastManager
     let type: SynthesisStore.SynthesisType
     let store: AppStore
     @Environment(SynthesisStore.self) var synthesisStore
@@ -150,12 +152,12 @@ struct SynthesisActionButton: View {
                             selectedFilterType = nil
                         }
                     }
-                    ToastManager.shared.show(type: .success, message: L10n.AI.Task.statusCompleted)
+                    toastManager.show(type: .success, message: L10n.AI.Task.statusCompleted)
                 }
             } catch {
                 await MainActor.run {
                     HapticFeedback.shared.trigger(.error)
-                    ToastManager.shared.show(type: .error, message: error.localizedDescription)
+                    toastManager.show(type: .error, message: error.localizedDescription)
                 }
             }
         }

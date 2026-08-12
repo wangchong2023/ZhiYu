@@ -8,6 +8,7 @@
 
 import XCTest
 import UFPCore
+import Dependencies
 @testable import ZhiYu
 
 @MainActor
@@ -15,6 +16,7 @@ final class WorkflowServiceTests: XCTestCase {
 
     var mockReminderService: MockReminderService!
     var service: WorkflowService!
+    @Dependency(\.toastService) var toastManager
 
     override func setUp() {
         super.setUp()
@@ -27,11 +29,11 @@ final class WorkflowServiceTests: XCTestCase {
             for: (any HapticFeedbackProtocol).self
         )
         // 重置 Toast 状态
-        ToastManager.shared.currentToast = nil
+        toastManager.currentToast = nil
     }
 
     override func tearDown() {
-        ToastManager.shared.currentToast = nil
+        toastManager.currentToast = nil
         service = nil
         mockReminderService = nil
         super.tearDown()
@@ -162,7 +164,7 @@ final class WorkflowServiceTests: XCTestCase {
         try? await service.syncToReminders(text: markdown, title: "测试")
 
         XCTAssertNotNil(
-            ToastManager.shared.currentToast,
+            toastManager.currentToast,
             "同步后应显示 Toast"
         )
     }
@@ -180,7 +182,7 @@ final class WorkflowServiceTests: XCTestCase {
         }
 
         XCTAssertNotNil(
-            ToastManager.shared.currentToast,
+            toastManager.currentToast,
             "权限拒绝时应显示错误 Toast"
         )
         XCTAssertEqual(
@@ -196,7 +198,7 @@ final class WorkflowServiceTests: XCTestCase {
         try? await service.syncToReminders(text: markdown, title: "测试")
 
         XCTAssertNotNil(
-            ToastManager.shared.currentToast,
+            toastManager.currentToast,
             "无任务时应显示 info Toast"
         )
     }
@@ -214,7 +216,7 @@ final class WorkflowServiceTests: XCTestCase {
         }
 
         XCTAssertNotNil(
-            ToastManager.shared.currentToast,
+            toastManager.currentToast,
             "失败时应显示错误 Toast"
         )
     }
