@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 @MainActor
 /// 笔记本工作台视图
@@ -21,7 +22,7 @@ public struct NotebookHubView: View {
     @Environment(Router.self) var router
     @Environment(ThemeManager.self) var themeManager
     @EnvironmentObject var onboardingService: OnboardingService
-    @Inject var appEnv: any AppEnvironmentProtocol // 注入环境能力
+    @Dependency(\.appEnvironment) var appEnv: any AppEnvironmentProtocol // 注入环境能力
     @Environment(\.interfaceIdiom) private var idiom
     
     // MARK: - 初始化

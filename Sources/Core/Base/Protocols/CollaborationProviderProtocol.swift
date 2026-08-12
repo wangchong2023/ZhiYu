@@ -83,3 +83,23 @@ protocol CollaborationProviderProtocol: AnyObject {
     /// - Parameter data: 待广播发送的二进制载荷数据。
     func broadcast(data: Data)
 }
+
+// MARK: - DependencyKey 注册
+
+import Dependencies
+import UFPCore
+
+/// CollaborationProviderProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum CollaborationProviderKey: DependencyKey {
+    static var liveValue: any CollaborationProviderProtocol {
+        ServiceContainer.shared.resolve((any CollaborationProviderProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    /// 协作提供商依赖
+    var collaborationProvider: any CollaborationProviderProtocol {
+        get { self[CollaborationProviderKey.self] }
+        set { self[CollaborationProviderKey.self] = newValue }
+    }
+}

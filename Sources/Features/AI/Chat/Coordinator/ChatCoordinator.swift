@@ -12,6 +12,7 @@ import SwiftUI
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 @MainActor
 @Observable
@@ -40,11 +41,11 @@ final class ChatCoordinator {
     /// 是否正在生成预测问题
     var isGeneratingPredictedQuestions = false
 
-    @ObservationIgnored @Inject private var aiSynthesis: (any AISynthesisServiceProtocol)
-    @ObservationIgnored @Inject private var chatService: (any ChatServiceProtocol)
-    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
-    @ObservationIgnored @Inject private var perf: PerformanceService
+    @ObservationIgnored @Dependency(\.aiSynthesisService) private var aiSynthesis: any AISynthesisServiceProtocol
+    @ObservationIgnored @Dependency(\.chatService) private var chatService: any ChatServiceProtocol
+    @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.performanceService) private var perf: PerformanceService
     
     /// 当前流式请求的后台 Task，用于支持显式取消
     @ObservationIgnored private var currentStreamTask: Task<Void, Never>?

@@ -207,3 +207,19 @@ final class IngestStore {
         )
     }
 }
+
+// MARK: - DependencyKey
+
+@MainActor
+enum IngestStoreKey: DependencyKey {
+    @MainActor
+    static var liveValue: IngestStore { ServiceContainer.shared.resolve(IngestStore.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    var ingestStore: IngestStore {
+        get { self[IngestStoreKey.self] }
+        set { self[IngestStoreKey.self] = newValue }
+    }
+}

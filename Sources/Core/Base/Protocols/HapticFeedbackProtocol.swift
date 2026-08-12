@@ -9,6 +9,8 @@
 //  核心职责：定义 HapticFeedback 模块的抽象契约接口。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 触感模式枚举：定义了系统通用的交互语义
 public enum HapticPattern: Sendable {
@@ -28,4 +30,22 @@ public enum HapticPattern: Sendable {
 public protocol HapticFeedbackProtocol: Sendable {
     /// 触发指定模式的触感反馈
     func trigger(_ pattern: HapticPattern)
+}
+
+// MARK: - DependencyKey 注册
+
+/// HapticFeedbackProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum HapticFeedbackKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any HapticFeedbackProtocol {
+        ServiceContainer.shared.resolve((any HapticFeedbackProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    /// 触感反馈服务依赖
+    public var haptic: any HapticFeedbackProtocol {
+        get { self[HapticFeedbackKey.self] }
+        set { self[HapticFeedbackKey.self] = newValue }
+    }
 }

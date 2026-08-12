@@ -9,6 +9,8 @@
 //  核心职责：定义 DatabaseManager 模块的抽象契约接口。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 数据库热切换与连接生命周期隔离契约。
 ///
@@ -36,4 +38,22 @@ public protocol VaultDatabaseSwitcher: Sendable {
     /// 读取指定 URL 处数据库文件的页面数量。
     /// - Parameter url: 数据库文件路径
     func countPages(at url: URL) async throws -> Int
+}
+
+// MARK: - DependencyKey 注册
+
+/// VaultDatabaseSwitcher 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum VaultDatabaseSwitcherKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any VaultDatabaseSwitcher {
+        ServiceContainer.shared.resolve((any VaultDatabaseSwitcher).self)
+    }
+}
+
+extension DependencyValues {
+    /// 数据库热切换器依赖
+    public var vaultDatabaseSwitcher: any VaultDatabaseSwitcher {
+        get { self[VaultDatabaseSwitcherKey.self] }
+        set { self[VaultDatabaseSwitcherKey.self] = newValue }
+    }
 }

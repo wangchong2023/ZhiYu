@@ -55,6 +55,18 @@ def load_whitelist():
         sys.exit(1)
 
 
+def _is_line_exempt(line_num, comment_lines, exempt_marked_lines, exempt_ranges=None, is_service_container=False):
+    """判断某行是否被豁免（注释行、inject_exempt 标记、DependencyKey 范围）"""
+    if line_num in comment_lines:
+        return True
+    if line_num in exempt_marked_lines:
+        return True
+    if is_service_container and exempt_ranges:
+        if any(start <= line_num <= end for start, end in exempt_ranges):
+            return True
+    return False
+
+
 def _detect_violations(content, rel_path, whitelist):
     """检测单个文件中的 @Inject 和 ServiceContainer.shared 违规"""
     found = []
@@ -66,21 +78,21 @@ def _detect_violations(content, rel_path, whitelist):
     # 预计算注释行（/// 或 //），跳过注释中的匹配
     comment_lines = _compute_comment_lines(content)
 
+    # 预计算含 inject_exempt 标记的行（行尾注释），跳过
+    exempt_marked_lines = _compute_exempt_marked_lines(content)
+
     for match in INJECT_PATTERN.finditer(content):
         line_num = content[:match.start()].count("\n") + 1
-        if line_num in comment_lines:
+        if _is_line_exempt(line_num, comment_lines, exempt_marked_lines):
             continue
         if (rel_path, line_num) not in whitelist:
             found.append({"file": rel_path, "line": line_num, "type": "@Inject"})
 
     for match in SERVICE_CONTAINER_PATTERN.finditer(content):
         line_num = content[:match.start()].count("\n") + 1
-        if line_num in comment_lines:
+        if _is_line_exempt(line_num, comment_lines, exempt_marked_lines, exempt_ranges, True):
             continue
         if (rel_path, line_num) not in whitelist:
-            # 豁免 DependencyKey liveValue/testValue/previewValue 内的调用
-            if any(start <= line_num <= end for start, end in exempt_ranges):
-                continue
             found.append({"file": rel_path, "line": line_num, "type": "ServiceContainer.shared"})
 
     return found
@@ -95,6 +107,33 @@ def _compute_comment_lines(content):
         if stripped.startswith("//") or stripped.startswith("///"):
             comment_lines.add(i + 1)  # 1-indexed
     return comment_lines
+
+
+# 向前搜索 inject_exempt 注释的最大行数
+EXEMPT_LOOKBACK_LINES = 5
+
+
+def _compute_exempt_marked_lines(content):
+    """计算含 inject_exempt 标记的行号集合。
+
+    豁免规则：
+    1. 当前行含 inject_exempt（行尾注释）
+    2. 向前最多 EXEMPT_LOOKBACK_LINES 行内有 inject_exempt 注释行（纯注释行 // inject_exempt: ...）
+    """
+    lines = content.split("\n")
+    exempt_lines = set()
+    for i, line in enumerate(lines):
+        if "inject_exempt" in line:
+            exempt_lines.add(i + 1)  # 当前行
+    # 向前搜索：对每个含 ServiceContainer.shared 的代码行，检查前 N 行是否有 inject_exempt 注释
+    for i, line in enumerate(lines):
+        if "ServiceContainer.shared" in line or "@Inject" in line:
+            lookback_start = max(0, i - EXEMPT_LOOKBACK_LINES)
+            for j in range(lookback_start, i):
+                if "inject_exempt" in lines[j]:
+                    exempt_lines.add(i + 1)
+                    break
+    return exempt_lines
 
 
 def _compute_dependency_key_ranges(content):

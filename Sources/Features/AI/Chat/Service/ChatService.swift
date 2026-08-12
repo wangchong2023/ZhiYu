@@ -11,14 +11,15 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 @MainActor
 final class ChatService: ChatServiceProtocol {
     static let shared = ChatService()
     
     private let historyStore = ChatHistoryStore()
-    @Inject private var llmService: any LLMServiceProtocol
-    @Inject private var logger: any LoggerProtocol
+    @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+    @Dependency(\.logger) private var logger: any LoggerProtocol
 
     private var cancellables = Set<AnyCancellable>()
 

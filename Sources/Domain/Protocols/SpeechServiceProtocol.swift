@@ -78,3 +78,24 @@ public protocol SpeechServiceProtocol: AnyObject, Observable {
     /// 清除当前转录文本缓存，重置输入框状态。
     func clearTranscription()
 }
+
+// MARK: - DependencyKey
+import Dependencies
+import UFPCore
+
+/// SpeechServiceProtocol 的 DependencyKey
+@MainActor
+public enum SpeechServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: any SpeechServiceProtocol {
+        ServiceContainer.shared.resolve((any SpeechServiceProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var speechService: any SpeechServiceProtocol {
+        get { self[SpeechServiceKey.self] }
+        set { self[SpeechServiceKey.self] = newValue }
+    }
+}

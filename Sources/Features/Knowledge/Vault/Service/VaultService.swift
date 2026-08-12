@@ -11,6 +11,7 @@
 import Foundation
 import UFPCore
 import Observation
+import Dependencies
 
 /// 知识笔记本/笔记本中枢服务（VaultService）。
 /// 业务功能层中负责维护多笔记本租户（Multi-Vault）生命周期的大脑门面。
@@ -21,19 +22,21 @@ public final class VaultService: VaultServiceProtocol {
     // MARK: - 依赖注入
 
     /// 注入笔记本元数据持久化仓储协议（vaultRepository），使用可选计算属性安全解析以规避单元测试单例污染崩溃。
+    /// inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     @ObservationIgnored
     var vaultRepository: (any VaultRepository)? {
         ServiceContainer.shared.resolveOptional((any VaultRepository).self)
     }
 
     /// 注入数据库切换契约（databaseSwitcher），使用可选计算属性安全解析以规避单元测试单例污染崩溃。
+    /// inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     @ObservationIgnored
     var databaseSwitcher: (any VaultDatabaseSwitcher)? {
         ServiceContainer.shared.resolveOptional((any VaultDatabaseSwitcher).self)
     }
 
-    /// 键值存储抽象，替代 UserDefaults.standard 访问。Factory 风格：标注可选由 @Inject 自动降级。
-    @ObservationIgnored @Inject var keyStore: (any KeyStoreProtocol)?
+    /// 键值存储抽象，替代 UserDefaults.standard 访问。Factory 风格：标注可选由 @Dependency 自动降级。
+    @ObservationIgnored @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
 
     // MARK: - 状态发布属性
 

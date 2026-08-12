@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - 报告内容视图
 
@@ -23,7 +24,7 @@ private enum MarkdownLinkDelimiter {
 /// 以 Markdown 渲染器展示合成文档内容的通用回退视图
 struct SynthesisReportView: View {
     let doc: SynthesisStore.SynthesisDocument
-    @Inject private var router: Router
+    @Dependency(\.router) private var router: Router
     @Environment(AppStore.self) private var store: AppStore
 
     var body: some View {

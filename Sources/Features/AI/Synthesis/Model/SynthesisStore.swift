@@ -143,7 +143,8 @@ public final class SynthesisStore {
     /// 加载SynthesisResults
     /// 使用 resolveOptional 优雅降级：DI 容器未就绪时静默跳过，等待后续显式加载。
     public func loadSynthesisResults() {
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        guard let keyStore = keyStore else { return }
         for type in SynthesisType.allCases {
             let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
             if let data = keyStore.data(forKey: key),
@@ -350,7 +351,7 @@ public final class SynthesisStore {
             }
         }
         
-        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
         for type in SynthesisType.allCases {
             let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
             keyStore?.removeObject(forKey: key)
@@ -401,7 +402,7 @@ public final class SynthesisStore {
     
     private func persistResults(for type: SynthesisType) {
         let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
-        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
         if let docs = _synthesisResults[type], !docs.isEmpty,
            let data = try? JSONEncoder().encode(docs) {
             keyStore?.set(data, forKey: key)
@@ -410,5 +411,21 @@ public final class SynthesisStore {
             keyStore?.removeObject(forKey: key)
             UserDefaults.standard.removeObject(forKey: key)
         }
+    }
+}
+
+// MARK: - DependencyKey
+
+@MainActor
+public enum SynthesisStoreKey: DependencyKey {
+    @MainActor
+    public static var liveValue: SynthesisStore { ServiceContainer.shared.resolve(SynthesisStore.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var synthesisStore: SynthesisStore {
+        get { self[SynthesisStoreKey.self] }
+        set { self[SynthesisStoreKey.self] = newValue }
     }
 }

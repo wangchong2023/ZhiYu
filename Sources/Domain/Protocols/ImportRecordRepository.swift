@@ -9,6 +9,8 @@
 //  核心职责：导入原始内容仓储协议
 
 import Foundation
+import Dependencies
+import UFPCore
 
 public protocol ImportRecordRepository: Sendable {
     func save(_ record: ImportRecord) async throws
@@ -20,4 +22,21 @@ public protocol ImportRecordRepository: Sendable {
     func updateTags(id: String, tags: String) async throws
     func fetchInProgress() async throws -> [ImportRecord]
     func totalStorageSize() async throws -> Int64
+}
+
+// MARK: - DependencyKey 注册
+
+/// ImportRecordRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum ImportRecordRepositoryKey: DependencyKey {
+    public static var liveValue: any ImportRecordRepository {
+        ServiceContainer.shared.resolve((any ImportRecordRepository).self)
+    }
+}
+
+extension DependencyValues {
+    /// 导入原始内容仓储依赖
+    public var importRecordRepository: any ImportRecordRepository {
+        get { self[ImportRecordRepositoryKey.self] }
+        set { self[ImportRecordRepositoryKey.self] = newValue }
+    }
 }

@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 /// 页面详情 AI 结果展示区
 struct PageDetailAISection: View {
@@ -54,7 +55,7 @@ struct PageDetailAISection: View {
                         if let result = aiStore.activePageAIResult, result.contains("- ") {
                             Button(action: {
                                 Task {
-                                    @Inject var workflowService: WorkflowService
+                                    @Dependency(\.workflowService) var workflowService
                                     try await workflowService.syncToReminders(text: result, title: page.title)
                                 }
                             }) {

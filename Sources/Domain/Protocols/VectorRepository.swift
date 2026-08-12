@@ -37,3 +37,23 @@ public protocol VectorRepository: Sendable {
     /// 获取知识库中所有页面的向量嵌入 (用于冷启动缓存)
     func fetchAllEmbeddings() async throws -> [UUID: [Float]]
 }
+
+// MARK: - DependencyKey 注册
+
+import Dependencies
+import UFPCore
+
+/// VectorRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum VectorRepositoryKey: DependencyKey {
+    public static var liveValue: any VectorRepository {
+        ServiceContainer.shared.resolve((any VectorRepository).self)
+    }
+}
+
+extension DependencyValues {
+    /// 向量仓储依赖
+    public var vectorRepository: any VectorRepository {
+        get { self[VectorRepositoryKey.self] }
+        set { self[VectorRepositoryKey.self] = newValue }
+    }
+}

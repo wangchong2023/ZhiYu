@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import QuickLook
+import Dependencies
 
 struct ImportRecordSection: View {
     @State private var selectedCategory: String = "all"
@@ -24,9 +25,9 @@ struct ImportRecordSection: View {
     var onAITag: ((ImportRecord) -> Void)?
     var onManualEdit: ((ImportRecord) -> Void)?
 
-    @Inject private var repo: any ImportRecordRepository
-    @Inject private var urlOpener: any URLOpenerProtocol
-    @Inject private var shareSheet: any ShareSheetProtocol
+    @Dependency(\.importRecordRepository) private var repo: any ImportRecordRepository
+    @Dependency(\.urlOpener) private var urlOpener: any URLOpenerProtocol
+    @Dependency(\.shareSheet) private var shareSheet: any ShareSheetProtocol
 
     private let tabs: [(key: String, label: String)] = {
         var items: [(String, String)] = [("all", L10n.Ingest.importAll)]

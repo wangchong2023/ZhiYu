@@ -10,12 +10,13 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - 语音笔记入口
 /// 语音笔记功能主视图
 /// 负责语音输入的实时采集、波形可视化展示、流式语音转文字（STT）及知识摘要提取
 struct VoiceNoteView: View {
-    @Inject private var speechService: any SpeechServiceProtocol
+    @Dependency(\.speechService) private var speechService: any SpeechServiceProtocol
     @Environment(AppStore.self) var store
     @State private var noteTitle = ""
     @State private var showSaveSheet = false

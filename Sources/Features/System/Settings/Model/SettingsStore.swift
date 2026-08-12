@@ -28,7 +28,7 @@ public final class SettingsStore {
     // ── 隐私与安全 ──
     /// 使用 resolveOptional 优雅降级：DI 容器未就绪（如单测 setUp 早期）时回退到默认 true。
     @ObservationIgnored private var _isPrivacyModeEnabled: Bool = {
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else {
+        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             return true
         }
         return keyStore.object(forKey: AppConstants.Keys.Storage.isPrivacyModeEnabled) as? Bool ?? true
@@ -42,13 +42,13 @@ public final class SettingsStore {
         set {
             withMutation(keyPath: \.isPrivacyModeEnabled) {
                 _isPrivacyModeEnabled = newValue
-                ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.isPrivacyModeEnabled)
+                ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.isPrivacyModeEnabled) // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             }
         }
     }
 
     @ObservationIgnored private var _isBiometricEnabled: Bool = {
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else {
+        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             return true
         }
         return keyStore.object(forKey: AppConstants.Keys.Storage.isBiometricEnabled) as? Bool ?? true
@@ -62,7 +62,7 @@ public final class SettingsStore {
         set {
             withMutation(keyPath: \.isBiometricEnabled) {
                 _isBiometricEnabled = newValue
-                ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.isBiometricEnabled)
+                ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.isBiometricEnabled) // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             }
         }
     }
@@ -73,36 +73,36 @@ public final class SettingsStore {
     // ── 引导状态 ──
     public var hasShownGraphCoachMark: Bool {
         get {
-            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return false }
+            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return false } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             return ks.bool(forKey: AppConstants.Keys.Storage.hasShownGraphCoachMark)
         }
-        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.hasShownGraphCoachMark) }
+        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.hasShownGraphCoachMark) } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     }
 
     // ── iCloud 同步偏好 ──
     public var iCloudConflictResolution: String {
         get {
-            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return "merge" }
+            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return "merge" } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             return ks.string(forKey: AppConstants.Keys.Storage.iCloudConflictResolution) ?? "merge"
         }
-        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.iCloudConflictResolution) }
+        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.iCloudConflictResolution) } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     }
 
     public var iCloudAutoSync: Bool {
         get {
-            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return false }
+            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return false } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             return ks.bool(forKey: AppConstants.Keys.Storage.iCloudAutoSync)
         }
-        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.iCloudAutoSync) }
+        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.iCloudAutoSync) } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     }
 
     // ── 协作用户名 ──
     public var collabUsername: String {
         get {
-            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return "" }
+            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return "" } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             return ks.string(forKey: AppConstants.Keys.Storage.userName) ?? ""
         }
-        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.userName) }
+        set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.userName) } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     }
 
     /// 重置
@@ -111,7 +111,7 @@ public final class SettingsStore {
         isBiometricEnabled = true
         showPerfDashboard = false
         hasShownGraphCoachMark = false
-        guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
         ks.removeObject(forKey: AppConstants.Keys.Storage.iCloudConflictResolution)
         ks.removeObject(forKey: AppConstants.Keys.Storage.iCloudAutoSync)
         ks.removeObject(forKey: AppConstants.Keys.Storage.userName)

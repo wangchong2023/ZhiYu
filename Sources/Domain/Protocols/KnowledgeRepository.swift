@@ -67,3 +67,20 @@ extension DependencyValues {
         set { self[KnowledgePageRepositoryKey.self] = newValue }
     }
 }
+
+// MARK: - KnowledgeRepository DependencyKey 注册
+
+/// KnowledgeRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum KnowledgeRepositoryKey: DependencyKey {
+    public static var liveValue: any KnowledgeRepository {
+        ServiceContainer.shared.resolve((any KnowledgeRepository).self)
+    }
+}
+
+extension DependencyValues {
+    /// 知识库仓储依赖
+    public var knowledgeRepository: any KnowledgeRepository {
+        get { self[KnowledgeRepositoryKey.self] }
+        set { self[KnowledgeRepositoryKey.self] = newValue }
+    }
+}

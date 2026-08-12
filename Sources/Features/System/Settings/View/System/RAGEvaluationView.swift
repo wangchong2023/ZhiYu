@@ -19,6 +19,7 @@ struct RAGEvaluationView: View {
     /// 使用手动可选解析替代 @Inject，避免测试环境 teardown 后 async task 回调时
     /// ServiceContainer 已被 reset() 导致 assertionFailure（SIGTRAP 崩溃）
     private var governance: (any RAGGovernanceRepository)? {
+        // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
         ServiceContainer.shared.resolveOptional((any RAGGovernanceRepository).self)
     }
 

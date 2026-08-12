@@ -132,7 +132,7 @@ struct ModelActionButton: View {
         Button(action: {
             modelManager.activeModelId = manifest.modelId
 
-            if let onDeviceService = ServiceContainer.shared.resolveOptional((any OnDeviceLLMServiceProtocol).self) as? OnDeviceLLMService {
+            if let onDeviceService = ServiceContainer.shared.resolveOptional((any OnDeviceLLMServiceProtocol).self) as? OnDeviceLLMService { // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
                 let expectedID = "downloaded_\(manifest.modelId)"
                 onDeviceService.selectedModelID = expectedID
 

@@ -146,3 +146,34 @@ extension DependencyValues {
         set { self[VaultServiceKey.self] = newValue }
     }
 }
+
+/// AISynthesisServiceProtocol 的 DependencyKey
+public enum AISynthesisServiceKey: DependencyKey {
+    public static var liveValue: any AISynthesisServiceProtocol {
+        ServiceContainer.shared.resolve((any AISynthesisServiceProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    public var aiSynthesisService: any AISynthesisServiceProtocol {
+        get { self[AISynthesisServiceKey.self] }
+        set { self[AISynthesisServiceKey.self] = newValue }
+    }
+}
+
+/// ChatServiceProtocol 的 DependencyKey
+@MainActor
+enum ChatServiceKey: DependencyKey {
+    @MainActor
+    static var liveValue: any ChatServiceProtocol {
+        ServiceContainer.shared.resolve((any ChatServiceProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    @MainActor
+    var chatService: any ChatServiceProtocol {
+        get { self[ChatServiceKey.self] }
+        set { self[ChatServiceKey.self] = newValue }
+    }
+}

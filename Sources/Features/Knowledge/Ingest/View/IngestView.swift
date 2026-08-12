@@ -240,7 +240,8 @@ struct IngestView: View {
                 Section(header: Text(L10n.Creation.content)) {
                     Group {
                         // 这里使用全局环境注入的 appEnv 来判断交互样式
-                        if ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self).interactionStyle == InteractionStyle.crown {
+                        @Dependency(\.appEnvironment) var appEnv: any AppEnvironmentProtocol
+                        if appEnv.interactionStyle == InteractionStyle.crown {
                             TextField("", text: $coordinator.newContent, axis: .vertical)
                         } else {
                             TextEditor(text: $coordinator.newContent)

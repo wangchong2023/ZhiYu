@@ -119,3 +119,19 @@ final class WorkflowService: ObservableObject {
         }
     }
 }
+
+// MARK: - DependencyKey
+
+@MainActor
+enum WorkflowServiceKey: DependencyKey {
+    @MainActor
+    static var liveValue: WorkflowService { ServiceContainer.shared.resolve(WorkflowService.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    var workflowService: WorkflowService {
+        get { self[WorkflowServiceKey.self] }
+        set { self[WorkflowServiceKey.self] = newValue }
+    }
+}

@@ -34,3 +34,21 @@ public enum ProcessorError: Error, Sendable {
     /// 物理文件在磁盘中不存在
     case fileNotFound
 }
+
+// MARK: - DependencyKey
+
+import Dependencies
+import UFPCore
+
+public enum DocumentExtractionServiceKey: DependencyKey {
+    public static var liveValue: any DocumentExtractionServiceProtocol {
+        ServiceContainer.shared.resolve((any DocumentExtractionServiceProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    public var documentExtractionService: any DocumentExtractionServiceProtocol {
+        get { self[DocumentExtractionServiceKey.self] }
+        set { self[DocumentExtractionServiceKey.self] = newValue }
+    }
+}

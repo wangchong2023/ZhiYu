@@ -25,13 +25,11 @@ struct PageDetailView: View {
     @State private var recommendations: [KnowledgePage] = []
     @State private var copiedUrl: String?
 
-    @Inject var pasteboard: any PasteboardProtocol
-    @Inject var urlOpener: any URLOpenerProtocol
+    @Dependency(\.pasteboard) var pasteboard: any PasteboardProtocol
+    @Dependency(\.urlOpener) var urlOpener: any URLOpenerProtocol
 
     /// 全局注入的平台设备环境，用于大屏适配判定
-    private var appEnv: any AppEnvironmentProtocol {
-        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
-    }
+    @Dependency(\.appEnvironment) private var appEnv: any AppEnvironmentProtocol
 
     init(page: KnowledgePage, heroNamespace: Namespace.ID? = nil) {
         self.page = page

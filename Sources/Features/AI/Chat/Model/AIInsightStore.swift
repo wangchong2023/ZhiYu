@@ -12,6 +12,7 @@ import Foundation
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 /// AI 洞察存储，管理全库级别的统计与分析结论。
 @MainActor
@@ -47,10 +48,10 @@ public final class AIInsightStore {
     public var conceptCount: Int = 0
     public var growthSeries: [AppStore.KnowledgeGrowthPoint] = []
 
-    @ObservationIgnored @Inject private var insightService: KnowledgeInsightService
-    @ObservationIgnored @Inject private var llmService: any LLMServiceProtocol
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.knowledgeInsightService) private var insightService: KnowledgeInsightService
+    @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Dependency(\.pageStoreCapabilities) private var pageStore: any AnyPageStoreCapabilities
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
 
     public init() {}
 
@@ -121,5 +122,21 @@ public final class AIInsightStore {
         } catch {
             logger.addLog(action: .aiscanFailed, target: "DailyRecap", details: error.localizedDescription)
         }
+    }
+}
+
+// MARK: - DependencyKey
+
+@MainActor
+public enum AIInsightStoreKey: DependencyKey {
+    @MainActor
+    public static var liveValue: AIInsightStore { ServiceContainer.shared.resolve(AIInsightStore.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var aiInsightStore: AIInsightStore {
+        get { self[AIInsightStoreKey.self] }
+        set { self[AIInsightStoreKey.self] = newValue }
     }
 }

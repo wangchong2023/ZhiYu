@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Observation
+import Dependencies
 
 @MainActor
 @Observable
@@ -31,8 +32,8 @@ final class TagCloudCoordinator {
     var tagToDelete: String?
     
     // ── 基础设施依赖 ──
-    @ObservationIgnored @Inject private var store: AppStore
-    @ObservationIgnored @Inject private var haptic: any HapticFeedbackProtocol
+    @ObservationIgnored @Dependency(\.appStore) private var store: AppStore
+    @ObservationIgnored @Dependency(\.haptic) private var haptic: any HapticFeedbackProtocol
 
     init(initialTag: String? = nil) {
         self.selectedTag = initialTag

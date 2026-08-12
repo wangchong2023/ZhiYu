@@ -181,10 +181,10 @@ extension IngestCoordinator {
 
     /// 从文件提取图片并 OCR（PDF/Office）
     func extractImagesFromFile(url: URL) async -> String {
+        @Dependency(\.pdfService) var pdfService: any PDFServiceProtocol
         let ext = url.pathExtension.lowercased()
         switch ext {
         case AppConstants.Keys.ImportLimits.pdfExtension:
-            let pdfService = ServiceContainer.shared.resolve((any PDFServiceProtocol).self)
             return await imageExtractor.extractImagesFromPDF(at: url, pdfService: pdfService)
         case let ext where AppConstants.Keys.ImportLimits.officeExtensions.contains(ext):
             return await imageExtractor.extractImagesFromOfficeFile(at: url)

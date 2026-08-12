@@ -16,3 +16,23 @@ public protocol FeedbackRepository: Sendable {
     func fetchByID(id: String) async throws -> FeedbackEntry?
     func updateStatus(id: String, status: FeedbackStatus) async throws
 }
+
+// MARK: - DependencyKey 注册
+
+import Dependencies
+import UFPCore
+
+/// FeedbackRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum FeedbackRepositoryKey: DependencyKey {
+    public static var liveValue: any FeedbackRepository {
+        ServiceContainer.shared.resolve((any FeedbackRepository).self)
+    }
+}
+
+extension DependencyValues {
+    /// 用户反馈仓储依赖
+    public var feedbackRepository: any FeedbackRepository {
+        get { self[FeedbackRepositoryKey.self] }
+        set { self[FeedbackRepositoryKey.self] = newValue }
+    }
+}

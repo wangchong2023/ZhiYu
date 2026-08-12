@@ -269,3 +269,21 @@ extension ToolItem {
         }
     }
 }
+
+// MARK: - DependencyKey
+
+import Dependencies
+
+@MainActor
+public enum AppStoreKey: DependencyKey {
+    @MainActor
+    public static var liveValue: AppStore { ServiceContainer.shared.resolve(AppStore.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var appStore: AppStore {
+        get { self[AppStoreKey.self] }
+        set { self[AppStoreKey.self] = newValue }
+    }
+}

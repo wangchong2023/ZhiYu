@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - Index View (entry point with NavigationStack)
 @MainActor
@@ -29,9 +30,7 @@ struct KnowledgePageListContent: View {
     var filterType: PageType?
     
     /// 全局注入的平台设备环境
-    private var appEnv: any AppEnvironmentProtocol {
-        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
-    }
+    @Dependency(\.appEnvironment) private var appEnv: any AppEnvironmentProtocol
     
     @State private var showDeleteConfirmation = false
     @State private var pageToDelete: KnowledgePage?

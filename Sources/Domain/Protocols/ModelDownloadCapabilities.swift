@@ -52,3 +52,23 @@ public protocol ModelDownloadCapabilities: Sendable {
     /// - Returns: 返回状态流转的异步 AsyncStream 序列，便于上层进行声明式渲染
     func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState>
 }
+
+// MARK: - DependencyKey 注册
+
+import Dependencies
+import UFPCore
+
+/// ModelDownloadCapabilities 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum ModelDownloadKey: DependencyKey {
+    public static var liveValue: any ModelDownloadCapabilities {
+        ServiceContainer.shared.resolve((any ModelDownloadCapabilities).self)
+    }
+}
+
+extension DependencyValues {
+    /// 大模型下载能力依赖
+    public var modelDownload: any ModelDownloadCapabilities {
+        get { self[ModelDownloadKey.self] }
+        set { self[ModelDownloadKey.self] = newValue }
+    }
+}

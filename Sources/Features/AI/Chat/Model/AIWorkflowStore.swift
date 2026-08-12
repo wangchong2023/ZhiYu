@@ -49,7 +49,8 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
     // ── 健康度问题存储 (Lint Issues) ──
     @ObservationIgnored private var _lintIssues: [LintIssue] = {
-        if let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self),
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        if let keyStore = keyStore,
            let data = keyStore.data(forKey: AppConstants.Keys.Storage.lastLintIssues),
            let decoded = try? JSONDecoder().decode([LintIssue].self, from: data) {
             return decoded
@@ -78,7 +79,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
     @ObservationIgnored @Inject private var logger: any LoggerProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     @ObservationIgnored @Inject private var linkService: LinkService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
-    @ObservationIgnored @Inject private var keyStore: (any KeyStoreProtocol)?
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
@@ -284,5 +285,21 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
     /// - Parameter id: id
     public func removeRefactorSuggestion(id: String) {
         refactorSuggestions.removeAll { $0.id == id }
+    }
+}
+
+// MARK: - DependencyKey
+
+@MainActor
+public enum AIWorkflowStoreKey: DependencyKey {
+    @MainActor
+    public static var liveValue: AIWorkflowStore { ServiceContainer.shared.resolve(AIWorkflowStore.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var aiWorkflowStore: AIWorkflowStore {
+        get { self[AIWorkflowStoreKey.self] }
+        set { self[AIWorkflowStoreKey.self] = newValue }
     }
 }
