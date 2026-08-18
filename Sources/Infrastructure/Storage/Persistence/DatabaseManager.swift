@@ -439,6 +439,9 @@ import UFPCore
 enum DatabaseManagerKey: DependencyKey {
     @MainActor
     static var liveValue: DatabaseManager { ServiceContainer.shared.resolve(DatabaseManager.self) }
+
+    @MainActor
+    static var testValue: DatabaseManager { DatabaseManager.shared }
 }
 
 extension DependencyValues {

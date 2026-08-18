@@ -31,6 +31,24 @@ public enum ImportRecordRepositoryKey: DependencyKey {
     public static var liveValue: any ImportRecordRepository {
         ServiceContainer.shared.resolve((any ImportRecordRepository).self)
     }
+
+    public static var testValue: any ImportRecordRepository {
+        ServiceContainer.shared.resolveOptional((any ImportRecordRepository).self) ?? NoOpImportRecordRepository()
+    }
+}
+
+/// 无操作导入记录仓储（测试/预览占位，DI 未就绪时降级）
+public final class NoOpImportRecordRepository: ImportRecordRepository, @unchecked Sendable {
+    public init() {}
+    public func save(_ record: ImportRecord) async throws {}
+    public func fetchAll(category: String?, limit: Int) async throws -> [ImportRecord] { [] }
+    public func fetchByID(_ id: String) async throws -> ImportRecord? { nil }
+    public func updateStatus(id: String, status: String, completedAt: Date?) async throws {}
+    public func updatePageID(id: String, pageID: String) async throws {}
+    public func updateRawText(id: String, rawText: String) async throws {}
+    public func updateTags(id: String, tags: String) async throws {}
+    public func fetchInProgress() async throws -> [ImportRecord] { [] }
+    public func totalStorageSize() async throws -> Int64 { 0 }
 }
 
 extension DependencyValues {

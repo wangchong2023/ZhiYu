@@ -295,6 +295,11 @@ enum BackupServiceKey: DependencyKey {
     public static var liveValue: BackupService {
         ServiceContainer.shared.resolve(BackupService.self)
     }
+
+    @MainActor
+    public static var testValue: BackupService {
+        ServiceContainer.shared.resolveOptional(BackupService.self) ?? BackupService()
+    }
 }
 
 extension DependencyValues {

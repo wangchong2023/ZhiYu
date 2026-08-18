@@ -94,6 +94,23 @@ enum CollaborationProviderKey: DependencyKey {
     static var liveValue: any CollaborationProviderProtocol {
         ServiceContainer.shared.resolve((any CollaborationProviderProtocol).self)
     }
+
+    @MainActor
+    static var testValue: any CollaborationProviderProtocol {
+        ServiceContainer.shared.resolveOptional((any CollaborationProviderProtocol).self) ?? NoOpCollaborationProvider()
+    }
+}
+
+/// 无操作协作服务（测试/预览占位，DI 未就绪时降级）
+@MainActor
+final class NoOpCollaborationProvider: CollaborationProviderProtocol, @unchecked Sendable {
+    var delegate: CollaborationProviderDelegate?
+    init() {}
+    func startHosting(roomName: String, userName: String) {}
+    func startBrowsing(userName: String) {}
+    func joinRoom(_ room: DiscoveredRoom) {}
+    func stop() {}
+    func broadcast(data: Data) {}
 }
 
 extension DependencyValues {

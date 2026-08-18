@@ -31,7 +31,9 @@ public enum ExportServiceKey: DependencyKey {
     public static var liveValue: any ExportServiceProtocol {
         ServiceContainer.shared.resolveOptional((any ExportServiceProtocol).self) ?? NoOpExportService()
     }
-    public static var testValue: any ExportServiceProtocol { NoOpExportService() }
+    public static var testValue: any ExportServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any ExportServiceProtocol).self) ?? NoOpExportService()
+    }
     public static var previewValue: any ExportServiceProtocol { NoOpExportService() }
 }
 

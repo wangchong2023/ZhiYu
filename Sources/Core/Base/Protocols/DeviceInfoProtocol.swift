@@ -31,6 +31,19 @@ public enum DeviceInfoKey: DependencyKey {
     public static var liveValue: any DeviceInfoProtocol {
         ServiceContainer.shared.resolve((any DeviceInfoProtocol).self)
     }
+
+    public static var testValue: any DeviceInfoProtocol {
+        ServiceContainer.shared.resolveOptional((any DeviceInfoProtocol).self) ?? NoOpDeviceInfo()
+    }
+}
+
+/// 无操作设备信息服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpDeviceInfo: DeviceInfoProtocol, @unchecked Sendable {
+    public init() {}
+    public var systemVersion: String { "" }
+    public var deviceModel: String { "" }
+    public var deviceName: String { "" }
+    public var screenHeight: CGFloat { 0 }
 }
 
 extension DependencyValues {

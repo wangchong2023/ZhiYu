@@ -60,6 +60,20 @@ public enum BiometricAuthProviderKey: DependencyKey {
     public static var liveValue: any BiometricAuthProviderProtocol {
         ServiceContainer.shared.resolve((any BiometricAuthProviderProtocol).self)
     }
+
+    @MainActor
+    public static var testValue: any BiometricAuthProviderProtocol {
+        ServiceContainer.shared.resolveOptional((any BiometricAuthProviderProtocol).self) ?? NoOpBiometricAuthProvider()
+    }
+}
+
+/// 无操作生物识别服务（测试/预览占位，DI 未就绪时降级）
+@MainActor
+public final class NoOpBiometricAuthProvider: BiometricAuthProviderProtocol, @unchecked Sendable {
+    public init() {}
+    public var authenticationPolicy: LAPolicy { .deviceOwnerAuthenticationWithBiometrics }
+    public func canEvaluatePolicy(context: LAContext) -> Bool { false }
+    public func evaluatePolicy(context: LAContext, reason: String) async -> Bool { false }
 }
 
 /// MLModelCompilerProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）

@@ -37,7 +37,9 @@ public enum SearchIndexerKey: DependencyKey {
     public static var liveValue: any SearchIndexerProtocol {
         ServiceContainer.shared.resolveOptional((any SearchIndexerProtocol).self) ?? UnsupportedSearchIndexer()
     }
-    public static var testValue: any SearchIndexerProtocol { UnsupportedSearchIndexer() }
+    public static var testValue: any SearchIndexerProtocol {
+        ServiceContainer.shared.resolveOptional((any SearchIndexerProtocol).self) ?? UnsupportedSearchIndexer()
+    }
     public static var previewValue: any SearchIndexerProtocol { UnsupportedSearchIndexer() }
 }
 

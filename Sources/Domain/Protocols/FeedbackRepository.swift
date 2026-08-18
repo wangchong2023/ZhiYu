@@ -27,6 +27,19 @@ public enum FeedbackRepositoryKey: DependencyKey {
     public static var liveValue: any FeedbackRepository {
         ServiceContainer.shared.resolve((any FeedbackRepository).self)
     }
+
+    public static var testValue: any FeedbackRepository {
+        ServiceContainer.shared.resolveOptional((any FeedbackRepository).self) ?? NoOpFeedbackRepository()
+    }
+}
+
+/// 无操作反馈仓储（测试/预览占位，DI 未就绪时降级）
+public final class NoOpFeedbackRepository: FeedbackRepository, @unchecked Sendable {
+    public init() {}
+    public func save(_ entry: FeedbackEntry) async throws {}
+    public func fetchAll(limit: Int) async throws -> [FeedbackEntry] { [] }
+    public func fetchByID(id: String) async throws -> FeedbackEntry? { nil }
+    public func updateStatus(id: String, status: FeedbackStatus) async throws {}
 }
 
 extension DependencyValues {

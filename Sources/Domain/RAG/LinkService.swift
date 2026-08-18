@@ -285,6 +285,10 @@ enum LinkServiceKey: DependencyKey {
     public static var liveValue: LinkService {
         ServiceContainer.shared.resolve(LinkService.self)
     }
+
+    public static var testValue: LinkService {
+        ServiceContainer.shared.resolveOptional(LinkService.self) ?? LinkService()
+    }
 }
 
 extension DependencyValues {

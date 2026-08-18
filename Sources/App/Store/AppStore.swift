@@ -278,6 +278,11 @@ import Dependencies
 public enum AppStoreKey: DependencyKey {
     @MainActor
     public static var liveValue: AppStore { ServiceContainer.shared.resolve(AppStore.self) }
+
+    @MainActor
+    public static var testValue: AppStore {
+        ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+    }
 }
 
 extension DependencyValues {

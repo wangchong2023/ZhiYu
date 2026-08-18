@@ -41,7 +41,9 @@ public enum KeyStoreKey: DependencyKey {
         ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
     }
     @MainActor
-    public static var testValue: (any KeyStoreProtocol)? { nil }
+    public static var testValue: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+    }
     @MainActor
     public static var previewValue: (any KeyStoreProtocol)? { nil }
 }

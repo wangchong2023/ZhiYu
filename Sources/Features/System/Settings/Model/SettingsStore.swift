@@ -12,6 +12,7 @@ import Foundation
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 /// 全局设置存储，管理隐私模式、安全验证及显示偏好。
 @MainActor
@@ -115,5 +116,24 @@ public final class SettingsStore {
         ks.removeObject(forKey: AppConstants.Keys.Storage.iCloudConflictResolution)
         ks.removeObject(forKey: AppConstants.Keys.Storage.iCloudAutoSync)
         ks.removeObject(forKey: AppConstants.Keys.Storage.userName)
+    }
+}
+
+// MARK: - DependencyKey
+
+extension SettingsStore: DependencyKey {
+    public static var liveValue: SettingsStore {
+        ServiceContainer.shared.resolveOptional(SettingsStore.self) ?? SettingsStore()
+    }
+    public static var testValue: SettingsStore {
+        ServiceContainer.shared.resolveOptional(SettingsStore.self) ?? SettingsStore()
+    }
+}
+
+extension DependencyValues {
+    /// 系统设置存储依赖
+    public var settingsStore: SettingsStore {
+        get { self[SettingsStore.self] }
+        set { self[SettingsStore.self] = newValue }
     }
 }

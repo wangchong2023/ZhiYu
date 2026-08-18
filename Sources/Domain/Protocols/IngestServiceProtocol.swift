@@ -32,6 +32,16 @@ public enum IngestServiceKey: DependencyKey {
     public static var liveValue: any IngestServiceProtocol {
         ServiceContainer.shared.resolve((any IngestServiceProtocol).self)
     }
+
+    public static var testValue: any IngestServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any IngestServiceProtocol).self) ?? NoOpIngestService()
+    }
+}
+
+/// 无操作导入服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpIngestService: IngestServiceProtocol, @unchecked Sendable {
+    public init() {}
+    public func ingestFolder(at url: URL, type: PageType, pageStore: any AnyPageStore) async -> [KnowledgePage] { [] }
 }
 
 extension DependencyValues {

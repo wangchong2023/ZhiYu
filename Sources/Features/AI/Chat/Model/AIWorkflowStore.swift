@@ -294,6 +294,11 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 public enum AIWorkflowStoreKey: DependencyKey {
     @MainActor
     public static var liveValue: AIWorkflowStore { ServiceContainer.shared.resolve(AIWorkflowStore.self) }
+
+    @MainActor
+    public static var testValue: AIWorkflowStore {
+        ServiceContainer.shared.resolveOptional(AIWorkflowStore.self) ?? AIWorkflowStore()
+    }
 }
 
 extension DependencyValues {

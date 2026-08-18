@@ -269,6 +269,10 @@ actor KnowledgeInsightService {
 
 enum KnowledgeInsightServiceKey: DependencyKey {
     static var liveValue: KnowledgeInsightService { ServiceContainer.shared.resolve(KnowledgeInsightService.self) }
+
+    static var testValue: KnowledgeInsightService {
+        ServiceContainer.shared.resolveOptional(KnowledgeInsightService.self) ?? KnowledgeInsightService()
+    }
 }
 
 extension DependencyValues {

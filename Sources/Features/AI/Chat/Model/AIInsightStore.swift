@@ -131,6 +131,11 @@ public final class AIInsightStore {
 public enum AIInsightStoreKey: DependencyKey {
     @MainActor
     public static var liveValue: AIInsightStore { ServiceContainer.shared.resolve(AIInsightStore.self) }
+
+    @MainActor
+    public static var testValue: AIInsightStore {
+        ServiceContainer.shared.resolveOptional(AIInsightStore.self) ?? AIInsightStore()
+    }
 }
 
 extension DependencyValues {

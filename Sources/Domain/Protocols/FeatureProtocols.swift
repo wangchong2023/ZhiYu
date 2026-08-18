@@ -137,6 +137,28 @@ public enum VaultServiceKey: DependencyKey {
     public static var liveValue: any VaultServiceProtocol {
         ServiceContainer.shared.resolve((any VaultServiceProtocol).self)
     }
+
+    @MainActor
+    public static var testValue: any VaultServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any VaultServiceProtocol).self) ?? NoOpVaultService()
+    }
+}
+
+/// 无操作笔记本服务（测试/预览占位，DI 未就绪时降级）
+@MainActor
+final class NoOpVaultService: VaultServiceProtocol, @unchecked Sendable {
+    var vaults: [Vault] { [] }
+    var selectedVaultID: UUID? { nil }
+    var currentVault: Vault? { nil }
+    init() {}
+    func selectVaultAndWait(_ vault: Vault) async throws {}
+    func refreshPageCount(for vaultID: UUID) async {}
+    func selectVault(_ vault: Vault) {}
+    func exitVault() {}
+    func createVault(name: String, icon: String?, description: String?) {}
+    func updateVault(id: UUID, name: String, icon: String?, description: String?) {}
+    func renameVault(id: UUID, newName: String) {}
+    func deleteVault(id: UUID) {}
 }
 
 extension DependencyValues {
@@ -168,6 +190,24 @@ enum ChatServiceKey: DependencyKey {
     static var liveValue: any ChatServiceProtocol {
         ServiceContainer.shared.resolve((any ChatServiceProtocol).self)
     }
+
+    @MainActor
+    static var testValue: any ChatServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any ChatServiceProtocol).self) ?? NoOpChatService()
+    }
+}
+
+/// 无操作聊天服务（测试/预览占位，DI 未就绪时降级）
+@MainActor
+final class NoOpChatService: ChatServiceProtocol, @unchecked Sendable {
+    init() {}
+    func loadHistory() -> [ChatMessage] { [] }
+    func clearHistory() {}
+    func streamChat(query: String, pages: [KnowledgePage]) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in continuation.finish() }
+    }
+    func saveAssistantMessage(_ content: String) {}
+    func saveUserMessage(_ content: String) {}
 }
 
 extension DependencyValues {

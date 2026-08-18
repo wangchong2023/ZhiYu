@@ -90,6 +90,37 @@ public enum SpeechServiceKey: DependencyKey {
     public static var liveValue: any SpeechServiceProtocol {
         ServiceContainer.shared.resolve((any SpeechServiceProtocol).self)
     }
+
+    @MainActor
+    public static var testValue: any SpeechServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any SpeechServiceProtocol).self) ?? NoOpSpeechService()
+    }
+}
+
+/// 无操作语音服务（测试/预览占位，DI 未就绪时降级）
+@MainActor
+public final class NoOpSpeechService: SpeechServiceProtocol, @unchecked Sendable {
+    public init() {}
+    public var isRecording: Bool { false }
+    public var isTranscribing: Bool { false }
+    public var transcribedText: String { get { "" } set {} }
+    public var audioLevel: Float { 0 }
+    public var audioLevelHistory: [Float] { [] }
+    public var statusMessage: String { "" }
+    public var supportedLanguages: [(code: String, name: String)] { [] }
+    public var selectedLanguage: String { get { "" } set {} }
+    public var hasPermission: Bool { false }
+    public var recordings: [VoiceRecording] { [] }
+    public var currentAudioFileURL: URL? { nil }
+    public func checkPermission() {}
+    public func startRecording() {}
+    public func stopRecording() {}
+    public func transcribeFile(url: URL) async throws -> String { "" }
+    public func saveRecording(title: String) -> VoiceRecording {
+        VoiceRecording(title: title, text: "", language: "zh-CN", duration: 0)
+    }
+    public func deleteRecording(_ recording: VoiceRecording) {}
+    public func clearTranscription() {}
 }
 
 extension DependencyValues {

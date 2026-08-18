@@ -40,6 +40,18 @@ public enum HapticFeedbackKey: DependencyKey {
     public static var liveValue: any HapticFeedbackProtocol {
         ServiceContainer.shared.resolve((any HapticFeedbackProtocol).self)
     }
+
+    @MainActor
+    public static var testValue: any HapticFeedbackProtocol {
+        ServiceContainer.shared.resolveOptional((any HapticFeedbackProtocol).self) ?? NoOpHapticFeedback()
+    }
+}
+
+/// 无操作触感反馈服务（测试/预览占位，DI 未就绪时降级）
+@MainActor
+public final class NoOpHapticFeedback: HapticFeedbackProtocol, @unchecked Sendable {
+    public init() {}
+    public func trigger(_ pattern: HapticPattern) {}
 }
 
 extension DependencyValues {

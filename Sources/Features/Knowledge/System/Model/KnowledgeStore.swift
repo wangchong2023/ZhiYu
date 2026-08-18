@@ -42,12 +42,12 @@ public final class KnowledgeStore {
     // MARK: - 核心依赖 (DI)
 
     /// [L1.5] 知识库领域仓储 — 遵循 DIP，L2 不再直接依赖 L1 SQLiteStore
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject private var pageManager: KnowledgePageManager  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Dependency(\.pageStoreCapabilities) private var pageStore: any AnyPageStoreCapabilities
+    @ObservationIgnored @Dependency(\.pageManager) private var pageManager: KnowledgePageManager
     /// Factory 风格：可选依赖，测试环境或 DI 未就绪时为 nil。
     /// 注册点在 KnowledgeModuleRegistrar，但测试路径可能跳过注册链。
     @ObservationIgnored @Dependency(\.maintenanceService) private var maintenanceService: MaintenanceService
-    @ObservationIgnored @Inject private var settingsStore: SettingsStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Dependency(\.settingsStore) private var settingsStore: SettingsStore
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
     @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
@@ -336,6 +336,11 @@ public enum KnowledgeStoreKey: DependencyKey {
     @MainActor
     public static var liveValue: KnowledgeStore {
         ServiceContainer.shared.resolve(KnowledgeStore.self)
+    }
+
+    @MainActor
+    public static var testValue: KnowledgeStore {
+        ServiceContainer.shared.resolveOptional(KnowledgeStore.self) ?? KnowledgeStore()
     }
 }
 

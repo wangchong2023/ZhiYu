@@ -35,6 +35,18 @@ public enum AIWorkflowCapabilitiesKey: DependencyKey {
     public static var liveValue: any AIWorkflowCapabilities {
         ServiceContainer.shared.resolve((any AIWorkflowCapabilities).self)
     }
+
+    @MainActor
+    public static var testValue: any AIWorkflowCapabilities {
+        ServiceContainer.shared.resolveOptional((any AIWorkflowCapabilities).self) ?? NoOpAIWorkflowCapabilities()
+    }
+}
+
+/// 无操作 AIWorkflowCapabilities 服务（测试/预览占位，DI 未就绪时降级）
+@MainActor
+public final class NoOpAIWorkflowCapabilities: AIWorkflowCapabilities, @unchecked Sendable {
+    public init() {}
+    public func removeRefactorSuggestion(id: String) {}
 }
 
 extension DependencyValues {

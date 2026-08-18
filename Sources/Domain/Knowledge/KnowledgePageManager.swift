@@ -287,3 +287,22 @@ public final class KnowledgePageManager {
         await tagStore.bulkDeleteTags(tags)
     }
 }
+
+// MARK: - DependencyKey
+
+extension KnowledgePageManager: DependencyKey {
+    public static var liveValue: KnowledgePageManager {
+        ServiceContainer.shared.resolveOptional(KnowledgePageManager.self) ?? KnowledgePageManager()
+    }
+    public static var testValue: KnowledgePageManager {
+        ServiceContainer.shared.resolveOptional(KnowledgePageManager.self) ?? KnowledgePageManager()
+    }
+}
+
+extension DependencyValues {
+    /// 知识页管理器依赖
+    public var pageManager: KnowledgePageManager {
+        get { self[KnowledgePageManager.self] }
+        set { self[KnowledgePageManager.self] = newValue }
+    }
+}

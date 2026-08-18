@@ -31,6 +31,18 @@ public enum ImportFileStoreKey: DependencyKey {
     public static var liveValue: any ImportFileStore {
         ServiceContainer.shared.resolve((any ImportFileStore).self)
     }
+
+    public static var testValue: any ImportFileStore {
+        ServiceContainer.shared.resolveOptional((any ImportFileStore).self) ?? NoOpImportFileStore()
+    }
+}
+
+/// 无操作导入文件存储（测试/预览占位，DI 未就绪时降级）
+public final class NoOpImportFileStore: ImportFileStore, @unchecked Sendable {
+    public init() {}
+    public func saveContent(_ content: String, category: ImportCategory, ext: String) -> String? { nil }
+    public func saveData(_ data: Data, category: ImportCategory, ext: String) -> String? { nil }
+    public func copyFile(at url: URL, category: ImportCategory) -> String? { nil }
 }
 
 extension DependencyValues {
