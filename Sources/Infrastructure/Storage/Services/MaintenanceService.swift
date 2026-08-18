@@ -147,3 +147,24 @@ public final class MaintenanceService {
         await activeLogger.clearAllLogs()
     }
 }
+
+// MARK: - DependencyKey
+
+@MainActor
+public enum MaintenanceServiceKey: DependencyKey {
+    @MainActor
+    public static var liveValue: MaintenanceService { ServiceContainer.shared.resolve(MaintenanceService.self) }
+
+    @MainActor
+    public static var testValue: MaintenanceService {
+        ServiceContainer.shared.resolveOptional(MaintenanceService.self) ?? MaintenanceService()
+    }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var maintenanceService: MaintenanceService {
+        get { self[MaintenanceServiceKey.self] }
+        set { self[MaintenanceServiceKey.self] = newValue }
+    }
+}

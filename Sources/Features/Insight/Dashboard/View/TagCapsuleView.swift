@@ -12,6 +12,7 @@
 
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - 标签气泡微组件
 
@@ -29,7 +30,7 @@ struct TagCapsuleView: View {
     /// 是否为气泡云显示模式
     var isBubbleMode: Bool = false
 
-    @Inject var deviceInfo: any DeviceInfoProtocol
+    @Dependency(\.deviceInfo) var deviceInfo: any DeviceInfoProtocol
 
     // ── 气泡及流式布局视觉参数常量 ──
     private let bubbleModeBaseFontSize: CGFloat = 10.0

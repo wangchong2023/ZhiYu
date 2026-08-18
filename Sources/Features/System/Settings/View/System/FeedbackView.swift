@@ -25,8 +25,8 @@ struct FeedbackView: View {
     @State private var isSubmitting = false
     @State private var history: [FeedbackEntry] = []
 
-    @Inject private var repo: any FeedbackRepository
-    @Inject private var deviceInfo: any DeviceInfoProtocol
+    @Dependency(\.feedbackRepository) private var repo: any FeedbackRepository
+    @Dependency(\.deviceInfo) private var deviceInfo: any DeviceInfoProtocol
 
     private let appVersion: String = {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""

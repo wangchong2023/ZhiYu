@@ -63,6 +63,27 @@ public enum EmbeddingProviderKey: DependencyKey {
     public static var liveValue: any EmbeddingProvider {
         ServiceContainer.shared.resolve((any EmbeddingProvider).self)
     }
+
+    public static var testValue: any EmbeddingProvider {
+        ServiceContainer.shared.resolveOptional((any EmbeddingProvider).self) ?? NoOpEmbeddingProvider()
+    }
+}
+
+/// 无操作嵌入向量化服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpEmbeddingProvider: EmbeddingProvider, @unchecked Sendable {
+    public init() {}
+    public func getAllEmbeddings() async -> [UUID: [Float]] { [:] }
+    public func syncEmbeddings(pages: [KnowledgePage]) async {}
+    public func updateEmbedding(for page: KnowledgePage) async {}
+    public func indexChunks(pageID: UUID, chunks: [PageChunk]) async {}
+    public func vectorizeChunks(chunks: [String]) async -> [[Float]] { [] }
+    public func search(query: String, topK: Int) async -> [(id: UUID, score: Float)] { [] }
+    public func multiQuerySearch(query: String, topK: Int) async -> [(chunk: PageChunk, score: Float)] { [] }
+    public func hydeSearch(query: String, topK: Int) async -> [(chunk: PageChunk, score: Float)] { [] }
+    public func selfReflectionSearch(query: String, candidates: [(chunk: PageChunk, score: Float)]) async -> [(chunk: PageChunk, score: Float)] { [] }
+    public func advancedSearch(query: String, topK: Int) async -> [(chunk: PageChunk, score: Float)] { [] }
+    public func loadInitialCache() async {}
+    public func clearCacheAndReload() async {}
 }
 
 extension DependencyValues {

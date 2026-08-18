@@ -17,26 +17,26 @@ import Dependencies
 actor AISynthesisService: AISynthesisServiceProtocol {
     nonisolated static let shared = AISynthesisService()
 
-    @Inject private var logger: any LoggerProtocol
+    @Dependency(\.logger) private var logger: any LoggerProtocol
     private var llm: any LLMServiceProtocol
     @ObservationIgnored private let promptService: PromptService
     @ObservationIgnored private let taskCenter: TaskCenter
 
     /// 动态解析最新的 LLMService 实例，防止持有失效句柄
     private var currentLLM: any LLMServiceProtocol {
-        if let liveLLM = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {
+        if let liveLLM = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {  // inject_exempt: actor 内 computed property 需可选降级，@Dependency 返回非可选会 crash
             return liveLLM
         }
         return llm
     }
 
     private init() {
-        // 使用 resolveOptional 防护 DI 未就绪阶段，降级至 LLMService.shared 避免单例初始化崩溃
-        if let resolved = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {
+        // 降级至 LLMService.shared 避免单例初始化崩溃：DI 未就绪时 liveValue 解析会失败
+        // LLMService.shared 是 @MainActor 隔离，actor init 可能从后台线程调用，
+        // 使用 runOnMainSync 安全桥接至主线程，避免 MainActor.assumeIsolated 在非主线程崩溃
+        if let resolved = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {  // inject_exempt: actor init 需可选降级，@Dependency 返回非可选会 crash
             self.llm = resolved
         } else {
-            // LLMService.shared 是 @MainActor 隔离，actor init 可能从后台线程调用，
-            // 使用 runOnMainSync 安全桥接至主线程，避免 MainActor.assumeIsolated 在非主线程崩溃
             self.llm = runOnMainSync { LLMService.shared }
         }
         self.promptService = PromptService(defaults: .standard)
@@ -208,7 +208,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         \(pageSummaries)
         """
 
-        // 诊断日志（logger 通过 @Inject 注入）
+        // 诊断日志（logger 通过 @Dependency 注入）
         logger.debug("[InsightQuestions] Prompt(前500): \(String(prompt.prefix(500)))")
 
         let systemPrompt = L10n.AI.Prompt.System.insightQuestions

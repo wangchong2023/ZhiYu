@@ -171,6 +171,11 @@ import Dependencies
 enum PerformanceServiceKey: DependencyKey {
     @MainActor
     static var liveValue: PerformanceService { ServiceContainer.shared.resolve(PerformanceService.self) }
+
+    @MainActor
+    static var testValue: PerformanceService {
+        ServiceContainer.shared.resolveOptional(PerformanceService.self) ?? PerformanceService()
+    }
 }
 
 extension DependencyValues {

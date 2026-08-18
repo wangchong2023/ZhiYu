@@ -178,6 +178,11 @@ enum LLMChatServiceKey: DependencyKey {
     public static var liveValue: any LLMChatServiceProtocol {
         ServiceContainer.shared.resolve((any LLMChatServiceProtocol).self)
     }
+
+    @MainActor
+    public static var testValue: any LLMChatServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self) ?? NoOpLLMChatService()
+    }
 }
 
 /// LLMKnowledgeServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -186,6 +191,11 @@ enum LLMKnowledgeServiceKey: DependencyKey {
     public static var liveValue: any LLMKnowledgeServiceProtocol {
         ServiceContainer.shared.resolve((any LLMKnowledgeServiceProtocol).self)
     }
+
+    @MainActor
+    public static var testValue: any LLMKnowledgeServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self) ?? NoOpLLMKnowledgeService()
+    }
 }
 
 /// LLMRetrievalServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -193,6 +203,11 @@ enum LLMRetrievalServiceKey: DependencyKey {
     @MainActor
     public static var liveValue: any LLMRetrievalServiceProtocol {
         ServiceContainer.shared.resolve((any LLMRetrievalServiceProtocol).self)
+    }
+
+    @MainActor
+    public static var testValue: any LLMRetrievalServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self) ?? NoOpLLMRetrievalService()
     }
 }
 
@@ -228,4 +243,79 @@ enum LLMServiceKey: DependencyKey {
     public static var liveValue: any LLMServiceProtocol {
         ServiceContainer.shared.resolve((any LLMServiceProtocol).self)
     }
+
+    @MainActor
+    public static var testValue: any LLMServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) ?? NoOpLLMService()
+    }
+}
+
+// MARK: - NoOp LLM 服务实现（测试/预览占位，DI 未就绪时降级）
+
+/// 无操作 LLM 对话服务
+@MainActor
+final class NoOpLLMChatService: LLMChatServiceProtocol, @unchecked Sendable {
+    var isEnabled: Bool { false }
+    init() {}
+    func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
+        ChatMessageDTO(role: .assistant, content: "")
+    }
+    func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in continuation.finish() }
+    }
+    func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
+}
+
+/// 无操作 LLM 知识维护服务
+@MainActor
+final class NoOpLLMKnowledgeService: LLMKnowledgeServiceProtocol, @unchecked Sendable {
+    init() {}
+    func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
+        SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: "concept", relatedTitles: [], summary: "")
+    }
+    func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
+    func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
+    func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] { [] }
+}
+
+/// 无操作 LLM 检索增强服务
+@MainActor
+final class NoOpLLMRetrievalService: LLMRetrievalServiceProtocol, @unchecked Sendable {
+    init() {}
+    func rewriteQuery(_ query: String) async -> String { query }
+    func expandQuery(_ query: String) async -> [String] { [] }
+    func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] { candidates }
+    func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] { chunks }
+    func generateHypotheticalDocument(query: String) async -> String { "" }
+}
+
+/// 无操作 LLM 综合服务（ObservableObject 占位）
+@MainActor
+final class NoOpLLMService: LLMServiceProtocol, @unchecked Sendable {
+    var provider: LLMProvider = .custom
+    var apiKey: String = ""
+    var baseURL: String = ""
+    var model: String = ""
+    var autoScan: Bool = false
+    var autoRefactor: Bool = false
+    var isEnabled: Bool { false }
+    init() {}
+    func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
+        ChatMessageDTO(role: .assistant, content: "")
+    }
+    func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in continuation.finish() }
+    }
+    func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
+    func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
+        SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: "concept", relatedTitles: [], summary: "")
+    }
+    func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
+    func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
+    func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] { [] }
+    func rewriteQuery(_ query: String) async -> String { query }
+    func expandQuery(_ query: String) async -> [String] { [] }
+    func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] { candidates }
+    func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] { chunks }
+    func generateHypotheticalDocument(query: String) async -> String { "" }
 }

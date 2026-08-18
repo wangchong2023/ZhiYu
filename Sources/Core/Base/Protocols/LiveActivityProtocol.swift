@@ -60,3 +60,29 @@ public protocol LiveActivityProtocol: Sendable {
     /// - Parameter id: 任务 UUID
     func endActivity(id: UUID) async
 }
+
+// MARK: - DependencyKey
+import Dependencies
+import UFPCore
+
+/// LiveActivityProtocol 的 DependencyKey（可选，返回 nil 时降级为无实时活动）
+@MainActor
+public enum LiveActivityKey: DependencyKey {
+    @MainActor
+    public static var liveValue: (any LiveActivityProtocol)? {
+        ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
+    }
+
+    @MainActor
+    public static var testValue: (any LiveActivityProtocol)? {
+        ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
+    }
+}
+
+extension DependencyValues {
+    @MainActor
+    public var liveActivity: (any LiveActivityProtocol)? {
+        get { self[LiveActivityKey.self] }
+        set { self[LiveActivityKey.self] = newValue }
+    }
+}

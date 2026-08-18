@@ -25,7 +25,9 @@ public enum OCRServiceKey: DependencyKey {
     public static var liveValue: any OCRServiceProtocol {
         ServiceContainer.shared.resolveOptional((any OCRServiceProtocol).self) ?? NoOpOCRService()
     }
-    public static var testValue: any OCRServiceProtocol { NoOpOCRService() }
+    public static var testValue: any OCRServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any OCRServiceProtocol).self) ?? NoOpOCRService()
+    }
     public static var previewValue: any OCRServiceProtocol { NoOpOCRService() }
 }
 

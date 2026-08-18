@@ -42,14 +42,14 @@ public final class KnowledgeStore {
     // MARK: - 核心依赖 (DI)
 
     /// [L1.5] 知识库领域仓储 — 遵循 DIP，L2 不再直接依赖 L1 SQLiteStore
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject private var pageManager: KnowledgePageManager  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Dependency(\.pageStoreCapabilities) private var pageStore: any AnyPageStoreCapabilities
+    @ObservationIgnored @Dependency(\.pageManager) private var pageManager: KnowledgePageManager
     /// Factory 风格：可选依赖，测试环境或 DI 未就绪时为 nil。
     /// 注册点在 KnowledgeModuleRegistrar，但测试路径可能跳过注册链。
-    @ObservationIgnored @Inject private var maintenanceService: MaintenanceService?
-    @ObservationIgnored @Inject private var settingsStore: SettingsStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Dependency(\.maintenanceService) private var maintenanceService: MaintenanceService
+    @ObservationIgnored @Dependency(\.settingsStore) private var settingsStore: SettingsStore
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
-    @ObservationIgnored @Inject private var keyStore: (any KeyStoreProtocol)?
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     // MARK: - 私有属性
     
@@ -61,8 +61,8 @@ public final class KnowledgeStore {
         Logger.shared.info(" [KnowledgeStore] Initializing...")
         // 诊断：记录当前 DI 容器状态
         #if DEBUG
-        let isProductionLocked = ServiceContainer.shared.isProductionChainLocked
-        Logger.shared.info(" [KnowledgeStore] DI container state: productionChainLocked=\(isProductionLocked), serviceCount=\(ServiceContainer.shared.diagnosticSnapshot.count)")
+        let isProductionLocked = ServiceContainer.shared.isProductionChainLocked  // inject_exempt: DI 诊断
+        Logger.shared.info(" [KnowledgeStore] DI container state: productionChainLocked=\(isProductionLocked), serviceCount=\(ServiceContainer.shared.diagnosticSnapshot.count)")  // inject_exempt: DI 诊断
         #endif
         setupSubscriptions()
     }
@@ -109,7 +109,7 @@ public final class KnowledgeStore {
                     // 🎬 RAG 冷启动魔法时刻 (Aha Moment)：
                     // 在新建笔记本首次切换进入时，如果数据库为空且未播种过，则自动注入欢迎与引导数据
                     // 防御性校验：在应用冷启动尚未完成 DI 注册前，避开早期的数据库卡片准备通知引发的竞态注入
-                    guard ServiceContainer.shared.isReady || ProcessInfo.processInfo.arguments.contains("--uitesting") else {
+                    guard ServiceContainer.shared.isReady || ProcessInfo.processInfo.arguments.contains("--uitesting") else {  // inject_exempt: DI 就绪性检查
                         return
                     }
 
@@ -154,6 +154,7 @@ public final class KnowledgeStore {
 
         // 🛡️ 防御性检查：在全量测试并发场景下，DI 容器可能被前置测试破坏
         // 使用 optionalResolve 避免因服务未注册导致 fatalError
+        // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
         guard let pageStore = ServiceContainer.shared.resolveOptional((any AnyPageStoreCapabilities).self),
               let knowledgeRepo = ServiceContainer.shared.resolveOptional((any KnowledgeRepository).self) else {
             Logger.shared.warning("[KnowledgeStore] refresh() skipped: required services missing from DI container (likely due to test interference)")
@@ -174,14 +175,14 @@ public final class KnowledgeStore {
         }
 
         let duration = Date().timeIntervalSince(startTime)
-        if let perf = ServiceContainer.shared.resolveOptional(PerformanceService.self) {
+        if let perf = ServiceContainer.shared.resolveOptional(PerformanceService.self) {  // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             perf.record(.databaseLoad, duration: duration)
         }
     }
 
     /// 填充默认内容
     public func seedDefaultContent(vaultName: String? = nil) async {
-        await maintenanceService?.seedDefaultContent(pages: pages, vaultName: vaultName)
+        await maintenanceService.seedDefaultContent(pages: pages, vaultName: vaultName)
         await refresh()
     }
 
@@ -284,12 +285,12 @@ public final class KnowledgeStore {
 
     /// 保存ToDisk
     public func saveToDisk() async {
-        await maintenanceService?.saveToDisk(pages: pages)
+        await maintenanceService.saveToDisk(pages: pages)
     }
 
     /// 加载FromDisk
     public func loadFromDisk() async { 
-        await maintenanceService?.loadFromDisk()
+        await maintenanceService.loadFromDisk()
         await refresh()
     }
 
@@ -314,7 +315,7 @@ public final class KnowledgeStore {
         // 转发至领域层 KnowledgePageManager 执行物理和向量导入流程
         // 注意：此处仍需传递 pageStore (通常是 AppStore 或 self) 以满足协议
         // 为保持解耦，我们传递 ServiceContainer 中的 AnyPageStore 实例
-        if let store = ServiceContainer.shared.resolveOptional(AppStore.self) {
+        if let store = ServiceContainer.shared.resolveOptional(AppStore.self) {  // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
             await pageManager.ingestFolder(at: url, pageStore: store)
         }
         await refresh()
@@ -322,7 +323,7 @@ public final class KnowledgeStore {
 
     private func clearAllData() {
         Task {
-            await maintenanceService?.clearAllDeveloperData()
+            await maintenanceService.clearAllDeveloperData()
             await refresh()
         }
     }
@@ -335,6 +336,11 @@ public enum KnowledgeStoreKey: DependencyKey {
     @MainActor
     public static var liveValue: KnowledgeStore {
         ServiceContainer.shared.resolve(KnowledgeStore.self)
+    }
+
+    @MainActor
+    public static var testValue: KnowledgeStore {
+        ServiceContainer.shared.resolveOptional(KnowledgeStore.self) ?? KnowledgeStore()
     }
 }
 

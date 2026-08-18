@@ -35,7 +35,9 @@ public enum FileArchiverKey: DependencyKey {
     public static var liveValue: any FileArchiverProtocol {
         ServiceContainer.shared.resolve((any FileArchiverProtocol).self)
     }
-    public static var testValue: any FileArchiverProtocol { NoOpFileArchiver() }
+    public static var testValue: any FileArchiverProtocol {
+        ServiceContainer.shared.resolveOptional((any FileArchiverProtocol).self) ?? NoOpFileArchiver()
+    }
     public static var previewValue: any FileArchiverProtocol { NoOpFileArchiver() }
 }
 

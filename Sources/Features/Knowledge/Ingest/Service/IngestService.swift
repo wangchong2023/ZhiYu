@@ -15,8 +15,8 @@ import Dependencies
 
 // MARK: - Ingest Service (Knowledge Ingestion)
 actor IngestService: IngestServiceProtocol {
-    @Inject private var docExtractor: any DocumentExtractionServiceProtocol
-    @Inject private var dbManager: DatabaseManager
+    @Dependency(\.documentExtractionService) private var docExtractor: any DocumentExtractionServiceProtocol
+    @Dependency(\.databaseManager) private var dbManager: DatabaseManager
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
     let scraper = WebScraperProcessor()
 

@@ -66,7 +66,9 @@ public enum AppEnvironmentKey: DependencyKey {
         ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
     }
     @MainActor
-    public static var testValue: any AppEnvironmentProtocol { NoOpAppEnvironment() }
+    public static var testValue: any AppEnvironmentProtocol {
+        ServiceContainer.shared.resolveOptional((any AppEnvironmentProtocol).self) ?? NoOpAppEnvironment()
+    }
     @MainActor
     public static var previewValue: any AppEnvironmentProtocol { NoOpAppEnvironment() }
 }

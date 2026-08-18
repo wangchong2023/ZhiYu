@@ -535,7 +535,7 @@ extension View {
             TextField(L10n.Tag.Management.inputName, text: name)
             Button(L10n.Common.rename) {
                 if let doc = doc {
-                    @Inject var store: SynthesisStore
+                    @Dependency(\.synthesisStore) var store: SynthesisStore
                     store.renameSynthesisDoc(type: doc.type, docID: doc.id, newName: name.wrappedValue)
                 }
             }

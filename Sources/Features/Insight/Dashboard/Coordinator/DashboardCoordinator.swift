@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Observation
+import Dependencies
 
 @MainActor
 @Observable
@@ -28,9 +29,9 @@ final class DashboardCoordinator {
     var dailyRecap: KnowledgeInsightService.DailyRecap?
     
     // ── 基础设施依赖 ──
-    @ObservationIgnored @Inject private var store: AppStore
-    @ObservationIgnored @Inject private var aiStore: AIInsightStore
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.appStore) private var store: AppStore
+    @ObservationIgnored @Dependency(\.aiInsightStore) private var aiStore: AIInsightStore
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
 
     /// Dashboard 配置常量
     private enum DashboardConfig {

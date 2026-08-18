@@ -348,3 +348,19 @@ final class Router {
         }
     }
 }
+
+// MARK: - DependencyKey
+
+@MainActor
+enum RouterKey: DependencyKey {
+    @MainActor
+    static var liveValue: Router { ServiceContainer.shared.resolve(Router.self) }
+}
+
+extension DependencyValues {
+    @MainActor
+    var router: Router {
+        get { self[RouterKey.self] }
+        set { self[RouterKey.self] = newValue }
+    }
+}

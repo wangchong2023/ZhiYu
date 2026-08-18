@@ -29,8 +29,8 @@ final class PageDetailCoordinator {
     
     // AI 任务相关状态由注入的 aiStore 提供
 
-    @ObservationIgnored @Inject private var store: AppStore
-    @ObservationIgnored @Inject private var aiStore: AIWorkflowStore
+    @ObservationIgnored @Dependency(\.appStore) private var store: AppStore
+    @ObservationIgnored @Dependency(\.aiWorkflowStore) private var aiStore: AIWorkflowStore
 
     init(page: KnowledgePage) {
         self.page = page

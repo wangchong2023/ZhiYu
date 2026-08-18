@@ -429,3 +429,25 @@ extension Notification.Name {
     /// 数据库运行状态发生改变的全局广播通知。
     static let databaseStateDidChange = Notification.Name("databaseStateDidChange")
 }
+
+// MARK: - DependencyKey
+
+import Dependencies
+import UFPCore
+
+@MainActor
+enum DatabaseManagerKey: DependencyKey {
+    @MainActor
+    static var liveValue: DatabaseManager { ServiceContainer.shared.resolve(DatabaseManager.self) }
+
+    @MainActor
+    static var testValue: DatabaseManager { DatabaseManager.shared }
+}
+
+extension DependencyValues {
+    @MainActor
+    var databaseManager: DatabaseManager {
+        get { self[DatabaseManagerKey.self] }
+        set { self[DatabaseManagerKey.self] = newValue }
+    }
+}

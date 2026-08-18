@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 /// 页面详情元数据展示区
 struct PageDetailMetadataSection: View {
@@ -19,7 +20,7 @@ struct PageDetailMetadataSection: View {
     
     @State private var copiedUrl: String?
     
-    @Inject var pasteboard: any PasteboardProtocol
+    @Dependency(\.pasteboard) var pasteboard: any PasteboardProtocol
     
     var body: some View {
         VStack(spacing: 0) {

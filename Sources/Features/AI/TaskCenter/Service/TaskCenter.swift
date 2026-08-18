@@ -110,7 +110,8 @@ public final class TaskCenter: @unchecked Sendable {
     @ObservationIgnored private var activityService: (any LiveActivityProtocol)?
 
     public init(activityService: (any LiveActivityProtocol)? = nil) {
-        self.activityService = activityService ?? ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
+        @Dependency(\.liveActivity) var resolvedActivity: (any LiveActivityProtocol)?
+        self.activityService = activityService ?? resolvedActivity
         setupSubscriptions()
     }
 
@@ -298,7 +299,7 @@ public final class TaskCenter: @unchecked Sendable {
 private enum TaskCenterKey: DependencyKey {
     @MainActor
     static var liveValue: TaskCenter {
-        TaskCenter(activityService: ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self))
+        TaskCenter(activityService: ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)) // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     }
     @MainActor
     static let testValue: TaskCenter = TaskCenter(activityService: nil)

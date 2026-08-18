@@ -52,3 +52,39 @@ public protocol ModelDownloadCapabilities: Sendable {
     /// - Returns: 返回状态流转的异步 AsyncStream 序列，便于上层进行声明式渲染
     func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState>
 }
+
+// MARK: - DependencyKey 注册
+
+import Dependencies
+import UFPCore
+
+/// ModelDownloadCapabilities 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum ModelDownloadKey: DependencyKey {
+    public static var liveValue: any ModelDownloadCapabilities {
+        ServiceContainer.shared.resolve((any ModelDownloadCapabilities).self)
+    }
+
+    public static var testValue: any ModelDownloadCapabilities {
+        ServiceContainer.shared.resolveOptional((any ModelDownloadCapabilities).self) ?? NoOpModelDownload()
+    }
+}
+
+/// 无操作模型下载服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpModelDownload: ModelDownloadCapabilities, @unchecked Sendable {
+    public init() {}
+    public func startDownload(modelId: String, remoteURL: URL) async throws {}
+    public func pauseDownload(modelId: String) async throws {}
+    public func resumeDownload(modelId: String) async throws {}
+    public func cancelDownload(modelId: String) async throws {}
+    public func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState> {
+        AsyncStream { _ in }
+    }
+}
+
+extension DependencyValues {
+    /// 大模型下载能力依赖
+    public var modelDownload: any ModelDownloadCapabilities {
+        get { self[ModelDownloadKey.self] }
+        set { self[ModelDownloadKey.self] = newValue }
+    }
+}

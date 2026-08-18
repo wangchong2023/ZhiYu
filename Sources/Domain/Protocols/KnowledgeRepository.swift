@@ -67,3 +67,38 @@ extension DependencyValues {
         set { self[KnowledgePageRepositoryKey.self] = newValue }
     }
 }
+
+// MARK: - KnowledgeRepository DependencyKey 注册
+
+/// KnowledgeRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum KnowledgeRepositoryKey: DependencyKey {
+    public static var liveValue: any KnowledgeRepository {
+        ServiceContainer.shared.resolve((any KnowledgeRepository).self)
+    }
+
+    public static var testValue: any KnowledgeRepository {
+        ServiceContainer.shared.resolveOptional((any KnowledgeRepository).self) ?? NoOpKnowledgeRepository()
+    }
+}
+
+/// 无操作知识库仓储（测试/预览占位，DI 未就绪时降级）
+public final class NoOpKnowledgeRepository: KnowledgeRepository, @unchecked Sendable {
+    public init() {}
+    public func fetchAll() async throws -> [KnowledgePage] { [] }
+    public func fetch(id: UUID) async throws -> KnowledgePage? { nil }
+    public func save(_ page: KnowledgePage) async throws {}
+    public func delete(id: UUID) async throws {}
+    public func search(query: String) async throws -> [KnowledgePage] { [] }
+    public func fetchBacklinks(for id: UUID) async throws -> [UUID] { [] }
+    public func renameTag(old: String, to new: String) async throws {}
+    public func deleteTag(_ tag: String) async throws {}
+    public func count() async throws -> Int { 0 }
+}
+
+extension DependencyValues {
+    /// 知识库仓储依赖
+    public var knowledgeRepository: any KnowledgeRepository {
+        get { self[KnowledgeRepositoryKey.self] }
+        set { self[KnowledgeRepositoryKey.self] = newValue }
+    }
+}

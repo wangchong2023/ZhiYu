@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 #if canImport(MultipeerConnectivity)
 import MultipeerConnectivity
 #endif
@@ -35,7 +36,7 @@ struct CollaborationViewContent: View {
     @State private var showBrowsing = false
     @State private var showConnectionError = false
 
-    @Inject var deviceInfo: any DeviceInfoProtocol
+    @Dependency(\.deviceInfo) var deviceInfo: any DeviceInfoProtocol
 
     private var recentEditsSnapshot: [CollabEdit] {
         Array(collabService.recentEdits.suffix(DesignSystem.Metrics.maxCollabEditHistory)) // 10

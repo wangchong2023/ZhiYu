@@ -9,6 +9,8 @@
 //  核心职责：领域层协议定义（Repository、Service、Strategy 等抽象）。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// [Domain] 笔记本/知识库元数据仓储协议，实现多库隔离元数据的解耦存储。
 public protocol VaultRepository: Sendable {
@@ -26,4 +28,21 @@ public protocol VaultRepository: Sendable {
 
     /// 写入全局配置项（供 Widget Extension 跨进程读取）
     func saveSetting(key: String, value: String) async throws
+}
+
+// MARK: - DependencyKey 注册
+
+/// VaultRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+public enum VaultRepositoryKey: DependencyKey {
+    public static var liveValue: any VaultRepository {
+        ServiceContainer.shared.resolve((any VaultRepository).self)
+    }
+}
+
+extension DependencyValues {
+    /// 笔记本元数据仓储依赖
+    public var vaultRepository: any VaultRepository {
+        get { self[VaultRepositoryKey.self] }
+        set { self[VaultRepositoryKey.self] = newValue }
+    }
 }

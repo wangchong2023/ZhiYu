@@ -69,6 +69,10 @@ public enum AIAnalyticsServiceKey: DependencyKey {
     public static var liveValue: AIAnalyticsService {
         ServiceContainer.shared.resolve(AIAnalyticsService.self)
     }
+
+    public static var testValue: AIAnalyticsService {
+        ServiceContainer.shared.resolveOptional(AIAnalyticsService.self) ?? AIAnalyticsService()
+    }
 }
 
 extension DependencyValues {

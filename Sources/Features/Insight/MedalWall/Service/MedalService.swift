@@ -11,6 +11,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 奖章系统服务：负责追踪用户成就并触发奖励弹窗
 @MainActor
@@ -19,7 +20,7 @@ final class MedalService: ObservableObject {
 
     private var cancellables: Set<AnyCancellable> = []
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
-     @Inject private var keyStore: (any KeyStoreProtocol)?
+     @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     struct Medal: Identifiable, Codable, Equatable {
         let id: String

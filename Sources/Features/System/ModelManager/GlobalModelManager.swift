@@ -13,6 +13,7 @@ import Foundation
 import UFPCore
 import Observation
 import Combine
+import Dependencies
 
 /// 全局大模型状态控制中枢，使用 Swift 17 @Observable 宏，全局唯一并以 Environment/DI 形式分发
 @MainActor
@@ -24,10 +25,10 @@ public final class GlobalModelManager {
     
     // MARK: - 依赖注入
     
-    @ObservationIgnored @Inject private var remoteConfig: any RemoteConfigCapabilities
-    @ObservationIgnored @Inject private var downloadManager: any ModelDownloadCapabilities
+    @ObservationIgnored @Dependency(\.remoteConfig) private var remoteConfig: any RemoteConfigCapabilities
+    @ObservationIgnored @Dependency(\.modelDownload) private var downloadManager: any ModelDownloadCapabilities
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
-    @ObservationIgnored @Inject private var keyStore: (any KeyStoreProtocol)?
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
     // MARK: - 全局响应式属性
     
@@ -158,6 +159,7 @@ public final class GlobalModelManager {
         defer { self.isLoading = false }
 
         // 在测试环境中 DI 容器可能尚未完全就绪，使用可选解析兜底
+        // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
         guard let remoteConfig = ServiceContainer.shared.resolveOptional((any RemoteConfigCapabilities).self) else {
             Logger.shared.warning("[GlobalModelManager] RemoteConfigCapabilities 未注册，跳过远程清单拉取")
             return

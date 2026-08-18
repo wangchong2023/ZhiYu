@@ -66,7 +66,7 @@ final class VaultSecurityTests: XCTestCase {
         ServiceContainer.shared.register(MockHapticFeedback() as any HapticFeedbackProtocol, for: (any HapticFeedbackProtocol).self)
         
         mockProvider = VaultSecurityMockBiometricAuthProvider()
-        ServiceContainer.shared.register(mockProvider, for: BiometricAuthProviderProtocol.self)
+        ServiceContainer.shared.register(mockProvider as any BiometricAuthProviderProtocol, for: (any BiometricAuthProviderProtocol).self)
         
         vault = VaultStorageSecurityService()
     }
@@ -90,7 +90,7 @@ final class VaultSecurityTests: XCTestCase {
         
         // 测试不可用状态
         mockProvider.isAvailable = false
-        ServiceContainer.shared.register(mockProvider, for: BiometricAuthProviderProtocol.self)
+        ServiceContainer.shared.register(mockProvider as any BiometricAuthProviderProtocol, for: (any BiometricAuthProviderProtocol).self)
         let newVault = VaultStorageSecurityService()
         XCTAssertFalse(newVault.biometricsAvailable, "注入不可用的 provider 后应反映其状态")
     }

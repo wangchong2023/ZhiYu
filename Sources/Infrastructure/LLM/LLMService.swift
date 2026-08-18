@@ -25,23 +25,19 @@ class LLMService: ObservableObject, LLMServiceProtocol {
     // MARK: - 安全延迟解析底层子服务 (DIP 解耦 + 崩溃防御)
     
     private var configManager: LLMConfigManager? {
-        @Dependency(\.llmConfigManager) var resolved: LLMConfigManager
-        return resolved
+        ServiceContainer.shared.resolveOptional(LLMConfigManager.self)  // inject_exempt: 降级场景需 nil 语义
     }
 
     private var chatRunner: (any LLMChatServiceProtocol)? {
-        @Dependency(\.llmChatService) var resolved: any LLMChatServiceProtocol
-        return resolved
+        ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self)  // inject_exempt: 降级场景需 nil 语义
     }
     
     private var ingestProcessor: (any LLMKnowledgeServiceProtocol)? {
-        @Dependency(\.llmKnowledgeService) var resolved: any LLMKnowledgeServiceProtocol
-        return resolved
+        ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self)  // inject_exempt: 降级场景需 nil 语义
     }
     
     private var queryReranker: (any LLMRetrievalServiceProtocol)? {
-        @Dependency(\.llmRetrievalService) var resolved: any LLMRetrievalServiceProtocol
-        return resolved
+        ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self)  // inject_exempt: 降级场景需 nil 语义
     }
 
     // MARK: - UI 状态属性 (透传转发至 configManager)

@@ -21,11 +21,11 @@ final class IngestCoordinator {
     @ObservationIgnored @Dependency(\.toastService) var toastManager
     @ObservationIgnored @Dependency(\.taskCenter) var taskCenter
     // ── 基础设施依赖 ──
-    @ObservationIgnored @Inject var store: AppStore
-    @ObservationIgnored @Inject var ingestStore: IngestStore
-    @ObservationIgnored @Inject var llmService: any LLMServiceProtocol
-    @ObservationIgnored @Inject var importRecordRepo: any ImportRecordRepository
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.appStore) var store: AppStore
+    @ObservationIgnored @Dependency(\.ingestStore) var ingestStore: IngestStore
+    @ObservationIgnored @Dependency(\.llmService) var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Dependency(\.importRecordRepository) var importRecordRepo: any ImportRecordRepository
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
 
     // ── 频控 ──
     let importCooldownSeconds = AppConstants.Keys.ImportLimits.importCooldownSeconds
@@ -64,7 +64,7 @@ final class IngestCoordinator {
 
     // ── 图片提取器（共享依赖） ──
     let imageExtractor = ImageExtractor()
-    @ObservationIgnored @Inject var fileStore: any ImportFileStore
+    @ObservationIgnored @Dependency(\.importFileStore) var fileStore: any ImportFileStore
 
     init() {}
 

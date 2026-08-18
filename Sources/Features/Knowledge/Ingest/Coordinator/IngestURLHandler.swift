@@ -149,8 +149,8 @@ extension IngestCoordinator {
     /// DI 就绪检查 — 异步任务跨 DI 生命周期边界时防御性降级
     private func isDIReadyForImport(taskID: UUID, urlString: String) async -> Bool {
         guard
-            ServiceContainer.shared.typeErasedResolve(AppStore.self) != nil,
-            ServiceContainer.shared.typeErasedResolve((any ImportRecordRepository).self) != nil
+            ServiceContainer.shared.typeErasedResolve(AppStore.self) != nil,  // inject_exempt: DI 就绪性检查
+            ServiceContainer.shared.typeErasedResolve((any ImportRecordRepository).self) != nil  // inject_exempt: DI 就绪性检查
         else {
             await MainActor.run {
                 taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): DI not ready [\(urlString)]")

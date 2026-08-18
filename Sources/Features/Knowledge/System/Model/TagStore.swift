@@ -81,6 +81,11 @@ import Dependencies
 public enum TagStoreKey: DependencyKey {
     @MainActor
     public static var liveValue: TagStore { ServiceContainer.shared.resolve(TagStore.self) }
+
+    @MainActor
+    public static var testValue: TagStore {
+        ServiceContainer.shared.resolveOptional(TagStore.self) ?? TagStore()
+    }
 }
 
 extension DependencyValues {

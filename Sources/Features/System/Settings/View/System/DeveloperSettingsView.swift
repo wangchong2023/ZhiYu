@@ -165,7 +165,7 @@ struct DeveloperSettingsView: View {
         }
 
         // 确保两个默认演示笔记本存在，不存在则创建
-        let vaultService = ServiceContainer.shared.resolve(VaultService.self)
+        let vaultService = ServiceContainer.shared.resolve(VaultService.self) // inject_exempt: 有意保留（需要具体 VaultService 类型而非协议）
         let demoVaultNames = [L10n.Vault.defaultName, L10n.Vault.researchName]
         for name in demoVaultNames where !vaultService.vaults.contains(where: { $0.name == name }) {
                 vaultService.createVault(name: name)

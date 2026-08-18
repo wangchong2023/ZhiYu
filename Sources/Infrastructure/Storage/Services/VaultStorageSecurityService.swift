@@ -30,8 +30,10 @@ final class VaultStorageSecurityService {
         return _biometricsAvailable ?? false
     }
 
-    /// 注入的平台策略提供者
-    @ObservationIgnored @Dependency(\.biometricAuthProvider) var provider: any BiometricAuthProviderProtocol
+    /// 注入的平台策略提供者（过渡期：每次从 ServiceContainer 解析，确保测试中重新注册生效）
+    private var provider: any BiometricAuthProviderProtocol {
+        ServiceContainer.shared.resolveOptional((any BiometricAuthProviderProtocol).self) ?? NoOpBiometricAuthProvider() // inject_exempt
+    }
 
     /**
      * @description: 初始化安全服务

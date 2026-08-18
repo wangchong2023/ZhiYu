@@ -403,7 +403,9 @@ extension TimeInterval {
 /// LoggerProtocol 的 DependencyKey（P7 迁移：liveValue 直接使用 Logger.shared）
 public enum LoggerKey: DependencyKey {
     public static var liveValue: any LoggerProtocol { Logger.shared }
-    public static var testValue: any LoggerProtocol { NoOpLogger() }
+    public static var testValue: any LoggerProtocol {
+        ServiceContainer.shared.resolveOptional((any LoggerProtocol).self) ?? NoOpLogger()
+    }
     public static var previewValue: any LoggerProtocol { NoOpLogger() }
 }
 

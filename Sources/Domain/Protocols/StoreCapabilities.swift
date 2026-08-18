@@ -239,6 +239,49 @@ public enum AnyPageStoreCapabilitiesKey: DependencyKey {
     public static var liveValue: any AnyPageStoreCapabilities {
         ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
     }
+
+    public static var testValue: any AnyPageStoreCapabilities {
+        ServiceContainer.shared.resolveOptional((any AnyPageStoreCapabilities).self) ?? NoOpPageStoreCapabilities()
+    }
+}
+
+/// 无操作页面存储能力服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, @unchecked Sendable {
+    public init() {}
+    public var embeddingProvider: any EmbeddingProvider { NoOpEmbeddingProvider() }
+    public var pages: [KnowledgePage] { get async { [] } }
+    public func fetchAllPages() async throws -> [KnowledgePage] { [] }
+    public func reloadFromDisk() async {}
+    public func replaceAllPages(_ newPages: [KnowledgePage]) async {}
+    public func resetDatabase() async throws {}
+    public func performBatchWrite(_ block: @escaping @Sendable (Database) throws -> Void) async throws {}
+    public func createPage(
+        title: String, pageType: PageType, customIcon: String?, content: String,
+        tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
+    ) async throws -> KnowledgePage {
+        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+    }
+    public func anyCreatePage(
+        title: String, pageType: PageType, customIcon: String?, content: String,
+        tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?,
+        forceDeepScan: Bool
+    ) async -> KnowledgePage {
+        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+    }
+    public func updatePage(_ page: KnowledgePage) async throws {}
+    public func anyUpdatePage(_ page: KnowledgePage, forceDeepScan: Bool) async {}
+    public func deletePage(_ page: KnowledgePage) async throws {}
+    public func anyDeletePage(_ page: KnowledgePage) async {}
+    public func syncRemotePage(_ page: KnowledgePage) async {}
+    public func fetchBacklinksByID(for id: UUID) async -> [KnowledgePage] { [] }
+    public func searchPages(query: String) async -> [KnowledgePage] { [] }
+    public func renameTag(_ oldTag: String, to newTag: String) async {}
+    public func deleteTag(_ tag: String) async {}
+    public func seedDefaultContent(logger: @escaping @Sendable (LogAction, String, String) -> Void) async {}
+    public func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?, startTime: Date?, endTime: Date?, module: String?) {}
+    public func getStorageStats() async -> StorageStats {
+        StorageStats(databaseSize: 0, logsSize: 0, exportsSize: 0)
+    }
 }
 
 extension DependencyValues {

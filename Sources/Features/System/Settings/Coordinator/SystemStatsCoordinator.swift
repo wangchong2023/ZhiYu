@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Observation
+import Dependencies
 
 @MainActor
 @Observable
@@ -59,13 +60,13 @@ final class SystemStatsCoordinator {
     var vaultStorageItems: [VaultStorageItem] = []
 
     // ── 基础设施依赖 ──
-    @ObservationIgnored @Inject private var pageStore: any AnyPageStoreCapabilities
-    @ObservationIgnored @Inject private var knowledgeRepo: any KnowledgeRepository
-    @ObservationIgnored @Inject private var vectorRepo: any VectorRepository
-    @ObservationIgnored @Inject private var governanceRepo: any RAGGovernanceRepository
-    @ObservationIgnored @Inject private var importRecordRepo: any ImportRecordRepository
-    @ObservationIgnored @Inject private var logger: any LoggerProtocol
-    @ObservationIgnored @Inject private var haptic: any HapticFeedbackProtocol
+    @ObservationIgnored @Dependency(\.pageStoreCapabilities) private var pageStore: any AnyPageStoreCapabilities
+    @ObservationIgnored @Dependency(\.knowledgeRepository) private var knowledgeRepo: any KnowledgeRepository
+    @ObservationIgnored @Dependency(\.vectorRepository) private var vectorRepo: any VectorRepository
+    @ObservationIgnored @Dependency(\.ragGovernanceRepository) private var governanceRepo: any RAGGovernanceRepository
+    @ObservationIgnored @Dependency(\.importRecordRepository) private var importRecordRepo: any ImportRecordRepository
+    @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
+    @ObservationIgnored @Dependency(\.haptic) private var haptic: any HapticFeedbackProtocol
 
     init() {}
 

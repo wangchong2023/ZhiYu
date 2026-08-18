@@ -91,7 +91,7 @@ struct OllamaAdapter: LLMAdapter {
     /// - Parameter messages: messages
     /// - Returns: 返回值
     func chatStream(messages: [[String: Any]]) -> AsyncThrowingStream<String, Error> {
-        return AsyncThrowingStream { _ in }
+        return AsyncThrowingStream { continuation in continuation.finish() }
     }
 }
 

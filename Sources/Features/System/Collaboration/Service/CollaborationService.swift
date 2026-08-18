@@ -11,6 +11,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 协作服务代理协议
 @MainActor
@@ -44,10 +45,10 @@ final class CollaborationService: NSObject, ObservableObject {
     @Published var isConnecting: Bool = false
 
     /// 注入的协作提供商实现
-    @Inject private var provider: any CollaborationProviderProtocol
-    @Inject private var appEnv: any AppEnvironmentProtocol
+    @Dependency(\.collaborationProvider) private var provider: any CollaborationProviderProtocol
+    @Dependency(\.appEnvironment) private var appEnv: any AppEnvironmentProtocol
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
-     @Inject private var keyStore: (any KeyStoreProtocol)?
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     /// 数据应用代理
     weak var delegate: CollaborationDelegate?

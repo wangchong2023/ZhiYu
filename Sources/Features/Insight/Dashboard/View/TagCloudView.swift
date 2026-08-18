@@ -12,6 +12,7 @@
 
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - 标签云视图 (导航容器)
 
@@ -31,7 +32,7 @@ struct TagCloudView: View {
 struct TagCloudViewContent: View {
     // ── 外部依赖 ──
     @Environment(AppStore.self) var store
-    @Inject var appEnv: any AppEnvironmentProtocol
+    @Dependency(\.appEnvironment) var appEnv: any AppEnvironmentProtocol
 
     // 使用协调器管理状态与交互
     @State var coordinator: TagCloudCoordinator

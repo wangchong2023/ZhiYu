@@ -188,6 +188,44 @@ public enum RAGGovernanceRepositoryKey: DependencyKey {
     public static var liveValue: any RAGGovernanceRepository {
         ServiceContainer.shared.resolve((any RAGGovernanceRepository).self)
     }
+
+    public static var testValue: any RAGGovernanceRepository {
+        ServiceContainer.shared.resolveOptional((any RAGGovernanceRepository).self) ?? NoOpRAGGovernanceRepository()
+    }
+}
+
+/// 无操作 RAG 治理仓储（测试/预览占位，DI 未就绪时降级）
+public final class NoOpRAGGovernanceRepository: RAGGovernanceRepository, @unchecked Sendable {
+    public init() {}
+    public func logTokenUsage(model: String, promptTokens: Int, completionTokens: Int) async throws {}
+    public func fetchTokenStats(days: Int) async throws -> TokenStats {
+        TokenStats(prompt: 0, completion: 0, total: 0)
+    }
+    public func fetchDailyAIStats(days: Int) async throws -> [DailyAIStat] { [] }
+    public func fetchMonthlyTokenStats() async throws -> [(month: String, total: Int)] { [] }
+    public func logCall(model: String, promptTokens: Int, completionTokens: Int, latencyMS: Int, status: String) async throws {}
+    public func fetchRecentLogs(limit: Int) async throws -> [LLMCallLog] { [] }
+    public func saveRAGEvaluation(_ evaluation: RAGEvaluation) async throws {}
+    public func fetchRAGEvaluations(limit: Int) async throws -> [RAGEvaluation] { [] }
+    public func calculateAverageRAGScores(days: Int) async throws -> AverageRAGScores {
+        AverageRAGScores(faithfulness: 0, relevance: 0, precision: 0, hallucinationRate: 0, citationAccuracy: 0)
+    }
+    public func saveRetrievalSnapshots(_ snapshots: [RetrievalSnapshot]) async throws {}
+    public func fetchRetrievalSnapshots(evaluationID: Int64) async throws -> [RetrievalSnapshot] { [] }
+    public func saveRelevanceJudgments(_ judgments: [RelevanceJudgment]) async throws {}
+    public func calculateHitRate(days: Int, k: Int) async throws -> Double { 0 }
+    public func calculateMRR(days: Int) async throws -> Double { 0 }
+    public func calculateNDCG(days: Int, k: Int) async throws -> Double { 0 }
+    public func calculateRecall(days: Int, k: Int) async throws -> Double { 0 }
+    public func calculateF1Score(days: Int, k: Int) async throws -> Double { 0 }
+    public func calculateMAP(days: Int) async throws -> Double { 0 }
+    public func calculateRetrievalLatency(days: Int) async throws -> LatencyPercentiles {
+        LatencyPercentiles(p50: 0, p95: 0, p99: 0, sampleCount: 0)
+    }
+    public func calculateTokenEfficiency(days: Int) async throws -> TokenEfficiency {
+        TokenEfficiency(totalTokens: 0, queryCount: 0, avgTokensPerQuery: 0, estimatedCostUSD: 0)
+    }
+    public func updateUserRating(evaluationID: Int64, rating: Int) async throws {}
 }
 
 extension DependencyValues {

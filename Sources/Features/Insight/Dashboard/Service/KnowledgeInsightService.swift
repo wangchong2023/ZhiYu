@@ -171,7 +171,8 @@ actor KnowledgeInsightService {
 
     private func loadCachedDailyRecap() async -> DailyRecap? {
         let key = cacheKey()
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else {
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        guard let keyStore else {
             return nil
         }
         let data = await MainActor.run { keyStore.data(forKey: key) }
@@ -183,7 +184,8 @@ actor KnowledgeInsightService {
 
     private func saveCachedDailyRecap(_ recap: DailyRecap) async {
         let key = cacheKey()
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        guard let keyStore else { return }
         if let data = try? JSONEncoder().encode(recap) {
             await MainActor.run { keyStore.set(data, forKey: key) }
         }
@@ -202,7 +204,8 @@ actor KnowledgeInsightService {
 
     private func loadCachedWeeklyInsight() async -> WeeklyInsight? {
         let key = weeklyCacheKey()
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return nil }
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        guard let keyStore else { return nil }
         let data = await MainActor.run { keyStore.data(forKey: key) }
         guard let data, let insight = try? JSONDecoder().decode(WeeklyInsight.self, from: data) else {
             return nil
@@ -212,7 +215,8 @@ actor KnowledgeInsightService {
 
     private func saveCachedWeeklyInsight(_ insight: WeeklyInsight) async {
         let key = weeklyCacheKey()
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        guard let keyStore else { return }
         if let data = try? JSONEncoder().encode(insight) {
             await MainActor.run { keyStore.set(data, forKey: key) }
         }
@@ -258,5 +262,22 @@ actor KnowledgeInsightService {
         Task { @MainActor in
             taskCenter.updateLatestStatus(text)
         }
+    }
+}
+
+// MARK: - DependencyKey
+
+enum KnowledgeInsightServiceKey: DependencyKey {
+    static var liveValue: KnowledgeInsightService { ServiceContainer.shared.resolve(KnowledgeInsightService.self) }
+
+    static var testValue: KnowledgeInsightService {
+        ServiceContainer.shared.resolveOptional(KnowledgeInsightService.self) ?? KnowledgeInsightService()
+    }
+}
+
+extension DependencyValues {
+    var knowledgeInsightService: KnowledgeInsightService {
+        get { self[KnowledgeInsightServiceKey.self] }
+        set { self[KnowledgeInsightServiceKey.self] = newValue }
     }
 }
