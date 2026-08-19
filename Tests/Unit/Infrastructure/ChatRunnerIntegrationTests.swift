@@ -105,6 +105,7 @@ final class ChatRunnerIntegrationTests: XCTestCase {
 
     private var config: LLMConfigManager!
     private var runner: ChatRunner!
+    private var originalLanguageMode: LanguageMode!
 
     private let mockHost = "chatrunner.mock.local"
 
@@ -112,6 +113,10 @@ final class ChatRunnerIntegrationTests: XCTestCase {
         try await super.setUp()
         ServiceContainer.shared.reset()
         ChatRunnerMockURLProtocol.reset()
+
+        // 强制中文环境，确保 system prompt 为中文，避免 NLTagger 将英文短语识别为实体导致脱敏映射污染
+        originalLanguageMode = Localized.languageMode
+        Localized.languageMode = .chinese
 
         // 注册 ChatRunner 的 4 个 @Inject 依赖
         config = LLMConfigManager()
@@ -168,6 +173,9 @@ final class ChatRunnerIntegrationTests: XCTestCase {
     override func tearDown() async throws {
         runner = nil
         config = nil
+        if let original = originalLanguageMode {
+            Localized.languageMode = original
+        }
         ChatRunnerMockURLProtocol.reset()
         URLProtocol.unregisterClass(ChatRunnerMockURLProtocol.self)
         ServiceContainer.shared.reset()

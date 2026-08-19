@@ -45,7 +45,11 @@ final class ZhiYuMonkeyTests: XCTestCase {
     /// 狂暴随机点击 Monkey 测试。
     ///
     /// 在 CI 环境中自动缩减至 20 步，本地开发保持 100 步。
+    /// 本地 100 步 × 0.4s 休眠 + UI 响应延迟可能超过默认 120s 超时，故显式提升至 300s。
     func testWildMonkeyClickTraversal() throws {
+        // 本地 100 步 Monkey 测试需要更长的执行时间 allowance
+        executionTimeAllowance = 300
+
         let isCI = ProcessInfo.processInfo.environment["CI"] == "true"
         let maxIterations = isCI ? 20 : 100
         print("====== [MONKEY] 开始执行 \(maxIterations) 步狂暴随机点击遍历压力测试 (CI: \(isCI)) ======")

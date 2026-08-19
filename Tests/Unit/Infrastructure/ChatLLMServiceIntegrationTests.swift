@@ -128,6 +128,7 @@ final class ChatLLMServiceIntegrationTests: XCTestCase {
 
     private var config: LLMConfigManager!
     private var service: ChatLLMService!
+    private var originalLanguageMode: LanguageMode!
 
     private let mockHost = "chatllmservice.mock.local"
 
@@ -135,6 +136,10 @@ final class ChatLLMServiceIntegrationTests: XCTestCase {
         try await super.setUp()
         ServiceContainer.shared.reset()
         ChatLLMServiceMockURLProtocol.reset()
+
+        // 强制中文环境，确保 system prompt 为中文，避免 NLTagger 将英文短语识别为实体导致脱敏映射污染
+        originalLanguageMode = Localized.languageMode
+        Localized.languageMode = .chinese
 
         config = LLMConfigManager()
         config.baseURL = "https://\(mockHost)/v1"
@@ -181,6 +186,9 @@ final class ChatLLMServiceIntegrationTests: XCTestCase {
     override func tearDown() async throws {
         service = nil
         config = nil
+        if let original = originalLanguageMode {
+            Localized.languageMode = original
+        }
         ChatLLMServiceMockURLProtocol.reset()
         URLProtocol.unregisterClass(ChatLLMServiceMockURLProtocol.self)
         ServiceContainer.shared.reset()

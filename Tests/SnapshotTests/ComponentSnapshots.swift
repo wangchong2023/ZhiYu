@@ -20,6 +20,9 @@ import Dependencies
 @MainActor
 final class ComponentSnapshots: XCTestCase {
 
+    /// 保存原始语言模式，在 tearDown 中恢复
+    private var originalLanguageMode: LanguageMode?
+
     /// 依据环境变量判断快照录制策略，用于支持 CI/CD 脚本自动更新基准图片
     private static var recordMode: SnapshotTestingConfiguration.Record {
         ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
@@ -29,6 +32,13 @@ final class ComponentSnapshots: XCTestCase {
         withSnapshotTesting(record: Self.recordMode) {
             super.invokeTest()
         }
+    }
+
+    override func tearDown() async throws {
+        if let original = originalLanguageMode {
+            Localized.languageMode = original
+        }
+        try await super.tearDown()
     }
 
     /// 测试 AI 脉搏指示器的视觉一致性
@@ -49,6 +59,12 @@ final class ComponentSnapshots: XCTestCase {
     /// - Parameter record: 显式控制是否开启录制。若传入 true 则强制开启录制，若为 false 则强制对比，不传则默认使用环境变量 RECORD_SNAPSHOTS 决定
     private func setupMockEnvironment(record: Bool? = nil) {
         setupFullMockEnvironment()
+        
+        // 强制中文环境，确保快照文本一致性，避免语言环境漂移导致快照不匹配
+        if originalLanguageMode == nil {
+            originalLanguageMode = Localized.languageMode
+        }
+        Localized.languageMode = .chinese
         
         // 清理聊天历史，防止其他测试（如 UI 测试）的残留数据污染快照测试
         ChatService.shared.clearHistory()
