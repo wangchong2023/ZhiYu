@@ -1,19 +1,7 @@
 inject_deprecated_whitelist:
-- file: Sources/Platforms/macOS/MacOSPlatformCapabilities.swift
-  line: 54
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
 - file: Sources/Platforms/watchOS/WatchVoiceCaptureView.swift
   line: 20
   type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Platforms/watchOS/Resources/ZhiYuWatchView.swift
-  line: 101
-  type: ServiceContainer.shared
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
@@ -47,33 +35,9 @@ inject_deprecated_whitelist:
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
-- file: Sources/Platforms/Shared/WidgetAndWatchViews.swift
-  line: 99
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Platforms/iOS/Services/iOSSpeechService.swift
-  line: 145
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Platforms/iOS/Services/iOSSpeechService.swift
-  line: 149
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
 - file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
   line: 24
   type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
-  line: 71
-  type: ServiceContainer.shared
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
@@ -171,18 +135,6 @@ inject_deprecated_whitelist:
   line: 34
   type: '@Inject'
   reason: P7 渐进式迁移存量 — DeepLinkService 是 ObservableObject，不适合 @Dependency
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/App/Scenes/Layout/SidebarView.swift
-  line: 27
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/App/Scenes/Layout/Components/SidebarRowComponents.swift
-  line: 57
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/App/Core/ZhiYuApp.swift
@@ -295,24 +247,6 @@ inject_deprecated_whitelist:
   expiry_check: P7
 - file: Sources/App/Lifecycle/AppWindowSceneDelegate.swift
   line: 29
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/App/Navigation/Router.swift
-  line: 216
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/App/Navigation/Router.swift
-  line: 276
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/App/Store/AppStore.swift
-  line: 110
   type: ServiceContainer.shared
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
