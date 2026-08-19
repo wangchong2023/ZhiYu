@@ -25,6 +25,7 @@ stages:
   - build
   - test
   - sonar
+  - perf
 
 default:
   tags:
@@ -149,4 +150,29 @@ sonarqube-analysis:
           -Dsonar.host.url=${SONAR_HOST_URL} \
           -Dsonar.qualitygate.wait=true
       fi
+
+# ════════════════════════════════════════════════════════════
+# perf — 性能测试 + 回归基线（每周夜间运行 + 手动触发）
+# ════════════════════════════════════════════════════════════
+
+perf-baseline:
+  stage: perf
+  needs: [build-prepare]
+  dependencies: [build-prepare]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop)$/ && $PERF_RUN == "true"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  script:
+    - export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"
+    - echo "===> 运行性能测试套件 + 生成回归基线"
+    - make perf-baseline
+    - bash Tools/CI/generate-pipeline-perf-baseline.sh
+  artifacts:
+    when: always
+    paths:
+      - build/.perf_baselines/
+    expire_in: 30 days
+    reports:
+      junit: build/perf-junit.xml
 
