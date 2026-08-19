@@ -100,6 +100,10 @@ public enum SpeechServiceKey: DependencyKey {
 /// 无操作语音服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
 public final class NoOpSpeechService: SpeechServiceProtocol, @unchecked Sendable {
+    private enum Constants {
+        static let defaultLanguage = "zh-CN"
+    }
+
     public init() {}
     public var isRecording: Bool { false }
     public var isTranscribing: Bool { false }
@@ -117,7 +121,7 @@ public final class NoOpSpeechService: SpeechServiceProtocol, @unchecked Sendable
     public func stopRecording() {}
     public func transcribeFile(url: URL) async throws -> String { "" }
     public func saveRecording(title: String) -> VoiceRecording {
-        VoiceRecording(title: title, text: "", language: "zh-CN", duration: 0)
+        VoiceRecording(title: title, text: "", language: Constants.defaultLanguage, duration: 0)
     }
     public func deleteRecording(_ recording: VoiceRecording) {}
     public func clearTranscription() {}

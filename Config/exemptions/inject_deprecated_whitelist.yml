@@ -168,15 +168,9 @@ inject_deprecated_whitelist:
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/App/Scenes/ContentView.swift
-  line: 33
+  line: 34
   type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/App/Scenes/ContentView.swift
-  line: 35
-  type: '@Inject'
-  reason: P7 渐进式迁移存量
+  reason: P7 渐进式迁移存量 — DeepLinkService 是 ObservableObject，不适合 @Dependency
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/App/Scenes/Layout/SidebarView.swift

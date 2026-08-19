@@ -53,9 +53,7 @@ struct SidebarRowWrapper<Content: View>: View {
     @Environment(Router.self) private var router
     
     /// 全局注入的平台设备环境，用于替代不准确的系统的 sizeClass 判定
-    private var appEnv: any AppEnvironmentProtocol {
-        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
-    }
+    @Dependency(\.appEnvironment) private var appEnv: any AppEnvironmentProtocol
     
     var body: some View {
         #if os(watchOS)

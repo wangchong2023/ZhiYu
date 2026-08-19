@@ -164,6 +164,7 @@ final class Router {
 
     // keyStore 已全部通过 resolveOptional() 手动解析，不再使用 @Inject 声明
     @ObservationIgnored @Dependency(\.pluginRegistry) private var pluginRegistry
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     /// 核心导航路径
     var path = NavigationPath()
@@ -213,7 +214,7 @@ final class Router {
     /// didSet 使用 resolveOptional：DI 容器未就绪时静默跳过持久化，避免启动崩溃。
     var selectedTab: AppTab = .knowledge {
         didSet {
-            if let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) {
+            if let ks = keyStore {
                 ks.set(selectedTab.rawValue, forKey: AppConstants.Keys.Storage.selectedTab)
             }
             // 切换主 Tab 时自动清空全局的导航路径。
@@ -273,7 +274,7 @@ final class Router {
     /// 使用 resolveOptional 优雅降级：DI 容器未就绪时（如 AppEnvironment 初始化早期）回退到默认 .knowledge。
     public init() {
         // 从 KeyStore 恢复上次选中的 Tab
-        let storedRaw = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?
+        let storedRaw = keyStore?
             .string(forKey: AppConstants.Keys.Storage.selectedTab)
         self.selectedTab = AppTab(rawValue: storedRaw ?? "") ?? .knowledge
     }

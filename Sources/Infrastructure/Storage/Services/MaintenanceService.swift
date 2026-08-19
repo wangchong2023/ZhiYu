@@ -167,4 +167,11 @@ extension DependencyValues {
         get { self[MaintenanceServiceKey.self] }
         set { self[MaintenanceServiceKey.self] = newValue }
     }
+
+    /// 可选 MaintenanceService 依赖（DI 未就绪时返回 nil）
+    @MainActor
+    public var maintenanceServiceOptional: MaintenanceService? {
+        get { ServiceContainer.shared.resolveOptional(MaintenanceService.self) } // inject_exempt: DependencyValues getter
+        set { /* 只读，setter 保留以符合 DependencyValues 协议 */ }
+    }
 }

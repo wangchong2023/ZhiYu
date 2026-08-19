@@ -39,7 +39,7 @@ final class AppEnvironment {
     private init() {
         // ── 0. 仅初始化不依赖 DI 的 stored properties（Swift 要求在调用 self 方法前完成）──
         self.router = Router.shared
-        self.themeManager = ThemeManager(keyStore: ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self))
+        self.themeManager = ThemeManager(keyStore: ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)) // inject_exempt: DI 核心初始化代码
         self.llmConfig = LLMConfigManager()
 
         Logger.shared.info("[AppEnvironment] Starting initialization...")
@@ -97,10 +97,10 @@ final class AppEnvironment {
         }
 
         // 🔒 生产路径：锁定 DI 容器，禁止 reset() 清空
-        ServiceContainer.shared.markProductionChainComplete()
+        ServiceContainer.shared.markProductionChainComplete() // inject_exempt: DI 核心初始化代码
 
         // 2.5 DI 就绪后重新解析需要容器注入的属性
-        self.llmConfig = ServiceContainer.shared.resolve(LLMConfigManager.self)
+        self.llmConfig = ServiceContainer.shared.resolve(LLMConfigManager.self) // inject_exempt: DI 核心初始化代码
 
         // 3. DI 就绪后实例化核心 Store（@Inject 首次访问安全）
         //    AppStore.init 内部会自注册到 DI 容器
@@ -206,20 +206,20 @@ final class AppEnvironment {
 
     /// 注册核心依赖注入模块 (L0 - L3)
     private func registerDIModules() {
-        CoreModuleRegistrar.register(in: ServiceContainer.shared)
-        StorageModuleRegistrar.register(in: ServiceContainer.shared)
+        CoreModuleRegistrar.register(in: ServiceContainer.shared) // inject_exempt: DI 核心初始化代码
+        StorageModuleRegistrar.register(in: ServiceContainer.shared) // inject_exempt: DI 核心初始化代码
 
         // L1 插件系统
         let pluginRegistry = PluginRegistry()
-        ServiceContainer.shared.register(pluginRegistry, for: PluginRegistry.self)
+        ServiceContainer.shared.register(pluginRegistry, for: PluginRegistry.self) // inject_exempt: DI 核心初始化代码
 
         // L2 领域模块 — 按依赖顺序：Auth → Knowledge → AI
-        AuthModuleRegistrar.register(in: ServiceContainer.shared)
-        KnowledgeModuleRegistrar.register(in: ServiceContainer.shared)
-        AIModuleRegistrar.register(in: ServiceContainer.shared)
+        AuthModuleRegistrar.register(in: ServiceContainer.shared) // inject_exempt: DI 核心初始化代码
+        KnowledgeModuleRegistrar.register(in: ServiceContainer.shared) // inject_exempt: DI 核心初始化代码
+        AIModuleRegistrar.register(in: ServiceContainer.shared) // inject_exempt: DI 核心初始化代码
 
         // L3 应用模块
-        AppModuleRegistrar.register(in: ServiceContainer.shared)
+        AppModuleRegistrar.register(in: ServiceContainer.shared) // inject_exempt: DI 核心初始化代码
     }
 
     /// 补充注册 AppStore.init 未覆盖的核心 Store 到 DI 容器
@@ -246,12 +246,12 @@ final class AppEnvironment {
             await self.store.seedDefaultContent()
             
             // 异步安全触发数据同步编排
-            ServiceContainer.shared.resolve(DataCoordinator.self).sync()
+            ServiceContainer.shared.resolve(DataCoordinator.self).sync() // inject_exempt: DI 核心初始化代码
         }
     }
     
     /// 获取平台环境信息
     var platformEnv: any AppEnvironmentProtocol {
-        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
+        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self) // inject_exempt: DI 核心初始化代码
     }
 }

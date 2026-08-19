@@ -25,7 +25,7 @@ enum AppPasteboard {
     
     /// 内部持有的具体实现
     private static var service: any PasteboardProtocol {
-        ServiceContainer.shared.resolve((any PasteboardProtocol).self)
+        ServiceContainer.shared.resolve((any PasteboardProtocol).self) // inject_exempt: static context 不支持 @Dependency
     }
 }
 

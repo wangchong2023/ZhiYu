@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 @MainActor
 struct SidebarView: View {
@@ -23,9 +24,7 @@ struct SidebarView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     /// 全局注入的平台设备环境
-    private var appEnv: any AppEnvironmentProtocol {
-        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
-    }
+    @Dependency(\.appEnvironment) private var appEnv: any AppEnvironmentProtocol
     
     // MARK: - Properties
     var heroNamespace: Namespace.ID

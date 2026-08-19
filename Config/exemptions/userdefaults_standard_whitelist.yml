@@ -1,25 +1,25 @@
 # UserDefaults.standard 冻结白名单
 # 策略：冻结现状，禁止新增。后续 P5-P6 阶段逐步迁移到 KeyStoreProtocol。
-# 登记总数：32 项
+# 登记总数：28 项
 
   - file: "Sources/App/Core/ZhiYuApp.swift"
-    line: 153
+    line: 157
   - file: "Sources/App/Core/ZhiYuApp.swift"
-    line: 166
+    line: 170
   - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
-    line: 355
-  - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
-    line: 406
+    line: 358
   - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
     line: 409
+  - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
+    line: 412
   - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
     line: 362
   - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
     line: 366
   - file: "Sources/Features/System/ModelManager/GlobalModelManager.swift"
-    line: 131
+    line: 132
   - file: "Sources/Features/System/ModelManager/GlobalModelManager.swift"
-    line: 135
+    line: 136
   - file: "Sources/Features/System/ModelManager/View/ServerConfigView.swift"
     line: 141
   - file: "Sources/Features/System/ModelManager/View/ServerConfigView.swift"
@@ -31,9 +31,9 @@
   - file: "Sources/Infrastructure/LLM/InferenceParametersStore.swift"
     line: 149
   - file: "Sources/Infrastructure/LLM/LLMContextBuilder.swift"
-    line: 333
+    line: 338
   - file: "Sources/Infrastructure/LLM/LLMContextBuilder.swift"
-    line: 343
+    line: 348
   - file: "Sources/Infrastructure/LLM/LLMModels.swift"
     line: 255
   - file: "Sources/Infrastructure/LLM/LLMModels.swift"
@@ -51,10 +51,10 @@
   - file: "Sources/Infrastructure/LLM/LLMModels.swift"
     line: 383
   - file: "Sources/Infrastructure/LLM/OnDeviceLLMService.swift"
-    line: 134
+    line: 135
   - file: "Sources/Infrastructure/LLM/OnDeviceLLMService.swift"
-    line: 203
+    line: 204
   - file: "Sources/Infrastructure/Storage/Sync/iCloudSyncManager.swift"
     line: 49
   - file: "Sources/Infrastructure/Storage/Utility/InitialNotebookGenerator.swift"
-    line: 224
+    line: 229

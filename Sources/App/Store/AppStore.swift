@@ -13,6 +13,7 @@ import SwiftUI
 import UFPCore
 import Combine
 import Observation
+import Dependencies
 import UFPStorage
 
 /// 智宇核心状态中心 (L3-Facade)
@@ -73,16 +74,16 @@ public final class AppStore {
     }
 
     // ── 核心依赖 (DI) ──
-    @ObservationIgnored @Inject var pageStore: any AnyPageStoreCapabilities  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Dependency(\.pageStoreCapabilities) var pageStore: any AnyPageStoreCapabilities
     /// Factory 风格：可选依赖，测试环境或 DI 未就绪时为 nil
-    @ObservationIgnored @Inject var maintenanceService: MaintenanceService?
-    @ObservationIgnored @Inject var performanceService: PerformanceService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var llmService: any LLMServiceProtocol  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var settingsStore: SettingsStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var linkService: LinkService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var ingestService: IngestService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var securityService: VaultStorageSecurityService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
-    @ObservationIgnored @Inject var snapshotService: SnapshotService  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    @ObservationIgnored @Dependency(\.maintenanceServiceOptional) var maintenanceService: MaintenanceService?
+    @ObservationIgnored @Dependency(\.performanceService) var performanceService: PerformanceService
+    @ObservationIgnored @Dependency(\.llmService) var llmService: any LLMServiceProtocol
+    @ObservationIgnored @Dependency(\.settingsStore) var settingsStore: SettingsStore
+    @ObservationIgnored @Dependency(\.linkService) var linkService: LinkService
+    @ObservationIgnored @Dependency(\.ingestServiceConcrete) var ingestService: IngestService
+    @ObservationIgnored @Dependency(\.vaultStorageSecurityService) var securityService: VaultStorageSecurityService
+    @ObservationIgnored @Dependency(\.snapshotService) var snapshotService: SnapshotService
 
     // ── 职责解耦：子 Store 聚合 ──
     @ObservationIgnored public var searchStore: SearchStore!
@@ -107,7 +108,7 @@ public final class AppStore {
         self.knowledgeStore = KnowledgeStore()
 
         // 2. 将核心 Store 及子 Store 自动注册到全局 DI 容器中 (@DIP)
-        let container = ServiceContainer.shared
+        let container = ServiceContainer.shared // inject_exempt: DI 核心初始化代码
         container.register(self, for: AppStore.self)
         container.register(self.searchStore, for: SearchStore.self)
         container.register(self.aiWorkflowStore, for: AIWorkflowStore.self)
@@ -271,8 +272,6 @@ extension ToolItem {
 }
 
 // MARK: - DependencyKey
-
-import Dependencies
 
 @MainActor
 public enum AppStoreKey: DependencyKey {

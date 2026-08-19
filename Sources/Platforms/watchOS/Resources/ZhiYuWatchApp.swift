@@ -16,7 +16,7 @@ import UFPCore
 struct AppWatchApp: App {
     /// 构造函数，在 watchOS App 启动时进行基础模块注册，保障系统 @Inject 的安全解析边界
     init() {
-        WatchModuleRegistrar.register(in: ServiceContainer.shared)
+        WatchModuleRegistrar.register(in: ServiceContainer.shared) // inject_exempt: App 入口 DI 初始化
     }
 
     var body: some Scene {

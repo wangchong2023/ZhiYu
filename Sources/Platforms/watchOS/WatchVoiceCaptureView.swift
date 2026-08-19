@@ -17,7 +17,7 @@ import WatchKit
 #endif
 
 public struct WatchVoiceCaptureView: View {
-    @Inject private var watchSync: any WatchSyncProtocol
+    @Inject private var watchSync: any WatchSyncProtocol // inject_exempt: ObservableObject 不适合 @Dependency
     @State private var isRecording = false
     @State private var recordedText = ""
     @State private var showSuccessBanner = false

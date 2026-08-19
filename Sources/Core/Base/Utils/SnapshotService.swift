@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 知识版本快照服务 (Snapshot Service)
 /// 用于在页面发生重大变更（如智能折叠、重构）前后记录物理快照，提供“后悔药”机制。
@@ -87,4 +88,24 @@ struct SnapshotInfo: Identifiable {
     var id: String { url.path }
     let url: URL
     let date: Date
+}
+
+// MARK: - DependencyKey 注册
+
+/// SnapshotService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum SnapshotServiceKey: DependencyKey {
+    static var liveValue: SnapshotService {
+        ServiceContainer.shared.resolve(SnapshotService.self)
+    }
+    static var testValue: SnapshotService {
+        ServiceContainer.shared.resolveOptional(SnapshotService.self) ?? SnapshotService()
+    }
+}
+
+extension DependencyValues {
+    /// 快照服务依赖
+    var snapshotService: SnapshotService {
+        get { self[SnapshotServiceKey.self] }
+        set { self[SnapshotServiceKey.self] = newValue }
+    }
 }

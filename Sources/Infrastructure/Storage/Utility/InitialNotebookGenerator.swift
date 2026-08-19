@@ -25,6 +25,10 @@ struct InitialNotebookGenerator {
     static let pkmPageCount = 18
     /// 咖啡店项目调研演示数据页面总数
     static let researchPageCount = 15
+    /// 压力测试默认生成节点总数
+    static let defaultStressTestNodeCount = 1000
+    /// 压测批量日志打印间隔步长
+    private static let stressBatchLogInterval = 100
 
     // MARK: - 模拟调用日志常量
 
@@ -151,16 +155,16 @@ struct InitialNotebookGenerator {
     ///   - store: 目标存储对象
     ///   - targetCount: 注入的节点数量
     /// - Returns: 实际生成的页面数
-    static func generateStressTest(in store: any AnyPageStore, count targetCount: Int = 1000) async throws -> Int {
+    static func generateStressTest(in store: any AnyPageStore, count targetCount: Int = defaultStressTestNodeCount) async throws -> Int {
         try await generateStressTestNotebooks(in: store, count: targetCount)
     }
 
     /// 执行图谱压力测试数据生成
     /// - Parameters:
     ///   - store: 目标存储对象
-    ///   - targetCount: 生成的节点数量，默认为 1000
+    ///   - targetCount: 生成的节点数量，默认为 defaultStressTestNodeCount
     /// - Returns: 生成的页面数量
-    static func generateStressTestNotebooks(in store: any AnyPageStore, count targetCount: Int = 1000) async throws -> Int {
+    static func generateStressTestNotebooks(in store: any AnyPageStore, count targetCount: Int = defaultStressTestNodeCount) async throws -> Int {
         Logger.shared.info("StressTestData_Starting")
 
         try await store.performBatchWrite { db in
@@ -192,7 +196,7 @@ struct InitialNotebookGenerator {
                 )
                 try page.save(db)
                 localCount += 1
-                if localCount % 100 == 0 { Logger.shared.debug("") }
+                if localCount % stressBatchLogInterval == 0 { Logger.shared.debug("") }
             }
         }
 
