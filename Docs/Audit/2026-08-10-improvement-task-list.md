@@ -1228,3 +1228,92 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 ---
 
 *任务清单制定 by CodeFree-O · 2026-08-10 · superpowers 方法论*
+
+---
+
+## 阶段 P9：冲刺 A+（9.5）— 扣分项收尾
+
+> **目标**: 综合评分 9.30 → 9.5（A+），差距 0.20
+> **依据**: [P8-3 评分验证报告](2026-08-20-p8-3-score-verification.md)
+> **策略**: 修复剩余 8 项扣分项（6 项完全修复 + 4 项部分修复 + 4 项待执行 → 全部收尾）
+
+### 任务 32：P9-1 豁免白名单清理
+
+**状态**: ✅ 已完成（commit `579b8a08`）
+
+**内容**:
+- `inject_deprecated_whitelist.yml`: 移除 11 项已过期条目（P7 迁移已完成），60 → 49 项
+- `manual_whitelist.yml` `business_magic_exempt`: 94 项从 `expiry_check: false` 改为 `true`，添加 `expiry_date: 2026-12-31`
+- 扣分项 #11 改善：-0.5 → -0.2
+
+### 任务 33：P9-2 性能测试 CI 定期运行 + 回归基线
+
+**状态**: ✅ 已完成（commit `d09f505d`）
+
+**内容**:
+- GitLab CI 新增 `perf-baseline` job（stage: perf）
+- 触发条件: 夜间定时调度 / 手动 Web 触发 / `PERF_RUN=true`
+- 执行: `make perf-baseline` + `generate-pipeline-perf-baseline.sh`
+- 产物: 性能基线 JSON（保留 30 天）+ JUnit 报告
+- 扣分项 #12/#13 改善：-1.0 → 0，-1.0 → 0
+
+### 任务 34：P9-3 插件校验 CI 集成
+
+**状态**: ✅ 已完成（commit `73d47e08`）
+
+**内容**:
+- `scan-plugin-marketplace.py` 扩展扫描目录：Marketplace + Tools/Plugins/{Local,Remote,community}
+- 实际扫描到 6 个 `.zyplugin` 包，全部校验通过
+- GitLab CI 新增 `plugin-validation` job（stage: analyze，与 static-analysis 并行）
+- 扣分项 #5 改善：-0.5 → 0
+
+### 任务 35：P9-4 覆盖率提升至 60%+
+
+**状态**: 🔄 进行中
+
+**内容**:
+- 当前覆盖率: 52%（P8-3 验证）
+- 目标: 60%+
+- 重点模块: App/Core + App/Store + Network
+- 扣分项 #7/#14 改善：-1.0 → -0.5
+
+### 任务 36：P9-5 动态安全扫描引入
+
+**状态**: ⏳ 待执行
+
+**内容**:
+- 引入 OWASP Mobile Top 10 动态扫描
+- 扣分项 #4 改善：-0.5 → 0
+
+### 任务 37：P9-6 @unchecked Sendable 审查
+
+**状态**: ⏳ 待执行
+
+**内容**:
+- 81 处 `@unchecked Sendable` 评估可改为 `Sendable`
+- 扣分项 #3 改善：部分修复 → 完全修复
+
+### 任务 38：P9-7 fatalError 审查
+
+**状态**: ⏳ 待执行
+
+**内容**:
+- 9 处 `fatalError` 区分程序员错误 vs 运行时错误
+- 扣分项 #2 改善：-0.3 → -0.1
+
+### 任务 39：P9-8 Domain 层剩余 SwiftUI 依赖抽离
+
+**状态**: ⏳ 待执行
+
+**内容**:
+- `AppStoreProtocol.swift` 中剩余 1 处 SwiftUI 依赖
+- 扣分项 #1 改善：部分修复 → 完全修复
+
+### 任务 40：P9-9 最终评分验证
+
+**状态**: ⏳ 待执行
+
+**内容**:
+- 第四次深度审计
+- 目标: 9.5/10（A+）
+- 全量测试零失败验证
