@@ -71,6 +71,20 @@ static-analysis:
     - bash Tools/CI/run-code-static-analysis.sh
 
 # ════════════════════════════════════════════════════════════
+# analyze — 插件安全校验（扫描所有 .zyplugin 包）
+# ════════════════════════════════════════════════════════════
+
+plugin-validation:
+  stage: analyze
+  needs: [build-prepare]
+  dependencies: [build-prepare]
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
+  script:
+    - echo "===> 运行插件安全校验（扫描所有 .zyplugin 包）"
+    - make plugin-scan
+
+# ════════════════════════════════════════════════════════════
 # build — 多平台构建（串行，复用 prepare artifacts）
 # ════════════════════════════════════════════════════════════
 

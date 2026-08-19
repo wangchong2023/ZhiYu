@@ -13,12 +13,20 @@
 import os
 import sys
 import glob
+import subprocess
 from pathlib import Path
 
 # 项目根目录（Tools/CI/ → 退 2 层）
 PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
-MARKETPLACE_DIR = PROJECT_DIR / "Plugins" / "Marketplace"
 VALIDATOR_SCRIPT = PROJECT_DIR / "Tools" / "ios" / "check-code-plugin-validation.py"
+
+# 待扫描的插件目录清单（SSOT）
+PLUGIN_SCAN_DIRS = [
+    PROJECT_DIR / "Plugins" / "Marketplace",
+    PROJECT_DIR / "Tools" / "Plugins" / "Local",
+    PROJECT_DIR / "Tools" / "Plugins" / "Remote",
+    PROJECT_DIR / "Tools" / "Plugins" / "community",
+]
 
 # 常量定义（避免魔鬼数字）
 REPORT_SEPARATOR_WIDTH = 60  # 报告分隔线宽度
@@ -26,22 +34,22 @@ PLUGIN_SEPARATOR_WIDTH = 60  # 插件分隔线宽度
 
 
 def scan_marketplace():
-    """扫描插件市场目录，对每个 .zyplugin 执行校验"""
-    print("🔌 [Plugin Marketplace Scanner] 开始扫描插件市场目录...\n")
+    """扫描所有插件目录，对每个 .zyplugin 执行校验"""
+    print("🔌 [Plugin Marketplace Scanner] 开始扫描插件目录...\n")
 
-    if not MARKETPLACE_DIR.exists():
-        print(f"ℹ️  插件市场目录不存在: {MARKETPLACE_DIR.relative_to(PROJECT_DIR)}")
-        print("   跳过扫描（无插件需校验）")
-        return 0
-
-    # 查找所有 .zyplugin 包
-    plugin_paths = sorted(
-        glob.glob(str(MARKETPLACE_DIR / "**" / "*.zyplugin"), recursive=True)
-    )
+    # 汇总所有扫描目录下的 .zyplugin 包
+    plugin_paths = []
+    for scan_dir in PLUGIN_SCAN_DIRS:
+        if not scan_dir.exists():
+            continue
+        found = sorted(
+            glob.glob(str(scan_dir / "**" / "*.zyplugin"), recursive=True)
+        )
+        for p in found:
+            plugin_paths.append(p)
 
     if not plugin_paths:
-        print(f"ℹ️  插件市场目录无 .zyplugin 包: {MARKETPLACE_DIR.relative_to(PROJECT_DIR)}")
-        print("   跳过扫描（无插件需校验）")
+        print("ℹ️  未发现任何 .zyplugin 包，跳过扫描（无插件需校验）")
         return 0
 
     print(f"📦 发现 {len(plugin_paths)} 个插件包，开始逐个校验...\n")
@@ -56,7 +64,6 @@ def scan_marketplace():
         print(f"🔍 校验: {rel_path}")
 
         # 调用校验脚本
-        import subprocess
         result = subprocess.run(
             [sys.executable, str(VALIDATOR_SCRIPT), plugin_path],
             capture_output=False,
