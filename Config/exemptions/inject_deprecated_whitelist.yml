@@ -347,3 +347,15 @@ inject_deprecated_whitelist:
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
+- file: Tests/Unit/Base/ServiceContainerTests.swift
+  line: 38
+  type: '@Inject'
+  reason: 测试 DI 容器本身的功能，保留 @Inject 验证
+  added: '2026-08-19'
+  expiry_check: P7
+- file: Tests/Unit/Base/ServiceContainerTests.swift
+  line: 111
+  type: '@Inject'
+  reason: 测试 DI 容器本身的功能，保留 @Inject 验证
+  added: '2026-08-19'
+  expiry_check: P7

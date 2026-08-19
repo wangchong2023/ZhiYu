@@ -89,6 +89,7 @@ run_parallel_task "Singleton Frozen" "singleton_frozen" "python3 Tools/ios/audit
 run_parallel_task "Environment Object Frozen" "env_object_frozen" "python3 Tools/ios/audit-environment-object.py" & pid35=$!
 run_parallel_task "UserDefaults Standard Frozen" "userdefaults_frozen" "python3 Tools/ios/audit-userdefaults-standard.py" & pid36=$!
 run_parallel_task "Inject Deprecated" "inject_deprecated" "python3 Tools/ios/audit-inject-deprecated.py" & pid37=$!
+run_parallel_task "OpenSource Internal Deps" "opensource_internal_deps" "python3 Tools/ios/check-arch-opensource-internal-deps.py" & pid38=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -127,6 +128,7 @@ wait $pid34 || EXIT_CODE=1
 wait $pid35 || EXIT_CODE=1
 wait $pid36 || EXIT_CODE=1
 wait $pid37 || EXIT_CODE=1
+wait $pid38 || EXIT_CODE=1
 
 
 echo ""

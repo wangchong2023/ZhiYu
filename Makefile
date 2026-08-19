@@ -82,6 +82,7 @@ audit:
 	@echo "🔍 运行 CI 架构与开源依赖门禁体系..."
 	@python3 Tools/ios/check-arch-opensource-adapters.py
 	@python3 Tools/ios/check-arch-dependency-registry.py
+	@python3 Tools/ios/check-arch-opensource-internal-deps.py
 	@python3 Tools/ios/check-code-absolute-paths.py
 	@python3 Tools/ios/check-code-snapshot-environment.py --strict
 
