@@ -46,12 +46,40 @@ dependencies:
     license: Apache-2.0
     purpose: "Lottie 动画渲染"
 
+  - name: swift-docc-plugin
+    upstream: "https://github.com/apple/swift-docc-plugin.git"
+    version: "main"
+    integration: spm
+    license: MIT
+    purpose: "Swift 文档生成插件（docc）"
+
+  - name: swift-docc-symbolkit
+    upstream: "https://github.com/swiftlang/swift-docc-symbolkit.git"
+    version: "main"
+    integration: spm
+    license: Apache-2.0
+    purpose: "Swift 文档符号提取工具（swift-docc-plugin 依赖）"
+
   - name: swift-markdown-ui
     upstream: "https://github.com/gonzalezreal/swift-markdown-ui.git"
     version: "main"
     integration: project_yml_path
     license: MIT
     purpose: "Markdown 渲染 UI 组件"
+
+  - name: NetworkImage
+    upstream: "https://github.com/gonzalezreal/swift-markdown-ui.git"
+    version: "main"
+    integration: project_yml_path
+    license: MIT
+    purpose: "swift-markdown-ui 传递依赖（异步网络图片加载）"
+
+  - name: swift-cmark
+    upstream: "https://github.com/swiftlang/swift-cmark.git"
+    version: "gfm"
+    integration: project_yml_path
+    license: MIT
+    purpose: "swift-markdown 传递依赖（CMark GFM 解析器）"
 
   - name: swift-markdown
     upstream: "https://github.com/apple/swift-markdown.git"

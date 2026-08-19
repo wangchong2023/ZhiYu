@@ -173,6 +173,11 @@ run_check "废弃注入审计" \
     "python3 Tools/ios/audit-inject-deprecated.py" \
     || exit 1
 
+# 1.17 开源库内部依赖本地化审计（阻断——离线优先原则，开源库自身 Package.swift 不得引用远端 URL）
+run_check "开源库内部依赖本地化审计" \
+    "python3 Tools/ios/check-arch-opensource-internal-deps.py" \
+    || exit 1
+
 # quick 模式在此结束
 if [ "$MODE" = "quick" ]; then
     summary && echo -e "${GREEN}${BOLD}✅ 快速门禁通过！${NC}" && exit 0
