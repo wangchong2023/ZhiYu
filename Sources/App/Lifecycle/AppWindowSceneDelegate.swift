@@ -25,8 +25,8 @@ class AppWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
 
         let window = UIWindow(windowScene: windowScene)
         let themeManager = ThemeManager()
-        let store: AppStore = ServiceContainer.shared.resolve(AppStore.self)
-        let llmService: LLMService = ServiceContainer.shared.resolve(LLMService.self)
+        let store: AppStore = ServiceContainer.shared.resolve(AppStore.self) // inject_exempt: DI 初始化代码
+        let llmService: LLMService = ServiceContainer.shared.resolve(LLMService.self) // inject_exempt: DI 初始化代码
 
         let contentView = ContentView()
             .environment(store)

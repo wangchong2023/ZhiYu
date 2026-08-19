@@ -14,7 +14,7 @@ import SwiftUI
 import UFPCore
 
 public struct WatchFlashView: View {
-    @Inject private var watchSync: any WatchSyncProtocol
+    @Inject private var watchSync: any WatchSyncProtocol // inject_exempt: ObservableObject 不适合 @Dependency
 
     @State private var selectedIndex = 0
 

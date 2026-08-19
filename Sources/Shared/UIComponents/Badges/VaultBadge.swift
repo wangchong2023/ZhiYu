@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 /// 笔记本标识与快速切换组件
 /// 采用平台感知的交互模式：
@@ -17,7 +18,7 @@ import UFPCore
 /// - 旋钮/紧凑设备：显示纯展示标签 (Label)
 struct VaultBadge: View {
     @Environment(VaultService.self) var vaultService
-    @Inject var platformEnv: any AppEnvironmentProtocol // 使用 DI 注入平台环境能力集
+    @Dependency(\.appEnvironment) var platformEnv
     @Environment(ThemeManager.self) var themeManager
 
     /// UI 测试模式下使用直通 Button 替代 Menu（XCUITest 对 SwiftUI Menu 交互不可靠）

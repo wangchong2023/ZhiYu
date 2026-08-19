@@ -160,11 +160,15 @@ public final class PromptService: @unchecked Sendable {
 // MARK: - PromptService DependencyKey
 
 private enum PromptServiceKey: DependencyKey {
+    private enum Constants {
+        static let testSuiteName = "test"
+    }
+
     static var liveValue: PromptService {
         PromptService(defaults: .standard)
     }
     static let testValue: PromptService = {
-        guard let defaults = UserDefaults(suiteName: "test") else {
+        guard let defaults = UserDefaults(suiteName: Constants.testSuiteName) else {
             return PromptService(defaults: .standard)
         }
         return PromptService(defaults: defaults)

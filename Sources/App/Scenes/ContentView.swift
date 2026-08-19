@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 /// 应用程序根视图
 /// 负责全局导航分发（Tab/SplitView）、安全遮罩及全局弹窗调度
@@ -31,8 +32,8 @@ struct ContentView: View {
     @EnvironmentObject var onboardingService: OnboardingService
     @EnvironmentObject var medalService: MedalService
     
-    @Inject internal var deepLinkService: DeepLinkService
-    @Inject internal var appEnv: any AppEnvironmentProtocol
+    @Inject internal var deepLinkService: DeepLinkService // inject_exempt: ObservableObject 不适合 @Dependency
+    @Dependency(\.appEnvironment) internal var appEnv: any AppEnvironmentProtocol
     
     @State internal var showSidebar = false 
     @State internal var authSession = AuthSession.shared

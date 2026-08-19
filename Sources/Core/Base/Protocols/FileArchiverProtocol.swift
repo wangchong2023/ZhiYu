@@ -51,12 +51,16 @@ extension DependencyValues {
 
 /// 无操作文件归档服务（测试/预览占位）
 public final class NoOpFileArchiver: FileArchiverProtocol, @unchecked Sendable {
+    private enum Constants {
+        static let noOpReason = "NoOp"
+    }
+
     public init() {}
     public func zip(directory sourceDir: URL, to destinationURL: URL) async throws {
         throw FileArchiverError.platformNotSupported
     }
     public func extractContents(from archiveURL: URL, to destinationURL: URL) throws {
-        throw FileArchiverError.extractionFailed(reason: "NoOp")
+        throw FileArchiverError.extractionFailed(reason: Constants.noOpReason)
     }
 }
 

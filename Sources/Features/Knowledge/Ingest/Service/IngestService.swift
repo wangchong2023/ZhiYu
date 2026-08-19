@@ -316,3 +316,23 @@ actor IngestService: IngestServiceProtocol {
         }
     }
 }
+
+// MARK: - Concrete DependencyKey（AppStore 需要具体类型，非协议类型）
+
+/// IngestService 具体类型的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+enum IngestServiceConcreteKey: DependencyKey {
+    static var liveValue: IngestService {
+        ServiceContainer.shared.resolve(IngestService.self)
+    }
+    static var testValue: IngestService {
+        ServiceContainer.shared.resolveOptional(IngestService.self) ?? IngestService()
+    }
+}
+
+extension DependencyValues {
+    /// IngestService 具体类型依赖（非协议类型）
+    var ingestServiceConcrete: IngestService {
+        get { self[IngestServiceConcreteKey.self] }
+        set { self[IngestServiceConcreteKey.self] = newValue }
+    }
+}

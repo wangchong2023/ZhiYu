@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 import LocalAuthentication
 
 // MARK: - 生物识别
@@ -46,12 +47,12 @@ struct MacOSBiometricAuthProvider: BiometricAuthProviderProtocol {
 #if os(macOS)
 /// macOS 安全存储：实现真正的 Security-Scoped Bookmarks 持久化
 struct MacOSSecurityScopedStorage: SecurityScopedStorageProtocol {
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     /// 为指定安全路径（如外部笔记本目录）创建并持久化安全作用域书签数据。
     /// - Parameter url: 待存储的物理路径 URL。
     func storeBookmark(for url: URL) {
         do {
             let data = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-            let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
             keyStore?.set(data, forKey: AppConstants.Keys.Storage.vaultBookmarkPrefix + url.lastPathComponent)
         } catch {
             Logger.shared.error("macOS_Error1: Failed to store bookmark for \(url.lastPathComponent)", error: error)

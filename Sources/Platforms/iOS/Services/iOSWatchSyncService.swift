@@ -13,6 +13,7 @@ import Foundation
 import UFPCore
 import WatchConnectivity
 import Combine
+import Dependencies
 
 /// iOS 端手表同步实现
 final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate {
@@ -20,8 +21,8 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
     @Published var latestBriefing: String?
     @Published var isBriefingLoading: Bool = false
     
-    /// Factory 风格：属性类型标注为可选（T?），@Inject 自动使用 resolveOptional
-    @Inject private var keyStore: (any KeyStoreProtocol)?
+    /// Factory 风格：可选依赖，DI 未就绪时为 nil
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
     override init() {
         super.init()
@@ -68,8 +69,8 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
     private func generateAndSendBriefing() {
         Task {
             do {
-                guard let appStore = ServiceContainer.shared.resolveOptional(AppStore.self),
-                      let llmService = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) else {
+                guard let appStore = ServiceContainer.shared.resolveOptional(AppStore.self), // inject_exempt: Task 内局部解析
+                      let llmService = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) else { // inject_exempt: Task 内局部解析
                     return
                 }
                 

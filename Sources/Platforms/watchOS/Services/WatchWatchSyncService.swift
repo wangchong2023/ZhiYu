@@ -13,6 +13,7 @@ import Foundation
 import UFPCore
 import WatchConnectivity
 import Combine
+import Dependencies
 
 /// watchOS 端同步实现
 final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate {
@@ -25,8 +26,8 @@ final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegat
     var mockActivationState: WCSessionActivationState?
     #endif
     
-    /// Factory 风格：属性类型标注为可选（T?），@Inject 自动使用 resolveOptional
-    @Inject private var keyStore: (any KeyStoreProtocol)?
+    /// Factory 风格：可选依赖，DI 未就绪时为 nil
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
     override init() {
         super.init()

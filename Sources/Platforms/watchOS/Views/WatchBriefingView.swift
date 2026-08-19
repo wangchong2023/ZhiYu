@@ -17,7 +17,7 @@ import AVFoundation
 @MainActor
 struct WatchBriefingView: View {
     @Environment(\.dismiss) private var dismiss
-    @Inject private var watchSync: any WatchSyncProtocol
+    @Inject private var watchSync: any WatchSyncProtocol // inject_exempt: ObservableObject 不适合 @Dependency
     
     @State private var isPlaying = false
     @State private var synthesizer = AVSpeechSynthesizer()

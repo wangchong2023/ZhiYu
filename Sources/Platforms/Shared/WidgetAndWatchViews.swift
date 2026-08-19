@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import WidgetKit
+import Dependencies
 
 #if !os(watchOS)
 // MARK: - Apple Watch Quick View
@@ -20,6 +21,7 @@ struct WatchKnowledgeStatsView: View {
     @State private var totalPages = 0
     @State private var totalWords = 0
     @State private var recentTitles: [String] = []
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
     /// 允许传入 Mock 数据的构造器
     public init(totalPages: Int = 0, totalWords: Int = 0, recentTitles: [String] = []) {
@@ -96,7 +98,6 @@ struct WatchKnowledgeStatsView: View {
     }
     
     private func loadData() {
-        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
         totalPages = keyStore?.integer(forKey: AppConstants.Keys.Storage.watchTotalPages) ?? 0
         totalWords = keyStore?.integer(forKey: AppConstants.Keys.Storage.watchTotalWords) ?? 0
         recentTitles = keyStore?.object(forKey: AppConstants.Keys.Storage.watchRecentTitles) as? [String] ?? []

@@ -16,7 +16,7 @@ import UFPCore
 /// 负责在手表端通过系统语音输入获取文本，并通过 WatchConnectivity 实时同步至主应用
 struct WatchDictationView: View {
     @Environment(\.dismiss) private var dismiss
-    @Inject private var watchSync: any WatchSyncProtocol
+    @Inject private var watchSync: any WatchSyncProtocol // inject_exempt: ObservableObject 不适合 @Dependency
     @State private var text = ""
     
     var body: some View {

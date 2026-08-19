@@ -108,3 +108,26 @@ final class VaultStorageSecurityService {
         HapticFeedback.shared.trigger(.lock)
     }
 }
+
+// MARK: - DependencyKey 注册
+
+/// VaultStorageSecurityService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
+@MainActor
+enum VaultStorageSecurityServiceKey: DependencyKey {
+    @MainActor
+    static var liveValue: VaultStorageSecurityService {
+        ServiceContainer.shared.resolve(VaultStorageSecurityService.self)
+    }
+    @MainActor
+    static var testValue: VaultStorageSecurityService {
+        ServiceContainer.shared.resolveOptional(VaultStorageSecurityService.self) ?? VaultStorageSecurityService()
+    }
+}
+
+extension DependencyValues {
+    /// Vault 存储安全服务依赖
+    var vaultStorageSecurityService: VaultStorageSecurityService {
+        get { self[VaultStorageSecurityServiceKey.self] }
+        set { self[VaultStorageSecurityServiceKey.self] = newValue }
+    }
+}

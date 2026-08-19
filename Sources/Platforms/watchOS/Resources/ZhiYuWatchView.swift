@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import Dependencies
 
 // MARK: - 手表端专用颜色
 private extension Color {
@@ -25,6 +26,7 @@ struct WatchKnowledgeStatsView: View {
     @State private var totalPages = 0
     @State private var totalWords = 0
     @State private var recentTitles: [String] = []
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
     /// 允许通过参数初始化状态的构造器，专为提升单元测试可测性而设计
     /// - Parameters:
@@ -98,7 +100,6 @@ struct WatchKnowledgeStatsView: View {
     
     /// 从 KeyStore 载入表盘所需的统计数据
     func loadData() {
-        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
         totalPages = keyStore?.integer(forKey: AppConstants.Keys.Storage.watchTotalPages) ?? 0
         totalWords = keyStore?.integer(forKey: AppConstants.Keys.Storage.watchTotalWords) ?? 0
         recentTitles = keyStore?.object(forKey: AppConstants.Keys.Storage.watchRecentTitles) as? [String] ?? []

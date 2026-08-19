@@ -37,7 +37,7 @@ struct ZhiYuApp: App {
     
     init() {
         // 从 DI 解析 KeyStore，创建 ThemeManager 实例
-        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) // inject_exempt: App 入口 DI 初始化
         self._themeManager = State(initialValue: ThemeManager(keyStore: keyStore))
 
         uiTestRoute = UITestRoute.fromLaunchArguments()
@@ -72,7 +72,7 @@ struct ZhiYuApp: App {
                     .environment(appModel)
                     .environment(dependencies)
                     .environment(themeManager)
-                    .environmentObject(ServiceContainer.shared.resolve(LLMService.self))
+                    .environmentObject(ServiceContainer.shared.resolve(LLMService.self) as LLMService) // inject_exempt: App 入口 DI 初始化
                     .environmentObject(onboardingService)
                     .environmentObject(MedalService.shared)
                     .environment(\.locale, Localized.currentLocale)

@@ -18,6 +18,7 @@ import Speech
 import AVFoundation
 import Combine
 import Observation
+import Dependencies
 
 /// iOS 语音处理实现
 @Observable
@@ -141,12 +142,13 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
     // MARK: - 持久化
 
     private let recordingsKey = AppConstants.Keys.Storage.voiceRecordings
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     private func loadRecordings() {
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        guard let keyStore = keyStore else { return }
         if let data = keyStore.data(forKey: recordingsKey), let decoded = try? JSONDecoder().decode([VoiceRecording].self, from: data) { recordings = decoded }
     }
     private func saveRecordingsToDisk() {
-        guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
+        guard let keyStore = keyStore else { return }
         if let data = try? JSONEncoder().encode(recordings) { keyStore.set(data, forKey: recordingsKey) }
     }
 

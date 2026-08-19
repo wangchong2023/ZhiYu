@@ -271,7 +271,7 @@ final class NoOpLLMChatService: LLMChatServiceProtocol, @unchecked Sendable {
 final class NoOpLLMKnowledgeService: LLMKnowledgeServiceProtocol, @unchecked Sendable {
     init() {}
     func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
-        SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: "concept", relatedTitles: [], summary: "")
+        SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: PageType.concept.rawValue, relatedTitles: [], summary: "")
     }
     func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
     func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
@@ -308,7 +308,7 @@ final class NoOpLLMService: LLMServiceProtocol, @unchecked Sendable {
     }
     func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
     func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
-        SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: "concept", relatedTitles: [], summary: "")
+        SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: PageType.concept.rawValue, relatedTitles: [], summary: "")
     }
     func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
     func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }

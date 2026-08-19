@@ -68,7 +68,6 @@ final class NotebookHubViewSnapshots: XCTestCase {
     func testNotebookCard_FullData() {
         let view = NotebookCard(notebook: makeVault(), action: {})
             .snapshotEnvironment()
-            .environment(NotebookHubViewModel())
             .frame(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)))
     }
@@ -77,7 +76,6 @@ final class NotebookHubViewSnapshots: XCTestCase {
     func testNotebookCard_MinimalData() {
         let view = NotebookCard(notebook: makeMinimalVault(), action: {})
             .snapshotEnvironment()
-            .environment(NotebookHubViewModel())
             .frame(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)))
     }
@@ -88,7 +86,6 @@ final class NotebookHubViewSnapshots: XCTestCase {
     func testNotebookListRow_FullData() {
         let view = NotebookListRow(notebook: makeVault(), action: {})
             .snapshotEnvironment()
-            .environment(NotebookHubViewModel())
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
     }
@@ -97,7 +94,6 @@ final class NotebookHubViewSnapshots: XCTestCase {
     func testNotebookListRow_NoDescription() {
         let view = NotebookListRow(notebook: makeMinimalVault(), action: {})
             .snapshotEnvironment()
-            .environment(NotebookHubViewModel())
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
     }
