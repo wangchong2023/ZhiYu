@@ -197,7 +197,7 @@ Tests/
 5. **L3 注册** → `AppModuleRegistrar`：Router、ViewFactory 注册各功能域 ViewProvider
 6. **Store 初始化** → `IngestStore()`、`SynthesisStore()`、`AppStore()` （在 DI 完成后实例化）
 
-### `@Inject` 属性包装器
+### `@Inject` 属性包装器（遗留）
 
 ```swift
 @Inject var store: AppStore
@@ -205,6 +205,27 @@ Tests/
 
 从 `ServiceContainer.shared` 解析服务。服务必须在使用前注册——未注册会触发 `fatalError`。
 对于 `@Observable` 类型，一般由 `AppEnvironment` 直接持有并通过 SwiftUI `.environment()` 注入，而非通过 `@Inject` 解析。
+
+> **⚠️ 遗留状态**: `@Inject` 已被 `@Dependency`（swift-dependencies）取代。CI-4 门禁（`audit-inject-deprecated.py`）禁止 `Sources/` 中新增 `@Inject`，仅白名单（60 项）保留存量。新代码必须使用 `@Dependency`。
+
+### `@Dependency` 属性包装器（推荐）
+
+```swift
+@Dependency(\.llmService) var llmService: LLMServiceProtocol
+```
+
+基于 [swift-dependencies](https://github.com/pointfreeco/swift-dependencies)，通过 `DependencyKey` 注册服务：
+- **`liveValue`**: 生产环境实现（注册在 `ModuleRegistrar` 中）
+- **`testValue`**: 测试环境实现（优先从 `ServiceContainer.shared.resolveOptional` 解析，fallback 到 NoOp）
+- **`previewValue`**: SwiftUI Preview 实现
+
+**关键规则**:
+- `@Observable` 类中 `@Dependency` 属性必须加 `@ObservationIgnored`
+- `@Dependency` 属性如需在 extension 中访问，不能标记 `private`
+- `@Observable` 类不能用 `@Dependency` 属性在 init 中赋值（computed property），需改为存储属性
+- `@Dependency` 不支持 `$` 投影，`@Observable` 绑定需用 `@Bindable var` 包装
+- `@Dependency` 在 `init` 时解析一次并缓存 — 测试中重新注册 `ServiceContainer` 不会更新已缓存值
+- `ObservableObject` 协议类型不适合 `@Dependency` — 保留 `@Inject` + `inject_exempt` 白名单
 
 ### 模块化注册 — ModuleRegistrar 协议
 
