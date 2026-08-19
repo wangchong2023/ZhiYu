@@ -34,8 +34,14 @@ default:
     - arm64
   before_script:
     - |
-      if [ -n "${OPENSRC_ROOT:-}" ] && [ ! -f Config/.env.local ]; then
-        echo "export OPENSRC_ROOT=${OPENSRC_ROOT}" > Config/.env.local
+      if [ ! -f Config/.env.local ]; then
+        if [ -n "${OPENSRC_ROOT:-}" ]; then
+          echo "export OPENSRC_ROOT=${OPENSRC_ROOT}" > Config/.env.local
+        elif [ -f Config/.env.example ]; then
+          sed 's|/path/to/opensrc/swift|/Users/constantine/Documents/work/code/opensrc/swift|g' Config/.env.example > Config/.env.local
+        else
+          echo "export OPENSRC_ROOT=/Users/constantine/Documents/work/code/opensrc/swift" > Config/.env.local
+        fi
       fi
 
 # ════════════════════════════════════════════════════════════
