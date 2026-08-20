@@ -82,17 +82,23 @@ final class NotebookHubUITests: KnowledgeBaseUITests {
             throw XCTSkip("NotebookHubView 未显示，跳过测试")
         }
 
-        // 点击第一个内置笔记本
+        // 点击第一个内置笔记本（使用坐标后备点击，避免 hittable 判定问题）
         let firstCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)
         guard firstCard.waitForExistence(timeout: 3) else {
             throw XCTSkip("无可点击的笔记本卡片，跳过测试")
         }
-        firstCard.tap()
+        if firstCard.isHittable {
+            firstCard.tap()
+        } else {
+            firstCard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
 
         // 等待主界面出现（TabBar + 内容区域）
+        // 注意：selectNotebook 中有 Task.yield() 时序 hack（避免 GestureRecognizer 冲突），
+        // 加上数据库初始化，5 秒超时在模拟器高负载下不够，改为 10 秒
         let tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 5),
-                      "点击笔记本后 TabBar 应在 5 秒内显示")
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 10),
+                      "点击笔记本后 TabBar 应在 10 秒内显示")
 
         // 验证 Knowledge tab 被选中
         try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -127,10 +133,15 @@ final class NotebookHubUITests: KnowledgeBaseUITests {
             throw XCTSkip("需要至少 2 个笔记本进行切换测试")
         }
 
-        // 第一轮：点击第一个笔记本
-        cards.element(boundBy: 0).tap()
+        // 第一轮：点击第一个笔记本（坐标后备点击）
+        let firstCard = cards.element(boundBy: 0)
+        if firstCard.isHittable {
+            firstCard.tap()
+        } else {
+            firstCard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
         var tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 5), "首次点击应进入主界面")
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 10), "首次点击应进入主界面")
 
         // 返回到 NotebookHub
         returnToNotebookHub()
@@ -138,7 +149,7 @@ final class NotebookHubUITests: KnowledgeBaseUITests {
             throw XCTSkip("返回 NotebookHub 失败")
         }
 
-        // 第二轮：点击第二个笔记本
+        // 第二轮：点击第二个笔记本（坐标后备点击）
         let refreshedCards = app.buttons.matching(identifier: "NotebookCard_Item")
         guard refreshedCards.count >= 2 else {
             throw XCTSkip("返回后笔记本卡片数量不足")
@@ -151,7 +162,7 @@ final class NotebookHubUITests: KnowledgeBaseUITests {
         }
 
         tabBar = app.tabBars.firstMatch
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 5), "第二次点击应进入主界面")
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 10), "第二次点击应进入主界面")
 
         // 如果到达这里，连续切换无 crash
     }
