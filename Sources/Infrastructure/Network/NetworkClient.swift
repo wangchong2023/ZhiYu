@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 #if DEBUG
 /// 仅用于开发环境的自签名证书信任代理
@@ -155,8 +156,8 @@ public actor NetworkClient {
         request.httpBody = body
 
         let (data, response) = try await activeSession.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw NetworkError.unexpected(L10n.Network.invalidHTTPResponse)
+        guard let httpResponse = response as? HTTPURLResponse, SystemConstants.HTTPStatusCode.isSuccess(httpResponse.statusCode) else {
+            throw NetworkError.invalidHTTPResponse
         }
         let apiResponse: ApiResponse<String> = try decodeResponse(data)
         if apiResponse.isSuccess {
@@ -177,8 +178,13 @@ public actor NetworkClient {
         await waitForTokenRefreshIfNeeded(requiresAuth: requiresAuth, isRetry: isRetry)
         let request = try buildURLRequest(path: path, method: method, body: body, requiresAuth: requiresAuth)
         let (data, response) = try await activeSession.data(for: request)
-        guard response is HTTPURLResponse else {
-            throw NetworkError.unexpected(L10n.Network.invalidHTTPResponse)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidHTTPResponse
+        }
+        // 5xx 服务器错误直接拒绝（不解析 body，防止误判）
+        // 4xx 客户端错误仍解析 body，因为后端可能用业务 code 表示具体错误（如 40101 token 过期）
+        if httpResponse.statusCode >= SystemConstants.HTTPStatusCode.internalServerError {
+            throw NetworkError.serverError(httpResponse.statusCode, "HTTP \(httpResponse.statusCode)")
         }
         let apiResponse: ApiResponse<T> = try decodeResponse(data)
         if apiResponse.isSuccess {
@@ -227,7 +233,7 @@ public actor NetworkClient {
             // swiftlint:disable:next force_cast
             return EmptyData() as! T
         }
-        throw NetworkError.unexpected(L10n.Network.missingDataPayload)
+        throw NetworkError.missingDataPayload
     }
     
     // MARK: - 无感刷新逻辑 (Refresh Token)
@@ -258,7 +264,7 @@ public actor NetworkClient {
             // 拿到长效 Refresh Token
             guard let refreshToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey) else {
                 NotificationCenter.default.post(name: .userAuthExpired, object: nil)
-                return .failure(NetworkError.unauthorized(L10n.Network.missingRefreshToken))
+                return .failure(NetworkError.missingRefreshToken)
             }
             
             // 发起刷新请求
@@ -290,7 +296,7 @@ public actor NetworkClient {
                     try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
                     try? KeychainService.shared.delete(key: AppConstants.Network.refreshTokenKey)
                     NotificationCenter.default.post(name: .userAuthExpired, object: nil)
-                    return .failure(NetworkError.unauthorized(L10n.Network.sessionInvalidated))
+                    return .failure(NetworkError.sessionInvalidated)
                 }
             } catch {
                 return .failure(error)

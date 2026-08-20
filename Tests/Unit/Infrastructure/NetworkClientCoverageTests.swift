@@ -192,8 +192,8 @@ final class NetworkClientCoverageTests: XCTestCase {
 
         do {
             let _: Item = try await NetworkClient.shared.request(path: "/api/v1/test")
-            XCTFail("应抛出 unexpected")
-        } catch NetworkError.unexpected {
+            XCTFail("应抛出 missingDataPayload")
+        } catch NetworkError.missingDataPayload {
             // 预期：payload 缺失
         }
     }
@@ -208,8 +208,8 @@ final class NetworkClientCoverageTests: XCTestCase {
 
         do {
             let _: Item = try await NetworkClient.shared.request(path: "/api/v1/test")
-            XCTFail("应抛出 unexpected")
-        } catch NetworkError.unexpected {
+            XCTFail("应抛出 invalidHTTPResponse")
+        } catch NetworkError.invalidHTTPResponse {
             // 预期
         }
         NetworkClientMockURLProtocol.returnNonHTTPResponse = false
@@ -297,8 +297,8 @@ final class NetworkClientCoverageTests: XCTestCase {
 
         do {
             let _: Item = try await NetworkClient.shared.request(path: "/api/v1/protected", requiresAuth: true)
-            XCTFail("应抛出 unauthorized")
-        } catch NetworkError.unauthorized {
+            XCTFail("应抛出 missingRefreshToken")
+        } catch NetworkError.missingRefreshToken {
             // 预期：无 refresh_token
         }
     }

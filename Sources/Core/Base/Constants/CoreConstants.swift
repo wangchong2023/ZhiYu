@@ -184,12 +184,13 @@ public enum CoreConstants {
     }
 
     // MARK: - 错误域 (Error Domain)
+    /// 使用反向 DNS 格式，遵循 Apple NSError domain 命名惯例
     public enum ErrorDomain {
-        public static let insight = "Insight"
-        public static let ingestStore = "IngestStore"
-        public static let export = "Export"
-        public static let synthesisStore = "SynthesisStore"
-        public static let securityManager = "SecurityManager"
+        public static let insight = "com.zhiyu.app.insight"
+        public static let ingestStore = "com.zhiyu.app.ingestStore"
+        public static let export = "com.zhiyu.app.export"
+        public static let synthesisStore = "com.zhiyu.app.synthesisStore"
+        public static let securityManager = "com.zhiyu.app.securityManager"
     }
 
     // MARK: - 错误码 (Error Code)

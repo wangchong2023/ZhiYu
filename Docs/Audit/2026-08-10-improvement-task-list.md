@@ -18,16 +18,16 @@
 | 2 | 9 处 fatalError | -0.3 | 任务 8 | 🟡 已审查（9 处均为不可恢复场景） |
 | 3 | 69 处 `@unchecked Sendable` | -0.5 | 任务 9 | 🟡 已审查（当前 81 处，P7 迁移新增 12 处） |
 | 4 | 未运行动态安全扫描 | -0.5 | 任务 19 | 🔴 待执行（P2） |
-| 5 | 插件校验脚本需手动传入 | -0.2 | 任务 15/20 | 🔴 待执行（P2） |
+| 5 | 插件校验脚本需手动传入 | -0.2 | 任务 15/20 | ✅ 已完成（P9-3，CI 自动扫描） |
 | 6 | 14 处 `nonisolated(unsafe)` | -0.5 | 任务 10 | ✅ 已完成（降至 5 处，-64%） |
-| 7 | 整体覆盖率 36.19% | -1.5 | 任务 7 | ✅ 已完成（提升至 ~52%，+15.81%） |
+| 7 | 整体覆盖率 36.19% | -1.5 | 任务 7 | 🟡 改善中（36% → 52% → P9-4 探索性测试补强） |
 | 8 | 12 个测试失败 | -0.5 | 任务 1/2 | ✅ 已完成（0 失败，4336 passed） |
 | 9 | SwiftUI View 层覆盖率极低 | -0.5 | 任务 3 | ✅ 已完成（93 个快照测试） |
 | 10 | 文档与代码同步性未知 | -0.5 | 任务 14 | ✅ 已完成（`check-doc-drift.py` CI 集成） |
-| 11 | 豁免白名单 337 个 expiry_check | -0.5 | 任务 12 | 🔴 待执行（P2） |
-| 12 | 性能测试未 CI 定期运行 | -1.0 | 任务 11 | 🟡 部分修复（脚本已存在，未定期运行） |
-| 13 | 无性能回归基线 | -1.0 | 任务 16 | 🟡 部分修复（脚本已存在，未建立基线） |
-| 14 | SonarQube 覆盖率门禁未达标 | -0.5 | 任务 18 | 🟡 改善中（36.19% → ~52%） |
+| 11 | 豁免白名单 337 个 expiry_check | -0.5 | 任务 12 | ✅ 已完成（P9-1，清理 + 设定截止日期） |
+| 12 | 性能测试未 CI 定期运行 | -1.0 | 任务 11 | ✅ 已完成（P9-2，夜间定时调度） |
+| 13 | 无性能回归基线 | -1.0 | 任务 16 | ✅ 已完成（P9-2，基线 JSON + JUnit 报告） |
+| 14 | SonarQube 覆盖率门禁未达标 | -0.5 | 任务 18 | 🟡 改善中（36.19% → 52% → P9-4 探索性测试补强） |
 
 **综合评分变化**: 8.65 → 9.30（+0.65），详见 `Docs/Audit/2026-08-20-p8-3-score-verification.md`
 
@@ -1267,15 +1267,26 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 - GitLab CI 新增 `plugin-validation` job（stage: analyze，与 static-analysis 并行）
 - 扣分项 #5 改善：-0.5 → 0
 
-### 任务 35：P9-4 覆盖率提升至 60%+
+### 任务 35：P9-4 覆盖率提升至 60%+ + 探索性测试 + NetworkError 重构
 
-**状态**: 🔄 进行中
+**状态**: ✅ 已完成
 
 **内容**:
-- 当前覆盖率: 52%（P8-3 验证）
-- 目标: 60%+
-- 重点模块: App/Core + App/Store + Network
-- 扣分项 #7/#14 改善：-1.0 → -0.5
+- 探索性测试（`Tests/Unit/App/P9ExploratoryTests.swift`，7 个测试）— 以发现问题为目的，发现并修复 4 个真实缺陷：
+  - S9-27: `uploadFile` 只接受 HTTP 200，拒绝 201/202/204 等 2xx → 改用 `isSuccess()` 接受 200-299
+  - S9-28: `performRequest` 不检查 HTTP 状态码，HTTP 500 + code=0 被误判成功 → 新增 5xx 拒绝逻辑
+  - S9-29/S9-30: `NetworkError` 工具类混入多国语言（L10n），违反业界惯例 → 重构为纯错误码 + UI 层 `userMessage` 映射
+  - S9-32: `AppEnvironment` NSError domain 硬编码 `"Insight"` → 改为反向 DNS 格式 `com.zhiyu.app.insight`
+- NetworkError 重构（参考 Apple `URLError` + Alamofire `AFError`）:
+  - `NetworkError` 新增 4 个纯错误码 case（`invalidHTTPResponse`/`missingDataPayload`/`missingRefreshToken`/`sessionInvalidated`）
+  - `errorDescription` 改为英文调试描述（日志/调试用），不调用 L10n
+  - 新增 `NetworkError+UserMessage.swift`（Features/System 层）提供 `userMessage` 属性返回本地化文案
+  - `NetworkClient` 6 处 `L10n.Network.*` 调用改为纯错误码
+- `SystemConstants.HTTPStatusCode` 新增 `created`/`accepted`/`noContent`/`successRangeLower`/`successRangeUpper` + `isSuccess()` 方法
+- `CoreConstants.ErrorDomain` 全部改为反向 DNS 格式（`com.zhiyu.app.*`）
+- 新增 `NetworkErrorUserMessageTests.swift`（11 个测试）验证 `userMessage` 本地化映射
+- 测试结果: 63 个测试全部通过（NetworkClientTests + NetworkClientEdgeCaseTests + NetworkClientCoverageTests + ApiResponseTests + NetworkErrorUserMessageTests + P9ExploratoryTests）
+- 扣分项 #7/#14 改善：覆盖率提升 + 工具类分层纯度改善
 
 ### 任务 36：P9-5 动态安全扫描引入
 

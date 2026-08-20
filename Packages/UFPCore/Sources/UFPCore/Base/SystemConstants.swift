@@ -45,6 +45,12 @@ public enum SystemConstants {
     public enum HTTPStatusCode {
         /// 200 OK
         public static let ok: Int = 200
+        /// 201 Created
+        public static let created: Int = 201
+        /// 202 Accepted
+        public static let accepted: Int = 202
+        /// 204 No Content
+        public static let noContent: Int = 204
         /// 401 Unauthorized
         public static let unauthorized: Int = 401
         /// 404 Not Found
@@ -55,6 +61,16 @@ public enum SystemConstants {
         public static let internalServerError: Int = 500
         /// 501 Not Implemented
         public static let notImplemented: Int = 501
+
+        /// 2xx 成功状态码范围下限
+        public static let successRangeLower: Int = 200
+        /// 2xx 成功状态码范围上限
+        public static let successRangeUpper: Int = 299
+
+        /// 判断给定状态码是否属于 2xx 成功范围
+        public static func isSuccess(_ code: Int) -> Bool {
+            code >= successRangeLower && code <= successRangeUpper
+        }
     }
 
     // MARK: - HTTP 请求头 (HTTP Headers)

@@ -166,15 +166,15 @@ final class NetworkClientTests: XCTestCase {
             return (response, nil)
         }
 
-        // 4. 执行请求并期望抛出授权失败错误
+        // 4. 执行请求并期望抛出会话失效错误
         do {
             let _: String = try await NetworkClient.shared.request(
                 path: "/api/v1/test/resource",
                 method: "GET",
                 requiresAuth: true
             )
-            XCTFail("刷新失败应抛出 unauthorized 异常，不应执行成功")
-        } catch NetworkError.unauthorized {
+            XCTFail("刷新失败应抛出 sessionInvalidated 异常，不应执行成功")
+        } catch NetworkError.sessionInvalidated {
             // 预期错误
         } catch {
             XCTFail("抛出了非预期的错误: \(error)")

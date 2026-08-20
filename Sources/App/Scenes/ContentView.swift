@@ -375,7 +375,7 @@ struct DatabaseCorruptedBanner: View {
         isRetrying = true
         Task {
             do {
-                guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { throw NSError(domain: "Insight", code: -1) }
+                guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { throw NSError(domain: CoreConstants.ErrorDomain.insight, code: SystemConstants.ErrorCode.default) }
                 let dbURL = appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
                 
                 // 重新执行 setup 挂载物理沙盒

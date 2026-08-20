@@ -161,7 +161,7 @@ final class AppEnvironment {
 
             // 旧的沙盒独立路径
             guard let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-                throw NSError(domain: "Insight", code: -1)
+                throw NSError(domain: CoreConstants.ErrorDomain.insight, code: SystemConstants.ErrorCode.default)
             }
             let oldDbURL = appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
             

@@ -102,7 +102,7 @@ final class NetworkClientEdgeCaseTests: XCTestCase {
         }
     }
 
-    /// 验证 uploadFile 在 payload 缺失时抛 unexpected
+    /// 验证 uploadFile 在 payload 缺失时抛 missingDataPayload
     func testUploadFileThrowsUnexpectedWhenPayloadMissing() async throws {
         // code==0 但 data 为 null，String 类型无法解码
         let body: [String: Any] = [
@@ -122,8 +122,8 @@ final class NetworkClientEdgeCaseTests: XCTestCase {
                 fileName: "test.png",
                 mimeType: "image/png"
             )
-            XCTFail("应抛出 unexpected")
-        } catch NetworkError.unexpected {
+            XCTFail("应抛出 missingDataPayload")
+        } catch NetworkError.missingDataPayload {
             // 预期：payload 缺失
         }
     }
@@ -206,7 +206,7 @@ final class NetworkClientEdgeCaseTests: XCTestCase {
 
     // MARK: - Token 刷新边界测试
 
-    /// 验证刷新接口 code==0 但 data 为 nil 时退登并抛 unauthorized
+    /// 验证刷新接口 code==0 但 data 为 nil 时退登并抛 sessionInvalidated
     func testTokenRefreshFailsWhenResponseDataNil() async throws {
         struct Item: Codable { let name: String }
         try KeychainService.shared.store(key: AppConstants.Network.refreshTokenKey, value: "valid-refresh")
@@ -219,8 +219,8 @@ final class NetworkClientEdgeCaseTests: XCTestCase {
 
         do {
             let _: Item = try await NetworkClient.shared.request(path: "/api/v1/protected", requiresAuth: true)
-            XCTFail("刷新 data 为 nil 应抛 unauthorized")
-        } catch NetworkError.unauthorized {
+            XCTFail("刷新 data 为 nil 应抛 sessionInvalidated")
+        } catch NetworkError.sessionInvalidated {
             // 预期：退登
         }
     }

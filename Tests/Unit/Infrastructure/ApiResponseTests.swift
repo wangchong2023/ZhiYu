@@ -172,11 +172,50 @@ final class ApiResponseTests: XCTestCase {
             .serverError(500, "msg"),
             .decodeFailed(NSError(domain: "x", code: 1)),
             .httpError(404),
-            .unexpected("msg")
+            .unexpected("msg"),
+            .invalidHTTPResponse,
+            .missingDataPayload,
+            .missingRefreshToken,
+            .sessionInvalidated
         ]
         for error in errors {
             XCTAssertNotNil(error.errorDescription, "所有 NetworkError case 都应有 errorDescription: \(error)")
         }
+    }
+
+    // MARK: - 纯错误码 case 测试（不携带本地化字符串）
+
+    /// 验证 .invalidHTTPResponse 的 errorDescription 为英文调试描述
+    func testNetworkErrorInvalidHTTPResponseDescription() {
+        let error = NetworkError.invalidHTTPResponse
+        XCTAssertEqual(error.errorDescription, "Invalid HTTP response.")
+    }
+
+    /// 验证 .missingDataPayload 的 errorDescription 为英文调试描述
+    func testNetworkErrorMissingDataPayloadDescription() {
+        let error = NetworkError.missingDataPayload
+        XCTAssertEqual(error.errorDescription, "Missing data payload.")
+    }
+
+    /// 验证 .missingRefreshToken 的 errorDescription 为英文调试描述
+    func testNetworkErrorMissingRefreshTokenDescription() {
+        let error = NetworkError.missingRefreshToken
+        XCTAssertEqual(error.errorDescription, "Missing refresh token.")
+    }
+
+    /// 验证 .sessionInvalidated 的 errorDescription 为英文调试描述
+    func testNetworkErrorSessionInvalidatedDescription() {
+        let error = NetworkError.sessionInvalidated
+        XCTAssertEqual(error.errorDescription, "Session invalidated.")
+    }
+
+    /// 验证 NetworkError 不混入 L10n（工具类纯错误码原则）
+    /// errorDescription 应为英文调试描述，不是本地化文案
+    func testNetworkErrorErrorDescriptionIsDebugDescriptionNotLocalized() {
+        let error = NetworkError.invalidHTTPResponse
+        XCTAssertEqual(error.errorDescription, "Invalid HTTP response.")
+        XCTAssertNotEqual(error.errorDescription, L10n.Network.invalidHTTPResponse,
+                          "工具类 errorDescription 应为英文调试描述，不应等于本地化文案")
     }
 
     // MARK: - 辅助方法
