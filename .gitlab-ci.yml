@@ -54,8 +54,8 @@ build-prepare:
     expire_in: 1 hour
 
 # ════════════════════════════════════════════════════════════
-# analyze — 静态代码分析 + Swift 编译告警门禁（22 项并行检查）
-#   含: 架构审计/Python/SwiftLint/Swift 编译告警(-warnings-as-errors)/SBOM 等
+# analyze — 静态代码分析 + Swift 编译告警门禁（39 项并行检查）
+#   含: 架构审计/Python/SwiftLint/Swift 编译告警(-warnings-as-errors)/SBOM/OWASP MASVS 等
 # ════════════════════════════════════════════════════════════
 
 static-analysis:
