@@ -12,7 +12,7 @@ import XCTest
 
 // MARK: - LLMUtils 单元测试
 
-final class LLMUtilsTests: XCTestCase {
+final class LLMUtilsDomainTests: XCTestCase {
 
     // MARK: - stripMarkdown
 
@@ -231,7 +231,7 @@ final class LLMUtilsTests: XCTestCase {
 
 // MARK: - PromptRegistry 单元测试
 
-final class PromptRegistryTests: XCTestCase {
+final class PromptRegistryDomainTests: XCTestCase {
 
     // MARK: - Ingest.summary
 
