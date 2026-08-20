@@ -5,15 +5,16 @@
 # 详细逻辑: Tools/CI/assert-code-pre-push.sh
 # ==============================================================================
 
-# 默认模式：静态检查 + 编译校验
-# 如需完整检查（含测试+覆盖率），设置环境变量: FULL_CHECK=1 git push
-# 如需快速检查（仅静态），设置环境变量: QUICK_CHECK=1 git push
+# 默认模式：--quick（仅安全扫描 + 变更文件 Lint）
+# 设计理由：pre-commit hook 已执行编译校验，pre-push 无需重复编译，避免推送超时
+# 如需完整检查（含编译+测试+覆盖率），设置环境变量: FULL_CHECK=1 git push
+# 如需默认+编译校验，设置环境变量: WITH_BUILD=1 git push
 
-MODE_ARG=""
+MODE_ARG="--quick"
 if [ "${FULL_CHECK:-0}" = "1" ]; then
     MODE_ARG="--full"
-elif [ "${QUICK_CHECK:-0}" = "1" ]; then
-    MODE_ARG="--quick"
+elif [ "${WITH_BUILD:-0}" = "1" ]; then
+    MODE_ARG=""
 fi
 
 exec bash Tools/CI/assert-code-pre-push.sh $MODE_ARG

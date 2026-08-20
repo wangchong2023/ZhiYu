@@ -89,6 +89,57 @@ def _match_pattern(filename: str, patterns: List[str]) -> bool:
     return False
 
 
+def _determine_file_risk(filename: str) -> str:
+    """根据文件名匹配高/中风险模式，返回风险等级。
+
+    :param filename: 仅文件名（不含路径）
+    :return: HIGH / MEDIUM / LOW
+    """
+    if _match_pattern(filename, HIGH_RISK_FILE_PATTERNS):
+        return "HIGH"
+    if _match_pattern(filename, MEDIUM_RISK_FILE_PATTERNS):
+        return "MEDIUM"
+    return "LOW"
+
+
+def _update_live_value_context(line: str, in_live_value: bool) -> bool:
+    """跟踪 DependencyKey.liveValue 上下文状态。
+
+    liveValue 是 computed property，从 ``var liveValue`` 开始到下一个
+    独立 ``}`` 行结束。
+
+    :param line: 去除首尾空白后的行文本
+    :param in_live_value: 当前是否已在 liveValue 块内
+    :return: 更新后的上下文状态
+    """
+    if re.search(r"\bvar\s+liveValue\b", line):
+        return True
+    if in_live_value and line == "}":
+        return False
+    return in_live_value
+
+
+def _scan_line(
+    raw_line: str, line: str, risk: str, in_live_value: bool,
+    rel_path: str, line_no: int, findings: List[Finding]
+) -> None:
+    """扫描单行，检测 @Inject 和 resolve() 安全问题。
+
+    :param raw_line: 原始行文本（含缩进）
+    :param line: 去除首尾空白后的行文本
+    :param risk: 当前文件的风险等级
+    :param in_live_value: 是否在 liveValue 块内
+    :param rel_path: 文件相对路径
+    :param line_no: 行号
+    :param findings: 追加发现到此列表
+    """
+    if line.startswith("//") or "// inject_exempt" in line:
+        return
+    effective_risk = "LOW" if in_live_value else risk
+    _check_non_optional_inject(raw_line, effective_risk, rel_path, line_no, findings)
+    _check_direct_resolve(line, effective_risk, rel_path, line_no, findings)
+
+
 def scan_file(filepath: Path) -> List[Finding]:
     """扫描单个 Swift 源文件，返回该文件内所有 @Inject 安全发现。
 
@@ -110,33 +161,12 @@ def scan_file(filepath: Path) -> List[Finding]:
     except Exception:
         return findings
 
-    risk = "HIGH"
-    if not _match_pattern(filename, HIGH_RISK_FILE_PATTERNS):
-        risk = "MEDIUM" if _match_pattern(filename, MEDIUM_RISK_FILE_PATTERNS) else "LOW"
-
+    risk = _determine_file_risk(filename)
     in_live_value = False
     for i, raw_line in enumerate(content.splitlines(), start=1):
         line = raw_line.strip()
-
-        if line.startswith("//"):
-            continue
-
-        # 豁免标注：// inject_exempt 表示该行 @Inject 已确认 DI 就绪后访问
-        if "// inject_exempt" in line:
-            continue
-
-        # 跟踪 DependencyKey.liveValue 上下文
-        # liveValue 是 computed property，从 `var liveValue` 开始到下一个 `}` 结束
-        if re.search(r"\bvar\s+liveValue\b", line):
-            in_live_value = True
-        if in_live_value and line == "}":
-            in_live_value = False
-
-        # liveValue 内部的 resolve 降级为 LOW（标准 DI 注册模式）
-        effective_risk = "LOW" if in_live_value else risk
-
-        _check_non_optional_inject(raw_line, effective_risk, rel_path, i, findings)
-        _check_direct_resolve(line, effective_risk, rel_path, i, findings)
+        in_live_value = _update_live_value_context(line, in_live_value)
+        _scan_line(raw_line, line, risk, in_live_value, rel_path, i, findings)
 
     return findings
 
