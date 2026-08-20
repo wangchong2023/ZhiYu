@@ -11,6 +11,10 @@ xcodeproj: ZhiYu.xcodeproj
 scheme: ZhiYu
 configuration: Debug
 
+# 自定义 DerivedData 路径（与 Makefile/xcodebuild -derivedDataPath 一致）
+# slather 默认查 ~/Library/Developer/Xcode/DerivedData/，需显式指定
+build_directory: build/DerivedData-ios
+
 # 覆盖率服务: SonarQube XML 格式
 coverage_service: sonarqube_xml
 

@@ -309,7 +309,7 @@ final class ZhiYuDomainTests: XCTestCase {
         XCTAssertEqual(refactorSuggestions.first?.target, "Target Page")
         XCTAssertEqual(refactorSuggestions.first?.reason, "Redundant data")
         XCTAssertEqual(refactorSuggestions.first?.suggestion, "Merge with main")
-        XCTAssertEqual(refactorSuggestions.first?.id, "Target Pagemerge")
+        XCTAssertEqual(refactorSuggestions.first?.id, "Target Page" + CoreConstants.TextSeparator.colon + "merge")
         
         // 测试 parseRefactorSuggestions：非法的 JSON 应该返回空列表
         let badRefactorJson = "[bad_json"
