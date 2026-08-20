@@ -10,14 +10,15 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 系统级触感管理器 (Facade 模式：作为具体平台实现的统一入口)
 @MainActor
 final class HapticFeedback: HapticFeedbackProtocol {
     static let shared = HapticFeedback()
-    
-    @Inject private var service: any HapticFeedbackProtocol
-    
+
+    @Dependency(\.haptic) private var service: any HapticFeedbackProtocol
+
     private init() {}
     
     /// 触发指定模式的触感反馈

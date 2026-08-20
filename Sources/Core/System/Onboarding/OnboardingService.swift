@@ -11,15 +11,16 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 /// 新手引导服务
 /// 负责维护和持久化新手引导的状态，并在需要时触发引导视图
 @MainActor final class OnboardingService: ObservableObject {
     static let shared = OnboardingService()
-    
+
     private let onboardingKey = AppConstants.Keys.Storage.hasCompletedOnboarding
-    /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
-     @Inject private var keyStore: (any KeyStoreProtocol)?
+    /// 键值存储依赖（可选，DI 未就绪时返回 nil）
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
     @Published var hasCompletedOnboarding: Bool {
         didSet {
@@ -30,8 +31,8 @@ import Combine
     @Published var currentStep: OnboardingStep?
     
     init() {
-        // NOTE: init() 内不能使用 @Inject 属性包装器（尚未完成初始化），
-        // 使用 resolveOptional 优雅降级：DI 容器未就绪时默认为 false（未完成引导）。
+        // @Dependency 属性在 init 中无法访问（self 未完成初始化），
+        // 使用 ServiceContainer.shared.resolveOptional 优雅降级
         self.hasCompletedOnboarding = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?
             .bool(forKey: AppConstants.Keys.Storage.hasCompletedOnboarding) ?? false
     }

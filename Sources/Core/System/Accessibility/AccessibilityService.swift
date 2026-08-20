@@ -11,6 +11,7 @@
 import Foundation
 import UFPCore
 import Combine
+import Dependencies
 
 // MARK: - Accessibility Service
 /// Provides accessibility enhancements, VoiceOver support, and dynamic type scaling.
@@ -64,7 +65,7 @@ final class AccessibilityService: ObservableObject {
     /// 主动向 VoiceOver 系统发送语音公告，提升视障用户的即时状态感知能力
     /// - Parameter text: 公告文案
     public static func postAnnouncement(_ text: String) {
-        @Inject var platformService: any AccessibilityServiceProtocol
+        @Dependency(\.accessibility) var platformService: any AccessibilityServiceProtocol
         platformService.postAnnouncement(text)
     }
 }

@@ -29,18 +29,6 @@ inject_deprecated_whitelist:
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
-- file: Sources/Platforms/watchOS/Services/WatchWatchSyncService.swift
-  line: 29
-  type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
-  line: 24
-  type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
 - file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
   line: 72
   type: ServiceContainer.shared
@@ -71,28 +59,11 @@ inject_deprecated_whitelist:
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
-- file: Sources/Core/System/Haptic/HapticFeedback.swift
-  line: 18
-  type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Core/System/Accessibility/AccessibilityService.swift
-  line: 67
-  type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
 - file: Sources/Core/System/Onboarding/OnboardingService.swift
-  line: 22
-  type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Core/System/Onboarding/OnboardingService.swift
-  line: 35
+  line: 36
   type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
+  reason: P11 部分迁移：@Inject→@Dependency，init 中保留 ServiceContainer.shared（@Dependency
+    在 init 中无法访问 self）
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/Core/System/Onboarding/OnboardingPath.swift
@@ -132,9 +103,9 @@ inject_deprecated_whitelist:
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/App/Scenes/ContentView.swift
-  line: 34
+  line: 35
   type: '@Inject'
-  reason: P7 渐进式迁移存量 — DeepLinkService 是 ObservableObject，不适合 @Dependency
+  reason: DeepLinkService 是 ObservableObject，不适合 @Dependency
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/App/Core/ZhiYuApp.swift
@@ -269,18 +240,6 @@ inject_deprecated_whitelist:
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
-- file: Sources/Shared/UIComponents/Badges/VaultBadge.swift
-  line: 20
-  type: '@Inject'
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Domain/Protocols/AppStoreProtocol.swift
-  line: 71
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
 - file: Tests/Unit/Base/ServiceContainerTests.swift
   line: 38
   type: '@Inject'
@@ -293,3 +252,9 @@ inject_deprecated_whitelist:
   reason: 测试 DI 容器本身的功能，保留 @Inject 验证
   added: '2026-08-19'
   expiry_check: P7
+- file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
+  line: 73
+  type: ServiceContainer.shared
+  reason: Task 内局部解析 LLMServiceProtocol，与 L72 AppStore 同一 guard 块
+  added: '2026-08-20'
+  expiry_check: P11

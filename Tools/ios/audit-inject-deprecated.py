@@ -28,7 +28,8 @@ SOURCES_DIR = os.path.join(PROJECT_DIR, "Sources")
 WHITELIST_PATH = os.path.join(PROJECT_DIR, "Config", "exemptions", "inject_deprecated_whitelist.yml")
 
 # 匹配 @Inject 属性包装器（支持 @Inject private/var name: Type）
-INJECT_PATTERN = re.compile(r'^\s*@Inject\b', re.MULTILINE)
+# 注意：使用 [ \t]* 而非 \s*，避免 MULTILINE 模式下跨行匹配空行
+INJECT_PATTERN = re.compile(r'^[ \t]*@Inject\b', re.MULTILINE)
 
 # 匹配 ServiceContainer.shared 调用
 SERVICE_CONTAINER_PATTERN = re.compile(r'\bServiceContainer\.shared\b')
