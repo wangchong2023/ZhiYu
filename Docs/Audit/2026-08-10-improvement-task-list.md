@@ -16,7 +16,7 @@
 |---|--------|------|----------|------|
 | 1 | Domain 层 2 处 `import SwiftUI` | -0.3 | 任务 13/17/22 | 🟡 部分修复（1 处剩余） |
 | 2 | 9 处 fatalError | -0.3 | 任务 8 | ✅ 已审查（13 处全部为合理场景，无需修改） |
-| 3 | 69 处 `@unchecked Sendable` | -0.5 | 任务 9 | 🟡 已审查（当前 81 处，P7 迁移新增 12 处） |
+| 3 | 69 处 `@unchecked Sendable` | -0.5 | 任务 9 | ✅ 已完成（93 处 → 46 处，-50.5%，P9-6） |
 | 4 | 未运行动态安全扫描 | -0.5 | 任务 19 | ✅ 已完成（P9-5，OWASP MASVS L1 静态扫描 CI 集成） |
 | 5 | 插件校验脚本需手动传入 | -0.2 | 任务 15/20 | ✅ 已完成（P9-3，CI 自动扫描） |
 | 6 | 14 处 `nonisolated(unsafe)` | -0.5 | 任务 10 | ✅ 已完成（降至 5 处，-64%） |
@@ -1044,11 +1044,11 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 
 ---
 
-### 任务 28：P6 极高风险迁移 — 5 个极高频单例迁移
+### 任务 28：P6 极高风险迁移 — 5 个极高频单例迁移 ✅
 
 **来源**: AppModel 迁移设计 Section 4.7
 **优先级**: P1
-**状态**: 执行中（P6-1/P6-2 已完成，P6-3/P6-4/P6-5 待执行）
+**状态**: 已完成（P6-1 ~ P6-5 全部完成并合入 main）
 **估时**: 2 周
 **依赖**: 任务 27（P5 高风险迁移）
 **风险**: 极高（引用频次 17-76，迁移期间易引入回归）
@@ -1059,11 +1059,11 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 **迁移对象**（按风险从低到高排序，实际执行顺序）:
 | # | 单例 | Sources/ 引用 | 特殊处理 | 状态 |
 |---|------|---------------|----------|------|
-| P6-1 | `ToastManager` | 42 | Toast 提示，最低风险 | ✅ 已完成，已合入 main |
-| P6-2 | `ThemeManager` | 17 | @AppStorage + static var didMigrate | 🔄 执行中 |
-| P6-3 | `PromptService` | 26 | private init + UserDefaults.standard | ⏳ 待执行 |
-| P6-4 | `TaskCenter` | 76 | AppEventBus 订阅 + activityService | ⏳ 待执行 |
-| P6-5 | `PluginRegistry` | 46 | 3 个子模块 + Task 异步加载 | ⏳ 待执行 |
+| P6-1 | `ToastManager` | 42 | Toast 提示，最低风险 | ✅ 已完成（commit `ebc93d1b`） |
+| P6-2 | `ThemeManager` | 17 | @AppStorage + static var didMigrate | ✅ 已完成（commit `faa5abd5`） |
+| P6-3 | `PromptService` | 26 | private init + UserDefaults.standard | ✅ 已完成（commit `b95b587d`） |
+| P6-4 | `TaskCenter` | 76 | AppEventBus 订阅 + activityService | ✅ 已完成（commit `feac510e`） |
+| P6-5 | `PluginRegistry` | 46 | 3 个子模块 + Task 异步加载 | ✅ 已完成（commit `861ef8a6`） |
 
 **迁移策略**:
 - 每个单例迁移流程：拆分 State + Service + 注册 `@Dependency` → 替换 `.shared` 引用 → 回归测试 → 从白名单删除
@@ -1302,13 +1302,21 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 - JSON 报告输出 `build/owasp-masvs-report.json`
 - 扣分项 #4 改善：-0.5 → 0
 
-### 任务 37：P9-6 @unchecked Sendable 审查
+### 任务 37：P9-6 @unchecked Sendable 审查 ✅
 
-**状态**: ⏳ 待执行
+**状态**: 已完成
 
 **内容**:
-- 81 处 `@unchecked Sendable` 评估可改为 `Sendable`
-- 扣分项 #3 改善：部分修复 → 完全修复
+- 93 处 `@unchecked Sendable` 审查，47 处改为 `Sendable` 或删除冗余声明
+- 22 个 NoOp 占位服务（无存储属性）改为 Sendable
+- 8 个平台服务类（DeviceInfo/Accessibility/FileArchiver/Spotlight）改为 Sendable
+- 7 个 @MainActor 类删除冗余 Sendable 声明（SwiftLint redundant_sendable）
+- 5 个其他无状态类（ApiResponse/WebScraperProcessor/Repository 等）改为 Sendable
+- 6 个 Packages/ 无状态类改为 Sendable
+- 保留 46 处 @unchecked Sendable（有 var 可变属性/Apple 框架协议/持有非 Sendable 类型）
+- 修复 KeychainService retrieve 在 errSecMissingEntitlement 时 keyStore 无 key 应返回 nil
+- KeychainServiceTests 14 个测试全部通过
+- 扣分项 #3 改善：93 处 → 46 处（-50.5%）
 
 ### 任务 38：P9-7 fatalError 审查 ✅
 
