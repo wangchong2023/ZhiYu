@@ -61,13 +61,3 @@ protocol AppStoreProtocol: AnyObject, Observable {
     /// 应用潜在链接建议
     func applyPotentialLink(_ link: PotentialLinkSuggestion) async
 }
-
-// MARK: - SwiftUI Support
-
-#if canImport(SwiftUI)
-import SwiftUI
-
-extension EnvironmentValues {
-    @Entry var appStore: any AppStoreProtocol = ServiceContainer.shared.resolve((any AppStoreProtocol).self)  // inject_exempt: EnvironmentValues 默认值，DI 就绪后访问
-}
-#endif
