@@ -13,7 +13,7 @@
 import AppKit
 
 /// macOS 原生平台特化的 VoiceOver 语音宣告服务实现类。
-public final class MacAccessibilityService: AccessibilityServiceProtocol, @unchecked Sendable {
+public final class MacAccessibilityService: AccessibilityServiceProtocol, Sendable {
     
     /// 初始化 macOS 辅助功能服务。
     public init() {}

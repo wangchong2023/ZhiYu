@@ -15,7 +15,7 @@ import UFPDesignSystem
 import ZhiYuDomain
 import ZhiYuAICore
 
-public final class AIFeatureModule: @unchecked Sendable {
+public final class AIFeatureModule: Sendable {
     public static let shared = AIFeatureModule()
 
     public init() {}

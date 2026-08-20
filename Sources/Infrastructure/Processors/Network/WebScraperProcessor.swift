@@ -44,7 +44,7 @@ extension WebScraperHandler {
 
 /// 网页内容提取处理器：负责从 URL 提取 Markdown 内容
 /// 使用责任链模式 (Chain of Responsibility) 以消除深层嵌套
-final class WebScraperProcessor: @unchecked Sendable {
+final class WebScraperProcessor: Sendable {
 
     enum ScraperError: Error {
         case invalidURL

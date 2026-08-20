@@ -50,7 +50,7 @@ extension DependencyValues {
 }
 
 /// 无操作文件归档服务（测试/预览占位）
-public final class NoOpFileArchiver: FileArchiverProtocol, @unchecked Sendable {
+public final class NoOpFileArchiver: FileArchiverProtocol, Sendable {
     private enum Constants {
         static let noOpReason = "NoOp"
     }

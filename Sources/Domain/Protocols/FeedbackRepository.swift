@@ -34,7 +34,7 @@ public enum FeedbackRepositoryKey: DependencyKey {
 }
 
 /// 无操作反馈仓储（测试/预览占位，DI 未就绪时降级）
-public final class NoOpFeedbackRepository: FeedbackRepository, @unchecked Sendable {
+public final class NoOpFeedbackRepository: FeedbackRepository, Sendable {
     public init() {}
     public func save(_ entry: FeedbackEntry) async throws {}
     public func fetchAll(limit: Int) async throws -> [FeedbackEntry] { [] }

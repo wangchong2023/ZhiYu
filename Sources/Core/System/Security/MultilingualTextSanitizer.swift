@@ -12,7 +12,7 @@
 import Foundation
 
 /// 全球 9 大语言抗变异与洗词预处理器
-public final class MultilingualTextSanitizer: @unchecked Sendable {
+public final class MultilingualTextSanitizer: Sendable {
     public static let shared = MultilingualTextSanitizer()
 
     /// 英文/拉丁语系 Leetspeak 替代映射字典

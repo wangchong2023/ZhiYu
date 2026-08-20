@@ -46,7 +46,7 @@ extension DependencyValues {
 }
 
 /// 无操作导出服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpExportService: ExportServiceProtocol, @unchecked Sendable {
+public final class NoOpExportService: ExportServiceProtocol, Sendable {
     public init() {}
     public func exportToPDF(markdown: String, fileName: String) async throws -> URL {
         throw ExportError.engineNotReady

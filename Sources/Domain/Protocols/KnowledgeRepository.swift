@@ -82,7 +82,7 @@ public enum KnowledgeRepositoryKey: DependencyKey {
 }
 
 /// 无操作知识库仓储（测试/预览占位，DI 未就绪时降级）
-public final class NoOpKnowledgeRepository: KnowledgeRepository, @unchecked Sendable {
+public final class NoOpKnowledgeRepository: KnowledgeRepository, Sendable {
     public init() {}
     public func fetchAll() async throws -> [KnowledgePage] { [] }
     public func fetch(id: UUID) async throws -> KnowledgePage? { nil }

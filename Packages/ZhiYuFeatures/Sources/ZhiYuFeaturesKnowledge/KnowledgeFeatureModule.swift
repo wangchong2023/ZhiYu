@@ -14,7 +14,7 @@ import UFPCore
 import UFPDesignSystem
 import ZhiYuDomain
 
-public final class KnowledgeFeatureModule: @unchecked Sendable {
+public final class KnowledgeFeatureModule: Sendable {
     public static let shared = KnowledgeFeatureModule()
 
     public init() {}

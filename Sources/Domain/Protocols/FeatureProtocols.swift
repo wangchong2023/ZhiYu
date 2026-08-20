@@ -146,7 +146,7 @@ public enum VaultServiceKey: DependencyKey {
 
 /// 无操作笔记本服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpVaultService: VaultServiceProtocol, @unchecked Sendable {
+final class NoOpVaultService: VaultServiceProtocol {
     var vaults: [Vault] { [] }
     var selectedVaultID: UUID? { nil }
     var currentVault: Vault? { nil }
@@ -199,7 +199,7 @@ enum ChatServiceKey: DependencyKey {
 
 /// 无操作聊天服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpChatService: ChatServiceProtocol, @unchecked Sendable {
+final class NoOpChatService: ChatServiceProtocol {
     init() {}
     func loadHistory() -> [ChatMessage] { [] }
     func clearHistory() {}

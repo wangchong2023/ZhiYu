@@ -93,6 +93,8 @@ class KeychainService: @unchecked Sendable {
                 if let val = runOnMainSync({ keyStore?.string(forKey: key) }) {
                     return val
                 }
+                // keyStore 中也不存在该 key，降级返回 nil（表示"不存在"）
+                return nil
                 #endif
             }
             throw KeychainError.retrieveFailed(status)

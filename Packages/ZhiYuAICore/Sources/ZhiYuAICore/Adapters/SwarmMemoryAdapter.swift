@@ -13,7 +13,7 @@ import Foundation
 import UFPCore
 import ZhiYuDomain
 
-public final class SwarmMemoryAdapter: MemoryEngineProtocol, @unchecked Sendable {
+public final class SwarmMemoryAdapter: MemoryEngineProtocol, Sendable {
     public let engineType: MemoryEngineType = .openSourceAdapter
 
     public init() {}

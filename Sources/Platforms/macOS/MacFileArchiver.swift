@@ -12,7 +12,7 @@
 import Foundation
 
 /// macOS 原生归档实现
-final class MacFileArchiver: FileArchiverProtocol, @unchecked Sendable {
+final class MacFileArchiver: FileArchiverProtocol, Sendable {
 
     /// zip
     func zip(directory sourceDir: URL, to destinationURL: URL) async throws {

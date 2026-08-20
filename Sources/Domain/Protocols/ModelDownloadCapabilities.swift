@@ -70,7 +70,7 @@ public enum ModelDownloadKey: DependencyKey {
 }
 
 /// 无操作模型下载服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpModelDownload: ModelDownloadCapabilities, @unchecked Sendable {
+public final class NoOpModelDownload: ModelDownloadCapabilities, Sendable {
     public init() {}
     public func startDownload(modelId: String, remoteURL: URL) async throws {}
     public func pauseDownload(modelId: String) async throws {}

@@ -99,7 +99,7 @@ public enum SpeechServiceKey: DependencyKey {
 
 /// 无操作语音服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-public final class NoOpSpeechService: SpeechServiceProtocol, @unchecked Sendable {
+public final class NoOpSpeechService: SpeechServiceProtocol {
     private enum Constants {
         static let defaultLanguage = "zh-CN"
     }

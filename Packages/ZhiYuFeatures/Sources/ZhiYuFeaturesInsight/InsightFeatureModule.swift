@@ -14,7 +14,7 @@ import UFPCore
 import UFPDesignSystem
 import ZhiYuDomain
 
-public final class InsightFeatureModule: @unchecked Sendable {
+public final class InsightFeatureModule: Sendable {
     public static let shared = InsightFeatureModule()
 
     public init() {}

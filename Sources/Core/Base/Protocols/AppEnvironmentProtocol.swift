@@ -83,7 +83,7 @@ extension DependencyValues {
 
 /// 无操作平台环境（测试/预览占位）
 @MainActor
-public final class NoOpAppEnvironment: AppEnvironmentProtocol, @unchecked Sendable {
+public final class NoOpAppEnvironment: AppEnvironmentProtocol {
     public init() {}
     public var screenClass: ScreenClass { .compact }
     public var interactionStyle: InteractionStyle { .touch }

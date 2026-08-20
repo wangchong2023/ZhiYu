@@ -13,7 +13,7 @@ import Foundation
 import UFPCore
 import ZhiYuDomain
 
-public final class NativeMemoryEngine: MemoryEngineProtocol, @unchecked Sendable {
+public final class NativeMemoryEngine: MemoryEngineProtocol, Sendable {
     public let engineType: MemoryEngineType = .native
 
     public init() {}

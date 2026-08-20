@@ -254,7 +254,7 @@ enum LLMServiceKey: DependencyKey {
 
 /// 无操作 LLM 对话服务
 @MainActor
-final class NoOpLLMChatService: LLMChatServiceProtocol, @unchecked Sendable {
+final class NoOpLLMChatService: LLMChatServiceProtocol {
     var isEnabled: Bool { false }
     init() {}
     func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
@@ -268,7 +268,7 @@ final class NoOpLLMChatService: LLMChatServiceProtocol, @unchecked Sendable {
 
 /// 无操作 LLM 知识维护服务
 @MainActor
-final class NoOpLLMKnowledgeService: LLMKnowledgeServiceProtocol, @unchecked Sendable {
+final class NoOpLLMKnowledgeService: LLMKnowledgeServiceProtocol {
     init() {}
     func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
         SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: PageType.concept.rawValue, relatedTitles: [], summary: "")
@@ -280,7 +280,7 @@ final class NoOpLLMKnowledgeService: LLMKnowledgeServiceProtocol, @unchecked Sen
 
 /// 无操作 LLM 检索增强服务
 @MainActor
-final class NoOpLLMRetrievalService: LLMRetrievalServiceProtocol, @unchecked Sendable {
+final class NoOpLLMRetrievalService: LLMRetrievalServiceProtocol {
     init() {}
     func rewriteQuery(_ query: String) async -> String { query }
     func expandQuery(_ query: String) async -> [String] { [] }

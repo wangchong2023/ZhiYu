@@ -13,7 +13,7 @@
 import UIKit
 
 /// iOS 与 macOS Catalyst 设备平台特化的 VoiceOver 语音宣告服务实现类。
-public final class iOSAccessibilityService: AccessibilityServiceProtocol, @unchecked Sendable {
+public final class iOSAccessibilityService: AccessibilityServiceProtocol, Sendable {
     
     /// 初始化 iOS 辅助功能服务。
     public init() {}

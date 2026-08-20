@@ -13,7 +13,7 @@
 import Foundation
 
 /// watchOS 表盘平台特化的 VoiceOver 语音宣告服务（目前做静默空实现）。
-public final class WatchAccessibilityService: AccessibilityServiceProtocol, @unchecked Sendable {
+public final class WatchAccessibilityService: AccessibilityServiceProtocol, Sendable {
     
     /// 初始化 watchOS 辅助功能服务。
     public init() {}

@@ -12,7 +12,7 @@ import Foundation
 import UFPStorage
 
 /// [Infra] 向量存储实现
-final class VectorDataRepository: VectorRepository, @unchecked Sendable {
+final class VectorDataRepository: VectorRepository, Sendable {
     private var dbWriter: any DatabaseWriter {
         get async throws {
             // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁

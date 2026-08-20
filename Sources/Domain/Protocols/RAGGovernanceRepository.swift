@@ -195,7 +195,7 @@ public enum RAGGovernanceRepositoryKey: DependencyKey {
 }
 
 /// 无操作 RAG 治理仓储（测试/预览占位，DI 未就绪时降级）
-public final class NoOpRAGGovernanceRepository: RAGGovernanceRepository, @unchecked Sendable {
+public final class NoOpRAGGovernanceRepository: RAGGovernanceRepository, Sendable {
     public init() {}
     public func logTokenUsage(model: String, promptTokens: Int, completionTokens: Int) async throws {}
     public func fetchTokenStats(days: Int) async throws -> TokenStats {

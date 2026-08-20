@@ -38,7 +38,7 @@ public enum DeviceInfoKey: DependencyKey {
 }
 
 /// 无操作设备信息服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpDeviceInfo: DeviceInfoProtocol, @unchecked Sendable {
+public final class NoOpDeviceInfo: DeviceInfoProtocol, Sendable {
     public init() {}
     public var systemVersion: String { "" }
     public var deviceModel: String { "" }

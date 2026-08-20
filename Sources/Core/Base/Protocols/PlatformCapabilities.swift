@@ -69,7 +69,7 @@ public enum BiometricAuthProviderKey: DependencyKey {
 
 /// 无操作生物识别服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-public final class NoOpBiometricAuthProvider: BiometricAuthProviderProtocol, @unchecked Sendable {
+public final class NoOpBiometricAuthProvider: BiometricAuthProviderProtocol {
     public init() {}
     public var authenticationPolicy: LAPolicy { .deviceOwnerAuthenticationWithBiometrics }
     public func canEvaluatePolicy(context: LAContext) -> Bool { false }

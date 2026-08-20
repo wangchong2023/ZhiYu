@@ -12,7 +12,7 @@
 import Foundation
 import ZhiYuAICore
 
-public final class MockAICore: @unchecked Sendable {
+public final class MockAICore: Sendable {
     public static let shared = MockAICore()
     public init() {}
 }

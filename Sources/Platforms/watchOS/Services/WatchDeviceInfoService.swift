@@ -12,7 +12,7 @@
 import WatchKit
 
 /// watchOS 设备信息服务
-final class WatchDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
+final class WatchDeviceInfoService: DeviceInfoProtocol, Sendable {
     var systemVersion: String {
         WKInterfaceDevice.current().systemVersion
     }

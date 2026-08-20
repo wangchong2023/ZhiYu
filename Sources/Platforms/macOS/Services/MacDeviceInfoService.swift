@@ -13,7 +13,7 @@ import AppKit
 import Foundation
 
 /// macOS 设备信息服务
-final class MacDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
+final class MacDeviceInfoService: DeviceInfoProtocol, Sendable {
     var systemVersion: String {
         let osv = ProcessInfo.processInfo.operatingSystemVersion
         return "\(osv.majorVersion).\(osv.minorVersion).\(osv.patchVersion)"

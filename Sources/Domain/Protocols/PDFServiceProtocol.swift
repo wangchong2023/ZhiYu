@@ -69,7 +69,7 @@ extension DependencyValues {
 
 /// 无操作 PDF 服务（测试/预览占位）
 @MainActor
-public final class NoOpPDFService: PDFServiceProtocol, @unchecked Sendable {
+public final class NoOpPDFService: PDFServiceProtocol {
     public init() {}
     public func savePDF(data: Data, fileName: String) async -> URL? { nil }
     public func deletePDF(fileName: String) async -> Bool { false }

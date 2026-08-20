@@ -418,7 +418,7 @@ extension DependencyValues {
 }
 
 /// 无操作日志服务（测试/预览占位）
-public final class NoOpLogger: LoggerProtocol, @unchecked Sendable {
+public final class NoOpLogger: LoggerProtocol, Sendable {
     public init() {}
     public func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?, startTime: Date?, endTime: Date?, module: String?, status: LogStatus?, failureReason: String?) {}
     public func debug(_ message: String, file: String, function: String, line: Int) {}

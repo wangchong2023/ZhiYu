@@ -13,7 +13,7 @@ import UIKit
 import UFPCore
 
 /// iOS 设备信息服务
-final class iOSDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
+final class iOSDeviceInfoService: DeviceInfoProtocol, Sendable {
     var systemVersion: String {
         runOnMainSync { UIDevice.current.systemVersion }
     }

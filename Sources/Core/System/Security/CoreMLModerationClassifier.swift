@@ -30,7 +30,7 @@ public struct CoreMLModerationResult: Sendable {
 }
 
 /// 端侧 CoreML 内容违规与防越狱分类器
-public final class CoreMLModerationClassifier: @unchecked Sendable {
+public final class CoreMLModerationClassifier: Sendable {
     public static let shared = CoreMLModerationClassifier()
 
     private init() {}

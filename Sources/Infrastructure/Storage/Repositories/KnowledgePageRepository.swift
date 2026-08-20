@@ -14,7 +14,7 @@ import UFPStorage
 // MARK: - 核心存储 (KnowledgePageRepository)
 
 /// 知识库 页面存储：封装基于 GRDB 的高性能 CRUD 操作。
-final class KnowledgePageRepository: KnowledgeRepository, @unchecked Sendable {
+final class KnowledgePageRepository: KnowledgeRepository, Sendable {
     private var dbWriter: any DatabaseWriter {
         get async throws {
             // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁

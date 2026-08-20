@@ -39,7 +39,7 @@ public enum IngestServiceKey: DependencyKey {
 }
 
 /// 无操作导入服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpIngestService: IngestServiceProtocol, @unchecked Sendable {
+public final class NoOpIngestService: IngestServiceProtocol, Sendable {
     public init() {}
     public func ingestFolder(at url: URL, type: PageType, pageStore: any AnyPageStore) async -> [KnowledgePage] { [] }
 }

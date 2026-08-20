@@ -70,7 +70,7 @@ public enum EmbeddingProviderKey: DependencyKey {
 }
 
 /// 无操作嵌入向量化服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpEmbeddingProvider: EmbeddingProvider, @unchecked Sendable {
+public final class NoOpEmbeddingProvider: EmbeddingProvider, Sendable {
     public init() {}
     public func getAllEmbeddings() async -> [UUID: [Float]] { [:] }
     public func syncEmbeddings(pages: [KnowledgePage]) async {}

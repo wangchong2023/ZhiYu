@@ -14,7 +14,7 @@ import CoreSpotlight
 import UniformTypeIdentifiers
 
 /// iOS/macOS Spotlight 索引实现
-final class iOSSpotlightIndexer: SearchIndexerProtocol, @unchecked Sendable {
+final class iOSSpotlightIndexer: SearchIndexerProtocol, Sendable {
 
     /// 索引Page
     /// - Parameter page: page

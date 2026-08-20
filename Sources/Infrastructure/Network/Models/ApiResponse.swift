@@ -12,7 +12,7 @@
 import Foundation
 
 /// 后端全局统一 JSON 响应封装
-public struct ApiResponse<T: Codable>: Codable, @unchecked Sendable {
+public struct ApiResponse<T: Codable>: Codable, Sendable {
     /// 业务状态码。0 表示操作成功；非 0 表示业务异常
     public let code: Int
     /// 友好可读的错误说明或状态描述

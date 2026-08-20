@@ -12,7 +12,7 @@
 import Foundation
 import os
 
-public final class MinimalLogger: @unchecked Sendable {
+public final class MinimalLogger: Sendable {
     public static let shared = MinimalLogger()
 
     private init() {}

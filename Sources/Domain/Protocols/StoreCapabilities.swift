@@ -246,7 +246,7 @@ public enum AnyPageStoreCapabilitiesKey: DependencyKey {
 }
 
 /// 无操作页面存储能力服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, @unchecked Sendable {
+public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, Sendable {
     public init() {}
     public var embeddingProvider: any EmbeddingProvider { NoOpEmbeddingProvider() }
     public var pages: [KnowledgePage] { get async { [] } }

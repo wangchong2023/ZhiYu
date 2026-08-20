@@ -38,7 +38,7 @@ public enum ImportFileStoreKey: DependencyKey {
 }
 
 /// 无操作导入文件存储（测试/预览占位，DI 未就绪时降级）
-public final class NoOpImportFileStore: ImportFileStore, @unchecked Sendable {
+public final class NoOpImportFileStore: ImportFileStore, Sendable {
     public init() {}
     public func saveContent(_ content: String, category: ImportCategory, ext: String) -> String? { nil }
     public func saveData(_ data: Data, category: ImportCategory, ext: String) -> String? { nil }

@@ -12,7 +12,7 @@
 import Foundation
 import UFPStorage
 
-public final class MockStorage: @unchecked Sendable {
+public final class MockStorage: Sendable {
     public static let shared = MockStorage()
     public init() {}
 }

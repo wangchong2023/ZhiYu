@@ -38,7 +38,7 @@ public enum ImportRecordRepositoryKey: DependencyKey {
 }
 
 /// 无操作导入记录仓储（测试/预览占位，DI 未就绪时降级）
-public final class NoOpImportRecordRepository: ImportRecordRepository, @unchecked Sendable {
+public final class NoOpImportRecordRepository: ImportRecordRepository, Sendable {
     public init() {}
     public func save(_ record: ImportRecord) async throws {}
     public func fetchAll(category: String?, limit: Int) async throws -> [ImportRecord] { [] }

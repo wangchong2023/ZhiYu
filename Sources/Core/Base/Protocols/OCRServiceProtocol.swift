@@ -40,7 +40,7 @@ extension DependencyValues {
 }
 
 /// 无操作 OCR 服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpOCRService: OCRServiceProtocol, @unchecked Sendable {
+public final class NoOpOCRService: OCRServiceProtocol, Sendable {
     public init() {}
     public func recognizeText(from image: AppImage) async throws -> String { "" }
 }

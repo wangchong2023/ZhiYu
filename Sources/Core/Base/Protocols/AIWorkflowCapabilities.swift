@@ -15,7 +15,7 @@ import Foundation
 /// 本协议定义了领域层可以直接调用的 AI 工作流关键操作，
 /// 通过协议抽象避免领域层（Domain）直接引用具体的业务层 Store（Features），保持架构纯净与单向依赖。
 @MainActor
-public protocol AIWorkflowCapabilities: AnyObject, Sendable {
+public protocol AIWorkflowCapabilities: AnyObject {
     
     /// 移除特定的 AI 重构建议
     ///
@@ -44,7 +44,7 @@ public enum AIWorkflowCapabilitiesKey: DependencyKey {
 
 /// 无操作 AIWorkflowCapabilities 服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-public final class NoOpAIWorkflowCapabilities: AIWorkflowCapabilities, @unchecked Sendable {
+public final class NoOpAIWorkflowCapabilities: AIWorkflowCapabilities {
     public init() {}
     public func removeRefactorSuggestion(id: String) {}
 }

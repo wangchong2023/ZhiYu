@@ -49,7 +49,7 @@ public enum HapticFeedbackKey: DependencyKey {
 
 /// 无操作触感反馈服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-public final class NoOpHapticFeedback: HapticFeedbackProtocol, @unchecked Sendable {
+public final class NoOpHapticFeedback: HapticFeedbackProtocol {
     public init() {}
     public func trigger(_ pattern: HapticPattern) {}
 }
