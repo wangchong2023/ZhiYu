@@ -28,3 +28,9 @@
 | A-9 | `SecureEnclaveCryptoService.swift:149-157` `getOrCreateHKDFSalt` 中 Keychain retrieve 返回 nil 时无法区分"盐不存在"与"临时错误"，可能生成新盐覆盖旧盐导致存量密文不可解密 | P2 | KeychainService.retrieve 应区分 errSecItemNotFound 和其他错误 | 否 |
 | A-10 | `SecureEnclaveCryptoService.swift:201-203` `getOrCreateHardwarePrivateKey` token 损坏时仅记录日志并静默重建，旧密文将永远无法解密，调用方不知情 | P2 | 抛出特定错误或通过通知机制告知调用方密钥已更换 | 否 |
 
+### Task 3：Core/Security 6 组件
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-11 | `SecurityManager.swift:226-239` `verifyIntegrity` 无签名记录时在模拟器 DEBUG 下直接返回 `true`（放行），不检查文件是否存在。对不存在的文件也返回 `true`，可能掩盖文件丢失/被删除的安全事件 | P2 | 在无签名放行路径前增加 `FileManager.default.fileExists(atPath:)` 检查，文件不存在时应 fail-closed | 否 |
+
