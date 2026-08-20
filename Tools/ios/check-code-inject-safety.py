@@ -95,6 +95,9 @@ def scan_file(filepath: Path) -> List[Finding]:
     对文件按风险等级分类，检测非可选 ``@Inject`` 属性及直接
     调用 ``resolve()`` 而不使用 ``resolveOptional()`` 的行。
 
+    ``DependencyKey.liveValue`` 内部的 ``resolve()`` 调用属于标准 DI 注册
+    模式（在 DI 容器就绪后才被解析），自动降级为 LOW 风险。
+
     :param filepath: Swift 源文件绝对路径
     :return: 该文件中发现的问题列表
     """
@@ -111,6 +114,7 @@ def scan_file(filepath: Path) -> List[Finding]:
     if not _match_pattern(filename, HIGH_RISK_FILE_PATTERNS):
         risk = "MEDIUM" if _match_pattern(filename, MEDIUM_RISK_FILE_PATTERNS) else "LOW"
 
+    in_live_value = False
     for i, raw_line in enumerate(content.splitlines(), start=1):
         line = raw_line.strip()
 
@@ -121,8 +125,18 @@ def scan_file(filepath: Path) -> List[Finding]:
         if "// inject_exempt" in line:
             continue
 
-        _check_non_optional_inject(raw_line, risk, rel_path, i, findings)
-        _check_direct_resolve(line, risk, rel_path, i, findings)
+        # 跟踪 DependencyKey.liveValue 上下文
+        # liveValue 是 computed property，从 `var liveValue` 开始到下一个 `}` 结束
+        if re.search(r"\bvar\s+liveValue\b", line):
+            in_live_value = True
+        if in_live_value and line == "}":
+            in_live_value = False
+
+        # liveValue 内部的 resolve 降级为 LOW（标准 DI 注册模式）
+        effective_risk = "LOW" if in_live_value else risk
+
+        _check_non_optional_inject(raw_line, effective_risk, rel_path, i, findings)
+        _check_direct_resolve(line, effective_risk, rel_path, i, findings)
 
     return findings
 
