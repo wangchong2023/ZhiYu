@@ -1493,5 +1493,191 @@ planned_test_classes:
   expiry_check: false
   category:
   - doc-drift
+- symbol: ActivityState
+  reason: 设计文档示例符号（AppModel 迁移设计，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AppState
+  reason: 设计文档示例符号（AppModel 迁移设计，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DependencyRegistrar
+  reason: 设计文档示例符号（模块化注册器概念，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: MedalState
+  reason: 设计文档示例符号（AppModel 迁移设计，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: StoreKitState
+  reason: 设计文档示例符号（AppModel 迁移设计，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TooltipState
+  reason: 设计文档示例符号（AppModel 迁移设计，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XxxService
+  reason: 设计文档占位符符号（示例命名，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XxxState
+  reason: 设计文档占位符符号（示例命名，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NavigateAction
+  reason: 架构文档概念符号（4+1 视图，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TagStoreProtocol
+  reason: 已重命名为 TagStore（审计文档历史引用）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: BytesPerKB
+  reason: UFPCore 常量（审计文档引用，符号在 UFPCore 包中）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: EXC_BREAKPOINT
+  reason: Mach 异常常量（审计文档引用，系统符号）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Processors
+  reason: 模块目录名（审计文档引用，非 Swift 类型）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: EXEMPT_IDENTICAL_VALUES
+  reason: 审计脚本内部常量（审计文档引用，非生产代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: EXEMPT_STRINGS
+  reason: 审计脚本内部常量（审计文档引用，非生产代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: IGNORE_PATTERNS
+  reason: 审计脚本内部常量（审计文档引用，非生产代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TokenManager
+  reason: Auth 服务 Token 管理器（Sources/Features/System/Auth/Service/TokenManager.swift）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AFError
+  reason: Alamofire 错误类型（审计文档引用，第三方库符号）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DependencyKey
+  reason: swift-dependencies 协议（Sources/Core/Dependencies/Register.swift）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Features
+  reason: 架构层目录名（审计文档引用，非 Swift 类型）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ControllerLogAspect
+  reason: 设计文档示例符号（AOP 概念，非真实代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: SIGTRAP
+  reason: POSIX 信号常量（审计文档引用，系统符号）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TypeError
+  reason: 通用错误类型名（审计文档引用，非项目代码符号）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AnyRegexOutput
+  reason: Swift Regex 类型（审计文档引用，SDK 符号）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: COMPAT_LAYER_MAX_LINES
+  reason: 审计脚本内部常量（审计文档引用，非生产代码）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PluginPermission
+  reason: 插件权限类型（Sources/Infrastructure/Plugins/PluginConstants.swift）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DatabaseQueue
+  reason: GRDB 数据库队列类型（Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: IngestUITests
+  reason: UI 测试 target 名称（审计文档引用，非 Swift 类型）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: LLMAdapters
+  reason: 模块目录名（审计文档引用，非 Swift 类型）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTAssertNotNil
+  reason: XCTest 框架 API（审计文档引用，非项目代码符号）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XlsxStringsProcessor
+  reason: 处理器类名（审计文档引用，可能已重命名）
+  added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
 business_magic_exempt: []
 ufpcore_pure_exempt: []
