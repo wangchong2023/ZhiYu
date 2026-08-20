@@ -224,6 +224,8 @@ public struct AppConstants {
         public static let stressTestDefaultCount: Int = 50000
         /// 压力测试进度日志步长
         public static let stressTestProgressStep: Int = 5000
+        /// 压力测试动态步长除数（实际步长 = max(count/除数, 1)）
+        public static let stressTestProgressDivisor: Int = 10
         /// 压力测试单次操作慢阈值（秒）
         public static let stressTestSlowOperationThreshold: TimeInterval = 0.8
     }

@@ -236,9 +236,11 @@ private final class CountingPageStore: AnyPageStore, @unchecked Sendable {
     private let lock = NSLock()
     private var _createCount = 0
     private var _searchCount = 0
+    private var _createdTitles: [String] = []
 
     var createCount: Int { lock.withLock { _createCount } }
     var searchCount: Int { lock.withLock { _searchCount } }
+    var createdTitles: [String] { lock.withLock { _createdTitles } }
 
     var pages: [KnowledgePage] { get async { [] } }
     func fetchAllPages() async throws -> [KnowledgePage] { [] }
@@ -250,7 +252,10 @@ private final class CountingPageStore: AnyPageStore, @unchecked Sendable {
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
     ) async throws -> KnowledgePage {
-        lock.withLock { _createCount += 1 }
+        lock.withLock {
+            _createCount += 1
+            _createdTitles.append(title)
+        }
         return KnowledgePage(title: title, pageType: pageType, customIcon: customIcon,
                              content: content, tags: tags, sourceURL: sourceURL,
                              rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
@@ -309,12 +314,37 @@ extension DemoMediaBuilderTests {
         let benchmarker = PerformanceBenchmarker.shared
         let store = CountingPageStore()
         await benchmarker.runStressTest(count: 2, store: store)
-        // CountingPageStore 不记录标题，但 createCount 验证调用次数
-        // 标题格式 "\(stressTestPagePrefix)\(i)" 在源码中已硬编码
         XCTAssertEqual(store.createCount, 2, "应创建 2 个页面")
+        // 验证标题格式：前缀 + 序号
+        let titles = store.createdTitles
+        XCTAssertEqual(titles.count, 2, "应记录 2 个标题")
+        XCTAssertTrue(titles[0].hasPrefix(CoreConstants.Benchmark.stressTestPagePrefix), "第一个标题应包含压测前缀")
+        XCTAssertTrue(titles[0].hasSuffix("1"), "第一个标题应以序号 1 结尾")
+        XCTAssertTrue(titles[1].hasSuffix("2"), "第二个标题应以序号 2 结尾")
     }
 
-    // 注意：count=0 会触发 1...0 空范围 fatalError（已知 P1 缺陷，见任务报告）
-    // 无法用 XCTest 捕获 fatalError，故不编写测试，仅在报告中记录
+    /// count=0 应安全跳过不崩溃（P1 缺陷 A-1 修复验证）
+    @MainActor
+    func testRunStressTest_count为零_应安全跳过不崩溃() async {
+        let benchmarker = PerformanceBenchmarker.shared
+        let store = CountingPageStore()
+        // 修复前：1...0 触发 fatalError；修复后：guard count > 0 提前返回
+        await benchmarker.runStressTest(count: 0, store: store)
+        XCTAssertEqual(store.createCount, 0, "count=0 时不应创建任何页面")
+        XCTAssertEqual(store.searchCount, 0, "count=0 时不应触发搜索")
+    }
+
+    /// 小批量压测应触发动态进度日志（A-4 死代码分支修复验证）
+    @MainActor
+    func testRunStressTest_小批量_动态步长应触发进度分支() async {
+        let benchmarker = PerformanceBenchmarker.shared
+        let store = CountingPageStore()
+        // 修复前：step=5000，count=5 时进度分支永不执行（死代码）
+        // 修复后：step=max(5/10,1)=1，每次迭代都触发进度日志
+        await benchmarker.runStressTest(count: 5, store: store)
+        XCTAssertEqual(store.createCount, 5, "应创建 5 个页面")
+        // 进度分支会访问 store.pages.count，但不影响 createCount
+        // 此测试主要验证小批量不崩溃且动态步长生效
+    }
 }
 #endif

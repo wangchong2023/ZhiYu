@@ -20,11 +20,19 @@ final class PerformanceBenchmarker {
     func runStressTest(count: Int = AppConstants.Performance.stressTestDefaultCount, store: any AnyPageStore) async {
         Logger.shared.info(" [Benchmark]  \(count) ...")
 
+        guard count > 0 else {
+            Logger.shared.warning(" [Benchmark] count 为 0，跳过压测")
+            return
+        }
+
         let startTime = CFAbsoluteTimeGetCurrent()
+
+        // 动态步长：保证小批量压测也有进度反馈，避免死代码分支
+        let progressStep = max(count / AppConstants.Performance.stressTestProgressDivisor, 1)
 
         // 批量创建模拟数据
         for i in 1...count {
-            if i % AppConstants.Performance.stressTestProgressStep == 0 {
+            if i % progressStep == 0 {
                 let currentTotal = await store.pages.count
                 Logger.shared.info(" [Benchmark]  \(i) ...  DB : \(currentTotal)")
             }
@@ -45,7 +53,9 @@ final class PerformanceBenchmarker {
         let duration = CFAbsoluteTimeGetCurrent() - startTime
         Logger.shared.info(" [Benchmark] ")
         Logger.shared.info(" : \(String(format: "%.2f", duration))s")
-        Logger.shared.info(" : \(String(format: "%.2f", Double(count)/duration)) docs/s")
+        // 防止 duration≈0 时出现 inf 日志
+        let throughput = duration > 0 ? Double(count) / duration : 0
+        Logger.shared.info(" : \(String(format: "%.2f", throughput)) docs/s")
 
         // 触发一次全量搜索测试
         await measureSearchPerformance(store: store)
