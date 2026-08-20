@@ -112,6 +112,7 @@
 		0AF73674E4758AD5ABD96BC7 /* VaultInsightsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B8A06619B5AECD1BFBF4C7 /* VaultInsightsPanel.swift */; };
 		0B47FF42484114DB9CAD6CD1 /* AppleAuthStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D065D40FCCF7D174C6CF7E /* AppleAuthStrategyTests.swift */; };
 		0B55821FE89D1833F46EE0A3 /* L10n+Knowledge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342E4984E7BE18961CA140B7 /* L10n+Knowledge.swift */; };
+		0B8496D18C4DEC9E2EC5A04C /* InfrastructureConstantsAndModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9970A4830BDBFD99CEFEB089 /* InfrastructureConstantsAndModelsTests.swift */; };
 		0B9D804AEF1DFAAC88089E54 /* WidgetRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 449002182A2C805347B6BA2E /* WidgetRepository.swift */; };
 		0BBBF5611A3619BBDBFEBA8A /* AIWorkflowStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E659ED43C29CD918F27EDA /* AIWorkflowStoreTests.swift */; };
 		0BDE993F6E85E8838378A7F7 /* SynthesisControlOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F792239E9B62B4E97AFA0FC8 /* SynthesisControlOptions.swift */; };
@@ -3025,6 +3026,7 @@
 		989FFD36A9187F018758C1FD /* MockLLMServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLLMServices.swift; sourceTree = "<group>"; };
 		98E88AE55C7718F630303B4D /* AppRows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRows.swift; sourceTree = "<group>"; };
 		99223DDAA47AF89C6CB98BD9 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		9970A4830BDBFD99CEFEB089 /* InfrastructureConstantsAndModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfrastructureConstantsAndModelsTests.swift; sourceTree = "<group>"; };
 		9A0A11254AE7A2A367AB79A0 /* DocumentSanitationEngineEdgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSanitationEngineEdgeTests.swift; sourceTree = "<group>"; };
 		9A0E17F66C8BD168E87FF1DF /* SettingsViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewTests.swift; sourceTree = "<group>"; };
 		9A5CAE014B26DC24D655D762 /* StreamDeanonymizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamDeanonymizerTests.swift; sourceTree = "<group>"; };
@@ -6785,6 +6787,7 @@
 				D6317AC4D2AC2087E51CE4F6 /* GraphCommunityProcessorSupplementTests.swift */,
 				158BCEF0ADB4417A4551452F /* ImageExtractorParsingTests.swift */,
 				4ED909269A4DC76049DF4BB0 /* InferenceParametersStoreTests.swift */,
+				9970A4830BDBFD99CEFEB089 /* InfrastructureConstantsAndModelsTests.swift */,
 				35274337D4B9A7A3315DE680 /* InfrastructureModelsTests.swift */,
 				B61463142F452462B0A79A95 /* InfrastructurePureLogicTests.swift */,
 				27C01123985A7D4DB5A117DF /* InfrastructureSecurityAndUtilityTests.swift */,
@@ -7726,6 +7729,7 @@
 				1379C93F0FA7AEA1C736B963 /* ImportSynthesisE2ETests.swift in Sources */,
 				1F56E1D5A280E8B9AD7E11C6 /* ImportSynthesisLinkTests.swift in Sources */,
 				22CA942D58E08603A9525A75 /* InferenceParametersStoreTests.swift in Sources */,
+				0B8496D18C4DEC9E2EC5A04C /* InfrastructureConstantsAndModelsTests.swift in Sources */,
 				11E4FBA0D0769BFF912DEB7C /* InfrastructureModelsTests.swift in Sources */,
 				0394AC29B7A7301B78EE77BF /* InfrastructurePureLogicTests.swift in Sources */,
 				6A85C837B5324AA523D665C3 /* InfrastructureSecurityAndUtilityTests.swift in Sources */,
