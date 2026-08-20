@@ -843,6 +843,7 @@
 		66031E579F12C7902D4104A5 /* DatabaseManagerDegradationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA12698B630307325468DCD /* DatabaseManagerDegradationTests.swift */; };
 		6604ED99647B59FBAE680EE9 /* L10n+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B79DC94CEED2945F86341F1B /* L10n+Components.swift */; };
 		6609F4A7B0ED7FC2B4E58133 /* L10n+Collaboration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BA494344266B24AE4D1F44 /* L10n+Collaboration.swift */; };
+		662AEC9E693714E86F302816 /* P10IssueDiscoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC8BAE398EED8307366D04C /* P10IssueDiscoveryTests.swift */; };
 		663CE3D35C2D318B4F7D49F0 /* L10nSystemTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EA0C4C47D0EB0A033CBDC22 /* L10nSystemTableTests.swift */; };
 		663DA1887361F40DCB517290 /* KeyStoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847817CF10BD9D479CA8EAEB /* KeyStoreProtocol.swift */; };
 		664F6BEB66720E9B3AEF5BB0 /* L10n+Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9F93AE47E5E27035F29EE4 /* L10n+Shared.swift */; };
@@ -3445,6 +3446,7 @@
 		ED6916170D7BA997C72218BE /* PluginLoaderRegexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginLoaderRegexTests.swift; sourceTree = "<group>"; };
 		ED92D30A34A9C576E9F39674 /* FrontmatterParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrontmatterParserTests.swift; sourceTree = "<group>"; };
 		EDA65555329C4C9A9318EB91 /* CollaborationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborationView.swift; sourceTree = "<group>"; };
+		EDC8BAE398EED8307366D04C /* P10IssueDiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = P10IssueDiscoveryTests.swift; sourceTree = "<group>"; };
 		EE32A29F62E3C52A21DEB0CD /* WatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWidgets.swift; sourceTree = "<group>"; };
 		EE53A1AC1AFA80AA23538C19 /* UITestRouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestRouteTests.swift; sourceTree = "<group>"; };
 		EE732DB2FC21219974658761 /* WeChatAuthStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeChatAuthStrategy.swift; sourceTree = "<group>"; };
@@ -6405,6 +6407,7 @@
 				38BE7053CC194C6831CD8108 /* Base */,
 				08AD7356737BA60D9F18B68A /* Core */,
 				665D948B5CC760CEBE0D669F /* Dashboard */,
+				F30160AD8573658AC69403C5 /* Discovery */,
 				027C1B588BBE2447C9761906 /* Domain */,
 				1EC61E33069AB53D013F3B73 /* Features */,
 				EA3B69718BBA8BBEF35B05D6 /* Graph */,
@@ -6832,6 +6835,14 @@
 				0A8AA9739F6EB7DA81C9A4E1 /* WebScraperProcessorChainTests.swift */,
 			);
 			path = Infrastructure;
+			sourceTree = "<group>";
+		};
+		F30160AD8573658AC69403C5 /* Discovery */ = {
+			isa = PBXGroup;
+			children = (
+				EDC8BAE398EED8307366D04C /* P10IssueDiscoveryTests.swift */,
+			);
+			path = Discovery;
 			sourceTree = "<group>";
 		};
 		F3658196B68F5177AC3F675F /* Overlays */ = {
@@ -7847,6 +7858,7 @@
 				B13B8416CBBED6F6A2F83A09 /* OnboardingPathTests.swift in Sources */,
 				EB47D6FC3F85BDB8A4A3F456 /* OnboardingServiceTests.swift in Sources */,
 				326652758929916521E18B65 /* OpenAICompatibleAdapterTests.swift in Sources */,
+				662AEC9E693714E86F302816 /* P10IssueDiscoveryTests.swift in Sources */,
 				FE331FC7FBC6A5FDA0173CDD /* P9ExploratoryTests.swift in Sources */,
 				69C402C4518A0A60655253E7 /* PDFHighlightTests.swift in Sources */,
 				646ED615BE4342C7F3E18206 /* PIIMaskerTests.swift in Sources */,
