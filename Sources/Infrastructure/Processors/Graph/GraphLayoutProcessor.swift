@@ -42,7 +42,7 @@ struct GraphLayoutProcessor {
 
         for iteration in 0..<config.iterations {
             let progress = CGFloat(iteration) / CGFloat(config.iterations)
-            let temperature = 1.0 - progress * 0.8
+            let temperature = GraphConstants.Layout.temperatureBaseline - progress * GraphConstants.Layout.temperatureDecayFactor
             applyForces(nodes: &nodes, edges: edges, canvasWidth: canvas.width, canvasHeight: canvas.height, config: config, temperature: temperature)
         }
 
@@ -63,7 +63,7 @@ struct GraphLayoutProcessor {
         let baseExpansion = 1.0 + CGFloat(max(0, CGFloat(nodeCount) - GraphConstants.TwoD.baseExpansionOffset)) * GraphConstants.TwoD.expansionFactor
         let width = canvasSize.width * baseExpansion
         let height = canvasSize.height * baseExpansion
-        return CanvasDimensions(width: width, height: height, centerX: width / 2, centerY: height / 2, radius: min(width, height) * 0.4)
+        return CanvasDimensions(width: width, height: height, centerX: width / 2, centerY: height / 2, radius: min(width, height) * GraphConstants.Layout.canvasRadiusRatio)
     }
 
     private static func createInitialCircularLayout(pages: [KnowledgePage], canvas: CanvasDimensions) -> [GraphNode] {
@@ -179,7 +179,7 @@ struct GraphLayoutProcessor {
         for i in nodes.indices {
             let gx = Int(nodes[i].position.x / gridSize)
             let gy = Int(nodes[i].position.y / gridSize)
-            let key = (gx << 16) | (gy & 0xFFFF)
+            let key = (gx << GraphConstants.Layout.gridHashShift) | (gy & GraphConstants.Layout.gridHashMask)
             grid[key, default: []].append(i)
         }
 
@@ -189,7 +189,7 @@ struct GraphLayoutProcessor {
 
             for ox in -1...1 {
                 for oy in -1...1 {
-                    let key = ((gx + ox) << 16) | ((gy + oy) & 0xFFFF)
+                    let key = ((gx + ox) << GraphConstants.Layout.gridHashShift) | ((gy + oy) & GraphConstants.Layout.gridHashMask)
                     guard let neighbors = grid[key] else { continue }
 
                     for j in neighbors where i < j {
@@ -251,7 +251,7 @@ struct GraphLayoutProcessor {
     ) {
         let centerX = canvasWidth / 2
         let centerY = canvasHeight / 2
-        let effectiveGravity = config.centerGravity + (1.0 - temperature) * 0.01
+        let effectiveGravity = config.centerGravity + (GraphConstants.Layout.temperatureBaseline - temperature) * GraphConstants.Layout.temperatureGravityCompensation
 
         var communityCenters: [Int: (sum: CGPoint, count: Int)] = [:]
         for node in nodes {

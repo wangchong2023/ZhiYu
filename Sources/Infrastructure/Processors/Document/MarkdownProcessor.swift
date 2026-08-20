@@ -286,21 +286,21 @@ final class MarkdownProcessor: Sendable {
 
 extension NSRegularExpression {
     static let appLinkRegex: NSRegularExpression = {
-        do { return try NSRegularExpression(pattern: "(?<!\\\\)\\[\\[(.+?)\\]\\]") } catch { fatalError("MarkdownProcessor: 无效正则 appLinkRegex — \(error)") }
+        do { return try NSRegularExpression(pattern: ProcessorConstants.InlineRegex.appLink) } catch { fatalError("MarkdownProcessor: 无效正则 appLinkRegex — \(error)") }
     }()
     static let boldRegex: NSRegularExpression = {
-        do { return try NSRegularExpression(pattern: "(?<!\\\\)\\*\\*(.+?)\\*\\*") } catch { fatalError("MarkdownProcessor: 无效正则 boldRegex — \(error)") }
+        do { return try NSRegularExpression(pattern: ProcessorConstants.InlineRegex.bold) } catch { fatalError("MarkdownProcessor: 无效正则 boldRegex — \(error)") }
     }()
     static let italicRegex: NSRegularExpression = {
-        do { return try NSRegularExpression(pattern: "(?<!\\\\)[\\*_](.+?)[\\*_]") } catch { fatalError("MarkdownProcessor: 无效正则 italicRegex — \(error)") }
+        do { return try NSRegularExpression(pattern: ProcessorConstants.InlineRegex.italic) } catch { fatalError("MarkdownProcessor: 无效正则 italicRegex — \(error)") }
     }()
     static let strikethroughRegex: NSRegularExpression = {
-        do { return try NSRegularExpression(pattern: "(?<!\\\\)~~(.+?)~~") } catch { fatalError("MarkdownProcessor: 无效正则 strikethroughRegex — \(error)") }
+        do { return try NSRegularExpression(pattern: ProcessorConstants.InlineRegex.strikethrough) } catch { fatalError("MarkdownProcessor: 无效正则 strikethroughRegex — \(error)") }
     }()
     static let codeRegex: NSRegularExpression = {
-        do { return try NSRegularExpression(pattern: "(?<!\\\\)`(.+?)`") } catch { fatalError("MarkdownProcessor: 无效正则 codeRegex — \(error)") }
+        do { return try NSRegularExpression(pattern: ProcessorConstants.InlineRegex.code) } catch { fatalError("MarkdownProcessor: 无效正则 codeRegex — \(error)") }
     }()
     static let linkRegex: NSRegularExpression = {
-        do { return try NSRegularExpression(pattern: "(?<!\\\\)\\[(.+?)\\]\\((.+?)\\)") } catch { fatalError("MarkdownProcessor: 无效正则 linkRegex — \(error)") }
+        do { return try NSRegularExpression(pattern: ProcessorConstants.InlineRegex.link) } catch { fatalError("MarkdownProcessor: 无效正则 linkRegex — \(error)") }
     }()
 }

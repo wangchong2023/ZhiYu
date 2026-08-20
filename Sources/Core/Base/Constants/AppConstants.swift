@@ -31,6 +31,8 @@ public struct AppConstants {
         public static let oauthCallbackScheme: String = "zhiyu"
         /// 单次请求超时时长（秒）
         public static let requestTimeout: TimeInterval = 30.0
+        /// 资源请求超时时长（秒）
+        public static let resourceTimeout: TimeInterval = 30.0
 
         // MARK: - Header 键名（引用 SystemConstants.HTTPHeader）
         /// Content-Type 请求头字段名
@@ -66,6 +68,13 @@ public struct AppConstants {
         // MARK: - Bearer Token 格式（引用 SystemConstants.HTTPAuthentication）
         /// Authorization header 中 Bearer 前缀
         public static let bearerPrefix: String = SystemConstants.HTTPAuthentication.bearerPrefix
+
+        // MARK: - 后端业务错误码 (API Business Code)
+        /// 后端返回的业务错误码常量集
+        public enum BusinessCode {
+            /// Token 过期，需刷新后重试
+            public static let tokenExpired: Int = 40101
+        }
     }
     
     // MARK: - 存储与基础配置
@@ -209,6 +218,14 @@ public struct AppConstants {
     public struct Performance {
         /// 延迟警告阈值 (毫秒)
         public static let latencyWarningThreshold: Int = 2000
+
+        // MARK: - 压力测试 (Stress Test)
+        /// 压力测试默认写入条数
+        public static let stressTestDefaultCount: Int = 50000
+        /// 压力测试进度日志步长
+        public static let stressTestProgressStep: Int = 5000
+        /// 压力测试单次操作慢阈值（秒）
+        public static let stressTestSlowOperationThreshold: TimeInterval = 0.8
     }
 
     // MARK: - 全局存储键名 (Magic Strings)

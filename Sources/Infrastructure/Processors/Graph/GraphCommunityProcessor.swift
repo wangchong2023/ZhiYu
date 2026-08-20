@@ -312,7 +312,7 @@ extension GraphLayoutProcessor {
     }
 
     /// 获取低内聚力社区的节点 ID
-    static func lowCohesionCommunities(nodes: [GraphNode], threshold: Double = 0.15) -> [UUID] {
+    static func lowCohesionCommunities(nodes: [GraphNode], threshold: Double = GraphConstants.Community.lowCohesionThreshold) -> [UUID] {
         return nodes.filter { node in
             if let cohesion = node.communityCohesion {
                 return cohesion < threshold

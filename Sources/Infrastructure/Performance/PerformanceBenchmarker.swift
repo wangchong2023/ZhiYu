@@ -17,14 +17,14 @@ final class PerformanceBenchmarker {
     static let shared = PerformanceBenchmarker()
 
     /// 模拟海量文档导入并测量索引耗时
-    func runStressTest(count: Int = 50000, store: any AnyPageStore) async {
+    func runStressTest(count: Int = AppConstants.Performance.stressTestDefaultCount, store: any AnyPageStore) async {
         Logger.shared.info(" [Benchmark]  \(count) ...")
 
         let startTime = CFAbsoluteTimeGetCurrent()
 
         // 批量创建模拟数据
         for i in 1...count {
-            if i % 5000 == 0 {
+            if i % AppConstants.Performance.stressTestProgressStep == 0 {
                 let currentTotal = await store.pages.count
                 Logger.shared.info(" [Benchmark]  \(i) ...  DB : \(currentTotal)")
             }
@@ -62,7 +62,7 @@ final class PerformanceBenchmarker {
         Logger.shared.info(" : \(String(format: "%.2f", duration * 1000))ms")
         Logger.shared.info(" : \(results.count)")
 
-        if duration > 0.8 {
+        if duration > AppConstants.Performance.stressTestSlowOperationThreshold {
             Logger.shared.warning(" [Warning]  800ms ")
         }
     }

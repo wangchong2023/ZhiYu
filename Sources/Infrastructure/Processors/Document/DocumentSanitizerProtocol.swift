@@ -25,9 +25,9 @@ public struct SanitizerOptions: OptionSet, Sendable {
     /// 自动剥离前导与后置杂质引言
     public static let stripLeadingChatter = SanitizerOptions(rawValue: 1 << 2)
     /// 自动合并 OCR 断字与不自然换行
-    public static let mergeOCRLineBreaks = SanitizerOptions(rawValue: 1 << 3)
+    public static let mergeOCRLineBreaks = SanitizerOptions(rawValue: 1 << CoreConstants.BitShift.bit3)
     /// 自动剥离 HTML 冗余标签与控制字符
-    public static let stripHTMLNoise = SanitizerOptions(rawValue: 1 << 4)
+    public static let stripHTMLNoise = SanitizerOptions(rawValue: 1 << CoreConstants.BitShift.bit4)
 
     /// 默认全套开启
     public static let defaultSuite: SanitizerOptions = [.applyPanguSpacing, .sanitizeMermaid, .stripLeadingChatter, .mergeOCRLineBreaks, .stripHTMLNoise]

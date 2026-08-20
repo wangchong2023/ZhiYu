@@ -171,4 +171,11 @@ enum StorageConstants {
         /// 引用 SystemConstants.MarkdownSyntax.tableRowSeparator
         static let tableRowSeparator: String = SystemConstants.MarkdownSyntax.tableRowSeparator
     }
+
+    // MARK: - 查询限制 (Query Limit)
+    /// 分页/搜索结果数量限制
+    enum QueryLimit {
+        /// 插件 FTS 搜索默认返回上限
+        static let pluginSearchResults: Int = 50
+    }
 }

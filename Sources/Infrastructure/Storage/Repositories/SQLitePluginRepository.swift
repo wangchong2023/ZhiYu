@@ -99,7 +99,7 @@ final class SQLitePluginRepository: PluginRepository, @unchecked Sendable {
             if let pattern = FTS5Pattern(matchingAnyTokenIn: query) {
                 let ftsMatches = try PluginRecordFTS
                     .matching(pattern)
-                    .limit(50)
+                    .limit(StorageConstants.QueryLimit.pluginSearchResults)
                     .fetchAll(db)
 
                 if !ftsMatches.isEmpty {

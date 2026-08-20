@@ -346,4 +346,34 @@ public enum CoreConstants {
             public static let linkDiscovery = "\n{{input}}\n [[]] "
         }
     }
+
+    // MARK: - 重试退避 (Retry Backoff)
+    /// 指数退避重试机制的默认参数
+    public enum RetryBackoff {
+        /// 默认最大重试次数（不含首次执行）
+        public static let defaultMaxRetries: Int = 3
+        /// 默认首次重试延迟（秒）
+        public static let defaultInitialDelay: TimeInterval = SystemConstants.Time.oneSecond
+        /// 默认指数乘数（每次重试延迟翻倍）
+        public static let defaultMultiplier: Double = 2.0
+        /// 默认单次重试最大延迟上限（秒）
+        public static let defaultMaxDelay: TimeInterval = 15.0
+    }
+
+    // MARK: - 位运算移位 (Bit Shift)
+    /// OptionSet 位掩码移位常量（避免裸数字 `1 << 3`）
+    public enum BitShift {
+        /// 第 0 位
+        public static let bit0: Int = 0
+        /// 第 1 位
+        public static let bit1: Int = 1
+        /// 第 2 位
+        public static let bit2: Int = 2
+        /// 第 3 位
+        public static let bit3: Int = 3
+        /// 第 4 位
+        public static let bit4: Int = 4
+        /// 第 5 位
+        public static let bit5: Int = 5
+    }
 }

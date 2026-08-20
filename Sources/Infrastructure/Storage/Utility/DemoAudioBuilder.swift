@@ -14,7 +14,7 @@ import AVFoundation
 
 public struct DemoAudioBuilder {
     /// 确保物理音频文件就绪，若不存在则实时合成标准 44.1kHz WAV 音频
-    public static func ensureAudioExists(at path: String, duration: TimeInterval = 10.0) -> URL? {
+    public static func ensureAudioExists(at path: String, duration: TimeInterval = DemoMediaConstants.defaultAudioDuration) -> URL? {
         let fileURL = URL(fileURLWithPath: path)
         if FileManager.default.fileExists(atPath: fileURL.path) {
             return fileURL
@@ -24,7 +24,7 @@ public struct DemoAudioBuilder {
             let parentDir = fileURL.deletingLastPathComponent()
             try FileManager.default.createDirectory(at: parentDir, withIntermediateDirectories: true)
             
-            let sampleRate: Double = 44100.0
+            let sampleRate: Double = DemoMediaConstants.audioSampleRate
             let numSamples = Int(sampleRate * duration)
             guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
                   let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(numSamples)) else {
@@ -38,11 +38,11 @@ public struct DemoAudioBuilder {
                 let frequencies: [Float] = [523.25, 659.25, 783.99, 1046.50]
                 for i in 0..<numSamples {
                     let time = Float(i) / Float(sampleRate)
-                    let chordIndex = Int(time * 2.0) % frequencies.count
+                    let chordIndex = Int(time * DemoMediaConstants.chordSwitchInterval) % frequencies.count
                     let freq = frequencies[chordIndex]
                     // 渐变衰减效果
-                    let envelope = sin(Float.pi * (time.truncatingRemainder(dividingBy: 0.5)) / 0.5)
-                    channelData[i] = sin(2.0 * Float.pi * freq * time) * 0.25 * envelope
+                    let envelope = sin(Float.pi * (time.truncatingRemainder(dividingBy: DemoMediaConstants.envelopePeriod)) / DemoMediaConstants.envelopePhaseDivisor)
+                    channelData[i] = sin(DemoMediaConstants.sineAngularCoefficient * Float.pi * freq * time) * DemoMediaConstants.volumeScale * envelope
                 }
             }
             

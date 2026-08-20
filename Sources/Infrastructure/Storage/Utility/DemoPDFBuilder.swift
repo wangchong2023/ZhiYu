@@ -40,8 +40,8 @@ public struct DemoPDFBuilder {
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = pdfMetaData as [String: Any]
         
-        let pageWidth: CGFloat = 8.5 * 72.0
-        let pageHeight: CGFloat = 11.0 * 72.0
+        let pageWidth: CGFloat = DemoMediaConstants.pageWidthInches * DemoMediaConstants.pointsPerInch
+        let pageHeight: CGFloat = DemoMediaConstants.pageHeightInches * DemoMediaConstants.pointsPerInch
         let pageRect = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
         
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
@@ -93,7 +93,7 @@ public struct DemoPDFBuilder {
         for rawLine in lines {
             let trimmed = rawLine.trimmingCharacters(in: .whitespaces)
             if trimmed.isEmpty {
-                currentY += 8
+                currentY += DemoMediaConstants.paragraphVerticalSpacing
                 continue
             }
             if isTableSeparator(trimmed) { continue }
@@ -140,7 +140,7 @@ public struct DemoPDFBuilder {
         let quoteText = sanitizeMarkdownText(text.replacingOccurrences(of: StorageConstants.MarkdownSyntax.blockquoteSpace, with: ""))
         let font = UIFont.systemFont(ofSize: 11) // Dynamic Type
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = 4
+        paragraph.lineSpacing = DemoMediaConstants.paragraphLineSpacing
         
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
@@ -165,7 +165,7 @@ public struct DemoPDFBuilder {
         let cols = text.split(separator: "|").map { sanitizeMarkdownText(String($0)) }
         let colWidth = contentWidth / CGFloat(max(1, cols.count))
         
-        let isHeader = currentY < 140
+        let isHeader = currentY < DemoMediaConstants.headerYThreshold
         let cellBgColor = isHeader ? PDFTheme.tableHeaderBg : PDFTheme.tableCellBg
         let textColor = isHeader ? PDFTheme.tableHeaderText : PDFTheme.tableCellText
         let font = isHeader ? UIFont.boldSystemFont(ofSize: 10) : UIFont.systemFont(ofSize: 10) // Dynamic Type
@@ -197,7 +197,7 @@ public struct DemoPDFBuilder {
         }
         
         let paragraph = NSMutableParagraphStyle()
-        paragraph.lineSpacing = 3
+        paragraph.lineSpacing = DemoMediaConstants.compactParagraphLineSpacing
         
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 11), // Dynamic Type

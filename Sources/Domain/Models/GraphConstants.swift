@@ -17,6 +17,28 @@ public enum GraphConstants {
     /// 图谱每节点最大显示连线数
     public static let maxEdgesPerNode: Int = 5
 
+    /// 社区内聚力阈值
+    public enum Community {
+        /// 低内聚力社区默认阈值（低于此值视为低内聚力）
+        public static let lowCohesionThreshold: Double = 0.15
+    }
+
+    /// 力导向布局算法系数
+    public enum Layout {
+        /// 温度基准值（仿真初始温度）
+        public static let temperatureBaseline: CGFloat = 1.0
+        /// 温度衰减系数（temperature = baseline - progress * decayFactor）
+        public static let temperatureDecayFactor: CGFloat = 0.8
+        /// 画布半径占短边比例
+        public static let canvasRadiusRatio: CGFloat = 0.4
+        /// 温度补偿引力系数
+        public static let temperatureGravityCompensation: CGFloat = 0.01
+        /// 空间网格哈希位移位数（将 gx 编码到高位）
+        public static let gridHashShift: Int = 16
+        /// 空间网格哈希低位掩码（gy 占低 16 位）
+        public static let gridHashMask: Int = 0xFFFF
+    }
+
     /// 2D 图谱逻辑配置
     public struct TwoD {
         public static let virtualSizeMultiplier: CGFloat = 2.0

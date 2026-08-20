@@ -71,7 +71,7 @@ public actor NetworkClient {
     private init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = AppConstants.Network.requestTimeout
-        config.timeoutIntervalForResource = 30.0
+        config.timeoutIntervalForResource = AppConstants.Network.resourceTimeout
         
         #if DEBUG
         // DEBUG 模式下允许自签名 HTTPS 证书
@@ -190,7 +190,7 @@ public actor NetworkClient {
         if apiResponse.isSuccess {
             return try extractPayload(apiResponse)
         }
-        if apiResponse.code == 40101 && requiresAuth && !isRetry {
+        if apiResponse.code == AppConstants.Network.BusinessCode.tokenExpired && requiresAuth && !isRetry {
             return try await handleTokenRefreshAndRetry(path: path, method: method, body: body)
         }
         throw NetworkError.serverError(apiResponse.code, apiResponse.message)

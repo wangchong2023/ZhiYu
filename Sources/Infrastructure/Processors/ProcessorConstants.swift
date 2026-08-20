@@ -597,4 +597,37 @@ enum ProcessorConstants {
             thinkBracketUnclosed
         ]
     }
+
+    // MARK: - Markdown 标题 (Heading)
+    /// Markdown 标题层级约束
+    enum Heading {
+        /// 最小标题层级
+        static let minLevel: Int = 1
+        /// 最大标题层级
+        static let maxLevel: Int = 6
+    }
+
+    // MARK: - 缩进换算 (Indentation)
+    /// 缩进与制表符换算常量
+    enum Indentation {
+        /// 1 个制表符等价的空格数
+        static let spacesPerTab: Int = 4
+    }
+
+    // MARK: - Markdown 行内格式正则 (Inline Format Regex)
+    /// Markdown 行内标记（appLink/bold/italic/strikethrough/code/link）正则模式
+    enum InlineRegex {
+        /// App Link 双方括号 `[[link]]`
+        static let appLink: String = #"(?<!\\)\[\[(.+?)\]\]"#
+        /// 加粗 `**bold**`
+        static let bold: String = #"(?<!\\)\*\*(.+?)\*\*"#
+        /// 斜体 `*italic*` 或 `_italic_`
+        static let italic: String = #"(?<!\\)[\*_](.+?)[\*_]"#
+        /// 删除线 `~~text~~`
+        static let strikethrough: String = #"(?<!\\)~~(.+?)~~"#
+        /// 行内代码 `` `code` ``
+        static let code: String = #"(?<!\\)`(.+?)`"#
+        /// 链接 `[text](url)`
+        static let link: String = #"(?<!\\)\[(.+?)\]\((.+?)\)"#
+    }
 }

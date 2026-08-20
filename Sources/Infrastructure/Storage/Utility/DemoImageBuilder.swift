@@ -17,7 +17,7 @@ public struct DemoImageBuilder {
     /// 确保 OCR 扫描示例图片就绪，若不存在或需要更新则动态绘制高精度原图
     public static func ensureImageExists(at path: String, title: String) -> UIImage? {
         // 如果文件存在，先尝试加载；如果加载成功且高度符合高清标准，则返回
-        if FileManager.default.fileExists(atPath: path), let img = UIImage(contentsOfFile: path), img.size.width >= 1000 {
+        if FileManager.default.fileExists(atPath: path), let img = UIImage(contentsOfFile: path), img.size.width >= DemoMediaConstants.hdMinWidth {
             return img
         }
         
@@ -112,7 +112,7 @@ public struct DemoImageBuilder {
         UIColor(red: 0.10, green: 0.30, blue: 0.45, alpha: 0.6).setFill()
         notePath.fill()
         UIColor(red: 0.30, green: 0.70, blue: 0.95, alpha: 0.8).setStroke()
-        notePath.lineWidth = 1.5
+        notePath.lineWidth = DemoMediaConstants.noteIconLineWidth
         notePath.stroke()
         
         let noteAttrs: [NSAttributedString.Key: Any] = [
@@ -205,7 +205,7 @@ public struct DemoImageBuilder {
         UIColor(red: 0.40, green: 0.25, blue: 0.10, alpha: 0.6).setFill()
         notePath.fill()
         UIColor(red: 0.95, green: 0.60, blue: 0.25, alpha: 0.8).setStroke()
-        notePath.lineWidth = 1.5
+        notePath.lineWidth = DemoMediaConstants.noteIconLineWidth
         notePath.stroke()
         
         let noteAttrs: [NSAttributedString.Key: Any] = [

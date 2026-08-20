@@ -151,6 +151,8 @@ public enum SystemConstants {
         public static let nanosecondsPerSecond: Double = 1_000_000_000
         /// 每秒对应的纳秒数（整型）
         public static let nanosecondsPerSecondInt: Int = 1_000_000_000
+        /// 1 秒（作为时间基础单位，语义化引用避免裸 1.0）
+        public static let oneSecond: TimeInterval = 1.0
     }
 
     // MARK: - 错误码 (Error Codes)

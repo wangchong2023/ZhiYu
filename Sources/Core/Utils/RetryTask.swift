@@ -26,10 +26,10 @@ public enum RetryTask {
     @discardableResult
     /// 执行带指数退避和抖动的异步重试任务
     public static func execute<T>(
-        maxRetries: Int = 3,
-        initialDelay: TimeInterval = 1.0,
-        multiplier: Double = 2.0,
-        maxDelay: TimeInterval = 15.0,
+        maxRetries: Int = CoreConstants.RetryBackoff.defaultMaxRetries,
+        initialDelay: TimeInterval = CoreConstants.RetryBackoff.defaultInitialDelay,
+        multiplier: Double = CoreConstants.RetryBackoff.defaultMultiplier,
+        maxDelay: TimeInterval = CoreConstants.RetryBackoff.defaultMaxDelay,
         operation: @Sendable () async throws -> T
     ) async throws -> T {
         var retries = 0

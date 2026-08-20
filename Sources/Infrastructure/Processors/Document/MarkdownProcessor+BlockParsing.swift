@@ -95,7 +95,7 @@ extension MarkdownProcessor {
         let level = hashes.count
 
         // 标题后面必须跟一个空格才是标准的 Markdown 标题且层级在 1 到 6 之间
-        guard level >= 1 && level <= 6 else { return nil }
+        guard level >= ProcessorConstants.Heading.minLevel && level <= ProcessorConstants.Heading.maxLevel else { return nil }
 
         let contentStart = trimmed.index(trimmed.startIndex, offsetBy: level)
         guard contentStart < trimmed.endIndex else { return nil }
@@ -164,7 +164,7 @@ extension MarkdownProcessor {
             if char == Character(ProcessorConstants.Whitespace.space) {
                 count += 1
             } else if char == Character(ProcessorConstants.Whitespace.tab) {
-                count += 4
+                count += ProcessorConstants.Indentation.spacesPerTab
             } else {
                 break
             }
