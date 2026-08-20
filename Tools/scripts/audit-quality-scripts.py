@@ -261,10 +261,10 @@ class ScriptAuditor:
         if not lines:
             return 0, []
 
-        # 1. 检查 Shebang 声明
+        # 1. 检查 Shebang 声明（支持 #!/bin/ 和 #!/usr/bin/env 两种标准形式）
         first_line = lines[0].strip()
-        if not first_line.startswith('#!/bin/'):
-            issues.append((1, f"Shell 脚本缺少标准的 Shebang 解释器声明 (如 #!/bin/bash 或 #!/bin/sh)"))
+        if not (first_line.startswith('#!/bin/') or first_line.startswith('#!/usr/bin/env ')):
+            issues.append((1, f"Shell 脚本缺少标准的 Shebang 解释器声明 (如 #!/bin/bash 或 #!/usr/bin/env bash)"))
 
         # 2. 检查文件头说明注释
         comment_lines_count = 0

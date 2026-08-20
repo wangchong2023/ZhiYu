@@ -45,6 +45,14 @@ DEFAULT_BRANCH_THRESHOLD = 85.0
 SEARCH_DIR = "build/DerivedData-ios"
 EXCLUDE_SUFFIXES = ["Schema.swift", "Status.swift"]
 
+# 正则 group 索引常量（避免魔鬼数字误报）
+REGEX_GROUP_COL = 1
+REGEX_GROUP_COUNT1 = 2
+REGEX_GROUP_COUNT2 = 3
+
+# 分支元组中的路径计数（每个分支元组包含 2 个路径计数）
+BRANCH_PATHS_PER_TUPLE = 2
+
 # 报告表格宽度（字符数）
 TABLE_WIDTH = 95
 # 函数体行数上限（Gatekeeper 规范）
@@ -146,6 +154,118 @@ def extract_coverage_text(latest_result):
         sys.exit(1)
 
 
+def _make_file_node(path, line_covered, line_executable, branch_covered, branch_total):
+    """
+    构造单个文件的覆盖率节点字典。
+
+    :param path: 文件路径
+    :param line_covered: 已覆盖行数
+    :param line_executable: 可执行行数
+    :param branch_covered: 已覆盖分支数
+    :param branch_total: 总分支数
+    :return: 覆盖率节点字典
+    """
+    return {
+        "path": path,
+        "coveredLines": line_covered,
+        "executableLines": line_executable,
+        "branchCovered": branch_covered,
+        "branchTotal": branch_total,
+    }
+
+
+def _parse_branch_tuple(line, current_branch_covered, current_branch_total):
+    """
+    解析分支元组行 "(33, 9, 0)"，更新分支计数。
+
+    :param line: 单行文本
+    :param current_branch_covered: 当前已覆盖分支数
+    :param current_branch_total: 当前总分支数
+    :return: (updated_covered, updated_total) 或 None（不匹配）
+    """
+    m = re.match(r"^\((\d+),\s+(\d+),\s+(\d+)\)\s*$", line)
+    if m:
+        count1 = int(m.group(REGEX_GROUP_COUNT1))
+        count2 = int(m.group(REGEX_GROUP_COUNT2))
+        new_total = current_branch_total + BRANCH_PATHS_PER_TUPLE
+        new_covered = current_branch_covered
+        if count1 > 0:
+            new_covered += 1
+        if count2 > 0:
+            new_covered += 1
+        return new_covered, new_total
+    return None
+
+
+def _parse_line_coverage(line, in_branch_block):
+    """
+    解析普通行覆盖率（非分支块内）。
+
+    :param line: 单行文本
+    :param in_branch_block: 是否在分支块内
+    :return: (line_executable_delta, line_covered_delta) 或 None（不匹配）
+    """
+    # 未覆盖行: " 11: 0"
+    m = re.match(r"^\s+(\d+):\s+0\s*$", line)
+    if m and not in_branch_block:
+        return 1, 0
+    # 已覆盖行（无分支）: " 12: 5"
+    m = re.match(r"^\s+(\d+):\s+([1-9]\d*)\s*$", line)
+    if m and not in_branch_block:
+        return 1, 1
+    return None
+
+
+def _parse_branch_block_start(line):
+    """
+    解析分支块开始行 " 13: 2 ["。
+
+    :param line: 单行文本
+    :return: (exec_count, line_executable_delta, line_covered_delta) 或 None（不匹配）
+    """
+    m = re.match(r"^\s+(\d+):\s+(\d+)\s+\[\s*$", line)
+    if m:
+        exec_count = int(m.group(REGEX_GROUP_COUNT1))
+        if exec_count > 0:
+            return exec_count, 1, 1
+        return exec_count, 1, 0
+    return None
+
+
+def _is_file_path_line(line):
+    """
+    判断是否为文件路径行（以冒号结尾，非行号格式）。
+
+    :param line: 单行文本
+    :return: bool
+    """
+    return line.endswith(":") and not re.match(r"^\s+\d+:", line)
+
+
+def _handle_branch_block_line(line, state):
+    """
+    处理分支块内的行（分支元组或块结束标记）。
+
+    :param line: 单行文本
+    :param state: 解析状态字典
+    :return: True 如果已处理，False 如果不匹配
+    """
+    result = _parse_branch_tuple(line, state["branch_covered"], state["branch_total"])
+    if result is not None:
+        state["branch_covered"], state["branch_total"] = result
+        return True
+    if line.strip() == "]":
+        state["in_branch"] = False
+        return True
+    return False
+
+
+def _apply_line_delta(state, exec_delta, covered_delta):
+    """将行覆盖率增量应用到状态"""
+    state["line_executable"] += exec_delta
+    state["line_covered"] += covered_delta
+
+
 def parse_coverage_text(text):
     """
     解析 xccov 文本格式覆盖率，返回文件覆盖率节点列表。
@@ -160,99 +280,47 @@ def parse_coverage_text(text):
         }
     """
     files = []
-    current_file = None
-    current_line_covered = 0
-    current_line_executable = 0
-    current_branch_covered = 0
-    current_branch_total = 0
-    in_branch_block = False
-    branch_line_exec_count = 0
+    state = {
+        "file": None, "line_covered": 0, "line_executable": 0,
+        "branch_covered": 0, "branch_total": 0, "in_branch": False,
+    }
+
+    def save_current():
+        """保存当前文件的覆盖率节点到列表"""
+        if state["file"] is not None:
+            files.append(_make_file_node(
+                state["file"], state["line_covered"], state["line_executable"],
+                state["branch_covered"], state["branch_total"]
+            ))
+            for key in ("file", "line_covered", "line_executable", "branch_covered", "branch_total"):
+                state[key] = None if key == "file" else 0
 
     for line in text.splitlines():
-        # 文件路径行（以冒号结尾，非行号格式）
-        if line.endswith(":") and not re.match(r"^\s+\d+:", line):
-            # 保存前一个文件
-            if current_file is not None:
-                files.append({
-                    "path": current_file,
-                    "coveredLines": current_line_covered,
-                    "executableLines": current_line_executable,
-                    "branchCovered": current_branch_covered,
-                    "branchTotal": current_branch_total,
-                })
-            # 开始新文件
-            current_file = line[:-1]  # 去掉尾部冒号
-            current_line_covered = 0
-            current_line_executable = 0
-            current_branch_covered = 0
-            current_branch_total = 0
-            in_branch_block = False
+        if _is_file_path_line(line):
+            save_current()
+            state["file"] = line[:-1]
+            state["in_branch"] = False
             continue
 
-        # 分支块开始: " 13: 2 ["
-        m = re.match(r"^\s+(\d+):\s+(\d+)\s+\[\s*$", line)
-        if m:
-            line_num = int(m.group(1))
-            exec_count = int(m.group(2))
-            current_line_executable += 1
-            if exec_count > 0:
-                current_line_covered += 1
-            in_branch_block = True
-            branch_line_exec_count = exec_count
+        branch_start = _parse_branch_block_start(line)
+        if branch_start is not None:
+            _, exec_delta, covered_delta = branch_start
+            _apply_line_delta(state, exec_delta, covered_delta)
+            state["in_branch"] = True
             continue
 
-        # 分支元组: "(33, 9, 0)"
-        m = re.match(r"^\((\d+),\s+(\d+),\s+(\d+)\)\s*$", line)
-        if m and in_branch_block:
-            count1 = int(m.group(2))
-            count2 = int(m.group(3))
-            current_branch_total += 2
-            if count1 > 0:
-                current_branch_covered += 1
-            if count2 > 0:
-                current_branch_covered += 1
+        if state["in_branch"] and _handle_branch_block_line(line, state):
             continue
 
-        # 分支块结束: "]"
-        if line.strip() == "]" and in_branch_block:
-            in_branch_block = False
+        line_result = _parse_line_coverage(line, state["in_branch"])
+        if line_result is not None:
+            _apply_line_delta(state, *line_result)
             continue
 
-        # 未覆盖行: " 11: 0"
-        m = re.match(r"^\s+(\d+):\s+0\s*$", line)
-        if m and not in_branch_block:
-            current_line_executable += 1
-            continue
+        if line.strip() == "":
+            save_current()
 
-        # 已覆盖行（无分支）: " 12: 5"
-        m = re.match(r"^\s+(\d+):\s+([1-9]\d*)\s*$", line)
-        if m and not in_branch_block:
-            current_line_executable += 1
-            current_line_covered += 1
-            continue
-
-        # 空行 — 文件分隔
-        if line.strip() == "" and current_file is not None:
-            files.append({
-                "path": current_file,
-                "coveredLines": current_line_covered,
-                "executableLines": current_line_executable,
-                "branchCovered": current_branch_covered,
-                "branchTotal": current_branch_total,
-            })
-            current_file = None
-            continue
-
-    # 保存最后一个文件
-    if current_file is not None:
-        files.append({
-            "path": current_file,
-            "coveredLines": current_line_covered,
-            "executableLines": current_line_executable,
-            "branchCovered": current_branch_covered,
-            "branchTotal": current_branch_total,
-        })
-
+    save_current()
     return files
 
 
@@ -614,16 +682,24 @@ def _load_coverage_data():
     return all_files
 
 
+def _sum_layer_field(layer_stats, field):
+    """
+    聚合所有已知层级中指定字段的总和。
+
+    :param layer_stats: 分层统计字典
+    :param field: 要聚合的字段名
+    :return: 总和
+    """
+    return sum(layer_stats[layer][field]
+               for layer in LAYER_ORDER if layer in layer_stats)
+
+
 def _aggregate_total_stats(layer_stats):
     """从分层统计聚合全 App 整体统计（仅聚合 LAYER_ORDER 中的已知层级）"""
-    total_line_covered = sum(layer_stats[layer]["line_covered"]
-                             for layer in LAYER_ORDER if layer in layer_stats)
-    total_line_executable = sum(layer_stats[layer]["line_executable"]
-                                for layer in LAYER_ORDER if layer in layer_stats)
-    total_branch_covered = sum(layer_stats[layer]["branch_covered"]
-                               for layer in LAYER_ORDER if layer in layer_stats)
-    total_branch_total = sum(layer_stats[layer]["branch_total"]
-                             for layer in LAYER_ORDER if layer in layer_stats)
+    total_line_covered = _sum_layer_field(layer_stats, "line_covered")
+    total_line_executable = _sum_layer_field(layer_stats, "line_executable")
+    total_branch_covered = _sum_layer_field(layer_stats, "branch_covered")
+    total_branch_total = _sum_layer_field(layer_stats, "branch_total")
     total_has_branch = any(layer_stats[layer]["has_branch"]
                            for layer in LAYER_ORDER if layer in layer_stats)
     return (

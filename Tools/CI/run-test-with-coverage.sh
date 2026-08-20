@@ -43,6 +43,28 @@ echo "===> Export Coverage Artifacts"
 COVERAGE_DIR="build/coverage"
 mkdir -p "$COVERAGE_DIR"
 
+# ── slather 降级方案（无分支数据，仅行覆盖率）──
+# 函数定义需在调用之前（ShellCheck SC2218）
+_fallback_slather() {
+    local coverage_dir="$1"
+    local xcresult="$2"
+    local derived_data_dir
+    derived_data_dir=$(dirname "$(dirname "$xcresult")")
+    if command -v slather >/dev/null 2>&1; then
+        slather coverage --sonarqube-xml \
+            --output-directory "$coverage_dir" \
+            --build-directory "$derived_data_dir" \
+            ZhiYu.xcodeproj 2>&1 | grep -v "^warning:" || true
+        if [ -f "$coverage_dir/sonarqube-generic-coverage.xml" ]; then
+            echo "  ✅ slather 降级报告（仅行覆盖率，无分支数据）: $coverage_dir/sonarqube-generic-coverage.xml"
+        else
+            echo "  ⚠️  slather 降级也失败，跳过"
+        fi
+    else
+        echo "  ⚠️  slather 未安装，跳过覆盖率报告生成"
+    fi
+}
+
 # 复制最新 .xcresult 包
 LATEST_XCRESULT=$(python3 -c "
 import glob, os
@@ -111,27 +133,6 @@ else
 fi
 
 echo "✅ 跑测、覆盖率门禁及性能回归校验全部通过！"
-
-# ── slather 降级方案（无分支数据，仅行覆盖率）──
-_fallback_slather() {
-    local coverage_dir="$1"
-    local xcresult="$2"
-    local derived_data_dir
-    derived_data_dir=$(dirname "$(dirname "$xcresult")")
-    if command -v slather >/dev/null 2>&1; then
-        slather coverage --sonarqube-xml \
-            --output-directory "$coverage_dir" \
-            --build-directory "$derived_data_dir" \
-            ZhiYu.xcodeproj 2>&1 | grep -v "^warning:" || true
-        if [ -f "$coverage_dir/sonarqube-generic-coverage.xml" ]; then
-            echo "  ✅ slather 降级报告（仅行覆盖率，无分支数据）: $coverage_dir/sonarqube-generic-coverage.xml"
-        else
-            echo "  ⚠️  slather 降级也失败，跳过"
-        fi
-    else
-        echo "  ⚠️  slather 未安装，跳过覆盖率报告生成"
-    fi
-}
 
 # ── 打印构建版本信息 ──
 if [ -f "$PLIST" ]; then
