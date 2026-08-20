@@ -60,7 +60,7 @@ P10 阶段新增 334 个单元测试，覆盖率从 24.80% 提升至 46.16%（+2
 - **App 层 2428 行**：Scene/Layout/Overlay 组件低覆盖
 - **Infrastructure 分支覆盖率 63.0%**：6194 个分支中 2289 个未覆盖，需重点补充分支测试
 
-### 1.4 工作原则
+### 1.5 工作原则
 
 延续 P10 测试驱动工作模式：
 - **测试以发现问题为目的**（用户最高优先级指示），而非纯粹追求覆盖率
@@ -90,9 +90,13 @@ P10 阶段新增 334 个单元测试，覆盖率从 24.80% 提升至 46.16%（+2
 
 ## 3. 批次范围与目标
 
-### 3.1 批次 A — Core/Domain/Infrastructure 补盲（2340 行未覆盖 → 95%）
+### 3.1 批次 A — Core/Domain/Infrastructure 补盲（2479 行未覆盖 → 95%）
 
-**目标**：102 个非 View 文件从当前覆盖率推到 95%，预期全 App 覆盖率 ~51.9%
+**目标**：Core/Domain/Infrastructure 三层非 View 文件从当前覆盖率推到 95%
+- Core：424 行未覆盖，381 分支未覆盖
+- Domain：438 行未覆盖，284 分支未覆盖
+- Infrastructure：1617 行未覆盖，2289 分支未覆盖
+- 合计：2479 行未覆盖，2954 分支未覆盖
 
 **重点文件**（按未覆盖行数排序）：
 
@@ -107,13 +111,16 @@ P10 阶段新增 334 个单元测试，覆盖率从 24.80% 提升至 46.16%（+2
 | SpeechServiceProtocol | Domain | 13.8% | 25 | 轻量补盲（协议默认实现） |
 | GlobalPromptRegistry | Domain | 0% | 31 | 问题驱动（Prompt 注册/查找） |
 | 各 Protocol 默认实现 | Core/Domain | 0% | ~100 | 轻量补盲（协议桩行为验证） |
-| 其余 92 个文件 | 各层 | <95% | ~1630 | 混合（按文件性质决定） |
+| 其余 ~96 个文件 | 各层 | <95% | ~1630 | 混合（按文件性质决定） |
 
 **问题驱动重点**：SecureEnclaveCryptoService（加密边界）、DataCoordinator（同步状态机）、GlobalPromptRegistry（Prompt 注册查找）
 
-### 3.2 批次 B — Localization/App 非View（1853 行未覆盖 → 95%）
+### 3.2 批次 B — Localization/App 非View（2406 行未覆盖 → 95%）
 
-**目标**：36 个非 View 文件推到 95%，预期全 App 覆盖率 ~55.2%
+**目标**：Localization + App 层非 View 文件推到 95%
+- Localization：801 行未覆盖，22 分支未覆盖
+- App：1605 行未覆盖，90 分支未覆盖
+- 合计：2406 行未覆盖，112 分支未覆盖
 
 **重点文件**：
 
@@ -126,15 +133,19 @@ P10 阶段新增 334 个单元测试，覆盖率从 24.80% 提升至 46.16%（+2
 | L10n+Common | Localization | 37.8% | 206 | 轻量补盲（key 存在性 + 返回值） |
 | L10n+Plugin | Localization | 27.9% | 93 | 轻量补盲 |
 | L10n+Dashboard | Localization | 44.4% | 109 | 轻量补盲 |
-| AppEnvironment | App | 58.6% | 77 | 问题驱动（DI 初始化顺序） |
+| AppEnvironment | App | 57.5% | 79 | 问题驱动（DI 初始化顺序） |
 | ViewFactory | App | 29.2% | 34 | 轻量补盲（视图注册表） |
 | 其余 27 个文件 | 各 | <95% | ~563 | 混合 |
 
 **注**：App 层部分文件（AppLayoutComponents/SidebarRowComponents）虽非 `View.swift` 后缀，但实为 UI 组件，归入快照测试。
 
-### 3.3 批次 C — Features 非View Service/ViewModel/Coordinator（1694 行未覆盖 → 85%）
+### 3.3 批次 C — Features 非View Service/ViewModel/Coordinator（21471 行未覆盖 → 85%）
 
-**目标**：29 个非 View 文件推到 85%，预期全 App 覆盖率 ~58.2%
+**目标**：Features 层非 View 文件推到 85%（非 95%，因为 Features 层总量大 30312 行，非 View 部分约 6870 行，先推到 85% 验证策略，剩余在批次 D 后视情况补盲）
+- Features 非View：约 6870 行未覆盖，1875 分支未覆盖
+- Features 全层：21471 行未覆盖（含 View 14602 行），1875 分支未覆盖
+
+**注**：批次 C 目标 85% 而非 95%，因为 Features 层是最大瓶颈（30312 行占全 App 51%），非 View 部分用问题驱动测试深度覆盖到 85%，View 部分在批次 D 用快照测试覆盖。批次 D 完成后 Features 全层达到 95%。
 
 **重点文件**：
 
@@ -161,19 +172,21 @@ P10 阶段新增 334 个单元测试，覆盖率从 24.80% 提升至 46.16%（+2
 
 **Mock 需求**：MockStoreKit、MockAuthSession、MockURLSession（扩展现有 TestMocks）
 
-### 3.4 批次 D — View + Shared UIComponents 快照测试（23348 行未覆盖 → 95%）
+### 3.4 批次 D — View + Shared UIComponents + Platforms 快照测试（~19968 行未覆盖 → 95%）
 
-**目标**：189 个 View/UI 文件用 swift-snapshot-testing 推到 95%，预期全 App 覆盖率 ~95%
+**目标**：Features View（14602 行 0%）+ Shared UIComponents（2341 行 0%）+ Platforms（1534 行 0%）+ App View（999 行 0%）用 swift-snapshot-testing 推到 95%
+- 合计 0% 文件：179 个，19968 行未覆盖
+- 分支：约 388 个未覆盖分支（View 中分支较少）
 
 **子批次划分**（按工作量进一步拆分）：
 
 | 子批次 | 范围 | 文件数 | 未覆盖行 | 策略 |
 |--------|------|--------|---------|------|
-| D1 | Shared/UIComponents | ~75 | ~3490 | 快照测试（暗色/亮色双快照） |
-| D2 | Features/System View | ~83 | ~8200 | 快照测试（按 Settings/Auth/ModelManager/Collaboration 分组） |
-| D3 | Features/Knowledge View | ~58 | ~4400 | 快照测试（按 Graph/Ingest/Search/Vault 分组） |
-| D4 | Features/Insight + AI View | ~67 | ~5400 | 快照测试（按 Dashboard/Log/AI Chat/Synthesis 分组） |
-| D5 | App/Platforms View | ~20 | ~1850 | 快照测试（Scene/Layout/Overlay） |
+| D1 | Shared/UIComponents | ~38 | ~2341 | 快照测试（暗色/亮色双快照） |
+| D2 | Features/System View | ~40 | ~6300 | 快照测试（按 Settings/Auth/ModelManager/Collaboration 分组） |
+| D3 | Features/Knowledge View | ~25 | ~3400 | 快照测试（按 Graph/Ingest/Search/Vault 分组） |
+| D4 | Features/Insight + AI View | ~28 | ~4900 | 快照测试（按 Dashboard/Log/AI Chat/Synthesis 分组） |
+| D5 | App/Platforms View | ~26 | ~2533 | 快照测试（Scene/Layout/Overlay + iOS/macOS/watchOS 平台适配） |
 
 **快照测试基础设施**：
 - 已有 `swift-snapshot-testing` 依赖（pointfreeco，~> 1.17）
@@ -399,10 +412,10 @@ pre-push 门禁全通过
 | Infrastructure | 86.4% | 95% | 95% | 95% | 95% | 95% |
 | Localization | 70.9% | 70.9% | 95% | 95% | 95% | 95% |
 | App | 33.9% | 33.9% | 95% | 95% | 95% | 95% |
-| Features | 29.2% | 29.2% | 29.2% | 85% | 95% | 95% |
+| Features | 29.2% | 29.2% | 29.2% | ~48% | 95% | 95% |
 | Shared | 29.9% | 29.9% | 29.9% | 29.9% | 95% | 95% |
 | Platforms | 9.8% | 9.8% | 9.8% | 9.8% | 95% | 95% |
-| **全 App** | **46.16%** | **~51%** | **~55%** | **~58%** | **~95%** | **95%** |
+| **全 App** | **46.16%** | **~48.9%** | **~52.5%** | **~62.1%** | **~95%** | **95%** |
 
 ### 9.2 分支覆盖率预期
 
@@ -416,9 +429,12 @@ pre-push 门禁全通过
 | Features | 57.6% | 57.6% | 57.6% | 85% | 90% | 90% |
 | Shared | 64.3% | 64.3% | 64.3% | 64.3% | 90% | 90% |
 | Platforms | 39.3% | 39.3% | 39.3% | 39.3% | 90% | 90% |
-| **全 App** | **62.46%** | **~68%** | **~72%** | **~78%** | **~90%** | **90%** |
+| **全 App** | **62.46%** | **~77.6%** | **~78.2%** | **~86.8%** | **~90%** | **90%** |
 
-**注**：分支覆盖率提升主要集中在批次 A（Infrastructure 2289 未覆盖分支）和批次 C（Features 1875 未覆盖分支），因为问题驱动测试天然覆盖条件分支。批次 D（View 快照）对分支覆盖率贡献较小。
+**注**：
+- 批次 A 对分支覆盖率提升最大（+15pp），因为 Infrastructure 层 2289 个未覆盖分支被问题驱动测试覆盖
+- 批次 C 对分支覆盖率提升次大（+8.6pp），因为 Features 层 1875 个未覆盖分支被状态机/决策表测试覆盖
+- 批次 D（View 快照）对分支覆盖率贡献较小（+3.2pp），因为 View 中分支较少
 
 ---
 
