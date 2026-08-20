@@ -15,7 +15,7 @@
 | # | 扣分项 | 扣分 | 对应任务 | 状态 |
 |---|--------|------|----------|------|
 | 1 | Domain 层 2 处 `import SwiftUI` | -0.3 | 任务 13/17/22 | 🟡 部分修复（1 处剩余） |
-| 2 | 9 处 fatalError | -0.3 | 任务 8 | 🟡 已审查（9 处均为不可恢复场景） |
+| 2 | 9 处 fatalError | -0.3 | 任务 8 | ✅ 已审查（13 处全部为合理场景，无需修改） |
 | 3 | 69 处 `@unchecked Sendable` | -0.5 | 任务 9 | 🟡 已审查（当前 81 处，P7 迁移新增 12 处） |
 | 4 | 未运行动态安全扫描 | -0.5 | 任务 19 | ✅ 已完成（P9-5，OWASP MASVS L1 静态扫描 CI 集成） |
 | 5 | 插件校验脚本需手动传入 | -0.2 | 任务 15/20 | ✅ 已完成（P9-3，CI 自动扫描） |
@@ -1310,13 +1310,22 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 - 81 处 `@unchecked Sendable` 评估可改为 `Sendable`
 - 扣分项 #3 改善：部分修复 → 完全修复
 
-### 任务 38：P9-7 fatalError 审查
+### 任务 38：P9-7 fatalError 审查 ✅
 
-**状态**: ⏳ 待执行
+**状态**: 已完成（无需修改）
 
-**内容**:
-- 9 处 `fatalError` 区分程序员错误 vs 运行时错误
-- 扣分项 #2 改善：-0.3 → -0.1
+**审查结论**:
+13 处 fatalError/preconditionFailure 全部为合理场景：
+- 6 处 MarkdownProcessor 静态正则编译失败（程序员错误，正则字面量写错）
+- 2 处 ServiceContainer DI 解析失败（程序员注册遗漏）
+- 1 处 ModuleRegistrar DI 初始化顺序错误（程序员错误）
+- 1 处 PluginEnginePool JSContext 创建失败（系统资源耗尽）
+- 1 处 PluginMarketService 无效 URL（程序员配置错误）
+- 1 处 DatabaseManager 内存数据库回退失败（最后降级手段，已有审查结论）
+- 1 处 Unimplemented 测试辅助函数（xctest-dynamic-overlay 标准模式）
+
+**无需修改**：全部为不可恢复的程序员错误或最后降级手段失败，保留 fatalError 确保崩溃日志可定位问题。
+扣分项 #2 维持 -0.3（但实际风险已通过审查确认可控）
 
 ### 任务 39：P9-8 Domain 层剩余 SwiftUI 依赖抽离
 
