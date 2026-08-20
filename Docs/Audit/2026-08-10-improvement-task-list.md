@@ -14,7 +14,7 @@
 
 | # | 扣分项 | 扣分 | 对应任务 | 状态 |
 |---|--------|------|----------|------|
-| 1 | Domain 层 2 处 `import SwiftUI` | -0.3 | 任务 13/17/22 | 🟡 部分修复（1 处剩余） |
+| 1 | Domain 层 2 处 `import SwiftUI` | -0.3 | 任务 13/17/22 | ✅ 已完成（P9-8，Domain 层 SwiftUI 依赖清零） |
 | 2 | 9 处 fatalError | -0.3 | 任务 8 | ✅ 已审查（13 处全部为合理场景，无需修改） |
 | 3 | 69 处 `@unchecked Sendable` | -0.5 | 任务 9 | ✅ 已完成（93 处 → 46 处，-50.5%，P9-6） |
 | 4 | 未运行动态安全扫描 | -0.5 | 任务 19 | ✅ 已完成（P9-5，OWASP MASVS L1 静态扫描 CI 集成） |
@@ -1335,13 +1335,15 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 **无需修改**：全部为不可恢复的程序员错误或最后降级手段失败，保留 fatalError 确保崩溃日志可定位问题。
 扣分项 #2 维持 -0.3（但实际风险已通过审查确认可控）
 
-### 任务 39：P9-8 Domain 层剩余 SwiftUI 依赖抽离
+### 任务 39：P9-8 Domain 层剩余 SwiftUI 依赖抽离 ✅
 
-**状态**: ⏳ 待执行
+**状态**: 已完成
 
 **内容**:
-- `AppStoreProtocol.swift` 中剩余 1 处 SwiftUI 依赖
-- 扣分项 #1 改善：部分修复 → 完全修复
+- 删除 `AppStoreProtocol.swift` 中的 `EnvironmentValues` 扩展（死代码，无任何使用方）
+- 实际环境注入使用 `@Environment(AppStore.self)`，不依赖 `EnvironmentValues.appStore`
+- Domain 层（L1.5）不再 import SwiftUI，分层约束 100% 合规
+- 扣分项 #1 修复：Domain 层 SwiftUI 依赖 1 → 0
 
 ### 任务 40：P9-9 最终评分验证
 
