@@ -9,6 +9,7 @@
 //  核心职责：构建 Splash 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - SplashView
 /// 启动画面：名言引导 + 程序化生成的书本 + 神经网络星空背景
@@ -116,7 +117,7 @@ struct SplashView: View {
     // MARK: - 动画序列
     private func startAnimations() {
         #if DEBUG
-        if CommandLine.arguments.contains("--uitesting") {
+        if TestModeDetector.isUITesting {
             onDismiss()
             return
         }

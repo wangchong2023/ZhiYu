@@ -341,12 +341,6 @@ struct UserProfileMenuSheetContent: View {
     @Binding var isShowingPopover: Bool
     @State private var pendingMenuAction: UserProfileMenu.MenuAction?
     
-    private var isUITesting: Bool {
-        NSClassFromString("XCTest") != nil ||
-        ProcessInfo.processInfo.arguments.contains("--uitesting") ||
-        ProcessInfo.processInfo.environment["UITesting"] == "true"
-    }
-    
     var body: some View {
         VStack(spacing: 0) {
             CustomProfilePopover(

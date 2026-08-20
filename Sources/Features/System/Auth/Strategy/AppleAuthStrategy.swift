@@ -44,7 +44,7 @@ public final class AppleAuthStrategy: NSObject, AuthStrategy {
         #if targetEnvironment(simulator)
         // 物理自愈与降级：若在模拟器进行 UI 自动化测试时，为避免拉起 ASAuthorizationController 物理弹窗失败超时，降级返回 Mock
         // 只有显式在启动参数中配置了 --uitesting 时才退避进入 mock，日常手动调试及真机均走真实逻辑
-        if ProcessInfo.processInfo.arguments.contains("--uitesting") || NSClassFromString("XCTestCase") != nil {
+        if TestModeDetector.isAnyTesting {
             let mockAppleToken = "mock_apple_identity_token_\(UUID().uuidString)"
             return AuthCredential(
                 identityType: identityType,

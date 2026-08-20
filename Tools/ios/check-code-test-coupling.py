@@ -45,8 +45,8 @@ SOURCES_ROOT = REPO_ROOT / "Sources"
 
 # ── 豁免目录/文件（这些位置允许出现测试耦合代码）──
 EXEMPT_PATHS = {
-    "Sources/App/ZhiYuApp.swift",          # @main 入口，解析 launch argument
-    "Sources/App/AppEnvironment.swift",    # 环境初始化
+    "Sources/App/Core/ZhiYuApp.swift",    # @main 入口，解析 launch argument
+    "Sources/App/Core/AppEnvironment.swift",  # 环境初始化
     "Sources/Platforms",                   # 平台适配层
     "Sources/Core/System",                 # 系统服务（Logger 等）
 }

@@ -53,7 +53,7 @@ public final class AuthService: AuthServiceProtocol {
         // 优先检查强制 mock 标志（供单元测试使用）
         if Self.forceMockBackend { return true }
         // 其次检查 UI 测试启动参数（与 AppEnvironment 内存数据库 mock 保持一致）
-        return CommandLine.arguments.contains("-UITest_MockData")
+        return TestModeDetector.isMockDataMode
         #else
         return false
         #endif

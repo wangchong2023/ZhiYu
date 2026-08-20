@@ -47,7 +47,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
             // 1. 防御性检查：验证 clientId 是否被正确配置，若在 UI 自动化测试且 DEBUG 下，降级返回 Mock 凭证，避免弹出错误网页
             if clientId.isEmpty {
                 #if DEBUG
-                if ProcessInfo.processInfo.arguments.contains("--uitesting") || NSClassFromString("XCTestCase") != nil {
+                if TestModeDetector.isAnyTesting {
                     let mockCode = "mock_github_code_\(UUID().uuidString)"
                     let cred = AuthCredential(
                         identityType: identityType,

@@ -22,7 +22,7 @@ public final class AIAnalyticsService: Sendable {
     /// 记录单次 LLM 调用指标
     public func recordUsage(model: String, response: [String: Any], latency: Int) {
         // 单测环境下禁用后台异步指标写入，以防重置 DI 容器导致的崩溃
-        guard NSClassFromString("XCTestCase") == nil else { return }
+        guard !TestModeDetector.isUnitTesting else { return }
 
         guard let usage = response["usage"] as? [String: Any],
               let prompt = usage["prompt_tokens"] as? Int,
@@ -47,7 +47,7 @@ public final class AIAnalyticsService: Sendable {
         latency: Int
     ) {
         // 单测环境下禁用后台异步指标写入，以防重置 DI 容器导致的崩溃
-        guard NSClassFromString("XCTestCase") == nil else { return }
+        guard !TestModeDetector.isUnitTesting else { return }
 
         let governance = self.governance
         let evalService = self.evalService

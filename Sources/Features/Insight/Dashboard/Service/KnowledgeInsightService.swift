@@ -64,7 +64,7 @@ actor KnowledgeInsightService {
         guard !pages.isEmpty else { throw AppError.insight(L10n.Dashboard.insight.addPagesFirst) }
 
         // 是否处于自动化 UI 测试模式
-        let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
+        let isTesting = TestModeDetector.isUITesting
 
         // 1. 尝试从本地加载有效缓存
         if let cached = await loadValidCache(pages: pages, forceRefresh: forceRefresh) {

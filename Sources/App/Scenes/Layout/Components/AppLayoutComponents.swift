@@ -9,6 +9,7 @@
 //  核心职责：SwiftUI 视图组件，构建应用的导航、侧边栏、布局等 UI 结构。
 //
 import SwiftUI
+import UFPCore
 
 extension ContentView {
     
@@ -59,8 +60,7 @@ extension ContentView {
     private func adaptiveTabView(tintColor: Color) -> some View {
         #if !os(macOS)
         // 1. 若处于 iOS/iPadOS UI 自动化测试模式下，一律强制回退至 legacyTabView 以保障 TabBar 元素定位在 iPhone/iPad 上绝对可靠
-        if ProcessInfo.processInfo.environment["UITesting"] == "true" ||
-           ProcessInfo.processInfo.arguments.contains("--uitesting") {
+        if TestModeDetector.isUITesting {
             legacyTabView(tintColor: tintColor)
         } else if appEnv.screenClass != .compact {
             if #available(iOS 18.0, *) {

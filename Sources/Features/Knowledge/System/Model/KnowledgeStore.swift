@@ -114,7 +114,7 @@ public final class KnowledgeStore {
                     }
 
                     if let vaultID = notification.userInfo?["vaultID"] as? UUID {
-                        let isTesting = ProcessInfo.processInfo.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
+                        let isTesting = TestModeDetector.isUITesting
                         let seedKey = "seeded_vault_\(vaultID.uuidString)"
                         if !(keyStore?.bool(forKey: seedKey) ?? false) || isTesting {
                             Logger.shared.info(" [KnowledgeStore] Seeding guide data for vault \(vaultID.uuidString)...")

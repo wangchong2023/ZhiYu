@@ -22,8 +22,8 @@ struct VaultBadge: View {
     @Environment(ThemeManager.self) var themeManager
 
     /// UI 测试模式下使用直通 Button 替代 Menu（XCUITest 对 SwiftUI Menu 交互不可靠）
-    private var isUITesting: Bool {
-        ProcessInfo.processInfo.arguments.contains("--uitesting")
+    private var usesPassthroughButton: Bool {
+        TestModeDetector.isUITesting
     }
     
     var body: some View {
@@ -42,7 +42,7 @@ struct VaultBadge: View {
         #else
         // 具有指针/触控能力的设备使用 Menu
         // UI 测试模式：附加一个透明直通按钮绕过 SwiftUI Menu（XCUITest 对 Menu 交互不可靠）
-        if isUITesting {
+        if usesPassthroughButton {
             Button {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     vaultService.exitVault()

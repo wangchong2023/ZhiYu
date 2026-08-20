@@ -58,10 +58,9 @@ public final class VaultService: VaultServiceProtocol {
 
     /// 私有化单例构造方法，防止外部直接实例化。
     private init() {
-        let isUITesting = CommandLine.arguments.contains("--uitesting") || ProcessInfo.processInfo.environment["UITesting"] == "true"
-        // 加载条件：非单元测试环境（XCTestCase 未加载）或 UI 测试环境
+        // 加载条件：非单元测试环境或 UI 测试环境
         // 单元测试时跳过加载，由测试用例自行注入数据
-        if NSClassFromString("XCTestCase") == nil || isUITesting {
+        if !TestModeDetector.isUnitTesting || TestModeDetector.isUITesting {
             loadVaults()
         }
     }
