@@ -9,6 +9,7 @@
 //  核心职责：跨层协议定义，建立 L0-L3 各层间的抽象契约。
 //
 import Foundation
+import UFPCore
 
 // MARK: - 协议定义
 
@@ -26,7 +27,7 @@ public protocol KnowledgePageRepresentable: Sendable {
 
 /// 统一的对话消息传输对象
 public struct ChatMessageDTO: Codable, Identifiable, Sendable {
-    public var id = UUID()
+    public let id: UUID
     public let role: ChatRole
     public let content: String
     public var timestamp = Date()
@@ -91,7 +92,7 @@ public struct SmartIngestResultDTO: Codable, Sendable {
 
 /// 知识重构建议的传输对象
 public struct RefactorSuggestionDTO: Codable, Identifiable, Sendable {
-    public var id: String { target + type }
+    public var id: String { target + CoreConstants.TextSeparator.colon + type }
     public let type: String     // merge, split, rename
     public let target: String
     public let reason: String

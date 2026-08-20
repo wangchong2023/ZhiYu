@@ -181,6 +181,8 @@ public enum CoreConstants {
     public enum TextSeparator {
         /// 引用 SystemConstants.Separator.commaSpace
         public static let commaSpace: String = SystemConstants.Separator.commaSpace
+        /// 引用 SystemConstants.Separator.colon
+        public static let colon: String = SystemConstants.Separator.colon
     }
 
     // MARK: - 错误域 (Error Domain)

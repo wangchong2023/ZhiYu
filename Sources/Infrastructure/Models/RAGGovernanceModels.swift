@@ -49,6 +49,17 @@ public struct TokenUsage: Identifiable, Codable, FetchableRecord, MutablePersist
         self.totalTokens = promptTokens + completionTokens
         self.createdAt = createdAt
     }
+
+    /// 自定义解码：强制 totalTokens = promptTokens + completionTokens，防止外部 JSON 数据不一致
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(Int64.self, forKey: .id)
+        self.model = try container.decode(String.self, forKey: .model)
+        self.promptTokens = try container.decode(Int.self, forKey: .promptTokens)
+        self.completionTokens = try container.decode(Int.self, forKey: .completionTokens)
+        self.totalTokens = promptTokens + completionTokens
+        self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+    }
 }
 
 // MARK: - RAG 质量评估模型

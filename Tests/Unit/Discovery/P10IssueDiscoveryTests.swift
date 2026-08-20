@@ -10,41 +10,36 @@
 import XCTest
 @testable import ZhiYu
 
-// MARK: - RefactorSuggestionDTO.id 碰撞风险验证
+// MARK: - RefactorSuggestionDTO.id 碰撞修复验证
 
 final class RefactorSuggestionIDCollisionTests: XCTestCase {
 
-    /// 问题 #18：RefactorSuggestionDTO.id = target + type 存在碰撞风险
-    /// target="AB" type="C" 与 target="A" type="BC" 产生相同 id "ABC"
-    func testIDCollisionWhenTargetAndTypeConcatenate() {
+    /// 修复验证：id = target + ":" + type 后不再碰撞
+    func testIDNoLongerCollidesAfterFix() {
         let suggestion1 = RefactorSuggestionDTO(type: "C", target: "AB", reason: "", suggestion: "")
         let suggestion2 = RefactorSuggestionDTO(type: "BC", target: "A", reason: "", suggestion: "")
-        XCTAssertEqual(
+        XCTAssertNotEqual(
             suggestion1.id,
             suggestion2.id,
-            "确认存在 id 碰撞：target+type 拼接无分隔符，不同输入产生相同 id"
+            "修复后：id 加冒号分隔符，AB:C ≠ A:BC，不再碰撞"
         )
     }
 
-    /// 验证碰撞会导致 ForEach/dictionary 去重丢失数据
-    func testIDCollisionCausesDataLossInDictionary() {
+    /// 验证修复后 Dictionary 不再丢数据
+    func testIDNoCollisionInDictionaryAfterFix() {
         let suggestion1 = RefactorSuggestionDTO(type: "C", target: "AB", reason: "r1", suggestion: "s1")
         let suggestion2 = RefactorSuggestionDTO(type: "BC", target: "A", reason: "r2", suggestion: "s2")
         var dict: [String: RefactorSuggestionDTO] = [:]
         dict[suggestion1.id] = suggestion1
         dict[suggestion2.id] = suggestion2
-        XCTAssertEqual(
-            dict.count,
-            1,
-            "确认 Dictionary 去重后只剩 1 个元素 — 两个不同建议因 id 碰撞被合并"
-        )
+        XCTAssertEqual(dict.count, 2, "修复后：两个不同建议保留在 Dictionary 中")
     }
 
-    /// 验证合理场景下也可能碰撞（target 含 type 前缀）
-    func testIDCollisionRealisticScenario() {
-        let mergePageA = RefactorSuggestionDTO(type: "merge", target: "PageA", reason: "", suggestion: "")
-        let pageAMerge = RefactorSuggestionDTO(type: "erge", target: "PageAm", reason: "", suggestion: "")
-        XCTAssertEqual(mergePageA.id, pageAMerge.id)
+    /// 验证 id 格式包含冒号分隔符
+    func testIDContainsColonSeparator() {
+        let suggestion = RefactorSuggestionDTO(type: "merge", target: "PageA", reason: "", suggestion: "")
+        XCTAssertTrue(suggestion.id.contains(":"), "id 应包含冒号分隔符")
+        XCTAssertEqual(suggestion.id, "PageA:merge")
     }
 }
 
@@ -52,8 +47,8 @@ final class RefactorSuggestionIDCollisionTests: XCTestCase {
 
 final class TokenUsageDataIntegrityTests: XCTestCase {
 
-    /// 问题 #16：TokenUsage 从 JSON 解码时 totalTokens 可能与 prompt+completion 不一致
-    func testDecodedTotalTokensCanDifferFromCalculated() throws {
+    /// 修复验证：自定义 init(from:) 后，解码时 totalTokens 强制 = prompt + completion
+    func testDecodedTotalTokensAlwaysConsistentAfterFix() throws {
         let json = """
         {
             "id": 1,
@@ -73,10 +68,10 @@ final class TokenUsageDataIntegrityTests: XCTestCase {
         XCTAssertEqual(decoded.completionTokens, 50)
         XCTAssertEqual(
             decoded.totalTokens,
-            999,
-            "确认问题：解码后 totalTokens=999，但 prompt+completion=150，数据不一致"
+            150,
+            "修复后：解码时强制 totalTokens = prompt + completion = 150，忽略 JSON 中的 999"
         )
-        XCTAssertNotEqual(decoded.totalTokens, decoded.promptTokens + decoded.completionTokens)
+        XCTAssertEqual(decoded.totalTokens, decoded.promptTokens + decoded.completionTokens)
     }
 
     /// 验证 init 构造的 totalTokens 始终一致
@@ -85,7 +80,7 @@ final class TokenUsageDataIntegrityTests: XCTestCase {
         XCTAssertEqual(usage.totalTokens, usage.promptTokens + usage.completionTokens)
     }
 
-    /// 验证 Codable 往返后 totalTokens 保持一致（因为编码的是计算值）
+    /// 验证 Codable 往返后 totalTokens 保持一致
     func testCodableRoundTripPreservesConsistency() throws {
         let original = TokenUsage(model: "gpt-4", promptTokens: 100, completionTokens: 50)
         let data = try JSONEncoder().encode(original)
@@ -94,24 +89,22 @@ final class TokenUsageDataIntegrityTests: XCTestCase {
     }
 }
 
-// MARK: - ChatMessageDTO.id 可变性验证
+// MARK: - ChatMessageDTO.id 不可变性验证
 
 final class ChatMessageDTOIDMutabilityTests: XCTestCase {
 
-    /// 问题 #17：ChatMessageDTO.id 是 var（可变），违反不可变标识原则
-    func testIDIsMutable() {
-        var msg = ChatMessageDTO(role: .user, content: "test")
+    /// 修复验证：id 改为 let 后不可变
+    func testIDIsImmutable() {
+        let msg = ChatMessageDTO(role: .user, content: "test")
         let originalID = msg.id
-        msg.id = UUID()
-        XCTAssertNotEqual(msg.id, originalID, "确认问题：id 可被外部修改")
+        XCTAssertEqual(msg.id, originalID, "id 是 let，不可变")
     }
 
-    /// 验证 id 可变会导致追踪丢失
-    func testMutableIDBreaksTracking() {
-        var msg = ChatMessageDTO(role: .user, content: "test")
+    /// 验证 id 始终一致
+    func testIDStable() {
+        let msg = ChatMessageDTO(role: .user, content: "test")
         let trackingID = msg.id
-        msg.id = UUID()
-        XCTAssertNotEqual(msg.id, trackingID, "确认问题：修改 id 后无法通过原 id 追踪消息")
+        XCTAssertEqual(msg.id, trackingID, "id 不可变，追踪不会丢失")
     }
 }
 

@@ -179,7 +179,7 @@ final class RefactorSuggestionDTOTests: XCTestCase {
         XCTAssertEqual(suggestion.suggestion, "合并到页面B")
     }
 
-    /// 验证 RefactorSuggestionDTO Identifiable（id = target + type）
+    /// 验证 RefactorSuggestionDTO Identifiable（id = target + ":" + type）
     func testRefactorSuggestionDTOIdentifiable() {
         let suggestion = RefactorSuggestionDTO(
             type: "split",
@@ -187,7 +187,7 @@ final class RefactorSuggestionDTOTests: XCTestCase {
             reason: "",
             suggestion: ""
         )
-        XCTAssertEqual(suggestion.id, "页面Xsplit")
+        XCTAssertEqual(suggestion.id, "页面X:split")
     }
 
     /// 验证 RefactorSuggestionDTO Codable 往返

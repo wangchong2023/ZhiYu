@@ -259,6 +259,8 @@ public enum SystemConstants {
         public static let commaSpace: String = ", "
         /// 箭头拼接符 " + "
         public static let arrow: String = " + "
+        /// 冒号分隔符 ":"
+        public static let colon: String = ":"
     }
 
     // MARK: - 版本号 (Version)
