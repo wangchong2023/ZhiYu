@@ -10,7 +10,7 @@
 #   - static-analysis: 22 项并行检查（Python/SwiftLint/架构审计 + Swift 编译告警门禁）
 #   - 后续 build Job 复用 prepare artifacts，跳过重复生成
 #   - Shell Runner 单机部署，build Job 串行执行
-#   - SonarQube 在测试后运行，包含 slather 生成的覆盖率报告
+#   - SonarQube 在测试后运行，包含覆盖率报告（SonarSource 官方脚本生成，含分支数据）
 #
 # 执行顺序:
 #   prepare(生成工程) → analyze(静态分析+Swift告警门禁) → build(ios→macos→watchos) → test → sonar
@@ -150,10 +150,10 @@ sonarqube-analysis:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) + slather 覆盖率 + Quality Gate 硬阻断"
+    - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) + 覆盖率报告（含分支）+ Quality Gate 硬阻断"
     - |
       if [ -f build/coverage/sonarqube-generic-coverage.xml ]; then
-        echo "  发现 slather 覆盖率报告，注入 sonar.coverageReportPaths"
+        echo "  发现覆盖率报告（SonarSource 官方脚本生成，含分支数据），注入 sonar.coverageReportPaths"
         sonar-scanner \
           -Dsonar.host.url=${SONAR_HOST_URL} \
           -Dsonar.coverageReportPaths=build/coverage/sonarqube-generic-coverage.xml \

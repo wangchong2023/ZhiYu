@@ -3,11 +3,17 @@
 #
 # 作者: Wang Chong
 # 功能说明: 智宇 (ZhiYu) 全自动代码覆盖率红线校验熔断工具
-#          自动提取 .xcresult，通过 xccov 抽取高维 JSON 报文，
+#          自动提取 .xcresult，通过 xccov 抽取覆盖率数据，
 #          按架构分层 (L0-L3) 统计语句覆盖率与分支覆盖率，
 #          对全 App 整体及每个模块均强加 85% 双红线（语句 + 分支）。
-# 版本: 2.0
-# 日期: 2026-08-06
+# 版本: 3.0
+# 日期: 2026-08-20
+#
+# 变更说明 (v3.0):
+#   - 改用 xccov view --archive（文本格式）替代 --report --json
+#   - JSON 报文不含分支数据，文本格式包含完整分支信息
+#   - 新增文本格式解析器，提取行覆盖率 + 分支覆盖率
+#   - 分支数据格式: "13: 2 [" + "(col, count1, count2)" + "]"
 #
 # 变更说明 (v2.0):
 #   - 从仅校验 Domain 层语句覆盖率扩展为全 App 各层双指标校验
@@ -26,6 +32,7 @@
 import os
 import sys
 import glob
+import re
 import json
 import argparse
 import subprocess
@@ -110,25 +117,22 @@ def find_latest_xcresult(search_dir):
     return results[0]
 
 
-def recursive_find_files(node):
-    """递归遍历 JSON 结构以适应 Xcode 不同版本 xccov 报文结构，收集所有文件覆盖率节点"""
-    files = []
-    if isinstance(node, dict):
-        if "path" in node and ("coveredLines" in node or "executableLines" in node):
-            files.append(node)
-        for key, value in node.items():
-            files.extend(recursive_find_files(value))
-    elif isinstance(node, list):
-        for item in node:
-            files.extend(recursive_find_files(item))
-    return files
+def extract_coverage_text(latest_result):
+    """
+    使用 xccov view --archive（文本格式）提取覆盖率数据。
 
-
-def extract_raw_report_json(latest_result):
-    """使用 xccov 工具提取最新的单元测试覆盖率 JSON 报文"""
+    文本格式包含完整分支信息（JSON 格式不含分支数据）：
+        /path/to/file.swift:
+         10: *              <- 非可执行行
+         11: 0              <- 未覆盖行
+         12: 5              <- 已覆盖行（执行 5 次）
+         13: 2 [            <- 已覆盖行 + 分支信息开始
+         (33, 9, 0)         <- 分支元组：(列, 路径1计数, 路径2计数)
+         ]                  <- 分支信息结束
+    """
     try:
-        cmd = ["xcrun", "xccov", "view", "--report", "--json", latest_result]
-        log_info(f"执行底层覆盖率转储: {' '.join(cmd)}")
+        cmd = ["xcrun", "xccov", "view", "--archive", latest_result]
+        log_info(f"执行覆盖率文本提取: {' '.join(cmd)}")
         process = subprocess.run(
             cmd,
             stdout=subprocess.PIPE,
@@ -142,16 +146,127 @@ def extract_raw_report_json(latest_result):
         sys.exit(1)
 
 
+def parse_coverage_text(text):
+    """
+    解析 xccov 文本格式覆盖率，返回文件覆盖率节点列表。
+
+    每个节点结构:
+        {
+            "path": str,
+            "coveredLines": int,
+            "executableLines": int,
+            "branchCovered": int,
+            "branchTotal": int,
+        }
+    """
+    files = []
+    current_file = None
+    current_line_covered = 0
+    current_line_executable = 0
+    current_branch_covered = 0
+    current_branch_total = 0
+    in_branch_block = False
+    branch_line_exec_count = 0
+
+    for line in text.splitlines():
+        # 文件路径行（以冒号结尾，非行号格式）
+        if line.endswith(":") and not re.match(r"^\s+\d+:", line):
+            # 保存前一个文件
+            if current_file is not None:
+                files.append({
+                    "path": current_file,
+                    "coveredLines": current_line_covered,
+                    "executableLines": current_line_executable,
+                    "branchCovered": current_branch_covered,
+                    "branchTotal": current_branch_total,
+                })
+            # 开始新文件
+            current_file = line[:-1]  # 去掉尾部冒号
+            current_line_covered = 0
+            current_line_executable = 0
+            current_branch_covered = 0
+            current_branch_total = 0
+            in_branch_block = False
+            continue
+
+        # 分支块开始: " 13: 2 ["
+        m = re.match(r"^\s+(\d+):\s+(\d+)\s+\[\s*$", line)
+        if m:
+            line_num = int(m.group(1))
+            exec_count = int(m.group(2))
+            current_line_executable += 1
+            if exec_count > 0:
+                current_line_covered += 1
+            in_branch_block = True
+            branch_line_exec_count = exec_count
+            continue
+
+        # 分支元组: "(33, 9, 0)"
+        m = re.match(r"^\((\d+),\s+(\d+),\s+(\d+)\)\s*$", line)
+        if m and in_branch_block:
+            count1 = int(m.group(2))
+            count2 = int(m.group(3))
+            current_branch_total += 2
+            if count1 > 0:
+                current_branch_covered += 1
+            if count2 > 0:
+                current_branch_covered += 1
+            continue
+
+        # 分支块结束: "]"
+        if line.strip() == "]" and in_branch_block:
+            in_branch_block = False
+            continue
+
+        # 未覆盖行: " 11: 0"
+        m = re.match(r"^\s+(\d+):\s+0\s*$", line)
+        if m and not in_branch_block:
+            current_line_executable += 1
+            continue
+
+        # 已覆盖行（无分支）: " 12: 5"
+        m = re.match(r"^\s+(\d+):\s+([1-9]\d*)\s*$", line)
+        if m and not in_branch_block:
+            current_line_executable += 1
+            current_line_covered += 1
+            continue
+
+        # 空行 — 文件分隔
+        if line.strip() == "" and current_file is not None:
+            files.append({
+                "path": current_file,
+                "coveredLines": current_line_covered,
+                "executableLines": current_line_executable,
+                "branchCovered": current_branch_covered,
+                "branchTotal": current_branch_total,
+            })
+            current_file = None
+            continue
+
+    # 保存最后一个文件
+    if current_file is not None:
+        files.append({
+            "path": current_file,
+            "coveredLines": current_line_covered,
+            "executableLines": current_line_executable,
+            "branchCovered": current_branch_covered,
+            "branchTotal": current_branch_total,
+        })
+
+    return files
+
+
 # ── 层级分类 ──────────────────────────────────────────────────
 def classify_layer(path):
-    """根据文件路径返回层级显示名，非 Sources/ 下返回 None"""
+    """根据文件路径返回层级显示名，非 Sources/ 项目目录返回 None"""
     norm = path.replace("\\", "/")
     if "/Sources/" not in norm:
         return None
     idx = norm.find("/Sources/")
     after = norm[idx + len("/Sources/"):]
     top = after.split("/")[0]
-    return LAYER_MAP.get(top, f"Other ({top})")
+    # 仅识别项目源码目录，排除第三方嵌入库（Markdown/MarkdownUI 等）
+    return LAYER_MAP.get(top)
 
 
 def filter_domain_files(all_files):
@@ -171,28 +286,12 @@ def filter_domain_files(all_files):
 def extract_branch_metrics(file_node):
     """
     从文件节点提取分支覆盖数据。
-    xccov JSON 报文中分支数据可能以两种形式存在：
-      1. 顶层 branchCoverage (0-1 浮点) + branches 数组
-      2. 仅 branches 数组，需自行计算
+    文本格式解析器已将分支数据提取为 branchCovered/branchTotal 字段。
     返回 (covered_branches, total_branches)；无分支数据返回 (0, 0)。
     """
-    branches = file_node.get("branches")
-    if branches and isinstance(branches, list):
-        total = 0
-        covered = 0
-        for b in branches:
-            if not isinstance(b, dict):
-                continue
-            # branchCount: 该分支点的分支总数；taken: 已执行的分支数
-            branch_count = b.get("branchCount", 0)
-            taken = b.get("taken", 0)
-            if branch_count > 0:
-                total += branch_count
-                covered += min(taken, branch_count)
-        return covered, total
-
-    # 降级：尝试从 branchCoverage 浮点 + executableLines 反推（不精确，仅告警用）
-    return 0, 0
+    total = file_node.get("branchTotal", 0)
+    covered = file_node.get("branchCovered", 0)
+    return covered, total
 
 
 # ── 聚合统计 ──────────────────────────────────────────────────
@@ -498,7 +597,7 @@ def _parse_args():
 
 
 def _load_coverage_data():
-    """定位并解析最新 xcresult 的覆盖率 JSON 报文"""
+    """定位并解析最新 xcresult 的覆盖率数据（文本格式，含分支）"""
     if not os.path.exists(SEARCH_DIR):
         log_error(f"未找到 Xcode 派生数据目录: {SEARCH_DIR}。请先执行自动化跑测。")
         sys.exit(1)
@@ -509,26 +608,24 @@ def _load_coverage_data():
         sys.exit(1)
 
     log_info(f"定位最新测试结果集: {latest_result}")
-    raw_json = extract_raw_report_json(latest_result)
-
-    try:
-        data = json.loads(raw_json)
-    except json.JSONDecodeError:
-        log_error("JSON 报文格式损坏，解析失败")
-        sys.exit(1)
-
-    all_files = recursive_find_files(data)
+    raw_text = extract_coverage_text(latest_result)
+    all_files = parse_coverage_text(raw_text)
     log_info(f"全栈扫描完毕。共捕获到 {len(all_files)} 个源文件节点的覆盖率信息。")
     return all_files
 
 
 def _aggregate_total_stats(layer_stats):
-    """从分层统计聚合全 App 整体统计"""
-    total_line_covered = sum(s["line_covered"] for s in layer_stats.values())
-    total_line_executable = sum(s["line_executable"] for s in layer_stats.values())
-    total_branch_covered = sum(s["branch_covered"] for s in layer_stats.values())
-    total_branch_total = sum(s["branch_total"] for s in layer_stats.values())
-    total_has_branch = any(s["has_branch"] for s in layer_stats.values())
+    """从分层统计聚合全 App 整体统计（仅聚合 LAYER_ORDER 中的已知层级）"""
+    total_line_covered = sum(layer_stats[layer]["line_covered"]
+                             for layer in LAYER_ORDER if layer in layer_stats)
+    total_line_executable = sum(layer_stats[layer]["line_executable"]
+                                for layer in LAYER_ORDER if layer in layer_stats)
+    total_branch_covered = sum(layer_stats[layer]["branch_covered"]
+                               for layer in LAYER_ORDER if layer in layer_stats)
+    total_branch_total = sum(layer_stats[layer]["branch_total"]
+                             for layer in LAYER_ORDER if layer in layer_stats)
+    total_has_branch = any(layer_stats[layer]["has_branch"]
+                           for layer in LAYER_ORDER if layer in layer_stats)
     return (
         total_line_covered, total_line_executable,
         total_branch_covered, total_branch_total, total_has_branch,

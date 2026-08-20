@@ -81,29 +81,57 @@ if total_executable > 0:
 " > "$COVERAGE_DIR/summary.txt"
     echo "  覆盖率摘要: $COVERAGE_DIR/summary.txt"
 
-    # ── 用 slather 生成 SonarQube Generic Coverage XML ──
-    # slather 从 .xcresult 提取行级覆盖率，生成 SonarQube 原生支持的 XML 格式
-    # 配置文件: .slather.yml (source_files 白名单仅含 Sources/**/*.swift)
-    echo "  生成 SonarQube 覆盖率报告 (slather)..."
-    DERIVED_DATA_DIR=$(dirname "$(dirname "$LATEST_XCRESULT")")
-    if command -v slather >/dev/null 2>&1; then
-        slather coverage --sonarqube-xml \
-            --output-directory "$COVERAGE_DIR" \
-            --build-directory "$DERIVED_DATA_DIR" \
-            ZhiYu.xcodeproj 2>&1 | grep -v "^warning:" || true
-        if [ -f "$COVERAGE_DIR/sonarqube-generic-coverage.xml" ]; then
+    # ── 生成 SonarQube Generic Coverage XML（含分支数据）──
+    # 使用 SonarSource 官方脚本 xccov-to-sonarqube-generic.sh 从 .xcresult 提取
+    # 该脚本用 xccov view --archive（文本格式）提取，包含 branchesToCover/coveredBranches
+    # 替代旧 slather 方案（slather 不提取分支数据，只提取行覆盖率）
+    echo "  生成 SonarQube 覆盖率报告（含分支数据，SonarSource 官方脚本）..."
+    XCCOV_SCRIPT="Tools/CI/coverage/xccov-to-sonarqube-generic.sh"
+    if [ -x "$XCCOV_SCRIPT" ]; then
+        # 官方脚本输出绝对路径，需转为相对路径（SonarQube 要求相对路径）
+        PROJECT_ROOT=$(pwd)
+        "$XCCOV_SCRIPT" "$LATEST_XCRESULT" \
+            | sed "s|$PROJECT_ROOT/||g" \
+            > "$COVERAGE_DIR/sonarqube-generic-coverage.xml" 2>/dev/null
+        if [ -s "$COVERAGE_DIR/sonarqube-generic-coverage.xml" ]; then
+            BRANCH_COUNT=$(grep -c "branchesToCover" "$COVERAGE_DIR/sonarqube-generic-coverage.xml" || echo 0)
+            LINE_COUNT=$(grep -c "lineToCover" "$COVERAGE_DIR/sonarqube-generic-coverage.xml" || echo 0)
             echo "  ✅ SonarQube 覆盖率报告: $COVERAGE_DIR/sonarqube-generic-coverage.xml"
+            echo "     行覆盖率节点: $LINE_COUNT | 分支覆盖率节点: $BRANCH_COUNT"
         else
-            echo "  ⚠️  slather 未生成覆盖率报告，跳过"
+            echo "  ⚠️  官方脚本未生成覆盖率报告，降级到 slather"
+            _fallback_slather "$COVERAGE_DIR" "$LATEST_XCRESULT"
         fi
     else
-        echo "  ⚠️  slather 未安装，跳过 SonarQube 覆盖率报告生成"
+        echo "  ⚠️  官方脚本不存在: $XCCOV_SCRIPT，降级到 slather"
+        _fallback_slather "$COVERAGE_DIR" "$LATEST_XCRESULT"
     fi
 else
     echo "  ⚠️  未找到 .xcresult 测试结果包，跳过产物导出"
 fi
 
 echo "✅ 跑测、覆盖率门禁及性能回归校验全部通过！"
+
+# ── slather 降级方案（无分支数据，仅行覆盖率）──
+_fallback_slather() {
+    local coverage_dir="$1"
+    local xcresult="$2"
+    local derived_data_dir
+    derived_data_dir=$(dirname "$(dirname "$xcresult")")
+    if command -v slather >/dev/null 2>&1; then
+        slather coverage --sonarqube-xml \
+            --output-directory "$coverage_dir" \
+            --build-directory "$derived_data_dir" \
+            ZhiYu.xcodeproj 2>&1 | grep -v "^warning:" || true
+        if [ -f "$coverage_dir/sonarqube-generic-coverage.xml" ]; then
+            echo "  ✅ slather 降级报告（仅行覆盖率，无分支数据）: $coverage_dir/sonarqube-generic-coverage.xml"
+        else
+            echo "  ⚠️  slather 降级也失败，跳过"
+        fi
+    else
+        echo "  ⚠️  slather 未安装，跳过覆盖率报告生成"
+    fi
+}
 
 # ── 打印构建版本信息 ──
 if [ -f "$PLIST" ]; then
