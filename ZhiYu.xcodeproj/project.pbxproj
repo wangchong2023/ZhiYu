@@ -1196,6 +1196,7 @@
 		8C538319D361E946D7FE1029 /* StoreCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0BD0D223C76282F271BBE1 /* StoreCapabilities.swift */; };
 		8C63F1B15F59C7B6980529BB /* ChatWelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284AFCBEF87FC52E89065FC6 /* ChatWelcomeView.swift */; };
 		8CAD43C3D77E22D7A360E1F0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DF0C4359CBAF3D73CE7C122E /* Localizable.strings */; };
+		8CB0CB6CDACB21201EB2FAAB /* SecureEnclaveCryptoSupplementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8C114DC9B0A71CA3651E93D /* SecureEnclaveCryptoSupplementTests.swift */; };
 		8CC613E6290C1E48EB425443 /* GraphCommunityProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6A8F898DED77E6E5FCD9E7 /* GraphCommunityProcessor.swift */; };
 		8CCBF6D9977E519FE67419FC /* testComparisonDetailBodyView_WithFrontmatter.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 78561715E00D81DCB63DF87C /* testComparisonDetailBodyView_WithFrontmatter.1.png */; };
 		8CDABE47BCAAC07C94DA5D13 /* DesignSystem+Shadows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 223A88F0020EBEE3AF842DE3 /* DesignSystem+Shadows.swift */; };
@@ -2030,6 +2031,7 @@
 		EE3DCDF911B817A860E0003E /* PageDetailMetaSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E203A9E4DF95CF56C6459C53 /* PageDetailMetaSectionView.swift */; };
 		EE435DA3AC10C72BF261ADCE /* LLMIngestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856622CAC4CAB31FEA7C3D2A /* LLMIngestService.swift */; };
 		EE5C866F65EA4955B1D03ABC /* L10nIngestTableExtrasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0074EFABBEC3C2FD9BE5A19 /* L10nIngestTableExtrasTests.swift */; };
+		EE77F810E81A3047AA43D42A /* SecureEnclaveCryptoServicePlusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D62F5E84D5198C2F97646EA /* SecureEnclaveCryptoServicePlusTests.swift */; };
 		EE79E5D85B03A6C52EAC3EBB /* ModelLabInputsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8FE8C75E3EDA800E49F833 /* ModelLabInputsPanel.swift */; };
 		EEAEF2E0E2C68D83184A4DEC /* MarkdownProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCB0D2C4E8F837B82C6053B /* MarkdownProcessorTests.swift */; };
 		EECA864957335B9C96E6BE20 /* CollaborationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7C238B00D09E936040D6F /* CollaborationModels.swift */; };
@@ -2410,6 +2412,7 @@
 		1CFBAAF41B7B064820E8022A /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		1D3ACB085FF9DF3E848B9763 /* ZhiYuUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZhiYuUITests.swift; sourceTree = "<group>"; };
 		1D6031265C0856B48123DFBC /* TaskCenterProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCenterProtocol.swift; sourceTree = "<group>"; };
+		1D62F5E84D5198C2F97646EA /* SecureEnclaveCryptoServicePlusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureEnclaveCryptoServicePlusTests.swift; sourceTree = "<group>"; };
 		1DA80CBD181DB76EF2E8DDEB /* WidgetL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetL10n.swift; sourceTree = "<group>"; };
 		1DE32090B01EA27407778988 /* testAdaptiveSidebarView.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testAdaptiveSidebarView.1.png; sourceTree = "<group>"; };
 		1DEBA23C20D4626F4A1208D7 /* Localized.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localized.swift; sourceTree = "<group>"; };
@@ -3339,6 +3342,7 @@
 		D84175488FDEAC7541758F67 /* ModelColorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelColorView.swift; sourceTree = "<group>"; };
 		D89469DD28BDEA92B2458653 /* PluginDataStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginDataStoreTests.swift; sourceTree = "<group>"; };
 		D8BB0013548BD19C7261BB01 /* ZhiYuUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ZhiYuUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8C114DC9B0A71CA3651E93D /* SecureEnclaveCryptoSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureEnclaveCryptoSupplementTests.swift; sourceTree = "<group>"; };
 		D8C9631A79F8E148A4F68621 /* LLMUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMUtilsTests.swift; sourceTree = "<group>"; };
 		D8F3C1578BE5000EC0CA70AA /* en */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = en; path = en.lproj/luckin_vs_starbucks_report.pdf; sourceTree = "<group>"; };
 		D91EF96EF05D994892D0142C /* testTaskCenterView_AllCompleted.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testTaskCenterView_AllCompleted.1.png; sourceTree = "<group>"; };
@@ -3743,7 +3747,9 @@
 				91383C5F9251E1EAB97D41BF /* OnboardingServiceTests.swift */,
 				92071252E04CCAD9A1952934 /* PerformanceServiceTests.swift */,
 				E1C43E5DF7050E9F997B6B08 /* RetryTaskTests.swift */,
+				1D62F5E84D5198C2F97646EA /* SecureEnclaveCryptoServicePlusTests.swift */,
 				0F7BD73C58CED36C876F84C0 /* SecureEnclaveCryptoServiceTests.swift */,
+				D8C114DC9B0A71CA3651E93D /* SecureEnclaveCryptoSupplementTests.swift */,
 				2CCCFE82C49A7D6314725CC0 /* SnapshotServiceTests.swift */,
 				BB48D9373EE44BA607E906E7 /* StringPhoneNumberTests.swift */,
 				BCE84123083599A965089C84 /* StubServicesTests.swift */,
@@ -7927,7 +7933,9 @@
 				64FE6BEC43BCCA6F07CAF464 /* SearchPerformanceTests.swift in Sources */,
 				20D3957BF9504953A897DA58 /* SearchStoreTests.swift in Sources */,
 				ACE50F58A8FD66D39152477D /* SearchViewSnapshots.swift in Sources */,
+				EE77F810E81A3047AA43D42A /* SecureEnclaveCryptoServicePlusTests.swift in Sources */,
 				7F7B2EB3C2916469E9C5C45A /* SecureEnclaveCryptoServiceTests.swift in Sources */,
+				8CB0CB6CDACB21201EB2FAAB /* SecureEnclaveCryptoSupplementTests.swift in Sources */,
 				D8B50B2AB8EEA316D403F9AC /* SecurityAndRerankerPureLogicTests.swift in Sources */,
 				298CF801EAAD72335AFEAF91 /* SecurityExpertTests.swift in Sources */,
 				CE9BE6DA20F4D5FD0E1A3930 /* SecurityIntegrityTests.swift in Sources */,

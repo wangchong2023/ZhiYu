@@ -19,3 +19,12 @@
 | A-5 | `PerformanceBenchmarker.swift:48` `Double(count)/duration` 当 duration≈0 得到 `inf`，日志显示 `inf docs/s` | P2 | 增加 `duration > 0` 防护，否则输出 0 | 是 |
 | A-6 | `DemoImageBuilder.swift:265-272` `#else`（watchOS）分支定义 `ensureDemoImagesExist(at:) -> [URL]`，但 UIKit 分支只有 `ensureImageExists(at:title:) -> UIImage?`，API 不一致 | P2 | 统一 API 签名，或在 watchOS 分支提供等价单图生成方法 | 否 |
 
+### Task 2：SecureEnclaveCryptoService
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-7 | `SecureEnclaveCryptoService.swift:71` `sealedBox.combined?.base64EncodedString() ?? ""` 当 combined 为 nil 时返回空字符串而非抛错，调用方无法区分"加密成功但 combined 为 nil"和"加密失败" | P2 | 改为 `guard let combined = sealedBox.combined else { throw SecurityError.encodingFailed }` | 否 |
+| A-8 | `SecureEnclaveCryptoService.swift:107-111` 迁移成功后 reencrypt 结果赋值给 `_` 丢弃，调用方收到旧明文但不知道需要更新 Keychain（死代码） | P2 | 返回 `(明文, 新密文)` 元组或通过回调通知调用方更新 Keychain | 否 |
+| A-9 | `SecureEnclaveCryptoService.swift:149-157` `getOrCreateHKDFSalt` 中 Keychain retrieve 返回 nil 时无法区分"盐不存在"与"临时错误"，可能生成新盐覆盖旧盐导致存量密文不可解密 | P2 | KeychainService.retrieve 应区分 errSecItemNotFound 和其他错误 | 否 |
+| A-10 | `SecureEnclaveCryptoService.swift:201-203` `getOrCreateHardwarePrivateKey` token 损坏时仅记录日志并静默重建，旧密文将永远无法解密，调用方不知情 | P2 | 抛出特定错误或通过通知机制告知调用方密钥已更换 | 否 |
+
