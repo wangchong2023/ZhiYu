@@ -39,7 +39,9 @@ public enum LLMConstants {
 
     /// 实体占位符解析阈值
     public enum EntityPlaceholder {
-        /// 占位符被切断时剩余文本最大长度，超过则视为非合法占位符
+        /// 缓冲区无闭合 `]` 时的最大缓存长度（DoS 保护）。
+        /// - 注意：此阈值仅在找不到闭合 `]` 时触发，防止恶意/异常输入导致无限缓存。
+        ///   完整的方括号内容（有闭合 `]`）即使超过此长度也会正常尝试还原。
         public static let maxRawLength = 25
         /// 缓冲区保留的后缀长度
         public static let bufferSuffixLength = 10

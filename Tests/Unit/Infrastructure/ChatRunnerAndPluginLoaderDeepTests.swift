@@ -149,11 +149,16 @@ final class OnDeviceLLMServiceExtractTagsDeepTests: XCTestCase {
         XCTAssertTrue(tags.isEmpty, "# 后跟空格不应被提取为标签")
     }
 
-    /// 问题：标签在 URL 中被误提取
-    func testExtractTagsExtractsFromURLs() {
-        let tags = service.extractTags(from: "https://example.com/#section")
-        // #section 会被提取为 "section"，这可能不是期望的行为
-        XCTAssertEqual(tags, ["section"], "URL 中的 #section 会被误提取为标签")
+    /// 修复 A-37：URL 中的 #fragment 不再被误提取为标签
+    func testExtractTagsDoesNotExtractURLFragments() {
+        let tags = service.extractTags(from: "Visit https://example.com/page#section for details")
+        XCTAssertTrue(tags.isEmpty, "URL 中的 #section 不应被提取为标签（A-37 已修复）")
+    }
+
+    /// 修复 A-37：URL 中的 #fragment 不被提取，但文本中的 #tag 仍正常提取
+    func testExtractTagsExtractsTagsButNotURLFragments() {
+        let tags = service.extractTags(from: "Check https://example.com/#section and #realtag here")
+        XCTAssertEqual(tags, ["realtag"], "应只提取 #realtag，不提取 URL 中的 #section")
     }
 }
 
@@ -608,21 +613,21 @@ final class LLMAnonymizationConstantsTests: XCTestCase {
 @MainActor
 final class PluginManifestLocalizationTests: XCTestCase {
 
-    /// 发现：Localized.bestMatch 在字典非空时总是返回某个值（第 5 步"任意值"）
-    /// 这意味着 name 在无匹配语言时不会 fallback 到 id，而是返回字典中的任意值
-    /// 这是一个潜在问题：如果插件只提供 fr 名称，中文用户会看到法语名称而非插件 id
-    func testNameReturnsArbitraryValueWhenNoMatch() {
+    /// 修复 A-38：name 在无匹配语言时 fallback 到 id（而非返回任意值）
+    func testNameFallsBackToIdWhenNoMatch() {
         let manifest = PluginManifest(
             id: "test.plugin",
             version: "1.0.0",
             names: ["fr": "Plugin Français"],
             descriptions: ["fr": "Description en français"]
         )
-        // bestMatch 第 5 步：非空字典返回任意值，不 fallback 到 id
-        XCTAssertEqual(manifest.name, "Plugin Français", "bestMatch 返回字典中的任意值而非 fallback 到 id")
+        // 修复后：bestMatch 在无匹配且 fallback 非空时返回 fallback（id）
+        XCTAssertEqual(manifest.name, "test.plugin", "无匹配语言时 name 应 fallback 到 id（A-38 已修复）")
     }
 
-    /// 发现：description 在无匹配语言时返回字典中的任意值，而非空字符串
+    /// 修复 A-38：description 在无匹配语言时返回字典中的任意值（fallback 为空时合理）
+    /// description 的 fallback 是空字符串，bestMatch 在 fallback 为空时返回字典任意值
+    /// 这比返回空字符串更有信息量 — 用户至少能看到某种语言的描述
     func testDescriptionReturnsArbitraryValueWhenNoMatch() {
         let manifest = PluginManifest(
             id: "test.plugin",
@@ -630,8 +635,8 @@ final class PluginManifestLocalizationTests: XCTestCase {
             names: ["en": "Test"],
             descriptions: ["fr": "Description en français"]
         )
-        // bestMatch 第 5 步：非空字典返回任意值，不返回空字符串
-        XCTAssertEqual(manifest.description, "Description en français", "bestMatch 返回字典中的任意值而非空字符串")
+        // fallback 为空时，返回字典中的任意值（比空字符串更有信息量）
+        XCTAssertEqual(manifest.description, "Description en français", "description fallback 为空时返回字典任意值是合理行为")
     }
 
     /// 问题：name 在有 en 匹配时返回 en 值

@@ -161,11 +161,12 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         task.taskDescription = modelId
         activeTasks[modelId] = task
         
-        // 3. 清理已消费的物理断点恢复文件，防止磁盘碎片残留
-        try? FileManager.default.removeItem(at: fileURL)
-        
-        // 4. 激活 Task 继续静默续传
+        // 3. 激活 Task 继续静默续传
         task.resume()
+        
+        // 4. 清理已消费的物理断点恢复文件 — 在 task.resume() 之后执行，
+        //    确保 task 已成功启动，避免恢复失败时 resumeData 丢失
+        try? FileManager.default.removeItem(at: fileURL)
     }
     
     /// 取消下载任务，彻底清除临时下载数据

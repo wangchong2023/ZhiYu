@@ -387,14 +387,31 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     }
 
     // MARK: - 标签自动分析器
+    /// 从文本中提取 `#标签` 形式的标签
+    /// - 注意：`\w` 在 NSRegularExpression 中是 Unicode aware，会匹配中文字母
+    /// - 排除 URL 中的 `#fragment`（如 `https://example.com/page#section`）
     func extractTags(from text: String) -> [String] {
+        // 先移除 URL（http/https 开头的非空白序列），避免误提取 `#fragment`
+        let urlPattern = "https?://\\S+"
+        let cleanedText: String
+        if let urlRegex = try? NSRegularExpression(pattern: urlPattern) {
+            let nsText = text as NSString
+            cleanedText = urlRegex.stringByReplacingMatches(
+                in: text,
+                range: NSRange(location: 0, length: nsText.length),
+                withTemplate: " "
+            )
+        } else {
+            cleanedText = text
+        }
+
         let pattern = "#(\\w+)"
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
-        let nsText = text as NSString
-        let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsText.length))
+        let nsCleaned = cleanedText as NSString
+        let matches = regex.matches(in: cleanedText, range: NSRange(location: 0, length: nsCleaned.length))
         return matches.compactMap { match in
             guard match.numberOfRanges > 1 else { return nil }
-            return nsText.substring(with: match.range(at: 1))
+            return nsCleaned.substring(with: match.range(at: 1))
         }
     }
 
