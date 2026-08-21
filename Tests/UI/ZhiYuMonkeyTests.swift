@@ -103,7 +103,16 @@ final class ZhiYuMonkeyTests: XCTestCase {
                 let frame = targetElement.frame
                 let hasValidFrame = !frame.isEmpty && frame.width > 1 && frame.height > 1
 
-                if !isDestructive && !isDestructiveId && !isIconOption && hasValidFrame && targetElement.isHittable {
+                // 🛡️ 屏幕边界检查：跳过 frame 中心点在屏幕外的元素
+                // isHittable 在元素处于离屏/动画/遮挡状态时可能抛出错误而非返回 false
+                // 模拟器屏幕尺寸通过 app.frame 获取（动态适配不同设备）
+                let appFrame = app.frame
+                let centerX = frame.origin.x + frame.width / 2
+                let centerY = frame.origin.y + frame.height / 2
+                let isOnScreen = centerX >= 0 && centerX <= appFrame.width &&
+                                 centerY >= 0 && centerY <= appFrame.height
+
+                if !isDestructive && !isDestructiveId && !isIconOption && hasValidFrame && isOnScreen && targetElement.isHittable {
                         print("[MONKEY] 第 \(step)/\(maxIterations) 步：拟真操作 -> 元素类型: \(targetElement.elementType)，文本标签: '\(targetElement.label)'")
                         
                         // 执行防护式点击，检查元素可点击性
