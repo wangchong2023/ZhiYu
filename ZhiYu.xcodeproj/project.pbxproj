@@ -262,6 +262,7 @@
 		1BD05EE807E7462D182DE6BD /* FormattedMarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FC0D45AC55B88CA0B57243 /* FormattedMarkdownText.swift */; };
 		1C19468B2D4EA2D00AF8EFF1 /* L10n+Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64E6CCC52DA7086DDA516A9 /* L10n+Tag.swift */; };
 		1C1BF67DF733986D2C1B5283 /* AuthStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82DB88C98C6753B07B87B42F /* AuthStrategy.swift */; };
+		1C3BB0C354D6C6D0691BC251 /* DomainRAGSupplementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D446EB5067F79C546B205263 /* DomainRAGSupplementTests.swift */; };
 		1C8027A5E05B8A480EDC89F7 /* NativeMemoryEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C34A64C09A341D93B3B74A7F /* NativeMemoryEngine.swift */; };
 		1C871E5CF3B5851AF23D7345 /* AuthGuestSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01051FADC0C3EEED39C118C /* AuthGuestSection.swift */; };
 		1CA6CC02D09C32FDF1882920 /* VaultRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109C835FC55EB93B6370F66D /* VaultRepository.swift */; };
@@ -3339,6 +3340,7 @@
 		D3A535A1F5A083B4ED23FB41 /* DesignSystem+Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Sidebar.swift"; sourceTree = "<group>"; };
 		D3D8ED3DB3CB4D36CDA829FF /* ZhiYuWatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZhiYuWatchView.swift; sourceTree = "<group>"; };
 		D416BDDEC9F098A17FB7F08E /* testModelCardView_Expanded.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testModelCardView_Expanded.1.png; sourceTree = "<group>"; };
+		D446EB5067F79C546B205263 /* DomainRAGSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainRAGSupplementTests.swift; sourceTree = "<group>"; };
 		D4A1815953EEE341640BADCD /* DeviceHardwareGuardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareGuardTests.swift; sourceTree = "<group>"; };
 		D4B588D58D4F1EF8DFD02352 /* L10n+Vault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+Vault.swift"; sourceTree = "<group>"; };
 		D4D106D891E8E0E9CE63AE70 /* JailbreakDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JailbreakDetectorTests.swift; sourceTree = "<group>"; };
@@ -3699,6 +3701,7 @@
 				7F76E983F3BE12B1C57AD5E6 /* DomainModelsTests.swift */,
 				706F99B060A4A873A0907A9A /* DomainProtocolsSupplementTests.swift */,
 				5A468CF44DA88E7E7138A3A8 /* DomainRAGLogicTests.swift */,
+				D446EB5067F79C546B205263 /* DomainRAGSupplementTests.swift */,
 				76B094D28B646D07D55774E7 /* GlobalPromptRegistrySupplementTests.swift */,
 			);
 			path = Domain;
@@ -7744,6 +7747,7 @@
 				4A5AE4ED09DE4581BBD1D3AD /* DomainModelsTests.swift in Sources */,
 				B9541EEF20F33D459C5F5854 /* DomainProtocolsSupplementTests.swift in Sources */,
 				B2C128A4BC15B6780679F791 /* DomainRAGLogicTests.swift in Sources */,
+				1C3BB0C354D6C6D0691BC251 /* DomainRAGSupplementTests.swift in Sources */,
 				C79991064AF41CD1CE1D3DD1 /* DynamicCompliancePatchTests.swift in Sources */,
 				62C90B26D90C78238DF80B1E /* DynamicComplianceSignatureTests.swift in Sources */,
 				6513BA0E2A437FFE5BC38E50 /* EmbeddingManagerDeterminismTests.swift in Sources */,
