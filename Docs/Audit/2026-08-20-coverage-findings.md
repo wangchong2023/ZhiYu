@@ -82,3 +82,13 @@
 | A-33 | `AuthIntegrationTests` 4 个测试各 30 秒超时（真实后端网络请求），全量测试耗时 120 秒+ | P2 | 添加 `withTimeout(seconds: 5)` 工具方法限制异步操作时间，超时从 120 秒降至 0.4 秒 | 是 |
 | A-34 | `SecureEnclaveCryptoService` 真机路径模拟测试在模拟器上行为不确定（Apple Silicon Mac 模拟器可能成功创建 SecureEnclave 密钥），`testEncrypt_真机路径模拟_模拟器上应抛出SecureEnclave错误` 失败 | P3 | 改为双路径断言（`do-catch` 接受抛错或成功两种情况），业界 SecureEnclave 模拟器测试标准方案 | 是 |
 
+### Task 18：ChatRunner/PluginLoader/OnDeviceLLMService 补盲
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-35 | `ModelDownloadManager.resumeDownload` L165 在 `task.resume()` 之前 `try? FileManager.default.removeItem(at: fileURL)` 删除 resumeData — 恢复失败时数据已丢失，无法再次恢复 | P2 | 将 `removeItem` 移到 `task.resume()` 成功后执行，或在 `catch` 中重新写入 resumeData | 否 |
+| A-36 | `OnDeviceLLMService.extractTags` 使用 `#(\w+)` 正则，`NSRegularExpression` 的 `\w` 是 Unicode aware，会匹配中文标签（如 `#中文标签`）— 与源码注释"过滤单字符噪声"不完全一致，但实际行为是支持中文标签 | P3 | 更新源码注释说明 `\w` 匹配 Unicode 字母，或改用 `[a-zA-Z0-9_]+` 限制为 ASCII | 否 |
+| A-37 | `OnDeviceLLMService.extractTags` 会误提取 URL 中的 `#section` 作为标签（如 `https://example.com/page#section` → `["section"]`） | P3 | 改用负向断言排除 URL 中的 `#`，如 `(?<!https?:\/\/\S*)#(\w+)` | 否 |
+| A-38 | `PluginManifest.name`/`description` 使用 `Localized.bestMatch`，非空字典总是返回某个值（第 5 步"任意值"），不 fallback 到插件 id 或空字符串 — 中文用户可能看到法语名称 | P3 | `bestMatch` 无匹配时应 fallback 到 `id`（name）或空字符串（description），而非返回任意值 | 否 |
+| A-39 | `StreamDeanonymizer.maxRawLength=25` 只在无闭合 `]` 时触发（DoS 保护），完整方括号内容即使超过 25 字符也会尝试还原 — 设计正确，但文档应说明 maxRawLength 是防 DoS 而非限制占位符长度 | P3 | 更新 `EntityPlaceholder.maxRawLength` 文档注释说明用途 | 否 |
+
