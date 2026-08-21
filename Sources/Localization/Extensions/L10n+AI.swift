@@ -278,6 +278,8 @@ extension L10n {
                 public static var expansion: String { AI.tr("prompt.system.expansion") }
                 public static var suggestFix: String { AI.tr("prompt.system.suggestFix") }
                 public static var insightQuestions: String { AI.tr("prompt.system.insightQuestions") }
+                public static var ingest: String { AI.tr("prompt.system.ingest") }
+                public static var voiceNote: String { AI.tr("prompt.system.voiceNote") }
             }
 
             // MARK: - L10n 净化后的 AI 提示词

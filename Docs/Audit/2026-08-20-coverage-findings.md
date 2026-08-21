@@ -52,3 +52,15 @@
 |------|---------|---------|---------|---------|
 | A-19 | `ApiResponse.swift:61,77` `NetworkError.errorDescription` 硬编码英文（"Token expired.", "Missing refresh token." 等），L10n 审计 WARNING | P3 | 改用 `L10n.Network.*` 强类型访问（已有完整词条注册） | 是 |
 
+### Task 8：GlobalPromptRegistry + PromptTemplateEngine
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-20 | `GlobalPromptRegistry.swift` `getPrompt` 的 `ingest`/`voiceNote` 领域硬编码英文字符串（"You are a professional knowledge curator..." / "You are a voice note summarizer..."），违反 L10n 强约束 | P2 | 改用 `L10n.AI.Prompt.System.ingest`/`L10n.AI.Prompt.System.voiceNote` 强类型访问，新增 xcstrings 词条（7 语言） | 是 |
+| A-21 | `PromptTemplateEngine.swift` `buildPrompt` 变量值含 `}}` 可能破坏后续 `{{key}}` 插值 | P2 | `PromptSecurityGuard.sanitize` 已转义 `{{`/`}}`，当前安全；添加测试验证边界情况 | 否（已安全） |
+| A-22 | `PromptTemplateEngine.swift` `renderPrompt` `skillId` 未做路径分隔符过滤，恶意 skillId 如 `../evil` 可能写入缓存目录之外（路径遍历漏洞） | P1 | 新增 `sanitizeFilename` 方法，使用 `SystemConstants.Character.underscore` 替换路径分隔符和遍历字符 | 是 |
+| A-23 | `PromptTemplateEngine.swift` `try? content.write(to:)` 静默吞掉缓存写入错误，磁盘满或权限不足时调用方无感知 | P2 | 改为 `do-catch` + `Logger.shared.error` 记录错误 | 是 |
+| A-24 | `PromptTemplateEngine.swift` 远程拉取超时 5 秒不可配置，弱网环境可能频繁失败 | P2 | 设计选择，常量已抽取到 `PromptConstants`，暂不修复 | 否（设计选择） |
+| A-25 | `GlobalPromptRegistry.swift` `getPrompt` 的 `key` 参数被忽略，API 签名误导调用方 | P3 | 添加文档注释说明 `key` 保留用于未来扩展（支持多版本 prompt 模板） | 是 |
+| A-26 | `PromptTemplateEngine.swift` `renderPrompt` 圈复杂度 11（超过 SwiftLint 阈值 10），需重构降低复杂度 | P2 | 提取 `readCacheIfNeeded`/`fetchRemotePrompt`/`writeCache` 三个私有方法，圈复杂度降至合规 | 是 |
+

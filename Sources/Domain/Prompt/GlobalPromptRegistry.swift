@@ -47,7 +47,7 @@ public final class GlobalPromptRegistry: Sendable {
     /// 获取特定领域及场景Key的系统提示词
     /// - Parameters:
     ///   - domain: 业务领域 (Chat, Synthesis, Ingest, RAG, Refactor, VoiceNote)
-    ///   - key: 场景主键
+    ///   - key: 场景主键（当前实现按领域返回统一 Prompt，key 保留用于未来按场景细分扩展）
     /// - Returns: 本地化及版本管理后的 System Prompt 字符串
     public func getPrompt(domain: PromptDomain, key _: String) -> String {
         switch domain {
@@ -56,13 +56,13 @@ public final class GlobalPromptRegistry: Sendable {
         case .synthesis:
             return promptService.mindmapPrompt
         case .ingest:
-            return "You are a professional knowledge curator. Structure, summarize, and extract key entities from incoming content."
+            return L10n.AI.Prompt.System.ingest
         case .ragRetrieval:
             return promptService.queryExpansionPrompt
         case .knowledgeRefactor:
             return promptService.refactorPrompt
         case .voiceNote:
-            return "You are a voice note summarizer. Organize transcriptions into concise bullet points and action items."
+            return L10n.AI.Prompt.System.voiceNote
         }
     }
 

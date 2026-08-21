@@ -3678,46 +3678,196 @@
     "chat.exportRoleUser": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "You" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "我" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "我" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Tú" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Vous" } },
-        "de": { "stringUnit": { "state": "translated", "value": "Du" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "あなた" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "나" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Você" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Вы" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tú"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あなた"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы"
+          }
+        }
       }
     },
     "chat.exportRoleAI": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "AI" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "AI" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "AI" } },
-        "es": { "stringUnit": { "state": "translated", "value": "IA" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "IA" } },
-        "de": { "stringUnit": { "state": "translated", "value": "KI" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "AI" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "AI" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "IA" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "ИИ" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KI"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IA"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ИИ"
+          }
+        }
       }
     },
     "chat.exportFileName": {
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "de": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Chat_Export" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Chat_Export" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat_Export"
+          }
+        }
       }
     },
     "chat.exportConversation": {
@@ -28131,6 +28281,100 @@
           "stringUnit": {
             "state": "translated",
             "value": "Analysis: Fallback question. It is recommended to add original content and regenerate."
+          }
+        }
+      }
+    },
+    "prompt.system.ingest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge curator. Structure, summarize, and extract key entities from incoming content."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名专业的知识策展人。请对输入内容进行结构化、摘要化，并提取关键实体。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名專業的知識策展人。請對輸入內容進行結構化、摘要化，並提取關鍵實體。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge curator. Structure, summarize, and extract key entities from incoming content."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge curator. Structure, summarize, and extract key entities from incoming content."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge curator. Structure, summarize, and extract key entities from incoming content."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a professional knowledge curator. Structure, summarize, and extract key entities from incoming content."
+          }
+        }
+      }
+    },
+    "prompt.system.voiceNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a voice note summarizer. Organize transcriptions into concise bullet points and action items."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名语音笔记摘要助手。请将转录文本整理为简洁的要点和行动项。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你是一名語音筆記摘要助手。請將轉錄文本整理為簡潔的要點和行動項。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a voice note summarizer. Organize transcriptions into concise bullet points and action items."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a voice note summarizer. Organize transcriptions into concise bullet points and action items."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a voice note summarizer. Organize transcriptions into concise bullet points and action items."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are a voice note summarizer. Organize transcriptions into concise bullet points and action items."
           }
         }
       }
