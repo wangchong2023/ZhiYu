@@ -10,24 +10,24 @@
 //
 import Foundation
 
-/// 不支持搜索索引的平台实现
-final class UnsupportedSearchIndexer: SearchIndexerProtocol, Sendable {
+/// 不支持搜索索引的平台实现（测试/预览占位，平台无搜索能力时降级）
+public final class UnsupportedSearchIndexer: SearchIndexerProtocol, Sendable {
 
     /// 索引Page
     /// - Parameter page: page
-    func indexPage(_ page: KnowledgePage) {}
+    public func indexPage(_ page: KnowledgePage) {}
 
     /// 索引Pages
     /// - Parameter pages: pages
-    func indexPages(_ pages: [KnowledgePage]) {}
+    public func indexPages(_ pages: [KnowledgePage]) {}
 
     /// 移除索引
-    func removeIndex(for pageID: UUID) {}
+    public func removeIndex(for pageID: UUID) {}
 
     /// 取消索引All
-    func deindexAll() {}
+    public func deindexAll() {}
 
     /// reindexAll
     /// - Parameter pages: pages
-    func reindexAll(pages: [KnowledgePage]) {}
+    public func reindexAll(pages: [KnowledgePage]) {}
 }

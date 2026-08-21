@@ -146,19 +146,19 @@ public enum VaultServiceKey: DependencyKey {
 
 /// 无操作笔记本服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpVaultService: VaultServiceProtocol {
-    var vaults: [Vault] { [] }
-    var selectedVaultID: UUID? { nil }
-    var currentVault: Vault? { nil }
-    init() {}
-    func selectVaultAndWait(_ vault: Vault) async throws {}
-    func refreshPageCount(for vaultID: UUID) async {}
-    func selectVault(_ vault: Vault) {}
-    func exitVault() {}
-    func createVault(name: String, icon: String?, description: String?) {}
-    func updateVault(id: UUID, name: String, icon: String?, description: String?) {}
-    func renameVault(id: UUID, newName: String) {}
-    func deleteVault(id: UUID) {}
+public final class NoOpVaultService: VaultServiceProtocol {
+    public var vaults: [Vault] { [] }
+    public var selectedVaultID: UUID? { nil }
+    public var currentVault: Vault? { nil }
+    public init() {}
+    public func selectVaultAndWait(_ vault: Vault) async throws {}
+    public func refreshPageCount(for vaultID: UUID) async {}
+    public func selectVault(_ vault: Vault) {}
+    public func exitVault() {}
+    public func createVault(name: String, icon: String?, description: String?) {}
+    public func updateVault(id: UUID, name: String, icon: String?, description: String?) {}
+    public func renameVault(id: UUID, newName: String) {}
+    public func deleteVault(id: UUID) {}
 }
 
 extension DependencyValues {
@@ -199,15 +199,15 @@ enum ChatServiceKey: DependencyKey {
 
 /// 无操作聊天服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpChatService: ChatServiceProtocol {
-    init() {}
-    func loadHistory() -> [ChatMessage] { [] }
-    func clearHistory() {}
-    func streamChat(query: String, pages: [KnowledgePage]) -> AsyncThrowingStream<String, Error> {
+public final class NoOpChatService: ChatServiceProtocol {
+    public init() {}
+    public func loadHistory() -> [ChatMessage] { [] }
+    public func clearHistory() {}
+    public func streamChat(query: String, pages: [KnowledgePage]) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in continuation.finish() }
     }
-    func saveAssistantMessage(_ content: String) {}
-    func saveUserMessage(_ content: String) {}
+    public func saveAssistantMessage(_ content: String) {}
+    public func saveUserMessage(_ content: String) {}
 }
 
 extension DependencyValues {

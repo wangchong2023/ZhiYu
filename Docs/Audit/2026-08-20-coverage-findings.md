@@ -34,3 +34,21 @@
 |------|---------|---------|---------|---------|
 | A-11 | `SecurityManager.swift:226-239` `verifyIntegrity` 无签名记录时在模拟器 DEBUG 下直接返回 `true`（放行），不检查文件是否存在。对不存在的文件也返回 `true`，可能掩盖文件丢失/被删除的安全事件 | P2 | 在无签名放行路径前增加 `FileManager.default.fileExists(atPath:)` 检查，文件不存在时应 fail-closed | 否 |
 
+### Task 7：Domain/Protocols 16 个 NoOp/Stub 默认实现
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-12 | `NoOpLLMRetrievalService.rerank` 标记 `throws` 但永不抛错，误导调用方期望错误处理路径 | P3 | 协议 `throws` 合理（真实实现会抛错），NoOp 保留 `throws` 是契约要求；添加文档注释说明 NoOp 永不抛错 | 是 |
+| A-13 | NoOp LLM 类（NoOpLLMChatService/KnowledgeService/RetrievalService/LLMService/VaultService/ChatService）`internal` 可见性，测试外部模块无法使用 | P3 | 改为 `public` | 是 |
+| A-14 | `NoOpLLMService` 标注 `@unchecked Sendable` 但 6 个属性为 `var`（可变），无同步保护，存在数据竞争风险 | P2 | 移除 `@unchecked Sendable`（`@MainActor` 已保证 Sendable，主线程隔离保证线程安全） | 是 |
+| A-15 | NoOp 类 `@MainActor` 不必要约束 | P3 | 协议本身是 `@MainActor`，NoOp 必须遵守契约，无法移除——标记为协议契约要求 | 是（文档说明） |
+| A-16 | `NoOpImportFileStore` 所有方法返回 `nil`，语义歧义（"未持久化" vs "存储失败"） | P3 | 添加文档注释说明 nil 语义为"未持久化"（NoOp 占位实现不进行任何持久化操作） | 是 |
+| A-17 | `NoOpRAGGovernanceRepository` `evaluationID: Int64` 参数为数据库自增主键类型，NoOp 占位实现忽略该参数 | P3 | 添加文档注释说明 Int64 为数据库自增主键类型，NoOp 忽略参数是契约要求 | 是 |
+| A-18 | `UnsupportedSearchIndexer` `internal` 可见性，测试外部模块无法使用 | P3 | 改为 `public` | 是 |
+
+### 预存 L10n 违规（测试阻断修复）
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-19 | `ApiResponse.swift:61,77` `NetworkError.errorDescription` 硬编码英文（"Token expired.", "Missing refresh token." 等），L10n 审计 WARNING | P3 | 改用 `L10n.Network.*` 强类型访问（已有完整词条注册） | 是 |
+

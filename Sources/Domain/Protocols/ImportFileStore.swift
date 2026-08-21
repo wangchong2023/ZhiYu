@@ -38,6 +38,9 @@ public enum ImportFileStoreKey: DependencyKey {
 }
 
 /// 无操作导入文件存储（测试/预览占位，DI 未就绪时降级）
+///
+/// 所有 `save*`/`copyFile` 方法返回 `nil`，语义为"未持久化"——调用方应据此判断存储不可用，
+/// 而非将 `nil` 误认为存储失败。真实实现返回非 nil 的相对路径字符串。
 public final class NoOpImportFileStore: ImportFileStore, Sendable {
     public init() {}
     public func saveContent(_ content: String, category: ImportCategory, ext: String) -> String? { nil }

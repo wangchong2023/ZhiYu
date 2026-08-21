@@ -252,70 +252,72 @@ enum LLMServiceKey: DependencyKey {
 
 // MARK: - NoOp LLM 服务实现（测试/预览占位，DI 未就绪时降级）
 
-/// 无操作 LLM 对话服务
+/// 无操作 LLM 对话服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpLLMChatService: LLMChatServiceProtocol {
-    var isEnabled: Bool { false }
-    init() {}
-    func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
+public final class NoOpLLMChatService: LLMChatServiceProtocol {
+    public var isEnabled: Bool { false }
+    public init() {}
+    public func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         ChatMessageDTO(role: .assistant, content: "")
     }
-    func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
+    public func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in continuation.finish() }
     }
-    func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
+    public func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
 }
 
-/// 无操作 LLM 知识维护服务
+/// 无操作 LLM 知识维护服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpLLMKnowledgeService: LLMKnowledgeServiceProtocol {
-    init() {}
-    func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
+public final class NoOpLLMKnowledgeService: LLMKnowledgeServiceProtocol {
+    public init() {}
+    public func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
         SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: PageType.concept.rawValue, relatedTitles: [], summary: "")
     }
-    func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
-    func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
-    func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] { [] }
+    public func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
+    public func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
+    public func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] { [] }
 }
 
-/// 无操作 LLM 检索增强服务
+/// 无操作 LLM 检索增强服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpLLMRetrievalService: LLMRetrievalServiceProtocol {
-    init() {}
-    func rewriteQuery(_ query: String) async -> String { query }
-    func expandQuery(_ query: String) async -> [String] { [] }
-    func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] { candidates }
-    func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] { chunks }
-    func generateHypotheticalDocument(query: String) async -> String { "" }
+public final class NoOpLLMRetrievalService: LLMRetrievalServiceProtocol {
+    public init() {}
+    public func rewriteQuery(_ query: String) async -> String { query }
+    public func expandQuery(_ query: String) async -> [String] { [] }
+    /// NoOp 占位实现：直接返回原候选列表，永不抛错（`throws` 仅为满足协议契约）
+    public func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] { candidates }
+    public func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] { chunks }
+    public func generateHypotheticalDocument(query: String) async -> String { "" }
 }
 
 /// 无操作 LLM 综合服务（ObservableObject 占位）
 @MainActor
-final class NoOpLLMService: LLMServiceProtocol, @unchecked Sendable {
-    var provider: LLMProvider = .custom
-    var apiKey: String = ""
-    var baseURL: String = ""
-    var model: String = ""
-    var autoScan: Bool = false
-    var autoRefactor: Bool = false
-    var isEnabled: Bool { false }
-    init() {}
-    func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
+public final class NoOpLLMService: LLMServiceProtocol {
+    public var provider: LLMProvider = .custom
+    public var apiKey: String = ""
+    public var baseURL: String = ""
+    public var model: String = ""
+    public var autoScan: Bool = false
+    public var autoRefactor: Bool = false
+    public var isEnabled: Bool { false }
+    public init() {}
+    public func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         ChatMessageDTO(role: .assistant, content: "")
     }
-    func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
+    public func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in continuation.finish() }
     }
-    func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
-    func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
+    public func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
+    public func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
         SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: PageType.concept.rawValue, relatedTitles: [], summary: "")
     }
-    func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
-    func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
-    func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] { [] }
-    func rewriteQuery(_ query: String) async -> String { query }
-    func expandQuery(_ query: String) async -> [String] { [] }
-    func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] { candidates }
-    func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] { chunks }
-    func generateHypotheticalDocument(query: String) async -> String { "" }
+    public func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
+    public func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
+    public func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] { [] }
+    public func rewriteQuery(_ query: String) async -> String { query }
+    public func expandQuery(_ query: String) async -> [String] { [] }
+    /// NoOp 占位实现：直接返回原候选列表，永不抛错（`throws` 仅为满足协议契约）
+    public func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] { candidates }
+    public func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] { chunks }
+    public func generateHypotheticalDocument(query: String) async -> String { "" }
 }

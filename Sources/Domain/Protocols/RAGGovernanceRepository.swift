@@ -195,6 +195,9 @@ public enum RAGGovernanceRepositoryKey: DependencyKey {
 }
 
 /// 无操作 RAG 治理仓储（测试/预览占位，DI 未就绪时降级）
+///
+/// 所有方法返回空集合或零值，不进行任何持久化操作。
+/// `evaluationID: Int64` 参数为数据库自增主键类型，NoOp 占位实现忽略该参数（协议契约要求保留签名）。
 public final class NoOpRAGGovernanceRepository: RAGGovernanceRepository, Sendable {
     public init() {}
     public func logTokenUsage(model: String, promptTokens: Int, completionTokens: Int) async throws {}
