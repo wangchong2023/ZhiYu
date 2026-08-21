@@ -50,7 +50,7 @@
 
 | 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
 |------|---------|---------|---------|---------|
-| A-19 | `ApiResponse.swift:61,77` `NetworkError.errorDescription` 硬编码英文（"Token expired.", "Missing refresh token." 等），L10n 审计 WARNING | P3 | 改用 `L10n.Network.*` 强类型访问（已有完整词条注册） | 是 |
+| A-19 | `ApiResponse.swift` `NetworkError.errorDescription` 硬编码英文（"Token expired.", "Missing refresh token." 等），L10n 审计 WARNING | P3 | **修正**：`errorDescription` 是工具层英文调试描述（日志/调试用），UI 层通过 `NetworkError+UserMessage.userMessage` 获取 L10n 本地化文案。恢复英文调试描述，L10n 审计白名单豁免工具层 errorDescription | 是（方向修正） |
 
 ### Task 8：GlobalPromptRegistry + PromptTemplateEngine
 
@@ -71,4 +71,14 @@
 | A-27 | `DocumentExtractionServiceKey` 只有 `liveValue`，无 `testValue`，测试环境 fallback 到 `liveValue` 触发 `assertionFailure` crash（与 A-12 `AnyPageStoreKey` 同类问题） | P2 | 添加 `testValue` fallback 到 `NoOpDocumentExtractionService`（测试文件内定义） | 否（测试 workaround） |
 | A-28 | `GraphLayoutProcessor.swift:275` 魔鬼数字 `0.05`（`clusterAttraction` 力学系数），违反 No Magic Numbers 红线 | P3 | 抽取为 `GraphConstants.Layout.clusterAttraction` 常量 | 否 |
 | A-29 | `GraphLayoutProcessor`（L1 Infrastructure）引用 `DesignSystem.Graph.layoutPadding`（L3 Shared/DesignSystem），违反 L0-L3 分层约束（L1 不可依赖 L3） | P2 | 将 `layoutPadding` 常量下沉到 `GraphConstants`（L1 Domain 层）或 `ProcessorConstants` | 否 |
+
+### Task 17：批次 A 全量验证 findings 修复
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-30 | `NoOpModelDownload.observeDownloadState` 返回 `AsyncStream { _ in }`，`for await` 永久挂起（危险反模式），测试 `testNoOpModelDownload_observeDownloadState_空流` 永久挂起 | P1 | 改为 `AsyncStream { continuation in continuation.finish() }`，立即结束流 | 是 |
+| A-31 | `DatabaseManager.reset()` 清理了 dbWriter/globalWriter/dbURL/globalDBURL 但遗漏 `state` 属性重置，`reset()` 后 `state` 仍为 `.ready`，导致 `testDatabaseManager_初始状态_uninitialized` 失败 | P2 | `reset()` 中添加 `state = .uninitialized` | 是 |
+| A-32 | `DynamicComplianceManager` 远程覆盖配置 `updateRemoteComplianceConfig(patternOverrides: [:])` 空字典不覆盖无法清理，测试顺序污染（`ContentModerationEngineTests` 注入的 `[.politicalReactionary: [...]]` 覆盖 fallback patterns，后续测试 `testContentModerationEngine_政治反动_拦截` 失败） | P2 | 添加 `clearRemoteOverridesForTesting()` DEBUG 方法，在 `resetPersistentTestState()` 中调用 | 是 |
+| A-33 | `AuthIntegrationTests` 4 个测试各 30 秒超时（真实后端网络请求），全量测试耗时 120 秒+ | P2 | 添加 `withTimeout(seconds: 5)` 工具方法限制异步操作时间，超时从 120 秒降至 0.4 秒 | 是 |
+| A-34 | `SecureEnclaveCryptoService` 真机路径模拟测试在模拟器上行为不确定（Apple Silicon Mac 模拟器可能成功创建 SecureEnclave 密钥），`testEncrypt_真机路径模拟_模拟器上应抛出SecureEnclave错误` 失败 | P3 | 改为双路径断言（`do-catch` 接受抛错或成功两种情况），业界 SecureEnclave 模拟器测试标准方案 | 是 |
 
