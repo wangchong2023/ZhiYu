@@ -778,6 +778,7 @@
 		5C089FECE6909B2B1EFA52D4 /* VaultDataCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C4FB97484AC2EA70782B41 /* VaultDataCoordinator.swift */; };
 		5C162AFF16619F663E62BE7C /* VaultThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD6245A51DE1A01933A12ADF /* VaultThemeTests.swift */; };
 		5C489774951A1480C57610E7 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8390567A95F898612D1932BB /* DatabaseManager.swift */; };
+		5CA0C5A9A247C820E8E61A7C /* VectorAndAuthSupplementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D271C6EAA2595A5D260C2E /* VectorAndAuthSupplementTests.swift */; };
 		5D19AB869223E7DC767FBF8D /* SynthesisMindmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646D54BBE9FF4AA576884179 /* SynthesisMindmapView.swift */; };
 		5D2CD603FDD87F8B26C26651 /* LLMContextBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D0492E89753819D4046036B /* LLMContextBuilder.swift */; };
 		5D7218AAFC9FA14D2183A27E /* FeatureGateManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3BDDEF61146756467089CA /* FeatureGateManagerTests.swift */; };
@@ -2460,6 +2461,7 @@
 		2255A495F769C19397B08F71 /* DemoMediaBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMediaBuilderTests.swift; sourceTree = "<group>"; };
 		227B4CA0D1A46574EE62D160 /* PasteboardProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardProtocol.swift; sourceTree = "<group>"; };
 		227F2487168B3148F057A098 /* KnowledgePageRepositoryUpsertTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgePageRepositoryUpsertTests.swift; sourceTree = "<group>"; };
+		22D271C6EAA2595A5D260C2E /* VectorAndAuthSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorAndAuthSupplementTests.swift; sourceTree = "<group>"; };
 		22EB75DD5B601F8843B9FC1B /* 个人知识管理方法论.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = "个人知识管理方法论.md"; path = "zh-Hans.lproj/个人知识管理方法论.md"; sourceTree = "<group>"; };
 		23491EBB42AA8509E78D577D /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		235C6E82198B1EBAD3608BAB /* KnowledgeIngestPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeIngestPipelineTests.swift; sourceTree = "<group>"; };
@@ -6888,6 +6890,7 @@
 				CBBF97F5E082CF36CB6CF49D /* StreamDeanonymizerLiteralCollisionTests.swift */,
 				9A5CAE014B26DC24D655D762 /* StreamDeanonymizerTests.swift */,
 				54203038159920F05F95B826 /* VaultStorageServiceTests.swift */,
+				22D271C6EAA2595A5D260C2E /* VectorAndAuthSupplementTests.swift */,
 				0DB2AF8EB03127EFB59578AD /* VectorIndexerTests.swift */,
 				0A8AA9739F6EB7DA81C9A4E1 /* WebScraperProcessorChainTests.swift */,
 			);
@@ -8041,6 +8044,7 @@
 				C436AF207DE7C3166B1764C2 /* VaultTests.swift in Sources */,
 				5C162AFF16619F663E62BE7C /* VaultThemeTests.swift in Sources */,
 				9CACCBA26B7AA33026663A09 /* VaultWidgetSyncManagerTests.swift in Sources */,
+				5CA0C5A9A247C820E8E61A7C /* VectorAndAuthSupplementTests.swift in Sources */,
 				EDB7BC4445CED0688A74CB7C /* VectorDataRepositoryChunkTests.swift in Sources */,
 				516AE1AF051A06A9F3489C04 /* VectorIndexerTests.swift in Sources */,
 				8908F5C34AACAA6F466D894C /* VersionInfoFormatterTests.swift in Sources */,

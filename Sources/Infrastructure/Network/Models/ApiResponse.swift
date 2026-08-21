@@ -56,27 +56,27 @@ public enum NetworkError: Error, LocalizedError, Sendable {
     public var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return L10n.Network.errorInvalidURL
+            return "Invalid URL."
         case .tokenExpired:
-            return L10n.Network.errorTokenExpired
+            return "Token expired."
         case .unauthorized(let msg):
-            return L10n.Network.errorUnauthorized(msg)
+            return "Unauthorized: \(msg)"
         case .serverError(let code, let msg):
-            return L10n.Network.errorServer(code, msg)
+            return "Server error (code=\(code)): \(msg)"
         case .decodeFailed(let err):
-            return L10n.Network.errorDecodeFailed(err.localizedDescription)
+            return "Decode failed: \(err.localizedDescription)"
         case .httpError(let code):
-            return L10n.Network.errorHTTP(code)
+            return "HTTP error: \(code)"
         case .unexpected(let msg):
-            return L10n.Network.errorUnexpected(msg)
+            return "Unexpected: \(msg)"
         case .invalidHTTPResponse:
-            return L10n.Network.invalidHTTPResponse
+            return "Invalid HTTP response."
         case .missingDataPayload:
-            return L10n.Network.missingDataPayload
+            return "Missing data payload."
         case .missingRefreshToken:
-            return L10n.Network.missingRefreshToken
+            return "Missing refresh token."
         case .sessionInvalidated:
-            return L10n.Network.sessionInvalidated
+            return "Session invalidated."
         }
     }
 }

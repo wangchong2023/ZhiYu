@@ -68,4 +68,14 @@ public final class DynamicComplianceManager: @unchecked Sendable {
         }
         return custom ?? fallback
     }
+
+    #if DEBUG
+    /// 测试专用：清空所有远程覆盖，恢复 fallback 默认行为
+    public func clearRemoteOverridesForTesting() {
+        lock.withLock {
+            remoteTextOverrides.removeAll()
+            remotePatternOverrides.removeAll()
+        }
+    }
+    #endif
 }

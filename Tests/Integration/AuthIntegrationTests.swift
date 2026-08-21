@@ -88,7 +88,7 @@ final class AuthIntegrationTests: XCTestCase {
     // MARK: - Integration Tests
     
     func testCarrierLoginIntegration() async throws {
-        let success = await AuthService.shared.login(using: TestCarrierAuthStrategy())
+        let success = await withTimeout(seconds: 5) { await AuthService.shared.login(using: TestCarrierAuthStrategy()) }
         // 注意：这里可能会因为 test_carrier_token_123 无效而返回 false。
         // 但此测试已证明能够将请求发往真实后端进行联调。
         // 如果后端有设置这个 magic token 为后门，则应该返回 true。
@@ -96,17 +96,31 @@ final class AuthIntegrationTests: XCTestCase {
     }
     
     func testGoogleLoginIntegration() async throws {
-        let success = await AuthService.shared.login(using: TestGoogleAuthStrategy())
+        let success = await withTimeout(seconds: 5) { await AuthService.shared.login(using: TestGoogleAuthStrategy()) }
         print(">>> [Integration] Google Login Success: \(success)")
     }
     
     func testAppleLoginIntegration() async throws {
-        let success = await AuthService.shared.login(using: TestAppleAuthStrategy())
+        let success = await withTimeout(seconds: 5) { await AuthService.shared.login(using: TestAppleAuthStrategy()) }
         print(">>> [Integration] Apple Login Success: \(success)")
     }
     
     func testGitHubLoginIntegration() async throws {
-        let success = await AuthService.shared.login(using: TestGitHubAuthStrategy())
+        let success = await withTimeout(seconds: 5) { await AuthService.shared.login(using: TestGitHubAuthStrategy()) }
         print(">>> [Integration] GitHub Login Success: \(success)")
+    }
+    
+    /// 超时工具：限制异步操作最长执行时间，超时返回 false
+    private func withTimeout<T>(seconds: TimeInterval, operation: @escaping @Sendable () async -> T) async -> T? where T: ExpressibleByBooleanLiteral {
+        await withTaskGroup(of: T?.self) { group in
+            group.addTask { await operation() }
+            group.addTask {
+                try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                return nil
+            }
+            let result = await group.next() ?? nil
+            group.cancelAll()
+            return result
+        }
     }
 }

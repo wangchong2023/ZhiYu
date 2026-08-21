@@ -839,6 +839,11 @@ extension XCTestCase {
         //    某些测试会设置 Localized.languageMode（如 LocalizationTests.testLanguageSwitchingLogic），
         //    若未清理会污染后续测试的 locale 依赖行为
         Localized.resetForTesting()
+
+        // 8. 重置 DynamicComplianceManager 远程覆盖
+        //    某些测试（如 ContentModerationEngineTests.testDynamicComplianceManager_RemoteTextAndPatternOverride_AppliedDynamically）
+        //    会注入远程 patternOverrides 覆盖 fallback patterns，若未清理会污染后续 ContentModerationEngine 测试
+        DynamicComplianceManager.shared.clearRemoteOverridesForTesting()
     }
 }
 

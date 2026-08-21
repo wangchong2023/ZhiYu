@@ -77,7 +77,7 @@ public final class NoOpModelDownload: ModelDownloadCapabilities, Sendable {
     public func resumeDownload(modelId: String) async throws {}
     public func cancelDownload(modelId: String) async throws {}
     public func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState> {
-        AsyncStream { _ in }
+        AsyncStream { continuation in continuation.finish() }
     }
 }
 

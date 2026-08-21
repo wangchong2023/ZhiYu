@@ -338,6 +338,7 @@ final class DatabaseManager {
         globalWriter = nil
         dbURL = nil
         globalDBURL = nil
+        state = .uninitialized
     }
     
     /// 强制对指定的数据库连接执行 Schema 架构迁移以重新构建物理表。

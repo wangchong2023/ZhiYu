@@ -477,12 +477,17 @@ final class TextChunkerSupplementTests: XCTestCase {
     // MARK: - Chunk contextualText
 
     func testChunk_contextualText_withBreadcrumb_includesContextPrefix() {
-        let text = "# Header\n\nContent"
+        // 源码设计：标题行本身也加入 chunk 文本（L74 在 L67 flush 之后执行）
+        // 使用多段文本让标题后的内容单独成块，验证 contextualText 包含 contextPrefix
+        let text = "# Header\n\nContent line one\n\n# Section2\n\nContent line two"
         let chunks = chunker.split(text: text)
         XCTAssertFalse(chunks.isEmpty)
-        let contentChunk = chunks.first { $0.text == "Content" }
-        XCTAssertNotNil(contentChunk)
-        XCTAssertTrue(contentChunk?.contextualText.contains(ProcessorConstants.TextChunker.contextPrefix) == true)
+        // 找到面包屑非空且包含 "Content" 的 chunk
+        let contentChunk = chunks.first { !$0.breadcrumbPath.isEmpty && $0.breadcrumbPath != ProcessorConstants.TextChunker.rootAnchor && $0.text.contains("Content") }
+        XCTAssertNotNil(contentChunk, "应找到带面包屑的内容分块，chunks: \(chunks.map { "text='\($0.text)', breadcrumb='\($0.breadcrumbPath)'" })")
+        // 有面包屑时 contextualText 应包含 contextPrefix
+        XCTAssertTrue(contentChunk?.contextualText.contains(ProcessorConstants.TextChunker.contextPrefix) == true,
+                      "有面包屑时 contextualText 应包含 contextPrefix，实际: \(contentChunk?.contextualText ?? "nil")")
     }
 
     func testChunk_contextualText_rootBreadcrumb_returnsPlainText() {
@@ -511,12 +516,14 @@ final class TextChunkerSupplementTests: XCTestCase {
     // MARK: - startIndex 单调递增（缺陷 #12 修复验证）
 
     func testSplit_startIndex_monotonicallyIncreasing_bug12Fixed() {
+        // 源码设计：split 按行处理，不拆分单行。需用多行文本触发溢出 flush
         let config = TextChunkerProcessor.Config(chunkSize: 20, chunkOverlap: 5, separators: TextChunkerProcessor.default.separators)
-        let text = "A" + String(repeating: " line", count: 20)
+        let text = "A line one here\nB line two here\nC line three here\nD line four here\nE line five here"
         let chunks = chunker.split(text: text, config: config)
-        XCTAssertGreaterThan(chunks.count, 1)
+        XCTAssertGreaterThan(chunks.count, 1, "多行文本应产生多个分块，实际: \(chunks.count)")
         for i in 1..<chunks.count {
-            XCTAssertGreaterThanOrEqual(chunks[i].startIndex, chunks[i - 1].startIndex)
+            XCTAssertGreaterThanOrEqual(chunks[i].startIndex, chunks[i - 1].startIndex,
+                                        "startIndex 应单调递增：chunks[\(i)].startIndex=\(chunks[i].startIndex) < chunks[\(i-1)].startIndex=\(chunks[i-1].startIndex)")
         }
     }
 
