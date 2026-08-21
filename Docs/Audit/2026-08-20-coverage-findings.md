@@ -64,3 +64,11 @@
 | A-25 | `GlobalPromptRegistry.swift` `getPrompt` 的 `key` 参数被忽略，API 签名误导调用方 | P3 | 添加文档注释说明 `key` 保留用于未来扩展（支持多版本 prompt 模板） | 是 |
 | A-26 | `PromptTemplateEngine.swift` `renderPrompt` 圈复杂度 11（超过 SwiftLint 阈值 10），需重构降低复杂度 | P2 | 提取 `readCacheIfNeeded`/`fetchRemotePrompt`/`writeCache` 三个私有方法，圈复杂度降至合规 | 是 |
 
+### Task 14：Infrastructure/Processors 5 组件
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-27 | `DocumentExtractionServiceKey` 只有 `liveValue`，无 `testValue`，测试环境 fallback 到 `liveValue` 触发 `assertionFailure` crash（与 A-12 `AnyPageStoreKey` 同类问题） | P2 | 添加 `testValue` fallback 到 `NoOpDocumentExtractionService`（测试文件内定义） | 否（测试 workaround） |
+| A-28 | `GraphLayoutProcessor.swift:275` 魔鬼数字 `0.05`（`clusterAttraction` 力学系数），违反 No Magic Numbers 红线 | P3 | 抽取为 `GraphConstants.Layout.clusterAttraction` 常量 | 否 |
+| A-29 | `GraphLayoutProcessor`（L1 Infrastructure）引用 `DesignSystem.Graph.layoutPadding`（L3 Shared/DesignSystem），违反 L0-L3 分层约束（L1 不可依赖 L3） | P2 | 将 `layoutPadding` 常量下沉到 `GraphConstants`（L1 Domain 层）或 `ProcessorConstants` | 否 |
+
