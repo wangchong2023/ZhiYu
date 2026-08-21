@@ -232,6 +232,10 @@ public enum AnyPageStoreKey: DependencyKey {
     public static var liveValue: any AnyPageStore {
         ServiceContainer.shared.resolve((any AnyPageStore).self)
     }
+
+    public static var testValue: any AnyPageStore {
+        ServiceContainer.shared.resolveOptional((any AnyPageStore).self) ?? NoOpPageStoreCapabilities()
+    }
 }
 
 /// AnyPageStoreCapabilities 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
