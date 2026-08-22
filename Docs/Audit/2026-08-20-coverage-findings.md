@@ -137,3 +137,6 @@
 | C-9 | `CollaborationService.stop()` 清理了 `connectedPeers`/`discoveredRooms`/`recentEdits`/`connectionError`，但未清理 `roomName` 和 `role`。stop 后 `roomName` 仍为上次房间名，`role` 仍为 `.owner`/`.editor`，状态残留导致 UI 误导用户 | P2 | `stop()` 中增加 `roomName = ""` 和 `role = .viewer` 清理 | 是 |
 | C-10 | `CollaborationService.appendEdit` 超限时调用 `removeFirst(count - maxRecentEdits)`，数组很大时是 O(n) 操作。功能正确，性能隐患 | P3 | 改用 `removeFirst()` 单次移除最早记录（超限时 count 最多为 maxRecentEdits+1，移除 1 个） | 是 |
 | C-11 | `CollaborationService.applyRemotePage` 中 `remoteUpdated > existingPage.updatedAt` 使用严格大于，当远程与本地 `updatedAt` 相等时不更新。多端同时编辑场景下，相同时间戳的远程更新会被丢弃，可能导致编辑丢失 | P2 | 改用 `>=` 比较，确保相同时间戳的远程更新也能应用 | 是 |
+| C-12 | `AISynthesisService.suggestFix`（line 191）使用 `llm.generate` 而非 `currentLLM.generate`，导致 ServiceContainer 动态更新 LLM 实例时仍使用旧实例。生产环境中切换 LLM 配置后，suggestFix 仍用旧句柄 | P2 | 改为 `currentLLM.generate` | 是 |
+| C-13 | `AISynthesisService.generateInsightfulQuestions`（line 215）使用 `llm.generate` 而非 `currentLLM.generate`，同 C-12 | P2 | 改为 `currentLLM.generate` | 是 |
+| C-14 | `AISynthesisService` 合成方法错误处理不一致：`summarize`/`extractActions`/`generateMindMap` 用 `try` 抛出，`generatePresentation`/`generateQuiz`/`generateInfographic`/`generateReport`/`expandKnowledge` 用 `try?` 降级 | P3 | 评估为有意设计（后者有 fallback 逻辑），不修复 | 是（评估结论） |

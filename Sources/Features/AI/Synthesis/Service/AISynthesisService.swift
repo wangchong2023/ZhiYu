@@ -188,7 +188,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         """
 
         let systemPrompt = L10n.AI.Prompt.System.suggestFix
-        return try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
+        return try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
     }
 
     /// 自动生成启发式问题：分析知识库并推荐 3 个最值得深挖的问题
@@ -212,7 +212,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         logger.debug("[InsightQuestions] Prompt(前500): \(String(prompt.prefix(500)))")
 
         let systemPrompt = L10n.AI.Prompt.System.insightQuestions
-        let result = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
         logger.debug("[InsightQuestions] 原始响应(前300): \(String(result.prefix(300)))")
         return LLMUtils.parseJSONArray(result)
     }
