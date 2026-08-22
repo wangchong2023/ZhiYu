@@ -63,7 +63,8 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                 return
             }
             
-            let urlString = "\(APIPaths.gitHubOAuthAuthorize)?client_id=\(clientId)&state=\(state)&scope=\(GitHubAuthConfig.oauthScope)"
+            let encodedScope = GitHubAuthConfig.oauthScope.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? GitHubAuthConfig.oauthScope
+            let urlString = "\(APIPaths.gitHubOAuthAuthorize)?client_id=\(clientId)&state=\(state)&scope=\(encodedScope)"
             guard let url = URL(string: urlString) else {
                 continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.urlInvalidCode, description: "GitHub URL Error"))
                 return
@@ -74,7 +75,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                     continuation.resume(throwing: error)
                     return
                 }
-                
+
                 guard let callbackURL = callbackURL,
                       let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: true),
                       let queryItems = components.queryItems,
@@ -82,10 +83,17 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                     continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.callbackInvalidCode, description: "GitHub Callback Error"))
                     return
                 }
-                
+
+                // CSRF 防护：校验回调 URL 中的 state 与生成时 state 一致
+                let returnedState = queryItems.first(where: { $0.name == "state" })?.value
+                guard returnedState == state else {
+                    continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.callbackInvalidCode, description: "GitHub State Mismatch"))
+                    return
+                }
+
                 let cred = AuthCredential(
                     identityType: "github",
-                    identifier: "", 
+                    identifier: "",
                     credential: code,
                     extraInfo: ["state": state]
                 )

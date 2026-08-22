@@ -283,9 +283,7 @@ final class AuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 保留 email 和 phone
-    /// 🐛 Bug #C-4: Mock 模式下 updateUserProfile 构造 User 时遗漏 phone 参数，
-    ///             导致 phone 丢失（默认 nil）。源码 AuthService.swift:137-148。
-    ///             严重程度：中（DEBUG Mock 模式下 phone 信息丢失，影响开发调试体验）
+    /// - Note: C-4 已修复 — Mock 模式构造 User 时补充了 phone 和 features 参数。
     func testUpdateUserProfile_Mock模式_保留email和phone() async {
         #if DEBUG
         AuthService.forceMockBackend = true
@@ -296,8 +294,7 @@ final class AuthServiceDeepTests: XCTestCase {
 
         XCTAssertTrue(success, "更新应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.email, testEmail, "应保留原 email")
-        // Bug #C-4: phone 丢失（Mock 模式构造 User 时遗漏 phone 参数）
-        XCTAssertNil(AuthService.shared.currentUser?.phone, "Bug #C-4: Mock 模式下 phone 丢失")
+        XCTAssertEqual(AuthService.shared.currentUser?.phone, testPhone, "应保留原 phone")
         #endif
     }
 

@@ -138,11 +138,13 @@ public final class AuthService: AuthServiceProtocol {
                     id: user.id,
                     name: nickname,
                     email: user.email,
+                    phone: user.phone,
                     avatarURL: avatar.flatMap { URL(string: $0) } ?? user.avatarURL,
                     planKey: user.planKey,
                     maxVaults: user.maxVaults,
                     maxPages: user.maxPages,
                     maxPlugins: user.maxPlugins,
+                    features: user.features,
                     gender: gender ?? user.gender,
                     birthday: birthday ?? user.birthday
                 )

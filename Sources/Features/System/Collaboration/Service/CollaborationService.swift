@@ -98,10 +98,11 @@ final class CollaborationService: NSObject, ObservableObject {
         self.roomName = roomName
         self.role = .owner
         connectionError = nil
-        isConnecting = true
         provider.startHosting(roomName: roomName, userName: userName)
         isHosting = true
         isJoined = true
+        // host 启动后自身已"连接"到房间，不需要等待 peer 连入
+        isConnecting = false
     }
 
     /// 启动Browsing
@@ -131,6 +132,8 @@ final class CollaborationService: NSObject, ObservableObject {
         discoveredRooms.removeAll()
         recentEdits.removeAll()
         connectionError = nil
+        roomName = ""
+        role = .viewer
     }
 
     // MARK: - Data Transmission
@@ -143,8 +146,9 @@ final class CollaborationService: NSObject, ObservableObject {
 
     private func appendEdit(_ edit: CollabEdit) {
         recentEdits.append(edit)
+        // 超限时移除最早的记录，保持上限
         if recentEdits.count > maxRecentEdits {
-            recentEdits.removeFirst(recentEdits.count - maxRecentEdits)
+            recentEdits.removeFirst()
         }
     }
 }
@@ -236,7 +240,8 @@ extension CollaborationService {
         guard let delegate = self.delegate else { return }
 
         if let existingPage = delegate.pages.first(where: { $0.id == pageID }) {
-            if remoteUpdated > existingPage.updatedAt {
+            // 使用 >= 而非 >，确保相同时间戳的远程更新也能应用（多端并发编辑场景）
+            if remoteUpdated >= existingPage.updatedAt {
                 var updated = existingPage
                 updated.title = title
                 updated.content = content
