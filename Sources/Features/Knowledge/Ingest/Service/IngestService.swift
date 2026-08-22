@@ -156,9 +156,13 @@ actor IngestService: IngestServiceProtocol {
         var updatedContent = rawPage.content
 
         for concept in concepts {
-            updatedContent = updatedContent.replacingOccurrences(
+            let nsContent = updatedContent as NSString
+            let fullRange = NSRange(location: 0, length: nsContent.length)
+            updatedContent = nsContent.replacingOccurrences(
                 of: concept,
-                with: "[[\(concept)]]"
+                with: "[[\(concept)]]",
+                options: .caseInsensitive,
+                range: fullRange
             )
         }
 

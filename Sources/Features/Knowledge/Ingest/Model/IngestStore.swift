@@ -159,7 +159,7 @@ final class IngestStore {
         let taskID = taskCenter.addTask(type: .ingest, name: L10n.Ingest.manualEntry, target: title)
 
         do {
-            let page: KnowledgePage
+            var page: KnowledgePage
             if useSmart && llmService.isEnabled {
                 let result = try await llmService.smartIngest(title: title, rawContent: content, pages: await pageStore.pages)
                 let pageType = PageType(rawValue: result.suggestedType) ?? type
@@ -182,6 +182,7 @@ final class IngestStore {
                 updatedPage.tags = tags
                 updatedPage.customIcon = customIcon
                 _ = try? await pageStore.updatePage(updatedPage)
+                page = updatedPage
             }
 
             taskCenter.updateTask(taskID, status: .completed, associatedPageID: page.id)
