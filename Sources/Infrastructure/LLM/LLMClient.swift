@@ -37,7 +37,6 @@ class LLMClient: LLMClientProtocol, Sendable {
     // MARK: - Constants
     private static let defaultTimeout: TimeInterval = 30
     private static let streamingTimeout: TimeInterval = 30
-    private static let maxRetries = 3
 
     // MARK: - Initialization
 
@@ -64,23 +63,16 @@ class LLMClient: LLMClientProtocol, Sendable {
     /// - Returns: API 响应字典
     /// - Throws: 网络或 API 错误
     func sendRequest(body: [String: Any]) async throws -> [String: Any] {
-        var lastError: Error?
-
-        for attempt in 0..<Self.maxRetries {
-            do {
-                return try await performRequest(body: body)
-            } catch {
-                lastError = error
-                // 仅针对网络波动或 429 错误进行重试
-                if shouldRetry(error: error, attempt: attempt) {
-                    let delay = pow(2.0, Double(attempt)) // 指数退避: 1s, 2s, 4s
-                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-                    continue
-                }
-                throw error
+        try await RetryTask.execute(
+            maxRetries: LLMConstants.Retry.maxAttempts - 1,
+            initialDelay: LLMConstants.Retry.initialDelaySeconds,
+            multiplier: LLMConstants.Retry.backoffMultiplier,
+            shouldRetry: { error in Self.isRetryableError(error) },
+            operation: { [weak self] in
+                guard let self else { throw LLMError.invalidResponse }
+                return try await self.performRequest(body: body)
             }
-        }
-        throw lastError ?? LLMError.invalidResponse
+        )
     }
 
     private func performRequest(body: [String: Any]) async throws -> [String: Any] {
@@ -131,12 +123,9 @@ class LLMClient: LLMClientProtocol, Sendable {
         return json
     }
 
-    /// 判断是否应重试请求。
+    /// 判断错误是否可重试。
     /// 可重试场景：限流（429）、服务端临时错误（5xx）、网络层断连/超时。
-    /// 使用指数退避策略，最多重试 maxRetries - 1 次。
-    private func shouldRetry(error: Error, attempt: Int) -> Bool {
-        if attempt >= Self.maxRetries - 1 { return false }
-
+    private static func isRetryableError(_ error: Error) -> Bool {
         if let llmError = error as? LLMError {
             switch llmError {
             case .rateLimited, .httpError(500), .httpError(502), .httpError(503), .httpError(504):

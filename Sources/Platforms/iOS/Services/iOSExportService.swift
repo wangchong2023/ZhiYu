@@ -83,16 +83,21 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
         }
         return "// JS Library \(name) not found in Bundle"
     }
+
+    /// 等待导出引擎空闲槽位（单次 500ms 等待 + 复检，仍忙则抛 systemBusy）
+    private func waitForExportSlot() async throws {
+        if isExporting {
+            try? await Task.sleep(for: .milliseconds(500))
+            if isExporting { throw ExportError.systemBusy }
+        }
+    }
     
     /// 导出ToPDF
     /// - Parameter markdown: markdown
     /// - Parameter fileName: fileName
     /// - Returns: 链接
     func exportToPDF(markdown: String, fileName: String) async throws -> URL {
-        if isExporting {
-            try? await Task.sleep(for: .milliseconds(500))
-            if isExporting { throw ExportError.systemBusy }
-        }
+        try await waitForExportSlot()
         
         isExporting = true
         defer { 
@@ -133,10 +138,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
     /// - Parameter fileName: fileName
     /// - Returns: 链接
     func exportMindmapToPDF(mermaidCode: String, fileName: String) async throws -> URL {
-        if isExporting {
-            try? await Task.sleep(for: .milliseconds(500))
-            if isExporting { throw ExportError.systemBusy }
-        }
+        try await waitForExportSlot()
         
         isExporting = true
         defer { 
@@ -208,10 +210,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
     /// - Parameter fileName: fileName
     /// - Returns: 链接
     func exportToPPTX(markdown: String, fileName: String) async throws -> URL {
-        if isExporting {
-            try? await Task.sleep(for: .milliseconds(500))
-            if isExporting { throw ExportError.systemBusy }
-        }
+        try await waitForExportSlot()
         isExporting = true
         defer { isExporting = false }
 

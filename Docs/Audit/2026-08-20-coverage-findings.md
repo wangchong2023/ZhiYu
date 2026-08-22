@@ -98,3 +98,9 @@
 |------|---------|---------|---------|---------|
 | A-40 | `KnowledgePageRepository.upsert` 第 72 行用 `title` 作为唯一键查找已存在记录（`KnowledgePage.filter(title == page.title)`），当用户修改页面标题后调用 `updatePage`，会 **insert 新记录** 而非更新原记录，导致：1) 原标题记录残留（数据冗余）；2) 页面 id 变化（关联链接、向量索引、FTS 索引失效）；3) `anyUpdatePage` 静默创建重复页面 | P2 | 应优先用 `id` 查找已存在记录（`KnowledgePage.filter(id == page.id)`），title 仅用于显示而非唯一键；如业务需要 title 唯一约束，应在数据库层添加 UNIQUE INDEX 并显式处理冲突 | 否 |
 
+### A-41：生产代码重试逻辑统一
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-41 | 生产代码存在 5 处手写重试/轮询逻辑，策略各异无统一封装：1) `SQLiteStore.dbWriter` 固定间隔轮询（20 次 × 50ms）；2) `LLMClient.sendRequest` 指数退避（1/2/4s，3 次）；3) `LLMService.executeWithBackoffRetry` 孤儿代码（零调用）；4) `iOSExportService` 3 处重复忙等待（500ms 单次复检）；5) `LLMClient.maxRetries=3` 与 `LLMConstants.Retry.maxAttempts=3` 常量重复定义。同时 `RetryTask` 通用工具类已存在但零调用 | P2 | 1) 增强 `RetryTask`：新增 `shouldRetry` 谓词 + `poll` 轮询方法 + `RetryError` 错误类型；2) `SQLiteStore.dbWriter` 迁移到 `RetryTask.poll`；3) `LLMClient.sendRequest` 迁移到 `RetryTask.execute` + `shouldRetry` 闭包，删除 `maxRetries` 硬编码常量；4) 删除 `LLMService.executeWithBackoffRetry` 孤儿代码；5) `iOSExportService` 3 处忙等待提取为 `waitForExportSlot()` 方法 | 是 |
+

@@ -235,34 +235,6 @@ class LLMService: ObservableObject, LLMServiceProtocol {
         return await reranker.generateHypotheticalDocument(query: query)
     }
 
-    /// 带 Jitter 的指数退避重试回路 (Exponential Backoff with Jitter)
-    /// 遭遇网络抖动或 503 超时，最多重试 3 次
-    func executeWithBackoffRetry<T: Sendable>(
-        maxAttempts: Int = LLMConstants.Retry.maxAttempts,
-        initialDelaySeconds: Double = LLMConstants.Retry.initialDelaySeconds,
-        operation: @Sendable () async throws -> T
-    ) async throws -> T {
-        guard maxAttempts > 0 else {
-            throw LLMError.apiError(L10n.AI.Synthesis.Error.limitReached)
-        }
-        var currentDelay = initialDelaySeconds
-        for attempt in 1...maxAttempts {
-            do {
-                return try await operation()
-            } catch {
-                if attempt == maxAttempts {
-                    throw error
-                }
-                let jitter = Double.random(in: 0.8...1.2)
-                let sleepNanoseconds = UInt64(currentDelay * jitter * 1_000_000_000)
-                try? await Task.sleep(nanoseconds: sleepNanoseconds)
-                currentDelay *= LLMConstants.Retry.backoffMultiplier
-            }
-        }
-        // 防御性兜底：理论上不可达，但保留以防逻辑变更遗漏
-        throw LLMError.apiError(L10n.AI.Synthesis.Error.limitReached)
-    }
-
     /// AI 模块连通性与响应测速测试 — 同时验证非流式与流式信道。
     /// 阶段 1：非流式探活（generate "Hi" → 期望 "OK"）
     /// 阶段 2：流式信道验证（chatStream "ping" → 读取首个非空 chunk）

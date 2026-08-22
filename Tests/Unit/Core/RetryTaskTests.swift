@@ -179,6 +179,81 @@ final class RetryTaskTests: XCTestCase {
         )
         XCTAssertEqual(result, "fast", "maxDelay 应截断 initialDelay，避免长时间等待")
     }
+
+    // MARK: - shouldRetry 谓词
+
+    /// shouldRetry 返回 false 时，不可重试错误直接抛出
+    func testExecute_shouldRetry过滤不可重试错误() async throws {
+        var callCount = 0
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 3,
+                initialDelay: 0.001,
+                shouldRetry: { _ in false },
+                operation: { @Sendable in
+                    callCount += 1
+                    throw TestError.failure
+                }
+            )
+            XCTFail("不可重试错误应直接抛出")
+        } catch {
+            XCTAssertEqual(callCount, 1, "shouldRetry=false 应只调用 1 次")
+        }
+    }
+
+    /// shouldRetry 返回 true 时，可重试错误按 maxRetries 重试
+    func testExecute_shouldRetry允许可重试错误() async throws {
+        var callCount = 0
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 2,
+                initialDelay: 0.001,
+                shouldRetry: { _ in true },
+                operation: { @Sendable in
+                    callCount += 1
+                    throw TestError.failure
+                }
+            )
+            XCTFail("应在重试上限后抛出错误")
+        } catch {
+            XCTAssertEqual(callCount, 3, "首次 + 2 次重试 = 3 次调用")
+        }
+    }
+
+    // MARK: - poll 轮询
+
+    /// poll 条件满足时返回结果
+    func testPoll_条件满足_返回结果() async throws {
+        var callCount = 0
+        let result = try await RetryTask.poll(maxAttempts: 5, interval: 0.001) {
+            callCount += 1
+            return callCount >= 3 ? "READY" : nil
+        }
+        XCTAssertEqual(result, "READY")
+        XCTAssertEqual(callCount, 3, "应在第 3 次轮询时满足条件")
+    }
+
+    /// poll 条件始终不满足时抛出 pollingExhausted
+    func testPoll_条件不满足_抛出pollingExhausted() async throws {
+        do {
+            let _: String = try await RetryTask.poll(maxAttempts: 3, interval: 0.001) {
+                return nil
+            }
+            XCTFail("应在轮询耗尽后抛出 RetryError")
+        } catch RetryError.pollingExhausted(let attempts) {
+            XCTAssertEqual(attempts, 3, "应尝试 3 次")
+        } catch {
+            XCTFail("应抛出 RetryError.pollingExhausted，实际：\(error)")
+        }
+    }
+
+    /// poll 首次即满足条件
+    func testPoll_首次满足_立即返回() async throws {
+        let result = try await RetryTask.poll(maxAttempts: 5, interval: 0.001) {
+            return "IMMEDIATE"
+        }
+        XCTAssertEqual(result, "IMMEDIATE")
+    }
 }
 
 // MARK: - 测试专用错误类型

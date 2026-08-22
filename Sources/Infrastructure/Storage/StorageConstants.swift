@@ -149,6 +149,8 @@ enum StorageConstants {
         static let maxAttempts: Int = 20
         /// 单次重试间隔（纳秒，50ms）
         static let intervalNanoseconds: UInt64 = 50_000_000
+        /// 单次重试间隔（秒，供 RetryTask.poll 使用）
+        static let intervalSeconds: TimeInterval = 0.05
     }
 
     /// 引用 SystemConstants.MarkdownSyntax，避免重复定义

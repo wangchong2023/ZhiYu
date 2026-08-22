@@ -24,15 +24,17 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
     private var dbWriter: any DatabaseWriter {
         get async throws {
             // 等待 notebook 切换完成（selectVault 异步 Task 可能尚未完成）
-            // 使用直接 await 避免 MainActor.run 在 XCTest 并行 worker 中死锁
-            for _ in 0..<StorageConstants.WriterRetry.maxAttempts {
-                if let writer = await DatabaseManager.shared.dbWriter {
-                    return writer
+            // 使用 RetryTask.poll 固定间隔轮询，耗尽后抛 DatabaseError.notReady
+            do {
+                return try await RetryTask.poll(
+                    maxAttempts: StorageConstants.WriterRetry.maxAttempts,
+                    interval: StorageConstants.WriterRetry.intervalSeconds
+                ) {
+                    await DatabaseManager.shared.dbWriter
                 }
-                try? await Task.sleep(nanoseconds: StorageConstants.WriterRetry.intervalNanoseconds)
+            } catch {
+                throw DatabaseError.notReady
             }
-            // Finding #17：重试 1s 后仍无 writer，抛错而非静默降级创建空内存库
-            throw DatabaseError.notReady
         }
     }
     

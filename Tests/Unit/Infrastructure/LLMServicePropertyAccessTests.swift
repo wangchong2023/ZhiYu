@@ -191,48 +191,4 @@ final class LLMServicePropertyAccessTests: XCTestCase {
         XCTAssertEqual(result.count, 1)
         XCTAssertEqual(result.first?.id, "test-1")
     }
-
-    // MARK: - executeWithBackoffRetry
-
-    func testExecuteWithBackoffRetrySucceedsOnFirstAttempt() async throws {
-        let result = try await service.executeWithBackoffRetry(maxAttempts: 3, initialDelaySeconds: 0.001) {
-            return "成功"
-        }
-        XCTAssertEqual(result, "成功")
-    }
-
-    func testExecuteWithBackoffRetryThrowsWhenMaxAttemptsZero() async {
-        do {
-            _ = try await service.executeWithBackoffRetry(maxAttempts: 0, initialDelaySeconds: 0.001) {
-                return "不应到达"
-            }
-            XCTFail("maxAttempts=0 应抛错")
-        } catch {
-            // 预期抛错
-        }
-    }
-
-    func testExecuteWithBackoffRetryRetriesAndSucceeds() async throws {
-        var attemptCount = 0
-        let result = try await service.executeWithBackoffRetry(maxAttempts: 3, initialDelaySeconds: 0.001) {
-            attemptCount += 1
-            if attemptCount < 3 {
-                throw LLMError.apiError("临时错误")
-            }
-            return "最终成功"
-        }
-        XCTAssertEqual(result, "最终成功")
-        XCTAssertEqual(attemptCount, 3)
-    }
-
-    func testExecuteWithBackoffRetryThrowsAfterMaxAttempts() async {
-        do {
-            _ = try await service.executeWithBackoffRetry(maxAttempts: 2, initialDelaySeconds: 0.001) {
-                throw LLMError.apiError("持续失败")
-            }
-            XCTFail("应抛错")
-        } catch {
-            // 预期抛错
-        }
-    }
 }
