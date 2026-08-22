@@ -92,3 +92,9 @@
 | A-38 | `PluginManifest.name`/`description` 使用 `Localized.bestMatch`，非空字典总是返回某个值（第 5 步"任意值"），不 fallback 到插件 id 或空字符串 — 中文用户可能看到法语名称 | P3 | `bestMatch` 第 5 步：fallback 非空时优先返回 fallback，fallback 为空时返回字典任意值 | 是 |
 | A-39 | `StreamDeanonymizer.maxRawLength=25` 只在无闭合 `]` 时触发（DoS 保护），完整方括号内容即使超过 25 字符也会尝试还原 — 设计正确，但文档应说明 maxRawLength 是防 DoS 而非限制占位符长度 | P3 | 更新 `EntityPlaceholder.maxRawLength` 文档注释说明用途 | 是 |
 
+### Task 20：SQLiteStore/DatabaseManager/NetworkClient/KeychainService
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| A-40 | `KnowledgePageRepository.upsert` 第 72 行用 `title` 作为唯一键查找已存在记录（`KnowledgePage.filter(title == page.title)`），当用户修改页面标题后调用 `updatePage`，会 **insert 新记录** 而非更新原记录，导致：1) 原标题记录残留（数据冗余）；2) 页面 id 变化（关联链接、向量索引、FTS 索引失效）；3) `anyUpdatePage` 静默创建重复页面 | P2 | 应优先用 `id` 查找已存在记录（`KnowledgePage.filter(id == page.id)`），title 仅用于显示而非唯一键；如业务需要 title 唯一约束，应在数据库层添加 UNIQUE INDEX 并显式处理冲突 | 否 |
+
