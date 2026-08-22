@@ -1552,6 +1552,7 @@
 		B12AA791D6D145D9C1E8C770 /* LogStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5056B00C6125AA2C75FF9669 /* LogStatus.swift */; };
 		B13B8416CBBED6F6A2F83A09 /* OnboardingPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5CD0532A6320877B056B422 /* OnboardingPathTests.swift */; };
 		B14CC9026EBBBE5E82A3153A /* DesignSystem+List.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47118FA1BF97E1F6B6062DB /* DesignSystem+List.swift */; };
+		B1535EE8752735CB5D423A3F /* ChatCoordinatorDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A372180FDFA00A6A8426A0B /* ChatCoordinatorDeepTests.swift */; };
 		B154FDDDF9D3334459C44DBF /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D61AF026EBC2F06927D94E2 /* SettingsStoreTests.swift */; };
 		B16885FB7C0CB0D21655C056 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A031B40982A6DD320F4B1B /* User.swift */; };
 		B1707F99FB4F7E97F4BE1613 /* SQLiteImportRecordRepositoryEdgeCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6304CC57EC0C5EA61FF20F72 /* SQLiteImportRecordRepositoryEdgeCaseTests.swift */; };
@@ -1911,6 +1912,7 @@
 		DBF34B23A309153BBF4957D1 /* testIngestTimelineView_EmbeddingStage.1.png in Resources */ = {isa = PBXBuildFile; fileRef = F41121D7508C7239D5E42175 /* testIngestTimelineView_EmbeddingStage.1.png */; };
 		DBF6E20C48BAD16BD045CC47 /* DomainThresholds.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE4746D6106D094CEE034331 /* DomainThresholds.swift */; };
 		DC3CD320121819D26B5FE02D /* AppNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = C52DB27515F908373C4C9B6F /* AppNotifications.swift */; };
+		DC859E132D17631F584CA109 /* AuthServiceDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 519C6F99F560A49EDC61BAE6 /* AuthServiceDeepTests.swift */; };
 		DCA540F7FD6E82082BB95C70 /* RAGGovernanceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE143076A48260E81DB2811 /* RAGGovernanceModels.swift */; };
 		DCBE4BB00916B458BAB02777 /* RegionCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200E06E0088695445022BAF3 /* RegionCapabilities.swift */; };
 		DCBF73D1C903955DAFBC5F06 /* PromptConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C1A8D7BB55003CDCDDF031 /* PromptConstants.swift */; };
@@ -2520,6 +2522,7 @@
 		29D2B623011C6C3BCE1A37B2 /* AppConfig.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = AppConfig.json; sourceTree = "<group>"; };
 		29FBE39C2BBE3AB9C88B58FF /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatService.swift; sourceTree = "<group>"; };
 		2A34BC0A233A1E6627A7D10D /* LockOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockOverlayView.swift; sourceTree = "<group>"; };
+		2A372180FDFA00A6A8426A0B /* ChatCoordinatorDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCoordinatorDeepTests.swift; sourceTree = "<group>"; };
 		2A3D238DE824A5C4D40ED087 /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GRDB.swift; path = ../../opensrc/swift/GRDB.swift; sourceTree = SOURCE_ROOT; };
 		2A64FFCFBB2B095EBDDF5C66 /* AsyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncStatus.swift; sourceTree = "<group>"; };
 		2AACAF237118AEFF5AA056DD /* VaultLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultLayout.swift; sourceTree = "<group>"; };
@@ -2727,6 +2730,7 @@
 		50867067EFB5A4CE9BFB2AD2 /* testVoiceNoteView_WithTranscription.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testVoiceNoteView_WithTranscription.1.png; sourceTree = "<group>"; };
 		50B9EDDFD71D2C6887D0EF7B /* CrossPlatformProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformProtocolTests.swift; sourceTree = "<group>"; };
 		514608DCE194C35F243A59CD /* GraphCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphCanvasView.swift; sourceTree = "<group>"; };
+		519C6F99F560A49EDC61BAE6 /* AuthServiceDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthServiceDeepTests.swift; sourceTree = "<group>"; };
 		51BCC8B1500D799669DE3AED /* View+Conditional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Conditional.swift"; sourceTree = "<group>"; };
 		51E576EA1E3290CF2CFA8C35 /* MarkdownRendererView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownRendererView.swift; sourceTree = "<group>"; };
 		51FAD49CE8F1DF1692F29AE1 /* VersionInfoFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionInfoFormatter.swift; sourceTree = "<group>"; };
@@ -4060,6 +4064,8 @@
 			isa = PBXGroup;
 			children = (
 				3FA4050C2E7123D10B45D57E /* AppleAuthStrategyDeepTests.swift */,
+				519C6F99F560A49EDC61BAE6 /* AuthServiceDeepTests.swift */,
+				2A372180FDFA00A6A8426A0B /* ChatCoordinatorDeepTests.swift */,
 				F06E99C210D1A2025506DB98 /* IngestCoordinatorDeepTests.swift */,
 				B05B04BFD3673E82CC4B95C5 /* IngestFileHandlerDeepTests.swift */,
 				A96331999A8CF6D1314DFA56 /* IngestFileHandlerFeatureTests.swift */,
@@ -7774,6 +7780,7 @@
 				E5D5C94BCDE309817A4DD97E /* AuthDTOsTests.swift in Sources */,
 				0A134772452DC1058A8C7C82 /* AuthIntegrationTests.swift in Sources */,
 				D54010D17D992726FB3F3F93 /* AuthRegionDetectorTests.swift in Sources */,
+				DC859E132D17631F584CA109 /* AuthServiceDeepTests.swift in Sources */,
 				FC4B27611B0E9CB5397ADB95 /* AuthServiceTests.swift in Sources */,
 				D6A47D6DDFA77A11DC070564 /* BackupServiceEdgeCaseTests.swift in Sources */,
 				9DD1D7987459E3BD44BF9AAB /* BackupServiceTests.swift in Sources */,
@@ -7782,6 +7789,7 @@
 				77717F81A0C9FA22A9F4351B /* CJKSpacingFormatterEdgeTests.swift in Sources */,
 				DF65EC537C5AB6224FAC578B /* CarrierAuthStrategyTests.swift in Sources */,
 				745F0CF29BEF5FA614677400 /* ChatComponentsSnapshots.swift in Sources */,
+				B1535EE8752735CB5D423A3F /* ChatCoordinatorDeepTests.swift in Sources */,
 				D87621AB1C5A3A1E12EC4847 /* ChatCoordinatorTests.swift in Sources */,
 				A63D0BCA84FF904A15CC520A /* ChatHistoryStoreTests.swift in Sources */,
 				421A18832E1A54CE27501640 /* ChatLLMServiceIntegrationTests.swift in Sources */,
