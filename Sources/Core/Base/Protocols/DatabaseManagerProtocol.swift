@@ -40,6 +40,18 @@ public protocol VaultDatabaseSwitcher: Sendable {
     func countPages(at url: URL) async throws -> Int
 }
 
+// MARK: - NoOp 实现
+
+/// VaultDatabaseSwitcher 的空操作实现，用于测试环境安全降级
+@MainActor
+public final class NoOpVaultDatabaseSwitcher: VaultDatabaseSwitcher, @unchecked Sendable {
+    public init() {}
+    public func switchDatabase(to vaultID: UUID, at url: URL) async throws {}
+    public func releaseDatabaseConnection() {}
+    public func countPagesInCurrentVault() async throws -> Int { 0 }
+    public func countPages(at url: URL) async throws -> Int { 0 }
+}
+
 // MARK: - DependencyKey 注册
 
 /// VaultDatabaseSwitcher 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -48,6 +60,12 @@ public enum VaultDatabaseSwitcherKey: DependencyKey {
     public static var liveValue: any VaultDatabaseSwitcher {
         ServiceContainer.shared.resolve((any VaultDatabaseSwitcher).self)
     }
+    @MainActor
+    public static var testValue: any VaultDatabaseSwitcher {
+        ServiceContainer.shared.resolveOptional((any VaultDatabaseSwitcher).self) ?? NoOpVaultDatabaseSwitcher()
+    }
+    @MainActor
+    public static var previewValue: any VaultDatabaseSwitcher { NoOpVaultDatabaseSwitcher() }
 }
 
 extension DependencyValues {

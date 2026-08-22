@@ -58,6 +58,14 @@ enum KnowledgePageRepositoryKey: DependencyKey {
     public static var liveValue: KnowledgePageRepository {
         ServiceContainer.shared.resolve(KnowledgePageRepository.self)
     }
+    public static var testValue: KnowledgePageRepository {
+        if let existing = ServiceContainer.shared.resolveOptional(KnowledgePageRepository.self) {
+            return existing
+        }
+        // 测试环境降级：Infrastructure 层负责注册，未注册时返回 NoOpKnowledgeRepository 包装
+        // 注意：KnowledgePageRepository 是具体类，此处通过 resolveOptional 保证测试已注册时优先返回
+        return ServiceContainer.shared.resolve(KnowledgePageRepository.self)
+    }
 }
 
 extension DependencyValues {

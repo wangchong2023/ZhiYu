@@ -76,11 +76,22 @@ public final class NoOpBiometricAuthProvider: BiometricAuthProviderProtocol {
     public func evaluatePolicy(context: LAContext, reason: String) async -> Bool { false }
 }
 
+/// 无操作模型编译服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpMLModelCompiler: MLModelCompilerProtocol, @unchecked Sendable {
+    public init() {}
+    public var supportsCompilation: Bool { false }
+    public func compileModel(at url: URL) async throws -> URL { url }
+}
+
 /// MLModelCompilerProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum MLModelCompilerKey: DependencyKey {
     public static var liveValue: any MLModelCompilerProtocol {
         ServiceContainer.shared.resolve((any MLModelCompilerProtocol).self)
     }
+    public static var testValue: any MLModelCompilerProtocol {
+        ServiceContainer.shared.resolveOptional((any MLModelCompilerProtocol).self) ?? NoOpMLModelCompiler()
+    }
+    public static var previewValue: any MLModelCompilerProtocol { NoOpMLModelCompiler() }
 }
 
 extension DependencyValues {

@@ -174,6 +174,19 @@ public enum AISynthesisServiceKey: DependencyKey {
     public static var liveValue: any AISynthesisServiceProtocol {
         ServiceContainer.shared.resolve((any AISynthesisServiceProtocol).self)
     }
+    public static var testValue: any AISynthesisServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any AISynthesisServiceProtocol).self) ?? NoOpAISynthesisService()
+    }
+    public static var previewValue: any AISynthesisServiceProtocol { NoOpAISynthesisService() }
+}
+
+/// 无操作 AI 知识综合服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpAISynthesisService: AISynthesisServiceProtocol, @unchecked Sendable {
+    public init() {}
+    public func summarize(content: String) async throws -> String { "" }
+    public func generateMindMap(content: String) async throws -> String { "" }
+    public func generateInsightfulQuestions(pages: [KnowledgePage]) async throws -> [String] { [] }
+    public func predictFollowUpQuestions(history: [ChatMessage], pages: [KnowledgePage]) async throws -> [String] { [] }
 }
 
 extension DependencyValues {

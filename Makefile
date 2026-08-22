@@ -85,6 +85,7 @@ audit:
 	@python3 Tools/ios/check-arch-opensource-internal-deps.py
 	@python3 Tools/ios/check-code-absolute-paths.py
 	@python3 Tools/ios/check-code-snapshot-environment.py --strict
+	@python3 Tools/ios/audit-dependency-key-test-value.py
 
 lint:
 	@swiftlint --strict

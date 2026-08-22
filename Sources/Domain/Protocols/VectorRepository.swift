@@ -38,6 +38,20 @@ public protocol VectorRepository: Sendable {
     func fetchAllEmbeddings() async throws -> [UUID: [Float]]
 }
 
+// MARK: - NoOp 实现
+
+/// VectorRepository 的空操作实现，用于测试环境安全降级
+public final class NoOpVectorRepository: VectorRepository, @unchecked Sendable {
+    public init() {}
+    public func saveChunks(_ chunks: [PageChunk], for pageID: UUID) async throws {}
+    public func fetchChunks(for pageID: UUID) async throws -> [PageChunk] { [] }
+    public func fetchAllChunksWithEmbeddings() async throws -> [PageChunk] { [] }
+    public func deleteChunks(for pageID: UUID) async throws {}
+    public func cleanupOrphanedChunks() async throws -> Int { 0 }
+    public func saveEmbedding(id: UUID, vector: [Float], modelName: String) async throws {}
+    public func fetchAllEmbeddings() async throws -> [UUID: [Float]] { [:] }
+}
+
 // MARK: - DependencyKey 注册
 
 import Dependencies
@@ -48,6 +62,10 @@ public enum VectorRepositoryKey: DependencyKey {
     public static var liveValue: any VectorRepository {
         ServiceContainer.shared.resolve((any VectorRepository).self)
     }
+    public static var testValue: any VectorRepository {
+        ServiceContainer.shared.resolveOptional((any VectorRepository).self) ?? NoOpVectorRepository()
+    }
+    public static var previewValue: any VectorRepository { NoOpVectorRepository() }
 }
 
 extension DependencyValues {

@@ -30,6 +30,18 @@ public protocol VaultRepository: Sendable {
     func saveSetting(key: String, value: String) async throws
 }
 
+// MARK: - NoOp 实现
+
+/// VaultRepository 的空操作实现，用于测试环境安全降级
+public final class NoOpVaultRepository: VaultRepository, @unchecked Sendable {
+    public init() {}
+    public func fetchAllVaults() async throws -> [Vault] { [] }
+    public func saveVault(_ vault: Vault) async throws {}
+    public func updateLastAccessed(id: UUID) async throws {}
+    public func deleteVault(id: UUID) async throws {}
+    public func saveSetting(key: String, value: String) async throws {}
+}
+
 // MARK: - DependencyKey 注册
 
 /// VaultRepository 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -37,6 +49,10 @@ public enum VaultRepositoryKey: DependencyKey {
     public static var liveValue: any VaultRepository {
         ServiceContainer.shared.resolve((any VaultRepository).self)
     }
+    public static var testValue: any VaultRepository {
+        ServiceContainer.shared.resolveOptional((any VaultRepository).self) ?? NoOpVaultRepository()
+    }
+    public static var previewValue: any VaultRepository { NoOpVaultRepository() }
 }
 
 extension DependencyValues {

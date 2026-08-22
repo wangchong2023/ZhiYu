@@ -42,8 +42,12 @@ import UFPCore
 
 public enum DocumentExtractionServiceKey: DependencyKey {
     public static var liveValue: any DocumentExtractionServiceProtocol {
-        ServiceContainer.shared.resolve((any DocumentExtractionServiceProtocol).self)
+        ServiceContainer.shared.resolveOptional((any DocumentExtractionServiceProtocol).self) ?? NoOpDocumentExtractionService()
     }
+    public static var testValue: any DocumentExtractionServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any DocumentExtractionServiceProtocol).self) ?? NoOpDocumentExtractionService()
+    }
+    public static var previewValue: any DocumentExtractionServiceProtocol { NoOpDocumentExtractionService() }
 }
 
 extension DependencyValues {
@@ -51,4 +55,11 @@ extension DependencyValues {
         get { self[DocumentExtractionServiceKey.self] }
         set { self[DocumentExtractionServiceKey.self] = newValue }
     }
+}
+
+/// 无操作文档提取服务（测试/预览占位，DI 未就绪时降级）
+public final class NoOpDocumentExtractionService: DocumentExtractionServiceProtocol, Sendable {
+    public init() {}
+    public func canExtract(format: DocumentFormat) -> Bool { false }
+    public func extractText(from url: URL) async throws -> String { "" }
 }

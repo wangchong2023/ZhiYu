@@ -19,6 +19,15 @@ public protocol URLOpenerProtocol: Sendable {
     func open(_ url: URL) async
 }
 
+// MARK: - NoOp 实现
+
+/// URLOpenerProtocol 的空操作实现，用于测试环境安全降级
+@MainActor
+public final class NoOpURLOpener: URLOpenerProtocol, @unchecked Sendable {
+    public init() {}
+    public func open(_ url: URL) async {}
+}
+
 // MARK: - DependencyKey 注册
 
 /// URLOpenerProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -27,6 +36,12 @@ public enum URLOpenerKey: DependencyKey {
     public static var liveValue: any URLOpenerProtocol {
         ServiceContainer.shared.resolve((any URLOpenerProtocol).self)
     }
+    @MainActor
+    public static var testValue: any URLOpenerProtocol {
+        ServiceContainer.shared.resolveOptional((any URLOpenerProtocol).self) ?? NoOpURLOpener()
+    }
+    @MainActor
+    public static var previewValue: any URLOpenerProtocol { NoOpURLOpener() }
 }
 
 extension DependencyValues {

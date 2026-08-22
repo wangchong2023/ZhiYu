@@ -25,6 +25,15 @@ public protocol RemoteConfigCapabilities: Sendable {
     func fetchAgentSkills() async throws -> [AgentSkill]
 }
 
+// MARK: - NoOp 实现
+
+/// RemoteConfigCapabilities 的空操作实现，用于测试环境安全降级
+public final class NoOpRemoteConfig: RemoteConfigCapabilities, @unchecked Sendable {
+    public init() {}
+    public func fetchLLMManifests() async throws -> [LLMManifest] { [] }
+    public func fetchAgentSkills() async throws -> [AgentSkill] { [] }
+}
+
 // MARK: - DependencyKey 注册
 
 import Dependencies
@@ -35,6 +44,10 @@ public enum RemoteConfigKey: DependencyKey {
     public static var liveValue: any RemoteConfigCapabilities {
         ServiceContainer.shared.resolve((any RemoteConfigCapabilities).self)
     }
+    public static var testValue: any RemoteConfigCapabilities {
+        ServiceContainer.shared.resolveOptional((any RemoteConfigCapabilities).self) ?? NoOpRemoteConfig()
+    }
+    public static var previewValue: any RemoteConfigCapabilities { NoOpRemoteConfig() }
 }
 
 extension DependencyValues {

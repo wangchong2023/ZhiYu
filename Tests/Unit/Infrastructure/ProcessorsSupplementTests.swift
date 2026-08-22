@@ -15,13 +15,7 @@ import Dependencies
 import UFPCore
 @testable import ZhiYu
 
-// MARK: - A-27 修复：DocumentExtractionServiceKey 缺失 testValue 的 NoOp 实现
-
-/// 无操作文档提取服务（测试/预览占位，DI 未就绪时降级）
-final class NoOpDocumentExtractionService: DocumentExtractionServiceProtocol, @unchecked Sendable {
-    func canExtract(format: DocumentFormat) -> Bool { false }
-    func extractText(from url: URL) async throws -> String { "" }
-}
+// MARK: - A-27 修复：NoOpDocumentExtractionService 已移入生产代码（DocumentExtractionServiceProtocol.swift）
 
 // MARK: - ImageExtractor 补充测试
 

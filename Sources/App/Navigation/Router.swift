@@ -356,6 +356,10 @@ final class Router {
 enum RouterKey: DependencyKey {
     @MainActor
     static var liveValue: Router { ServiceContainer.shared.resolve(Router.self) }
+    @MainActor
+    static var testValue: Router {
+        ServiceContainer.shared.resolveOptional(Router.self) ?? Router()
+    }
 }
 
 extension DependencyValues {

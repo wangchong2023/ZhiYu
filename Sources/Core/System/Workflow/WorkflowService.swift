@@ -126,6 +126,10 @@ final class WorkflowService: ObservableObject {
 enum WorkflowServiceKey: DependencyKey {
     @MainActor
     static var liveValue: WorkflowService { ServiceContainer.shared.resolve(WorkflowService.self) }
+    @MainActor
+    static var testValue: WorkflowService {
+        ServiceContainer.shared.resolveOptional(WorkflowService.self) ?? WorkflowService()
+    }
 }
 
 extension DependencyValues {

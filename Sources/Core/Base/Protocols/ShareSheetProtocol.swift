@@ -20,6 +20,15 @@ public protocol ShareSheetProtocol: Sendable {
     func presentShareSheet(items: [Any]) async
 }
 
+// MARK: - NoOp 实现
+
+/// ShareSheetProtocol 的空操作实现，用于测试环境安全降级
+@MainActor
+public final class NoOpShareSheet: ShareSheetProtocol, @unchecked Sendable {
+    public init() {}
+    public func presentShareSheet(items: [Any]) async {}
+}
+
 // MARK: - DependencyKey 注册
 
 /// ShareSheetProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -28,6 +37,12 @@ public enum ShareSheetKey: DependencyKey {
     public static var liveValue: any ShareSheetProtocol {
         ServiceContainer.shared.resolve((any ShareSheetProtocol).self)
     }
+    @MainActor
+    public static var testValue: any ShareSheetProtocol {
+        ServiceContainer.shared.resolveOptional((any ShareSheetProtocol).self) ?? NoOpShareSheet()
+    }
+    @MainActor
+    public static var previewValue: any ShareSheetProtocol { NoOpShareSheet() }
 }
 
 extension DependencyValues {

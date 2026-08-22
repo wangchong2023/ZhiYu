@@ -420,6 +420,10 @@ public final class SynthesisStore {
 public enum SynthesisStoreKey: DependencyKey {
     @MainActor
     public static var liveValue: SynthesisStore { ServiceContainer.shared.resolve(SynthesisStore.self) }
+    @MainActor
+    public static var testValue: SynthesisStore {
+        ServiceContainer.shared.resolveOptional(SynthesisStore.self) ?? SynthesisStore()
+    }
 }
 
 extension DependencyValues {

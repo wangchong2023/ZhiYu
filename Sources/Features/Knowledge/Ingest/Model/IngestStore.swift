@@ -214,6 +214,10 @@ final class IngestStore {
 enum IngestStoreKey: DependencyKey {
     @MainActor
     static var liveValue: IngestStore { ServiceContainer.shared.resolve(IngestStore.self) }
+    @MainActor
+    static var testValue: IngestStore {
+        ServiceContainer.shared.resolveOptional(IngestStore.self) ?? IngestStore()
+    }
 }
 
 extension DependencyValues {

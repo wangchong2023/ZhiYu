@@ -229,6 +229,11 @@ enum RAGEvaluationServiceKey: DependencyKey {
     static var liveValue: RAGEvaluationService {
         ServiceContainer.shared.resolve(RAGEvaluationService.self)
     }
+    @MainActor
+    static var testValue: RAGEvaluationService {
+        ServiceContainer.shared.resolveOptional(RAGEvaluationService.self)
+            ?? RAGEvaluationService(llmService: NoOpLLMService(), governanceStore: NoOpRAGGovernanceRepository())
+    }
 }
 
 extension DependencyValues {
