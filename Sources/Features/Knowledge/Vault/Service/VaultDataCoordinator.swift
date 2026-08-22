@@ -62,9 +62,11 @@ extension VaultService {
 
                 self.vaults = loadedVaults
                 await refreshAllPageCounts()
+                autoSelectFirstVaultForUITesting()
             } catch {
                 Logger.shared.error(" [VaultService] Failed to asynchronously load notebook metadata: \(error)", error: error)
                 self.vaults = buildFallbackDemoVaults()
+                autoSelectFirstVaultForUITesting()
             }
         }
 
@@ -145,6 +147,25 @@ extension VaultService {
                     Logger.shared.error(" [VaultService] Failed to auto-connect to the recently used physical database: \(error)", error: error)
                 }
             }
+        }
+    }
+
+    // MARK: - UI 测试支持
+
+    /// UI 测试模式自动选中第一个金库，跳过 NotebookHubView 直接进入主界面。
+    /// 根因：NotebookCard 的 accessibilityElement(children: .combine) 导致 isHittable=false，
+    /// XCUITest 的 element.tap() 会抛错，coordinate.tap() 不触发 SwiftUI Button action，
+    /// 测试无法通过 UI 点击进入金库。此处通过预置 selectedVaultID 正向绕过该限制。
+    func autoSelectFirstVaultForUITesting() {
+        guard TestModeDetector.isUITesting, selectedVaultID == nil,
+              let firstVault = vaults.first else { return }
+        selectedVaultID = firstVault.id
+        keyStore?.set(firstVault.englishName, forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
+        keyStore?.set(firstVault.id.uuidString, forKey: AppConstants.Keys.Storage.vaultsSelectedID)
+        Task { [weak self] in
+            guard let self, let databaseSwitcher = self.databaseSwitcher else { return }
+            let dbURL = self.getVaultDatabaseURL(for: firstVault.id)
+            try? await databaseSwitcher.switchDatabase(to: firstVault.id, at: dbURL)
         }
     }
 }

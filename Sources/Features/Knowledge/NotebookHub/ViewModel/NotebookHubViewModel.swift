@@ -122,17 +122,14 @@ public final class NotebookHubViewModel {
     /// 选择Notebook
     /// - Parameter notebook: notebook
     public func selectNotebook(_ notebook: Vault) {
-        Task { @MainActor in
-            // Phase 1: 重置路由状态，让 SwiftUI 在当前周期中安全处理
-            Router.shared.sidebarSelection = nil
-            Router.shared.selectedTab = .knowledge
-            Router.shared.path = NavigationPath()
-            // 让出主线程：确保 NavigationStack 被完全销毁、手势系统稳定后，
-            // 再触发 NavigationSplitView 创建，避免 GestureRecognizer 冲突崩溃
-            await Task.yield()
-            // Phase 2: 触发视图层级切换 (NotebookHubView → mainContent)
-            vaultService.selectVault(notebook)
-        }
+        // Phase 1: 同步重置路由状态，让 SwiftUI 在当前渲染周期中安全处理
+        Router.shared.sidebarSelection = nil
+        Router.shared.selectedTab = .knowledge
+        Router.shared.path = NavigationPath()
+        // Phase 2: 同步触发视图层级切换 (NotebookHubView → mainContent)
+        // vaultService.selectVault 内部已将数据库切换封装为后台 Task，
+        // selectedVaultID 同步设置即可驱动视图层级立即切换
+        vaultService.selectVault(notebook)
     }
     
     /// 创建新笔记本

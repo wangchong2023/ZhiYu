@@ -64,10 +64,10 @@ class KnowledgeBaseUITests: XCTestCase {
             let anyCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)
             
             if firstVaultCard.waitForExistence(timeout: 2.0) && firstVaultCard.exists {
-                firstVaultCard.tap()
+                safeTap(firstVaultCard)
                 try? await Task.sleep(nanoseconds: 1 * 1_000_000_000)
             } else if anyCard.exists {
-                anyCard.tap()
+                safeTap(anyCard)
                 try? await Task.sleep(nanoseconds: 1 * 1_000_000_000)
             } else {
                 // MARK: - [自愈逻辑] 冷启动且数据库为空时，通过引导按钮自动创建并进入测试笔记本
@@ -91,7 +91,7 @@ class KnowledgeBaseUITests: XCTestCase {
                             try? await Task.sleep(nanoseconds: 1 * 1_000_000_000)
                             let newCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)
                             if newCard.waitForExistence(timeout: 3.0) {
-                                newCard.tap()
+                                safeTap(newCard)
                                 try? await Task.sleep(nanoseconds: 1 * 1_000_000_000)
                             }
                         }
@@ -124,30 +124,24 @@ class KnowledgeBaseUITests: XCTestCase {
     /// 安全点击元素：元素存在且可点击时执行点击，否则静默跳过（不 XCTFail）
     /// 适用于可选性 UI 元素（某些平台/状态下可能不存在）
     /// - Returns: 是否成功执行了点击
+    /// - Note: 优先使用 element.tap() 以确保 SwiftUI Button action 被触发；
+    ///   coordinate.tap() 坐标点击无法可靠触发 SwiftUI Button action，仅作为兜底。
     @discardableResult
     func safeTap(_ element: XCUIElement) -> Bool {
-        if element.exists {
-            if element.isHittable {
-                element.tap()
-            } else {
-                element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            }
-            return true
-        }
-        return false
+        guard element.exists else { return false }
+        // 直接调用 tap()；若 isHittable 为 false 但元素存在，
+        // tap() 仍可能触发 SwiftUI Button action（比 coordinate.tap() 更可靠）
+        element.tap()
+        return true
     }
 
     /// 强制点击元素：元素不存在或不可点击时触发 XCTFail
     /// 适用于必须存在的 UI 元素（官方测试套件关键项）
+    /// - Note: 优先使用 element.tap() 以确保 SwiftUI Button action 被触发。
     func assertTap(_ element: XCUIElement, file: StaticString = #file, line: UInt = #line) {
         XCTAssertTrue(element.exists, "元素不存在: \(element.identifier)", file: file, line: line)
-        if element.exists {
-            if element.isHittable {
-                element.tap()
-            } else {
-                element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            }
-        }
+        guard element.exists else { return }
+        element.tap()
     }
 
     // MARK: - Tab Navigation

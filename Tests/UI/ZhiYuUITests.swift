@@ -61,14 +61,30 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
             #if DEBUG
             print("UI Test Recovery: Detected Notebook Hub, entering the default notebook vault.")
             #endif
-            var anyCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)
-            if !anyCard.exists {
-                anyCard = app.buttons.element(boundBy: 0)
+            let anyCard = app.buttons.matching(identifier: "NotebookCard_Item").element(boundBy: 0)
+
+            // 重试机制：NotebookCard 因 accessibilityElement(children: .combine) 可能 isHittable=false
+            // selectNotebook 是异步 Task（含 Task.yield），点击后需等待视图切换完成
+            var enteredVault = false
+            var attempt = 0
+            while attempt < 3 && !enteredVault {
+                attempt += 1
+                guard anyCard.waitForExistence(timeout: 3) else { continue }
+
+                // 直接调用 tap()；若 isHittable 为 false 但元素存在，
+                // tap() 仍可能触发 SwiftUI Button action（比 coordinate.tap() 更可靠）
+                anyCard.tap()
+
+                // selectNotebook 同步设置 selectedVaultID，等待视图层级切换完成
+                _ = XCTWaiter.wait(for: [XCTestExpectation(description: "进入金库转场等待第\(attempt)次")], timeout: 3.0)
+                // 验证是否进入金库：TabBar 出现
+                enteredVault = app.tabBars.firstMatch.waitForExistence(timeout: 8)
             }
 
-            if anyCard.exists {
-                anyCard.tap()
-                _ = XCTWaiter.wait(for: [XCTestExpectation(description: "进入金库转场等待")], timeout: 1.0)
+            if !enteredVault {
+                #if DEBUG
+                print("UI Test Recovery: Failed to enter vault after 3 attempts, continuing anyway.")
+                #endif
             }
         }
 

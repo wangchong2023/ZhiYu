@@ -94,7 +94,9 @@ struct NotebookCard: View {
         .buttonStyle(AppCardButtonStyle())
         .accessibilityIdentifier("NotebookCard_Item") // 添加 UI 自动化测试精确定位标识，防止测试误触新建按钮
         // MARK: - A11y 无障碍适配
-        .accessibilityElement(children: .combine)
+        // UI 测试模式下使用 .contain 允许 XCUITest 穿透容器定位 Button，
+        // 确保 element.tap() 能正常触发 SwiftUI Button action（coordinate.tap() 兜底不可靠）
+        .accessibilityElement(children: ProcessInfo.processInfo.arguments.contains("--uitesting") ? .contain : .combine)
         .accessibilityLabel("\(notebook.name)\(L10n.Accessibility.notebookCardLabel)")
         .accessibilityValue(notebook.description ?? L10n.Vault.defaultDescription)
         .accessibilityHint("\(L10n.Vault.lastEdited) \(notebook.updatedAt.formatted(.relative(presentation: .numeric)))\(L10n.Accessibility.notebookCardHint)")

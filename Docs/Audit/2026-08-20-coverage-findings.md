@@ -104,3 +104,17 @@
 |------|---------|---------|---------|---------|
 | A-41 | 生产代码存在 5 处手写重试/轮询逻辑，策略各异无统一封装：1) `SQLiteStore.dbWriter` 固定间隔轮询（20 次 × 50ms）；2) `LLMClient.sendRequest` 指数退避（1/2/4s，3 次）；3) `LLMService.executeWithBackoffRetry` 孤儿代码（零调用）；4) `iOSExportService` 3 处重复忙等待（500ms 单次复检）；5) `LLMClient.maxRetries=3` 与 `LLMConstants.Retry.maxAttempts=3` 常量重复定义。同时 `RetryTask` 通用工具类已存在但零调用 | P2 | 1) 增强 `RetryTask`：新增 `shouldRetry` 谓词 + `poll` 轮询方法 + `RetryError` 错误类型；2) `SQLiteStore.dbWriter` 迁移到 `RetryTask.poll`；3) `LLMClient.sendRequest` 迁移到 `RetryTask.execute` + `shouldRetry` 闭包，删除 `maxRetries` 硬编码常量；4) 删除 `LLMService.executeWithBackoffRetry` 孤儿代码；5) `iOSExportService` 3 处忙等待提取为 `waitForExportSlot()` 方法 | 是 |
 
+---
+
+## 批次 B — Localization/App 非View
+
+### L10n 表深度测试
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| B-1 | `L10n+Common.swift:360` `L10n.Common.Tags.memory` 使用 `Common.tr("demo.memory.title")` key 而非 `Common.tr("tags.memory")`，与同文件 `L10n.Common.Perf.memory`（使用 `tags.memory`）不一致。Tags.memory 应返回"记忆"标签文案，却返回了 Demo 模块的"记忆"标题，语义错配 | P2 | 改为 `Common.tr("tags.memory")`，与 `Perf.memory` 使用相同 key；如 `tags.memory` key 在 .xcstrings 中不存在则新增 | 否 |
+| B-2 | `L10n+Ingest.swift` `L10n.InitialNotebook.Snippet.workflow` 使用 `demo.fallback.workflow` key 而非 `demo.snippet.workflow`，与同 enum 中其他属性使用 `demo.snippet.*` 前缀不一致，且与 `Fallback.workflow` 返回相同值（key 冲突） | P2 | 改为 `demo.snippet.workflow` key，与同 enum 前缀一致；如该 key 不存在则新增 | 否 |
+| B-3 | `L10n+Dashboard.swift:24-30` `L10n.Dashboard.trf` 方法中 `if localized == key` 分支重复调用 `Dashboard.trf(key, args)` — 死代码，第二次调用返回同样结果，浪费一次本地化查表 | P3 | 删除 `if localized == key` 分支，直接返回 `localized` | 否 |
+| B-4 | `L10n+Plugin.swift` `L10n.Plugin.permTitle("network")` 返回 `L10n.Common.tr("tags.network")`（Common 表），而 `permDesc("network")` 返回 `Plugin.tr("plugin.perm.network.desc")`（Plugin 表）— permTitle 和 permDesc 对 network 权限使用了不同的表和不同的 key 前缀，跨表引用不一致 | P2 | 统一使用 Plugin 表：`permTitle("network")` 改为 `Plugin.tr("plugin.perm.network.title")`，与 `permDesc` 同表同前缀；如该 key 不存在则新增 | 否 |
+| B-5 | `L10n+Knowledge.swift:32-33` `batchDeleteTitle(_ count: Int)` 和 `batchDeleteMessage(_ count: Int)` 传入 `Int` 参数，但 `Knowledge.xcstrings` 中对应 key 的模板使用 `%@`（对象占位符）而非 `%d`（整数占位符）。`String(format:)` 对 `%@` 调用 `objc_opt_respondsToSelector` 检查传入值是否响应 NSObject 协议，`Int` 不是对象导致 EXC_BAD_ACCESS 崩溃（地址 `0x0000000000000001`）。这是**生产代码 P1 崩溃 bug**，在批量删除页面时必现崩溃 | P1 | 将 `Knowledge.xcstrings` 中 `page.batchDeleteTitle` 和 `page.batchDeleteMessage` 所有语言的 `%@` 改为 `%d`（10 种语言共 20 处） | 是 |
+

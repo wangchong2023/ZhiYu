@@ -11252,61 +11252,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "批量删除 %@ 个页面"
+            "value": "批量删除 %d 个页面"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "批量刪除 %@ 個頁面"
+            "value": "批量刪除 %d 個頁面"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete %@ Pages"
+            "value": "Delete %d Pages"
           }
         }
       }
@@ -11317,61 +11317,61 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "此操作不可撤销，确定要删除这 %@ 个页面吗？"
+            "value": "此操作不可撤销，确定要删除这 %d 个页面吗？"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "此操作不可復原，確定要刪除這 %@ 個頁面吗？"
+            "value": "此操作不可復原，確定要刪除這 %d 個頁面吗？"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "This action cannot be undone. Are you sure you want to delete these %@ pages?"
+            "value": "This action cannot be undone. Are you sure you want to delete these %d pages?"
           }
         }
       }
