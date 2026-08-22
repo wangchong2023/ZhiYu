@@ -300,7 +300,7 @@ class KnowledgeBaseUITests: XCTestCase {
             "Graph": 4, "图谱": 4,
             "Search": 2, "搜索": 2, "检索": 2
         ]
-        
+
         if tabName == "Settings" || tabName == "设置" {
             let settingsBtn = app.buttons["Settings"]
             if settingsBtn.waitForExistence(timeout: 15) {
@@ -313,15 +313,66 @@ class KnowledgeBaseUITests: XCTestCase {
                 return
             }
         }
-        
+
         let index = indexMapping[tabName] ?? (tabName == "Settings" || tabName == "设置" ? 4 : 0)
-        _ = app.tabBars.firstMatch.waitForExistence(timeout: 15)
-        let button = app.tabBars.buttons.count > index ? app.tabBars.buttons.element(boundBy: index) : app.buttons.element(boundBy: index)
-        if button.waitForExistence(timeout: 15) {
-            button.tap()
-        } else {
-            XCTFail("找不到任何能点击的 Tab 按钮: \(tabName)")
+
+        // 重试机制：冷启动时 TabBar 可能需要更长时间渲染
+        let maxRetries = 3
+        for attempt in 1...maxRetries {
+            // 等待 TabBar 出现（每次重试增加等待时间）
+            let waitTimeout = TimeInterval(10 * attempt)
+            guard app.tabBars.firstMatch.waitForExistence(timeout: waitTimeout) else {
+                // TabBar 未出现，尝试 ensureAppMainInterfaceVisible 后重试
+                ensureAppMainInterfaceVisible()
+                continue
+            }
+
+            // 优先从 TabBar 按索引点击
+            if app.tabBars.buttons.count > index {
+                let button = app.tabBars.buttons.element(boundBy: index)
+                if button.waitForExistence(timeout: 5) && button.isHittable {
+                    button.tap()
+                    return
+                }
+            }
+
+            // fallback：从所有按钮中按索引点击
+            if app.buttons.count > index {
+                let button = app.buttons.element(boundBy: index)
+                if button.waitForExistence(timeout: 5) && button.isHittable {
+                    button.tap()
+                    return
+                }
+            }
+
+            // 再 fallback：按 accessibility identifier 搜索
+            let aliases = tabAliases(for: tabName)
+            for alias in aliases {
+                let btn = app.buttons[alias]
+                if btn.waitForExistence(timeout: 3) && btn.isHittable {
+                    btn.tap()
+                    return
+                }
+            }
+
+            // 短暂等待后重试
+            if attempt < maxRetries {
+                Thread.sleep(forTimeInterval: 2.0)
+            }
         }
+
+        // 最终兜底：使用坐标点击 TabBar 底部区域
+        let tabBar = app.tabBars.firstMatch
+        if tabBar.exists {
+            let tabBarFrame = tabBar.frame
+            if tabBarFrame.width > 0 {
+                let xOffset = CGFloat(index + 1) / CGFloat(max(app.tabBars.buttons.count, index + 2))
+                tabBar.coordinate(withNormalizedOffset: CGVector(dx: xOffset, dy: 0.5)).tap()
+                return
+            }
+        }
+
+        XCTFail("重试 \(maxRetries) 次后仍找不到 Tab 按钮: \(tabName)")
     }
 
     // MARK: - Common Navigation

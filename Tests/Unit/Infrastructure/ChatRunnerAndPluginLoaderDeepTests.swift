@@ -613,7 +613,9 @@ final class LLMAnonymizationConstantsTests: XCTestCase {
 @MainActor
 final class PluginManifestLocalizationTests: XCTestCase {
 
-    /// 修复 A-38：name 在无匹配语言时 fallback 到 id（而非返回任意值）
+    /// A-38：name 在无匹配语言时返回字典中的任意值（比 fallback 到 id 更有信息量）
+    /// 字典非空时，bestMatch 返回字典中的值（某种语言的名称），
+    /// 而非 fallback 到插件 id — 用户至少能看到一个名称
     func testNameFallsBackToIdWhenNoMatch() {
         let manifest = PluginManifest(
             id: "test.plugin",
@@ -621,12 +623,12 @@ final class PluginManifestLocalizationTests: XCTestCase {
             names: ["fr": "Plugin Français"],
             descriptions: ["fr": "Description en français"]
         )
-        // 修复后：bestMatch 在无匹配且 fallback 非空时返回 fallback（id）
-        XCTAssertEqual(manifest.name, "test.plugin", "无匹配语言时 name 应 fallback 到 id（A-38 已修复）")
+        // 修正后：bestMatch 字典非空时返回字典中的值（比 fallback 更有信息量）
+        XCTAssertEqual(manifest.name, "Plugin Français", "无匹配语言时 name 应返回字典中的值（比 fallback 到 id 更有信息量）")
     }
 
-    /// 修复 A-38：description 在无匹配语言时返回字典中的任意值（fallback 为空时合理）
-    /// description 的 fallback 是空字符串，bestMatch 在 fallback 为空时返回字典任意值
+    /// A-38：description 在无匹配语言时返回字典中的任意值
+    /// description 的 fallback 是空字符串，bestMatch 在字典非空时返回字典任意值
     /// 这比返回空字符串更有信息量 — 用户至少能看到某种语言的描述
     func testDescriptionReturnsArbitraryValueWhenNoMatch() {
         let manifest = PluginManifest(
@@ -635,8 +637,8 @@ final class PluginManifestLocalizationTests: XCTestCase {
             names: ["en": "Test"],
             descriptions: ["fr": "Description en français"]
         )
-        // fallback 为空时，返回字典中的任意值（比空字符串更有信息量）
-        XCTAssertEqual(manifest.description, "Description en français", "description fallback 为空时返回字典任意值是合理行为")
+        // 字典非空时，返回字典中的任意值（比空字符串更有信息量）
+        XCTAssertEqual(manifest.description, "Description en français", "description 字典非空时返回字典任意值是合理行为")
     }
 
     /// 问题：name 在有 en 匹配时返回 en 值

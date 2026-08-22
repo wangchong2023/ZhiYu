@@ -377,16 +377,16 @@ internal struct Localized {
         
         // 4. en fallback
         if let en = dict["en"] { return en }
-        
-        // 5. 如果调用方提供了非空 fallback，优先返回 fallback（而非任意值）
-        //    例如 PluginManifest.name 在无匹配时应 fallback 到插件 id，
-        //    而非返回一个用户无法理解的外语名称
-        if !fallback.isEmpty {
-            return fallback
+
+        // 5. 字典非空时，返回字典中的任意值（比 fallback 更有信息量）
+        //    例如 PluginManifest.name 在无匹配时应返回字典中某个语言的名称，
+        //    而非 fallback 到插件 id（用户至少能看到一个名称）
+        if let anyValue = dict.values.first {
+            return anyValue
         }
-        
-        // 6. fallback 为空时，返回字典中的任意值（比空字符串更有信息量）
-        return dict.values.first ?? fallback
+
+        // 6. 字典为空时，返回 fallback
+        return fallback
     }
 }
 

@@ -89,7 +89,7 @@
 | A-35 | `ModelDownloadManager.resumeDownload` L165 在 `task.resume()` 之前 `try? FileManager.default.removeItem(at: fileURL)` 删除 resumeData — 恢复失败时数据已丢失，无法再次恢复 | P2 | 将 `removeItem` 移到 `task.resume()` 之后执行，确保 task 已成功启动 | 是 |
 | A-36 | `OnDeviceLLMService.extractTags` 使用 `#(\w+)` 正则，`NSRegularExpression` 的 `\w` 是 Unicode aware，会匹配中文标签（如 `#中文标签`）— 与源码注释"过滤单字符噪声"不完全一致，但实际行为是支持中文标签 | P3 | 更新源码注释说明 `\w` 匹配 Unicode 字母，中文标签是支持的特性 | 是 |
 | A-37 | `OnDeviceLLMService.extractTags` 会误提取 URL 中的 `#section` 作为标签（如 `https://example.com/page#section` → `["section"]`） | P3 | 先用正则移除 URL（`https?://\S+`），再匹配 `#(\w+)` | 是 |
-| A-38 | `PluginManifest.name`/`description` 使用 `Localized.bestMatch`，非空字典总是返回某个值（第 5 步"任意值"），不 fallback 到插件 id 或空字符串 — 中文用户可能看到法语名称 | P3 | `bestMatch` 第 5 步：fallback 非空时优先返回 fallback，fallback 为空时返回字典任意值 | 是 |
+| A-38 | `PluginManifest.name`/`description` 使用 `Localized.bestMatch`，非空字典总是返回某个值（第 5 步"任意值"），不 fallback 到插件 id 或空字符串 — 中文用户可能看到法语名称 | P3 | `bestMatch` 第 5 步：字典非空时返回字典中的值（比 fallback 更有信息量），字典为空时返回 fallback | 是 |
 | A-39 | `StreamDeanonymizer.maxRawLength=25` 只在无闭合 `]` 时触发（DoS 保护），完整方括号内容即使超过 25 字符也会尝试还原 — 设计正确，但文档应说明 maxRawLength 是防 DoS 而非限制占位符长度 | P3 | 更新 `EntityPlaceholder.maxRawLength` 文档注释说明用途 | 是 |
 
 ### Task 20：SQLiteStore/DatabaseManager/NetworkClient/KeychainService
