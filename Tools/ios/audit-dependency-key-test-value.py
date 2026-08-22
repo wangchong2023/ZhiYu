@@ -43,6 +43,15 @@ PREVIEW_VALUE_PATTERN = re.compile(r'\bstatic\s+(?:var|let)\s+previewValue\b')
 # 匹配 liveValue 属性定义
 LIVE_VALUE_PATTERN = re.compile(r'\bstatic\s+(?:var|let)\s+liveValue\b')
 
+# DependencyKey 枚举体最大扫描行数（防止无限扫描）
+MAX_KEY_BODY_LINES = 200
+
+# 控制台分隔线宽度
+SEPARATOR_WIDTH = 70
+
+# 表格分隔线宽度
+TABLE_SEPARATOR_WIDTH = 120
+
 
 def find_swift_files():
     """查找 Sources/ 目录下所有 Swift 文件"""
@@ -54,6 +63,31 @@ def find_swift_files():
         for f in glob.glob(pattern, recursive=True):
             files.add(f)
     return sorted(files)
+
+
+def _find_key_body_end(lines, start_index):
+    """
+    从 start_index 开始查找枚举体的结束行（匹配大括号配对）。
+    返回结束行号（1-indexed），未找到则返回 start_index + 1。
+    """
+    brace_depth = 0
+    found_open = False
+    end_line = start_index + 1
+
+    for j in range(start_index, min(start_index + MAX_KEY_BODY_LINES, len(lines))):
+        for char in lines[j]:
+            if char == '{':
+                brace_depth += 1
+                found_open = True
+            elif char == '}':
+                brace_depth -= 1
+                if found_open and brace_depth == 0:
+                    end_line = j + 1  # 1-indexed
+                    return end_line
+        if found_open and brace_depth == 0:
+            break
+
+    return end_line
 
 
 def extract_dependency_keys(content):
@@ -75,25 +109,7 @@ def extract_dependency_keys(content):
 
         key_name = match.group(1)
         start_line = i + 1  # 1-indexed
-
-        # 查找枚举体的结束位置（匹配大括号）
-        brace_depth = 0
-        found_open = False
-        end_line = start_line
-
-        for j in range(i, min(i + 200, len(lines))):
-            for char in lines[j]:
-                if char == '{':
-                    brace_depth += 1
-                    found_open = True
-                elif char == '}':
-                    brace_depth -= 1
-                    if found_open and brace_depth == 0:
-                        end_line = j + 1  # 1-indexed
-                        break
-            if found_open and brace_depth == 0:
-                break
-
+        end_line = _find_key_body_end(lines, i)
         results.append((key_name, start_line, end_line))
 
     return results
@@ -145,21 +161,11 @@ def audit_file(file_path):
     return violations
 
 
-def main():
-    print("=" * 70)
-    print("智宇 DependencyKey testValue 完整性审计")
-    print("=" * 70)
-    print()
-
-    files = find_swift_files()
-    if not files:
-        print("⚠️  未找到 Swift 文件", file=sys.stderr)
-        sys.exit(1)
-
-    print(f"扫描目录: {SOURCES_DIR}")
-    print(f"Swift 文件数: {len(files)}")
-    print()
-
+def _scan_all_files(files):
+    """
+    扫描所有 Swift 文件，分类收集 testValue 违规和 previewValue 警告。
+    返回: (test_value_violations, preview_warnings, keys_found)
+    """
     all_violations = []
     preview_warnings = []
     keys_found = 0
@@ -183,24 +189,57 @@ def main():
                 # 仅缺 previewValue 的为 warning
                 preview_warnings.append(v)
 
+    return all_violations, preview_warnings, keys_found
+
+
+def _print_violation_table(title, violations):
+    """
+    打印违规表格（序号/Key 名称/文件/行号/缺少属性）。
+    """
+    print("=" * SEPARATOR_WIDTH)
+    print(title)
+    print("=" * SEPARATOR_WIDTH)
+    print()
+    print(f"{'序号':<4} {'Key 名称':<30} {'文件':<55} {'行号':<6} {'缺少'}")
+    print("-" * TABLE_SEPARATOR_WIDTH)
+
+    for idx, (key_name, rel_path, line, missing) in enumerate(violations, 1):
+        missing_str = ", ".join(missing)
+        print(f"{idx:<4} {key_name:<30} {rel_path:<55} {line:<6} {missing_str}")
+    print()
+
+
+def main():
+    """
+    审计入口：扫描 Sources/ 下所有 Swift 文件，检测 DependencyKey 的
+    testValue/previewValue 完整性。testValue 缺失为硬阻断，previewValue 缺失为警告。
+    """
+    print("=" * SEPARATOR_WIDTH)
+    print("智宇 DependencyKey testValue 完整性审计")
+    print("=" * SEPARATOR_WIDTH)
+    print()
+
+    files = find_swift_files()
+    if not files:
+        print("⚠️  未找到 Swift 文件", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"扫描目录: {SOURCES_DIR}")
+    print(f"Swift 文件数: {len(files)}")
+    print()
+
+    all_violations, preview_warnings, keys_found = _scan_all_files(files)
+
     print(f"DependencyKey 总数: {keys_found}")
     print(f"缺少 testValue 的 Key 数: {len(all_violations)} (硬阻断)")
     print(f"缺少 previewValue 的 Key 数: {len(preview_warnings)} (警告)")
     print()
 
     if all_violations:
-        print("=" * 70)
-        print("❌ 审计失败 — 以下 DependencyKey 缺少 testValue（硬阻断）:")
-        print("=" * 70)
-        print()
-        print(f"{'序号':<4} {'Key 名称':<30} {'文件':<55} {'行号':<6} {'缺少'}")
-        print("-" * 120)
-
-        for idx, (key_name, rel_path, line, missing) in enumerate(all_violations, 1):
-            missing_str = ", ".join(missing)
-            print(f"{idx:<4} {key_name:<30} {rel_path:<55} {line:<6} {missing_str}")
-
-        print()
+        _print_violation_table(
+            "❌ 审计失败 — 以下 DependencyKey 缺少 testValue（硬阻断）:",
+            all_violations
+        )
         print("修复指南:")
         print("  1. 为每个缺少 testValue 的 Key 添加:")
         print("     static var testValue: Type {")
@@ -212,27 +251,19 @@ def main():
         sys.exit(1)
 
     if preview_warnings:
-        print("=" * 70)
-        print("⚠️  警告 — 以下 DependencyKey 缺少 previewValue（不影响 CI 阻断）:")
-        print("=" * 70)
-        print()
-        print(f"{'序号':<4} {'Key 名称':<30} {'文件':<55} {'行号':<6} {'缺少'}")
-        print("-" * 120)
-
-        for idx, (key_name, rel_path, line, missing) in enumerate(preview_warnings, 1):
-            missing_str = ", ".join(missing)
-            print(f"{idx:<4} {key_name:<30} {rel_path:<55} {line:<6} {missing_str}")
-
-        print()
+        _print_violation_table(
+            "⚠️  警告 — 以下 DependencyKey 缺少 previewValue（不影响 CI 阻断）:",
+            preview_warnings
+        )
         print("修复建议:")
         print("  为每个缺少 previewValue 的 Key 添加:")
         print("     static var previewValue: Type { NoOpType() }")
         print()
         sys.exit(0)
     else:
-        print("=" * 70)
+        print("=" * SEPARATOR_WIDTH)
         print("✅ 审计通过 — 所有 DependencyKey 均已定义 testValue/previewValue")
-        print("=" * 70)
+        print("=" * SEPARATOR_WIDTH)
         sys.exit(0)
 
 
