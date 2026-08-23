@@ -12,7 +12,11 @@
 import os, re, sys
 
 EXCLUDE_DIRS = {'.git','build','DerivedData','.build','Frameworks','Tests','env','__pycache__'}
-TOKEN_FILES = {'Colors.swift','DesignSystem.swift','IconTokens.swift','Spacing.swift','DemoImageBuilder.swift','InitialNotebookGenerator.swift'}
+TOKEN_FILES = {
+    'Colors.swift', 'DesignSystem.swift', 'IconTokens.swift', 'Spacing.swift',
+    'DemoImageBuilder.swift', 'InitialNotebookGenerator.swift',
+    'Reference.swift', 'System.swift', 'Component.swift',
+}
 TOKEN_FILES_PY = set()
 
 SWIFT_EXT = {'.swift'}
@@ -83,7 +87,7 @@ def check_swift_layout(raw, path, line_no, s):
 
 def _check_padding_and_radius(raw, path, line_no, s, res):
     """检查 padding 与 cornerRadius。"""
-    valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout'])
+    valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
     if re.search(r'\.padding\(\s*(\d+)\s*\)', raw) and not valid:
         res.append(('hardcoded padding', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
     # 检测带 label 的双参数形式：.padding(.vertical, 10) / .padding(.horizontal, 8)
@@ -95,17 +99,17 @@ def _check_padding_and_radius(raw, path, line_no, s, res):
 
 def _check_frame_and_opacity(raw, path, line_no, s, res):
     """检查 frame 尺寸与 opacity。"""
-    valid_frame = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'geo', 'CGFloat', 'Double'])
+    valid_frame = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component', 'geo', 'CGFloat', 'Double'])
     if re.search(r'\.frame\([^)]*\b(width|height|minWidth|minHeight|maxWidth|maxHeight):\s*\d{2,}\b', raw) and not valid_frame:
         res.append(('hardcoded frame dimension', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    valid_opacity = any(k in raw for k in ['DesignSystem', 'Colors', 'Opacity', 'Color.theme', 'glassOpacity'])
+    valid_opacity = any(k in raw for k in ['DesignSystem', 'Colors', 'Opacity', 'Color.theme', 'glassOpacity', 'Reference', 'System', 'Component'])
     if re.search(r'\.opacity\(\s*0\.\d+\s*\)', raw) and not valid_opacity:
         res.append(('hardcoded opacity', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
 def _check_spacing_and_layout_params(raw, path, line_no, s, res):
     """检查容器 spacing、font size、lineWidth、shadow 等布局参数中的魔鬼数字。"""
-    valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout'])
+    valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
     if valid:
         return
     _check_container_spacing(raw, path, line_no, s, res)
@@ -175,7 +179,7 @@ def _check_view_arithmetic(raw, path, line_no, s, res, is_known_valid):
 
 def _check_token_arithmetic(raw, path, line_no, s, res, is_known_valid, exempt_tokens):
     """检查 token * 数字 形式的算术表达式。"""
-    token_math = re.search(r'\b(DesignSystem|Spacing)\.([a-zA-Z0-9_.]+)\s*[\*\/]\s*(\d+\.?\d*)\b', raw)
+    token_math = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/]\s*(\d+\.?\d*)\b', raw)
     if token_math and not is_known_valid:
         token_full = f'{token_math.group(1)}.{token_math.group(2)}'
         if token_full not in exempt_tokens and not any(token_full.startswith(e) for e in exempt_tokens):
