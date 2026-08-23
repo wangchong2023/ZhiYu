@@ -364,7 +364,10 @@ public final class SynthesisStore {
     /// - Returns: 字符串
     static func cleanMarkdown(_ text: String) -> String {
         var cleaned = text
-        let pattern = #"\\([\#\(\)\[\]\{\}\_\~\+\-\*\.\!\|])"#
+        // 注：原始 pattern 中 `\#` 在 Swift raw string `#"..."#` 中被解析为 `#`（转义），
+        // 导致字符类中缺少 `#`，`\#` 无法被清理还原为 `#`。
+        // 修复：直接在字符类中使用 `#`（字符类内 `#` 无需转义）。
+        let pattern = #"\\([#\(\)\[\]\{\}\_\~\+\-\*\.\!\|])"#
         if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
             let range = NSRange(location: 0, length: cleaned.utf16.count)
             cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: "$1")

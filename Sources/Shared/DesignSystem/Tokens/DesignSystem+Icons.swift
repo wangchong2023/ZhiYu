@@ -339,6 +339,12 @@ extension DesignSystem {
             public static let storageImport = "books.vertical.fill"
             /// 导出
             public static let storageExport = "square.and.arrow.up.fill"
+            /// 模型
+            public static let models = "cpu.fill"
+            /// 插件
+            public static let plugins = "puzzlepiece.fill"
+            /// 缓存
+            public static let caches = "trash.circle.fill"
             /// 兜底
             public static let fallback = "folder.fill"
         }

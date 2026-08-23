@@ -80,6 +80,8 @@ final class SystemStatsCoordinator {
         await fetchStorageStats()
         await fetchVaultStorageSizes()
         await fetchRawPageStats()
+        await fetchProvenanceStats()
+        await fetchRetrievalLatency()
         self.totalPages = (try? await knowledgeRepo.count()) ?? 0
 
         let endTime = Date()
@@ -93,6 +95,44 @@ final class SystemStatsCoordinator {
             module: "Dashboard"
         )
         self.isLoading = false
+    }
+
+    /// 从导入记录中聚合来源统计（imported vs created），填充 provenance 属性
+    private func fetchProvenanceStats() async {
+        let records = (try? await importRecordRepo.fetchAll(category: nil, limit: 2000)) ?? []
+        var importedCount = 0
+        var importedSize: Int64 = 0
+        var createdCount = 0
+        var createdSize: Int64 = 0
+        for record in records {
+            let size = record.fileSize ?? 0
+            // link/file/ocr/clipboard/voice 视为"导入来源"
+            // manual 视为"手动创建来源"
+            if record.category == ImportCategory.manual.rawValue {
+                createdCount += 1
+                createdSize += size
+            } else {
+                importedCount += 1
+                importedSize += size
+            }
+        }
+        self.provenance = ProvenanceStats(
+            importedCount: importedCount,
+            importedSize: importedSize,
+            createdCount: createdCount,
+            createdSize: createdSize
+        )
+    }
+
+    /// 从治理仓储拉取检索延迟百分位数据，填充延迟属性
+    private func fetchRetrievalLatency() async {
+        guard let percentiles = try? await governanceRepo.calculateRetrievalLatency(days: AppConstants.Keys.Stats.dailyStatsDays) else {
+            return
+        }
+        self.avgLatency = percentiles.p50
+        self.maxLatency = percentiles.p99
+        self.minLatency = percentiles.p50
+        self.latencyCount = percentiles.sampleCount
     }
 
     /// 从知识库仓库中提取所有 .raw (原始) 页面的存储统计数据（字数与字节大小）
@@ -112,7 +152,7 @@ final class SystemStatsCoordinator {
         guard let daily = try? await governanceRepo.fetchDailyAIStats(days: AppConstants.Keys.Stats.dailyStatsDays) else { return }
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = AppConstants.Keys.Stats.dailyDateFormat
-        dateFormatter.locale = Locale(identifier: Localized.currentLanguage)
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let components = calendar.dateComponents([.year, .month], from: today)
@@ -236,6 +276,9 @@ final class SystemStatsCoordinator {
     func iconForCategory(_ label: String) -> String {
         if label == L10n.Dashboard.System.database { return DesignSystem.Icons.StorageStats.database }
         if label == L10n.Dashboard.System.logs { return DesignSystem.Icons.StorageStats.logs }
+        if label == L10n.Dashboard.System.models { return DesignSystem.Icons.StorageStats.models }
+        if label == L10n.Dashboard.System.plugins { return DesignSystem.Icons.StorageStats.plugins }
+        if label == L10n.Dashboard.System.caches { return DesignSystem.Icons.StorageStats.caches }
         if label == L10n.Dashboard.stats.storageImport { return DesignSystem.Icons.StorageStats.storageImport }
         if label == L10n.Dashboard.stats.storageExport { return DesignSystem.Icons.StorageStats.storageExport }
         return DesignSystem.Icons.StorageStats.fallback

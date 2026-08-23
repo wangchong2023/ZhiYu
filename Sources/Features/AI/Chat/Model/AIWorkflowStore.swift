@@ -109,6 +109,8 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         let pages = (try? await knowledgeRepository.fetchAll()) ?? []
         let issues = await lintService.runLint(pages: pages, linkService: linkService)
         lintIssues = issues
+        let metrics = lintService.calculateHealthMetrics(issues: issues)
+        lastLintScore = metrics.score
         lastLintDate = Date()
         taskCenter.updateTask(taskID, status: .completed)
     }
@@ -155,11 +157,21 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
                 currentLinks.removeAll { $0.sourcePageID == spec.id }
                 potentialLinks = currentLinks + tempLinks
             } else {
-                // 全局扫描
+                // 全局扫描：合并而非覆盖，保留单页扫描已发现的链接
                 let samplePages = Array(allPages.prefix(AIScanConfig.globalScanPrefix))
                 let suggestions = try await llmService.analyzeForRefactoring(pages: samplePages)
                 refactorSuggestions = suggestions
-                potentialLinks = tempLinks
+                // 合并全局扫描结果与已有链接，去重避免重复
+                var mergedLinks = potentialLinks
+                var existingKeys = Set(mergedLinks.map { "\($0.sourcePageID.uuidString)\u{0}\($0.targetTitle)" })
+                for link in tempLinks {
+                    let key = "\(link.sourcePageID.uuidString)\u{0}\(link.targetTitle)"
+                    if !existingKeys.contains(key) {
+                        mergedLinks.append(link)
+                        existingKeys.insert(key)
+                    }
+                }
+                potentialLinks = mergedLinks
             }
 
             isScanningAI = false
@@ -247,6 +259,8 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
                 if let quiz = QuizProcessor.parseToQuizModel(result) {
                     activeQuiz = quiz
                 } else {
+                    // 解析失败时清空旧 quiz，避免残留过期数据
+                    activeQuiz = nil
                     activePageAIResult = result
                 }
             } else {
@@ -268,6 +282,8 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         lintIssues = []
         lastLintScore = 0
         lastLintDate = nil
+        isScanningAI = false
+        isProcessingPageAI = false
 
         keyStore?.removeObject(forKey: AppConstants.Keys.Storage.lastLintIssues)
 

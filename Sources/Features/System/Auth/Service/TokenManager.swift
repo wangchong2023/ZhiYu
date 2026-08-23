@@ -14,6 +14,17 @@ import UFPCore
 
 extension AuthService {
 
+    // MARK: - Int64 → UUID 规范化
+
+    /// 将后端 Int64 类型的 userId 规范化为确定性 UUID
+    /// 与 `User.init(from:)` 的解码逻辑保持一致，确保跨设备/跨登录用户身份稳定
+    /// - Parameter userId: 后端返回的 Int64 用户 ID
+    /// - Returns: 规范化后的 UUID（失败时回退随机 UUID）
+    private static func normalizedUUID(from userId: Int64) -> UUID {
+        let uuidString = String(format: "00000000-0000-0000-0000-%012x", userId)
+        return UUID(uuidString: uuidString) ?? UUID()
+    }
+
     // MARK: - 自动登录恢复
 
     /// 自动静默登录验证，利用 Keychain 本地缓存的 token 进行登录态恢复
@@ -50,7 +61,7 @@ extension AuthService {
 
             // 3. 构造本地 User 模型并更新状态树
             let user = User(
-                id: UUID(uuidString: String(response.userId)) ?? UUID(),
+                id: Self.normalizedUUID(from: response.userId),
                 name: response.nick,
                 email: response.email ?? "",
                 phone: response.mobile,
@@ -116,7 +127,7 @@ extension AuthService {
             )
 
             let user = User(
-                id: UUID(uuidString: String(profileResponse.userId)) ?? UUID(),
+                id: Self.normalizedUUID(from: profileResponse.userId),
                 name: profileResponse.nick,
                 email: profileResponse.email ?? "",
                 phone: profileResponse.mobile,
@@ -200,7 +211,7 @@ extension AuthService {
                 name: profile.nick,
                 email: profile.email.flatMap { $0.isEmpty ? nil : $0 } ?? user.email,
                 phone: profile.mobile.flatMap { $0.isEmpty ? nil : $0 } ?? user.phone,
-                avatarURL: profile.avatar.flatMap { URL(string: $0) },
+                avatarURL: profile.avatar.flatMap { $0.isEmpty ? nil : URL(string: $0) } ?? user.avatarURL,
                 planKey: currentPlanKey,
                 maxVaults: quotasToUse.maxVaults,
                 maxPages: quotasToUse.maxPages,
