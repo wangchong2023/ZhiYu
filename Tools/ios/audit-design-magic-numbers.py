@@ -106,23 +106,46 @@ def _check_frame_and_opacity(raw, path, line_no, s, res):
 def _check_spacing_and_layout_params(raw, path, line_no, s, res):
     """检查容器 spacing、font size、lineWidth、shadow 等布局参数中的魔鬼数字。"""
     valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout'])
-    # HStack/VStack/ZStack/LazyVStack/LazyHStack(spacing: N) — spacing: 0 是合法的无间距用法，豁免
-    if re.search(r'\b(?:HStack|VStack|ZStack|LazyVStack|LazyHStack|Grid|LazyVGrid|LazyHGrid)\(\s*(?:alignment:[^,]+,\s*)?spacing:\s*([1-9]\d*)\s*[),]', raw) and not valid:
+    if valid:
+        return
+    _check_container_spacing(raw, path, line_no, s, res)
+    _check_font_size(raw, path, line_no, s, res)
+    _check_line_width(raw, path, line_no, s, res)
+    _check_shadow_params(raw, path, line_no, s, res)
+    _check_kerning_tracking(raw, path, line_no, s, res)
+
+
+def _check_container_spacing(raw, path, line_no, s, res):
+    """检查 HStack/VStack/ZStack 等容器的 spacing 参数。"""
+    # spacing: 0 是合法的无间距用法，豁免
+    pattern = r'\b(?:HStack|VStack|ZStack|LazyVStack|LazyHStack|Grid|LazyVGrid|LazyHGrid)\(\s*(?:alignment:[^,]+,\s*)?spacing:\s*([1-9]\d*)\s*[),]'
+    if re.search(pattern, raw):
         res.append(('hardcoded container spacing', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    # .font(.system(size: N))
-    if re.search(r'\.font\(\s*\.system\(\s*size:\s*(\d+)\s*[,)]', raw) and not valid:
+
+
+def _check_font_size(raw, path, line_no, s, res):
+    """检查 .font(.system(size: N)) 中的硬编码字号。"""
+    if re.search(r'\.font\(\s*\.system\(\s*size:\s*(\d+)\s*[,)]', raw):
         res.append(('hardcoded font size', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    # lineWidth: N（行尾或后跟 ,/)）
-    if re.search(r'\blineWidth:\s*(\d+\.?\d*)\b', raw) and not valid:
+
+
+def _check_line_width(raw, path, line_no, s, res):
+    """检查 lineWidth: N 硬编码。"""
+    if re.search(r'\blineWidth:\s*(\d+\.?\d*)\b', raw):
         res.append(('hardcoded lineWidth', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    # .shadow(radius: N, ...) / .shadow(..., radius: N) — 使用非贪婪匹配跨越嵌套括号
-    if re.search(r'\.shadow\(.*?radius:\s*(\d+\.?\d*)\b', raw) and not valid:
+
+
+def _check_shadow_params(raw, path, line_no, s, res):
+    """检查 .shadow 中的 radius/x/y 硬编码。"""
+    if re.search(r'\.shadow\(.*?radius:\s*(\d+\.?\d*)\b', raw):
         res.append(('hardcoded shadow radius', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    # .shadow(..., x: N) / .shadow(..., y: N)
-    if re.search(r'\.shadow\(.*?\b[xy]:\s*(\d+\.?\d*)\b', raw) and not valid:
+    if re.search(r'\.shadow\(.*?\b[xy]:\s*(\d+\.?\d*)\b', raw):
         res.append(('hardcoded shadow offset', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    # .kerning(N) / .tracking(N)
-    if re.search(r'\.(?:kerning|tracking)\(\s*(\d+\.?\d*)\s*\)', raw) and not valid:
+
+
+def _check_kerning_tracking(raw, path, line_no, s, res):
+    """检查 .kerning(N) / .tracking(N) 硬编码。"""
+    if re.search(r'\.(?:kerning|tracking)\(\s*(\d+\.?\d*)\s*\)', raw):
         res.append(('hardcoded kerning/tracking', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
@@ -138,14 +161,29 @@ def _check_magic_math(raw, path, line_no, s, res):
         r'DesignSystem\.huge\s*[*/]\s*\d+',
     ]
     is_known_valid = any(re.search(p, raw) for p in known_valid_patterns)
-    if re.search(r'\.(padding|frame|offset|radius)\([^)]*\b(DesignSystem|Spacing)\.[a-zA-Z0-9_.]+\s*[\*\/]\s*(0\.\d+|\d+\.?\d*)\b', raw) and not is_known_valid:
+    _check_view_arithmetic(raw, path, line_no, s, res, is_known_valid)
+    _check_token_arithmetic(raw, path, line_no, s, res, is_known_valid, exempt_tokens)
+    _check_custom_size(raw, path, line_no, s, res)
+
+
+def _check_view_arithmetic(raw, path, line_no, s, res, is_known_valid):
+    """检查 View 修饰符中的 token 算术表达式。"""
+    pattern = r'\.(padding|frame|offset|radius)\([^)]*\b(DesignSystem|Spacing)\.[a-zA-Z0-9_.]+\s*[\*\/]\s*(0\.\d+|\d+\.?\d*)\b'
+    if re.search(pattern, raw) and not is_known_valid:
         res.append(('Magic Math View算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    # 检测 token * 数字 形式（如 DesignSystem.glassOpacity * 3）
+
+
+def _check_token_arithmetic(raw, path, line_no, s, res, is_known_valid, exempt_tokens):
+    """检查 token * 数字 形式的算术表达式。"""
     token_math = re.search(r'\b(DesignSystem|Spacing)\.([a-zA-Z0-9_.]+)\s*[\*\/]\s*(\d+\.?\d*)\b', raw)
     if token_math and not is_known_valid:
         token_full = f'{token_math.group(1)}.{token_math.group(2)}'
         if token_full not in exempt_tokens and not any(token_full.startswith(e) for e in exempt_tokens):
             res.append(('Magic Math token算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_custom_size(raw, path, line_no, s, res):
+    """检查 customSizeN 伪 token 模式。"""
     if re.search(r'customSize\d+', raw) and 'DesignSystem+Metrics.swift' not in path and 'Spacing.swift' not in path:
         res.append(('pseudo-token customSize (硬编码数字变相包裹)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
