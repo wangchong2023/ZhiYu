@@ -457,32 +457,150 @@ Sources/Shared/DesignSystem/Tokens/
 | `Typography.swift` | 移除 FontSize 定义，保留 Font 定义 |
 | `DesignSystem.swift` | 移除旧别名，重新导出新 token |
 
-## 6. CI 审计脚本更新
+## 6. 旧 3 层架构清理
 
-### 6.1 `audit-design-magic-numbers.py` 更新
+### 6.1 现状
 
-- 识别新 token 命名空间：`Reference.*`/`System.*`/`Component.*`
-- 保留 Magic Math 检测：禁止 `Reference.* * N`、`System.* * N` 等算术表达式
-- 保留 hardcoded 值检测
+项目已存在一套旧的 3 层 token 架构，但**从未被视图代码实际使用**（死代码）：
 
-### 6.2 新增 `audit-token-layering.py`
+| 文件 | 内容 | 实际引用 |
+|------|------|---------|
+| `DesignSystem+Layering.swift` | Tier1/Tier2/Tier3 enum（121 行） | 仅被 DesignTokenRegistry.swift 内部引用 |
+| `PlatformContext.swift` | 平台设备家族 + Environment 注入（85 行） | 仅被 DesignTokenRegistry.swift 内部引用 |
+| `DesignTokenRegistry.swift` | 动态 token 解析注册表（109 行） | 无任何视图代码调用 `.shared.resolveSpacing` |
 
-- 检查 Layer 依赖规则：Component → System → Reference
-- 禁止 Component 直接引用 Reference（必须通过 System）
-- 禁止 System 引用 Component
+### 6.2 清理决策
 
-## 7. 迁移策略
+**删除全部 3 个文件**，新架构（Reference/System/Component）取代：
 
-### 7.1 硬切一次性迁移
+1. 删除 `DesignSystem+Layering.swift` — Tier1/Tier2/Tier3 命名被 Reference/System/Component 取代
+2. 删除 `PlatformContext.swift` — 平台动态解析未落地，新架构暂不需要（如未来需要跨平台动态解析，再单独设计）
+3. 删除 `DesignTokenRegistry.swift` — `resolveSpacing`/`resolveRadius` 从未被调用
+
+### 6.3 清理验证
+
+- 全局搜索 `DesignSystem.Tier` / `DesignTokenRegistry.shared` / `PlatformContext.current` / `SemanticSpacingToken` / `SemanticRadiusToken` 应无任何引用
+- 编译通过（删除零影响，因从未被使用）
+
+## 7. CI 审计脚本全量调整
+
+### 7.1 `audit-design-magic-numbers.py` 更新
+
+**当前问题**：`valid` 关键词列表只识别 `DesignSystem`/`Spacing`/`Layout`/`Colors`/`Opacity`，新 token 命名空间 `Reference`/`System`/`Component` 会被误判为魔鬼数字。
+
+**调整内容**：
+
+1. **扩展 valid token 关键词列表**：
+   ```python
+   # 旧
+   valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout'])
+   # 新
+   valid = any(k in raw for k in [
+       'DesignSystem', 'Spacing', 'Layout',  # 兼容期（迁移完成前）
+       'Reference', 'System', 'Component',   # 新 3 层架构
+       'Colors', 'Opacity', 'Color.theme'    # 颜色/透明度
+   ])
+   ```
+
+2. **Magic Math 检测扩展**：
+   ```python
+   # 旧：只检测 DesignSystem/Spacing 开头的算术
+   token_math = re.search(r'\b(DesignSystem|Spacing)\.([a-zA-Z0-9_.]+)\s*[\*\/]\s*(\d+\.?\d*)\b', raw)
+   # 新：增加 Reference/System/Component
+   token_math = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/]\s*(\d+\.?\d*)\b', raw)
+   ```
+
+3. **exempt_tokens 扩展**：新架构的 token 定义文件加入豁免
+   ```python
+   TOKEN_FILES = {
+       'Colors.swift', 'DesignSystem.swift', 'IconTokens.swift', 'Spacing.swift',
+       'DemoImageBuilder.swift', 'InitialNotebookGenerator.swift',
+       'Reference.swift', 'System.swift', 'Component.swift',  # 新增
+   }
+   ```
+
+4. **迁移完成后**：移除 `DesignSystem`/`Spacing`/`Layout` 旧关键词（硬切完成后旧 token 不再存在）
+
+### 7.2 `audit-design-token-layering.py` 重写
+
+**当前问题**：检查旧的 `DesignSystem+Layering.swift`/`PlatformContext.swift`/`DesignTokenRegistry.swift` 文件和 `Tier1`/`Tier2`/`Tier3` 命名，旧架构删除后全部报错。
+
+**重写内容**：
+
+1. **文件存在性检查**：
+   ```python
+   REFERENCE_FILE = 'Sources/Shared/DesignSystem/Tokens/Reference.swift'
+   SYSTEM_FILE = 'Sources/Shared/DesignSystem/Tokens/System.swift'
+   COMPONENT_FILE = 'Sources/Shared/DesignSystem/Tokens/Component.swift'
+   # 检查 3 个文件全部存在
+   # 检查 enum Reference / enum System / enum Component 定义存在
+   ```
+
+2. **依赖方向检查**（严格分层）：
+   ```python
+   # Reference.swift：禁止引用 System/Component
+   # System.swift：必须引用 Reference，禁止引用 Component
+   # Component.swift：必须引用 System（可引用 Reference）
+   ```
+
+3. **视图代码分层检查**：
+   ```python
+   # 扫描 Sources/Features/ + Sources/Shared/UIComponents/
+   # 禁止视图代码直接引用 Reference.*（必须通过 System/Component）
+   # 允许视图代码引用 System.* / Component.*
+   ```
+
+4. **旧架构残留检查**：
+   ```python
+   # 禁止任何文件引用 Tier1/Tier2/Tier3/DesignTokenRegistry/PlatformContext
+   # 禁止旧文件存在（DesignSystem+Layering.swift 等）
+   ```
+
+### 7.3 新增 `audit-design-token-naming.py`
+
+**职责**：检查 token 命名规范，防止新架构引入新的 Magic Math
+
+1. **token 定义文件内禁止算术表达式**：
+   ```python
+   # Reference.swift：禁止任何 * / + - 算术（纯原子值）
+   # System.swift：禁止 * / 算术（允许 Reference.A + Reference.B 组合）
+   # Component.swift：禁止 * / 算术（允许 System.A + System.B 组合）
+   ```
+
+2. **视图代码禁止 token 算术**：
+   ```python
+   # 扫描 Sources/Features/ + Sources/Shared/UIComponents/
+   # 禁止 Reference.* * N、System.* * N、Component.* * N
+   # 禁止 Reference.* / N、System.* / N、Component.* / N
+   ```
+
+3. **hardcoded 值零容忍**：
+   ```python
+   # 视图代码中 .padding(N)、.frame(width: N)、spacing: N、lineWidth: N 等
+   # 必须引用 System.* 或 Component.* token
+   ```
+
+### 7.4 CI 脚本调整任务清单
+
+| 脚本 | 操作 | 任务 |
+|------|------|------|
+| `audit-design-magic-numbers.py` | 修改 | 扩展 valid 关键词 + Magic Math 检测 + exempt_tokens |
+| `audit-design-token-layering.py` | 重写 | 检查新 3 层架构文件 + 依赖方向 + 视图分层 + 旧架构残留 |
+| `audit-design-token-naming.py` | 新建 | token 命名规范 + 算术表达式禁止 + hardcoded 零容忍 |
+| `Makefile` audit 目标 | 修改 | 集成新脚本 |
+
+## 8. 迁移策略
+
+### 8.1 硬切一次性迁移
 
 1. **新建 3 个文件**：Reference.swift / System.swift / Component.swift
 2. **全局替换**：660 个 Swift 文件中的旧 token 引用
-3. **删除旧文件**：8 个旧 token 文件
+3. **删除旧文件**：8 个旧 token 文件 + 3 个旧 3 层架构文件
 4. **更新 DesignSystem.swift**：重新导出新 token
 5. **编译验证**：全量编译通过
 6. **CI 审计验证**：0 处魔鬼数字
 
-### 7.2 分批执行
+### 8.2 分批执行
 
 按目录分 6 批：
 - 第 1 批：Features/System（158 处）
@@ -494,7 +612,7 @@ Sources/Shared/DesignSystem/Tokens/
 
 每批编译验证，全部完成后全量验证。
 
-## 8. 风险与缓解
+## 9. 风险与缓解
 
 | 风险 | 缓解措施 |
 |------|---------|
@@ -503,10 +621,12 @@ Sources/Shared/DesignSystem/Tokens/
 | 旧 token 删除导致编译失败 | 全局替换完成后再删除旧文件 |
 | Component 层膨胀 | 组件特定尺寸严格审查，避免随意扩展 |
 
-## 9. 成功标准
+## 10. 成功标准
 
 - [ ] 3 层金字塔架构落地（Reference/System/Component）
+- [ ] 旧 3 层架构文件删除（Tier1/Tier2/Tier3 + PlatformContext + DesignTokenRegistry）
 - [ ] 362 处魔鬼数字全部消除
+- [ ] CI 审计脚本全量调整完成（magic-numbers + token-layering 重写 + token-naming 新建）
 - [ ] CI 审计脚本 0 漏检
 - [ ] 全量编译通过
 - [ ] 全量测试通过（7664+ 用例）
