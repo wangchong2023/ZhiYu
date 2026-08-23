@@ -151,3 +151,14 @@
 | C-23 | `AIWorkflowStore.clearAll` 不重置 `isScanningAI`/`isProcessingPageAI`，若清理时正在扫描或处理，状态将永久卡死为 true，UI 显示永久"扫描中" | P1 | `clearAll` 中增加 `isScanningAI = false` 和 `isProcessingPageAI = false` | 是 |
 | C-24 | `AIWorkflowStore.runAIScan` 全局扫描时 `potentialLinks = tempLinks` 直接赋值，覆盖单页扫描累积的链接，导致数据丢失 | P2 | 改为合并模式：保留已有链接，去重追加新链接 | 是 |
 | C-25 | `AIWorkflowStore.performPageSynthesis` quiz 解析失败时 `activeQuiz` 未被清空，残留旧 quiz 数据。用户看到的是上一次的测验而非当前页面的内容 | P2 | quiz 解析失败时增加 `activeQuiz = nil` 清空旧值 | 是 |
+
+---
+
+## 批次 D — View + Shared UIComponents + Platforms
+
+### Task 1-2：System View 快照测试 + 源码审查
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| D-1 | `audit-design-magic-numbers.py` CI 审计脚本存在 6 大类漏检漏洞，导致 362 处魔鬼数字一直未被发现：(1) `.padding(.vertical, N)` 双参数形式漏检；(2) `HStack/VStack(spacing: N)` container spacing 漏检；(3) `.font(.system(size: N))` font size 漏检；(4) `lineWidth: N` 漏检；(5) `.shadow(radius: N, y: N)` 漏检；(6) `DesignSystem.glassOpacity * N` token 算术表达式漏检（exempt_math 豁免过于宽泛） | P1 | 修复 CI 脚本：新增 `_check_spacing_and_layout_params` 函数检测 spacing/font size/lineWidth/shadow/kerning；新增 `.padding(.\\w+, N)` 双参数检测；收窄 `exempt_math` 为精确匹配已知合法模式 | 是 |
+| D-2 | 362 处源码魔鬼数字（修复 CI 脚本后检出）：90 处 hardcoded container spacing、120 处 Magic Math token算术表达式、99 处 hardcoded padding (labeled)、29 处 hardcoded lineWidth、15 处 Magic Math View算术表达式、4 处 hardcoded kerning/tracking、3 处 hardcoded shadow radius、2 处 hardcoded shadow offset。分布在 Features/System、Features/AI、Features/Insight、Features/Knowledge、Shared/UIComponents 等 | P2 | 批量修复：spacing/padding/lineWidth/shadow/kerning 替换为 DesignSystem token；token 算术表达式（如 `DesignSystem.glassOpacity * 3`）定义为新 token 常量 | 否 |
