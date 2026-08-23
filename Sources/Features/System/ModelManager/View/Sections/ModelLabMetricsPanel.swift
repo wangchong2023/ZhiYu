@@ -25,7 +25,7 @@ extension ModelLabView {
                     .font(.caption.bold())
                     .foregroundStyle(.cyan)
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, SystemSpacing.tiny)
 
             HStack(spacing: DesignSystem.small) {
                 metricItemCard(
@@ -65,14 +65,14 @@ extension ModelLabView {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1
+                    lineWidth: SystemStroke.divider
                 )
         )
     }
 
     /// 单个带渐变边框发光的科技微面板
     func metricItemCard(title: String, value: String, unit: String, glowColor: Color) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: SystemSpacing.tiny) {
             Text(title)
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -90,19 +90,19 @@ extension ModelLabView {
         .padding(.vertical, DesignSystem.small)
         .frame(maxWidth: .infinity)
         .background(Color.appCard.opacity(DesignSystem.Opacity.ghost))
-        .cornerRadius(DesignSystem.smallRadius)
+        .cornerRadius(SystemRadius.small)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+            RoundedRectangle(cornerRadius: SystemRadius.small)
                 .stroke(
                     LinearGradient(
                         colors: [glowColor.opacity(DesignSystem.softOpacity), .clear],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 0.8
+                    lineWidth: SystemStroke.border
                 )
         )
-        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignSystem.glassOpacity) : .clear, radius: 4, x: 0, y: 0)
+        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignSystem.glassOpacity) : .clear, radius: 4, x: SystemShadow.offsetNone, y: 0)
     }
 
     // MARK: - 辅助子视图（高精度 AI 模拟效果展示）
@@ -140,13 +140,13 @@ extension ModelLabView {
             Text(time)
                 .font(.system(size: DesignSystem.caption2FontSize, weight: .semibold, design: .monospaced))
                 .foregroundStyle(color)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
+                .padding(.horizontal, SystemSpacing.small)
+                .padding(.vertical, SystemSpacing.atomic)
                 .background(color.opacity(DesignSystem.subtleFillOpacity))
                 .cornerRadius(DesignSystem.microRadius)
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                        .stroke(color.opacity(DesignSystem.accentStrokeOpacity), lineWidth: 0.5)
+                        .stroke(color.opacity(DesignSystem.accentStrokeOpacity), lineWidth: SystemStroke.hairline)
                 )
 
             Text(text)
@@ -154,7 +154,7 @@ extension ModelLabView {
                 .foregroundStyle(.appText)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, SystemSpacing.atomic)
     }
 
     private func traceStepRow(title: String, desc: String, icon: String, color: Color) -> some View {
@@ -162,9 +162,9 @@ extension ModelLabView {
             Image(systemName: icon)
                 .font(.caption)
                 .foregroundStyle(color)
-                .padding(.top, 2)
+                .padding(.top, SystemSpacing.atomic)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                 Text(title)
                     .font(.caption.bold())
                     .foregroundStyle(.appText)
@@ -175,7 +175,7 @@ extension ModelLabView {
             }
             Spacer()
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, SystemSpacing.atomic)
     }
 
     private func parseColor(from name: String) -> Color {
@@ -196,32 +196,32 @@ extension ModelLabView {
                 .foregroundStyle(.cyan)
             
             if useCase == .askImage {
-                VStack(spacing: 8) {
+                VStack(spacing: SystemSpacing.element) {
                     ForEach(labManager.confidenceItems) { item in
                         confidenceRow(name: item.name, score: item.score, color: parseColor(from: item.colorName))
                     }
                 }
                 .padding(DesignSystem.small)
                 .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
-                .cornerRadius(DesignSystem.smallRadius)
+                .cornerRadius(SystemRadius.small)
             } else if useCase == .audioScribe {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: SystemSpacing.element) {
                     ForEach(labManager.traceSteps) { item in
                         transcriptionSegment(time: item.title, text: item.desc, color: parseColor(from: item.colorName))
                     }
                 }
                 .padding(DesignSystem.small)
                 .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
-                .cornerRadius(DesignSystem.smallRadius)
+                .cornerRadius(SystemRadius.small)
             } else {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: SystemSpacing.element) {
                     ForEach(labManager.traceSteps) { item in
                         traceStepRow(title: item.title, desc: item.desc, icon: item.icon, color: parseColor(from: item.colorName))
                     }
                 }
                 .padding(DesignSystem.small)
                 .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
-                .cornerRadius(DesignSystem.smallRadius)
+                .cornerRadius(SystemRadius.small)
             }
         }
     }
@@ -255,10 +255,10 @@ extension ModelLabView {
             .frame(height: DesignSystem.Vault.cardHeight + DesignSystem.Metrics.iconBoxSize)
             .padding(DesignSystem.standardPadding + DesignSystem.tiny)
             .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .cornerRadius(DesignSystem.smallRadius)
+            .cornerRadius(SystemRadius.small)
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: 1)
+                RoundedRectangle(cornerRadius: SystemRadius.small)
+                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
             )
         }
         .padding(DesignSystem.medium)

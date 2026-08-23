@@ -89,10 +89,10 @@ extension ModelLabView {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: 1
+                        lineWidth: SystemStroke.divider
                     )
             )
-            .shadow(color: isCompatible ? .cyan.opacity(DesignSystem.Opacity.light) : .clear, radius: DesignSystem.shadowRadius, x: 0, y: DesignSystem.shadowY)
+            .shadow(color: isCompatible ? .cyan.opacity(DesignSystem.Opacity.light) : .clear, radius: DesignSystem.shadowRadius, x: SystemShadow.offsetNone, y: DesignSystem.shadowY)
         }
         .buttonStyle(.plain)
     }

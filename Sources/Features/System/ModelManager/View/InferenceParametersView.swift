@@ -190,7 +190,7 @@ public struct InferenceParametersView: View {
             .padding(.vertical, DesignSystem.small)
             .background(isCustom ? Color.appAccent : Color.appBackground)
             .foregroundStyle(isCustom ? .white : .appText)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         }
         .buttonStyle(.plain)
         .disabled(isCustom) // 已在自定义模式时禁用
@@ -209,7 +209,7 @@ public struct InferenceParametersView: View {
             .padding(.vertical, DesignSystem.small)
             .background(matchedPreset == preset ? Color.appAccent : Color.appBackground)
             .foregroundStyle(matchedPreset == preset ? .white : .appText)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         }
         .buttonStyle(.plain)
     }
@@ -221,7 +221,7 @@ public struct InferenceParametersView: View {
     @ViewBuilder
     private func parameterSlider(title: String, value: Binding<Double>, range: ClosedRange<Double>, tip: String) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            HStack(spacing: 4) {
+            HStack(spacing: SystemSpacing.tiny) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
@@ -252,7 +252,7 @@ public struct InferenceParametersView: View {
     @ViewBuilder
     private func parameterIntSlider(title: String, value: Binding<Int>, range: ClosedRange<Int>, tip: String) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            HStack(spacing: 4) {
+            HStack(spacing: SystemSpacing.tiny) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)

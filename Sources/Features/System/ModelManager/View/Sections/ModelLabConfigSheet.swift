@@ -75,7 +75,7 @@ extension ModelLabView {
                 }
                 .padding(DesignSystem.small)
                 .background(Color.theme.orange.opacity(DesignSystem.subtleFillOpacity))
-                .cornerRadius(DesignSystem.smallRadius)
+                .cornerRadius(SystemRadius.small)
             }
 
             // Max Tokens
@@ -170,7 +170,7 @@ extension ModelLabView {
                 .buttonStyle(.plain)
             }
             .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         }
     }
 
@@ -186,10 +186,10 @@ extension ModelLabView {
                 .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
                 .padding(DesignSystem.standardPadding)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                .cornerRadius(DesignSystem.smallRadius)
+                .cornerRadius(SystemRadius.small)
                 .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                        .stroke(Color.appBorder.opacity(DesignSystem.Opacity.glass), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: SystemRadius.small)
+                        .stroke(Color.appBorder.opacity(DesignSystem.Opacity.glass), lineWidth: SystemStroke.divider)
                 )
                 .font(.body)
                 .foregroundStyle(Color.theme.text)
@@ -264,7 +264,7 @@ extension ModelLabView {
             .padding(.vertical, DesignSystem.small)
             .background(isCustom ? Color.theme.cyan : Color.appCard.opacity(DesignSystem.Opacity.subtle))
             .foregroundStyle(isCustom ? .white : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         }
         .buttonStyle(.plain)
         .disabled(isCustom)
@@ -283,7 +283,7 @@ extension ModelLabView {
             .padding(.vertical, DesignSystem.small)
             .background(isSelected ? Color.theme.cyan : Color.appCard.opacity(DesignSystem.Opacity.subtle))
             .foregroundStyle(isSelected ? .white : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         }
         .buttonStyle(.plain)
     }

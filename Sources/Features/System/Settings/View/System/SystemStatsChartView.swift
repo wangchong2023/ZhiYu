@@ -36,7 +36,7 @@ struct ChartView: View {
             .frame(maxWidth: .infinity)
             .frame(height: DesignSystem.Metrics.chartHeight - 60)
             .background(Color.appCard.opacity(DesignSystem.softOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         } else {
             switch type {
             case .requests:
@@ -76,14 +76,14 @@ struct ChartView: View {
                     y: .value(L10n.Dashboard.chartValue, Double(stat.requests))
                 )
                 .foregroundStyle(themeManager.accentColor)
-                .lineStyle(StrokeStyle(lineWidth: 2))
+                .lineStyle(StrokeStyle(lineWidth: SystemStroke.selected))
                 .interpolationMethod(.catmullRom)
             }
             
             if let selectedDate {
                 RuleMark(x: .value(L10n.Dashboard.chartSelected, selectedDate, unit: .day))
                     .foregroundStyle(Color.appSecondary.opacity(DesignSystem.Opacity.soft))
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [2]))
+                    .lineStyle(StrokeStyle(lineWidth: SystemStroke.divider, dash: [2]))
                     .annotation(position: .automatic, alignment: .center, spacing: DesignSystem.tiny) {
                         if let stat = stats.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
                             tooltipView(stat: stat)
@@ -97,7 +97,7 @@ struct ChartView: View {
                     )
                     .symbol {
                         Circle()
-                            .stroke(themeManager.accentColor, lineWidth: 2)
+                            .stroke(themeManager.accentColor, lineWidth: SystemStroke.selected)
                             .background(Circle().fill(.white))
                             .frame(width: DesignSystem.small, height: DesignSystem.small)
                     }
@@ -133,7 +133,7 @@ struct ChartView: View {
             if let selectedDate {
                 RuleMark(x: .value(L10n.Dashboard.chartSelected, selectedDate, unit: .day))
                     .foregroundStyle(Color.appSecondary.opacity(DesignSystem.Opacity.soft))
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [2]))
+                    .lineStyle(StrokeStyle(lineWidth: SystemStroke.divider, dash: [2]))
                     .annotation(position: .automatic, alignment: .center, spacing: DesignSystem.tiny) {
                         if let stat = stats.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
                             tooltipView(stat: stat)

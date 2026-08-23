@@ -30,7 +30,7 @@ struct DeveloperSettingsView: View {
             // MARK: - 性能测试 (Performance Testing)
             Section {
                 // 性能测试卡片：将数量选择与压测按钮整合入单个卡片容器中，优化人机交互效率
-                VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: SystemSpacing.medium) {
                     HStack {
                         Label(L10n.Settings.developer.stressTest.count, systemImage: "number.circle")
                             .font(.body)
@@ -53,7 +53,7 @@ struct DeveloperSettingsView: View {
                     
                     // 下方横跨卡片的一体化压力测试按钮，采用高对比度的蓝色主题，带 gauge.with.needle 仪表盘图标
                     Button(action: { showStressTestConfirmation = true }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: SystemSpacing.element) {
                             Spacer()
                             Image(systemName: "gauge.with.needle")
                                 .font(.headline)
@@ -61,20 +61,20 @@ struct DeveloperSettingsView: View {
                                 .bold()
                             if isStressTesting {
                                 ProgressView()
-                                    .padding(.leading, 4)
+                                    .padding(.leading, SystemSpacing.tiny)
                             }
                             Spacer()
                         }
-                        .padding(.vertical, 10)
+                        .padding(.vertical, SystemSpacing.element)
                         .frame(maxWidth: .infinity)
                         .background(isStressTesting ? Color.secondary.opacity(DesignSystem.Opacity.disabled) : Color.theme.accent)
                         .foregroundColor(Color.theme.white)
-                        .cornerRadius(DesignSystem.cardRadius)
+                        .cornerRadius(SystemRadius.card)
                     }
                     .disabled(isStressTesting)
                     .buttonStyle(.plain) // 避免嵌套点击污染
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, SystemSpacing.element)
             } header: {
                 Text(L10n.Settings.developer.section.performance_test)
             } footer: {

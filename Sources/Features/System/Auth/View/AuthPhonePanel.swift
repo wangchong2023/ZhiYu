@@ -23,7 +23,7 @@ struct AuthPhonePanel: View {
         VStack(spacing: Spacing.large) {
             // 手机号掩码显示
             Text(authService.currentUser?.phone?.maskedPhoneNumber ?? "180****6625")
-                .font(.system(size: DesignSystem.titleFontSize * 1.2, weight: .bold, design: .rounded))
+                .font(.system(size: SystemFontSize.hero, weight: .bold, design: .rounded))
                 .foregroundStyle(.appText)
                 .padding(.top, Spacing.medium)
 

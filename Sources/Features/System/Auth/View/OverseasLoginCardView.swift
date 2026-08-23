@@ -33,7 +33,7 @@ struct OverseasLoginCardView: View {
             //    字号 / 字重 / 字体设计 / 顶部 padding 与大陆版保持完全一致，
             //    确保 3D 翻转时两侧卡片视觉高度一致，避免下方 OAuth / 游客模式跳变。
             Text(L10n.Auth.overseasWelcome)
-                .font(.system(size: DesignSystem.titleFontSize * 1.2, weight: .bold, design: .rounded))
+                .font(.system(size: SystemFontSize.hero, weight: .bold, design: .rounded))
                 .foregroundStyle(.appText)
                 .padding(.top, Spacing.medium)
 

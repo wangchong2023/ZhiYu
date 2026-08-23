@@ -105,8 +105,8 @@ struct PluginCenterView: View {
             }
             .padding(DesignSystem.medium)
             .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-            .overlay(RoundedRectangle(cornerRadius: DesignSystem.cardRadius).stroke(Color.appBorder.opacity(DesignSystem.glassOpacity * 3), lineWidth: DesignSystem.borderWidth / 2))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .overlay(RoundedRectangle(cornerRadius: SystemRadius.card).stroke(Color.appBorder.opacity(SystemOpacity.glassHeavy), lineWidth: DesignSystem.borderWidth / 2))
             
             // 安全模式与加载按钮
             HStack(spacing: DesignSystem.large) {
@@ -338,14 +338,14 @@ struct PluginCenterView: View {
         let isSelected = selectedCategory == category
         return Text(title)
             .font(.caption.bold())
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, SystemSpacing.medium)
+            .padding(.vertical, SystemSpacing.small)
             .background(isSelected ? Color.appAccent : Color.appCard.opacity(DesignSystem.Opacity.dim))
             .foregroundColor(isSelected ? .white : .appText)
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .stroke(isSelected ? Color.clear : Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 0.5)
+                    .stroke(isSelected ? Color.clear : Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.hairline)
             )
             .onTapGesture {
                 HapticFeedback.shared.trigger(.selection)
@@ -404,8 +404,8 @@ struct PluginCard: View {
                     .renderingMode(.original)
                     .resizable().scaledToFit()
                     .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous).stroke(Color.appBorder.opacity(DesignSystem.subtleOpacity * 1.66), lineWidth: 0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glassMedium), lineWidth: SystemStroke.hairline))
             } else if let iconURL = URL(string: icon), iconURL.scheme?.hasPrefix("http") == true {
                 CachedAsyncImage(url: iconURL) { phase in
                     switch phase {
@@ -425,26 +425,26 @@ struct PluginCard: View {
                             .font(.title3)
                             .foregroundStyle(.white)
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(DesignSystem.pressedOpacity * 4.0)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     @unknown default:
                         Image(systemName: "puzzlepiece.extension.fill")
                             .font(.title3)
                             .foregroundStyle(.white)
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(DesignSystem.pressedOpacity * 4.0)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     }
                 }
                 .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous).stroke(Color.theme.white.opacity(DesignSystem.subtleOpacity * 1.25), lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.theme.white.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
             } else {
                 Image(systemName: icon)
                     .font(.title3)
                     .foregroundStyle(.white)
                     .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(DesignSystem.pressedOpacity * 4.0)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous).stroke(Color.theme.white.opacity(DesignSystem.subtleOpacity * 1.25), lineWidth: 0.5))
+                    .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.theme.white.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
             }
             
             VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -462,7 +462,7 @@ struct PluginCard: View {
                         Text(sourceLabel(src))
                             .font(.system(size: DesignSystem.microFontSize, weight: .bold))
                             .padding(.horizontal, DesignSystem.tiny + 2)
-                            .padding(.vertical, 2)
+                            .padding(.vertical, SystemSpacing.atomic)
                             .background(sourceColor(src))
                             .clipShape(Capsule())
                             .foregroundStyle(.white)
@@ -487,7 +487,7 @@ struct PluginCard: View {
                             .foregroundStyle(.yellow)
                     }
                     .foregroundStyle(.appSecondary)
-                    .padding(.top, 2)
+                    .padding(.top, SystemSpacing.atomic)
                 }
             }
             Spacer()
@@ -500,9 +500,9 @@ struct PluginCard: View {
                 .foregroundStyle(.appSecondary)
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: DesignSystem.Task.dashboardRadius, style: .continuous).fill(.ultraThinMaterial))
-        .overlay(RoundedRectangle(cornerRadius: DesignSystem.Task.dashboardRadius, style: .continuous).stroke(Color.theme.white.opacity(DesignSystem.subtleOpacity * 1.25), lineWidth: 0.5))
-        .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity * 0.66), radius: 8, x: 0, y: 4)
+        .background(RoundedRectangle(cornerRadius: SystemRadius.section, style: .continuous).fill(.ultraThinMaterial))
+        .overlay(RoundedRectangle(cornerRadius: SystemRadius.section, style: .continuous).stroke(Color.theme.white.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
+        .shadow(color: Color.theme.black.opacity(SystemOpacity.glassSubtle), radius: SystemShadow.radiusMedium, x: SystemShadow.offsetNone, y: SystemShadow.offsetSmall)
         .task {
             if let id = pluginID {
                 // 兼容支持物理包名 ID 与市场简短 ID 的匹配
@@ -541,14 +541,14 @@ struct PluginCard: View {
     @ViewBuilder
     private var actionButton: some View {
         if isInstalled {
-            HStack(spacing: 4) {
+            HStack(spacing: SystemSpacing.tiny) {
                 Image(systemName: "trash")
                     .font(.caption2)
                 Text(L10n.Plugin.Action.uninstall)
                     .font(.caption.bold())
             }
             .padding(.horizontal, DesignSystem.tightPadding + 2)
-            .padding(.vertical, 4)
+            .padding(.vertical, SystemSpacing.tiny)
             .background(Color.theme.red)
             .clipShape(Capsule())
             .foregroundStyle(.white)
@@ -562,7 +562,7 @@ struct PluginCard: View {
             }
         } else if let marketPlugin = marketPlugin, let service = marketService {
             let isDownloading = service.downloadingPluginID == pluginID
-            HStack(spacing: 4) {
+            HStack(spacing: SystemSpacing.tiny) {
                 if isDownloading {
                     ProgressView()
                         .scaleEffect(0.7)
@@ -574,7 +574,7 @@ struct PluginCard: View {
                     .font(.caption.bold())
             }
             .padding(.horizontal, DesignSystem.tightPadding + 2)
-            .padding(.vertical, 4)
+            .padding(.vertical, SystemSpacing.tiny)
             .background(Color.appAccent)
             .clipShape(Capsule())
             .foregroundStyle(.white)

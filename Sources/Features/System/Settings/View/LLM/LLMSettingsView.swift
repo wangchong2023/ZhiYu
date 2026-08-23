@@ -233,10 +233,10 @@ struct LLMSettingsView: View {
                 }
                 .padding()
                 .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
                 .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                        .stroke(validation.isValid || config.apiKey.isEmpty ? Color.appBorder.opacity(DesignSystem.Opacity.prominent) : Color.appAlert.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: SystemRadius.small)
+                        .stroke(validation.isValid || config.apiKey.isEmpty ? Color.appBorder.opacity(DesignSystem.Opacity.prominent) : Color.appAlert.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
                 )
             }
             
@@ -251,10 +251,10 @@ struct LLMSettingsView: View {
                     .foregroundStyle(.appText)
                     .padding()
                     .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: SystemRadius.small)
+                            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
                     )
                     .skipOnWatch { $0.autocapitalization(.none).keyboardType(.URL) }
             }
@@ -288,10 +288,10 @@ struct LLMSettingsView: View {
                         .foregroundStyle(.appText)
                         .padding()
                         .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
                         .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: SystemRadius.small)
+                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
                         )
                         .skipOnWatch { $0.autocapitalization(.none) }
                 } else {
@@ -314,10 +314,10 @@ struct LLMSettingsView: View {
                         }
                         .padding()
                         .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
                         .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: SystemRadius.small)
+                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
                         )
                     }
                 }

@@ -56,10 +56,10 @@ struct AuthView: View {
                         } else {
                             OverseasLoginCardView()
                                 .id(Localized.currentLanguage)
-                                .rotation3DEffect(.degrees(180), axis: (x: 0.0, y: 1.0, z: 0.0))
+                                .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1.0, z: 0.0))
                         }
                     }
-                    .rotation3DEffect(.degrees(rotateDegrees), axis: (x: 0.0, y: 1.0, z: 0.0))
+                    .rotation3DEffect(.degrees(rotateDegrees), axis: (x: 0, y: 1.0, z: 0.0))
 
                     // 3. 第三方 OAuth 面板
                     AuthOAuthPanel(
@@ -136,15 +136,15 @@ struct AuthView: View {
                     }
                 }
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: SystemSpacing.tiny) {
                     Image(systemName: "globe")
                         .font(.subheadline)
                     Text(selectedLanguage.displayName)
                         .font(.caption)
                 }
                 .foregroundStyle(.appSecondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, SystemSpacing.medium)
+                .padding(.vertical, SystemSpacing.small)
                 .background(.ultraThinMaterial)
                 .clipShape(Capsule())
             }
@@ -162,7 +162,7 @@ struct AuthView: View {
                     .blur(radius: Spacing.shadowRadius)
 
                 Image(systemName: DesignSystem.Icons.knowledge)
-                    .font(.system(size: DesignSystem.displayFontSize * 1.5))
+                    .font(.system(size: SystemFontSize.mega))
                     .foregroundStyle(LinearGradient(colors: [.appAccent, .appConcept], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .shadow(color: .appAccent.opacity(DesignSystem.Opacity.disabled), radius: Spacing.shadowRadius, y: Spacing.shadowY)
             }
@@ -171,7 +171,7 @@ struct AuthView: View {
                 Text(L10n.Common.appName)
                     .font(.system(size: DesignSystem.titleFontSize, weight: .black, design: .rounded))
                     .foregroundStyle(.appText)
-                    .tracking(1)
+                    .tracking(DesignSystem.Tracking.tight)
 
                 Text(L10n.Onboarding.subtitle)
                     .font(.system(size: DesignSystem.subheadlineFontSize, weight: .medium))

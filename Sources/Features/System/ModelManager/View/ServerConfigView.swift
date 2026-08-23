@@ -127,7 +127,7 @@ public struct ServerConfigView: View {
                 .frame(width: DesignSystem.Metrics.notebookActionIconSize, height: DesignSystem.Metrics.notebookActionIconSize)
                 .background(Color.appAccent)
                 .clipShape(Circle())
-                .shadow(color: .primary.opacity(DesignSystem.Opacity.medium), radius: 8, y: 4)
+                .shadow(color: .primary.opacity(DesignSystem.Opacity.medium), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
         }
         .padding(DesignSystem.large)
     }
@@ -406,7 +406,7 @@ private struct ServerCardView: View {
             HStack {
                 statusIndicator(for: server)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
                     Text(server.name)
                         .font(.headline)
                         .foregroundStyle(.appText)
@@ -427,7 +427,7 @@ private struct ServerCardView: View {
             }
 
             if let lastTested = server.lastTestedAt, let latency = server.latencyMs {
-                HStack(spacing: 4) {
+                HStack(spacing: SystemSpacing.tiny) {
                     Text(L10n.ModelManager.Server.lastTested(formatDate(lastTested)))
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)

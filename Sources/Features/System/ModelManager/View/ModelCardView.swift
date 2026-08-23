@@ -51,8 +51,8 @@ struct ModelCardView: View {
 
                             Text(manifest.parameterCount)
                                 .font(.system(size: 10, weight: .bold, design: .monospaced)) // Dynamic Type
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
+                                .padding(.horizontal, SystemSpacing.small)
+                                .padding(.vertical, SystemSpacing.atomic)
                                 .background(Color.appAccent.opacity(DesignSystem.Opacity.glass))
                                 .clipShape(Capsule())
                                 .foregroundStyle(.appAccent)
@@ -90,7 +90,7 @@ struct ModelCardView: View {
                                 }
                             }()
 
-                            HStack(spacing: 4) {
+                            HStack(spacing: SystemSpacing.tiny) {
                                 Image(systemName: statusIcon)
                                     .font(.caption2)
                                     .foregroundStyle(iconColor)
@@ -102,7 +102,7 @@ struct ModelCardView: View {
                             
                             if let urlString = manifest.huggingfaceURLString ?? manifest.modelscopeURLString,
                                let url = URL(string: urlString) {
-                                HStack(spacing: 2) {
+                                HStack(spacing: SystemSpacing.atomic) {
                                     Image(systemName: "arrow.up.right.square")
                                         .font(.caption2)
                                         .foregroundStyle(.appAccent)
@@ -118,7 +118,7 @@ struct ModelCardView: View {
 
                     HStack(spacing: DesignSystem.small) {
                         if isLocalReady {
-                            HStack(spacing: 2) {
+                            HStack(spacing: SystemSpacing.atomic) {
                                 Image(systemName: "checkmark.shield.fill")
                                 Text(L10n.ModelManager.Card.ready)
                             }
@@ -158,7 +158,7 @@ struct ModelCardView: View {
                                     .padding(.horizontal, DesignSystem.small)
                                     .padding(.vertical, DesignSystem.atomic)
                                     .background(taskColor(for: task).opacity(DesignSystem.Opacity.subtle))
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.chipRadius))
+                                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip))
                                     .foregroundStyle(taskColor(for: task))
                             }
                         }
@@ -201,7 +201,7 @@ struct ModelCardView: View {
                 RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                     .stroke(borderColor, lineWidth: isSelected ? 2 : 1)
             )
-            .shadow(color: shadowColor, radius: 8, x: 0, y: 4)
+            .shadow(color: shadowColor, radius: SystemShadow.radiusMedium, x: SystemShadow.offsetNone, y: SystemShadow.offsetSmall)
             .onTapGesture {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     expandedModelId = (expandedModelId == manifest.modelId) ? nil : manifest.modelId
@@ -237,15 +237,15 @@ struct ModelCardView: View {
                 HStack(spacing: DesignSystem.tiny) {
                     Text(L10n.ModelManager.Spec.tasks).font(.caption).foregroundStyle(.appSecondary)
                     ForEach(manifest.displayTasks, id: \.self) { t in
-                        HStack(spacing: 3) {
+                        HStack(spacing: SystemSpacing.tight) {
                             // 胶囊引入微型功能图标，增强视觉可读性
                             Image(systemName: taskIcon(for: t))
                                 .font(.system(size: 8)) // Dynamic Type
                             Text(taskLabel(for: t))
                                 .font(.caption2)
                         }
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
+                        .padding(.horizontal, SystemSpacing.small)
+                        .padding(.vertical, SystemSpacing.atomic)
                         .background(taskColor(for: t).opacity(DesignSystem.Opacity.subtle)).clipShape(Capsule())
                         .foregroundStyle(taskColor(for: t))
                     }
@@ -254,7 +254,7 @@ struct ModelCardView: View {
         }
         .padding(DesignSystem.medium)
         .background(specBg)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
 
@@ -269,14 +269,14 @@ struct ModelCardView: View {
         .padding(DesignSystem.small)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.appBackground.opacity(DesignSystem.Opacity.shadow))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 
     // MARK: - Banner 信息条
 
     /// 强物理内存拦截红条
     private func restrictedBanner(for manifest: LLMManifest) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: SystemSpacing.element) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.red)
             Text(" \(String(format: "%.1f", manifest.minDeviceMemoryInGb)) GB  OOM")
@@ -291,7 +291,7 @@ struct ModelCardView: View {
 
     /// 临界运存警告黄条
     private var warningBanner: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: SystemSpacing.element) {
             Image(systemName: "exclamationmark.circle.fill")
                 .foregroundStyle(.orange)
             Text(L10n.ModelManager.Card.warningLowMemory)

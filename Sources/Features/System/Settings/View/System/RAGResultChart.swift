@@ -102,12 +102,12 @@ struct RAGCostPanel: View {
     private func tokenMetricCard(id _: String, title: String, value: String) -> some View {
         VStack(spacing: DesignSystem.tightPadding) {
             Text(value).font(.system(size: FontSize.tokenValue, weight: .bold, design: .rounded)).foregroundStyle(.primary)
-            HStack(spacing: 2) {
+            HStack(spacing: SystemSpacing.atomic) {
                 Text(title).font(.caption2).foregroundStyle(.tertiary).multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
-        .background(Color.theme.green.opacity(CardVisual.tokenBgOpacity)).clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .background(Color.theme.green.opacity(CardVisual.tokenBgOpacity)).clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 }
 

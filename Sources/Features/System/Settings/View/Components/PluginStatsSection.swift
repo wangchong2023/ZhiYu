@@ -54,7 +54,7 @@ struct PluginStatsSection: View {
                         }
                         .padding(.vertical, DesignSystem.small)
                         .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                        .cornerRadius(DesignSystem.smallRadius)
+                        .cornerRadius(SystemRadius.small)
                     }
 
                     // 插件列表明细
@@ -100,7 +100,7 @@ struct PluginStatsSection: View {
 
                                 VStack(alignment: .trailing, spacing: DesignSystem.tiny) {
                                     // 耗时数值与占比 (添加 CPU 与 占比 的辅助文本)
-                                    HStack(spacing: 2) {
+                                    HStack(spacing: SystemSpacing.atomic) {
                                         Text(L10n.Plugin.Stats.cpu)
                                             .font(.system(size: DesignSystem.microFontSize))
                                             .foregroundStyle(.appSecondary)
@@ -109,7 +109,7 @@ struct PluginStatsSection: View {
                                             .foregroundStyle(usage.status == .suspended ? .red : .appText)
                                     }
 
-                                    HStack(spacing: 2) {
+                                    HStack(spacing: SystemSpacing.atomic) {
                                         Text(L10n.Plugin.Stats.ratio)
                                             .font(.system(size: DesignSystem.microFontSize))
                                             .foregroundStyle(.appSecondary)
@@ -156,11 +156,11 @@ struct PluginStatsSection: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                .overlay(RoundedRectangle(cornerRadius: DesignSystem.smallRadius).stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: DesignSystem.atomic / 2))
+                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+                .overlay(RoundedRectangle(cornerRadius: SystemRadius.small).stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider))
         } else {
             ZStack {
-                RoundedRectangle(cornerRadius: DesignSystem.smallRadius, style: .continuous)
+                RoundedRectangle(cornerRadius: SystemRadius.small, style: .continuous)
                     .fill(pluginColor(for: pluginID).opacity(DesignSystem.Opacity.subtle))
                     .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
 
@@ -207,7 +207,7 @@ struct PluginStatsSection: View {
         .cornerRadius(DesignSystem.mediumRadius)
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: 1)
+                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
         )
     }
 }

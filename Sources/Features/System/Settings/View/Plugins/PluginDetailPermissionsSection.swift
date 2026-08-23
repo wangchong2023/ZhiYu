@@ -55,7 +55,7 @@ extension PluginDetailView {
                         .padding(DesignSystem.medium)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
                     }
                 }
             } else {
@@ -69,7 +69,7 @@ extension PluginDetailView {
                 .padding(DesignSystem.medium)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
             }
         }
     }

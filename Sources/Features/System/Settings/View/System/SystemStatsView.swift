@@ -393,7 +393,7 @@ struct SystemStatsView: View {
                 Text(L10n.Dashboard.totalStorage)
                     .font(.system(size: DesignSystem.microFontSize, weight: .black))
                     .foregroundStyle(.appSecondary)
-                    .kerning(1)
+                    .kerning(DesignSystem.Tracking.tight)
                     .textCase(.uppercase)
             }
         }
@@ -463,10 +463,10 @@ struct SystemStatsView: View {
         .padding(DesignSystem.small)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-        .cornerRadius(DesignSystem.smallRadius)
+        .cornerRadius(SystemRadius.small)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                .stroke(color.opacity(DesignSystem.Opacity.shadow), lineWidth: 1)
+            RoundedRectangle(cornerRadius: SystemRadius.small)
+                .stroke(color.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
         )
     }
 }

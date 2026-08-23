@@ -137,13 +137,13 @@ public struct UserProfileView: View {
                     } placeholder: {
                         ProgressView()
                     }
-                    .frame(width: DesignSystem.Gallery.emptyStateImageSize / 2, height: DesignSystem.Gallery.emptyStateImageSize / 2)
+                    .frame(width: ComponentSpacing.emptyStateImageHalf, height: ComponentSpacing.emptyStateImageHalf)
                     .clipShape(Circle())
                 } else {
                     Image(systemName: DesignSystem.Icons.personCropFill)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: DesignSystem.Gallery.emptyStateImageSize / 2, height: DesignSystem.Gallery.emptyStateImageSize / 2)
+                        .frame(width: ComponentSpacing.emptyStateImageHalf, height: ComponentSpacing.emptyStateImageHalf)
                         .foregroundStyle(.appSecondary)
                 }
 
@@ -151,7 +151,7 @@ public struct UserProfileView: View {
                 if isUploading {
                     Circle()
                         .fill(Color.theme.black.opacity(DesignSystem.Opacity.disabled))
-                        .frame(width: DesignSystem.Gallery.emptyStateImageSize / 2, height: DesignSystem.Gallery.emptyStateImageSize / 2)
+                        .frame(width: ComponentSpacing.emptyStateImageHalf, height: ComponentSpacing.emptyStateImageHalf)
                     ProgressView()
                         .tint(.white)
                 }
@@ -165,7 +165,7 @@ public struct UserProfileView: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: 2
+                        lineWidth: SystemStroke.selected
                     )
                     // 绑定发光呼吸动效：通过动态切换阴影的透明度模拟发光呼吸
                     .shadow(
@@ -205,7 +205,7 @@ public struct UserProfileView: View {
             VStack(alignment: .leading, spacing: DesignSystem.large) {
                 // 账号 ID (不可修改)
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: SystemSpacing.element) {
                         Image(systemName: "person.text.rectangle.fill")
                             .foregroundStyle(.gray)
                         Text(L10n.Auth.accountId)
@@ -221,7 +221,7 @@ public struct UserProfileView: View {
                 // 手机号（如果通过短信登录则展示，不可修改）
                 if let phone = authService.currentUser?.phone, !phone.isEmpty {
                     VStack(alignment: .leading, spacing: DesignSystem.small) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: SystemSpacing.element) {
                             Image(systemName: "phone.fill")
                                 .foregroundStyle(.gray)
                             Text(L10n.Auth.phoneLabel)
@@ -236,7 +236,7 @@ public struct UserProfileView: View {
 
                 // 昵称修改
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: SystemSpacing.element) {
                         Image(systemName: "person.fill")
                             .foregroundStyle(Color.theme.accent)
                         Text(L10n.Auth.nickname)
@@ -254,7 +254,7 @@ public struct UserProfileView: View {
                 
                 // 性别选择
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: SystemSpacing.element) {
                         Image(systemName: "person.2.fill")
                             .foregroundStyle(Color.theme.accent)
                         Text(L10n.Auth.gender)
@@ -272,7 +272,7 @@ public struct UserProfileView: View {
                 
                 // 生日选择
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: SystemSpacing.element) {
                         Image(systemName: "calendar")
                             .foregroundStyle(Color.theme.accent)
                         Text(L10n.Auth.birthday)
@@ -294,14 +294,14 @@ public struct UserProfileView: View {
         AppCard {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 // 模块页头
-                HStack(spacing: 8) {
+                HStack(spacing: SystemSpacing.element) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .foregroundStyle(Color.theme.accent)
                     Text(L10n.Auth.statsBoard)
                         .font(.headline.bold())
                         .foregroundStyle(.primary)
                 }
-                .padding(.bottom, 4)
+                .padding(.bottom, SystemSpacing.tiny)
                 
                 // 2x2 网格，清晰统计用户的知识库状况
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.medium) {
@@ -338,7 +338,7 @@ public struct UserProfileView: View {
     /// 单个资产数据指标组件
     private func metricItem(title: String, value: String, icon: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-            HStack(spacing: 6) {
+            HStack(spacing: SystemSpacing.small) {
                 Image(systemName: icon)
                     .font(.caption)
                     .foregroundStyle(color)
@@ -353,7 +353,7 @@ public struct UserProfileView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DesignSystem.small)
         .background(Color.appCard.opacity(DesignSystem.softOpacity))
-        .cornerRadius(DesignSystem.cardRadius)
+        .cornerRadius(SystemRadius.card)
     }
 
     /// 活跃天数逻辑：初次启动时在本地存储中打点，自动计算距今的累积使用天数

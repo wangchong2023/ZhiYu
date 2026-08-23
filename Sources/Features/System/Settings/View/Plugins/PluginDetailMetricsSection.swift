@@ -69,7 +69,7 @@ extension PluginDetailView {
             Spacer(minLength: 0)
 
             if let icon = icon {
-                HStack(spacing: 4) {
+                HStack(spacing: SystemSpacing.tiny) {
                     Image(systemName: icon)
                         .foregroundStyle(iconColor)
                         .font(.caption.bold())
@@ -84,7 +84,7 @@ extension PluginDetailView {
                     .lineLimit(1)
             }
         }
-        .frame(width: Spacing.Action.buttonHeight * 2.0 + Spacing.atomic, height: Spacing.Action.buttonHeight)
+        .frame(width: ComponentSpacing.metricChipWidth, height: ComponentSpacing.buttonHeight)
     }
 
     var metricDivider: some View {

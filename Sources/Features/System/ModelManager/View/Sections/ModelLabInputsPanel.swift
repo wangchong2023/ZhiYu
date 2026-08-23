@@ -43,10 +43,10 @@ extension ModelLabView {
                 }
                 .frame(width: DesignSystem.Metrics.sourceCardWidth + DesignSystem.tiny, height: DesignSystem.Metrics.boxHeight)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                .cornerRadius(DesignSystem.smallRadius)
+                .cornerRadius(SystemRadius.small)
                 .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                        .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: SystemRadius.small)
+                        .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
                 )
             }
             .buttonStyle(.plain)
@@ -88,16 +88,16 @@ extension ModelLabView {
                     .padding(.horizontal, DesignSystem.standardPadding + 8)
                     .padding(.vertical, DesignSystem.standardPadding + 2)
                     .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                    .cornerRadius(DesignSystem.smallRadius)
+                    .cornerRadius(SystemRadius.small)
                 }
                 .buttonStyle(.plain)
 
                 if isAudioRecording {
                     HStack(spacing: DesignSystem.standardPadding / 2) {
                         ForEach(0..<6) { _ in
-                            RoundedRectangle(cornerRadius: DesignSystem.borderWidth * 2)
+                            RoundedRectangle(cornerRadius: SystemStroke.selected)
                                 .fill(Color.theme.cyan)
-                                .frame(width: DesignSystem.borderWidth * 4, height: CGFloat.random(in: DesignSystem.standardPadding...DesignSystem.large))
+                                .frame(width: SystemStroke.heavy, height: CGFloat.random(in: DesignSystem.standardPadding...DesignSystem.large))
                                 .animation(.easeInOut(duration: 0.25).repeatForever(), value: isAudioRecording)
                         }
                     }

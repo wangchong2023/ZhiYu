@@ -210,7 +210,7 @@ struct SettingsView: View {
     /// 构建大屏左侧分类侧边栏（气泡圆角卡片样式，具备呼吸感与选中高亮）
     private var sidebarColumn: some View {
         ScrollView {
-            VStack(spacing: 6) {
+            VStack(spacing: SystemSpacing.small) {
                 ForEach(SettingsSection.allCases) { section in
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
@@ -226,8 +226,8 @@ struct SettingsView: View {
                                 .foregroundStyle(selectedSection == section ? .white : .appText)
                             Spacer()
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, SystemSpacing.content)
+                        .padding(.vertical, SystemSpacing.medium)
                         .background(
                             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
                                 .fill(selectedSection == section ? Color.appAccent : Color.clear)
@@ -236,8 +236,8 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 16)
+            .padding(.horizontal, SystemSpacing.medium)
+            .padding(.vertical, SystemSpacing.content)
         }
         .background(Color.appCard.opacity(DesignSystem.Opacity.disabled)) // 侧边栏微暗色半透明质感
     }
@@ -531,7 +531,7 @@ struct ColorfulIconLabelStyle: LabelStyle {
                 .foregroundStyle(.white)
                 .frame(width: DesignSystem.Metrics.settingsIconFrameSize, height: DesignSystem.Metrics.settingsIconFrameSize)
                 .background(color)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small, style: .continuous))
             
             configuration.title
         }

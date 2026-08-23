@@ -40,7 +40,7 @@ public struct SmartRoutingView: View {
 
             // 端侧与在线混合开关
             VStack(alignment: .leading, spacing: DesignSystem.small) {
-                HStack(alignment: .center, spacing: 8) {
+                HStack(alignment: .center, spacing: SystemSpacing.element) {
                     // 主开关左侧添加合并融合图标，以表现端侧与在线智能调度的含义
                     Image(systemName: "arrow.triangle.merge")
                         .foregroundStyle(Color.theme.accent)

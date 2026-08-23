@@ -62,22 +62,22 @@ public struct OnDeviceTestView: View {
     
     // MARK: - 提示词输入区域
     private var promptInputSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: SystemSpacing.element) {
             Text(L10n.AI.OnDevice.testPrompt)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.appSecondary)
-                .tracking(1)
+                .tracking(DesignSystem.Tracking.tight)
             
             AdaptiveTextEditor(text: $prompt)
             .font(.body)
             .frame(height: DesignSystem.Metrics.largeIconBoxSize)
-            .padding(DesignSystem.atomic + DesignSystem.small) /* 10pt = 2+8 */
+            .padding(SystemSpacing.element) /* 10pt = 2+8 */
             .scrollContentBackground(.hidden)
             .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
             .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: Spacing.standardRadius)
-                    .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1.5)
+                    .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: SystemStroke.emphasis)
             )
         }
     }
@@ -85,7 +85,7 @@ public struct OnDeviceTestView: View {
     // MARK: - 一键生成按钮
     private var generateButton: some View {
         Button(action: generate) {
-            HStack(spacing: 10) {
+            HStack(spacing: SystemSpacing.element) {
                 if isGenerating {
                     ProgressView()
                         .tint(.white)
@@ -97,7 +97,7 @@ public struct OnDeviceTestView: View {
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, SystemSpacing.medium)
             .background(
                 LinearGradient(
                     // swiftlint:disable:next magic_numbers_opacity
@@ -107,7 +107,7 @@ public struct OnDeviceTestView: View {
                 )
             )
             .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            .shadow(color: Color.appAccent.opacity(isGenerating ? 0 : 0.2), radius: 8, y: 4)
+            .shadow(color: Color.appAccent.opacity(isGenerating ? 0 : 0.2), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
         }
         .disabled(isGenerating || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
@@ -116,7 +116,7 @@ public struct OnDeviceTestView: View {
     @ViewBuilder
     private var progressIndicator: some View {
         if isGenerating {
-            VStack(spacing: DesignSystem.tightPadding) {
+            VStack(spacing: SystemSpacing.element) {
                 ProgressView(value: onDeviceService.generationProgress)
                     .tint(.appAccent)
                     .progressViewStyle(.linear)
@@ -133,7 +133,7 @@ public struct OnDeviceTestView: View {
     @ViewBuilder
     private var resultSection: some View {
         if !result.isEmpty {
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: SystemSpacing.element) {
                 HStack {
                     Label(
                         L10n.AI.OnDevice.result,
@@ -151,7 +151,7 @@ public struct OnDeviceTestView: View {
                         Label(L10n.Common.copy, systemImage: "doc.on.doc.fill")
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.appAccent)
-                            .padding(.horizontal, DesignSystem.small)
+                            .padding(.horizontal, SystemSpacing.element)
                             .padding(.vertical, DesignSystem.tiny)
                             .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                             .clipShape(Capsule())
@@ -171,7 +171,7 @@ public struct OnDeviceTestView: View {
                 .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
                 .overlay(
                     RoundedRectangle(cornerRadius: Spacing.standardRadius)
-                        .strokeBorder(Color.appText.opacity(DesignSystem.Opacity.ghost), lineWidth: 1)
+                        .strokeBorder(Color.appText.opacity(DesignSystem.Opacity.ghost), lineWidth: SystemStroke.divider)
                 )
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -223,7 +223,7 @@ public struct OnDeviceModelRow: View {
     }
     
     public var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: SystemSpacing.medium) {
             // 左侧精美模型图标
             ZStack {
                 let circleBgColor = isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.glass) : Color.appSecondary.opacity(DesignSystem.Opacity.light)
@@ -243,7 +243,7 @@ public struct OnDeviceModelRow: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
                 
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: SystemSpacing.element) {
                     if model.size > 0 {
                         Text(model.sizeLabel)
                             .font(.caption2.weight(.medium))
@@ -252,10 +252,9 @@ public struct OnDeviceModelRow: View {
                     
                     Text(modelTypeLabel)
                         .font(.caption2.weight(.bold))
-                        .padding(.horizontal, DesignSystem.tightPadding)
-                        .padding(.vertical, DesignSystem.atomic)
-                        // swiftlint:disable:next magic_numbers_opacity
-                        .background(isSelected ? Color.appAccent.opacity(0.18) : Color.appSecondary.opacity(DesignSystem.Opacity.subtle))
+                        .padding(.horizontal, SystemSpacing.element)
+                        .padding(.vertical, SystemSpacing.atomic)
+                        .background(isSelected ? Color.appAccent.opacity(SystemOpacity.glassMedium) : Color.appSecondary.opacity(DesignSystem.Opacity.subtle))
                         .foregroundStyle(isSelected ? .appAccent : .appSecondary)
                         .clipShape(Capsule())
                 }
@@ -271,7 +270,7 @@ public struct OnDeviceModelRow: View {
                     .transition(.scale.combined(with: .opacity))
             } else {
                 Circle()
-                    .stroke(Color.appSecondary.opacity(DesignSystem.Opacity.shadow), lineWidth: 1.5)
+                    .stroke(Color.appSecondary.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.emphasis)
                     .frame(width: DesignSystem.IconSize.small, height: DesignSystem.IconSize.small)
             }
         }
@@ -284,7 +283,7 @@ public struct OnDeviceModelRow: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: Spacing.cardRadius)
-                .strokeBorder(isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.shadow) : Color.appText.opacity(DesignSystem.Opacity.ghost), lineWidth: 1.5)
+                .strokeBorder(isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.shadow) : Color.appText.opacity(DesignSystem.Opacity.ghost), lineWidth: SystemStroke.emphasis)
         )
         .contentShape(Rectangle())
         .onTapGesture {
@@ -315,7 +314,7 @@ struct OnDeviceInfoRow: View {
     let text: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: SystemSpacing.element) {
             Image(systemName: icon)
                 .font(.footnote)
                 .foregroundStyle(.appAccent)

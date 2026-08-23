@@ -165,11 +165,11 @@ public struct SubscriptionPlanView: View {
                 glassQuotaCard(title: L10n.Auth.pluginsUsage, icon: "puzzlepiece", current: pluginsCount, max: pluginsMax)
             }
             .padding(DesignSystem.medium)
-            .background(Color.appCard.opacity(DesignSystem.glassOpacity * 2))
+            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.large))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.Radius.large)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.light), lineWidth: 1)
+                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.divider)
             )
         }
         .padding()

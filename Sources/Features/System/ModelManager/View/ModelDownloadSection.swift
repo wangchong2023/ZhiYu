@@ -114,13 +114,13 @@ struct ModelActionButton: View {
     /// 渲染因硬件限制而被拦截的下载按钮
     private var restrictedActionButton: some View {
         Button(action: { alertManifest = manifest }) {
-            HStack(spacing: 4) {
+            HStack(spacing: SystemSpacing.tiny) {
                 Image(systemName: "exclamationmark.octagon.fill")
                 Text(L10n.ModelManager.Card.unavailable)
             }
             .font(.subheadline.bold())
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, SystemSpacing.content)
+            .padding(.vertical, SystemSpacing.element)
             .background(Color.theme.red.opacity(DesignSystem.Opacity.glass))
             .foregroundStyle(.red)
             .clipShape(Capsule())
@@ -165,7 +165,7 @@ struct ModelActionButton: View {
                     .background(Color.appBackground)
                     .foregroundStyle(.orange)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.theme.orange, lineWidth: 1))
+                    .overlay(Circle().stroke(Color.theme.orange, lineWidth: SystemStroke.divider))
             }
         case .paused:
             HStack(spacing: DesignSystem.small) {
@@ -188,13 +188,13 @@ struct ModelActionButton: View {
             }
         default:
             Button(action: { modelManager.startDownload(for: manifest) }) {
-                HStack(spacing: 4) {
+                HStack(spacing: SystemSpacing.tiny) {
                     Image(systemName: "icloud.and.arrow.down")
                     Text(L10n.ModelManager.Card.download)
                 }
                 .font(.subheadline.bold())
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, SystemSpacing.content)
+                .padding(.vertical, SystemSpacing.element)
                 .background(Color.appAccent)
                 .foregroundStyle(.white)
                 .clipShape(Capsule())

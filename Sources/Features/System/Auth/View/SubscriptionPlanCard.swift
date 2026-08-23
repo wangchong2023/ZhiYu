@@ -32,21 +32,21 @@ struct SubscriptionPlanCard: View {
                 HapticFeedback.shared.trigger(.selection)
                 onCycleChange(.monthly)
             }) {
-                VStack(spacing: 2) {
+                VStack(spacing: SystemSpacing.atomic) {
                     Text(L10n.Auth.monthly)
                         .font(.subheadline.bold())
                     Text(L10n.Auth.priceMonthlyPro)
                         .font(.system(size: 10)) // Dynamic Type
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                .padding(.vertical, SystemSpacing.element)
                 .foregroundStyle(selectedCycle == .monthly ? .appAccent : .appSecondary)
             }
             .buttonStyle(.plain)
-            .background(Color.appCard.opacity(DesignSystem.glassOpacity * 2))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                RoundedRectangle(cornerRadius: SystemRadius.card)
                     .stroke(
                         selectedCycle == .monthly
                             ? AnyShapeStyle(LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -59,15 +59,15 @@ struct SubscriptionPlanCard: View {
                 HapticFeedback.shared.trigger(.selection)
                 onCycleChange(.yearly)
             }) {
-                VStack(spacing: 2) {
-                    HStack(spacing: 4) {
+                VStack(spacing: SystemSpacing.atomic) {
+                    HStack(spacing: SystemSpacing.tiny) {
                         Text(L10n.Auth.yearly)
                             .font(.subheadline.bold())
                         Text(L10n.Auth.save20Percent)
                             .font(.system(size: 8, weight: .bold)) // Dynamic Type
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 1)
+                            .padding(.horizontal, SystemSpacing.tiny)
+                            .padding(.vertical, SystemSpacing.divider)
                             .background(Color.theme.blue)
                             .clipShape(Capsule())
                     }
@@ -75,14 +75,14 @@ struct SubscriptionPlanCard: View {
                         .font(.system(size: 10)) // Dynamic Type
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                .padding(.vertical, SystemSpacing.element)
                 .foregroundStyle(selectedCycle == .yearly ? .appAccent : .appSecondary)
             }
             .buttonStyle(.plain)
-            .background(Color.appCard.opacity(DesignSystem.glassOpacity * 2))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                RoundedRectangle(cornerRadius: SystemRadius.card)
                     .stroke(
                         selectedCycle == .yearly
                             ? AnyShapeStyle(LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -98,7 +98,7 @@ struct SubscriptionPlanCard: View {
     private var tierCardsSection: some View {
         HStack(spacing: DesignSystem.medium) {
             // Lite Card
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: SystemSpacing.element) {
                 HStack {
                     Image(systemName: "lightbulb")
                         .font(.title3)
@@ -112,10 +112,10 @@ struct SubscriptionPlanCard: View {
                     Text("Lite")
                         .font(.system(size: 9, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
+                        .padding(.horizontal, SystemSpacing.small)
+                        .padding(.vertical, SystemSpacing.atomic)
                         .overlay(
-                            Capsule().stroke(Color.appBorder, lineWidth: 1)
+                            Capsule().stroke(Color.appBorder, lineWidth: SystemStroke.divider)
                         )
                 }
                 Text(L10n.Auth.priceMonthlyLite)
@@ -129,15 +129,15 @@ struct SubscriptionPlanCard: View {
             }
             .padding(DesignSystem.medium)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(Color.appCard.opacity(DesignSystem.glassOpacity * 2))
+            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: 1.5)
+                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.emphasis)
             )
 
             // Pro Card
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: SystemSpacing.element) {
                 HStack {
                     Image(systemName: "bolt.fill")
                         .font(.title3)
@@ -151,8 +151,8 @@ struct SubscriptionPlanCard: View {
                     Text(L10n.Auth.proPlan)
                         .font(.system(size: 9, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
+                        .padding(.horizontal, SystemSpacing.small)
+                        .padding(.vertical, SystemSpacing.atomic)
                         .background(LinearGradient(colors: [.purple, .blue], startPoint: .leading, endPoint: .trailing))
                         .clipShape(Capsule())
                 }
@@ -169,16 +169,16 @@ struct SubscriptionPlanCard: View {
             }
             .padding(DesignSystem.medium)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(Color.appCard.opacity(DesignSystem.glassOpacity * 3))
+            .background(Color.appCard.opacity(SystemOpacity.glassHeavy))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                     .stroke(
                         LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing),
-                        lineWidth: 3
+                        lineWidth: SystemStroke.accent
                     )
             )
-            .shadow(color: .purple.opacity(DesignSystem.Opacity.shadow), radius: 8, x: 0, y: 0)
+            .shadow(color: .purple.opacity(DesignSystem.Opacity.shadow), radius: SystemShadow.radiusMedium, x: SystemShadow.offsetNone, y: 0)
         }
         .fixedSize(horizontal: false, vertical: true)
     }

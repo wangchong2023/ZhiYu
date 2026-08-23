@@ -136,7 +136,7 @@ struct RawPageRow: View {
                 .foregroundStyle(.appAccent)
                 .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
                 .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
             
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                 // 使用高亮文本显示匹配项
@@ -336,7 +336,7 @@ struct RawStorageListView: View {
         .padding(.horizontal, DesignSystem.standardPadding)
         .padding(.vertical, DesignSystem.tightPadding)
         .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         .padding()
     }
     

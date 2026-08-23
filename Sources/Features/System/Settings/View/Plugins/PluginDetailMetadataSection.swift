@@ -30,7 +30,7 @@ extension PluginDetailView {
                     value: displayVersion
                 )
 
-                Divider().padding(.leading, 40)
+                Divider().padding(.leading, ComponentSpacing.ultra)
 
                 // 作者
                 metadataRow(
@@ -39,7 +39,7 @@ extension PluginDetailView {
                     value: plugin.author
                 )
 
-                Divider().padding(.leading, 40)
+                Divider().padding(.leading, ComponentSpacing.ultra)
 
                 // 最低应用版本
                 if let minVersion = plugin.minAppVersion {
@@ -48,7 +48,7 @@ extension PluginDetailView {
                         label: L10n.Plugin.Detail.minAppVersion,
                         value: minVersion
                     )
-                    Divider().padding(.leading, 40)
+                    Divider().padding(.leading, ComponentSpacing.ultra)
                 }
 
                 // 分类
@@ -58,7 +58,7 @@ extension PluginDetailView {
                     value: categoryName
                 )
 
-                Divider().padding(.leading, 40)
+                Divider().padding(.leading, ComponentSpacing.ultra)
 
                 // 许可
                 metadataRow(
@@ -68,7 +68,7 @@ extension PluginDetailView {
                 )
             }
             .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
         }
     }
 

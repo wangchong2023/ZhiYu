@@ -93,7 +93,7 @@ struct PerformanceDashboardView: View {
                     }
                     .padding()
                     .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
                     
                     // Last Updated
                     Text(L10n.Common.Perf.lastUpdated + ": " + service.metrics.lastUpdated.formatted(Date.FormatStyle(locale: Localized.currentLocale)))
@@ -156,7 +156,7 @@ struct MetricCardView: View {
         .padding(DesignSystem.medium)
         .frame(maxWidth: .infinity)
         .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
     }
 }
 

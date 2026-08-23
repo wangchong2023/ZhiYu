@@ -32,12 +32,12 @@ extension ModelLabView {
                         // 使用 ScrollView 包裹标准交互沙盒，防止多参数导致内容溢出挤压安全区
                         ScrollView(.vertical, showsIndicators: false) {
                             standardSandboxView(for: useCase)
-                                .padding(.vertical, 2)
+                                .padding(.vertical, SystemSpacing.atomic)
                         }
                     }
                 }
                 .padding(.horizontal, DesignSystem.medium)
-                .padding(.bottom, 8)
+                .padding(.bottom, SystemSpacing.element)
             }
             .navigationTitle(useCase.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -73,7 +73,7 @@ extension ModelLabView {
                 }
             }
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: SystemSpacing.tiny) {
                 Text(getActiveModel()?.displayName ?? useCase.title)
                     .font(.headline)
                     .foregroundStyle(.appText)
@@ -81,8 +81,8 @@ extension ModelLabView {
                     .font(.caption)
                     .foregroundStyle(.cyan)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, SystemSpacing.medium)
+            .padding(.vertical, SystemSpacing.small)
             .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
             .clipShape(Capsule())
         }
@@ -115,11 +115,11 @@ extension ModelLabView {
             TextEditor(text: $testPrompt)
                 .focused($isPromptFocused)
                 .padding(DesignSystem.standardPadding)
-                .frame(height: DesignSystem.Metrics.iconBoxSize * 2)
+                .frame(height: ComponentSpacing.colossal)
                 .background(Color.theme.white.opacity(DesignSystem.Opacity.ghost))
-                .cornerRadius(DesignSystem.smallRadius)
+                .cornerRadius(SystemRadius.small)
                 .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                    RoundedRectangle(cornerRadius: SystemRadius.small)
                         .stroke(
                             isPromptFocused ?
                             LinearGradient(colors: [.cyan, .purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing) :
@@ -127,7 +127,7 @@ extension ModelLabView {
                             lineWidth: isPromptFocused ? 1.5 : 1.0
                         )
                 )
-                .shadow(color: isPromptFocused ? .cyan.opacity(DesignSystem.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: 0, y: 0)
+                .shadow(color: isPromptFocused ? .cyan.opacity(DesignSystem.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: SystemShadow.offsetNone, y: 0)
                 .overlay(
                     Group {
                         if testPrompt.isEmpty {
@@ -156,7 +156,7 @@ extension ModelLabView {
                     .padding(.vertical, DesignSystem.standardPadding + 2)
                     .background(Color.theme.red.opacity(DesignSystem.Opacity.shadow))
                     .foregroundStyle(Color.theme.red)
-                    .cornerRadius(DesignSystem.smallRadius)
+                    .cornerRadius(SystemRadius.small)
             }
         } else {
             Button(action: {
@@ -178,7 +178,7 @@ extension ModelLabView {
                         )
                     )
                     .foregroundStyle(Color.theme.white)
-                    .cornerRadius(DesignSystem.smallRadius)
+                    .cornerRadius(SystemRadius.small)
                     .shadow(color: Color.theme.cyan.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.shadowRadius)
             }
             .disabled(testPrompt.isEmpty && useCase != .audioScribe)
@@ -197,15 +197,15 @@ extension ModelLabView {
                 HapticFeedback.shared.trigger(.selection)
                 showConfigSheet = true
             }) {
-                HStack(spacing: 4) {
+                HStack(spacing: SystemSpacing.tiny) {
                     Image(systemName: "slider.horizontal.3")
                         .font(.caption)
                     Text(L10n.ModelManager.parametersTitle)
                         .font(.caption)
                 }
                 .foregroundStyle(.cyan)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, SystemSpacing.medium)
+                .padding(.vertical, SystemSpacing.small)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
                 .clipShape(Capsule())
             }

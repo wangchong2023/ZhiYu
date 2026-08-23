@@ -118,7 +118,7 @@ public struct OnDeviceLLMSettingsView: View {
         VStack(spacing: DesignSystem.medium) {
             Spacer(minLength: 4)
             Image(systemName: "cpu")
-                .font(.system(size: DesignSystem.displayFontSize * 1.3))
+                .font(.system(size: SystemFontSize.mega))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.appSource, .appAccent],
@@ -126,7 +126,7 @@ public struct OnDeviceLLMSettingsView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: 8, y: 4)
+                .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
             
             Text(L10n.AI.OnDevice.subtitle)
                 .font(.subheadline)
@@ -141,7 +141,7 @@ public struct OnDeviceLLMSettingsView: View {
     
     // MARK: - 可用性与硬件参数视图
     private var availabilitySection: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: SystemSpacing.medium) {
             Image(systemName: onDeviceService.isAvailable ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                 .font(.title3)
                 .foregroundStyle(onDeviceService.isAvailable ? .green : .red)
@@ -174,7 +174,7 @@ public struct OnDeviceLLMSettingsView: View {
     
     // MARK: - 模型选型列表
     private var modelSelectionSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: SystemSpacing.element) {
             if onDeviceService.availableModels.isEmpty {
                 VStack(spacing: DesignSystem.small) {
                     Image(systemName: "square.dashed")
@@ -228,7 +228,7 @@ public struct OnDeviceLLMSettingsView: View {
                         Text(L10n.AI.OnDevice.unload)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.red)
-                            .padding(.horizontal, 10)
+                            .padding(.horizontal, SystemSpacing.element)
                             .padding(.vertical, DesignSystem.tightPadding)
                             .background(Color.theme.red.opacity(DesignSystem.Opacity.subtle))
                             .clipShape(Capsule())
@@ -267,7 +267,7 @@ public struct OnDeviceLLMSettingsView: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appAccent)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 11)
+                .padding(.vertical, SystemSpacing.element)
                 .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                 .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
             }
@@ -305,7 +305,7 @@ public struct OnDeviceLLMSettingsView: View {
     
     // MARK: - 测试 Playground 入口
     private var testSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: SystemSpacing.element) {
             Button(action: {
                 showTestSheet = true
                 feedbackGenerator.notificationOccurred(.success)

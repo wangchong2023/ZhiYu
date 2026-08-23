@@ -259,7 +259,7 @@ struct RAGRetrievalPanel: View {
                         .foregroundStyle(color.opacity(CardVisual.percentAuxOpacity))
                 }
             }
-            HStack(spacing: 2) {
+            HStack(spacing: SystemSpacing.atomic) {
                 Text(title).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center).lineLimit(2)
                 infoIcon(id: id, tip: tip)
             }
@@ -272,7 +272,7 @@ struct RAGRetrievalPanel: View {
     func scoreCardMedium(id: String, title: String, score: Double, tip: String) -> some View {
         let color = scoreColor(score)
         return VStack(spacing: DesignSystem.tightPadding) {
-            HStack(spacing: 2) {
+            HStack(spacing: SystemSpacing.atomic) {
                 Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 infoIcon(id: id, tip: tip)
             }
@@ -281,7 +281,7 @@ struct RAGRetrievalPanel: View {
         }
         .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
         .background(color.opacity(CardVisual.metricBgOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 
     // MARK: - 检索指标卡片
@@ -289,7 +289,7 @@ struct RAGRetrievalPanel: View {
     private func retrievalMetricCard(id: String, title: String, score: Double, detail: String, tip: String) -> some View {
         let color = scoreColor(score)
         return VStack(spacing: DesignSystem.tightPadding) {
-            HStack(spacing: 2) {
+            HStack(spacing: SystemSpacing.atomic) {
                 Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 infoIcon(id: id, tip: tip)
             }
@@ -299,23 +299,23 @@ struct RAGRetrievalPanel: View {
         }
         .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
         .background(color.opacity(CardVisual.metricBgOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 
     private func latencyCard(id: String, label: String, value: Int) -> some View {
         let color = latencyColor(value)
         return VStack(spacing: DesignSystem.tightPadding) {
-            HStack(spacing: 2) {
+            HStack(spacing: SystemSpacing.atomic) {
                 Text(label).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 infoIcon(id: id, tip: L10n.Dashboard.stats.tipLatency)
             }
-            HStack(alignment: .bottom, spacing: 2) {
+            HStack(alignment: .bottom, spacing: SystemSpacing.atomic) {
                 Text("\(value)").font(.system(size: FontSize.metricValue, weight: .bold, design: .rounded)).foregroundStyle(color)
                 Text(L10n.Dashboard.stats.latencyUnitMS).font(.system(size: FontSize.tag, weight: .medium)).foregroundStyle(.tertiary)
             }
         }
         .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
-        .background(color.opacity(CardVisual.metricBgOpacity)).clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .background(color.opacity(CardVisual.metricBgOpacity)).clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 
     // MARK: - 评分与颜色

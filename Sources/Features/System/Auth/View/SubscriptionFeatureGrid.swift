@@ -34,7 +34,7 @@ struct SubscriptionFeatureGrid: View {
                     Rectangle()
                         .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
                         .frame(width: DesignSystem.Metrics.dividerThickness)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, SystemSpacing.tiny)
                         .frame(maxHeight: Spacing.iconSmall)
 
                     Text(L10n.Auth.proPlan)
@@ -81,7 +81,7 @@ struct SubscriptionFeatureGrid: View {
             Rectangle()
                 .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
                 .frame(width: DesignSystem.Metrics.dividerThickness)
-                .padding(.horizontal, 4)
+                .padding(.horizontal, SystemSpacing.tiny)
                 .frame(maxHeight: DesignSystem.medium)
 
             // Pro 值

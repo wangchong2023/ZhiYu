@@ -57,6 +57,6 @@ public struct TaskRoutingRulesView: View {
         }
         .padding(.vertical, DesignSystem.small).padding(.horizontal, DesignSystem.medium)
         .background(Color.appBackground.opacity(DesignSystem.Opacity.soft))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 }

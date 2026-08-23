@@ -120,7 +120,7 @@ struct LocalPluginDetailView: View {
                         detailRow(icon: "key.fill", label: "ID", value: manifest.id)
                     }
                     .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
                 }
 
                 Divider()
@@ -135,7 +135,7 @@ struct LocalPluginDetailView: View {
                         }
                         .padding(DesignSystem.medium).frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
                     }
                 }
 

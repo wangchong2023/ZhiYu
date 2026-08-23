@@ -18,7 +18,7 @@ extension ModelLabView {
     var noModelMaskView: some View {
         VStack(spacing: DesignSystem.medium) {
             Image(systemName: "flask.fill")
-                .font(.system(size: DesignSystem.iconDisplay / 2 + 10))
+                .font(.system(size: ComponentSpacing.iconLarge + 10))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.purple, .cyan],
@@ -61,7 +61,7 @@ extension ModelLabView {
         .cornerRadius(DesignSystem.largeRadius)
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                .stroke(Color.theme.white.opacity(DesignSystem.Opacity.glass), lineWidth: 1)
+                .stroke(Color.theme.white.opacity(DesignSystem.Opacity.glass), lineWidth: SystemStroke.divider)
         )
         .padding(.vertical, DesignSystem.medium)
     }

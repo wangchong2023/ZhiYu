@@ -112,7 +112,7 @@ struct CollaborationViewContent: View {
         }
         .padding()
         .background(Color.theme.orange.opacity(DesignSystem.glassOpacity * 0.53)) // 0.08
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
     }
     
     // MARK: - Status
@@ -140,7 +140,7 @@ struct CollaborationViewContent: View {
         }
         .padding()
         .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
     }
     
     // MARK: - Actions
@@ -187,7 +187,7 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
         }
         .disabled(collabService.isSimulator)
         .opacity(collabService.isSimulator ? 0.5 : 1.0)
@@ -208,7 +208,7 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
         }
         .disabled(collabService.isSimulator)
         .opacity(collabService.isSimulator ? 0.5 : 1.0)
@@ -270,7 +270,7 @@ struct CollaborationViewContent: View {
             }
             .padding()
             .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
             .accessibilityIdentifier("collab-session-info")
 
             leaveButton
@@ -288,7 +288,7 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.theme.red.opacity(DesignSystem.Opacity.light))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
         }
         .accessibilityIdentifier("collab-leave-button")
     }
