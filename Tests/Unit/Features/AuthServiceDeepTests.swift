@@ -994,9 +994,8 @@ final class AuthServiceDeepTests: XCTestCase {
 
         try await AuthService.shared.refreshUserProfile()
 
-        // refreshUserProfile 中 avatar 使用 `profile.avatar.flatMap { URL(string: $0) }`，不保留本地
-        // 这是设计行为：avatar 直接覆盖（空则 nil）
-        XCTAssertNil(AuthService.shared.currentUser?.avatarURL, "后端返回空 avatar 时应更新为 nil（设计行为）")
+        // C-20 修复后：avatar 空时保留本地值（与 email/phone 策略一致）
+        XCTAssertEqual(AuthService.shared.currentUser?.avatarURL?.absoluteString, testAvatarURL, "后端返回空 avatar 时应保留本地 avatar（C-20 修复）")
     }
 
     /// 验证 refreshUserProfile 后端返回非空 avatar 时更新本地 avatar
