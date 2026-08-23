@@ -9,9 +9,9 @@
   - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
     line: 358
   - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
-    line: 409
-  - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
     line: 412
+  - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
+    line: 415
   - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
     line: 362
   - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
