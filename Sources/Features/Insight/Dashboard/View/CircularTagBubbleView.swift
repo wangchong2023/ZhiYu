@@ -90,20 +90,20 @@ struct CircularTagBubbleView: View {
             }
             HapticFeedback.shared.trigger(.selection)
         }) {
-            VStack(spacing: 3) {
+            VStack(spacing: SystemSpacing.tight) {
                 // 标签文本：首要保证单行显示，支持字体自适应缩小(最高压缩至48%)，仍溢出时尾部截断
                 Text(item.tag.replacingOccurrences(of: "#", with: ""))
                     .font(.system(size: textFontSize, design: .rounded).weight(isSelected ? .bold : .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(minTextScaleLimit)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, SystemSpacing.small)
                 
                 // 词频指示数字胶囊
                 Text("\(item.count)")
                     .font(.system(size: textFontSize * 0.75, weight: .bold, design: .monospaced))
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 0.8)
+                    .padding(.horizontal, SystemSpacing.tiny)
+                    .padding(.vertical, SystemSpacing.divider)
                     .background(isSelected ? Color.theme.white.opacity(countBadgeSelectedOpacity) : Color.appSecondary.opacity(countBadgeUnselectedOpacity))
                     .clipShape(Capsule())
             }
@@ -117,7 +117,7 @@ struct CircularTagBubbleView: View {
             .overlay {
                 // 正圆描边
                 Circle()
-                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(borderBaseOpacity + bubbleRatio * borderOpacityRange), lineWidth: 1.2)
+                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(borderBaseOpacity + bubbleRatio * borderOpacityRange), lineWidth: SystemStroke.divider)
             }
             .shadow(color: isSelected ? Color.appAccent.opacity(shadowGlowOpacity) : Color.clear, radius: shadowGlowRadius, y: shadowGlowOffset)
             .scaleEffect(interactiveScale)
@@ -136,7 +136,7 @@ struct CircularTagBubbleView: View {
                                 .foregroundStyle(Color.theme.white)
                         } else {
                             Circle()
-                                .stroke(Color.appBorder, lineWidth: 1)
+                                .stroke(Color.appBorder, lineWidth: SystemStroke.divider)
                                 .frame(width: checkboxDiameter, height: checkboxDiameter)
                         }
                     }

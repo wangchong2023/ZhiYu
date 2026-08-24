@@ -78,7 +78,7 @@ struct CreatePageView: View {
                                 RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
                                     .stroke(type == pageType
                                         ? Color.fromModelColorName(pageType.colorName).opacity(DesignSystem.Opacity.soft)
-                                        : Color.clear, lineWidth: 1)
+                                        : Color.clear, lineWidth: SystemStroke.divider)
                             )
                         }
                         .buttonStyle(.plain)
@@ -251,7 +251,7 @@ struct CreatePageView: View {
                         Text(hint)
                             .font(.body)
                             .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.disabled))
-                            .padding(.top, 8).padding(.leading, 4)
+                            .padding(.top, SystemSpacing.element).padding(.leading, SystemSpacing.tiny)
                             .allowsHitTesting(false)
                     }
                 }

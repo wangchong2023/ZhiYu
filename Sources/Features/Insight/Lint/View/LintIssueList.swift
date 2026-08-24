@@ -94,7 +94,7 @@ struct LintHealthCheckSection: View {
                     Spacer()
                     ZStack {
                         Circle()
-                            .stroke(healthColor.opacity(DesignSystem.Opacity.light), lineWidth: 10)
+                            .stroke(healthColor.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.progressRing)
                             .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
 
                         // 进度环
@@ -102,7 +102,7 @@ struct LintHealthCheckSection: View {
                             .trim(from: 0, to: CGFloat(aiStore.lintScore) / 100.0)
                             .stroke(
                                 LinearGradient(colors: [healthColor.opacity(DesignSystem.Opacity.dim), healthColor], startPoint: .top, endPoint: .bottom),
-                                style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                                style: StrokeStyle(lineWidth: SystemStroke.progressRing, lineCap: .round)
                             )
                             .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
                             .rotationEffect(.degrees(-90))
@@ -228,7 +228,7 @@ struct LintHealthCheckSection: View {
                                 .padding(.vertical, DesignSystem.small)
 
                             if issue.id != issues.last?.id {
-                                Divider().padding(.leading, 40)
+                                Divider().padding(.leading, ComponentSpacing.ultra)
                             }
                         }
                     }

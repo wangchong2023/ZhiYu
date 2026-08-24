@@ -48,7 +48,7 @@ struct BacklinksView: View {
                             .foregroundStyle(.appSecondary)
                     } else {
                         ForEach(outgoingPages) { linkedPage in
-                            HStack(spacing: 10) {
+                            HStack(spacing: SystemSpacing.element) {
                                 Image(systemName: DesignSystem.Icons.arrowRight)
                                     .font(.caption)
                                     .foregroundStyle(.appAccent)
@@ -86,7 +86,7 @@ struct BacklinksView: View {
                             .foregroundStyle(.appSecondary)
                     } else {
                         ForEach(backlinks) { linkingPage in
-                            HStack(spacing: 10) {
+                            HStack(spacing: SystemSpacing.element) {
                                 Image(systemName: DesignSystem.Icons.arrowLeft)
                                     .font(.caption)
                                     .foregroundStyle(.appComparison)

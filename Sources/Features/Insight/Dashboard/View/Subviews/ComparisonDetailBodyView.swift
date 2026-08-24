@@ -161,7 +161,7 @@ struct ComparisonDetailBodyView: View {
                 ForEach(dimensions) { dim in
                     HStack(spacing: Spacing.medium) {
                         // 维度名称与单位
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                             Text(dim.name)
                                 .font(.caption.bold())
                                 .foregroundStyle(.appSecondary)
@@ -216,7 +216,7 @@ struct ComparisonDetailBodyView: View {
             
         case .rating(let val):
             // 渲染精致的小评分
-            HStack(spacing: 1) {
+            HStack(spacing: SystemSpacing.divider) {
                 let rounded = Int(val.rounded())
                 ForEach(1...Self.ratingMaxStars, id: \.self) { star in
                     Image(systemName: star <= rounded ? "star.fill" : "star")
@@ -227,7 +227,7 @@ struct ComparisonDetailBodyView: View {
             
         case .range(let minVal, let maxVal):
             // 渲染迷你渐变横条
-            VStack(spacing: 2) {
+            VStack(spacing: SystemSpacing.atomic) {
                 Text(L10n.Dashboard.stats.rawPageCountFormat(Int(minVal), "\(Int(maxVal))")) // 借用格式化展示区间
                     .font(.system(size: Self.rangeTextSize, weight: .bold))
                     .foregroundStyle(.appAccent)
@@ -249,7 +249,7 @@ struct ComparisonDetailBodyView: View {
         case .imageList(let items):
             // 渲染气泡徽章列表
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 2) {
+                HStack(spacing: SystemSpacing.atomic) {
                     ForEach(items, id: \.self) { item in
                         Text(item)
                             .font(.system(size: Self.badgeFontSize, weight: .bold))

@@ -81,26 +81,26 @@ extension TagCloudViewContent {
     // MARK: - 悬浮控制舱
 
     private func unifiedToolbar(isExp: Bool) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: SystemSpacing.medium) {
             Spacer()
 
             // 右侧动作按钮组：升级为带文字与图标的胶囊型按钮
-            HStack(spacing: 10) {
+            HStack(spacing: SystemSpacing.element) {
                 if !coordinator.isEditMode {
                     // ➕ 新建按钮
                     Button(action: { coordinator.showAddTagDialog = true }) {
-                        HStack(spacing: 6) {
+                        HStack(spacing: SystemSpacing.small) {
                             Image(systemName: "plus")
                                 .font(.system(size: actionBtnIconFontSize, weight: .bold))
                             Text(L10n.Tag.Management.addNew)
                                 .font(.system(size: viewModeFontSize - 1, weight: .semibold))
                         }
                         .foregroundStyle(Color.theme.white)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, SystemSpacing.medium)
                         .frame(height: actionBtnDiameter)
                         .background(Color.appCard.opacity(actionBtnBgOpacity))
                         .clipShape(Capsule())
-                        .overlay(Capsule().stroke(Color.appBorder.opacity(actionBtnBorderOpacity), lineWidth: 1))
+                        .overlay(Capsule().stroke(Color.appBorder.opacity(actionBtnBorderOpacity), lineWidth: SystemStroke.divider))
                     }
                     .buttonStyle(.plain)
                 }
@@ -110,29 +110,29 @@ extension TagCloudViewContent {
                     coordinator.isEditMode.toggle()
                     if !coordinator.isEditMode { coordinator.selectedTagsForBulk.removeAll() }
                 }) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: SystemSpacing.small) {
                         Image(systemName: coordinator.isEditMode ? "checkmark" : "list.bullet.indent")
                             .font(.system(size: actionBtnIconFontSize, weight: .bold))
                         Text(coordinator.isEditMode ? L10n.Common.ok : L10n.Tag.Management.manageTitle)
                             .font(.system(size: viewModeFontSize - 1, weight: .semibold))
                     }
                     .foregroundStyle(coordinator.isEditMode ? .green : Color.theme.white)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, SystemSpacing.medium)
                     .frame(height: actionBtnDiameter)
                     .background(Color.appCard.opacity(actionBtnBgOpacity))
                     .clipShape(Capsule())
-                    .overlay(Capsule().stroke(Color.appBorder.opacity(actionBtnBorderOpacity), lineWidth: 1))
+                    .overlay(Capsule().stroke(Color.appBorder.opacity(actionBtnBorderOpacity), lineWidth: SystemStroke.divider))
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
+        .padding(.horizontal, SystemSpacing.medium)
+        .padding(.vertical, SystemSpacing.element)
         .background(BlurView().background(Color.appCard.opacity(toolbarBgOpacity)))
         .clipShape(RoundedRectangle(cornerRadius: toolbarCornerRadius))
-        .overlay(RoundedRectangle(cornerRadius: toolbarCornerRadius).stroke(Color.appBorder.opacity(toolbarBorderOpacity), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: toolbarCornerRadius).stroke(Color.appBorder.opacity(toolbarBorderOpacity), lineWidth: SystemStroke.divider))
         .padding(.horizontal, isExp ? DesignSystem.wide : DesignSystem.medium)
-        .padding(.vertical, 10)
+        .padding(.vertical, SystemSpacing.element)
     }
 
     // MARK: - 标签云展示区

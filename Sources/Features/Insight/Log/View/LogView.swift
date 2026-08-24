@@ -29,7 +29,7 @@ struct LogViewContent: View {
     @State private var showConfirmation = false
 
     private var emptyPadding: CGFloat {
-        DesignSystem.loosePadding * 1.5
+        ComponentSpacing.ultra
     }
 
     var body: some View {
@@ -122,31 +122,31 @@ private struct LogEntryRow: View {
         DesignSystem.tiny + DesignSystem.atomic
     }
     private var modFontSize: CGFloat {
-        DesignSystem.microFontSize - DesignSystem.atomic / 2.0
+        DesignSystem.microFontSize - SystemStroke.divider
     }
     private var modVerticalPadding: CGFloat {
-        DesignSystem.atomic / 2.0
+        SystemStroke.divider
     }
     private var modCornerRadius: CGFloat {
-        DesignSystem.microRadius - DesignSystem.atomic / 2.0
+        DesignSystem.microRadius - SystemStroke.divider
     }
     private var statusFontSize: CGFloat {
-        DesignSystem.caption2FontSize - DesignSystem.atomic / 2.0
+        DesignSystem.caption2FontSize - SystemStroke.divider
     }
     private var statusHorizontalPadding: CGFloat {
         DesignSystem.small - DesignSystem.atomic
     }
     private var actionBgOpacity: Double {
-        DesignSystem.dimmedOpacity * 0.5
+        SystemOpacity.faint
     }
     private var statusBgOpacity: Double {
         DesignSystem.glassOpacity
     }
     private var detailBgOpacity: Double {
-        DesignSystem.disabledOpacity * 1.33
+        SystemOpacity.disabled
     }
     private var failureBgOpacity: Double {
-        DesignSystem.dimmedOpacity * 0.25
+        SystemOpacity.ghost
     }
     private var failureTextOpacity: Double {
         DesignSystem.secondaryOpacity

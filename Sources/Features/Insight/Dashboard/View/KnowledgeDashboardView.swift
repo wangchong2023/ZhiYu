@@ -44,7 +44,7 @@ struct KnowledgeDashboardView: View {
                     hotTopicsSection
                 }
                 .padding()
-                .padding(.bottom, DesignSystem.Metrics.chartHeight / 2)
+                .padding(.bottom, ComponentSpacing.chartHalfHeight)
             }
             .scrollIndicators(.hidden)
             

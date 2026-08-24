@@ -19,7 +19,7 @@ struct MedalCard: View {
         VStack(spacing: DesignSystem.medium) {
             ZStack {
                 let baseColor = Color(hex: medal.colorHex)
-                let fillColor = isEarned ? baseColor.opacity(DesignSystem.glassOpacity) : Color.appBorder.opacity(DesignSystem.glassOpacity / 1.5) // 0.1
+                let fillColor = isEarned ? baseColor.opacity(SystemOpacity.glass) : Color.appBorder.opacity(SystemOpacity.glassHeavy) // 0.1
                 
                 Circle()
                     .fill(fillColor)
@@ -55,11 +55,11 @@ struct MedalCard: View {
         .background(Color.appCard)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Gallery.itemRadius))
         .overlay {
-            let overlayColor = isEarned ? Color(hex: medal.colorHex).opacity(DesignSystem.glassOpacity * 2) : Color.appBorder.opacity(DesignSystem.glassOpacity / 1.5)
+            let overlayColor = isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.glassStrong) : Color.appBorder.opacity(SystemOpacity.glassHeavy)
             RoundedRectangle(cornerRadius: DesignSystem.Gallery.itemRadius)
                 .stroke(overlayColor, lineWidth: DesignSystem.borderWidth)
         }
-        .shadow(color: isEarned ? Color(hex: medal.colorHex).opacity(DesignSystem.glassOpacity / 1.5) : .clear, radius: DesignSystem.standardRadius, y: DesignSystem.borderWidth * 4)
+        .shadow(color: isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.glassHeavy) : .clear, radius: SystemRadius.small, y: SystemStroke.heavy)
         .grayscale(isEarned ? 0 : 1)
         .opacity(isEarned ? DesignSystem.fullOpacity : DesignSystem.secondaryOpacity + 0.1) // 0.7
     }
@@ -105,7 +105,7 @@ struct MedalRewardPopup: View {
                     Text(L10n.Insight.Medal.congrats)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appAccent)
-                        .kerning(2)
+                        .kerning(DesignSystem.Tracking.loose)
                     
                     Text(L10n.Insight.tr(medal.titleKey))
                         .font(.title.bold())
@@ -128,7 +128,7 @@ struct MedalRewardPopup: View {
                             Capsule()
                                 .fill(LinearGradient(colors: [baseColor, baseColor.opacity(DesignSystem.secondaryOpacity)], startPoint: .leading, endPoint: .trailing))
                         }
-                        .shadow(color: baseColor.opacity(DesignSystem.disabledOpacity), radius: DesignSystem.standardRadius, y: DesignSystem.microRadius + DesignSystem.atomic) // 0.3, 10, 5
+                        .shadow(color: baseColor.opacity(DesignSystem.disabledOpacity), radius: SystemRadius.small, y: DesignSystem.microRadius + DesignSystem.atomic) // 0.3, 10, 5
                 }
                 .padding(.bottom, DesignSystem.Gallery.blurRadius)
                 .scaleEffect(isAnimating ? 1 : 0.9)
@@ -146,7 +146,7 @@ struct MedalRewardPopup: View {
             .opacity(isAnimating ? 1 : 0)
         }
         .onAppear {
-            withAnimation(.spring(response: DesignSystem.Animation.springResponse * 2, dampingFraction: DesignSystem.Animation.springDamping - 0.1, blendDuration: 0)) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0)) {
                 isAnimating = true
             }
         }

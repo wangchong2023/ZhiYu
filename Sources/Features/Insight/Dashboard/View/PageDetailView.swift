@@ -148,7 +148,7 @@ struct PageDetailView: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1
+                    lineWidth: SystemStroke.divider
                 )
         )
         .shadow(color: .primary.opacity(DesignSystem.Opacity.ghost), radius: 10, x: 0, y: 5)
@@ -437,7 +437,7 @@ struct PageDetailView: View {
                 .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appAccent.opacity(DesignSystem.Opacity.atomic)))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                        .stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
+                        .stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: SystemStroke.divider)
                 )
                 .padding(.vertical, DesignSystem.small)
             } else if coordinator.hasScannedForLinks {
@@ -499,7 +499,7 @@ struct PageDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.tightPadding))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.tightPadding)
-                .stroke(Color.appBorder.opacity(DesignSystem.glassOpacity), lineWidth: 1)
+                .stroke(Color.appBorder.opacity(DesignSystem.glassOpacity), lineWidth: SystemStroke.divider)
         )
     }
 }

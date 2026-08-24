@@ -141,7 +141,7 @@ struct WeeklyInsightCard: View {
                     .padding(DesignSystem.Metrics.sectionSpacing) // 24
                     .background(
                         RoundedRectangle(cornerRadius: DesignSystem.cardRadius) // 16
-                            .fill(LinearGradient(colors: [.appAccent.opacity(DesignSystem.dimmedOpacity * 0.75), .appAccent.opacity(DesignSystem.glassOpacity / 2)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .fill(LinearGradient(colors: [.appAccent.opacity(SystemOpacity.glass), .appAccent.opacity(SystemOpacity.ghost)], startPoint: .topLeading, endPoint: .bottomTrailing))
                             .overlay(RoundedRectangle(cornerRadius: DesignSystem.cardRadius).stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth))
                     )
                     .foregroundStyle(.appAccent)
@@ -153,7 +153,7 @@ struct WeeklyInsightCard: View {
         .background(
             ZStack {
                 DesignSystem.containerBackground
-                LinearGradient(colors: [.purple.opacity(DesignSystem.glassOpacity / 2), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
+                LinearGradient(colors: [.purple.opacity(SystemOpacity.ghost), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.loosePadding)) // 20
@@ -196,7 +196,7 @@ struct InsightStat: View {
                 .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.atomic * 2, height: DesignSystem.Metrics.iconBoxSize + DesignSystem.atomic * 2) // 44
                 .background(
                     Circle()
-                        .fill(color.opacity(DesignSystem.glassOpacity * 1.5))
+                        .fill(color.opacity(SystemOpacity.glassMedium))
                         .overlay(Circle().stroke(color.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth))
                 )
             

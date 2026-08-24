@@ -129,7 +129,7 @@ extension TagCloudViewContent {
                     .background(Color.appCard)
                     .clipShape(Capsule())
                     .overlay(
-                        Capsule().stroke(Color.appAccent.opacity(DesignSystem.Opacity.light), lineWidth: 1)
+                        Capsule().stroke(Color.appAccent.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.divider)
                     )
                 }
                 .buttonStyle(.plain)
@@ -151,7 +151,7 @@ extension TagCloudViewContent {
                     .background(Color.appCard)
                     .clipShape(Capsule())
                     .overlay(
-                        Capsule().stroke(Color.appBorder.opacity(DesignSystem.Opacity.light), lineWidth: 1)
+                        Capsule().stroke(Color.appBorder.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.divider)
                     )
                 }
                 .buttonStyle(.plain)

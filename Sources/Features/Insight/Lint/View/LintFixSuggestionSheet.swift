@@ -84,7 +84,7 @@ struct LintIssueRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                            .stroke(Color.theme.purple.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
+                            .stroke(Color.theme.purple.opacity(DesignSystem.Opacity.medium), lineWidth: SystemStroke.divider)
                     )
                     .padding(.leading, DesignSystem.giant)
                     .transition(.move(edge: .top).combined(with: .opacity))

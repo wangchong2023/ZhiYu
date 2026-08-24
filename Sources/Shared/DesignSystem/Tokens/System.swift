@@ -72,6 +72,7 @@ public enum SystemStroke {
     public static let selected: CGFloat = Reference.Stroke.two
     public static let accent: CGFloat = Reference.Stroke.three
     public static let heavy: CGFloat = Reference.Stroke.four
+    public static let progressRing: CGFloat = 10
 }
 
 // MARK: - SystemFontSize（语义字号）

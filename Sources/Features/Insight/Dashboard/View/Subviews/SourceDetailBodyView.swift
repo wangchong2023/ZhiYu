@@ -236,7 +236,7 @@ struct SourceDetailBodyView: View {
                         .font(.system(size: 8, weight: .heavy)) // Dynamic Type
                         .foregroundStyle(.appAccent)
                         .padding(.horizontal, Spacing.tiny)
-                        .padding(.vertical, Spacing.atomic / 2)
+                        .padding(.vertical, SystemSpacing.divider)
                         .background(Color.appAccent.opacity(DesignSystem.subtleFillOpacity))
                         .cornerRadius(Spacing.microRadius)
                     
@@ -288,7 +288,7 @@ struct SourceDetailBodyView: View {
                                     .clipShape(Capsule())
                                     .overlay(
                                         Capsule()
-                                            .stroke(ref.type == "concept" ? Color.theme.teal.opacity(DesignSystem.Opacity.disabled) : Color.theme.yellow.opacity(DesignSystem.Opacity.disabled), lineWidth: 1)
+                                            .stroke(ref.type == "concept" ? Color.theme.teal.opacity(DesignSystem.Opacity.disabled) : Color.theme.yellow.opacity(DesignSystem.Opacity.disabled), lineWidth: SystemStroke.divider)
                                     )
                                 }
                                 .buttonStyle(.plain)

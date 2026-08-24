@@ -124,7 +124,7 @@ struct PageDetailMetadataSection: View {
                 }
                 .padding()
                 .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appAccent.opacity(DesignSystem.Opacity.atomic)))
-                .overlay(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: SystemStroke.divider))
                 .padding()
             }
         }
@@ -145,7 +145,7 @@ struct PageDetailMetadataSection: View {
             .padding(DesignSystem.medium)
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.tightPadding))
-            .overlay(RoundedRectangle(cornerRadius: DesignSystem.tightPadding).stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.shadow), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: DesignSystem.tightPadding).stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.shadow), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: SystemStroke.divider))
         }
         .buttonStyle(.plain)
     }

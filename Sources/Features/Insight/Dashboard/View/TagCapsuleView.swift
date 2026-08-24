@@ -90,7 +90,7 @@ struct TagCapsuleView: View {
     }
 
     private var opacity: Double {
-        isBubbleMode ? bubbleModeMinOpacity + bubbleRatio * bubbleModeOpacityRange : DesignSystem.translucentOpacity
+        isBubbleMode ? bubbleModeMinOpacity + bubbleRatio * bubbleModeOpacityRange : SystemOpacity.overlay
     }
 
     private var size: CGFloat {
@@ -197,7 +197,7 @@ struct TagCapsuleView: View {
 
                 Text("\(item.count)")
                     .font(.system(size: fontSize * 0.8, weight: .bold, design: .monospaced))
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, SystemSpacing.tiny)
                     .padding(.vertical, 0.5)
                     .background(countTextBg)
                     .clipShape(Capsule())
@@ -213,7 +213,7 @@ struct TagCapsuleView: View {
                     .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + bubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignSystem.borderWidth)
             }
             .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(DesignSystem.glassOpacity * 0.8) : Color.appAccent.opacity(bubbleRatio * 0.08), radius: bubbleRatio > 0.5 ? DesignSystem.shadowRadius : 2, y: bubbleRatio > 0.5 ? DesignSystem.shadowY : 1)
+            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(bubbleRatio * 0.08), radius: bubbleRatio > 0.5 ? DesignSystem.shadowRadius : 2, y: bubbleRatio > 0.5 ? DesignSystem.shadowY : 1)
             .overlay(alignment: .topTrailing) {
                 if coordinator.isEditMode {
                     editBadgeView(isSelected: isSelected)
@@ -226,23 +226,23 @@ struct TagCapsuleView: View {
 
                 Text("\(item.count)")
                     .font(.system(size: DesignSystem.microFontSize, weight: .bold, design: .monospaced))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 1)
-                    .background(isSelected ? Color.appAccent.opacity(DesignSystem.glassOpacity) : Color.appSecondary.opacity(DesignSystem.glassOpacity * 0.5))
+                    .padding(.horizontal, SystemSpacing.tiny)
+                    .padding(.vertical, SystemSpacing.divider)
+                    .background(isSelected ? Color.appAccent.opacity(SystemOpacity.glass) : Color.appSecondary.opacity(SystemOpacity.ghost))
                     .clipShape(Capsule())
             }
             .padding(.horizontal, paddingH)
             .padding(.vertical, paddingV)
             .background {
                 Capsule()
-                    .fill(isSelected ? Color.appAccent.opacity(DesignSystem.glassOpacity) : Color.appCard.opacity(opacity))
+                    .fill(isSelected ? Color.appAccent.opacity(SystemOpacity.glass) : Color.appCard.opacity(opacity))
             }
             .overlay {
                 Capsule()
-                    .stroke(isSelected ? Color.appAccent.opacity(DesignSystem.surfaceOpacity) : Color.appBorder.opacity(DesignSystem.translucentOpacity), lineWidth: DesignSystem.borderWidth * 1.5)
+                    .stroke(isSelected ? Color.appAccent.opacity(SystemOpacity.textSecondary) : Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.divider)
             }
             .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(DesignSystem.glassOpacity * 0.8) : Color.appAccent.opacity(bubbleRatio * 0.08), radius: bubbleRatio > 0.5 ? DesignSystem.shadowRadius : 2, y: bubbleRatio > 0.5 ? DesignSystem.shadowY : 1)
+            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(bubbleRatio * 0.08), radius: bubbleRatio > 0.5 ? DesignSystem.shadowRadius : 2, y: bubbleRatio > 0.5 ? DesignSystem.shadowY : 1)
             .overlay(alignment: .topTrailing) {
                 if coordinator.isEditMode {
                     editBadgeView(isSelected: isSelected)

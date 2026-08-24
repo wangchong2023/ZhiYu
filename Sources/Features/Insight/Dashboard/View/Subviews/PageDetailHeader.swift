@@ -67,7 +67,7 @@ struct PageDetailHeader: View {
     
     // MARK: - Type / Status / Confidence Row
     private var typeStatusConfidenceRow: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: SystemSpacing.element) {
             // Type badge
             TypeBadge(page: page, heroNamespace: heroNamespace)
             
@@ -125,7 +125,7 @@ struct PageDetailHeader: View {
                                     isAlias ? 
                                     Color.appSource.opacity(DesignSystem.Opacity.medium) : 
                                     Color.appAccent.opacity(DesignSystem.Opacity.medium), 
-                                    lineWidth: 0.5
+                                    lineWidth: SystemStroke.hairline
                                 )
                         )
                         .foregroundStyle(isAlias ? .appSource : .appAccent)
