@@ -591,6 +591,11 @@ class SourceCodeAuditor:
                 issues.append((line_no, s, "Hardcoded English sentence in UI context.", severity))
             else:
                 issues.append((line_no, s, "Hardcoded English sentence detected in logic file.", "WARNING"))
+        # UI 语境标识符式字符串检测：如 "3D_Graph"/"Graph_Desc" 在 Text() 中使用
+        # 模式：含下划线的标识符式字符串（字母数字+下划线），看起来像未注册的 L10n key 而非展示文本
+        elif is_view and is_ui_trigger and re.match(r'^[A-Za-z0-9][A-Za-z0-9]*_[A-Za-z0-9_]+$', s) and len(s) >= 4:
+            severity = "WARNING" if is_logger else "ERROR"
+            issues.append((line_no, s, "Hardcoded identifier-style string in UI context (should use L10n property).", severity))
 
     def _audit_literal(self, s, line, line_no, is_allow_non_ascii, is_view, is_logger, issues):
         """

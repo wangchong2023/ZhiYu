@@ -26,6 +26,31 @@ UD_KEY_PATTERN = re.compile(r'UserDefaults\.[^)]*forKey:\s*"[^"]+"')
 # 硬编码 URL 模式
 URL_PATTERN = re.compile(r'"(https?://[^"]+)"')
 
+# UI 组件中的硬编码字符串模式（Text/Label/Button/.navigationTitle 等）
+# 匹配：UI组件("字符串字面量" 或 UI组件("字符串字面量",
+UI_STRING_PATTERN = re.compile(
+    r'\b(?:Text|Label|Button|navigationTitle|Alert|ConfirmationDialog|Toast|Picker|Toggle|Section|TextField|SecureField|TextEditor)\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"'
+)
+# 排除的 UI 字符串模式（合理保留）
+UI_STRING_EXCLUDE_PATTERNS = [
+    re.compile(r'L10n\.'),
+    re.compile(r'Localized\.'),
+    re.compile(r'\.tr\('),
+    re.compile(r'\.trf\('),
+    re.compile(r'LocalizedStringKey'),
+    re.compile(r'^\s*//'),  # 注释行
+    re.compile(r'^\s*\*'),  # 文档注释续行
+    re.compile(r'/// '),  # 文档注释
+]
+# 豁免的 UI 字符串值（空字符串、纯格式占位符等）
+UI_STRING_EXEMPT_VALUES = {
+    "",  # 空字符串
+    "%@",  # 格式占位符
+    "%d",
+    "%.1f",
+    "%.0f",
+}
+
 # 排除的 URL 模式（合理保留）
 URL_EXCLUDE_PATTERNS = [
     re.compile(r'AppConstants\.URLs\.'),
@@ -99,18 +124,32 @@ def _is_in_char_api_context(content: str) -> bool:
     return False
 
 
-def _scan_line_for_violations(line: str, rel_path: Path, line_no: int) -> tuple[list, list, list]:
+def _should_exclude_ui_string(content: str, match_value: str) -> bool:
+    """判断 UI 字符串是否属于合理保留场景（已用 L10n、注释、空字符串、字符串插值等）。"""
+    if match_value in UI_STRING_EXEMPT_VALUES:
+        return True
+    # 排除字符串插值（含 \( 的字符串不是纯硬编码）
+    if '\\(' in match_value:
+        return True
+    for pat in UI_STRING_EXCLUDE_PATTERNS:
+        if pat.search(content):
+            return True
+    return False
+
+
+def _scan_line_for_violations(line: str, rel_path: Path, line_no: int) -> tuple[list, list, list, list]:
     """
-    扫描单行代码的三类违规：UserDefaults key、URL、单字符字面量。
+    扫描单行代码的四类违规：UserDefaults key、URL、单字符字面量、UI 硬编码字符串。
 
     :param line: 单行代码内容
     :param rel_path: 文件相对路径
     :param line_no: 行号
-    :return: (UD 违规列表, URL 违规列表, 单字符违规列表)
+    :return: (UD 违规列表, URL 违规列表, 单字符违规列表, UI字符串违规列表)
     """
     ud_violations = []
     url_violations = []
     char_violations = []
+    ui_string_violations = []
 
     if UD_KEY_PATTERN.search(line) and 'AppConstants' not in line:
         ud_violations.append((rel_path, line_no, line.strip()))
@@ -124,21 +163,28 @@ def _scan_line_for_violations(line: str, rel_path: Path, line_no: int) -> tuple[
             if re.search(pattern, line):
                 char_violations.append((rel_path, line_no, line.strip(), const_name, semantic))
 
-    return ud_violations, url_violations, char_violations
+    # UI 硬编码字符串检测
+    for m in UI_STRING_PATTERN.finditer(line):
+        match_value = m.group(1)
+        if not _should_exclude_ui_string(line, match_value):
+            ui_string_violations.append((rel_path, line_no, line.strip(), match_value))
+
+    return ud_violations, url_violations, char_violations, ui_string_violations
 
 
-def _scan_directory(check_dir: Path) -> tuple[list, list, list]:
+def _scan_directory(check_dir: Path) -> tuple[list, list, list, list]:
     """
-    扫描目录中所有 Swift 文件的硬编码 UserDefaults key、URL 和单字符字面量。
+    扫描目录中所有 Swift 文件的硬编码 UserDefaults key、URL、单字符字面量和 UI 硬编码字符串。
 
     :param check_dir: 扫描目录
-    :return: (UD 违规列表, URL 违规列表, 单字符违规列表)
+    :return: (UD 违规列表, URL 违规列表, 单字符违规列表, UI字符串违规列表)
     """
     all_ud = []
     all_url = []
     all_char = []
+    all_ui_string = []
     if not check_dir.exists():
-        return all_ud, all_url, all_char
+        return all_ud, all_url, all_char, all_ui_string
 
     for swift_file in check_dir.rglob("*.swift"):
         rel_path = swift_file.relative_to(PROJECT_ROOT)
@@ -148,12 +194,13 @@ def _scan_directory(check_dir: Path) -> tuple[list, list, list]:
         except Exception:
             continue
         for i, line in enumerate(lines, 1):
-            uds, urls, chars = _scan_line_for_violations(line, rel_path, i)
+            uds, urls, chars, ui_strings = _scan_line_for_violations(line, rel_path, i)
             all_ud.extend(uds)
             all_url.extend(urls)
             all_char.extend(chars)
+            all_ui_string.extend(ui_strings)
 
-    return all_ud, all_url, all_char
+    return all_ud, all_url, all_char, all_ui_string
 
 
 def _report_violations(label: str, hint: str, items: list) -> int:
@@ -218,18 +265,20 @@ def _report_char_violations(items: list) -> int:
 
 
 def main():
-    """扫描业务层硬编码 UserDefaults key、URL 和单字符字面量，验证是否已用常量替代。"""
+    """扫描业务层硬编码 UserDefaults key、URL、单字符字面量和 UI 硬编码字符串，验证是否已用常量替代。"""
     all_ud = []
     all_url = []
     all_char = []
+    all_ui_string = []
     for check_dir in CHECK_DIRS:
-        uds, urls, chars = _scan_directory(check_dir)
+        uds, urls, chars, ui_strings = _scan_directory(check_dir)
         all_ud.extend(uds)
         all_url.extend(urls)
         all_char.extend(chars)
+        all_ui_string.extend(ui_strings)
 
-    if not all_ud and not all_url and not all_char:
-        print("✅ PASS: 无硬编码 UserDefaults key、URL 或单字符字面量")
+    if not all_ud and not all_url and not all_char and not all_ui_string:
+        print("✅ PASS: 无硬编码 UserDefaults key、URL、单字符字面量或 UI 硬编码字符串")
         return 0
 
     exit_code = 0
@@ -246,6 +295,12 @@ def main():
         exit_code = exit_code or ec
     if all_char:
         ec = _report_char_violations(all_char)
+        exit_code = exit_code or ec
+    if all_ui_string:
+        ec = _report_violations(
+            "UI 硬编码字符串",
+            "应使用 L10n.模块.属性 强类型访问",
+            all_ui_string)
         exit_code = exit_code or ec
     return exit_code
 

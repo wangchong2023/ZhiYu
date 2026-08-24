@@ -1659,6 +1659,7 @@
 		BA673ABA22EADA98A2F75C67 /* MedalServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EDE7F396E59B5DE305DA7A /* MedalServiceTests.swift */; };
 		BA6E690730ABC49072E493EC /* LintFixSuggestionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD9DD73E8FDB75E331E4F3C /* LintFixSuggestionSheet.swift */; };
 		BAC304D07EC71878589373E4 /* MCSessionDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3644C00B813FD7E1DED4BD9 /* MCSessionDelegateImpl.swift */; };
+		BAE5158B3E9B0DA2CC97AFD6 /* KnowledgeViewSnapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5695F495B821A13A78B7C6CA /* KnowledgeViewSnapshots.swift */; };
 		BB1742ED48F13F9E2825D9E1 /* KnowledgePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C61FA7A53FB23B68ABD52F /* KnowledgePage.swift */; };
 		BB1CCD9A0FE6D2BD97E659D2 /* MarkdownProcessor+BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C43423D329AC3BFE15DA41 /* MarkdownProcessor+BlockParsing.swift */; };
 		BB3A8F4F5E5A5DB533BF08B5 /* OverseasLoginCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1C1F053AD585ED33E6D766A /* OverseasLoginCardView.swift */; };
@@ -2804,6 +2805,7 @@
 		565FC47D70B8F705A96B915E /* WatchShareSheetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchShareSheetService.swift; sourceTree = "<group>"; };
 		5689AEDC8C3784B07E02DE31 /* GraphViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphViewModelTests.swift; sourceTree = "<group>"; };
 		5695E85C3C97CEC9DC7F5602 /* IngestUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestUITests.swift; sourceTree = "<group>"; };
+		5695F495B821A13A78B7C6CA /* KnowledgeViewSnapshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeViewSnapshots.swift; sourceTree = "<group>"; };
 		56F28C33E807B54FEC462FC5 /* PluginRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginRuntime.swift; sourceTree = "<group>"; };
 		5714EF992FFA9DF10881DDCA /* AIWorkflowCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIWorkflowCapabilities.swift; sourceTree = "<group>"; };
 		571DEFD9E00EFFF949A71DA4 /* ModelManagerViewSnapshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelManagerViewSnapshots.swift; sourceTree = "<group>"; };
@@ -6817,6 +6819,7 @@
 				7ECB70A7ECE2F86B922C2A82 /* DashboardViewSnapshots.swift */,
 				8E623277193E160AB7B72E77 /* GraphViewSnapshots.swift */,
 				B1D3AF62A01B58E72CB80067 /* IngestViewSnapshots.swift */,
+				5695F495B821A13A78B7C6CA /* KnowledgeViewSnapshots.swift */,
 				6F40F291429770BEF7BDFB5A /* MedalWallViewSnapshots.swift */,
 				571DEFD9E00EFFF949A71DA4 /* ModelManagerViewSnapshots.swift */,
 				66F6FCD8BD674CAB98B16074 /* NotebookHubViewSnapshots.swift */,
@@ -8039,6 +8042,7 @@
 				8040CF007B12CF2D66E35065 /* KnowledgeStorePerformanceTests.swift in Sources */,
 				D0925C91F9B73136EA32E0FE /* KnowledgeStoreStressTests.swift in Sources */,
 				F09EE70A015E0B4121049394 /* KnowledgeStoreTests.swift in Sources */,
+				BAE5158B3E9B0DA2CC97AFD6 /* KnowledgeViewSnapshots.swift in Sources */,
 				1E0FEA40E0BB6911806B60BA /* L10nAIDeepTests.swift in Sources */,
 				1DF59DA88D2A1AC0F48100D7 /* L10nAITableTests.swift in Sources */,
 				F2122C8F42C4238F12738C2D /* L10nCommonDeepTests.swift in Sources */,

@@ -68,8 +68,8 @@ def _check_hex_color(raw, path, line_no, s, res):
 
 
 def is_layout_exempt(path, s):
-    """判断布局检查是否可豁免。"""
-    exempt_tokens = ['//', 'enum Layout', 'struct Layout', 'private enum', 'private struct', 'ContentView.swift', 'ZhiYuWatchView.swift']
+    """判断布局检查是否可豁免。仅豁免完整注释行和 Layout 定义块，行尾注释不豁免。"""
+    exempt_tokens = ['enum Layout', 'struct Layout', 'private enum', 'private struct', 'ContentView.swift', 'ZhiYuWatchView.swift']
     return any(t in s or t in path for t in exempt_tokens)
 
 
@@ -82,7 +82,24 @@ def check_swift_layout(raw, path, line_no, s):
     _check_frame_and_opacity(raw, path, line_no, s, res)
     _check_spacing_and_layout_params(raw, path, line_no, s, res)
     _check_magic_math(raw, path, line_no, s, res)
+    _check_business_threshold(raw, path, line_no, s, res)
     return res
+
+
+def _check_business_threshold(raw, path, line_no, s, res):
+    """检查 View 文件中的业务比较阈值魔鬼数字（> N, < N, >= N, <= N）。"""
+    # 仅检测 View 文件中的比较运算符后的裸数字（2 位以上，避免误报）
+    if '/View/' not in path and '/Views/' not in path and not path.endswith('View.swift'):
+        return
+    # 排除常量定义文件
+    basename = os.path.basename(path)
+    if basename in TOKEN_FILES or 'Constants' in basename:
+        return
+    # 检测 > N, < N, >= N, <= N（2 位以上数字，避免 > 0/> 1 误报）
+    if re.search(r'[<>]=?\s*(\d{2,})\b', raw):
+        # 排除 DesignSystem token 上下文
+        if not any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component']):
+            res.append(('hardcoded business threshold', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
 def _check_padding_and_radius(raw, path, line_no, s, res):
@@ -113,6 +130,7 @@ def _check_spacing_and_layout_params(raw, path, line_no, s, res):
     if valid:
         return
     _check_container_spacing(raw, path, line_no, s, res)
+    _check_line_spacing(raw, path, line_no, s, res)
     _check_font_size(raw, path, line_no, s, res)
     _check_line_width(raw, path, line_no, s, res)
     _check_shadow_params(raw, path, line_no, s, res)
@@ -127,6 +145,12 @@ def _check_container_spacing(raw, path, line_no, s, res):
         res.append(('hardcoded container spacing', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
+def _check_line_spacing(raw, path, line_no, s, res):
+    """检查 .lineSpacing(N) 硬编码。lineSpacing 的值必须是 token，纯数字即违规。"""
+    if re.search(r'\.lineSpacing\(\s*(\d+\.?\d*)\s*\)', raw):
+        res.append(('hardcoded lineSpacing', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
 def _check_font_size(raw, path, line_no, s, res):
     """检查 .font(.system(size: N)) 中的硬编码字号。"""
     if re.search(r'\.font\(\s*\.system\(\s*size:\s*(\d+)\s*[,)]', raw):
@@ -134,7 +158,7 @@ def _check_font_size(raw, path, line_no, s, res):
 
 
 def _check_line_width(raw, path, line_no, s, res):
-    """检查 lineWidth: N 硬编码。"""
+    """检查 lineWidth: N 硬编码。lineWidth 的值必须是 token，纯数字即违规，不受行内其他 token 影响。"""
     if re.search(r'\blineWidth:\s*(\d+\.?\d*)\b', raw):
         res.append(('hardcoded lineWidth', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
@@ -170,12 +194,19 @@ def _check_view_arithmetic(raw, path, line_no, s, res):
 
 
 def _check_token_arithmetic(raw, path, line_no, s, res, exempt_tokens):
-    """检查 token * 数字 形式的算术表达式（严格禁止 * / + -）。"""
-    token_math = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/\+\-]\s*(\d+\.?\d*)\b', raw)
-    if token_math:
-        token_full = f'{token_math.group(1)}.{token_math.group(2)}'
+    """检查 token 算术表达式（严格禁止 * / + -）。检测 Token op number 和 Token op Token 两种形式。"""
+    # 形式 1: Token op number（如 DesignSystem.small * 2）
+    token_math_num = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/\+\-]\s*(\d+\.?\d*)\b', raw)
+    if token_math_num:
+        token_full = f'{token_math_num.group(1)}.{token_math_num.group(2)}'
         if token_full not in exempt_tokens and not any(token_full.startswith(e) for e in exempt_tokens):
             res.append(('Magic Math token算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    # 形式 2: Token op Token（如 DesignSystem.small + DesignSystem.atomic）
+    token_math_token = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/\+\-]\s*(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\b', raw)
+    if token_math_token:
+        token_full = f'{token_math_token.group(1)}.{token_math_token.group(2)}'
+        if token_full not in exempt_tokens and not any(token_full.startswith(e) for e in exempt_tokens):
+            res.append(('Magic Math token+token算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
 def _check_custom_size(raw, path, line_no, s, res):
