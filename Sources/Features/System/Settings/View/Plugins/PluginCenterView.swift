@@ -106,7 +106,7 @@ struct PluginCenterView: View {
             .padding(DesignSystem.medium)
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
-            .overlay(RoundedRectangle(cornerRadius: SystemRadius.card).stroke(Color.appBorder.opacity(SystemOpacity.glassHeavy), lineWidth: DesignSystem.borderWidth / 2))
+            .overlay(RoundedRectangle(cornerRadius: SystemRadius.card).stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: DesignSystem.borderWidth / 2))
             
             // 安全模式与加载按钮
             HStack(spacing: DesignSystem.large) {
@@ -405,7 +405,7 @@ struct PluginCard: View {
                     .resizable().scaledToFit()
                     .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
                     .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glassMedium), lineWidth: SystemStroke.hairline))
+                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
             } else if let iconURL = URL(string: icon), iconURL.scheme?.hasPrefix("http") == true {
                 CachedAsyncImage(url: iconURL) { phase in
                     switch phase {
@@ -502,7 +502,7 @@ struct PluginCard: View {
         .padding()
         .background(RoundedRectangle(cornerRadius: SystemRadius.section, style: .continuous).fill(.ultraThinMaterial))
         .overlay(RoundedRectangle(cornerRadius: SystemRadius.section, style: .continuous).stroke(Color.theme.white.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
-        .shadow(color: Color.theme.black.opacity(SystemOpacity.glassSubtle), radius: SystemShadow.radiusMedium, x: SystemShadow.offsetNone, y: SystemShadow.offsetSmall)
+        .shadow(color: Color.theme.black.opacity(SystemOpacity.faint), radius: SystemShadow.radiusMedium, x: 0, y: SystemShadow.offsetSmall)
         .task {
             if let id = pluginID {
                 // 兼容支持物理包名 ID 与市场简短 ID 的匹配

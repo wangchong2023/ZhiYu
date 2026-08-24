@@ -229,7 +229,7 @@ struct ChatViewContent: View {
                 .font(DesignSystem.secondaryFont)
                 .foregroundStyle(.appAccent)
                 .frame(width: DesignSystem.titleIconSize * DesignSystem.Domain.AI.Chat.bubbleIconScale, height: DesignSystem.titleIconSize * DesignSystem.Domain.AI.Chat.bubbleIconScale)
-                .background(Color.appAccent.opacity(SystemOpacity.glassMedium))
+                .background(Color.appAccent.opacity(SystemOpacity.glass))
                 .clipShape(Circle())
             
             VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) {

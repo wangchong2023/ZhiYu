@@ -92,6 +92,7 @@ run_parallel_task "Inject Deprecated" "inject_deprecated" "python3 Tools/ios/aud
 run_parallel_task "OpenSource Internal Deps" "opensource_internal_deps" "python3 Tools/ios/check-arch-opensource-internal-deps.py" & pid38=$!
 run_parallel_task "OWASP MASVS Security Scan" "owasp_masvs" "python3 Tools/ios/check-security-owasp-masvs.py --strict" & pid39=$!
 run_parallel_task "Design Token Naming" "token_naming" "python3 Tools/ios/audit-design-token-naming.py" & pid40=$!
+run_parallel_task "Design Token Budget" "token_budget" "python3 Tools/ios/audit-design-token-budget.py" & pid41=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -133,6 +134,7 @@ wait $pid37 || EXIT_CODE=1
 wait $pid38 || EXIT_CODE=1
 wait $pid39 || EXIT_CODE=1
 wait $pid40 || EXIT_CODE=1
+wait $pid41 || EXIT_CODE=1
 
 
 echo ""

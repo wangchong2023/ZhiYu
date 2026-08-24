@@ -145,7 +145,7 @@ struct VoiceRecordingRow: View {
             Image(systemName: DesignSystem.Icons.waveform)
                 .foregroundStyle(.appSource)
                 .frame(width: DesignSystem.largeIconSize, height: DesignSystem.largeIconSize) // 32
-                .background(Color.appSource.opacity(SystemOpacity.glassMedium))
+                .background(Color.appSource.opacity(SystemOpacity.glass))
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
             
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {

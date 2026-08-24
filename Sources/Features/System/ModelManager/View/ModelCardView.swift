@@ -201,7 +201,7 @@ struct ModelCardView: View {
                 RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                     .stroke(borderColor, lineWidth: isSelected ? 2 : 1)
             )
-            .shadow(color: shadowColor, radius: SystemShadow.radiusMedium, x: SystemShadow.offsetNone, y: SystemShadow.offsetSmall)
+            .shadow(color: shadowColor, radius: SystemShadow.radiusMedium, x: 0, y: SystemShadow.offsetSmall)
             .onTapGesture {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     expandedModelId = (expandedModelId == manifest.modelId) ? nil : manifest.modelId

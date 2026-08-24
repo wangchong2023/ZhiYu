@@ -196,7 +196,7 @@ struct InsightStat: View {
                 .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.atomic * 2, height: DesignSystem.Metrics.iconBoxSize + DesignSystem.atomic * 2) // 44
                 .background(
                     Circle()
-                        .fill(color.opacity(SystemOpacity.glassMedium))
+                        .fill(color.opacity(SystemOpacity.glass))
                         .overlay(Circle().stroke(color.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth))
                 )
             

@@ -74,7 +74,7 @@ struct VoiceNoteView: View {
     private var headerSection: some View {
         VStack(spacing: Spacing.large) {
             Image(systemName: DesignSystem.Icons.waveformCircleFill)
-                .font(.system(size: SystemFontSize.mega))
+                .font(.system(size: Reference.FontSize.mega))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.appAccent, .appSource],
@@ -159,7 +159,7 @@ struct VoiceNoteView: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(speechService.isRecording ? Color.appRecording.opacity(SystemOpacity.glassMedium) : Color.appAccent.opacity(DesignSystem.Opacity.glass))
+                    .fill(speechService.isRecording ? Color.appRecording.opacity(SystemOpacity.glass) : Color.appAccent.opacity(DesignSystem.Opacity.glass))
                     .frame(width: DesignSystem.Domain.Voice.recordButtonSize, height: DesignSystem.Domain.Voice.recordButtonSize)
                 
                 if speechService.isRecording {

@@ -254,7 +254,7 @@ public struct OnDeviceModelRow: View {
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, SystemSpacing.element)
                         .padding(.vertical, SystemSpacing.atomic)
-                        .background(isSelected ? Color.appAccent.opacity(SystemOpacity.glassMedium) : Color.appSecondary.opacity(DesignSystem.Opacity.subtle))
+                        .background(isSelected ? Color.appAccent.opacity(SystemOpacity.glass) : Color.appSecondary.opacity(DesignSystem.Opacity.subtle))
                         .foregroundStyle(isSelected ? .appAccent : .appSecondary)
                         .clipShape(Capsule())
                 }

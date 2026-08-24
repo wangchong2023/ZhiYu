@@ -24,9 +24,9 @@ extension PluginDetailView {
                     .renderingMode(.original)
                     .resizable().scaledToFit()
                     .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.button, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.button, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glassMedium), lineWidth: SystemStroke.hairline))
-                    .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: SystemShadow.offsetNone, y: 6)
+                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
+                    .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
             } else if let iconURL = URL(string: plugin.icon), iconURL.scheme?.hasPrefix("http") == true {
                 CachedAsyncImage(url: iconURL) { phase in
                     switch phase {
@@ -34,7 +34,7 @@ extension PluginDetailView {
                         image
                             .resizable().scaledToFit()
                     case .empty:
-                        AppSkeleton(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize, cornerRadius: SystemRadius.button)
+                        AppSkeleton(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize, cornerRadius: SystemRadius.chip)
                             .overlay(
                                 ProgressView()
                                     .controlSize(.small)
@@ -59,9 +59,9 @@ extension PluginDetailView {
                     }
                 }
                 .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.button, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: SystemRadius.button, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glassMedium), lineWidth: SystemStroke.hairline))
-                .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: SystemShadow.offsetNone, y: 6)
+                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
+                .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
             } else {
                 Image(systemName: plugin.icon)
                     .font(.system(size: DesignSystem.Gallery.mainIconSize * 0.9))
@@ -70,9 +70,9 @@ extension PluginDetailView {
                     .background(
                         LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.textSecondary)],
                                        startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.button, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.button, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glassMedium), lineWidth: SystemStroke.hairline))
-                    .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: SystemShadow.offsetNone, y: 6)
+                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
+                    .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
             }
 
             VStack(alignment: .leading, spacing: DesignSystem.small) {

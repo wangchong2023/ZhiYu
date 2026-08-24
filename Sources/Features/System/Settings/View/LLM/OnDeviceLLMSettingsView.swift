@@ -118,7 +118,7 @@ public struct OnDeviceLLMSettingsView: View {
         VStack(spacing: DesignSystem.medium) {
             Spacer(minLength: 4)
             Image(systemName: "cpu")
-                .font(.system(size: SystemFontSize.mega))
+                .font(.system(size: Reference.FontSize.mega))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.appSource, .appAccent],

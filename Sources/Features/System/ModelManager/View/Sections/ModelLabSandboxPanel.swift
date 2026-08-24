@@ -127,7 +127,7 @@ extension ModelLabView {
                             lineWidth: isPromptFocused ? 1.5 : 1.0
                         )
                 )
-                .shadow(color: isPromptFocused ? .cyan.opacity(DesignSystem.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: SystemShadow.offsetNone, y: 0)
+                .shadow(color: isPromptFocused ? .cyan.opacity(DesignSystem.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: 0, y: 0)
                 .overlay(
                     Group {
                         if testPrompt.isEmpty {

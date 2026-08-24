@@ -169,16 +169,16 @@ struct SubscriptionPlanCard: View {
             }
             .padding(DesignSystem.medium)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(Color.appCard.opacity(SystemOpacity.glassHeavy))
+            .background(Color.appCard.opacity(SystemOpacity.disabled))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                     .stroke(
                         LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing),
-                        lineWidth: SystemStroke.accent
+                        lineWidth: SystemStroke.heavy
                     )
             )
-            .shadow(color: .purple.opacity(DesignSystem.Opacity.shadow), radius: SystemShadow.radiusMedium, x: SystemShadow.offsetNone, y: 0)
+            .shadow(color: .purple.opacity(DesignSystem.Opacity.shadow), radius: SystemShadow.radiusMedium, x: 0, y: 0)
         }
         .fixedSize(horizontal: false, vertical: true)
     }

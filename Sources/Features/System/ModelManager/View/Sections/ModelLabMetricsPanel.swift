@@ -102,7 +102,7 @@ extension ModelLabView {
                     lineWidth: SystemStroke.border
                 )
         )
-        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignSystem.glassOpacity) : .clear, radius: 4, x: SystemShadow.offsetNone, y: 0)
+        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignSystem.glassOpacity) : .clear, radius: 4, x: 0, y: 0)
     }
 
     // MARK: - 辅助子视图（高精度 AI 模拟效果展示）

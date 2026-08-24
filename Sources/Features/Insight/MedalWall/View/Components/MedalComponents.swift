@@ -19,7 +19,7 @@ struct MedalCard: View {
         VStack(spacing: DesignSystem.medium) {
             ZStack {
                 let baseColor = Color(hex: medal.colorHex)
-                let fillColor = isEarned ? baseColor.opacity(SystemOpacity.glass) : Color.appBorder.opacity(SystemOpacity.glassHeavy) // 0.1
+                let fillColor = isEarned ? baseColor.opacity(SystemOpacity.glass) : Color.appBorder.opacity(SystemOpacity.disabled) // 0.1
                 
                 Circle()
                     .fill(fillColor)
@@ -55,11 +55,11 @@ struct MedalCard: View {
         .background(Color.appCard)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Gallery.itemRadius))
         .overlay {
-            let overlayColor = isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.glassStrong) : Color.appBorder.opacity(SystemOpacity.glassHeavy)
+            let overlayColor = isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.glassStrong) : Color.appBorder.opacity(SystemOpacity.disabled)
             RoundedRectangle(cornerRadius: DesignSystem.Gallery.itemRadius)
                 .stroke(overlayColor, lineWidth: DesignSystem.borderWidth)
         }
-        .shadow(color: isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.glassHeavy) : .clear, radius: SystemRadius.small, y: SystemStroke.heavy)
+        .shadow(color: isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.disabled) : .clear, radius: SystemRadius.small, y: SystemStroke.heavy)
         .grayscale(isEarned ? 0 : 1)
         .opacity(isEarned ? DesignSystem.fullOpacity : DesignSystem.secondaryOpacity + 0.1) // 0.7
     }

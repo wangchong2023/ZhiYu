@@ -29,24 +29,15 @@ public enum SystemOpacity {
     public static let hidden: Double = Reference.Opacity.zero
     public static let ghost: Double = Reference.Opacity.five
     public static let faint: Double = Reference.Opacity.ten
-
-    // 玻璃质感层级
-    public static let glassSubtle: Double = Reference.Opacity.ten
     public static let glass: Double = Reference.Opacity.fifteen
-    public static let glassMedium: Double = Reference.Opacity.twenty
     public static let glassStrong: Double = Reference.Opacity.thirty
-    public static let glassHeavy: Double = Reference.Opacity.forty
-
     public static let overlay: Double = Reference.Opacity.sixty
     public static let disabled: Double = Reference.Opacity.forty
-    public static let pressed: Double = Reference.Opacity.ninety
     public static let active: Double = Reference.Opacity.full
 
     // 文本层级
-    public static let textPrimary: Double = Reference.Opacity.full
     public static let textSecondary: Double = Reference.Opacity.eighty
     public static let textTertiary: Double = Reference.Opacity.seventy
-    public static let textQuaternary: Double = Reference.Opacity.fifty
 }
 
 // MARK: - SystemRadius（语义圆角）
@@ -54,7 +45,6 @@ public enum SystemRadius {
     public static let none: CGFloat = Reference.Radius.zero
     public static let micro: CGFloat = Reference.Radius.two
     public static let chip: CGFloat = Reference.Radius.four
-    public static let button: CGFloat = Reference.Radius.six
     public static let small: CGFloat = Reference.Radius.eight
     public static let card: CGFloat = Reference.Radius.twelve
     public static let large: CGFloat = Reference.Radius.sixteen
@@ -70,9 +60,7 @@ public enum SystemStroke {
     public static let divider: CGFloat = Reference.Stroke.one
     public static let emphasis: CGFloat = Reference.Stroke.oneHalf
     public static let selected: CGFloat = Reference.Stroke.two
-    public static let accent: CGFloat = Reference.Stroke.three
     public static let heavy: CGFloat = Reference.Stroke.four
-    public static let progressRing: CGFloat = 10
 }
 
 // MARK: - SystemFontSize（语义字号）
@@ -89,15 +77,11 @@ public enum SystemFontSize {
     public static let largeTitle: CGFloat = Reference.FontSize.largeTitle
     public static let display: CGFloat = Reference.FontSize.display
     public static let hero: CGFloat = Reference.FontSize.hero
-    public static let mega: CGFloat = Reference.FontSize.mega
 }
 
 // MARK: - SystemShadow（语义阴影）
 public enum SystemShadow {
     public static let radiusSmall: CGFloat = Reference.Spacing.four
     public static let radiusMedium: CGFloat = Reference.Spacing.eight
-    public static let radiusLarge: CGFloat = Reference.Spacing.twelve
-    public static let offsetTiny: CGFloat = Reference.Spacing.two
     public static let offsetSmall: CGFloat = Reference.Spacing.four
-    public static let offsetNone: CGFloat = Reference.Spacing.zero
 }

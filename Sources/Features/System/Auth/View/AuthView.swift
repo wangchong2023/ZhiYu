@@ -162,7 +162,7 @@ struct AuthView: View {
                     .blur(radius: Spacing.shadowRadius)
 
                 Image(systemName: DesignSystem.Icons.knowledge)
-                    .font(.system(size: SystemFontSize.mega))
+                    .font(.system(size: Reference.FontSize.mega))
                     .foregroundStyle(LinearGradient(colors: [.appAccent, .appConcept], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .shadow(color: .appAccent.opacity(DesignSystem.Opacity.disabled), radius: Spacing.shadowRadius, y: Spacing.shadowY)
             }

@@ -14,6 +14,9 @@ import UFPCore
 
 // MARK: - 健康检查板块
 
+// 进度环描边宽度（组件特定值）
+private let progressRingLineWidth: CGFloat = 10
+
 /// 知识治理健康检查总面板：包含仪表盘头部、指标网格与问题分组列表
 struct LintHealthCheckSection: View {
     @Environment(AppStore.self) var store
@@ -94,7 +97,7 @@ struct LintHealthCheckSection: View {
                     Spacer()
                     ZStack {
                         Circle()
-                            .stroke(healthColor.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.progressRing)
+                            .stroke(healthColor.opacity(DesignSystem.Opacity.light), lineWidth: progressRingLineWidth)
                             .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
 
                         // 进度环
@@ -102,7 +105,7 @@ struct LintHealthCheckSection: View {
                             .trim(from: 0, to: CGFloat(aiStore.lintScore) / 100.0)
                             .stroke(
                                 LinearGradient(colors: [healthColor.opacity(DesignSystem.Opacity.dim), healthColor], startPoint: .top, endPoint: .bottom),
-                                style: StrokeStyle(lineWidth: SystemStroke.progressRing, lineCap: .round)
+                                style: StrokeStyle(lineWidth: progressRingLineWidth, lineCap: .round)
                             )
                             .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
                             .rotationEffect(.degrees(-90))
