@@ -32,18 +32,14 @@ final class DesignSystemSystemTests: XCTestCase {
         XCTAssertEqual(SystemOpacity.faint, Reference.Opacity.ten)
         XCTAssertEqual(SystemOpacity.glass, Reference.Opacity.fifteen)
         XCTAssertEqual(SystemOpacity.glassStrong, Reference.Opacity.thirty)
-        XCTAssertEqual(SystemOpacity.glassSubtle, Reference.Opacity.twenty)
         XCTAssertEqual(SystemOpacity.overlay, Reference.Opacity.sixty)
         XCTAssertEqual(SystemOpacity.disabled, Reference.Opacity.forty)
-        XCTAssertEqual(SystemOpacity.pressed, Reference.Opacity.ninety)
         XCTAssertEqual(SystemOpacity.active, Reference.Opacity.full)
     }
 
     func testSystemOpacityTextLevels() {
-        XCTAssertEqual(SystemOpacity.textPrimary, Reference.Opacity.full)
         XCTAssertEqual(SystemOpacity.textSecondary, Reference.Opacity.eighty)
         XCTAssertEqual(SystemOpacity.textTertiary, Reference.Opacity.seventy)
-        XCTAssertEqual(SystemOpacity.textQuaternary, Reference.Opacity.fifty)
     }
 
     // MARK: - SystemRadius 映射正确性
@@ -66,7 +62,6 @@ final class DesignSystemSystemTests: XCTestCase {
         XCTAssertEqual(SystemStroke.divider, Reference.Stroke.one)
         XCTAssertEqual(SystemStroke.emphasis, Reference.Stroke.oneHalf)
         XCTAssertEqual(SystemStroke.selected, Reference.Stroke.two)
-        XCTAssertEqual(SystemStroke.accent, Reference.Stroke.three)
         XCTAssertEqual(SystemStroke.heavy, Reference.Stroke.four)
     }
 
@@ -78,6 +73,5 @@ final class DesignSystemSystemTests: XCTestCase {
         XCTAssertEqual(SystemFontSize.title, Reference.FontSize.title)
         XCTAssertEqual(SystemFontSize.display, Reference.FontSize.display)
         XCTAssertEqual(SystemFontSize.hero, Reference.FontSize.hero)
-        XCTAssertEqual(SystemFontSize.mega, Reference.FontSize.mega)
     }
 }

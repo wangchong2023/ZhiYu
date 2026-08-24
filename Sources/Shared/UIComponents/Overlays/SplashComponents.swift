@@ -90,7 +90,8 @@ struct SplashBackgroundView: View {
             // 神经网络连接线
             GeometryReader { geo in
                 if geo.size.width > 1 && geo.size.height > 1 {
-                    ForEach(Array(connections.enumerated()), id: \.offset) { _, conn in
+                    let indexed: [(offset: Int, element: (from: Int, to: Int))] = Array(connections.enumerated())
+                    ForEach(indexed, id: \.offset) { _, conn in
                         let fromNode = networkNodes[conn.from]
                         let toNode = networkNodes[conn.to]
                         let lineColor1 = fromNode.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
@@ -112,7 +113,7 @@ struct SplashBackgroundView: View {
                                 startPoint: .init(x: fromNode.x, y: fromNode.y),
                                 endPoint: .init(x: toNode.x, y: toNode.y)
                             ),
-                            lineWidth: SystemStroke.thin
+                            lineWidth: SystemStroke.border
                         )
                     }
                 }

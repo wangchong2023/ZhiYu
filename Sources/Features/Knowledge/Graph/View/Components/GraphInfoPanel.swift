@@ -344,7 +344,7 @@ struct GraphConceptGuideSheet: View {
                 VStack(spacing: 0) {
                     Image("graph_concepts_guide_clean")
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(maxWidth: .infinity)
                         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
                         .shadow(color: Color.theme.black.opacity(DesignSystem.translucentOpacity), radius: DesignSystem.shadowRadius)

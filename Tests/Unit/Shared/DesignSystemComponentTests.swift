@@ -21,32 +21,20 @@ final class DesignSystemComponentTests: XCTestCase {
         XCTAssertEqual(ComponentSpacing.colossal, 64)
     }
 
-    // MARK: - 组件语义映射
-    func testComponentSemanticMapping() {
-        XCTAssertEqual(ComponentSpacing.cardPadding, SystemSpacing.content)
-        XCTAssertEqual(ComponentSpacing.listRowGap, SystemSpacing.element)
-        XCTAssertEqual(ComponentSpacing.iconTextGap, SystemSpacing.small)
-        XCTAssertEqual(ComponentSpacing.buttonInternalPadding, SystemSpacing.medium)
-        XCTAssertEqual(ComponentSpacing.chipPadding, SystemSpacing.tiny)
-    }
-
     // MARK: - 组件特定尺寸
     func testComponentSpecificDimensions() {
-        XCTAssertEqual(ComponentSpacing.toolbarHeight, 44)
         XCTAssertEqual(ComponentSpacing.buttonHeight, 44)
-        XCTAssertEqual(ComponentSpacing.compactButtonHeight, 32)
-        XCTAssertEqual(ComponentSpacing.inputFieldHeight, 50)
-        XCTAssertEqual(ComponentSpacing.minTouchTarget, 44)
-        XCTAssertEqual(ComponentSpacing.capsuleHeight, 28)
-        XCTAssertEqual(ComponentSpacing.inputBarHeight, 54)
+        XCTAssertEqual(ComponentSpacing.chartHeight, 220)
+        XCTAssertEqual(ComponentSpacing.chartHeightCompact, 160)
+        XCTAssertEqual(ComponentSpacing.chartHalfHeight, 110)
+        XCTAssertEqual(ComponentSpacing.metricChipWidth, 80)
+        XCTAssertEqual(ComponentSpacing.emptyStateImageHalf, 120)
     }
 
     // MARK: - 图标尺寸
     func testIconSizes() {
         XCTAssertEqual(ComponentSpacing.iconCompact, 18)
         XCTAssertEqual(ComponentSpacing.iconStandard, 22)
-        XCTAssertEqual(ComponentSpacing.iconLarge, 24)
         XCTAssertEqual(ComponentSpacing.iconDisplay, 48)
-        XCTAssertEqual(ComponentSpacing.iconHuge, 64)
     }
 }

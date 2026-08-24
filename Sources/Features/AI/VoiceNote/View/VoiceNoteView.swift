@@ -165,7 +165,7 @@ struct VoiceNoteView: View {
                 if speechService.isRecording {
                     RoundedRectangle(cornerRadius: DesignSystem.microRadius)
                         .fill(Color.appRecording)
-                        .frame(width: ComponentSpacing.recordButtonInner, height: ComponentSpacing.recordButtonInner)
+                        .frame(width: ComponentSpacing.huge, height: ComponentSpacing.huge)
                 } else {
                     Image(systemName: DesignSystem.Icons.micFill)
                         .font(.system(size: DesignSystem.displayFontSize))

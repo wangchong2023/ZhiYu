@@ -133,7 +133,7 @@ public struct UserProfileView: View {
                     AsyncImage(url: avatarURL) { image in
                         image
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
+                            .scaledToFill()
                     } placeholder: {
                         ProgressView()
                     }
@@ -142,7 +142,7 @@ public struct UserProfileView: View {
                 } else {
                     Image(systemName: DesignSystem.Icons.personCropFill)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(width: ComponentSpacing.emptyStateImageHalf, height: ComponentSpacing.emptyStateImageHalf)
                         .foregroundStyle(.appSecondary)
                 }
