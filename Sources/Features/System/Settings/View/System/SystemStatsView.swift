@@ -393,7 +393,7 @@ struct SystemStatsView: View {
                 Text(L10n.Dashboard.totalStorage)
                     .font(.system(size: DesignSystem.microFontSize, weight: .black))
                     .foregroundStyle(.appSecondary)
-                    .kerning(DesignSystem.Tracking.tight)
+                    .kerning(Reference.Spacing.one)
                     .textCase(.uppercase)
             }
         }

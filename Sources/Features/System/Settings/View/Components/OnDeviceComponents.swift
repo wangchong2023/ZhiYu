@@ -66,7 +66,7 @@ public struct OnDeviceTestView: View {
             Text(L10n.AI.OnDevice.testPrompt)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.appSecondary)
-                .tracking(DesignSystem.Tracking.tight)
+                .tracking(Reference.Spacing.one)
             
             AdaptiveTextEditor(text: $prompt)
             .font(.body)

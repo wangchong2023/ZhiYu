@@ -871,7 +871,6 @@
 		6513BA0E2A437FFE5BC38E50 /* EmbeddingManagerDeterminismTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32762B7CDBB2748627AF2F6D /* EmbeddingManagerDeterminismTests.swift */; };
 		65684AA92CD344F96EE0FFCC /* LinkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E12AD5BEA111DB5F6D20E4B /* LinkService.swift */; };
 		65DC4CD728AEB17ADBFAAFB1 /* IngestCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADB1E854E50603E99E02E866 /* IngestCoordinator.swift */; };
-		65EAAFCE9D18C7B1F7D898A5 /* DesignSystem+Stroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD173B6C6558DB4CAB673BC /* DesignSystem+Stroke.swift */; };
 		66031E579F12C7902D4104A5 /* DatabaseManagerDegradationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA12698B630307325468DCD /* DatabaseManagerDegradationTests.swift */; };
 		6604ED99647B59FBAE680EE9 /* L10n+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = B79DC94CEED2945F86341F1B /* L10n+Components.swift */; };
 		6609F4A7B0ED7FC2B4E58133 /* L10n+Collaboration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BA494344266B24AE4D1F44 /* L10n+Collaboration.swift */; };
@@ -2047,7 +2046,6 @@
 		E838F851A28328577A321B0E /* WatchSyncProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B63B9D96388374DC543ADDF0 /* WatchSyncProtocol.swift */; };
 		E87604D245E2EDDE90F8C0D0 /* DeviceInfoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1134D4E7766F7E546DE6224 /* DeviceInfoProtocol.swift */; };
 		E888E28F431CE8555DAD00F4 /* IngestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A14ECF17C7DE8EA2C6306AC /* IngestView.swift */; };
-		E889705650B1542EB56E5132 /* DesignSystem+Stroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD173B6C6558DB4CAB673BC /* DesignSystem+Stroke.swift */; };
 		E89E88A5C297C50AAB7EA459 /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7D26AF97EF436D10485365 /* LoggerTests.swift */; };
 		E8A70C1C6EAF06515EA23491 /* ZhiYuFeatures in Frameworks */ = {isa = PBXBuildFile; productRef = 4F3F5683C09430C4842B4968 /* ZhiYuFeatures */; };
 		E8D05FD7A34822BD0083E1BB /* iPadRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AC336D75B887AD95413CFF /* iPadRouterTests.swift */; };
@@ -2176,7 +2174,6 @@
 		F622B925453751875D6281A7 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203B4EBD884996C5E6A88E4A /* Typography.swift */; };
 		F63088A5C88F35F4C398E3BB /* ChatLLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F1FDF01434BAE824B5A037 /* ChatLLMService.swift */; };
 		F63693BB09A7B486166B2310 /* iCloudSyncIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB6DCB5FF21D25AF2DE9B5C /* iCloudSyncIntegrationTests.swift */; };
-		F63BC2E066389C31BF49C308 /* DesignSystem+Stroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD173B6C6558DB4CAB673BC /* DesignSystem+Stroke.swift */; };
 		F647738F6FCCAE7976889AEF /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E732B5FBEAB333B42B827BC3 /* Spacing.swift */; };
 		F6495461F421E91C185ABFB1 /* AuthOAuthPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C2328B8299D16F5DB5CE6E2 /* AuthOAuthPanel.swift */; };
 		F64DAF9008BEB921295FEB4F /* testNotebookListRow_NoDescription.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 0D84A3EB257C2E3FBD430FB4 /* testNotebookListRow_NoDescription.1.png */; };
@@ -3012,7 +3009,6 @@
 		7C156F5C5ABCBD89F675089F /* SmartIngestPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartIngestPreview.swift; sourceTree = "<group>"; };
 		7C24599BF284FAD6843F6A06 /* testIngestTimelineView_ExtractionStage.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testIngestTimelineView_ExtractionStage.1.png; sourceTree = "<group>"; };
 		7CC6F6B06158CB0DFB59E4D6 /* L10n+Plugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+Plugin.swift"; sourceTree = "<group>"; };
-		7CD173B6C6558DB4CAB673BC /* DesignSystem+Stroke.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem+Stroke.swift"; sourceTree = "<group>"; };
 		7CE7826168D9A3BF9EAC0245 /* DynamicComplianceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicComplianceManager.swift; sourceTree = "<group>"; };
 		7CF32A94BE1F3797C9FF6B22 /* LLMRetrievalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMRetrievalService.swift; sourceTree = "<group>"; };
 		7D231FC0BBBB98655EBA22DA /* DesignSystemComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemComponentTests.swift; sourceTree = "<group>"; };
@@ -4985,7 +4981,6 @@
 				74960508417EF540D882DA72 /* DesignSystem+RadiusToken.swift */,
 				223A88F0020EBEE3AF842DE3 /* DesignSystem+Shadows.swift */,
 				57D6EFD678A07BDE43E8B965 /* DesignSystem+SpacingToken.swift */,
-				7CD173B6C6558DB4CAB673BC /* DesignSystem+Stroke.swift */,
 				4CF7B1556D14A0F06E8CA0D8 /* DesignSystem+ZIndex.swift */,
 				D24CAD9FDE7056EF6B085929 /* Reference.swift */,
 				E732B5FBEAB333B42B827BC3 /* Spacing.swift */,
@@ -8469,7 +8464,6 @@
 				8CDABE47BCAAC07C94DA5D13 /* DesignSystem+Shadows.swift in Sources */,
 				CA0243C7E98DDDAEC4C07729 /* DesignSystem+Sidebar.swift in Sources */,
 				38470F855A473DD53DCB54E0 /* DesignSystem+SpacingToken.swift in Sources */,
-				65EAAFCE9D18C7B1F7D898A5 /* DesignSystem+Stroke.swift in Sources */,
 				86622785BC8AFBBBE70C7568 /* DesignSystem+Task.swift in Sources */,
 				4E2EEAFACE8C6CBDDDB99AC6 /* DesignSystem+Timeline.swift in Sources */,
 				B9C776ED838A302C592D2CC0 /* DesignSystem+Vault.swift in Sources */,
@@ -9209,7 +9203,6 @@
 				0F626C1E1F9DEB53417B0ABD /* DesignSystem+Shadows.swift in Sources */,
 				8CEE458AC527B15653775A24 /* DesignSystem+Sidebar.swift in Sources */,
 				013E95D0E66F476A1E8AED61 /* DesignSystem+SpacingToken.swift in Sources */,
-				E889705650B1542EB56E5132 /* DesignSystem+Stroke.swift in Sources */,
 				D388CD60553A00CBEF2AEED8 /* DesignSystem+Task.swift in Sources */,
 				17999DEE831EA86E8E563A3B /* DesignSystem+Timeline.swift in Sources */,
 				44CC7DA7D321754964FDBB96 /* DesignSystem+Vault.swift in Sources */,
@@ -9775,7 +9768,6 @@
 				4A6CF93F227DF53B6C031B28 /* DesignSystem+RadiusToken.swift in Sources */,
 				4EC3E85F6C9D53FDA16B97F4 /* DesignSystem+Shadows.swift in Sources */,
 				57CEDBFA14616FE30F024680 /* DesignSystem+SpacingToken.swift in Sources */,
-				F63BC2E066389C31BF49C308 /* DesignSystem+Stroke.swift in Sources */,
 				D526F0FCBBA03D7EC741163E /* DesignSystem+ZIndex.swift in Sources */,
 				BDEEEB09EB0DBE12ACCF0E17 /* DesignSystem.swift in Sources */,
 				E87604D245E2EDDE90F8C0D0 /* DeviceInfoProtocol.swift in Sources */,
