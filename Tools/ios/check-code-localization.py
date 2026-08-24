@@ -512,7 +512,12 @@ EXEMPT_STRINGS = {
     "不受过滤",
     # KnowledgePageManager 日志详情常量（审计日志记录，保持英文以便跨语言一致性审计）
     "Applied potential",
-    " link to"
+    " link to",
+    # errorDescription / AppError.auth description 调试描述（A-19 决策：保持英文调试描述，UI 层通过 userMessage 获取本地化文案）
+    "Polling exhausted after \\(attempts) attempts",
+    "GitHub State Mismatch",
+    "Token expired.",
+    "Missing refresh token."
 }
 
 class SourceCodeAuditor:
