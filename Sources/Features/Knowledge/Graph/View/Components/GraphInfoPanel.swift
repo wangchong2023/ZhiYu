@@ -78,7 +78,7 @@ struct GraphSelectedNodeCard: View {
         .padding()
         .background(Color.appCard)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-        .shadow(color: Color.theme.black.opacity(DesignSystem.glassOpacity * 2), radius: DesignSystem.mediumRadius)
+        .shadow(color: Color.theme.black.opacity(SystemOpacity.glassStrong), radius: DesignSystem.mediumRadius)
     }
 }
 
@@ -130,9 +130,9 @@ struct GraphInsightsPanel: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                            .stroke(Color.appAccent.opacity(DesignSystem.subtleOpacity * 1.2), lineWidth: DesignSystem.borderWidth * 0.5)
+                            .stroke(Color.appAccent.opacity(SystemOpacity.faint), lineWidth: SystemStroke.hairline)
                     )
-                    .shadow(color: Color.theme.black.opacity(DesignSystem.shadowOpacity * 0.4), radius: DesignSystem.shadowRadius, x: 0, y: DesignSystem.shadowRadius / 2)
+                    .shadow(color: Color.theme.black.opacity(SystemOpacity.ghost), radius: DesignSystem.shadowRadius, x: 0, y: SystemShadow.offsetSmall)
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, DesignSystem.small)
@@ -202,7 +202,7 @@ struct GraphInsightsPanel: View {
                 .padding(.vertical, Spacing.Chip.verticalPadding)
                 .background(
                     LinearGradient(
-                        colors: [color, color.opacity(DesignSystem.surfaceOpacity - 0.05)],
+                        colors: [color, color.opacity(SystemOpacity.glassStrong)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -245,20 +245,20 @@ struct GraphInsightsPanel: View {
         .padding(DesignSystem.medium)
         .background(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                .fill(Color.appCard.opacity(DesignSystem.halfOpacity + 0.05))
+                .fill(Color.appCard.opacity(SystemOpacity.glassStrong))
         )
         .background(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
                 .stroke(
                     LinearGradient(
-                        colors: [color.opacity(DesignSystem.accentStrokeOpacity - 0.05), color.opacity(DesignSystem.shadowOpacity * 0.5)],
+                        colors: [color.opacity(SystemOpacity.glassStrong), color.opacity(SystemOpacity.ghost)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
                     lineWidth: DesignSystem.borderWidth
                 )
         )
-        .shadow(color: Color.theme.black.opacity(DesignSystem.shadowOpacity * 0.4), radius: DesignSystem.mediumRadius, x: 0, y: DesignSystem.smallRadius)
+        .shadow(color: Color.theme.black.opacity(SystemOpacity.ghost), radius: DesignSystem.mediumRadius, x: 0, y: DesignSystem.smallRadius)
     }
 
     /// 渲染已展开分析板块的详情和节点推荐 Chips (微交互 & Hover 效果)
@@ -268,7 +268,7 @@ struct GraphInsightsPanel: View {
                 .font(.footnote)
                 .foregroundStyle(.appSecondary)
                 .padding(.leading, DesignSystem.huge)
-                .lineSpacing(DesignSystem.atomic * 1.5)
+                .lineSpacing(SystemSpacing.tight)
             
             // Node chips
             let nodeIDs = getNodeIDs(for: id)
@@ -289,7 +289,7 @@ struct GraphInsightsPanel: View {
                                 }
                                 .padding(.horizontal, DesignSystem.medium)
                                 .padding(.vertical, DesignSystem.tiny)
-                                .background(color.opacity(DesignSystem.subtleFillOpacity * 0.8))
+                                .background(color.opacity(SystemOpacity.ghost))
                                 .overlay(
                                     Capsule()
                                         .stroke(color.opacity(DesignSystem.dimmedOpacity), lineWidth: DesignSystem.borderWidth)
@@ -389,7 +389,7 @@ struct GraphConceptGuideSheet: View {
                     .foregroundStyle(.white)
             }
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic * 2) {
+            VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
                 Text(title)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appText)
@@ -402,11 +402,11 @@ struct GraphConceptGuideSheet: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Color.appCard.opacity(DesignSystem.halfOpacity - 0.05))
+        .background(Color.appCard.opacity(SystemOpacity.glass))
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                .stroke(Color.appBorder.opacity(DesignSystem.translucentOpacity + 0.06), lineWidth: DesignSystem.borderWidth * 0.5)
+                .stroke(Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.hairline)
         )
     }
 }

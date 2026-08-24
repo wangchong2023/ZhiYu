@@ -43,7 +43,7 @@ struct ImportRecordCard: View {
                     Text(categoryDisplayName)
                         .font(.caption2.weight(.bold))
                         .padding(.horizontal, DesignSystem.tightPadding)
-                        .padding(.vertical, 2)
+                        .padding(.vertical, SystemSpacing.atomic)
                         .background(Capsule().fill(categoryColor))
                         .foregroundStyle(.white)
                     
@@ -54,7 +54,7 @@ struct ImportRecordCard: View {
                                     Text(tag)
                                         .font(.caption2.weight(.medium))
                                         .padding(.horizontal, DesignSystem.tightPadding)
-                                        .padding(.vertical, 2)
+                                        .padding(.vertical, SystemSpacing.atomic)
                                         .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
                                         .foregroundStyle(.appAccent)
                                 }

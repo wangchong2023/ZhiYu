@@ -17,7 +17,7 @@ struct ActivityRow: View {
         Button(action: { if let id = task.associatedPageID { HapticFeedback.shared.trigger(.selection); router.navigateToPage(id: id) } }) {
             HStack(spacing: DesignSystem.medium) {
                 ZStack {
-                    Circle().fill(taskColor.opacity(DesignSystem.glassOpacity)).frame(width: DesignSystem.Metrics.smallIconBoxSize + DesignSystem.atomic * 2, height: DesignSystem.Metrics.smallIconBoxSize + DesignSystem.atomic * 2)
+                    Circle().fill(taskColor.opacity(SystemOpacity.glass)).frame(width: ComponentSpacing.huge, height: ComponentSpacing.huge)
                     Image(systemName: taskIcon).font(.system(size: DesignSystem.subheadlineFontSize)).foregroundStyle(taskColor)
                 }
                 VStack(alignment: .leading, spacing: DesignSystem.atomic) {

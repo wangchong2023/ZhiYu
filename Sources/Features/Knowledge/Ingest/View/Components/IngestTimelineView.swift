@@ -58,7 +58,7 @@ struct IngestTimelineView: View {
                                 .fill(isCompleted(stage.id) ? stage.color : Color.appBorder)
                                 .frame(width: DesignSystem.atomic)
                                 .frame(minHeight: isActive(stage.id) ? 30 : 16)
-                                .padding(.vertical, 2)
+                                .padding(.vertical, SystemSpacing.atomic)
                         }
                     }
                     
@@ -67,7 +67,7 @@ struct IngestTimelineView: View {
                         Text(stage.title)
                             .font(.subheadline.weight(isActive(stage.id) ? .bold : .medium))
                             .foregroundStyle(isActive(stage.id) ? stage.color : (isCompleted(stage.id) ? .appText : .appSecondary.opacity(DesignSystem.Opacity.soft)))
-                            .padding(.top, 2)
+                            .padding(.top, SystemSpacing.atomic)
                         
                         // 只在当前活跃阶段显示最新的子日志
                         if isActive(stage.id), let latestLog = subLogs.last {

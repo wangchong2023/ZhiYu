@@ -198,7 +198,7 @@ struct SearchView: View {
                                 }
                                 .padding(.horizontal, DesignSystem.tightPadding + DesignSystem.atomic) // 10
                                 .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 5
-                                .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
+                                .background(Color.appCard.opacity(SystemOpacity.active))
                                 .clipShape(Capsule())
                                 .foregroundStyle(.appSecondary)
                             }
@@ -350,7 +350,7 @@ struct SearchView: View {
     }
     
     private var filterStatusBackgroundColor: Color {
-        filterStatus == nil ? Color.appCard.opacity(DesignSystem.Opacity.prominent) : Color.appAccent.opacity(DesignSystem.glassOpacity / 1.5)
+        filterStatus == nil ? Color.appCard.opacity(SystemOpacity.active) : Color.appAccent.opacity(SystemOpacity.faint)
     }
 }
 

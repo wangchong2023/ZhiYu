@@ -47,7 +47,7 @@ struct VisionProSpatialView: View {
                             .foregroundStyle(.appSecondary)
                             .multilineTextAlignment(.center)
                     }
-                    .padding(.top, 40)
+                    .padding(.top, ComponentSpacing.ultra)
                 }
             }
             .padding()

@@ -70,7 +70,7 @@ struct SourceView: View {
                 .font(.subheadline)
                 .foregroundStyle(.appSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+                .padding(.horizontal, ComponentSpacing.ultra)
             Spacer()
         }
         .frame(maxWidth: .infinity)

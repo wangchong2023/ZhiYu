@@ -44,7 +44,7 @@ struct PagePreviewSheet: View {
                                     .font(.caption2)
                                     .bold()
                                     .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, 4)
+                                    .padding(.vertical, SystemSpacing.tiny)
                                     .background(page.status.color.opacity(DesignSystem.Opacity.glass))
                                     .foregroundStyle(page.status.color)
                                     .clipShape(Capsule())
@@ -53,7 +53,7 @@ struct PagePreviewSheet: View {
                                     .font(.caption2)
                                     .bold()
                                     .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, 4)
+                                    .padding(.vertical, SystemSpacing.tiny)
                                     .background(page.confidence.color.opacity(DesignSystem.Opacity.glass))
                                     .foregroundStyle(page.confidence.color)
                                     .clipShape(Capsule())
@@ -71,7 +71,7 @@ struct PagePreviewSheet: View {
                             .bold()
                             .foregroundStyle(page.pageType.color)
                             .padding(.horizontal, DesignSystem.small)
-                            .padding(.vertical, 2)
+                            .padding(.vertical, SystemSpacing.atomic)
                             .background(page.pageType.color.opacity(DesignSystem.Opacity.subtle))
                             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
                     }
@@ -102,7 +102,7 @@ struct PagePreviewSheet: View {
                                         .font(.caption2)
                                         .bold()
                                         .padding(.horizontal, DesignSystem.small)
-                                        .padding(.vertical, 4)
+                                        .padding(.vertical, SystemSpacing.tiny)
                                         .background(Color.secondary.opacity(DesignSystem.Opacity.subtle))
                                         .foregroundStyle(.secondary)
                                         .clipShape(Capsule())
@@ -308,7 +308,7 @@ struct SearchDiagnosticSheet: View {
                                             .background(Color.theme.orange.opacity(DesignSystem.Opacity.subtle))
                                             .clipShape(Circle())
                                         
-                                        VStack(alignment: .leading, spacing: 2) {
+                                        VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                                             Text(item.title)
                                                 .font(.subheadline)
                                                 .bold()
@@ -317,7 +317,7 @@ struct SearchDiagnosticSheet: View {
                                             
                                             HStack(spacing: DesignSystem.small) {
                                                 // FTS 排位
-                                                HStack(spacing: 2) {
+                                                HStack(spacing: SystemSpacing.atomic) {
                                                     Text("FTS:")
                                                     Text(item.ftsRank > 0 ? "#\(item.ftsRank)" : L10n.Search.Diag.miss)
                                                 }
@@ -325,7 +325,7 @@ struct SearchDiagnosticSheet: View {
                                                 .foregroundStyle(item.ftsRank > 0 ? Color.theme.blue : Color.secondary)
                                                 
                                                 // 向量排位
-                                                HStack(spacing: 2) {
+                                                HStack(spacing: SystemSpacing.atomic) {
                                                     Text("Vec:")
                                                     Text(item.vectorRank > 0 ? "#\(item.vectorRank)" : L10n.Search.Diag.miss)
                                                 }
@@ -342,7 +342,7 @@ struct SearchDiagnosticSheet: View {
                                             .bold()
                                             .foregroundStyle(Color.theme.orange)
                                             .padding(.horizontal, DesignSystem.small)
-                                            .padding(.vertical, 4)
+                                            .padding(.vertical, SystemSpacing.tiny)
                                             .background(Color.theme.orange.opacity(DesignSystem.Opacity.subtle))
                                             .cornerRadius(DesignSystem.microRadius)
                                     }
@@ -352,7 +352,7 @@ struct SearchDiagnosticSheet: View {
                                     if index < info.rrfTopResults.count - 1 {
                                         Divider()
                                             .background(Color.secondary.opacity(DesignSystem.Opacity.subtle))
-                                            .padding(.leading, 48)
+                                            .padding(.leading, ComponentSpacing.massive)
                                     }
                                 }
                             }

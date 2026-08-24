@@ -139,7 +139,7 @@ public struct NotebookHubView: View {
         }
         .padding(.horizontal, DesignSystem.standardPadding)
         .padding(.vertical, DesignSystem.tightPadding + DesignSystem.atomic)
-        .background(Color.appCard.opacity(DesignSystem.glassOpacity * 2))
+        .background(Color.appCard.opacity(SystemOpacity.glassStrong))
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
@@ -199,7 +199,7 @@ public struct NotebookHubView: View {
             Image(systemName: DesignSystem.Icons.sparkles)
                 .font(.callout.weight(.bold))
                 .foregroundStyle(.appAccent)
-                .padding(.leading, 4)
+                .padding(.leading, SystemSpacing.tiny)
         }
         .buttonStyle(.plain)
     }
@@ -246,7 +246,7 @@ struct WelcomeBannerView: View {
             Image(systemName: "sparkles")
                 .font(.title2)
                 .foregroundStyle(.blue)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                 Text(L10n.Onboarding.pathTitle)
                     .font(.subheadline.bold())
                 Text(L10n.Onboarding.subtitle)

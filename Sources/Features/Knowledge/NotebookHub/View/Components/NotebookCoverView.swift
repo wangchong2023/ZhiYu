@@ -46,7 +46,7 @@ public struct NotebookCoverView: View {
     }
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: SystemSpacing.medium) {
             // 图标与装饰条
             HStack {
                 Image(systemName: icon)
@@ -61,7 +61,7 @@ public struct NotebookCoverView: View {
             Spacer()
             
             // 标题与统计元数据
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
                 Text(title)
                     .font(.system(size: 18, weight: .black, design: .rounded)) // Dynamic Type
                     .foregroundColor(.theme.white)

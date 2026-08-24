@@ -69,7 +69,7 @@ struct NotebookFormSheet: View {
                                     .fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                                     .overlay(
                                         Circle()
-                                            .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.shadow), lineWidth: 2)
+                                            .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.selected)
                                     )
                                     .frame(width: DesignSystem.Metrics.avatarPickerSize, height: DesignSystem.Metrics.avatarPickerSize)
                                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
@@ -99,7 +99,7 @@ struct NotebookFormSheet: View {
                                                 .clipShape(Circle())
                                                 .overlay(
                                                     Circle()
-                                                        .strokeBorder(icon == item ? Color.appAccent : Color.clear, lineWidth: 2)
+                                                        .strokeBorder(icon == item ? Color.appAccent : Color.clear, lineWidth: SystemStroke.selected)
                                                 )
                                             }
                                         }

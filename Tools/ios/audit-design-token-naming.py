@@ -5,9 +5,9 @@
 #
 # 职责说明: 本脚本用于对设计令牌命名规范进行 CI 门禁检查。
 # 验证内容：
-# 1. token 定义文件内禁止算术表达式（Reference 纯原子值，System/Component 仅允许组合）
-# 2. 视图代码禁止 token 算术表达式（Reference.* * N、System.* * N、Component.* * N）
-# 3. hardcoded 值零容忍（视图代码中 .padding(N)、spacing: N、lineWidth: N 等）
+# 1. token 定义文件内禁止算术表达式（Reference 纯原子值，System/Component 仅允许 Reference.A 引用）
+# 2. 视图代码禁止任何 token 算术表达式（* / + -），包括旧 DesignSystem.* token
+# 3. 严格有限原则：禁止倍数、禁止派生、禁止任何算术运算，必须使用命名 token
 #
 
 import os
@@ -30,6 +30,9 @@ REFERENCE_FILE = os.path.join(TOKENS_DIR, 'Reference.swift')
 SYSTEM_FILE = os.path.join(TOKENS_DIR, 'System.swift')
 COMPONENT_FILE = os.path.join(TOKENS_DIR, 'Component.swift')
 
+# 算术运算符正则：* / + -（包括前后空格变体）
+ARITH_PATTERN = r'\s*[\*\/\+\-]\s*'
+
 
 def check_token_definition_arithmetic():
     """检查 token 定义文件内禁止算术表达式"""
@@ -39,46 +42,44 @@ def check_token_definition_arithmetic():
 
 
 def _check_reference_arithmetic():
-    """Reference.swift：禁止任何 * / 算术（纯原子值）"""
+    """Reference.swift：禁止任何算术（纯原子值）"""
     if not os.path.exists(REFERENCE_FILE):
         return
-    with open(REFERENCE_FILE, 'r', encoding='utf-8', errors='ignore') as f:
-        for i, line in enumerate(f, 1):
-            s = line.strip()
-            if s.startswith('//') or s.startswith('/*'):
-                continue
-            if re.search(r'\b\d+\.?\d*\s*[\*\/]\s*\d+\.?\d*\b', line):
-                reporter.add_issue(
-                    filepath=os.path.relpath(REFERENCE_FILE, PROJECT_ROOT),
-                    line_no=i,
-                    message="Reference 层禁止算术表达式（纯原子值）",
-                    level="ERROR",
-                    content=s
-                )
+    _scan_definition_file(REFERENCE_FILE, "Reference 层禁止算术表达式（纯原子值）")
 
 
 def _check_system_arithmetic():
-    """System.swift：禁止 * / 算术（允许 Reference.A + Reference.B 组合）"""
+    """System.swift：禁止任何算术（仅允许 Reference.A 直接引用）"""
     if not os.path.exists(SYSTEM_FILE):
         return
-    _check_token_arithmetic_in_file(SYSTEM_FILE, "System 层禁止 token 算术表达式")
+    _scan_definition_file(SYSTEM_FILE, "System 层禁止算术表达式（仅允许 Reference 直接引用）")
 
 
 def _check_component_arithmetic():
-    """Component.swift：禁止 * / 算术"""
+    """Component.swift：禁止任何算术（仅允许 System/Reference 直接引用）"""
     if not os.path.exists(COMPONENT_FILE):
         return
-    _check_token_arithmetic_in_file(COMPONENT_FILE, "Component 层禁止 token 算术表达式")
+    _scan_definition_file(COMPONENT_FILE, "Component 层禁止算术表达式（仅允许 System/Reference 直接引用）")
 
 
-def _check_token_arithmetic_in_file(fpath, message):
-    """检查文件中 token 算术表达式"""
+def _scan_definition_file(fpath, message):
+    """检查 token 定义文件中的算术表达式"""
     with open(fpath, 'r', encoding='utf-8', errors='ignore') as f:
         for i, line in enumerate(f, 1):
             s = line.strip()
             if s.startswith('//') or s.startswith('/*'):
                 continue
-            if re.search(r'\b(Reference|System|Component)\.\w+\.\w+\s*[\*\/]\s*\d+\.?\d*\b', line):
+            # 检测 token 之间的算术运算：Reference.A * N、System.B + N 等
+            if re.search(r'\b(Reference|System|Component)\.\w+\.\w+' + ARITH_PATTERN + r'\d', line):
+                reporter.add_issue(
+                    filepath=os.path.relpath(fpath, PROJECT_ROOT),
+                    line_no=i,
+                    message=message,
+                    level="ERROR",
+                    content=s
+                )
+            # 检测纯数字算术：2 * 3 等
+            if re.search(r'\b\d+\.?\d*' + ARITH_PATTERN + r'\d+\.?\d*\b', line):
                 reporter.add_issue(
                     filepath=os.path.relpath(fpath, PROJECT_ROOT),
                     line_no=i,
@@ -89,7 +90,7 @@ def _check_token_arithmetic_in_file(fpath, message):
 
 
 def check_view_token_arithmetic():
-    """扫描视图代码，禁止 token 算术表达式"""
+    """扫描视图代码，禁止任何 token 算术表达式"""
     views_dirs = [
         os.path.join(SOURCES_DIR, 'Features'),
         os.path.join(SOURCES_DIR, 'Shared/UIComponents'),
@@ -116,23 +117,42 @@ def _scan_dir_for_token_arithmetic(v_dir, exempt_files):
 
 
 def _scan_file_for_token_arithmetic(fpath):
-    """扫描单个文件的 token 算术表达式"""
+    """扫描单个文件的 token 算术表达式（严格禁止 * / + -）"""
     with open(fpath, 'r', encoding='utf-8', errors='ignore') as f:
         for i, line in enumerate(f, 1):
             s = line.strip()
             if s.startswith('//'):
                 continue
-            if re.search(r'\b(Reference|System|Component)\w*\.\w+\s*[\*\/]\s*\d+\.?\d*\b', line):
-                reporter.add_issue(
-                    filepath=os.path.relpath(fpath, PROJECT_ROOT),
-                    line_no=i,
-                    message="视图代码禁止 token 算术表达式，应使用命名 token",
-                    level="ERROR",
-                    content=s
-                )
+            _check_token_math_in_view(fpath, i, s, line)
+
+
+def _check_token_math_in_view(fpath, i, s, line):
+    """检查视图代码中的 token 算术表达式"""
+    # 匹配所有 token 命名空间的算术运算：DesignSystem.*、Reference.*、System.*、Component.*
+    # 严格禁止 * / + - 四种运算符
+    pattern = r'\b(DesignSystem|Reference|System|Component)\w*\.\w+' + ARITH_PATTERN + r'(0\.\d+|\d+\.?\d*)\b'
+    if re.search(pattern, line):
+        reporter.add_issue(
+            filepath=os.path.relpath(fpath, PROJECT_ROOT),
+            line_no=i,
+            message="视图代码禁止 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
+            level="ERROR",
+            content=s
+        )
+    # 反向匹配：N * DesignSystem.xxx
+    pattern_reverse = r'\b(0\.\d+|\d+\.?\d*)' + ARITH_PATTERN + r'(DesignSystem|Reference|System|Component)\w*\.\w+'
+    if re.search(pattern_reverse, line):
+        reporter.add_issue(
+            filepath=os.path.relpath(fpath, PROJECT_ROOT),
+            line_no=i,
+            message="视图代码禁止 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
+            level="ERROR",
+            content=s
+        )
 
 
 def main():
+    """主入口：执行 token 命名规范检查。"""
     check_token_definition_arithmetic()
     check_view_token_arithmetic()
     reporter.report()

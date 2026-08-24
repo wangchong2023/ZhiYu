@@ -404,7 +404,7 @@ struct Graph3DControlsOverlay: View {
 
             // Filter - 全屏模式下根据用户要求隐藏
             if !isFullScreen {
-                Button(action: { withAnimation(.spring(response: DesignSystem.Animation.springResponse + 0.05)) { showFilterPopup.toggle() } }) {
+                Button(action: { withAnimation(.spring(response: 0.35)) { showFilterPopup.toggle() } }) {
                     Image(systemName: DesignSystem.Icons.filterCircle)
                         .font(.title3)
                         .foregroundStyle(filterType == nil ? iconColor : Color.appAccent)
@@ -420,7 +420,7 @@ struct Graph3DControlsOverlay: View {
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(.appSecondary)
                                 .padding(.horizontal, DesignSystem.medium)
-                                .padding(.top, 10)
+                                .padding(.top, SystemSpacing.tight)
                                 .padding(.bottom, DesignSystem.tightPadding)
                             
                             Divider().background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
@@ -440,7 +440,7 @@ struct Graph3DControlsOverlay: View {
                                             }
                                         }
                                         .padding(.horizontal, DesignSystem.medium)
-                                        .padding(.vertical, 10)
+                                        .padding(.vertical, SystemSpacing.tight)
                                         .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
@@ -461,7 +461,7 @@ struct Graph3DControlsOverlay: View {
                                                 }
                                             }
                                             .padding(.horizontal, DesignSystem.medium)
-                                            .padding(.vertical, 10)
+                                            .padding(.vertical, SystemSpacing.tight)
                                             .contentShape(Rectangle())
                                         }
                                         .buttonStyle(.plain)

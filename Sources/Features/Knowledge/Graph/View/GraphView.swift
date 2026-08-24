@@ -273,13 +273,13 @@ struct GraphContainerView: View {
             .padding(.vertical, DesignSystem.Chip.verticalPadding)
             .background(
                 Capsule()
-                    .fill(Color.appAccent.opacity(DesignSystem.glassOpacity * 0.5))
+                    .fill(Color.appAccent.opacity(SystemOpacity.ghost))
             )
             .overlay(
                 Capsule()
-                    .stroke(Color.appAccent.opacity(DesignSystem.disabledOpacity * 0.5), lineWidth: DesignSystem.borderWidth)
+                    .stroke(Color.appAccent.opacity(SystemOpacity.glass), lineWidth: DesignSystem.borderWidth)
             )
-            .shadow(color: .black.opacity(DesignSystem.ghostOpacity * 3), radius: DesignSystem.atomic * 2, x: 0, y: DesignSystem.borderWidth)
+            .shadow(color: .black.opacity(SystemOpacity.faint), radius: SystemSpacing.tiny, x: 0, y: DesignSystem.borderWidth)
         }
         .buttonStyle(.plain)
         .contentShape(Capsule())

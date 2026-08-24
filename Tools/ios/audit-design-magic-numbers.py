@@ -155,32 +155,24 @@ def _check_kerning_tracking(raw, path, line_no, s, res):
 
 def _check_magic_math(raw, path, line_no, s, res):
     """检查魔鬼算术表达式与 customSize。"""
-    # 精确匹配：仅当 DesignSystem/Spacing token 与算术运算符直接组合时豁免特定已知 token，
-    # 而非整行包含关键词就豁免
+    # 严格有限原则：禁止任何 token 算术表达式（* / + -），无豁免
     exempt_tokens = ['DesignSystem.Domain', 'DesignSystem.Metrics', 'DesignSystem.Gallery', 'Spacing']
-    # 已知合法的 token 算术表达式（如 DesignSystem.standardPadding / 2 在定义文件中）
-    known_valid_patterns = [
-        r'DesignSystem\.borderWidth\s*[/]\s*\d+',  # DesignSystem.borderWidth / 2
-        r'DesignSystem\.standardPadding\s*[+/]\s*\d+',  # DesignSystem.standardPadding + 4
-        r'DesignSystem\.huge\s*[*/]\s*\d+',
-    ]
-    is_known_valid = any(re.search(p, raw) for p in known_valid_patterns)
-    _check_view_arithmetic(raw, path, line_no, s, res, is_known_valid)
-    _check_token_arithmetic(raw, path, line_no, s, res, is_known_valid, exempt_tokens)
+    _check_view_arithmetic(raw, path, line_no, s, res)
+    _check_token_arithmetic(raw, path, line_no, s, res, exempt_tokens)
     _check_custom_size(raw, path, line_no, s, res)
 
 
-def _check_view_arithmetic(raw, path, line_no, s, res, is_known_valid):
+def _check_view_arithmetic(raw, path, line_no, s, res):
     """检查 View 修饰符中的 token 算术表达式。"""
-    pattern = r'\.(padding|frame|offset|radius)\([^)]*\b(DesignSystem|Spacing)\.[a-zA-Z0-9_.]+\s*[\*\/]\s*(0\.\d+|\d+\.?\d*)\b'
-    if re.search(pattern, raw) and not is_known_valid:
+    pattern = r'\.(padding|frame|offset|radius)\([^)]*\b(DesignSystem|Spacing)\.[a-zA-Z0-9_.]+\s*[\*\/\+\-]\s*(0\.\d+|\d+\.?\d*)\b'
+    if re.search(pattern, raw):
         res.append(('Magic Math View算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
-def _check_token_arithmetic(raw, path, line_no, s, res, is_known_valid, exempt_tokens):
-    """检查 token * 数字 形式的算术表达式。"""
-    token_math = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/]\s*(\d+\.?\d*)\b', raw)
-    if token_math and not is_known_valid:
+def _check_token_arithmetic(raw, path, line_no, s, res, exempt_tokens):
+    """检查 token * 数字 形式的算术表达式（严格禁止 * / + -）。"""
+    token_math = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/\+\-]\s*(\d+\.?\d*)\b', raw)
+    if token_math:
         token_full = f'{token_math.group(1)}.{token_math.group(2)}'
         if token_full not in exempt_tokens and not any(token_full.startswith(e) for e in exempt_tokens):
             res.append(('Magic Math token算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))

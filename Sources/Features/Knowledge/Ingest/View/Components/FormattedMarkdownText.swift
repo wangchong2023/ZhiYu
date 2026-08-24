@@ -131,7 +131,7 @@ public struct FormattedMarkdownText: View {
                             Button {
                                 onWikiLinkTap?(match.targetTitle)
                             } label: {
-                                HStack(spacing: 2) {
+                                HStack(spacing: SystemSpacing.atomic) {
                                     Image(systemName: "link")
                                         .font(.caption2)
                                     Text("[[\(match.displayTitle)]]")

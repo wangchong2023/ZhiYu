@@ -112,7 +112,7 @@ struct GraphNodeView: View {
             // 2. 核心脉冲 (Core Pulse)
             if isSelected {
                 Circle()
-                    .stroke(nodeBaseColor.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth * 1.5)
+                    .stroke(nodeBaseColor.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.divider)
                     .frame(width: nodeSize, height: nodeSize)
                     .scaleEffect(isAnimating ? 1.8 : 1.0)
                     .opacity(isAnimating ? 0 : 1)
@@ -144,9 +144,9 @@ struct GraphNodeView: View {
                 .contextMenu { nodeContextMenu }
                 .overlay(
                     Circle()
-                        .stroke(.appGloss.opacity(DesignSystem.glassOpacity * 2), lineWidth: DesignSystem.borderWidth)
+                        .stroke(.appGloss.opacity(SystemOpacity.glassStrong), lineWidth: DesignSystem.borderWidth)
                 )
-                .shadow(color: nodeBaseColor.opacity(isSelected ? DesignSystem.fullOpacity - DesignSystem.glassOpacity : DesignSystem.disabledOpacity), radius: isSelected ? DesignSystem.standardPadding : DesignSystem.tiny + DesignSystem.atomic)
+                .shadow(color: nodeBaseColor.opacity(isSelected ? DesignSystem.fullOpacity - DesignSystem.glassOpacity : SystemOpacity.disabled), radius: isSelected ? DesignSystem.standardPadding : DesignSystem.tiny + DesignSystem.atomic)
                 .scaleEffect(isSelected ? 1.1 : 1.0)
 
             // 4. 类型图标
@@ -173,7 +173,7 @@ struct GraphNodeView: View {
                 Text(node.title)
                     .font(.caption.bold())
                 Text(node.pageType.displayName)
-                    .font(.system(size: DesignSystem.microFontSize - 2))
+                    .font(.system(size: Reference.FontSize.micro))
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, DesignSystem.small)

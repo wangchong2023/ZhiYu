@@ -13,6 +13,9 @@ import UFPCore
 import UniformTypeIdentifiers
 import Dependencies
 
+// 导入面板最小高度（组件特定值）
+private let ingestPanelMinHeight: CGFloat = 246
+
 // MARK: - 视图核心
 struct IngestView: View {
     @Environment(KnowledgeStore.self) var store
@@ -218,7 +221,7 @@ struct IngestView: View {
                                         .overlay(Capsule().stroke(coordinator.newType == type ? Color.fromModelColorName(type.colorName).opacity(DesignSystem.Opacity.shadow) : Color.appBorder, lineWidth: 1))
                                     }.buttonStyle(.plain)
                                 }
-                            }.padding(.horizontal, 1)
+                            }.padding(.horizontal, SystemSpacing.divider)
                         }
                     }.padding(.vertical, DesignSystem.tiny)
                     NavigationLink(destination: IconPickerView(selectedIcon: $coordinator.newCustomIcon)) {
@@ -246,7 +249,7 @@ struct IngestView: View {
                         } else {
                             TextEditor(text: $coordinator.newContent)
                         }
-                    }.frame(minHeight: DesignSystem.Metrics.heroValueSize * 7.7)
+                    }.frame(minHeight: ingestPanelMinHeight)
                 }
             }
             .scrollContentBackground(.hidden).background(themeManager.pageBackground()).navigationTitle(coordinator.manualFormTitle).navigationBarTitleDisplayMode(.inline)

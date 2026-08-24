@@ -146,7 +146,7 @@ struct TagPill: View {
     var onRemove: () -> Void = {}
 
     var body: some View {
-        HStack(spacing: DesignSystem.atomic * 2) { // 4
+        HStack(spacing: SystemSpacing.tiny) { // 4
             Text(tag)
                 .font(.caption2)
                 .foregroundStyle(.appAccent)

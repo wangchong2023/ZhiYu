@@ -104,7 +104,7 @@ struct Graph3DView: View {
                 HStack(spacing: DesignSystem.tiny) {
                     Circle()
                         .fill(fps > 30 ? Color.theme.green : (fps > 15 ? Color.theme.orange : Color.theme.red))
-                        .frame(width: DesignSystem.tiny + 2, height: DesignSystem.tiny + 2)
+                        .frame(width: SystemSpacing.small, height: SystemSpacing.small)
                     Text("FPS: \(Int(fps))")
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
@@ -199,7 +199,7 @@ struct Graph3DView: View {
         let starCount = GraphConstants.ThreeD.starCount
         let starGeometry = SCNSphere(radius: DesignSystem.Graph.ThreeD.starRadius)
         starGeometry.firstMaterial?.emission.contents = UIColor(Color.appAccent).withAlphaComponent(DesignSystem.surfaceOpacity)
-        starGeometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(DesignSystem.softOpacity)
+        starGeometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(SystemOpacity.faint)
         
         for _ in 0..<starCount {
             let node = SCNNode(geometry: starGeometry)
@@ -271,7 +271,7 @@ struct Graph3DView: View {
             
             geometry.firstMaterial?.diffuse.contents = uiColor.withAlphaComponent(opacity)
             geometry.firstMaterial?.specular.contents = UIColor.theme.white.withAlphaComponent(opacity)
-            geometry.firstMaterial?.emission.contents = isDimmed ? uiColor.withAlphaComponent(DesignSystem.ghostOpacity * 10) : uiColor.withAlphaComponent(DesignSystem.softOpacity)
+            geometry.firstMaterial?.emission.contents = isDimmed ? uiColor.withAlphaComponent(SystemOpacity.faint) : uiColor.withAlphaComponent(SystemOpacity.faint)
 
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(

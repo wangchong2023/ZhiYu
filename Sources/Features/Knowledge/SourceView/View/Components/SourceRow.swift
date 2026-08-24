@@ -22,7 +22,7 @@ struct SourceRow: View {
                         .font(.caption)
                         .foregroundStyle(.appAccent)
                     
-                    VStack(alignment: .leading, spacing: 1) {
+                    VStack(alignment: .leading, spacing: SystemSpacing.divider) {
                         Text(source.title)
                             .font(.footnote.weight(.bold))
                             .foregroundStyle(.appText)
