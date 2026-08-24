@@ -86,7 +86,7 @@ struct TaskCenterView: View {
                                         HStack(spacing: DesignSystem.medium) {
                                             ZStack {
                                                 Circle()
-                                                    .fill(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                                    .fill(taskColor(for: type).opacity(SystemOpacity.ghost))
                                                     .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
                                                 Image(systemName: type.icon)
                                                     .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
@@ -113,7 +113,7 @@ struct TaskCenterView: View {
                                                 }
                                                 .padding(.horizontal, DesignSystem.tightPadding)
                                                 .padding(.vertical, DesignSystem.tiny)
-                                                .background(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                                .background(taskColor(for: type).opacity(SystemOpacity.ghost))
                                                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
                                             }
                                         }
@@ -148,7 +148,7 @@ struct TaskCenterView: View {
                                         HStack(spacing: DesignSystem.medium) {
                                             ZStack {
                                                 Circle()
-                                                    .fill(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                                    .fill(taskColor(for: type).opacity(SystemOpacity.ghost))
                                                     .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
                                                 Image(systemName: type.icon)
                                                     .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
@@ -175,7 +175,7 @@ struct TaskCenterView: View {
                                                 }
                                                 .padding(.horizontal, DesignSystem.tightPadding)
                                                 .padding(.vertical, DesignSystem.tiny)
-                                                .background(taskColor(for: type).opacity(DesignSystem.glassOpacity / 3))
+                                                .background(taskColor(for: type).opacity(SystemOpacity.ghost))
                                                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
                                             }
                                         }
@@ -238,7 +238,7 @@ struct TaskCenterView: View {
         return VStack(alignment: .center, spacing: DesignSystem.tiny) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(DesignSystem.glassOpacity / 2))
+                    .fill(color.opacity(SystemOpacity.ghost))
                     .frame(width: DesignSystem.Timeline.indicatorSize - DesignSystem.tiny, height: DesignSystem.Timeline.indicatorSize - DesignSystem.tiny) // 32
                 Image(systemName: type.icon)
                     .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
@@ -247,7 +247,7 @@ struct TaskCenterView: View {
                 if runningCount > 0 {
                     Circle()
                         .trim(from: 0, to: 0.8)
-                        .stroke(color, lineWidth: DesignSystem.borderWidth * 2)
+                        .stroke(color, lineWidth: SystemStroke.selected)
                         .frame(width: DesignSystem.Timeline.indicatorSize, height: DesignSystem.Timeline.indicatorSize)
                         .rotationEffect(.degrees(-90))
                 }
@@ -274,12 +274,12 @@ struct TaskCenterView: View {
         // 选中状态应用细微的色彩边框，提供强力视觉锚点
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .stroke(isSelected ? color : Color.clear, lineWidth: DesignSystem.borderWidth * 2)
+                .stroke(isSelected ? color : Color.clear, lineWidth: SystemStroke.selected)
         )
         .padding(.vertical, DesignSystem.tiny)
         // 阴影和缩放微动效
         .shadow(
-            color: Color.theme.black.opacity(isSelected ? DesignSystem.shadowOpacity / 2.5 : DesignSystem.shadowOpacity / 5),
+            color: Color.theme.black.opacity(isSelected ? SystemOpacity.ghost : SystemOpacity.ghost),
             radius: isSelected ? DesignSystem.medium : DesignSystem.small,
             x: 0,
             y: isSelected ? DesignSystem.small : DesignSystem.tiny
@@ -303,14 +303,14 @@ struct TaskCenterView: View {
         VStack(spacing: DesignSystem.loosePadding) {
             ZStack {
                 Circle()
-                    .fill(Color.appAccent.opacity(DesignSystem.glassOpacity / 2))
+                    .fill(Color.appAccent.opacity(SystemOpacity.ghost))
                     .frame(width: DesignSystem.Gallery.displayIconSize, height: DesignSystem.Gallery.displayIconSize)
                 
                 Image(systemName: DesignSystem.Icons.trayFill)
                     .font(.system(size: DesignSystem.Gallery.splashIconSize - DesignSystem.medium))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.appAccent.opacity(DesignSystem.fullOpacity), .appAccent.opacity(DesignSystem.glassOpacity * 2)],
+                            colors: [.appAccent.opacity(DesignSystem.fullOpacity), .appAccent.opacity(SystemOpacity.glassStrong)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -332,7 +332,7 @@ struct TaskCenterView: View {
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(DesignSystem.atomic * 2)
+                    .lineSpacing(SystemSpacing.tiny)
             }
             
             VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
@@ -361,7 +361,7 @@ struct TaskCenterView: View {
                 .font(.system(size: DesignSystem.Action.iconSize))
                 .foregroundStyle(color)
                 .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
-                .background(color.opacity(DesignSystem.glassOpacity / 2))
+                .background(color.opacity(SystemOpacity.ghost))
                 .clipShape(Circle())
             
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
@@ -387,7 +387,7 @@ private struct TaskRow: View {
             // 类型图标与状态
             ZStack(alignment: .bottomTrailing) {
                 Circle()
-                    .fill(task.type == .ai ? Color.theme.purple.opacity(DesignSystem.glassOpacity / 2) : Color.appAccent.opacity(DesignSystem.glassOpacity / 2))
+                    .fill(task.type == .ai ? Color.theme.purple.opacity(SystemOpacity.ghost) : Color.appAccent.opacity(SystemOpacity.ghost))
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 Image(systemName: task.type.icon)
@@ -399,11 +399,11 @@ private struct TaskRow: View {
                     Circle()
                         .fill(.red)
                         .frame(width: DesignSystem.Task.statusIndicatorSize, height: DesignSystem.Task.statusIndicatorSize)
-                        .overlay(Circle().stroke(Color.appCard, lineWidth: DesignSystem.borderWidth * 2))
+                        .overlay(Circle().stroke(Color.appCard, lineWidth: SystemStroke.selected))
                 }
             }
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic * 2) {
+            VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
                 HStack {
                     Text(task.name)
                         .font(.subheadline.bold())
@@ -434,8 +434,8 @@ private struct TaskRow: View {
             VStack(alignment: .trailing, spacing: DesignSystem.Metrics.progressHeight) {
                 statusText
                 Text(task.startTime.formatted(.dateTime.hour().minute().second().locale(Localized.currentLocale)))
-                    .font(.system(size: DesignSystem.microFontSize - DesignSystem.atomic * 2, design: .monospaced)) // 8
-                    .foregroundStyle(.appSecondary.opacity(DesignSystem.glassOpacity * 2))
+                    .font(.system(size: DesignSystem.microFontSize - SystemSpacing.tiny, design: .monospaced)) // 8
+                    .foregroundStyle(.appSecondary.opacity(SystemOpacity.glassStrong))
                     .fixedSize()
             }
         }

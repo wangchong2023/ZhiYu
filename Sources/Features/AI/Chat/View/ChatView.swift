@@ -229,7 +229,7 @@ struct ChatViewContent: View {
                 .font(DesignSystem.secondaryFont)
                 .foregroundStyle(.appAccent)
                 .frame(width: DesignSystem.titleIconSize * DesignSystem.Domain.AI.Chat.bubbleIconScale, height: DesignSystem.titleIconSize * DesignSystem.Domain.AI.Chat.bubbleIconScale)
-                .background(Color.appAccent.opacity(DesignSystem.Opacity.glass * 1.5))
+                .background(Color.appAccent.opacity(SystemOpacity.glassMedium))
                 .clipShape(Circle())
             
             VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) {
@@ -275,7 +275,7 @@ struct ChatViewContent: View {
                 .buttonStyle(.plain)
                 .padding(.top, DesignSystem.tiny)
             }
-            Spacer(minLength: DesignSystem.largeIconSize * 0.8)
+            Spacer(minLength: ComponentSpacing.iconStandard)
         }
     }
     

@@ -95,7 +95,7 @@ struct SynthesisSourcePagesBar: View {
                             .padding(.vertical, DesignSystem.tightPadding + 1)
                             .background(
                                 ZStack {
-                                    Capsule().fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity * 0.5))
+                                    Capsule().fill(Color.appAccent.opacity(SystemOpacity.disabled))
                                     Capsule().strokeBorder(Color.appAccent.opacity(DesignSystem.dimmedOpacity), lineWidth: 1)
                                 }
                             )

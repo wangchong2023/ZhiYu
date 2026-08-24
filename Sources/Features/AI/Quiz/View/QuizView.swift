@@ -267,10 +267,10 @@ private struct OptionRow: View {
     
     private var backgroundColor: Color {
         if !showResult {
-            return isSelected ? Color.appAccent.opacity(DesignSystem.glassOpacity / 1.5) : Color.appCard
+            return isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appCard
         }
-        if isCorrect { return Color.theme.green.opacity(DesignSystem.glassOpacity / 1.5) }
-        if isSelected { return Color.theme.red.opacity(DesignSystem.glassOpacity / 1.5) }
+        if isCorrect { return Color.theme.green.opacity(SystemOpacity.faint) }
+        if isSelected { return Color.theme.red.opacity(SystemOpacity.faint) }
         return Color.appCard
     }
     

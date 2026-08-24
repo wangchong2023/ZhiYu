@@ -184,7 +184,7 @@ struct ChatBubbleView: View {
                         HapticFeedback.shared.trigger(.selection)
                         onRegenerate()
                     }) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: SystemSpacing.tiny) {
                             Image(systemName: DesignSystem.Icons.arrowClockwise)
                                 .font(.caption2)
                             Text(L10n.Chat.regenerate)
@@ -257,7 +257,7 @@ struct ChatBubbleView: View {
                                         selectedTab = .knowledge
                                         router.navigateToPage(id: page.id)
                                     }) {
-                                        HStack(spacing: 3) {
+                                        HStack(spacing: SystemSpacing.tight) {
                                             Image(systemName: page.displayIcon)
                                                 .font(.caption2)
                                             Text(page.title)
@@ -341,7 +341,7 @@ struct ChatContentView: View {
                         .padding(.vertical, DesignSystem.tightPadding)
                         .background(
                             RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                                .fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity * 0.5))
+                                .fill(Color.appAccent.opacity(SystemOpacity.disabled))
                         )
                     }
                     .buttonStyle(.plain)

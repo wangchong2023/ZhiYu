@@ -178,7 +178,7 @@ struct SynthesisView: View {
                         }
                         .padding(.horizontal, DesignSystem.medium)
                         .padding(.vertical, DesignSystem.tightPadding)
-                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity * 0.5)))
+                        .background(Capsule().fill(Color.appAccent.opacity(SystemOpacity.disabled)))
                         .foregroundStyle(Color.appAccent)
                     }
                     .buttonStyle(.plain)

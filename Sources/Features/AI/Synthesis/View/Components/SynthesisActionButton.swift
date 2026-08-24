@@ -42,7 +42,7 @@ struct SynthesisActionButton: View {
                 }) {
                     VStack(spacing: DesignSystem.tiny) {
                         ZStack {
-                            Circle().fill(type.formatColor.opacity(DesignSystem.dimmedOpacity * 0.6)).frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
+                            Circle().fill(type.formatColor.opacity(SystemOpacity.faint)).frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
                             Image(systemName: type.icon)
                                 .font(.system(size: DesignSystem.iconMedium, weight: .semibold))
                                 .foregroundStyle(type.formatColor)
@@ -76,7 +76,7 @@ struct SynthesisActionButton: View {
                         .padding(DesignSystem.tightPadding)
                         .background(Color.appCard.opacity(DesignSystem.surfaceOpacity))
                         .clipShape(Circle())
-                        .shadow(radius: 2)
+                        .shadow(radius: SystemShadow.radiusSmall)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.AI.Synthesis.Control.title)

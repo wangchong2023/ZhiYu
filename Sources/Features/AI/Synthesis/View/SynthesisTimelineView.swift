@@ -60,7 +60,7 @@ struct SynthesisTimelineView: View {
     private func synthesisTaskRow(task: GlobalTask) -> some View {
         HStack(spacing: DesignSystem.standardPadding) {
             ZStack {
-                Circle().fill(Color.appAccent.opacity(DesignSystem.glassOpacity / 1.5)).frame(width: DesignSystem.Graph.selectedNodeSize, height: DesignSystem.Graph.selectedNodeSize)
+                Circle().fill(Color.appAccent.opacity(SystemOpacity.faint)).frame(width: DesignSystem.Graph.selectedNodeSize, height: DesignSystem.Graph.selectedNodeSize)
                 ProgressView()
             }
             VStack(alignment: .leading, spacing: DesignSystem.small) {

@@ -98,7 +98,7 @@ struct AIPulseIndicator: View {
         .background(
             Capsule()
                 .fill(Color.appCard.opacity(DesignSystem.Opacity.prominent)) // 0.8
-                .shadow(color: .black.opacity(DesignSystem.shadowOpacity / 2), radius: DesignSystem.borderWidth * 2) // 0.05, 2
+                .shadow(color: .black.opacity(DesignSystem.shadowOpacity / 2), radius: SystemStroke.selected) // 0.05, 2
         )
         .animation(.spring(response: DesignSystem.Animation.standardDuration * 1.2), value: taskCenter.latestStatus) // 0.3
         .animation(.spring(), value: isActive)
