@@ -70,7 +70,7 @@ struct QuickCaptureWidgetEntryView: View {
     }
 
     private var mediumView: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 3) {
             captureButton(title: WidgetL10n.voice, icon: "mic.fill", color: .purple, url: "zhiyu://voice")
             captureButton(title: "OCR", icon: "doc.text.viewfinder", color: .blue, url: "zhiyu://ocr")
             captureButton(title: WidgetL10n.search, icon: "magnifyingglass", color: .orange, url: "zhiyu://search")

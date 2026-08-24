@@ -36,12 +36,12 @@ struct WatchKnowledgeStatsView: View {
                 // Stats circle
                 ZStack {
                     Circle()
-                        .stroke(Color.appAccent.opacity(DesignSystem.glassOpacity), lineWidth: DesignSystem.borderWidth * 3)
+                        .stroke(Color.appAccent.opacity(SystemOpacity.glass), lineWidth: SystemStroke.heavy)
                         .frame(width: DesignSystem.huge * 2 + DesignSystem.small, height: DesignSystem.huge * 2 + DesignSystem.small)
                     
                     Circle()
                         .trim(from: 0, to: min(1.0, Double(totalPages) / 100.0))
-                        .stroke(Color.appAccent, style: StrokeStyle(lineWidth: DesignSystem.borderWidth * 3, lineCap: .round))
+                        .stroke(Color.appAccent, style: StrokeStyle(lineWidth: SystemStroke.heavy, lineCap: .round))
                         .frame(width: DesignSystem.huge * 2 + DesignSystem.small, height: DesignSystem.huge * 2 + DesignSystem.small)
                         .rotationEffect(.degrees(-90))
                     
@@ -269,7 +269,7 @@ public struct WatchDailyInsightView: View {
 }
 
 #Preview(L10n.Widget.widgetsPreview) {
-    VStack(spacing: 20) {
+    VStack(spacing: SystemSpacing.content) {
         DailyInsightWidgetView()
         KnowledgeDistributionWidgetView()
         QuickCaptureWidgetView()

@@ -120,7 +120,7 @@ struct DailyInsightWidgetEntryView: View {
     }
 
     private var mediumView: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Label(WidgetL10n.dailyInsight, systemImage: "sparkles")
                     .font(.caption.weight(.bold))

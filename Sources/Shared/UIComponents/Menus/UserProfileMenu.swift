@@ -442,7 +442,7 @@ struct CustomProfilePopover: View {
                             .clipShape(Circle())
                     }
                     
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
                         Text(authService.currentUser?.name ?? L10n.Auth.profileAndQuota)
                             .font(.headline)
                             .foregroundStyle(.appText)
@@ -529,7 +529,7 @@ struct CustomProfilePopover: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, 6)
+            .padding(.vertical, SystemSpacing.small)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

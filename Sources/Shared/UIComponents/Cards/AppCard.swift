@@ -143,13 +143,13 @@ public struct AppGlassCard<Content: View>: View {
                         .fill(Color.appCard.opacity(DesignSystem.translucentOpacity))
                     if isHighlighted {
                         RoundedRectangle(cornerRadius: cornerRadius)
-                            .stroke(Color.appAccent.opacity(DesignSystem.accentStrokeOpacity), lineWidth: DesignSystem.borderWidth)
+                            .stroke(Color.appAccent.opacity(DesignSystem.accentStrokeOpacity), lineWidth: SystemStroke.border)
                     }
                 }
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .shadow(
-                color: .primary.opacity(isHighlighted ? DesignSystem.glassOpacity : DesignSystem.shadowOpacity * 0.75),
+                color: .primary.opacity(isHighlighted ? SystemOpacity.glass : SystemOpacity.ghost * 0.75),
                 radius: isHighlighted ? Spacing.Decorator.shadowRadiusLarge : Spacing.Decorator.shadowRadiusSmall, 
                 x: 0, 
                 y: isHighlighted ? Spacing.Decorator.shadowOffsetYLarge : Spacing.Decorator.shadowOffsetYSmall

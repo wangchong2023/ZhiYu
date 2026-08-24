@@ -36,12 +36,12 @@ struct AboutView: View {
                             .font(.title2.bold())
                     }
                 }
-                .padding(.top, 40)
+                .padding(.top, ComponentSpacing.ultra)
                 
                 // 去粗糙化：移除在此处误引用的 L10n.Vault.subtitle (即“选择一个笔记本开始探索”提示语)
                 
                 // Info List
-                VStack(spacing: 1) {
+                VStack(spacing: SystemSpacing.divider) {
                     infoRow(title: L10n.Settings.About.developer, value: L10n.Settings.About.developerName)
                     Divider().padding(.leading, Spacing.standardPadding)
                     
@@ -79,7 +79,7 @@ struct AboutView: View {
                     .font(.caption2)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, ComponentSpacing.ultra)
             }
         }
         .background(PageBackgroundView(accentColor: .appAccent))

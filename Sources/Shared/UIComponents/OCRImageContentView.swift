@@ -41,10 +41,10 @@ public struct OCRImageContentView: View {
                     .scaledToFit()
                     .frame(maxHeight: Spacing.Grid.emptyStateHeight)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                    .shadow(color: .primary.opacity(DesignSystem.shadowOpacity), radius: DesignSystem.small)
+                    .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.small)
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                            .stroke(Color.appBorder, lineWidth: SystemStroke.border)
                     )
             }
         }
@@ -60,10 +60,10 @@ public struct OCRImageContentView: View {
                     .scaledToFit()
                     .frame(maxHeight: Spacing.Grid.emptyStateHeight)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                    .shadow(color: .primary.opacity(DesignSystem.shadowOpacity), radius: DesignSystem.small)
+                    .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.small)
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                            .stroke(Color.appBorder, lineWidth: SystemStroke.border)
                     )
             }
         }

@@ -56,7 +56,7 @@ struct MarkdownRendererView: View {
             if store.isPrivacyModeEnabled && isPrivate && !tempUnlocked {
                 VStack(spacing: DesignSystem.medium) {
                     Image(systemName: DesignSystem.Icons.privacyMode)
-                        .font(.system(size: DesignSystem.largeIconSize / 1.5))
+                        .font(.system(size: ComponentSpacing.iconCompact))
                     Text(L10n.Common.Security.privacyMasked)
                         .font(DesignSystem.titleFont)
                     Button(action: {
@@ -122,7 +122,7 @@ struct MarkdownRendererView: View {
                 .padding(.top, DesignSystem.tiny)
         }
         .padding(DesignSystem.medium)
-        .background(Color.appAccent.opacity(DesignSystem.glassOpacity / 3))
+        .background(Color.appAccent.opacity(SystemOpacity.ghost))
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
         .padding(.vertical, DesignSystem.tiny)
         #else
@@ -135,7 +135,7 @@ struct MarkdownRendererView: View {
                 .foregroundStyle(.appAccent)
         }
         .padding(DesignSystem.medium)
-        .background(Color.appAccent.opacity(DesignSystem.glassOpacity / 3))
+        .background(Color.appAccent.opacity(SystemOpacity.ghost))
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
         .padding(.vertical, DesignSystem.tiny)
         #endif
@@ -160,8 +160,8 @@ struct MarkdownRendererView: View {
     private func renderParagraph(text: String) -> some View {
         renderInlineContent(text)
             .font(isCompact ? DesignSystem.secondaryFont : .system(.body, design: .serif))
-            .lineSpacing(isCompact ? DesignSystem.atomic * 2 : DesignSystem.tiny * 1.5)
-            .foregroundStyle(.appText.opacity(DesignSystem.fullOpacity - DesignSystem.glassOpacity))
+            .lineSpacing(isCompact ? SystemSpacing.tiny : SystemSpacing.small)
+            .foregroundStyle(.appText.opacity(SystemOpacity.active - SystemOpacity.glass))
     }
 
     // MARK: - Render Bullet List
@@ -199,19 +199,19 @@ struct MarkdownRendererView: View {
         
         HStack(spacing: 0) {
             RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                .fill(isAISummary ? Color.appAccent : Color.appAccent.opacity(DesignSystem.disabledOpacity))
-                .frame(width: DesignSystem.atomic + DesignSystem.borderWidth)
+                .fill(isAISummary ? Color.appAccent : Color.appAccent.opacity(SystemOpacity.disabled))
+                .frame(width: DesignSystem.atomic + SystemStroke.border)
                 .padding(.trailing, DesignSystem.mediumRadius)
 
             renderInlineContent(text)
                 .font(isAISummary ? .system(.body, design: .serif).italic() : .body.italic())
                 .foregroundStyle(isAISummary ? .appAccent : .appSecondary)
-                .lineSpacing(isAISummary ? DesignSystem.small : DesignSystem.tiny * 1.5) // AI 总结采用更宽松的行间距提升阅读舒适度
+                .lineSpacing(isAISummary ? DesignSystem.small : SystemSpacing.small) // AI 总结采用更宽松的行间距提升阅读舒适度
 
             Spacer(minLength: 0)
         }
         .padding(isAISummary ? DesignSystem.medium : 0)
-        .background(isAISummary ? Color.appAccent.opacity(DesignSystem.glassOpacity / 3) : Color.clear)
+        .background(isAISummary ? Color.appAccent.opacity(SystemOpacity.ghost) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: isAISummary ? DesignSystem.smallRadius : 0))
         .padding(.vertical, DesignSystem.tiny)
     }
@@ -241,15 +241,15 @@ struct MarkdownRendererView: View {
                         }
                     }
                     .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(.appText.opacity(DesignSystem.fullOpacity - DesignSystem.glassOpacity))
+                    .foregroundStyle(.appText.opacity(SystemOpacity.active - SystemOpacity.glass))
                     .padding(DesignSystem.medium)
                 }
             }
-            .background(Color.appCard.opacity(DesignSystem.fullOpacity - DesignSystem.glassOpacity * 1.5))
+            .background(Color.appCard.opacity(SystemOpacity.active - SystemOpacity.glass * 1.5))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth)
+                    .stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border)
             )
             .padding(.vertical, DesignSystem.tiny)
         }
@@ -419,7 +419,7 @@ struct MarkdownRendererView: View {
     private func codeSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
         var container = AttributedString(segment.content)
         container.swiftUI.font = .system(.caption, design: .monospaced)
-        container.swiftUI.backgroundColor = Color.appAccent.opacity(DesignSystem.glassOpacity)
+        container.swiftUI.backgroundColor = Color.appAccent.opacity(SystemOpacity.glass)
         container.swiftUI.foregroundColor = .appText
         return container
     }
@@ -478,17 +478,17 @@ struct MarkdownRendererView: View {
             VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
                 ForEach(0..<3, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                        .fill(Color.appCard.opacity(DesignSystem.disabledOpacity * 2))
+                        .fill(Color.appCard.opacity(SystemOpacity.glassStrong))
                         .frame(height: DesignSystem.captionFontSize + DesignSystem.atomic)
                         .frame(maxWidth: .infinity)
                 }
             }
             
             RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                .fill(Color.appCard.opacity(DesignSystem.disabledOpacity))
-                .frame(width: DesignSystem.Gallery.callToActionWidth - DesignSystem.tightPadding, height: DesignSystem.subheadlineFontSize + DesignSystem.atomic * 2)
+                .fill(Color.appCard.opacity(SystemOpacity.disabled))
+                .frame(width: DesignSystem.Gallery.callToActionWidth - DesignSystem.tightPadding, height: DesignSystem.subheadlineFontSize + SystemSpacing.tiny)
         }
         .padding(.vertical, DesignSystem.tightPadding)
-        .opacity(DesignSystem.disabledOpacity * 2)
+        .opacity(SystemOpacity.glassStrong)
     }
 }

@@ -24,7 +24,7 @@ struct WatchBriefingView: View {
     @State private var delegate = SpeechDelegate()
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: SystemSpacing.medium) {
             if watchSync.isBriefingLoading {
                 ProgressView(L10n.Watch.briefingSynthesizing)
                     .foregroundStyle(Color.theme.purple)
@@ -35,7 +35,7 @@ struct WatchBriefingView: View {
                         .padding()
                 }
                 
-                HStack(spacing: 20) {
+                HStack(spacing: SystemSpacing.content) {
                     Button(action: {
                         if isPlaying {
                             synthesizer.pauseSpeaking(at: .word)
@@ -65,9 +65,9 @@ struct WatchBriefingView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.top, 8)
+                .padding(.top, SystemSpacing.element)
             } else {
-                VStack(spacing: 8) {
+                VStack(spacing: SystemSpacing.element) {
                     Image(systemName: "headphones")
                         .font(.largeTitle)
                         .foregroundStyle(Color.theme.purple)

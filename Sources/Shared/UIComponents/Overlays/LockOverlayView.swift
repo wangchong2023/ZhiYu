@@ -57,7 +57,7 @@ struct LockOverlayView: View {
             }
             .animation(.easeInOut(duration: 10).repeatForever(autoreverses: true), value: isAnimating)
             
-            VStack(spacing: 40) {
+            VStack(spacing: ComponentSpacing.ultra) {
                 Spacer()
                 
                 // 2. The Vault Icon Container
@@ -66,7 +66,7 @@ struct LockOverlayView: View {
                     Circle()
                         .stroke(
                             LinearGradient(colors: [Color.appAccent.opacity(DesignSystem.Opacity.disabled), .clear], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: 1
+                            lineWidth: SystemStroke.divider
                         )
                         .frame(width: DesignSystem.Metrics.ringSmallSize, height: DesignSystem.Metrics.ringSmallSize)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
@@ -75,7 +75,7 @@ struct LockOverlayView: View {
                     Circle()
                         .stroke(
                             LinearGradient(colors: [.clear, Color.appAccent.opacity(DesignSystem.Opacity.medium)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: 1
+                            lineWidth: SystemStroke.divider
                         )
                         .frame(width: DesignSystem.Metrics.ringLargeSize, height: DesignSystem.Metrics.ringLargeSize)
                         .rotationEffect(.degrees(isAnimating ? -360 : 0))
@@ -126,8 +126,8 @@ struct LockOverlayView: View {
                         Text(L10n.Common.Security.unlock)
                             .font(.headline)
                     }
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 18)
+                    .padding(.horizontal, ComponentSpacing.ultra)
+                    .padding(.vertical, SystemSpacing.medium)
                     .background {
                         ZStack {
                             Capsule()
@@ -147,7 +147,7 @@ struct LockOverlayView: View {
                     .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.soft), radius: 25, y: 12)
                 }
                 .buttonStyle(ScaleButtonStyle())
-                .padding(.bottom, 60)
+                .padding(.bottom, ComponentSpacing.colossal)
             }
             .padding(.horizontal)
         }

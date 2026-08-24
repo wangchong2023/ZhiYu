@@ -75,7 +75,7 @@ struct AIProcessingActivityWidget: Widget {
                 
                 // 展开模式 - 底部：核心进度与状态流
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 3) {
                         // 状态标签
                         HStack {
                             Text(context.state.status)

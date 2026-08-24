@@ -190,7 +190,7 @@ struct ContentView: View {
                 .frame(width: DesignSystem.Sidebar.width)
                 .background(.ultraThinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-                .shadow(color: .primary.opacity(DesignSystem.shadowOpacity), radius: DesignSystem.shadowRadius)
+                .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.shadowRadius)
                 .padding(.vertical, DesignSystem.Layout.sidebarOverlayVerticalPadding)
                 .padding(.leading, DesignSystem.medium)
             Spacer()
@@ -294,14 +294,14 @@ struct DatabaseCorruptedBanner: View {
     @State private var showDetail = false
     
     var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 12) {
+        VStack(spacing: SystemSpacing.element) {
+            HStack(spacing: SystemSpacing.medium) {
                 // 安全警告图标
                 Image(systemName: DesignSystem.Icons.exclamationShieldFill)
                     .font(.title3)
                     .foregroundColor(.theme.orange)
                 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                     // 主警告文案 (从强类型本地化 L10n 中拉取)
                     Text(L10n.Security.databaseCorrupted)
                         .font(.subheadline)
@@ -323,7 +323,7 @@ struct DatabaseCorruptedBanner: View {
                 Spacer()
                 
                 // 动作按钮组
-                HStack(spacing: 12) {
+                HStack(spacing: SystemSpacing.medium) {
                     // 折叠切换按钮
                     Button(action: {
                         withAnimation {
@@ -347,7 +347,7 @@ struct DatabaseCorruptedBanner: View {
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
+                                .padding(.vertical, SystemSpacing.small)
                                 .background(Capsule().fill(Color.theme.orange))
                                 .foregroundColor(.theme.white)
                         }
@@ -362,11 +362,11 @@ struct DatabaseCorruptedBanner: View {
             .shadow(color: .primary.opacity(DesignSystem.Opacity.subtle), radius: 6, x: 0, y: 3)
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                    .stroke(Color.theme.orange.opacity(DesignSystem.Opacity.shadow), lineWidth: 1)
+                    .stroke(Color.theme.orange.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
             )
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.top, SystemSpacing.element)
     }
     
     /// 触发重新挂载与完整性校验逻辑

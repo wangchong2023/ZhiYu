@@ -43,20 +43,20 @@ public struct AppLoadingSkeleton: View {
                     .frame(height: DesignSystem.IconSize.micro)
                 
             case .paragraph:
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: SystemSpacing.tight) {
                     skeletonRectangle().frame(height: DesignSystem.IconSize.micro).frame(maxWidth: .infinity)
                     skeletonRectangle().frame(height: DesignSystem.IconSize.micro).frame(maxWidth: .infinity)
                     skeletonRectangle().frame(height: DesignSystem.IconSize.micro).frame(width: DesignSystem.Metrics.sourceCardWidth)
                 }
                 
             case .cardBlock:
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: SystemSpacing.medium) {
                     skeletonRectangle()
                         .frame(height: DesignSystem.Metrics.heroValueSize)
-                    HStack(spacing: 8) {
+                    HStack(spacing: SystemSpacing.element) {
                         skeletonRectangle().frame(width: DesignSystem.Metrics.avatarSkeletonSize, height: DesignSystem.Metrics.avatarSkeletonSize)
                         VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-                            skeletonRectangle().frame(height: DesignSystem.Metrics.textSkeletonHeight).frame(width: DesignSystem.Metrics.sourceCardWidth / 2)
+                            skeletonRectangle().frame(height: DesignSystem.Metrics.textSkeletonHeight).frame(width: ComponentSpacing.colossal)
                             skeletonRectangle().frame(height: DesignSystem.mediumRadius).frame(width: DesignSystem.Metrics.emptyStateGraphicHeight)
                         }
                     }

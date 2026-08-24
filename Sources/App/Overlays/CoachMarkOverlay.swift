@@ -30,7 +30,7 @@ struct CoachMarkOverlay: View {
                     Circle()
                         .fill(LinearGradient(colors: [.appAccent, .appSource], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: DesignSystem.Gallery.splashIconSize, height: DesignSystem.Gallery.splashIconSize)
-                        .shadow(color: .appAccent.opacity(DesignSystem.disabledOpacity), radius: DesignSystem.medium, y: DesignSystem.small + DesignSystem.atomic)
+                        .shadow(color: .appAccent.opacity(SystemOpacity.disabled), radius: DesignSystem.medium, y: DesignSystem.small + DesignSystem.atomic)
                     
                     Image(systemName: iconName)
                         .font(.system(size: DesignSystem.Metrics.titleFontSize * DesignSystem.Metrics.coachMarkIconScale, weight: .bold))
@@ -51,7 +51,7 @@ struct CoachMarkOverlay: View {
                         .padding(.horizontal)
                 }
                 .offset(y: isAnimating ? 0 : DesignSystem.loosePadding)
-                .opacity(isAnimating ? DesignSystem.fullOpacity : 0)
+                .opacity(isAnimating ? SystemOpacity.active : 0)
                 
                 Button(action: performAction) {
                     Text(actionText)
@@ -64,8 +64,8 @@ struct CoachMarkOverlay: View {
                                 .fill(Color.appAccent)
                         )
                 }
-                .scaleEffect(isAnimating ? DesignSystem.fullOpacity : DesignSystem.Metrics.coachMarkScaleMultiplier)
-                .opacity(isAnimating ? DesignSystem.fullOpacity : 0)
+                .scaleEffect(isAnimating ? SystemOpacity.active : DesignSystem.Metrics.coachMarkScaleMultiplier)
+                .opacity(isAnimating ? SystemOpacity.active : 0)
                 
                 Button(action: dismissWithAnimation) {
                     Text(L10n.Common.skip)
@@ -74,16 +74,16 @@ struct CoachMarkOverlay: View {
                 }
                 .padding(.top, DesignSystem.tiny)
             }
-            .padding(DesignSystem.giant + DesignSystem.Metrics.heroValueSize * 0.5)
+            .padding(ComponentSpacing.ultra)
             .background(
                 RoundedRectangle(cornerRadius: DesignSystem.largeRadius + DesignSystem.Metrics.coachMarkRadiusOffset)
                     .fill(Color.appCard)
-                    .shadow(color: .primary.opacity(DesignSystem.glassOpacity * 2), radius: DesignSystem.Metrics.coachMarkShadowRadius, x: 0, y: DesignSystem.Metrics.coachMarkShadowY)
+                    .shadow(color: .primary.opacity(SystemOpacity.glassStrong), radius: DesignSystem.Metrics.coachMarkShadowRadius, x: 0, y: DesignSystem.Metrics.coachMarkShadowY)
             )
             .padding(DesignSystem.giant)
         }
         .onAppear {
-            withAnimation(.spring(response: DesignSystem.Animation.standardDuration, dampingFraction: DesignSystem.Animation.standardDamping * 0.875)) {
+            withAnimation(.spring(response: DesignSystem.Animation.standardDuration, dampingFraction: 0.7)) {
                 isAnimating = true
             }
         }

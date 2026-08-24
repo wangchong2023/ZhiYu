@@ -67,7 +67,7 @@ public struct AppAILoadingSkeleton: View {
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                .stroke(stageColor.opacity(DesignSystem.Opacity.subtle), lineWidth: 1)
+                .stroke(stageColor.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
         )
     }
     

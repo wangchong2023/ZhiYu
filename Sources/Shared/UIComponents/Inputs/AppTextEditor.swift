@@ -40,15 +40,15 @@ public struct AppTextEditor: View {
     }
     
     public var body: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .trailing, spacing: SystemSpacing.small) {
             ZStack(alignment: .topLeading) {
                 // 占位文本层：当内容为空且未输入时展示
                 if text.isEmpty {
                     Text(placeholder)
                         .font(.system(size: 15)) // Dynamic Type
                         .foregroundColor(.secondary.opacity(DesignSystem.Opacity.dim))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, SystemSpacing.small)
+                        .padding(.vertical, SystemSpacing.element)
                         .allowsHitTesting(false) // 允许点击穿透到底层 TextEditor
                 }
                 
@@ -72,7 +72,7 @@ public struct AppTextEditor: View {
                 RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
                     .stroke(
                         isFocused ? Color.theme.blue.opacity(DesignSystem.Opacity.dim) : Color.primary.opacity(DesignSystem.Opacity.subtle),
-                        lineWidth: 1
+                        lineWidth: SystemStroke.divider
                     )
             )
             .shadow(color: isFocused ? Color.theme.blue.opacity(DesignSystem.Opacity.light) : Color.clear, radius: 4, x: 0, y: 2)

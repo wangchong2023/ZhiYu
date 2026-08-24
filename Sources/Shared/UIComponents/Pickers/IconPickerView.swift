@@ -142,7 +142,7 @@ struct IconPickerView: View {
                             .foregroundStyle(selectedIcon == icon ? .appAccent : .appText)
                             .overlay(
                                 RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                                    .stroke(selectedIcon == icon ? Color.appAccent : Color.clear, lineWidth: 2)
+                                    .stroke(selectedIcon == icon ? Color.appAccent : Color.clear, lineWidth: SystemStroke.selected)
                             )
                     }
                     .buttonStyle(.plain)

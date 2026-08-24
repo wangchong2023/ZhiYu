@@ -76,7 +76,7 @@ struct SplashBackgroundView: View {
                             .fill(.appGloss)
                             .frame(width: star.size, height: star.size)
                             .position(x: geo.size.width * star.x, y: geo.size.height * star.y)
-                            .opacity(starTwinkle ? DesignSystem.fullOpacity * 0.7 : DesignSystem.disabledOpacity)
+                            .opacity(starTwinkle ? SystemOpacity.glassStrong : SystemOpacity.disabled)
                             .animation(
                                 .easeInOut(duration: DesignSystem.Animation.looseDuration + star.delay)
                                 .repeatForever(autoreverses: true)
@@ -93,8 +93,8 @@ struct SplashBackgroundView: View {
                     ForEach(Array(connections.enumerated()), id: \.offset) { _, conn in
                         let fromNode = networkNodes[conn.from]
                         let toNode = networkNodes[conn.to]
-                        let lineColor1 = fromNode.isAccent ? Color.appAccent.opacity(DesignSystem.disabledOpacity) : Color.appGloss.opacity(DesignSystem.glassOpacity * 1.2)
-                        let lineColor2 = toNode.isAccent ? Color.appAccent.opacity(DesignSystem.disabledOpacity) : Color.appGloss.opacity(DesignSystem.glassOpacity * 1.2)
+                        let lineColor1 = fromNode.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
+                        let lineColor2 = toNode.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
                         
                         Path { path in
                             path.move(to: CGPoint(
@@ -112,7 +112,7 @@ struct SplashBackgroundView: View {
                                 startPoint: .init(x: fromNode.x, y: fromNode.y),
                                 endPoint: .init(x: toNode.x, y: toNode.y)
                             ),
-                            lineWidth: DesignSystem.borderWidth * 0.8
+                            lineWidth: SystemStroke.thin
                         )
                     }
                 }
@@ -122,11 +122,11 @@ struct SplashBackgroundView: View {
             GeometryReader { geo in
                 if geo.size.width > 1 && geo.size.height > 1 {
                     ForEach(Array(networkNodes.enumerated()), id: \.offset) { index, node in
-                        let nodeColor1 = node.isAccent ? Color.appAccent.opacity(DesignSystem.fullOpacity * 0.9) : Color.appGloss.opacity(DesignSystem.fullOpacity * 0.8)
-                        let nodeColor2 = node.isAccent ? Color.appAccent.opacity(DesignSystem.disabledOpacity) : Color.appGloss.opacity(DesignSystem.glassOpacity * 2)
+                        let nodeColor1 = node.isAccent ? Color.appAccent.opacity(SystemOpacity.active) : Color.appGloss.opacity(SystemOpacity.active * 0.8)
+                        let nodeColor2 = node.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
                         
-                        let nodeScale = nodeGlow ? DesignSystem.fullOpacity : DesignSystem.fullOpacity * 0.5
-                        let nodeOpacity = nodeGlow ? DesignSystem.fullOpacity : DesignSystem.disabledOpacity
+                        let nodeScale = nodeGlow ? SystemOpacity.active : SystemOpacity.overlay
+                        let nodeOpacity = nodeGlow ? SystemOpacity.active : SystemOpacity.disabled
                         let animDuration = DesignSystem.Animation.slowDuration + Double(index) * 0.1
                         let nodeAnim = SwiftUI.Animation.easeInOut(duration: animDuration)
                             .repeatForever(autoreverses: true)
@@ -155,9 +155,9 @@ struct SplashBackgroundView: View {
                 Spacer()
                 RadialGradient(
                     colors: [
-                        Colors.Splash.glow1.opacity(DesignSystem.glassOpacity * 2.5), // 0.25
-                        Colors.Splash.glow2.opacity(DesignSystem.glassOpacity * 1.2), // 0.12
-                        Colors.Splash.glow3.opacity(DesignSystem.shadowOpacity / 2), // 0.05
+                        Colors.Splash.glow1.opacity(SystemOpacity.glassStrong), // 0.25
+                        Colors.Splash.glow2.opacity(SystemOpacity.glassStrong), // 0.12
+                        Colors.Splash.glow3.opacity(SystemOpacity.ghost / 2), // 0.05
                         .clear
                     ],
                     center: .center,
@@ -174,32 +174,32 @@ struct SplashBackgroundView: View {
                 ZStack {
                     // 书本主体
                     RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                        .stroke(Color.appAccent.opacity(DesignSystem.disabledOpacity * 1.15), lineWidth: DesignSystem.borderWidth * 1.2) // 0.35, 1.2
+                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled * 1.15), lineWidth: SystemStroke.border * 1.2) // 0.35, 1.2
                         .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay) // 60, 44
                         .rotationEffect(.degrees(-8))
                         .offset(x: -DesignSystem.atomic) // -2
 
                     RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                        .stroke(Color.appAccent.opacity(DesignSystem.disabledOpacity * 1.15), lineWidth: DesignSystem.borderWidth * 1.2) // 0.35, 1.2
+                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled * 1.15), lineWidth: SystemStroke.border * 1.2) // 0.35, 1.2
                         .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay) // 60, 44
                         .rotationEffect(.degrees(8))
                         .offset(x: DesignSystem.atomic) // 2
 
                     // 书脊
                     Capsule()
-                        .fill(Color.appAccent.opacity(DesignSystem.glassOpacity * 2)) // 0.2
+                        .fill(Color.appAccent.opacity(SystemOpacity.glassStrong)) // 0.2
                         .frame(width: DesignSystem.atomic + 1, height: DesignSystem.iconDisplay) // 3, 44
 
                     // 从书中升起的光粒子
                     ForEach(0..<5, id: \.self) { i in
                         Circle()
-                            .fill(Color.appAccent.opacity(DesignSystem.glassOpacity * 4)) // 0.4
+                            .fill(Color.appAccent.opacity(SystemOpacity.glass * 4)) // 0.4
                             .frame(width: DesignSystem.atomic + 1, height: DesignSystem.atomic + 1) // 3, 3
                             .offset(
                                 x: CGFloat(i - 2) * (DesignSystem.small + DesignSystem.tiny), // 14
                                 y: nodeGlow ? -DesignSystem.Metrics.iconBoxSize * 1.35 - CGFloat(i) * 15 : -DesignSystem.loosePadding // -60, -20
                             )
-                            .opacity(nodeGlow ? DesignSystem.fullOpacity * 0.6 : DesignSystem.glassOpacity) // 0.6, 0.1
+                            .opacity(nodeGlow ? SystemOpacity.active * 0.6 : SystemOpacity.glass) // 0.6, 0.1
                             .animation(
                                 .easeOut(duration: 3.0)
                                 .repeatForever(autoreverses: false)

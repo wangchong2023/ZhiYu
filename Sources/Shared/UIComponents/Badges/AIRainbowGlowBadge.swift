@@ -85,7 +85,7 @@ public struct AIRainbowGlowBadge: View {
                             colors: [.green, .cyan, .blue, .purple, .pink, .green],
                             center: .center
                         ),
-                        lineWidth: 2
+                        lineWidth: SystemStroke.selected
                     )
                     .frame(width: DesignSystem.Metrics.glowBadgeRingSize, height: DesignSystem.Metrics.glowBadgeRingSize)
                     .rotationEffect(.degrees(rotateAnim))
@@ -97,7 +97,7 @@ public struct AIRainbowGlowBadge: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: 1.5
+                        lineWidth: SystemStroke.emphasis
                     )
                     .frame(width: DesignSystem.IconSize.small, height: DesignSystem.IconSize.small)
                     .scaleEffect(1.0 + breathAnim * 0.1)
@@ -139,12 +139,12 @@ public struct AIRainbowGlowBadge: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.bottom, 2)
+            .padding(.bottom, SystemSpacing.atomic)
             
             Divider()
             
             // 1. 当前大模型运行状态
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: SystemSpacing.small) {
                 Text(L10n.Common.unknown)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
@@ -154,7 +154,7 @@ public struct AIRainbowGlowBadge: View {
                         .foregroundStyle(modelManager.isModelLocalReady(for: modelManager.activeModelId) ? Color.theme.green : .appAccent)
                         .font(.title3)
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                         Text(modelManager.activeModelId)
                             .font(.system(.body, design: .monospaced))
                             .bold()
@@ -176,7 +176,7 @@ public struct AIRainbowGlowBadge: View {
                 get: { modelManager.isCloudEscalationEnabled },
                 set: { modelManager.isCloudEscalationEnabled = $0 }
             )) {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                     Text(L10n.Common.unknown)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appText)
@@ -186,7 +186,7 @@ public struct AIRainbowGlowBadge: View {
                 }
             }
             .tint(.appAccent)
-            .padding(.vertical, 4)
+            .padding(.vertical, SystemSpacing.tiny)
             
             // 3. 硬件安全与拦截计数
             let memInGb = Double(modelManager.physicalMemory) / SystemConstants.bytesPerGB

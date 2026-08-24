@@ -10,6 +10,9 @@
 //
 import SwiftUI
 
+// 输入框最小宽度（组件特定值）
+private let inputFieldMinWidth: CGFloat = 110
+
 // MARK: - App Text Field
 
 /// 统一样式的文本输入框
@@ -52,9 +55,9 @@ public struct AppTagField: View {
             // 使用 FlowLayout 自动换行排列标签
             FlowLayout(spacing: DesignSystem.Grid.flowSpacing) {
                 ForEach(tags, id: \.self) { tag in
-                    HStack(spacing: DesignSystem.atomic * 1.5) {
+                    HStack(spacing: SystemSpacing.tight) {
                         Text(tag)
-                            .font(.system(size: DesignSystem.microFontSize + 1))
+                            .font(.system(size: Reference.FontSize.micro))
                         
                         Button(action: { 
                             withAnimation(DesignSystem.Animation.standard) {
@@ -62,14 +65,14 @@ public struct AppTagField: View {
                             }
                         }) {
                             Image(systemName: DesignSystem.Icons.xmark)
-                                .font(.system(size: DesignSystem.microFontSize - 1))
+                                .font(.system(size: Reference.FontSize.micro))
                                 .foregroundStyle(.appSecondary)
                         }
                         .buttonStyle(.plain)
                     }
                     .padding(.horizontal, DesignSystem.small)
                     .padding(.vertical, DesignSystem.tiny)
-                    .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
+                    .background(Color.appAccent.opacity(SystemOpacity.glass))
                     .clipShape(Capsule())
                     .foregroundStyle(.appAccent)
                 }
@@ -87,7 +90,7 @@ public struct AppTagField: View {
                     .onSubmit {
                         addCurrentTag()
                     }
-                    .frame(minWidth: DesignSystem.Metrics.largeIconBoxSize * 2.5)
+                    .frame(minWidth: inputFieldMinWidth)
                     .foregroundStyle(.appText)
             }
             .padding(.horizontal, Spacing.medium)

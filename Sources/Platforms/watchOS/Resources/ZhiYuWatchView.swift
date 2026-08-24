@@ -45,12 +45,12 @@ struct WatchKnowledgeStatsView: View {
                 // 1. 页面总数环形图
                 ZStack {
                     Circle()
-                        .stroke(Color.watchAccent.opacity(DesignSystem.glassOpacity), lineWidth: DesignSystem.borderWidth * 3)
+                        .stroke(Color.watchAccent.opacity(SystemOpacity.glass), lineWidth: SystemStroke.heavy)
                         .frame(width: DesignSystem.huge * 2 + DesignSystem.small, height: DesignSystem.huge * 2 + DesignSystem.small)
                     
                     Circle()
                         .trim(from: 0, to: min(1.0, Double(totalPages) / 100.0))
-                        .stroke(Color.watchAccent, style: StrokeStyle(lineWidth: DesignSystem.borderWidth * 3, lineCap: .round))
+                        .stroke(Color.watchAccent, style: StrokeStyle(lineWidth: SystemStroke.heavy, lineCap: .round))
                         .frame(width: DesignSystem.huge * 2 + DesignSystem.small, height: DesignSystem.huge * 2 + DesignSystem.small)
                         .rotationEffect(.degrees(-90))
                     

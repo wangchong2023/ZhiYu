@@ -41,7 +41,7 @@ public struct AppErrorView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: SystemSpacing.content) {
             // 渐变质感的警告图标
             Image(systemName: iconName)
                 .font(.system(size: 54)) // Dynamic Type
@@ -64,7 +64,7 @@ public struct AppErrorView: View {
                 .font(.system(size: 14)) // Dynamic Type
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, SystemSpacing.medium)
                 .lineLimit(4)
             
             // 重试按钮
@@ -81,8 +81,8 @@ public struct AppErrorView: View {
                     Text(L10n.Shared.retryButton)
                         .font(.system(size: 15, weight: .semibold)) // Dynamic Type
                         .foregroundColor(Color.theme.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 10)
+                        .padding(.horizontal, SystemSpacing.medium)
+                        .padding(.vertical, SystemSpacing.tight)
                         .background(
                             LinearGradient(
                                 colors: [Color.theme.blue, Color.theme.purple],
@@ -94,7 +94,7 @@ public struct AppErrorView: View {
                         .shadow(color: Color.theme.blue.opacity(DesignSystem.Opacity.shadow), radius: 8, x: 0, y: 4)
                 }
                 .buttonStyle(PlainButtonStyle())
-                .padding(.top, 8)
+                .padding(.top, SystemSpacing.element)
             }
         }
         .padding(DesignSystem.loosePadding)

@@ -96,7 +96,7 @@ struct KnowledgeDistributionWidgetEntryView: View {
     }
 
     private var mediumView: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Label(WidgetL10n.knowledgeDistribution, systemImage: "chart.pie.fill")
                     .font(.caption.weight(.bold))

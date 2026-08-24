@@ -91,7 +91,7 @@ struct WatchWidgetView: View {
         Button(intent: WatchCaptureIntent()) {
             switch family {
             case .accessoryRectangular:
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                     HStack {
                         Image(systemName: "sparkles")
                             .foregroundStyle(Color.appAccent)
@@ -107,7 +107,7 @@ struct WatchWidgetView: View {
                         .lineLimit(2)
                 }
             case .accessoryInline:
-                HStack(spacing: 4) {
+                HStack(spacing: SystemSpacing.tiny) {
                     Image(systemName: "flame.fill")
                         .foregroundStyle(.orange)
                     Text("\(entry.synthesisCount) \(L10n.Widget.knowledgeCompile) · \(entry.flashQuote)")

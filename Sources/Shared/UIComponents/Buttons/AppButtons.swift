@@ -100,7 +100,7 @@ public struct AppBorderedButton: View {
             .frame(maxWidth: maxWidth)
             .padding(.vertical, Spacing.medium)
             .padding(.horizontal, Spacing.large)
-            .background(color.opacity(DesignSystem.glassOpacity * 0.5))
+            .background(color.opacity(SystemOpacity.ghost))
             .overlay(
                 RoundedRectangle(cornerRadius: Spacing.cardRadius)
                     .stroke(color.opacity(DesignSystem.softOpacity), lineWidth: Spacing.borderWidth)

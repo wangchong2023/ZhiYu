@@ -34,7 +34,7 @@ public struct WatchVoiceCaptureView: View {
                 ZStack {
                     Circle()
                         .fill(isRecording ? Color.theme.red.opacity(DesignSystem.Opacity.soft) : Color.appAccent.opacity(DesignSystem.Opacity.soft))
-                        .frame(width: DesignSystem.huge * 2, height: DesignSystem.huge * 2)
+                        .frame(width: ComponentSpacing.colossal, height: ComponentSpacing.colossal)
 
                     Image(systemName: isRecording ? DesignSystem.Icons.stopFill : DesignSystem.Icons.voiceNote)
                         .font(.title2.weight(.bold))

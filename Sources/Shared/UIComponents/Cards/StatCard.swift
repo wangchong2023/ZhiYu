@@ -36,7 +36,7 @@ public struct StatCard: View {
             // 带发光效果的图标
             ZStack {
                 Circle()
-                    .fill(color.opacity(DesignSystem.glassOpacity * 1.2))
+                    .fill(color.opacity(SystemOpacity.glassStrong))
                     .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
 
                 Image(systemName: icon)
@@ -62,6 +62,6 @@ public struct StatCard: View {
         .appPadding(.vertical, .standardPadding)
         .background(Color.appCard.opacity(DesignSystem.surfaceOpacity))
         .appCornerRadius(.medium)
-        .shadow(color: .black.opacity(DesignSystem.shadowOpacity * 1.5), radius: DesignSystem.shadowRadius - 2, x: 0, y: DesignSystem.shadowY)
+        .shadow(color: .black.opacity(SystemOpacity.faint), radius: SystemSpacing.medium, x: 0, y: DesignSystem.shadowY)
     }
 }

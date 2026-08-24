@@ -74,7 +74,7 @@ public struct AppIconChip: View {
         }
         .padding(.horizontal, DesignSystem.medium)
         .padding(.vertical, DesignSystem.small)
-        .background(isSelected ? color.opacity(DesignSystem.glassOpacity * 2.5) : Color.appCard)
+        .background(isSelected ? color.opacity(SystemOpacity.glassStrong) : Color.appCard)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
         .foregroundStyle(isSelected ? color : .appSecondary)
         .overlay(

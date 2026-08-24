@@ -60,7 +60,7 @@ struct FloatingContextCapsule: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1.5
+                    lineWidth: SystemStroke.emphasis
                 )
                 .shadow(color: .appAccent.opacity(DesignSystem.Opacity.soft), radius: 8, x: 0, y: 0)
         )

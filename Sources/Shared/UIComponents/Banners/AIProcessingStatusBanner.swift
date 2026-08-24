@@ -59,13 +59,13 @@ struct AIProcessingStatusBanner: View {
                     }
                 }
                 .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, 10)
+                .padding(.vertical, SystemSpacing.tight)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
                 .background(.ultraThinMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
-                        .strokeBorder(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.shadow), .purple.opacity(DesignSystem.Opacity.subtle)], startPoint: .leading, endPoint: .trailing), lineWidth: 1)
+                        .strokeBorder(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.shadow), .purple.opacity(DesignSystem.Opacity.subtle)], startPoint: .leading, endPoint: .trailing), lineWidth: SystemStroke.divider)
                 )
                 .shadow(color: .black.opacity(DesignSystem.Opacity.ghost), radius: 10, y: 5)
             }

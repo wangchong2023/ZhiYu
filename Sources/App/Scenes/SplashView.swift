@@ -98,10 +98,10 @@ struct SplashView: View {
                     .padding(.vertical, DesignSystem.medium)
                     .background(
                         Capsule()
-                            .fill(Color.appAccent.opacity(DesignSystem.glassOpacity * 2))
+                            .fill(Color.appAccent.opacity(SystemOpacity.glassStrong))
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.appAccent.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth)
+                                    .strokeBorder(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border)
                             )
                     )
                 }
@@ -133,7 +133,7 @@ struct SplashView: View {
 
         // 名言淡入
         DispatchQueue.main.asyncAfter(deadline: .now() + DesignSystem.Animation.Splash.quoteDelay) {
-            withAnimation(.easeOut(duration: DesignSystem.Animation.looseDuration * 0.8)) {
+            withAnimation(.easeOut(duration: 1.2)) {
                 quoteOpacity = 1
             }
         }
