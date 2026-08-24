@@ -412,7 +412,7 @@ struct KnowledgeStatItem: View {
         .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                .stroke(.white.opacity(DesignSystem.accentStrokeOpacity), lineWidth: DesignSystem.borderWidth / 2)
+                .stroke(.white.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline)
         )
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
         .shadow(color: .primary.opacity(DesignSystem.shadowOpacity), radius: DesignSystem.small, x: 0, y: DesignSystem.tiny)

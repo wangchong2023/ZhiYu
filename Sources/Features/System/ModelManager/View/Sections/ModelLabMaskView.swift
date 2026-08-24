@@ -18,7 +18,7 @@ extension ModelLabView {
     var noModelMaskView: some View {
         VStack(spacing: DesignSystem.medium) {
             Image(systemName: "flask.fill")
-                .font(.system(size: ComponentSpacing.iconLarge + 10))
+                .font(.system(size: ComponentSpacing.iconDisplay))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.purple, .cyan],

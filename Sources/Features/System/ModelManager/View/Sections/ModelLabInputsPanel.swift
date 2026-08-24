@@ -51,7 +51,7 @@ extension ModelLabView {
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: DesignSystem.standardPadding / 2) {
+            VStack(alignment: .leading, spacing: SystemSpacing.small) {
                 Text(L10n.ModelManager.Lab.visualParams)
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
@@ -61,7 +61,7 @@ extension ModelLabView {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.bottom, DesignSystem.standardPadding - 2)
+        .padding(.bottom, SystemSpacing.element)
     }
 
     /// Audio Scribe 输入项
@@ -85,15 +85,15 @@ extension ModelLabView {
                             .foregroundStyle(isAudioRecording ? .red : .cyan)
                         Text(isAudioRecording ? L10n.ModelManager.Lab.stopRecording : L10n.ModelManager.Lab.recordAudio)
                     }
-                    .padding(.horizontal, DesignSystem.standardPadding + 8)
-                    .padding(.vertical, DesignSystem.standardPadding + 2)
+                    .padding(.horizontal, ComponentSpacing.sectionLarge)
+                    .padding(.vertical, SystemSpacing.content)
                     .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
                     .cornerRadius(SystemRadius.small)
                 }
                 .buttonStyle(.plain)
 
                 if isAudioRecording {
-                    HStack(spacing: DesignSystem.standardPadding / 2) {
+                    HStack(spacing: SystemSpacing.small) {
                         ForEach(0..<6) { _ in
                             RoundedRectangle(cornerRadius: SystemStroke.selected)
                                 .fill(Color.theme.cyan)
@@ -110,7 +110,7 @@ extension ModelLabView {
                     .foregroundStyle(.green)
             }
         }
-        .padding(.bottom, DesignSystem.standardPadding - 2)
+        .padding(.bottom, SystemSpacing.element)
     }
 
     /// Prompt Lab 滑块项
@@ -119,11 +119,11 @@ extension ModelLabView {
             sliderRow(title: "Temperature", val: $tempTemperature, range: 0.0...2.0, spec: "%.2f")
             sliderRow(title: "Top-P", val: $tempTopP, range: 0.0...1.0, spec: "%.2f")
         }
-        .padding(.bottom, DesignSystem.standardPadding - 2)
+        .padding(.bottom, SystemSpacing.element)
     }
 
     func sliderRow(title: String, val: Binding<Double>, range: ClosedRange<Double>, spec: String) -> some View {
-        VStack(spacing: DesignSystem.standardPadding / 4) {
+        VStack(spacing: SystemSpacing.tight) {
             HStack {
                 Text(title)
                     .font(.caption)

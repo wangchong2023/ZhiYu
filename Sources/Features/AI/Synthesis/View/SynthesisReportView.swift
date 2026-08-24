@@ -91,8 +91,8 @@ struct SynthesisSourcePagesBar: View {
                                     .font(.system(size: 10, weight: .bold)) // Dynamic Type
                                     .foregroundStyle(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
                             }
-                            .padding(.horizontal, DesignSystem.small + 2)
-                            .padding(.vertical, DesignSystem.tightPadding + 1)
+                            .padding(.horizontal, SystemSpacing.small)
+                            .padding(.vertical, SystemSpacing.small)
                             .background(
                                 ZStack {
                                     Capsule().fill(Color.appAccent.opacity(SystemOpacity.disabled))

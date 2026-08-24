@@ -153,7 +153,7 @@ extension ModelLabView {
                     Text("CPU")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, DesignSystem.standardPadding + 4)
+                        .padding(.vertical, SystemSpacing.content)
                         .background(useGPU ? Color.clear : Color.theme.cyan)
                         .foregroundStyle(useGPU ? Color.secondary : .white)
                 }
@@ -163,7 +163,7 @@ extension ModelLabView {
                     Text("GPU")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, DesignSystem.standardPadding + 4)
+                        .padding(.vertical, SystemSpacing.content)
                         .background(useGPU ? Color.theme.cyan : Color.clear)
                         .foregroundStyle(useGPU ? .white : Color.secondary)
                 }
@@ -206,7 +206,7 @@ extension ModelLabView {
         displayValue: String,
         isDisabled: Bool = false
     ) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding / 2) {
+        VStack(alignment: .leading, spacing: SystemSpacing.small) {
             Text(title)
                 .font(.subheadline)
 
@@ -220,7 +220,7 @@ extension ModelLabView {
                     .lineLimit(1)
                     .frame(minWidth: Spacing.Sidebar.backButtonWidth, alignment: .trailing)
                     .padding(.horizontal, DesignSystem.standardPadding)
-                    .padding(.vertical, DesignSystem.standardPadding / 2)
+                    .padding(.vertical, SystemSpacing.small)
                     .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardPadding))
             }

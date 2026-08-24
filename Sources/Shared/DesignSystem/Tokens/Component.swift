@@ -34,6 +34,8 @@ public enum ComponentSpacing {
     public static let minTouchTarget: CGFloat = 44
     public static let capsuleHeight: CGFloat = 28
     public static let inputBarHeight: CGFloat = 54
+    public static let chartHeight: CGFloat = 220
+    public static let chartHeightCompact: CGFloat = 160
 
     // MARK: 图标尺寸（组件特定）
     public static let iconCompact: CGFloat = 18

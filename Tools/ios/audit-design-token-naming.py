@@ -128,24 +128,25 @@ def _scan_file_for_token_arithmetic(fpath):
 
 def _check_token_math_in_view(fpath, i, s, line):
     """检查视图代码中的 token 算术表达式"""
-    # 匹配所有 token 命名空间的算术运算：DesignSystem.*、Reference.*、System.*、Component.*
+    # 仅检测新 token 命名空间（Reference/System/Component）的算术运算
+    # 旧 DesignSystem.* token 保留阶段，其算术由 audit-design-magic-numbers.py 检测
     # 严格禁止 * / + - 四种运算符
-    pattern = r'\b(DesignSystem|Reference|System|Component)\w*\.\w+' + ARITH_PATTERN + r'(0\.\d+|\d+\.?\d*)\b'
+    pattern = r'\b(Reference|System|Component)\w*\.\w+' + ARITH_PATTERN + r'(0\.\d+|\d+\.?\d*)\b'
     if re.search(pattern, line):
         reporter.add_issue(
             filepath=os.path.relpath(fpath, PROJECT_ROOT),
             line_no=i,
-            message="视图代码禁止 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
+            message="视图代码禁止新 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
             level="ERROR",
             content=s
         )
-    # 反向匹配：N * DesignSystem.xxx
-    pattern_reverse = r'\b(0\.\d+|\d+\.?\d*)' + ARITH_PATTERN + r'(DesignSystem|Reference|System|Component)\w*\.\w+'
+    # 反向匹配：N * Reference.xxx / N * System.xxx / N * Component.xxx
+    pattern_reverse = r'\b(0\.\d+|\d+\.?\d*)' + ARITH_PATTERN + r'(Reference|System|Component)\w*\.\w+'
     if re.search(pattern_reverse, line):
         reporter.add_issue(
             filepath=os.path.relpath(fpath, PROJECT_ROOT),
             line_no=i,
-            message="视图代码禁止 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
+            message="视图代码禁止新 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
             level="ERROR",
             content=s
         )

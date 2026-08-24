@@ -103,7 +103,7 @@ public struct SmartRoutingView: View {
                     Text(L10n.ModelManager.Routing.autoOnlineDesc)
                         .font(.caption2)
                         .foregroundStyle(.orange)
-                        .padding(.leading, DesignSystem.titleIconSize + 8)
+                        .padding(.leading, ComponentSpacing.huge)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 

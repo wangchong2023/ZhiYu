@@ -163,7 +163,7 @@ struct LocalPluginDetailView: View {
             Spacer()
             Text(value).font(.subheadline.weight(.medium)).foregroundStyle(.appText)
         }
-        .padding(.horizontal, DesignSystem.medium).padding(.vertical, DesignSystem.small + 2)
+        .padding(.horizontal, DesignSystem.medium).padding(.vertical, SystemSpacing.small)
     }
 
     private func permIcon(for perm: String) -> String {

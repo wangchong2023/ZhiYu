@@ -106,7 +106,7 @@ struct PluginCenterView: View {
             .padding(DesignSystem.medium)
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
-            .overlay(RoundedRectangle(cornerRadius: SystemRadius.card).stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: DesignSystem.borderWidth / 2))
+            .overlay(RoundedRectangle(cornerRadius: SystemRadius.card).stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline))
             
             // 安全模式与加载按钮
             HStack(spacing: DesignSystem.large) {
@@ -461,7 +461,7 @@ struct PluginCard: View {
                     if let src = source {
                         Text(sourceLabel(src))
                             .font(.system(size: DesignSystem.microFontSize, weight: .bold))
-                            .padding(.horizontal, DesignSystem.tiny + 2)
+                            .padding(.horizontal, SystemSpacing.tiny)
                             .padding(.vertical, SystemSpacing.atomic)
                             .background(sourceColor(src))
                             .clipShape(Capsule())
@@ -547,7 +547,7 @@ struct PluginCard: View {
                 Text(L10n.Plugin.Action.uninstall)
                     .font(.caption.bold())
             }
-            .padding(.horizontal, DesignSystem.tightPadding + 2)
+            .padding(.horizontal, SystemSpacing.small)
             .padding(.vertical, SystemSpacing.tiny)
             .background(Color.theme.red)
             .clipShape(Capsule())
@@ -573,7 +573,7 @@ struct PluginCard: View {
                 Text(L10n.Plugin.Action.install)
                     .font(.caption.bold())
             }
-            .padding(.horizontal, DesignSystem.tightPadding + 2)
+            .padding(.horizontal, SystemSpacing.small)
             .padding(.vertical, SystemSpacing.tiny)
             .background(Color.appAccent)
             .clipShape(Capsule())

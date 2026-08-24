@@ -202,7 +202,7 @@ struct KnowledgeDashboardView: View {
                         HStack(spacing: DesignSystem.tiny) {
                             HStack(spacing: DesignSystem.atomic) {
                                 Image(systemName: "arrow.up")
-                                    .font(.system(size: DesignSystem.caption2FontSize - 1, weight: .bold))
+                                    .font(.system(size: SystemFontSize.micro, weight: .bold))
                                     .foregroundColor(.appAccent)
                                 Text(L10n.Dashboard.axisPages)
                                     .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
@@ -215,7 +215,7 @@ struct KnowledgeDashboardView: View {
                             
                             HStack(spacing: DesignSystem.atomic) {
                                 Image(systemName: "arrow.right")
-                                    .font(.system(size: DesignSystem.caption2FontSize - 1, weight: .bold))
+                                    .font(.system(size: SystemFontSize.micro, weight: .bold))
                                     .foregroundColor(.appAccent)
                                 Text(L10n.Dashboard.axisRelations)
                                     .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))

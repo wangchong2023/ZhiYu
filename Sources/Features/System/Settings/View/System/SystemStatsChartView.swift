@@ -34,7 +34,7 @@ struct ChartView: View {
                     .foregroundStyle(.appSecondary)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: DesignSystem.Metrics.chartHeight - 60)
+            .frame(height: ComponentSpacing.chartHeightCompact)
             .background(Color.appCard.opacity(DesignSystem.softOpacity))
             .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         } else {

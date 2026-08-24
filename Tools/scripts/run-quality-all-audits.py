@@ -24,8 +24,7 @@ GATEKEEPER_AUDIT_STEPS = [
     ("L10n 本地化合规审计", ["python3", "Tools/ios/check-code-localization.py"]),
     ("Prompt 治理与安全合规审计", ["python3", "Tools/ios/check-code-prompt-governance.py"]),
     ("存储层常量提取审计", ["python3", "Tools/ios/check-code-storage-constants.py"]),
-    # TODO(token-refactor): 临时跳过魔鬼数字审计，Task 8-12 完成源码迁移后恢复
-    # ("魔鬼数字提取审计", ["python3", "Tools/ios/audit-design-magic-numbers.py"]),
+    ("魔鬼数字提取审计", ["python3", "Tools/ios/audit-design-magic-numbers.py"]),
     ("硬编码敏感信息扫描", ["python3", "Tools/ios/assert-release-hardcoded-secrets.py"]),
     ("HIG 视觉规范度审计", ["python3", "Tools/ios/check-design-hig.py"]),
     ("App Store 上架就绪度审计", ["python3", "Tools/ios/check-release-appstore.py"]),
@@ -38,8 +37,7 @@ GATEKEEPER_AUDIT_STEPS = [
     ("开源库适配器逻辑隔离审计", ["python3", "Tools/ios/check-arch-opensource-adapters.py"]),
     ("开源库适配器物理归位审计", ["python3", "Tools/ios/check-arch-opensource-placement.py"]),
     ("死代码与迁移残留审计 (Periphery)", ["python3", "Tools/ios/audit-code-dead-code.py"]),
-    # 临时跳过 token-naming 审计（等 Task 12 完成全量迁移后恢复）
-    # ("设计令牌命名规范审计", ["python3", "Tools/ios/audit-design-token-naming.py"]),
+    ("设计令牌命名规范审计", ["python3", "Tools/ios/audit-design-token-naming.py"]),
     ("设计令牌数量预算审计", ["python3", "Tools/ios/audit-design-token-budget.py"]),
 ]
 

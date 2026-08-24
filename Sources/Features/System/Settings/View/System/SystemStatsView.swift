@@ -108,7 +108,7 @@ struct SystemStatsView: View {
                     }
                     
                     ChartView(stats: coordinator.dailyStats, type: .requests)
-                        .frame(height: DesignSystem.Metrics.chartHeight - 40)
+                        .frame(height: ComponentSpacing.chartHeight)
                 }
                 .padding(Spacing.medium)
             }
@@ -126,7 +126,7 @@ struct SystemStatsView: View {
                     }
                     
                     ChartView(stats: coordinator.dailyStats, type: .tokens)
-                        .frame(height: DesignSystem.Metrics.chartHeight - 40)
+                        .frame(height: ComponentSpacing.chartHeight)
                 }
                 .padding(Spacing.medium)
             }
@@ -187,7 +187,7 @@ struct SystemStatsView: View {
                 VStack(spacing: Spacing.medium) {
                     if coordinator.storageCategories.isEmpty {
                         ProgressView()
-                            .frame(height: DesignSystem.Metrics.chartHeight - 20)
+                            .frame(height: ComponentSpacing.chartHeight)
                     } else if coordinator.storageCategories.allSatisfy({ $0.value == 0 }) {
                         VStack(spacing: Spacing.medium) {
                             Image(systemName: DesignSystem.Icons.chartPie)
@@ -198,7 +198,7 @@ struct SystemStatsView: View {
                                 .foregroundStyle(.appSecondary)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: DesignSystem.Metrics.chartHeight - 20)
+                        .frame(height: ComponentSpacing.chartHeight)
                     } else {
                         HStack(spacing: Spacing.medium) {
                             chartContainer
@@ -384,11 +384,11 @@ struct SystemStatsView: View {
                 .foregroundStyle(category.color)
             }
             .chartLegend(.hidden)
-            .frame(height: DesignSystem.Metrics.chartHeight - 40)
+            .frame(height: ComponentSpacing.chartHeight)
             
             VStack(spacing: DesignSystem.tiny) {
                 Text(coordinator.formatBytes(coordinator.totalStorage))
-                    .font(.system(size: DesignSystem.titleFontSize + 2, weight: .bold, design: .rounded))
+                    .font(.system(size: SystemFontSize.title, weight: .bold, design: .rounded))
                     .foregroundStyle(.appAccent)
                 Text(L10n.Dashboard.totalStorage)
                     .font(.system(size: DesignSystem.microFontSize, weight: .black))
@@ -405,7 +405,7 @@ struct SystemStatsView: View {
                 HStack(spacing: DesignSystem.tiny) {
                     Circle()
                         .fill(category.color)
-                        .frame(width: DesignSystem.tiny + 2, height: DesignSystem.tiny + 2)
+                        .frame(width: SystemSpacing.tiny, height: SystemSpacing.tiny)
                     
                     VStack(alignment: .leading, spacing: 0) {
                         Text(category.label)

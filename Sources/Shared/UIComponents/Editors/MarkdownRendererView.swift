@@ -245,7 +245,7 @@ struct MarkdownRendererView: View {
                     .padding(DesignSystem.medium)
                 }
             }
-            .background(Color.appCard.opacity(SystemOpacity.active - SystemOpacity.glass * 1.5))
+            .background(Color.appCard.opacity(SystemOpacity.textSecondary))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.smallRadius)

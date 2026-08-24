@@ -122,7 +122,7 @@ struct SplashBackgroundView: View {
             GeometryReader { geo in
                 if geo.size.width > 1 && geo.size.height > 1 {
                     ForEach(Array(networkNodes.enumerated()), id: \.offset) { index, node in
-                        let nodeColor1 = node.isAccent ? Color.appAccent.opacity(SystemOpacity.active) : Color.appGloss.opacity(SystemOpacity.active * 0.8)
+                        let nodeColor1 = node.isAccent ? Color.appAccent.opacity(SystemOpacity.active) : Color.appGloss.opacity(SystemOpacity.textSecondary)
                         let nodeColor2 = node.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
                         
                         let nodeScale = nodeGlow ? SystemOpacity.active : SystemOpacity.overlay
@@ -157,7 +157,7 @@ struct SplashBackgroundView: View {
                     colors: [
                         Colors.Splash.glow1.opacity(SystemOpacity.glassStrong), // 0.25
                         Colors.Splash.glow2.opacity(SystemOpacity.glassStrong), // 0.12
-                        Colors.Splash.glow3.opacity(SystemOpacity.ghost / 2), // 0.05
+                        Colors.Splash.glow3.opacity(SystemOpacity.ghost), // 0.05
                         .clear
                     ],
                     center: .center,
@@ -174,13 +174,13 @@ struct SplashBackgroundView: View {
                 ZStack {
                     // 书本主体
                     RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled * 1.15), lineWidth: SystemStroke.border * 1.2) // 0.35, 1.2
+                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border) // 0.3, 0.8
                         .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay) // 60, 44
                         .rotationEffect(.degrees(-8))
                         .offset(x: -DesignSystem.atomic) // -2
 
                     RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled * 1.15), lineWidth: SystemStroke.border * 1.2) // 0.35, 1.2
+                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border) // 0.3, 0.8
                         .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay) // 60, 44
                         .rotationEffect(.degrees(8))
                         .offset(x: DesignSystem.atomic) // 2
@@ -193,13 +193,13 @@ struct SplashBackgroundView: View {
                     // 从书中升起的光粒子
                     ForEach(0..<5, id: \.self) { i in
                         Circle()
-                            .fill(Color.appAccent.opacity(SystemOpacity.glass * 4)) // 0.4
+                            .fill(Color.appAccent.opacity(SystemOpacity.overlay)) // 0.6
                             .frame(width: DesignSystem.atomic + 1, height: DesignSystem.atomic + 1) // 3, 3
                             .offset(
                                 x: CGFloat(i - 2) * (DesignSystem.small + DesignSystem.tiny), // 14
                                 y: nodeGlow ? -DesignSystem.Metrics.iconBoxSize * 1.35 - CGFloat(i) * 15 : -DesignSystem.loosePadding // -60, -20
                             )
-                            .opacity(nodeGlow ? SystemOpacity.active * 0.6 : SystemOpacity.glass) // 0.6, 0.1
+                            .opacity(nodeGlow ? SystemOpacity.overlay : SystemOpacity.glass) // 0.6, 0.1
                             .animation(
                                 .easeOut(duration: 3.0)
                                 .repeatForever(autoreverses: false)

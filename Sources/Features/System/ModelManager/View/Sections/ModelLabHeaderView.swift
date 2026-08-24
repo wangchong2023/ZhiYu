@@ -55,9 +55,9 @@ extension ModelLabView {
 
                     if !isCompatible {
                         Text(L10n.ModelManager.Lab.unsupported)
-                            .font(.system(size: DesignSystem.iconTiny - 2))
+                            .font(.system(size: SystemFontSize.micro))
                             .padding(.horizontal, DesignSystem.standardPadding)
-                            .padding(.vertical, DesignSystem.standardPadding / 3)
+                            .padding(.vertical, SystemSpacing.tiny)
                             .background(Color.theme.red.opacity(DesignSystem.Opacity.medium))
                             .foregroundStyle(.red)
                             .clipShape(Capsule())

@@ -94,7 +94,7 @@ extension PluginDetailView {
                 .multilineTextAlignment(.trailing)
         }
         .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, DesignSystem.small + 2)
+        .padding(.vertical, SystemSpacing.small)
     }
 
     // MARK: - 辅助计算属性

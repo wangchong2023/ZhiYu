@@ -122,7 +122,7 @@ struct AppToastView: View {
             if toast.type == .processing {
                 ProgressView()
                     .tint(toast.type.color)
-                    .scaleEffect(SystemOpacity.active * 0.8) // 0.8
+                    .scaleEffect(SystemOpacity.textSecondary) // 0.8
             } else {
                 Image(systemName: toast.type.icon)
                     .foregroundStyle(toast.type.color)
@@ -152,7 +152,7 @@ struct AppToastView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.medium) // 12
-                .stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border / 2) // 0.3, 0.5
+                .stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline) // 0.3, 0.5
         )
         .shadow(color: .black.opacity(SystemOpacity.ghost), radius: DesignSystem.standardRadius, y: DesignSystem.small + DesignSystem.atomic) // 0.1, 10, 5
         .padding(.horizontal, DesignSystem.loosePadding) // 20

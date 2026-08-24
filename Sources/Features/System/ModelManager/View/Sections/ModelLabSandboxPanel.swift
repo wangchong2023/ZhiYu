@@ -133,8 +133,8 @@ extension ModelLabView {
                         if testPrompt.isEmpty {
                             Text(L10n.ModelManager.Lab.placeholderInput)
                                 .foregroundStyle(.secondary)
-                                .padding(.horizontal, DesignSystem.standardPadding + 4)
-                                .padding(.vertical, DesignSystem.standardPadding + 4)
+                                .padding(.horizontal, SystemSpacing.content)
+                                .padding(.vertical, SystemSpacing.content)
                         }
                     },
                     alignment: .topLeading
@@ -152,8 +152,8 @@ extension ModelLabView {
                 labManager.stopSimulation()
             }) {
                 Text(L10n.ModelManager.Lab.stopInference)
-                    .padding(.horizontal, DesignSystem.large - 8)
-                    .padding(.vertical, DesignSystem.standardPadding + 2)
+                    .padding(.horizontal, SystemSpacing.small)
+                    .padding(.vertical, SystemSpacing.content)
                     .background(Color.theme.red.opacity(DesignSystem.Opacity.shadow))
                     .foregroundStyle(Color.theme.red)
                     .cornerRadius(SystemRadius.small)
@@ -168,8 +168,8 @@ extension ModelLabView {
             }) {
                 Text(L10n.ModelManager.Lab.runTest)
                     .bold()
-                    .padding(.horizontal, DesignSystem.large - 4)
-                    .padding(.vertical, DesignSystem.standardPadding + 2)
+                    .padding(.horizontal, SystemSpacing.element)
+                    .padding(.vertical, SystemSpacing.content)
                     .background(
                         LinearGradient(
                             colors: [Color.theme.cyan, Color.theme.blue],

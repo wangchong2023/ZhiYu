@@ -149,7 +149,7 @@ struct LintHealthCheckSection: View {
                 .padding(.trailing, DesignSystem.standardPadding)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
-            .frame(height: DesignSystem.Metrics.chartHeight - 60)
+            .frame(height: ComponentSpacing.chartHeightCompact)
         }
     }
 
@@ -186,7 +186,7 @@ struct LintHealthCheckSection: View {
                 ZStack {
                     Circle()
                         .fill(color.opacity(DesignSystem.Opacity.glass))
-                        .frame(width: DesignSystem.Metrics.iconBoxSize - 8, height: DesignSystem.Metrics.iconBoxSize - 8)
+                        .frame(width: ComponentSpacing.huge, height: ComponentSpacing.huge)
                     Image(systemName: icon)
                         .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
                         .foregroundColor(color)
