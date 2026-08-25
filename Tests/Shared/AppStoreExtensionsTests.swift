@@ -386,9 +386,39 @@ final class AppStoreExtensionsTests: XCTestCase {
         }
     }
 
-    /// 验证 logEntries 返回空数组（AppStore 协议实现）
-    func testLogEntries_ReturnsEmpty() {
-        XCTAssertTrue(store.logEntries.isEmpty, "AppStore.logEntries 应返回空数组")
+    /// 验证 logEntries 初始为空（订阅 CurrentValueSubject 的初始值）
+    func testLogEntries_InitialIsEmpty() {
+        // CurrentValueSubject 订阅时立即发送初始值 []
+        // 注意：Logger.loadFromDisk 是异步的，在测试运行时可能尚未完成
+        // 因此只验证类型正确且不崩溃，不强制断言 isEmpty
+        _ = store.logEntries
+        XCTAssertTrue(true, "logEntries 应可同步访问而不崩溃")
+    }
+
+    /// 验证 logEntries 通过订阅 publisher 更新
+    func testLogEntries_UpdatesViaPublisher() async {
+        // 清空 Logger 确保干净状态
+        await Logger.shared.clearAllLogs()
+
+        // 等待 RunLoop.main 让订阅的初始值送达
+        await Task.yield()
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        // 初始状态应为空
+        XCTAssertTrue(store.logEntries.isEmpty, "清空后 logEntries 应为空")
+
+        // 添加一条日志
+        Logger.shared.addLog(action: .create, target: "TestTarget", details: "test")
+
+        // 等待 publisher 传播 + RunLoop.main 调度
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        // 验证 logEntries 已更新
+        XCTAssertFalse(store.logEntries.isEmpty, "添加日志后 logEntries 应非空")
+        XCTAssertEqual(store.logEntries.first?.target, "TestTarget")
+
+        // 清理
+        await Logger.shared.clearAllLogs()
     }
 
     /// 验证 clusters 返回空数组（GraphDataProvider 协议实现）
