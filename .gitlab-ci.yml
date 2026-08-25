@@ -128,6 +128,8 @@ test-and-coverage:
   script:
     - export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"
     - bash Tools/CI/run-test-with-coverage.sh
+    - echo "===> 运行 xccov 本地覆盖率门禁（Swift 语句+分支覆盖率，不依赖 SonarQube）"
+    - python3 Tools/CI/check_xccov_coverage.py --xml build/coverage/sonarqube-generic-coverage.xml
   coverage: '/Coverage: \d+\.\d+%/'
   artifacts:
     when: always
@@ -136,7 +138,9 @@ test-and-coverage:
     expire_in: 7 days
 
 # ════════════════════════════════════════════════════════════
-# sonar — SonarQube 全语言代码质量分析 + 覆盖率 + Quality Gate
+# sonar — SonarQube 代码质量分析（Tools 脚本 Python/Shell/YAML）+ Quality Gate
+# 注意：SonarQube Community Edition 不支持 Swift 语言分析
+#       Swift 覆盖率门禁由 test-and-coverage 阶段的 xccov 本地脚本执行
 # ════════════════════════════════════════════════════════════
 
 sonarqube-analysis:
@@ -150,20 +154,10 @@ sonarqube-analysis:
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - echo "===> 运行 SonarQube 全语言代码质量分析 (Swift, Python, Shell, YAML) + 覆盖率报告（含分支）+ Quality Gate 硬阻断"
-    - |
-      if [ -f build/coverage/sonarqube-generic-coverage.xml ]; then
-        echo "  发现覆盖率报告（SonarSource 官方脚本生成，含分支数据），注入 sonar.coverageReportPaths"
-        sonar-scanner \
-          -Dsonar.host.url=${SONAR_HOST_URL} \
-          -Dsonar.coverageReportPaths=build/coverage/sonarqube-generic-coverage.xml \
-          -Dsonar.qualitygate.wait=true
-      else
-        echo "  ⚠️  未发现覆盖率报告，仅运行代码质量扫描"
-        sonar-scanner \
-          -Dsonar.host.url=${SONAR_HOST_URL} \
-          -Dsonar.qualitygate.wait=true
-      fi
+    - echo "===> 运行 SonarQube 代码质量分析（Tools 脚本 Python/Shell/YAML）+ Quality Gate 硬阻断"
+    - sonar-scanner \
+        -Dsonar.host.url=${SONAR_HOST_URL} \
+        -Dsonar.qualitygate.wait=true
 
 # ════════════════════════════════════════════════════════════
 # perf — 性能测试 + 回归基线（每周夜间运行 + 手动触发）

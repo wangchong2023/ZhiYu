@@ -132,6 +132,21 @@ else
     echo "  ⚠️  未找到 .xcresult 测试结果包，跳过产物导出"
 fi
 
+# ── xccov 本地覆盖率门禁（Swift 语句+分支覆盖率，不依赖 SonarQube）──
+# SonarQube Community Edition 不支持 Swift 语言分析，无法导入 Swift 覆盖率数据
+# 因此用 check_xccov_coverage.py 直接从 generic coverage XML 计算并断言门禁
+if [ -s "$COVERAGE_DIR/sonarqube-generic-coverage.xml" ]; then
+    echo ""
+    echo "  运行 xccov 本地覆盖率门禁检查..."
+    python3 Tools/CI/check_xccov_coverage.py \
+        --xml "$COVERAGE_DIR/sonarqube-generic-coverage.xml"
+    XCCOV_EXIT=$?
+    if [ $XCCOV_EXIT -ne 0 ]; then
+        echo "  ❌ xccov 覆盖率门禁未通过"
+        exit $XCCOV_EXIT
+    fi
+fi
+
 echo "✅ 跑测、覆盖率门禁及性能回归校验全部通过！"
 
 # ── 打印构建版本信息 ──
