@@ -23,7 +23,7 @@ struct CollabInfoRow: View {
             Image(systemName: icon)
                 .font(.caption)
                 .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.Action.iconSize + DesignSystem.tiny) // 20
+                .frame(width: ComponentSpacing.section) // 20
             Text(text)
                 .font(.caption)
                 .foregroundStyle(.appText)

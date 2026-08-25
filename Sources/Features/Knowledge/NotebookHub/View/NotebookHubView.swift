@@ -138,7 +138,7 @@ public struct NotebookHubView: View {
             }
         }
         .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.tightPadding + DesignSystem.atomic)
+        .padding(.vertical, SystemSpacing.elementLarge)
         .background(Color.appCard.opacity(SystemOpacity.glassStrong))
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
         .overlay(

@@ -418,27 +418,27 @@ final class GlobalModelManagerDeepTests: XCTestCase {
     // MARK: - 初始状态
 
     /// 验证新实例的 remoteManifests 为空（init 异步加载，测试环境 Mock 返回空）。
-    func test初始状态_remoteManifests为空() {
+    func testInitialStateRemoteManifestsIsEmpty() {
         XCTAssertTrue(manager.remoteManifests.isEmpty)
     }
 
     /// 验证新实例的 downloadStates 为空。
-    func test初始状态_downloadStates为空() {
+    func testInitialStateDownloadStatesIsEmpty() {
         XCTAssertTrue(manager.downloadStates.isEmpty)
     }
 
     /// 验证新实例的 modelStorageUsage 为空。
-    func test初始状态_modelStorageUsage为空() {
+    func testInitialStateModelStorageUsageIsEmpty() {
         XCTAssertTrue(manager.modelStorageUsage.isEmpty)
     }
 
     /// 验证新实例的 modelCallCounts 为空。
-    func test初始状态_modelCallCounts为空() {
+    func testInitialStateModelCallCountsIsEmpty() {
         XCTAssertTrue(manager.modelCallCounts.isEmpty)
     }
 
     /// 验证新实例的 isLoading 初始为 false（异步 Task 可能正在执行，但 defer 保证最终 false）。
-    func test初始状态_isLoading最终为false() async {
+    func testInitialStateIsLoadingEventuallyFalse() async {
         // 等待 init 中的 Task 完成
         try? await Task.sleep(nanoseconds: 100_000_000)
         XCTAssertFalse(manager.isLoading)

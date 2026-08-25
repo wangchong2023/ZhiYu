@@ -88,7 +88,7 @@ struct SynthesisSourcePagesBar: View {
                                     .font(.caption.weight(.medium))
                                     .lineLimit(1)
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 10, weight: .bold)) // Dynamic Type
+                                    .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
                                     .foregroundStyle(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
                             }
                             .padding(.horizontal, SystemSpacing.small)

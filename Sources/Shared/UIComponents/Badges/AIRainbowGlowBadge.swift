@@ -135,7 +135,7 @@ public struct AIRainbowGlowBadge: View {
                 Button(action: { isShowingPopover = false }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
-                        .font(.system(size: 20)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.title2)) // Dynamic Type
                 }
                 .buttonStyle(.plain)
             }

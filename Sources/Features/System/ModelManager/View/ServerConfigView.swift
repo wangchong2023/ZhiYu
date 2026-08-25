@@ -61,7 +61,7 @@ public struct ServerConfigView: View {
     private var emptyStateView: some View {
         VStack(spacing: DesignSystem.large) {
             Image(systemName: "server.rack")
-                .font(.system(size: 64)) // Dynamic Type
+                .font(.system(size: ComponentSpacing.colossal)) // Dynamic Type
                 .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
 
             Text(L10n.ModelManager.Server.emptyTitle)

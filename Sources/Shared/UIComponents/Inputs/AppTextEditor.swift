@@ -45,7 +45,7 @@ public struct AppTextEditor: View {
                 // 占位文本层：当内容为空且未输入时展示
                 if text.isEmpty {
                     Text(placeholder)
-                        .font(.system(size: 15)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.subheadline)) // Dynamic Type
                         .foregroundColor(.secondary.opacity(DesignSystem.Opacity.dim))
                         .padding(.horizontal, SystemSpacing.small)
                         .padding(.vertical, SystemSpacing.element)
@@ -54,7 +54,7 @@ public struct AppTextEditor: View {
                 
                 // 原生编辑器层
                 TextEditor(text: $text)
-                    .font(.system(size: 15)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.subheadline)) // Dynamic Type
                     .scrollContentBackground(.hidden) // 隐藏原生背景以便显示自定义半透明底色
                     .background(Color.clear)
                     .focused($isFocused)
@@ -81,7 +81,7 @@ public struct AppTextEditor: View {
             // 字数限额计数条
             if let limit = maxCharacters {
                 Text("\(text.count)/\(limit)")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.microLarge, weight: .medium, design: .monospaced)) // Dynamic Type
                     .foregroundColor(text.count >= limit ? Color.theme.red : .secondary)
             }
         }

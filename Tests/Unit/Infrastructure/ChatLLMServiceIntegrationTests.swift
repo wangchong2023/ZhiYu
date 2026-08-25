@@ -180,7 +180,14 @@ final class ChatLLMServiceIntegrationTests: XCTestCase {
 
         URLProtocol.registerClass(ChatLLMServiceMockURLProtocol.self)
 
-        service = ChatLLMService()
+        // 注入 mock LLMContextBuilder — 模拟器 NLTagger 中文人名识别率低，用确定性 mock 替代
+        service = ChatLLMService(contextBuilderFactory: {
+            LLMContextBuilder(entityRecognizer: { text in
+                // 模拟 NLTagger 识别中文人名：返回文本中出现的已知测试人名
+                let knownNames = ["张三丰", "张三", "李四", "王五", "赵六", "钱七", "孙八", "周九", "吴十"]
+                return knownNames.filter { text.contains($0) }
+            })
+        })
     }
 
     override func tearDown() async throws {

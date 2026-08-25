@@ -13,16 +13,29 @@
 import SwiftUI
 import UIKit
 
+// MARK: - OCR 缩放查看器私有常量
+private enum OCRZoomConstants {
+    static let minScale: CGFloat = 0.8
+    static let maxScale: CGFloat = 4.0
+    static let resetScale: CGFloat = 1.0
+    static let step: CGFloat = 0.25
+    static let doubleTapThreshold: CGFloat = 1.2
+    static let doubleTapTarget: CGFloat = 2.0
+    static let animationDuration: Double = 0.2
+    static let tapSpringResponse: CGFloat = 0.3
+    static let tapSpringDamping: CGFloat = 0.7
+}
+
 struct ZoomableOCRImageView: View {
     let image: UIImage
     
-    @State private var currentScale: CGFloat = 1.0
-    @State private var gestureScale: CGFloat = 1.0
+    @State private var currentScale: CGFloat = OCRZoomConstants.resetScale
+    @State private var gestureScale: CGFloat = OCRZoomConstants.resetScale
     @State private var offset: CGSize = .zero
     @State private var gestureOffset: CGSize = .zero
-    
+
     private var totalScale: CGFloat {
-        max(0.8, min(4.0, currentScale * gestureScale))
+        max(OCRZoomConstants.minScale, min(OCRZoomConstants.maxScale, currentScale * gestureScale))
     }
     
     var body: some View {
@@ -42,17 +55,17 @@ struct ZoomableOCRImageView: View {
                                         gestureScale = value.magnification
                                     }
                                     .onEnded { value in
-                                        currentScale = max(1.0, min(4.0, currentScale * value.magnification))
-                                        gestureScale = 1.0
+                                        currentScale = max(OCRZoomConstants.resetScale, min(OCRZoomConstants.maxScale, currentScale * value.magnification))
+                                        gestureScale = OCRZoomConstants.resetScale
                                     },
                                 DragGesture()
                                     .onChanged { value in
-                                        if totalScale > 1.0 {
+                                        if totalScale > OCRZoomConstants.resetScale {
                                             gestureOffset = value.translation
                                         }
                                     }
                                     .onEnded { value in
-                                        if totalScale > 1.0 {
+                                        if totalScale > OCRZoomConstants.resetScale {
                                             offset.width += value.translation.width
                                             offset.height += value.translation.height
                                             gestureOffset = .zero
@@ -61,11 +74,11 @@ struct ZoomableOCRImageView: View {
                             )
                         )
                         .onTapGesture(count: 2) {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                if currentScale > 1.2 {
+                            withAnimation(.spring(response: OCRZoomConstants.tapSpringResponse, dampingFraction: OCRZoomConstants.tapSpringDamping)) {
+                                if currentScale > OCRZoomConstants.doubleTapThreshold {
                                     resetZoom()
                                 } else {
-                                    currentScale = 2.0
+                                    currentScale = OCRZoomConstants.doubleTapTarget
                                     offset = .zero
                                 }
                             }
@@ -78,7 +91,7 @@ struct ZoomableOCRImageView: View {
                 
                 // 2. 浮动缩放控制面板
                 HStack(spacing: DesignSystem.small) {
-                    Text(String(format: "%.1fx", totalScale))
+                    Text(String(format: L10n.Ingest.OCR.zoomFormat, totalScale))
                         .font(.caption2.monospacedDigit().weight(.bold))
                         .foregroundStyle(.appAccent)
                         .padding(.horizontal, DesignSystem.small)
@@ -114,24 +127,24 @@ struct ZoomableOCRImageView: View {
     }
     
     private func zoomIn() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            currentScale = min(4.0, currentScale + 0.25)
+        withAnimation(.easeInOut(duration: OCRZoomConstants.animationDuration)) {
+            currentScale = min(OCRZoomConstants.maxScale, currentScale + OCRZoomConstants.step)
         }
     }
-    
+
     private func zoomOut() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            currentScale = max(1.0, currentScale - 0.25)
-            if currentScale <= 1.0 {
+        withAnimation(.easeInOut(duration: OCRZoomConstants.animationDuration)) {
+            currentScale = max(OCRZoomConstants.resetScale, currentScale - OCRZoomConstants.step)
+            if currentScale <= OCRZoomConstants.resetScale {
                 offset = .zero
             }
         }
     }
-    
+
     private func resetZoom() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            currentScale = 1.0
-            gestureScale = 1.0
+        withAnimation(.easeInOut(duration: OCRZoomConstants.animationDuration)) {
+            currentScale = OCRZoomConstants.resetScale
+            gestureScale = OCRZoomConstants.resetScale
             offset = .zero
             gestureOffset = .zero
         }

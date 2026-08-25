@@ -282,7 +282,9 @@ class XCStringsAuditor:
             "about", "action", "ignore", "preview", "skip", "unknown", "yesterday", "retry", 
             "A", "B", "1 Text", "50-69", "70-89", "90-100", "50–69", "70–89", "90–100", "Mac", "macOS", "—",
             "MRR", "NDCG@10", "F1@5", "MAP", "Lint", "model-name", "< 50", "%@ GB", "sk-...", "Constantine",
-            "Chat_Export"
+            "Chat_Export",
+            # 技术术语/格式字符串：zh/en 相同是合理的（无法翻译）
+            "0 / 0", "AAC 44.1kHz", "%.1fx", "FTS:", "Vec:"
         }
         if en_trimmed in EXEMPT_IDENTICAL_VALUES or en_trimmed in KNOWN_PROPER_NAMES:
             return True
@@ -584,6 +586,9 @@ class SourceCodeAuditor:
 
     def _audit_english_literal(self, s, line, line_no, is_view, is_logger, issues):
         """审计 UI 上可能存在的硬编码英文句子字面量。"""
+        # accessibilityIdentifier 是测试标识符，不是用户可见文本，跳过检测
+        if 'accessibilityIdentifier' in line:
+            return
         is_ui_trigger = any(trigger in line for trigger in UI_TRIGGERS)
         if TextUtil.is_natural_language_sentence(s):
             if is_view and is_ui_trigger:
@@ -593,7 +598,7 @@ class SourceCodeAuditor:
                 issues.append((line_no, s, "Hardcoded English sentence detected in logic file.", "WARNING"))
         # UI 语境标识符式字符串检测：如 "3D_Graph"/"Graph_Desc" 在 Text() 中使用
         # 模式：含下划线的标识符式字符串（字母数字+下划线），看起来像未注册的 L10n key 而非展示文本
-        elif is_view and is_ui_trigger and re.match(r'^[A-Za-z0-9][A-Za-z0-9]*_[A-Za-z0-9_]+$', s) and len(s) >= 4:
+        elif is_view and is_ui_trigger and re.match(r'^[A-Za-z0-9][A-Za-z0-9]*_[A-Za-z0-9_]+$', s) and len(s) >= MIN_NATURAL_LANG_LEN:
             severity = "WARNING" if is_logger else "ERROR"
             issues.append((line_no, s, "Hardcoded identifier-style string in UI context (should use L10n property).", severity))
 

@@ -251,7 +251,9 @@ final class AppEnvironment {
     }
     
     /// 获取平台环境信息
+    /// 注意：使用 resolveOptional + NoOpAppEnvironment 安全降级，
+    ///       避免测试环境中 ServiceContainer.reset() 后 resolve 崩溃（D-34 修复）
     var platformEnv: any AppEnvironmentProtocol {
-        ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self) // inject_exempt: DI 核心初始化代码
+        ServiceContainer.shared.resolveOptional((any AppEnvironmentProtocol).self) ?? NoOpAppEnvironment() // inject_exempt: DI 核心初始化代码
     }
 }

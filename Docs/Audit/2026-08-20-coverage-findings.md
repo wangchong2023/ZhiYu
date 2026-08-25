@@ -167,28 +167,48 @@
 
 | 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
 |------|---------|---------|---------|---------|
-| D-3 | `Graph3DView.swift:127` 硬编码字符串 `"3D_Graph"`，未通过 `L10n.模块.属性` 强类型访问，违反 L10n 强约束。用户在非中文环境下看到的是字面量 `"3D_Graph"` 而非本地化文案 | P1 | 注册 L10n key 并改为 `L10n.Graph.threeDTitle` | 否 |
-| D-4 | `Graph3DView.swift:132` 硬编码字符串 `"Graph_Desc"`，同 D-3，违反 L10n 强约束 | P1 | 注册 L10n key 并改为 `L10n.Graph.threeDDescription` | 否 |
-| D-5 | `Graph3DView.swift:108` 硬编码字符串 `"FPS: \(Int(fps))"`，`"FPS:"` 前缀未本地化 | P2 | 改为 `L10n.Graph.fpsFormat(fps)` | 否 |
-| D-6 | `Graph3DView.swift:81` 魔鬼数字 `2000`（节点数降级阈值），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.nodeCountDegradeThreshold` | 否 |
-| D-7 | `Graph3DView.swift:106` 魔鬼数字 `30`、`15`（FPS 颜色阈值），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.fpsGoodThreshold`/`fpsWarnThreshold` | 否 |
-| D-8 | `Graph3DView.swift:191` 魔鬼数字 `2.2`（相机距离倍数），`192` 魔鬼数字 `60`/`400`（相机距离 min/max），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.cameraDistanceMultiplier`/`minCameraDistance`/`maxCameraDistance` | 否 |
-| D-9 | `Graph3DView.swift:206` 魔鬼数字 `150`（星空半径），`207` 算术表达式 `2 * .pi`，`230` 魔鬼数字 `20`/`30`/`20`（光源位置），`239` 魔鬼数字 `15`（相机 Y），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.starfieldRadius`/`lightPosition`/`cameraYOffset` | 否 |
-| D-10 | `SearchSheets.swift:130` 魔鬼数字 `6`（`lineSpacing(6)`），未使用 DesignSystem token | P2 | 替换为 `SystemSpacing.divider` 或新增 `Reference.Spacing` token | 否 |
-| D-11 | `SearchSheets.swift:226,256` 魔鬼数字 `36`（`font(.system(size: 36))`），`230,260,324,332` 魔鬼数字 `10`（`font(.system(size: 10))`），未使用 DesignSystem token | P2 | `36` → `Reference.FontSize.display`，`10` → `Reference.FontSize.micro` | 否 |
-| D-12 | `SearchSheets.swift:245,275` 魔鬼数字 `1`（`lineWidth: 1`），`PDFReaderView.swift:152` 魔鬼数字 `2`/`0`（`lineWidth`），`VoiceAudioPlayerView.swift:123` 魔鬼数字 `1`，未使用 `SystemStroke` token | P2 | `1` → `SystemStroke.border`，`2` → `SystemStroke.selected`，`0` → `SystemStroke.none` | 否 |
-| D-13 | `SearchSheets.swift:321,329` 硬编码字符串 `"FTS:"`/`"Vec:"`，未通过 L10n 强类型访问 | P2 | 注册 L10n key 并改为 `L10n.Search.Diag.ftsLabel`/`vectorLabel` | 否 |
-| D-14 | `PDFReaderView.swift:145` 硬编码字符串数组 `["yellow", "green", "blue", "pink", "purple"]`（高亮颜色名称），未抽取为枚举常量 | P2 | 抽取为 `PDFHighlight.ColorOption.allCases` 枚举 | 否 |
-| D-15 | `PDFReaderView.swift:111` 硬编码字符串 `"0 / 0"`（PDFKit 不可用时页码显示），未本地化 | P2 | 改为 `L10n.Ingest.PDF.pageUnavailable` | 否 |
-| D-16 | `PDFComponents.swift:91-93,97,119,155` 硬编码字符串 `"fullText"`/`"pageRange"`/`"highlights"` 用于 `ingestMode` 状态比较，应使用枚举而非字符串 | P1 | 抽取为 `enum PDFIngestMode: String` 枚举，所有比较改为枚举 case | 否 |
-| D-17 | `PDFComponents.swift:102,106` 算术表达式 `heroValueSize * 1.9`，`142` 算术表达式 `heroValueSize * 5.75`，违反"禁止 token 算术"规则 | P2 | 定义新 token 常量 `ComponentSpacing.pdfPageInputWidth`/`pdfPreviewMaxHeight` | 否 |
-| D-18 | `PDFComponents.swift:139` 魔鬼数字 `10`（`lineLimit(10)`），未抽取为常量 | P3 | 抽取为 `AppConstants.PDF.previewLineLimit` | 否 |
-| D-19 | `VoiceAudioPlayerView.swift:51` 硬编码字符串 `"AAC 44.1kHz"`（音频格式描述），未本地化 | P2 | 改为 `L10n.Ingest.audioFormatAAC` | 否 |
-| D-20 | `VoiceAudioPlayerView.swift:61` 魔鬼数字 `32`/`8`/`12`（波形高度计算 `waveformLevels[index] * 32 + 8`/`12`），未抽取为常量 | P2 | 抽取为 `ComponentSpacing.waveformMaxHeight`/`waveformBaseHeight`/`waveformIdleHeight` | 否 |
-| D-21 | `VoiceAudioPlayerView.swift:62,117,123,132` 魔鬼数字 `0.2`（动画 duration），多处重复，未抽取为常量 | P3 | 抽取为 `DesignSystem.Animation.quickDuration` | 否 |
-| D-22 | `VoiceAudioPlayerView.swift:103` 魔鬼数字 `48`（`font(.system(size: 48))`），未使用 DesignSystem token | P2 | 替换为 `Reference.FontSize.mega` | 否 |
-| D-23 | `ZoomableOCRImageView.swift:25,45,68,118,124,133` 魔鬼数字 `0.8`/`4.0`/`1.0`/`2.0`/`0.25`（缩放比例阈值），多处重复，未抽取为常量 | P2 | 抽取为 `ZoomConstants.minScale`/`maxScale`/`defaultScale`/`doubleTapScale`/`stepScale` | 否 |
-| D-24 | `ZoomableOCRImageView.swift:64` 魔鬼数字 `0.3`/`0.7`（spring 参数），`65` 魔鬼数字 `1.2`（双击放大阈值），未抽取为常量 | P3 | 抽取为 `DesignSystem.Animation.zoomSpringResponse`/`dampingFraction`/`doubleTapThreshold` | 否 |
-| D-25 | `ZoomableOCRImageView.swift:81` 硬编码格式字符串 `"%.1fx"`（缩放倍率显示），未本地化 | P3 | 改为 `L10n.Ingest.zoomScaleFormat(totalScale)` | 否 |
-| D-26 | `Graph3DComponents.swift:365,377,388,411` 算术表达式 `DesignSystem.small + DesignSystem.atomic`（多处重复），违反"禁止 token 算术"规则 | P2 | 定义新 token 常量 `SystemSpacing.controlPadding` | 否 |
-| D-27 | `Graph3DComponents.swift:407` 魔鬼数字 `0.35`（spring response），`414` 魔鬼数字 `0`（opacity），未抽取为常量 | P3 | 抽取为 `DesignSystem.Animation.filterPopupResponse`/`Color.transparent` | 否 |
+| D-3 | `Graph3DView.swift:127` 硬编码字符串 `"3D_Graph"`，未通过 `L10n.模块.属性` 强类型访问，违反 L10n 强约束。用户在非中文环境下看到的是字面量 `"3D_Graph"` 而非本地化文案 | P1 | 注册 L10n key 并改为 `L10n.Graph.threeDTitle` | 是 |
+| D-4 | `Graph3DView.swift:132` 硬编码字符串 `"Graph_Desc"`，同 D-3，违反 L10n 强约束 | P1 | 注册 L10n key 并改为 `L10n.Graph.threeDDescription` | 是 |
+| D-5 | `Graph3DView.swift:108` 硬编码字符串 `"FPS: \(Int(fps))"`，`"FPS:"` 前缀未本地化 | P2 | 改为 `L10n.Graph.fpsFormat(fps)` | 是 |
+| D-6 | `Graph3DView.swift:81` 魔鬼数字 `2000`（节点数降级阈值），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.nodeCountDegradeThreshold` | 是 |
+| D-7 | `Graph3DView.swift:106` 魔鬼数字 `30`、`15`（FPS 颜色阈值），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.fpsGoodThreshold`/`fpsWarnThreshold` | 是 |
+| D-8 | `Graph3DView.swift:191` 魔鬼数字 `2.2`（相机距离倍数），`192` 魔鬼数字 `60`/`400`（相机距离 min/max），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.cameraDistanceMultiplier`/`minCameraDistance`/`maxCameraDistance` | 是 |
+| D-9 | `Graph3DView.swift:206` 魔鬼数字 `150`（星空半径），`207` 算术表达式 `2 * .pi`，`230` 魔鬼数字 `20`/`30`/`20`（光源位置），`239` 魔鬼数字 `15`（相机 Y），未抽取为常量 | P2 | 抽取为 `GraphConstants.ThreeD.starfieldRadius`/`lightPosition`/`cameraYOffset` | 是 |
+| D-10 | `SearchSheets.swift:130` 魔鬼数字 `6`（`lineSpacing(6)`），未使用 DesignSystem token | P2 | 替换为 `SystemSpacing.divider` 或新增 `Reference.Spacing` token | 是 |
+| D-11 | `SearchSheets.swift:226,256` 魔鬼数字 `36`（`font(.system(size: 36))`），`230,260,324,332` 魔鬼数字 `10`（`font(.system(size: 10))`），未使用 DesignSystem token | P2 | `36` → `Reference.FontSize.display`，`10` → `Reference.FontSize.micro` | 是 |
+| D-12 | `SearchSheets.swift:245,275` 魔鬼数字 `1`（`lineWidth: 1`），`PDFReaderView.swift:152` 魔鬼数字 `2`/`0`（`lineWidth`），`VoiceAudioPlayerView.swift:123` 魔鬼数字 `1`，未使用 `SystemStroke` token | P2 | `1` → `SystemStroke.border`，`2` → `SystemStroke.selected`，`0` → `SystemStroke.none` | 是 |
+| D-13 | `SearchSheets.swift:321,329` 硬编码字符串 `"FTS:"`/`"Vec:"`，未通过 L10n 强类型访问 | P2 | 注册 L10n key 并改为 `L10n.Search.Diag.ftsLabel`/`vectorLabel` | 是 |
+| D-14 | `PDFReaderView.swift:145` 硬编码字符串数组 `["yellow", "green", "blue", "pink", "purple"]`（高亮颜色名称），未抽取为枚举常量 | P2 | 抽取为 `PDFHighlightColor` 枚举 | 是 |
+| D-15 | `PDFReaderView.swift:111` 硬编码字符串 `"0 / 0"`（PDFKit 不可用时页码显示），未本地化 | P2 | 改为 `L10n.Ingest.PDF.pageZeroFormat` | 是 |
+| D-16 | `PDFComponents.swift:91-93,97,119,155` 硬编码字符串 `"fullText"`/`"pageRange"`/`"highlights"` 用于 `ingestMode` 状态比较，应使用枚举而非字符串 | P1 | 抽取为 `enum PDFIngestMode: String` 枚举，所有比较改为枚举 case | 是 |
+| D-17 | `PDFComponents.swift:102,106` 算术表达式 `heroValueSize * 1.9`，`142` 算术表达式 `heroValueSize * 5.75`，违反"禁止 token 算术"规则 | P2 | 迁移到 `PDFConstants` 常量 | 是 |
+| D-18 | `PDFComponents.swift:139` 魔鬼数字 `10`（`lineLimit(10)`），未抽取为常量 | P3 | 抽取为 `PDFUIConstants.previewLineLimit` | 是 |
+| D-19 | `VoiceAudioPlayerView.swift:51` 硬编码字符串 `"AAC 44.1kHz"`（音频格式描述），未本地化 | P2 | 改为 `L10n.Ingest.audioFormatAAC` | 是 |
+| D-20 | `VoiceAudioPlayerView.swift:61` 魔鬼数字 `32`/`8`/`12`（波形高度计算 `waveformLevels[index] * 32 + 8`/`12`），未抽取为常量 | P2 | 抽取为 `VoiceUIConstants.waveformMaxHeight`/`waveformMinHeight`/`waveformIdleHeight` | 是 |
+| D-21 | `VoiceAudioPlayerView.swift:62,117,123,132` 魔鬼数字 `0.2`（动画 duration），多处重复，未抽取为常量 | P3 | 抽取为 `VoicePlaybackConfig.waveformAnimationDuration` | 是 |
+| D-22 | `VoiceAudioPlayerView.swift:103` 魔鬼数字 `48`（`font(.system(size: 48))`），未使用 DesignSystem token | P2 | 替换为 `Reference.FontSize.mega` | 是 |
+| D-23 | `ZoomableOCRImageView.swift:25,45,68,118,124,133` 魔鬼数字 `0.8`/`4.0`/`1.0`/`2.0`/`0.25`（缩放比例阈值），多处重复，未抽取为常量 | P2 | 抽取为 `OCRZoomConstants.minScale`/`maxScale`/`resetScale`/`doubleTapTarget` | 是 |
+| D-24 | `ZoomableOCRImageView.swift:64` 魔鬼数字 `0.3`/`0.7`（spring 参数），`65` 魔鬼数字 `1.2`（双击放大阈值），未抽取为常量 | P3 | 抽取为 `OCRZoomConstants` 常量 | 是 |
+| D-25 | `ZoomableOCRImageView.swift:81` 硬编码格式字符串 `"%.1fx"`（缩放倍率显示），未本地化 | P3 | 改为 `L10n.Ingest.zoomScaleFormat(totalScale)` | 是 |
+| D-26 | `Graph3DComponents.swift:365,377,388,411` 算术表达式 `DesignSystem.small + DesignSystem.atomic`（多处重复），违反"禁止 token 算术"规则 | P2 | 定义新 token 常量 `Graph3DUIConstants.controlPadding`（值=`SystemSpacing.contentMedium`） | 是 |
+| D-27 | `Graph3DComponents.swift:407` 魔鬼数字 `0.35`（spring response），`414` 魔鬼数字 `0`（opacity），未抽取为常量 | P3 | 抽取为 `Graph3DUIConstants.filterSpringResponse` | 是 |
+
+### Task 4-8：Insight/AI/Shared 快照 + Platforms 单元测试 + 全量验证
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| D-28 | `audit-design-magic-numbers.py` 正则未处理类型标注（如 `let x: CGFloat = 1.0`），95 处 private 常量魔鬼数字漏检 | 高 | 正则改为 `(?::\s*\w+)?\s*=\s*` 支持可选类型标注 | 是 |
+| D-29 | 43 处 private 常量魔鬼数字（UI 语境 enum 中变相硬编码） | 高 | 16 处迁移现有 token + 13 处拆分到非 UI 语境 enum + 1 处迁移 `Reference.Opacity.fifty` + 13 处组件特定尺寸白名单 | 是 |
+| D-30 | `ExportError` 未 conform `Equatable`，测试无法用 `XCTAssertEqual` 直接比较 | 中 | 测试改用 `errorDescription` 字符串比较（不修改源码） | 是（测试层） |
+| D-31 | `IOSSpotlightIndexerTests` 中 `KnowledgePage` init 参数顺序错误（`aliases` 应在 `tags` 前） | 低 | 修正测试代码参数顺序 | 是 |
+| D-32 | `iOSReminderService.requestAccess()` 直接调用 EventKit，在模拟器阻塞权限弹窗，4 个测试卡住 | 高 | 引入闭包注入模式（`requestAccessHandler`/`defaultCalendarHandler`/`calendarsHandler`/`saveHandler`），测试通过 `init(requestAccess:defaultCalendar:calendars:save:)` 注入 Mock 闭包 | 是 |
+| D-33 | `type_name` SwiftLint 规则要求类名大写开头，`iOS*Tests` 违规 | 低 | 重命名为 `IOS*Tests`（13 个文件） | 是 |
+| D-34 | `AppEnvironment.platformEnv` getter 调用 `ServiceContainer.resolve`，测试环境中其他测试 `reset()` 清空注册后触发 `assertionFailure` 崩溃 | 高 | 改为 `resolveOptional ?? NoOpAppEnvironment()` 安全降级 | 是 |
+| D-35 | `IOSURLOpenerServiceTests` 调用真实 `UIApplication.shared.open`，在模拟器阻塞 Safari/系统进程 | 高 | `iOSURLOpenerService` 引入闭包注入模式（`openHandler`），测试用 `URLRecorder` 引用类型包装验证 | 是 |
+| D-36 | `ModelDownloadManagerDeepTests.testStartDownloadWithPausedStateProceeds` 用真实 URL `"https://example.com/model.bin"` 发起网络请求，测试环境挂起超时 | 高 | `ModelDownloadManager` 引入 `sessionFactory` 闭包注入模式，测试注入 ephemeral session + `MockDownloadURLProtocol`；`ModelDownloadDelegateHelper` 改为 `internal` | 是 |
+| D-37 | NLTagger 中文人名识别率 33%（3/9），tag 全是 `Other` 而非 `.personalName`，8 个匿名化测试失败 | 高 | `LLMContextBuilder` 引入 `entityRecognizer` 闭包注入点 + `init(entityRecognizer:)` 测试初始化器 + `defaultEntityRecognizer` 静态方法；`ChatLLMService`/`ChatRunner` 引入 `contextBuilderFactory` 闭包属性 + 测试初始化器；4 个测试文件注入 mock `entityRecognizer` | 是 |
+| D-38 | `EmbeddingManager.getVector(for:)` fallback 中 `Hasher.finalize()` 返回负值，负数取模产生负值导致向量分布异常（负值占比 0.998 > 0.9） | 高 | `abs(seed ^ i)` 确保非负取模 | 是 |
+| D-39 | `DatabaseManagerDegradationTests.testStateAfterDegradationToInMemory` 降级后 `state` 未设为 `.ready` | 中 | 测试已通过，`degradeToInMemory` 降级逻辑正常工作 — `/dev/null/cannot_create_db/vault.sqlite3` 路径触发降级，内存数据库成功初始化 | 是 |
+| D-40 | `ZIPFoundationArchiver.extractContents` 解压后文件在子目录（源目录名）下，而非直接在目标目录下 — ZIPFoundation `zipItem` 保留源目录名作为 ZIP 内根条目 | 中 | 测试改为遍历子目录查找文件（`findFile(named:in:)` 递归查找），符合 ZIP 保留目录结构的业界标准 | 是（测试层） |
+| D-41 | `CollaborationServiceDeepTests.test接收PageSync数据且远程时间等于本地时也更新` flaky — `Task {}` 异步竞态，100ms 等待在全量测试负载下不够 | 低 | 3 个正向断言测试改为轮询等待（`waitFor` 辅助方法），44 个测试全部通过 | 是 |
+| D-42 | 46 个中文测试方法名违反英文命名规范（8 个文件） | 中 | 全部改为英文命名（`CollaborationServiceDeepTests` 21 个 + `CarrierAuthStrategyDeepTests` 3 个 + `SynthesisStoreDeepTests` 2 个 + `ModelLabManagerDeepTests` 7 个 + `GitHubAuthStrategyDeepTests` 4 个 + `StoreKitServiceDeepTests` 2 个 + `GlobalModelManagerDeepTests` 5 个 + `L10nMediumFilesDeepTests` 2 个） | 是 |

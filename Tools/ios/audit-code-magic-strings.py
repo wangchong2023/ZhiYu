@@ -137,6 +137,40 @@ def _should_exclude_ui_string(content: str, match_value: str) -> bool:
     return False
 
 
+def _scan_ud_key(line: str, rel_path: Path, line_no: int) -> list:
+    """检测 UserDefaults key 硬编码。"""
+    if UD_KEY_PATTERN.search(line) and 'AppConstants' not in line:
+        return [(rel_path, line_no, line.strip())]
+    return []
+
+
+def _scan_url(line: str, rel_path: Path, line_no: int) -> list:
+    """检测 URL 硬编码。"""
+    if URL_PATTERN.search(line) and not _should_exclude_url(line):
+        return [(rel_path, line_no, line.strip())]
+    return []
+
+
+def _scan_single_char(line: str, rel_path: Path, line_no: int) -> list:
+    """检测单字符字面量硬编码。"""
+    violations = []
+    if not _should_exclude_single_char(line) and _is_in_char_api_context(line):
+        for (pattern, semantic), const_name in SINGLE_CHAR_LITERALS.items():
+            if re.search(pattern, line):
+                violations.append((rel_path, line_no, line.strip(), const_name, semantic))
+    return violations
+
+
+def _scan_ui_string(line: str, rel_path: Path, line_no: int) -> list:
+    """检测 UI 硬编码字符串。"""
+    violations = []
+    for m in UI_STRING_PATTERN.finditer(line):
+        match_value = m.group(1)
+        if not _should_exclude_ui_string(line, match_value):
+            violations.append((rel_path, line_no, line.strip(), match_value))
+    return violations
+
+
 def _scan_line_for_violations(line: str, rel_path: Path, line_no: int) -> tuple[list, list, list, list]:
     """
     扫描单行代码的四类违规：UserDefaults key、URL、单字符字面量、UI 硬编码字符串。
@@ -146,30 +180,12 @@ def _scan_line_for_violations(line: str, rel_path: Path, line_no: int) -> tuple[
     :param line_no: 行号
     :return: (UD 违规列表, URL 违规列表, 单字符违规列表, UI字符串违规列表)
     """
-    ud_violations = []
-    url_violations = []
-    char_violations = []
-    ui_string_violations = []
-
-    if UD_KEY_PATTERN.search(line) and 'AppConstants' not in line:
-        ud_violations.append((rel_path, line_no, line.strip()))
-
-    if URL_PATTERN.search(line) and not _should_exclude_url(line):
-        url_violations.append((rel_path, line_no, line.strip()))
-
-    # 单字符字面量检测：仅在 API 上下文中检测，避免字符串插值误报
-    if not _should_exclude_single_char(line) and _is_in_char_api_context(line):
-        for (pattern, semantic), const_name in SINGLE_CHAR_LITERALS.items():
-            if re.search(pattern, line):
-                char_violations.append((rel_path, line_no, line.strip(), const_name, semantic))
-
-    # UI 硬编码字符串检测
-    for m in UI_STRING_PATTERN.finditer(line):
-        match_value = m.group(1)
-        if not _should_exclude_ui_string(line, match_value):
-            ui_string_violations.append((rel_path, line_no, line.strip(), match_value))
-
-    return ud_violations, url_violations, char_violations, ui_string_violations
+    return (
+        _scan_ud_key(line, rel_path, line_no),
+        _scan_url(line, rel_path, line_no),
+        _scan_single_char(line, rel_path, line_no),
+        _scan_ui_string(line, rel_path, line_no),
+    )
 
 
 def _scan_directory(check_dir: Path) -> tuple[list, list, list, list]:
@@ -264,8 +280,8 @@ def _report_char_violations(items: list) -> int:
     return 1
 
 
-def main():
-    """扫描业务层硬编码 UserDefaults key、URL、单字符字面量和 UI 硬编码字符串，验证是否已用常量替代。"""
+def _aggregate_violations() -> tuple[list, list, list, list]:
+    """聚合所有扫描目录的违规条目。"""
     all_ud = []
     all_url = []
     all_char = []
@@ -276,7 +292,41 @@ def main():
         all_url.extend(urls)
         all_char.extend(chars)
         all_ui_string.extend(ui_strings)
+    return all_ud, all_url, all_char, all_ui_string
 
+
+def _report_url_violations(all_url: list, exit_code: int) -> int:
+    """报告 URL 违规并更新退出码。"""
+    if all_url:
+        ec = _report_violations(
+            "URL",
+            "应使用 AppConstants.URLs.* 常量",
+            all_url)
+        return exit_code or ec
+    return exit_code
+
+
+def _report_char_violations_and_update(all_char: list, exit_code: int) -> int:
+    """报告单字符违规并更新退出码。"""
+    if all_char:
+        ec = _report_char_violations(all_char)
+        return exit_code or ec
+    return exit_code
+
+
+def _report_ui_string_violations(all_ui_string: list, exit_code: int) -> int:
+    """报告 UI 字符串违规并更新退出码。"""
+    if all_ui_string:
+        ec = _report_violations(
+            "UI 硬编码字符串",
+            "应使用 L10n.模块.属性 强类型访问",
+            all_ui_string)
+        return exit_code or ec
+    return exit_code
+
+
+def _report_all_violations(all_ud: list, all_url: list, all_char: list, all_ui_string: list) -> int:
+    """报告四类违规并返回退出码。"""
     if not all_ud and not all_url and not all_char and not all_ui_string:
         print("✅ PASS: 无硬编码 UserDefaults key、URL、单字符字面量或 UI 硬编码字符串")
         return 0
@@ -287,22 +337,16 @@ def main():
             "UserDefaults key",
             "应使用 AppConstants.Keys.Storage.* 常量",
             all_ud)
-    if all_url:
-        ec = _report_violations(
-            "URL",
-            "应使用 AppConstants.URLs.* 常量",
-            all_url)
-        exit_code = exit_code or ec
-    if all_char:
-        ec = _report_char_violations(all_char)
-        exit_code = exit_code or ec
-    if all_ui_string:
-        ec = _report_violations(
-            "UI 硬编码字符串",
-            "应使用 L10n.模块.属性 强类型访问",
-            all_ui_string)
-        exit_code = exit_code or ec
+    exit_code = _report_url_violations(all_url, exit_code)
+    exit_code = _report_char_violations_and_update(all_char, exit_code)
+    exit_code = _report_ui_string_violations(all_ui_string, exit_code)
     return exit_code
+
+
+def main():
+    """扫描业务层硬编码 UserDefaults key、URL、单字符字面量和 UI 硬编码字符串，验证是否已用常量替代。"""
+    all_ud, all_url, all_char, all_ui_string = _aggregate_violations()
+    return _report_all_violations(all_ud, all_url, all_char, all_ui_string)
 
 
 if __name__ == "__main__":

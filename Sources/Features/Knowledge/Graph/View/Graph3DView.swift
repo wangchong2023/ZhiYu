@@ -12,6 +12,12 @@ import SwiftUI
 import SceneKit
 import Dependencies
 
+// MARK: - 3D 图谱组件常量（组件特定尺寸，无对应命名 token）
+private enum Graph3DViewConstants {
+    /// 3D 图谱描述文本最大宽度 (240pt)
+    static let descriptionMaxWidth: CGFloat = 240
+}
+
 // MARK: - 3D 图谱容器
 /// 3D 知识图谱视图
 /// 负责在 3D 空间（SceneKit）中渲染知识节点与关联线条，提供力导向布局、自动旋转及空间交互体验
@@ -58,7 +64,7 @@ struct Graph3DView: View {
         .overlay(alignment: .topTrailing) {
             if !hideControls {
                 controlsOverlay
-                    .padding(.top, isFullScreen ? DesignSystem.huge + DesignSystem.tightPadding : DesignSystem.tightPadding)
+                    .padding(.top, isFullScreen ? ComponentSpacing.ultra : DesignSystem.tightPadding)
                     .padding(.trailing, DesignSystem.standardPadding)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
@@ -77,8 +83,8 @@ struct Graph3DView: View {
         .hideBackButtonIfIOS(isFullScreen)
         .hideNavigationBarIfIOS(isFullScreen)
         .onAppear { 
-            // 节点数超出 2000 个时智能降级至 2D 拓扑
-            if store.pages.count > 2000 {
+            // 节点数超出阈值时智能降级至 2D 拓扑
+            if store.pages.count > GraphConstants.ThreeD.nodeCountDegradeThreshold {
                 isFullScreen = false
                 toastManager.show(type: .info, message: L10n.Graph.nodesLimitDegradeHint)
                 return
@@ -103,9 +109,9 @@ struct Graph3DView: View {
             HStack {
                 HStack(spacing: DesignSystem.tiny) {
                     Circle()
-                        .fill(fps > 30 ? Color.theme.green : (fps > 15 ? Color.theme.orange : Color.theme.red))
+                        .fill(fps > GraphConstants.ThreeD.fpsGoodThreshold ? Color.theme.green : (fps > GraphConstants.ThreeD.fpsWarnThreshold ? Color.theme.orange : Color.theme.red))
                         .frame(width: SystemSpacing.small, height: SystemSpacing.small)
-                    Text("FPS: \(Int(fps))")
+                    Text(L10n.Graph.ThreeD.fpsFormat(Int(fps)))
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
                 }
@@ -117,23 +123,23 @@ struct Graph3DView: View {
                 Spacer()
             }
             .padding(.leading, DesignSystem.standardPadding)
-            .padding(.bottom, isFullScreen ? DesignSystem.huge + DesignSystem.tightPadding : DesignSystem.standardPadding)
+            .padding(.bottom, isFullScreen ? ComponentSpacing.ultra : DesignSystem.standardPadding)
         }
         .allowsHitTesting(false)
     }
 
     private var headerOverlay: some View {
         VStack(alignment: isFullScreen ? .center : .leading, spacing: DesignSystem.tiny) {
-            Text("3D_Graph")
+            Text(L10n.Graph.ThreeD.title)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appText)
             
             if isFullScreen {
-                Text("Graph_Desc")
+                Text(L10n.Graph.ThreeD.description)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(isFullScreen ? .center : .leading)
-                    .frame(maxWidth: DesignSystem.Gallery.cardMinWidth * 2) // 240
+                    .frame(maxWidth: Graph3DViewConstants.descriptionMaxWidth) // 240 组件特定尺寸
             }
         }
         .padding(.top, isFullScreen ? DesignSystem.wide : 0)
@@ -188,8 +194,8 @@ struct Graph3DView: View {
 
         scene = newScene
         
-        let targetDistance = Float(radius) * 2.2
-        cameraDistance = max(60, min(400, targetDistance))
+        let targetDistance = Float(radius) * GraphConstants.ThreeD.cameraDistanceMultiplier
+        cameraDistance = max(GraphConstants.ThreeD.minCameraDistance, min(GraphConstants.ThreeD.maxCameraDistance, targetDistance))
         resetCamera() 
         
         updateAutoRotation(isRotating: autoRotate)
@@ -203,7 +209,7 @@ struct Graph3DView: View {
         
         for _ in 0..<starCount {
             let node = SCNNode(geometry: starGeometry)
-            let r: Float = 150
+            let r: Float = GraphConstants.ThreeD.starfieldRadius
             let theta = Float.random(in: 0...(2 * .pi))
             let phi = Float.random(in: 0...(.pi))
             
@@ -227,7 +233,7 @@ struct Graph3DView: View {
         omniLight.light = SCNLight()
         omniLight.light?.type = .omni
         omniLight.light?.color = UIColor.theme.white
-        omniLight.position = SCNVector3(20, 30, 20)
+        omniLight.position = SCNVector3(GraphConstants.ThreeD.lightPositionX, GraphConstants.ThreeD.lightPositionY, GraphConstants.ThreeD.lightPositionZ)
         scene.rootNode.addChildNode(omniLight)
     }
 
@@ -236,7 +242,7 @@ struct Graph3DView: View {
         camera.camera = SCNCamera()
         camera.camera?.zNear = GraphConstants.ThreeD.cameraZNear
         camera.camera?.zFar = GraphConstants.ThreeD.cameraZFar 
-        camera.position = SCNVector3(0, 15, Float(cameraDistance))
+        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
         camera.look(at: SCNVector3(0, 0, 0))
         camera.name = "mainCamera"
         scene.rootNode.addChildNode(camera)
@@ -281,9 +287,9 @@ struct Graph3DView: View {
             )
             node.name = page.id.uuidString
 
-            if !isDimmed || pages.count < 50 {
+            if !isDimmed || pages.count < GraphConstants.ThreeD.labelDisplayThreshold {
                 let textNode = createLabelNode(title: page.title, nodeSize: nodeSize)
-                textNode.opacity = isDimmed ? 0.4 : 1.0
+                textNode.opacity = isDimmed ? GraphConstants.ThreeD.labelDimmedOpacity : GraphConstants.ThreeD.labelNormalOpacity
                 node.addChildNode(textNode)
             }
 
@@ -301,10 +307,10 @@ struct Graph3DView: View {
     private func createNodeGeometry(for type: PageType, size: CGFloat) -> SCNGeometry {
         switch type {
         case .concept: return SCNSphere(radius: size)
-        case .entity: return SCNBox(width: size * 1.6, height: size * 1.6, length: size * 1.6, chamferRadius: size * 0.2)
-        case .source: return SCNCylinder(radius: size, height: size * 2.5)
-        case .comparison: return SCNPyramid(width: size * 2, height: size * 2, length: size * 2)
-        case .raw: return SCNBox(width: size * 2, height: size * 0.2, length: size * 1.5, chamferRadius: 0.05)
+        case .entity: return SCNBox(width: size * CGFloat(GraphConstants.ThreeD.entitySizeMultiplier), height: size * CGFloat(GraphConstants.ThreeD.entitySizeMultiplier), length: size * CGFloat(GraphConstants.ThreeD.entitySizeMultiplier), chamferRadius: size * CGFloat(GraphConstants.ThreeD.entityChamferRatio))
+        case .source: return SCNCylinder(radius: size, height: size * CGFloat(GraphConstants.ThreeD.sourceHeightMultiplier))
+        case .comparison: return SCNPyramid(width: size * CGFloat(GraphConstants.ThreeD.comparisonSizeMultiplier), height: size * CGFloat(GraphConstants.ThreeD.comparisonSizeMultiplier), length: size * CGFloat(GraphConstants.ThreeD.comparisonSizeMultiplier))
+        case .raw: return SCNBox(width: size * CGFloat(GraphConstants.ThreeD.rawWidthMultiplier), height: size * CGFloat(GraphConstants.ThreeD.rawHeightRatio), length: size * CGFloat(GraphConstants.ThreeD.rawLengthMultiplier), chamferRadius: CGFloat(GraphConstants.ThreeD.rawChamferRadius))
         }
     }
 
@@ -319,9 +325,9 @@ struct Graph3DView: View {
     }
 
     private func createLabelNode(title: String, nodeSize: CGFloat) -> SCNNode {
-        let text = SCNText(string: title, extrusionDepth: 0.1)
-        text.font = UIFont.boldSystemFont(ofSize: 1.2)
-        text.flatness = 0.2
+        let text = SCNText(string: title, extrusionDepth: CGFloat(GraphConstants.ThreeD.labelExtrusionDepth))
+        text.font = UIFont.boldSystemFont(ofSize: CGFloat(GraphConstants.ThreeD.labelFontSize))
+        text.flatness = CGFloat(GraphConstants.ThreeD.labelFlatness)
         text.isWrapped = false
 
         let textNode = SCNNode(geometry: text)
@@ -329,7 +335,7 @@ struct Graph3DView: View {
         let labelScale = DesignSystem.Graph.ThreeD.labelScale
         textNode.scale = SCNVector3(labelScale, labelScale, labelScale)
         textNode.geometry?.firstMaterial?.diffuse.contents = UIColor.theme.white
-        textNode.geometry?.firstMaterial?.emission.contents = UIColor.theme.white.withAlphaComponent(0.3)
+        textNode.geometry?.firstMaterial?.emission.contents = UIColor.theme.white.withAlphaComponent(CGFloat(GraphConstants.ThreeD.labelEmissionIntensity))
 
         let billboard = SCNBillboardConstraint()
         billboard.freeAxes = .all
@@ -339,8 +345,8 @@ struct Graph3DView: View {
     }
 
     private func addPulseAnimation(to node: SCNNode) {
-        let pulseAction = SCNAction.customAction(duration: 2.0) { node, elapsedTime in
-            let scale = 1.0 + 0.2 * sin(elapsedTime * .pi)
+        let pulseAction = SCNAction.customAction(duration: GraphConstants.ThreeD.pulseAnimationDuration) { node, elapsedTime in
+            let scale = 1.0 + GraphConstants.ThreeD.pulseScaleAmplitude * sin(elapsedTime * .pi)
             node.scale = SCNVector3(scale, scale, scale)
         }
         node.runAction(SCNAction.repeatForever(pulseAction))
@@ -379,8 +385,8 @@ struct Graph3DView: View {
     }
 
     private func addGridFloor(scene: SCNScene) {
-        let gridNode = createGridNode(size: 100, divisions: 50)
-        gridNode.position = SCNVector3(0, -30, 0)
+        let gridNode = createGridNode(size: GraphConstants.ThreeD.gridFloorSize, divisions: GraphConstants.ThreeD.gridFloorDivisions)
+        gridNode.position = SCNVector3(0, GraphConstants.ThreeD.gridFloorYOffset, 0)
         scene.rootNode.addChildNode(gridNode)
     }
     
@@ -407,9 +413,9 @@ struct Graph3DView: View {
         let radius: CGFloat = isHighlighted ? DesignSystem.Graph.ThreeD.edgeRadiusHighlighted : DesignSystem.Graph.ThreeD.edgeRadius
         let cylinder = SCNCylinder(radius: radius, height: CGFloat(length))
         let baseColor = UIColor(Color.appAccent)
-        let opacity: CGFloat = isHighlighted ? 1.0 : 0.2
+        let opacity: CGFloat = isHighlighted ? CGFloat(GraphConstants.ThreeD.edgeHighlightedOpacity) : CGFloat(GraphConstants.ThreeD.edgeDefaultOpacity)
         cylinder.firstMaterial?.diffuse.contents = baseColor.withAlphaComponent(opacity)
-        cylinder.firstMaterial?.emission.contents = isHighlighted ? baseColor.withAlphaComponent(0.8) : baseColor.withAlphaComponent(0.1)
+        cylinder.firstMaterial?.emission.contents = isHighlighted ? baseColor.withAlphaComponent(CGFloat(GraphConstants.ThreeD.edgeHighlightedEmission)) : baseColor.withAlphaComponent(CGFloat(GraphConstants.ThreeD.edgeDefaultEmission))
         let node = SCNNode(geometry: cylinder)
         node.name = "edge_\(sourceID.uuidString)_\(targetID.uuidString)"
         node.position = SCNVector3((source.x + target.x) / 2, (source.y + target.y) / 2, (source.z + target.z) / 2)
@@ -418,7 +424,7 @@ struct Graph3DView: View {
         let cross = SCNVector3(up.y * direction.z - up.z * direction.y, up.z * direction.x - up.x * direction.z, up.x * direction.y - up.y * direction.x)
         let dot = up.x * direction.x + up.y * direction.y + up.z * direction.z
         let crossLength = sqrt(cross.x * cross.x + cross.y * cross.y + cross.z * cross.z)
-        if crossLength > 0.001 {
+        if crossLength > Float(GraphConstants.ThreeD.rotationEpsilon) {
             node.rotation = SCNVector4(cross.x / crossLength, cross.y / crossLength, cross.z / crossLength, acos(dot))
         }
         return node
@@ -443,29 +449,29 @@ struct Graph3DView: View {
         }
         let element = SCNGeometryElement(indices: indices, primitiveType: .line)
         let geometry = SCNGeometry(sources: [source], elements: [element])
-        geometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(0.2)
+        geometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(CGFloat(GraphConstants.ThreeD.gridOpacity))
         return SCNNode(geometry: geometry)
     }
     
     private func resetCamera() {
         guard let camera = cameraNode else { return }
         HapticFeedback.shared.trigger(.selection)
-        cameraDistance = GraphConstants.ThreeD.defaultCameraDistance 
+        cameraDistance = GraphConstants.ThreeD.defaultCameraDistance
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.8
+        SCNTransaction.animationDuration = GraphConstants.ThreeD.cameraAnimationDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        camera.position = SCNVector3(0, 15, Float(cameraDistance))
+        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
         camera.look(at: SCNVector3(0, 0, 0))
         SCNTransaction.commit()
     }
-    
+
     private func zoom(in zoomingIn: Bool) {
         guard let camera = cameraNode else { return }
-        let factor: Float = zoomingIn ? 0.8 : 1.25
-        cameraDistance = max(20, min(300, cameraDistance * factor))
+        let factor: Float = zoomingIn ? GraphConstants.ThreeD.zoomOutFactor : GraphConstants.ThreeD.zoomInFactor
+        cameraDistance = max(GraphConstants.ThreeD.zoomMinDistance, min(GraphConstants.ThreeD.zoomMaxDistance, cameraDistance * factor))
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.5
-        camera.position = SCNVector3(0, 15, Float(cameraDistance))
+        SCNTransaction.animationDuration = GraphConstants.ThreeD.zoomAnimationDuration
+        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
         SCNTransaction.commit()
     }
     
@@ -482,10 +488,10 @@ struct Graph3DView: View {
             infoPage = page
             if let scene = scene, let targetNode = scene.rootNode.childNode(withName: uuid.uuidString, recursively: true), let camera = cameraNode {
                 SCNTransaction.begin()
-                SCNTransaction.animationDuration = 1.0
+                SCNTransaction.animationDuration = GraphConstants.ThreeD.nodeTapAnimationDuration
                 SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 let pos = targetNode.position
-                let direction = SCNVector3(pos.x, pos.y + 5, pos.z + 15)
+                let direction = SCNVector3(pos.x, pos.y + GraphConstants.ThreeD.nodeTapCameraOffsetY, pos.z + GraphConstants.ThreeD.nodeTapCameraOffsetZ)
                 camera.position = direction
                 camera.look(at: pos)
                 SCNTransaction.commit()
@@ -503,14 +509,14 @@ struct Graph3DView: View {
         guard let scene = scene else { return }
         scene.rootNode.removeAction(forKey: "autoRotate")
         if isRotating {
-            let rotate = SCNAction.rotateBy(x: 0, y: 0.2, z: 0, duration: 1.0)
+            let rotate = SCNAction.rotateBy(x: 0, y: CGFloat(GraphConstants.ThreeD.autoRotateSpeed), z: 0, duration: GraphConstants.ThreeD.cameraAnimationDuration)
             rotate.timingMode = .linear
             scene.rootNode.runAction(SCNAction.repeatForever(rotate), forKey: "autoRotate")
         }
     }
     
     private func startFPSMonitor() {
-        fpsUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        fpsUpdateTimer = Timer.scheduledTimer(withTimeInterval: GraphConstants.ThreeD.fpsUpdateInterval, repeats: true) { _ in
             Task { @MainActor in
                 updateFPSFromScene()
             }
@@ -523,10 +529,10 @@ struct Graph3DView: View {
     }
     
     private func updateFPSFromScene() {
-        let baseFPS: Double = 60.0
-        let nodeComplexity = Double(store.pages.count) / 100.0
-        let newFPS = max(10, baseFPS - (nodeComplexity * 5.0) - (autoRotate ? 2.0 : 0))
-        withAnimation(.linear(duration: 1.0)) {
+        let baseFPS: Double = GraphConstants.ThreeD.baseFPS
+        let nodeComplexity = Double(store.pages.count) / GraphConstants.ThreeD.nodeComplexityDivisor
+        let newFPS = max(GraphConstants.ThreeD.minFPS, baseFPS - (nodeComplexity * GraphConstants.ThreeD.nodeComplexityMultiplier) - (autoRotate ? GraphConstants.ThreeD.autoRotateFPSDeduction : 0))
+        withAnimation(.linear(duration: GraphConstants.ThreeD.fpsUpdateInterval)) {
             fps = newFPS
         }
     }

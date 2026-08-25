@@ -28,22 +28,36 @@ final class ChatRunner: LLMChatServiceProtocol {
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
     // MARK: - 内部属性
-    
-    /// 上下文构建器
-    private let contextBuilder = LLMContextBuilder()
-    
+
+    /// 上下文构建器工厂闭包 — 生产环境创建默认实例，测试环境可注入 mock
+    private let contextBuilderFactory: @Sendable () -> LLMContextBuilder
+
     /// 核心对话子服务
     private var chatService: LLMChatService?
-    
+
     var isEnabled: Bool {
         configManager.isEnabled
     }
-    
+
     // MARK: - 初始化
-    
+
+    /// 生产环境初始化器
     init() {
+        self.contextBuilderFactory = { LLMContextBuilder() }
         updateSubServices()
-        
+
+        // 绑定配置中心刷新事件
+        configManager.setRefreshHandler { [weak self] in
+            self?.updateSubServices()
+        }
+    }
+
+    /// 测试环境初始化器 — 允许注入自定义 LLMContextBuilder 工厂
+    /// - Parameter contextBuilderFactory: 返回自定义 LLMContextBuilder 的工厂闭包
+    init(contextBuilderFactory: @escaping @Sendable () -> LLMContextBuilder) {
+        self.contextBuilderFactory = contextBuilderFactory
+        updateSubServices()
+
         // 绑定配置中心刷新事件
         configManager.setRefreshHandler { [weak self] in
             self?.updateSubServices()
@@ -68,8 +82,9 @@ final class ChatRunner: LLMChatServiceProtocol {
         guard configManager.isEnabled, !configManager.apiKey.isEmpty else { throw LLMError.notConfigured }
         let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
         let sanitizedPrompt = PromptSanitizer.shared.sanitize(prompt)
-        
+
         // 🔒 端侧 NER 脱敏 (SR-12)
+        let contextBuilder = contextBuilderFactory()
         let (anonSystemPrompt, mapping1) = contextBuilder.anonymize(systemPrompt)
         let (anonPrompt, mapping) = contextBuilder.anonymize(sanitizedPrompt, existingMapping: mapping1)
         
@@ -114,12 +129,13 @@ final class ChatRunner: LLMChatServiceProtocol {
         
         guard configManager.isEnabled, let chatService = self.chatService else { throw LLMError.notConfigured }
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
- 
+
         // 1. 在 UI 层启动任务中心异步进度条
         let taskID = taskCenter.addTask(type: .ai, name: LLMConstants.TaskName.aiChat, target: sanitizedQuery)
         taskCenter.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
-        
+
         // 2. 检索向量库及 FTS5 混合语义，构建保护双链的语义上下文
+        let contextBuilder = contextBuilderFactory()
         let (context, sources) = await contextBuilder.buildRelevantContext(query: sanitizedQuery)
         SourceStore.shared.updateSources(sources)
         let capturedSources = sources  // 捕获用于异步评估
@@ -192,10 +208,12 @@ final class ChatRunner: LLMChatServiceProtocol {
                     try await performPreflightCheck()
 
                     // 1 & 2. 构建混合上下文，更新引用源，排序候选文档并脱敏 (SR-12)
+                    let contextBuilder = contextBuilderFactory()
                     let prep = try await prepareChatContextAndAnonymize(
                         sanitizedQuery: sanitizedQuery,
                         history: history,
-                        pages: pages
+                        pages: pages,
+                        contextBuilder: contextBuilder
                     )
 
                     var fullResponse = ""
@@ -289,7 +307,8 @@ final class ChatRunner: LLMChatServiceProtocol {
     private func prepareChatContextAndAnonymize(
         sanitizedQuery: String,
         history: [ChatMessageDTO],
-        pages: [any KnowledgePageRepresentable]
+        pages: [any KnowledgePageRepresentable],
+        contextBuilder: LLMContextBuilder
     ) async throws -> ChatPreparationResult {
         // 1. 构建混合上下文，更新引用源
         let (context, sources) = await contextBuilder.buildRelevantContext(query: sanitizedQuery)

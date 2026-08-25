@@ -70,7 +70,7 @@ struct SmartIngestPreview: View {
                         .foregroundStyle(.appText)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxHeight: DesignSystem.Metrics.heroValueSize * 7.7) // 200
+                .frame(maxHeight: ComponentSpacing.chartHeight) // 220 最近档舍入
                 .padding(DesignSystem.small) // 8
                 .background(Color.appCard)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))

@@ -16,6 +16,11 @@ import Dependencies
 /// 语音笔记功能主视图
 /// 负责语音输入的实时采集、波形可视化展示、流式语音转文字（STT）及知识摘要提取
 struct VoiceNoteView: View {
+    // MARK: - UI 常量
+    private enum UIConstants {
+        static let waveformBarCount: Int = Int(ComponentSpacing.section)
+    }
+    
     @Dependency(\.speechService) private var speechService: any SpeechServiceProtocol
     @Environment(AppStore.self) var store
     @State private var noteTitle = ""
@@ -200,7 +205,7 @@ struct VoiceNoteView: View {
                 .foregroundStyle(.appSecondary)
 
             HStack(spacing: DesignSystem.Domain.Voice.waveBarSpacing) {
-                ForEach(0..<20, id: \.self) { i in
+                ForEach(0..<UIConstants.waveformBarCount, id: \.self) { i in
                     RoundedRectangle(cornerRadius: DesignSystem.tiny)
                         .fill(Color.appAccent)
                         .frame(width: DesignSystem.Domain.Voice.waveBarWidth, height: max(DesignSystem.Domain.Voice.waveBarMinHeight, CGFloat(speechService.audioLevelHistory[i]) * DesignSystem.Domain.Voice.waveScale))

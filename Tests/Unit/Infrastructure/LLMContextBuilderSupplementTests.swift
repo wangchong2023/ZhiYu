@@ -15,7 +15,11 @@ final class LLMContextBuilderSupplementTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        builder = LLMContextBuilder()
+        // 注入 mock entityRecognizer — 模拟器 NLTagger 中文人名/地名识别率低，用确定性 mock 替代
+        builder = LLMContextBuilder(entityRecognizer: { text in
+            let knownEntities = ["张三丰", "张三", "李四", "王五", "赵六", "钱七", "孙八", "周九", "吴十", "北京", "上海", "广州"]
+            return knownEntities.filter { text.contains($0) }
+        })
     }
 
     override func tearDown() {

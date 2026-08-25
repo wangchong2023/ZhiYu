@@ -77,7 +77,7 @@ struct PluginStatsSection: View {
                                         // 彩点状态指示器
                                         Circle()
                                             .fill(statusColor(for: usage.status))
-                                            .frame(width: DesignSystem.tiny + DesignSystem.atomic, height: DesignSystem.tiny + DesignSystem.atomic)
+                                            .frame(width: SystemSpacing.small, height: SystemSpacing.small)
                                     }
 
                                     // 自定义微缩进度条表示总时间占比 (利用标准化 progressHeight 消除硬编码)
@@ -114,12 +114,12 @@ struct PluginStatsSection: View {
                                             .font(.system(size: DesignSystem.microFontSize))
                                             .foregroundStyle(.appSecondary)
                                         Text(String(format: "%.1f%%", percentage * 100))
-                                            .font(.system(size: DesignSystem.captionFontSize - DesignSystem.atomic, design: .monospaced))
+                                            .font(.system(size: SystemFontSize.micro, design: .monospaced))
                                             .foregroundStyle(.appSecondary)
                                     }
                                 }
                             }
-                            .padding(.vertical, DesignSystem.small + DesignSystem.atomic)
+                            .padding(.vertical, SystemSpacing.element)
 
                             if index < sortedUsage.count - 1 {
                                 Divider().opacity(DesignSystem.Opacity.shadow)

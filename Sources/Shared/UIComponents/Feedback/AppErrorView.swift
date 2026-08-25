@@ -44,7 +44,7 @@ public struct AppErrorView: View {
         VStack(spacing: SystemSpacing.content) {
             // 渐变质感的警告图标
             Image(systemName: iconName)
-                .font(.system(size: 54)) // Dynamic Type
+                .font(.system(size: UIConstants.iconSize)) // Dynamic Type
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color.theme.red, Color.theme.orange],
@@ -56,12 +56,12 @@ public struct AppErrorView: View {
             
             // 标题
             Text(title)
-                .font(.system(size: 20, weight: .bold, design: .rounded)) // Dynamic Type
+                .font(.system(size: SystemFontSize.title2, weight: .bold, design: .rounded)) // Dynamic Type
                 .foregroundColor(.primary)
             
             // 详细描述
             Text(message)
-                .font(.system(size: 14)) // Dynamic Type
+                .font(.system(size: SystemFontSize.subheadline)) // Dynamic Type
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, SystemSpacing.medium)
@@ -79,7 +79,7 @@ public struct AppErrorView: View {
                     retryAction()
                 }) {
                     Text(L10n.Shared.retryButton)
-                        .font(.system(size: 15, weight: .semibold)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
                         .foregroundColor(Color.theme.white)
                         .padding(.horizontal, SystemSpacing.medium)
                         .padding(.vertical, SystemSpacing.tight)
@@ -100,5 +100,10 @@ public struct AppErrorView: View {
         .padding(DesignSystem.loosePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.clear)
+    }
+
+    // MARK: - 常量
+    private enum UIConstants {
+        static let iconSize: CGFloat = 54
     }
 }

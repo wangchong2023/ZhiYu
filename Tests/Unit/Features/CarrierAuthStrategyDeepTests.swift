@@ -180,7 +180,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - 并发安全
 
     /// 验证并发多次调用 acquireCredentials 不崩溃且每次返回独立 token
-    func test并发调用acquireCredentials不崩溃且token独立() async throws {
+    func testConcurrentAcquireCredentialsDoesNotCrashAndTokensIndependent() async throws {
         #if DEBUG
         guard let strategy = self.strategy else {
             XCTFail("strategy 不应为 nil")
@@ -211,7 +211,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - 多次调用一致性
 
     /// 验证连续多次调用 acquireCredentials 均成功且 token 唯一
-    func test连续多次调用acquireCredentials均成功且token唯一() async throws {
+    func testSequentialAcquireCredentialsAllSucceedAndTokensUnique() async throws {
         #if DEBUG
         var tokens: [String] = []
         for _ in 0..<concurrentCallCount {
@@ -243,7 +243,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - extraInfo 不可变性
 
     /// 验证多次调用 extraInfo 键集合稳定不变
-    func test多次调用extraInfo键集合稳定() async throws {
+    func testMultipleExtraInfoCallsKeySetStable() async throws {
         #if DEBUG
         let cred1 = try await strategy.acquireCredentials()
         let cred2 = try await strategy.acquireCredentials()

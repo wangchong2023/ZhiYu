@@ -13,6 +13,13 @@
 
 import SwiftUI
 
+// MARK: - 搜索诊断面板私有常量
+private enum SearchDiagConstants {
+    static let metricFontSize: CGFloat = 32
+    static let labelFontSize: CGFloat = 10
+    static let previewLineSpacing: CGFloat = 6
+}
+
 // MARK: - 页面预览弹出页
 /// 知识库页面的快速预览表单
 struct PagePreviewSheet: View {
@@ -127,7 +134,7 @@ struct PagePreviewSheet: View {
                             Text(page.content)
                                 .font(.body)
                                 .foregroundStyle(.primary)
-                                .lineSpacing(6)
+                                .lineSpacing(SearchDiagConstants.previewLineSpacing)
                                 .textSelection(.enabled)
                         }
                     }
@@ -223,11 +230,11 @@ struct SearchDiagnosticSheet: View {
                                 .foregroundStyle(.secondary)
                             
                             Text("\(info.ftsCount)")
-                                .font(.system(size: 36, weight: .bold, design: .rounded)) // Dynamic Type
+                                .font(.system(size: SearchDiagConstants.metricFontSize, weight: .bold, design: .rounded)) // Dynamic Type
                                 .foregroundStyle(Color.theme.blue)
-                            
+
                             Text(L10n.Search.Diag.ftsEngine)
-                                .font(.system(size: 10, weight: .bold)) // Dynamic Type
+                                .font(.system(size: SearchDiagConstants.labelFontSize, weight: .bold)) // Dynamic Type
                                 .foregroundStyle(.blue.opacity(DesignSystem.Opacity.prominent))
                         }
                         .frame(maxWidth: .infinity)
@@ -253,11 +260,11 @@ struct SearchDiagnosticSheet: View {
                                 .foregroundStyle(.secondary)
                             
                             Text("\(info.vectorCount)")
-                                .font(.system(size: 36, weight: .bold, design: .rounded)) // Dynamic Type
+                                .font(.system(size: SearchDiagConstants.metricFontSize, weight: .bold, design: .rounded)) // Dynamic Type
                                 .foregroundStyle(Color.theme.green)
-                            
+
                             Text(L10n.Search.Diag.vectorEngine)
-                                .font(.system(size: 10, weight: .bold)) // Dynamic Type
+                                .font(.system(size: SearchDiagConstants.labelFontSize, weight: .bold)) // Dynamic Type
                                 .foregroundStyle(.green.opacity(DesignSystem.Opacity.prominent))
                         }
                         .frame(maxWidth: .infinity)
@@ -318,18 +325,18 @@ struct SearchDiagnosticSheet: View {
                                             HStack(spacing: DesignSystem.small) {
                                                 // FTS 排位
                                                 HStack(spacing: SystemSpacing.atomic) {
-                                                    Text("FTS:")
+                                                    Text(L10n.Search.Diag.ftsPrefix)
                                                     Text(item.ftsRank > 0 ? "#\(item.ftsRank)" : L10n.Search.Diag.miss)
                                                 }
-                                                .font(.system(size: 10)) // Dynamic Type
+                                                .font(.system(size: SearchDiagConstants.labelFontSize)) // Dynamic Type
                                                 .foregroundStyle(item.ftsRank > 0 ? Color.theme.blue : Color.secondary)
-                                                
+
                                                 // 向量排位
                                                 HStack(spacing: SystemSpacing.atomic) {
-                                                    Text("Vec:")
+                                                    Text(L10n.Search.Diag.vecPrefix)
                                                     Text(item.vectorRank > 0 ? "#\(item.vectorRank)" : L10n.Search.Diag.miss)
                                                 }
-                                                .font(.system(size: 10)) // Dynamic Type
+                                                .font(.system(size: SearchDiagConstants.labelFontSize)) // Dynamic Type
                                                 .foregroundStyle(item.vectorRank > 0 ? Color.theme.green : Color.secondary)
                                             }
                                         }

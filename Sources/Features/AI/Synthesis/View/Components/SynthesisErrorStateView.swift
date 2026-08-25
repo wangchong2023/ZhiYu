@@ -16,7 +16,7 @@ import SwiftUI
 struct SynthesisErrorStateView: View {
     // MARK: - Constants
     private enum Layout {
-        static let iconCircleSize: CGFloat = 80
+        static let iconCircleSize: CGFloat = ComponentSpacing.metricChipWidth
         static let iconFontSize: CGFloat = 36
         static let cardMinHeight: CGFloat = 320
     }

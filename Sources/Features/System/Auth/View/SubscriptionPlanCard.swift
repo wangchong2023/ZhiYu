@@ -36,7 +36,7 @@ struct SubscriptionPlanCard: View {
                     Text(L10n.Auth.monthly)
                         .font(.subheadline.bold())
                     Text(L10n.Auth.priceMonthlyPro)
-                        .font(.system(size: 10)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, SystemSpacing.element)
@@ -64,7 +64,7 @@ struct SubscriptionPlanCard: View {
                         Text(L10n.Auth.yearly)
                             .font(.subheadline.bold())
                         Text(L10n.Auth.save20Percent)
-                            .font(.system(size: 8, weight: .bold)) // Dynamic Type
+                            .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
                             .foregroundStyle(.white)
                             .padding(.horizontal, SystemSpacing.tiny)
                             .padding(.vertical, SystemSpacing.divider)
@@ -72,7 +72,7 @@ struct SubscriptionPlanCard: View {
                             .clipShape(Capsule())
                     }
                     Text(L10n.Auth.priceYearlyPro)
-                        .font(.system(size: 10)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, SystemSpacing.element)
@@ -110,7 +110,7 @@ struct SubscriptionPlanCard: View {
                     Spacer()
 
                     Text("Lite")
-                        .font(.system(size: 9, weight: .bold)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
                         .padding(.horizontal, SystemSpacing.small)
                         .padding(.vertical, SystemSpacing.atomic)
@@ -123,7 +123,7 @@ struct SubscriptionPlanCard: View {
                     .foregroundStyle(.appText)
 
                 Text(L10n.Auth.litePlanDesc)
-                    .font(.system(size: 10)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                     .foregroundStyle(.appSecondary)
                     .lineLimit(2)
             }
@@ -149,7 +149,7 @@ struct SubscriptionPlanCard: View {
                     Spacer()
 
                     Text(L10n.Auth.proPlan)
-                        .font(.system(size: 9, weight: .bold)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.white)
                         .padding(.horizontal, SystemSpacing.small)
                         .padding(.vertical, SystemSpacing.atomic)
@@ -163,7 +163,7 @@ struct SubscriptionPlanCard: View {
                     .foregroundStyle(.appAccent)
 
                 Text(L10n.Auth.proPlanDesc)
-                    .font(.system(size: 10)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                     .foregroundStyle(.appSecondary)
                     .lineLimit(2)
             }

@@ -12,6 +12,12 @@
 #if ICLOUD_ENABLED
 import SwiftUI
 
+/// 冲突比对视图常量
+private enum ConflictDiffConstants {
+    /// 宽屏分栏阈值 (iPad/横屏判定)
+    static let wideWidthThreshold: CGFloat = 700
+}
+
 // MARK: - 冲突可视化数据载体
 /// 承载单篇页面发生物理碰撞或命名重合时的比对实体结构
 struct ConflictingPage: Identifiable, Hashable {
@@ -89,7 +95,7 @@ struct ConflictDiffView: View {
     private var emptyConflictStateView: some View {
         VStack(spacing: DesignSystem.medium) {
             Image(systemName: "checkmark.icloud.fill")
-                .font(.system(size: 64)) // Dynamic Type
+                .font(.system(size: ComponentSpacing.colossal)) // Dynamic Type
                 .foregroundStyle(.appAccent)
             
             Text(L10n.ICloud.Conflict.noPhysicalConflict)
@@ -115,7 +121,7 @@ struct ConflictDiffView: View {
     /// 包含左侧列表与右侧分栏 Diff 的核心交互板式
     private var mainConflictDiffLayout: some View {
         GeometryReader { geo in
-            let isWide = geo.size.width > 700
+            let isWide = geo.size.width > ConflictDiffConstants.wideWidthThreshold
             
             HStack(spacing: 0) {
                 // 1. 左侧冲突文档选取列表
@@ -134,11 +140,11 @@ struct ConflictDiffView: View {
                             let item = conflicts[index]
                             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                                 Text(item.title)
-                                    .font(.system(size: 14, weight: .semibold)) // Dynamic Type
+                                    .font(.system(size: SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
                                     .foregroundStyle(.appText)
                                 
                                 Text("ID: \(item.id.uuidString.prefix(8))...")
-                                    .font(.system(size: 10)) // Dynamic Type
+                                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                                     .foregroundStyle(.appSecondary)
                             }
                             .tag(index)
@@ -203,7 +209,7 @@ struct ConflictDiffView: View {
                 Text(L10n.ICloud.Conflict.localVersionTime(formatDate(item.localPage?.updatedAt)))
                 Text(L10n.ICloud.Conflict.remoteVersionTime(formatDate(item.remotePage?.updatedAt)))
             }
-            .font(.system(size: 11)) // Dynamic Type
+            .font(.system(size: SystemFontSize.microLarge)) // Dynamic Type
             .foregroundStyle(.appSecondary)
             
             Spacer()
@@ -293,7 +299,7 @@ struct ConflictDiffView: View {
             
             ScrollView {
                 Text(content)
-                    .font(.system(size: 12, design: .monospaced)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.caption, design: .monospaced)) // Dynamic Type
                     .padding(DesignSystem.tiny)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

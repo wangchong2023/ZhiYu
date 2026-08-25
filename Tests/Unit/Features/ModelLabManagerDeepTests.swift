@@ -669,22 +669,22 @@ final class ModelLabManagerDeepTests: XCTestCase {
     // MARK: - 初始状态
 
     /// 验证新实例的 selectedUseCase 为 nil。
-    func test初始状态_selectedUseCase为nil() {
+    func testInitialStateSelectedUseCaseIsNil() {
         XCTAssertNil(manager.selectedUseCase)
     }
 
     /// 验证新实例的 generatedText 为空。
-    func test初始状态_generatedText为空() {
+    func testInitialStateGeneratedTextIsEmpty() {
         XCTAssertEqual(manager.generatedText, "")
     }
 
     /// 验证新实例的 isGenerating 为 false。
-    func test初始状态_isGenerating为false() {
+    func testInitialStateIsGeneratingIsFalse() {
         XCTAssertFalse(manager.isGenerating)
     }
 
     /// 验证新实例的 currentStats 全为 0。
-    func test初始状态_currentStats全为0() {
+    func testInitialStateCurrentStatsAllZero() {
         XCTAssertEqual(manager.currentStats.speed, 0.0)
         XCTAssertEqual(manager.currentStats.prefillLatency, 0)
         XCTAssertEqual(manager.currentStats.firstTokenLatency, 0)
@@ -692,17 +692,17 @@ final class ModelLabManagerDeepTests: XCTestCase {
     }
 
     /// 验证新实例的 traceSteps 为空。
-    func test初始状态_traceSteps为空() {
+    func testInitialStateTraceStepsIsEmpty() {
         XCTAssertTrue(manager.traceSteps.isEmpty)
     }
 
     /// 验证新实例的 confidenceItems 为空。
-    func test初始状态_confidenceItems为空() {
+    func testInitialStateConfidenceItemsIsEmpty() {
         XCTAssertTrue(manager.confidenceItems.isEmpty)
     }
 
     /// 验证新实例的 extraPanelTitle 为空。
-    func test初始状态_extraPanelTitle为空() {
+    func testInitialStateExtraPanelTitleIsEmpty() {
         XCTAssertEqual(manager.extraPanelTitle, "")
     }
 

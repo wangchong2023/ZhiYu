@@ -434,9 +434,16 @@ final class ModelStoreConfigTests: XCTestCase {
     }
     
     /// 测试 ModelDownloadManager 能够成功读取沙盒中持久化的断点恢复文件并进行续传消费（消费后自动物理删除文件）
+    /// D-36 修复模式：注入 Mock URLSession，避免真实网络请求挂起测试
     @MainActor
     func testModelDownloadResumeDataConsumption() async throws {
-        let manager = ModelDownloadManager.shared
+        // 注入 ephemeral session + MockDownloadURLProtocol，避免真实网络请求
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockDownloadURLProtocol.self]
+        let manager = ModelDownloadManager(sessionFactory: { owner in
+            let delegateHelper = ModelDownloadDelegateHelper(manager: owner)
+            return URLSession(configuration: config, delegate: delegateHelper, delegateQueue: nil)
+        })
         let modelId = "test-consume-resume-model-id"
         
         // 1. 获取物理路径

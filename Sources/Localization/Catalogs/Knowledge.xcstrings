@@ -11961,6 +11961,71 @@
         }
       }
     },
+    "vault.raw.ocr.detected_text_zone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DETECTED TEXT ZONE"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检测文本区域"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檢測文字區域"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZONA DE TEXTO DETECTADA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZONE DE TEXTE DÉTECTÉE"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "منطقة النص المكتشفة"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ОБНАРУЖЕННАЯ ЗОНА ТЕКСТА"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "감지된 텍스트 영역"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "検出テキスト領域"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZONA DE TEXTO DETECTADA"
+          }
+        }
+      }
+    },
     "vault.comparison.recommendation.default": {
       "extractionState": "manual",
       "localizations": {

@@ -145,7 +145,7 @@ struct ModelActionButton: View {
             HapticFeedback.shared.trigger(.success)
         }) {
             Image(systemName: "arrow.right")
-                .font(.system(size: 16, weight: .bold)) // Dynamic Type
+                .font(.system(size: SystemFontSize.body, weight: .bold)) // Dynamic Type
                 .foregroundStyle(.white)
                 .frame(width: DesignSystem.Metrics.ringSize, height: DesignSystem.Metrics.ringSize)
                 .background(Color.appAccent)

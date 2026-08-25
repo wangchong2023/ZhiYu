@@ -48,14 +48,35 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
 
     /// 全局单例注入，便于在 App 顶层会话绑定
     public static let shared = ModelDownloadManager()
-    
-        private lazy var session: URLSession = {
+
+    /// Session 工厂闭包 — 生产环境创建 background URLSession，测试环境可注入 ephemeral session
+    private let sessionFactory: @Sendable (ModelDownloadManager) -> URLSession
+
+    /// 懒加载 Session 实例，由 sessionFactory 创建
+    private lazy var session: URLSession = {
+        sessionFactory(self)
+    }()
+
+    /// 生产环境默认 Session 工厂 — 创建 background URLSession
+    @Sendable
+    private static func defaultSessionFactory(manager: ModelDownloadManager) -> URLSession {
         let config = URLSessionConfiguration.background(withIdentifier: "com.zhiyu.app.model.download")
         config.isDiscretionary = false
         config.sessionSendsLaunchEvents = true
-        let delegateHelper = ModelDownloadDelegateHelper(manager: self)
+        let delegateHelper = ModelDownloadDelegateHelper(manager: manager)
         return URLSession(configuration: config, delegate: delegateHelper, delegateQueue: nil)
-    }()
+    }
+
+    /// 生产环境初始化器（私有，仅 `shared` 单例使用）
+    private init() {
+        sessionFactory = Self.defaultSessionFactory
+    }
+
+    /// 测试环境初始化器 — 允许注入自定义 Session 工厂
+    /// - Parameter sessionFactory: 自定义 Session 工厂闭包
+    internal init(sessionFactory: @escaping @Sendable (ModelDownloadManager) -> URLSession) {
+        self.sessionFactory = sessionFactory
+    }
 
     /// 模型 ID 到当前下载任务状态的映射表
     private var downloadStates: [String: DownloadState] = [:]
@@ -88,9 +109,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         try? FileManager.default.createDirectory(at: resumeFolder, withIntermediateDirectories: true)
         return resumeFolder.appendingPathComponent("\(modelId).resume")
     }
-    
-    private init() {}
-    
+
     // MARK: - Capabilities 契约接口实现
     
     /// 开始下载大模型权重文件
@@ -369,7 +388,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
 // MARK: - 桥接 Delegate 协调助手类 (NSObject Bridge Pattern)
 
 /// URLSession 代理协助类。继承自 NSObject 满足 Objective-C 回调契约，负责无声桥接后台系统通知至 Actor
-private final class ModelDownloadDelegateHelper: NSObject, URLSessionDownloadDelegate, Sendable {
+internal final class ModelDownloadDelegateHelper: NSObject, URLSessionDownloadDelegate, Sendable {
     
     /// 持有弱引用的 Actor 控制器
     private let manager: ModelDownloadManager

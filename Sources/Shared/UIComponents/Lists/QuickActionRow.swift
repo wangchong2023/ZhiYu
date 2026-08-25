@@ -48,7 +48,7 @@ public struct QuickActionRow: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: Spacing.Metrics.iconBoxSize + 4, height: Spacing.Metrics.iconBoxSize + 4) // 44
+                        .frame(width: ComponentSpacing.buttonHeight, height: ComponentSpacing.buttonHeight) // 44
 
                     Image(systemName: icon)
                         .font(.system(size: Spacing.titleIconSize, weight: .semibold))

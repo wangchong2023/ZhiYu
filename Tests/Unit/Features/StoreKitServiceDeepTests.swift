@@ -137,7 +137,7 @@ final class StoreKitServiceDeepTests: XCTestCase {
     // MARK: - 状态隔离
 
     /// 验证 tearDown 后状态被重置（跨用例隔离）
-    func test状态隔离_tearDown后重置() {
+    func testStateIsolationResetAfterTearDown() {
         // 此用例故意污染状态
         service.isRestoring = true
         service.restoreMessage = "polluted"
@@ -146,7 +146,7 @@ final class StoreKitServiceDeepTests: XCTestCase {
     }
 
     /// 验证 tearDown 后下个用例看到干净状态（依赖 setUp 重置）
-    func test状态隔离_下个用例看到干净状态() {
+    func testStateIsolationNextTestSeesCleanState() {
         // 此用例紧随 test状态隔离_tearDown后重置 执行
         // 若 tearDown/setUp 重置生效，此处应看到初始状态
         XCTAssertFalse(service.isRestoring, "setUp 重置后 isRestoring 应为 false")

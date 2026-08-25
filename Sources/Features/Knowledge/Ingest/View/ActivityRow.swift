@@ -26,7 +26,7 @@ struct ActivityRow: View {
                 }
                 Spacer()
                 if task.associatedPageID != nil { Image(systemName: DesignSystem.Icons.forward).font(.system(size: DesignSystem.captionFontSize, weight: .bold)).foregroundStyle(.appSecondary.opacity(DesignSystem.disabledOpacity)) }
-            }.padding(.vertical, DesignSystem.tightPadding + DesignSystem.atomic).padding(.horizontal, DesignSystem.medium)
+            }.padding(.vertical, SystemSpacing.elementLarge).padding(.horizontal, DesignSystem.medium)
         }.buttonStyle(.plain)
     }
     private var taskColor: Color {

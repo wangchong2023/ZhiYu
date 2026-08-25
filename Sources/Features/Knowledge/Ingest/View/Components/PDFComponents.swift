@@ -13,6 +13,13 @@ import SwiftUI
 import PDFKit
 #endif
 
+// MARK: - PDF 组件私有常量
+private enum PDFUIConstants {
+    static let pageRangeFieldWidth: CGFloat = 50
+    static let previewMaxHeight: CGFloat = 150
+    static let previewLineLimit: Int = Int(SystemSpacing.elementLarge)
+}
+
 // MARK: - PDF Ingest Sheet
 /// PDF 资料入库配置面板组件
 /// 负责配置 PDF 内容的提取方式（全文、范围或仅高亮），并设定目标 知识库 页面的元数据
@@ -24,7 +31,7 @@ struct PDFIngestSheet: View {
     let pdfDocument: PDFKit.PDFDocument?
     #endif
     
-    @State private var ingestMode = "fullText"
+    @State private var ingestMode: PDFIngestMode = .fullText
     @State private var pageStart = 1
     @State private var pageEnd = 1
     @State private var targetType = PageType.source
@@ -88,22 +95,22 @@ struct PDFIngestSheet: View {
     private var rangeSection: some View {
         Section {
             Picker(L10n.Ingest.PDF.extractionMethod, selection: $ingestMode) {
-                Text(L10n.Ingest.PDF.fullText).tag("fullText")
-                Text(L10n.Ingest.PDF.pageRange).tag("pageRange")
-                Text(L10n.Ingest.PDF.highlightsOnly).tag("highlights")
+                Text(L10n.Ingest.PDF.fullText).tag(PDFIngestMode.fullText)
+                Text(L10n.Ingest.PDF.pageRange).tag(PDFIngestMode.pageRange)
+                Text(L10n.Ingest.PDF.highlightsOnly).tag(PDFIngestMode.highlights)
             }
             .segmentedPickerStyleIfAvailable()
-            
-            if ingestMode == "pageRange" {
+
+            if ingestMode == .pageRange {
                 HStack {
                     Text(L10n.Ingest.PDF.fromPage)
                     TextField("1", value: $pageStart, format: .number)
                         .adaptiveNumberPadKeyboard()
-                        .frame(width: Spacing.Metrics.heroValueSize * 1.9) // 50
+                        .frame(width: PDFUIConstants.pageRangeFieldWidth)
                     Text(L10n.Ingest.PDF.toPage)
                     TextField("\(documentInfo.pageCount)", value: $pageEnd, format: .number)
                         .adaptiveNumberPadKeyboard()
-                        .frame(width: Spacing.Metrics.heroValueSize * 1.9) // 50
+                        .frame(width: PDFUIConstants.pageRangeFieldWidth)
                     Text(L10n.Ingest.PDF.page)
                 }
                 .foregroundStyle(.appText)
@@ -112,11 +119,11 @@ struct PDFIngestSheet: View {
             Text(L10n.Ingest.PDF.extractionRange)
         }
     }
-    
+
     // MARK: - Highlights Section
     @ViewBuilder
     private var highlightsSection: some View {
-        if ingestMode == "highlights" && documentInfo.highlights.isEmpty {
+        if ingestMode == .highlights && documentInfo.highlights.isEmpty {
             Section {
                 Text(L10n.Ingest.PDF.noHighlights)
                     .font(.caption)
@@ -124,7 +131,7 @@ struct PDFIngestSheet: View {
             }
         }
     }
-    
+
     // MARK: - Preview Section
     private var previewSection: some View {
         Section {
@@ -136,34 +143,34 @@ struct PDFIngestSheet: View {
                     Text(previewText)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
-                        .lineLimit(10)
+                        .lineLimit(PDFUIConstants.previewLineLimit)
                 }
             }
-            .frame(maxHeight: Spacing.Metrics.heroValueSize * 5.75) // 150
+            .frame(maxHeight: PDFUIConstants.previewMaxHeight)
         } header: {
             Text(L10n.Ingest.PDF.contentPreview)
         }
     }
-    
+
     // MARK: - Update Preview
     private func updatePreview() {
         Task {
             isLoadingPreview = true
             defer { isLoadingPreview = false }
-            
+
             switch ingestMode {
-            case "fullText":
+            case .fullText:
                 #if canImport(PDFKit)
                 guard let pdfDoc = pdfDocument, let url = pdfDoc.documentURL else {
                     previewText = L10n.Ingest.PDF.cannotLoadPDF
                     return
                 }
-                let text = await ingestStore.extractPDFText(from: url, pageRange: 0..<min(2, pdfDoc.pageCount))
-                previewText = String(text.prefix(500))
+                let text = await ingestStore.extractPDFText(from: url, pageRange: 0..<min(PDFConstants.previewPageCount, pdfDoc.pageCount))
+                previewText = String(text.prefix(PDFConstants.previewTextLength))
                 #else
-                previewText = "PDF extraction is not supported on this platform."
+                previewText = L10n.Ingest.PDF.notSupportedDesc
                 #endif
-            case "pageRange":
+            case .pageRange:
                 #if canImport(PDFKit)
                 guard let pdfDoc = pdfDocument, let url = pdfDoc.documentURL else {
                     previewText = ""
@@ -172,15 +179,13 @@ struct PDFIngestSheet: View {
                 let start = max(0, pageStart - 1)
                 let end = min(pdfDoc.pageCount, pageEnd)
                 let text = await ingestStore.extractPDFText(from: url, pageRange: start..<end)
-                previewText = String(text.prefix(500))
+                previewText = String(text.prefix(PDFConstants.previewTextLength))
                 #else
                 previewText = ""
                 #endif
-            case "highlights":
+            case .highlights:
                 let texts = documentInfo.highlights.map { $0.text }
-                previewText = String(texts.joined(separator: "\n\n").prefix(500))
-            default:
-                previewText = ""
+                previewText = String(texts.joined(separator: "\n\n").prefix(PDFConstants.previewTextLength))
             }
         }
     }
@@ -188,15 +193,15 @@ struct PDFIngestSheet: View {
     // MARK: - Ingest Content
     private func ingestContent() async {
         var content = ""
-        
+
         switch ingestMode {
-        case "fullText":
+        case .fullText:
             #if canImport(PDFKit)
             if let pdfDoc = pdfDocument, let url = pdfDoc.documentURL {
                 content = await ingestStore.extractPDFText(from: url)
             }
             #endif
-        case "pageRange":
+        case .pageRange:
             #if canImport(PDFKit)
             if let pdfDoc = pdfDocument, let url = pdfDoc.documentURL {
                 let start = max(0, pageStart - 1)
@@ -204,7 +209,7 @@ struct PDFIngestSheet: View {
                 content = await ingestStore.extractPDFText(from: url, pageRange: start..<end)
             }
             #endif
-        case "highlights":
+        case .highlights:
             content = documentInfo.highlights.map { highlight in
                 var text = "> \(highlight.text)"
                 if !highlight.note.isEmpty {
@@ -212,18 +217,16 @@ struct PDFIngestSheet: View {
                 }
                 return text
             }.joined(separator: "\n\n---\n\n")
-        default:
-            break
         }
-        
+
         Task {
             _ = await store.createPage(
                 title: targetTitle,
                 pageType: targetType,
                 content: content,
-                tags: ["PDF", L10n.Common.LogAction.ingest]
+                tags: [PDFConstants.ingestTag, L10n.Common.LogAction.ingest]
             )
-            store.addLog(action: .importPDF, target: targetTitle, details: L10n.Ingest.pdfIngestModeFormat(ingestMode))
+            store.addLog(action: .importPDF, target: targetTitle, details: L10n.Ingest.pdfIngestModeFormat(ingestMode.rawValue))
             await store.saveToDisk()
             dismiss()
         }

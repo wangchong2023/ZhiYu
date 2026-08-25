@@ -10,6 +10,12 @@
 //
 import SwiftUI
 
+// MARK: - 图谱组件常量（组件特定尺寸，无对应命名 token）
+private enum GraphViewConstants {
+    /// 图谱节点徽章 Y 轴偏移 (36pt)
+    static let badgeOffset: CGFloat = 36
+}
+
 // MARK: - Graph Node View
 /// 图谱中的单个节点渲染组件。
 /// 具备三级渲染能力：
@@ -146,7 +152,7 @@ struct GraphNodeView: View {
                     Circle()
                         .stroke(.appGloss.opacity(SystemOpacity.glassStrong), lineWidth: DesignSystem.borderWidth)
                 )
-                .shadow(color: nodeBaseColor.opacity(isSelected ? DesignSystem.fullOpacity - DesignSystem.glassOpacity : SystemOpacity.disabled), radius: isSelected ? DesignSystem.standardPadding : DesignSystem.tiny + DesignSystem.atomic)
+                .shadow(color: nodeBaseColor.opacity(isSelected ? SystemOpacity.textSecondary : SystemOpacity.disabled), radius: isSelected ? DesignSystem.standardPadding : SystemSpacing.small)
                 .scaleEffect(isSelected ? 1.1 : 1.0)
 
             // 4. 类型图标
@@ -180,7 +186,7 @@ struct GraphNodeView: View {
             .padding(.vertical, DesignSystem.tiny)
             .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-            .offset(y: -DesignSystem.huge - DesignSystem.tiny)
+            .offset(y: -GraphViewConstants.badgeOffset)
             .transition(.scale.combined(with: .opacity))
         }
     }

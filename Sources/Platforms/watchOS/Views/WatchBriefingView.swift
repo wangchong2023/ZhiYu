@@ -50,7 +50,7 @@ struct WatchBriefingView: View {
                         }
                     }) {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 40)) // Dynamic Type
+                            .font(.system(size: Reference.FontSize.hero)) // Dynamic Type
                             .foregroundStyle(Color.theme.purple)
                     }
                     .buttonStyle(.plain)
@@ -60,7 +60,7 @@ struct WatchBriefingView: View {
                         isPlaying = false
                     }) {
                         Image(systemName: "stop.circle.fill")
-                            .font(.system(size: 30)) // Dynamic Type
+                            .font(.system(size: Reference.FontSize.largeTitle)) // Dynamic Type
                             .foregroundStyle(Color.theme.red)
                     }
                     .buttonStyle(.plain)

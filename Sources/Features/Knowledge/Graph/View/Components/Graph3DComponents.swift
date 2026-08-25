@@ -16,6 +16,26 @@ import UIKit
 import AppKit
 #endif
 
+// MARK: - 3D 图谱组件私有常量
+private enum Graph3DUIConstants {
+    static let controlPadding: CGFloat = SystemSpacing.contentMedium
+    static let filterOffsetX: CGFloat = -50
+    static let filterOffsetY: CGFloat = -20
+    static let filterShadowRadius: CGFloat = SystemSpacing.element
+    static let filterShadowX: CGFloat = -4
+    static let filterShadowY: CGFloat = SystemSpacing.tiny
+    static let filterPopupScale: CGFloat = CGFloat(Reference.Opacity.eighty)
+    static let cameraZMin: Float = Float(SystemSpacing.extraSmall)
+}
+
+// MARK: - 3D 图谱场景配置（非 UI 语境）
+private enum Graph3DSceneConfig {
+    static let filterSpringResponse: CGFloat = 0.35
+    static let panDampening: Float = 0.005
+    static let cameraZDefault: Float = 60
+    static let cameraZMax: Float = 300
+}
+
 // MARK: - Tappable Scene View Representable
 /// SceneKit 视图的可点击封装，支持节点点击检测
 /// - Note: watchOS 不编译此文件（Features 层不在 watchOS target sources），
@@ -85,12 +105,12 @@ struct TappableSceneView: UIViewRepresentable {
         // ── 临时手势积分状态 ──
         var currentAngleX: Float = 0
         var currentAngleY: Float = 0
-        var cameraZ: Float = 60.0
-        
+        var cameraZ: Float = Graph3DSceneConfig.cameraZDefault
+
         init(onNodeTap: @escaping (UUID?) -> Void) {
             self.onNodeTap = onNodeTap
         }
-        
+
         /// 同步当前物理相机的几何空间参数
         func syncCameraState(from cameraNode: SCNNode) {
             currentAngleX = cameraNode.eulerAngles.x
@@ -115,21 +135,20 @@ struct TappableSceneView: UIViewRepresentable {
             }
             onNodeTap(nil)
         }
-        
+
         /// 处理Pan
         /// - Parameter gesture: gesture
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
                   let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
-            
+
             let translation = gesture.translation(in: scnView)
-            // 0.005 极其平滑的阻尼系数，防止大节点量手势过于敏感瞬间飞出画布
-            let dampening: Float = 0.005
-            
+            let dampening: Float = Graph3DSceneConfig.panDampening
+
             if gesture.state == .changed {
                 let deltaY = Float(translation.x) * dampening
                 let deltaX = Float(translation.y) * dampening
-                
+
                 // 将位移积分转换为相机的 Euler 空间旋转
                 cameraNode.eulerAngles.y = currentAngleY - deltaY
                 cameraNode.eulerAngles.x = currentAngleX - deltaX
@@ -138,18 +157,18 @@ struct TappableSceneView: UIViewRepresentable {
                 currentAngleX = cameraNode.eulerAngles.x
             }
         }
-        
+
         /// 处理Pinch
         /// - Parameter gesture: gesture
         @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
                   let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
-            
+
             if gesture.state == .changed {
                 let factor = Float(gesture.scale)
                 let newZ = cameraZ / factor
                 // 约束限制防极端穿透飞出
-                cameraNode.position.z = max(5.0, min(newZ, 300.0))
+                cameraNode.position.z = max(Graph3DUIConstants.cameraZMin, min(newZ, Graph3DSceneConfig.cameraZMax))
             } else if gesture.state == .ended {
                 cameraZ = cameraNode.position.z
             }
@@ -216,16 +235,16 @@ struct TappableSceneView: NSViewRepresentable {
 
     class Coordinator: NSObject {
         let onNodeTap: (UUID?) -> Void
-        
+
         // ── 临时手势积分状态 ──
         var currentAngleX: Float = 0
         var currentAngleY: Float = 0
-        var cameraZ: Float = 60.0
-        
+        var cameraZ: Float = Graph3DSceneConfig.cameraZDefault
+
         init(onNodeTap: @escaping (UUID?) -> Void) {
             self.onNodeTap = onNodeTap
         }
-        
+
         /// 同步当前物理相机的几何空间参数
         func syncCameraState(from cameraNode: SCNNode) {
             currentAngleX = cameraNode.eulerAngles.x
@@ -250,21 +269,20 @@ struct TappableSceneView: NSViewRepresentable {
             }
             onNodeTap(nil)
         }
-        
+
         /// 处理Pan
         /// - Parameter gesture: gesture
         @objc func handlePan(_ gesture: NSPanGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
                   let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
-            
+
             let translation = gesture.translation(in: scnView)
-            // 0.005 极其平滑的阻尼系数，防止大节点量手势过于敏感瞬间飞出画布
-            let dampening: Float = 0.005
-            
+            let dampening: Float = Graph3DSceneConfig.panDampening
+
             if gesture.state == .changed {
                 let deltaY = Float(translation.x) * dampening
                 let deltaX = Float(translation.y) * dampening
-                
+
                 // 将位移积分转换为相机的 Euler 空间旋转
                 cameraNode.eulerAngles.y = currentAngleY - deltaY
                 cameraNode.eulerAngles.x = currentAngleX - deltaX
@@ -273,18 +291,18 @@ struct TappableSceneView: NSViewRepresentable {
                 currentAngleX = cameraNode.eulerAngles.x
             }
         }
-        
+
         /// 处理Magnify
         /// - Parameter gesture: gesture
         @objc func handleMagnify(_ gesture: NSMagnificationGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
                   let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
-            
+
             if gesture.state == .changed {
                 let factor = Float(1.0 + gesture.magnification)
                 let newZ = cameraZ / factor
                 // 约束限制防极端穿透飞出
-                cameraNode.position.z = max(5.0, min(newZ, 300.0))
+                cameraNode.position.z = max(Graph3DUIConstants.cameraZMin, min(newZ, Graph3DSceneConfig.cameraZMax))
             } else if gesture.state == .ended {
                 cameraZ = cameraNode.position.z
             }
@@ -320,20 +338,20 @@ struct Graph3DControlsOverlay: View {
 
     var body: some View {
         let iconColor: Color = isFullScreen ? .white : .appText
-        
+
         VStack(spacing: DesignSystem.small) {
             // Fullscreen toggle
-            Button(action: { 
-                withAnimation(.spring()) { 
-                    isFullScreen.toggle() 
+            Button(action: {
+                withAnimation(.spring()) {
+                    isFullScreen.toggle()
                     showFilterPopup = false // 切换模式时自动折叠菜单
                     if !isFullScreen { hideControls = false } // 退出全屏时强制显示
-                } 
+                }
             }) {
                 Image(systemName: isFullScreen ? DesignSystem.Icons.fullscreenExit : DesignSystem.Icons.fullscreenEnter)
                     .font(.title3)
                     .foregroundStyle(iconColor)
-                    .padding(DesignSystem.small + DesignSystem.atomic)
+                    .padding(Graph3DUIConstants.controlPadding)
                     .background(.ultraThinMaterial)
                     .clipShape(Circle())
             }
@@ -349,7 +367,7 @@ struct Graph3DControlsOverlay: View {
                     Image(systemName: DesignSystem.Icons.eyeSlashOutline)
                         .font(.title3)
                         .foregroundStyle(iconColor)
-                        .padding(DesignSystem.small + DesignSystem.atomic)
+                        .padding(Graph3DUIConstants.controlPadding)
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
                 }
@@ -362,7 +380,7 @@ struct Graph3DControlsOverlay: View {
                     Image(systemName: autoRotate ? DesignSystem.Icons.refreshCircleFill : DesignSystem.Icons.refreshCircle)
                         .font(.title3)
                         .foregroundStyle(autoRotate ? Color.appAccent : iconColor)
-                        .padding(DesignSystem.small + DesignSystem.atomic)
+                        .padding(Graph3DUIConstants.controlPadding)
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
                 }
@@ -374,29 +392,29 @@ struct Graph3DControlsOverlay: View {
                 Image(systemName: DesignSystem.Icons.scope)
                     .font(.title3)
                     .foregroundStyle(iconColor)
-                    .padding(DesignSystem.small + DesignSystem.atomic)
+                    .padding(Graph3DUIConstants.controlPadding)
                     .background(.ultraThinMaterial)
                     .clipShape(Circle())
             }
             .accessibilityIdentifier("graph3d-reset-camera")
-            
+
             // Zoom In
             Button(action: onZoomIn) {
                 Image(systemName: DesignSystem.Icons.plusMagnifyingglass)
                     .font(.title3)
                     .foregroundStyle(iconColor)
-                    .padding(DesignSystem.small + DesignSystem.atomic)
+                    .padding(Graph3DUIConstants.controlPadding)
                     .background(.ultraThinMaterial)
                     .clipShape(Circle())
             }
             .accessibilityIdentifier("graph3d-zoom-in")
-            
+
             // Zoom Out
             Button(action: onZoomOut) {
                 Image(systemName: DesignSystem.Icons.minusMagnifyingglass)
                     .font(.title3)
                     .foregroundStyle(iconColor)
-                    .padding(DesignSystem.small + DesignSystem.atomic)
+                    .padding(Graph3DUIConstants.controlPadding)
                     .background(.ultraThinMaterial)
                     .clipShape(Circle())
             }
@@ -404,11 +422,11 @@ struct Graph3DControlsOverlay: View {
 
             // Filter - 全屏模式下根据用户要求隐藏
             if !isFullScreen {
-                Button(action: { withAnimation(.spring(response: 0.35)) { showFilterPopup.toggle() } }) {
+                Button(action: { withAnimation(.spring(response: Graph3DSceneConfig.filterSpringResponse)) { showFilterPopup.toggle() } }) {
                     Image(systemName: DesignSystem.Icons.filterCircle)
                         .font(.title3)
                         .foregroundStyle(filterType == nil ? iconColor : Color.appAccent)
-                        .padding(DesignSystem.small + DesignSystem.atomic)
+                        .padding(Graph3DUIConstants.controlPadding)
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(filterType == nil ? 0 : DesignSystem.dimmedOpacity), radius: DesignSystem.tiny)
@@ -476,11 +494,11 @@ struct Graph3DControlsOverlay: View {
                         .background(
                             RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                                 .fill(.regularMaterial)
-                                .shadow(color: .black.opacity(DesignSystem.Opacity.glass), radius: 8, x: -4, y: 4)
+                                .shadow(color: .black.opacity(DesignSystem.Opacity.glass), radius: Graph3DUIConstants.filterShadowRadius, x: Graph3DUIConstants.filterShadowX, y: Graph3DUIConstants.filterShadowY)
                         )
-                        .offset(x: -50, y: -20)
+                        .offset(x: Graph3DUIConstants.filterOffsetX, y: Graph3DUIConstants.filterOffsetY)
                         .transition(.asymmetric(
-                            insertion: .scale(scale: 0.8).combined(with: .opacity),
+                            insertion: .scale(scale: Graph3DUIConstants.filterPopupScale).combined(with: .opacity),
                             removal: .opacity
                         ))
                     }

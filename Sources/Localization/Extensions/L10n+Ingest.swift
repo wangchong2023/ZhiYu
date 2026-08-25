@@ -77,6 +77,7 @@ extension L10n {
         public static var ocrScan: String { Ingest.tr("ingest.ocrScan") }
         public static var clipboardImport: String { Ingest.tr("ingest.clipboardImport") }
         public static var voiceNote: String { Ingest.tr("ingest.voiceNote") }
+        public static var voiceAudioFormat: String { Ingest.tr("ingest.voiceAudioFormat") }
         public static var audioSubtitle: String { Ingest.tr("ingest.audioSubtitle") }
         public static var resultTitle: String { Ingest.tr("ingest.resultTitle") }
         public static var importRecords: String { Ingest.tr("ingest.importRecords") }
@@ -175,6 +176,7 @@ extension L10n {
             public static var changeIcon: String { Ingest.tr("ocr.changeIcon") }
             public static var customIcon: String { Ingest.tr("ingest.iconCustom") }
             public static var scanTag: String { Ingest.tr("ocr.scanTag") }
+            public static var zoomFormat: String { Ingest.tr("ocr.zoomFormat") }
             public static var confirmAndEdit: String { Ingest.tr("ocr.confirmAndEdit") }
             public static var scanFailed: String { Ingest.tr("ocr.scanFailed") }
             public static var addTag: String { Ingest.tr("ocr.addTag") }
@@ -209,6 +211,7 @@ extension L10n {
             public static var extractionRange: String { Ingest.tr("pdf.extractionRange") }
             public static var noHighlights: String { Ingest.tr("pdf.noHighlights") }
             public static var cannotLoadPDF: String { Ingest.tr("pdf.cannotLoadPDF") }
+            public static var pageZeroFormat: String { Ingest.tr("pdf.pageZeroFormat") }
             public static var noteLabel: String { Ingest.tr("pdf.noteLabel") }
 
             public static var title: String { Ingest.tr("pdf.title") }

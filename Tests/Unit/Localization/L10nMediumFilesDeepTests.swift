@@ -22,7 +22,7 @@ final class L10nMediumFilesDeepTests: XCTestCase {
 
     // MARK: - 全量属性批量验证
 
-    func test所有中小文件_静态属性返回非Missing值() {
+    func testAllMediumFilesStaticPropertiesReturnNonMissingValue() {
         let values: [String] = [
             L10n.Auth.login,
             L10n.Auth.register,
@@ -592,7 +592,7 @@ final class L10nMediumFilesDeepTests: XCTestCase {
 
     // MARK: - 全量格式化方法验证
 
-    func test所有中小文件_格式化方法返回非Missing值() {
+    func testAllMediumFilesFormatMethodsReturnNonMissingValue() {
         assertNonMissing(L10n.Shortcuts.Capture.pageTitle("x"), "L10n.Shortcuts.Capture.pageTitle")
         assertNonMissing(L10n.Shortcuts.Search.success("x"), "L10n.Shortcuts.Search.success")
         assertNonMissing(L10n.Shortcuts.Stats.success(1), "L10n.Shortcuts.Stats.success")

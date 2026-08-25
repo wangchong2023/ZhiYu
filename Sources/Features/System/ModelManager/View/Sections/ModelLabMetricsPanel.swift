@@ -252,8 +252,8 @@ extension ModelLabView {
                     }
                 }
             }
-            .frame(height: DesignSystem.Vault.cardHeight + DesignSystem.Metrics.iconBoxSize)
-            .padding(DesignSystem.standardPadding + DesignSystem.tiny)
+            .frame(height: ComponentSpacing.chartHeight)
+            .padding(ComponentSpacing.section)
             .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
             .cornerRadius(SystemRadius.small)
             .overlay(

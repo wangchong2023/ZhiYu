@@ -119,7 +119,7 @@ private struct LogEntryRow: View {
 
     // 提前计算复杂的布局常量，避免在 View 渲染中进行繁重的算术运算导致编译器超时
     private var vspacing: CGFloat {
-        DesignSystem.tiny + DesignSystem.atomic
+        SystemSpacing.small
     }
     private var modFontSize: CGFloat {
         DesignSystem.microFontSize - SystemStroke.divider
@@ -134,7 +134,7 @@ private struct LogEntryRow: View {
         DesignSystem.caption2FontSize - SystemStroke.divider
     }
     private var statusHorizontalPadding: CGFloat {
-        DesignSystem.small - DesignSystem.atomic
+        SystemSpacing.small
     }
     private var actionBgOpacity: Double {
         SystemOpacity.faint

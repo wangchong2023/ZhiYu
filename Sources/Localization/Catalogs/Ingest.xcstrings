@@ -15990,6 +15990,57 @@
           }
         }
       }
+    },
+    "pdf.pageZeroFormat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 / 0"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 / 0"
+          }
+        }
+      }
+    },
+    "ingest.voiceAudioFormat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AAC 44.1kHz"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AAC 44.1kHz"
+          }
+        }
+      }
+    },
+    "ocr.zoomFormat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1fx"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1fx"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

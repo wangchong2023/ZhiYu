@@ -12,6 +12,12 @@ import SwiftUI
 import UFPDesignSystem
 
 // MARK: - Ingest Timeline View
+
+// Lottie 动画资源名常量（资源标识符，非用户可见文本）
+private enum IngestLottieAnimation {
+    static let processing = "ingest_processing"
+}
+
 /// Ingest 细粒度子状态实时反馈时间轴组件
 /// 提供带有呼吸动画、进度连线、玻璃态和当前日志打字机效果的动态视图
 struct IngestTimelineView: View {
@@ -44,12 +50,12 @@ struct IngestTimelineView: View {
                                 .frame(width: DesignSystem.IconSize.standard, height: DesignSystem.IconSize.standard)
                             
                             if isActive(stage.id) {
-                                AppLottieView(name: "ingest_processing")
+                                AppLottieView(name: IngestLottieAnimation.processing)
                                     .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
                             }
                             
                             Image(systemName: isCompleted(stage.id) ? "checkmark" : stage.icon)
-                                .font(.system(size: 10, weight: .bold)) // Dynamic Type
+                                .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
                                 .foregroundStyle(isCompleted(stage.id) ? .white : (isActive(stage.id) ? stage.color : .appSecondary.opacity(DesignSystem.Opacity.soft)))
                         }
                         

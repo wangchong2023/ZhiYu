@@ -14,6 +14,12 @@ import SwiftUI
 /// 语音笔记保存配置面板组件
 /// 负责在保存语音识别结果前配置页面标题、类型，并展示转录文本预览供最终确认
 struct SaveVoiceNoteSheet: View {
+    // MARK: - UI 常量
+    private enum UIConstants {
+        static let previewMinHeight: CGFloat = 147.2
+        static let previewMaxHeight: CGFloat = 368
+    }
+    
     var speechService: any SpeechServiceProtocol
     @Binding var title: String
     @Environment(AppStore.self) var store
@@ -39,7 +45,7 @@ struct SaveVoiceNoteSheet: View {
     }
     
     private var titleField: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) { // 6
+        VStack(alignment: .leading, spacing: SystemSpacing.small) { // 6
             Text(L10n.Voice.Speech.noteTitle)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -50,7 +56,7 @@ struct SaveVoiceNoteSheet: View {
     }
     
     private var typePicker: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) { // 6
+        VStack(alignment: .leading, spacing: SystemSpacing.small) { // 6
             Text(L10n.Ingest.OCR.pageType)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -66,7 +72,7 @@ struct SaveVoiceNoteSheet: View {
     }
     
     private var previewSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) { // 6
+        VStack(alignment: .leading, spacing: SystemSpacing.small) { // 6
             Text(L10n.Ingest.PDF.contentPreview)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -78,7 +84,7 @@ struct SaveVoiceNoteSheet: View {
                 ))
                     .font(.body)
                     .foregroundStyle(.appText)
-                    .frame(minHeight: DesignSystem.Metrics.heroValueSize * 4.6, maxHeight: DesignSystem.Metrics.heroValueSize * 11.5) // 120, 300
+                    .frame(minHeight: UIConstants.previewMinHeight, maxHeight: UIConstants.previewMaxHeight) // 120, 300
                     .padding(DesignSystem.small)
                     .background(Color.appCard)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
@@ -166,7 +172,7 @@ struct VoiceRecordingRow: View {
                 .foregroundStyle(.appSecondary)
         }
         .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, DesignSystem.medium - DesignSystem.atomic) // 10
+        .padding(.vertical, SystemSpacing.elementLarge) // 10
         .background(Color.appCard)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
         .frame(maxWidth: .infinity)

@@ -14,6 +14,25 @@ import AVFoundation
 import NaturalLanguage
 import UFPCore
 
+// MARK: - 语音播放器私有常量
+private enum VoiceUIConstants {
+    static let waveformMaxHeight: CGFloat = ComponentSpacing.huge
+    static let waveformMinHeight: CGFloat = SystemSpacing.element
+    static let waveformIdleHeight: CGFloat = SystemSpacing.medium
+    static let playButtonSize: CGFloat = ComponentSpacing.iconDisplay
+    static let waveformBarCount: Int = Int(ComponentSpacing.iconCompact)
+}
+
+// MARK: - 语音播放器播放配置（非 UI 语境）
+private enum VoicePlaybackConfig {
+    static let timerInterval: TimeInterval = 0.1
+    static let waveformAnimationDuration: Double = 0.2
+    static let waveformRandomMin: CGFloat = 0.2
+    static let waveformRandomMax: CGFloat = 1.0
+    static let seekInterval: TimeInterval = 5
+    static let defaultDuration: TimeInterval = 45
+}
+
 /// 语音笔记时间戳定界符（首行 [00:00] 格式标记）
 private enum VoiceTimestampDelimiter {
     static let openBracket: String = SystemConstants.Character.openBracket
@@ -28,11 +47,11 @@ struct VoiceAudioPlayerView: View {
     @State private var audioPlayer: AVAudioPlayer?
     @State private var isPlaying = false
     @State private var currentTime: TimeInterval = 0
-    @State private var duration: TimeInterval = 45.0
+    @State private var duration: TimeInterval = VoicePlaybackConfig.defaultDuration
     @State private var waveformLevels: [CGFloat] = [0.3, 0.6, 0.4, 0.8, 0.5, 0.9, 0.3, 0.7, 0.4, 0.6, 0.8, 0.3, 0.5, 0.7, 0.4, 0.9, 0.6, 0.3]
     @Environment(\.interfaceIdiom) private var idiom
-    
-    private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+
+    private let timer = Timer.publish(every: VoicePlaybackConfig.timerInterval, on: .main, in: .common).autoconnect()
     
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
@@ -48,7 +67,7 @@ struct VoiceAudioPlayerView: View {
                     
                     Spacer()
                     
-                    Text("AAC 44.1kHz")
+                    Text(L10n.Ingest.voiceAudioFormat)
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
@@ -58,8 +77,8 @@ struct VoiceAudioPlayerView: View {
                     ForEach(0..<waveformLevels.count, id: \.self) { index in
                         RoundedRectangle(cornerRadius: DesignSystem.tiny)
                             .fill(isPlaying ? Color.appAccent : Color.appAccent.opacity(DesignSystem.Opacity.medium))
-                            .frame(height: isPlaying ? waveformLevels[index] * 32 + 8 : 12)
-                            .animation(.easeInOut(duration: 0.2).repeatCount(1, autoreverses: true), value: isPlaying)
+                            .frame(height: isPlaying ? waveformLevels[index] * VoiceUIConstants.waveformMaxHeight + VoiceUIConstants.waveformMinHeight : VoiceUIConstants.waveformIdleHeight)
+                            .animation(.easeInOut(duration: VoicePlaybackConfig.waveformAnimationDuration).repeatCount(1, autoreverses: true), value: isPlaying)
                     }
                 }
                 .frame(height: DesignSystem.Metrics.iconBoxSize)
@@ -92,20 +111,20 @@ struct VoiceAudioPlayerView: View {
                 HStack(spacing: DesignSystem.loosePadding) {
                     Spacer()
                     
-                    Button(action: { seekBy(-5) }) {
+                    Button(action: { seekBy(-VoicePlaybackConfig.seekInterval) }) {
                         Image(systemName: "gobackward.5")
                             .font(.title3)
                             .foregroundStyle(.primary)
                     }
-                    
+
                     Button(action: togglePlayPause) {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 48)) // Dynamic Type
+                            .font(.system(size: VoiceUIConstants.playButtonSize)) // Dynamic Type
                             .foregroundStyle(.appAccent)
                             .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
                     }
-                    
-                    Button(action: { seekBy(5) }) {
+
+                    Button(action: { seekBy(VoicePlaybackConfig.seekInterval) }) {
                         Image(systemName: "goforward.5")
                             .font(.title3)
                             .foregroundStyle(.primary)
@@ -211,12 +230,12 @@ struct VoiceAudioPlayerView: View {
             if !VoiceSpeechState.shared.isSpeaking {
                 isPlaying = false
             } else {
-                currentTime += 0.1
+                currentTime += VoicePlaybackConfig.timerInterval
             }
         }
         
         // 更新波形律动
-        waveformLevels = (0..<18).map { _ in CGFloat.random(in: 0.2...1.0) }
+        waveformLevels = (0..<VoiceUIConstants.waveformBarCount).map { _ in CGFloat.random(in: VoicePlaybackConfig.waveformRandomMin...VoicePlaybackConfig.waveformRandomMax) }
     }
     
     private func formatTime(_ time: TimeInterval) -> String {

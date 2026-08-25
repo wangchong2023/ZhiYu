@@ -1075,7 +1075,7 @@ final class SynthesisStoreDeepTests: XCTestCase {
     // MARK: - 多次 generate 文档累积
 
     /// 验证多次 performSynthesis 同类型文档累积（不超过 5 份）。
-    func test多次PerformSynthesis同类型文档累积() async throws {
+    func testMultiplePerformSynthesisSameDocTypeAccumulates() async throws {
         mockLLM.defaultResponse = validContent(for: .report)
 
         for _ in 0..<3 {
@@ -1086,7 +1086,7 @@ final class SynthesisStoreDeepTests: XCTestCase {
     }
 
     /// 验证多次 performSynthesis 不同类型文档独立累积。
-    func test多次PerformSynthesis不同类型独立累积() async throws {
+    func testMultiplePerformSynthesisDifferentDocTypesAccumulateIndependently() async throws {
         mockLLM.defaultResponse = validContent(for: .report)
         _ = try await store.performSynthesis(type: .report, combinedContent: "源内容")
 

@@ -56,6 +56,112 @@ public enum GraphConstants {
         public static let minSphereRadius: CGFloat = 60.0
         public static let maxSphereRadius: CGFloat = 250.0
         public static let starCount: Int = 500
+        /// 节点数降级阈值（超出时降级至 2D 拓扑）
+        public static let nodeCountDegradeThreshold: Int = 2000
+        /// FPS 良好阈值（高于此值显示绿色）
+        public static let fpsGoodThreshold: Double = 30
+        /// FPS 警告阈值（高于此值显示橙色，低于显示红色）
+        public static let fpsWarnThreshold: Double = 15
+        /// 相机距离倍数（基于球体半径计算目标距离）
+        public static let cameraDistanceMultiplier: Float = 2.2
+        /// 相机距离最小值
+        public static let minCameraDistance: Float = 60
+        /// 相机距离最大值
+        public static let maxCameraDistance: Float = 400
+        /// 星空球体半径
+        public static let starfieldRadius: Float = 150
+        /// 光源 X 坐标
+        public static let lightPositionX: Float = 20
+        /// 光源 Y 坐标
+        public static let lightPositionY: Float = 30
+        /// 光源 Z 坐标
+        public static let lightPositionZ: Float = 20
+        /// 相机 Y 偏移
+        public static let cameraYOffset: Float = 15
+        /// 节点标签显示阈值（低于此数量的节点显示标签）
+        public static let labelDisplayThreshold: Int = 50
+        /// 网格地板尺寸
+        public static let gridFloorSize: Float = 100
+        /// 网格地板分割数
+        public static let gridFloorDivisions: Int = 50
+        /// 网格地板 Y 偏移
+        public static let gridFloorYOffset: Float = -30
+        /// 缩放最小距离
+        public static let zoomMinDistance: Float = 20
+        /// 缩放最大距离
+        public static let zoomMaxDistance: Float = 300
+        /// 缩小因子
+        public static let zoomOutFactor: Float = 0.8
+        /// 放大因子
+        public static let zoomInFactor: Float = 1.25
+        /// 自动旋转速度
+        public static let autoRotateSpeed: Float = 0.2
+        /// 相机动画时长
+        public static let cameraAnimationDuration: Double = 0.8
+        /// 缩放动画时长
+        public static let zoomAnimationDuration: Double = 0.5
+        /// 节点点击动画时长
+        public static let nodeTapAnimationDuration: Double = 1.0
+        /// 脉冲动画时长
+        public static let pulseAnimationDuration: Double = 2.0
+        /// 脉冲缩放幅度
+        public static let pulseScaleAmplitude: Double = 0.2
+        /// 标签字体大小
+        public static let labelFontSize: CGFloat = 1.2
+        /// 标签扁平度
+        public static let labelFlatness: CGFloat = 0.2
+        /// 标签文字深度
+        public static let labelExtrusionDepth: CGFloat = 0.1
+        /// 标签发射强度
+        public static let labelEmissionIntensity: Double = 0.3
+        /// 边高亮不透明度
+        public static let edgeHighlightedOpacity: Double = 1.0
+        /// 边默认不透明度
+        public static let edgeDefaultOpacity: Double = 0.2
+        /// 边高亮发射强度
+        public static let edgeHighlightedEmission: Double = 0.8
+        /// 边默认发射强度
+        public static let edgeDefaultEmission: Double = 0.1
+        /// 网格不透明度
+        public static let gridOpacity: Double = 0.2
+        /// 节点点击相机偏移 Y
+        public static let nodeTapCameraOffsetY: Float = 5
+        /// 节点点击相机偏移 Z
+        public static let nodeTapCameraOffsetZ: Float = 15
+        /// 旋转角度微小阈值
+        public static let rotationEpsilon: Double = 0.001
+        /// 基础 FPS
+        public static let baseFPS: Double = 60.0
+        /// FPS 最低值
+        public static let minFPS: Double = 10.0
+        /// 节点复杂度除数
+        public static let nodeComplexityDivisor: Double = 100.0
+        /// 节点复杂度乘数
+        public static let nodeComplexityMultiplier: Double = 5.0
+        /// 自动旋转 FPS 扣减
+        public static let autoRotateFPSDeduction: Double = 2.0
+        /// FPS 更新间隔（秒）
+        public static let fpsUpdateInterval: TimeInterval = 1.0
+        /// 节点几何体 entity 宽高倍数
+        public static let entitySizeMultiplier: Double = 1.6
+        /// 节点几何体 entity 倒角半径比例
+        public static let entityChamferRatio: Double = 0.2
+        /// 节点几何体 source 高度倍数
+        public static let sourceHeightMultiplier: Double = 2.5
+        /// 节点几何体 comparison 宽高倍数
+        public static let comparisonSizeMultiplier: Double = 2.0
+        /// 节点几何体 raw 宽高倍数
+        public static let rawWidthMultiplier: Double = 2.0
+        /// 节点几何体 raw 高度比例
+        public static let rawHeightRatio: Double = 0.2
+        /// 节点几何体 raw 长度倍数
+        public static let rawLengthMultiplier: Double = 1.5
+        /// 节点几何体 raw 倒角半径
+        public static let rawChamferRadius: Double = 0.05
+        /// 节点标签不透明度（dimmed 状态）
+        public static let labelDimmedOpacity: Double = 0.4
+        /// 节点标签不透明度（正常状态）
+        public static let labelNormalOpacity: Double = 1.0
     }
     
     /// 力导向算法物理常数

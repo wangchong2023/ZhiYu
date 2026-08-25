@@ -66,7 +66,7 @@ extension TagCloudViewContent {
             }
         }
         .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.tightPadding + DesignSystem.atomic)
+        .padding(.vertical, SystemSpacing.elementLarge)
         .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
         .overlay(

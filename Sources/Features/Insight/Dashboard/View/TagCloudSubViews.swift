@@ -12,6 +12,12 @@
 
 import SwiftUI
 
+// 标签云业务阈值常量
+private enum InsightBusinessConstants {
+    /// 列表模式下标签折叠触发阈值
+    static let tagCollapseThreshold = 12
+}
+
 // MARK: - 子视图组件
 
 extension TagCloudViewContent {
@@ -25,7 +31,7 @@ extension TagCloudViewContent {
             Button(role: .destructive, action: { showBulkDeleteConfirm = true }) {
                 Text(L10n.Common.Misc.bulkDelete)
                     .padding(.horizontal, DesignSystem.large)
-                    .padding(.vertical, DesignSystem.small - DesignSystem.atomic) // 6
+                    .padding(.vertical, SystemSpacing.small) // 6
                     .background(Color.theme.red)
                     .clipShape(Capsule())
                     .foregroundStyle(.white)
@@ -66,8 +72,8 @@ extension TagCloudViewContent {
     var tagScrollView: some View {
         let isListMode = displayMode == .list
         let tags = coordinator.filteredTags
-        let shouldCollapse = isListMode && tags.count > 12 && !isExpanded
-        let displayedTags = shouldCollapse ? Array(tags.prefix(12)) : tags
+        let shouldCollapse = isListMode && tags.count > InsightBusinessConstants.tagCollapseThreshold && !isExpanded
+        let displayedTags = shouldCollapse ? Array(tags.prefix(InsightBusinessConstants.tagCollapseThreshold)) : tags
 
         return VStack(spacing: 0) {
             if isListMode {
@@ -103,7 +109,7 @@ extension TagCloudViewContent {
                     .frame(minHeight: bubbleCanvasMinHeight, maxHeight: .infinity)
             }
 
-            if isListMode && tags.count > 12 {
+            if isListMode && tags.count > InsightBusinessConstants.tagCollapseThreshold {
                 expandCollapseButton
             }
         }

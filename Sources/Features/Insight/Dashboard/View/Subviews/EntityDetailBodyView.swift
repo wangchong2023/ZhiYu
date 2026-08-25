@@ -114,7 +114,7 @@ struct EntityDetailBodyView: View {
                         ForEach(aliasList, id: \.self) { alias in
                             HStack(spacing: Spacing.atomic) {
                                 Image(systemName: "pencil.and.list.clipboard")
-                                    .font(.system(size: 8)) // Dynamic Type
+                                    .font(.system(size: SystemFontSize.nano)) // Dynamic Type
                                 Text(alias)
                                     .font(.caption2.bold())
                             }

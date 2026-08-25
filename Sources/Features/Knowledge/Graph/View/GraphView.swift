@@ -250,7 +250,7 @@ struct GraphContainerView: View {
             computeInsights()
             viewModel.showInsights = true
         }) {
-            HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) {
+            HStack(spacing: SystemSpacing.small) {
                 Image(systemName: DesignSystem.Icons.sparkles)
                     .font(.system(size: DesignSystem.microFontSize, weight: .bold))
                     .foregroundStyle(.appAccent)

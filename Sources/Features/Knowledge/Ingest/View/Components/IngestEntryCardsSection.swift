@@ -137,7 +137,7 @@ struct IngestEntryCardsSection: View {
         VStack(spacing: DesignSystem.tiny) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(DesignSystem.glassOpacity * 1.2)) // 0.12
+                    .fill(color.opacity(Reference.Opacity.ten)) // 0.1 最近档舍入
                     .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
                 Image(systemName: icon)
                     .font(.system(size: DesignSystem.iconMedium, weight: .semibold))

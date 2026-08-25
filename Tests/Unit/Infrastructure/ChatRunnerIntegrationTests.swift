@@ -167,7 +167,13 @@ final class ChatRunnerIntegrationTests: XCTestCase {
         // 全局注册 URLProtocol 拦截（URLSession.shared 需通过 registerClass 全局注册）
         URLProtocol.registerClass(ChatRunnerMockURLProtocol.self)
 
-        runner = ChatRunner()
+        // 注入 mock LLMContextBuilder — 模拟器 NLTagger 中文人名识别率低，用确定性 mock 替代
+        runner = ChatRunner(contextBuilderFactory: {
+            LLMContextBuilder(entityRecognizer: { text in
+                let knownNames = ["张三丰", "张三", "李四", "王五", "赵六", "钱七", "孙八", "周九", "吴十"]
+                return knownNames.filter { text.contains($0) }
+            })
+        })
     }
 
     override func tearDown() async throws {

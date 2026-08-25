@@ -27,7 +27,7 @@ struct MedalCard: View {
                 
                 Image(systemName: medal.icon)
                     .font(.system(size: DesignSystem.Gallery.iconSize, weight: .bold))
-                    .foregroundStyle(isEarned ? baseColor : .appSecondary.opacity(DesignSystem.secondaryOpacity * 0.625)) // 0.5
+                    .foregroundStyle(isEarned ? baseColor : .appSecondary.opacity(Reference.Opacity.fifty)) // 0.5
                 
                 if !isEarned {
                     Image(systemName: DesignSystem.Icons.lock)
@@ -61,7 +61,7 @@ struct MedalCard: View {
         }
         .shadow(color: isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.disabled) : .clear, radius: SystemRadius.small, y: SystemStroke.heavy)
         .grayscale(isEarned ? 0 : 1)
-        .opacity(isEarned ? DesignSystem.fullOpacity : DesignSystem.secondaryOpacity + 0.1) // 0.7
+        .opacity(isEarned ? DesignSystem.fullOpacity : SystemOpacity.strong) // 0.9
     }
 }
 
@@ -73,7 +73,7 @@ struct MedalRewardPopup: View {
     
     var body: some View {
         ZStack {
-            Color.theme.black.opacity(DesignSystem.disabledOpacity + 0.1) // 0.4
+            Color.theme.black.opacity(Reference.Opacity.forty) // 0.4
                 .ignoresSafeArea()
                 .onTapGesture(perform: onDismiss)
             
@@ -96,7 +96,7 @@ struct MedalRewardPopup: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .shadow(color: baseColor.opacity(DesignSystem.secondaryOpacity / 1.6), radius: DesignSystem.loosePadding, y: DesignSystem.standardPadding) // 0.5, 20, 10
+                        .shadow(color: baseColor.opacity(Reference.Opacity.fifty), radius: DesignSystem.loosePadding, y: DesignSystem.standardPadding) // 0.5, 20, 10
                         .scaleEffect(isAnimating ? 1.1 : 0.9)
                 }
                 .padding(.top, DesignSystem.Gallery.blurRadius)
@@ -128,7 +128,7 @@ struct MedalRewardPopup: View {
                             Capsule()
                                 .fill(LinearGradient(colors: [baseColor, baseColor.opacity(DesignSystem.secondaryOpacity)], startPoint: .leading, endPoint: .trailing))
                         }
-                        .shadow(color: baseColor.opacity(DesignSystem.disabledOpacity), radius: SystemRadius.small, y: DesignSystem.microRadius + DesignSystem.atomic) // 0.3, 10, 5
+                        .shadow(color: baseColor.opacity(DesignSystem.disabledOpacity), radius: SystemRadius.small, y: SystemSpacing.small) // 0.3, 10, 6
                 }
                 .padding(.bottom, DesignSystem.Gallery.blurRadius)
                 .scaleEffect(isAnimating ? 1 : 0.9)

@@ -374,7 +374,7 @@ struct SidebarTypeRow: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(Color.fromModelColorName(type.colorName))
                 .frame(width: DesignSystem.largeIconSize, height: DesignSystem.largeIconSize)
-                .background(Color.fromModelColorName(type.colorName).opacity(DesignSystem.softOpacity * 0.3)) // 0.12
+                .background(Color.fromModelColorName(type.colorName).opacity(Reference.Opacity.ten)) // 0.12
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius, style: .continuous))
             
             // 分类名称
@@ -389,7 +389,7 @@ struct SidebarTypeRow: View {
                 .font(.caption2.weight(.bold))
                 .padding(.horizontal, count > 9 ? DesignSystem.Chip.horizontalPadding : DesignSystem.Chip.verticalPadding)
                 .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                .background(Color.fromModelColorName(type.colorName).opacity(DesignSystem.softOpacity * 0.375)) // 0.15
+                .background(Color.fromModelColorName(type.colorName).opacity(Reference.Opacity.fifteen)) // 0.15
                 .foregroundStyle(Color.fromModelColorName(type.colorName))
                 .clipShape(Capsule())
         }

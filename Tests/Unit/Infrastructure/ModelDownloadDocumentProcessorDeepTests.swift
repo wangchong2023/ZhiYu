@@ -214,8 +214,14 @@ final class ModelDownloadManagerDeepTests: XCTestCase {
     }
 
     /// startDownload 已有 paused 状态 — 验证可以重新启动
+    /// D-36 修复：注入 Mock URLSession，避免真实网络请求挂起测试
     func testStartDownloadWithPausedStateProceeds() async throws {
-        let manager = ModelDownloadManager.shared
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockDownloadURLProtocol.self]
+        let manager = ModelDownloadManager(sessionFactory: { owner in
+            let delegateHelper = ModelDownloadDelegateHelper(manager: owner)
+            return URLSession(configuration: config, delegate: delegateHelper, delegateQueue: nil)
+        })
         let modelId = "test-start-paused-\(UUID().uuidString)"
 
         // 先设置 paused 状态
@@ -246,6 +252,33 @@ final class ModelDownloadManagerDeepTests: XCTestCase {
         // 清理
         try? await manager.cancelDownload(modelId: modelId)
     }
+}
+
+// MARK: - D-36 Mock URLProtocol
+
+/// 拦截下载请求，立即返回空数据，避免真实网络请求
+final class MockDownloadURLProtocol: URLProtocol {
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        guard let url = request.url ?? URL(string: "https://example.com") else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badURL))
+            return
+        }
+        guard let response = HTTPURLResponse(
+            url: url,
+            statusCode: 200,
+            httpVersion: "HTTP/1.1",
+            headerFields: nil
+        ) else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
+        client?.urlProtocol(self, didReceive: response as URLResponse, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data())
+        client?.urlProtocolDidFinishLoading(self)
+    }
+    override func stopLoading() {}
 }
 
 // MARK: - ModelDownloadManager verifySHA256 边界测试

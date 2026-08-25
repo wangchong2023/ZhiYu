@@ -53,6 +53,8 @@ extension L10n {
             public static var scoreFormat: String { Search.tr("search.diag.scoreFormat") }
             public static var ftsEngine: String { Search.tr("search.diag.ftsEngine") }
             public static var vectorEngine: String { Search.tr("search.diag.vectorEngine") }
+            public static var ftsPrefix: String { Search.tr("search.diag.ftsPrefix") }
+            public static var vecPrefix: String { Search.tr("search.diag.vecPrefix") }
         }
     }
 }

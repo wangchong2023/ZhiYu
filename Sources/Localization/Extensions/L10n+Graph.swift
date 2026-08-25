@@ -127,7 +127,12 @@ extension L10n {
             public static func tr(_ key: String) -> String {
                 Localized.tr("graph3d." + key, table: t)
             }
-            public static var title: String { Localized.tr("graph3d.", table: t) }
+            public static var title: String { Localized.tr("spatial.feature.3dGraph", table: "Common") }
+            public static var description: String { Localized.tr("graph3d.description", table: t) }
+            /// FPS 格式化文案
+            /// - Parameter fps: 帧率值
+            /// - Returns: 本地化格式化文案
+            public static func fpsFormat(_ fps: Int) -> String { Localized.trf("graph3d.fpsFormat", table: t, fps) }
         }
 
         public struct guide {

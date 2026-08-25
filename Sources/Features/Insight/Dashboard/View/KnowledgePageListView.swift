@@ -378,7 +378,7 @@ struct KnowledgePageListContent: View {
             }
         }
         .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.tightPadding + DesignSystem.atomic)
+        .padding(.vertical, SystemSpacing.elementLarge)
         .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
         .overlay(
@@ -420,7 +420,7 @@ struct KnowledgeStatItem: View {
             RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
                 .stroke(color.opacity(DesignSystem.dimmedOpacity), lineWidth: DesignSystem.borderWidth)
         )
-        .shadow(color: .primary.opacity(DesignSystem.shadowOpacity * DesignSystem.subtleOpacity), radius: DesignSystem.medium, x: 0, y: DesignSystem.tiny)
+        .shadow(color: .primary.opacity(Reference.Opacity.five), radius: DesignSystem.medium, x: 0, y: DesignSystem.tiny)
     }
 }
 

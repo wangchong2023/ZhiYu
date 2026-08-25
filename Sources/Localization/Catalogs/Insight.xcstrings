@@ -16900,6 +16900,40 @@
           }
         }
       }
+    },
+    "graph3d.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Explore connections in 3D space"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在三维空间中探索知识关联"
+          }
+        }
+      }
+    },
+    "graph3d.fpsFormat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FPS: %d"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "帧率: %d"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

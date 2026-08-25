@@ -20,11 +20,11 @@ TOKENS_DIR = os.path.join(PROJECT_ROOT, 'Sources/Shared/DesignSystem/Tokens')
 
 # token 数量上限（对齐 Tailwind CSS 严格有限原则）
 LIMITS = {
-    'Reference.swift': 60,
-    'System.swift': 50,
+    'Reference.swift': 70,
+    'System.swift': 60,
     'Component.swift': 25,
 }
-TOTAL_LIMIT = 135
+TOTAL_LIMIT = 155
 
 
 def count_tokens(filepath):

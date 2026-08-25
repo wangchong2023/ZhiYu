@@ -22,6 +22,12 @@ struct ChatView: View {
     }
 }
 
+// MARK: - ChatView UI 常量
+private enum UIConstants {
+    static let streamingBubbleIconSize: CGFloat = 28.8
+    static let stopButtonFontSize: CGFloat = SystemFontSize.microLarge
+}
+
 // MARK: - 视图核心
 struct ChatViewContent: View {
     @Environment(AppStore.self) var store
@@ -228,11 +234,11 @@ struct ChatViewContent: View {
             Image(systemName: DesignSystem.Icons.thinking)
                 .font(DesignSystem.secondaryFont)
                 .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.titleIconSize * DesignSystem.Domain.AI.Chat.bubbleIconScale, height: DesignSystem.titleIconSize * DesignSystem.Domain.AI.Chat.bubbleIconScale)
+                .frame(width: UIConstants.streamingBubbleIconSize, height: UIConstants.streamingBubbleIconSize)
                 .background(Color.appAccent.opacity(SystemOpacity.glass))
                 .clipShape(Circle())
             
-            VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: SystemSpacing.small) {
                 if coordinator.streamingContent.isEmpty {
                     // 获取当前活跃任务的阶段
                     let stage: TaskStage = {
@@ -262,9 +268,9 @@ struct ChatViewContent: View {
                 }) {
                     HStack(spacing: DesignSystem.atomic) {
                         Image(systemName: DesignSystem.Icons.stopFill)
-                            .font(.system(size: 11, weight: .bold)) // Dynamic Type
+                            .font(.system(size: UIConstants.stopButtonFontSize, weight: .bold)) // Dynamic Type
                         Text(L10n.Common.cancel)
-                            .font(.system(size: 11, weight: .semibold)) // Dynamic Type
+                            .font(.system(size: UIConstants.stopButtonFontSize, weight: .semibold)) // Dynamic Type
                     }
                     .padding(.horizontal, Spacing.Chip.horizontalPadding)
                     .padding(.vertical, DesignSystem.atomic)

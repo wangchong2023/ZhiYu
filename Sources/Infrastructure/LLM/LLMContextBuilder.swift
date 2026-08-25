@@ -21,6 +21,10 @@ final class LLMContextBuilder: Sendable {
     @Dependency(\.embeddingProvider) private var embeddingProvider: any EmbeddingProvider
     @Dependency(\.knowledgePageRepository) private var pageRepository: KnowledgePageRepository
 
+    /// 实体识别器闭包 — 默认使用 NLTagger，测试中可注入 mock 识别器
+    /// 返回文本中识别到的实体字符串数组（人名/地名/组织机构名）
+    private let entityRecognizer: @Sendable (String) -> [String]
+
     // MARK: - Configuration Constants
     /// Max entities listed in the system prompt overview.
     private static let maxEntityOverview = PromptConstants.RAGPrompt.maxEntityOverview
@@ -35,6 +39,35 @@ final class LLMContextBuilder: Sendable {
 
     private let sanitizer = PromptSecuritySanitizer()
     private let reranker = ContextReranker()
+
+    // MARK: - 初始化
+
+    /// 生产环境初始化器 — 使用 NLTagger 默认实体识别器
+    init() {
+        entityRecognizer = Self.defaultEntityRecognizer
+    }
+
+    /// 测试环境初始化器 — 允许注入自定义实体识别器
+    /// - Parameter entityRecognizer: 自定义实体识别闭包，返回文本中识别到的实体字符串数组
+    init(entityRecognizer: @escaping @Sendable (String) -> [String]) {
+        self.entityRecognizer = entityRecognizer
+    }
+
+    /// 默认实体识别器 — 使用 NLTagger 识别人名/地名/组织机构名
+    @Sendable
+    private static func defaultEntityRecognizer(_ text: String) -> [String] {
+        let tagger = NLTagger(tagSchemes: [.nameType])
+        tagger.string = text
+        let options: NLTagger.Options = [.omitWhitespace, .omitPunctuation, .joinNames]
+        var entities: [String] = []
+        tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word, scheme: .nameType, options: options) { tag, tokenRange in
+            if let tag = tag, tag == .personalName || tag == .placeName || tag == .organizationName {
+                entities.append(String(text[tokenRange]))
+            }
+            return true
+        }
+        return entities
+    }
 
     // MARK: - System Prompt
     /// 构建SystemPrompt
@@ -235,44 +268,32 @@ final class LLMContextBuilder: Sendable {
     /// - Returns: (脱敏后的文本, 哈希映射字典)
     func anonymize(_ text: String, existingMapping: [String: String] = [:]) -> (anonymizedText: String, mapping: [String: String]) {
         guard !text.isEmpty else { return (text, existingMapping) }
-        
-        // 局部实例化非 Sendable 的 NLTagger 以保证并发安全
-        let tagger = NLTagger(tagSchemes: [.nameType])
-        tagger.string = text
-        
+
         var mapping = existingMapping
         var reversedMapping: [String: String] = [:]
-        
+
         // 反向映射以重用已有 placeholder
         for (placeholder, original) in existingMapping {
             reversedMapping[original] = placeholder
         }
-        
+
         var count = mapping.count
-        let options: NLTagger.Options = [.omitWhitespace, .omitPunctuation, .joinNames]
-        
-        tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word, scheme: .nameType, options: options) { tag, tokenRange in
-            if let tag = tag {
-                // 筛选人名、地名及组织机构等专有名词实体
-                if tag == .personalName || tag == .placeName || tag == .organizationName {
-                    let original = String(text[tokenRange])
-                    
-                    // 仅对有效长度的敏感实体进行遮掩，避免过短噪音，且避免重复分配
-                    if original.count >= LLMConstants.Anonymization.minEntityLength && reversedMapping[original] == nil {
-                        let character = Character(UnicodeScalar(UInt8(LLMConstants.Anonymization.asciiUppercaseA) + UInt8(count % LLMConstants.Anonymization.alphabetSize)))
-                        let suffix = count >= LLMConstants.Anonymization.alphabetSize ? "\(count / LLMConstants.Anonymization.alphabetSize)" : ""
-                        let placeholder = "\(LLMConstants.Anonymization.placeholderPrefix)\(character)\(suffix)\(LLMConstants.Anonymization.placeholderSuffix)"
-                        
-                        mapping[placeholder] = original
-                        reversedMapping[original] = placeholder
-                        count += 1
-                    }
-                }
+
+        // 通过可注入的实体识别器获取实体列表
+        let entities = entityRecognizer(text)
+        for original in entities {
+            // 仅对有效长度的敏感实体进行遮掩，避免过短噪音，且避免重复分配
+            if original.count >= LLMConstants.Anonymization.minEntityLength, reversedMapping[original] == nil {
+                let character = Character(UnicodeScalar(UInt8(LLMConstants.Anonymization.asciiUppercaseA) + UInt8(count % LLMConstants.Anonymization.alphabetSize)))
+                let suffix = count >= LLMConstants.Anonymization.alphabetSize ? "\(count / LLMConstants.Anonymization.alphabetSize)" : ""
+                let placeholder = "\(LLMConstants.Anonymization.placeholderPrefix)\(character)\(suffix)\(LLMConstants.Anonymization.placeholderSuffix)"
+                mapping[placeholder] = original
+                reversedMapping[original] = placeholder
+                count += 1
             }
-            return true
         }
-        
-        // 按照敏感词长度从长到短执行物理替换，规避前缀子串替换冲突 (例如“张三丰”优先于“张三”)
+
+        // 按照敏感词长度从长到短执行物理替换，规避前缀子串替换冲突 (例如"张三丰"优先于"张三")
         var anonymizedText = text
         let sortedOriginals = reversedMapping.keys.sorted { $0.count > $1.count }
         for original in sortedOriginals {
@@ -280,7 +301,7 @@ final class LLMContextBuilder: Sendable {
                 anonymizedText = anonymizedText.replacingOccurrences(of: original, with: placeholder)
             }
         }
-        
+
         return (anonymizedText, mapping)
     }
     

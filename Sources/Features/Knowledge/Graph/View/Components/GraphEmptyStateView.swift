@@ -33,8 +33,8 @@ struct GraphEmptyStateView: View {
             Button(action: { selectedTab = .ingest }) {
                 Text(L10n.Graph.startBuilding)
                     .font(.headline)
-                    .padding(.horizontal, DesignSystem.loosePadding + DesignSystem.small)
-                    .padding(.vertical, DesignSystem.standardPadding - DesignSystem.atomic)
+                    .padding(.horizontal, ComponentSpacing.huge)
+                    .padding(.vertical, SystemSpacing.contentMedium)
                     .background(Capsule().fill(Color.appAccent))
                     .foregroundStyle(.white)
             }

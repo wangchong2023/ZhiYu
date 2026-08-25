@@ -239,7 +239,7 @@ struct TaskCenterView: View {
             ZStack {
                 Circle()
                     .fill(color.opacity(SystemOpacity.ghost))
-                    .frame(width: DesignSystem.Timeline.indicatorSize - DesignSystem.tiny, height: DesignSystem.Timeline.indicatorSize - DesignSystem.tiny) // 32
+                    .frame(width: UIConstants.filterIndicatorSize, height: UIConstants.filterIndicatorSize) // 32
                 Image(systemName: type.icon)
                     .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
                     .foregroundStyle(color)
@@ -255,16 +255,16 @@ struct TaskCenterView: View {
             
             VStack(spacing: DesignSystem.atomic) {
                 Text(type.localizedName)
-                    .font(.system(size: DesignSystem.microFontSize + DesignSystem.atomic, weight: .bold)) // 11
+                    .font(.system(size: UIConstants.filterLabelFontSize, weight: .bold)) // 11
                     .foregroundStyle(.appSecondary)
                 
                 HStack(alignment: .firstTextBaseline, spacing: DesignSystem.atomic) {
                     Text("\(metrics.completed)")
-                        .font(.system(size: DesignSystem.standardFontSize + DesignSystem.small, weight: .bold, design: .rounded)) // 20
+                        .font(.system(size: UIConstants.filterCountFontSize, weight: .bold, design: .rounded)) // 20
                         .foregroundStyle(.appText)
                     Text("/ \(metrics.total)")
                         .font(.system(size: DesignSystem.microFontSize, weight: .medium, design: .rounded))
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.secondaryOpacity * 0.75)) // 0.6
+                        .foregroundStyle(.appSecondary.opacity(UIConstants.filterTotalOpacity)) // 0.6
                 }
             }
         }
@@ -320,7 +320,7 @@ struct TaskCenterView: View {
                 Image(systemName: DesignSystem.Icons.sparkles)
                     .font(.system(size: DesignSystem.Action.largeIconSize))
                     .foregroundStyle(.purple)
-                    .offset(x: DesignSystem.standardPadding + DesignSystem.medium, y: -(DesignSystem.standardPadding + DesignSystem.medium))
+                    .offset(x: UIConstants.emptyStateSparkleOffset, y: -UIConstants.emptyStateSparkleOffset)
             }
             
             VStack(spacing: DesignSystem.medium) {
@@ -349,7 +349,7 @@ struct TaskCenterView: View {
             .padding()
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-            .padding(.horizontal, DesignSystem.loosePadding + DesignSystem.tiny)
+            .padding(.horizontal, SystemSpacing.sectionCompact)
         }
         .frame(maxWidth: .infinity)
         .listRowBackground(Color.clear)
@@ -391,7 +391,7 @@ private struct TaskRow: View {
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 Image(systemName: task.type.icon)
-                    .font(.system(size: DesignSystem.Action.iconSize + DesignSystem.atomic))
+                    .font(.system(size: UIConstants.taskRowIconSize))
                     .foregroundStyle(task.type == .ai ? .purple : .appAccent)
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
@@ -486,4 +486,14 @@ extension TaskType {
         default: return .appAccent
         }
     }
+}
+
+// MARK: - TaskCenterView UI 常量
+private enum UIConstants {
+    static let filterIndicatorSize: CGFloat = ComponentSpacing.huge
+    static let filterLabelFontSize: CGFloat = SystemFontSize.caption
+    static let filterCountFontSize: CGFloat = SystemFontSize.title
+    static let filterTotalOpacity: Double = SystemOpacity.overlay
+    static let emptyStateSparkleOffset: CGFloat = SystemSpacing.sectionCompact
+    static let taskRowIconSize: CGFloat = ComponentSpacing.iconCompact
 }

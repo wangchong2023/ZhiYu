@@ -15,6 +15,18 @@ import Dependencies
 /// AI 脉搏指示器
 /// 负责增强用户对 AI 处理状态（如思考、全库扫描）的感知，提供动态波纹动画及实时状态文本展示
 struct AIPulseIndicator: View {
+    // MARK: - UI 常量
+    private enum UIConstants {
+        static let indicatorDotSize: CGFloat = SystemSpacing.element
+        static let statusFontSize: CGFloat = SystemFontSize.nano
+    }
+
+    // MARK: - 脉冲动画配置（非 UI 语境）
+    private enum PulseAnimationConfig {
+        static let shadowOpacity: Double = 0.06
+        static let pulseSpringResponse: CGFloat = 0.24
+    }
+    
     @Environment(AppStore.self) var store
     @Dependency(\.taskCenter) private var taskCenter
     private var isAIProcessing: Bool {
@@ -72,7 +84,7 @@ struct AIPulseIndicator: View {
                 } else {
                     Circle()
                         .fill(pulseColor)
-                        .frame(width: DesignSystem.smallIconSize / 2, height: DesignSystem.smallIconSize / 2) // 8
+                        .frame(width: UIConstants.indicatorDotSize, height: UIConstants.indicatorDotSize) // 8
                 }
             }
             
@@ -84,7 +96,7 @@ struct AIPulseIndicator: View {
                     
                     if !taskCenter.latestStatus.isEmpty {
                         Text(taskCenter.latestStatus)
-                            .font(.system(size: DesignSystem.microFontSize - 2, design: .monospaced)) // 8
+                            .font(.system(size: UIConstants.statusFontSize, design: .monospaced)) // 8
                             .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.prominent)) // 0.8
                             .lineLimit(1)
                             .transition(.asymmetric(insertion: .push(from: .bottom), removal: .opacity))
@@ -93,14 +105,14 @@ struct AIPulseIndicator: View {
                 .transition(.opacity.combined(with: .move(edge: .leading)))
             }
         }
-        .padding(.horizontal, DesignSystem.small + DesignSystem.atomic) // 10
-        .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 6
+        .padding(.horizontal, SystemSpacing.elementLarge) // 10
+        .padding(.vertical, SystemSpacing.small) // 6
         .background(
             Capsule()
                 .fill(Color.appCard.opacity(DesignSystem.Opacity.prominent)) // 0.8
-                .shadow(color: .black.opacity(DesignSystem.shadowOpacity / 2), radius: SystemStroke.selected) // 0.05, 2
+                .shadow(color: .black.opacity(PulseAnimationConfig.shadowOpacity), radius: SystemStroke.selected) // 0.05, 2
         )
-        .animation(.spring(response: DesignSystem.Animation.standardDuration * 1.2), value: taskCenter.latestStatus) // 0.3
+        .animation(.spring(response: PulseAnimationConfig.pulseSpringResponse), value: taskCenter.latestStatus) // 0.3
         .animation(.spring(), value: isActive)
         .onChange(of: isActive) { _, newValue in
             if newValue {

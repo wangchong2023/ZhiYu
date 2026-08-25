@@ -10,6 +10,12 @@
 //
 import SwiftUI
 
+// 周报卡片组件特定常量
+private enum WeeklyCardConstants {
+    /// 核心指标分隔线高度
+    static let dividerHeight: CGFloat = 36
+}
+
 /// 知识周报卡片 (PM 视角：价值闭环)
 /// 知识周报卡片容器
 /// 集成 AI 摘要与核心增长指标的可视化面板
@@ -22,7 +28,7 @@ struct WeeklyInsightCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.loosePadding) {
             HStack {
-                AppGlow(icon: DesignSystem.Icons.sparkles, color: .purple, size: DesignSystem.largeIconSize - DesignSystem.tiny) // 28
+                AppGlow(icon: DesignSystem.Icons.sparkles, color: .purple, size: SystemFontSize.title) // 24
                 VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                     Text(L10n.Dashboard.insight.weeklyTitle)
                         .font(.title3.bold())
@@ -63,7 +69,7 @@ struct WeeklyInsightCard: View {
                     VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
                         HStack(spacing: DesignSystem.Metrics.sectionSpacing) { // 24
                             InsightStat(label: L10n.Common.Stats.newPages, value: "\(insight.totalNewPages)", icon: DesignSystem.Icons.docBadgePlus, color: .blue)
-                            Divider().frame(height: DesignSystem.Action.buttonHeight - DesignSystem.small) // 36
+                            Divider().frame(height: WeeklyCardConstants.dividerHeight) // 36
                             InsightStat(label: L10n.Common.Stats.growth, value: insight.growthTraction, icon: DesignSystem.Icons.chartLine, color: .green)
                         }
                         
@@ -72,8 +78,8 @@ struct WeeklyInsightCard: View {
                                 ForEach(Array(Set(insight.topKeywords)).sorted(), id: \.self) { tag in
                                     Text("#\(tag)")
                                         .font(DesignSystem.caption2Font) // 11
-                                        .padding(.horizontal, DesignSystem.small + DesignSystem.atomic) // 10
-                                        .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 6
+                                        .padding(.horizontal, SystemSpacing.elementLarge) // 10
+                                        .padding(.vertical, SystemSpacing.small) // 6
                                         .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
                                         .foregroundStyle(.appAccent)
                                         .clipShape(Capsule())
@@ -94,7 +100,7 @@ struct WeeklyInsightCard: View {
                         HStack {
                             Image(systemName: DesignSystem.Icons.quoteOpening)
                                 .font(.title2)
-                                .foregroundStyle(.appAccent.opacity(DesignSystem.dimmedOpacity * 1.5)) // 0.3
+                                .foregroundStyle(.appAccent.opacity(SystemOpacity.glassStrong)) // 0.3
                             Spacer()
                         }
                         
@@ -122,7 +128,7 @@ struct WeeklyInsightCard: View {
                                     .stroke(LinearGradient(colors: [DesignSystem.containerBorder, .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: DesignSystem.borderWidth)
                             )
                     }
-                    .shadow(color: .primary.opacity(DesignSystem.shadowOpacity * 1.25), radius: DesignSystem.shadowRadius, y: DesignSystem.shadowY) // 0.05, 10, 4
+                    .shadow(color: .primary.opacity(Reference.Opacity.ten), radius: DesignSystem.shadowRadius, y: DesignSystem.shadowY) // 0.1, 10, 4
                 }
                 .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .opacity))
             } else {
@@ -157,7 +163,7 @@ struct WeeklyInsightCard: View {
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.loosePadding)) // 20
-        .shadow(color: .primary.opacity(DesignSystem.shadowOpacity * 1.25), radius: DesignSystem.shadowRadius * 1.5, x: 0, y: DesignSystem.shadowY * 2) // 0.05, 15, 8
+        .shadow(color: .primary.opacity(Reference.Opacity.ten), radius: SystemSpacing.content, x: 0, y: SystemSpacing.element) // 0.1, 16, 8
         .onAppear {
             if aiStore.weeklyInsight == nil && !store.pages.isEmpty {
                 generateInsight()
@@ -193,7 +199,7 @@ struct InsightStat: View {
             Image(systemName: icon)
                 .font(.system(size: DesignSystem.Metrics.iconBoxSize / 2, weight: .semibold)) // 20
                 .foregroundStyle(color)
-                .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.atomic * 2, height: DesignSystem.Metrics.iconBoxSize + DesignSystem.atomic * 2) // 44
+                .frame(width: ComponentSpacing.buttonHeight, height: ComponentSpacing.buttonHeight) // 44
                 .background(
                     Circle()
                         .fill(color.opacity(SystemOpacity.glass))
@@ -232,7 +238,7 @@ struct WeeklyReportView: View {
                     
                     Text(L10n.Dashboard.insight.tips.content)
                         .font(.subheadline)
-                        .lineSpacing(DesignSystem.tiny + DesignSystem.atomic) // 5
+                        .lineSpacing(SystemSpacing.small) // 6
                         .foregroundStyle(.appSecondary)
                         .padding(DesignSystem.loosePadding)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -243,7 +249,7 @@ struct WeeklyReportView: View {
                                 .stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth)
                         )
                 }
-                .padding(.top, DesignSystem.medium - DesignSystem.atomic) // 10
+                .padding(.top, SystemSpacing.elementLarge) // 10
                 
                 // 底部占位，增加留白感
                 Spacer(minLength: DesignSystem.Metrics.iconBoxSize) // 40

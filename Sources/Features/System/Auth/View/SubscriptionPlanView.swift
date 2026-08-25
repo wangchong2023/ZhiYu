@@ -36,6 +36,8 @@ public struct SubscriptionPlanView: View {
     private enum Constants {
         static let barHeight: CGFloat = 6
         static let popoverWidth: CGFloat = 280
+        /// 无限额度阈值 (超过此值视为无限)
+        static let unlimitedMaxValue: Int = 999999
     }
 
     // MARK: - 状态变量
@@ -192,7 +194,7 @@ public struct SubscriptionPlanView: View {
 
                 Spacer()
 
-                Text("\(current) / \(max < 999999 ? "\(max)" : "∞")")
+                Text("\(current) / \(max < Constants.unlimitedMaxValue ? "\(max)" : "∞")")
                     .font(.system(.subheadline, design: .rounded).bold())
                     .foregroundStyle(.appText)
             }
@@ -225,7 +227,7 @@ public struct SubscriptionPlanView: View {
         AppCard {
             VStack(spacing: DesignSystem.medium) {
                 Image(systemName: "crown.fill")
-                    .font(.system(size: 48)) // Dynamic Type
+                    .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
                     .foregroundStyle(
                         LinearGradient(
                             colors: [.yellow, .orange],

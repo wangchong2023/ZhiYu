@@ -171,6 +171,26 @@ final class CollaborationServiceDeepTests: XCTestCase {
         try JSONSerialization.data(withJSONObject: object)
     }
 
+    /// 轮询等待条件满足，避免固定 sleep 在全量测试负载下不够的问题
+    /// - Parameters:
+    ///   - condition: 条件闭包，返回 true 表示条件已满足
+    ///   - timeout: 超时时间（秒），默认 2 秒
+    ///   - interval: 轮询间隔（纳秒），默认 10ms
+    private func waitFor(
+        _ condition: @MainActor () -> Bool,
+        timeout: TimeInterval = 2.0,
+        interval: UInt64 = 10_000_000
+    ) async throws {
+        let start = Date()
+        while Date().timeIntervalSince(start) < timeout {
+            if await MainActor.run(body: condition) { return }
+            try await Task.sleep(nanoseconds: interval)
+        }
+        // 最后一次检查
+        if await MainActor.run(body: condition) { return }
+        XCTFail("等待条件超时（\(timeout)秒）")
+    }
+
     // MARK: - startHosting 状态转换
 
     /// 验证 startHosting 完整状态转换：roomName/role/connectionError/isConnecting/isHosting/isJoined
@@ -304,7 +324,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证重复 peer 连接不重复添加
-    func test重复Peer连接不重复添加() {
+    func testDuplicatePeerConnectionNotAddedTwice() {
         let user = makeUser(id: testUserId)
         mockProvider.simulatePeerConnect(user)
         mockProvider.simulatePeerConnect(user)
@@ -324,7 +344,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 host 场景下所有 peer 断开后 isJoined 置 false
-    func test非host场景所有peer断开后isJoined置false() {
+    func testNonHostScenarioAllPeersDisconnectedSetsIsJoinedFalse() {
         service.startBrowsing()
         mockProvider.simulatePeerConnect(makeUser(id: testUserId))
         XCTAssertTrue(service.isJoined)
@@ -346,7 +366,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证断开不存在的 peer ID 不崩溃且不改变状态
-    func test断开不存在的PeerID不崩溃() {
+    func testDisconnectNonExistentPeerIDDoesNotCrash() {
         mockProvider.simulatePeerConnect(makeUser(id: testUserId))
         XCTAssertEqual(service.connectedPeers.count, 1)
 
@@ -369,7 +389,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证重复 room ID 不重复添加
-    func test重复RoomID不重复添加() {
+    func testDuplicateRoomIDNotAddedTwice() {
         let room = makeRoom(id: testRoomId)
         mockProvider.delegate?.providerDidDiscoverRoom(room)
         mockProvider.delegate?.providerDidDiscoverRoom(room)
@@ -389,7 +409,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证丢失不存在的 room ID 不崩溃
-    func test丢失不存在的RoomID不崩溃() {
+    func testLoseNonExistentRoomIDDoesNotCrash() {
         mockProvider.delegate?.providerDidLoseRoom(id: "non-existent-room")
         XCTAssertTrue(service.discoveredRooms.isEmpty)
     }
@@ -416,7 +436,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - data 接收：CollabEdit
 
     /// 验证接收 CollabEdit 数据添加到 recentEdits
-    func test接收CollabEdit数据添加到RecentEdits() async throws {
+    func testReceiveCollabEditDataAddedToRecentEdits() async throws {
         let pageID = UUID()
         let data = try makeCollabEditData(pageID: pageID)
 
@@ -428,7 +448,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收无效 JSON 数据不崩溃且不添加到 recentEdits
-    func test接收无效JSON数据不崩溃且不添加到RecentEdits() {
+    func testReceiveInvalidJSONDataDoesNotCrashAndNotAddedToRecentEdits() {
         let invalidData = Data("invalid json".utf8)
         mockProvider.simulateDataReceived(invalidData, from: testUserId)
 
@@ -436,7 +456,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收非 CollabEdit 非 pageSync 数据不崩溃
-    func test接收未知格式数据不崩溃() throws {
+    func testReceiveUnknownFormatDataDoesNotCrash() throws {
         let unknownData = try makeJSONData(["unknown": "format"])
         mockProvider.simulateDataReceived(unknownData, from: testUserId)
 
@@ -445,7 +465,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
     /// 验证接收超过 100 条 Edit 时截断为 100 条
     /// - Note: C-10/Bug#6 已优化 — 改用 removeFirst() 单次移除，保持功能正确性。
-    func test接收超过100条Edit时截断为100条() throws {
+    func testReceiveOver100EditsTruncatedTo100() throws {
         let pageID = UUID()
         for _ in 0..<overflowEditCount {
             let data = try makeCollabEditData(pageID: pageID)
@@ -471,7 +491,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - data 接收：pageSync
 
     /// 验证接收 pageSync 数据且 delegate 有对应页面时调用 applyRemoteUpdate
-    func test接收PageSync数据且Delegate有对应页面时调用ApplyRemoteUpdate() async throws {
+    func testReceivePageSyncDataWithMatchingPageCallsApplyRemoteUpdate() async throws {
         let pageID = UUID()
         let existingPage = KnowledgePage(id: pageID, title: "Old Title", content: "old content")
         mockDelegate.pages = [existingPage]
@@ -482,8 +502,8 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
         mockProvider.simulateDataReceived(data, from: testUserId)
 
-        // 等待 Task 异步执行
-        try await Task.sleep(nanoseconds: asyncWaitNanoseconds)
+        // 轮询等待 Task {} 异步完成，避免固定 sleep 在全量测试负载下不够
+        try await waitFor { !mockDelegate.appliedUpdates.isEmpty }
 
         XCTAssertEqual(mockDelegate.appliedUpdates.count, 1, "应调用 applyRemoteUpdate")
         XCTAssertEqual(mockDelegate.appliedUpdates.first?.title, "New Title")
@@ -491,7 +511,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据且 delegate 无对应页面时调用 insertRemotePage
-    func test接收PageSync数据且Delegate无对应页面时调用InsertRemotePage() async throws {
+    func testReceivePageSyncDataWithoutMatchingPageCallsInsertRemotePage() async throws {
         let pageID = UUID()
         mockDelegate.pages = []
 
@@ -499,7 +519,8 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
         mockProvider.simulateDataReceived(data, from: testUserId)
 
-        try await Task.sleep(nanoseconds: asyncWaitNanoseconds)
+        // 轮询等待 Task {} 异步完成，避免固定 sleep 在全量测试负载下不够
+        try await waitFor { !mockDelegate.insertedPages.isEmpty }
 
         XCTAssertEqual(mockDelegate.insertedPages.count, 1, "应调用 insertRemotePage")
         XCTAssertEqual(mockDelegate.insertedPages.first?.title, "Brand New Page")
@@ -507,7 +528,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据且远程时间不晚于本地时不调用 applyRemoteUpdate
-    func test接收PageSync数据且远程时间不晚于本地时不调用ApplyRemoteUpdate() async throws {
+    func testReceivePageSyncDataWithStaleTimestampDoesNotCallApplyRemoteUpdate() async throws {
         let pageID = UUID()
         let oldDate = Date().addingTimeInterval(-3600)
         let existingPage = KnowledgePage(id: pageID, title: "Existing", content: "existing", createdAt: oldDate, updatedAt: oldDate)
@@ -527,7 +548,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
     /// 验证接收 pageSync 数据且远程时间等于本地时也更新
     /// - Note: C-11/Bug#7 已修复 — 改用 >= 比较，相同时间戳的远程更新也会应用。
-    func test接收PageSync数据且远程时间等于本地时也更新() async throws {
+    func testReceivePageSyncDataWithEqualTimestampAlsoUpdates() async throws {
         let pageID = UUID()
         let syncDate = Date()
         let existingPage = KnowledgePage(id: pageID, title: "Existing", content: "existing", createdAt: syncDate, updatedAt: syncDate)
@@ -538,7 +559,8 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
         mockProvider.simulateDataReceived(data, from: testUserId)
 
-        try await Task.sleep(nanoseconds: asyncWaitNanoseconds)
+        // 轮询等待 Task {} 异步完成，避免固定 sleep 在全量测试负载下不够
+        try await waitFor { !mockDelegate.appliedUpdates.isEmpty }
 
         // 验证修复：时间戳相等时也更新（避免并发编辑丢失）
         XCTAssertEqual(mockDelegate.appliedUpdates.count, 1, "远程时间等于本地时也应更新 — 避免并发编辑丢失")
@@ -546,7 +568,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据但 delegate 为 nil 时不崩溃
-    func test接收PageSync数据但Delegate为nil时不崩溃() async throws {
+    func testReceivePageSyncDataWithNilDelegateDoesNotCrash() async throws {
         service.delegate = nil
         let pageID = UUID()
 
@@ -559,7 +581,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据但 payload 缺少必需字段时不崩溃
-    func test接收PageSync数据缺少必需字段时不崩溃() async throws {
+    func testReceivePageSyncDataMissingRequiredFieldsDoesNotCrash() async throws {
         let pageID = UUID()
         // 缺少 title 字段
         let payload: [String: Any] = [
@@ -584,7 +606,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据但 id 不是合法 UUID 时不崩溃
-    func test接收PageSync数据id非合法UUID时不崩溃() async throws {
+    func testReceivePageSyncDataWithInvalidUUIDDoesNotCrash() async throws {
         let payload: [String: Any] = [
             "type": "pageSync",
             "page": [
@@ -608,7 +630,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据但 type 字段不是合法 PageType 时不崩溃
-    func test接收PageSync数据type非合法PageType时不崩溃() async throws {
+    func testReceivePageSyncDataWithInvalidPageTypeDoesNotCrash() async throws {
         let pageID = UUID()
         let data = try makePageSyncData(id: pageID, title: "Title", content: "content", pageType: "invalid_type")
 
@@ -621,7 +643,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据但 status 字段不是合法 PageStatus 时不崩溃
-    func test接收PageSync数据status非合法PageStatus时不崩溃() async throws {
+    func testReceivePageSyncDataWithInvalidPageStatusDoesNotCrash() async throws {
         let pageID = UUID()
         let data = try makePageSyncData(id: pageID, title: "Title", content: "content", status: "invalid_status")
 
@@ -634,7 +656,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证接收 pageSync 数据但 tags 不是 String 数组时不崩溃
-    func test接收PageSync数据tags非字符串数组时不崩溃() async throws {
+    func testReceivePageSyncDataWithNonStringArrayTagsDoesNotCrash() async throws {
         let pageID = UUID()
         let payload: [String: Any] = [
             "type": "pageSync",
@@ -711,7 +733,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - isAvailable 模拟器降级
 
     /// 验证模拟器环境下 isAvailable 初始为 false（#if targetEnvironment(simulator)）
-    func test模拟器环境下IsAvailable初始为false() {
+    func testSimulatorEnvironmentIsAvailableInitiallyFalse() {
         // 在模拟器运行时，新建 service（不强制 isAvailable = true）
         let freshService = CollaborationService()
         #if targetEnvironment(simulator)
@@ -753,7 +775,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证多次 stop 不崩溃
-    func test多次Stop不崩溃() {
+    func testMultipleStopCallsDoNotCrash() {
         service.startHosting(roomName: testRoomName)
         service.stop()
         service.stop()

@@ -50,7 +50,7 @@ public struct NotebookCoverView: View {
             // 图标与装饰条
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: 24, weight: .bold)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.title, weight: .bold)) // Dynamic Type
                     .foregroundColor(.theme.white)
                 Spacer()
                 RoundedRectangle(cornerRadius: 2 /* 装饰微圆角，暂无 DesignSystem token */)
@@ -63,13 +63,13 @@ public struct NotebookCoverView: View {
             // 标题与统计元数据
             VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
                 Text(title)
-                    .font(.system(size: 18, weight: .black, design: .rounded)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.title3, weight: .black, design: .rounded)) // Dynamic Type
                     .foregroundColor(.theme.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                 
                 Text(L10n.Shared.pageCountFormat(pageCount))
-                    .font(.system(size: 12, weight: .medium)) // Dynamic Type
+                    .font(.system(size: SystemFontSize.caption, weight: .medium)) // Dynamic Type
                     .foregroundColor(Color.theme.white.opacity(DesignSystem.Opacity.prominent))
             }
         }

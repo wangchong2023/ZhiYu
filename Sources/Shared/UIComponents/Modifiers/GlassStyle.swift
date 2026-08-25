@@ -93,8 +93,7 @@ public extension View {
             .background(
                 ZStack {
                     Rectangle().fill(.ultraThinMaterial).opacity(DesignSystem.Opacity.disabled) // 降低材质干扰
-                    // swiftlint:disable:next magic_numbers_opacity
-                    background.opacity(0.9) // 优化通透度
+                    background.opacity(UIConstants.backgroundOpacity) // 优化通透度
                 }
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
@@ -174,4 +173,9 @@ public extension View {
     func appListRowBackground() -> some View {
         self.modifier(AppListRowBackgroundModifier())
     }
+}
+
+// MARK: - 常量
+private enum UIConstants {
+    static let backgroundOpacity: Double = SystemOpacity.strong
 }

@@ -65,14 +65,14 @@ struct SuggestionGroupView: View {
     @Environment(AppStore.self) var store
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small + DesignSystem.atomic) {
+        VStack(alignment: .leading, spacing: SystemSpacing.elementLarge) {
             // 标题现在支持点击直接触发“总体探索”
             Button(action: {
                 HapticFeedback.shared.trigger(.link)
                 let query = L10n.Chat.deepExplorePrompt(title)
                 Task { await coordinator.sendMessage(query: query, pages: store.pages) }
             }) {
-                HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) {
+                HStack(spacing: SystemSpacing.small) {
                     Image(systemName: icon).font(.caption2)
                     Text(title).font(.caption.weight(.bold))
                     Spacer()

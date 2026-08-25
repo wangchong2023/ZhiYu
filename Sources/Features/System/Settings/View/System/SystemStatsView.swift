@@ -11,6 +11,12 @@
 import SwiftUI
 import Charts
 
+/// 系统统计视图常量
+private enum SystemStatsConstants {
+    /// 资产分类网格左缩进 (giant + standardPadding = 40)
+    static let assetGridLeadingPadding: CGFloat = 40
+}
+
 // MARK: - 资源监控视图
 /// [L3] 表现层：资源监控视图 (原资源监控)
 /// 提供 AI 资源消耗、存储空间分布及数据溯源的多维度监控。
@@ -263,7 +269,7 @@ struct SystemStatsView: View {
                                 assetCategoryGridItem(title: L10n.Dashboard.stats.documentFormat, count: file.count, size: file.size, color: .teal)
                             }
                             .padding(.top, DesignSystem.small)
-                            .padding(.leading, DesignSystem.giant + Spacing.standardPadding)
+                            .padding(.leading, SystemStatsConstants.assetGridLeadingPadding)
                         }
                     }
                     .appListRowStyle(showDivider: index < coordinator.storageCategories.count - 1)
@@ -449,7 +455,7 @@ struct SystemStatsView: View {
     private func assetCategoryGridItem(title: String, count: Int, size: Int64, color: Color) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.atomic) {
             Text(title)
-                .font(.system(size: 10, weight: .bold)) // Dynamic Type
+                .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
                 .foregroundStyle(.secondary)
             
             Text(L10n.Dashboard.stats.itemsCount(count))

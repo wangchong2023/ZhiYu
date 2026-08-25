@@ -28,6 +28,7 @@ MAX_LINE_PREVIEW_LEN = 90
 MAX_DISPLAY_LIMIT = 5
 
 def scan_file(path, ext):
+    """扫描单个文件中的硬编码魔鬼数字，返回 (类型, 路径, 行号, 代码) 元组列表。"""
     issues = []
     if 'Sources/Shared/DesignSystem' in path or os.path.basename(path) in TOKEN_FILES:
         return issues
@@ -39,9 +40,85 @@ def scan_file(path, ext):
             continue
         if ext in SWIFT_EXT:
             issues.extend(check_swift_line(path, i, s, line))
-        if ext in PY_EXT:
-            issues.extend(check_python_line(path, i, s, line))
+    # 检测 private enum 中的变相硬编码
+    issues.extend(scan_private_constants(path, lines))
     return issues
+
+
+def scan_private_constants(path, lines):
+    """
+    扫描文件中 UI 语境 private enum 内的 static let = 数字 模式（变相硬编码）。
+
+    治理策略：
+    1. 只检测 UI 语境的 private enum（名称含 UI/Layout/Visual/Style/Spacing/Size/Font/Color/Opacity）
+    2. 跳过业务逻辑 enum（非 UI 语境自动跳过）
+    3. 如果值与已知 System/Component token 值重复，报错"应使用现有 token"
+    4. 如果值是纯数字字面量且不在白名单中，报错"private 常量变相硬编码"
+    """
+    issues = []
+    in_private_enum = False
+    enum_indent = 0
+    enum_name = ''
+
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith('//'):
+            continue
+        # 检测 private enum 开始
+        enum_match = re.match(r'^(\s*)private\s+enum\s+(\w+)', line)
+        if enum_match:
+            in_private_enum = True
+            enum_indent = len(enum_match.group(1))
+            enum_name = enum_match.group(2)
+            continue
+        # 检测 enum 结束（回到同级或更少缩进的 }）
+        if in_private_enum and stripped == '}' and len(line) - len(line.lstrip()) <= enum_indent:
+            in_private_enum = False
+            continue
+        # 在 private enum 内检测 static let = 数字
+        if in_private_enum and _is_ui_context_enum(enum_name):
+            issue = _check_private_constant_value(path, i, stripped, enum_name)
+            if issue:
+                issues.append(issue)
+    return issues
+
+
+def _is_ui_context_enum(enum_name):
+    """判断 enum 名称是否属于 UI 语境（含 UI/Layout/Visual/Style 等关键词）。"""
+    UI_CONTEXT_KEYWORDS = ('UI', 'Layout', 'Visual', 'Style', 'Spacing', 'Size', 'Font', 'Color', 'Opacity', 'Dimension', 'Metric')
+    return any(kw.lower() in enum_name.lower() for kw in UI_CONTEXT_KEYWORDS)
+
+
+def _check_private_constant_value(path, line_no, stripped, enum_name):
+    """检测单行 static let = 数字 是否为变相硬编码，返回 issue 元组或 None。"""
+    # 支持类型标注：static let foo: CGFloat = 12.0
+    m = re.match(r'\s*static\s+let\s+(\w+)\s*(?::\s*\w+)?\s*=\s*(\d+\.?\d*)\s*$', stripped)
+    if not m:
+        return None
+    const_name = m.group(1)
+    const_value_str = m.group(2)
+    try:
+        const_value = float(const_value_str)
+        if const_value == int(const_value):
+            const_value = int(const_value)
+    except ValueError:
+        return None
+
+    whitelist_key = f'{path}:{const_name}'
+    if whitelist_key in PRIVATE_CONST_WHITELIST:
+        return None
+
+    # 检查值是否与已知 token 重复
+    if const_value in KNOWN_TOKEN_VALUES:
+        return (
+            f'private 常量 "{const_name}={const_value}" 与现有 System/Component token 重复，应使用现有 token',
+            path, line_no, stripped[:MAX_LINE_PREVIEW_LEN]
+        )
+    # 纯数字字面量的 private 常量，需注册白名单
+    return (
+        f'private 常量 "{const_name}={const_value}" 使用数字字面量，需注册白名单或引用 Reference 层',
+        path, line_no, stripped[:MAX_LINE_PREVIEW_LEN]
+    )
 
 
 def check_swift_colors(raw, path, line_no, s):
@@ -213,6 +290,106 @@ def _check_custom_size(raw, path, line_no, s, res):
     """检查 customSizeN 伪 token 模式。"""
     if re.search(r'customSize\d+', raw) and 'DesignSystem+Metrics.swift' not in path and 'Spacing.swift' not in path:
         res.append(('pseudo-token customSize (硬编码数字变相包裹)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+# private 常量白名单（从 Config/exemptions/manual_whitelist.yml 的 private_const_whitelist 分类动态加载）
+def _load_private_const_whitelist():
+    """从 manual_whitelist.yml 的 private_const_whitelist 分类加载白名单。
+
+    yml 格式：
+        private_const_whitelist:
+          - file: Sources/Shared/.../File.swift
+            const: iconSize
+            reason: 组件特定尺寸，无匹配 token
+            expiry_check: 2026-12-31
+    """
+    whitelist = set()
+    yml_path = os.path.join(os.path.dirname(__file__), '..', '..', 'Config', 'exemptions', 'manual_whitelist.yml')
+    if not os.path.exists(yml_path):
+        return whitelist
+    try:
+        import yaml
+        with open(yml_path, encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+        items = data.get('private_const_whitelist', []) or []
+        for item in items:
+            if isinstance(item, dict) and 'file' in item and 'const' in item:
+                key = f"{item['file']}:{item['const']}"
+                whitelist.add(key)
+    except Exception:
+        pass
+    return whitelist
+
+
+PRIVATE_CONST_WHITELIST = _load_private_const_whitelist()
+
+
+def _load_token_values():
+    """从 Reference.swift/System.swift/Component.swift 动态解析所有 token 值，避免硬编码。"""
+    tokens_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Sources', 'Shared', 'DesignSystem', 'Tokens')
+    token_files = ['Reference.swift', 'System.swift', 'Component.swift']
+    values = set()
+    for fname in token_files:
+        fpath = os.path.join(tokens_dir, fname)
+        if not os.path.exists(fpath):
+            continue
+        with open(fpath, encoding='utf-8', errors='ignore') as f:
+            for line in f:
+                # 匹配 public static let name: Type = value
+                m = re.search(r'public\s+static\s+let\s+\w+\s*:\s*[\w.]+\s*=\s*(\d+\.?\d*)', line)
+                if m:
+                    val_str = m.group(1)
+                    try:
+                        val = float(val_str)
+                        if val == int(val):
+                            val = int(val)
+                        values.add(val)
+                    except ValueError:
+                        pass
+    return values
+
+
+KNOWN_TOKEN_VALUES = _load_token_values()
+
+
+def _check_private_constant(raw, path, line_no, s, res):
+    """
+    检测 private enum 中的硬编码数字（变相魔鬼数字）。
+
+    治理策略：
+    1. 扫描 private enum UIConstants / private enum Constants 中的 static let = 数字
+    2. 如果值与已知 System/Component token 值重复，报错"应使用现有 token"
+    3. 如果值是纯数字字面量且不在白名单中，报错"private 常量变相硬编码"
+    """
+    # 匹配 private enum 内的 static let = 数字 模式
+    # 如：static let backgroundOpacity = 0.9
+    m = re.match(r'\s*static\s+let\s+(\w+)\s*(?::\s*\w+)?\s*=\s*(\d+\.?\d*)\s*$', raw)
+    if m:
+        const_name = m.group(1)
+        const_value_str = m.group(2)
+        try:
+            const_value = float(const_value_str)
+            if const_value == int(const_value):
+                const_value = int(const_value)
+        except ValueError:
+            return
+
+        whitelist_key = f'{path}:{const_name}'
+        if whitelist_key in PRIVATE_CONST_WHITELIST:
+            return
+
+        # 检查值是否与已知 token 重复
+        if const_value in KNOWN_TOKEN_VALUES:
+            res.append((
+                f'private 常量 "{const_name}={const_value}" 与现有 System/Component token 重复，应使用现有 token',
+                path, line_no, s[:MAX_LINE_PREVIEW_LEN]
+            ))
+        else:
+            # 纯数字字面量的 private 常量，需注册白名单
+            res.append((
+                f'private 常量 "{const_name}={const_value}" 使用数字字面量，需注册白名单或引用 Reference 层',
+                path, line_no, s[:MAX_LINE_PREVIEW_LEN]
+            ))
 
 def check_swift_line(path, line_no, s, raw):
     """

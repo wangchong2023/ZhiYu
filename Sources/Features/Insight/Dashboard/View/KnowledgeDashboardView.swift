@@ -11,6 +11,13 @@
 import SwiftUI
 import Charts
 import Dependencies
+
+// 仪表盘业务阈值常量
+private enum InsightBusinessConstants {
+    /// 图表轴标签名称前缀最大长度
+    static let axisNamePrefixLength = 12
+}
+
 struct KnowledgeDashboardView: View {
     @Dependency(\.toastService) private var toastManager
     @Environment(AppStore.self) var store
@@ -162,7 +169,7 @@ struct KnowledgeDashboardView: View {
                             AxisValueLabel {
                                 if let name = value.as(String.self) {
                                     // 正常完整展示具体的页面文案内容（最多支持 12 个汉字，完美适应 iPhone 屏幕宽度，超过时以 "..." 雅致折叠）
-                                    Text(name.prefix(12) + (name.count > 12 ? "..." : ""))
+                                    Text(name.prefix(InsightBusinessConstants.axisNamePrefixLength) + (name.count > InsightBusinessConstants.axisNamePrefixLength ? "..." : ""))
                                         .font(.system(size: DesignSystem.captionFontSize, weight: .medium, design: .rounded))
                                         .foregroundStyle(.appSource)
                                 }
@@ -353,7 +360,7 @@ struct MetricBox: View {
     var trend: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium + DesignSystem.atomic) { // 14pt
+        VStack(alignment: .leading, spacing: SystemSpacing.contentMedium) { // 14pt
             HStack {
                 ZStack {
                     Circle()

@@ -17,6 +17,12 @@ import UFPCore
 // 进度环描边宽度（组件特定值）
 private let progressRingLineWidth: CGFloat = 10
 
+// 健康检查业务阈值常量
+private enum InsightBusinessConstants {
+    /// 健康分"差"档上限阈值
+    static let healthPoorThreshold = 50
+}
+
 /// 知识治理健康检查总面板：包含仪表盘头部、指标网格与问题分组列表
 struct LintHealthCheckSection: View {
     @Environment(AppStore.self) var store
@@ -129,7 +135,7 @@ struct LintHealthCheckSection: View {
                         (L10n.Lint.healthExcellent, "90-100"),
                         (L10n.Lint.healthGood, "70-89"),
                         (L10n.Lint.healthFair, "50-69"),
-                        (L10n.Lint.healthPoor, "< 50")
+                        (L10n.Lint.healthPoor, "< \(InsightBusinessConstants.healthPoorThreshold)")
                     ]
 
                     ForEach(ranges, id: \.1) { label, range in
@@ -207,7 +213,7 @@ struct LintHealthCheckSection: View {
         .padding(DesignSystem.standardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
         .appContainer(background: Color.appCard, cornerRadius: DesignSystem.Metrics.dashboardRadius, padding: false)
-        .shadow(color: .primary.opacity(DesignSystem.Opacity.faint), radius: DesignSystem.small + DesignSystem.tiny, x: 0, y: DesignSystem.tiny + DesignSystem.atomic)
+        .shadow(color: .primary.opacity(DesignSystem.Opacity.faint), radius: SystemSpacing.medium, x: 0, y: SystemSpacing.small)
     }
 
     // MARK: - 问题分组

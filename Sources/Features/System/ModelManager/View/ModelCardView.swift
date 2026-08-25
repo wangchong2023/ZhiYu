@@ -50,7 +50,7 @@ struct ModelCardView: View {
                                 .foregroundStyle(eligibility == .restricted ? .appSecondary : .appText)
 
                             Text(manifest.parameterCount)
-                                .font(.system(size: 10, weight: .bold, design: .monospaced)) // Dynamic Type
+                                .font(.system(size: SystemFontSize.micro, weight: .bold, design: .monospaced)) // Dynamic Type
                                 .padding(.horizontal, SystemSpacing.small)
                                 .padding(.vertical, SystemSpacing.atomic)
                                 .background(Color.appAccent.opacity(DesignSystem.Opacity.glass))
@@ -240,7 +240,7 @@ struct ModelCardView: View {
                         HStack(spacing: SystemSpacing.tight) {
                             // 胶囊引入微型功能图标，增强视觉可读性
                             Image(systemName: taskIcon(for: t))
-                                .font(.system(size: 8)) // Dynamic Type
+                                .font(.system(size: SystemFontSize.nano)) // Dynamic Type
                             Text(taskLabel(for: t))
                                 .font(.caption2)
                         }
@@ -280,7 +280,7 @@ struct ModelCardView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.red)
             Text(" \(String(format: "%.1f", manifest.minDeviceMemoryInGb)) GB  OOM")
-                .font(.system(size: 10)) // Dynamic Type
+                .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                 .foregroundStyle(.red)
             Spacer()
         }
@@ -295,7 +295,7 @@ struct ModelCardView: View {
             Image(systemName: "exclamationmark.circle.fill")
                 .foregroundStyle(.orange)
             Text(L10n.ModelManager.Card.warningLowMemory)
-                .font(.system(size: 10)) // Dynamic Type
+                .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                 .foregroundStyle(.orange)
             Spacer()
         }

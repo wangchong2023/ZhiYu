@@ -47,7 +47,7 @@ public struct AppToast: Identifiable, Equatable {
     public let id = UUID()
     public let type: AppToastType
     public let message: String
-    public var duration: Double = DesignSystem.Animation.slowDuration * 6 // 3.0
+    public var duration: Double = UIConstants.toastDuration // 3.0
 }
 
 // MARK: - 提示管理器
@@ -67,7 +67,7 @@ public final class ToastManager: @unchecked Sendable {
     /// - Parameter message: message
     /// - Parameter duration: duration
     public func show(type: AppToastType, message: String, duration: Double = 3.0) {
-        withAnimation(.spring(response: DesignSystem.Animation.standardDuration * 1.6, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
+        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
             currentToast = AppToast(type: type, message: message, duration: duration)
         }
 
@@ -83,7 +83,7 @@ public final class ToastManager: @unchecked Sendable {
 
     /// 关闭
     public func dismiss() {
-        withAnimation(.spring(response: DesignSystem.Animation.standardDuration * 1.6, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
+        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
             currentToast = nil
         }
     }
@@ -154,7 +154,7 @@ struct AppToastView: View {
             RoundedRectangle(cornerRadius: DesignSystem.medium) // 12
                 .stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline) // 0.3, 0.5
         )
-        .shadow(color: .black.opacity(SystemOpacity.ghost), radius: DesignSystem.standardRadius, y: DesignSystem.small + DesignSystem.atomic) // 0.1, 10, 5
+        .shadow(color: .black.opacity(SystemOpacity.ghost), radius: DesignSystem.standardRadius, y: SystemSpacing.elementLarge) // 0.1, 10, 5
         .padding(.horizontal, DesignSystem.loosePadding) // 20
         .transition(.move(edge: .top).combined(with: .opacity))
     }
@@ -177,7 +177,7 @@ struct AppToastModifier: ViewModifier {
                 AppToastView(toast: toast) {
                     manager.dismiss()
                 }
-                .padding(.top, DesignSystem.small + DesignSystem.atomic) // 10
+                .padding(.top, SystemSpacing.elementLarge) // 10
                 .zIndex(9999)
             }
         }
@@ -190,4 +190,14 @@ extension View {
     func appToast() -> some View {
         modifier(AppToastModifier())
     }
+}
+
+// MARK: - 常量
+private enum UIConstants {
+    static let toastDuration: Double = Double(SystemSpacing.tight)
+}
+
+// MARK: - Toast 动画配置（非 UI 语境）
+private enum ToastAnimationConfig {
+    static let toastSpringResponse: Double = 0.32
 }

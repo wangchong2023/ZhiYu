@@ -96,7 +96,7 @@ public struct AppStepRow: View {
             Text("\(number)")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.white)
-                .frame(width: Spacing.smallIconSize + Spacing.atomic * 2, height: Spacing.smallIconSize + Spacing.atomic * 2) // 22
+                .frame(width: ComponentSpacing.section, height: ComponentSpacing.section) // 22
                 .background(Circle().fill(Color.appAccent))
 
             Text(text)

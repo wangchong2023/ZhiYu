@@ -66,71 +66,6 @@
         }
       }
     },
-    "< 50": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "< 50"
-          }
-        }
-      }
-    },
     "1": {
       "extractionState": "manual",
       "localizations": {
@@ -25624,6 +25559,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "yesterday"
+          }
+        }
+      }
+    },
+    "search.diag.ftsPrefix": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FTS:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FTS:"
+          }
+        }
+      }
+    },
+    "search.diag.vecPrefix": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vec:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vec:"
           }
         }
       }

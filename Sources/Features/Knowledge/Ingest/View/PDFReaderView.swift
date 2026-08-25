@@ -26,7 +26,7 @@ struct PDFReaderView: View {
     @State private var showHighlightPanel = false
     @State private var showIngestSheet = false
     @State private var selectedText = ""
-    @State private var highlightColor = "yellow"
+    @State private var highlightColor = PDFHighlightColor.yellow.rawValue
     @State private var highlightNote = ""
     @State private var pdfDocument: PDFKit.PDFDocument?
     @Environment(\.dismiss) private var dismiss
@@ -108,7 +108,7 @@ struct PDFReaderView: View {
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                 #else
-                Text("0 / 0")
+                Text(L10n.Ingest.PDF.pageZeroFormat)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                 #endif
@@ -142,14 +142,14 @@ struct PDFReaderView: View {
                 .lineLimit(3)
 
             HStack(spacing: DesignSystem.small) {
-                ForEach(["yellow", "green", "blue", "pink", "purple"], id: \.self) { color in
+                ForEach(PDFHighlightColor.allRawValues, id: \.self) { color in
                     Button(action: { highlightColor = color }) {
                         Circle()
                             .fill(Color.pdfHighlight(color))
                             .frame(width: DesignSystem.IconSize.standard, height: DesignSystem.IconSize.standard)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.appText, lineWidth: highlightColor == color ? 2 : 0)
+                                    .stroke(Color.appText, lineWidth: highlightColor == color ? SystemStroke.selected : SystemStroke.none)
                             )
                     }
                 }

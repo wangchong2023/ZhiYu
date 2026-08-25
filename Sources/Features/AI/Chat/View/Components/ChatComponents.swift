@@ -85,7 +85,7 @@ struct ChatBubbleView: View {
             Text(timestampString)
                 .font(.system(size: DesignSystem.caption2FontSize))
                 .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
-                .padding(.trailing, DesignSystem.small + DesignSystem.tiny + DesignSystem.tiny)
+                .padding(.trailing, SystemSpacing.content)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
         .padding(.leading, DesignSystem.Domain.AI.Chat.bubbleTrailingPadding) // 左侧与 trailing 对称避让

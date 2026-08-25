@@ -27,7 +27,7 @@ struct MarkdownRendererView: View {
     private let parser = MarkdownProcessor()
 
     private enum Layout {
-        static let minColWidth: CGFloat = 80
+        static let minColWidth: CGFloat = ComponentSpacing.metricChipWidth
         static let maxColWidth: CGFloat = 180
         static let cellHeight: CGFloat = 36
     }
@@ -326,7 +326,7 @@ struct MarkdownRendererView: View {
     // MARK: - Render Task List
     @ViewBuilder
     private func renderTaskList(items: [(text: String, checked: Bool)]) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny + DesignSystem.atomic) {
+        VStack(alignment: .leading, spacing: SystemSpacing.small) {
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                 HStack(spacing: DesignSystem.tightPadding) {
                     Image(systemName: item.checked ? DesignSystem.Icons.checkSquareFill : DesignSystem.Icons.emptySquare)
@@ -479,7 +479,7 @@ struct MarkdownRendererView: View {
                 ForEach(0..<3, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: DesignSystem.microRadius)
                         .fill(Color.appCard.opacity(SystemOpacity.glassStrong))
-                        .frame(height: DesignSystem.captionFontSize + DesignSystem.atomic)
+                        .frame(height: SystemSpacing.contentMedium)
                         .frame(maxWidth: .infinity)
                 }
             }

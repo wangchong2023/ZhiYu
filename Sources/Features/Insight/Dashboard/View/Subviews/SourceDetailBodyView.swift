@@ -197,8 +197,8 @@ struct SourceDetailBodyView: View {
                         .foregroundStyle(.appSecondary)
                     
                     HStack(spacing: Spacing.small) {
-                        Text("DETECTED_TEXT_ZONE")
-                            .font(.system(size: 9, design: .monospaced)) // Dynamic Type
+                        Text(L10n.Vault.raw.detectedTextZone)
+                            .font(.system(size: SystemFontSize.nano, design: .monospaced)) // Dynamic Type
                             .foregroundStyle(.appAccent)
                             .padding(.horizontal, Spacing.tiny)
                             .padding(.vertical, Spacing.atomic)
@@ -233,7 +233,7 @@ struct SourceDetailBodyView: View {
                 
                 HStack(spacing: Spacing.small) {
                     Text(page.sourceType?.uppercased() ?? "FILE")
-                        .font(.system(size: 8, weight: .heavy)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.nano, weight: .heavy)) // Dynamic Type
                         .foregroundStyle(.appAccent)
                         .padding(.horizontal, Spacing.tiny)
                         .padding(.vertical, SystemSpacing.divider)
@@ -277,7 +277,7 @@ struct SourceDetailBodyView: View {
                                 }) {
                                     HStack(spacing: Spacing.atomic) {
                                         Image(systemName: ref.type == "concept" ? "books.vertical.fill" : "person.text.rectangle.fill")
-                                            .font(.system(size: 8)) // Dynamic Type
+                                            .font(.system(size: SystemFontSize.nano)) // Dynamic Type
                                         Text(ref.name)
                                             .font(.caption2.bold())
                                     }

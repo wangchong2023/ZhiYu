@@ -12,6 +12,12 @@
 import SwiftUI
 import Dependencies
 
+/// 插件详情操作区常量
+private enum PluginActionConstants {
+    /// 进度指示器缩放比例 (iconSmall / largeIconSize ≈ 0.571)
+    static let progressScale: CGFloat = 0.571
+}
+
 // MARK: - 操作按钮
 
 extension PluginDetailView {
@@ -38,7 +44,7 @@ extension PluginDetailView {
             }) {
                 HStack(spacing: DesignSystem.tiny) {
                     if isInstalling || marketService.downloadingPluginID == plugin.id {
-                        ProgressView().scaleEffect(DesignSystem.iconSmall / DesignSystem.largeIconSize)
+                        ProgressView().scaleEffect(PluginActionConstants.progressScale)
                     } else {
                         Image(systemName: isInstalled ? "trash" : "icloud.and.arrow.down")
                     }

@@ -10,6 +10,12 @@
 //
 import SwiftUI
 
+/// 功能引导弹窗常量
+private enum CoachMarkConstants {
+    /// 卡片圆角 (largeRadius + coachMarkRadiusOffset = 28)
+    static let cardCornerRadius: CGFloat = 28
+}
+
 /// 功能引导弹窗 (Coach Marks)
 struct CoachMarkOverlay: View {
     let type: AppStore.CoachMarkType
@@ -30,7 +36,7 @@ struct CoachMarkOverlay: View {
                     Circle()
                         .fill(LinearGradient(colors: [.appAccent, .appSource], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: DesignSystem.Gallery.splashIconSize, height: DesignSystem.Gallery.splashIconSize)
-                        .shadow(color: .appAccent.opacity(SystemOpacity.disabled), radius: DesignSystem.medium, y: DesignSystem.small + DesignSystem.atomic)
+                        .shadow(color: .appAccent.opacity(SystemOpacity.disabled), radius: DesignSystem.medium, y: SystemSpacing.element)
                     
                     Image(systemName: iconName)
                         .font(.system(size: DesignSystem.Metrics.titleFontSize * DesignSystem.Metrics.coachMarkIconScale, weight: .bold))
@@ -76,7 +82,7 @@ struct CoachMarkOverlay: View {
             }
             .padding(ComponentSpacing.ultra)
             .background(
-                RoundedRectangle(cornerRadius: DesignSystem.largeRadius + DesignSystem.Metrics.coachMarkRadiusOffset)
+                RoundedRectangle(cornerRadius: CoachMarkConstants.cardCornerRadius)
                     .fill(Color.appCard)
                     .shadow(color: .primary.opacity(SystemOpacity.glassStrong), radius: DesignSystem.Metrics.coachMarkShadowRadius, x: 0, y: DesignSystem.Metrics.coachMarkShadowY)
             )

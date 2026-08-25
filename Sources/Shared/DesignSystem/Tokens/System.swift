@@ -17,10 +17,15 @@ public enum SystemSpacing {
     public static let atomic: CGFloat = Reference.Spacing.two
     public static let tight: CGFloat = Reference.Spacing.three
     public static let tiny: CGFloat = Reference.Spacing.four
+    public static let extraSmall: CGFloat = Reference.Spacing.five
     public static let small: CGFloat = Reference.Spacing.six
+    public static let smallMedium: CGFloat = Reference.Spacing.seven
     public static let element: CGFloat = Reference.Spacing.eight
+    public static let elementLarge: CGFloat = Reference.Spacing.ten
     public static let medium: CGFloat = Reference.Spacing.twelve
+    public static let contentMedium: CGFloat = Reference.Spacing.fourteen
     public static let content: CGFloat = Reference.Spacing.sixteen
+    public static let sectionCompact: CGFloat = Reference.Spacing.twentyEight
 }
 
 // MARK: - SystemOpacity（语义透明度）
@@ -38,6 +43,9 @@ public enum SystemOpacity {
     // 文本层级
     public static let textSecondary: Double = Reference.Opacity.eighty
     public static let textTertiary: Double = Reference.Opacity.seventy
+
+    // 增强状态
+    public static let strong: Double = Reference.Opacity.ninety
 }
 
 // MARK: - SystemRadius（语义圆角）
@@ -65,7 +73,9 @@ public enum SystemStroke {
 
 // MARK: - SystemFontSize（语义字号）
 public enum SystemFontSize {
+    public static let nano: CGFloat = Reference.FontSize.nano
     public static let micro: CGFloat = Reference.FontSize.micro
+    public static let microLarge: CGFloat = Reference.FontSize.microLarge
     public static let caption: CGFloat = Reference.FontSize.caption
     public static let footnote: CGFloat = Reference.FontSize.footnote
     public static let subheadline: CGFloat = Reference.FontSize.subheadline

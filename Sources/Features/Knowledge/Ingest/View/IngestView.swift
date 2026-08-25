@@ -33,7 +33,7 @@ struct IngestView: View {
         ZStack {
             themeManager.pageBackground().ignoresSafeArea()
             ScrollView {
-                VStack(spacing: DesignSystem.standardPadding + DesignSystem.small) {
+                VStack(spacing: ComponentSpacing.sectionLarge) {
                     ingestProgressPanel
                     actionsSection
                     ImportRecordSection(

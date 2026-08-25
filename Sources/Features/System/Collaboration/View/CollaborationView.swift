@@ -15,6 +15,12 @@ import Dependencies
 import MultipeerConnectivity
 #endif
 
+/// 协作视图常量
+private enum CollaborationConstants {
+    /// 头像图标尺寸 (iconDisplay * 1.16 ≈ 56)
+    static let avatarIconSize: CGFloat = 56
+}
+
 // MARK: - 导航入口
 /// 多设备协作功能主容器视图
 /// 负责为协作内容提供独立的导航堆栈，管理 MultipeerConnectivity 的顶层生命周期
@@ -83,7 +89,7 @@ struct CollaborationViewContent: View {
     private var headerSection: some View {
         VStack(spacing: DesignSystem.medium) { // 12
             Image(systemName: DesignSystem.Icons.personCircle)
-                .font(.system(size: DesignSystem.iconDisplay * 1.16)) // 56
+                .font(.system(size: CollaborationConstants.avatarIconSize)) // 56
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.appAccent, .appConcept],
@@ -111,7 +117,7 @@ struct CollaborationViewContent: View {
                 .foregroundStyle(.appSecondary)
         }
         .padding()
-        .background(Color.theme.orange.opacity(DesignSystem.glassOpacity * 0.53)) // 0.08
+        .background(Color.theme.orange.opacity(Reference.Opacity.five)) // 0.08
         .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
     }
     

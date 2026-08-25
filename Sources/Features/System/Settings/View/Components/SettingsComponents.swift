@@ -47,7 +47,7 @@ struct PluginExtensionsDetailView: View {
                 // 无已安装插件：空状态引导页
                 VStack(spacing: DesignSystem.large) {
                     Image(systemName: "puzzlepiece.extension.fill")
-                        .font(.system(size: 48)) // Dynamic Type
+                        .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
 
                     Text(L10n.Plugin.settings.noSettings)

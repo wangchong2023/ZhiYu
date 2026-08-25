@@ -22,14 +22,25 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
     
     /// AI 吞吐指标记录器
     @ObservationIgnored @Dependency(\.aiAnalyticsService) private var analytics: AIAnalyticsService
-    
+
+    /// LLMContextBuilder 工厂闭包 — 生产环境创建默认实例，测试环境可注入 mock
+    @ObservationIgnored private let contextBuilderFactory: @Sendable () -> LLMContextBuilder
+
     /// 指示当前大模型服务是否使能开启
     public var isEnabled: Bool {
         configManager.isEnabled
     }
-    
-    /// 初始化对话服务
+
+    /// 生产环境初始化器
     public override init() {
+        self.contextBuilderFactory = { LLMContextBuilder() }
+        super.init()
+    }
+
+    /// 测试环境初始化器 — 允许注入自定义 LLMContextBuilder 工厂
+    /// - Parameter contextBuilderFactory: 返回自定义 LLMContextBuilder 的工厂闭包
+    init(contextBuilderFactory: @escaping @Sendable () -> LLMContextBuilder) {
+        self.contextBuilderFactory = contextBuilderFactory
         super.init()
     }
     
@@ -103,7 +114,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
         
         // 2. 组装系统提示词与相关页面上下文
-        let contextBuilder = LLMContextBuilder()
+        let contextBuilder = contextBuilderFactory()
         let (context, _) = await contextBuilder.buildRelevantContext(query: sanitizedQuery)
         let sandboxedContext = PromptSanitizer.shared.wrapInSandbox(context)
         let systemPrompt = contextBuilder.buildSystemPrompt(pages: pages) + "\n\n" + sandboxedContext
@@ -179,7 +190,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
         // 1. 使用后台异步任务生成上下文与启动流式返回
         Task {
             do {
-                let contextBuilder = LLMContextBuilder()
+                let contextBuilder = contextBuilderFactory()
                 let (context, _) = await contextBuilder.buildRelevantContext(query: sanitizedQuery)
                 let sandboxedContext = PromptSanitizer.shared.wrapInSandbox(context)
                 let systemPrompt = contextBuilder.buildSystemPrompt(pages: pages) + "\n\n" + sandboxedContext

@@ -1681,3 +1681,56 @@ planned_test_classes:
   - doc-drift
 business_magic_exempt: []
 ufpcore_pure_exempt: []
+private_const_whitelist:
+- file: Sources/Features/System/Settings/View/Plugins/PluginDetailMetricsSection.swift
+  const: barHeight
+  reason: 插件指标条高度（72pt），组件特定尺寸，无匹配 token
+  expiry_check: 2026-12-31
+- file: Sources/Features/Knowledge/Ingest/View/Components/PDFComponents.swift
+  const: pageRangeFieldWidth
+  reason: PDF 页码输入框宽度（50pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Features/Knowledge/Ingest/View/Components/PDFComponents.swift
+  const: previewMaxHeight
+  reason: PDF 预览最大高度（150pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Features/AI/Chat/View/ChatView.swift
+  const: streamingBubbleIconSize
+  reason: 流式气泡图标尺寸（28.8pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Features/AI/Synthesis/View/Components/SynthesisErrorStateView.swift
+  const: iconFontSize
+  reason: 错误态图标字号（36pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Features/AI/Synthesis/View/Components/SynthesisErrorStateView.swift
+  const: cardMinHeight
+  reason: 错误态卡片最小高度（320pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Features/AI/VoiceNote/View/Components/VoiceNoteComponents.swift
+  const: previewMinHeight
+  reason: 语音笔记预览最小高度（147.2pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Features/AI/VoiceNote/View/Components/VoiceNoteComponents.swift
+  const: previewMaxHeight
+  reason: 语音笔记预览最大高度（368pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Shared/UIComponents/Overlays/SplashComponents.swift
+  const: glowHeight
+  reason: 启动屏光晕高度（368pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Shared/UIComponents/Overlays/SplashComponents.swift
+  const: glowOffset
+  reason: 启动屏光晕偏移（96pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Shared/UIComponents/Editors/MarkdownRendererView.swift
+  const: maxColWidth
+  reason: 表格列最大宽度（180pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Shared/UIComponents/Editors/MarkdownRendererView.swift
+  const: cellHeight
+  reason: 表格单元格高度（36pt），组件特定尺寸
+  expiry_check: 2026-12-31
+- file: Sources/Shared/UIComponents/Feedback/AppErrorView.swift
+  const: iconSize
+  reason: 错误图标尺寸（54pt），组件特定尺寸
+  expiry_check: 2026-12-31

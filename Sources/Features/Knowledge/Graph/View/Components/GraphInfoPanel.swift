@@ -17,7 +17,7 @@ private struct GraphLegendRow: View {
     let title: String
     
     var body: some View {
-        HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) {
+        HStack(spacing: SystemSpacing.small) {
             Circle()
                 .fill(color)
                 .frame(width: DesignSystem.microIconSize, height: DesignSystem.microIconSize)

@@ -63,6 +63,7 @@ extension L10n {
             public static var categoryClipboard: String { tr("vault.raw.category.clipboard") }
             public static var categoryManual: String { tr("vault.raw.category.manual") }
             public static var ocrSimulated: String { tr("vault.raw.ocr.simulated") }
+            public static var detectedTextZone: String { tr("vault.raw.ocr.detected_text_zone") }
         }
 
         public struct comparison {

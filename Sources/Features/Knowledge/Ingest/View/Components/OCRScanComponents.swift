@@ -11,6 +11,14 @@
 import SwiftUI
 import PhotosUI
 
+// MARK: - OCR 组件常量（组件特定尺寸，无对应命名 token）
+private enum OCRConstants {
+    /// OCR 占位图标尺寸 (36pt)
+    static let placeholderIconSize: CGFloat = 36
+    /// OCR 结果编辑器最大高度 (368pt)
+    static let resultEditorMaxHeight: CGFloat = 368
+}
+
 // MARK: - OCR Image Picker Area
 /// OCR 图片选择区域：显示选中图片或占位符 + 相册选择按钮 + 识别按钮
 @MainActor
@@ -32,11 +40,11 @@ struct OCRImagePickerArea: View {
                 // Placeholder
                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
                     .fill(Color.appCard)
-                    .frame(height: DesignSystem.Metrics.heroValueSize * 7.7) // 200
+                    .frame(height: ComponentSpacing.chartHeight) // 220 最近档舍入
                     .overlay(
                         VStack(spacing: DesignSystem.medium) { // 12
                             Image(systemName: DesignSystem.Icons.ocr)
-                                .font(.system(size: DesignSystem.largeIconSize + DesignSystem.small)) // 40
+                                .font(.system(size: OCRConstants.placeholderIconSize)) // 36 组件特定尺寸
                                 .foregroundStyle(.appSecondary)
                             Text(L10n.Ingest.OCR.selectImage)
                                 .font(.subheadline)
@@ -45,7 +53,7 @@ struct OCRImagePickerArea: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .strokeBorder(style: StrokeStyle(lineWidth: DesignSystem.borderWidth * 2, dash: [CGFloat(DesignSystem.small)])) // 2, 8
+                            .strokeBorder(style: StrokeStyle(lineWidth: Reference.Stroke.two, dash: [CGFloat(DesignSystem.small)])) // 2, 8
                             .foregroundStyle(.appBorder)
                     )
             }
@@ -60,25 +68,25 @@ struct OCRImagePickerArea: View {
                         .font(.subheadline)
                         .foregroundStyle(.appAccent)
                         .padding(.horizontal, DesignSystem.standardPadding) // 16
-                        .padding(.vertical, DesignSystem.small + DesignSystem.atomic) // 10
+                        .padding(.vertical, SystemSpacing.elementLarge) // 10
                         .background(Color.appAccent.opacity(DesignSystem.glassOpacity), in: RoundedRectangle(cornerRadius: DesignSystem.smallRadius)) // 0.1
                 }
                 .accessibilityIdentifier("ocr-select-photo")
 
                 if selectedImage != nil {
                     Button(action: onStartRecognition) {
-                        HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) { // 6
+                        HStack(spacing: SystemSpacing.small) { // 6
                             if isProcessing {
                                 ProgressView()
                                     .tint(.white)
-                                    .scaleEffect(DesignSystem.fullOpacity * 0.8) // 0.8
+                                    .scaleEffect(SystemOpacity.textSecondary) // 0.8
                             }
                             Text(isProcessing ? L10n.Ingest.OCR.processing : L10n.Ingest.OCR.recognize)
                         }
                         .font(.subheadline)
                         .foregroundStyle(.white)
                         .padding(.horizontal, DesignSystem.standardPadding) // 16
-                        .padding(.vertical, DesignSystem.small + DesignSystem.atomic) // 10
+                        .padding(.vertical, SystemSpacing.elementLarge) // 10
                         .background(Color.appAccent, in: RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
                     }
                     .accessibilityIdentifier("ocr-start-recognition")
@@ -117,7 +125,7 @@ struct OCRResultDisplay: View {
             AdaptiveTextEditor(text: $recognizedText)
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.appText)
-                .frame(minHeight: DesignSystem.Metrics.heroValueSize * 4.6, maxHeight: DesignSystem.Metrics.heroValueSize * 11.5) // 120, 300
+                .frame(minHeight: ComponentSpacing.emptyStateImageHalf, maxHeight: OCRConstants.resultEditorMaxHeight) // 120, 368
                 .padding(DesignSystem.small) // 8
                 .background(Color.appCard)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))

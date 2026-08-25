@@ -517,7 +517,7 @@ struct CustomProfilePopover: View {
                         .fill(color.opacity(DesignSystem.Opacity.glass))
                         .frame(width: Constants.iconBoxSize, height: Constants.iconBoxSize)
                     Image(systemName: icon)
-                        .font(.system(size: 14, weight: .semibold)) // Dynamic Type
+                        .font(.system(size: SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
                         .symbolRenderingMode(.monochrome)
                         .foregroundStyle(color)
                 }

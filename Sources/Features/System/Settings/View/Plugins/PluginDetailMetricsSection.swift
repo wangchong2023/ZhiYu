@@ -12,6 +12,12 @@
 
 import SwiftUI
 
+/// 插件指标区常量
+private enum PluginMetricsConstants {
+    /// 指标栏高度 (iconDisplay + giant = 72)
+    static let barHeight: CGFloat = 72
+}
+
 // MARK: - App Store 风格快捷指标滚轴
 
 extension PluginDetailView {
@@ -55,14 +61,14 @@ extension PluginDetailView {
             }
             .padding(.horizontal, DesignSystem.small)
         }
-        .frame(height: DesignSystem.iconDisplay + Spacing.giant)
+        .frame(height: PluginMetricsConstants.barHeight)
     }
 
     /// 单个快捷指标项卡片渲染
     func metricCard(title: String, subtitle: String, icon: String? = nil, iconColor: Color = .secondary) -> some View {
         VStack(spacing: DesignSystem.tiny) {
             Text(subtitle)
-                .font(.system(size: 10, weight: .bold)) // Dynamic Type
+                .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
                 .foregroundStyle(.appSecondary)
                 .lineLimit(1)
 

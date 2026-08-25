@@ -122,7 +122,7 @@ struct SearchView: View {
                 }
             }
             .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.vertical, DesignSystem.tightPadding + DesignSystem.atomic)
+            .padding(.vertical, SystemSpacing.elementLarge)
             .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
             .overlay(
@@ -170,8 +170,8 @@ struct SearchView: View {
                                     Text(filterStatus?.displayName ?? L10n.Knowledge.Page.status)
                                         .font(.caption)
                                 }
-                                .padding(.horizontal, DesignSystem.tightPadding + DesignSystem.atomic) // 10
-                                .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 5
+                                .padding(.horizontal, SystemSpacing.elementLarge) // 10
+                                .padding(.vertical, SystemSpacing.small) // 6
                                 .background(filterStatusBackgroundColor)
                                 .clipShape(Capsule())
                                 .foregroundStyle(filterStatusLabelColor)
@@ -196,8 +196,8 @@ struct SearchView: View {
                                     Text(L10n.Common.tr(sortBy.rawValue))
                                         .font(.caption)
                                 }
-                                .padding(.horizontal, DesignSystem.tightPadding + DesignSystem.atomic) // 10
-                                .padding(.vertical, DesignSystem.tiny + DesignSystem.atomic) // 5
+                                .padding(.horizontal, SystemSpacing.elementLarge) // 10
+                                .padding(.vertical, SystemSpacing.small) // 6
                                 .background(Color.appCard.opacity(SystemOpacity.active))
                                 .clipShape(Capsule())
                                 .foregroundStyle(.appSecondary)
@@ -236,7 +236,7 @@ struct SearchView: View {
                         Spacer()
                         Image(systemName: searchText.isEmpty ? DesignSystem.Icons.search : DesignSystem.Icons.weeklyInsight)
                             .font(.system(size: DesignSystem.Metrics.heroValueSize * 1.5)) // 48
-                            .foregroundStyle(.appSecondary.opacity(DesignSystem.secondaryOpacity * 0.625)) // 0.5
+                            .foregroundStyle(.appSecondary.opacity(Reference.Opacity.fifty)) // 0.5
                         
                         Text(searchText.isEmpty ? L10n.SearchPlaceholder : L10n.Search.noResults)
                             .font(.headline)
@@ -245,7 +245,7 @@ struct SearchView: View {
                         if !searchText.isEmpty {
                             Text(L10n.Search.noResultsHint)
                                 .font(.caption)
-                                .foregroundStyle(.appSecondary.opacity(DesignSystem.secondaryOpacity * 0.875)) // 0.7
+                                .foregroundStyle(.appSecondary.opacity(SystemOpacity.textTertiary)) // 0.7
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, DesignSystem.huge)
                         }
@@ -288,7 +288,7 @@ struct SearchView: View {
             
             // Footer
             if !filteredPages.isEmpty {
-                Divider().background(Color.appBorder.opacity(DesignSystem.secondaryOpacity * 0.625)) // 0.5
+                Divider().background(Color.appBorder.opacity(Reference.Opacity.fifty)) // 0.5
                 HStack {
                     Text(L10n.Search.pagesCount(filteredPages.count))
                         .font(.caption)
@@ -306,7 +306,7 @@ struct SearchView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.vertical, DesignSystem.tightPadding + DesignSystem.atomic) // 10
+                .padding(.vertical, SystemSpacing.elementLarge) // 10
                 .background(themeManager.pageBackground())
             }
         }
@@ -370,7 +370,7 @@ struct FilterPill: View {
     }
 
     var body: some View {
-        HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) { // 6
+        HStack(spacing: SystemSpacing.small) { // 6
             if let icon = icon {
                 Image(systemName: icon)
                     .font(horizontalSizeClass == .regular ? .subheadline : .caption)
@@ -379,7 +379,7 @@ struct FilterPill: View {
                 .font(pillFont.weight(isSelected ? .semibold : .regular))
         }
         .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-        .padding(.vertical, DesignSystem.Chip.verticalPadding + DesignSystem.atomic) // 6
+        .padding(.vertical, SystemSpacing.small) // 6
         .background(isSelected ? color.opacity(DesignSystem.Opacity.subtle) : Color.appCard.opacity(DesignSystem.Opacity.dim))
         .clipShape(Capsule())
         .foregroundStyle(isSelected ? color : .appSecondary)

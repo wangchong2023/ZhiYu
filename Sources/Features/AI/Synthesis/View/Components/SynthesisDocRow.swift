@@ -14,6 +14,13 @@ import UFPCore
 /// 合成文档条目行组件
 /// 负责展示单个生成文档的详情、预览入口及重命名/删除等交互操作
 struct SynthesisDocRow: View {
+    // MARK: - UI 常量
+    private enum UIConstants {
+        static let unselectedIconOpacity: Double = SystemOpacity.disabled
+        static let formatColorOpacity: Double = SystemOpacity.faint
+        static let trailingIconOpacity: Double = Reference.Opacity.fifty
+    }
+    
     let doc: SynthesisStore.SynthesisDocument
     let type: SynthesisStore.SynthesisType
     let isSelected: Bool
@@ -49,7 +56,7 @@ struct SynthesisDocRow: View {
                 if editMode == .active {
                     Image(systemName: isSelected ? DesignSystem.Icons.checkCircle : DesignSystem.Icons.circle)
                         .font(.system(size: DesignSystem.Graph.nodeSizeReference))
-                        .foregroundStyle(isSelected ? .appAccent : .appSecondary.opacity(DesignSystem.disabledOpacity * 1.33)) // 0.4
+                        .foregroundStyle(isSelected ? .appAccent : .appSecondary.opacity(UIConstants.unselectedIconOpacity)) // 0.4
                         .onTapGesture {
                             HapticFeedback.shared.trigger(.selection)
                             onTap()
@@ -61,7 +68,7 @@ struct SynthesisDocRow: View {
             
             ZStack {
                 RoundedRectangle(cornerRadius: DesignSystem.CompositeRow.cornerRadius)
-                    .fill(type.formatColor.opacity(DesignSystem.dimmedOpacity * 0.5)) // 0.1
+                    .fill(type.formatColor.opacity(UIConstants.formatColorOpacity)) // 0.1
                     .frame(width: DesignSystem.CompositeRow.iconBoxSize, height: DesignSystem.CompositeRow.iconBoxSize)
                 Image(systemName: type.formatIcon).foregroundStyle(type.formatColor)
             }
@@ -90,7 +97,7 @@ struct SynthesisDocRow: View {
             if editMode == .inactive {
                 Image(systemName: DesignSystem.Icons.forward)
                     .font(.system(size: DesignSystem.captionFontSize))
-                    .foregroundStyle(.appSecondary.opacity(DesignSystem.secondaryOpacity * 0.6)) // 0.5
+                    .foregroundStyle(.appSecondary.opacity(UIConstants.trailingIconOpacity)) // 0.5
             }
         }
         .padding(.horizontal, DesignSystem.standardPadding)

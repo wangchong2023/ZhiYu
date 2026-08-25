@@ -153,7 +153,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证多次调用 state 互不相同（CSRF 防护基础）
-    func test多次调用state互不相同() async throws {
+    func testMultipleCallsStateAreDistinct() async throws {
         #if DEBUG
         var states: [String] = []
         for _ in 0..<concurrentCallCount {
@@ -189,7 +189,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     // MARK: - 多次调用一致性
 
     /// 验证连续多次调用 acquireCredentials 均成功且 credential 唯一
-    func test连续多次调用acquireCredentials均成功且credential唯一() async throws {
+    func testSequentialAcquireCredentialsAllSucceedAndCredentialsUnique() async throws {
         #if DEBUG
         var codes: [String] = []
         for _ in 0..<concurrentCallCount {
@@ -204,7 +204,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     // MARK: - 并发安全
 
     /// 验证并发多次调用 acquireCredentials 不崩溃且 credential 唯一
-    func test并发调用acquireCredentials不崩溃且credential唯一() async throws {
+    func testConcurrentAcquireCredentialsDoesNotCrashAndCredentialsUnique() async throws {
         #if DEBUG
         guard let strategy = self.strategy else {
             XCTFail("strategy 不应为 nil")
@@ -232,7 +232,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     // MARK: - extraInfo 键集合稳定性
 
     /// 验证多次调用 extraInfo 键集合稳定不变
-    func test多次调用extraInfo键集合稳定() async throws {
+    func testMultipleExtraInfoCallsKeySetStable() async throws {
         #if DEBUG
         let cred1 = try await strategy.acquireCredentials()
         let cred2 = try await strategy.acquireCredentials()

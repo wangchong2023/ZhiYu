@@ -204,7 +204,9 @@ public actor EmbeddingManager: EmbeddingProvider {
         let seed = hasher.finalize()
         var deterministicVector = [Float](repeating: 0, count: SearchDefaults.vectorDimension)
         for i in 0..<SearchDefaults.vectorDimension {
-            deterministicVector[i] = Float((seed ^ i) % Int(SearchDefaults.deterministicModulus)) / SearchDefaults.deterministicModulus
+            // abs() 确保非负 — Hasher.finalize() 可返回负值，负数取模产生负值导致向量分布异常
+            let mixed = abs(seed ^ i)
+            deterministicVector[i] = Float(mixed % Int(SearchDefaults.deterministicModulus)) / SearchDefaults.deterministicModulus
         }
         return deterministicVector
     }

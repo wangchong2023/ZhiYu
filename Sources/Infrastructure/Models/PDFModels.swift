@@ -12,6 +12,13 @@ import Foundation
 
 // MARK: - PDF 文档模型
 
+/// PDF 导入模式枚举
+public enum PDFIngestMode: String, Codable, Sendable, CaseIterable {
+    case fullText
+    case pageRange
+    case highlights
+}
+
 /// PDF 文档信息模型
 ///
 /// 存储 PDF 文档的元数据，包括标题、页数、阅读进度、高亮内容和关联的知识库页面。
@@ -46,6 +53,20 @@ public struct PDFDocumentInfo: Identifiable, Codable, Sendable {
     }
 }
 
+// MARK: - PDF 高亮颜色
+
+/// PDF 高亮颜色枚举
+public enum PDFHighlightColor: String, Codable, Sendable, CaseIterable {
+    case yellow
+    case green
+    case blue
+    case pink
+    case purple
+
+    /// 所有颜色原始值，用于 UI 遍历
+    public static var allRawValues: [String] { allCases.map(\.rawValue) }
+}
+
 // MARK: - PDF 高亮
 
 /// PDF 高亮标记模型
@@ -53,7 +74,7 @@ public struct PDFHighlight: Identifiable, Codable, Sendable {
     public let id: UUID
     public var pageIndex: Int
     public var text: String
-    public var color: String  // "yellow", "green", "blue", "pink", "purple"
+    public var color: String
     public var note: String
     public var creationDate: Date
 
@@ -61,7 +82,7 @@ public struct PDFHighlight: Identifiable, Codable, Sendable {
         id: UUID = UUID(),
         pageIndex: Int,
         text: String,
-        color: String = "yellow",
+        color: String = PDFHighlightColor.yellow.rawValue,
         note: String = "",
         creationDate: Date = Date()
     ) {

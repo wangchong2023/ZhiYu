@@ -165,8 +165,8 @@ struct SplashBackgroundView: View {
                     startRadius: DesignSystem.loosePadding, // 20
                     endRadius: DesignSystem.Metrics.heroValueSize * 9.6 // 250
                 )
-                .frame(height: DesignSystem.Metrics.heroValueSize * 11.5) // 300
-                .offset(y: DesignSystem.Metrics.heroValueSize * 3) // 80
+                .frame(height: UIConstants.glowHeight) // 300
+                .offset(y: UIConstants.glowOffset) // 80
             }
 
             // 书本轮廓 — 极简线条
@@ -189,15 +189,15 @@ struct SplashBackgroundView: View {
                     // 书脊
                     Capsule()
                         .fill(Color.appAccent.opacity(SystemOpacity.glassStrong)) // 0.2
-                        .frame(width: DesignSystem.atomic + 1, height: DesignSystem.iconDisplay) // 3, 44
+                        .frame(width: SystemSpacing.tight, height: DesignSystem.iconDisplay) // 3, 44
 
                     // 从书中升起的光粒子
                     ForEach(0..<5, id: \.self) { i in
                         Circle()
                             .fill(Color.appAccent.opacity(SystemOpacity.overlay)) // 0.6
-                            .frame(width: DesignSystem.atomic + 1, height: DesignSystem.atomic + 1) // 3, 3
+                            .frame(width: SystemSpacing.tight, height: SystemSpacing.tight) // 3, 3
                             .offset(
-                                x: CGFloat(i - 2) * (DesignSystem.small + DesignSystem.tiny), // 14
+                                x: CGFloat(i - 2) * SystemSpacing.medium, // 14
                                 y: nodeGlow ? -DesignSystem.Metrics.iconBoxSize * 1.35 - CGFloat(i) * 15 : -DesignSystem.loosePadding // -60, -20
                             )
                             .opacity(nodeGlow ? SystemOpacity.overlay : SystemOpacity.glass) // 0.6, 0.1
@@ -212,5 +212,11 @@ struct SplashBackgroundView: View {
                 .padding(.bottom, Spacing.Vault.cardHeight) // 180
             }
         }
+    }
+
+    // MARK: - 常量
+    private enum UIConstants {
+        static let glowHeight: CGFloat = 368
+        static let glowOffset: CGFloat = 96
     }
 }

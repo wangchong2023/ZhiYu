@@ -506,7 +506,7 @@ struct SettingsView: View {
     private func emptyDetailPlaceholder(router: Router) -> some View {
         VStack(spacing: DesignSystem.medium) {
             Image(systemName: "gearshape.2")
-                .font(.system(size: 48)) // Dynamic Type
+                .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
                 .foregroundStyle(.appAccent)
             Text(L10n.Settings.selectCategoryTip)
                 .font(.headline)
@@ -527,7 +527,7 @@ struct ColorfulIconLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: DesignSystem.medium) {
             configuration.icon
-                .font(.system(size: 16, weight: .medium)) // Dynamic Type
+                .font(.system(size: SystemFontSize.body, weight: .medium)) // Dynamic Type
                 .foregroundStyle(.white)
                 .frame(width: DesignSystem.Metrics.settingsIconFrameSize, height: DesignSystem.Metrics.settingsIconFrameSize)
                 .background(color)
