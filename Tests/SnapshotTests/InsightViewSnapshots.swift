@@ -88,7 +88,7 @@ final class InsightViewSnapshots: XCTestCase {
 
         let view = WeeklyInsightCard()
             .snapshotEnvironment()
-            .environment(aiStore)
+            .environment(aiStore) // snapshot_env_exempt: 覆盖默认空 AIInsightStore 以注入 weeklyInsight 测试数据
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
             .background(Color.appBackground)
 

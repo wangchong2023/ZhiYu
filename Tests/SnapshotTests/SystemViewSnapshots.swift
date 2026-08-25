@@ -351,7 +351,7 @@ final class SystemViewSnapshots: XCTestCase {
             RawStorageListView()
         }
         .snapshotEnvironment()
-        .environment(store)
+        .environment(store) // snapshot_env_exempt: 覆盖默认空 KnowledgeStore 以注入 pages 测试数据
         .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
