@@ -212,3 +212,39 @@
 | D-40 | `ZIPFoundationArchiver.extractContents` 解压后文件在子目录（源目录名）下，而非直接在目标目录下 — ZIPFoundation `zipItem` 保留源目录名作为 ZIP 内根条目 | 中 | 测试改为遍历子目录查找文件（`findFile(named:in:)` 递归查找），符合 ZIP 保留目录结构的业界标准 | 是（测试层） |
 | D-41 | `CollaborationServiceDeepTests.test接收PageSync数据且远程时间等于本地时也更新` flaky — `Task {}` 异步竞态，100ms 等待在全量测试负载下不够 | 低 | 3 个正向断言测试改为轮询等待（`waitFor` 辅助方法），44 个测试全部通过 | 是 |
 | D-42 | 46 个中文测试方法名违反英文命名规范（8 个文件） | 中 | 全部改为英文命名（`CollaborationServiceDeepTests` 21 个 + `CarrierAuthStrategyDeepTests` 3 个 + `SynthesisStoreDeepTests` 2 个 + `ModelLabManagerDeepTests` 7 个 + `GitHubAuthStrategyDeepTests` 4 个 + `StoreKitServiceDeepTests` 2 个 + `GlobalModelManagerDeepTests` 5 个 + `L10nMediumFilesDeepTests` 2 个） | 是 |
+
+### 扣分项 #7/#14：SonarQube 覆盖率门禁达标验证
+
+| 序号 | 问题描述 | 严重程度 | 修改方案 | 是否解决 |
+|------|---------|---------|---------|---------|
+| D-43 | SonarQube Community Edition 不支持 Swift 语言分析，`sonar-scanner` 上传覆盖率 XML 后 1063 个 Swift 文件全部被标记为 "unknown files"，覆盖率指标为 0.0% | 高 | 调整 SonarQube 职责分工：SonarQube 仅负责 Tools 脚本（Python/Shell/YAML）代码质量 + 重复率 + Secrets 扫描；新建 `Tools/CI/check_xccov_coverage.py` 从 xccov generic coverage XML 直接解析 Swift 语句+分支覆盖率，在 `test-and-coverage` CI 阶段本地执行门禁 | 是 |
+
+**SonarQube 职责分工调整详情**（commit `34a436b8`）：
+
+| 组件 | 调整前 | 调整后 |
+|------|--------|--------|
+| `sonar-project.properties` | 2 模块（app-swift + tools-scripts） | 1 模块（仅 tools-scripts） |
+| `.gitlab-ci.yml` test-and-coverage | 仅跑测 + 生成覆盖率 XML | 跑测 + 生成 XML + **xccov 本地门禁** |
+| `.gitlab-ci.yml` sonarqube-analysis | 上传覆盖率 XML + Quality Gate | 仅质量扫描 + Quality Gate（重复率） |
+| `run-test-with-coverage.sh` | 生成 generic coverage XML | 生成 XML + **xccov 本地门禁检查** |
+| `check_xccov_coverage.py` | 不存在 | **新建**，从 XML 解析语句+分支覆盖率，按模块统计，门禁判定 |
+
+**当前覆盖率状态（xccov 本地报告）**：
+
+| 模块 | 语句覆盖率 | 分支覆盖率 | 行数 | 分支数 |
+|------|-----------|-----------|------|--------|
+| App | 35.99% | 70.59% | 2431 | 306 |
+| Core | 88.51% | 69.55% | 2654 | 1330 |
+| Infrastructure | 90.54% | 64.44% | 11935 | 6470 |
+| Domain | 90.66% | 70.74% | 2271 | 1080 |
+| Features/非View | 88.59% | 65.73% | 6185 | 3122 |
+| Features/View | 33.51% | 54.10% | 24222 | 3416 |
+| Shared | 51.38% | 62.50% | 4875 | 968 |
+| Platforms | 28.45% | 49.63% | 2559 | 268 |
+| Localization | 97.75% | 50.00% | 2761 | 64 |
+| **总计** | **59.47%** | **63.11%** | **59893** | **17024** |
+
+门禁阈值：语句 ≥95%、分支 ≥90%。当前语句 59.47%、分支 63.11%，**均未达标**。
+主要短板：Features/View（33.51%）、Platforms（28.45%）、App（35.99%）、Shared（51.38%）。
+
+**SonarQube Quality Gate 状态**：OK（重复率 0.35% < 3.0%），74 个 Tools 脚本文件已分析。
