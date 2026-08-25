@@ -47,6 +47,10 @@ public final class AppStore {
     // ── UI 状态 ──
     public var pendingCoachMark: CoachMarkType?
 
+    /// 日志条目缓存（Cache Proxy 模式）
+    /// 订阅 Logger.logEntriesPublisher，作为 UI 层同步访问的 source of truth
+    public var logEntries: [LogEntry] = []
+
     // ── 转发指标 (由 KnowledgeStore 持有，@Observable 自动追踪) ──
     public var pages: [KnowledgePage] { knowledgeStore.pages }
     public var totalPages: Int { knowledgeStore.totalPages }
@@ -147,6 +151,14 @@ public final class AppStore {
                 Task { [weak self] in
                     await self?.aiInsightStore.updateStatistics()
                 }
+            }
+            .store(in: &cancellables)
+
+        // 订阅 Logger 日志流，缓存到本地存储属性供 UI 同步访问（Cache Proxy 模式）
+        Logger.shared.logEntriesPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] entries in
+                self?.logEntries = entries
             }
             .store(in: &cancellables)
     }

@@ -14,7 +14,6 @@ import UFPStorage
 
 @MainActor
 extension AppStore: AnyPageStore {
-    public var logEntries: [LogEntry] { [] }
 
     /// 拉取AllPages
     public func fetchAllPages() async throws -> [KnowledgePage] {
