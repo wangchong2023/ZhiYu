@@ -12,6 +12,14 @@
 
 set -euo pipefail
 
+# 自动加载 Config/.env.local 环境变量（如 OPENSRC_ROOT 等）
+# 与 Makefile 保持一致，避免 hook 中环境变量缺失导致审计跳过
+if [ -f "Config/.env.local" ]; then
+    set -a
+    . Config/.env.local
+    set +a
+fi
+
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'
 BOLD='\033[1m'; NC='\033[0m'
 
