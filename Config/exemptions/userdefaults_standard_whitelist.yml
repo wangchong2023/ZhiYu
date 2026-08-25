@@ -31,9 +31,9 @@
   - file: "Sources/Infrastructure/LLM/InferenceParametersStore.swift"
     line: 149
   - file: "Sources/Infrastructure/LLM/LLMContextBuilder.swift"
-    line: 338
+    line: 359
   - file: "Sources/Infrastructure/LLM/LLMContextBuilder.swift"
-    line: 348
+    line: 369
   - file: "Sources/Infrastructure/LLM/LLMModels.swift"
     line: 255
   - file: "Sources/Infrastructure/LLM/LLMModels.swift"
