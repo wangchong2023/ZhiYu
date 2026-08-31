@@ -61,8 +61,8 @@ let package = Package(
             name: "UFPDesignSystem",
             dependencies: [
                 .product(name: "UFPCore", package: "UFPCore"),
-                .product(name: "Lottie", package: "lottie-ios", condition: .when(platforms: [.iOS, .macOS])),
-                .product(name: "MarkdownUI", package: "swift-markdown-ui", condition: .when(platforms: [.iOS, .macOS]))
+                .product(name: "Lottie", package: "lottie-ios", condition: .when(platforms: [.iOS, .macOS, .macCatalyst])),
+                .product(name: "MarkdownUI", package: "swift-markdown-ui", condition: .when(platforms: [.iOS, .macOS, .macCatalyst]))
             ],
             resources: [
                 .process("Resources")

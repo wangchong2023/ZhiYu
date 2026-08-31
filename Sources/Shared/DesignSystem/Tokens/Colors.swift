@@ -114,10 +114,12 @@ public enum Colors {
     }
 }
 
+#if !os(watchOS)
 /// 主题颜色解析器：通过 @Dependency 解析 ThemeManager，替代已删除的 ThemeManager.shared
 private struct ThemeColorResolver {
     @Dependency(\.themeService) var theme
 }
+#endif
 
 // MARK: - Color 扩展 (Semantic Colors)
 extension Color {

@@ -71,7 +71,13 @@ public enum BiometricAuthProviderKey: DependencyKey {
 @MainActor
 public final class NoOpBiometricAuthProvider: BiometricAuthProviderProtocol {
     public init() {}
-    public var authenticationPolicy: LAPolicy { .deviceOwnerAuthenticationWithBiometrics }
+    public var authenticationPolicy: LAPolicy {
+        #if os(watchOS)
+        return .deviceOwnerAuthentication
+        #else
+        return .deviceOwnerAuthenticationWithBiometrics
+        #endif
+    }
     public func canEvaluatePolicy(context: LAContext) -> Bool { false }
     public func evaluatePolicy(context: LAContext, reason: String) async -> Bool { false }
 }

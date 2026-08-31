@@ -6,7 +6,7 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[Snapshot] 快照测试层
-//  核心职责：任务中心 (TaskCenterView)、异步任务看板与运行态卡片的视觉快照与渲染回归。
+//  核心职责：任务调度中心 (TaskCenterView)、实时任务进度卡与仪表板状态的视觉快照与渲染回归。
 //
 
 import XCTest
@@ -19,6 +19,16 @@ import Dependencies
 @MainActor
 final class TaskCenterInteractiveSnapshots: XCTestCase {
 
+    private static var recordMode: SnapshotTestingConfiguration.Record {
+        ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
+    }
+
+    override func invokeTest() {
+        withSnapshotTesting(record: Self.recordMode) {
+            super.invokeTest()
+        }
+    }
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
@@ -30,7 +40,7 @@ final class TaskCenterInteractiveSnapshots: XCTestCase {
         try await super.tearDown()
     }
 
-    // MARK: - 1. 任务中心空状态看板快照
+    // MARK: - 1. 任务中心主页空状态快照
 
     func testTaskCenterView_EmptyState_RendersDashboardAndCards() {
         let view = NavigationStack {
@@ -41,27 +51,16 @@ final class TaskCenterInteractiveSnapshots: XCTestCase {
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
-    // MARK: - 2. 任务中心包含运行中与已完成任务的列表快照
+    // MARK: - 2. 任务列表活动中状态快照
 
     func testTaskCenterView_WithActiveTasks_RendersList() {
-        let taskCenter = TaskCenter()
-        taskCenter.tasks.removeAll()
-
-        let task1 = GlobalTask(
-            type: .synthesis,
-            name: "微服务架构脑图深度合成",
-            target: "知识库合成",
-            status: .running(progress: 0.65, stage: .enrichment),
-            isRead: false
-        )
-        let task2 = GlobalTask(
+        @Dependency(\.taskCenter) var taskCenter
+        let taskId = taskCenter.addTask(
             type: .ingest,
-            name: "WWDC26 深度学习文档切片",
-            target: "文档导入",
-            status: .completed,
-            isRead: true
+            name: "摄取任务",
+            target: "《Karpathy LLM OS 论文》"
         )
-        taskCenter.tasks = [task1, task2]
+        taskCenter.updateTask(taskId, status: .running(progress: 0.65, stage: .embedding))
 
         let view = NavigationStack {
             TaskCenterView()

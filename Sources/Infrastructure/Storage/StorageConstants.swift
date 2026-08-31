@@ -6,6 +6,7 @@
 //  核心职责：Storage 模块业务常量集（来源类型/同步状态/日志模块名/SQL 关键字/CloudKit/Bundle 资源等）
 //
 
+import Foundation
 import UFPCore
 
 /// Storage 模块业务常量集

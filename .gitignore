@@ -83,3 +83,4 @@ Config/.env.local
 # 提交的是模板：Config/project.yml.template
 project.yml
 .exemption_cache/
+sonar-coverage.xml

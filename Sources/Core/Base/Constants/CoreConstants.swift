@@ -6,6 +6,7 @@
 //  核心职责：Core 模块业务常量集（语言代码/本地化/安全/工作流/错误类型等）
 //
 
+import Foundation
 import UFPCore
 
 /// Core 模块业务常量集

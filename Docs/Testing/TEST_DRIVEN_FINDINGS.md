@@ -50,16 +50,23 @@
 | **40** | `PluginRuntime.suspendPlugin` 在看门狗熔断封禁恶意/超时插件时，仅清理了命令、设置页和自定义视图，遗漏清理已挂起插件在 `registry.eventListeners` 中的监听器，导致已被封禁的插件仍可在事件总线被触发并执行 JS 回调 | **High** | 架构与安全设计缺陷 | 在 `suspendPlugin` 中显式清理 `registry.eventListeners.removeAll(where: { $0.pluginID == id })`，彻底阻断幽灵回调与并发死锁 | **✅ 已解决** |
 | **41** | `setupFullMockEnvironment` 在注册核心领域服务时，对 `AuthService`、`VaultService`、`ChatService` 仅注册了抽象协议，遗漏了具体类型的双注册（`container.register(service, for: AuthService.self)`），导致通过具体类型解析的单测触发 `ServiceContainer.resolve` 致命断言崩溃 (SIGTRAP) | **High** | 架构与依赖注入缺陷 | 在 `TestMocks.swift` 补充具体类型注册，严格遵循 DIP 双注册规范 | **✅ 已解决** |
 | **42** | 部分单元测试在 `tearDown` 中显式调用 `DatabaseManager.shared.reset()` 与 `ServiceContainer.shared.reset()`，导致测试进程内后续用例持有的数据库句柄与 DI 链条被意外擦除破坏，引发跨测试级联崩溃 | **High** | 状态机与生命周期 | 全量清理单测中不当的全局单例 reset 调用，遵循 `setupFullMockEnvironment` 幂等状态覆盖机制 | **✅ 已解决** |
+| **43** | `ContentView` 与 `NotebookHubView` 等根工作台视图因 `@EnvironmentObject`（`OnboardingService`, `MedalService`）及多个 `@Environment`（`AppEnvironment`, `SettingsStore`）隐式依赖在缺少对应环境注入时，于 `EnvironmentValues.subscript.getter` 动态属性解析阶段触发主线程 SIGTRAP 断言崩溃 | **High** | 环境依赖与健壮性 | 规范化视图层环境初始化契约，确保根容器视图在全平台场景与分栏测试下使用统合依赖装配器（`.snapshotEnvironment()`）进行全量兜底注入，避免悬空环境对象穿透崩溃 | **✅ 已解决** |
+| **44** | `PageDetailView` 在知识库无主/未选中关联时，因 `PageDetailCoordinator` 强依赖 `AIWorkflowStore` 与 `ToastService` 上下文，未设置默认兜底导致在无状态预览或孤立加载时触发视图层断言异常 | **Medium** | UI/状态机防御性 | 在 `PageDetailView` 声明周期与装配链中注入统一依赖契约，并在无父级 Store 注入时具备安全空降级 | **✅ 已解决** |
+| **45** | `AppLayoutComponents` 中 `@available(iOS 18.0, ...)` 的私有 `modernTabView` 扩展直接跨模块暴露时，在 iOS 17 目标下引发链接器不透明返回类型符号缺失 (`opaque return type of View.tag`) | **Medium** | 跨系统版本兼容与编译健壮性 | 封装 `ContentView` 顶层容器状态机调度，内部安全隔离版本分支，消除测试和调用端对版本限定私有符号的直接非安全依赖 | **✅ 已解决** |
+| **46** | `TaskCenter` 任务中心在单元测试并发或多用例连续执行时，残留的全局任务状态污染了后续快照测试（如 `TaskCenterInteractiveSnapshots` 与 `ChatViewInteractiveSnapshots` 空状态卡片渲染），导致空状态测试断言失败 | **Medium** | 状态机隔离与测试健壮性 | 在 `TaskCenter` 增加 `reset()` 机制并在测试 `tearDown` 与 `setUp` 中执行原子状态重置，杜绝全局单例状态跨用例泄漏 | **✅ 已解决** |
+| **47** | `MarkdownProcessor.parse` 对多层级 HTML `<details>` 与未闭合代码块混合的复杂文档缺少容错回退机制，在遇到异常嵌套时未平滑回退至普通段落文本 | **Medium** | 核心解析器与边界容错 | 优化 `parseNextBlock` 优先级扫描与自动段落降级逻辑，确保任意畸变嵌套 Markdown 均能 100% 稳定生成 AST | **✅ 已解决** |
+| **48** | `ComparisonFrontmatter` 与 `ConceptFrontmatter` 反序列化在缺失非必填字段时，因 `MatrixValue` 缺乏 null 兜底导致解码中断 | **Low** | 数据结构与反序列化边界 | 补充 `MatrixValue.null` 枚举态与容错反序列化支持，增强复杂矩阵元数据解析弹性 | **✅ 已解决** |
 
 ---
 
 ## 📈 台账指标统计
 
-- **收录问题总数**：**42 项**
+- **收录问题总数**：**48 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器：9 项 (21.4%)
-  - 状态机并发与数据生命周期：10 项 (23.8%)
-  - 架构设计与安全/环境依赖：9 项 (21.4%)
-  - UI/交互与防御性缺陷：4 项 (9.5%)
-  - 代码坏味道与去魔鬼化/DRY 治理：10 项 (23.8%)
-- **修复闭环率**：**100.0% (42/42 已修复并测试验证通过)**
+  - 功能缺陷与核心算法/解析器：11 项 (22.9%)
+  - 状态机并发与数据生命周期：11 项 (22.9%)
+  - 架构设计与安全/环境依赖：11 项 (22.9%)
+  - UI/交互与防御性缺陷：5 项 (10.4%)
+  - 代码坏味道与去魔鬼化/DRY 治理：10 项 (20.8%)
+- **修复闭环率**：**100.0% (48/48 已修复并测试验证通过)**
+

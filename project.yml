@@ -90,11 +90,9 @@ settings:
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     SWIFT_STRICT_CONCURRENCY: complete
     SUPPRESS_WARNINGS_FROM_PACKAGE_DEPENDENCIES: YES
-    SWIFT_COMPILATION_MODE: wholemodule
-    SWIFT_GENERATE_LOCALIZATION_SYMBOL_KEYS: NO
-    EAGER_COMPILATION_ENABLED: NO
     MTL_ENABLE_DEBUG_INFO: INCLUDE_SOURCE
     FRAMEWORK_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
+    HEADER_SEARCH_PATHS: $(inherited) /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/src/include /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/extensions/include /Users/constantine/Documents/work/code/opensrc/swift/swift-markdown/Sources/CAtomic/include
 
 targetTemplates:
   BaseAppTemplate:

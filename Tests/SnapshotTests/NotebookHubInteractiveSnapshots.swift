@@ -18,6 +18,16 @@ import UFPCore
 @MainActor
 final class NotebookHubInteractiveSnapshots: XCTestCase {
 
+    private static var recordMode: SnapshotTestingConfiguration.Record {
+        ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
+    }
+
+    override func invokeTest() {
+        withSnapshotTesting(record: Self.recordMode) {
+            super.invokeTest()
+        }
+    }
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
@@ -45,18 +55,18 @@ final class NotebookHubInteractiveSnapshots: XCTestCase {
     func testNotebookCard_NormalState_RendersIconAndTitle() {
         let vault = Vault(
             id: UUID(),
-            name: "AI 智能体研发笔记",
-            createdAt: Date(),
-            updatedAt: Date(),
-            pageCount: 12,
-            icon: "🧠",
-            description: "涵盖 Karpathy LLM Wiki、RAG 向量检索与多模态架构设计"
+            name: "分布式系统与高并发架构",
+            icon: "server.rack",
+            description: "系统架构笔记"
         )
-        let view = NotebookCard(notebook: vault, action: {})
-            .frame(width: DesignSystem.Metrics.snapshotNotebookCardWidth)
-            .padding()
-            .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)))
+        let card = NotebookCard(
+            notebook: vault,
+            action: {}
+        )
+        .padding()
+        .snapshotEnvironment()
+
+        assertSnapshot(of: card, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
     }
 }

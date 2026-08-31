@@ -59,7 +59,7 @@ public enum AppScreen {
     }
 }
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 
 /// 跨平台呈现锚点工具，用于 ASAuthorizationController / ASWebAuthenticationSession
