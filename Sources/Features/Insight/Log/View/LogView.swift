@@ -80,7 +80,7 @@ struct LogViewContent: View {
             Text(L10n.Log.noLogs)
                 .font(.subheadline)
                 .foregroundStyle(.appSecondary)
-            Text(L10n.Log.noLogs)
+            Text(L10n.Log.noLogsHint)
                 .font(.caption)
                 .foregroundStyle(.appSecondary.opacity(DesignSystem.secondaryOpacity))
         }
@@ -312,10 +312,10 @@ private struct LogEntryRow: View {
                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
                     Text(L10n.Log.failureReason)
                         .font(.caption2.bold())
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.theme.red)
                     Text(reason)
                         .font(.system(.caption, design: .monospaced))
-                        .foregroundStyle(.red.opacity(failureTextOpacity))
+                        .foregroundStyle(Color.theme.red.opacity(failureTextOpacity))
                 }
                 .padding(DesignSystem.Timeline.detailHorizontalPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)

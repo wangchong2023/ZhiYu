@@ -98,7 +98,7 @@ struct DailyInsightWidgetEntryView: View {
             HStack(spacing: 4) {
                 Image(systemName: "sparkles")
                     .font(.caption2)
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(WidgetSharedConstants.Color.purple)
                 Text(WidgetL10n.dailyInsight)
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.secondary)
@@ -124,7 +124,7 @@ struct DailyInsightWidgetEntryView: View {
             HStack {
                 Label(WidgetL10n.dailyInsight, systemImage: "sparkles")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(WidgetSharedConstants.Color.purple)
 
                 Spacer()
 
@@ -148,7 +148,7 @@ struct DailyInsightWidgetEntryView: View {
             HStack {
                 Image(systemName: "quote.bubble.fill")
                     .font(.caption2)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(WidgetSharedConstants.Color.blue)
                 Text(entry.insight.flashThoughtSummary)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.white.opacity(WidgetMetrics.opacitySoft))
@@ -167,11 +167,11 @@ struct DailyInsightWidgetEntryView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(WidgetL10n.recentUpdates)
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(WidgetSharedConstants.Color.purple)
 
                 HStack(spacing: 8) {
                     Image(systemName: "brain.head.profile")
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(WidgetSharedConstants.Color.blue)
                     Text(WidgetL10n.insightQuote1)
                         .font(.caption2)
                         .foregroundStyle(.white)
@@ -182,7 +182,7 @@ struct DailyInsightWidgetEntryView: View {
 
                 HStack(spacing: 8) {
                     Image(systemName: "bolt.horizontal.fill")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(WidgetSharedConstants.Color.orange)
                     Text(WidgetL10n.insightQuote2)
                         .font(.caption2)
                         .foregroundStyle(.white)

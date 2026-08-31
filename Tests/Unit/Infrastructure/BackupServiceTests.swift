@@ -9,6 +9,7 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class BackupServiceSupplementTests: XCTestCase {
 
     private var tempDir: URL!

@@ -17,11 +17,11 @@ extension ModelLabView {
 
     var noModelMaskView: some View {
         VStack(spacing: DesignSystem.medium) {
-            Image(systemName: "flask.fill")
+            Image(systemName: DesignSystem.Icons.flaskFill)
                 .font(.system(size: ComponentSpacing.iconDisplay))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [.purple, .cyan],
+                        colors: [Color.theme.purple, Color.theme.cyan],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -43,7 +43,7 @@ extension ModelLabView {
                 onGoToStore()
             }) {
                 HStack(spacing: DesignSystem.small) {
-                    Image(systemName: "square.stack.3d.up.fill")
+                    Image(systemName: DesignSystem.Icons.stackFill)
                     Text(L10n.ModelManager.storeTitle)
                 }
                 .font(.subheadline.bold())

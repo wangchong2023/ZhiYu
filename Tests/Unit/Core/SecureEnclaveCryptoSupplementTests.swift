@@ -28,6 +28,8 @@ final class SecureEnclaveCryptoSupplementTests: XCTestCase {
         originalKeychainOverride = KeychainService.testOverride
         KeychainService.testOverride = mockKeychain
         originalSecurityManagerOverride = SecurityManager.testOverride
+        // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
+        SecurityManager.testOverride = nil
     }
 
     override func tearDown() {

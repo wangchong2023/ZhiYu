@@ -191,6 +191,8 @@ final class ChatCoordinator {
         chatService.clearHistory()
         chatHistory.removeAll()
         predictedQuestions.removeAll() // 清除历史时，同时重置预测追问问题
+        isSelectionMode = false
+        selectedMessageIDs.removeAll()
     }
 
     /// 导出Chat

@@ -188,7 +188,7 @@ final class EmbeddingManagerDeterminismTests: XCTestCase {
 
         // 创建新 manager，触发 loadInitialCache 从 DB 加载分块向量
         let newManager = EmbeddingManager(repository: mockRepository)
-        try await Task.sleep(nanoseconds: 200_000_000)
+        try await Task.sleep(nanoseconds: 1_000_000_000)
 
         // 用相同文本查询 multiQuerySearch
         let results = await newManager.multiQuerySearch(query: chunk.content, topK: 5)

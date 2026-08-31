@@ -17,17 +17,22 @@ import CryptoKit
 final class SecurityManagerTests: XCTestCase {
     
     private var securityManager: SecurityManager!
-    
+    private var originalSecurityManagerOverride: SecurityManager?
+
     @MainActor
     override func setUp() {
         super.setUp()
         setupFullMockEnvironment()
+        // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
+        originalSecurityManagerOverride = SecurityManager.testOverride
+        SecurityManager.testOverride = nil
         securityManager = SecurityManager.shared
     }
-    
+
     @MainActor
     override func tearDown() {
         securityManager = nil
+        SecurityManager.testOverride = originalSecurityManagerOverride
         ServiceContainer.shared.reset()
         super.tearDown()
     }

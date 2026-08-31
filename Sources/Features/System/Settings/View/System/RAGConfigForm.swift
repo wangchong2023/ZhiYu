@@ -13,11 +13,21 @@ import SwiftUI
 
 // MARK: - 时间范围选择器
 
+/// RAG 评估时间窗口选项常量
+private enum RAGTimeRange {
+    /// 可选时间窗口（天）：7 天 / 30 天 / 90 天
+    static let dayOptions: [Int] = [
+        FeatureConstants.RAGEvalTimeRange.shortDays,
+        FeatureConstants.RAGEvalTimeRange.mediumDays,
+        FeatureConstants.RAGEvalTimeRange.longDays
+    ]
+}
+
 /// RAG 评估数据的时间窗口选择器（7/30/90 天）
 struct RAGTimeRangePicker: View {
     @Binding var selectedDays: Int
 
-    private let dayOptions = [7, 30, 90]
+    private let dayOptions = RAGTimeRange.dayOptions
 
     var body: some View {
         HStack(spacing: DesignSystem.tightPadding) {

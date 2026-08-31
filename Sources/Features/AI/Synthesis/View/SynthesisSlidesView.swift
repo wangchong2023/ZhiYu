@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 /// 渲染演示文稿 / 幻灯片类型的合成文档
 struct SynthesisSlidesView: View {
@@ -21,20 +22,20 @@ struct SynthesisSlidesView: View {
         let content = doc.content.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
 
-        if content.contains("---") {
-            parts = content.components(separatedBy: "---")
-        } else if content.contains("\n## ") {
-            parts = content.components(separatedBy: "\n## ").map { $0.hasPrefix("## ") ? $0 : "## " + $0 }
+        if content.contains(SystemConstants.MarkdownDelimiter.horizontalRule) {
+            parts = content.components(separatedBy: SystemConstants.MarkdownDelimiter.horizontalRule)
+        } else if content.contains(ProcessorConstants.MarkdownSyntax.sectionBreak) {
+            parts = content.components(separatedBy: ProcessorConstants.MarkdownSyntax.sectionBreak).map { $0.hasPrefix(SystemConstants.MarkdownSyntax.h2Prefix) ? $0 : SystemConstants.MarkdownSyntax.h2Prefix + $0 }
         } else {
             parts = [content]
         }
 
         let cleaned = parts
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty && $0 != "---" }
+            .filter { !$0.isEmpty && $0 != SystemConstants.MarkdownDelimiter.horizontalRule }
             .map { slide -> String in
                 // 🛡️ 自动检测并闭合在切分点被截断的代码块围栏
-                let fenceCount = slide.components(separatedBy: "```").count - 1
+                let fenceCount = slide.components(separatedBy: SystemConstants.MarkdownSyntax.codeFence).count - 1
                 if fenceCount % 2 != 0 {
                     return slide + "\n```"
                 }
@@ -48,7 +49,7 @@ struct SynthesisSlidesView: View {
         VStack(spacing: DesignSystem.medium) {
             // 页码与控制顶部栏
             HStack {
-                Label(L10n.AI.Prompt.Expert.Slides.title, systemImage: "play.rectangle.fill")
+                Label(L10n.AI.Prompt.Expert.Slides.title, systemImage: DesignSystem.Icons.playRectangleFill)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appAccent)
 
@@ -82,7 +83,7 @@ struct SynthesisSlidesView: View {
                         HapticFeedback.shared.trigger(.selection)
                     }
                 }) {
-                    Image(systemName: "chevron.left.circle.fill")
+                    Image(systemName: DesignSystem.Icons.chevronLeftCircleFill)
                         .font(.title2)
                         .foregroundStyle(currentSlideIndex > 0 ? Color.appAccent : Color.appSecondary.opacity(DesignSystem.Opacity.soft))
                 }
@@ -94,7 +95,7 @@ struct SynthesisSlidesView: View {
                         HapticFeedback.shared.trigger(.selection)
                     }
                 }) {
-                    Image(systemName: "chevron.right.circle.fill")
+                    Image(systemName: DesignSystem.Icons.chevronRightCircleFill)
                         .font(.title2)
                         .foregroundStyle(currentSlideIndex < slides.count - 1 ? Color.appAccent : Color.appSecondary.opacity(DesignSystem.Opacity.soft))
                 }
@@ -104,7 +105,7 @@ struct SynthesisSlidesView: View {
         }
         .background(Color.appBackground)
         .onAppear {
-            if slides.count <= 1 && !doc.content.contains("---") && !doc.content.contains("##") {
+            if slides.count <= 1 && !doc.content.contains(SystemConstants.MarkdownDelimiter.horizontalRule) && !doc.content.contains(SystemConstants.Character.hash) {
                 Logger.shared.error("[SYNTH_ERR_SLIDES]" + " \(doc.content.prefix(50))")
             }
         }

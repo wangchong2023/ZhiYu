@@ -23,13 +23,19 @@ final class SecurityComponentsSupplementTests: XCTestCase {
 
     // MARK: - 测试夹具
 
+    private var originalSecurityManagerOverride: SecurityManager?
+
     override func setUp() {
         super.setUp()
         setupFullMockEnvironment()
         resetPersistentTestState()
+        // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
+        originalSecurityManagerOverride = SecurityManager.testOverride
+        SecurityManager.testOverride = nil
     }
 
     override func tearDown() {
+        SecurityManager.testOverride = originalSecurityManagerOverride
         resetPersistentTestState()
         super.tearDown()
     }
@@ -37,19 +43,19 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - KeychainService 错误分支
 
     /// KeychainError.encodingFailed 应有非空描述
-    func testKeychainError_encodingFailed_描述非空() {
+    func testKeychainError_EncodingFailed_DescriptionNotEmpty() {
         XCTAssertFalse(KeychainError.encodingFailed.errorDescription?.isEmpty ?? true,
                        "encodingFailed 错误描述不应为空")
     }
 
     /// KeychainError.unexpectedData 应有非空描述
-    func testKeychainError_unexpectedData_描述非空() {
+    func testKeychainError_UnexpectedData_DescriptionNotEmpty() {
         XCTAssertFalse(KeychainError.unexpectedData.errorDescription?.isEmpty ?? true,
                        "unexpectedData 错误描述不应为空")
     }
 
     /// KeychainError.storeFailed 描述应包含状态码
-    func testKeychainError_storeFailed_描述含状态码() {
+    func testKeychainError_StoreFailed_DescriptionContainsStatusCode() {
         let status: OSStatus = -34018
         let error = KeychainError.storeFailed(status)
         XCTAssertTrue(error.errorDescription?.contains("-34018") ?? false,
@@ -57,7 +63,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// KeychainError.retrieveFailed 描述应包含状态码
-    func testKeychainError_retrieveFailed_描述含状态码() {
+    func testKeychainError_RetrieveFailed_DescriptionContainsStatusCode() {
         let status: OSStatus = -25300
         let error = KeychainError.retrieveFailed(status)
         XCTAssertTrue(error.errorDescription?.contains("-25300") ?? false,
@@ -65,7 +71,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// KeychainError.deleteFailed 描述应包含状态码
-    func testKeychainError_deleteFailed_描述含状态码() {
+    func testKeychainError_DeleteFailed_DescriptionContainsStatusCode() {
         let status: OSStatus = -25299
         let error = KeychainError.deleteFailed(status)
         XCTAssertTrue(error.errorDescription?.contains("-25299") ?? false,
@@ -73,7 +79,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// MockKeychainService 覆盖写入后读取应返回最新值
-    func testMockKeychainService_覆盖写入_返回最新值() throws {
+    func testMockKeychainService_Overwrite_ReturnsLatestValue() throws {
         let mock = MockKeychainService()
         try mock.store(key: "overwrite_key", value: "v1")
         try mock.store(key: "overwrite_key", value: "v2")
@@ -82,14 +88,14 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// MockKeychainService 删除不存在的 key 应不崩溃
-    func testMockKeychainService_删除不存在Key_不崩溃() throws {
+    func testMockKeychainService_DeleteNonExistentKey_DoesNotCrash() throws {
         let mock = MockKeychainService()
         try mock.delete(key: "nonexistent_\(UUID().uuidString)")
         // 不崩溃即通过
     }
 
     /// KeychainService testOverride 置 nil 后 shared 应返回真实单例
-    func testKeychainService_testOverride置nil_shared返回真实单例() {
+    func testKeychainService_WhenTestOverrideNil_ReturnsRealSingleton() {
         let original = KeychainService.testOverride
         KeychainService.testOverride = nil
         defer { KeychainService.testOverride = original }
@@ -101,7 +107,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - SecurityManager 加解密边界
 
     /// SecurityManager 加密空字符串后解密应还原空字符串
-    func testSecurityManager_空字符串加解密环回() throws {
+    func testSecurityManager_EmptyString_EncryptDecryptLoopback() throws {
         let manager = SecurityManager.shared
         let encrypted = try manager.encrypt("")
         XCTAssertFalse(encrypted.isEmpty, "加密产物不应为空（含 nonce+tag）")
@@ -110,7 +116,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// SecurityManager 解密无效 Base64 应抛出 decodingFailed
-    func testSecurityManager_解密无效Base64_抛出decodingFailed() {
+    func testSecurityManager_DecryptInvalidBase64_ThrowsDecodingFailed() {
         let manager = SecurityManager.shared
         XCTAssertThrowsError(try manager.decrypt("!!!invalid_base64!!!")) { error in
             guard case SecurityError.decodingFailed = error else {
@@ -121,7 +127,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// SecurityManager 解密有效 Base64 但非 AES-GCM 密文应抛出错误
-    func testSecurityManager_解密有效Base64但非密文_抛出错误() {
+    func testSecurityManager_DecryptValidBase64NonCipher_ThrowsError() {
         let manager = SecurityManager.shared
         let fakeCipher = Data("not_a_sealed_box".utf8).base64EncodedString()
         XCTAssertThrowsError(try manager.decrypt(fakeCipher)) { _ in
@@ -130,14 +136,14 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// SecurityError 三个 case 的 errorDescription 应非空
-    func testSecurityError_所有case_描述非空() {
+    func testSecurityError_AllCases_DescriptionNotEmpty() {
         XCTAssertFalse(SecurityError.invalidSalt.errorDescription?.isEmpty ?? true)
         XCTAssertFalse(SecurityError.encodingFailed.errorDescription?.isEmpty ?? true)
         XCTAssertFalse(SecurityError.decodingFailed.errorDescription?.isEmpty ?? true)
     }
 
     /// getDatabasePassphrase 多次调用应返回缓存值（一致性）
-    func testSecurityManager_getDatabasePassphrase_缓存一致性() {
+    func testSecurityManager_GetDatabasePassphrase_CacheConsistency() {
         let manager = SecurityManager.shared
         let p1 = manager.getDatabasePassphrase()
         let p2 = manager.getDatabasePassphrase()
@@ -148,7 +154,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - SecurityManager 完整性校验降级路径
 
     /// verifyIntegrity 无签名记录时，模拟器 DEBUG 应放行（true），真机应 fail-closed（false）
-    func testSecurityManager_verifyIntegrity_无签名_模拟器放行() async throws {
+    func testSecurityManager_VerifyIntegrity_NoSignature_SimulatorPass() async throws {
         let manager = SecurityManager.shared
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent("no_sig_test_\(UUID().uuidString).txt")
@@ -164,21 +170,16 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// verifyIntegrity 文件不存在时：
-    /// - 模拟器 DEBUG：无签名记录走放行路径返回 true（A-11 发现：不检查文件是否存在）
-    /// - 真机/Release：无签名记录走 fail-closed 返回 false
-    func testSecurityManager_verifyIntegrity_文件不存在_模拟器放行() async {
+    /// 一律 fail-closed 返回 false（即使在模拟器 DEBUG 模式下也不放行不存在的文件）
+    func testSecurityManager_VerifyIntegrity_FileNotExists_ReturnsFalse() async {
         let manager = SecurityManager.shared
         let nonExistentURL = URL(fileURLWithPath: "/tmp/nonexistent_file_\(UUID().uuidString).txt")
         let result = await manager.verifyIntegrity(for: nonExistentURL)
-        #if DEBUG && targetEnvironment(simulator)
-        XCTAssertTrue(result, "模拟器 DEBUG 模式下无签名记录应放行（A-11：不检查文件存在性）")
-        #else
-        XCTAssertFalse(result, "非模拟器环境无签名应 fail-closed")
-        #endif
+        XCTAssertFalse(result, "文件不存在时完整性校验一律应 fail-closed 返回 false")
     }
 
     /// calculateHMAC 对不存在的文件应抛出错误
-    func testSecurityManager_calculateHMAC_文件不存在_抛出错误() async {
+    func testSecurityManager_CalculateHMAC_FileNotExists_ThrowsError() async {
         let manager = SecurityManager.shared
         let nonExistentURL = URL(fileURLWithPath: "/tmp/nonexistent_hmac_\(UUID().uuidString).txt")
         do {
@@ -190,7 +191,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// updateSignature 对不存在的文件应不崩溃（内部 catch）
-    func testSecurityManager_updateSignature_文件不存在_不崩溃() async {
+    func testSecurityManager_UpdateSignature_FileNotExists_DoesNotCrash() async {
         let manager = SecurityManager.shared
         let nonExistentURL = URL(fileURLWithPath: "/tmp/nonexistent_update_\(UUID().uuidString).txt")
         await manager.updateSignature(for: nonExistentURL)
@@ -200,7 +201,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - AhoCorasickEngine 深度边界
 
     /// 重复模式应被去重（Set 去重），不影响匹配结果
-    func testAhoCorasickEngine_重复模式_去重后正常匹配() {
+    func testAhoCorasickEngine_DuplicatePatterns_MatchesNormally() {
         let patterns = ["abc", "abc", "abc", "def"]
         let engine = AhoCorasickEngine(patterns: patterns)
         let matches = engine.search(in: "abcdef")
@@ -210,7 +211,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 空字符串模式应被过滤（filter { !$0.isEmpty }），非空模式正常匹配
-    func testAhoCorasickEngine_含空字符串模式_过滤后正常工作() {
+    func testAhoCorasickEngine_EmptyPattern_FiltersAndWorks() {
         let patterns = ["", "test", ""]
         let engine = AhoCorasickEngine(patterns: patterns)
         XCTAssertTrue(engine.containsAny(in: "test"), "空字符串模式应被过滤，test 应匹配")
@@ -218,7 +219,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// search 返回的 startIndex/endIndex 应正确
-    func testAhoCorasickEngine_search_索引正确性() {
+    func testAhoCorasickEngine_Search_IndexCorrectness() {
         let engine = AhoCorasickEngine(patterns: ["cat"])
         let text = "the cat sat"
         let matches = engine.search(in: text)
@@ -231,26 +232,26 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// containsAny 空文本应返回 false
-    func testAhoCorasickEngine_containsAny_空文本_返回false() {
+    func testAhoCorasickEngine_ContainsAny_EmptyText_ReturnsFalse() {
         let engine = AhoCorasickEngine(patterns: ["test"])
         XCTAssertFalse(engine.containsAny(in: ""), "空文本应返回 false")
     }
 
     /// containsAny 空模式列表应返回 false
-    func testAhoCorasickEngine_containsAny_空模式_返回false() {
+    func testAhoCorasickEngine_ContainsAny_EmptyPatterns_ReturnsFalse() {
         let engine = AhoCorasickEngine(patterns: [])
         XCTAssertFalse(engine.containsAny(in: "any text"), "空模式列表应返回 false")
     }
 
     /// search 部分匹配但未完整匹配应返回空结果
-    func testAhoCorasickEngine_部分匹配_不命中() {
+    func testAhoCorasickEngine_PartialMatch_DoesNotHit() {
         let engine = AhoCorasickEngine(patterns: ["hello"])
         let matches = engine.search(in: "hel lo")
         XCTAssertTrue(matches.isEmpty, "部分匹配（中间有空格）不应命中")
     }
 
     /// 多个模式在同一位置重叠应全部命中
-    func testAhoCorasickEngine_重叠模式_全部命中() {
+    func testAhoCorasickEngine_OverlappingPatterns_AllHit() {
         let engine = AhoCorasickEngine(patterns: ["he", "she", "her"])
         let matches = engine.search(in: "she")
         let patterns = Set(matches.map { $0.pattern })
@@ -261,19 +262,19 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - JailbreakDetector
 
     /// 模拟器环境越狱检测应返回 false
-    func testJailbreakDetector_模拟器环境_返回false() {
+    func testJailbreakDetector_SimulatorEnvironment_ReturnsFalse() {
         let detector = JailbreakDetector.shared
         XCTAssertFalse(detector.isJailbroken(), "模拟器环境应检测为非越狱")
     }
 
     /// 独立实例也应检测为非越狱
-    func testJailbreakDetector_独立实例_返回false() {
+    func testJailbreakDetector_IndependentInstance_ReturnsFalse() {
         let detector = JailbreakDetector()
         XCTAssertFalse(detector.isJailbroken(), "独立实例在模拟器应返回 false")
     }
 
     /// 多次调用 isJailbroken 应返回一致结果
-    func testJailbreakDetector_多次调用_结果一致() {
+    func testJailbreakDetector_MultipleCalls_ResultConsistent() {
         let detector = JailbreakDetector.shared
         let first = detector.isJailbroken()
         for _ in 0..<5 {
@@ -284,13 +285,13 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - ContentModerationEngine 边界
 
     /// 空文本应直接返回（不触发任何审核）
-    func testContentModerationEngine_空文本_直接返回() throws {
+    func testContentModerationEngine_EmptyText_ReturnsDirectly() throws {
         let result = try ContentModerationEngine.shared.evaluateAndEnforce("")
         XCTAssertEqual(result, "", "空文本应直接返回空字符串")
     }
 
     /// 政治反动内容应被拦截并抛出 contentViolatesPolicy(.politicalReactionary)
-    func testContentModerationEngine_政治反动_拦截() {
+    func testContentModerationEngine_PoliticalSensitive_Intercepted() {
         XCTAssertThrowsError(
             try ContentModerationEngine.shared.evaluateAndEnforce("颠覆政权反动宣言")
         ) { error in
@@ -302,7 +303,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 黄色色情内容应被拦截并抛出 contentViolatesPolicy(.adultNSFW)
-    func testContentModerationEngine_黄色色情_拦截() {
+    func testContentModerationEngine_Pornography_Intercepted() {
         XCTAssertThrowsError(
             try ContentModerationEngine.shared.evaluateAndEnforce("淫秽色情涉黄描述")
         ) { error in
@@ -314,7 +315,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 暴恐内容应被拦截并抛出 contentViolatesPolicy(.violenceTerrorism)
-    func testContentModerationEngine_暴恐_拦截() {
+    func testContentModerationEngine_Terrorism_Intercepted() {
         XCTAssertThrowsError(
             try ContentModerationEngine.shared.evaluateAndEnforce("制造炸弹恐怖袭击")
         ) { error in
@@ -326,7 +327,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 赌博毒品内容应被拦截并抛出 contentViolatesPolicy(.gamblingNarcotics)
-    func testContentModerationEngine_赌博毒品_拦截() {
+    func testContentModerationEngine_GamblingDrugs_Intercepted() {
         XCTAssertThrowsError(
             try ContentModerationEngine.shared.evaluateAndEnforce("制造冰毒配方合成冰毒")
         ) { error in
@@ -338,14 +339,14 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// PromptComplianceError.accountTemporarilyThrottled 应有非空描述
-    func testPromptComplianceError_accountTemporarilyThrottled_描述非空() {
+    func testPromptComplianceError_AccountTemporarilyThrottled_DescriptionNotEmpty() {
         let error = PromptComplianceError.accountTemporarilyThrottled
         XCTAssertFalse(error.errorDescription?.isEmpty ?? true,
                        "accountTemporarilyThrottled 描述不应为空")
     }
 
     /// ComplianceCategory 应有 6 个 case 且 rawValue 非空
-    func testComplianceCategory_6个case_rawValue非空() {
+    func testComplianceCategory_AllSixCases_RawValueNotEmpty() {
         XCTAssertEqual(ComplianceCategory.allCases.count, 6, "应有 6 个违规分类")
         for category in ComplianceCategory.allCases {
             XCTAssertFalse(category.rawValue.isEmpty, "\(category) rawValue 不应为空")
@@ -355,7 +356,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - DynamicComplianceManager+Patch 验签失败路径
 
     /// 空载荷应返回 false
-    func testVerifyAndApplyPatch_空载荷_返回false() {
+    func testVerifyAndApplyPatch_EmptyPayload_ReturnsFalse() {
         let manager = DynamicComplianceManager.shared
         let result = manager.verifyAndApplyPatch(
             payloadData: Data(),
@@ -366,7 +367,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 空签名应返回 false
-    func testVerifyAndApplyPatch_空签名_返回false() {
+    func testVerifyAndApplyPatch_EmptySignature_ReturnsFalse() {
         let manager = DynamicComplianceManager.shared
         let payload = Data("{\"configVersion\":\"1\"}".utf8)
         let result = manager.verifyAndApplyPatch(
@@ -378,7 +379,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 无效 Base64 签名应返回 false（Data(base64Encoded:) 返回 nil）
-    func testVerifyAndApplyPatch_无效Base64签名_返回false() {
+    func testVerifyAndApplyPatch_InvalidBase64Signature_ReturnsFalse() {
         let manager = DynamicComplianceManager.shared
         let payload = Data("{\"configVersion\":\"1\"}".utf8)
         let result = manager.verifyAndApplyPatch(
@@ -390,7 +391,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 测试公钥 + 空签名数据应返回 false（!signatureData.isEmpty 检查）
-    func testVerifyAndApplyPatch_测试公钥空签名数据_返回false() {
+    func testVerifyAndApplyPatch_TestPublicKeyEmptySignature_ReturnsFalse() {
         let manager = DynamicComplianceManager.shared
         let payload = Data("{\"configVersion\":\"1\"}".utf8)
         let emptySignature = Data().base64EncodedString()
@@ -403,7 +404,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 测试公钥 + 非空签名 + 无效 JSON 应返回 false（验签通过但 JSON 解析失败）
-    func testVerifyAndApplyPatch_测试公钥无效JSON_返回false() {
+    func testVerifyAndApplyPatch_TestPublicKeyInvalidJSON_ReturnsFalse() {
         let manager = DynamicComplianceManager.shared
         let invalidJSON = Data("not_json_at_all".utf8)
         let validSignature = Data("sig".utf8).base64EncodedString()
@@ -416,7 +417,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 测试公钥 + 有效 JSON + 未知分类 key 应跳过该 key（不崩溃，返回 true）
-    func testVerifyAndApplyPatch_未知分类Key_跳过并返回true() {
+    func testVerifyAndApplyPatch_UnknownCategoryKey_SkipsAndReturnsTrue() {
         let manager = DynamicComplianceManager.shared
         let jsonPayload = Data("""
         {
@@ -437,7 +438,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 测试公钥 + 有效 JSON + 空覆盖应返回 true（updateRemoteComplianceConfig 接受空字典）
-    func testVerifyAndApplyPatch_空覆盖_返回true() {
+    func testVerifyAndApplyPatch_EmptyOverride_ReturnsTrue() {
         let manager = DynamicComplianceManager.shared
         let jsonPayload = Data("""
         {
@@ -456,7 +457,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// 非测试公钥 + 无效 PEM 应返回 false（extractPublicKeyData 返回 nil）
-    func testVerifyAndApplyPatch_非测试公钥无效PEM_返回false() {
+    func testVerifyAndApplyPatch_NonTestPublicKeyInvalidPEM_ReturnsFalse() {
         let manager = DynamicComplianceManager.shared
         let payload = Data("{\"configVersion\":\"1\"}".utf8)
         let signature = Data("sig".utf8).base64EncodedString()
@@ -471,7 +472,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     // MARK: - DynamicComplianceManager 文案与模式覆盖
 
     /// getComplianceMessage 无远程覆盖时应回退到 L10n
-    func testDynamicComplianceManager_无远程覆盖_回退L10n() {
+    func testDynamicComplianceManager_NoRemoteOverride_FallbackToL10n() {
         let manager = DynamicComplianceManager.shared
         // 先清空远程覆盖
         manager.updateRemoteComplianceConfig(textOverrides: [:], patternOverrides: [:])
@@ -480,7 +481,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// getPatterns 无远程覆盖时应返回 fallback
-    func testDynamicComplianceManager_无远程覆盖_返回fallback() {
+    func testDynamicComplianceManager_NoRemoteOverride_ReturnsFallback() {
         let manager = DynamicComplianceManager.shared
         manager.updateRemoteComplianceConfig(patternOverrides: [:])
         let fallback = ["fallback_pattern"]
@@ -489,7 +490,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// getPatterns 有远程覆盖时应返回远程模式
-    func testDynamicComplianceManager_有远程覆盖_返回远程模式() {
+    func testDynamicComplianceManager_WithRemoteOverride_ReturnsRemotePatterns() {
         let manager = DynamicComplianceManager.shared
         let remotePatterns = ["remote_pattern_1", "remote_pattern_2"]
         manager.updateRemoteComplianceConfig(patternOverrides: [.violenceTerrorism: remotePatterns])
@@ -500,7 +501,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     }
 
     /// updateRemoteComplianceConfig 空字典不应覆盖已有远程配置
-    func testDynamicComplianceManager_空字典不覆盖_保留已有配置() {
+    func testDynamicComplianceManager_EmptyDictNoOverride_RetainsExistingConfig() {
         let manager = DynamicComplianceManager.shared
         let remotePatterns = ["existing_pattern"]
         manager.updateRemoteComplianceConfig(patternOverrides: [.gamblingNarcotics: remotePatterns])

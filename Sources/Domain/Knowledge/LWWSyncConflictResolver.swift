@@ -28,7 +28,7 @@ public struct LWWSyncConflictResolver: SyncConflictResolver {
             if let localIndex = merged.firstIndex(where: { $0.id == remotePage.id }) {
                 // 1. 物理对撞：UUID 一致，取最近更新版本
                 let localPage = merged[localIndex]
-                if remotePage.updatedAt > localPage.updatedAt {
+                if remotePage.updatedAt >= localPage.updatedAt {
                     merged[localIndex] = remotePage
                 }
             } else if !merged.contains(where: { $0.title == remotePage.title }) {
@@ -56,8 +56,8 @@ public struct LWWSyncConflictResolver: SyncConflictResolver {
         // 2. 将去重融合后的审计日志按产生时间戳进行降序（由新到旧）排列
         merged.sort { $0.timestamp > $1.timestamp }
 
-        // 3. 触发容量削减阀值限制，强行裁剪保留最近 200 条
-        let limit = 200
+        // 3. 触发容量削减阀值限制，强行裁剪保留最近条数
+        let limit = SyncConstants.auditLogWindowLimit
         if merged.count > limit {
             merged = Array(merged.prefix(limit))
         }

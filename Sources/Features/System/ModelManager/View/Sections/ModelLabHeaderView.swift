@@ -49,7 +49,7 @@ extension ModelLabView {
                 HStack {
                     Image(systemName: useCase.icon)
                         .font(.title2)
-                        .foregroundStyle(isCompatible ? .cyan : .secondary)
+                        .foregroundStyle(isCompatible ? Color.theme.cyan : .secondary)
 
                     Spacer()
 
@@ -59,7 +59,7 @@ extension ModelLabView {
                             .padding(.horizontal, DesignSystem.standardPadding)
                             .padding(.vertical, SystemSpacing.tiny)
                             .background(Color.theme.red.opacity(DesignSystem.Opacity.medium))
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.theme.red)
                             .clipShape(Capsule())
                     }
                 }

@@ -255,7 +255,10 @@ public final class AppStore {
     }
 
     /// 清除Logs
-    func clearLogs() async { await maintenanceService?.clearLogs() }
+    func clearLogs() async {
+        await maintenanceService?.clearLogs()
+        logEntries = []
+    }
 }
 
 // MARK: - ToolItem + AppRoute (L3 路由映射扩展)

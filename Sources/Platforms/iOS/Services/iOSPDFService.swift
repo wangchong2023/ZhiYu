@@ -28,11 +28,22 @@ final class iOSPDFService: PDFServiceProtocol {
 
     // MARK: - File Management
 
+    /// 校验 fileName 不含路径穿越字符
+    /// - Parameter fileName: 待校验的文件名
+    /// - Returns: 校验通过返回 true，含路径穿越返回 false
+    private func isFileNameSafe(_ fileName: String) -> Bool {
+        // 拒绝含 ".." 或 "/" 的文件名，防止路径穿越
+        !fileName.contains(PlatformConstants.PDFSecurity.pathTraversalMarker)
+            && !fileName.contains(PlatformConstants.PDFSecurity.pathSeparator)
+    }
+
     /// 保存PDF
     /// - Parameter data: data
     /// - Parameter fileName: fileName
     /// - Returns: 可选值
     func savePDF(data: Data, fileName: String) async -> URL? {
+        // Bug #46 修复：校验 fileName 防止路径穿越
+        guard isFileNameSafe(fileName) else { return nil }
         let fileURL = documentsDirectory.appendingPathComponent(fileName)
         do {
             try data.write(to: fileURL)
@@ -46,6 +57,8 @@ final class iOSPDFService: PDFServiceProtocol {
     /// - Parameter fileName: fileName
     /// - Returns: 是否成功
     func deletePDF(fileName: String) async -> Bool {
+        // Bug #47 修复：校验 fileName 防止路径穿越
+        guard isFileNameSafe(fileName) else { return false }
         let fileURL = documentsDirectory.appendingPathComponent(fileName)
         do {
             try FileManager.default.removeItem(at: fileURL)
@@ -73,6 +86,7 @@ final class iOSPDFService: PDFServiceProtocol {
     /// - Parameter fileName: fileName
     /// - Returns: 可选值
     func getPDFURL(fileName: String) -> URL? {
+        guard isFileNameSafe(fileName) else { return nil }
         let fileURL = documentsDirectory.appendingPathComponent(fileName)
         return FileManager.default.fileExists(atPath: fileURL.path) ? fileURL : nil
     }
@@ -144,7 +158,7 @@ final class iOSPDFService: PDFServiceProtocol {
 
     func extractImages(from url: URL) async -> [Data] {
         guard let document = PDFDocument(url: url) else { return [] }
-        let maxPages = AppConstants.Keys.ImportLimits.maxImagesPerPage
+        let maxPages = AppConstants.Keys.ImportLimits.maxPagesForImageExtraction
         let pageCount = min(document.pageCount, maxPages)
         var images: [Data] = []
 

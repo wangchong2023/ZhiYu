@@ -109,12 +109,12 @@ public struct FileTextPreviewView: View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
             if isLargeFile && !isEOF {
                 HStack(spacing: DesignSystem.small) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.orange)
+                    Image(systemName: DesignSystem.Icons.warning)
+                        .foregroundStyle(Color.theme.orange)
                         .font(.caption)
                     Text(L10n.Ingest.previewTruncated)
                         .font(.caption)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.theme.orange)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, DesignSystem.tiny)
@@ -148,7 +148,7 @@ public struct FileTextPreviewView: View {
                         }) {
                             HStack {
                                 Spacer()
-                                Label(L10n.Ingest.previewLoadMore, systemImage: "arrow.clockwise.circle")
+                                Label(L10n.Ingest.previewLoadMore, systemImage: DesignSystem.Icons.refreshCircle)
                                     .font(.subheadline.bold())
                                 Spacer()
                             }

@@ -24,8 +24,6 @@ final class AppStoreCoverageTests: XCTestCase {
     override func tearDown() async throws {
         store = nil
         try? await Task.sleep(nanoseconds: 50_000_000)
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
         try await super.tearDown()
     }
 

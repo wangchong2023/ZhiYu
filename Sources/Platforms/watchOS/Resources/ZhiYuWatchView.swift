@@ -92,7 +92,7 @@ struct WatchKnowledgeStatsView: View {
             }
             .padding(DesignSystem.small)
         }
-        .navigationTitle("ZhiYu")
+        .navigationTitle(AppConstants.displayName)
         .onAppear {
             loadData()
         }

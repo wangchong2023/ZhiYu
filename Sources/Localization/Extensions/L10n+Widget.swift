@@ -35,6 +35,7 @@ extension L10n {
         public static var knowledgeDistribution: String { Localized.tr("widget.knowledgeDistribution", table: t) }
         public static var voice: String { L10n.Common.tr("tab.voice") }
         public static var qa: String { Localized.tr("widget.qa", table: t) }
+        public static var ocr: String { Localized.tr("widget.ocr", table: t) }
         public static var dictating: String { Localized.tr("widget.dictating", table: t) }
         public static var voiceFlashCapture: String { Localized.tr("widget.voiceFlashCapture", table: t) }
         public static var syncedToiOS: String { Localized.tr("widget.syncedToiOS", table: t) }

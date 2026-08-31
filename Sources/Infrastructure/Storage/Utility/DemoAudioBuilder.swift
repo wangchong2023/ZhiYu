@@ -16,7 +16,8 @@ public struct DemoAudioBuilder {
     /// 确保物理音频文件就绪，若不存在则实时合成标准 44.1kHz WAV 音频
     public static func ensureAudioExists(at path: String, duration: TimeInterval = DemoMediaConstants.defaultAudioDuration) -> URL? {
         let fileURL = URL(fileURLWithPath: path)
-        if FileManager.default.fileExists(atPath: fileURL.path) {
+        if FileManager.default.fileExists(atPath: fileURL.path),
+           (try? AVAudioFile(forReading: fileURL)) != nil {
             return fileURL
         }
         
@@ -35,7 +36,7 @@ public struct DemoAudioBuilder {
             if let channels = buffer.floatChannelData {
                 let channelData = channels[0]
                 // 合成柔和的和弦波形音符 (C5-E5-G5 悦耳和弦)
-                let frequencies: [Float] = [523.25, 659.25, 783.99, 1046.50]
+                let frequencies: [Float] = DemoMediaConstants.chordFrequencies
                 for i in 0..<numSamples {
                     let time = Float(i) / Float(sampleRate)
                     let chordIndex = Int(time * DemoMediaConstants.chordSwitchInterval) % frequencies.count

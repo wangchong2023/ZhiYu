@@ -206,7 +206,7 @@ extension CollaborationService: CollaborationProviderDelegate {
         
         // Try to decode as page sync
         if let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           payload["type"] as? String == "pageSync",
+           payload[FeatureConstants.CollaborationKey.type] as? String == FeatureConstants.CollaborationKey.pageSync,
            let pageData = payload["page"] as? [String: Any] {
             applyRemotePage(pageData)
             return
@@ -249,7 +249,7 @@ extension CollaborationService {
                 updated.tags = tags
                 updated.status = status
                 updated.updatedAt = remoteUpdated
-                Task {
+                Task { @MainActor in
                     await delegate.applyRemoteUpdate(updated)
                     self.statusMessage = L10n.Collaboration.Status.pageReceived
                 }
@@ -260,7 +260,7 @@ extension CollaborationService {
                 status: status, confidence: .medium, sources: [], relatedPageIDs: [], isPinned: false,
                 contentHash: nil, createdAt: remoteUpdated, updatedAt: remoteUpdated
             )
-            Task {
+            Task { @MainActor in
                 await delegate.insertRemotePage(newPage)
                 self.statusMessage = L10n.Collaboration.Status.pageReceived
             }

@@ -112,14 +112,14 @@ struct SynthesisDocRow: View {
             } label: {
                 Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
             }
-            .tint(.red)
+            .tint(Color.theme.red)
             
             Button {
                 onRename()
             } label: {
                 Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
             }
-            .tint(.orange)
+            .tint(Color.theme.orange)
         }
         .contextMenu {
             Button {

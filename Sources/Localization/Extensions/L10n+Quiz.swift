@@ -28,6 +28,8 @@ extension L10n {
         public static var showAnswer: String { tr("quiz.showAnswer") }
         public static var correctAnswer: String { tr("quiz.correctAnswer") }
         public static var explanation: String { tr("quiz.explanation") }
+        public static var empty: String { tr("quiz.empty") }
+        public static var emptyDescription: String { tr("quiz.emptyDescription") }
 
         /// question格式化
         /// - Parameter current: current

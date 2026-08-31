@@ -110,16 +110,14 @@ final class VectorDataRepository: VectorRepository, Sendable {
     }
 
     /// cleanupOrphanedChunks
-    /// - Returns: 数值
+    /// - Returns: 清理的孤儿分块总数
     func cleanupOrphanedChunks() async throws -> Int {
         let writer = try await dbWriter
         return try await writer.write { db in
-            // 使用 Query Interface 的 subquery 方式替代原始 SQL
             let pages = KnowledgePage.select(KnowledgePage.Columns.id)
-            let deletedCount = try PageChunk
+            return try PageChunk
                 .filter(!pages.contains(PageChunk.Columns.pageID))
                 .deleteAll(db)
-            return deletedCount
         }
     }
 }

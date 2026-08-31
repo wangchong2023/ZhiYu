@@ -49,6 +49,20 @@ extension ContentView {
             adaptiveTabView(tintColor: tintColor)
             
             globalOverlaySheets()
+            
+            // UI 测试专用退出按钮：toolbar 中的 VaultBadge 在 principal 位置，
+            // XCUITest 点击不可靠。添加一个透明的退出区域，仅在 UI 测试模式下显示。
+            if TestModeDetector.isUITesting {
+                Button {
+                    vaultService.exitVault()
+                } label: {
+                    Color.clear
+                        .contentShape(Rectangle())
+                }
+                .accessibilityIdentifier("UITest_ExitVaultButton")
+                .frame(width: DesignSystem.Metrics.uiTestButtonSize, height: DesignSystem.Metrics.uiTestButtonSize)
+                .position(x: DesignSystem.Metrics.uiTestButtonSize / 2, y: DesignSystem.Metrics.uiTestButtonSize / 2)
+            }
         }
         .appToast()
     }

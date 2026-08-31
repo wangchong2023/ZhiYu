@@ -47,11 +47,11 @@ struct MarkdownEditorView: View {
                 }
                 .disabled(ingestStore == nil)
                 
-                Button(action: { text += "**" }) {
+                Button(action: { text += "****" }) {
                     Image(systemName: DesignSystem.Icons.bold)
                 }
                 
-                Button(action: { text += "*" }) {
+                Button(action: { text += "**" }) {
                     Image(systemName: DesignSystem.Icons.italic)
                 }
                 

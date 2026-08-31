@@ -40,7 +40,7 @@ struct OverseasLoginCardView: View {
             // 2. Passkey 一键生物免密注册/登录按钮 (海外首选安全通道)
             Button(action: handlePasskeyLogin) {
                 HStack(spacing: Spacing.small) {
-                    Image(systemName: "person.badge.key.fill")
+                    Image(systemName: DesignSystem.Icons.personBadgeKeyFill)
                         .font(.headline)
                     Text(L10n.Auth.continueWithPasskey)
                         .font(.headline.weight(.semibold))
@@ -99,8 +99,8 @@ struct OverseasLoginCardView: View {
                     .foregroundStyle(.appSecondary)
                     .lineSpacing(Spacing.atomic)
                     .environment(\.openURL, OpenURLAction { url in
-                        if url.scheme == "privacy" {
-                            if url.host == "terms" {
+                        if url.scheme == FeatureConstants.URLSchemeName.privacy {
+                            if url.host == FeatureConstants.URLSchemeName.terms {
                                 showTermsSheet = true
                             } else {
                                 showPrivacySheet = true

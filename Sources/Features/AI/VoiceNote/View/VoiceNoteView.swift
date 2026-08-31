@@ -132,7 +132,7 @@ struct VoiceNoteView: View {
         VStack(spacing: DesignSystem.Domain.Voice.permissionSectionSpacing) {
             Image(systemName: DesignSystem.Icons.micSlashFill)
                 .font(.title)
-                .foregroundStyle(.red)
+                .foregroundStyle(Color.theme.red)
             
             Text(L10n.Voice.Speech.needPermission)
                 .font(.subheadline)
@@ -309,7 +309,7 @@ struct VoiceNoteView: View {
             }
             
             VStack(spacing: Spacing.small) {
-                ForEach(Array(speechService.recordings.prefix(5))) { recording in
+                ForEach(Array(speechService.recordings.prefix(FeatureConstants.VoiceNote.maxRecordingPreview))) { recording in
                     VoiceRecordingRow(recording: recording)
                 }
             }

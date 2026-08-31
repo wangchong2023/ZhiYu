@@ -29,11 +29,11 @@ public struct TaskRoutingRulesView: View {
                         .padding(.horizontal, DesignSystem.small)
 
                     VStack(spacing: DesignSystem.small) {
-                        routingRuleRow(icon: "lock.fill", iconColor: .red, task: L10n.ModelManager.Routing.taskSemanticChunking, rule: L10n.ModelManager.Routing.strategyForceLocal)
-                        routingRuleRow(icon: "lock.fill", iconColor: .red, task: L10n.ModelManager.Routing.taskLinkDiscovery, rule: L10n.ModelManager.Routing.strategyForceLocal)
-                        routingRuleRow(icon: "arrow.triangle.branch", iconColor: .blue, task: L10n.ModelManager.Routing.taskSynthesis, rule: L10n.ModelManager.Routing.strategySmartRouting)
-                        routingRuleRow(icon: "arrow.triangle.branch", iconColor: .blue, task: L10n.ModelManager.Routing.taskChat, rule: L10n.ModelManager.Routing.strategySmartRouting)
-                        routingRuleRow(icon: "arrow.triangle.branch", iconColor: .blue, task: L10n.ModelManager.Routing.taskTagGeneration, rule: L10n.ModelManager.Routing.strategySmartRouting)
+                        routingRuleRow(icon: "lock.fill", iconColor: Color.theme.red, task: L10n.ModelManager.Routing.taskSemanticChunking, rule: L10n.ModelManager.Routing.strategyForceLocal)
+                        routingRuleRow(icon: "lock.fill", iconColor: Color.theme.red, task: L10n.ModelManager.Routing.taskLinkDiscovery, rule: L10n.ModelManager.Routing.strategyForceLocal)
+                        routingRuleRow(icon: "arrow.triangle.branch", iconColor: Color.theme.blue, task: L10n.ModelManager.Routing.taskSynthesis, rule: L10n.ModelManager.Routing.strategySmartRouting)
+                        routingRuleRow(icon: "arrow.triangle.branch", iconColor: Color.theme.blue, task: L10n.ModelManager.Routing.taskChat, rule: L10n.ModelManager.Routing.strategySmartRouting)
+                        routingRuleRow(icon: "arrow.triangle.branch", iconColor: Color.theme.blue, task: L10n.ModelManager.Routing.taskTagGeneration, rule: L10n.ModelManager.Routing.strategySmartRouting)
                     }
                     .padding()
                     .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
@@ -52,7 +52,7 @@ public struct TaskRoutingRulesView: View {
             Image(systemName: icon).font(.caption).foregroundStyle(iconColor).frame(width: DesignSystem.titleIconSize)
             Text(task).font(.subheadline).foregroundStyle(.appText)
             Spacer()
-            Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.appSecondary)
+            Image(systemName: DesignSystem.Icons.arrowRight).font(.caption2).foregroundStyle(.appSecondary)
             Text(rule).font(.caption.weight(.medium)).foregroundStyle(.appAccent)
         }
         .padding(.vertical, DesignSystem.small).padding(.horizontal, DesignSystem.medium)

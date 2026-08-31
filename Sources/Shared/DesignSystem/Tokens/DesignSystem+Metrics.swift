@@ -78,6 +78,8 @@ extension DesignSystem {
         // MARK: - 语义化 UI 组件与布局 Token
         /// 分割线厚度 (1px)
         public static let dividerThickness: CGFloat = 1
+        /// UI 测试专用按钮尺寸 (44px) — 满足 XCUITest 最小可点击区域
+        public static let uiTestButtonSize: CGFloat = 44
         /// 按钮与图标操作框尺寸 (56px)
         public static let notebookActionIconSize: CGFloat = 56
         /// 笔记本卡片宽度 (140px)

@@ -70,7 +70,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         let prompt = promptService.mindmapPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.mindmap
         let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
-        let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: "mindmap")
+        let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: ProcessorConstants.MermaidSyntax.mindmap)
         if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
             return SynthesisProcessor.convertMarkdownToListMindmap(result, title: L10n.AI.Synthesis.Mindmap.title)
         }
@@ -131,7 +131,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         let prompt = promptService.infographicPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
         let systemPrompt = L10n.AI.Prompt.System.infographic
         let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
-        let formatted = SynthesisProcessor.formatMermaid(rawResult, fallbackPrefix: "graph TD")
+        let formatted = SynthesisProcessor.formatMermaid(rawResult, fallbackPrefix: ProcessorConstants.MermaidSyntax.graphTD)
         if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
             return SynthesisProcessor.generateFallbackInfographic(from: content, title: L10n.Knowledge.Page.AI.infographic)
         }
@@ -166,8 +166,10 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     /// 针对具体的 Lint 问题提供 AI 修复建议
     func suggestFix(issue: LintIssue, pages: [KnowledgePage]) async throws -> String {
-        let pageTitle = pages.first(where: { $0.id == issue.pageID })?.title ?? L10n.Common.unknown
-        let pageContent = pages.first(where: { $0.title == pageTitle })?.content ?? ""
+        // Bug #126 修复：直接用 id 查 content，避免重名页面取错内容
+        let targetPage = pages.first(where: { $0.id == issue.pageID })
+        let pageTitle = targetPage?.title ?? L10n.Common.unknown
+        let pageContent = targetPage?.content ?? ""
         let otherTitles = pages.map { $0.title }.filter { $0 != pageTitle }
 
         let prompt = """
@@ -180,11 +182,11 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
         \(L10n.AI.LLM.Prompt.pageContentSnippet)
         \"\"\"
-        \(pageContent.prefix(500))
+        \(pageContent.prefix(FeatureConstants.AISynthesis.suggestFixContentSnippetPrefix))
         \"\"\"
 
         \(L10n.AI.LLM.Prompt.otherPageTitles)
-        \(otherTitles.prefix(50).joined(separator: ", "))
+        \(otherTitles.prefix(FeatureConstants.AISynthesis.suggestFixOtherTitlesPrefix).joined(separator: ", "))
         """
 
         let systemPrompt = L10n.AI.Prompt.System.suggestFix
@@ -196,8 +198,8 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         guard !pages.isEmpty else { return [] }
 
         let pageSummaries = pages.sorted(by: { $0.updatedAt > $1.updatedAt })
-            .prefix(15)
-            .map { "\($0.title): \($0.content.prefix(100))..." }
+            .prefix(FeatureConstants.AISynthesis.insightQuestionsPagePrefix)
+            .map { "\($0.title): \($0.content.prefix(FeatureConstants.AISynthesis.insightQuestionsContentPrefix))..." }
             .joined(separator: "\n")
 
         let prompt = """
@@ -226,7 +228,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         guard !history.isEmpty else { return [] }
 
         // 提取最近最多 10 条消息（5 轮对话）以作为大模型预测的基础上下文
-        let recentMessages = history.suffix(10)
+        let recentMessages = history.suffix(FeatureConstants.AISynthesis.followUpHistorySuffix)
             .map { "\($0.role == .user ? "User" : "Assistant"): \($0.content)" }
             .joined(separator: "\n")
 

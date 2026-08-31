@@ -41,12 +41,14 @@ public struct ServerConfigView: View {
         .sheet(isPresented: $showAddSheet) {
             ServerEditSheet(server: nil, onSave: { server in
                 servers.append(server)
+                saveServers()
             })
         }
         .sheet(item: $editingServer) { server in
             ServerEditSheet(server: server, onSave: { updated in
                 if let index = servers.firstIndex(where: { $0.id == updated.id }) {
                     servers[index] = updated
+                    saveServers()
                 }
             })
         }
@@ -60,7 +62,7 @@ public struct ServerConfigView: View {
     /// 空状态视图
     private var emptyStateView: some View {
         VStack(spacing: DesignSystem.large) {
-            Image(systemName: "server.rack")
+            Image(systemName: DesignSystem.Icons.serverRack)
                 .font(.system(size: ComponentSpacing.colossal)) // Dynamic Type
                 .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
 
@@ -75,7 +77,7 @@ public struct ServerConfigView: View {
                 .padding(.horizontal, DesignSystem.large)
 
             Button(action: { showAddSheet = true }) {
-                Label(L10n.ModelManager.Server.addServer, systemImage: "plus")
+                Label(L10n.ModelManager.Server.addServer, systemImage: DesignSystem.Icons.plus)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, DesignSystem.large)
@@ -121,7 +123,7 @@ public struct ServerConfigView: View {
     /// 添加按钮
     private var addButton: some View {
         Button(action: { showAddSheet = true }) {
-            Image(systemName: "plus")
+            Image(systemName: DesignSystem.Icons.plus)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.white)
                 .frame(width: DesignSystem.Metrics.notebookActionIconSize, height: DesignSystem.Metrics.notebookActionIconSize)
@@ -171,14 +173,14 @@ public struct ServerConfigView: View {
             if let url = URL(string: server.baseURL + "/health") {
                 do {
                     let (_, response) = try await URLSession.shared.data(from: url)
-                    isHealthy = (response as? HTTPURLResponse)?.statusCode == 200
+                    isHealthy = (response as? HTTPURLResponse)?.statusCode == FeatureConstants.HTTPStatusCode.ok
                 } catch {
                     isHealthy = false
                 }
             } else {
                 isHealthy = false
             }
-            latency = Int(Date().timeIntervalSince(start) * 1000)
+            latency = Int(Date().timeIntervalSince(start) * Double(FeatureConstants.ServerConfig.latencyMsPerSecond))
             if let idx = servers.firstIndex(where: { $0.id == server.id }) {
                 servers[idx] = MockServerConfig(
                     id: server.id, name: server.name, baseURL: server.baseURL,
@@ -265,7 +267,7 @@ private struct ServerEditSheet: View {
                         if let result = testResult {
                             Text(result)
                                 .font(.caption)
-                                .foregroundStyle(result.contains(L10n.ModelManager.Server.testSuccess) ? .green : .red)
+                                .foregroundStyle(result.contains(L10n.ModelManager.Server.testSuccess) ? Color.theme.green : Color.theme.red)
                         }
                     }
                     .appListRowBackground()
@@ -308,7 +310,7 @@ private struct ServerEditSheet: View {
         Task {
             do {
                 let (_, response) = try await URLSession.shared.data(from: url)
-                let isHealthy = (response as? HTTPURLResponse)?.statusCode == 200
+                let isHealthy = (response as? HTTPURLResponse)?.statusCode == FeatureConstants.HTTPStatusCode.ok
                 await MainActor.run {
                     testResult = isHealthy ? "✅ Connected" : "❌ HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)"
                     HapticFeedback.shared.trigger(isHealthy ? .success : .error)
@@ -420,8 +422,8 @@ private struct ServerCardView: View {
                 Spacer()
 
                 if server.isDefault {
-                    Image(systemName: "star.fill")
-                        .foregroundStyle(.orange)
+                    Image(systemName: DesignSystem.Icons.pinFill)
+                        .foregroundStyle(Color.theme.orange)
                         .font(.caption)
                 }
             }
@@ -432,7 +434,7 @@ private struct ServerCardView: View {
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
 
-                    Text("·")
+                    Text(FeatureConstants.Decorator.middleDot)
                         .foregroundStyle(.appSecondary)
 
                     Text(L10n.ModelManager.Server.latencyMs(latency))
@@ -457,9 +459,9 @@ private struct ServerCardView: View {
                 }
 
                 Button(action: onDelete) {
-                    Text(L10n.ModelManager.Server.deleteAction)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.red)
+                        Text(L10n.ModelManager.Server.deleteAction)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(Color.theme.red)
                 }
 
                 Spacer()
@@ -468,7 +470,7 @@ private struct ServerCardView: View {
                     Button(action: onSetDefault) {
                         Text(L10n.ModelManager.Server.setDefaultAction)
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color.theme.orange)
                     }
                 }
             }

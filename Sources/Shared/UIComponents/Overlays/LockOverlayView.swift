@@ -154,6 +154,11 @@ struct LockOverlayView: View {
         .onAppear {
             isAnimating = true
         }
+        // Bug #65 修复：onDisappear 时停止动画，避免视图销毁后 repeatForever 动画
+        // 仍持有渲染资源，导致内存泄漏与 CPU 占用。
+        .onDisappear {
+            isAnimating = false
+        }
     }
 }
 

@@ -19,13 +19,23 @@ import CryptoKit
 final class PluginLoader {
 
     /// 父注册中心弱引用（避免循环引用）
-    weak var registry: PluginRegistry!
+    weak var registry: PluginRegistry?
 
     /// ZIPFoundation 适配层注入（通过 FileArchiverProtocol 间接调用，不直接 import ZIPFoundation）
     @Dependency(\.fileArchiver) private var archiver: any FileArchiverProtocol
 
     /// 插件签名密钥的 Keychain 存储键（审查修复 HIGH-3：不再硬编码盐值）
     private static let signatureKeychainKey = "com.zhiyu.plugin.signature_key"
+
+    // MARK: - 文件名安全校验
+
+    /// 校验 fileName 不含路径穿越字符
+    /// - Parameter fileName: 待校验的文件名
+    /// - Returns: 校验通过返回 true，含路径穿越返回 false
+    private func isFileNameSafe(_ fileName: String) -> Bool {
+        !fileName.contains(PluginConstants.FileNameSecurity.pathTraversalMarker)
+            && !fileName.contains(PluginConstants.FileNameSecurity.pathSeparator)
+    }
 
     // MARK: - 插件签名校验（VULN-001 修复）
 
@@ -160,6 +170,10 @@ final class PluginLoader {
         }
 
         for (locale, filename) in readmeMap {
+            guard isFileNameSafe(filename) else {
+                Logger.shared.warning("[PluginRegistry] \(manifest.id): README.\(locale) 文件名含路径穿越字符，已跳过")
+                continue
+            }
             let fileURL = extractedDir.appendingPathComponent(filename)
             if FileManager.default.fileExists(atPath: fileURL.path) {
                 Logger.shared.info("[PluginRegistry] \(manifest.id): README.\(locale) ✓")
@@ -217,6 +231,7 @@ final class PluginLoader {
 
     /// 获取已安装插件的图标 URL
     func iconURL(for pluginID: String) -> URL? {
+        guard isFileNameSafe(pluginID) else { return nil }
         let fileManager = FileManager.default
         guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
         let url = documentsURL.appendingPathComponent("Plugins/\(pluginID)_icon.png")
@@ -225,6 +240,7 @@ final class PluginLoader {
 
     /// 获取已安装插件的本地化 README 内容
     func localizedReadme(for pluginID: String) -> String? {
+        guard isFileNameSafe(pluginID) else { return nil }
         let lang = Locale.current.language.languageCode?.identifier ?? "en"
         let fileManager = FileManager.default
         guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
@@ -281,7 +297,7 @@ final class PluginLoader {
 
             #if canImport(JavaScriptCore) && !os(watchOS)
             if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
-                registry.loadPlugin(jsPlugin)
+                registry?.loadPlugin(jsPlugin)
                 Logger.shared.info("[PluginRegistry] Loaded: \(manifest.name)")
             } else {
                 Logger.shared.error("[PluginRegistry] Init failed: \(manifest.name)")
@@ -329,7 +345,7 @@ final class PluginLoader {
 
             #if canImport(JavaScriptCore) && !os(watchOS)
             if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
-                registry.loadPlugin(jsPlugin)
+                registry?.loadPlugin(jsPlugin)
                 Logger.shared.info("[PluginRegistry] 从明文目录成功加载: \(manifest.name)")
             } else {
                 Logger.shared.error("[PluginRegistry] 实例化 JS 插件失败: \(manifest.name)")
@@ -369,7 +385,7 @@ final class PluginLoader {
 
             #if canImport(JavaScriptCore) && !os(watchOS)
             if let jsPlugin = JavaScriptPlugin(script: scriptContent, manifest: manifest) {
-                registry.loadPlugin(jsPlugin)
+                registry?.loadPlugin(jsPlugin)
                 Logger.shared.info("[PluginRegistry] Loaded legacy .js: \(displayName)")
             }
             #endif

@@ -28,8 +28,8 @@ struct PluginStatsSection: View {
                 VStack(spacing: DesignSystem.medium) {
                     // 顶部统计卡片，让画面更显饱满与专业
                     HStack(spacing: DesignSystem.medium) {
-                        statCard(title: L10n.Plugin.Stats.enabledCount, value: "\(registry.plugins.count)", icon: "puzzlepiece.extension.fill", color: .blue)
-                        statCard(title: L10n.Plugin.Stats.activeCount, value: "\(registry.pluginResourceUsage.filter { $0.value.status == .active }.count)", icon: "play.circle.fill", color: .green)
+                        statCard(title: L10n.Plugin.Stats.enabledCount, value: "\(registry.plugins.count)", icon: DesignSystem.Icons.puzzlepieceExtensionFill, color: Color.theme.blue)
+                        statCard(title: L10n.Plugin.Stats.activeCount, value: "\(registry.pluginResourceUsage.filter { $0.value.status == .active }.count)", icon: "play.circle.fill", color: Color.theme.green)
                     }
                     .padding(.horizontal, DesignSystem.small)
 
@@ -106,14 +106,14 @@ struct PluginStatsSection: View {
                                             .foregroundStyle(.appSecondary)
                                         Text(String(format: "%.2fs", usage.totalExecutionTime))
                                             .font(.system(.footnote, design: .monospaced).weight(.bold))
-                                            .foregroundStyle(usage.status == .suspended ? .red : .appText)
+                                            .foregroundStyle(usage.status == .suspended ? Color.theme.red : .appText)
                                     }
 
                                     HStack(spacing: SystemSpacing.atomic) {
                                         Text(L10n.Plugin.Stats.ratio)
                                             .font(.system(size: DesignSystem.microFontSize))
                                             .foregroundStyle(.appSecondary)
-                                        Text(String(format: "%.1f%%", percentage * 100))
+                                        Text(String(format: "%.1f%%", percentage * FeatureConstants.PercentageBase.full))
                                             .font(.system(size: SystemFontSize.micro, design: .monospaced))
                                             .foregroundStyle(.appSecondary)
                                     }
@@ -140,9 +140,9 @@ struct PluginStatsSection: View {
             return plugin.manifest.name
         }
         // 如果插件还没加载完成，做基础裁剪提取
-        return pluginID.replacingOccurrences(of: "com.zhiyu.plugin.local.", with: "")
-                       .replacingOccurrences(of: "com.zhiyu.plugin.remote.", with: "")
-                       .replacingOccurrences(of: "com.zhiyu.plugin.", with: "")
+        return pluginID.replacingOccurrences(of: PluginConstants.IDPrefix.local, with: "")
+                       .replacingOccurrences(of: PluginConstants.IDPrefix.remote, with: "")
+                       .replacingOccurrences(of: PluginConstants.IDPrefix.base, with: "")
                        .capitalized
     }
 
@@ -164,7 +164,7 @@ struct PluginStatsSection: View {
                     .fill(pluginColor(for: pluginID).opacity(DesignSystem.Opacity.subtle))
                     .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
 
-                Image(systemName: "puzzlepiece.extension.fill")
+                Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
                     .font(.title3)
                     .foregroundStyle(pluginColor(for: pluginID))
             }
@@ -173,16 +173,16 @@ struct PluginStatsSection: View {
 
     /// 基于哈希的自适应离散颜色生成器，保证新插件接入时大盘颜色的区分性且彻底去除写死关联
     private func pluginColor(for pluginID: String) -> Color {
-        let colors: [Color] = [.blue, .purple, .teal, .green, .orange, .pink, .indigo, .mint]
+        let colors: [Color] = [Color.theme.blue, Color.theme.purple, Color.theme.teal, Color.theme.green, Color.theme.orange, Color.theme.pink, Color.theme.indigo, Color.theme.mint]
         let hash = abs(pluginID.hashValue)
         return colors[hash % colors.count]
     }
 
     private func statusColor(for status: PluginRuntime.ResourceUsage.Status) -> Color {
         switch status {
-        case .active: return .green
-        case .throttled: return .orange
-        case .suspended: return .red
+        case .active: return Color.theme.green
+        case .throttled: return Color.theme.orange
+        case .suspended: return Color.theme.red
         }
     }
 

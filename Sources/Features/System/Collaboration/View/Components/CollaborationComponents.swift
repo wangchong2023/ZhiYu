@@ -146,7 +146,7 @@ struct CollabRoleBadge: View {
     
     private var color: Color {
         switch role {
-        case .owner: return .yellow
+        case .owner: return Color.theme.yellow
         case .editor: return .appAccent
         case .viewer: return .appSecondary
         }

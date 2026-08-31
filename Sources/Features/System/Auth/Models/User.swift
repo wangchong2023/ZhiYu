@@ -180,7 +180,7 @@ public struct User: Codable, Identifiable, Sendable {
 
     /// 是否具有隐私安全特性权限（Pro 或 features 中包含 privacy_security）
     public var hasPrivacySecurity: Bool {
-        return features.contains("privacy_security") || isPro
+        return features.contains(FeatureConstants.FeatureKey.privacySecurity) || isPro
     }
 
     // MARK: - Codable 适配后端 UserProfileResp

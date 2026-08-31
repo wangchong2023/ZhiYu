@@ -208,7 +208,7 @@ struct KnowledgeDashboardView: View {
                         // 右侧双轴物理含义释义 (箭头+含义，通过 | 分隔，完美揭示空间物理轴方向)
                         HStack(spacing: DesignSystem.tiny) {
                             HStack(spacing: DesignSystem.atomic) {
-                                Image(systemName: "arrow.up")
+                                Image(systemName: DesignSystem.Icons.arrowUp)
                                     .font(.system(size: SystemFontSize.micro, weight: .bold))
                                     .foregroundColor(.appAccent)
                                 Text(L10n.Dashboard.axisPages)
@@ -221,7 +221,7 @@ struct KnowledgeDashboardView: View {
                                 .foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.disabled))
                             
                             HStack(spacing: DesignSystem.atomic) {
-                                Image(systemName: "arrow.right")
+                                Image(systemName: DesignSystem.Icons.arrowRight)
                                     .font(.system(size: SystemFontSize.micro, weight: .bold))
                                     .foregroundColor(.appAccent)
                                 Text(L10n.Dashboard.axisRelations)

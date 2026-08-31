@@ -9,6 +9,7 @@
 //  核心职责：多笔记本管理：创建、切换、主题、iCloud 同步。
 //
 import Foundation
+import UFPCore
 
 /// 内置演示笔记本的英文标识常量
 public enum BuiltinVaultEnglishName {
@@ -69,12 +70,12 @@ public struct Vault: Identifiable, Codable, Hashable, VaultProtocol {
         let strip = latin?.applyingTransform(.stripDiacritics, reverse: false) ?? trimmedName
         
         // 将所有非安全字符（非字母、非数字、非下划线）替换为下划线，支持多空格/连接符归并
-        let spaced = strip.replacingOccurrences(of: "\\s+|-", with: "_", options: .regularExpression)
+        let spaced = strip.replacingOccurrences(of: FeatureConstants.RegexEscape.whitespaceOrDash, with: SystemConstants.Character.underscore, options: .regularExpression)
         let pattern = "[^a-zA-Z0-9_]"
         if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
             let range = NSRange(location: 0, length: spaced.utf16.count)
             let cleaned = regex.stringByReplacingMatches(in: spaced, options: [], range: range, withTemplate: "")
-            let cleanResult = cleaned.replacingOccurrences(of: "_+", with: "_", options: .regularExpression)
+            let cleanResult = cleaned.replacingOccurrences(of: FeatureConstants.RegexEscape.underscorePlus, with: SystemConstants.Character.underscore, options: .regularExpression)
             let trimmedResult = cleanResult.trimmingCharacters(in: CharacterSet(charactersIn: "_"))
             return trimmedResult.isEmpty ? "Vault_\(id.uuidString.prefix(AppConstants.Keys.ImportLimits.uuidPrefixLength))" : trimmedResult
         }

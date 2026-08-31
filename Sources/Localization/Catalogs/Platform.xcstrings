@@ -1951,6 +1951,131 @@
         }
       }
     },
+    "widget.ocr": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "扫描"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "掃描"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR"
+          }
+        }
+      }
+    },
+    "widget.source": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "来源" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Source" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "來源" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Fuente" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Source" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "المصدر" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Источник" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "소스" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ソース" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Fonte" } }
+      }
+    },
+    "widget.concept": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "概念" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Concept" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "概念" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Concepto" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Concept" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "مفهوم" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Концепция" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "개념" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "概念" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Conceito" } }
+      }
+    },
+    "widget.entity": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "实体" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Entity" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "實體" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Entidad" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Entité" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "كيان" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Сущность" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "엔티티" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "エンティティ" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Entidade" } }
+      }
+    },
+    "widget.map": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "图谱" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Map" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "圖譜" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Mapa" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Carte" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "خريطة" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Карта" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "맵" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "マップ" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Mapa" } }
+      }
+    },
     "widget.dictating": {
       "extractionState": "manual",
       "localizations": {

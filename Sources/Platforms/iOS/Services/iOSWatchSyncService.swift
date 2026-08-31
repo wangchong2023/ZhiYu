@@ -116,6 +116,10 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
     /// /// - Parameter filename: filename
     /// /// - Parameter data: data
     func handleReceivedAudioChunk(transferId: String, index: Int, total: Int, filename: String, data: Data) {
+        guard total > 0, index >= 0, index < total else {
+            Logger.shared.warning("iOSWatchSyncService: 无效音频分片参数 total=\(total) index=\(index)")
+            return
+        }
         var assembly = keyStore?.object(forKey: "\(AppConstants.Keys.Storage.iOSAudioAssemblyPrefix)\(transferId)") as? [String: Data] ?? [:]
         assembly["\(index)"] = data
         

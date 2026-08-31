@@ -59,7 +59,7 @@ struct PluginDetailView: View {
                 if let error = marketService.errorMessage {
                     Text(error)
                         .font(.caption)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.theme.red)
                         .padding(.top, -DesignSystem.small)
                 }
 

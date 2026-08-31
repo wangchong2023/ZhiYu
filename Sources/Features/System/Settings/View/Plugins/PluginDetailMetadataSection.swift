@@ -25,7 +25,7 @@ extension PluginDetailView {
             VStack(spacing: 0) {
                 // 版本
                 metadataRow(
-                    icon: "number",
+                    icon: DesignSystem.Icons.number,
                     label: L10n.Plugin.Detail.version,
                     value: displayVersion
                 )
@@ -34,7 +34,7 @@ extension PluginDetailView {
 
                 // 作者
                 metadataRow(
-                    icon: "person.fill",
+                    icon: DesignSystem.Icons.personFill,
                     label: L10n.Plugin.Detail.author,
                     value: plugin.author
                 )
@@ -44,7 +44,7 @@ extension PluginDetailView {
                 // 最低应用版本
                 if let minVersion = plugin.minAppVersion {
                     metadataRow(
-                        icon: "app.badge.checkmark",
+                        icon: DesignSystem.Icons.appBadgeCheckmark,
                         label: L10n.Plugin.Detail.minAppVersion,
                         value: minVersion
                     )
@@ -53,7 +53,7 @@ extension PluginDetailView {
 
                 // 分类
                 metadataRow(
-                    icon: "folder.fill",
+                    icon: DesignSystem.Icons.folderFill,
                     label: L10n.Plugin.Detail.category,
                     value: categoryName
                 )
@@ -62,7 +62,7 @@ extension PluginDetailView {
 
                 // 许可
                 metadataRow(
-                    icon: "checkmark.seal.fill",
+                    icon: DesignSystem.Icons.checkmarkSealFill,
                     label: L10n.Plugin.Detail.license,
                     value: monetizationLabel
                 )

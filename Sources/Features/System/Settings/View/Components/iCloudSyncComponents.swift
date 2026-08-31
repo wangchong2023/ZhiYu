@@ -31,8 +31,8 @@ struct SyncStatusRow: View {
         switch syncService.syncStatus {
         case .idle: return .appSecondary
         case .syncing: return .appAccent
-        case .synced: return .green
-        case .error: return .red
+        case .synced: return Color.theme.green
+        case .error: return Color.theme.red
         }
     }
 
@@ -80,7 +80,7 @@ struct SyncActionsSection: View {
         Section {
             // Push to iCloud
             Button(action: onPush) {
-                Label(L10n.ICloud.pushToCloud, systemImage: "icloud.and.arrow.up")
+                Label(L10n.ICloud.pushToCloud, systemImage: DesignSystem.Icons.icloudArrowUp)
                     .foregroundStyle(.appText)
             }
             .accessibilityIdentifier("push-to-icloud")
@@ -88,7 +88,7 @@ struct SyncActionsSection: View {
 
             // Pull from iCloud
             Button(action: onPullRequest) {
-                Label(L10n.ICloud.pullFromCloud, systemImage: "icloud.and.arrow.down")
+                Label(L10n.ICloud.pullFromCloud, systemImage: DesignSystem.Icons.icloudArrowDown)
                     .foregroundStyle(.appText)
             }
             .accessibilityIdentifier("pull-from-icloud")

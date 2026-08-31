@@ -79,8 +79,8 @@ struct AuthPhonePanel: View {
                     .foregroundStyle(.appSecondary)
                     .lineSpacing(Spacing.atomic)
                     .environment(\.openURL, OpenURLAction { url in
-                        if url.scheme == "privacy" {
-                            if url.host == "terms" {
+                        if url.scheme == FeatureConstants.URLSchemeName.privacy {
+                            if url.host == FeatureConstants.URLSchemeName.terms {
                                 showTermsSheet = true
                             } else {
                                 showPrivacySheet = true

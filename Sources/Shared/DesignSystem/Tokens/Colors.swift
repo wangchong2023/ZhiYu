@@ -291,6 +291,13 @@ public struct ColorTheme: Sendable {
     public var teal: Color { Color(adaptLight: Color(hex: "30B0C7"), dark: Color(hex: "40C8E0")) }
     /// 词条/高亮（黄色）
     public var yellow: Color { Color(adaptLight: Color(hex: "FFCC00"), dark: Color(hex: "FFD60A")) }
+    public var pink: Color { Color(adaptLight: Color(hex: "FF2D55"), dark: Color(hex: "FF375F")) }
+    /// 靛蓝（Indigo）
+    public var indigo: Color { Color(adaptLight: Color(hex: "5856D6"), dark: Color(hex: "5E5CE6")) }
+    /// 薄荷绿（Mint）
+    public var mint: Color { Color(adaptLight: Color(hex: "00C7BE"), dark: Color(hex: "66D4CF")) }
+    /// 棕色（Brown）
+    public var brown: Color { Color(adaptLight: Color(hex: "A2845E"), dark: Color(hex: "AC8E68")) }
 }
 
 #if canImport(UIKit)

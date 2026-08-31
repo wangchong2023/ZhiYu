@@ -92,7 +92,7 @@ final class SystemStatsCoordinator {
             duration: endTime.timeIntervalSince(startTime),
             startTime: startTime,
             endTime: endTime,
-            module: "Dashboard"
+            module: FeatureConstants.ModuleName.dashboard
         )
         self.isLoading = false
     }
@@ -214,13 +214,13 @@ final class SystemStatsCoordinator {
         let modelCount = GlobalModelManager.shared.modelStorageUsage.count
         
         let categories = [
-            StorageCategory(label: L10n.Dashboard.System.database, value: stats.databaseSize, count: VaultService.shared.vaults.count, color: .blue),
-            StorageCategory(label: L10n.Dashboard.System.models, value: effectiveModelsSize, count: modelCount, color: .purple),
-            StorageCategory(label: L10n.Dashboard.System.plugins, value: stats.pluginsSize, count: 0, color: .indigo),
-            StorageCategory(label: L10n.Dashboard.System.logs, value: stats.logsSize, count: allLogEntries.count, color: .orange),
-            StorageCategory(label: L10n.Dashboard.stats.storageImport, value: (try? await importRecordRepo.totalStorageSize()) ?? 0, count: records.count, color: .green),
-            StorageCategory(label: L10n.Dashboard.stats.storageExport, value: stats.exportsSize, count: allLogEntries.filter { $0.action == .export }.count, color: .pink),
-            StorageCategory(label: L10n.Dashboard.System.caches, value: stats.cachesSize, count: 0, color: .gray)
+            StorageCategory(label: L10n.Dashboard.System.database, value: stats.databaseSize, count: VaultService.shared.vaults.count, color: Color.theme.blue),
+            StorageCategory(label: L10n.Dashboard.System.models, value: effectiveModelsSize, count: modelCount, color: Color.theme.purple),
+            StorageCategory(label: L10n.Dashboard.System.plugins, value: stats.pluginsSize, count: 0, color: Color.theme.indigo),
+            StorageCategory(label: L10n.Dashboard.System.logs, value: stats.logsSize, count: allLogEntries.count, color: Color.theme.orange),
+            StorageCategory(label: L10n.Dashboard.stats.storageImport, value: (try? await importRecordRepo.totalStorageSize()) ?? 0, count: records.count, color: Color.theme.green),
+            StorageCategory(label: L10n.Dashboard.stats.storageExport, value: stats.exportsSize, count: allLogEntries.filter { $0.action == .export }.count, color: Color.theme.pink),
+            StorageCategory(label: L10n.Dashboard.System.caches, value: stats.cachesSize, count: 0, color: Color.theme.gray)
         ]
         self.storageCategories = categories
         self.totalStorage = categories.reduce(0) { $0 + $1.value }

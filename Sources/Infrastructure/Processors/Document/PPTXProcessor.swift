@@ -120,7 +120,7 @@ final class PPTXProcessor {
     private func generatePresentation(at url: URL, slideCount: Int) throws {
         var slideList = ""
         for i in 1...slideCount {
-            slideList += ["<p:sldId", "id=\"\(255 + i)\"", "r:id=\"rId\(i + 1)\"/>"].joined(separator: " ")
+            slideList += ["<p:sldId", "id=\"\(ProcessorConstants.OOXML.pptxSlideIdBase + i)\"", "r:id=\"rId\(i + 1)\"/>"].joined(separator: " ")
         }
 
         let xml = """

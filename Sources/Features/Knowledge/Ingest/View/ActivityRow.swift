@@ -21,7 +21,7 @@ struct ActivityRow: View {
                     Image(systemName: taskIcon).font(.system(size: DesignSystem.subheadlineFontSize)).foregroundStyle(taskColor)
                 }
                 VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                    Text(task.name + ": " + task.target).font(.system(size: DesignSystem.subheadlineFontSize, weight: .medium)).foregroundStyle(.appText).lineLimit(1)
+                    Text(displayTitle).font(.system(size: DesignSystem.subheadlineFontSize, weight: .medium)).foregroundStyle(.appText).lineLimit(1)
                     Text(task.startTime.formatted(Date.FormatStyle(locale: Localized.currentLocale))).font(.system(size: DesignSystem.captionFontSize)).foregroundStyle(.appSecondary)
                 }
                 Spacer()
@@ -31,11 +31,20 @@ struct ActivityRow: View {
     }
     private var taskColor: Color {
         switch task.status {
-        case .completed: return .green
-        case .failed: return .red
-        case .running: return .blue
-        case .pending: return .gray
+        case .completed: return Color.theme.green
+        case .failed: return Color.theme.red
+        case .running: return Color.theme.blue
+        case .pending: return Color.theme.gray
         }
+    }
+    
+    /// 拼接任务名称与目标，空值时避免显示孤立的 ": "
+    private var displayTitle: String {
+        let name = task.name
+        let target = task.target
+        if name.isEmpty { return target }
+        if target.isEmpty { return name }
+        return "\(name): \(target)"
     }
     private var taskIcon: String {
         switch task.status {

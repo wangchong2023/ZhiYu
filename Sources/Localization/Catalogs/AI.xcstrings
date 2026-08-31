@@ -11865,6 +11865,71 @@
         }
       }
     },
+    "ondevice.tokensPerSecondFormat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.1f tok/s"
+          }
+        }
+      }
+    },
     "ondevice.info.memory": {
       "extractionState": "manual",
       "localizations": {
@@ -14268,6 +14333,21 @@
             "value": "Impact: Control difficulty level, question distribution, and explanation detail."
           }
         }
+      }
+    },
+    "ai.quiz.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Quiz View" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "测验视图" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "測驗視圖" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Vista de Quiz" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Vue Quiz" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "عرض الاختبار" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Вид теста" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "퀴즈 보기" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "クイズビュー" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Vista de Quiz" } }
       }
     },
     "prompt.expert.quiz.title": {

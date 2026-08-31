@@ -35,6 +35,9 @@ final class DataCoordinator {
         syncTask = Task { [weak self] in
             guard let self = self else { return }
 
+            // Bug #140 修复：在每个 await 后检查取消，避免取消后仍执行副作用
+            guard !Task.isCancelled else { return }
+
             // 1. 监控存储层的页面变化
             // SQLiteStore 现在只负责通知数据已更新，由协调器决定后续动作
             self.logger.addLog(
@@ -46,9 +49,11 @@ final class DataCoordinator {
 
             // 2. 触发向量化同步 (@RR-01: 确保向量存储与主库最终一致性)
             let currentPages = await self.sqliteStore.pages
+            guard !Task.isCancelled else { return }
             await self.embeddingProvider.syncEmbeddings(pages: currentPages)
-            
+
             // 3. 触发 Spotlight 索引同步
+            guard !Task.isCancelled else { return }
             SpotlightService.shared.indexPages(currentPages)
 
             self.logger.addLog(

@@ -297,8 +297,8 @@ struct SettingsView: View {
                     Text(mode.displayName).tag(mode)
                 }
             } label: {
-                Label(L10n.Settings.systemTheme, systemImage: "paintbrush.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .indigo))
+                Label(L10n.Settings.systemTheme, systemImage: DesignSystem.Icons.settingsAppearance)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.indigo))
             }
 
             Picker(selection: $selectedLanguage) {
@@ -306,8 +306,8 @@ struct SettingsView: View {
                     Text(mode.displayName).tag(mode)
                 }
             } label: {
-                Label(L10n.Settings.systemLanguage, systemImage: "globe")
-                    .labelStyle(ColorfulIconLabelStyle(color: .blue))
+                Label(L10n.Settings.systemLanguage, systemImage: DesignSystem.Icons.globe)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
             }
             .onChange(of: selectedLanguage) { _, newValue in
                 Localized.languageMode = newValue
@@ -326,16 +326,16 @@ struct SettingsView: View {
             NavigationLink {
                 SystemStatsView()
             } label: {
-                Label(L10n.Common.usage, systemImage: "chart.bar.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .teal))
+                Label(L10n.Common.usage, systemImage: DesignSystem.Icons.chartBarFill)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.teal))
             }
 
             #if ICLOUD_ENABLED
             NavigationLink {
                 iCloudSyncView()
             } label: {
-                Label(L10n.Settings.iCloudSync, systemImage: "icloud.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .blue))
+                Label(L10n.Settings.iCloudSync, systemImage: DesignSystem.Icons.icloud)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
             }
             #endif
             
@@ -343,22 +343,22 @@ struct SettingsView: View {
             NavigationLink {
                 BackupView()
             } label: {
-                Label(L10n.Settings.backupRestore, systemImage: "archivebox.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .brown))
+                Label(L10n.Settings.backupRestore, systemImage: DesignSystem.Icons.settingsData)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.brown))
             }
             
             NavigationLink {
                 LogView()
             } label: {
-                Label(L10n.Settings.operationLog, systemImage: "list.bullet.rectangle.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .mint))
+                Label(L10n.Settings.operationLog, systemImage: DesignSystem.Icons.listBulletRectangleFill)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.mint))
             }
             
             // 恢复预设：生成默认的演示笔记本
             Button(action: { showInjectConfirmation = true }) {
                 HStack {
-                    Label(L10n.Settings.rebuildInitialNotebooks, systemImage: "arrow.counterclockwise")
-                        .labelStyle(ColorfulIconLabelStyle(color: .red))
+                    Label(L10n.Settings.rebuildInitialNotebooks, systemImage: DesignSystem.Icons.arrowCounterclockwise)
+                        .labelStyle(ColorfulIconLabelStyle(color: Color.theme.red))
                         .foregroundStyle(.appText)
                     Spacer()
                     if isInjecting {
@@ -407,14 +407,14 @@ struct SettingsView: View {
         
         return Section {
             Toggle(isOn: privacyBinding) {
-                Label(L10n.Settings.privacyMode, systemImage: "eye.slash.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .purple))
+                Label(L10n.Settings.privacyMode, systemImage: DesignSystem.Icons.settingsSecurity)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.purple))
             }
             
             if showBiometric {
                 Toggle(isOn: biometricBinding) {
-                    Label(L10n.Settings.biometricProtection, systemImage: "faceid")
-                        .labelStyle(ColorfulIconLabelStyle(color: .green))
+                    Label(L10n.Settings.biometricProtection, systemImage: DesignSystem.Icons.faceid)
+                        .labelStyle(ColorfulIconLabelStyle(color: Color.theme.green))
                 }
             }
         } header: {
@@ -439,7 +439,7 @@ struct SettingsView: View {
                     .environment(themeManager)
             } label: {
                 Label(L10n.Settings.Feedback.title, systemImage: "bubble.left.and.bubble.right.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .blue))
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
             }
         }
     }
@@ -449,8 +449,8 @@ struct SettingsView: View {
             NavigationLink {
                 AboutView()
             } label: {
-                Label(L10n.Settings.Section.about, systemImage: "info.circle")
-                    .labelStyle(ColorfulIconLabelStyle(color: .gray))
+                Label(L10n.Settings.Section.about, systemImage: DesignSystem.Icons.settingsAbout)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.gray))
             }
         }
     }
@@ -465,8 +465,8 @@ struct SettingsView: View {
                     .environment(store.settingsStore)
                     .environmentObject(onboardingService)
             } label: {
-                Label(L10n.Settings.Section.developer, systemImage: "hammer.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: .gray))
+                Label(L10n.Settings.Section.developer, systemImage: DesignSystem.Icons.settingsDeveloper)
+                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.gray))
             }
         }
     }
@@ -505,7 +505,7 @@ struct SettingsView: View {
     @ViewBuilder
     private func emptyDetailPlaceholder(router: Router) -> some View {
         VStack(spacing: DesignSystem.medium) {
-            Image(systemName: "gearshape.2")
+            Image(systemName: DesignSystem.Icons.gearshape2)
                 .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
                 .foregroundStyle(.appAccent)
             Text(L10n.Settings.selectCategoryTip)

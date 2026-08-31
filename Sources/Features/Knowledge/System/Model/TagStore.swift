@@ -50,13 +50,13 @@ public final class TagStore {
     /// 在全库范围内重命名标签
     public func renameTag(old: String, to new: String) async {
         await store.renameTag(old, to: new)
-        logger.addLog(action: .update, target: old, details: "Renamed tag" + " to \(new)", module: "TagStore")
+        logger.addLog(action: .update, target: old, details: FeatureConstants.LogDetails.renamedTag + FeatureConstants.LogDetails.toSpace + "\(new)", module: FeatureConstants.ModuleName.tagStore)
     }
 
     /// 物理删除特定标签引用
     public func deleteTag(_ tag: String) async {
         await store.deleteTag(tag)
-        logger.addLog(action: .delete, target: tag, details: "Tag removed from all pages", module: "TagStore")
+        logger.addLog(action: .delete, target: tag, details: FeatureConstants.LogDetails.tagRemovedFromAllPages, module: FeatureConstants.ModuleName.tagStore)
     }
 
     /// 批量删除标签
@@ -64,12 +64,12 @@ public final class TagStore {
         for tag in tags {
             await store.deleteTag(tag)
         }
-        logger.addLog(action: .delete, target: "Multiple Tags", details: "Deleted \(tags.count) tags", module: "TagStore")
+        logger.addLog(action: .delete, target: FeatureConstants.MockData.multipleTags, details: "Deleted \(tags.count) tags", module: FeatureConstants.ModuleName.tagStore)
     }
 
     /// 注册新标签 (用于预设)
     public func addNewTag(_ tag: String) {
-        logger.addLog(action: .update, target: tag, details: "New tag registered", module: "TagStore")
+        logger.addLog(action: .update, target: tag, details: FeatureConstants.LogDetails.newTagRegistered, module: FeatureConstants.ModuleName.tagStore)
     }
 }
 

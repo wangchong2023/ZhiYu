@@ -77,24 +77,29 @@ struct TagCapsuleView: View {
         coordinator.isEditMode ? coordinator.selectedTagsForBulk.contains(item.tag) : coordinator.selectedTag == item.tag
     }
 
+    /// 将 bubbleRatio 限制在 [0, 1] 范围内，防止外部传入越界值导致视觉变形
+    private var clampedBubbleRatio: Double {
+        min(max(bubbleRatio, 0.0), 1.0)
+    }
+
     private var fontSize: CGFloat {
-        isBubbleMode ? bubbleModeBaseFontSize + CGFloat(bubbleRatio * bubbleModeFontSizeDelta) : listModeFontSize
+        isBubbleMode ? bubbleModeBaseFontSize + CGFloat(clampedBubbleRatio * bubbleModeFontSizeDelta) : listModeFontSize
     }
 
     private var paddingH: CGFloat {
-        isBubbleMode ? bubbleModeBasePaddingH + CGFloat(bubbleRatio * bubbleModePaddingHDelta) : listModePaddingH
+        isBubbleMode ? bubbleModeBasePaddingH + CGFloat(clampedBubbleRatio * bubbleModePaddingHDelta) : listModePaddingH
     }
 
     private var paddingV: CGFloat {
-        isBubbleMode ? bubbleModeBasePaddingV + CGFloat(bubbleRatio * bubbleModePaddingVDelta) : listModePaddingV
+        isBubbleMode ? bubbleModeBasePaddingV + CGFloat(clampedBubbleRatio * bubbleModePaddingVDelta) : listModePaddingV
     }
 
     private var opacity: Double {
-        isBubbleMode ? bubbleModeMinOpacity + bubbleRatio * bubbleModeOpacityRange : SystemOpacity.overlay
+        isBubbleMode ? bubbleModeMinOpacity + clampedBubbleRatio * bubbleModeOpacityRange : SystemOpacity.overlay
     }
 
     private var size: CGFloat {
-        bubbleModeBaseSize + CGFloat(bubbleRatio * bubbleModeSizeDelta)
+        bubbleModeBaseSize + CGFloat(clampedBubbleRatio * bubbleModeSizeDelta)
     }
 
     private var countTextBg: Color {
@@ -120,7 +125,7 @@ struct TagCapsuleView: View {
             let frame = geo.frame(in: .global)
             let screenHeight = deviceInfo.screenHeight
             // 计算屏幕中心 Y 轴坐标
-            let centerY = screenHeight / 2.0
+            let centerY = screenHeight / FeatureConstants.TagBubbleCloud.canvasHalfDivisor
             // 计算当前气泡中心与屏幕中心的绝对 Y 轴距离
             let distance = abs(frame.midY - centerY)
             // 计算归一化的偏移比例（0.0 到 1.0 之间）
@@ -196,24 +201,24 @@ struct TagCapsuleView: View {
                     .multilineTextAlignment(.center)
 
                 Text("\(item.count)")
-                    .font(.system(size: fontSize * 0.8, weight: .bold, design: .monospaced))
+                    .font(.system(size: fontSize * FeatureConstants.TagBubbleCloud.capsuleCountFontScale, weight: .bold, design: .monospaced))
                     .padding(.horizontal, SystemSpacing.tiny)
-                    .padding(.vertical, 0.5)
+                    .padding(.vertical, FeatureConstants.TagBubbleCloud.capsuleCountVerticalPadding)
                     .background(countTextBg)
                     .clipShape(Capsule())
             }
-            .padding(bubbleRatio > 0.5 ? DesignSystem.medium : DesignSystem.small)
-            .frame(minWidth: size * 0.7)
+            .padding(clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.medium : DesignSystem.small)
+            .frame(minWidth: size * FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold)
             .background {
                 Circle()
-                    .fill(isSelected ? Color.appAccent.opacity(bubbleSelectedFillOpacity) : Color.appAccent.opacity(bubbleUnselectedFillOpacityBase + bubbleRatio * bubbleUnselectedFillOpacityFactor))
+                    .fill(isSelected ? Color.appAccent.opacity(bubbleSelectedFillOpacity) : Color.appAccent.opacity(bubbleUnselectedFillOpacityBase + clampedBubbleRatio * bubbleUnselectedFillOpacityFactor))
             }
             .overlay {
                 Circle()
-                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + bubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignSystem.borderWidth)
+                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + clampedBubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignSystem.borderWidth)
             }
             .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(bubbleRatio * 0.08), radius: bubbleRatio > 0.5 ? DesignSystem.shadowRadius : 2, y: bubbleRatio > 0.5 ? DesignSystem.shadowY : 1)
+            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
             .overlay(alignment: .topTrailing) {
                 if coordinator.isEditMode {
                     editBadgeView(isSelected: isSelected)
@@ -242,7 +247,7 @@ struct TagCapsuleView: View {
                     .stroke(isSelected ? Color.appAccent.opacity(SystemOpacity.textSecondary) : Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.divider)
             }
             .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(bubbleRatio * 0.08), radius: bubbleRatio > 0.5 ? DesignSystem.shadowRadius : 2, y: bubbleRatio > 0.5 ? DesignSystem.shadowY : 1)
+            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
             .overlay(alignment: .topTrailing) {
                 if coordinator.isEditMode {
                     editBadgeView(isSelected: isSelected)

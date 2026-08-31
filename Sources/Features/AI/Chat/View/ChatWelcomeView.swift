@@ -77,7 +77,7 @@ struct SuggestionGroupView: View {
                     Text(title).font(.caption.weight(.bold))
                     Spacer()
                     Image(systemName: DesignSystem.Icons.promptLibrary)
-                        .font(.system(size: DesignSystem.Metrics.heroValueSize * 0.38))
+                        .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.ChatWelcome.iconFontScale))
                         .opacity(DesignSystem.Opacity.soft)
                 }
                 .foregroundStyle(color)

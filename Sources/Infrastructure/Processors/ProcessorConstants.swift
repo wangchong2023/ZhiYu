@@ -196,6 +196,8 @@ enum ProcessorConstants {
         static let sharedStringIndexMax: Int = 10000
         // Office 文档嵌入图片的媒体目录路径
         static let imageMediaFolders: [String] = ["word/media", "xl/media", "ppt/media"]
+        /// PPTX 幻灯片 ID 基址（OOXML 规范：sldId 从 256 开始）
+        static let pptxSlideIdBase: Int = 255
     }
 
     // MARK: - 空白字符 (Whitespace)
@@ -242,7 +244,12 @@ enum ProcessorConstants {
         /// 日志详情模板
         static let logDetailsTemplate: String = "%@ (Length: %lld)"
         /// 受限 HTTP 状态码
-        static let restrictedStatusCodes: [Int] = [401, 402, 403, 429]
+        static let restrictedStatusCodes: [Int] = [
+            SystemConstants.HTTPStatusCode.unauthorized,
+            SystemConstants.HTTPStatusCode.paymentRequired,
+            SystemConstants.HTTPStatusCode.forbidden,
+            SystemConstants.HTTPStatusCode.rateLimited
+        ]
         /// HTTPS 协议前缀（不带 //）
         static let httpsPrefix: String = "https:"
         /// 通用桌面浏览器 UA（引用 SystemConstants.UserAgent.desktopSafari）

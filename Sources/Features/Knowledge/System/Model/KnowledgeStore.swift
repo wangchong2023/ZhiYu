@@ -109,7 +109,7 @@ public final class KnowledgeStore {
                     // 🎬 RAG 冷启动魔法时刻 (Aha Moment)：
                     // 在新建笔记本首次切换进入时，如果数据库为空且未播种过，则自动注入欢迎与引导数据
                     // 防御性校验：在应用冷启动尚未完成 DI 注册前，避开早期的数据库卡片准备通知引发的竞态注入
-                    guard ServiceContainer.shared.isReady || ProcessInfo.processInfo.arguments.contains("--uitesting") else {  // inject_exempt: DI 就绪性检查
+                    guard ServiceContainer.shared.isReady || ProcessInfo.processInfo.arguments.contains(FeatureConstants.UITestingArg.uiTesting) else {  // inject_exempt: DI 就绪性检查
                         return
                     }
 
@@ -222,7 +222,7 @@ public final class KnowledgeStore {
         )) ?? KnowledgePage(title: title)
 
         // 检查是否需要显示图谱引导 (@SRS-UI-01)
-        if totalPages >= 3 && !settingsStore.hasShownGraphCoachMark {
+        if totalPages >= FeatureConstants.KnowledgeCoachMark.minPagesForGraphCoachMark && !settingsStore.hasShownGraphCoachMark {
             // 此处逻辑暂留，AppStore 可能会处理全局引导弹窗
             // 我们只负责触发事件或状态更新
             NotificationCenter.default.post(name: NSNotification.Name("ShowGraphCoachMark"), object: nil)

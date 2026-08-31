@@ -83,8 +83,8 @@ public final class SettingsStore {
     // ── iCloud 同步偏好 ──
     public var iCloudConflictResolution: String {
         get {
-            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return "merge" } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
-            return ks.string(forKey: AppConstants.Keys.Storage.iCloudConflictResolution) ?? "merge"
+            guard let ks = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return AppConstants.Storage.ConflictResolution.merge } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
+            return ks.string(forKey: AppConstants.Keys.Storage.iCloudConflictResolution) ?? AppConstants.Storage.ConflictResolution.merge
         }
         set { ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?.set(newValue, forKey: AppConstants.Keys.Storage.iCloudConflictResolution) } // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
     }

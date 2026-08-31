@@ -67,7 +67,8 @@ public struct AppTextEditor: View {
             }
             .padding(DesignSystem.SpacingToken.tiny.value)
             .background(Color.primary.opacity(DesignSystem.Opacity.atomic))
-            .cornerRadius(8)
+            // Bug #102 修复：硬编码 8 改用 DesignSystem.Radius.small
+            .cornerRadius(DesignSystem.Radius.small)
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
                     .stroke(
@@ -75,7 +76,11 @@ public struct AppTextEditor: View {
                         lineWidth: SystemStroke.divider
                     )
             )
-            .shadow(color: isFocused ? Color.theme.blue.opacity(DesignSystem.Opacity.light) : Color.clear, radius: 4, x: 0, y: 2)
+            // Bug #102 修复：硬编码 4/2 改用 DesignSystem.Shadows.standard
+            .shadow(color: isFocused ? Color.theme.blue.opacity(DesignSystem.Opacity.light) : Color.clear,
+                    radius: DesignSystem.Shadows.standard.radius,
+                    x: DesignSystem.Shadows.standard.x,
+                    y: DesignSystem.Shadows.standard.y)
             .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
             
             // 字数限额计数条

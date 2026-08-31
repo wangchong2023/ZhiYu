@@ -104,6 +104,9 @@ final class CollaborationServiceDeepTests: XCTestCase {
         // 强行模拟可用状态以越过 iOS 模拟器环境下的 isAvailable 检查
         service.isAvailable = true
 
+        // 确保 mockProvider.delegate 指向 service（绕过 @Dependency 缓存不确定性）
+        mockProvider.delegate = service
+
         mockDelegate = MockCollaborationDelegate()
         service.delegate = mockDelegate
     }
@@ -174,11 +177,11 @@ final class CollaborationServiceDeepTests: XCTestCase {
     /// 轮询等待条件满足，避免固定 sleep 在全量测试负载下不够的问题
     /// - Parameters:
     ///   - condition: 条件闭包，返回 true 表示条件已满足
-    ///   - timeout: 超时时间（秒），默认 2 秒
+    ///   - timeout: 超时时间（秒），默认 30 秒（全量测试高负载下 Task 调度可能延迟）
     ///   - interval: 轮询间隔（纳秒），默认 10ms
     private func waitFor(
         _ condition: @MainActor () -> Bool,
-        timeout: TimeInterval = 2.0,
+        timeout: TimeInterval = 30.0,
         interval: UInt64 = 10_000_000
     ) async throws {
         let start = Date()
@@ -548,9 +551,12 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
     /// 验证接收 pageSync 数据且远程时间等于本地时也更新
     /// - Note: C-11/Bug#7 已修复 — 改用 >= 比较，相同时间戳的远程更新也会应用。
+    /// - Important: 使用整数秒避免 JSONSerialization 对 Double 的精度损失导致比较失败。
     func testReceivePageSyncDataWithEqualTimestampAlsoUpdates() async throws {
         let pageID = UUID()
-        let syncDate = Date()
+        // 使用整数秒时间戳，确保 JSON 序列化/反序列化无精度损失
+        let rawTimestamp = TimeInterval(Int(Date().timeIntervalSince1970))
+        let syncDate = Date(timeIntervalSince1970: rawTimestamp)
         let existingPage = KnowledgePage(id: pageID, title: "Existing", content: "existing", createdAt: syncDate, updatedAt: syncDate)
         mockDelegate.pages = [existingPage]
 

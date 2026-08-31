@@ -167,9 +167,9 @@ public final class SynthesisStore {
         
         // 🛡️ 校验生成内容有效性：拒绝 0 字节、纯骨架关键字或小于最小字节阀值的无效填充
         guard !trimmed.isEmpty,
-              trimmed != "mindmap",
-              trimmed != "graph TD",
-              trimmed != "graph",
+              trimmed != ProcessorConstants.MermaidSyntax.mindmap,
+              trimmed != ProcessorConstants.MermaidSyntax.graphTD,
+              trimmed != ProcessorConstants.MermaidSyntax.graph,
               trimmed.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
             Logger.shared.addLog(action: .ingest, target: type.title, details: "Synthesis result invalid or empty (size: \(trimmed.utf8.count) B)")
             return nil
@@ -248,7 +248,7 @@ public final class SynthesisStore {
             let processedContent = strategy.process(rawContent: content, sourceContent: combinedContent)
             
             let cleaned = Self.cleanMarkdown(processedContent).trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !cleaned.isEmpty, cleaned != "mindmap", cleaned != "graph TD", cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
+            guard !cleaned.isEmpty, cleaned != ProcessorConstants.MermaidSyntax.mindmap, cleaned != ProcessorConstants.MermaidSyntax.graphTD, cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes else {
                 let invalidError = L10n.AI.Synthesis.Error.invalidResult
                 Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] Synthesis validation failed, invalid content")
                 throw AppError.synthesis(invalidError, code: -3)
@@ -370,18 +370,18 @@ public final class SynthesisStore {
         let pattern = #"\\([#\(\)\[\]\{\}\_\~\+\-\*\.\!\|])"#
         if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
             let range = NSRange(location: 0, length: cleaned.utf16.count)
-            cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: "$1")
+            cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: FeatureConstants.RegexTemplate.captureGroup1)
         }
-        cleaned = cleaned.replacingOccurrences(of: "\\[\\[", with: "[[")
-                        .replacingOccurrences(of: "\\]\\]", with: "]]")
+        cleaned = cleaned.replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkOpen, with: SystemConstants.MarkdownSyntax.wikiLinkOpen)
+                        .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkClose, with: SystemConstants.MarkdownSyntax.wikiLinkClose)
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func extractTitle(from content: String, type: SynthesisType) -> String {
         if type == .quiz {
             let cleaned = content.trimmingCharacters(in: .whitespacesAndNewlines)
-                .replacingOccurrences(of: "```json", with: "")
-                .replacingOccurrences(of: "```", with: "")
+                .replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "")
+                .replacingOccurrences(of: SystemConstants.MarkdownSyntax.codeFence, with: "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             if let data = cleaned.data(using: .utf8),
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

@@ -32,10 +32,10 @@ struct IngestTimelineView: View {
     }
     
     private let stages: [StageItem] = [
-        StageItem(id: .extraction, title: L10n.Ingest.Status.starting, icon: "doc.text.magnifyingglass", color: .gray),
-        StageItem(id: .enrichment, title: L10n.Ingest.Status.aiEnriching, icon: "sparkles", color: .indigo),
-        StageItem(id: .chunking, title: L10n.Ingest.Status.chunking, icon: "square.grid.3x3", color: .cyan),
-        StageItem(id: .embedding, title: L10n.Ingest.Status.vectorizing, icon: "server.rack", color: .teal)
+        StageItem(id: .extraction, title: L10n.Ingest.Status.starting, icon: "doc.text.magnifyingglass", color: Color.theme.gray),
+        StageItem(id: .enrichment, title: L10n.Ingest.Status.aiEnriching, icon: "sparkles", color: Color.theme.indigo),
+        StageItem(id: .chunking, title: L10n.Ingest.Status.chunking, icon: "square.grid.3x3", color: Color.theme.cyan),
+        StageItem(id: .embedding, title: L10n.Ingest.Status.vectorizing, icon: "server.rack", color: Color.theme.teal)
     ]
     
     var body: some View {

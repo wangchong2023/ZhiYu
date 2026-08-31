@@ -71,7 +71,7 @@ struct TagCloudViewContent: View {
 
         mainContent
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(PageBackgroundView(accentColor: .blue))
+            .background(PageBackgroundView(accentColor: Color.theme.blue))
             .appSubPageToolbar(title: L10n.Tag.title)
             .task {
                 await coordinator.fetchData()

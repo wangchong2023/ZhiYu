@@ -104,8 +104,6 @@ final class P9ExploratoryTests: XCTestCase {
         setupFullMockEnvironment()
         let store = AppStore()
         defer {
-            DatabaseManager.shared.reset()
-            ServiceContainer.shared.reset()
         }
 
         _ = await store.createPage(title: "TestData", pageType: .concept)
@@ -157,8 +155,6 @@ final class P9ExploratoryTests: XCTestCase {
         setupFullMockEnvironment()
         let store = AppStore()
         defer {
-            DatabaseManager.shared.reset()
-            ServiceContainer.shared.reset()
         }
 
         _ = await store.createPage(title: "TagConsistency", pageType: .concept, tags: ["alpha", "beta"])

@@ -52,7 +52,27 @@ struct QuizView: View {
                 .padding(.horizontal, Spacing.standardPadding)
                 .frame(maxWidth: .infinity, alignment: .center)
 
-            if !isCompleted {
+            if quiz.questions.isEmpty {
+                // 空题目守卫：避免 questions[currentIndex] 越界与 ProgressView total=0 除零
+                ContentUnavailableView(
+                    L10n.Quiz.empty,
+                    systemImage: DesignSystem.Icons.questionCircle,
+                    description: Text(L10n.Quiz.emptyDescription)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Spacer()
+                Button(action: { dismiss() }) {
+                    Text(L10n.Quiz.backToPage)
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(Spacing.standardPadding)
+                        .background(Color.appAccent)
+                        .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                }
+                .padding(.horizontal, Spacing.huge)
+                .padding(.bottom, Spacing.standardPadding)
+            } else if !isCompleted {
                 // 进度页眉
                 VStack(spacing: Spacing.small) {
                     HStack {
@@ -105,9 +125,11 @@ struct QuizView: View {
                                         .font(.subheadline.bold())
                                 }
 
-                                Text("\(optionLabel(for: correctIdx)) \(quiz.questions[currentIndex].options[correctIdx])")
-                                    .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(.green)
+                                if quiz.questions[currentIndex].options.indices.contains(correctIdx) {
+                                    Text("\(optionLabel(for: correctIdx)) \(quiz.questions[currentIndex].options[correctIdx])")
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(Color.theme.green)
+                                }
 
                                 Text(fixExplanationNumbering(quiz.questions[currentIndex].explanation, correctIndex: correctIdx))
                                     .font(.footnote)
@@ -144,7 +166,7 @@ struct QuizView: View {
                 // Completion View
                 VStack(spacing: DesignSystem.loosePadding) {
                     Image(systemName: DesignSystem.Icons.trophy)
-                        .font(.system(size: DesignSystem.Metrics.heroValueSize * 2.5)) // 80
+                        .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.QuizCompletion.trophyFontScale)) // 80
                         .foregroundStyle(.appAccent)
                     
                     VStack(spacing: DesignSystem.tightPadding) {
@@ -154,7 +176,7 @@ struct QuizView: View {
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                         Text("\(score) / \(quiz.questions.count)")
-                            .font(.system(size: DesignSystem.Metrics.heroValueSize * 1.5, weight: .black, design: .rounded)) // 48
+                            .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.QuizCompletion.scoreFontScale, weight: .black, design: .rounded)) // 48
                             .foregroundStyle(.appAccent)
                     }
                     
@@ -187,7 +209,8 @@ struct QuizView: View {
     
     private func optionLabel(for index: Int) -> String {
         let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        let i = letters.index(letters.startIndex, offsetBy: min(index, letters.count - 1))
+        let safeIndex = max(0, min(index, letters.count - 1))
+        let i = letters.index(letters.startIndex, offsetBy: safeIndex)
         return "\(letters[i])."
     }
 

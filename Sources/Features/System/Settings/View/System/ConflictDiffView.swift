@@ -94,7 +94,7 @@ struct ConflictDiffView: View {
     /// 空冲突降级状态（通常仅发生日志时碰撞，不含物理 Page 冲突）
     private var emptyConflictStateView: some View {
         VStack(spacing: DesignSystem.medium) {
-            Image(systemName: "checkmark.icloud.fill")
+            Image(systemName: DesignSystem.Icons.checkmarkIcloudFill)
                 .font(.system(size: ComponentSpacing.colossal)) // Dynamic Type
                 .foregroundStyle(.appAccent)
             

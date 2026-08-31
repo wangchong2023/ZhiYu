@@ -132,8 +132,8 @@ public struct DemoImageBuilder {
             (String(localized: "demo.ocr.neuron.r5c1", defaultValue: "记忆重构"), String(localized: "demo.ocr.neuron.r5c2", defaultValue: "神经可塑性 (Neuroplasticity)"), String(localized: "demo.ocr.neuron.r5c3", defaultValue: "3D 知识图谱聚类与涌现"))
         ]
         
-        var startY: CGFloat = 220
-        let colWidths: [CGFloat] = [220, 420, 420]
+        var startY: CGFloat = DemoMediaConstants.ocrTableStartY
+        let colWidths: [CGFloat] = DemoMediaConstants.ocrNeuronTableColumnWidths
         
         for (i, row) in rows.enumerated() {
             let isHeader = (i == 0)
@@ -225,8 +225,8 @@ public struct DemoImageBuilder {
             (String(localized: "demo.ocr.coffee.r5c1", defaultValue: "供应链可达"), String(localized: "demo.ocr.coffee.r5c2", defaultValue: "20% 权重"), String(localized: "demo.ocr.coffee.r5c3", defaultValue: "冷链配送 24h 内完备交付（见采购清单）"))
         ]
         
-        var startY: CGFloat = 220
-        let colWidths: [CGFloat] = [220, 260, 580]
+        var startY: CGFloat = DemoMediaConstants.ocrTableStartY
+        let colWidths: [CGFloat] = DemoMediaConstants.ocrCoffeeTableColumnWidths
         
         for (i, row) in rows.enumerated() {
             let isHeader = (i == 0)

@@ -565,6 +565,8 @@ extension L10n {
             public static var enableThinking: String { ModelManager.tr("model_manager.lab.enable_thinking") }
             public static var enableSpeculativeDecoding: String { ModelManager.tr("model_manager.lab.enable_speculative_decoding") }
             public static var accelerator: String { ModelManager.tr("model_manager.lab.accelerator") }
+            public static var cpu: String { ModelManager.tr("model_manager.lab.cpu") }
+            public static var gpu: String { ModelManager.tr("model_manager.lab.gpu") }
             public static var selectModel: String { ModelManager.tr("model_manager.lab.select_model") }
             public static var chatInputPlaceholder: String { ModelManager.tr("model_manager.lab.chat_input_placeholder") }
             public static var send: String { ModelManager.tr("model_manager.lab.send") }

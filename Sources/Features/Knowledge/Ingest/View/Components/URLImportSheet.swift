@@ -9,6 +9,7 @@
 //  核心职责：知识摄入：文档导入、URL 抓取、OCR 扫描、PDF 解析。
 //
 import SwiftUI
+import UFPCore
 
 // MARK: - URL Import Sheet
 /// 批量网页链接导入面板（最多 10 个 URL，带格式校验）
@@ -18,6 +19,8 @@ struct URLImportSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     private let maxURLCount = AppConstants.Keys.ImportLimits.maxURLCount
+    // Bug #98 修复：URL 超限警告状态
+    @State private var urlExceedWarning: String?
 
     /// 解析所有非空行
     private var allLines: [String] {
@@ -31,7 +34,7 @@ struct URLImportSheet: View {
         var seen = Set<String>()
         return allLines.compactMap { line -> URL? in
             guard let url = URL(string: line),
-                  url.scheme == "http" || url.scheme == "https" else { return nil }
+                  url.scheme == SystemConstants.URLScheme.httpLiteral || url.scheme == SystemConstants.URLScheme.httpsLiteral else { return nil }
             let normalized = url.absoluteString.lowercased()
             guard !seen.contains(normalized) else { return nil }
             seen.insert(normalized)
@@ -44,7 +47,7 @@ struct URLImportSheet: View {
         let validSet = Set(validURLs.map { $0.absoluteString.lowercased() })
         for (i, line) in allLines.enumerated() {
             guard let url = URL(string: line),
-                  url.scheme == "http" || url.scheme == "https",
+                  url.scheme == SystemConstants.URLScheme.httpLiteral || url.scheme == SystemConstants.URLScheme.httpsLiteral,
                   validSet.contains(url.absoluteString.lowercased()) else {
                 return i + 1
             }
@@ -78,11 +81,11 @@ struct URLImportSheet: View {
 
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
                     if let line = firstInvalidLine {
-                        Label(String(format: L10n.Ingest.invalidURLAtLine(line)), systemImage: "exclamationmark.triangle.fill")
+                        Label(String(format: L10n.Ingest.invalidURLAtLine(line)), systemImage: DesignSystem.Icons.warning)
                             .font(.caption2)
                             .foregroundStyle(Color.theme.red)
                     }
-                    Label(String(format: L10n.Ingest.validURLCount(validURLs.count, maxURLCount)), systemImage: "link")
+                    Label(String(format: L10n.Ingest.validURLCount(validURLs.count, maxURLCount)), systemImage: DesignSystem.Icons.link)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
 
@@ -91,11 +94,22 @@ struct URLImportSheet: View {
                         icon: DesignSystem.Icons.trayArrowDown,
                         isLoading: false
                     ) {
+                        // Bug #98 修复：超限时显示警告，避免静默截断
+                        if validURLs.count > maxURLCount {
+                            urlExceedWarning = L10n.Ingest.urlExceedLimit(validURLs.count - maxURLCount, maxURLCount)
+                        }
                         let urls = Array(validURLs.prefix(maxURLCount))
                         onImport(urls)
                     }
                     .disabled(validURLs.isEmpty)
                     .accessibilityIdentifier("urlImportSubmitButton") // 添加导入按钮测试标识符
+
+                    // Bug #98 修复：超限警告展示
+                    if let warning = urlExceedWarning {
+                        Text(warning)
+                            .font(.caption2)
+                            .foregroundStyle(Color.theme.red)
+                    }
                 }
                 .padding()
                 .background(Color.appCard)

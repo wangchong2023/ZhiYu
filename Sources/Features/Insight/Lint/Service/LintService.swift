@@ -99,10 +99,16 @@ public final class LintService: Sendable {
     /// 检查循环引用 (A -> B -> A)
     private func checkCircularReferences(pages: [KnowledgePage], titleMap: [String: KnowledgePage]) -> [LintIssue] {
         var issues: [LintIssue] = []
+        // Bug #127 修复：用 Set 去重，避免同一环被报告两次
+        var reportedPairs: Set<String> = []
         for pageA in pages {
             for linkTitle in pageA.outgoingLinks {
                 if let pageB = titleMap[linkTitle.lowercased()] {
                     if pageB.outgoingLinks.contains(where: { $0.lowercased() == pageA.title.lowercased() }) {
+                        // 按 id 排序生成唯一 key，避免 A→B 和 B→A 重复
+                        let pairKey = [pageA.id.uuidString, pageB.id.uuidString].sorted().joined()
+                        guard !reportedPairs.contains(pairKey) else { continue }
+                        reportedPairs.insert(pairKey)
                         issues.append(LintIssue(
                             severity: .info,
                             type: .cycle,
@@ -195,11 +201,11 @@ public final class LintService: Sendable {
         let infoCount = issues.filter { $0.severity == .info }.count
 
         // 扣分制：错误 -10，警告 -5，提示 -2
-        let deduction = (errorCount * 10) + (warningCount * 5) + (infoCount * 2)
-        let score = max(0, 100 - deduction)
+        let deduction = (errorCount * FeatureConstants.LintHealthThreshold.errorDeduction) + (warningCount * FeatureConstants.LintHealthThreshold.warningDeduction) + (infoCount * FeatureConstants.LintHealthThreshold.infoDeduction)
+        let score = max(0, FeatureConstants.LintHealthThreshold.baseScore - deduction)
 
         let level: HealthLevel
-        if score >= 90 { level = .excellent } else if score >= 75 { level = .good } else if score >= 50 { level = .fair } else { level = .poor }
+        if score >= FeatureConstants.LintHealthThreshold.excellentScore { level = .excellent } else if score >= FeatureConstants.LintHealthThreshold.goodScore { level = .good } else if score >= FeatureConstants.LintHealthThreshold.fairScore { level = .fair } else { level = .poor }
 
         return (score, level)
     }

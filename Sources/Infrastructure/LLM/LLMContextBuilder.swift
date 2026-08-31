@@ -131,8 +131,13 @@ final class LLMContextBuilder: Sendable {
     /// 使用多路召回与二阶段重排序 (Two-Stage Rerank) 获取高度相关的知识片段，并完成 XML 沙箱化隔离。
     /// - Returns: (格式化后的 Prompt 字符串, 提取出的信源数据对象列表)
     func buildRelevantContext(query: String) async -> (context: String, sources: [KnowledgeSource]) {
-        // 0. 越狱注入攻击扫描
-        try? sanitizer.scanJailbreakAttempt(in: query)
+        // 0. 越狱注入攻击扫描——检测到越狱时中断流程，返回空上下文
+        do {
+            try sanitizer.scanJailbreakAttempt(in: query)
+        } catch {
+            Logger.shared.warning("[LLMContextBuilder] 拦截越狱攻击，返回空上下文: \(error)")
+            return ("\(L10n.AI.LLM.Prompt.relevantPages)\n\(L10n.Common.Global.noData)\n", [])
+        }
 
         let embeddingProvider = self.embeddingProvider
 

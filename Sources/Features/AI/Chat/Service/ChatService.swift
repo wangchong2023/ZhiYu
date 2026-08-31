@@ -49,6 +49,8 @@ final class ChatService: ChatServiceProtocol {
     /// - Parameter content: content
     func saveUserMessage(_ content: String) {
         historyStore.append(ChatMessage(role: .user, content: content))
+        // Bug #139 修复：user message 也需持久化，避免 App 崩溃时历史不完整
+        historyStore.persistToDisk()
     }
     
     /// 保存AssistantMessage

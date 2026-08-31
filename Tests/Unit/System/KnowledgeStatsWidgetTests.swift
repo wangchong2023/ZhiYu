@@ -86,4 +86,11 @@ final class KnowledgeStatsWidgetTests: XCTestCase {
         XCTAssertEqual(entry.lastUpdatedPages.count, 2)
         XCTAssertEqual(entry.lastUpdatedPages[1].typeName, "entity")
     }
+
+    /// TC-WID-04: 验证 WidgetSharedConstants 常量可访问性
+    func testWidgetSharedConstantsAccessibility() {
+        XCTAssertEqual(WidgetSharedConstants.DeepLink.voice, "zhiyu://voice")
+        XCTAssertEqual(WidgetSharedConstants.DeepLink.ocr, "zhiyu://ocr")
+        XCTAssertNotNil(WidgetSharedConstants.Color.purple)
+    }
 }

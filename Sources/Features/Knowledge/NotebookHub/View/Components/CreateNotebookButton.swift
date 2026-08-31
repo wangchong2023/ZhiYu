@@ -87,7 +87,7 @@ struct CreateNotebookButton: View {
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
-                    .strokeBorder(style: StrokeStyle(lineWidth: SystemStroke.emphasis, dash: [4, 4]))
+                    .strokeBorder(style: StrokeStyle(lineWidth: SystemStroke.emphasis, dash: FeatureConstants.DashedBorder.pattern))
                     .foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.medium))
             )
         }

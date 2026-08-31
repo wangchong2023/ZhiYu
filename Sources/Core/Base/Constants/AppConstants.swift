@@ -13,7 +13,11 @@ import UFPCore
 
 /// [L0] 底层基座层：硬编码常量配置 (AppConstants)
 public struct AppConstants {
-    
+
+    // MARK: - 应用标识 (App Identity)
+    /// 应用显示名称
+    public static let displayName: String = "ZhiYu"
+
     // MARK: - Network
     public struct Network {
         // MARK: - Token 与超时
@@ -97,6 +101,13 @@ public struct AppConstants {
         public static let logsFileName: String = "audit_logs.json"
         /// 默认调用状态
         public static let defaultCallStatus: String = "success"
+
+        // MARK: - 冲突解决策略常量
+        public struct ConflictResolution {
+            public static let merge = "merge"
+            public static let overwrite = "overwrite"
+            public static let keepBoth = "keepBoth"
+        }
         
         // MARK: - 表名定义
         /// 存储系统内所有数据表的物理名称。
@@ -248,6 +259,7 @@ public struct AppConstants {
             public static let iCloudAutoSync = "app_icloud_auto_sync"
             public static let hasCompletedOnboarding = "app_has_completed_onboarding"
             public static let selectedTab = "app_selected_tab"
+            public static let firstLaunchTime = "app.firstLaunchTime"
             
             // ── 认证与会话 ──
             public static let authIsAuthenticated = "auth.isAuthenticated"
@@ -331,6 +343,8 @@ public struct AppConstants {
             public static let maxImageSizeBytes: Int64 = 5 * Int64(SystemConstants.bytesPerMB)
             /// 图片提取：每页最多数量
             public static let maxImagesPerPage: Int = 10
+            /// PDF 图片提取：最大处理页数
+            public static let maxPagesForImageExtraction: Int = 20
             /// 图片提取：下载超时（秒）
             public static let imageDownloadTimeoutSeconds: TimeInterval = 10
             /// PDF 页面渲染缩放比例
@@ -364,6 +378,8 @@ public struct AppConstants {
             public static let manualFormHeaderSkipLines: Int = 2
             /// UUID 字符串截取前缀长度（用于日志/默认名称简写）
             public static let uuidPrefixLength: Int = 8
+            /// Sheet 关闭后导航跳转的延迟等待时间（纳秒，100ms）
+            public static let navigationTransitionDelayNS: UInt64 = 100_000_000
         }
 
         /// 系统统计相关常量

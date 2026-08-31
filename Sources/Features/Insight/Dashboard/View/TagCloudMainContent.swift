@@ -59,7 +59,7 @@ extension TagCloudViewContent {
 
             if !coordinator.searchText.isEmpty {
                 Button(action: { coordinator.searchText = "" }) {
-                    Image(systemName: "xmark.circle.fill")
+                    Image(systemName: DesignSystem.Icons.errorCircle)
                         .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
                 }
                 .buttonStyle(.plain)
@@ -90,7 +90,7 @@ extension TagCloudViewContent {
                     // ➕ 新建按钮
                     Button(action: { coordinator.showAddTagDialog = true }) {
                         HStack(spacing: SystemSpacing.small) {
-                            Image(systemName: "plus")
+                            Image(systemName: DesignSystem.Icons.plus)
                                 .font(.system(size: actionBtnIconFontSize, weight: .bold))
                             Text(L10n.Tag.Management.addNew)
                                 .font(.system(size: viewModeFontSize - 1, weight: .semibold))

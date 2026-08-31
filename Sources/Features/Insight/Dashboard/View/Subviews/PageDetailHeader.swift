@@ -105,7 +105,7 @@ struct PageDetailHeader: View {
                                 Image(systemName: DesignSystem.Icons.arrowBranch)
                                     .font(.system(size: DesignSystem.caption2FontSize))
                             } else {
-                                Text("#")
+                                Text(FeatureConstants.Decorator.hash)
                                     .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
                             }
                             Text(item)

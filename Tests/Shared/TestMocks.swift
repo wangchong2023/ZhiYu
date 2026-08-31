@@ -422,8 +422,10 @@ extension XCTestCase {
         
         // 3. Domain Services (L2)
         ServiceContainer.shared.register(AuthService.shared as any AuthServiceProtocol, for: (any AuthServiceProtocol).self)
+        ServiceContainer.shared.register(AuthService.shared, for: AuthService.self)
         ServiceContainer.shared.register(MockVaultDatabaseSwitcher() as any VaultDatabaseSwitcher, for: (any VaultDatabaseSwitcher).self)
         ServiceContainer.shared.register(VaultService.shared as any VaultServiceProtocol, for: (any VaultServiceProtocol).self)
+        ServiceContainer.shared.register(VaultService.shared, for: VaultService.self)
         // 注册设置存储中心以供测试沙盒内需要注入 SettingsStore 的类能正常解析，避免测试时闪退
         ServiceContainer.shared.register(SettingsStore(), for: SettingsStore.self)
         
@@ -437,6 +439,7 @@ extension XCTestCase {
         // 注册系统维护服务，健全单测生命周期的全局重置与清理链路 (@DIP)
         ServiceContainer.shared.register(MaintenanceService(), for: MaintenanceService.self)
         ServiceContainer.shared.register(ChatService.shared as any ChatServiceProtocol, for: (any ChatServiceProtocol).self)
+        ServiceContainer.shared.register(ChatService.shared, for: ChatService.self)
         #if !os(watchOS)
         ServiceContainer.shared.register(AISynthesisService.shared, for: AISynthesisService.self)
         #endif

@@ -28,6 +28,30 @@ final class IOSPDFServiceTests: XCTestCase {
         static let metadataPageCount: Int = 5
         static let nonExistentFile: String = "non_existent_\(UUID().uuidString).pdf"
         static let invalidPDFFileName: String = "invalid.pdf"
+        static let pdfMetadataFileName: String = "pdf_metadata.json"
+        static let appPDFsDirName: String = "AppPDFs"
+    }
+
+    // MARK: - 测试隔离：每个用例前后清理持久化状态
+
+    override func setUp() async throws {
+        try await super.setUp()
+        try removePDFMetadataFile()
+    }
+
+    override func tearDown() async throws {
+        try removePDFMetadataFile()
+        try await super.tearDown()
+    }
+
+    /// 删除持久化的 PDF 元数据文件，确保每个用例环境干净
+    private func removePDFMetadataFile() throws {
+        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let appPDFsDir = docsDir.appendingPathComponent(TestConstants.appPDFsDirName)
+        let metadataURL = appPDFsDir.appendingPathComponent(TestConstants.pdfMetadataFileName)
+        if FileManager.default.fileExists(atPath: metadataURL.path) {
+            try FileManager.default.removeItem(at: metadataURL)
+        }
     }
 
     // MARK: - 辅助方法

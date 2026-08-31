@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 /// 格式化 Markdown 行模型
 private struct LineEntry: Identifiable {
@@ -54,13 +55,13 @@ public struct FormattedMarkdownText: View {
                 // 1. 跳过 Markdown 表格对齐分隔行 (|:---|:---|)
                 if isTableSeparator(trimmed) {
                     EmptyView()
-                } else if trimmed.hasPrefix("# ") {
-                    Text(LocalizedStringKey(trimmed.replacingOccurrences(of: "# ", with: "")))
+                } else if trimmed.hasPrefix(SystemConstants.MarkdownSyntax.h1Prefix) {
+                    Text(LocalizedStringKey(trimmed.replacingOccurrences(of: SystemConstants.MarkdownSyntax.h1Prefix, with: "")))
                         .font(.title2.weight(.bold))
                         .foregroundStyle(.appText)
                         .padding(.top, DesignSystem.tiny)
-                } else if trimmed.hasPrefix("## ") {
-                    let sectionTitle = trimmed.replacingOccurrences(of: "## ", with: "")
+                } else if trimmed.hasPrefix(SystemConstants.MarkdownSyntax.h2Prefix) {
+                    let sectionTitle = trimmed.replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
                     HStack {
                         Text(LocalizedStringKey(sectionTitle))
                             .font(.headline.weight(.semibold))
@@ -74,7 +75,7 @@ public struct FormattedMarkdownText: View {
                                     Button {
                                         onSectionPolish(sectionTitle)
                                     } label: {
-                                        Label(L10n.AI.Synthesis.Actions.polish, systemImage: "sparkles")
+                                        Label(L10n.AI.Synthesis.Actions.polish, systemImage: DesignSystem.Icons.sparkles)
                                             .font(.caption2)
                                     }
                                     .buttonStyle(.bordered)
@@ -85,22 +86,22 @@ public struct FormattedMarkdownText: View {
                                     Button {
                                         onSectionRegenerate(sectionTitle)
                                     } label: {
-                                        Label(L10n.AI.Synthesis.Actions.regenerate, systemImage: "arrow.clockwise")
+                                        Label(L10n.AI.Synthesis.Actions.regenerate, systemImage: DesignSystem.Icons.arrowClockwise)
                                             .font(.caption2)
                                     }
                                     .buttonStyle(.bordered)
-                                    .tint(.orange)
+                                    .tint(Color.theme.orange)
                                 }
                             }
                         }
                     }
                     .padding(.top, DesignSystem.tiny)
-                } else if trimmed.hasPrefix("> ") {
+                } else if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.blockquotePrefix) {
                     HStack(spacing: DesignSystem.small) {
                         Rectangle()
                             .fill(Color.appAccent)
                             .frame(width: DesignSystem.tiny)
-                        Text(LocalizedStringKey(trimmed.replacingOccurrences(of: "> ", with: "")))
+                        Text(LocalizedStringKey(trimmed.replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.blockquotePrefix, with: "")))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -132,7 +133,7 @@ public struct FormattedMarkdownText: View {
                                 onWikiLinkTap?(match.targetTitle)
                             } label: {
                                 HStack(spacing: SystemSpacing.atomic) {
-                                    Image(systemName: "link")
+                                    Image(systemName: DesignSystem.Icons.link)
                                         .font(.caption2)
                                     Text("[[\(match.displayTitle)]]")
                                         .font(.caption.weight(.medium))
@@ -157,7 +158,7 @@ public struct FormattedMarkdownText: View {
 
     private func isTableSeparator(_ line: String) -> Bool {
         let cleaned = line.replacingOccurrences(of: " ", with: "")
-        return cleaned.hasPrefix("|:") || cleaned.hasPrefix("|-") || (cleaned.contains("---") && cleaned.contains("|"))
+        return cleaned.hasPrefix(SystemConstants.MarkdownSyntax.tableSeparatorColon) || cleaned.hasPrefix(SystemConstants.MarkdownSyntax.tableSeparatorDash) || (cleaned.contains(SystemConstants.MarkdownDelimiter.horizontalRule) && cleaned.contains(SystemConstants.Character.pipe))
     }
 
     @ViewBuilder

@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPCore
 
 /// 插件自定义设置详情视图
 struct PluginCustomSettingsView: View {
@@ -74,16 +75,17 @@ struct PluginCustomSettingsView: View {
     private func renderItem(_ item: PluginUISchemaItem) -> some View {
         Section(header: item.header.map { Text($0) }) {
             switch item.type {
-            case "toggle":
+            case FeatureConstants.PluginSettingType.toggle:
                 Toggle(item.label, isOn: Binding(
-                    get: { (configData[item.key] == "true") },
+                    get: { (configData[item.key] == SystemConstants.BooleanLiteral.true) },
                     set: { newValue in
-                        let stringVal = newValue ? "true" : "false"
+                        // Bug #101 修复：硬编码 "true"/"false" 改用 SystemConstants.BooleanLiteral
+                        let stringVal = newValue ? SystemConstants.BooleanLiteral.true : SystemConstants.BooleanLiteral.false
                         configData[item.key] = stringVal
                         registry.savePluginData(pluginID: tab.pluginID, key: item.key, value: stringVal)
                     }
                 ))
-            case "text":
+            case FeatureConstants.PluginSettingType.text:
                 TextField(item.label, text: Binding(
                     get: { configData[item.key] ?? "" },
                     set: { newValue in
@@ -91,7 +93,7 @@ struct PluginCustomSettingsView: View {
                         registry.savePluginData(pluginID: tab.pluginID, key: item.key, value: newValue)
                     }
                 ))
-            case "info":
+            case FeatureConstants.PluginSettingType.info:
                 HStack {
                     Text(item.label)
                     Spacer()

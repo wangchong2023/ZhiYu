@@ -24,9 +24,21 @@ public enum PromptSecuritySanitizer {
         return "<\(tag)>\n\(escapedInput)\n</\(tag)>"
     }
 
+    private static let zeroWidthScalarSet: Set<UInt32> = [
+        0x200B, // Zero-width space
+        0x200C, // Zero-width non-joiner
+        0x200D, // Zero-width joiner
+        0xFEFF, // Zero-width no-break space (BOM)
+        0x200E, // Left-to-right mark
+        0x200F, // Right-to-left mark
+        0x2060  // Word joiner
+    ]
+
     /// 扫描输入文本是否包含越狱/提权攻击模式
     public static func scanJailbreakAttempt(_ input: String) -> Bool {
-        let lowercaseInput = input.lowercased()
+        // 预处理：基于 Unicode Scalar 严格移除零宽字符，防止字形簇合并绕过
+        let cleanedScalars = input.unicodeScalars.filter { !zeroWidthScalarSet.contains($0.value) }
+        let lowercaseInput = String(cleanedScalars).lowercased()
         let maliciousPatterns = [
             "ignore previous instructions",
             "ignore all instructions",

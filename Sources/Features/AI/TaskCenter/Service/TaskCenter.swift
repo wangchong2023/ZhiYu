@@ -182,6 +182,10 @@ public final class TaskCenter: @unchecked Sendable {
     public func addTask(type: TaskType = .ai, name: String, target: String) -> UUID {
         let task = GlobalTask(type: type, name: name, target: target, status: .pending)
         self.tasks.insert(task, at: 0)
+        // Bug #141 修复：addTask 时也做长度清理，避免运行中任务无限堆积
+        if self.tasks.count > FeatureConstants.TaskCenter.maxRetainedTasks {
+            self.tasks.removeLast()
+        }
         self.latestStatus = L10n.AI.Task.starting( name, target)
 
         activityService?.startActivity(id: task.id, name: name, target: target)
@@ -224,7 +228,7 @@ public final class TaskCenter: @unchecked Sendable {
             }
 
             if case .completed = status {
-                if self.tasks.count > 20 {
+                if self.tasks.count > FeatureConstants.TaskCenter.maxRetainedTasks {
                     self.tasks.removeLast()
                 }
             }

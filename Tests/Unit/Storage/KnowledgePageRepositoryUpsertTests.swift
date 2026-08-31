@@ -267,4 +267,45 @@ final class KnowledgePageUpsertTests: XCTestCase {
         let results = try await repository.fetchRecentlyUpdated(limit: 100)
         XCTAssertEqual(results.count, 3, "limit 超过实际数量时应返回全部")
     }
+
+    // MARK: - 私密页面加密与安全断言
+
+    /// 验证：私密页面内容在持久化时被加密，底层数据库中不包含明文内容。
+    func testSavePrivatePageEncryptsContentInDatabase() async throws {
+        let plainContent = "Top Secret Financial Data 2026"
+        let snippet = "Financial Data Snippet"
+        let page = KnowledgePage(title: "Secret Vault", content: plainContent, tags: ["private", "confidential"], rawTextSnippet: snippet)
+        
+        try await repository.save(page)
+
+        // 1. 从 Repository 读取应自动解密还原明文
+        let fetched = try await repository.fetch(title: "Secret Vault")
+        XCTAssertNotNil(fetched)
+        XCTAssertEqual(fetched?.content, plainContent)
+        XCTAssertEqual(fetched?.rawTextSnippet, snippet)
+
+        // 2. 直接绕过 Repository 检查 SQLite 原始行，验证底层存储的确实不是明文
+        let rawRow = try await dbQueue.read { db in
+            try Row.fetchOne(db, sql: "SELECT content, raw_snippet FROM pages WHERE title = ?", arguments: ["Secret Vault"])
+        }
+        XCTAssertNotNil(rawRow)
+        let rawStoredContent: String = rawRow?["content"] ?? ""
+        let rawStoredSnippet: String? = rawRow?["raw_snippet"]
+        
+        XCTAssertNotEqual(rawStoredContent, plainContent, "SQLite 底层存储绝不能为未加密的明文")
+        if let storedSnippet = rawStoredSnippet {
+            XCTAssertNotEqual(storedSnippet, snippet, "SQLite 底层存储的摘要绝不能为明文")
+        }
+    }
+
+    /// 验证：空内容页面、空标签页面保存安全
+    func testSavePageWithEmptyContentAndTags() async throws {
+        let page = KnowledgePage(title: "EmptyPage", content: "", tags: [])
+        try await repository.save(page)
+
+        let fetched = try await repository.fetch(title: "EmptyPage")
+        XCTAssertNotNil(fetched)
+        XCTAssertEqual(fetched?.content, "")
+        XCTAssertTrue(fetched?.tags.isEmpty ?? false)
+    }
 }

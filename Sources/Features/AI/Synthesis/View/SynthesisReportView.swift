@@ -66,7 +66,7 @@ struct SynthesisSourcePagesBar: View {
                 .background(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
 
             HStack {
-                Label(L10n.AI.Synthesis.sourceCount(sourcePageIDs.count), systemImage: "doc.text")
+                Label(L10n.AI.Synthesis.sourceCount(sourcePageIDs.count), systemImage: DesignSystem.Icons.document)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.appSecondary)
                 Spacer()
@@ -87,7 +87,7 @@ struct SynthesisSourcePagesBar: View {
                                 Text(page.title)
                                     .font(.caption.weight(.medium))
                                     .lineLimit(1)
-                                Image(systemName: "chevron.right")
+                                Image(systemName: DesignSystem.Icons.chevronRight)
                                     .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
                                     .foregroundStyle(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
                             }

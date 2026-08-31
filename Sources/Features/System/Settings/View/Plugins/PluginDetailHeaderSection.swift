@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 // MARK: - 头部信息区
 
@@ -27,7 +28,7 @@ extension PluginDetailView {
                     .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
                     .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
-            } else if let iconURL = URL(string: plugin.icon), iconURL.scheme?.hasPrefix("http") == true {
+            } else if let iconURL = URL(string: plugin.icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
                 CachedAsyncImage(url: iconURL) { phase in
                     switch phase {
                     case .success(let image):
@@ -41,16 +42,16 @@ extension PluginDetailView {
                             )
                     case .failure:
                         // 远程图标拉取失败时，fallback 到带渐变底的拼图块默认图标
-                        Image(systemName: "puzzlepiece.extension.fill")
-                            .font(.system(size: DesignSystem.Gallery.mainIconSize * 0.9))
+                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
+                            .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
                             .foregroundStyle(.white)
                             .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
                             .background(
                                 LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.textSecondary)],
                                                startPoint: .topLeading, endPoint: .bottomTrailing))
                     @unknown default:
-                        Image(systemName: "puzzlepiece.extension.fill")
-                            .font(.system(size: DesignSystem.Gallery.mainIconSize * 0.9))
+                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
+                            .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
                             .foregroundStyle(.white)
                             .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
                             .background(
@@ -64,7 +65,7 @@ extension PluginDetailView {
                 .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
             } else {
                 Image(systemName: plugin.icon)
-                    .font(.system(size: DesignSystem.Gallery.mainIconSize * 0.9))
+                    .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
                     .foregroundStyle(.white)
                     .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
                     .background(
@@ -100,12 +101,12 @@ extension PluginDetailView {
                 // 安装状态标签 (移至大字号区域下端，保持视觉重点清晰)
                 if isInstalled {
                     HStack(spacing: DesignSystem.tiny) {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(systemName: DesignSystem.Icons.checkCircle)
                             .font(.caption)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.theme.green)
                         Text(L10n.Plugin.Detail.installed)
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.theme.green)
                     }
                     .padding(.top, DesignSystem.atomic)
                 }

@@ -104,8 +104,8 @@ public final class CarrierAuthStrategy: AuthStrategy {
     public init() {}
     /// 获取运营商凭证（watchOS 不支持，直接抛错）
     public func acquireCredentials() async throws -> AuthCredential {
-        throw NSError(domain: "CarrierAuthStrategy", code: -99,
-                      userInfo: [NSLocalizedDescriptionKey: "WatchOS not supported"])
+        throw NSError(domain: FeatureConstants.ModuleName.carrierAuthStrategy, code: -99,
+                      userInfo: [NSLocalizedDescriptionKey: FeatureConstants.ErrorDescription.watchOSNotSupported])
     }
 }
 

@@ -38,8 +38,8 @@ extension PluginDetailView {
                 metricCard(
                     title: L10n.Plugin.Detail.securePassed,
                     subtitle: L10n.Plugin.Detail.secureLabel,
-                    icon: "lock.shield.fill",
-                    iconColor: .green
+                    icon: DesignSystem.Icons.lockShieldFill,
+                    iconColor: Color.theme.green
                 )
 
                 metricDivider

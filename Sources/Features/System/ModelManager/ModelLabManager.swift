@@ -13,6 +13,7 @@
 import Foundation
 import Observation
 import SwiftUI
+import UFPCore
 
 /// 大模型测试实验室的 7 大用例场景类型
 public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
@@ -215,7 +216,7 @@ public final class ModelLabManager {
         // 1. 初始化预填和首词延迟指标（根据不同模型配置动态呈现真实耗时与内存）
         let basePrefill = useCase == .askImage ? 450 : 180
         let baseFirstToken = useCase == .askImage ? 520 : 210
-        let isE4B = model.parameterCount.contains("4B")
+        let isE4B = model.parameterCount.contains(FeatureConstants.ModelParameter.e4B)
         
         let prefillLatency = basePrefill + (isE4B ? 80 : 0)
         let firstTokenLatency = baseFirstToken + (isE4B ? 95 : 0)
@@ -251,7 +252,7 @@ public final class ModelLabManager {
         
         // 4. 针对中文/多语言文本按 Character 逐字/短 Chunk 递增输出，呈现与 AI 对话一致的流畅打字流
         let characters = Array(finalResponseText)
-        let chunkSize = characters.count > 100 ? 2 : 1
+        let chunkSize = characters.count > FeatureConstants.ModelLabSimulation.longTextThreshold ? FeatureConstants.ModelLabSimulation.longTextChunkSize : FeatureConstants.ModelLabSimulation.shortTextChunkSize
         var currentIndex = 0
         var currentTokenCount = 0
         let startTime = Date()
@@ -268,7 +269,7 @@ public final class ModelLabManager {
             // 动态更新 Tokens/Sec 推理速度
             let elapsed = Date().timeIntervalSince(startTime)
             if elapsed > 0 {
-                let currentSpeed = Double(currentTokenCount * 4) / elapsed
+                let currentSpeed = Double(currentTokenCount * FeatureConstants.ModelLabSimulation.tokenSpeedMultiplier) / elapsed
                 currentStats.speed = min(currentSpeed, isE4B ? 32.5 : 45.8)
             }
             
@@ -290,7 +291,7 @@ public final class ModelLabManager {
     
     private func getMockResponse(for useCase: UseCaseType, model: LLMManifest, prompt: String) -> String {
         let cleanPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        let promptSnippet = cleanPrompt.count > 15 ? String(cleanPrompt.prefix(15)) + "..." : cleanPrompt
+        let promptSnippet = cleanPrompt.count > FeatureConstants.ModelLabSimulation.promptSnippetLength ? String(cleanPrompt.prefix(FeatureConstants.ModelLabSimulation.promptSnippetLength)) + FeatureConstants.ModelLabSimulation.promptEllipsis : cleanPrompt
         
         switch useCase {
         case .askImage:
@@ -325,36 +326,36 @@ public final class ModelLabManager {
         case .askImage:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.objectDetection
             confidenceItems = [
-                ConfidenceItem(name: "Notebook (笔记本)", score: 0.94, colorName: "cyan"),
-                ConfidenceItem(name: "Pen (钢笔)", score: 0.87, colorName: "purple"),
-                ConfidenceItem(name: "iPhone Screen (手机屏)", score: 0.81, colorName: "blue")
+                ConfidenceItem(name: FeatureConstants.MockText.notebookLabel, score: 0.94, colorName: FeatureConstants.MockColorName.cyan),
+                ConfidenceItem(name: FeatureConstants.MockText.penLabel, score: 0.87, colorName: FeatureConstants.MockColorName.purple),
+                ConfidenceItem(name: FeatureConstants.MockText.iphoneScreenLabel, score: 0.81, colorName: FeatureConstants.MockColorName.blue)
             ]
         case .audioScribe:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.speechTranscribing
             traceSteps = [
-                TraceStep(title: "00:01 - 00:03", desc: "智宇大模型本地测试实验室今日上线", icon: "mic.fill", colorName: "cyan"),
-                TraceStep(title: "00:04 - 00:08", desc: "完美支持 Gemma 4 最新端侧模型", icon: "mic.fill", colorName: "purple")
+                TraceStep(title: FeatureConstants.MockText.traceStep1Title, desc: FeatureConstants.MockText.traceStep1Desc, icon: DesignSystem.Icons.micFill, colorName: FeatureConstants.MockColorName.cyan),
+                TraceStep(title: FeatureConstants.MockText.traceStep2Title, desc: FeatureConstants.MockText.traceStep2Desc, icon: DesignSystem.Icons.micFill, colorName: FeatureConstants.MockColorName.purple)
             ]
         case .tinyGarden:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.functionCallTree
             traceSteps = [
-                TraceStep(title: L10n.ModelManager.Lab.Extra.intentMatch, desc: "🌹 玫瑰播种意图触发 - SUCCESS", icon: "leaf.fill", colorName: "green"),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.apiInvocation, desc: L10n.ModelManager.Lab.Extra.gardenRender, icon: "drop.fill", colorName: "blue"),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.uiRendering, desc: "玫瑰花瓣粒子开花效果就绪", icon: "sparkles", colorName: "purple")
+                TraceStep(title: L10n.ModelManager.Lab.Extra.intentMatch, desc: FeatureConstants.MockText.intentMatchDesc, icon: DesignSystem.Icons.leafFill, colorName: FeatureConstants.MockColorNameSupplement.green),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.apiInvocation, desc: L10n.ModelManager.Lab.Extra.gardenRender, icon: DesignSystem.Icons.dropFill, colorName: FeatureConstants.MockColorNameSupplement.blue),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.uiRendering, desc: FeatureConstants.MockText.uiRenderingDesc, icon: DesignSystem.Icons.sparkles, colorName: FeatureConstants.MockColorName.purple)
             ]
         case .mobileActions:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.devicePipeline
             traceSteps = [
-                TraceStep(title: L10n.ModelManager.Lab.Extra.intentAnalyser, desc: "识别切换暗黑主题指令 - PASS", icon: "magnifyingglass", colorName: "cyan"),
-                TraceStep(title: "Sandbox Gatekeeper", desc: "设备安全准入校验 - PASS", icon: "shield.fill", colorName: "green"),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.hapticFeedback, desc: "系统调用已触发生效", icon: "iphone.radiowaves.left.and.right", colorName: "purple")
+                TraceStep(title: L10n.ModelManager.Lab.Extra.intentAnalyser, desc: FeatureConstants.MockText.intentAnalyserDesc, icon: DesignSystem.Icons.magnifyingglass, colorName: FeatureConstants.MockColorName.cyan),
+                TraceStep(title: FeatureConstants.MockText.sandboxGatekeeperTitle, desc: FeatureConstants.MockText.sandboxGatekeeperDesc, icon: DesignSystem.Icons.shieldFill, colorName: FeatureConstants.MockColorName.green),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.hapticFeedback, desc: FeatureConstants.MockText.hapticFeedbackDesc, icon: DesignSystem.Icons.iphoneRadiowaves, colorName: FeatureConstants.MockColorName.purple)
             ]
         case .agentSkills:
             extraPanelTitle = "Agent Skills Execution Sandbox"
             traceSteps = [
-                TraceStep(title: L10n.ModelManager.Lab.Extra.toolLocation, desc: "ZhiYuSystemPlugin.summarizeActivePage", icon: "paperplane.fill", colorName: "purple"),
-                TraceStep(title: "Sandbox Read", desc: "大模型方案设计.md (145行) - 读取成功", icon: "folder.fill", colorName: "cyan"),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.contextSummary, desc: "总结任务处理中，输出结果对齐 L0-L3 设计", icon: "checkmark.circle.fill", colorName: "green")
+                TraceStep(title: L10n.ModelManager.Lab.Extra.toolLocation, desc: "ZhiYuSystemPlugin.summarizeActivePage", icon: DesignSystem.Icons.paperplaneFill, colorName: FeatureConstants.MockColorName.purple),
+                TraceStep(title: FeatureConstants.MockText.sandboxReadTitle, desc: FeatureConstants.MockText.sandboxReadDesc, icon: DesignSystem.Icons.folderFill, colorName: FeatureConstants.MockColorName.cyan),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.contextSummary, desc: FeatureConstants.MockText.contextSummaryDesc, icon: DesignSystem.Icons.checkmarkCircleFill, colorName: FeatureConstants.MockColorName.green)
             ]
         default:
             break

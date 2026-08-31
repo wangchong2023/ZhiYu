@@ -89,16 +89,15 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func totalStorageSize() async throws -> Int64 {
-        let records = try await fetchAll(category: nil, limit: 2000)
-        var total: Int64 = 0
-        for r in records {
-            if r.filePath != nil, let size = r.fileSize {
-                total += size
-            }
-            if let text = r.rawText {
-                total += Int64(text.utf8.count)
-            }
+        let writer = try await dbWriter
+        return try await writer.read { db in
+            let sql = """
+                SELECT COALESCE(SUM(
+                    CASE WHEN \(ImportRecord.CodingKeys.filePath.name) IS NOT NULL AND \(ImportRecord.CodingKeys.fileSize.name) IS NOT NULL THEN \(ImportRecord.CodingKeys.fileSize.name) ELSE 0 END +
+                    CASE WHEN \(ImportRecord.CodingKeys.rawText.name) IS NOT NULL THEN LENGTH(\(ImportRecord.CodingKeys.rawText.name)) ELSE 0 END
+                ), 0) FROM \(ImportRecord.databaseTableName)
+            """
+            return try Int64.fetchOne(db, sql: sql) ?? 0
         }
-        return total
     }
 }

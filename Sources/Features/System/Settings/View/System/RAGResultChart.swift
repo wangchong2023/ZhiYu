@@ -23,7 +23,7 @@ struct RAGSatisfactionPanel: View {
         let barHeight: CGFloat = 12
         return VStack(alignment: .leading, spacing: DesignSystem.medium) {
             HStack(spacing: DesignSystem.small) {
-                Label(L10n.Dashboard.stats.userSatisfaction, systemImage: "hand.thumbsup.fill").font(.headline).foregroundStyle(.blue)
+                Label(L10n.Dashboard.stats.userSatisfaction, systemImage: DesignSystem.Icons.handThumbsupFill).font(.headline).foregroundStyle(.blue)
                 // info icon omitted here — handled by caller
             }
 
@@ -42,7 +42,7 @@ struct RAGSatisfactionPanel: View {
                     }
                     .frame(height: barHeight)
 
-                    Text(String(format: FormatPattern.percentInt, satisfactionRate * 100) + "%")
+                    Text(String(format: FormatPattern.percentInt, satisfactionRate * FeatureConstants.PercentageBase.full) + "%")
                         .font(.title3.bold()).foregroundStyle(satisfactionColor)
 
                     VStack(alignment: .leading, spacing: 0) {
@@ -62,9 +62,9 @@ struct RAGSatisfactionPanel: View {
     }
 
     private var satisfactionColor: Color {
-        if satisfactionRate >= ScoreThreshold.excellent { return .green }
-        if satisfactionRate >= ScoreThreshold.fair { return .orange }
-        return .red
+        if satisfactionRate >= ScoreThreshold.excellent { return Color.theme.green }
+        if satisfactionRate >= ScoreThreshold.fair { return Color.theme.orange }
+        return Color.theme.red
     }
 }
 
@@ -77,7 +77,7 @@ struct RAGCostPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
             HStack(spacing: DesignSystem.small) {
-                Label(L10n.Dashboard.stats.tokenEfficiency, systemImage: "dollarsign.circle").font(.headline).foregroundStyle(.green)
+                Label(L10n.Dashboard.stats.tokenEfficiency, systemImage: DesignSystem.Icons.dollarsignCircle).font(.headline).foregroundStyle(.green)
             }
             HStack(spacing: DesignSystem.medium) {
                 tokenMetricCard(id: "totalTokens", title: L10n.Dashboard.stats.totalTokens,
@@ -92,7 +92,7 @@ struct RAGCostPanel: View {
                 Spacer()
                 Text(String(format: FormatPattern.costUSD, tokenEfficiency.estimatedCostUSD))
                     .font(.system(size: FontSize.tokenValue, weight: .bold, design: .monospaced))
-                    .foregroundStyle(tokenEfficiency.estimatedCostUSD < CostThreshold.low ? .green : .orange)
+                    .foregroundStyle(tokenEfficiency.estimatedCostUSD < CostThreshold.low ? Color.theme.green : Color.theme.orange)
             }
             .padding(.horizontal, DesignSystem.small)
         }
@@ -121,15 +121,18 @@ struct RAGEvaluationHistoryPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            Label(L10n.Dashboard.stats.recentEvaluations, systemImage: "list.bullet.clipboard").font(.headline).foregroundStyle(.orange)
+            Label(L10n.Dashboard.stats.recentEvaluations, systemImage: DesignSystem.Icons.listBulletClipboard).font(.headline).foregroundStyle(.orange)
             if recentEvaluations.isEmpty {
                 Text(L10n.Dashboard.stats.noEvaluations)
                     .font(.subheadline).foregroundStyle(.secondary)
                     .padding(.vertical, DesignSystem.large).frame(maxWidth: .infinity)
             } else {
-                ForEach(recentEvaluations.prefix(EvalDisplay.displayLimit), id: \.id) { eval in
+                // Bug #97 修复：预计算 prefix 数组，避免每次迭代重新切片。
+                let displayedEvaluations = Array(recentEvaluations.prefix(EvalDisplay.displayLimit))
+                let lastId = displayedEvaluations.last?.id
+                ForEach(displayedEvaluations, id: \.id) { eval in
                     evaluationRow(eval)
-                    if eval.id != recentEvaluations.prefix(EvalDisplay.displayLimit).last?.id { Divider() }
+                    if eval.id != lastId { Divider() }
                 }
             }
         }
@@ -180,7 +183,7 @@ struct RAGEvaluationHistoryPanel: View {
     }
 
     private func scoreBadge(_ score: Double) -> some View {
-        Text(String(format: FormatPattern.score1, score * 100))
+        Text(String(format: FormatPattern.score1, score * FeatureConstants.PercentageBase.full))
             .font(.caption.bold()).foregroundStyle(scoreColor(score))
             .padding(.horizontal, DesignSystem.small).padding(.vertical, DesignSystem.atomic)
             .background(scoreColor(score).opacity(DesignSystem.Opacity.subtle)).clipShape(Capsule())
@@ -205,14 +208,14 @@ struct RAGEvaluationHistoryPanel: View {
     }
 
     private func scoreColor(_ s: Double) -> Color {
-        if s >= ScoreThreshold.excellent { return .green }
-        if s >= ScoreThreshold.fair { return .orange }
-        return .red
+        if s >= ScoreThreshold.excellent { return Color.theme.green }
+        if s >= ScoreThreshold.fair { return Color.theme.orange }
+        return Color.theme.red
     }
 
     private func invertedScoreColor(_ s: Double) -> Color {
-        if s <= ScoreThreshold.invertedExcellent { return .green }
-        if s <= ScoreThreshold.invertedFair { return .orange }
-        return .red
+        if s <= ScoreThreshold.invertedExcellent { return Color.theme.green }
+        if s <= ScoreThreshold.invertedFair { return Color.theme.orange }
+        return Color.theme.red
     }
 }

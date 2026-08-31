@@ -82,7 +82,7 @@ struct SynthesisTimelineView: View {
     private func buildTaskAccessibilityLabel(_ task: GlobalTask) -> String {
         let base = "\(task.name)\(L10n.AI.Task.Accessibility.taskInProgress)"
         if case .running(let progress, let stage) = task.status {
-            let percentage = Int(progress * 100)
+            let percentage = Int(progress * FeatureConstants.SynthesisTimeline.percentageBase)
             let stageName = localizedStageName(stage)
             return base + "" + L10n.AI.Task.Accessibility.progressValue(percentage, stageName)
         }

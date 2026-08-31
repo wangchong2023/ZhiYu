@@ -24,11 +24,8 @@ public struct OnDeviceTestView: View {
     /// 输入的测试提示词
     @State private var prompt = ""
     
-    /// 推理输出的完整文本
+    /// 推理输出的完整文本（含错误信息，独立于 service.generatedText）
     @State private var result = ""
-    
-    /// 标识当前是否正在进行 Token 生成
-    @State private var isGenerating = false
     
     /// 触发 Haptic 触感反馈的局部状态
     @State private var feedbackGenerator = UINotificationFeedbackGenerator()
@@ -86,13 +83,13 @@ public struct OnDeviceTestView: View {
     private var generateButton: some View {
         Button(action: generate) {
             HStack(spacing: SystemSpacing.element) {
-                if isGenerating {
+                if onDeviceService.isGenerating {
                     ProgressView()
                         .tint(.white)
                 } else {
-                    Image(systemName: "sparkles")
+                    Image(systemName: DesignSystem.Icons.sparkles)
                 }
-                Text(isGenerating ? L10n.AI.OnDevice.generating : L10n.AI.OnDevice.generate)
+                Text(onDeviceService.isGenerating ? L10n.AI.OnDevice.generating : L10n.AI.OnDevice.generate)
             }
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.white)
@@ -101,27 +98,27 @@ public struct OnDeviceTestView: View {
             .background(
                 LinearGradient(
                     // swiftlint:disable:next magic_numbers_opacity
-                    colors: isGenerating ? [.gray, .gray.opacity(DesignSystem.Opacity.prominent)] : [.appAccent, .appAccent.opacity(0.85)],
+                    colors: onDeviceService.isGenerating ? [.gray, .gray.opacity(DesignSystem.Opacity.prominent)] : [.appAccent, .appAccent.opacity(0.85)],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            .shadow(color: Color.appAccent.opacity(isGenerating ? 0 : 0.2), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
+            .shadow(color: Color.appAccent.opacity(onDeviceService.isGenerating ? 0 : 0.2), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
         }
-        .disabled(isGenerating || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        .disabled(onDeviceService.isGenerating || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
     
     // MARK: - 生成进度指示条
     @ViewBuilder
     private var progressIndicator: some View {
-        if isGenerating {
+        if onDeviceService.isGenerating {
             VStack(spacing: SystemSpacing.element) {
                 ProgressView(value: onDeviceService.generationProgress)
                     .tint(.appAccent)
                     .progressViewStyle(.linear)
                 
-                Text(String(format: "%.0f%%", onDeviceService.generationProgress * 100))
+                Text(String(format: "%.0f%%", onDeviceService.generationProgress * FeatureConstants.PercentageBase.full))
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.appAccent)
             }
@@ -137,7 +134,7 @@ public struct OnDeviceTestView: View {
                 HStack {
                     Label(
                         L10n.AI.OnDevice.result,
-                        systemImage: "doc.text.magnifyingglass"
+                        systemImage: DesignSystem.Icons.weeklyInsight
                     )
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.appSecondary)
@@ -148,7 +145,7 @@ public struct OnDeviceTestView: View {
                         AppPasteboard.string = result
                         feedbackGenerator.notificationOccurred(.success)
                     }) {
-                        Label(L10n.Common.copy, systemImage: "doc.on.doc.fill")
+                        Label(L10n.Common.copy, systemImage: DesignSystem.Icons.docOnDocFill)
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.appAccent)
                             .padding(.horizontal, SystemSpacing.element)
@@ -182,7 +179,6 @@ public struct OnDeviceTestView: View {
     private func generate() {
         guard !prompt.isEmpty else { return }
         
-        isGenerating = true
         result = ""
         feedbackGenerator.prepare()
         
@@ -197,7 +193,6 @@ public struct OnDeviceTestView: View {
                     result = "\(L10n.Common.error): \(error.localizedDescription)"
                 }
             }
-            isGenerating = false
         }
     }
 }
@@ -264,9 +259,9 @@ public struct OnDeviceModelRow: View {
             
             // 右侧精美单选对勾
             if isSelected {
-                Image(systemName: "checkmark.circle.fill")
+                Image(systemName: DesignSystem.Icons.checkCircle)
                     .font(.title3)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.theme.green)
                     .transition(.scale.combined(with: .opacity))
             } else {
                 Circle()

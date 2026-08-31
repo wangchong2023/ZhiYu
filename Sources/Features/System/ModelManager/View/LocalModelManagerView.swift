@@ -33,8 +33,8 @@ public struct LocalModelManagerView: View {
                     // Section 1: 模型市场
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: DesignSystem.small) {
-                            Image(systemName: "square.stack.3d.up.fill")
-                                .foregroundStyle(.cyan)
+                            Image(systemName: DesignSystem.Icons.stackFill)
+                                .foregroundStyle(Color.theme.cyan)
                                 .font(.title3)
                             Text(L10n.ModelManager.storeTitle)
                                 .font(.title3.bold())
@@ -59,8 +59,8 @@ public struct LocalModelManagerView: View {
                     // Section 2: 测试实验室
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: DesignSystem.small) {
-                            Image(systemName: "flask.fill")
-                                .foregroundStyle(.purple)
+                            Image(systemName: DesignSystem.Icons.flaskFill)
+                                .foregroundStyle(Color.theme.purple)
                                 .font(.title3)
                             Text(L10n.ModelManager.laboratoryTitle)
                                 .font(.title3.bold())

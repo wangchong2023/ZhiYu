@@ -34,7 +34,7 @@ extension PluginDetailView {
                 // 降级选择链：优先显示本地缓存的 README -> 远端多语言 README -> 插件自身的简短描述
                 let content = localReadme ?? remoteReadme ?? plugin.description
                 let lineCount = content.components(separatedBy: .newlines).count
-                let showExpandButton = lineCount > 5
+                let showExpandButton = lineCount > FeatureConstants.PluginDescription.expandLineThreshold
 
                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
                     MarkdownRendererView(content: content, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
@@ -99,7 +99,7 @@ extension PluginDetailView {
                 let (data, response) = try await URLSession.shared.data(from: readmeURL)
                 let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
 
-                if statusCode == 200, !data.isEmpty, let text = String(data: data, encoding: .utf8) {
+                if statusCode == FeatureConstants.HTTPStatusCode.ok, !data.isEmpty, let text = String(data: data, encoding: .utf8) {
                     Logger.shared.info("PluginDetail.fetchRemoteReadme.success: \(readmeURL.lastPathComponent)")
                     await MainActor.run {
                         self.remoteReadme = text

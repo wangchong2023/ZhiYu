@@ -39,10 +39,10 @@ struct AuthOAuthPanel: View {
                 let forceShowAll = authService.isMockMode
                 #endif
 
-                ThirdPartyIconButton(id: "auth.thirdparty.apple", icon: "apple.logo", isSystem: true, color: .primary) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.apple, icon: DesignSystem.Icons.appleLogo, isSystem: true, color: .primary) {
                     handleThirdPartyLogin(AppleAuthStrategy())
                 }
-                ThirdPartyIconButton(id: "auth.thirdparty.google", icon: "GoogleLogo", isSystem: false, color: .blue) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.google, icon: DesignSystem.Icons.googleLogo, isSystem: false, color: Color.theme.blue) {
                     #if DEBUG
                     handleThirdPartyLogin(GoogleAuthStrategy())
                     #else
@@ -53,7 +53,7 @@ struct AuthOAuthPanel: View {
                     }
                     #endif
                 }
-                ThirdPartyIconButton(id: "auth.thirdparty.github", icon: "GithubLogo", isSystem: false, color: .primary) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.github, icon: DesignSystem.Icons.githubLogo, isSystem: false, color: .primary) {
                     #if DEBUG
                     handleThirdPartyLogin(GitHubAuthStrategy())
                     #else
@@ -65,7 +65,16 @@ struct AuthOAuthPanel: View {
                     #endif
                 }
             }
+
+            // 错误提示：errorMessage 被赋值时显示错误文本
+            if let message = errorMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(Color.theme.red)
+                    .transition(.opacity)
+            }
         }
+        .animation(.easeInOut, value: errorMessage)
     }
 }
 
@@ -100,7 +109,7 @@ struct ThirdPartyIconButton: View {
                         .font(.system(size: DesignSystem.Domain.Auth.thirdPartyIconFontSize))
                         .foregroundStyle(color)
                 } else {
-                    if icon == "GithubLogo" {
+                    if icon == FeatureConstants.AssetName.githubLogo {
                         Image(icon)
                             .renderingMode(.template)
                             .resizable()

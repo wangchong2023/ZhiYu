@@ -9,6 +9,7 @@
 //  核心职责：展示已安装本地插件的详细信息（manifest 数据 + 卸载操作）。
 
 import SwiftUI
+import UFPCore
 import Dependencies
 
 /// 本地已安装插件详情页（基于 PluginManifest，无需网络）
@@ -29,21 +30,21 @@ struct LocalPluginDetailView: View {
     /// 根据插件 ID 智能映射默认 of SF Symbol 兜底图标，防止在未解压或无本地物理图片时各插件展示单一的拼图块
     private var fallbackIcon: String {
         let id = manifest.id
-        if id.contains("toc-generator") {
+        if id.contains(PluginConstants.LocalIconKeyword.tocGenerator) {
             return "list.bullet.rectangle.portrait"
-        } else if id.contains("word-counter") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.wordCounter) {
             return "character.textbox"
-        } else if id.contains("smart-cleaner") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.smartCleaner) {
             return "wand.and.stars"
-        } else if id.contains("ai-summary") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.aiSummary) {
             return "brain.head.profile"
-        } else if id.contains("code-highlighter") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.codeHighlighter) {
             return "curlybraces"
-        } else if id.contains("link-preview") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.linkPreview) {
             return "link"
-        } else if id.contains("ai-translator") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.aiTranslator) {
             return "translate"
-        } else if id.contains("markdown-beautifier") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.markdownBeautifier) {
             return "doc.text.magnifyingglass"
         } else {
             return "puzzlepiece.extension.fill"
@@ -65,7 +66,7 @@ struct LocalPluginDetailView: View {
                             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
                     } else {
                         Image(systemName: fallbackIcon)
-                            .font(.system(size: DesignSystem.Gallery.mainIconSize * 0.9))
+                            .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
                             .foregroundStyle(.white)
                             .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
                             .background(
@@ -88,8 +89,8 @@ struct LocalPluginDetailView: View {
                                 .clipShape(Capsule())
 
                             if isInstalled {
-                                Label(L10n.Plugin.Detail.installed, systemImage: "checkmark.circle.fill")
-                                    .font(.caption.weight(.medium)).foregroundStyle(.green)
+                                Label(L10n.Plugin.Detail.installed, systemImage: DesignSystem.Icons.checkCircle)
+                                    .font(.caption.weight(.medium)).foregroundStyle(Color.theme.green)
                             }
                         }
                     }
@@ -100,12 +101,12 @@ struct LocalPluginDetailView: View {
                     registry.unloadPlugin(id: manifest.id)
                     dismiss()
                 }) {
-                    Label(L10n.Plugin.Action.uninstall, systemImage: "trash")
+                    Label(L10n.Plugin.Action.uninstall, systemImage: DesignSystem.Icons.delete)
                         .font(.headline).frame(maxWidth: .infinity)
                         .padding(.vertical, DesignSystem.small)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(.red)
+                .tint(Color.theme.red)
 
                 Divider()
 
@@ -115,9 +116,9 @@ struct LocalPluginDetailView: View {
                     VStack(spacing: 0) {
                         detailRow(icon: "number", label: L10n.Plugin.Detail.version, value: manifest.version)
                         Divider().padding(.leading, DesignSystem.medium)
-                        detailRow(icon: "person.fill", label: L10n.Plugin.Detail.author, value: manifest.author)
+                        detailRow(icon: DesignSystem.Icons.personFill, label: L10n.Plugin.Detail.author, value: manifest.author)
                         Divider().padding(.leading, DesignSystem.medium)
-                        detailRow(icon: "key.fill", label: "ID", value: manifest.id)
+                        detailRow(icon: DesignSystem.Icons.keyFill, label: L10n.Plugin.Detail.idLabel, value: manifest.id)
                     }
                     .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
                     .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
@@ -168,12 +169,12 @@ struct LocalPluginDetailView: View {
 
     private func permIcon(for perm: String) -> String {
         switch perm {
-        case "readContent": return "doc.text.magnifyingglass"
-        case "writeContent": return "square.and.pencil"
-        case "network": return "globe"
-        case "aiAccess": return "brain.head.profile"
-        case "log": return "list.bullet.clipboard"
-        default: return "key.fill"
+        case FeatureConstants.PermissionName.readContent: return DesignSystem.Icons.docMagnify
+        case FeatureConstants.PermissionName.writeContent: return DesignSystem.Icons.squareAndPencil
+        case FeatureConstants.PermissionName.network: return DesignSystem.Icons.globe
+        case FeatureConstants.PermissionName.aiAccess: return DesignSystem.Icons.brainProfile
+        case FeatureConstants.PermissionName.log: return DesignSystem.Icons.listBulletClipboard
+        default: return DesignSystem.Icons.keyFill
         }
     }
 }

@@ -14,7 +14,7 @@ import QuickLook
 import Dependencies
 
 struct ImportRecordSection: View {
-    @State private var selectedCategory: String = "all"
+    @State private var selectedCategory: String = FeatureConstants.CategoryFilter.all
     @State private var records: [ImportRecord] = []
     @State private var previewText: String?
     @State private var previewFilePath: String?
@@ -30,7 +30,7 @@ struct ImportRecordSection: View {
     @Dependency(\.shareSheet) private var shareSheet: any ShareSheetProtocol
 
     private let tabs: [(key: String, label: String)] = {
-        var items: [(String, String)] = [("all", L10n.Ingest.importAll)]
+        var items: [(String, String)] = [(FeatureConstants.CategoryFilter.all, L10n.Ingest.importAll)]
         for cat in ImportCategory.allCases {
             items.append((cat.rawValue, cat.displayName))
         }
@@ -55,7 +55,7 @@ struct ImportRecordSection: View {
                     .foregroundStyle(.secondary)
                     .padding(.vertical, DesignSystem.large)
                     .frame(maxWidth: .infinity)
-            } else if selectedCategory == "all" {
+            } else if selectedCategory == FeatureConstants.CategoryFilter.all {
                 tagGroupedList
             } else {
                 flatCardList(records)
@@ -73,13 +73,13 @@ struct ImportRecordSection: View {
     private var textPreviewSheetContent: some View {
         NavigationStack {
             Group {
-                if previewRecord?.category == "ocr" {
+                if previewRecord?.category == FeatureConstants.SourceType.ocr {
                     ocrFullPreviewView
                 } else {
                     standardPreviewScrollView
                 }
             }
-            .navigationTitle(previewRecord?.category == "ocr" ? (previewRecord?.title ?? L10n.Ingest.ocrScan) : L10n.Ingest.rawContentTitle)
+            .navigationTitle(previewRecord?.category == FeatureConstants.SourceType.ocr ? (previewRecord?.title ?? L10n.Ingest.ocrScan) : L10n.Ingest.rawContentTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -102,7 +102,7 @@ struct ImportRecordSection: View {
     private var standardPreviewScrollView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                if previewRecord?.category == "voice" {
+                if previewRecord?.category == FeatureConstants.SourceType.voice {
                     VoiceAudioPlayerView(
                         title: previewRecord?.title ?? "",
                         audioPath: previewFilePath,
@@ -115,7 +115,7 @@ struct ImportRecordSection: View {
                     }
                 }
                 
-                if previewRecord?.category != "voice" {
+                if previewRecord?.category != FeatureConstants.SourceType.voice {
                     if let path = previewFilePath, !isTextFile(path: path) {
                         FileTextPreviewView(filePath: path)
                     } else {
@@ -129,8 +129,8 @@ struct ImportRecordSection: View {
     }
     
     private func cleanPreviewText(_ text: String) -> String {
-        text.replacingOccurrences(of: "[[", with: "「")
-            .replacingOccurrences(of: "]]", with: "」")
+        text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "「")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "」")
     }
 
     // MARK: - 预览分发
@@ -148,10 +148,10 @@ struct ImportRecordSection: View {
         // 仅当文件确实是 PDF（扩展名是 .pdf 或 category 为 pdf）时才进行 PDF 构建与 QuickLook 弹窗
         let titleLower = record.title.lowercased()
         let catLower = record.category.lowercased()
-        let isPDF = catLower == "pdf" || titleLower.hasSuffix(".pdf") || record.filePath?.lowercased().hasSuffix(".pdf") == true
+        let isPDF = catLower == SystemConstants.FileExtension.pdf || titleLower.hasSuffix(".\(SystemConstants.FileExtension.pdf)") || record.filePath?.lowercased().hasSuffix(".\(SystemConstants.FileExtension.pdf)") == true
 
         // 对于 OCR 扫描分类，强制走智宇原生带有手势捏合与缩放控制按钮的 ZoomableOCRImageView 预览弹窗
-        if catLower == "ocr" {
+        if catLower == FeatureConstants.SourceType.ocr {
             previewText = record.rawText ?? record.title
             previewFilePath = record.filePath
             showTextPreview = true
@@ -202,7 +202,7 @@ struct ImportRecordSection: View {
         if let record = previewRecord {
             VStack(alignment: .leading, spacing: DesignSystem.small) {
                 HStack {
-                    Label(L10n.Ingest.ocrScan, systemImage: "camera.viewfinder")
+                    Label(L10n.Ingest.ocrScan, systemImage: DesignSystem.Icons.cameraViewfinder)
                         .font(.caption.weight(.bold))
                         .padding(.horizontal, DesignSystem.medium)
                         .padding(.vertical, DesignSystem.tightPadding)
@@ -233,7 +233,7 @@ struct ImportRecordSection: View {
 
     @ViewBuilder
     private var previewSourceBadge: some View {
-        let cat = previewRecord?.category ?? "file"
+        let cat = previewRecord?.category ?? FeatureConstants.SourceType.file
         Label(badgeLabel(for: cat), systemImage: badgeIcon(for: cat))
             .font(.caption.weight(.bold))
             .padding(.horizontal, DesignSystem.medium)
@@ -244,30 +244,30 @@ struct ImportRecordSection: View {
 
     private func badgeLabel(for category: String) -> String {
         switch category {
-        case "ocr": return L10n.Ingest.ocrScan
-        case "voice": return L10n.Ingest.voiceNote
-        case "link": return L10n.Ingest.urlImport
-        case "manual": return L10n.Ingest.manualEntry
+        case FeatureConstants.SourceType.ocr: return L10n.Ingest.ocrScan
+        case FeatureConstants.SourceType.voice: return L10n.Ingest.voiceNote
+        case FeatureConstants.SourceType.link: return L10n.Ingest.urlImport
+        case FeatureConstants.SourceType.manual: return L10n.Ingest.manualEntry
         default: return L10n.Ingest.fileImport
         }
     }
 
     private func badgeIcon(for category: String) -> String {
         switch category {
-        case "ocr": return "camera.viewfinder"
-        case "voice": return "waveform"
-        case "link": return "link"
-        case "manual": return "square.and.pencil"
+        case FeatureConstants.SourceType.ocr: return "camera.viewfinder"
+        case FeatureConstants.SourceType.voice: return "waveform"
+        case FeatureConstants.SourceType.link: return "link"
+        case FeatureConstants.SourceType.manual: return "square.and.pencil"
         default: return "doc.text"
         }
     }
 
     private func badgeColor(for category: String) -> Color {
         switch category {
-        case "ocr": return .purple
-        case "voice": return .pink
-        case "link": return .blue
-        case "manual": return .orange
+        case FeatureConstants.SourceType.ocr: return Color.theme.purple
+        case FeatureConstants.SourceType.voice: return Color.theme.pink
+        case FeatureConstants.SourceType.link: return Color.theme.blue
+        case FeatureConstants.SourceType.manual: return Color.theme.orange
         default: return .appAccent
         }
     }
@@ -333,7 +333,7 @@ struct ImportRecordSection: View {
     }
 
     private func loadRecords() async {
-        let cat: String? = selectedCategory == "all" ? nil : selectedCategory
+        let cat: String? = selectedCategory == FeatureConstants.CategoryFilter.all ? nil : selectedCategory
         let fetched = (try? await repo.fetchAll(category: cat, limit: 50)) ?? []
         records = fetched.map { sanitizeRecordSize($0) }
     }

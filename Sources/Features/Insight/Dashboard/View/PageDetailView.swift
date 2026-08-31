@@ -39,7 +39,7 @@ struct PageDetailView: View {
     private func pinButton(coordinator: PageDetailCoordinator) -> some View {
         Button(action: { Task { await coordinator.togglePin() } }) {
             Image(systemName: coordinator.page.isPinned ? DesignSystem.Icons.pinFill : DesignSystem.Icons.pin)
-                .foregroundStyle(coordinator.page.isPinned ? .orange : .appSecondary)
+                .foregroundStyle(coordinator.page.isPinned ? Color.theme.orange : .appSecondary)
         }
         .accessibilityIdentifier("pin")
     }
@@ -63,7 +63,7 @@ struct PageDetailView: View {
             coordinator.isEditing.toggle()
         }) {
             Image(systemName: coordinator.isEditing ? DesignSystem.Icons.check : DesignSystem.Icons.squareAndPencil)
-                .foregroundStyle(coordinator.isEditing ? .green : .appText)
+                .foregroundStyle(coordinator.isEditing ? Color.theme.green : .appText)
         }
     }
     
@@ -89,7 +89,7 @@ struct PageDetailView: View {
                 Image(systemName: DesignSystem.Icons.sparkles)
                     .font(.title2)
                     .foregroundStyle(LinearGradient(
-                        colors: [.appAccent, .orange],
+                        colors: [.appAccent, Color.theme.orange],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
@@ -317,7 +317,7 @@ struct PageDetailView: View {
 
     private func sourceCitationBar(coordinator: PageDetailCoordinator) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-            Label(L10n.Knowledge.Page.sourceCitation, systemImage: "link")
+            Label(L10n.Knowledge.Page.sourceCitation, systemImage: DesignSystem.Icons.link)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.appSecondary)
             sourceCitationDetails(coordinator: coordinator)
@@ -334,7 +334,7 @@ struct PageDetailView: View {
                 sourceCitationLinkButton(url: url, coordinator: coordinator)
             }
             if let st = coordinator.page.sourceType {
-                Label("\(L10n.Knowledge.Page.sourceTypeFile): \(st)", systemImage: "doc")
+                Label("\(L10n.Knowledge.Page.sourceTypeFile): \(st)", systemImage: DesignSystem.Icons.doc)
                     .font(.caption2)
                     .foregroundStyle(.appSecondary)
             }
@@ -370,7 +370,7 @@ struct PageDetailView: View {
                             .font(.caption)
                             .lineLimit(1)
                     }
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.theme.blue)
                 }
                 .buttonStyle(.plain)
             } else {
@@ -385,7 +385,7 @@ struct PageDetailView: View {
                             .font(.caption)
                             .lineLimit(1)
                     }
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.theme.blue)
                 }
             }
         }
@@ -419,7 +419,7 @@ struct PageDetailView: View {
             } else if !relevantLinks.isEmpty {
                 VStack(alignment: .leading, spacing: DesignSystem.medium) {
                     HStack(spacing: DesignSystem.small) {
-                        Image(systemName: "link.badge.plus")
+                        Image(systemName: DesignSystem.Icons.linkBadgePlus)
                             .foregroundStyle(.appAccent)
                         Text(L10n.Knowledge.Page.AI.potentialLinksTitle)
                             .font(.headline)
@@ -443,7 +443,7 @@ struct PageDetailView: View {
             } else if coordinator.hasScannedForLinks {
                 VStack(alignment: .leading, spacing: DesignSystem.medium) {
                     HStack(spacing: DesignSystem.small) {
-                        Image(systemName: "info.circle")
+                        Image(systemName: DesignSystem.Icons.settingsAbout)
                             .foregroundStyle(.appSecondary)
                         Text(L10n.Knowledge.Page.AI.potentialLinksEmpty)
                             .font(.subheadline)

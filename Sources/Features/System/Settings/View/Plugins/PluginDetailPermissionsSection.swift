@@ -60,8 +60,8 @@ extension PluginDetailView {
                 }
             } else {
                 HStack {
-                    Image(systemName: "checkmark.shield.fill")
-                        .foregroundStyle(.green)
+                    Image(systemName: DesignSystem.Icons.checkmarkShieldFill)
+                        .foregroundStyle(Color.theme.green)
                     Text(L10n.Plugin.perm.none)
                         .font(.subheadline)
                         .foregroundStyle(.appSecondary)
@@ -79,23 +79,23 @@ extension PluginDetailView {
     /// 权限图标
     func permIcon(for perm: String) -> String {
         switch perm {
-        case "readContent": return "doc.text.magnifyingglass"
-        case "writeContent": return "square.and.pencil"
-        case "network": return "globe"
-        case "aiAccess": return "brain.head.profile"
-        case "log": return "list.bullet.clipboard"
-        default: return "key.fill"
+        case FeatureConstants.PermissionName.readContent: return DesignSystem.Icons.docMagnify
+        case FeatureConstants.PermissionName.writeContent: return DesignSystem.Icons.squareAndPencil
+        case FeatureConstants.PermissionName.network: return DesignSystem.Icons.globe
+        case FeatureConstants.PermissionName.aiAccess: return DesignSystem.Icons.brainProfile
+        case FeatureConstants.PermissionName.log: return DesignSystem.Icons.listBulletClipboard
+        default: return DesignSystem.Icons.keyFill
         }
     }
 
     /// 权限颜色
     func permColor(for perm: String) -> Color {
         switch perm {
-        case "readContent": return .blue
-        case "writeContent": return .orange
-        case "network": return .purple
-        case "aiAccess": return .pink
-        case "log": return .gray
+        case FeatureConstants.PermissionName.readContent: return Color.theme.blue
+        case FeatureConstants.PermissionName.writeContent: return Color.theme.orange
+        case FeatureConstants.PermissionName.network: return Color.theme.purple
+        case FeatureConstants.PermissionName.aiAccess: return Color.theme.pink
+        case FeatureConstants.PermissionName.log: return Color.theme.gray
         default: return .appSecondary
         }
     }

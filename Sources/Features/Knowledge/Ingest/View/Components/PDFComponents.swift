@@ -18,6 +18,7 @@ private enum PDFUIConstants {
     static let pageRangeFieldWidth: CGFloat = 50
     static let previewMaxHeight: CGFloat = 150
     static let previewLineLimit: Int = Int(SystemSpacing.elementLarge)
+    static let pageStartPlaceholder: String = "1"
 }
 
 // MARK: - PDF Ingest Sheet
@@ -104,7 +105,7 @@ struct PDFIngestSheet: View {
             if ingestMode == .pageRange {
                 HStack {
                     Text(L10n.Ingest.PDF.fromPage)
-                    TextField("1", value: $pageStart, format: .number)
+                    TextField(PDFUIConstants.pageStartPlaceholder, value: $pageStart, format: .number)
                         .adaptiveNumberPadKeyboard()
                         .frame(width: PDFUIConstants.pageRangeFieldWidth)
                     Text(L10n.Ingest.PDF.toPage)
@@ -275,11 +276,11 @@ struct PDFDocumentRow: View {
                 .lineLimit(1)
             
             HStack(spacing: Spacing.small) { // 8
-                Label(L10n.Ingest.pdfPageCountFormat(doc.pageCount), systemImage: "doc.text")
+                Label(L10n.Ingest.pdfPageCountFormat(doc.pageCount), systemImage: DesignSystem.Icons.document)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                 
-                Label(L10n.Ingest.pdfHighlightCountFormat(doc.highlights.count), systemImage: "highlighter")
+                Label(L10n.Ingest.pdfHighlightCountFormat(doc.highlights.count), systemImage: DesignSystem.Icons.highlighter)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
             }
@@ -327,12 +328,12 @@ extension Color {
     /// - Returns: 返回值
     static func pdfHighlight(_ name: String) -> Color {
         switch name {
-        case "yellow": return .yellow
-        case "green": return .green
-        case "blue": return .blue
-        case "pink": return .pink
-        case "purple": return .purple
-        default: return .yellow
+        case FeatureConstants.MockColorName.yellow: return Color.theme.yellow
+        case FeatureConstants.MockColorName.green: return Color.theme.green
+        case FeatureConstants.MockColorName.blue: return Color.theme.blue
+        case FeatureConstants.MockColorName.pink: return Color.theme.pink
+        case FeatureConstants.MockColorName.purple: return Color.theme.purple
+        default: return Color.theme.yellow
         }
     }
 }

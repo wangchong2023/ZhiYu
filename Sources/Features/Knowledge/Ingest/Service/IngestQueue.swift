@@ -61,7 +61,7 @@ final class IngestQueue: ObservableObject {
             let task = Task {
                 do {
                     try Task.checkCancellation()
-                    Logger.shared.debug(" [IngestQueue]" + " Processing task:" + " \(title)")
+                    Logger.shared.debug(FeatureConstants.LogDetails.ingestQueuePrefix + FeatureConstants.LogDetails.processingTask + " \(title)")
                     let result = try await llmService.smartIngest(title: title, rawContent: content, pages: pages)
                     try Task.checkCancellation()
                     
@@ -73,9 +73,9 @@ final class IngestQueue: ObservableObject {
                         self.decrementCount()
                     }
                 } catch is CancellationError {
-                    Logger.shared.debug(" [IngestQueue]" + " Task cancelled:" + " \(title)")
+                    Logger.shared.debug(FeatureConstants.LogDetails.ingestQueuePrefix + FeatureConstants.LogDetails.taskCancelled + " \(title)")
                 } catch {
-                    Logger.shared.error(" [IngestQueue] Task failed: " + title + ", Error: " + String(describing: error))
+                    Logger.shared.error(FeatureConstants.LogDetails.taskFailedPrefix + title + FeatureConstants.LogDetails.errorPrefix + String(describing: error))
                     await MainActor.run { 
                         self.activeTasks.removeValue(forKey: taskID)
                         self.decrementCount() 

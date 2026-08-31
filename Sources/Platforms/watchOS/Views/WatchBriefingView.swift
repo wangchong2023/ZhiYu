@@ -76,7 +76,7 @@ struct WatchBriefingView: View {
                     Button(L10n.Watch.briefingGenerateNow) {
                         watchSync.requestDailyBriefing()
                     }
-                    .tint(.purple)
+                    .tint(Color.theme.purple)
                 }
             }
         }

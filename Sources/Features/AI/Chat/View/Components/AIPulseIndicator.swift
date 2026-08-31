@@ -54,10 +54,10 @@ struct AIPulseIndicator: View {
     private var pulseColor: Color {
         if isAIProcessing {
             switch currentStage {
-            case .embedding: return .cyan
-            case .retrieval: return .blue
-            case .synthesis: return .purple
-            default: return .purple
+            case .embedding: return Color.theme.cyan
+            case .retrieval: return Color.theme.blue
+            case .synthesis: return Color.theme.purple
+            default: return Color.theme.purple
             }
         } else if store.isScanningAI {
             return .appAccent // 正在全库扫描 (Orange)

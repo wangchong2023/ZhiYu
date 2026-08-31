@@ -35,4 +35,9 @@ enum WidgetL10n {
     static var insightQuote3: String { String(localized: "widget.insightQuote3", table: "Platform") }
     static var weeklyHeatmap: String { String(localized: "widget.weeklyHeatmap", table: "Platform") }
     static var quickCaptureTitle: String { String(localized: "widget.quickCaptureTitle", table: "Platform") }
+    static var source: String { String(localized: "widget.source", table: "Platform") }
+    static var concept: String { String(localized: "widget.concept", table: "Platform") }
+    static var entity: String { String(localized: "widget.entity", table: "Platform") }
+    static var map: String { String(localized: "widget.map", table: "Platform") }
+    static var ocr: String { String(localized: "widget.ocr", table: "Platform") }
 }

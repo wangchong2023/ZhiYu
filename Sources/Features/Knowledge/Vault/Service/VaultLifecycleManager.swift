@@ -20,7 +20,7 @@ extension VaultService {
         keyStore?.set(vault.englishName, forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
 
         guard let vaultRepository = vaultRepository,
-              let databaseSwitcher = databaseSwitcher else {
+              databaseSwitcher != nil else {
             Logger.shared.warning(" [VaultService] selectVaultAndWait 被跳过，因为相关数据库依赖未在 DI 注册")
             return
         }
@@ -28,11 +28,7 @@ extension VaultService {
         try? await vaultRepository.saveSetting(key: AppConstants.Keys.Storage.vaultsSelectedID, value: vault.id.uuidString)
         NotificationCenter.default.post(name: .vaultWillSwitch, object: vault.id)
 
-        let dbURL = getVaultDatabaseURL(for: vault.id)
-        try await databaseSwitcher.switchDatabase(to: vault.id, at: dbURL)
-        try? await vaultRepository.updateLastAccessed(id: vault.id)
-
-        await refreshPageCount(for: vault.id)
+        try await performVaultDatabaseSwitch(for: vault.id)
     }
 
     /// 选择并激活目标笔记本，同时触发底层的专属物理数据库 WAL 切换。
@@ -48,20 +44,26 @@ extension VaultService {
         NotificationCenter.default.post(name: .vaultWillSwitch, object: vault.id)
 
         Task {
-            guard let databaseSwitcher = databaseSwitcher,
-                  let vaultRepository = vaultRepository else {
+            guard databaseSwitcher != nil,
+                  vaultRepository != nil else {
                 Logger.shared.warning(" [VaultService] selectVault 物理切换被跳过，因为底层依赖未在 DI 注册")
                 return
             }
             do {
-                let dbURL = getVaultDatabaseURL(for: vault.id)
-                try await databaseSwitcher.switchDatabase(to: vault.id, at: dbURL)
-                try? await vaultRepository.updateLastAccessed(id: vault.id)
-                await refreshPageCount(for: vault.id)
+                try await performVaultDatabaseSwitch(for: vault.id)
             } catch {
                 Logger.shared.error("[VaultService] selectVault switch failed: \(error.localizedDescription)", error: error)
             }
         }
+    }
+
+    /// 统一执行保险库专属物理数据库切换与元数据更新
+    private func performVaultDatabaseSwitch(for vaultID: UUID) async throws {
+        guard let databaseSwitcher = databaseSwitcher else { return }
+        let dbURL = getVaultDatabaseURL(for: vaultID)
+        try await databaseSwitcher.switchDatabase(to: vaultID, at: dbURL)
+        try? await vaultRepository?.updateLastAccessed(id: vaultID)
+        await refreshPageCount(for: vaultID)
     }
 
     /// 退出当前选中的笔记本笔记本。
@@ -117,6 +119,7 @@ extension VaultService {
     public func deleteVault(id: UUID) {
         vaults.removeAll { $0.id == id }
         if selectedVaultID == id {
+            NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
             selectedVaultID = nil
             keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultsSelectedID)
             keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)

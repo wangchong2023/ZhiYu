@@ -42,7 +42,7 @@ public struct SmartRoutingView: View {
             VStack(alignment: .leading, spacing: DesignSystem.small) {
                 HStack(alignment: .center, spacing: SystemSpacing.element) {
                     // 主开关左侧添加合并融合图标，以表现端侧与在线智能调度的含义
-                    Image(systemName: "arrow.triangle.merge")
+                    Image(systemName: DesignSystem.Icons.arrowTriangleMerge)
                         .foregroundStyle(Color.theme.accent)
                     VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                         Text(L10n.ModelManager.Routing.onlineEscalationToggle)
@@ -58,17 +58,17 @@ public struct SmartRoutingView: View {
                 
                 // 补全辅助配置的微型功能图标
                 Toggle(isOn: .constant(false)) {
-                    Label(L10n.ModelManager.Routing.wifiOnly, systemImage: "wifi")
+                    Label(L10n.ModelManager.Routing.wifiOnly, systemImage: DesignSystem.Icons.wifi)
                 }
                 .font(.subheadline)
                 
                 Toggle(isOn: .constant(true)) {
-                    Label(L10n.ModelManager.Routing.autoFallback, systemImage: "shield.fill")
+                    Label(L10n.ModelManager.Routing.autoFallback, systemImage: DesignSystem.Icons.shieldFill)
                 }
                 .font(.subheadline)
                 
                 Toggle(isOn: .constant(true)) {
-                    Label(L10n.ModelManager.Routing.preferLocal, systemImage: "cpu.fill")
+                    Label(L10n.ModelManager.Routing.preferLocal, systemImage: DesignSystem.Icons.models)
                 }
                 .font(.subheadline)
             }
@@ -90,7 +90,7 @@ public struct SmartRoutingView: View {
                     value: getActiveModelName(),
                     status: modelManager.isModelLocalReady(for: modelManager.activeModelId) ? .healthy : .warning)
                 HStack {
-                    Image(systemName: "cpu").foregroundStyle(.appAccent).frame(width: DesignSystem.titleIconSize)
+                    Image(systemName: DesignSystem.Icons.cpuOutline).foregroundStyle(.appAccent).frame(width: DesignSystem.titleIconSize)
                     Text(L10n.ModelManager.Routing.currentDecision).font(.subheadline).foregroundStyle(.appText)
                     Spacer()
                     Text(getCurrentRoutingDecision()).font(.caption.weight(.bold)).foregroundStyle(.appAccent)
@@ -102,14 +102,14 @@ public struct SmartRoutingView: View {
                 if !modelManager.isCloudEscalationEnabled && !modelManager.isModelLocalReady(for: modelManager.activeModelId) {
                     Text(L10n.ModelManager.Routing.autoOnlineDesc)
                         .font(.caption2)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.theme.orange)
                         .padding(.leading, ComponentSpacing.huge)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
                 Divider()
-                statusRow(label: L10n.ModelManager.Routing.networkCurrent, value: "WiFi", status: .healthy)
-                statusRow(label: L10n.ModelManager.Routing.networkLatency, value: "23ms", status: .healthy)
+                statusRow(label: L10n.ModelManager.Routing.networkCurrent, value: FeatureConstants.MockData.wifi, status: .healthy)
+                statusRow(label: L10n.ModelManager.Routing.networkLatency, value: FeatureConstants.MockData.latency23ms, status: .healthy)
                 statusRow(label: L10n.ModelManager.Routing.networkBandwidth, value: L10n.ModelManager.Routing.networkBandwidthExcellent, status: .healthy)
             }
             .padding()
@@ -156,11 +156,11 @@ public struct SmartRoutingView: View {
         var color: Color {
             switch self {
             case .healthy:
-                return .green
+                return Color.theme.green
             case .warning:
-                return .orange
+                return Color.theme.orange
             case .error:
-                return .red
+                return Color.theme.red
             }
         }
     }

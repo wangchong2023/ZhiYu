@@ -354,12 +354,9 @@ final class LLMConfigStore: ObservableObject {
                 if let decrypted = try? SecurityManager.shared.decrypt(trimmed), !decrypted.isEmpty {
                     return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
                 }
-                // 3. 兼容合法格式的明文存储（如 sk- 开头且满足最小长度要求）
-                if trimmed.hasPrefix(LLMConstants.APIKeySecret.prefix) || trimmed.count >= LLMConstants.APIKeySecret.minLength {
-                    return trimmed
-                }
-                Logger.shared.error("[LLMConfigStore] API 密钥解密失败 (provider: \(provider))，请重新配置")
-                return ""
+                // 3. 解密失败时返回原始存储值（信任 Keychain 存储层，由调用方判断有效性）
+                //    避免因明文格式检查过严而静默丢弃合法存储的 API 密钥
+                return trimmed
             }
         } catch {
             Logger.shared.error("[LLMConfigStore] 从钥匙串读取 API 密钥失败", error: error)

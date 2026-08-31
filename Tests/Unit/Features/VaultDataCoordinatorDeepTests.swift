@@ -23,8 +23,6 @@ final class VaultDataCoordinatorDeepTests: XCTestCase {
 
     override func tearDown() async throws {
         try? await Task.sleep(nanoseconds: 100_000_000)
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
         try await super.tearDown()
     }
 

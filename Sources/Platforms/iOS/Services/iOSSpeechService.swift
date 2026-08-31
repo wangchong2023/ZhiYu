@@ -63,7 +63,7 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd_HHmmss"
         let ts = formatter.string(from: Date())
-        let fileName = "voice_\(ts).mp3"
+        let fileName = "voice_\(ts).m4a"
         let fileURL = recordsDir.appendingPathComponent(fileName)
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),

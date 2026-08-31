@@ -196,8 +196,8 @@ public enum FrontmatterParser {
     public static func split(content: String) -> (frontmatter: String?, body: String) {
         let lines = content.components(separatedBy: .newlines)
         
-        // 必须以 --- 或 ---json 开头
-        guard let firstLine = lines.first?.trimmingCharacters(in: .whitespacesAndNewlines),
+        // 必须顶格以 --- 或 ---json 开头（禁止前置缩进空格）
+        guard let firstLine = lines.first,
               firstLine == ProcessorConstants.Frontmatter.yamlDelimiter || firstLine == ProcessorConstants.Frontmatter.jsonDelimiter else {
             return (nil, content)
         }
@@ -208,8 +208,7 @@ public enum FrontmatterParser {
         
         for index in 1..<lines.count {
             let line = lines[index]
-            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !foundEnd && trimmed == ProcessorConstants.Frontmatter.yamlDelimiter {
+            if !foundEnd && line == ProcessorConstants.Frontmatter.yamlDelimiter {
                 foundEnd = true
                 continue
             }

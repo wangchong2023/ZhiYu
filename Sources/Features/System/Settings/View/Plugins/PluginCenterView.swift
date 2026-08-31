@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 import Dependencies
 
 /// 插件中心 (Stub: 为未来生态预留位置)
@@ -158,18 +159,7 @@ struct PluginCenterView: View {
     private var myPluginsSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.widePadding) {
             let filtered = registry.plugins.filter { plugin in
-                let matchesSearch = searchText.isEmpty || plugin.manifest.name.localizedCaseInsensitiveContains(searchText)
-                let matchesCategory: Bool
-                if let sel = selectedCategory {
-                    if sel == "other" {
-                        matchesCategory = plugin.manifest.category == nil || plugin.manifest.category == "other"
-                    } else {
-                        matchesCategory = plugin.manifest.category == sel
-                    }
-                } else {
-                    matchesCategory = true
-                }
-                return matchesSearch && matchesCategory
+                matchesSearch(plugin.manifest.name) && matchesCategory(plugin.manifest.category)
             }
             
             if !filtered.isEmpty {
@@ -231,11 +221,11 @@ struct PluginCenterView: View {
             } else {
                 if let errorMessage = marketService.errorMessage {
                     AppEmptyState.withAction(
-                        icon: "wifi.slash",
+                        icon: DesignSystem.Icons.wifiSlash,
                         title: L10n.Plugin.market.connectionError,
                         description: errorMessage,
                         actionLabel: L10n.Shared.retryButton,
-                        actionIcon: "arrow.clockwise"
+                        actionIcon: DesignSystem.Icons.arrowClockwise
                     ) {
                         Task {
                             await marketService.fetchPlugins()
@@ -244,18 +234,7 @@ struct PluginCenterView: View {
                     .padding(.vertical, DesignSystem.giant)
                 } else {
                     let filtered = marketService.availablePlugins.filter { p in
-                        let matchesSearch = searchText.isEmpty || p.name.localizedCaseInsensitiveContains(searchText)
-                        let matchesCategory: Bool
-                        if let sel = selectedCategory {
-                            if sel == "other" {
-                                matchesCategory = p.category == nil || p.category == "other"
-                            } else {
-                                matchesCategory = p.category == sel
-                            }
-                        } else {
-                            matchesCategory = true
-                        }
-                        return matchesSearch && matchesCategory
+                        matchesSearch(p.name) && matchesCategory(p.category)
                     }
                     
                     if filtered.isEmpty {
@@ -291,43 +270,63 @@ struct PluginCenterView: View {
 
     /// 根据本地已安装插件 ID 的特征动态匹配合适的功能性 SF Symbol 图标，保证各示意插件图标各具特色
     private func localIconName(for id: String) -> String {
-        if id.contains("toc-generator") {
+        if id.contains(PluginConstants.LocalIconKeyword.tocGenerator) {
             return "list.bullet.rectangle.portrait"
-        } else if id.contains("word-counter") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.wordCounter) {
             return "character.textbox"
-        } else if id.contains("smart-cleaner") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.smartCleaner) {
             return "wand.and.stars"
-        } else if id.contains("ai-summary") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.aiSummary) {
             return "brain.head.profile"
-        } else if id.contains("code-highlighter") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.codeHighlighter) {
             return "curlybraces"
-        } else if id.contains("link-preview") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.linkPreview) {
             return "link"
-        } else if id.contains("ai-translator") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.aiTranslator) {
             return "translate"
-        } else if id.contains("markdown-beautifier") {
+        } else if id.contains(PluginConstants.LocalIconKeyword.markdownBeautifier) {
             return "doc.text.magnifyingglass"
         } else {
             return "puzzlepiece.fill"
         }
     }
 
-    /// 动态研判已安装插件的真实来源属性（若在社区插件列表内匹配则为community，否则为local）
+    /// 动态研判已安装插件的真实来源属性。
+    /// - 市场列表已加载且匹配到 → `.community`
+    /// - 市场列表已加载但未匹配 → `.local`
+    /// - 市场列表未加载（空且未在加载中）→ `.unknown`，避免误判
     private func determineSource(for pluginID: String) -> PluginSource {
+        if marketService.availablePlugins.isEmpty && !marketService.isLoading {
+            return .unknown
+        }
         let isMarket = marketService.availablePlugins.contains { marketPlugin in
             pluginID == marketPlugin.id || pluginID.hasSuffix("." + marketPlugin.id)
         }
         return isMarket ? .community : .local
     }
 
+    /// 通用搜索匹配：空搜索词时返回 true，否则执行大小写不敏感包含匹配
+    private func matchesSearch(_ name: String) -> Bool {
+        searchText.isEmpty || name.localizedCaseInsensitiveContains(searchText)
+    }
+
+    /// 通用分类匹配：无选中分类时返回 true，"other" 分类匹配 nil 和 "other"，其余精确匹配
+    private func matchesCategory(_ category: String?) -> Bool {
+        guard let sel = selectedCategory else { return true }
+        if sel == PluginConstants.Category.other {
+            return category == nil || category == PluginConstants.Category.other
+        }
+        return category == sel
+    }
+
     private var categoryPillsSection: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: DesignSystem.small) {
                 categoryPill(title: L10n.Plugin.Category.all, category: nil)
-                categoryPill(title: L10n.Plugin.Category.efficiency, category: "efficiency")
-                categoryPill(title: L10n.Plugin.Category.social, category: "social")
-                categoryPill(title: L10n.Plugin.Category.reading, category: "reading")
-                categoryPill(title: L10n.Plugin.Category.other, category: "other")
+                categoryPill(title: L10n.Plugin.Category.efficiency, category: PluginConstants.Category.efficiency)
+                categoryPill(title: L10n.Plugin.Category.social, category: PluginConstants.Category.social)
+                categoryPill(title: L10n.Plugin.Category.reading, category: PluginConstants.Category.reading)
+                categoryPill(title: L10n.Plugin.Category.other, category: PluginConstants.Category.other)
             }
             .padding(.horizontal)
             .padding(.vertical, DesignSystem.tiny)
@@ -360,6 +359,8 @@ struct PluginCenterView: View {
 enum PluginSource: String {
     case local
     case community
+    /// 市场列表未加载时的未知来源状态，避免将社区插件误判为本地
+    case unknown
 }
 
 /// 插件卡片通用视图组件
@@ -406,7 +407,7 @@ struct PluginCard: View {
                     .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
                     .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
-            } else if let iconURL = URL(string: icon), iconURL.scheme?.hasPrefix("http") == true {
+            } else if let iconURL = URL(string: icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
                 CachedAsyncImage(url: iconURL) { phase in
                     switch phase {
                     case .success(let image):
@@ -414,20 +415,20 @@ struct PluginCard: View {
                             .resizable().scaledToFit()
                     case .empty:
                         // 网络图标加载中时，展示静止淡雅的拼图占位符，去除凌乱的局部菊花与闪烁
-                        Image(systemName: "puzzlepiece.extension.fill")
+                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
                             .font(.title3)
                             .foregroundStyle(.appSecondary.opacity(DesignSystem.disabledOpacity))
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
                             .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
                     case .failure:
                         // 远程图标拉取失败时，fallback 到带渐变底的拼图块默认图标
-                        Image(systemName: "puzzlepiece.extension.fill")
+                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
                             .font(.title3)
                             .foregroundStyle(.white)
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
                             .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     @unknown default:
-                        Image(systemName: "puzzlepiece.extension.fill")
+                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
                             .font(.title3)
                             .foregroundStyle(.white)
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
@@ -484,7 +485,7 @@ struct PluginCard: View {
                             .font(.system(size: DesignSystem.microFontSize))
                         Label(String(format: "%.1f", rating), systemImage: DesignSystem.Icons.star)
                             .font(.system(size: DesignSystem.microFontSize))
-                            .foregroundStyle(.yellow)
+                            .foregroundStyle(Color.theme.yellow)
                     }
                     .foregroundStyle(.appSecondary)
                     .padding(.top, SystemSpacing.atomic)
@@ -528,13 +529,15 @@ struct PluginCard: View {
         switch src {
         case .local: return L10n.Plugin.Detail.categoryLocal
         case .community: return L10n.Plugin.Detail.categoryCommunity
+        case .unknown: return L10n.Plugin.Detail.categoryUnknown
         }
     }
 
     private func sourceColor(_ src: PluginSource) -> Color {
         switch src {
-        case .local: return .green
-        case .community: return .orange
+        case .local: return Color.theme.green
+        case .community: return Color.theme.orange
+        case .unknown: return Color.theme.gray
         }
     }
 
@@ -542,7 +545,7 @@ struct PluginCard: View {
     private var actionButton: some View {
         if isInstalled {
             HStack(spacing: SystemSpacing.tiny) {
-                Image(systemName: "trash")
+                Image(systemName: DesignSystem.Icons.delete)
                     .font(.caption2)
                 Text(L10n.Plugin.Action.uninstall)
                     .font(.caption.bold())
@@ -554,10 +557,11 @@ struct PluginCard: View {
             .foregroundStyle(.white)
             .contentShape(Capsule()) // 提升手势判定区域
             .onTapGesture {
+                guard let id = pluginID else { return }
                 HapticFeedback.shared.trigger(.success)
                 let targetID = registry.plugins.first(where: {
-                    $0.manifest.id == pluginID || $0.manifest.id.hasSuffix("." + (pluginID ?? ""))
-                })?.manifest.id ?? (pluginID ?? "")
+                    $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id)
+                })?.manifest.id ?? id
                 registry.unloadPlugin(id: targetID)
             }
         } else if let marketPlugin = marketPlugin, let service = marketService {
@@ -567,7 +571,7 @@ struct PluginCard: View {
                     ProgressView()
                         .scaleEffect(0.7)
                 } else {
-                    Image(systemName: "icloud.and.arrow.down")
+                    Image(systemName: DesignSystem.Icons.icloudArrowDown)
                         .font(.caption2)
                 }
                 Text(L10n.Plugin.Action.install)

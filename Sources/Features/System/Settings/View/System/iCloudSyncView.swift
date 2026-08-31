@@ -71,8 +71,8 @@ struct iCloudSyncView: View {
                 Button(role: .destructive) {
                     coordinator.showClearCloudConfirmation = true
                 } label: {
-                    Label(L10n.ICloud.clearCloudData, systemImage: "trash.icloud")
-                        .foregroundStyle(.red)
+                    Label(L10n.ICloud.clearCloudData, systemImage: DesignSystem.Icons.trashICloud)
+                        .foregroundStyle(Color.theme.red)
                 }
                 .disabled(coordinator.isSyncing)
             }

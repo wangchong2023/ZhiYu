@@ -40,7 +40,8 @@ struct WatchKnowledgeStatsView: View {
                         .frame(width: DesignSystem.huge * 2 + DesignSystem.small, height: DesignSystem.huge * 2 + DesignSystem.small)
                     
                     Circle()
-                        .trim(from: 0, to: min(1.0, Double(totalPages) / 100.0))
+                        // Bug #62 修复：分母硬编码 100，与配额语义不符；抽取为常量。
+                        .trim(from: 0, to: min(1.0, Double(totalPages) / PlatformConstants.WidgetWatch.progressRingDenominator))
                         .stroke(Color.appAccent, style: StrokeStyle(lineWidth: SystemStroke.heavy, lineCap: .round))
                         .frame(width: DesignSystem.huge * 2 + DesignSystem.small, height: DesignSystem.huge * 2 + DesignSystem.small)
                         .rotationEffect(.degrees(-90))
@@ -75,7 +76,9 @@ struct WatchKnowledgeStatsView: View {
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(Color.appSecondary)
                     
-                    ForEach(recentTitles.prefix(5), id: \.self) { title in
+                    // Bug #64 修复：ForEach 用 id: \.self，重复标题会被 SwiftUI 去重导致渲染错误。
+                    // 改用 enumerated + offset 作为 id，保证重复标题都能渲染。
+                    ForEach(Array(recentTitles.prefix(PlatformConstants.WidgetWatch.maxRecentTitles).enumerated()), id: \.offset) { _, title in
                         HStack(spacing: DesignSystem.tiny + DesignSystem.atomic) {
                             Circle()
                                 .fill(Color.appAccent)
@@ -104,10 +107,11 @@ struct WatchKnowledgeStatsView: View {
     }
     
     private func formatNumber(_ n: Int) -> String {
-        if n >= 10000 {
-            return String(format: "%.1f%@", Double(n) / 10000.0, L10n.Common.unitTenThousand)
-        } else if n >= 1000 {
-            return String(format: "%.1fk", Double(n) / 1000.0)
+        // Bug #63 修复：阈值与换算因子硬编码，抽取为 PlatformConstants.WidgetWatch 常量。
+        if n >= PlatformConstants.WidgetWatch.tenThousandThreshold {
+            return String(format: "%.1f%@", Double(n) / PlatformConstants.WidgetWatch.tenThousandDivisor, L10n.Common.unitTenThousand)
+        } else if n >= PlatformConstants.WidgetWatch.thousandThreshold {
+            return String(format: "%.1fk", Double(n) / PlatformConstants.WidgetWatch.thousandDivisor)
         }
         return "\(n)"
     }
@@ -165,7 +169,7 @@ public struct KnowledgeDistributionWidgetView: View {
     public let pageCount: Int
     public let distribution: [String: Double]
 
-    public init(pageCount: Int = 42, distribution: [String: Double] = ["Source": 0.4, "Concept": 0.3, "Entity": 0.2, "Map": 0.1]) {
+    public init(pageCount: Int = PlatformConstants.WidgetWatch.defaultPageCount, distribution: [String: Double] = PlatformConstants.WidgetWatch.defaultDistribution) {
         self.pageCount = pageCount
         self.distribution = distribution
     }
@@ -190,7 +194,7 @@ public struct KnowledgeDistributionWidgetView: View {
                             .foregroundStyle(Color.appSecondary)
                         
                         RoundedRectangle(cornerRadius: DesignSystem.atomic)
-                            .fill(Color.appAccent.opacity(distribution[key] ?? 0.2))
+                            .fill(Color.appAccent.opacity(distribution[key] ?? PlatformConstants.WidgetWatch.distributionFallbackOpacity))
                             .frame(height: DesignSystem.tiny)
                     }
                 }
@@ -207,7 +211,7 @@ public struct QuickCaptureWidgetView: View {
     public var body: some View {
         HStack(spacing: DesignSystem.medium) {
             shortcutItem(icon: DesignSystem.Icons.voiceNote, label: L10n.Widget.voice)
-            shortcutItem(icon: DesignSystem.Icons.scan, label: "OCR")
+            shortcutItem(icon: DesignSystem.Icons.scan, label: L10n.Widget.ocr)
             shortcutItem(icon: DesignSystem.Icons.search, label: L10n.Widget.search)
             shortcutItem(icon: DesignSystem.Icons.sparkle, label: L10n.Widget.qa)
         }
@@ -247,7 +251,7 @@ public struct WatchDailyInsightView: View {
 
     public var body: some View {
         TabView {
-            ForEach(insights, id: \.self) { insight in
+            ForEach(Array(insights.enumerated()), id: \.offset) { _, insight in
                 VStack(spacing: DesignSystem.small) {
                     Image(systemName: DesignSystem.Icons.sparkle)
                         .font(.title3)

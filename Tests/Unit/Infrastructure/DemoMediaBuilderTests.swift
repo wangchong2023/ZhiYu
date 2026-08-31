@@ -264,7 +264,7 @@ private final class CountingPageStore: AnyPageStore, @unchecked Sendable {
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?,
         forceDeepScan: Bool
-    ) async -> KnowledgePage {
+    ) async -> KnowledgePage? {
         KnowledgePage(title: title, pageType: pageType, customIcon: customIcon,
                       content: content, tags: tags, sourceURL: sourceURL,
                       rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)

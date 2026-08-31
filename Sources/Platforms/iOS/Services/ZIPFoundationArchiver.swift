@@ -38,18 +38,33 @@ final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
         for entry in archive {
             let entryPath = entry.path
 
-            // 1. 拒绝 ".." 相对路径穿越
-            guard !entryPath.contains("..") else { continue }
+            // 1. 拒绝 ".." 路径穿越——按路径组件检查，避免误拒含 ".." 的合法文件名
+            // Bug #43 修复：从子串匹配改为路径组件检查
+            let pathComponents = entryPath.split(separator: "/").map(String.init)
+            guard !pathComponents.contains(PlatformConstants.PDFSecurity.pathTraversalMarker) else {
+                // Bug #45 修复：恶意 entry 跳过时记录 warning 日志
+                Logger.shared.warning("ZIP_Skipped_PathTraversal_Entry: \(entryPath)")
+                continue
+            }
             // 2. 拒绝绝对路径（Unix / 和 Windows 盘符 C:\）
             guard !entryPath.hasPrefix("/"),
-                  !entryPath.matchesRegex(#"^[A-Za-z]:[\\/]"#) else { continue }
+                  !entryPath.matchesRegex(#"^[A-Za-z]:[\\/]"#) else {
+                Logger.shared.warning("ZIP_Skipped_AbsolutePath_Entry: \(entryPath)")
+                continue
+            }
             // 3. 拒绝空路径
-            guard !entryPath.isEmpty else { continue }
+            guard !entryPath.isEmpty else {
+                Logger.shared.warning("ZIP_Skipped_EmptyPath_Entry")
+                continue
+            }
 
             let destURL = destinationURL.appendingPathComponent(entryPath)
 
             // 4. 确保 destURL 标准化后仍在目标目录内
-            guard destURL.standardizedFileURL.path.hasPrefix(destStandardized) else { continue }
+            guard destURL.standardizedFileURL.path.hasPrefix(destStandardized) else {
+                Logger.shared.warning("ZIP_Skipped_OutsideDest_Entry: \(entryPath)")
+                continue
+            }
 
             // 确保父目录存在（处理 ZIP 内目录结构）
             try? FileManager.default.createDirectory(

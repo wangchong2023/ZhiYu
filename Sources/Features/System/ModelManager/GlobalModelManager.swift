@@ -62,9 +62,9 @@ public final class GlobalModelManager {
             return override
         }
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return Locale.current.region?.identifier == "CN"
+            return Locale.current.region?.identifier == FeatureConstants.LocaleIdentifier.cn
         } else {
-            return Locale.current.identifier.contains("zh-Hans") || Locale.current.identifier.contains("_CN")
+            return Locale.current.identifier.contains(FeatureConstants.LocaleIdentifier.zhHans) || Locale.current.identifier.contains(FeatureConstants.LocaleIdentifier.zhHansCN)
         }
     }
     
@@ -238,7 +238,7 @@ public final class GlobalModelManager {
                 }
                 
                 if !isDownloadingOrActive {
-                    downloadStates[modelId] = .failed(error: "Not Downloaded")
+                    downloadStates[modelId] = .failed(error: FeatureConstants.MockData.notDownloaded)
                 }
             }
         }
@@ -354,12 +354,12 @@ public final class GlobalModelManager {
     /// - Returns: 是否应该分流路由到云端 (true 代表云端 API，false 代表端侧本地运行)
     public func shouldRouteToCloud(for taskTag: String) -> Bool {
         // 1. 语义分块 (Chunking) 与 反链发现 (LinkDiscovery) 强锁定本地端侧，绝对不下发云端，保证最高隐私安全与免资后台运行
-        if taskTag == "Chunking" || taskTag == "LinkDiscovery" {
+        if taskTag == FeatureConstants.TaskTag.chunking || taskTag == FeatureConstants.TaskTag.linkDiscovery {
             return false
         }
         
         // 2. 合成实验室 (Synthesis) 属于端云混合中枢
-        if taskTag == "Synthesis" {
+        if taskTag == FeatureConstants.TaskTag.synthesis {
             // 若用户开启了 ""，且本地活跃大模型未就绪或者强网络状态下，路由至云端以确保高质量考据
             return isCloudEscalationEnabled
         }

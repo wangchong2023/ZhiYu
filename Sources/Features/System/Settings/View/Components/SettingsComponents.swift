@@ -46,7 +46,7 @@ struct PluginExtensionsDetailView: View {
             if registry.settingTabs.isEmpty {
                 // 无已安装插件：空状态引导页
                 VStack(spacing: DesignSystem.large) {
-                    Image(systemName: "puzzlepiece.extension.fill")
+                    Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
                         .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
 
@@ -55,7 +55,7 @@ struct PluginExtensionsDetailView: View {
                         .foregroundStyle(.appText)
 
                     Button(action: { showPluginCenter = true }) {
-                        Label(L10n.Plugin.title, systemImage: "plus.circle.fill")
+                        Label(L10n.Plugin.title, systemImage: DesignSystem.Icons.plusCircle)
                             .font(.body.weight(.medium))
                     }
                     .buttonStyle(.borderedProminent)

@@ -58,18 +58,17 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
         
         // --- 隐私加固：应用级内容加密 (@P0) ---
         if p.isPrivate {
-            do {
-                p.content = try SecurityManager.shared.encrypt(p.content)
-                if let snippet = p.rawTextSnippet {
-                    p.rawTextSnippet = try SecurityManager.shared.encrypt(snippet)
-                }
-            } catch {
-                Logger.shared.error("Failed to encrypt private page content", error: error)
+            p.content = try SecurityManager.shared.encrypt(p.content)
+            if let snippet = p.rawTextSnippet {
+                p.rawTextSnippet = try SecurityManager.shared.encrypt(snippet)
             }
         }
         
-        // 查找是否已存在同名标题
-        if let existing = try KnowledgePage.filter(KnowledgePage.Columns.title == page.title).fetchOne(db) {
+        // 查找是否已存在相同 ID 或相同标题的记录
+        let existingByID = try KnowledgePage.filter(KnowledgePage.Columns.id == page.id).fetchOne(db)
+        let existingByTitle = existingByID == nil ? try KnowledgePage.filter(KnowledgePage.Columns.title == page.title).fetchOne(db) : nil
+        
+        if let existing = existingByID ?? existingByTitle {
             p.id = existing.id
             p.createdAt = existing.createdAt
             p.updatedAt = Date()

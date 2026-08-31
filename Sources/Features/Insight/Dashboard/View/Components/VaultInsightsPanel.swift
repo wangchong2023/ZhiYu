@@ -38,8 +38,8 @@ struct VaultInsightsPanel: View {
                 // 2. 核心统计指标
                 HStack(spacing: DesignSystem.standardPadding) {
                     StatBox(label: L10n.Dashboard.stats.short.pages, value: "\(store.totalPages)", color: .appAccent)
-                    StatBox(label: L10n.Dashboard.stats.short.new, value: "+12", color: .green)
-                    StatBox(label: L10n.Dashboard.stats.short.ref, value: "85%", color: .orange)
+                    StatBox(label: L10n.Dashboard.stats.short.new, value: FeatureConstants.StatDisplayValue.newPagesDelta, color: Color.theme.green)
+                    StatBox(label: L10n.Dashboard.stats.short.ref, value: FeatureConstants.StatDisplayValue.refPercent, color: Color.theme.orange)
                 }
                 
                 // 3. 模拟图表：分类分布
@@ -48,11 +48,12 @@ struct VaultInsightsPanel: View {
                         .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
                     
                     HStack(alignment: .bottom, spacing: DesignSystem.medium) {
-                        BarItem(label: L10n.Dashboard.stats.short.entity, value: 0.6, color: .appEntity)
-                        BarItem(label: L10n.Dashboard.stats.short.concept, value: 0.8, color: .appConcept)
-                        BarItem(label: L10n.Dashboard.stats.short.source, value: 0.4, color: .appSource)
-                        BarItem(label: L10n.Dashboard.stats.short.comparison, value: 0.2, color: .appComparison)
-                        BarItem(label: L10n.Dashboard.stats.short.raw, value: 0.05, color: .gray)
+                        // Bug #104 修复：硬编码 0.6/0.8/0.4/0.2/0.05 改用 FeatureConstants.VaultInsightsBarRatio
+                        BarItem(label: L10n.Dashboard.stats.short.entity, value: FeatureConstants.VaultInsightsBarRatio.entity, color: .appEntity)
+                        BarItem(label: L10n.Dashboard.stats.short.concept, value: FeatureConstants.VaultInsightsBarRatio.concept, color: .appConcept)
+                        BarItem(label: L10n.Dashboard.stats.short.source, value: FeatureConstants.VaultInsightsBarRatio.source, color: .appSource)
+                        BarItem(label: L10n.Dashboard.stats.short.comparison, value: FeatureConstants.VaultInsightsBarRatio.comparison, color: .appComparison)
+                        BarItem(label: L10n.Dashboard.stats.short.raw, value: FeatureConstants.VaultInsightsBarRatio.raw, color: Color.theme.gray)
                     }
                     .frame(height: DesignSystem.Metrics.chartHeight)
                 }
@@ -122,10 +123,10 @@ private struct ChartLinePlaceholder: View {
     var body: some View {
         GeometryReader { geo in
             Path { path in
-                path.move(to: CGPoint(x: 0, y: geo.size.height * 0.7))
-                path.addCurve(to: CGPoint(x: geo.size.width, y: geo.size.height * 0.3),
-                             control1: CGPoint(x: geo.size.width * 0.4, y: geo.size.height * 0.9),
-                             control2: CGPoint(x: geo.size.width * 0.6, y: geo.size.height * 0.1))
+                path.move(to: CGPoint(x: 0, y: geo.size.height * FeatureConstants.VaultChartPlaceholder.startHeightRatio))
+                path.addCurve(to: CGPoint(x: geo.size.width, y: geo.size.height * FeatureConstants.VaultChartPlaceholder.endHeightRatio),
+                             control1: CGPoint(x: geo.size.width * FeatureConstants.VaultChartPlaceholder.control1WidthRatio, y: geo.size.height * FeatureConstants.VaultChartPlaceholder.control1HeightRatio),
+                             control2: CGPoint(x: geo.size.width * FeatureConstants.VaultChartPlaceholder.control2WidthRatio, y: geo.size.height * FeatureConstants.VaultChartPlaceholder.control2HeightRatio))
             }
             .stroke(lineWidth: DesignSystem.Decorator.accentLineWidth)
         }

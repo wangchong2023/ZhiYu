@@ -225,11 +225,7 @@ final class PluginMarketService: ObservableObject {
         do {
             Logger.shared.info("[PluginMarket] 正在尝试从以下地址拉取插件市场: \(url.absoluteString)")
             let (data, response) = try await URLSession.shared.data(from: url)
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-
-            guard statusCode == SystemConstants.HTTPStatusCode.ok else {
-                throw NSError(domain: PluginConstants.MarketError.domain, code: statusCode, userInfo: [NSLocalizedDescriptionKey: "\(PluginConstants.MarketError.httpPrefix)\(statusCode)"])
-            }
+            try validateHTTPResponse(response)
 
             Logger.shared.info("[PluginMarket] 成功拉取插件元数据，大小: \(data.count) 字节")
             return await processPluginResponse(data: data)
@@ -387,14 +383,7 @@ final class PluginMarketService: ObservableObject {
                 group.addTask {
                     do {
                         let (tempURL, response) = try await URLSession.shared.download(from: task.remoteURL)
-                        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                        guard statusCode == SystemConstants.HTTPStatusCode.ok else {
-                            throw NSError(
-                                domain: PluginConstants.MarketError.domain,
-                                code: statusCode,
-                                userInfo: [NSLocalizedDescriptionKey: "\(PluginConstants.MarketError.httpPrefix)\(statusCode)"]
-                            )
-                        }
+                        try self.validateHTTPResponse(response)
                         
                         if FileManager.default.fileExists(atPath: task.localURL.path) {
                             try FileManager.default.removeItem(at: task.localURL)
@@ -452,6 +441,18 @@ final class PluginMarketService: ObservableObject {
         
         urlsToTry.append(base.appendingPathComponent("\(pluginID).md"))
         return urlsToTry
+    }
+
+    /// 统一校验 HTTP 响应状态码
+    nonisolated private func validateHTTPResponse(_ response: URLResponse) throws {
+        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+        guard statusCode == SystemConstants.HTTPStatusCode.ok else {
+            throw NSError(
+                domain: PluginConstants.MarketError.domain,
+                code: statusCode,
+                userInfo: [NSLocalizedDescriptionKey: "\(PluginConstants.MarketError.httpPrefix)\(statusCode)"]
+            )
+        }
     }
 }
 

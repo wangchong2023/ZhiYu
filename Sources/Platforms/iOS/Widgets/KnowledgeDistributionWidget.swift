@@ -100,16 +100,16 @@ struct KnowledgeDistributionWidgetEntryView: View {
             HStack {
                 Label(WidgetL10n.knowledgeDistribution, systemImage: "chart.pie.fill")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(WidgetSharedConstants.Color.purple)
 
                 Spacer()
 
                 HStack(spacing: 4) {
                     Image(systemName: "flame.fill")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(WidgetSharedConstants.Color.orange)
                     Text("+\(entry.distribution.weeklyGrowth)% / W")
                         .font(.caption2.weight(.bold))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(WidgetSharedConstants.Color.orange)
                 }
             }
 
@@ -134,10 +134,10 @@ struct KnowledgeDistributionWidgetEntryView: View {
 
             // 图例网格
             HStack(spacing: 12) {
-                legendItem(label: "Source", ratio: entry.distribution.sourceRatio, color: .purple)
-                legendItem(label: "Concept", ratio: entry.distribution.conceptRatio, color: .blue)
-                legendItem(label: "Entity", ratio: entry.distribution.entityRatio, color: .teal)
-                legendItem(label: "Map", ratio: entry.distribution.mapRatio, color: .orange)
+                legendItem(label: WidgetL10n.source, ratio: entry.distribution.sourceRatio, color: WidgetSharedConstants.Color.purple)
+                legendItem(label: WidgetL10n.concept, ratio: entry.distribution.conceptRatio, color: WidgetSharedConstants.Color.blue)
+                legendItem(label: WidgetL10n.entity, ratio: entry.distribution.entityRatio, color: WidgetSharedConstants.Color.teal)
+                legendItem(label: WidgetL10n.map, ratio: entry.distribution.mapRatio, color: WidgetSharedConstants.Color.orange)
             }
             .padding(.top, 4)
         }

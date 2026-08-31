@@ -57,6 +57,9 @@ final class IngestCoordinator {
     var sourceHint: ImportCategory = .manual
     var pendingImageData: Data?
     var pendingVoiceFileURL: URL?
+    /// Bug #66 修复：标记 VoiceNote/OCR 是否产生了新内容，供 sheet onDismiss 判断
+    /// 是否应打开手动表单。避免依赖 newTitle.isEmpty 判断导致的状态泄漏误触发。
+    var hasNewContent = false
 
     var isLLMConfigured: Bool {
         llmService.isEnabled && !llmService.apiKey.isEmpty
@@ -81,6 +84,7 @@ final class IngestCoordinator {
         let recordID = UUID().uuidString
 
         guard let prep = prepareImportFiles(recordID: recordID) else {
+            isIngesting = false
             return
         }
 
@@ -143,7 +147,7 @@ final class IngestCoordinator {
         let sourceName = sourceHint.displayName
 
         let rawText = "> \(L10n.Ingest.sourcePrefix)\(sourceName) | \(Date().formatted(date: .numeric, time: .shortened))\n\n\(content)"
-        let textPath = fileStore.saveContent(rawText, category: sourceHint, ext: "md")
+        let textPath = fileStore.saveContent(rawText, category: sourceHint, ext: SystemConstants.FileExtension.markdown)
 
         if sourceHint == .ocr, let imgData = pendingImageData {
             if imgData.count > AppConstants.Keys.ImportLimits.maxOCRImageSizeBytes {
@@ -162,7 +166,7 @@ final class IngestCoordinator {
                 showError = true
                 return nil
             }
-            _ = fileStore.saveData(imgData, category: .ocr, ext: "jpg")
+            _ = fileStore.saveData(imgData, category: .ocr, ext: SystemConstants.FileExtension.jpg)
             pendingImageData = nil
         }
 

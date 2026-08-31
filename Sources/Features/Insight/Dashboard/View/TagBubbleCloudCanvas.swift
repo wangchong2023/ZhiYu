@@ -73,7 +73,7 @@ struct TagBubbleCloudCanvas: View {
         let coordinates = HexSpiralCalculator.generateSpiralCoordinates(count: filtered.count)
         
         GeometryReader { viewportGeo in
-            let viewportCenter = CGPoint(x: viewportGeo.size.width / 2.0, y: viewportGeo.size.height / 2.0)
+            let viewportCenter = CGPoint(x: viewportGeo.size.width / FeatureConstants.TagBubbleCloud.canvasHalfDivisor, y: viewportGeo.size.height / FeatureConstants.TagBubbleCloud.canvasHalfDivisor)
             
             ZStack {
                 // 大背景，作为拖拽手势的整体捕获层
@@ -114,11 +114,11 @@ struct TagBubbleCloudCanvas: View {
                                 interactiveScale: minFisheyeScale,
                                 interactiveOpacity: minFisheyeOpacity
                             )
-                            .position(x: itemGeo.size.width / 2.0, y: itemGeo.size.height / 2.0)
+                            .position(x: itemGeo.size.width / FeatureConstants.TagBubbleCloud.canvasHalfDivisor, y: itemGeo.size.height / FeatureConstants.TagBubbleCloud.canvasHalfDivisor)
                         } else {
                             // 3. 鱼眼引擎三维余弦过渡缩放计算
                             let normDist = min(distance / maxFisheyeDistance, 1.0)
-                            let interpolator = (cos(normDist * .pi) + 1.0) / 2.0
+                            let interpolator = (cos(normDist * .pi) + 1.0) / FeatureConstants.TagBubbleCloud.cosineInterpolatorDivisor
                             
                             let scale = minFisheyeScale + (maxFisheyeScale - minFisheyeScale) * interpolator
                             let opacity = minFisheyeOpacity + (maxFisheyeOpacity - minFisheyeOpacity) * interpolator
@@ -130,7 +130,7 @@ struct TagBubbleCloudCanvas: View {
                                 interactiveScale: scale,
                                 interactiveOpacity: opacity
                               )
-                              .position(x: itemGeo.size.width / 2.0, y: itemGeo.size.height / 2.0)
+                              .position(x: itemGeo.size.width / FeatureConstants.TagBubbleCloud.canvasHalfDivisor, y: itemGeo.size.height / FeatureConstants.TagBubbleCloud.canvasHalfDivisor)
                         }
                     }
                     .frame(width: bubbleFrameDiameter, height: bubbleFrameDiameter)

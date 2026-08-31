@@ -126,7 +126,7 @@ extension L10n {
             public static var synthesis: String { Common.tr("tab.synthesis") }
             public static var system: String { Common.tr("sidebar.system") }
             public static var tools: String { Common.tr("tags.tools") }
-            public static var capabilities: String { Common.tr("iconPicker.common") }
+            public static var capabilities: String { Common.tr("sidebar.capabilities") }
             public static var healthCheck: String { Common.tr("sidebar.healthCheck") }
             public static var knowledge: String { Common.tr("tab.knowledge") }
             public static var pageList: String { Common.tr("sidebar.pageList") }

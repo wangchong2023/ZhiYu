@@ -52,6 +52,7 @@ public enum NetworkError: Error, LocalizedError, Sendable {
     case missingDataPayload
     case missingRefreshToken
     case sessionInvalidated
+    case invalidFileName
 
     public var errorDescription: String? {
         switch self {
@@ -77,6 +78,8 @@ public enum NetworkError: Error, LocalizedError, Sendable {
             return "Missing refresh token."
         case .sessionInvalidated:
             return "Session invalidated."
+        case .invalidFileName:
+            return "Invalid file name (contains CRLF characters)."
         }
     }
 }

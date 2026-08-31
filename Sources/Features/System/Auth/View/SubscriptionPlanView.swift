@@ -103,7 +103,7 @@ public struct SubscriptionPlanView: View {
                         if let error = errorMessage {
                             Text(error)
                                 .font(.caption)
-                                .foregroundStyle(.red)
+                                .foregroundStyle(Color.theme.red)
                                 .padding(.horizontal, DesignSystem.medium)
                         }
 
@@ -131,7 +131,7 @@ public struct SubscriptionPlanView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { isQuotaExpanded.toggle() }) {
-                    Image(systemName: "chart.bar.doc.horizontal")
+                    Image(systemName: DesignSystem.Icons.chartBarDoc)
                         .font(.body.bold())
                 }
                 .popover(isPresented: $isQuotaExpanded) {
@@ -155,15 +155,15 @@ public struct SubscriptionPlanView: View {
             
             VStack(spacing: DesignSystem.medium) {
                 let vaultsCount = VaultService.shared.vaults.count
-                let vaultsMax = authService.currentUser?.maxVaults ?? 2
+                let vaultsMax = authService.currentUser?.maxVaults ?? FeatureConstants.SubscriptionQuota.defaultMaxVaults
                 glassQuotaCard(title: L10n.Auth.vaultUsage, icon: "books.vertical", current: vaultsCount, max: vaultsMax)
 
                 let pagesCount = VaultService.shared.vaults.reduce(0) { $0 + $1.pageCount }
-                let pagesMax = authService.currentUser?.maxPages ?? 1000
+                let pagesMax = authService.currentUser?.maxPages ?? FeatureConstants.SubscriptionQuota.defaultMaxPages
                 glassQuotaCard(title: L10n.Auth.pagesUsage, icon: "doc.text", current: pagesCount, max: pagesMax)
 
                 let pluginsCount = registry.plugins.count
-                let pluginsMax = authService.currentUser?.maxPlugins ?? 3
+                let pluginsMax = authService.currentUser?.maxPlugins ?? FeatureConstants.SubscriptionQuota.defaultMaxPlugins
                 glassQuotaCard(title: L10n.Auth.pluginsUsage, icon: "puzzlepiece", current: pluginsCount, max: pluginsMax)
             }
             .padding(DesignSystem.medium)
@@ -179,8 +179,11 @@ public struct SubscriptionPlanView: View {
     }
 
     private func glassQuotaCard(title: String, icon: String, current: Int, max: Int) -> some View {
-        let ratio = CGFloat(min(Double(current) / Double(max), 1.0))
-        let isDanger = ratio > 0.9
+        // Bug #61 修复：max==0 时除零产生 inf，导致进度条显示满格且 isDanger 误判。
+        // max==0 语义为"无配额"或"未初始化"，进度条应显示为 0。
+        let safeRatio: Double = (max > 0) ? min(Double(current) / Double(max), 1.0) : 0.0
+        let ratio = CGFloat(safeRatio)
+        let isDanger = ratio > FeatureConstants.SubscriptionQuota.dangerRatioThreshold
 
         return VStack(spacing: DesignSystem.small) {
             HStack {
@@ -194,7 +197,7 @@ public struct SubscriptionPlanView: View {
 
                 Spacer()
 
-                Text("\(current) / \(max < Constants.unlimitedMaxValue ? "\(max)" : "∞")")
+                Text("\(current) / \(max < Constants.unlimitedMaxValue ? "\(max)" : FeatureConstants.SubscriptionQuota.unlimitedSymbol)")
                     .font(.system(.subheadline, design: .rounded).bold())
                     .foregroundStyle(.appText)
             }
@@ -210,7 +213,7 @@ public struct SubscriptionPlanView: View {
                     Capsule()
                         .fill(
                             LinearGradient(
-                                colors: isDanger ? [.red, .orange] : [Color.theme.blue, Color.theme.cyan],
+                                colors: isDanger ? [Color.theme.red, Color.theme.orange] : [Color.theme.blue, Color.theme.cyan],
                                 startPoint: .leading, endPoint: .trailing
                             )
                         )
@@ -226,11 +229,11 @@ public struct SubscriptionPlanView: View {
     private var successView: some View {
         AppCard {
             VStack(spacing: DesignSystem.medium) {
-                Image(systemName: "crown.fill")
+                Image(systemName: DesignSystem.Icons.crown)
                     .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.yellow, .orange],
+                            colors: [Color.theme.yellow, Color.theme.orange],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )

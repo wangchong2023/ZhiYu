@@ -14,6 +14,14 @@ import SwiftUI
 private enum GraphViewConstants {
     /// 图谱节点徽章 Y 轴偏移 (36pt)
     static let badgeOffset: CGFloat = 36
+    /// 选中节点尺寸
+    static let selectedNodeSize: CGFloat = 32
+    /// 节点最小尺寸
+    static let minNodeSize: CGFloat = 18
+    /// 节点最大尺寸
+    static let maxNodeSize: CGFloat = 30
+    /// 节点基准尺寸
+    static let baseNodeSize: CGFloat = 20
 }
 
 // MARK: - Graph Node View
@@ -24,8 +32,6 @@ private enum GraphViewConstants {
 /// 3. LOD 低细节态：远景下自动精简为纯色圆点，确保千级节点下的流畅度。
 /// 知识图谱节点视图组件
 /// 负责单个节点的视觉呈现、LOD (细节分级) 渲染、发光动画及交互反馈。
-/// 知识图谱节点视图组件
-/// 负责单个节点的视觉呈现、LOD (细节分级) 渲染、发光动画及交互反馈
 struct GraphNodeView: View {
     let node: GraphNode
     let isSelected: Bool
@@ -50,7 +56,11 @@ struct GraphNodeView: View {
     }
 
     private var nodeSize: CGFloat {
-        isSelected ? 32 : max(18, min(30, 20 + CGFloat(linkCount) * 1.5))
+        if isSelected {
+            return GraphViewConstants.selectedNodeSize
+        }
+        let dynamicSize = GraphViewConstants.baseNodeSize + CGFloat(linkCount) * FeatureConstants.GraphComponentsScale.linkCountSizeFactor
+        return max(GraphViewConstants.minNodeSize, min(GraphViewConstants.maxNodeSize, dynamicSize))
     }
 
     var body: some View {
@@ -109,7 +119,7 @@ struct GraphNodeView: View {
             if isSelected {
                 Circle()
                     .fill(nodeBaseColor.opacity(DesignSystem.glassOpacity))
-                    .frame(width: nodeSize * 2.2, height: nodeSize * 2.2)
+                    .frame(width: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier, height: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier)
                     .blur(radius: DesignSystem.cardRadius)
                     .scaleEffect(isAnimating ? 1.1 : 0.9)
                     .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isAnimating)

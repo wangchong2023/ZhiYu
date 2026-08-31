@@ -66,16 +66,30 @@ struct IngestView: View {
             allowedContentTypes: [.pdf, .text, .plainText, UTType("net.daringfireball.markdown")].compactMap({$0}),
             allowsMultipleSelection: true
         ) { coordinator.handleFileImport($0) }
-        .sheet(isPresented: $coordinator.showVoiceNote, onDismiss: { if !coordinator.newTitle.isEmpty { coordinator.showManualForm = true } }) {
+        .sheet(isPresented: $coordinator.showVoiceNote, onDismiss: {
+            // Bug #66 修复：用 hasNewContent 标志替代 newTitle.isEmpty 判断，
+            // 避免上次导入残留的 newTitle 导致取消 VoiceNote 时误触发手动表单。
+            if coordinator.hasNewContent {
+                coordinator.showManualForm = true
+            }
+            coordinator.hasNewContent = false
+        }) {
             VoiceNoteView(onFinish: { title, text, audioURL in
                 coordinator.sourceHint = .voice
                 coordinator.newTitle = title
                 coordinator.newContent = text
                 coordinator.manualFormTitle = L10n.Voice.Speech.title
                 coordinator.pendingVoiceFileURL = audioURL
+                coordinator.hasNewContent = true
             })
         }
-        .sheet(isPresented: $coordinator.showOCRScan, onDismiss: { if !coordinator.newTitle.isEmpty { coordinator.showManualForm = true } }) {
+        .sheet(isPresented: $coordinator.showOCRScan, onDismiss: {
+            // Bug #66 修复：同上，用 hasNewContent 标志判断。
+            if coordinator.hasNewContent {
+                coordinator.showManualForm = true
+            }
+            coordinator.hasNewContent = false
+        }) {
             OCRScanView(onFinish: { title, text, imageData in
                 coordinator.sourceHint = .ocr
                 coordinator.newTitle = title
@@ -84,6 +98,7 @@ struct IngestView: View {
                 if let data = imageData {
                     coordinator.pendingImageData = data
                 }
+                coordinator.hasNewContent = true
             })
         }
         .sheet(isPresented: $coordinator.showURLImport) { URLImportSheet(urlText: $coordinator.newURL, onImport: { urls in coordinator.handleBatchURLImport(urls) }) }
@@ -106,7 +121,7 @@ struct IngestView: View {
         return AnyView(
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 HStack {
-                    Image(systemName: "wand.and.stars")
+                    Image(systemName: DesignSystem.Icons.wand)
                         .font(.title3)
                         .foregroundStyle(Color.appAccent)
                     

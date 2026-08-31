@@ -172,7 +172,7 @@ struct ChatBubbleView: View {
                     AppPasteboard.string = processed.mainContent
                     toastManager.show(type: .success, message: L10n.Chat.copied)
                 }) {
-                    Image(systemName: "doc.on.doc")
+                    Image(systemName: DesignSystem.Icons.copy)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
@@ -365,11 +365,11 @@ struct ChatContentView: View {
             }
             
             // 清理常见的 LLM 转义符错误 (确保 Markdown 渲染正常)
-            let cleanedText = processed.mainContent.replacingOccurrences(of: "\\`", with: "`")
-                .replacingOccurrences(of: "\\*", with: "*")
-                .replacingOccurrences(of: "\\_", with: "_")
-                .replacingOccurrences(of: "\\[\\[", with: "[[")
-                .replacingOccurrences(of: "\\]\\]", with: "]]")
+            let cleanedText = processed.mainContent.replacingOccurrences(of: FeatureConstants.RegexEscape.escapedBacktick, with: SystemConstants.Character.backtick)
+                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedAsterisk, with: SystemConstants.Character.asterisk)
+                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedUnderscore, with: SystemConstants.Character.underscore)
+                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkOpen, with: SystemConstants.MarkdownSyntax.wikiLinkOpen)
+                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkClose, with: SystemConstants.MarkdownSyntax.wikiLinkClose)
             
             MarkdownRendererView(content: cleanedText, isPrivate: false, onLinkTap: { title in
                 let targetTitle = title.trimmingCharacters(in: .whitespaces)
@@ -393,7 +393,7 @@ struct SuggestedFollowUpCardView: View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
             // Header
             HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: "sparkles")
+                Image(systemName: DesignSystem.Icons.sparkles)
                     .font(.caption)
                     .foregroundStyle(.appAccent)
                 Text(L10n.AI.Prompt.followUpHeader)
@@ -420,7 +420,7 @@ struct SuggestedFollowUpCardView: View {
 
                             Spacer(minLength: 0)
 
-                            Image(systemName: "chevron.right")
+                            Image(systemName: DesignSystem.Icons.chevronRight)
                                 .font(.caption2)
                                 .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
                         }

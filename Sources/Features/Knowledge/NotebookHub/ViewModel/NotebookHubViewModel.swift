@@ -190,7 +190,9 @@ public final class NotebookHubViewModel {
     /// 执行重命名保存
     public func confirmRename() {
         guard let vault = editingVault else { return }
-        renameNotebook(id: vault.id, newName: editingName)
+        let trimmed = editingName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        renameNotebook(id: vault.id, newName: trimmed)
         editingVault = nil
         editingName = ""
         isShowingRenameAlert = false

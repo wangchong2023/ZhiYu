@@ -146,7 +146,7 @@ struct FeedbackView: View {
         Group {
             if history.isEmpty {
                 VStack(spacing: DesignSystem.standardPadding) {
-                    Image(systemName: "bubble.left.and.bubble.right")
+                    Image(systemName: DesignSystem.Icons.bubbleLeftAndRight)
                         .font(.largeTitle).foregroundStyle(.secondary.opacity(DesignSystem.Opacity.soft))
                     Text(L10n.Settings.Feedback.noHistory)
                         .font(.subheadline).foregroundStyle(.secondary)
@@ -198,10 +198,10 @@ private struct FeedbackHistoryRow: View {
 
     private var categoryColor: Color {
         switch entry.category {
-        case FeedbackCategory.bug: return .red
-        case FeedbackCategory.feature: return .green
-        case FeedbackCategory.content: return .yellow
-        default: return .gray
+        case FeedbackCategory.bug: return Color.theme.red
+        case FeedbackCategory.feature: return Color.theme.green
+        case FeedbackCategory.content: return Color.theme.yellow
+        default: return Color.theme.gray
         }
     }
 
@@ -216,8 +216,8 @@ private struct FeedbackHistoryRow: View {
     private var statusColor: Color {
         switch entry.status {
         case .pending: return .secondary
-        case .synced: return .green
-        case .failed: return .red
+        case .synced: return Color.theme.green
+        case .failed: return Color.theme.red
         }
     }
 

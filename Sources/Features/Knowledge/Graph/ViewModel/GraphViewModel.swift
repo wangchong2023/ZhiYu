@@ -44,6 +44,12 @@ final class GraphViewModel {
     var insightSparse: [UUID] = []
     var insightBridges: [UUID] = []
 
+    /// Bug #68 修复：缓存过滤后的边列表，避免在 body 中重复计算 3 次。
+    /// 当 nodes/edges/filterType 变化时由 GraphContainerView 刷新。
+    var cachedFilteredEdges: [GraphEdge] = []
+    /// 缓存是否正在截断连线，与 cachedFilteredEdges 同步刷新。
+    var cachedIsTruncatingEdges: Bool = false
+
     private var simulationTask: Task<Void, Never>?
 
     /// 物理仿真配置常量

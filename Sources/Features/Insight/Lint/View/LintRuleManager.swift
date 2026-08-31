@@ -123,18 +123,18 @@ struct RefactorSuggestionRow: View {
 
     private var iconName: String {
         switch suggestion.type {
-        case "merge": return DesignSystem.Icons.merge
-        case "split": return DesignSystem.Icons.branch
-        case "rename": return DesignSystem.Icons.cursorIbeam
+        case FeatureConstants.LintAction.merge: return DesignSystem.Icons.merge
+        case FeatureConstants.LintAction.split: return DesignSystem.Icons.branch
+        case FeatureConstants.LintAction.rename: return DesignSystem.Icons.cursorIbeam
         default: return DesignSystem.Icons.sparkles
         }
     }
 
     private var color: Color {
         switch suggestion.type {
-        case "merge": return .orange
-        case "split": return .purple
-        case "rename": return .blue
+        case FeatureConstants.LintAction.merge: return Color.theme.orange
+        case FeatureConstants.LintAction.split: return Color.theme.purple
+        case FeatureConstants.LintAction.rename: return Color.theme.blue
         default: return .appAccent
         }
     }

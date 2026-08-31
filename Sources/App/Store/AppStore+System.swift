@@ -82,7 +82,7 @@ extension AppStore: AnyPageStore {
         fileSize: Int64?,
         sourceType: String?,
         forceDeepScan: Bool
-    ) async -> KnowledgePage {
+    ) async -> KnowledgePage? {
         await knowledgeStore.createPage(
             title: title,
             pageType: pageType,

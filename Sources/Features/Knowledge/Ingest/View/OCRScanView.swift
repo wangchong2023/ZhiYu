@@ -138,13 +138,15 @@ struct OCRScanView: View {
 
         recognitionTask = Task {
             do {
-                let text = try await ingestStore.recognizeText(from: image)
+                // Bug #96 修复：checkCancellation 移到 recognizeText 前，
+                // 避免取消时已识别文本被丢弃。
                 try Task.checkCancellation()
+                let text = try await ingestStore.recognizeText(from: image)
                 await MainActor.run {
                     recognizedText = text
                     isProcessing = false
                     if targetTitle.isEmpty {
-                        targetTitle = String(text.prefix(20)).trimmingCharacters(in: .whitespacesAndNewlines)
+                        targetTitle = String(text.prefix(FeatureConstants.OCRScan.titlePrefixLength)).trimmingCharacters(in: .whitespacesAndNewlines)
                     }
                 }
             } catch is CancellationError {

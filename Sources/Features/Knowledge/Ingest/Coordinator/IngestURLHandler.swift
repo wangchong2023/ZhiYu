@@ -186,7 +186,7 @@ extension IngestCoordinator {
     ) async -> Bool {
         let rawBody = rawResult.map { "> \(L10n.Ingest.urlSourcePrefix)\(urlString)\n> \(L10n.Ingest.scrapeTimePrefix)\(Date().formatted(date: .numeric, time: .shortened))\n\n\($0.markdown)" }
         let rawMarkdown = rawBody.map { $0 + ocrText }
-        let filePath = rawMarkdown.flatMap { store.saveContent($0, category: .link, ext: "md") }
+        let filePath = rawMarkdown.flatMap { store.saveContent($0, category: .link, ext: SystemConstants.FileExtension.markdown) }
 
         let record = ImportRecord(
             id: recordID, category: ImportCategory.link.rawValue,

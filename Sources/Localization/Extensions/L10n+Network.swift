@@ -21,6 +21,7 @@ public extension L10n {
         public static var missingDataPayload: String { tr("missingDataPayload") }
         public static var missingRefreshToken: String { tr("missingRefreshToken") }
         public static var sessionInvalidated: String { tr("sessionInvalidated") }
+        public static var invalidFileName: String { tr("invalidFileName") }
         
         public static var errorInvalidURL: String { tr("errorInvalidURL") }
         public static var errorTokenExpired: String { tr("errorTokenExpired") }

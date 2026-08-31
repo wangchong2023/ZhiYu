@@ -33,7 +33,7 @@ struct PerformanceDashboardView: View {
                     MetricCardView(
                         title: L10n.Common.Perf.memory,
                         value: String(format: "%.1f MB", service.metrics.memoryUsageMB),
-                        color: .blue
+                        color: Color.theme.blue
                     )
                     
                     // Page Stats
@@ -41,12 +41,12 @@ struct PerformanceDashboardView: View {
                         MetricCardView(
                             title: L10n.Common.Perf.pages,
                             value: "\(service.metrics.pageCount)",
-                            color: .green
+                            color: Color.theme.green
                         )
                         MetricCardView(
                             title: L10n.Common.Perf.words,
                             value: "\(service.metrics.totalWords)",
-                            color: .purple
+                            color: Color.theme.purple
                         )
                     }
                     
@@ -55,12 +55,12 @@ struct PerformanceDashboardView: View {
                         MetricCardView(
                             title: L10n.Common.Perf.nodes,
                             value: "\(service.metrics.graphNodeCount)",
-                            color: .orange
+                            color: Color.theme.orange
                         )
                         MetricCardView(
                             title: L10n.Common.Perf.edges,
                             value: "\(service.metrics.graphEdgeCount)",
-                            color: .pink
+                            color: Color.theme.pink
                         )
                     }
                     
@@ -69,12 +69,12 @@ struct PerformanceDashboardView: View {
                         MetricCardView(
                             title: L10n.Common.Perf.llmCalls,
                             value: "\(service.metrics.llmCallCount)",
-                            color: .cyan
+                            color: Color.theme.cyan
                         )
                         MetricCardView(
                             title: L10n.Common.Perf.aiSuccessRate,
-                            value: String(format: "%.1f%%", service.metrics.aiSuccessRate * 100),
-                            color: .teal
+                            value: String(format: "%.1f%%", service.metrics.aiSuccessRate * FeatureConstants.PercentageBase.full),
+                            color: Color.theme.teal
                         )
                     }
                     
@@ -84,12 +84,12 @@ struct PerformanceDashboardView: View {
                             .font(.headline)
                             .foregroundStyle(.appText)
                         
-                        TimingRowView(label: L10n.Common.Perf.save, duration: service.metrics.saveDuration, color: .green)
-                        TimingRowView(label: L10n.Common.Perf.load, duration: service.metrics.loadDuration, color: .blue)
-                        TimingRowView(label: L10n.Common.Perf.lint, duration: service.metrics.lintDuration, color: .orange)
-                        TimingRowView(label: L10n.Common.Perf.graphLayout, duration: service.metrics.graphLayoutDuration, color: .purple)
-                        TimingRowView(label: L10n.Common.Perf.search, duration: service.metrics.searchDuration, color: .pink)
-                        TimingRowView(label: L10n.Common.Perf.ragChain, duration: service.metrics.ragChainDuration, color: .cyan)
+                        TimingRowView(label: L10n.Common.Perf.save, duration: service.metrics.saveDuration, color: Color.theme.green)
+                        TimingRowView(label: L10n.Common.Perf.load, duration: service.metrics.loadDuration, color: Color.theme.blue)
+                        TimingRowView(label: L10n.Common.Perf.lint, duration: service.metrics.lintDuration, color: Color.theme.orange)
+                        TimingRowView(label: L10n.Common.Perf.graphLayout, duration: service.metrics.graphLayoutDuration, color: Color.theme.purple)
+                        TimingRowView(label: L10n.Common.Perf.search, duration: service.metrics.searchDuration, color: Color.theme.pink)
+                        TimingRowView(label: L10n.Common.Perf.ragChain, duration: service.metrics.ragChainDuration, color: Color.theme.cyan)
                     }
                     .padding()
                     .background(Color.appCard)
@@ -169,7 +169,7 @@ struct TimingRowView: View {
     
     private var barWidth: CGFloat {
         let maxDuration: CGFloat = 1.0
-        return min(CGFloat(duration) / maxDuration, 1.0) * 200
+        return min(CGFloat(duration) / maxDuration, 1.0) * FeatureConstants.TimingBar.maxWidth
     }
     
     var body: some View {

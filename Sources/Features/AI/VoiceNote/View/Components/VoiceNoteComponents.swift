@@ -159,7 +159,7 @@ struct VoiceRecordingRow: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.appText)
                     .lineLimit(1)
-                Text(String(recording.text.prefix(50)))
+                Text(String(recording.text.prefix(FeatureConstants.VoiceNote.recordingTextPrefix)))
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                     .lineLimit(1)

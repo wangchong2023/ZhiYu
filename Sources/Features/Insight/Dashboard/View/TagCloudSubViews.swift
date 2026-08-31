@@ -126,7 +126,7 @@ extension TagCloudViewContent {
                 }) {
                     HStack(spacing: DesignSystem.tiny) {
                         Text(L10n.Tag.expandAll)
-                        Image(systemName: "chevron.down")
+                        Image(systemName: DesignSystem.Icons.chevronDown)
                     }
                     .font(.caption.bold())
                     .foregroundStyle(.appAccent)
@@ -148,7 +148,7 @@ extension TagCloudViewContent {
                 }) {
                     HStack(spacing: DesignSystem.tiny) {
                         Text(L10n.Tag.collapse)
-                        Image(systemName: "chevron.up")
+                        Image(systemName: DesignSystem.Icons.chevronUp)
                     }
                     .font(.caption.bold())
                     .foregroundStyle(.appSecondary)

@@ -68,7 +68,10 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
             throw SecurityError.encodingFailed
         }
         let sealedBox = try AES.GCM.seal(data, using: symmetricKey)
-        return sealedBox.combined?.base64EncodedString() ?? ""
+        guard let combined = sealedBox.combined else {
+            throw SecurityError.encodingFailed
+        }
+        return combined.base64EncodedString()
     }
     
     /// 使用 Secure Enclave 硬件芯片物理级加解密 API 密钥 (解密)

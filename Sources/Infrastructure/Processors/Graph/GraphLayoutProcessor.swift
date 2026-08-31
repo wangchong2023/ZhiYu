@@ -22,7 +22,7 @@ struct GraphLayoutProcessor {
         var damping: CGFloat = GraphConstants.Physics.damping
         var centerGravity: CGFloat = GraphConstants.Physics.centerGravity
         var iterations: Int = GraphConstants.TwoD.simulationIterations
-        var padding: CGFloat = DesignSystem.Graph.layoutPadding
+        var padding: CGFloat = GraphConstants.Layout.layoutPadding
 
         static let `default` = Config()
     }
@@ -272,7 +272,7 @@ struct GraphLayoutProcessor {
                 let center = CGPoint(x: centerData.sum.x / CGFloat(centerData.count), y: centerData.sum.y / CGFloat(centerData.count))
                 let dx = center.x - nodes[i].position.x
                 let dy = center.y - nodes[i].position.y
-                let clusterAttraction: CGFloat = 0.05
+                let clusterAttraction = GraphConstants.Layout.clusterAttraction
                 forces[i].x += dx * clusterAttraction
                 forces[i].y += dy * clusterAttraction
             }

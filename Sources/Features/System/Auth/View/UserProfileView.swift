@@ -114,6 +114,8 @@ public struct UserProfileView: View {
                     birthday = date
                 }
             }
+            // 确保首次启动时间已记录（副作用隔离，不在计算属性中执行）
+            ensureFirstLaunchRecorded()
         }
         .onChange(of: selectedItem) { _, newItem in
             if let item = newItem {
@@ -161,7 +163,7 @@ public struct UserProfileView: View {
                     // 使用彩虹色线性渐变绘制外环，打造暗黑高科技星空设计感
                     .stroke(
                         LinearGradient(
-                            colors: [.red, .orange, .yellow, .green, .blue, .purple],
+                            colors: [Color.theme.red, Color.theme.orange, Color.theme.yellow, Color.theme.green, Color.theme.blue, Color.theme.purple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
@@ -206,8 +208,8 @@ public struct UserProfileView: View {
                 // 账号 ID (不可修改)
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
                     HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: "person.text.rectangle.fill")
-                            .foregroundStyle(.gray)
+                        Image(systemName: DesignSystem.Icons.entity)
+                            .foregroundStyle(Color.theme.gray)
                         Text(L10n.Auth.accountId)
                             .font(.caption.bold())
                             .foregroundStyle(.appSecondary)
@@ -222,8 +224,8 @@ public struct UserProfileView: View {
                 if let phone = authService.currentUser?.phone, !phone.isEmpty {
                     VStack(alignment: .leading, spacing: DesignSystem.small) {
                         HStack(spacing: SystemSpacing.element) {
-                            Image(systemName: "phone.fill")
-                                .foregroundStyle(.gray)
+                            Image(systemName: DesignSystem.Icons.phoneFill)
+                                .foregroundStyle(Color.theme.gray)
                             Text(L10n.Auth.phoneLabel)
                                 .font(.caption.bold())
                                 .foregroundStyle(.appSecondary)
@@ -237,7 +239,7 @@ public struct UserProfileView: View {
                 // 昵称修改
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
                     HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: "person.fill")
+                        Image(systemName: DesignSystem.Icons.person)
                             .foregroundStyle(Color.theme.accent)
                         Text(L10n.Auth.nickname)
                             .font(.caption.bold())
@@ -255,7 +257,7 @@ public struct UserProfileView: View {
                 // 性别选择
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
                     HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: "person.2.fill")
+                        Image(systemName: DesignSystem.Icons.persons)
                             .foregroundStyle(Color.theme.accent)
                         Text(L10n.Auth.gender)
                             .font(.caption.bold())
@@ -273,7 +275,7 @@ public struct UserProfileView: View {
                 // 生日选择
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
                     HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: "calendar")
+                        Image(systemName: DesignSystem.Icons.calendar)
                             .foregroundStyle(Color.theme.accent)
                         Text(L10n.Auth.birthday)
                             .font(.caption.bold())
@@ -295,7 +297,7 @@ public struct UserProfileView: View {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 // 模块页头
                 HStack(spacing: SystemSpacing.element) {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Image(systemName: DesignSystem.Icons.chartLine)
                         .foregroundStyle(Color.theme.accent)
                     Text(L10n.Auth.statsBoard)
                         .font(.headline.bold())
@@ -308,26 +310,26 @@ public struct UserProfileView: View {
                     metricItem(
                         title: L10n.Auth.statsNotebooks,
                         value: "\(vaultService.vaults.count)",
-                        icon: "books.vertical.fill",
-                        color: .blue
+                        icon: DesignSystem.Icons.booksVerticalFill,
+                        color: Color.theme.blue
                     )
                     metricItem(
                         title: L10n.Auth.statsPages,
                         value: "\(knowledgeStore.totalPages)",
-                        icon: "doc.text.fill",
-                        color: .green
+                        icon: DesignSystem.Icons.docTextFill,
+                        color: Color.theme.green
                     )
                     metricItem(
                         title: L10n.Auth.statsSynthesis,
                         value: "\(synthesisStore.allSortedDocuments.count)",
-                        icon: "sparkles",
-                        color: .purple
+                        icon: DesignSystem.Icons.sparkles,
+                        color: Color.theme.purple
                     )
                     metricItem(
                         title: L10n.Auth.statsActiveDays,
                         value: "\(activeDays)",
-                        icon: "calendar.day.timeline.left",
-                        color: .orange
+                        icon: DesignSystem.Icons.calendarDayTimeline,
+                        color: Color.theme.orange
                     )
                 }
             }
@@ -357,14 +359,24 @@ public struct UserProfileView: View {
     }
 
     /// 活跃天数逻辑：初次启动时在本地存储中打点，自动计算距今的累积使用天数
+    /// - Note: 副作用（写入 firstLaunchTime）已迁移至 `ensureFirstLaunchRecorded()`，由 `onAppear` 调用，
+    ///   计算属性本身保持纯函数语义。
     private var activeDays: Int {
-        let key = "app.firstLaunchTime"
-        if let time = UserDefaults.standard.object(forKey: key) as? Date {
-            let diff = Calendar.current.dateComponents([.day], from: time, to: Date())
-            return max(1, (diff.day ?? 0) + 1)
-        } else {
-            UserDefaults.standard.set(Date(), forKey: key)
+        let key = AppConstants.Keys.Storage.firstLaunchTime
+        guard let time = UserDefaults.standard.object(forKey: key) as? Date else {
             return 1
+        }
+        let diff = Calendar.current.dateComponents([.day], from: time, to: Date())
+        let rawDays = (diff.day ?? 0) + 1
+        // 时间回拨时 rawDays 可能为负或零，返回 1 表示「至少 1 天」并记录异常
+        return max(1, rawDays)
+    }
+
+    /// 确保首次启动时间已记录（副作用隔离，由 onAppear 调用）
+    private func ensureFirstLaunchRecorded() {
+        let key = AppConstants.Keys.Storage.firstLaunchTime
+        if UserDefaults.standard.object(forKey: key) == nil {
+            UserDefaults.standard.set(Date(), forKey: key)
         }
     }
 

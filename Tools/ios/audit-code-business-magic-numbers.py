@@ -30,11 +30,15 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Dict, Set, Tuple, Optional
 
-# ── 扫描范围：业务逻辑层（排除 UI 层，UI 层由 audit-design-magic-numbers.py 负责）──
+# ── 扫描范围：业务逻辑层 + 功能层 ──
+# Features 层含 View 中的业务阈值（如 prefix(500)、if count > 20）和交互响应数值（如 scale = 1.2），
+# 这些属于业务常量而非 UI 修饰符，由本脚本检测；纯 UI 修饰符（.padding()/.frame()）由 audit-design-magic-numbers.py 负责。
+# 短字符串检测通过 --magic-string-scope 按子目录逐步启用（Phase 2），避免存量 546 处 magic_string 一次性阻断 CI。
 SCAN_DIRS = [
     "Sources/Domain",
     "Sources/Infrastructure",
     "Sources/Core",
+    "Sources/Features",
 ]
 
 # ── 排除目录 ──
@@ -216,6 +220,7 @@ def _extract_numbers_from_line(line: str) -> List[str]:
     4. 函数默认参数中的数字：``timeout: TimeInterval = 30``
     5. 复合表达式常量定义中的数字：``private let x = 5 * 1024 * 1024``
        （单值常量 ``static let x = 60`` 跳过，已有语义名）
+    6. 数组字面量中的裸数字：``[7, 30, 90]`` / ``[0.6, 0.8, 0.4]``
 
     :param line: 原始代码行
     :return: 提取出的数字字符串列表（去重）
@@ -232,35 +237,80 @@ def _extract_numbers_from_line(line: str) -> List[str]:
         return []
 
     numbers = set()
+    numbers.update(_extract_comparison_numbers(code_part))
+    numbers.update(_extract_function_param_numbers(code_part))
+    numbers.update(_extract_assignment_numbers(code_part))
+    numbers.update(_extract_default_param_numbers(code_part))
+    numbers.update(_extract_compound_expression_numbers(code_part))
+    numbers.update(_extract_array_literal_numbers(code_part))
 
-    # 模式 1: 比较运算符后的数字 — < 0.7 / >= 200 / == 0.5 / != 0
-    # 注意：排除赋值 =（单独的 = 不是比较运算符）
+    return list(numbers)
+
+
+def _extract_comparison_numbers(code_part: str) -> set:
+    """模式 1: 比较运算符后的数字 — < 0.7 / >= 200 / == 0.5 / != 0"""
+    numbers = set()
     for m in re.finditer(r"[<>!]=?\s*(\-?\d+\.?\d*)\b|==\s*(\-?\d+\.?\d*)\b", code_part):
         num = m.group(1) or m.group(2)
         if num:
             numbers.add(num)
+    return numbers
 
-    # 模式 2: prefix(\d+) / suffix(\d+) / maxLen(\d+) 等函数参数
+
+def _extract_function_param_numbers(code_part: str) -> set:
+    """模式 2: prefix(\\d+) / suffix(\\d+) / maxLen(\\d+) 等函数参数"""
+    numbers = set()
     for m in re.finditer(r"\b(?:prefix|suffix|maxLength|minLength|maxCount|minCount|maxRetries|limit|timeout|delay|interval|batchSize|chunkSize|windowSize|topN|topK)\s*\(?\s*(\-?\d+\.?\d*)\b", code_part):
         numbers.add(m.group(1))
+    return numbers
 
-    # 模式 3: 赋值语句中的数字 — let/var xxx = 3000 / progress = 0.75
-    # 排除 == 比较运算符（已在模式 1 处理）
-    # 注意：单值常量定义已在上文跳过，这里会处理复合表达式（5 * 1024 * 1024）
+
+def _extract_assignment_numbers(code_part: str) -> set:
+    """模式 3: 赋值语句中的数字 — let/var xxx = 3000 / progress = 0.75
+
+    排除 == 比较运算符（已在模式 1 处理）。
+    注意：单值常量定义已在上文跳过，这里会处理复合表达式（5 * 1024 * 1024）。
+    """
+    numbers = set()
     for m in re.finditer(r"(?<![=<>!])=\s*(\-?\d+\.?\d*)\b", code_part):
         numbers.add(m.group(1))
+    return numbers
 
-    # 模式 4: 函数默认参数 — timeout: TimeInterval = 30 / limit: Int = 200
+
+def _extract_default_param_numbers(code_part: str) -> set:
+    """模式 4: 函数默认参数 — timeout: TimeInterval = 30 / limit: Int = 200"""
+    numbers = set()
     for m in re.finditer(r":\s*\w+\s*=\s*(\-?\d+\.?\d*)\b", code_part):
         numbers.add(m.group(1))
+    return numbers
 
-    # 模式 5: 复合表达式中的裸数字 — 5 * 1024 * 1024 / 1 << 24 / value & 0xFF
-    # 检测乘法/除法/位运算/移位运算中的数字（这些通常是换算常量或位掩码，应抽为命名常量）
-    # 排除已被模式 1-4 覆盖的比较/赋值场景
+
+def _extract_compound_expression_numbers(code_part: str) -> set:
+    """模式 5: 复合表达式中的裸数字 — 5 * 1024 * 1024 / 1 << 24 / value & 0xFF
+
+    检测乘法/除法/位运算/移位运算中的数字（这些通常是换算常量或位掩码，应抽为命名常量）。
+    排除已被模式 1-4 覆盖的比较/赋值场景。
+    """
+    numbers = set()
     for m in re.finditer(r"[*\/%<>]\s*(\-?\d+\.?\d*)\b", code_part):
         numbers.add(m.group(1))
+    return numbers
 
-    return list(numbers)
+
+def _extract_array_literal_numbers(code_part: str) -> set:
+    """模式 6: 数组字面量中的裸数字 — [7, 30, 90] / [0.6, 0.8, 0.4]
+
+    检测方括号内逗号分隔的数字列表（这些通常是配置选项/阈值集合，应抽为命名常量）。
+    仅检测含至少 2 个数字的数组（单个数字数组如 [0] 通常是索引占位）。
+    """
+    numbers = set()
+    for m in re.finditer(r"\[([^\[\]]*\d[^\[\]]*)\]", code_part):
+        inner = m.group(1)
+        inner_numbers = re.findall(r"(?<!\w)(\-?\d+\.?\d*)\b", inner)
+        if len(inner_numbers) >= 2:
+            for num in inner_numbers:
+                numbers.add(num)
+    return numbers
 
 
 def _is_hardcoded_prompt(line: str, in_multiline: bool) -> bool:
@@ -449,6 +499,8 @@ def _check_assignment_strings(code_part: str, rel_path: str, line_no: int, strip
         s = m.group(2)
         if s in ESCAPE_STRINGS:
             continue
+        if '\\(' in s:
+            continue
         if field_name in TECHNICAL_PARAM_NAMES:
             continue
         if _is_technical_field(field_name):
@@ -550,6 +602,8 @@ def _check_contains_strings(code_part: str, rel_path: str, line_no: int, strippe
     for m in re.finditer(r'\.contains\("([^"]{2,30})"\)', code_part):
         s = m.group(1)
         if s in ESCAPE_STRINGS:
+            continue
+        if '\\(' in s:
             continue
         results.append(Finding(
             kind="magic_string",

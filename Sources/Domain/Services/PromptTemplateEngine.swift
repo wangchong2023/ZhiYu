@@ -15,7 +15,15 @@ import UFPCore
 
 /// 动态提示词解析引擎，使用 Actor 隔离保证并发安全
 public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
-    
+
+    /// 文件名安全清理：需移除的路径分隔符与路径遍历字符集
+    private static let pathInvalidCharacters = CharacterSet(
+        charactersIn: SystemConstants.Character.slash
+            + SystemConstants.Character.backslash
+            + SystemConstants.Character.dot
+            + SystemConstants.Character.dot
+    )
+
     /// 网络请求 Session，用于拉取远程外部提示词 Markdown 文本
     private let session: URLSession
     
@@ -166,7 +174,7 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
     /// - Parameter filename: 原始文件名（可能含 `/`、`\`、`..` 等危险字符）
     /// - Returns: 清理后的安全文件名（仅保留字母、数字、下划线、连字符）
     private nonisolated func sanitizeFilename(_ filename: String) -> String {
-        let invalidCharacters = CharacterSet(charactersIn: "/\\..")
+        let invalidCharacters = Self.pathInvalidCharacters
         return filename
             .components(separatedBy: invalidCharacters)
             .joined(separator: SystemConstants.Character.underscore)

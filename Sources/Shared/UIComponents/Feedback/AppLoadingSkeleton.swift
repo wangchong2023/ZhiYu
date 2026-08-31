@@ -27,7 +27,7 @@ public struct AppLoadingSkeleton: View {
     public let type: SkeletonType
     
     /// 动画透明度控制状态
-    @State private var animateOpacity = 0.3
+    @State private var animateOpacity = DesignSystem.Opacity.shadow
     
     /// 初始化骨架屏加载组件
     /// - Parameter type: 骨架样式，默认为 .textRow
@@ -66,10 +66,17 @@ public struct AppLoadingSkeleton: View {
         .onAppear {
             // 1. 物理挂载后立即执行无限往复的流光透明度插值动画
             withAnimation(
-                .easeInOut(duration: 1.2)
+                .easeInOut(duration: Animations.Decorator.pulseDuration)
                 .repeatForever(autoreverses: true)
             ) {
-                animateOpacity = 0.8
+                animateOpacity = DesignSystem.Opacity.prominent
+            }
+        }
+        // Bug #103 修复：onDisappear 时停止动画，避免 repeatForever 动画
+        // 仍持有渲染资源，导致内存泄漏与 CPU 占用（同 Bug #65）。
+        .onDisappear {
+            withAnimation(.easeOut(duration: DesignSystem.Animation.fastDuration)) {
+                animateOpacity = DesignSystem.Opacity.shadow
             }
         }
     }

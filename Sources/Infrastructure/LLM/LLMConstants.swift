@@ -323,6 +323,18 @@ public enum LLMConstants {
 
     /// Prompt 越狱注入攻击特征词集
     public enum PromptSecurity {
+        /// 零宽字符常量——用于预处理移除，防止绕过子串匹配
+        public enum ZeroWidthChar {
+            /// U+200B 零宽空格
+            public static let zeroWidthSpace = "\u{200B}"
+            /// U+200C 零宽非连接符
+            public static let zeroWidthNonJoiner = "\u{200C}"
+            /// U+200D 零宽连接符
+            public static let zeroWidthJoiner = "\u{200D}"
+            /// U+FEFF 零宽不换行空格（BOM）
+            public static let zeroWidthNoBreakSpace = "\u{FEFF}"
+        }
+
         /// 常见的越狱注入攻击特征词集（中英文混合，覆盖主流攻击模式）
         /// - Note: 安全检测特征词不经过 L10n 国际化，因为攻击者输入语言不可预测，
         ///   需同时覆盖英文（LLM 注入主流语言）与中文（本地化攻击场景）。

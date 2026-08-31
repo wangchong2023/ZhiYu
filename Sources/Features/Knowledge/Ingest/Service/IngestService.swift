@@ -49,55 +49,64 @@ actor IngestService: IngestServiceProtocol {
         let manager = dbManager  // 捕获以跨 actor 边界传递
         // Finding #18 修复：通过 TransactionGatekeeper 获取事务许可，排空期间抛 draining
         try await manager.incrementActiveTransactions()
-        defer {
-            Task { await manager.decrementActiveTransactions() }
+
+        // Bug #120 修复：defer 中 fire-and-forget Task 不保证及时执行，
+        // 改为在所有退出路径前 await 释放事务许可
+        do {
+            let pageID = UUID()
+
+            // 1. 内容脱敏及 RAG 摄入预处理
+            let processedContent = await prepareContent(
+                content,
+                pageID: pageID,
+                forceDeepScan: forceDeepScan,
+                llmService: llmService,
+                pageStore: pageStore
+            )
+
+            // 2. 创建包含归档信息的原始页面
+            // Bug #136 修复：anyCreatePage 失败时返回 nil，需处理
+            guard let rawPage = await pageStore.anyCreatePage(
+                title: title,
+                pageType: type,
+                customIcon: nil,
+                content: processedContent,
+                tags: ["ingested"],
+                sourceURL: sourceURL,
+                rawSnippet: rawSnippet ?? String(processedContent.prefix(FeatureConstants.IngestLimit.rawSnippetLength)),
+                fileSize: fileSize,
+                sourceType: sourceType,
+                forceDeepScan: forceDeepScan
+            ) else {
+                await manager.decrementActiveTransactions()
+                throw AppError.ingest(L10n.Ingest.error)
+            }
+
+            // 3. 自动识别并关联双链概念
+            let page = await applyConceptLinks(
+                rawPage: rawPage,
+                processedContent: processedContent,
+                pageStore: pageStore,
+                forceDeepScan: forceDeepScan
+            )
+
+            let duration = Date().timeIntervalSince(startTime)
+            pageStore.addLog(
+                action: .create,
+                target: title,
+                details: "Ingested \(processedContent.count) chars. DeepScan: \(forceDeepScan)",
+                duration: duration,
+                startTime: startTime,
+                endTime: Date(),
+                module: FeatureConstants.ModuleName.ingestService
+            )
+
+            await manager.decrementActiveTransactions()
+            return page
+        } catch {
+            await manager.decrementActiveTransactions()
+            throw error
         }
-        let pageID = UUID()
-
-        // 1. 内容脱敏及 RAG 摄入预处理
-        let processedContent = await prepareContent(
-            content,
-            pageID: pageID,
-            forceDeepScan: forceDeepScan,
-            llmService: llmService,
-            pageStore: pageStore
-        )
-
-        // 2. 创建包含归档信息的原始页面
-        let rawPage = await pageStore.anyCreatePage(
-            title: title,
-            pageType: type,
-            customIcon: nil,
-            content: processedContent,
-            tags: ["ingested"],
-            sourceURL: sourceURL,
-            rawSnippet: rawSnippet ?? String(processedContent.prefix(500)),
-            fileSize: fileSize,
-            sourceType: sourceType,
-            forceDeepScan: forceDeepScan
-        )
-
-        // 3. 自动识别并关联双链概念
-        let page = await applyConceptLinks(
-            rawPage: rawPage,
-            processedContent: processedContent,
-            pageStore: pageStore,
-            forceDeepScan: forceDeepScan
-        )
-
-        let duration = Date().timeIntervalSince(startTime)
-        pageStore.addLog(
-            action: .create,
-            target: title,
-            details: "Ingested \(processedContent.count) chars. DeepScan: \(forceDeepScan)",
-            duration: duration,
-            startTime: startTime,
-            endTime: Date(),
-            module: "IngestService"
-        )
-
-        // decrementActiveTransactions 已由 defer 处理
-        return page
     }
 
     /// 预处理内容：安全脱敏及 RAG 摄入管道集成
@@ -155,15 +164,27 @@ actor IngestService: IngestServiceProtocol {
         let concepts = extractConcepts(from: processedContent, pages: allPages)
         var updatedContent = rawPage.content
 
-        for concept in concepts {
+        // Bug #121 修复：按 concept 长度降序排序，避免短标题破坏长标题；
+        // 用占位符替换避免二次包装 [[concept]]
+        let sortedConcepts = concepts.sorted { $0.count > $1.count }
+        var placeholderMap: [String: String] = [:]
+        var placeholderIndex = 0
+        for concept in sortedConcepts {
+            let placeholder = "\u{0}\(placeholderIndex)\u{0}"
+            placeholderMap[placeholder] = "[[\(concept)]]"
             let nsContent = updatedContent as NSString
             let fullRange = NSRange(location: 0, length: nsContent.length)
             updatedContent = nsContent.replacingOccurrences(
                 of: concept,
-                with: "[[\(concept)]]",
+                with: placeholder,
                 options: .caseInsensitive,
                 range: fullRange
             )
+            placeholderIndex += 1
+        }
+        // 将占位符替换为最终的双链格式
+        for (placeholder, replacement) in placeholderMap {
+            updatedContent = updatedContent.replacingOccurrences(of: placeholder, with: replacement)
         }
 
         var page = rawPage
@@ -197,7 +218,7 @@ actor IngestService: IngestServiceProtocol {
             content: content,
             type: .source,
             sourceURL: urlString,
-            rawSnippet: String(content.prefix(1000)),
+            rawSnippet: String(content.prefix(FeatureConstants.IngestLimit.urlRawSnippetLength)),
             forceDeepScan: forceDeepScan,
             llmService: llmService,
             pageStore: pageStore
@@ -211,7 +232,8 @@ actor IngestService: IngestServiceProtocol {
     /// - Returns: 识别到的现有知识标题字符串列表
     func extractConcepts(from content: String, pages: [KnowledgePage]) -> [String] {
         var found: [String] = []
-        for page in pages where content.lowercased().contains(page.title.lowercased()) {
+        // Bug #122 修复：跳过空标题页面，避免 contains("") 永真导致内容污染
+        for page in pages where !page.title.isEmpty && content.lowercased().contains(page.title.lowercased()) {
                 found.append(page.title)
         }
         return found
@@ -263,7 +285,7 @@ actor IngestService: IngestServiceProtocol {
             includingPropertiesForKeys: [.isRegularFileKey],
             options: [.skipsHiddenFiles]
         ) else {
-            Logger.shared.warning("Failed to" + " enumerate folder:" + " \(url.path)")
+            Logger.shared.warning(FeatureConstants.LogDetails.failedTo + FeatureConstants.LogDetails.enumerateFolder + " \(url.path)")
             return []
         }
 
@@ -293,7 +315,7 @@ actor IngestService: IngestServiceProtocol {
                     let page = await self.ingestDocument(at: fileURL, type: type, pageStore: pageStore)
                     if page != nil {
                         await MainActor.run {
-                            LocalAnalyticsService.shared.trackEvent("document_ingested", properties: ["format": fileURL.pathExtension])
+                            LocalAnalyticsService.shared.trackEvent(FeatureConstants.AnalyticsKey.documentIngested, properties: [FeatureConstants.AnalyticsKey.format: fileURL.pathExtension])
                         }
                     }
                     return (page, fileURL.lastPathComponent)
@@ -313,7 +335,7 @@ actor IngestService: IngestServiceProtocol {
                 await taskCenter.updateLatestStatus(status)
             }
             
-            // 完成任务
+            // Bug #130 修复：确保 completeTask 在异常路径也执行
             await taskCenter.completeTask(id: taskID)
             
             return results

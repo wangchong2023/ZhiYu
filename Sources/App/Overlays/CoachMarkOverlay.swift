@@ -134,8 +134,11 @@ struct CoachMarkOverlay: View {
         withAnimation(.easeIn(duration: DesignSystem.Animation.fastDuration)) {
             isAnimating = false
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + DesignSystem.Animation.fastDuration) {
-            onDismiss()
+        // Bug #99 修复：DispatchQueue.main.asyncAfter 改为 Task + Task.sleep，
+        // 符合项目并发规范（AGENTS.md：优先 async/await）。
+        Task {
+            try? await Task.sleep(for: .seconds(DesignSystem.Animation.fastDuration))
+            await MainActor.run { onDismiss() }
         }
     }
 }

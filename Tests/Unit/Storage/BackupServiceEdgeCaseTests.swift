@@ -10,6 +10,7 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class BackupServiceEdgeTests: XCTestCase {
 
     var tempDir: URL!
@@ -186,5 +187,63 @@ final class BackupServiceEdgeTests: XCTestCase {
 
         XCTAssertEqual(backupService.backupEntries.count, 1, "空页面列表也应能备份")
         XCTAssertEqual(backupService.backupEntries.first?.pageCount, 0)
+    }
+
+    // MARK: - Bug #56: createForcedBackup 绕过 isAutoBackupEnabled 开关
+
+    /// 验证：`isAutoBackupEnabled=false` 时 `createForcedBackup` 仍能创建备份。
+    /// 这是"立即创建备份"按钮的核心场景，避免静默失效。
+    func testForcedBackupBypassesAutoBackupDisabled() {
+        backupService.isAutoBackupEnabled = false
+        backupService.createForcedBackup(pages: makePages(count: 2))
+
+        XCTAssertEqual(backupService.backupEntries.count, 1, "强制备份应绕过自动备份开关")
+        XCTAssertEqual(backupService.backupEntries.first?.pageCount, 2)
+    }
+
+    /// 验证：`createForcedBackup` 不受节流限制。
+    func testForcedBackupBypassesThrottle() {
+        let pages = makePages(count: 1)
+        backupService.createForcedBackup(pages: pages)
+        XCTAssertEqual(backupService.backupEntries.count, 1)
+
+        // 立即再次强制备份，不应被节流
+        backupService.createForcedBackup(pages: pages)
+        XCTAssertEqual(backupService.backupEntries.count, 2, "强制备份不应被节流")
+    }
+
+    /// 验证：`createBackup`（自动）在开关关闭时仍静默跳过，与 `createForcedBackup` 行为区分。
+    func testAutoBackupStillRespectsToggleWhileForcedBackupDoesNot() {
+        backupService.isAutoBackupEnabled = false
+
+        backupService.createBackup(pages: makePages())
+        XCTAssertTrue(backupService.backupEntries.isEmpty, "自动备份应受开关控制")
+
+        backupService.createForcedBackup(pages: makePages())
+        XCTAssertEqual(backupService.backupEntries.count, 1, "强制备份应绕过开关")
+    }
+
+    // MARK: - Bug #57: 恢复前安全备份必须强制执行
+
+    /// 验证：恢复流程中即使 `isAutoBackupEnabled=false`，安全备份仍能创建。
+    /// 模拟 BackupView.restoreFromBackup 的安全备份步骤。
+    func testRestoreSafetyBackupWorksWhenAutoBackupDisabled() {
+        backupService.isAutoBackupEnabled = false
+
+        // 先准备一个可恢复的备份
+        backupService.createForcedBackup(pages: makePages(count: 1))
+        guard let entry = backupService.backupEntries.first else {
+            XCTFail("应有备份记录")
+            return
+        }
+
+        // 恢复前的安全备份（应使用 createForcedBackup）
+        let safetyPages = makePages(count: 5)
+        backupService.createForcedBackup(pages: safetyPages)
+        XCTAssertEqual(backupService.backupEntries.count, 2, "安全备份应成功创建")
+
+        // 恢复操作本身仍应正常
+        let restored = backupService.restoreBackup(entry)
+        XCTAssertNotNil(restored, "恢复应成功")
     }
 }

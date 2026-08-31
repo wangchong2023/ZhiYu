@@ -84,6 +84,16 @@ final class iOSReminderService: ReminderServiceProtocol, @unchecked Sendable {
     /// - Parameter title: title
     /// - Parameter notes: notes
     func createReminder(title: String, notes: String) async throws {
+        // Bug #49 修复：创建前检查权限，未授权时抛错
+        let granted = try await requestAccessHandler()
+        guard granted else {
+            throw NSError(
+                domain: "ZhiYu.ReminderService",
+                code: PlatformConstants.Reminder.notFoundErrorCode,
+                userInfo: [NSLocalizedDescriptionKey: L10n.Reminder.noListAvailableMessage]
+            )
+        }
+
         let reminder = EKReminder(eventStore: eventStore)
         reminder.title = title
         reminder.notes = notes
@@ -93,8 +103,12 @@ final class iOSReminderService: ReminderServiceProtocol, @unchecked Sendable {
         } else {
             let calendars = calendarsHandler(.reminder)
             guard let firstCalendar = calendars.first else {
-                // 将硬编码中文字符串替换为强类型多语言引用，防止 L10n 静态扫描泄露并保障 watchOS/iOS 的多语言统一
-                throw NSError(domain: "ZhiYu.ReminderService", code: 404, userInfo: [NSLocalizedDescriptionKey: L10n.Reminder.noListAvailableMessage])
+                // Bug #50 修复：魔鬼数字 404 抽取为常量
+                throw NSError(
+                    domain: "ZhiYu.ReminderService",
+                    code: PlatformConstants.Reminder.notFoundErrorCode,
+                    userInfo: [NSLocalizedDescriptionKey: L10n.Reminder.noListAvailableMessage]
+                )
             }
             reminder.calendar = firstCalendar
         }

@@ -135,7 +135,7 @@ struct SearchView: View {
                 // Filters
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.small) {
-                        FilterPill(title: L10n.Search.all, accessibilityIdentifier: "filter-all", isSelected: filterType == nil) {
+                        FilterPill(title: L10n.Search.all, accessibilityIdentifier: FeatureConstants.AccessibilityID.filterAll, isSelected: filterType == nil) {
                             HapticFeedback.shared.trigger(.selection)
                             filterType = nil
                         }
@@ -216,7 +216,7 @@ struct SearchView: View {
             ZStack {
                 if searchStore.isSearching {
                     VStack(spacing: DesignSystem.standardPadding) {
-                        ForEach(0..<6) { _ in
+                        ForEach(0..<FeatureConstants.SearchView.skeletonRowCount) { _ in
                             HStack(spacing: DesignSystem.medium) {
                                 AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize) // 44
                                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -235,7 +235,7 @@ struct SearchView: View {
                     VStack(spacing: DesignSystem.standardPadding) {
                         Spacer()
                         Image(systemName: searchText.isEmpty ? DesignSystem.Icons.search : DesignSystem.Icons.weeklyInsight)
-                            .font(.system(size: DesignSystem.Metrics.heroValueSize * 1.5)) // 48
+                            .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.SearchView.emptyIconSizeMultiplier)) // 48
                             .foregroundStyle(.appSecondary.opacity(Reference.Opacity.fifty)) // 0.5
                         
                         Text(searchText.isEmpty ? L10n.SearchPlaceholder : L10n.Search.noResults)
@@ -274,7 +274,7 @@ struct SearchView: View {
                                 Button {
                                     AppPasteboard.string = "[[\(page.title)]]"
                                 } label: {
-                                    Label(L10n.Common.copyPageLink, systemImage: "link")
+                                    Label(L10n.Common.copyPageLink, systemImage: DesignSystem.Icons.link)
                                 }
                             }
                         }

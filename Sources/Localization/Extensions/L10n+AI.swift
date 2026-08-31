@@ -185,6 +185,8 @@ extension L10n {
             public static var importModel: String { AI.tr("ondevice.importModel") }
             public static var testGeneration: String { AI.tr("ondevice.testGeneration") }
             public static var inferenceSpeed: String { AI.tr("ondevice.inferenceSpeed") }
+            /// 推理速度格式化模板（%.1f tok/s）
+            public static var tokensPerSecondFormat: String { AI.tr("ondevice.tokensPerSecondFormat") }
             public static var testPrompt: String { AI.tr("ondevice.testPrompt") }
             public static var generating: String { AI.tr("ondevice.generating") }
             public static var generate: String { AI.tr("ondevice.generate") }
@@ -362,6 +364,7 @@ extension L10n {
                 public static var question: String { AI.tr("ondevice.chatQuestion") }
                 public static var option: String { AI.tr("prompt.quiz.option") }
                 public static var explanation: String { AI.tr("prompt.quiz.explanation") }
+                public static var placeholder: String { AI.tr("ai.quiz.placeholder") }
             }
 
             public enum Expert {

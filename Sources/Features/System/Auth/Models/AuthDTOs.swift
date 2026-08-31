@@ -38,7 +38,7 @@ public struct LoginRequest: Encodable {
     /// 初始化密码登录请求
     public static func password(username: String, password: String, consent: Bool = true) -> LoginRequest {
         return LoginRequest(
-            grantType: "password",
+            grantType: FeatureConstants.GrantType.pwd,
             username: username,
             password: password,
             phone: nil,
@@ -52,7 +52,7 @@ public struct LoginRequest: Encodable {
     /// 初始化短信验证登录请求
     public static func sms(phone: String, code: String, consent: Bool = true) -> LoginRequest {
         return LoginRequest(
-            grantType: "sms_code",
+            grantType: FeatureConstants.GrantType.sms,
             username: nil,
             password: nil,
             phone: phone,

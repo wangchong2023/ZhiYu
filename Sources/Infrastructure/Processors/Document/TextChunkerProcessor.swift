@@ -152,12 +152,13 @@ struct TextChunkerProcessor: Sendable {
 
         state.chunks.append(Chunk(text: trimmedText, startIndex: state.currentStartIndex, anchorPath: state.currentAnchor, breadcrumbPath: state.currentBreadcrumb, isCode: state.currentChunkText.contains(ProcessorConstants.MarkdownSyntax.codeFence)))
 
-        // 缺陷 #12 修复：在修改 currentChunkText 前保存旧长度，用于正确计算 startIndex 偏移
+        // Bug #134 修复：重叠窗口 clamp，避免短 chunk 时塌缩到 startIndex
         let oldChunkTextCount = state.currentChunkText.count
-        let overlapIndex = state.currentChunkText.index(state.currentChunkText.endIndex, offsetBy: -config.chunkOverlap, default: state.currentChunkText.startIndex)
+        let overlapAmount = min(config.chunkOverlap, oldChunkTextCount)
+        let overlapIndex = state.currentChunkText.index(state.currentChunkText.endIndex, offsetBy: -overlapAmount)
         state.currentChunkText = String(state.currentChunkText[overlapIndex...]) + lineWithNewline
         // startIndex 偏移 = 旧 chunk 文本长度 - 重叠窗口大小
-        state.currentStartIndex += max(0, oldChunkTextCount - config.chunkOverlap)
+        state.currentStartIndex += max(0, oldChunkTextCount - overlapAmount)
     }
 }
 

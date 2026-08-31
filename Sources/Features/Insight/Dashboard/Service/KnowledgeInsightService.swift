@@ -18,10 +18,10 @@ private enum InsightConfig {
     static let contentPrefixLength = 500
     /// 最近修改天数阈值
     static let recentDays = 3
-    /// 长期记忆最小天数
-    static let longTermMinDays = 90
-    /// 长期记忆最大天数
-    static let longTermMaxDays = 30
+    /// 长期记忆窗口起始天数（较早的时间点）
+    static let longTermStaleWindowStartDays = 90
+    /// 长期记忆窗口结束天数（较近的时间点）
+    static let longTermStaleWindowEndDays = 30
     /// 周报回看天数
     static let weeklyDays = 7
     /// 爆发式增长阈值
@@ -123,8 +123,8 @@ actor KnowledgeInsightService {
     private func selectTargetPage(pages: [KnowledgePage]) throws -> KnowledgePage {
         let now = Date()
         let calendar = Calendar.current
-        guard let longTermMin = calendar.date(byAdding: .day, value: -InsightConfig.longTermMinDays, to: now),
-              let longTermMax = calendar.date(byAdding: .day, value: -InsightConfig.longTermMaxDays, to: now) else {
+        guard let longTermMin = calendar.date(byAdding: .day, value: -InsightConfig.longTermStaleWindowStartDays, to: now),
+              let longTermMax = calendar.date(byAdding: .day, value: -InsightConfig.longTermStaleWindowEndDays, to: now) else {
             throw AppError.insight(L10n.Insight.dateCalculationFailed, code: InsightConfig.errorCode)
         }
 
@@ -239,7 +239,11 @@ actor KnowledgeInsightService {
 
         let summary = try await llmService.generate(prompt: prompt, systemPrompt: L10n.Dashboard.insight.weekly.systemPrompt)
         let allTags = newPages.flatMap { $0.tags }
-        let keywords = Array(Set(allTags)).sorted().prefix(InsightConfig.topKeywordsCount).map { String($0) }
+        // Bug #132 修复：按频率降序排序取 Top 5，而非字典序
+        let tagFrequency = Dictionary(allTags.map { ($0, 1) }, uniquingKeysWith: +)
+        let keywords = tagFrequency.sorted { $0.value > $1.value }
+            .prefix(InsightConfig.topKeywordsCount)
+            .map { $0.key }
 
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

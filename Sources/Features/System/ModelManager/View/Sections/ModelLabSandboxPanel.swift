@@ -45,6 +45,8 @@ extension ModelLabView {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.Common.done) {
                         HapticFeedback.shared.trigger(.selection)
+                        simulationTask?.cancel()
+                        simulationTask = nil
                         labManager.stopSimulation()
                         labManager.selectedUseCase = nil
                     }
@@ -61,7 +63,16 @@ extension ModelLabView {
     func modelSelectionMenu(for useCase: UseCaseType) -> some View {
         Menu {
             Picker("", selection: Binding(
-                get: { getActiveModel()?.modelId ?? modelManager.activeModelId },
+                get: {
+                    let activeId = modelManager.activeModelId
+                    let readyIds = modelManager.remoteManifests
+                        .filter { modelManager.isModelLocalReady(for: $0.modelId) }
+                        .map(\.modelId)
+                    if readyIds.contains(activeId) {
+                        return activeId
+                    }
+                    return getActiveModel()?.modelId ?? activeId
+                },
                 set: { newId in
                     HapticFeedback.shared.trigger(.selection)
                     modelManager.activeModelId = newId
@@ -77,9 +88,9 @@ extension ModelLabView {
                 Text(getActiveModel()?.displayName ?? useCase.title)
                     .font(.headline)
                     .foregroundStyle(.appText)
-                Image(systemName: "chevron.down")
+                Image(systemName: DesignSystem.Icons.chevronDown)
                     .font(.caption)
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(Color.theme.cyan)
             }
             .padding(.horizontal, SystemSpacing.medium)
             .padding(.vertical, SystemSpacing.small)
@@ -90,6 +101,9 @@ extension ModelLabView {
 
     /// 设置特定用例场景的初始预设 prompt
     func setupDefaultPrompt(for useCase: UseCaseType) {
+        // Bug #73 修复：仅首次为该用例设置默认 prompt，避免 onAppear 重复触发时覆盖用户输入。
+        guard !hasSetupPrompt.contains(useCase.rawValue) else { return }
+        hasSetupPrompt.insert(useCase.rawValue)
         switch useCase {
         case .askImage:
             testPrompt = L10n.ModelManager.Lab.Prompt.askImage
@@ -103,6 +117,9 @@ extension ModelLabView {
             testPrompt = L10n.ModelManager.Lab.Prompt.tinyGarden
         case .mobileActions:
             testPrompt = L10n.ModelManager.Lab.Prompt.mobileActions
+        case .audioScribe:
+            // 音频速记用例不使用文本 prompt，保持空字符串
+            testPrompt = ""
         default:
             testPrompt = ""
         }
@@ -122,12 +139,12 @@ extension ModelLabView {
                     RoundedRectangle(cornerRadius: SystemRadius.small)
                         .stroke(
                             isPromptFocused ?
-                            LinearGradient(colors: [.cyan, .purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                            LinearGradient(colors: [Color.theme.cyan, Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing) :
                             LinearGradient(colors: [Color.theme.white.opacity(DesignSystem.Opacity.glass)], startPoint: .topLeading, endPoint: .bottomTrailing),
                             lineWidth: isPromptFocused ? 1.5 : 1.0
                         )
                 )
-                .shadow(color: isPromptFocused ? .cyan.opacity(DesignSystem.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: 0, y: 0)
+                .shadow(color: isPromptFocused ? Color.theme.cyan.opacity(DesignSystem.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: 0, y: 0)
                 .overlay(
                     Group {
                         if testPrompt.isEmpty {
@@ -149,6 +166,8 @@ extension ModelLabView {
     func controlButton(for useCase: UseCaseType) -> some View {
         if labManager.isGenerating {
             Button(action: {
+                simulationTask?.cancel()
+                simulationTask = nil
                 labManager.stopSimulation()
             }) {
                 Text(L10n.ModelManager.Lab.stopInference)
@@ -160,10 +179,11 @@ extension ModelLabView {
             }
         } else {
             Button(action: {
-                Task {
+                simulationTask = Task {
                     guard let model = getActiveModel() else { return }
                     HapticFeedback.shared.trigger(.selection)
                     await labManager.runSimulation(for: useCase, model: model, prompt: testPrompt)
+                    simulationTask = nil
                 }
             }) {
                 Text(L10n.ModelManager.Lab.runTest)
@@ -198,12 +218,12 @@ extension ModelLabView {
                 showConfigSheet = true
             }) {
                 HStack(spacing: SystemSpacing.tiny) {
-                    Image(systemName: "slider.horizontal.3")
+                    Image(systemName: DesignSystem.Icons.sliderHorizontal)
                         .font(.caption)
                     Text(L10n.ModelManager.parametersTitle)
                         .font(.caption)
                 }
-                .foregroundStyle(.cyan)
+                .foregroundStyle(Color.theme.cyan)
                 .padding(.horizontal, SystemSpacing.medium)
                 .padding(.vertical, SystemSpacing.small)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.dim))

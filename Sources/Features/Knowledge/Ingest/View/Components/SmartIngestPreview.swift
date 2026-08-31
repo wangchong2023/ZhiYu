@@ -52,7 +52,7 @@ struct SmartIngestPreview: View {
                         AppChip(text: type.displayName, color: Color.fromModelColorName(type.colorName))
                     }
                     ForEach(result.suggestedTags.prefix(DesignSystem.Metrics.maxRecentItems), id: \.self) { tag in // 5
-                        AppChip(text: "#\(tag)", color: .appAccent, backgroundOpacity: DesignSystem.glassOpacity) // 0.1
+                        AppChip(text: FeatureConstants.TagPrefix.hash + tag, color: .appAccent, backgroundOpacity: DesignSystem.glassOpacity) // 0.1
                     }
                 }
 

@@ -181,12 +181,15 @@ extension L10n {
             public static var minAppVersion: String { Plugin.tr("plugin.detail.minAppVersion") }
             public static var category: String { Plugin.tr("plugin.detail.category") }
             public static var license: String { Plugin.tr("plugin.detail.license") }
+            public static var idLabel: String { Plugin.tr("plugin.detail.idLabel") }
             public static var reportTitle: String { Plugin.tr("plugin.detail.report") }
             public static var reportIssue: String { Plugin.tr("plugin.detail.reportIssue") }
             public static var viewSource: String { Plugin.tr("plugin.detail.viewSource") }
             public static var categoryLocal: String { Plugin.tr("plugin.detail.category.local") }
             public static var categoryRemote: String { Plugin.tr("plugin.detail.category.remote") }
             public static var categoryCommunity: String { Plugin.tr("plugin.detail.category.community") }
+            /// 未知来源（市场列表未加载时）
+            public static var categoryUnknown: String { Plugin.tr("plugin.detail.category.unknown") }
             public static var licenseFree: String { Plugin.tr("plugin.detail.license.free") }
             public static var licenseDonation: String { Plugin.tr("plugin.detail.license.donation") }
             public static var licenseSubscription: String { Plugin.tr("plugin.detail.license.subscription") }

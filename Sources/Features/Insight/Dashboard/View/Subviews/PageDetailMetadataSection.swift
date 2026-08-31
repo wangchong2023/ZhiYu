@@ -136,7 +136,7 @@ struct PageDetailMetadataSection: View {
                 Image(systemName: recPage.displayIcon).foregroundStyle(Color.fromModelColorName(recPage.pageType.colorName))
                 VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                     Text(recPage.title).font(.subheadline.weight(.medium))
-                    let summaryText = String(recPage.content.prefix(60)) + "..."
+                    let summaryText = String(recPage.content.prefix(FeatureConstants.PageDetailMetadata.summaryPrefixLength)) + "..."
                     Text(summaryText).font(.caption2).foregroundStyle(.appSecondary)
                 }
                 Spacer()

@@ -45,14 +45,14 @@ struct PageDetailAISection: View {
                                     aiStore.activePageAIResult = nil
                                 }
                             }) {
-                                Label(L10n.Common.appendToBody, systemImage: "square.and.arrow.down")
+                                Label(L10n.Common.appendToBody, systemImage: DesignSystem.Icons.squareAndArrowDown)
                                     .font(.caption)
                                     .foregroundStyle(.appAccent)
                             }
                             .padding(.trailing, DesignSystem.small)
                         }
 
-                        if let result = aiStore.activePageAIResult, result.contains("- ") {
+                        if let result = aiStore.activePageAIResult, result.contains(SystemConstants.MarkdownSyntax.bulletDash) {
                             Button(action: {
                                 Task {
                                     @Dependency(\.workflowService) var workflowService

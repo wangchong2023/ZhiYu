@@ -77,12 +77,13 @@ extension VaultService {
     func buildDefaultDemoVaults() -> [Vault] {
         let id1 = UUID()
         let id2 = UUID()
+        let now = Date()
         return [
             Vault(
                 id: id1,
                 name: L10n.Vault.defaultName,
-                createdAt: Date(),
-                updatedAt: Date(),
+                createdAt: now,
+                updatedAt: now,
                 pageCount: 0,
                 themePayload: nil,
                 icon: DesignSystem.Icons.Notebook.defaultBook,
@@ -91,8 +92,8 @@ extension VaultService {
             Vault(
                 id: id2,
                 name: L10n.Vault.researchName,
-                createdAt: Date(),
-                updatedAt: Date(),
+                createdAt: now,
+                updatedAt: now,
                 pageCount: 0,
                 themePayload: nil,
                 icon: DesignSystem.Icons.Notebook.defaultResearch,
@@ -104,12 +105,13 @@ extension VaultService {
     /// 极端降级兜底：建立支持多语言本地化的内存级缓存笔记本
     /// 注意：pageCount 设为 0，实际页面数需在数据库可用后调用 refreshAllPageCounts 更新
     func buildFallbackDemoVaults() -> [Vault] {
+        let now = Date()
         return [
             Vault(
                 id: UUID(),
                 name: L10n.Vault.defaultName,
-                createdAt: Date(),
-                updatedAt: Date(),
+                createdAt: now,
+                updatedAt: now,
                 pageCount: 0,
                 themePayload: nil,
                 icon: DesignSystem.Icons.Notebook.defaultBook,
@@ -118,8 +120,8 @@ extension VaultService {
             Vault(
                 id: UUID(),
                 name: L10n.Vault.researchName,
-                createdAt: Date(),
-                updatedAt: Date(),
+                createdAt: now,
+                updatedAt: now,
                 pageCount: 0,
                 themePayload: nil,
                 icon: DesignSystem.Icons.Notebook.defaultResearch,
@@ -157,7 +159,8 @@ extension VaultService {
     /// XCUITest 的 element.tap() 会抛错，coordinate.tap() 不触发 SwiftUI Button action，
     /// 测试无法通过 UI 点击进入金库。此处通过预置 selectedVaultID 正向绕过该限制。
     func autoSelectFirstVaultForUITesting() {
-        guard TestModeDetector.isUITesting, selectedVaultID == nil,
+        guard TestModeDetector.isUITesting, !TestModeDetector.skipAutoVault,
+              selectedVaultID == nil,
               let firstVault = vaults.first else { return }
         selectedVaultID = firstVault.id
         keyStore?.set(firstVault.englishName, forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)

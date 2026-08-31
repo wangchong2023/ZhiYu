@@ -49,9 +49,12 @@ struct SubscriptionFeatureGrid: View {
                 AppDivider()
 
                 // 权益对比行
-                ForEach(0..<min(liteFeatures.count, proFeatures.count), id: \.self) { i in
+                // Bug #105 修复：Divider 判断用 min(count) 而非 liteFeatures.count，
+                // 避免两个数组长度不一致时 Divider 显示错误。
+                let displayCount = min(liteFeatures.count, proFeatures.count)
+                ForEach(0..<displayCount, id: \.self) { i in
                     featureRow(lite: liteFeatures[i], pro: proFeatures[i])
-                    if i < liteFeatures.count - 1 {
+                    if i < displayCount - 1 {
                         AppDivider().padding(.leading, DesignSystem.large)
                     }
                 }

@@ -30,13 +30,15 @@ final class iOSSpotlightIndexer: SearchIndexerProtocol, Sendable {
         for page in pages {
             let attributeSet = CSSearchableItemAttributeSet(contentType: .plainText)
             attributeSet.title = page.title
-            attributeSet.contentDescription = String(page.content.prefix(200))
+            // Bug #51 修复：魔鬼数字 200 抽取为常量
+            attributeSet.contentDescription = String(page.content.prefix(PlatformConstants.Spotlight.contentDescriptionMaxLength))
             attributeSet.keywords = page.tags + page.aliases
             attributeSet.relatedUniqueIdentifier = page.id.uuidString
             
             let item = CSSearchableItem(
                 uniqueIdentifier: page.id.uuidString,
-                domainIdentifier: "com.zhiyu.app.pages",
+                // Bug #52 修复：魔鬼字符串抽取为常量
+                domainIdentifier: PlatformConstants.Spotlight.domainIdentifier,
                 attributeSet: attributeSet
             )
             item.expirationDate = nil

@@ -32,11 +32,23 @@ public struct PromptSecuritySanitizer: Sendable {
 
     public init() {}
 
+    private static let zeroWidthScalarSet: Set<UInt32> = [
+        0x200B, // Zero-width space
+        0x200C, // Zero-width non-joiner
+        0x200D, // Zero-width joiner
+        0xFEFF, // Zero-width no-break space (BOM)
+        0x200E, // Left-to-right mark
+        0x200F, // Right-to-left mark
+        0x2060  // Word joiner
+    ]
+
     /// 扫描输入文本中是否存在提示词注入越狱攻击
     /// - Parameter text: 待校验的原始文本
     /// - Throws: 发现注入模式时抛出 PromptSecurityError.jailbreakAttemptDetected
     public func scanJailbreakAttempt(in text: String) throws {
-        let lowered = text.lowercased()
+        // 预处理：基于 Unicode Scalar 严格移除零宽字符，防止字形簇合并绕过
+        let cleanedScalars = text.unicodeScalars.filter { !Self.zeroWidthScalarSet.contains($0.value) }
+        let lowered = String(cleanedScalars).lowercased()
         for pattern in Self.jailbreakPatterns where lowered.contains(pattern) {
             Logger.shared.warning("[PromptSecurity] 拦截越狱攻击特征: \(pattern)")
             throw PromptSecurityError.jailbreakAttemptDetected(pattern: pattern)

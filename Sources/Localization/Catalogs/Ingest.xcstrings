@@ -13911,6 +13911,71 @@
         }
       }
     },
+    "ingest.urlExceedLimit_%@_%@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "超出最大 %@ 个 URL 限制，已截断 %@ 条"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "超出最大 %@ 個 URL 限制，已截斷 %@ 條"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exceeded max %@ URLs, truncated %@ entries"
+          }
+        }
+      }
+    },
     "ingest.importProgress": {
       "extractionState": "manual",
       "localizations": {

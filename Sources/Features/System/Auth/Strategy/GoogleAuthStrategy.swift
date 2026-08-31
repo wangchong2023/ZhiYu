@@ -39,8 +39,8 @@ public final class GoogleAuthStrategy: AuthStrategy {
         #if canImport(GoogleSignIn)
         
         // 1. 防御性配置探针：检测 Info.plist 或者是 GIDSignIn 的 configuration 中是否配置了有效的 clientID
-        let clientID = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String ?? GIDSignIn.sharedInstance.configuration?.clientID
-        if clientID == nil || clientID == "YOUR_GOOGLE_CLIENT_ID" || clientID?.isEmpty == true {
+        let clientID = Bundle.main.object(forInfoDictionaryKey: FeatureConstants.GoogleConfig.clientIDKey) as? String ?? GIDSignIn.sharedInstance.configuration?.clientID
+        if clientID == nil || clientID == FeatureConstants.GoogleConfig.placeholderClientID || clientID?.isEmpty == true {
             #if DEBUG
             // 物理自愈与降级：若在 UI 自动化测试运行中未配置 ClientID，降级返回 Mock
             if TestModeDetector.isAnyTesting {
@@ -48,16 +48,16 @@ public final class GoogleAuthStrategy: AuthStrategy {
                 return AuthCredential(
                     identityType: identityType,
                     identifier: "mock_google_user_id",
-                    credential: "mock_google_code",
+                    credential: FeatureConstants.MockData.mockGoogleCode,
                     extraInfo: [
                         "idToken": mockIDToken,
                         "email": "mock_google_user@gmail.com",
-                        "nickname": "Google Mock User"
+                        "nickname": FeatureConstants.MockData.googleMockUser
                     ]
                 )
             }
             #endif
-            throw AppError.auth(domain: "GoogleAuthStrategy", code: -99, description: L10n.Auth.googleSdkNotConfigured)
+            throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -99, description: L10n.Auth.googleSdkNotConfigured)
         }
         
         let activeScene = UIApplication.shared.connectedScenes
@@ -65,18 +65,18 @@ public final class GoogleAuthStrategy: AuthStrategy {
             .first { $0.activationState == .foregroundActive }
         
         guard let rootVC = activeScene?.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
-            throw AppError.auth(domain: "GoogleAuthStrategy", code: -1, description: L10n.Auth.googleWindowError)
+            throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -1, description: L10n.Auth.googleWindowError)
         }
         
         let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootVC)
         guard let idToken = result.user.idToken?.tokenString else {
-            throw AppError.auth(domain: "GoogleAuthStrategy", code: -2, description: L10n.Auth.googleTokenError)
+            throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -2, description: L10n.Auth.googleTokenError)
         }
         
         return AuthCredential(
             identityType: identityType,
             identifier: result.user.userID ?? "",
-            credential: "mock_google_code", // Google 使用 idToken 发往后端，传非空以绕过 @NotBlank 校验
+            credential: FeatureConstants.MockData.mockGoogleCode, // Google 使用 idToken 发往后端，传非空以绕过 @NotBlank 校验
             extraInfo: [
                 "idToken": idToken,
                 "email": result.user.profile?.email ?? "",
@@ -90,16 +90,16 @@ public final class GoogleAuthStrategy: AuthStrategy {
             return AuthCredential(
                 identityType: identityType,
                 identifier: "mock_google_user_id",
-                credential: "mock_google_code",
+                credential: FeatureConstants.MockData.mockGoogleCode,
                 extraInfo: [
                     "idToken": mockIDToken,
                     "email": "mock_google_user@gmail.com",
-                    "nickname": "Google Mock User"
+                    "nickname": FeatureConstants.MockData.googleMockUser
                 ]
             )
         }
         #endif
-        throw AppError.auth(domain: "GoogleAuthStrategy", code: -99, description: "Google SDK not compiled in watchOS or simulator without framework")
+        throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -99, description: "Google SDK not compiled in watchOS or simulator without framework")
         #endif
     }
 }

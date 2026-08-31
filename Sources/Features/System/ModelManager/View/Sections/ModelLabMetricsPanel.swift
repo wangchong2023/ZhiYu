@@ -19,11 +19,11 @@ extension ModelLabView {
     var metricsMonitorBoard: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
             HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: "cpu")
-                    .foregroundStyle(.cyan)
+                Image(systemName: DesignSystem.Icons.cpuOutline)
+                    .foregroundStyle(Color.theme.cyan)
                 Text(L10n.ModelManager.Lab.performanceMetrics)
                     .font(.caption.bold())
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(Color.theme.cyan)
             }
             .padding(.horizontal, SystemSpacing.tiny)
 
@@ -31,26 +31,26 @@ extension ModelLabView {
                 metricItemCard(
                     title: L10n.ModelManager.Lab.speed,
                     value: String(format: "%.1f", labManager.currentStats.speed),
-                    unit: "Tok/s",
-                    glowColor: .cyan
+                    unit: FeatureConstants.UnitName.tokPerSec,
+                    glowColor: Color.theme.cyan
                 )
                 metricItemCard(
                     title: L10n.ModelManager.Lab.prefillLatency,
                     value: "\(labManager.currentStats.prefillLatency)",
-                    unit: "ms",
-                    glowColor: .purple
+                    unit: FeatureConstants.UnitName.millisecond,
+                    glowColor: Color.theme.purple
                 )
                 metricItemCard(
                     title: L10n.ModelManager.Lab.firstTokenLatency,
                     value: "\(labManager.currentStats.firstTokenLatency)",
-                    unit: "ms",
-                    glowColor: .blue
+                    unit: FeatureConstants.UnitName.millisecond,
+                    glowColor: Color.theme.blue
                 )
                 metricItemCard(
                     title: L10n.ModelManager.Lab.memoryUsage,
                     value: String(format: "%.0f", labManager.currentStats.memoryUsage),
-                    unit: "MB",
-                    glowColor: .teal
+                    unit: FeatureConstants.UnitName.megabyte,
+                    glowColor: Color.theme.teal
                 )
             }
         }
@@ -61,7 +61,7 @@ extension ModelLabView {
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                 .stroke(
                     LinearGradient(
-                        colors: [.cyan.opacity(DesignSystem.softOpacity), .purple.opacity(DesignSystem.shadowOpacity)],
+                        colors: [Color.theme.cyan.opacity(DesignSystem.softOpacity), Color.theme.purple.opacity(DesignSystem.shadowOpacity)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
@@ -102,7 +102,7 @@ extension ModelLabView {
                     lineWidth: SystemStroke.border
                 )
         )
-        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignSystem.glassOpacity) : .clear, radius: 4, x: 0, y: 0)
+        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignSystem.glassOpacity) : .clear, radius: SystemShadow.radiusSmall, x: 0, y: 0)
     }
 
     // MARK: - 辅助子视图（高精度 AI 模拟效果展示）
@@ -121,14 +121,15 @@ extension ModelLabView {
 
                 RoundedRectangle(cornerRadius: DesignSystem.microRadius)
                     .fill(color)
-                    .frame(width: DesignSystem.Metrics.boxHeight * CGFloat(score), height: DesignSystem.Metrics.progressHeight)
-                    .shadow(color: color.opacity(DesignSystem.softOpacity), radius: 2)
+                    // Bug #74 修复：钳制 score 到 [0, 1]，避免 score > 1 时进度条溢出容器。
+                    .frame(width: DesignSystem.Metrics.boxHeight * CGFloat(min(max(score, 0.0), 1.0)), height: DesignSystem.Metrics.progressHeight)
+                    .shadow(color: color.opacity(DesignSystem.softOpacity), radius: SystemShadow.radiusSmall)
             }
             .frame(width: DesignSystem.Metrics.boxHeight)
 
             Spacer()
 
-            Text(String(format: "%.0f%%", score * 100))
+            Text(String(format: "%.0f%%", score * FeatureConstants.PercentageBase.full))
                 .font(.caption2.monospaced())
                 .foregroundStyle(color)
                 .bold()
@@ -180,11 +181,11 @@ extension ModelLabView {
 
     private func parseColor(from name: String) -> Color {
         switch name {
-        case "cyan": return .cyan
-        case "purple": return .purple
-        case "blue": return .blue
-        case "green": return .green
-        default: return .cyan
+        case FeatureConstants.MockColorName.cyan: return Color.theme.cyan
+        case FeatureConstants.MockColorName.purple: return Color.theme.purple
+        case FeatureConstants.MockColorName.blue: return Color.theme.blue
+        case FeatureConstants.MockColorName.green: return Color.theme.green
+        default: return Color.theme.cyan
         }
     }
 
@@ -193,7 +194,7 @@ extension ModelLabView {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
             Text(labManager.extraPanelTitle)
                 .font(.caption.bold())
-                .foregroundStyle(.cyan)
+                .foregroundStyle(Color.theme.cyan)
             
             if useCase == .askImage {
                 VStack(spacing: SystemSpacing.element) {

@@ -12,6 +12,12 @@ import SwiftUI
 import UFPCore
 import Dependencies
 
+// MARK: - 常量
+private enum PageListConstants {
+    /// 搜索中骨架屏呼吸卡片展示数量
+    static let skeletonCardCount = 4
+}
+
 // MARK: - Index View (entry point with NavigationStack)
 @MainActor
 struct KnowledgePageListView: View {
@@ -57,9 +63,14 @@ struct KnowledgePageListContent: View {
     }
     
     private var hasSearchResults: Bool {
-        if searchText.isEmpty { return true }
         if let filterType {
             return !filteredPages(for: filterType).isEmpty
+        }
+        if searchText.isEmpty {
+            // 空搜索无过滤时，只要任意类型有页面即视为有结果
+            return PageType.allCases.contains { type in
+                !filteredPages(for: type).isEmpty
+            }
         }
         return PageType.allCases.contains { type in
             !filteredPages(for: type).isEmpty
@@ -160,7 +171,7 @@ struct KnowledgePageListContent: View {
             if store.searchStore.isSearching {
                 // 如果正在执行混合检索，展示高精度骨架屏呼吸卡片
                 VStack(spacing: DesignSystem.standardPadding) {
-                    ForEach(0..<4) { _ in
+                    ForEach(0..<PageListConstants.skeletonCardCount) { _ in
                         HStack(spacing: DesignSystem.medium) {
                             AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize)
                             VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -339,7 +350,7 @@ struct KnowledgePageListContent: View {
                 HStack {
                     Label(L10n.Dashboard.pageList.rawCount(raws.count), systemImage: DesignSystem.Icons.raw)
                         .font(.subheadline.bold())
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(Color.theme.gray)
                     Spacer()
                 }
                 .padding(.vertical, DesignSystem.tiny)

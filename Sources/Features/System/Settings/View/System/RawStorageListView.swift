@@ -38,11 +38,11 @@ enum RawCategoryType: String, CaseIterable, Identifiable {
     /// 获取分类对应的默认主题颜色
     var defaultColor: Color {
         switch self {
-        case .document: return .teal
-        case .audio: return .indigo
-        case .ocr: return .orange
-        case .web: return .blue
-        case .clipboard: return .purple
+        case .document: return Color.theme.teal
+        case .audio: return Color.theme.indigo
+        case .ocr: return Color.theme.orange
+        case .web: return Color.theme.blue
+        case .clipboard: return Color.theme.purple
         case .manual: return .secondary
         }
     }
@@ -116,7 +116,7 @@ struct RawPageRow: View {
     private static let typeBadgeFontSize: CGFloat = 9
     private static let titleLineLimit = 1
     private static let tagHorizontalPadding = Spacing.tiny
-    private static let tagVerticalPadding = Spacing.atomic * 0.5
+    private static let tagVerticalPadding = Spacing.atomic * FeatureConstants.StorageListPadding.tagVerticalPaddingScale
     private static let itemVerticalPadding = DesignSystem.tiny
     
     /// 字节格式化助手

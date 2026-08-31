@@ -62,7 +62,7 @@ public struct HexSpiralCalculator {
             var currentR = HexSpiralCalculator.hexDirections[4].axialR * ring
             
             // 沿 6 个方向逐个环绕平铺
-            for directionIndex in 0..<6 {
+            for directionIndex in 0..<FeatureConstants.HexSpiral.directionCount {
                 for _ in 0..<ring {
                     if results.count >= count { return results }
                     results.append(HexCoordinate(axialQ: currentQ, axialR: currentR))
@@ -86,8 +86,8 @@ public struct HexSpiralCalculator {
     /// - Returns: CGPoint 物理平面坐标点
     public static func convertToPhysicalPoint(coord: HexCoordinate, stepSize: CGFloat) -> CGPoint {
         // 使用标准六角网格的物理坐标转换公式
-        let x = stepSize * (sqrt(3.0) * CGFloat(coord.axialQ) + (sqrt(3.0) / 2.0) * CGFloat(coord.axialR))
-        let y = stepSize * (1.5 * CGFloat(coord.axialR))
+        let x = stepSize * (sqrt(3.0) * CGFloat(coord.axialQ) + (sqrt(3.0) / FeatureConstants.HexSpiral.physicalXRDivisor) * CGFloat(coord.axialR))
+        let y = stepSize * (CGFloat(FeatureConstants.HexSpiral.physicalYScale) * CGFloat(coord.axialR))
         return CGPoint(x: x, y: y)
     }
 }

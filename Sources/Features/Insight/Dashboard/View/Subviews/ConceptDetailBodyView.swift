@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 /// [L3] 表现层：主题页面差异化详情视图
 struct ConceptDetailBodyView: View {
@@ -137,7 +138,7 @@ struct ConceptDetailBodyView: View {
                                 onLinkTap(link)
                             }) {
                                 HStack(spacing: DesignSystem.tightPadding) {
-                                    Image(systemName: "tag.fill")
+                                    Image(systemName: DesignSystem.Icons.tagFill)
                                         .font(.system(size: Self.tagIconSize))
                                     Text(link)
                                         .font(.caption2.weight(.medium))
@@ -197,9 +198,9 @@ struct ConceptDetailBodyView: View {
     // MARK: - 2. 认知碰撞卡 (Surprising Insights)
     private func insightsSection(_ insights: [ConceptFrontmatter.SurprisingInsight]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Dashboard.stats.citationAccuracy, systemImage: "sparkles")
+            Label(L10n.Dashboard.stats.citationAccuracy, systemImage: DesignSystem.Icons.sparkles)
                 .font(.subheadline.bold())
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.theme.orange)
             
             ForEach(insights, id: \.insightTitle) { insight in
                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -239,7 +240,7 @@ struct ConceptDetailBodyView: View {
     // MARK: - 3. 知识脉络树 (Outlines Tree)
     private var outlinesTreeSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Editor.toc, systemImage: "list.bullet.indent")
+            Label(L10n.Editor.toc, systemImage: DesignSystem.Icons.listBulletIndent)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appSecondary)
             
@@ -289,7 +290,7 @@ struct ConceptDetailBodyView: View {
                                 Spacer()
                                     .frame(width: CGFloat(item.level - 1) * Self.indentStep)
                                 
-                                Image(systemName: "square.fill")
+                                Image(systemName: DesignSystem.Icons.squareFill)
                                     .font(.system(size: Self.derivedDotSize))
                                     .foregroundStyle(.appSecondary)
                                 
@@ -319,11 +320,11 @@ struct ConceptDetailBodyView: View {
         var list: [DerivedOutline] = []
         for line in lines {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.hasPrefix("### ") {
+            if trimmed.hasPrefix(SystemConstants.MarkdownSyntax.h3Prefix) {
                 list.append(DerivedOutline(title: String(trimmed.dropFirst(4)), level: 3))
-            } else if trimmed.hasPrefix("## ") {
+            } else if trimmed.hasPrefix(SystemConstants.MarkdownSyntax.h2Prefix) {
                 list.append(DerivedOutline(title: String(trimmed.dropFirst(3)), level: 2))
-            } else if trimmed.hasPrefix("# ") {
+            } else if trimmed.hasPrefix(SystemConstants.MarkdownSyntax.h1Prefix) {
                 list.append(DerivedOutline(title: String(trimmed.dropFirst(2)), level: 1))
             }
         }

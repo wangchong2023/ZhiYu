@@ -89,7 +89,8 @@ final class MultipeerCollaborationProvider: NSObject, CollaborationProviderProto
     /// - Parameter room: room
     func joinRoom(_ room: DiscoveredRoom) {
         guard let session = session, let browser = browser, let targetPeer = room.platformPeer as? MCPeerID else { return }
-        browser.invitePeer(targetPeer, to: session, withContext: nil, timeout: 30)
+        // Bug #53 修复：魔鬼数字 30 抽取为常量
+        browser.invitePeer(targetPeer, to: session, withContext: nil, timeout: PlatformConstants.Multipeer.joinTimeoutSeconds)
         delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.joining)
     }
     
@@ -107,7 +108,11 @@ final class MultipeerCollaborationProvider: NSObject, CollaborationProviderProto
     /// broadcast
     /// - Parameter data: data
     func broadcast(data: Data) {
-        guard let session = session, !session.connectedPeers.isEmpty else { return }
+        // Bug #54 修复：无连接 peer 时记录日志，避免静默返回
+        guard let session = session, !session.connectedPeers.isEmpty else {
+            Logger.shared.warning("Collaboration_Broadcast_NoConnectedPeers")
+            return
+        }
         try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
     }
     
@@ -115,7 +120,10 @@ final class MultipeerCollaborationProvider: NSObject, CollaborationProviderProto
         let session = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
         sessionDelegate = MCSessionDelegateImpl(
             onPeerConnected: { [weak self] peerID in
-                let user = CollabUser(id: peerID.displayName, displayName: peerID.displayName.components(separatedBy: "|").first ?? peerID.displayName, deviceName: "", joinedAt: Date())
+                // Bug #55 修复：用 split(maxSplits: 1) 替代 components(separatedBy:).first
+                // 避免 displayName 含多个 "|" 时丢失信息
+                let displayName = peerID.displayName.split(separator: "|", maxSplits: 1).first.map(String.init) ?? peerID.displayName
+                let user = CollabUser(id: peerID.displayName, displayName: displayName, deviceName: "", joinedAt: Date())
                 self?.delegate?.providerDidConnectPeer(user)
             },
             onPeerDisconnected: { [weak self] peerID in

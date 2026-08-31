@@ -49,7 +49,7 @@ public final class AppleAuthStrategy: NSObject, AuthStrategy {
             return AuthCredential(
                 identityType: identityType,
                 identifier: "mock_apple_user_id",
-                credential: "mock_apple_authorization_code",
+                credential: FeatureConstants.MockData.mockAppleCode,
                 extraInfo: [
                     "idToken": mockAppleToken,
                     "email": "mock_apple_user@example.com",

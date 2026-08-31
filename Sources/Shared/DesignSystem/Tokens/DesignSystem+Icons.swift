@@ -296,6 +296,24 @@ extension DesignSystem {
         public static let textBubble = "text.bubble.fill"
         /// 柱状图统计
         public static let chartBarFill = "chart.bar.fill"
+        /// 叶子填充
+        public static let leafFill = "leaf.fill"
+        /// 水滴填充
+        public static let dropFill = "drop.fill"
+        /// 纸飞机填充
+        public static let paperplaneFill = "paperplane.fill"
+        /// 勾选圆圈填充
+        public static let checkmarkCircleFill = "checkmark.circle.fill"
+        /// iPhone 无线电波
+        public static let iphoneRadiowaves = "iphone.radiowaves.left.and.right"
+        /// 放大镜（与 search 同义，显式命名以匹配 SF Symbol 原名）
+        public static let magnifyingglass = "magnifyingglass"
+        /// CPU（非填充，对应 SF Symbol "cpu"）
+        public static let cpuSymbol = "cpu"
+        /// 网络节点（对应 SF Symbol "network"，区别于 network 统计图标）
+        public static let networkSymbol = "network"
+        /// 归档箱填充（显式命名以匹配 SF Symbol 原名）
+        public static let archiveboxFill = "archivebox.fill"
         
         // ── 设置中心专属分类 SF Symbol 图标收口 ──
         /// 外观设置图标
@@ -348,5 +366,154 @@ extension DesignSystem {
             /// 兜底
             public static let fallback = "folder.fill"
         }
+
+        // MARK: - Features 层补充图标 (Phase 2 magic_string 整改)
+        /// 归档箱（非填充）
+        public static let archiveboxOutline = "archivebox"
+        /// 逆时针箭头
+        public static let arrowCounterclockwise = "arrow.counterclockwise"
+        /// 合并箭头
+        public static let arrowTriangleMerge = "arrow.triangle.merge"
+        /// 上箭头
+        public static let arrowUp = "arrow.up"
+        /// 右上气泡箭头
+        public static let arrowUpRightBubble = "arrow.up.right.bubble"
+        /// 左转 U 型箭头
+        public static let arrowUturnLeft = "arrow.uturn.left"
+        /// 闪电填充
+        public static let boltFill = "bolt.fill"
+        /// 双气泡对话
+        public static let bubbleLeftAndRight = "bubble.left.and.bubble.right"
+        /// 相机取景器
+        public static let cameraViewfinder = "camera.viewfinder"
+        /// iCloud 勾选填充
+        public static let checkmarkIcloudFill = "checkmark.icloud.fill"
+        /// 勾选盾牌
+        public static let checkmarkShield = "checkmark.shield"
+        /// 勾选盾牌填充
+        public static let checkmarkShieldFill = "checkmark.shield.fill"
+        /// 左圆圈右箭头填充
+        public static let chevronLeftCircleFill = "chevron.left.circle.fill"
+        /// 右圆圈右箭头填充
+        public static let chevronRightCircleFill = "chevron.right.circle.fill"
+        /// 文档（非填充）
+        public static let doc = "doc"
+        /// 纯文本文档
+        public static let docPlaintext = "doc.plaintext"
+        /// 心电图文档
+        public static let docTextBelowEcg = "doc.text.below.ecg"
+        /// 美元符号圆圈
+        public static let dollarsignCircle = "dollarsign.circle"
+        /// 八角形感叹号填充
+        public static let exclamationmarkOctagonFill = "exclamationmark.octagon.fill"
+        /// 方格旗
+        public static let flagCheckered = "flag.checkered"
+        /// 仪表盘（非填充）
+        public static let gaugeWithNeedle = "gauge.with.needle"
+        /// 双齿轮
+        public static let gearshape2 = "gearshape.2"
+        /// 后退 5 秒
+        public static let goBackward5 = "gobackward.5"
+        /// 前进 5 秒
+        public static let goForward5 = "goforward.5"
+        /// 点赞填充
+        public static let handThumbsupFill = "hand.thumbsup.fill"
+        /// 信息圆圈填充
+        public static let infoCircleFill = "info.circle.fill"
+        /// 灯泡
+        public static let lightbulb = "lightbulb"
+        /// 列表带剪贴板
+        public static let listBulletClipboard = "list.bullet.clipboard"
+        /// 列表缩进
+        public static let listBulletIndent = "list.bullet.indent"
+        /// 编号列表
+        public static let listNumber = "list.number"
+        /// 数字圆圈
+        public static let numberCircle = "number.circle"
+        /// 暂停填充
+        public static let pauseFill = "pause.fill"
+        /// 人物徽章钥匙填充
+        public static let personBadgeKeyFill = "person.badge.key.fill"
+        /// 电话填充
+        public static let phoneFill = "phone.fill"
+        /// 播放填充
+        public static let playFill = "play.fill"
+        /// 播放矩形填充
+        public static let playRectangleFill = "play.rectangle.fill"
+        /// 加号取景器
+        public static let plusViewfinder = "plus.viewfinder"
+        /// 拼图块扩展填充
+        public static let puzzlepieceExtensionFill = "puzzlepiece.extension.fill"
+        /// 问号圆圈填充
+        public static let questionmarkCircleFill = "questionmark.circle.fill"
+        /// 服务器机架
+        public static let serverRack = "server.rack"
+        /// 方框向下箭头（下载）
+        public static let squareAndArrowDown = "square.and.arrow.down"
+        /// 方框填充
+        public static let squareFill = "square.fill"
+        /// WiFi
+        public static let wifi = "wifi"
+
+        // MARK: - Typography.Icons 转发 (Phase 2 magic_string 整改补充)
+        /// 烧瓶填充
+        public static let flaskFill = Typography.Icons.flaskFill
+        /// 感叹号圆圈填充
+        public static let exclamationmarkCircleFill = Typography.Icons.exclamationmarkCircleFill
+        /// iCloud 下载箭头
+        public static let icloudArrowDown = Typography.Icons.icloudArrowDown
+        /// 水平滑块
+        public static let sliderHorizontal = Typography.Icons.sliderHorizontal
+        /// 地球
+        public static let globe = Typography.Icons.globe
+        /// 列表带矩形填充
+        public static let listBulletRectangleFill = Typography.Icons.listBulletRectangleFill
+        /// 日历
+        public static let calendar = Typography.Icons.calendar
+        /// 柱状图文档
+        public static let chartBarDoc = Typography.Icons.chartBarDoc
+        /// 链接徽章加号
+        public static let linkBadgePlus = Typography.Icons.linkBadgePlus
+        /// 模型/CPU（用于路由偏好等场景）
+        public static let models = Typography.Icons.cpu
+        /// 任务图标
+        public static let chatBubbles = "bubble.left.and.bubble.right.fill"
+        public static let checklistChecked = "checklist.checked"
+        public static let chevronCode = "chevron.left.forwardslash.chevron.right"
+        public static let docMagnify = "doc.text.magnifyingglass"
+        public static let characterBook = "character.book.closed.fill"
+        /// 大脑轮廓（AI/推理）
+        public static let brainProfile = Typography.Icons.brainProfile
+        /// 文档图标
+        public static let docText = "doc.text"
+        public static let docTextFill = "doc.text.fill"
+        /// 日历时间线
+        public static let calendarDayTimeline = "calendar.day.timeline.left"
+        /// Apple/Google/GitHub Logo
+        public static let appleLogo = "apple.logo"
+        public static let applelogo = "applelogo"
+        public static let googleLogo = "GoogleLogo"
+        public static let githubLogo = "GithubLogo"
+        /// WiFi 断开
+        public static let wifiSlash = "wifi.slash"
+        /// 内存芯片
+        public static let memorychipFill = "memorychip.fill"
+        /// 数字/人员/应用徽章/勾选印章
+        public static let number = "number"
+        public static let personFill = "person.fill"
+        public static let appBadgeCheckmark = "app.badge.checkmark"
+        public static let checkmarkSealFill = "checkmark.seal.fill"
+        /// 感叹号气泡
+        public static let exclamationmarkBubble = "exclamationmark.bubble"
+        /// 听诊器
+        public static let stethoscope = "stethoscope"
+        /// 文档取景器（OCR）
+        public static let docTextViewfinder = "doc.text.viewfinder"
+        /// 目标靶心
+        public static let target = "target"
+        /// 收件箱箭头（入库）
+        public static let trayArrowDownFill = "tray.and.arrow.down.fill"
+        /// 魔法星星（合成）
+        public static let wandAndStars = "wand.and.stars"
     }
 }

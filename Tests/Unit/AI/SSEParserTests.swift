@@ -229,6 +229,19 @@ final class SSEParserTests: XCTestCase {
         XCTAssertEqual(chunks, ["A", "B", "C"])
     }
 
+    // MARK: - content 为空字符串时的 reasoning_content 提取
+
+    func testParseReasoningContentWhenContentIsEmptyString() async throws {
+        let sse = """
+        data: {"choices":[{"delta":{"content":"","reasoning_content":"深度推理分析中..."}}]}
+
+        data: [DONE]
+
+        """
+        let chunks = try await collectChunks(from: sse)
+        XCTAssertEqual(chunks, ["深度推理分析中..."], "当 content 为空字符串时，应成功降级提取 reasoning_content 而不是丢失")
+    }
+
     // MARK: - 辅助方法
 
     private func collectChunks(from sseText: String) async throws -> [String] {

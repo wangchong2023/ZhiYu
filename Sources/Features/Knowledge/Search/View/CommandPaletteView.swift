@@ -71,7 +71,7 @@ struct CommandPaletteView: View {
                 }
                 
                 Section(L10n.Action.cmd.recentAccess) {
-                    ForEach(store.pages.prefix(3)) { page in
+                    ForEach(store.pages.prefix(FeatureConstants.CommandPalette.recentAccessCount)) { page in
                         CommandRow(icon: page.pageType.icon, title: page.title) {
                             dismiss()
                         }

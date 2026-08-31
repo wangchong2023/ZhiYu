@@ -46,7 +46,7 @@ struct RAGEvaluationView: View {
     @State private var satisfactionThumbsDown: Int = 0
     // 历史
     @State private var recentEvaluations: [RAGEvaluation] = []
-    @State private var selectedDays = 30
+    @State private var selectedDays = FeatureConstants.RAGEvaluation.defaultSelectedDays
     @State private var isLoading = true
     @State private var activeTooltip: String?
     @State private var selectedTab: EvalTab = .retrieval

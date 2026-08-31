@@ -45,6 +45,8 @@ public extension NetworkError {
             return L10n.Network.missingRefreshToken
         case .sessionInvalidated:
             return L10n.Network.sessionInvalidated
+        case .invalidFileName:
+            return L10n.Network.invalidFileName
         }
     }
 }

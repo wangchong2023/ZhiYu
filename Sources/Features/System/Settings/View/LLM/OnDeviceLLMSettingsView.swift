@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UniformTypeIdentifiers
+import UFPCore
 
 // MARK: - On-Device LLM Settings View
 /// 设备端本地大模型配置面板视图
@@ -117,7 +118,7 @@ public struct OnDeviceLLMSettingsView: View {
     private var headerSection: some View {
         VStack(spacing: DesignSystem.medium) {
             Spacer(minLength: 4)
-            Image(systemName: "cpu")
+            Image(systemName: DesignSystem.Icons.cpuOutline)
                 .font(.system(size: Reference.FontSize.mega))
                 .foregroundStyle(
                     LinearGradient(
@@ -144,7 +145,7 @@ public struct OnDeviceLLMSettingsView: View {
         HStack(spacing: SystemSpacing.medium) {
             Image(systemName: onDeviceService.isAvailable ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                 .font(.title3)
-                .foregroundStyle(onDeviceService.isAvailable ? .green : .red)
+                .foregroundStyle(onDeviceService.isAvailable ? Color.theme.green : Color.theme.red)
             
             VStack(alignment: .leading, spacing: DesignSystem.tiny) {
                 Text(onDeviceService.isAvailable ? L10n.AI.OnDevice.available : L10n.AI.OnDevice.unavailable)
@@ -155,11 +156,11 @@ public struct OnDeviceLLMSettingsView: View {
                     if #available(iOS 18.2, *) {
                         Text(L10n.AI.OnDevice.supportsFoundation)
                             .font(.caption)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.theme.green)
                     } else {
                         Text(L10n.AI.OnDevice.supportsCoreML)
                             .font(.caption)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.theme.blue)
                     }
                 } else {
                     Text(L10n.AI.OnDevice.requiresIOS17)
@@ -177,7 +178,7 @@ public struct OnDeviceLLMSettingsView: View {
         VStack(alignment: .leading, spacing: SystemSpacing.element) {
             if onDeviceService.availableModels.isEmpty {
                 VStack(spacing: DesignSystem.small) {
-                    Image(systemName: "square.dashed")
+                    Image(systemName: DesignSystem.Icons.squareDashed)
                         .font(.title3)
                         .foregroundStyle(.appSecondary)
                     Text(L10n.AI.OnDevice.noModels)
@@ -207,8 +208,8 @@ public struct OnDeviceLLMSettingsView: View {
         VStack(spacing: DesignSystem.medium) {
             if onDeviceService.isModelLoaded {
                 HStack(spacing: DesignSystem.medium) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+                    Image(systemName: DesignSystem.Icons.checkCircle)
+                        .foregroundStyle(Color.theme.green)
                         .font(.title3)
                     
                     VStack(alignment: .leading, spacing: DesignSystem.atomic) {
@@ -227,7 +228,7 @@ public struct OnDeviceLLMSettingsView: View {
                     }) {
                         Text(L10n.AI.OnDevice.unload)
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.theme.red)
                             .padding(.horizontal, SystemSpacing.element)
                             .padding(.vertical, DesignSystem.tightPadding)
                             .background(Color.theme.red.opacity(DesignSystem.Opacity.subtle))
@@ -244,7 +245,7 @@ public struct OnDeviceLLMSettingsView: View {
                             ProgressView()
                                 .tint(.white)
                         } else {
-                            Image(systemName: "arrow.down.circle.fill")
+                            Image(systemName: DesignSystem.Icons.onDeviceDownloaded)
                         }
                         Text(L10n.AI.OnDevice.loadModel)
                     }
@@ -275,8 +276,8 @@ public struct OnDeviceLLMSettingsView: View {
                 isPresented: $showImportPicker,
                 allowedContentTypes: {
                     var types: [UTType] = []
-                    if let ml = UTType(filenameExtension: "mlmodel") { types.append(ml) }
-                    if let mlc = UTType(filenameExtension: "mlmodelc") { types.append(mlc) }
+                    if let ml = UTType(filenameExtension: SystemConstants.FileExtension.mlmodel) { types.append(ml) }
+                    if let mlc = UTType(filenameExtension: SystemConstants.FileExtension.mlmodelC) { types.append(mlc) }
                     return types.isEmpty ? [.data] : types
                 }(),
                 allowsMultipleSelection: false
@@ -311,7 +312,7 @@ public struct OnDeviceLLMSettingsView: View {
                 feedbackGenerator.notificationOccurred(.success)
             }) {
                 HStack(spacing: DesignSystem.small) {
-                    Image(systemName: "text.bubble.fill")
+                    Image(systemName: DesignSystem.Icons.textBubble)
                     Text(L10n.AI.OnDevice.testGeneration)
                 }
                 .font(.subheadline.weight(.semibold))
@@ -327,16 +328,16 @@ public struct OnDeviceLLMSettingsView: View {
                 HStack {
                     Label(
                         L10n.AI.OnDevice.inferenceSpeed,
-                        systemImage: "gauge.with.needle.fill"
+                        systemImage: DesignSystem.Icons.dashboard
                     )
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                     
                     Spacer()
                     
-                    Text(String(format: "%.1f tok/s", onDeviceService.inferenceSpeed))
+                    Text(String(format: L10n.AI.OnDevice.tokensPerSecondFormat, onDeviceService.inferenceSpeed))
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(.green)
+                        .foregroundStyle(Color.theme.green)
                 }
                 .padding(.top, DesignSystem.tiny)
             }
@@ -348,22 +349,22 @@ public struct OnDeviceLLMSettingsView: View {
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
             OnDeviceInfoRow(
-                icon: "lock.shield.fill",
+                icon: DesignSystem.Icons.lockShieldFill,
                 text: L10n.AI.OnDevice.Info.privacy
             )
             
             OnDeviceInfoRow(
-                icon: "wifi.slash",
+                icon: DesignSystem.Icons.wifiSlash,
                 text: L10n.AI.OnDevice.Info.offline
             )
             
             OnDeviceInfoRow(
-                icon: "bolt.fill",
+                icon: DesignSystem.Icons.boltFill,
                 text: L10n.AI.OnDevice.Info.ne
             )
             
             OnDeviceInfoRow(
-                icon: "memorychip.fill",
+                icon: DesignSystem.Icons.memorychipFill,
                 text: L10n.AI.OnDevice.Info.memory
             )
         }

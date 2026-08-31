@@ -9,6 +9,7 @@
 //  核心职责：导入原始内容卡片组件
 
 import SwiftUI
+import UFPCore
 
 struct ImportRecordCard: View {
     let record: ImportRecord
@@ -20,7 +21,7 @@ struct ImportRecordCard: View {
     private var categoryValue: ImportCategory? { ImportCategory(rawValue: record.category) }
     private var canOpenFile: Bool { record.filePath != nil }
     private var tagList: [String] {
-        record.tags?.components(separatedBy: ", ").filter { !$0.isEmpty } ?? []
+        record.tags?.components(separatedBy: SystemConstants.Separator.commaSpace).filter { !$0.isEmpty } ?? []
     }
 
     var body: some View {
@@ -76,7 +77,7 @@ struct ImportRecordCard: View {
         .contextMenu {
             if canOpenFile {
                 Button(action: { onOpenWith?() }) {
-                    Label(L10n.Ingest.openWith, systemImage: "square.and.arrow.up")
+                    Label(L10n.Ingest.openWith, systemImage: DesignSystem.Icons.export)
                 }
             }
         }
@@ -103,19 +104,19 @@ struct ImportRecordCard: View {
             case .file:
                 HStack(spacing: DesignSystem.tightPadding) {
                     if let size = record.fileSize {
-                        Label(ByteCountFormatter.string(fromByteCount: size, countStyle: .file), systemImage: "doc")
+                        Label(ByteCountFormatter.string(fromByteCount: size, countStyle: .file), systemImage: DesignSystem.Icons.doc)
                     }
                     if let url = record.sourceURL, let host = URL(string: url)?.host {
-                        Text("·")
-                        Label(host, systemImage: "link")
+                        Text(FeatureConstants.Decorator.middleDot)
+                        Label(host, systemImage: DesignSystem.Icons.link)
                     }
                 }
             case .link:
                 if let url = record.sourceURL, let host = URL(string: url)?.host {
-                    Label(host, systemImage: "link")
+                    Label(host, systemImage: DesignSystem.Icons.link)
                 }
             case .voice:
-                Label(L10n.Ingest.voiceNote, systemImage: "waveform")
+                Label(L10n.Ingest.voiceNote, systemImage: DesignSystem.Icons.waveform)
             default:
                 EmptyView()
             }
@@ -132,10 +133,10 @@ struct ImportRecordCard: View {
 
     private var timeLine: some View {
         HStack(spacing: DesignSystem.small) {
-            Label(record.createdAt.formatted(date: .numeric, time: .shortened), systemImage: "clock")
+            Label(record.createdAt.formatted(date: .numeric, time: .shortened), systemImage: DesignSystem.Icons.clock)
                 .font(.caption2)
             if record.status == ImportRecordStatus.done, let done = record.completedAt {
-                Label(done.formatted(date: .numeric, time: .shortened), systemImage: "flag.checkered")
+                Label(done.formatted(date: .numeric, time: .shortened), systemImage: DesignSystem.Icons.flagCheckered)
                     .font(.caption2)
             }
         }
@@ -147,10 +148,10 @@ struct ImportRecordCard: View {
     @ViewBuilder
     private var statusBadge: some View {
         switch record.status {
-        case "done":
-            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+        case FeatureConstants.ImportStatus.done:
+            Image(systemName: DesignSystem.Icons.checkCircle).foregroundStyle(Color.theme.green)
         case ImportRecordStatus.failed:
-            Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+            Image(systemName: DesignSystem.Icons.errorCircle).foregroundStyle(.red)
         default:
             ProgressView().scaleEffect(0.8)
         }
@@ -168,11 +169,11 @@ struct ImportRecordCard: View {
         if !titleExt.isEmpty { return titleExt }
 
         let titleLower = record.title.lowercased()
-        if titleLower.contains(".pdf") || titleLower.contains("pdf") { return "pdf" }
-        if titleLower.contains(".md") || titleLower.contains("markdown") { return "md" }
-        if titleLower.contains(".doc") || titleLower.contains("word") { return "docx" }
-        if titleLower.contains(".xls") || titleLower.contains("excel") { return "xlsx" }
-        if titleLower.contains(".ppt") { return "pptx" }
+        if titleLower.contains(".\(SystemConstants.FileExtension.pdf)") || titleLower.contains(SystemConstants.FileExtension.pdf) { return SystemConstants.FileExtension.pdf }
+        if titleLower.contains(".\(SystemConstants.FileExtension.markdown)") || titleLower.contains(SystemConstants.FileExtension.markdownLong) { return SystemConstants.FileExtension.markdown }
+        if titleLower.contains(".\(SystemConstants.FileExtension.doc)") || titleLower.contains(FeatureConstants.FileTypeName.word) { return SystemConstants.FileExtension.docx }
+        if titleLower.contains(".\(SystemConstants.FileExtension.xls)") || titleLower.contains(FeatureConstants.FileTypeName.excel) { return SystemConstants.FileExtension.xlsx }
+        if titleLower.contains(".\(SystemConstants.FileExtension.ppt)") { return SystemConstants.FileExtension.pptx }
         return ""
     }
 
@@ -180,12 +181,12 @@ struct ImportRecordCard: View {
         switch categoryValue {
         case .file:
             switch detectedExtension {
-            case "pdf": return "PDF"
-            case "md", "markdown": return "Markdown"
-            case "doc", "docx": return "Word"
-            case "xls", "xlsx", "csv": return "Excel"
-            case "ppt", "pptx": return "PPT"
-            case "txt", "json", "swift", "py": return "TXT"
+            case FeatureConstants.FileExtension.pdf: return FeatureConstants.FileTypeName.pdf
+            case FeatureConstants.FileExtension.md, FeatureConstants.FileExtension.markdown: return FeatureConstants.FileTypeName.markdown
+            case FeatureConstants.FileExtension.doc, FeatureConstants.FileExtension.docx: return FeatureConstants.FileTypeName.word
+            case FeatureConstants.FileExtension.xls, FeatureConstants.FileExtension.xlsx, FeatureConstants.FileExtension.csv: return FeatureConstants.FileTypeName.excel
+            case FeatureConstants.FileExtension.ppt, FeatureConstants.FileExtension.pptx: return FeatureConstants.FileTypeName.ppt
+            case FeatureConstants.FileExtension.txt, FeatureConstants.FileExtension.json, FeatureConstants.FileExtension.swift, FeatureConstants.FileExtension.py: return FeatureConstants.FileTypeName.txt
             default: return L10n.Ingest.fileImport
             }
         case .link: return L10n.Ingest.urlImport
@@ -198,15 +199,15 @@ struct ImportRecordCard: View {
 
     private var fileIcon: String {
         switch detectedExtension {
-        case "pdf": return "doc.richtext.fill"
-        case "md", "markdown": return "m.square.fill"
-        case "doc", "docx": return "w.square.fill"
-        case "xls", "xlsx", "csv": return "x.square.fill"
-        case "ppt", "pptx": return "p.square.fill"
-        case "png", "jpg", "jpeg", "heic", "webp": return "photo.fill"
-        case "mp3", "m4a", "wav": return "waveform.circle.fill"
-        case "txt", "json", "swift", "py": return "doc.plaintext.fill"
-        case "zip", "tar", "gz": return "doc.zipper.fill"
+        case FeatureConstants.FileExtension.pdf: return "doc.richtext.fill"
+        case FeatureConstants.FileExtension.md, FeatureConstants.FileExtension.markdown: return "m.square.fill"
+        case FeatureConstants.FileExtension.doc, FeatureConstants.FileExtension.docx: return "w.square.fill"
+        case FeatureConstants.FileExtension.xls, FeatureConstants.FileExtension.xlsx, FeatureConstants.FileExtension.csv: return "x.square.fill"
+        case FeatureConstants.FileExtension.ppt, FeatureConstants.FileExtension.pptx: return "p.square.fill"
+        case FeatureConstants.FileExtension.png, FeatureConstants.FileExtension.jpg, FeatureConstants.FileExtension.jpeg, FeatureConstants.FileExtension.heic, FeatureConstants.FileExtension.webp: return "photo.fill"
+        case FeatureConstants.FileExtension.mp3, FeatureConstants.FileExtension.m4a, FeatureConstants.FileExtension.wav: return "waveform.circle.fill"
+        case FeatureConstants.FileExtension.txt, FeatureConstants.FileExtension.json, FeatureConstants.FileExtension.swift, FeatureConstants.FileExtension.py: return "doc.plaintext.fill"
+        case FeatureConstants.FileExtension.zip, FeatureConstants.FileExtension.tar, FeatureConstants.FileExtension.gz: return "doc.zipper.fill"
         default: return "doc.text.fill"
         }
     }
@@ -227,20 +228,20 @@ struct ImportRecordCard: View {
         switch categoryValue {
         case .file:
             switch detectedExtension {
-            case "pdf": return .red
-            case "md", "markdown": return .blue
-            case "doc", "docx": return .blue
-            case "xls", "xlsx", "csv": return .green
-            case "ppt", "pptx": return .orange
-            case "png", "jpg", "jpeg", "heic", "webp": return .purple
-            case "txt", "json", "swift", "py": return .teal
-            default: return .orange
+            case FeatureConstants.FileExtension.pdf: return Color.theme.red
+            case FeatureConstants.FileExtension.md, FeatureConstants.FileExtension.markdown: return Color.theme.blue
+            case FeatureConstants.FileExtension.doc, FeatureConstants.FileExtension.docx: return Color.theme.blue
+            case FeatureConstants.FileExtension.xls, FeatureConstants.FileExtension.xlsx, FeatureConstants.FileExtension.csv: return Color.theme.green
+            case FeatureConstants.FileExtension.ppt, FeatureConstants.FileExtension.pptx: return Color.theme.orange
+            case FeatureConstants.FileExtension.png, FeatureConstants.FileExtension.jpg, FeatureConstants.FileExtension.jpeg, FeatureConstants.FileExtension.heic, FeatureConstants.FileExtension.webp: return Color.theme.purple
+            case FeatureConstants.FileExtension.txt, FeatureConstants.FileExtension.json, FeatureConstants.FileExtension.swift, FeatureConstants.FileExtension.py: return Color.theme.teal
+            default: return Color.theme.orange
             }
-        case .link: return .cyan
-        case .manual: return .green
-        case .ocr: return .purple
-        case .clipboard: return .gray
-        case .voice: return .pink
+        case .link: return Color.theme.cyan
+        case .manual: return Color.theme.green
+        case .ocr: return Color.theme.purple
+        case .clipboard: return Color.theme.gray
+        case .voice: return Color.theme.pink
         case nil: return .secondary
         }
     }

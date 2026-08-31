@@ -42,15 +42,15 @@ struct LintViewContent: View {
 
     private var healthColor: Color {
         switch aiStore.healthLevel {
-        case .excellent: return .green
+        case .excellent: return Color.theme.green
         case .good: return .appAccent
-        case .fair: return .orange
-        case .poor: return .red
+        case .fair: return Color.theme.orange
+        case .poor: return Color.theme.red
         }
     }
 
     private var buttonGradient: Color {
-        selectedTab == 0 ? .blue : .purple
+        selectedTab == 0 ? Color.theme.blue : Color.theme.purple
     }
 
     var body: some View {

@@ -38,7 +38,7 @@ struct SynthesisActionButton: View {
             ZStack(alignment: .topTrailing) {
                 Button(action: { 
                     HapticFeedback.shared.trigger(.selection)
-                    performSynthesis(options: SynthesisControlOptions?.none)
+                    performSynthesis(options: nil)
                 }) {
                     VStack(spacing: DesignSystem.tiny) {
                         ZStack {
@@ -70,7 +70,7 @@ struct SynthesisActionButton: View {
                     HapticFeedback.shared.trigger(.selection)
                     showControlSheet = true
                 } label: {
-                    Image(systemName: "slider.horizontal.3")
+                    Image(systemName: DesignSystem.Icons.sliderHorizontal)
                         .font(.system(size: DesignSystem.iconTiny, weight: .bold))
                         .foregroundStyle(type.formatColor)
                         .padding(DesignSystem.tightPadding)
@@ -87,13 +87,13 @@ struct SynthesisActionButton: View {
                 Button {
                     performSynthesis(options: nil)
                 } label: {
-                    Label(L10n.AI.Status.generating, systemImage: "bolt.fill")
+                    Label(L10n.AI.Status.generating, systemImage: DesignSystem.Icons.boltFill)
                 }
                 
                 Button {
                     showControlSheet = true
                 } label: {
-                    Label(L10n.AI.Synthesis.Control.title, systemImage: "slider.horizontal.3")
+                    Label(L10n.AI.Synthesis.Control.title, systemImage: DesignSystem.Icons.sliderHorizontal)
                 }
             }
             .animation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping), value: state)
@@ -107,7 +107,7 @@ struct SynthesisActionButton: View {
             if isLimitReached {
                 Text(L10n.AI.Synthesis.limitReachedWarning)
                     .font(.system(size: DesignSystem.microFontSize, weight: .medium))
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.theme.red)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }

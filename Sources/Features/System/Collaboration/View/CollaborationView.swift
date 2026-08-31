@@ -110,7 +110,7 @@ struct CollaborationViewContent: View {
     private var simulatorWarning: some View {
         HStack(spacing: DesignSystem.medium) {
             Image(systemName: DesignSystem.Icons.warning)
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.theme.orange)
             
             Text(L10n.Collaboration.simulatorWarning)
                 .font(.subheadline)
@@ -125,7 +125,7 @@ struct CollaborationViewContent: View {
     private var statusSection: some View {
         HStack(spacing: DesignSystem.medium) { // 12
             Circle()
-                .fill(collabService.isJoined ? .green : .gray)
+                .fill(collabService.isJoined ? Color.theme.green : Color.theme.gray)
                 .frame(width: DesignSystem.iconTiny, height: DesignSystem.iconTiny) // 12
             
             Text(collabService.statusMessage)
@@ -228,7 +228,7 @@ struct CollaborationViewContent: View {
         }) {
             Text(L10n.Collaboration.stopSearching)
                 .font(.subheadline)
-                .foregroundStyle(.red)
+                .foregroundStyle(Color.theme.red)
         }
         .accessibilityIdentifier("collab-stop-searching-button")
     }
@@ -266,7 +266,7 @@ struct CollaborationViewContent: View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
             HStack {
                 Image(systemName: DesignSystem.Icons.crown)
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(Color.theme.yellow)
                 Text(collabService.roomName)
                     .font(.headline)
                     .foregroundStyle(.appText)
@@ -290,7 +290,7 @@ struct CollaborationViewContent: View {
                 Text(L10n.Collaboration.leaveSession)
             }
             .font(.subheadline.weight(.medium))
-            .foregroundStyle(.red)
+            .foregroundStyle(Color.theme.red)
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.theme.red.opacity(DesignSystem.Opacity.light))
@@ -310,7 +310,7 @@ struct CollaborationViewContent: View {
             // Self
             HStack {
                 Image(systemName: DesignSystem.Icons.personCheck)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.theme.green)
                 Text(userName)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.appText)

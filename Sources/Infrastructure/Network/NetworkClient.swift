@@ -121,6 +121,10 @@ public actor NetworkClient {
         mimeType: String,
         requiresAuth: Bool = true
     ) async throws -> String {
+        // Bug #40 修复：校验 fileName 不含 CRLF，防止 HTTP header 注入
+        guard !fileName.contains("\r") && !fileName.contains("\n") else {
+            throw NetworkError.invalidFileName
+        }
         guard let url = URL(string: AppConfig.backendBaseURL + path) else {
             throw NetworkError.invalidURL
         }

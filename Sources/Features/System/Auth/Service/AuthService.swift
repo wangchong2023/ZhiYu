@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 import Observation
 
 /// 身份认证服务
@@ -100,7 +101,7 @@ public final class AuthService: AuthServiceProtocol {
                 let req = RefreshRequest(refreshToken: refreshToken)
                 let result: EmptyData? = try? await NetworkClient.shared.request(
                     path: APIPaths.logoutPath,
-                    method: "POST",
+                    method: SystemConstants.HTTPMethod.post,
                     body: req,
                     requiresAuth: true
                 )
@@ -167,7 +168,7 @@ public final class AuthService: AuthServiceProtocol {
         do {
             let response: UserProfileResponse = try await NetworkClient.shared.request(
                 path: APIPaths.userProfilePath,
-                method: "PUT",
+                method: SystemConstants.HTTPMethod.put,
                 body: req,
                 requiresAuth: true
             )
@@ -267,7 +268,7 @@ public final class AuthService: AuthServiceProtocol {
         do {
             let _: VerifyResponse = try await NetworkClient.shared.request(
                 path: APIPaths.subscriptionAppleVerifyPath,
-                method: "POST",
+                method: SystemConstants.HTTPMethod.post,
                 body: body,
                 requiresAuth: true
             )

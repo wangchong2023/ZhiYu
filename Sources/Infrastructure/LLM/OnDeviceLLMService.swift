@@ -48,6 +48,9 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     
     /// 常驻的 Core ML 预测模型实例
     private var currentModel: AnyObject?
+
+    /// 当前推理任务引用（用于取消）
+    private var generationTask: Task<String?, Error>?
     
     /// 本地选型偏好持久化 Key
     private let configKey = LLMConstants.OnDeviceStorage.configKey
@@ -102,7 +105,8 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         }
 
         // 2. 扫描沙盒 Documents 目录中用户自主下载或导入的模型目录
-        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         let modelsDir = docsDir.appendingPathComponent("MLModels")
 
         if let enumerator = FileManager.default.enumerator(at: modelsDir, includingPropertiesForKeys: [.fileSizeKey]) {
@@ -163,6 +167,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
 
         isGenerating = true
         generationProgress = 0
+        defer { isGenerating = false }
 
         switch model.type {
         case .system:
@@ -197,7 +202,6 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
             loadedModelName = model.name
         }
 
-        isGenerating = false
         generationProgress = 1.0
 
         // 保存本次成功载入的本地模型偏好
@@ -246,12 +250,15 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
             do {
                 let provider = try MLDictionaryFeatureProvider(dictionary: inputFeatures)
                 let modelToPredict = self.currentModel as? MLModel
-                
-                let generatedTextResult = try await Task.detached(priority: .userInitiated) {
+
+                generationTask = Task.detached(priority: .userInitiated) {
                     guard let model = modelToPredict else { throw LLMError.apiError("Model not loaded") }
                     let prediction = try model.prediction(from: provider)
                     return prediction.featureValue(for: LLMConstants.MLFeature.generatedText)?.stringValue
-                }.value
+                }
+
+                let generatedTextResult = try await generationTask?.value
+                generationTask = nil
 
                 if let generated = generatedTextResult {
                     let elapsed = Date().timeIntervalSince(startTime)
@@ -372,6 +379,8 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     // MARK: - 强行取消生成
     /// 取消Generation
     public func cancelGeneration() {
+        generationTask?.cancel()
+        generationTask = nil
         isGenerating = false
         generatedText = ""
         generationProgress = 0
@@ -418,7 +427,8 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     // MARK: - 动态模型导入
     /// 将用户在外部文件沙盒选中的 `.mlmodel` 或 `.mlmodelc` 模型无缝拷贝并挂接至内部存储器中
     public func importModel(from url: URL) async throws {
-        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         let modelsDir = docsDir.appendingPathComponent("MLModels")
         try FileManager.default.createDirectory(at: modelsDir, withIntermediateDirectories: true)
 
@@ -435,7 +445,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         if destURL.pathExtension == SystemConstants.FileExtension.mlmodel {
             let compiledURL = try await compiler.compileModel(at: destURL)
             try FileManager.default.removeItem(at: destURL)
-            try FileManager.default.moveItem(at: compiledURL, to: destURL.appendingPathExtension("mlmodelc"))
+            try FileManager.default.moveItem(at: compiledURL, to: destURL.deletingPathExtension().appendingPathExtension(SystemConstants.FileExtension.mlmodelC))
         }
 
         discoverModels()

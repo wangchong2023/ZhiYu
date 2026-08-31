@@ -31,10 +31,12 @@ public struct ModelLabView: View {
 
     @FocusState var isPromptFocused: Bool
     @State var testPrompt: String = ""
-    @State var tempTemperature: Double = 0.7
-    @State var tempTopP: Double = 0.9
-    @State var tempTopK: Int = 40
-    @State var tempMaxTokens: Int = 2048
+    /// Bug #73 修复：标记是否已为当前用例设置过默认 prompt，避免 onAppear 重复触发时覆盖用户输入。
+    @State var hasSetupPrompt: Set<String> = []
+    @State var tempTemperature: Double = FeatureConstants.InferenceParam.defaultTemperature
+    @State var tempTopP: Double = FeatureConstants.InferenceParam.defaultTopP
+    @State var tempTopK: Int = FeatureConstants.InferenceParam.defaultTopK
+    @State var tempMaxTokens: Int = FeatureConstants.InferenceParam.defaultMaxTokens
 
     // 参数配置面板
     @State var showConfigSheet: Bool = false
@@ -45,11 +47,14 @@ public struct ModelLabView: View {
     @State var selectedConfigTab: Int = 0
     @State var systemPromptText: String = L10n.ModelManager.Lab.defaultSystemPrompt
 
+    /// Bug #115 修复：存储 runSimulation Task 引用，视图销毁时取消避免泄漏
+    @State var simulationTask: Task<Void, Never>?
+
     var matchedPreset: ParameterPreset? {
         for p in ParameterPreset.allCases {
             let v = p.parameters
-            if abs(tempTemperature - v.temperature) < 0.01,
-               abs(tempTopP - v.topP) < 0.01,
+            if abs(tempTemperature - v.temperature) < FeatureConstants.InferenceParam.presetMatchTolerance,
+               abs(tempTopP - v.topP) < FeatureConstants.InferenceParam.presetMatchTolerance,
                tempTopK == v.topK,
                tempMaxTokens == v.maxTokens { return p }
         }

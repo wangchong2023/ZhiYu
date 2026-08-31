@@ -113,7 +113,7 @@ struct EntityDetailBodyView: View {
                     HStack(spacing: Spacing.small) {
                         ForEach(aliasList, id: \.self) { alias in
                             HStack(spacing: Spacing.atomic) {
-                                Image(systemName: "pencil.and.list.clipboard")
+                                Image(systemName: DesignSystem.Icons.pencilClipboard)
                                     .font(.system(size: SystemFontSize.nano)) // Dynamic Type
                                 Text(alias)
                                     .font(.caption2.bold())
@@ -137,7 +137,7 @@ struct EntityDetailBodyView: View {
     // MARK: - 2. 百科属性网格面板 (Wiki InfoBox)
     private func wikiInfoBoxSection(_ items: [EntityFrontmatter.InfoBoxItem]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Onboarding.featureTitle, systemImage: "macwindow.badge.plus") // 百科特征标签
+            Label(L10n.Onboarding.featureTitle, systemImage: DesignSystem.Icons.macwindowBadgePlus) // 百科特征标签
                 .font(.subheadline.bold())
                 .foregroundStyle(.appSecondary)
             
@@ -169,7 +169,7 @@ struct EntityDetailBodyView: View {
     // MARK: - 3. 内容概述大纲 (Overview)
     private func overviewSection(_ items: [String]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Editor.outline, systemImage: "doc.text.below.ecg")
+            Label(L10n.Editor.outline, systemImage: DesignSystem.Icons.docTextBelowEcg)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appSecondary)
             

@@ -18,6 +18,7 @@ extension L10n {
         /// - Parameter key: key
         /// - Returns: 返回值
         public static var noLogs: String { tr("log.noLogs") }
+        public static var noLogsHint: String { tr("log.noLogsHint") }
         public static var clearConfirmTitle: String { tr("log.clearConfirmTitle") }
         public static var startTime: String { tr("log.startTime") }
         public static var endTime: String { tr("log.endTime") }

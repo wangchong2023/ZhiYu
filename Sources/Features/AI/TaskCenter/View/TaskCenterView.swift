@@ -218,10 +218,10 @@ struct TaskCenterView: View {
     // MARK: - Status Dashboard
     private var statusDashboard: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: DesignSystem.Task.dashboardSpacing), GridItem(.flexible(), spacing: DesignSystem.Task.dashboardSpacing)], spacing: DesignSystem.Task.dashboardSpacing) {
-            summaryCard(type: .ingest, color: .blue)
-            summaryCard(type: .healthCheck, color: .red)
-            summaryCard(type: .aiScan, color: .orange)
-            summaryCard(type: .synthesis, color: .purple)
+            summaryCard(type: .ingest, color: Color.theme.blue)
+            summaryCard(type: .healthCheck, color: Color.theme.red)
+            summaryCard(type: .aiScan, color: Color.theme.orange)
+            summaryCard(type: .synthesis, color: Color.theme.purple)
         }
     }
     
@@ -319,7 +319,7 @@ struct TaskCenterView: View {
                 
                 Image(systemName: DesignSystem.Icons.sparkles)
                     .font(.system(size: DesignSystem.Action.largeIconSize))
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(Color.theme.purple)
                     .offset(x: UIConstants.emptyStateSparkleOffset, y: -UIConstants.emptyStateSparkleOffset)
             }
             
@@ -341,10 +341,10 @@ struct TaskCenterView: View {
                     .foregroundStyle(.appSecondary)
                     .padding(.bottom, DesignSystem.tiny)
                 
-                guideRow(icon: "stethoscope", color: .red, title: L10n.AI.Task.guideHealth, desc: L10n.AI.Task.guideHealthDesc)
-                guideRow(icon: "bolt.shield.fill", color: .orange, title: L10n.AI.Task.guideAIScan, desc: L10n.AI.Task.guideAIScanDesc)
-                guideRow(icon: "tray.and.arrow.down.fill", color: .blue, title: L10n.AI.Task.guideIngest, desc: L10n.AI.Task.guideIngestDesc)
-                guideRow(icon: "wand.and.stars", color: .purple, title: L10n.AI.Task.guideSynthesis, desc: L10n.AI.Task.guideSynthesisDesc)
+                guideRow(icon: DesignSystem.Icons.stethoscope, color: Color.theme.red, title: L10n.AI.Task.guideHealth, desc: L10n.AI.Task.guideHealthDesc)
+                guideRow(icon: DesignSystem.Icons.boltShieldFill, color: Color.theme.orange, title: L10n.AI.Task.guideAIScan, desc: L10n.AI.Task.guideAIScanDesc)
+                guideRow(icon: DesignSystem.Icons.trayArrowDownFill, color: Color.theme.blue, title: L10n.AI.Task.guideIngest, desc: L10n.AI.Task.guideIngestDesc)
+                guideRow(icon: DesignSystem.Icons.wandAndStars, color: Color.theme.purple, title: L10n.AI.Task.guideSynthesis, desc: L10n.AI.Task.guideSynthesisDesc)
             }
             .padding()
             .background(Color.appCard)
@@ -392,12 +392,12 @@ private struct TaskRow: View {
                 
                 Image(systemName: task.type.icon)
                     .font(.system(size: UIConstants.taskRowIconSize))
-                    .foregroundStyle(task.type == .ai ? .purple : .appAccent)
+                    .foregroundStyle(task.type == .ai ? Color.theme.purple : Color.appAccent)
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 if !task.isRead && (task.status == .completed || isFailed) {
                     Circle()
-                        .fill(.red)
+                        .fill(Color.theme.red)
                         .frame(width: DesignSystem.Task.statusIndicatorSize, height: DesignSystem.Task.statusIndicatorSize)
                         .overlay(Circle().stroke(Color.appCard, lineWidth: SystemStroke.selected))
                 }
@@ -423,7 +423,7 @@ private struct TaskRow: View {
                 if case .failed(let error) = task.status {
                     Text(error)
                         .font(.caption2)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.theme.red)
                         .lineLimit(2)
                         .padding(.top, DesignSystem.atomic)
                 }
@@ -467,11 +467,11 @@ private struct TaskRow: View {
         case .completed:
             Text(L10n.AI.Task.statusCompleted)
                 .font(.caption2)
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.theme.green)
         case .failed:
             Text(L10n.AI.Task.statusFailed)
                 .font(.caption2.bold())
-                .foregroundStyle(.red)
+                .foregroundStyle(Color.theme.red)
         }
     }
 }
@@ -479,10 +479,10 @@ private struct TaskRow: View {
 extension TaskType {
     var uiColor: Color {
         switch self.defaultColor {
-        case "blue": return .blue
-        case "red": return .red
-        case "orange": return .orange
-        case "purple": return .purple
+        case FeatureConstants.MockColorName.blue: return Color.theme.blue
+        case FeatureConstants.MockColorName.red: return Color.theme.red
+        case FeatureConstants.MockColorName.orange: return Color.theme.orange
+        case FeatureConstants.MockColorName.purple: return Color.theme.purple
         default: return .appAccent
         }
     }

@@ -24,12 +24,27 @@ struct GraphContainerView: View {
     @Environment(ThemeManager.self) var themeManager
     @State private var viewModel = GraphViewModel()
     @StateObject private var tooltipManager = TooltipManager.shared
+    /// Bug #67 修复：保存布局 Task 引用，新布局启动前取消旧任务，避免竞态覆盖。
+    @State private var layoutTask: Task<Void, Never>?
 
     /// 每个节点最多保留的重要连线数
     private var maxEdgesPerNode: Int { GraphConstants.maxEdgesPerNode }
 
-    /// 动态过滤后的边列表：每节点仅保留最重要 K 条连线，避免密集时视觉混乱
+    /// 动态过滤后的边列表：每节点仅保留最重要 K 条连线，避免密集时视觉混乱。
+    /// Bug #68 修复：改为读取缓存，避免在 body 中重复计算 3 次。
     private var currentFilteredEdges: [GraphEdge] {
+        viewModel.cachedFilteredEdges
+    }
+
+    /// 是否正在截断连线
+    /// Bug #68 修复：改为读取缓存，避免重复计算。
+    private var isTruncatingEdges: Bool {
+        viewModel.cachedIsTruncatingEdges
+    }
+
+    /// 重新计算过滤后的边列表并缓存到 viewModel。
+    /// 在 nodes/edges/filterType 变化时调用。
+    private func refreshFilteredEdgesCache() {
         let filteredNodes = viewModel.getFilteredNodes()
         let allEdges = viewModel.getFilteredEdges(for: filteredNodes)
         let filteredIDs = Set(filteredNodes.map(\.id))
@@ -49,15 +64,11 @@ struct GraphContainerView: View {
                 .prefix(maxEdgesPerNode)
         }
 
-        return topEdges
-    }
+        viewModel.cachedFilteredEdges = topEdges
 
-    /// 是否正在截断连线
-    private var isTruncatingEdges: Bool {
-        let allEdges = viewModel.getFilteredEdges(for: viewModel.getFilteredNodes())
-        let filteredIDs = Set(viewModel.getFilteredNodes().map(\.id))
+        // 计算是否截断
         let relevantEdges = allEdges.filter { filteredIDs.contains($0.source) && filteredIDs.contains($0.target) }
-        return relevantEdges.count > currentFilteredEdges.count
+        viewModel.cachedIsTruncatingEdges = relevantEdges.count > topEdges.count
     }
 
     var body: some View {
@@ -150,6 +161,8 @@ struct GraphContainerView: View {
         .appTabToolbar(title: L10n.Graph.title)
         .toolbarBackground(.hidden, for: .navigationBar)
         .onChange(of: store.pages.count) { _, _ in layoutGraph() }
+        // Bug #68 修复：filterType 变化时刷新边过滤缓存，无需重新布局。
+        .onChange(of: viewModel.filterType) { _, _ in refreshFilteredEdgesCache() }
         .onChange(of: viewModel.graphSize) { _, newSize in
             if newSize != .zero { layoutGraph() }
         }
@@ -213,6 +226,12 @@ struct GraphContainerView: View {
      * @return {*}
      */
     private func handleNodeTap(_ node: GraphNode) {
+        // 守卫：graphSize 为 .zero 时无法计算居中偏移，跳过聚焦逻辑
+        guard viewModel.graphSize != .zero else {
+            viewModel.selectedNodeID = node.id
+            HapticFeedback.shared.trigger(.selection)
+            return
+        }
         withAnimation(DesignSystem.Animation.prominent) {
             if viewModel.selectedNodeID == node.id {
                 viewModel.selectedNodeID = nil
@@ -232,8 +251,8 @@ struct GraphContainerView: View {
                 )
                 viewModel.lastOffset = viewModel.offset
                 if viewModel.scale < 1.0 { 
-                    viewModel.scale = 1.2
-                    viewModel.lastScale = 1.2 
+                    viewModel.scale = GraphConstants.TwoD.nodeTapScale
+                    viewModel.lastScale = GraphConstants.TwoD.nodeTapScale 
                 }
             }
         }
@@ -321,19 +340,27 @@ struct GraphContainerView: View {
         }
 
         viewModel.isLayouting = true
-        Task {
+        // Bug #67 修复：取消未完成的旧布局任务，避免快速连续触发时后启动的旧任务
+        // 先完成并覆盖最新数据。
+        layoutTask?.cancel()
+        layoutTask = Task {
             let canvasSize = viewModel.graphSize
+            let pagesSnapshot = pages
             let result = await Task.detached {
                 return GraphLayoutProcessor.layout(
-                    pages: pages,
-                    linkResolver: { t in pages.first(where: { $0.title == t }) },
+                    pages: pagesSnapshot,
+                    linkResolver: { t in pagesSnapshot.first(where: { $0.title == t }) },
                     canvasSize: canvasSize
                 )
             }.value
+            // 若任务被取消，丢弃结果。
+            if Task.isCancelled { return }
             await MainActor.run {
                 viewModel.nodes = result.nodes
                 viewModel.edges = result.edges
                 viewModel.isLayouting = false
+                // Bug #68 修复：布局完成后刷新边过滤缓存。
+                refreshFilteredEdgesCache()
                 fitToScreen()
             }
         }
@@ -344,7 +371,8 @@ struct GraphContainerView: View {
      * @return {*}
      */
     private func fitToScreen() {
-        guard !viewModel.nodes.isEmpty else { return }
+        // Bug #69 修复：补充 graphSize != .zero 守卫，避免除零产生 NaN/负数缩放。
+        guard !viewModel.nodes.isEmpty, viewModel.graphSize != .zero else { return }
         let minX = viewModel.nodes.map(\.position.x).min() ?? 0
         let maxX = viewModel.nodes.map(\.position.x).max() ?? 0
         let minY = viewModel.nodes.map(\.position.y).min() ?? 0

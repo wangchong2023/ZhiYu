@@ -32,7 +32,7 @@ struct ModelCardView: View {
     var body: some View {
         let isSelected = modelManager.activeModelId == manifest.modelId
         let eligibility = modelManager.evaluateEligibility(for: manifest)
-        let downloadState = modelManager.downloadStates[manifest.modelId] ?? .failed(error: "Not Downloaded")
+        let downloadState = modelManager.downloadStates[manifest.modelId] ?? .failed(error: FeatureConstants.MockData.notDownloaded)
         let isLocalReady = modelManager.isModelLocalReady(for: manifest.modelId)
 
         let cardBackground = Color.appCard.opacity(eligibility == .restricted ? 0.4 : 0.8)
@@ -79,13 +79,13 @@ struct ModelCardView: View {
                             
                             let iconColor: Color = {
                                 if isLocalReady {
-                                    return .green
+                                    return Color.theme.green
                                 } else {
                                     switch downloadState {
                                     case .downloading, .pending:
-                                        return .blue
+                                        return Color.theme.blue
                                     default:
-                                        return .gray
+                                        return Color.theme.gray
                                     }
                                 }
                             }()
@@ -103,7 +103,7 @@ struct ModelCardView: View {
                             if let urlString = manifest.huggingfaceURLString ?? manifest.modelscopeURLString,
                                let url = URL(string: urlString) {
                                 HStack(spacing: SystemSpacing.atomic) {
-                                    Image(systemName: "arrow.up.right.square")
+                                    Image(systemName: DesignSystem.Icons.arrowUpRightSquare)
                                         .font(.caption2)
                                         .foregroundStyle(.appAccent)
                                     Link(L10n.ModelManager.Card.learnMore, destination: url)
@@ -119,11 +119,11 @@ struct ModelCardView: View {
                     HStack(spacing: DesignSystem.small) {
                         if isLocalReady {
                             HStack(spacing: SystemSpacing.atomic) {
-                                Image(systemName: "checkmark.shield.fill")
+                                Image(systemName: DesignSystem.Icons.checkmarkShieldFill)
                                 Text(L10n.ModelManager.Card.ready)
                             }
                             .font(.caption2.bold())
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.theme.green)
                         }
                         
                         Button {
@@ -131,7 +131,7 @@ struct ModelCardView: View {
                                 expandedModelId = (expandedModelId == manifest.modelId) ? nil : manifest.modelId
                             }
                         } label: {
-                            Image(systemName: "chevron.up.chevron.down")
+                            Image(systemName: DesignSystem.Icons.chevronUpDown)
                                 .font(.caption2)
                                 .foregroundStyle(.appSecondary)
                                 .padding(DesignSystem.tiny)
@@ -230,7 +230,7 @@ struct ModelCardView: View {
                 specItem(icon: "cpu", label: L10n.ModelManager.Spec.memory, value: String(format: "%.0f GB", manifest.minDeviceMemoryInGb))
                 specItem(icon: "arrow.down.doc", label: L10n.ModelManager.Spec.downloadSize, value: formattedSize(manifest.fileSizeInBytes))
                 specItem(icon: "square.3.layers.3d", label: L10n.ModelManager.Spec.parameters, value: manifest.parameterCount)
-                specItem(icon: "number", label: L10n.ModelManager.Spec.checksum, value: String(manifest.sha256Checksum.prefix(12)) + "...")
+                specItem(icon: "number", label: L10n.ModelManager.Spec.checksum, value: String(manifest.sha256Checksum.prefix(FeatureConstants.ModelCard.checksumPrefixLength)) + "...")
             }
 
             if !manifest.displayTasks.isEmpty {
@@ -277,11 +277,11 @@ struct ModelCardView: View {
     /// 强物理内存拦截红条
     private func restrictedBanner(for manifest: LLMManifest) -> some View {
         HStack(spacing: SystemSpacing.element) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.red)
+            Image(systemName: DesignSystem.Icons.warning)
+                .foregroundStyle(Color.theme.red)
             Text(" \(String(format: "%.1f", manifest.minDeviceMemoryInGb)) GB  OOM")
                 .font(.system(size: SystemFontSize.micro)) // Dynamic Type
-                .foregroundStyle(.red)
+                .foregroundStyle(Color.theme.red)
             Spacer()
         }
         .padding(DesignSystem.tightPadding)
@@ -292,11 +292,11 @@ struct ModelCardView: View {
     /// 临界运存警告黄条
     private var warningBanner: some View {
         HStack(spacing: SystemSpacing.element) {
-            Image(systemName: "exclamationmark.circle.fill")
-                .foregroundStyle(.orange)
+            Image(systemName: DesignSystem.Icons.exclamationmarkCircleFill)
+                .foregroundStyle(Color.theme.orange)
             Text(L10n.ModelManager.Card.warningLowMemory)
                 .font(.system(size: SystemFontSize.micro)) // Dynamic Type
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.theme.orange)
             Spacer()
         }
         .padding(DesignSystem.tightPadding)
@@ -315,24 +315,24 @@ struct ModelCardView: View {
 
     func taskLabel(for task: String) -> String {
         switch task {
-        case "chat": return L10n.ModelManager.Task.chat
-        case "completion": return L10n.ModelManager.Task.completion
-        case "reasoning": return L10n.ModelManager.Task.reasoning
-        case "code": return L10n.ModelManager.Task.code
-        case "rag": return L10n.ModelManager.Task.rag
-        case "translation": return L10n.ModelManager.Task.translation
+        case FeatureConstants.TaskName.chat: return L10n.ModelManager.Task.chat
+        case FeatureConstants.TaskName.completion: return L10n.ModelManager.Task.completion
+        case FeatureConstants.TaskName.reasoning: return L10n.ModelManager.Task.reasoning
+        case FeatureConstants.TaskName.code: return L10n.ModelManager.Task.code
+        case FeatureConstants.TaskName.rag: return L10n.ModelManager.Task.rag
+        case FeatureConstants.TaskName.translation: return L10n.ModelManager.Task.translation
         default: return task
         }
     }
 
     func taskColor(for task: String) -> Color {
         switch task {
-        case "chat": return .blue
-        case "completion": return .green
-        case "reasoning": return .purple
-        case "code": return .orange
-        case "rag": return .pink
-        case "translation": return .teal
+        case FeatureConstants.TaskName.chat: return Color.theme.blue
+        case FeatureConstants.TaskName.completion: return Color.theme.green
+        case FeatureConstants.TaskName.reasoning: return Color.theme.purple
+        case FeatureConstants.TaskName.code: return Color.theme.orange
+        case FeatureConstants.TaskName.rag: return Color.theme.pink
+        case FeatureConstants.TaskName.translation: return Color.theme.teal
         default: return .appSecondary
         }
     }
@@ -340,13 +340,13 @@ struct ModelCardView: View {
     /// 映射模型能力任务对应的 SF Symbols 图标名称
     func taskIcon(for task: String) -> String {
         switch task {
-        case "chat": return "bubble.left.and.bubble.right.fill"
-        case "completion": return "checklist.checked"
-        case "reasoning": return "brain.head.profile"
-        case "code": return "chevron.left.forwardslash.chevron.right"
-        case "rag": return "doc.text.magnifyingglass"
-        case "translation": return "character.book.closed.fill"
-        default: return "sparkles"
+        case FeatureConstants.TaskName.chat: return DesignSystem.Icons.chatBubbles
+        case FeatureConstants.TaskName.completion: return DesignSystem.Icons.checklistChecked
+        case FeatureConstants.TaskName.reasoning: return DesignSystem.Icons.brainProfile
+        case FeatureConstants.TaskName.code: return DesignSystem.Icons.chevronCode
+        case FeatureConstants.TaskName.rag: return DesignSystem.Icons.docMagnify
+        case FeatureConstants.TaskName.translation: return DesignSystem.Icons.characterBook
+        default: return DesignSystem.Icons.sparkles
         }
     }
 }

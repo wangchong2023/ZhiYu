@@ -101,7 +101,7 @@ struct CircularTagBubbleView: View {
                 
                 // 词频指示数字胶囊
                 Text("\(item.count)")
-                    .font(.system(size: textFontSize * 0.75, weight: .bold, design: .monospaced))
+                    .font(.system(size: textFontSize * FeatureConstants.TagBubbleCloud.countBadgeFontScale, weight: .bold, design: .monospaced))
                     .padding(.horizontal, SystemSpacing.tiny)
                     .padding(.vertical, SystemSpacing.divider)
                     .background(isSelected ? Color.theme.white.opacity(countBadgeSelectedOpacity) : Color.appSecondary.opacity(countBadgeUnselectedOpacity))
@@ -131,7 +131,7 @@ struct CircularTagBubbleView: View {
                             .frame(width: checkboxDiameter, height: checkboxDiameter)
                         
                         if isSelected {
-                            Image(systemName: "checkmark")
+                            Image(systemName: DesignSystem.Icons.check)
                                 .font(.caption2.weight(.black))
                                 .foregroundStyle(Color.theme.white)
                         } else {

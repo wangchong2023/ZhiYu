@@ -44,7 +44,7 @@ extension ModelLabView {
                     Button(L10n.ModelManager.Parameters.save) {
                         showConfigSheet = false
                     }
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(Color.theme.cyan)
                 }
             }
         }
@@ -66,7 +66,7 @@ extension ModelLabView {
             // 提示文案展示
             if !labManager.paramTips.isEmpty {
                 HStack(alignment: .top, spacing: DesignSystem.tiny) {
-                    Image(systemName: "info.circle.fill")
+                    Image(systemName: DesignSystem.Icons.infoCircleFill)
                         .foregroundStyle(Color.theme.orange)
                     Text(labManager.paramTips)
                         .font(.system(size: DesignSystem.captionFontSize))
@@ -133,10 +133,10 @@ extension ModelLabView {
 
             // 高级开关
             Toggle(L10n.ModelManager.Lab.enableThinking, isOn: $enableThinking)
-                .tint(.cyan)
+                .tint(Color.theme.cyan)
 
             Toggle(L10n.ModelManager.Lab.enableSpeculativeDecoding, isOn: $enableSpeculativeDecoding)
-                .tint(.cyan)
+                .tint(Color.theme.cyan)
         }
         .padding(.horizontal, DesignSystem.medium)
     }
@@ -144,13 +144,14 @@ extension ModelLabView {
     /// CPU / GPU 加速器选择
     private var acceleratorSelector: some View {
         VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
-            Text("Accelerator")
+            // Bug #76 修复：硬编码英文替换为 L10n 强类型访问。
+            Text(L10n.ModelManager.Lab.accelerator)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 0) {
                 Button(action: { useGPU = false }) {
-                    Text("CPU")
+                    Text(L10n.ModelManager.Lab.cpu)
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, SystemSpacing.content)
@@ -160,7 +161,7 @@ extension ModelLabView {
                 .buttonStyle(.plain)
 
                 Button(action: { useGPU = true }) {
-                    Text("GPU")
+                    Text(L10n.ModelManager.Lab.gpu)
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, SystemSpacing.content)
@@ -212,7 +213,7 @@ extension ModelLabView {
 
             HStack(spacing: DesignSystem.medium) {
                 Slider(value: value, in: range, step: step)
-                    .tint(.cyan)
+                    .tint(Color.theme.cyan)
                     .disabled(isDisabled || !isCustomMode)
 
                 Text(displayValue)
@@ -251,11 +252,11 @@ extension ModelLabView {
         let isCustom = matchedPreset == nil
         return Button(action: {
             if let preset = matchedPreset {
-                tempTemperature = preset.parameters.temperature + 0.01
+                tempTemperature = preset.parameters.temperature + FeatureConstants.InferenceParam.customNudgeDelta
             }
         }) {
             VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: "slider.horizontal.3")
+                Image(systemName: DesignSystem.Icons.sliderHorizontal)
                     .font(.title3)
                 Text(L10n.ModelManager.Parameters.custom)
                     .font(.caption.weight(.medium))

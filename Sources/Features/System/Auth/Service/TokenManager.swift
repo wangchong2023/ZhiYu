@@ -35,9 +35,9 @@ extension AuthService {
             // Mock 模式：检测到 Mock 环境则直接构造并注入假登录用户态
             let mockUser = User(
                 id: UUID(),
-                name: "Mock Autologin User",
-                email: "mock_autologin@example.com",
-                phone: "13800000000",
+                name: FeatureConstants.MockData.mockAutologinUser,
+                email: FeatureConstants.MockData.mockAutologinEmail,
+                phone: FeatureConstants.MockData.mockAutologinPhone,
                 avatarURL: nil
             )
             AuthSession.shared.update(user: mockUser)

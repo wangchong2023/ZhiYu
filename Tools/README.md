@@ -86,6 +86,7 @@ Tools/
 - `ci-run-test-ui.sh`：执行 UI 自动化测试，跳过不稳定用例。
 - `ci-run-test-with-coverage.sh`：汇总跑测并触发生命周期门禁。
 - `ci-assert-test-coverage.py`：解析 `.xcresult` 报文，强制执行核心 Domain 覆盖率门禁。
+- `analyze_coverage_gaps.py`：全工程代码覆盖率与分支缺口系统性分析工具，定位拉低覆盖率的核心文件与代码块。
 - `ci-run-test-progress.sh`：解析 xcodebuild 管道输出，实时格式化当前跑测进度。
 
 ### Analyze (静态分析)

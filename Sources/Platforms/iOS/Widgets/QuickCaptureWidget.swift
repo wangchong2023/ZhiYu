@@ -71,25 +71,25 @@ struct QuickCaptureWidgetEntryView: View {
 
     private var mediumView: some View {
         HStack(spacing: 3) {
-            captureButton(title: WidgetL10n.voice, icon: "mic.fill", color: .purple, url: "zhiyu://voice")
-            captureButton(title: "OCR", icon: "doc.text.viewfinder", color: .blue, url: "zhiyu://ocr")
-            captureButton(title: WidgetL10n.search, icon: "magnifyingglass", color: .orange, url: "zhiyu://search")
-            captureButton(title: WidgetL10n.qa, icon: "sparkles", color: .teal, url: "zhiyu://chat")
+            captureButton(title: WidgetL10n.voice, icon: "mic.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.voice)
+            captureButton(title: WidgetL10n.ocr, icon: "doc.text.viewfinder", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.ocr)
+            captureButton(title: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
+            captureButton(title: WidgetL10n.qa, icon: "sparkles", color: WidgetSharedConstants.Color.teal, url: WidgetSharedConstants.DeepLink.chat)
         }
         .padding(12)
     }
 
     private var accessoryView: some View {
         HStack(spacing: 8) {
-            Link(destination: URL(string: "zhiyu://voice")!) {
+            Link(destination: URL(string: WidgetSharedConstants.DeepLink.voice) ?? URL(string: "about:blank")!) {
                 Image(systemName: "mic.fill")
                     .font(.title3)
             }
-            Link(destination: URL(string: "zhiyu://ocr")!) {
+            Link(destination: URL(string: WidgetSharedConstants.DeepLink.ocr) ?? URL(string: "about:blank")!) {
                 Image(systemName: "doc.text.viewfinder")
                     .font(.title3)
             }
-            Link(destination: URL(string: "zhiyu://chat")!) {
+            Link(destination: URL(string: WidgetSharedConstants.DeepLink.chat) ?? URL(string: "about:blank")!) {
                 Image(systemName: "sparkles")
                     .font(.title3)
             }

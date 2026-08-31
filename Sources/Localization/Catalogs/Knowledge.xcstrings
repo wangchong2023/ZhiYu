@@ -1951,6 +1951,81 @@
         }
       }
     },
+    "editor.iconPicker.common": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Common" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "常用" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "常用" } }
+      }
+    },
+    "editor.iconPicker.academic": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Academic" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "学术" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "學術" } }
+      }
+    },
+    "editor.iconPicker.nature": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Nature" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "自然" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "自然" } }
+      }
+    },
+    "editor.iconPicker.transport": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Transport" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "交通" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "交通" } }
+      }
+    },
+    "editor.iconPicker.symbols": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Symbols" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "符号" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "符號" } }
+      }
+    },
     "editor.insertPageLink": {
       "extractionState": "manual",
       "localizations": {
@@ -12737,6 +12812,136 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notebook Name"
+          }
+        }
+      }
+    },
+    "quiz.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Questions"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无题目"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暫無題目"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin preguntas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune question"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد أسئلة"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет вопросов"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "질문 없음"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "問題なし"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem perguntas"
+          }
+        }
+      }
+    },
+    "quiz.emptyDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This quiz has no questions yet."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本次测验暂无题目，请返回重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本次測驗暫無題目，請返回重試。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este cuestionario aún no tiene preguntas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce quiz n'a pas encore de questions."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يحتوي هذا الاختبار على أسئلة بعد."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этом тесте пока нет вопросов."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 퀴즈에는 아직 질문이 없습니다."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このクイズにはまだ問題がありません。"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este questionário ainda não tem perguntas."
           }
         }
       }

@@ -41,7 +41,7 @@ extension VaultService {
         dailyInsightTitle: String = L10n.Widget.llmWikiChunking,
         dailyInsightContent: String = L10n.Widget.llmWikiDescription,
         flashThoughtSummary: String = L10n.Widget.flashThoughtSub,
-        distribution: [String: Double] = ["source": 0.4, "concept": 0.3, "entity": 0.2, "map": 0.1]
+        distribution: [String: Double] = FeatureConstants.SourceType.defaultWidgetDistribution
     ) async {
         guard let groupURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: AppConstants.Storage.appGroupIdentifier

@@ -170,4 +170,17 @@ final class ChatCoordinatorTests: XCTestCase {
         await coordinator.sendMessage(query: nil, pages: [])
         XCTAssertTrue(coordinator.chatHistory.isEmpty)
     }
+
+    /// 验证 clearChatHistory 重置多选模式和已选消息列表，防止幽灵选区状态残留
+    func testClearChatHistoryResetsSelectionState() {
+        let dummyID = UUID()
+        coordinator.isSelectionMode = true
+        coordinator.selectedMessageIDs = [dummyID]
+        coordinator.chatHistory.append(ChatMessage(id: dummyID, role: .user, content: "test"))
+
+        coordinator.clearChatHistory()
+
+        XCTAssertFalse(coordinator.isSelectionMode, "清空历史后必须重置多选模式")
+        XCTAssertTrue(coordinator.selectedMessageIDs.isEmpty, "清空历史后已选消息集合必须清空")
+    }
 }

@@ -12,16 +12,58 @@ import XCTest
 @MainActor
 final class LLMConfigStoreTests: XCTestCase {
     
+    /// 保存原始 testOverride，在 tearDown 中恢复，避免污染其他测试类
+    private var originalKeychainOverride: KeychainService?
+    private var originalSecureEnclaveOverride: SecureEnclaveCryptoService?
+    private var originalSecurityManagerOverride: SecurityManager?
+
     override func setUp() async throws {
         try await super.setUp()
-        // 清理 UserDefaults 持久化，确保每个 Test Case 环境干净且物理隔离
+        // 保存原始 testOverride
+        originalKeychainOverride = KeychainService.testOverride
+        originalSecureEnclaveOverride = SecureEnclaveCryptoService.testOverride
+        originalSecurityManagerOverride = SecurityManager.testOverride
+        // 注入 Mock 加解密服务：plaintext 直通，避免模拟器 SecureEnclave/AES-GCM 链路问题
+        // 根因：模拟器 SecItemAdd 返回 errSecMissingEntitlement，KeychainService 降级到 keyStore，
+        //      但 LLMConfigStoreTests 未注册 KeyStoreProtocol，导致密文丢失。
+        //      通过 testOverride 注入 MockKeychainService（内存字典）+ Mock 加解密（直通）彻底隔离。
+        if KeychainService.testOverride == nil {
+            KeychainService.testOverride = MockKeychainService()
+        }
+        if SecureEnclaveCryptoService.testOverride == nil {
+            SecureEnclaveCryptoService.testOverride = MockSecureEnclaveCryptoService()
+        }
+        if SecurityManager.testOverride == nil {
+            SecurityManager.testOverride = MockSecurityManager()
+        }
+        // 清理 Mock Keychain 内存存储，确保每个 Test Case 环境干净且物理隔离
+        if let mockKeychain = KeychainService.testOverride as? MockKeychainService {
+            for provider in LLMProvider.allCases {
+                try? mockKeychain.delete(key: "llm_api_key_\(provider.rawValue)")
+            }
+            try? mockKeychain.delete(key: "zhiyu_llm_api_key")
+        }
         UserDefaults.standard.removeObject(forKey: "zhiyu_llm_config")
         for provider in LLMProvider.allCases {
             UserDefaults.standard.removeObject(forKey: "llm_base_url_\(provider.rawValue)")
             UserDefaults.standard.removeObject(forKey: "llm_model_\(provider.rawValue)")
             UserDefaults.standard.removeObject(forKey: "zhiyu_llm_api_key_fallback_\(provider.rawValue)")
-            try? KeychainService.shared.delete(key: "llm_api_key_\(provider.rawValue)")
         }
+    }
+
+    override func tearDown() async throws {
+        // 清理内存存储
+        if let mockKeychain = KeychainService.testOverride as? MockKeychainService {
+            for provider in LLMProvider.allCases {
+                try? mockKeychain.delete(key: "llm_api_key_\(provider.rawValue)")
+            }
+            try? mockKeychain.delete(key: "zhiyu_llm_api_key")
+        }
+        // 恢复原始 testOverride，避免污染其他测试类（如 SecureEnclaveCryptoServiceTests）
+        KeychainService.testOverride = originalKeychainOverride
+        SecureEnclaveCryptoService.testOverride = originalSecureEnclaveOverride
+        SecurityManager.testOverride = originalSecurityManagerOverride
+        try await super.tearDown()
     }
     
     // MARK: - 1. 顺位与提供商枚举排序测试

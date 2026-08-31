@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 /// [L3] 表现层：来源页面差异化详情视图
 struct SourceDetailBodyView: View {
@@ -77,9 +78,9 @@ struct SourceDetailBodyView: View {
         let type = frontmatter?.type ?? page.sourceType?.lowercased() ?? ""
         
         return Group {
-            if type == "voice" || type == "audio" || type == "mp3" || type == "m4a" || type == "wav" {
+            if type == FeatureConstants.SourceType.voice || type == FeatureConstants.SourceType.audio || type == SystemConstants.FileExtension.mp3 || type == SystemConstants.FileExtension.m4a || type == SystemConstants.FileExtension.wav {
                 audioPlayerWindow
-            } else if type == "ocr" || type == "png" || type == "jpg" || type == "jpeg" {
+            } else if type == FeatureConstants.SourceType.ocr || type == SystemConstants.FileExtension.png || type == SystemConstants.FileExtension.jpg || type == SystemConstants.FileExtension.jpeg {
                 ocrCanvasWindow
             } else {
                 documentPreviewWindow
@@ -92,7 +93,7 @@ struct SourceDetailBodyView: View {
         VStack(spacing: DesignSystem.medium) {
             // 播放器状态栏
             HStack {
-                Label(L10n.Ingest.audioSubtitle, systemImage: "waveform.circle.fill")
+                Label(L10n.Ingest.audioSubtitle, systemImage: DesignSystem.Icons.waveformCircleFill)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appAccent)
                 Spacer()
@@ -131,7 +132,7 @@ struct SourceDetailBodyView: View {
                         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
                             Task { @MainActor in
                                 if playProgress < 1.0 {
-                                    playProgress += 0.01
+                                    playProgress += FeatureConstants.PlaybackProgress.step
                                 } else {
                                     playProgress = 0.0
                                     isPlaying = false
@@ -176,7 +177,7 @@ struct SourceDetailBodyView: View {
     /// OCR 扫描图片文字窗口
     private var ocrCanvasWindow: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            Label(L10n.Ingest.OCR.previewTitle, systemImage: "viewfinder")
+            Label(L10n.Ingest.OCR.previewTitle, systemImage: DesignSystem.Icons.viewfinder)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appSecondary)
             
@@ -218,7 +219,7 @@ struct SourceDetailBodyView: View {
     /// 物理文档预览窗口
     private var documentPreviewWindow: some View {
         HStack(spacing: DesignSystem.medium) {
-            Image(systemName: "doc.richtext.fill")
+            Image(systemName: DesignSystem.Icons.docRichtext)
                 .font(.system(size: DesignSystem.large))
                 .foregroundStyle(.appAccent)
                 .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
@@ -265,7 +266,7 @@ struct SourceDetailBodyView: View {
         return Group {
             if !refs.isEmpty {
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    Label(L10n.Ingest.resultTitle, systemImage: "sparkles")
+                    Label(L10n.Ingest.resultTitle, systemImage: DesignSystem.Icons.sparkles)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appAccent)
                     
@@ -276,19 +277,19 @@ struct SourceDetailBodyView: View {
                                     onLinkTap(ref.name)
                                 }) {
                                     HStack(spacing: Spacing.atomic) {
-                                        Image(systemName: ref.type == "concept" ? "books.vertical.fill" : "person.text.rectangle.fill")
+                                        Image(systemName: ref.type == FeatureConstants.SourceType.concept ? DesignSystem.Icons.library : DesignSystem.Icons.entity)
                                             .font(.system(size: SystemFontSize.nano)) // Dynamic Type
                                         Text(ref.name)
                                             .font(.caption2.bold())
                                     }
-                                    .foregroundStyle(ref.type == "concept" ? Color.theme.teal : Color.theme.yellow)
+                                    .foregroundStyle(ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal : Color.theme.yellow)
                                     .padding(.horizontal, Spacing.Chip.horizontalPadding)
                                     .padding(.vertical, Spacing.atomic)
                                     .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
                                     .clipShape(Capsule())
                                     .overlay(
                                         Capsule()
-                                            .stroke(ref.type == "concept" ? Color.theme.teal.opacity(DesignSystem.Opacity.disabled) : Color.theme.yellow.opacity(DesignSystem.Opacity.disabled), lineWidth: SystemStroke.divider)
+                                            .stroke(ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal.opacity(DesignSystem.Opacity.disabled) : Color.theme.yellow.opacity(DesignSystem.Opacity.disabled), lineWidth: SystemStroke.divider)
                                     )
                                 }
                                 .buttonStyle(.plain)

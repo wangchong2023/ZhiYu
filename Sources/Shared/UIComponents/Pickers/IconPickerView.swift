@@ -18,37 +18,34 @@ struct IconPickerView: View {
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - Icon Categories
-    private static let iconCategories: [(String, [String])] = [
-        ("iconPicker.common", [
+    // Bug #100 修复：图标分类 key 改为强类型 L10n 属性引用，禁止动态 tr(key) 调用
+    private static let iconCategories: [(label: String, icons: [String])] = [
+        (L10n.Editor.iconPicker.common, [
             "person.text.rectangle.fill", "building.2.fill", "books.vertical.fill", "lightbulb.fill",
             "doc.richtext.fill", "globe", "star.fill", "heart.fill",
             "tag.fill", "folder.fill", "paperclip", "link",
             "camera.fill", "music.note", "paintpalette.fill", "hammer.fill"
         ]),
-        ("iconPicker.academic", [
+        (L10n.Editor.iconPicker.academic, [
             "graduationcap.fill", "brain.head.profile.fill", "atom", "circle.grid.hex.fill",
             "chart.bar.fill", "chart.pie.fill", "cube.box.fill", "gearshape.fill",
             "cpu", "desktopcomputer", "server.rack", "circle.hexagongrid.fill"
         ]),
-        ("iconPicker.nature", [
+        (L10n.Editor.iconPicker.nature, [
             "tree.fill", "leaf.fill", "sun.max.fill", "moon.fill",
             "cloud.fill", "drop.fill", "flame.fill", "bolt.fill",
             "mountain.2.fill", "water.waves", "wind", "snowflake"
         ]),
-        ("iconPicker.transport", [
+        (L10n.Editor.iconPicker.transport, [
             "airplane", "car.fill", "tram.fill",
             "ferry.fill", "bicycle", "sailboat.fill"
         ]),
-        ("iconPicker.symbols", [
+        (L10n.Editor.iconPicker.symbols, [
             "exclamationmark.triangle.fill", "checkmark.circle.fill",
             "xmark.circle.fill", "questionmark.circle.fill",
             "info.circle.fill", "bell.fill", "flag.fill", "bookmark.fill"
         ])
     ]
-
-    private func categoryDisplayName(_ key: String) -> String {
-        L10n.Editor.tr(key)
-    }
 
     private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: DesignSystem.medium), count: 6)
 
@@ -60,8 +57,8 @@ struct IconPickerView: View {
                 currentSelectionPreview
 
                 // Icon categories
-                ForEach(Self.iconCategories, id: \.0) { category, icons in
-                    iconCategorySection(title: categoryDisplayName(category), icons: icons)
+                ForEach(Self.iconCategories, id: \.label) { category in
+                    iconCategorySection(title: category.label, icons: category.icons)
                 }
             }
             .padding()

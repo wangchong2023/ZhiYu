@@ -45,6 +45,12 @@ extension L10n {
             public static var customSelected: String { Localized.tr("editor.iconPicker.customSelected", table: t) }
             public static var useDefault: String { Localized.tr("editor.iconPicker.useDefault", table: t) }
             public static var selectIcon: String { Localized.tr("editor.iconPicker.selectIcon", table: t) }
+            // Bug #100 修复：图标分类名称强类型化，禁止动态 tr(key) 调用
+            public static var common: String { Localized.tr("editor.iconPicker.common", table: t) }
+            public static var academic: String { Localized.tr("editor.iconPicker.academic", table: t) }
+            public static var nature: String { Localized.tr("editor.iconPicker.nature", table: t) }
+            public static var transport: String { Localized.tr("editor.iconPicker.transport", table: t) }
+            public static var symbols: String { Localized.tr("editor.iconPicker.symbols", table: t) }
         }
     }
 }

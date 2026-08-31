@@ -108,7 +108,7 @@ struct LintHealthCheckSection: View {
 
                         // 进度环
                         Circle()
-                            .trim(from: 0, to: CGFloat(aiStore.lintScore) / 100.0)
+                            .trim(from: 0, to: CGFloat(aiStore.lintScore) / FeatureConstants.LintHealthThreshold.progressMax)
                             .stroke(
                                 LinearGradient(colors: [healthColor.opacity(DesignSystem.Opacity.dim), healthColor], startPoint: .top, endPoint: .bottom),
                                 style: StrokeStyle(lineWidth: progressRingLineWidth, lineCap: .round)
@@ -166,17 +166,17 @@ struct LintHealthCheckSection: View {
             metricCard(title: L10n.Lint.metricPages,
                        value: "\(store.pages.count)",
                        icon: DesignSystem.Icons.documentFill,
-                       color: .blue)
+                       color: Color.theme.blue)
 
             metricCard(title: L10n.Lint.metricBroken,
                        value: "\(store.brokenLinkCount)",
                        icon: DesignSystem.Icons.link,
-                       color: .red)
+                       color: Color.theme.red)
 
             metricCard(title: L10n.Lint.metricOrphans,
                        value: "\(store.orphanPageCount)",
                        icon: DesignSystem.Icons.orphanPage,
-                       color: .orange)
+                       color: Color.theme.orange)
 
             metricCard(title: L10n.Lint.metricLinks,
                        value: "\(store.totalConnectionCount)",

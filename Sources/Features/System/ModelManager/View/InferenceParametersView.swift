@@ -24,17 +24,17 @@ public struct InferenceParametersView: View {
 
     // MARK: - 状态管理
 
-    @State private var temperature: Double = 0.7
-    @State private var topP: Double = 0.9
-    @State private var topK: Int = 40
-    @State private var maxTokens: Int = 2048
+    @State private var temperature: Double = FeatureConstants.InferenceParam.defaultTemperature
+    @State private var topP: Double = FeatureConstants.InferenceParam.defaultTopP
+    @State private var topK: Int = FeatureConstants.InferenceParam.defaultTopK
+    @State private var maxTokens: Int = FeatureConstants.InferenceParam.defaultMaxTokens
     @State private var activeTipId: String? // 记录当前激活的 popover 提示 ID
 
     /// 当前位置是否匹配某个预设（不匹配时按钮不高亮）
     private var matchedPreset: ParameterPreset? {
         for p in ParameterPreset.allCases {
             let v = p.parameters
-            if abs(temperature - v.temperature) < 0.01, abs(topP - v.topP) < 0.01,
+            if abs(temperature - v.temperature) < FeatureConstants.InferenceParam.presetMatchTolerance, abs(topP - v.topP) < FeatureConstants.InferenceParam.presetMatchTolerance,
                topK == v.topK, maxTokens == v.maxTokens { return p }
         }
         return nil
@@ -177,11 +177,11 @@ public struct InferenceParametersView: View {
         return Button(action: {
             if let preset = matchedPreset {
                 // 从已锁定预设进入自定义：微调后 matchedPreset 自动变 nil
-                temperature = preset.parameters.temperature + 0.01
+                temperature = preset.parameters.temperature + FeatureConstants.InferenceParam.customNudgeDelta
             }
         }) {
             VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: "slider.horizontal.3")
+                Image(systemName: DesignSystem.Icons.sliderHorizontal)
                     .font(.title3)
                 Text(L10n.ModelManager.Parameters.custom)
                     .font(.caption.weight(.medium))
@@ -314,7 +314,7 @@ public struct InferenceParametersView: View {
                 }
             }
         }) {
-            Image(systemName: "info.circle")
+            Image(systemName: DesignSystem.Icons.settingsAbout)
                 .font(.caption)
                 .foregroundStyle(isExpanded ? .appAccent : .appSecondary.opacity(DesignSystem.Opacity.soft))
                 .frame(width: DesignSystem.Metrics.iconBoxSize, height: DesignSystem.Metrics.iconBoxSize)

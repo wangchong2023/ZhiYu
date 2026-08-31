@@ -35,9 +35,13 @@ struct ContentView: View {
     @Inject internal var deepLinkService: DeepLinkService // inject_exempt: ObservableObject 不适合 @Dependency
     @Dependency(\.appEnvironment) internal var appEnv: any AppEnvironmentProtocol
     
-    @State internal var showSidebar = false 
-    @State internal var authSession = AuthSession.shared
+    @State internal var showSidebar = false
+    // Bug #71 修复：AuthSession 是 @Observable，@State 包装单例语义错误且不保证
+    // 内部属性变化触发重绘。改为直接引用单例，@Observable 会自动追踪。
+    internal var authSession = AuthSession.shared
     @State private var dbState: DatabaseState = DatabaseManager.shared.state
+    /// Bug #72 修复：标记是否已尝试过自动登录，避免 onAppear 多次触发时重复登录。
+    @State private var hasAttemptedAutoLogin = false
 
     // MARK: - Body
     var body: some View {
@@ -127,6 +131,8 @@ struct ContentView: View {
             NavigationStack {
                 PluginCenterView()
             }
+            // Bug #70 修复：PluginCenterView 依赖 Router，缺失注入会导致 fatalError。
+            .environment(router)
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
             .applyPagePresentationSizing()
         }
@@ -155,7 +161,9 @@ struct ContentView: View {
         .onAppear {
             // 🎬 正常应用启动时，若处于未登录状态且非游客模式且非 UI 测试环境，自动尝试恢复本地 KeyChain Token 并登录
             let isTesting = TestModeDetector.isUITesting
-            if !authSession.isLoggedIn && !authSession.isGuest && !isTesting {
+            // Bug #72 修复：用标志位防重入，避免 onAppear 多次触发时重复登录。
+            if !authSession.isLoggedIn && !authSession.isGuest && !isTesting && !hasAttemptedAutoLogin {
+                hasAttemptedAutoLogin = true
                 Task {
                     _ = await authService.tryAutoLogin()
                 }

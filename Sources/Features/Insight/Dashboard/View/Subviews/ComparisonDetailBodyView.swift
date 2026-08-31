@@ -76,7 +76,7 @@ struct ComparisonDetailBodyView: View {
     private var recommendationPanelSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
             HStack(spacing: Spacing.small) {
-                Image(systemName: "hand.thumbsup.fill")
+                Image(systemName: DesignSystem.Icons.handThumbsupFill)
                     .font(.headline)
                     .foregroundStyle(Color.theme.purple)
                 
@@ -129,7 +129,7 @@ struct ComparisonDetailBodyView: View {
         dimensions: [ComparisonFrontmatter.ComparisonDimension]
     ) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Dashboard.stats.title, systemImage: "grid") // 对比指标网格标签
+            Label(L10n.Dashboard.stats.title, systemImage: DesignSystem.Icons.grid) // 对比指标网格标签
                 .font(.subheadline.bold())
                 .foregroundStyle(.appSecondary)
             
@@ -263,7 +263,7 @@ struct ComparisonDetailBodyView: View {
             }
             
         case .null:
-            Text("--")
+            Text(FeatureConstants.Decorator.dash)
                 .font(.caption2)
                 .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.disabled))
         }

@@ -39,7 +39,7 @@ struct LintIssueRow: View {
                 HStack(spacing: DesignSystem.tiny) {
                     Image(systemName: DesignSystem.Icons.concept)
                         .font(.caption2)
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(Color.theme.yellow)
                     Text(issue.suggestion)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
@@ -68,7 +68,7 @@ struct LintIssueRow: View {
                                 Text(L10n.Lint.aiFixSuggestionShort)
                                     .font(.caption2)
                             }
-                            .foregroundStyle(.purple)
+                            .foregroundStyle(Color.theme.purple)
                         }
                         .disabled(isAnalyzing)
                     }

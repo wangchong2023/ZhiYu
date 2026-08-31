@@ -101,6 +101,8 @@ extension L10n {
         public static var batchImport: String { Ingest.tr("ingest.batchImport") }
         public static func invalidURLAtLine(_ line: Int) -> String { Ingest.trf("ingest.invalidURLAtLine_%@", String(line)) }
         public static func validURLCount(_ valid: Int, _ max: Int) -> String { Ingest.trf("ingest.validURLCount_%@_%@", String(valid), String(max)) }
+        // Bug #98 修复：URL 超限警告词条
+        public static func urlExceedLimit(_ truncated: Int, _ max: Int) -> String { Ingest.trf("ingest.urlExceedLimit_%@_%@", String(truncated), String(max)) }
         public static func importProgress(_ cur: Int, _ total: Int) -> String { Ingest.trf("ingest.importProgress", String(cur), String(total)) }
         public static func batchResult(_ ok: Int, _ fail: Int) -> String { Ingest.trf("ingest.batchResult", String(ok), String(fail)) }
         public static var aiTag: String { Ingest.tr("ingest.aiTag") }

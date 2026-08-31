@@ -241,8 +241,6 @@ final class AIWorkflowStoreDeepTests: XCTestCase {
         resetPersistentTestState()
         UserDefaults.standard.removeObject(forKey: AppConstants.Keys.Storage.lastLintIssues)
         try? await Task.sleep(nanoseconds: 50_000_000)
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
         try await super.tearDown()
     }
 

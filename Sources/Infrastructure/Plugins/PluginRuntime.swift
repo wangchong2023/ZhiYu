@@ -73,16 +73,16 @@ final class PluginRuntime: @unchecked Sendable {
     // MARK: - 配置常量
 
     /// 单插件最大执行时间 0.5s
-    private let pluginTimeout: TimeInterval = 0.5
+    private let pluginTimeout: TimeInterval = PluginConstants.Sandbox.pluginTimeoutSeconds
 
     /// 限流窗口内最大调用次数
-    private let maxCallsPerWindow: Int = 50
+    private let maxCallsPerWindow: Int = PluginConstants.Sandbox.maxCallsPerWindow
 
     /// 限流窗口 60 秒
-    private let throttlingWindow: TimeInterval = 60.0
+    private let throttlingWindow: TimeInterval = PluginConstants.Sandbox.throttlingWindowSeconds
 
     /// 内核版本定义（nonisolated 避免 @MainActor 跨越）
-    nonisolated let currentHostVersion: String = "2.0.0"
+    nonisolated let currentHostVersion: String = PluginConstants.Sandbox.defaultHostVersion
 
     // MARK: - 插件生命周期
 
@@ -170,6 +170,7 @@ final class PluginRuntime: @unchecked Sendable {
         registry.ribbonItems.removeAll(where: { $0.pluginID == id })
         registry.settingTabs.removeAll(where: { $0.pluginID == id })
         registry.customViews.removeAll(where: { $0.pluginID == id })
+        registry.eventListeners.removeAll(where: { $0.pluginID == id })
 
         // 更新资源状态
         var usage = pluginResourceUsage[id] ?? ResourceUsage()
@@ -326,7 +327,7 @@ final class PluginRuntime: @unchecked Sendable {
 private struct PluginContextImpl: PluginContext {
     let manifest: PluginManifest
     weak var registry: PluginRegistry!
-    var hostVersion: String { "2.0.0" }
+    var hostVersion: String { PluginConstants.Sandbox.defaultHostVersion }
 
     // MARK: - 依赖注入
     @Dependency(\.knowledgeStore) private var knowledgeStore: KnowledgeStore

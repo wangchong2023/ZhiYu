@@ -126,7 +126,7 @@ struct ChatViewContent: View {
                 
                 Section {
                     NavigationLink(destination: PromptWorkshopView()) {
-                        Label(L10n.Settings.promptSettings, systemImage: "sparkles.rectangle.stack")
+                        Label(L10n.Settings.promptSettings, systemImage: DesignSystem.Icons.promptLibrary)
                     }
                 }
                 
@@ -309,7 +309,7 @@ struct ChatViewContent: View {
                     if coordinator.isProcessing { coordinator.cancelCurrentRequest() } else { HapticFeedback.shared.trigger(.selection); Task { await coordinator.sendMessage(pages: store.pages) } }
                 } label: {
                     Image(systemName: coordinator.isProcessing ? DesignSystem.Icons.stop : DesignSystem.Icons.send)
-                        .font(.title2).foregroundStyle(coordinator.isProcessing ? .red : (canSend ? .appAccent : .appSecondary))
+                        .font(.title2).foregroundStyle(coordinator.isProcessing ? Color.theme.red : (canSend ? .appAccent : .appSecondary))
                         .symbolEffect(.bounce, value: coordinator.isProcessing)
                         .frame(width: DesignSystem.Action.inputBarHeight, height: DesignSystem.Action.inputBarHeight)
                 }
@@ -356,7 +356,7 @@ struct ChatViewContent: View {
                                     }
                                 }) {
                                     HStack(spacing: DesignSystem.tiny) {
-                                        Image(systemName: "arrow.up.right.bubble")
+                                        Image(systemName: DesignSystem.Icons.arrowUpRightBubble)
                                             .font(.caption)
                                             .foregroundStyle(.appAccent)
                                         Text(question)

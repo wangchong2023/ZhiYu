@@ -174,6 +174,19 @@ public struct NotebookHubView: View {
                         NotebookCard(notebook: notebook) {
                             viewModel.selectNotebook(notebook)
                         }
+                        // UI 测试专用进入按钮：NotebookCard 的 accessibilityElement(children: .contain)
+                        // 在某些 iOS 版本下 tap() 不触发 action。添加透明覆盖按钮确保 XCUITest 可靠点击。
+                        .overlay {
+                            if TestModeDetector.isUITesting {
+                                Button {
+                                    viewModel.selectNotebook(notebook)
+                                } label: {
+                                    Color.clear
+                                        .contentShape(Rectangle())
+                                }
+                                .accessibilityIdentifier("UITest_EnterVault_\(notebook.id.uuidString.prefix(8))")
+                            }
+                        }
                     }
                 }
             } else {
@@ -243,9 +256,9 @@ struct WelcomeBannerView: View {
 
     var body: some View {
         HStack(spacing: DesignSystem.medium) {
-            Image(systemName: "sparkles")
+            Image(systemName: DesignSystem.Icons.sparkles)
                 .font(.title2)
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.theme.blue)
             VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
                 Text(L10n.Onboarding.pathTitle)
                     .font(.subheadline.bold())
@@ -258,7 +271,7 @@ struct WelcomeBannerView: View {
                 HapticFeedback.shared.trigger(.selection)
                 withAnimation { onboardingService.hasCompletedOnboarding = true }
             } label: {
-                Image(systemName: "xmark")
+                Image(systemName: DesignSystem.Icons.xmark)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(DesignSystem.tightPadding)

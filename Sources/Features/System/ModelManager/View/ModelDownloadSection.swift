@@ -21,10 +21,10 @@ struct ModelDownloadStatusBar: View {
     var body: some View {
         switch downloadState {
         case .failed(let error):
-            if error == "Not Downloaded" {
+            if error == FeatureConstants.MockData.notDownloaded {
                 EmptyView()
             } else {
-                ringWithStatus(state: downloadState, statusText: error, color: .red)
+                ringWithStatus(state: downloadState, statusText: error, color: Color.theme.red)
             }
         case .cancelled:
             EmptyView()
@@ -65,7 +65,7 @@ struct ModelDownloadStatusBar: View {
         case .paused:
             Text(L10n.ModelManager.Status.paused)
                 .font(.caption)
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.theme.orange)
         case .verifying:
             Text(L10n.ModelManager.Status.verifying + "...")
                 .font(.caption.bold())
@@ -115,14 +115,14 @@ struct ModelActionButton: View {
     private var restrictedActionButton: some View {
         Button(action: { alertManifest = manifest }) {
             HStack(spacing: SystemSpacing.tiny) {
-                Image(systemName: "exclamationmark.octagon.fill")
+                Image(systemName: DesignSystem.Icons.exclamationmarkOctagonFill)
                 Text(L10n.ModelManager.Card.unavailable)
             }
             .font(.subheadline.bold())
             .padding(.horizontal, SystemSpacing.content)
             .padding(.vertical, SystemSpacing.element)
             .background(Color.theme.red.opacity(DesignSystem.Opacity.glass))
-            .foregroundStyle(.red)
+            .foregroundStyle(Color.theme.red)
             .clipShape(Capsule())
         }
     }
@@ -144,7 +144,7 @@ struct ModelActionButton: View {
             onGoToLab()
             HapticFeedback.shared.trigger(.success)
         }) {
-            Image(systemName: "arrow.right")
+            Image(systemName: DesignSystem.Icons.arrowRight)
                 .font(.system(size: SystemFontSize.body, weight: .bold)) // Dynamic Type
                 .foregroundStyle(.white)
                 .frame(width: DesignSystem.Metrics.ringSize, height: DesignSystem.Metrics.ringSize)
@@ -159,18 +159,18 @@ struct ModelActionButton: View {
         switch downloadState {
         case .pending, .downloading:
             Button(action: { modelManager.pauseDownload(for: manifest.modelId) }) {
-                Image(systemName: "pause.fill")
+                Image(systemName: DesignSystem.Icons.pauseFill)
                     .font(.caption)
                     .padding(DesignSystem.small)
                     .background(Color.appBackground)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.theme.orange)
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.theme.orange, lineWidth: SystemStroke.divider))
             }
         case .paused:
             HStack(spacing: DesignSystem.small) {
                 Button(action: { modelManager.cancelDownload(for: manifest.modelId) }) {
-                    Image(systemName: "xmark")
+                    Image(systemName: DesignSystem.Icons.xmark)
                         .font(.caption2)
                         .padding(DesignSystem.small)
                         .background(Color.appBackground)
@@ -178,7 +178,7 @@ struct ModelActionButton: View {
                         .clipShape(Circle())
                 }
                 Button(action: { modelManager.resumeDownload(for: manifest.modelId) }) {
-                    Image(systemName: "play.fill")
+                    Image(systemName: DesignSystem.Icons.playFill)
                         .font(.caption2)
                         .padding(DesignSystem.small)
                         .background(Color.appAccent)
@@ -189,7 +189,7 @@ struct ModelActionButton: View {
         default:
             Button(action: { modelManager.startDownload(for: manifest) }) {
                 HStack(spacing: SystemSpacing.tiny) {
-                    Image(systemName: "icloud.and.arrow.down")
+                    Image(systemName: DesignSystem.Icons.icloudArrowDown)
                     Text(L10n.ModelManager.Card.download)
                 }
                 .font(.subheadline.bold())

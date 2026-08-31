@@ -28,12 +28,12 @@ struct WatchDictationView: View {
             
             HStack {
                 Button(L10n.Common.cancel) { dismiss() }
-                    .tint(.red)
+                    .tint(Color.theme.red)
                 
                 Button(L10n.Common.save) {
                     saveAndSync()
                 }
-                .tint(.green)
+                .tint(Color.theme.green)
                 .disabled(text.isEmpty)
             }
         }

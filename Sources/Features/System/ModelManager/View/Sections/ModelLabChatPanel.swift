@@ -103,9 +103,9 @@ extension ModelLabView {
                     }
                 }
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: DesignSystem.Icons.plus)
                     .font(.title2)
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(Color.theme.cyan)
                     .frame(width: DesignSystem.Action.inputBarHeight, height: DesignSystem.Action.inputBarHeight)
             }
             .buttonStyle(.plain)

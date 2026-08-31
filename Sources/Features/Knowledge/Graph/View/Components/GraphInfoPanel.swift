@@ -107,7 +107,7 @@ struct GraphInsightsPanel: View {
                     showGuide = true
                 } label: {
                     HStack(spacing: DesignSystem.medium) {
-                        Image(systemName: "questionmark.circle.fill")
+                        Image(systemName: DesignSystem.Icons.questionmarkCircleFill)
                             .font(.title2)
                             .foregroundStyle(.appAccent)
                         
@@ -164,7 +164,7 @@ struct GraphInsightsPanel: View {
                     title: L10n.Graph.insightSparse,
                     count: sparse.count,
                     description: L10n.Graph.insightSparseDesc,
-                    color: .orange
+                    color: Color.theme.orange
                 )
                 
                 insightSection(
@@ -308,10 +308,10 @@ struct GraphInsightsPanel: View {
     
     private func getNodeIDs(for section: String) -> [UUID] {
         switch section {
-        case "surprising": return surprising
-        case "orphans": return orphans
-        case "sparse": return sparse
-        case "bridges": return bridges
+        case FeatureConstants.GraphInsightType.surprising: return surprising
+        case FeatureConstants.GraphInsightType.orphans: return orphans
+        case FeatureConstants.GraphInsightType.sparse: return sparse
+        case FeatureConstants.GraphInsightType.bridges: return bridges
         default: return []
         }
     }
@@ -327,7 +327,7 @@ struct GraphConceptGuideSheet: View {
             VStack(spacing: DesignSystem.huge) {
                 // 1. 头部标题
                 HStack {
-                    Label(L10n.Graph.guide.sheetTitle, systemImage: "info.circle.fill")
+                    Label(L10n.Graph.guide.sheetTitle, systemImage: DesignSystem.Icons.infoCircleFill)
                         .font(.headline)
                         .foregroundStyle(.appAccent)
                     Spacer()
@@ -363,9 +363,9 @@ struct GraphConceptGuideSheet: View {
                     guideRow(color: .appSecondary, icon: "minus", title: L10n.Graph.guide.legendLinkTitle, desc: L10n.Graph.guide.legendLinkDesc)
                     guideRow(color: .appAccent, icon: "circle.fill", title: L10n.Graph.guide.typeConceptTitle, desc: L10n.Graph.guide.typeConceptDesc) // 对应图中蓝色左大簇
                     guideRow(color: .appEntity, icon: "circle.fill", title: L10n.Graph.guide.typeEntityTitle, desc: L10n.Graph.guide.typeEntityDesc) // 对应图中金色右大簇
-                    guideRow(color: .purple, icon: "circle.fill", title: L10n.Graph.guide.bridgeTitle, desc: L10n.Graph.guide.bridgeDesc) // 对应中间的紫色桥点
-                    guideRow(color: .orange, icon: "circle.fill", title: L10n.Graph.guide.sparseTitle, desc: L10n.Graph.guide.sparseDesc) // 对应左上角稀疏橙色簇
-                    guideRow(color: .gray, icon: "circle.fill", title: L10n.Graph.guide.orphanTitle, desc: L10n.Graph.guide.orphanDesc) // 对应右下角孤立灰色点
+                    guideRow(color: Color.theme.purple, icon: "circle.fill", title: L10n.Graph.guide.bridgeTitle, desc: L10n.Graph.guide.bridgeDesc) // 对应中间的紫色桥点
+                    guideRow(color: Color.theme.orange, icon: "circle.fill", title: L10n.Graph.guide.sparseTitle, desc: L10n.Graph.guide.sparseDesc) // 对应左上角稀疏橙色簇
+                    guideRow(color: Color.theme.gray, icon: "circle.fill", title: L10n.Graph.guide.orphanTitle, desc: L10n.Graph.guide.orphanDesc) // 对应右下角孤立灰色点
                     guideRow(color: .appComparison, icon: "bolt.fill", title: L10n.Graph.guide.surprisingTitle, desc: L10n.Graph.guide.surprisingDesc) // 对应中间粉红桥接线
                 }
                 

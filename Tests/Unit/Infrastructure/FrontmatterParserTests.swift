@@ -52,12 +52,12 @@ final class FrontmatterParserTests: XCTestCase {
         XCTAssertEqual(result.body, content)
     }
 
-    func testSplit_firstLineWithLeadingWhitespace_isRecognized() {
+    func testSplit_firstLineWithLeadingWhitespace_isNotRecognizedAsFrontmatter() {
         let content = "  ---\nkey: value\n---\nBody"
         let result = FrontmatterParser.split(content: content)
 
-        XCTAssertEqual(result.frontmatter, "key: value")
-        XCTAssertEqual(result.body, "Body")
+        XCTAssertNil(result.frontmatter, "包含前置缩进空格的分隔符不应被识别为 Frontmatter")
+        XCTAssertEqual(result.body, content)
     }
 
     func testSplit_emptyFrontmatter_returnsNilFrontmatter() {

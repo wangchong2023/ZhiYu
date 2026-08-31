@@ -250,7 +250,7 @@ struct SystemStatsView: View {
                                 }
                                 
                                 if coordinator.totalStorage > 0 {
-                                    let percent = Int(Double(category.value) / Double(coordinator.totalStorage) * 100)
+                                    let percent = Int(Double(category.value) / Double(coordinator.totalStorage) * Double(FeatureConstants.PercentageBase.fullInt))
                                     Text("\(percent)%")
                                         .font(.system(size: DesignSystem.microFontSize, design: .rounded))
                                         .foregroundStyle(.appSecondary)
@@ -264,9 +264,9 @@ struct SystemStatsView: View {
                             let file = coordinator.assetCategoryStats["file"] ?? SystemStatsCoordinator.AssetStats(count: 0, size: 0)
                             
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.small) {
-                                assetCategoryGridItem(title: L10n.Dashboard.stats.audioFormat, count: voice.count, size: voice.size, color: .indigo)
-                                assetCategoryGridItem(title: L10n.Dashboard.stats.imageFormat, count: ocr.count, size: ocr.size, color: .orange)
-                                assetCategoryGridItem(title: L10n.Dashboard.stats.documentFormat, count: file.count, size: file.size, color: .teal)
+                                assetCategoryGridItem(title: L10n.Dashboard.stats.audioFormat, count: voice.count, size: voice.size, color: Color.theme.indigo)
+                                assetCategoryGridItem(title: L10n.Dashboard.stats.imageFormat, count: ocr.count, size: ocr.size, color: Color.theme.orange)
+                                assetCategoryGridItem(title: L10n.Dashboard.stats.documentFormat, count: file.count, size: file.size, color: Color.theme.teal)
                             }
                             .padding(.top, DesignSystem.small)
                             .padding(.leading, SystemStatsConstants.assetGridLeadingPadding)
@@ -318,7 +318,7 @@ struct SystemStatsView: View {
                                 
                                 // 计算所占总数据库大小的百分比
                                 let dbTotal = coordinator.storageCategories.first { $0.label == L10n.Dashboard.System.database }?.value ?? 1
-                                let percent = Int(Double(item.size) / Double(max(1, dbTotal)) * 100)
+                                let percent = Int(Double(item.size) / Double(max(1, dbTotal)) * Double(FeatureConstants.PercentageBase.fullInt))
                                 Text("\(percent)%")
                                     .font(.system(size: DesignSystem.microFontSize, design: .rounded))
                                     .foregroundStyle(.appSecondary)
@@ -335,7 +335,7 @@ struct SystemStatsView: View {
                     RawStorageListView()
                 } label: {
                     HStack {
-                        Label(L10n.Dashboard.stats.viewRawPages, systemImage: "doc.plaintext")
+                        Label(L10n.Dashboard.stats.viewRawPages, systemImage: DesignSystem.Icons.docPlaintext)
                         Spacer()
                         Image(systemName: DesignSystem.Icons.forward)
                             .font(.caption)
@@ -351,7 +351,7 @@ struct SystemStatsView: View {
                 VStack(alignment: .leading, spacing: DesignSystem.medium) {
                     Button(action: { Task { await coordinator.cleanupData() } }) {
                         HStack {
-                            Label(L10n.Dashboard.cleanupAction, systemImage: "sparkles")
+                            Label(L10n.Dashboard.cleanupAction, systemImage: DesignSystem.Icons.sparkles)
                             Spacer()
                             if coordinator.isCleaning {
                                 ProgressView()
@@ -420,7 +420,7 @@ struct SystemStatsView: View {
                             .lineLimit(1)
                         HStack(spacing: DesignSystem.tiny) {
                             Text(coordinator.formatBytes(category.value))
-                            let percent = coordinator.totalStorage > 0 ? Int(Double(category.value) / Double(coordinator.totalStorage) * 100) : 0
+                            let percent = coordinator.totalStorage > 0 ? Int(Double(category.value) / Double(coordinator.totalStorage) * Double(FeatureConstants.PercentageBase.fullInt)) : 0
                             Text("(\(percent)%)")
                         }
                         .font(.system(size: DesignSystem.microFontSize))

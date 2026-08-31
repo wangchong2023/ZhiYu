@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 extension AuthService {
 
@@ -24,7 +25,7 @@ extension AuthService {
             #if DEBUG
             if isMockBackend {
                 // 在 Mock 模式下，直接构造测试凭证，跳过底层 SDK (如 FaceID) 唤起，防止 UI 测试阻塞
-                let mockCred = AuthCredential(identityType: strategy.identityType, identifier: "mock_sub_123", credential: "mock_jwt_token", extraInfo: ["nickname": "Mock User"])
+                let mockCred = AuthCredential(identityType: strategy.identityType, identifier: FeatureConstants.MockData.mockSub123, credential: FeatureConstants.MockCredential.mockJwtToken, extraInfo: [FeatureConstants.MockCredentialKey.nickname: FeatureConstants.MockData.mockAutologinUser])
                 return try await sendAuthRequestToBackend(mockCred)
             }
             #endif
@@ -63,7 +64,7 @@ extension AuthService {
             accessToken: "mock_jwt_access_token_\(UUID().uuidString)",
             refreshToken: "mock_jwt_refresh_token_\(UUID().uuidString)",
             expiresIn: 3600,
-            tokenType: "Bearer",
+            tokenType: FeatureConstants.MockData.bearer,
             isNewUser: false,
             totpRequired: false
         )
@@ -84,15 +85,15 @@ extension AuthService {
     private func resolveAuthRequestInfo(_ cred: AuthCredential) -> AuthRequestInfo {
         switch cred.identityType {
         // 苹果登录
-        case "apple": return AuthRequestInfo(path: APIPaths.oauthApplePath, body: OAuthAppleRequest(code: cred.credential, state: cred.extraInfo?["state"], idToken: cred.extraInfo?["idToken"]))
+        case FeatureConstants.OAuthProvider.apple: return AuthRequestInfo(path: APIPaths.oauthApplePath, body: OAuthAppleRequest(code: cred.credential, state: cred.extraInfo?["state"], idToken: cred.extraInfo?["idToken"]))
         // 微信登录
-        case "wechat": return AuthRequestInfo(path: APIPaths.oauthWeChatPath, body: OAuthWeChatRequest(code: cred.credential, state: cred.extraInfo?["state"]))
+        case FeatureConstants.OAuthProvider.wechat: return AuthRequestInfo(path: APIPaths.oauthWeChatPath, body: OAuthWeChatRequest(code: cred.credential, state: cred.extraInfo?["state"]))
         // 谷歌登录
-        case "google": return AuthRequestInfo(path: APIPaths.oauthGooglePath, body: OAuthGoogleRequest(code: cred.credential, idToken: cred.extraInfo?["idToken"] ?? ""))
+        case FeatureConstants.OAuthProvider.google: return AuthRequestInfo(path: APIPaths.oauthGooglePath, body: OAuthGoogleRequest(code: cred.credential, idToken: cred.extraInfo?["idToken"] ?? ""))
         // GitHub 登录
-        case "github": return AuthRequestInfo(path: APIPaths.oauthGitHubPath, body: OAuthGitHubRequest(code: cred.credential, state: cred.extraInfo?["state"]))
+        case FeatureConstants.OAuthProvider.github: return AuthRequestInfo(path: APIPaths.oauthGitHubPath, body: OAuthGitHubRequest(code: cred.credential, state: cred.extraInfo?["state"]))
         // 运营商一键免密登录
-        case "carrier": return AuthRequestInfo(path: APIPaths.carrierAuthPath, body: CarrierAuthRequest(carrierToken: cred.extraInfo?["carrierToken"] ?? "", appKey: cred.extraInfo?["appKey"] ?? "", privacyConsent: cred.extraInfo?["privacyConsent"] == "true"))
+        case FeatureConstants.OAuthProvider.carrier: return AuthRequestInfo(path: APIPaths.carrierAuthPath, body: CarrierAuthRequest(carrierToken: cred.extraInfo?["carrierToken"] ?? "", appKey: cred.extraInfo?["appKey"] ?? "", privacyConsent: cred.extraInfo?["privacyConsent"] == SystemConstants.BooleanLiteral.true))
         default:
             Logger.shared.error("未支持的登录渠道类型: \(cred.identityType)")
             return AuthRequestInfo(path: "", body: "")
@@ -106,19 +107,19 @@ extension AuthService {
     /// - Returns: 登录响应
     private func sendOAuthRequest(path: String, reqBody: Any) async throws -> LoginResponse {
         if let appleReq = reqBody as? OAuthAppleRequest {
-            return try await NetworkClient.shared.request(path: path, method: "POST", body: appleReq, requiresAuth: false)
+            return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: appleReq, requiresAuth: false)
         }
         if let wechatReq = reqBody as? OAuthWeChatRequest {
-            return try await NetworkClient.shared.request(path: path, method: "POST", body: wechatReq, requiresAuth: false)
+            return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: wechatReq, requiresAuth: false)
         }
         if let googleReq = reqBody as? OAuthGoogleRequest {
-            return try await NetworkClient.shared.request(path: path, method: "POST", body: googleReq, requiresAuth: false)
+            return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: googleReq, requiresAuth: false)
         }
         if let githubReq = reqBody as? OAuthGitHubRequest {
-            return try await NetworkClient.shared.request(path: path, method: "POST", body: githubReq, requiresAuth: false)
+            return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: githubReq, requiresAuth: false)
         }
         if let carrierReq = reqBody as? CarrierAuthRequest {
-            return try await NetworkClient.shared.request(path: path, method: "POST", body: carrierReq, requiresAuth: false)
+            return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: carrierReq, requiresAuth: false)
         }
         throw NetworkError.unexpected("Unsupported auth request type")
     }

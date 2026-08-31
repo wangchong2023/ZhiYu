@@ -1679,7 +1679,28 @@ planned_test_classes:
   expiry_check: false
   category:
   - doc-drift
-business_magic_exempt: []
+business_magic_exempt:
+- file: Sources/Features/Knowledge/Graph/View/Graph3DView.swift
+  line: 264
+  reason: 元组索引 $0.0/$0.1 被误判为数字字面量，实为 Swift 元组成员访问语法
+  expiry_check: false
+- file: Sources/Features/Insight/Dashboard/View/Subviews/SourceDetailBodyView.swift
+  line: 32
+  reason: 波形采样数据数组（10 个 Double），每个值无独立语义，整体已命名 defaultWaveform
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoMediaConstants.swift
+  line: 31
+  reason: 和弦频率常量定义行（C5-E5-G5-C6），每个值为音乐频率，整体已命名 chordFrequencies
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoMediaConstants.swift
+  line: 41
+  reason: OCR 表格列宽常量定义行，整体已命名 ocrNeuronTableColumnWidths
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/DemoMediaConstants.swift
+  line: 43
+  reason: OCR 表格列宽常量定义行，整体已命名 ocrCoffeeTableColumnWidths
+  expiry_check: false
+magic_string_exempt: []
 ufpcore_pure_exempt: []
 private_const_whitelist:
 - file: Sources/Features/System/Settings/View/Plugins/PluginDetailMetricsSection.swift

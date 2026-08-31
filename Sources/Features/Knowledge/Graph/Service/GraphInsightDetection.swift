@@ -59,17 +59,36 @@ extension GraphLayoutProcessor {
     ) -> [UUID] {
         var bridges: Set<UUID> = []
 
+        // Bug #131 修复：预构建 nodeID → Set<communityID> 邻接索引，O(E) 一次遍历
+        var nodeCommunities: [UUID: Set<Int>] = [:]
+        for edge in edges {
+            let srcComm = nodeMap[edge.source]?.communityID
+            let tgtComm = nodeMap[edge.target]?.communityID
+            if let sc = srcComm {
+                nodeCommunities[edge.source, default: []].insert(sc)
+            }
+            if let tc = tgtComm {
+                nodeCommunities[edge.target, default: []].insert(tc)
+            }
+            // 同时记录邻居的社区
+            if let sc = srcComm, sc != nodeMap[edge.target]?.communityID {
+                if let tc = tgtComm {
+                    nodeCommunities[edge.source, default: []].insert(tc)
+                    nodeCommunities[edge.target, default: []].insert(sc)
+                }
+            }
+        }
+
         for edge in edges {
             let srcComm = nodeMap[edge.source]?.communityID
             let tgtComm = nodeMap[edge.target]?.communityID
 
             if let sc = srcComm, let tc = tgtComm, sc != tc {
-                // 检查两个节点各自连接了多少个不同社区
-                let srcConnectedCommunities = countDistinctCommunities(node: edge.source, nodeMap: nodeMap, edges: edges)
-                let tgtConnectedCommunities = countDistinctCommunities(node: edge.target, nodeMap: nodeMap, edges: edges)
+                let srcConnectedCommunities = nodeCommunities[edge.source]?.count ?? 0
+                let tgtConnectedCommunities = nodeCommunities[edge.target]?.count ?? 0
 
-                if srcConnectedCommunities >= 3 { bridges.insert(edge.source) }
-                if tgtConnectedCommunities >= 3 { bridges.insert(edge.target) }
+                if srcConnectedCommunities >= FeatureConstants.GraphInsightDetection.minBridgeCommunityCount { bridges.insert(edge.source) }
+                if tgtConnectedCommunities >= FeatureConstants.GraphInsightDetection.minBridgeCommunityCount { bridges.insert(edge.target) }
             }
         }
         return Array(bridges)

@@ -100,7 +100,7 @@ struct WatchWidgetView: View {
                         Spacer()
                         Text("🔥 \(entry.synthesisCount)")
                             .font(.caption2.weight(.bold))
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color.theme.orange)
                     }
                     Text(entry.flashQuote)
                         .font(.caption2)
@@ -109,7 +109,7 @@ struct WatchWidgetView: View {
             case .accessoryInline:
                 HStack(spacing: SystemSpacing.tiny) {
                     Image(systemName: "flame.fill")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.theme.orange)
                     Text("\(entry.synthesisCount) \(L10n.Widget.knowledgeCompile) · \(entry.flashQuote)")
                 }
             case .accessoryCorner:

@@ -32,7 +32,7 @@ struct SynthesisErrorStateView: View {
                     .fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                     .frame(width: Layout.iconCircleSize, height: Layout.iconCircleSize)
 
-                Image(systemName: "sparkles")
+                Image(systemName: DesignSystem.Icons.sparkles)
                     .font(.system(size: Layout.iconFontSize, weight: .light)) // Dynamic Type
                     .foregroundStyle(
                         LinearGradient(
@@ -62,7 +62,7 @@ struct SynthesisErrorStateView: View {
                         HapticFeedback.shared.trigger(.selection)
                         onSwitchToText()
                     }) {
-                        Label(L10n.AI.Synthesis.documentList, systemImage: "doc.plaintext")
+                        Label(L10n.AI.Synthesis.documentList, systemImage: DesignSystem.Icons.docPlaintext)
                             .font(.subheadline.weight(.medium))
                     }
                     .buttonStyle(.borderedProminent)
@@ -74,7 +74,7 @@ struct SynthesisErrorStateView: View {
                         HapticFeedback.shared.trigger(.error)
                         onRetry()
                     }) {
-                        Label(L10n.AI.Synthesis.Actions.regenerate, systemImage: "arrow.clockwise")
+                        Label(L10n.AI.Synthesis.Actions.regenerate, systemImage: DesignSystem.Icons.arrowClockwise)
                             .font(.subheadline.weight(.medium))
                     }
                     .buttonStyle(.bordered)

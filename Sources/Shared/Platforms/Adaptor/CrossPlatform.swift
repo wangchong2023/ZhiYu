@@ -58,3 +58,18 @@ public enum AppScreen {
         #endif
     }
 }
+
+#if canImport(UIKit)
+import UIKit
+
+/// 跨平台呈现锚点工具，用于 ASAuthorizationController / ASWebAuthenticationSession
+public enum PlatformPresentationAnchor {
+    @MainActor
+    public static var keyWindow: UIWindow {
+        let activeScene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+        return activeScene?.windows.first { $0.isKeyWindow } ?? UIWindow()
+    }
+}
+#endif

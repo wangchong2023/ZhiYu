@@ -50,7 +50,7 @@ struct PluginSandboxGateway {
     ///   - permissions: 插件 manifest 中声明的权限列表
     /// - Returns: 净化并构建好的安全 URLRequest
     /// - Throws: 包含权限缺失、域名拦截或大小超限的安全错误说明
-    static func auditFetch(url urlString: String, options: [String: Any]?, allowedDomains: [String], permissions: [String] = []) throws -> URLRequest {
+    static func auditFetch(url urlString: String, options: [String: Any]?, allowedDomains: [String], permissions: [String] = []) throws -> URLRequest { // swiftlint:disable:this cyclomatic_complexity
         // 权限校验：插件必须声明 network 权限才能发起网络请求
         // 与 requestAIAccess（检查 "llm"）、queryPages（检查 "pages.read"）保持一致
         guard permissions.contains(PluginConstants.Permission.network) else {
@@ -77,9 +77,20 @@ struct PluginSandboxGateway {
         var request = URLRequest(url: requestURL)
 
         if let opts = options {
-            request.httpMethod = (opts["method"] as? String)?.uppercased() ?? "GET"
+            let method = (opts["method"] as? String)?.uppercased() ?? "GET"
+            // Bug #33 修复：限制 HTTP 方法为安全白名单，拒绝 DELETE/TRACE/CONNECT 等
+                guard PluginConstants.NetworkSecurity.allowedHTTPMethods.contains(method) else {
+                    throw PluginSandboxError.permissionDenied(PluginConstants.Permission.httpMethod)
+                }
+            request.httpMethod = method
             if let headers = opts["headers"] as? [String: String] {
-                for (key, val) in headers { request.setValue(val, forHTTPHeaderField: key) }
+                // Bug #32 修复：过滤危险 header，防止插件窃取宿主凭证
+                for (key, val) in headers {
+                    guard !PluginConstants.NetworkSecurity.blockedHeaders.contains(key) else {
+                        throw PluginSandboxError.permissionDenied(PluginConstants.Permission.httpHeader)
+                    }
+                    request.setValue(val, forHTTPHeaderField: key)
+                }
             }
             if let body = opts["body"] as? String {
                 guard body.utf8.count <= maxPayloadSize else {

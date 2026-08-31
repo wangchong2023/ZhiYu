@@ -27,7 +27,7 @@ struct IngestEntryCardsSection: View {
     /// 响应式列配置：iPhone 2列，iPad 自适应多列
     private var columns: [GridItem] {
         if horizontalSizeClass == .regular {
-            Array(repeating: GridItem(.flexible(minimum: DesignSystem.Metrics.heroValueSize * 3, maximum: DesignSystem.Metrics.heroValueSize * 7), spacing: DesignSystem.medium), count: 5) // 80, 180, 12
+            Array(repeating: GridItem(.flexible(minimum: DesignSystem.Metrics.heroValueSize * FeatureConstants.IngestGrid.flexibleMinMultiplier, maximum: DesignSystem.Metrics.heroValueSize * FeatureConstants.IngestGrid.flexibleMaxMultiplier), spacing: DesignSystem.medium), count: FeatureConstants.IngestGrid.regularColumns) // 80, 180, 12
         } else {
             [GridItem(.flexible()), GridItem(.flexible())]
         }
@@ -43,7 +43,7 @@ struct IngestEntryCardsSection: View {
                 entryCardContent(
                     title: L10n.Ingest.fileImport,
                     icon: DesignSystem.Icons.docBadgePlus,
-                    color: .blue
+                    color: Color.theme.blue
                 )
             }
             .buttonStyle(AppCardButtonStyle())
@@ -59,7 +59,7 @@ struct IngestEntryCardsSection: View {
                 entryCardContent(
                     title: L10n.Ingest.manualEntry,
                     icon: DesignSystem.Icons.pencilClipboard,
-                    color: .orange
+                    color: Color.theme.orange
                 )
             }
             .buttonStyle(AppCardButtonStyle())
@@ -75,7 +75,7 @@ struct IngestEntryCardsSection: View {
                 entryCardContent(
                     title: L10n.Ingest.urlImport,
                     icon: DesignSystem.Icons.link,
-                    color: .teal
+                    color: Color.theme.teal
                 )
             }
             .buttonStyle(AppCardButtonStyle())
@@ -91,7 +91,7 @@ struct IngestEntryCardsSection: View {
                 entryCardContent(
                     title: L10n.Ingest.ocrScan,
                     icon: DesignSystem.Icons.ocr,
-                    color: .purple
+                    color: Color.theme.purple
                 )
             }
             .buttonStyle(AppCardButtonStyle())
@@ -107,7 +107,7 @@ struct IngestEntryCardsSection: View {
                 entryCardContent(
                     title: L10n.Ingest.clipboardImport,
                     icon: DesignSystem.Icons.docOnClipboard,
-                    color: .green
+                    color: Color.theme.green
                 )
             }
             .buttonStyle(AppCardButtonStyle())
@@ -123,7 +123,7 @@ struct IngestEntryCardsSection: View {
                 entryCardContent(
                     title: L10n.Ingest.voiceNote,
                     icon: DesignSystem.Icons.waveform,
-                    color: .red
+                    color: Color.theme.red
                 )
             }
             .buttonStyle(AppCardButtonStyle())

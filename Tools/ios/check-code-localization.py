@@ -48,7 +48,8 @@ ALLOW_NON_ASCII_FILES = {
     'NativeMemoryEngine.swift',    # 自研分层对话记忆引擎断言与摘要
     'SwarmMemoryAdapter.swift',    # 开源 Swarm 框架记忆适配器数据
     'PromptConstants.swift',        # Prompt 常量及 JSON Schema 结构描述定义
-    'ProcessorConstants.swift'      # 处理器常量集（含 ThinkingProcessor 中文 AI 输出检测关键词）
+    'ProcessorConstants.swift',     # 处理器常量集（含 ThinkingProcessor 中文 AI 输出检测关键词）
+    'FeatureConstants.swift'        # Features 模块常量集（含 ModelLab Mock 中文演示数据与日志文本）
 }
 
 # 匹配模式： " ... " 字符串字面量
@@ -278,13 +279,14 @@ class XCStringsAuditor:
         """
         # 1. 静态白名单匹配：包括通用缩写、计量单位及数学区间
         EXEMPT_IDENTICAL_VALUES = {
-            "AI", "PDF", "Token", "RAG", "ms", "MB", "GB", "SHA256", "Top-K", "Top-P", "ESC", "·", 
+            "AI", "PDF", "Token", "RAG", "ms", "MB", "GB", "SHA256", "Top-K", "Top-P", "ESC", "·",
+            "CPU", "GPU",
             "about", "action", "ignore", "preview", "skip", "unknown", "yesterday", "retry", 
             "A", "B", "1 Text", "50-69", "70-89", "90-100", "50–69", "70–89", "90–100", "Mac", "macOS", "—",
             "MRR", "NDCG@10", "F1@5", "MAP", "Lint", "model-name", "< 50", "%@ GB", "sk-...", "Constantine",
             "Chat_Export",
             # 技术术语/格式字符串：zh/en 相同是合理的（无法翻译）
-            "0 / 0", "AAC 44.1kHz", "%.1fx", "FTS:", "Vec:"
+            "0 / 0", "AAC 44.1kHz", "%.1fx", "FTS:", "Vec:", "%.1f tok/s"
         }
         if en_trimmed in EXEMPT_IDENTICAL_VALUES or en_trimmed in KNOWN_PROPER_NAMES:
             return True

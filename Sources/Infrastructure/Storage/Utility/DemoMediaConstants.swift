@@ -27,12 +27,20 @@ public enum DemoMediaConstants {
     public static let sineAngularCoefficient: Float = 2.0
     /// 音量缩放系数（防止削波）
     public static let volumeScale: Float = 0.25
+    /// 演示和弦频率（C5-E5-G5-C6 悦耳和弦，单位 Hz）
+    public static let chordFrequencies: [Float] = [523.25, 659.25, 783.99, 1046.50]
 
     // MARK: - 演示图像 (Image)
     /// 高清图像最小宽度阈值（像素）
     public static let hdMinWidth: CGFloat = 1000
     /// 笔记图标线宽
     public static let noteIconLineWidth: CGFloat = 1.5
+    /// OCR 演示图像表格起始 Y 坐标
+    public static let ocrTableStartY: CGFloat = 220
+    /// OCR 神经元演示表格列宽（3 列等宽）
+    public static let ocrNeuronTableColumnWidths: [CGFloat] = [220, 420, 420]
+    /// OCR 咖啡演示表格列宽（3 列不等宽）
+    public static let ocrCoffeeTableColumnWidths: [CGFloat] = [220, 260, 580]
 
     // MARK: - 演示 PDF (PDF)
     /// US Letter 页面宽度（英寸）

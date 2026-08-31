@@ -12,6 +12,7 @@ import Foundation
 import UFPCore
 import Combine
 import Dependencies
+import SwiftUI
 
 /// 奖章系统服务：负责追踪用户成就并触发奖励弹窗
 @MainActor
@@ -43,18 +44,18 @@ final class MedalService: ObservableObject {
 
     let allMedals: [Medal] = [
         // 1. 探索奖章
-        Medal(id: "first_page", titleKey: "medal.first_page.title", descKey: "medal.first_page.desc", icon: "sparkles", colorHex: "#FFD700", threshold: 1, category: .explore),
+        Medal(id: MedalConstants.MedalID.firstPage, titleKey: MedalConstants.L10nKey.firstPageTitle, descKey: MedalConstants.L10nKey.firstPageDesc, icon: DesignSystem.Icons.sparkles, colorHex: MedalConstants.ColorHex.gold, threshold: 1, category: .explore),
 
         // 2. 积累奖章 (节点数)
-        Medal(id: "nodes_5", titleKey: "medal.nodes_5.title", descKey: "medal.nodes_5.desc", icon: "doc.badge.plus", colorHex: "#4FACFE", threshold: 5, category: .accumulation),
-        Medal(id: "nodes_10", titleKey: "medal.nodes_10.title", descKey: "medal.nodes_10.desc", icon: "books.vertical.fill", colorHex: "#00F2FE", threshold: 10, category: .accumulation),
-        Medal(id: "nodes_100", titleKey: "medal.nodes_100.title", descKey: "medal.nodes_100.desc", icon: "archivebox.fill", colorHex: "#A8EDEA", threshold: 100, category: .accumulation),
+        Medal(id: MedalConstants.MedalID.nodes5, titleKey: MedalConstants.L10nKey.nodes5Title, descKey: MedalConstants.L10nKey.nodes5Desc, icon: DesignSystem.Icons.docBadgePlus, colorHex: MedalConstants.ColorHex.skyBlue, threshold: 5, category: .accumulation),
+        Medal(id: MedalConstants.MedalID.nodes10, titleKey: MedalConstants.L10nKey.nodes10Title, descKey: MedalConstants.L10nKey.nodes10Desc, icon: DesignSystem.Icons.booksVerticalFill, colorHex: MedalConstants.ColorHex.cyan, threshold: 10, category: .accumulation),
+        Medal(id: MedalConstants.MedalID.nodes100, titleKey: MedalConstants.L10nKey.nodes100Title, descKey: MedalConstants.L10nKey.nodes100Desc, icon: DesignSystem.Icons.archiveboxFill, colorHex: MedalConstants.ColorHex.mint, threshold: 100, category: .accumulation),
 
         // 3. 连接奖章 (链接数)
-        Medal(id: "links_5", titleKey: "medal.links_5.title", descKey: "medal.links_5.desc", icon: "link", colorHex: "#F093FB", threshold: 5, category: .connection),
-        Medal(id: "links_10", titleKey: "medal.links_10.title", descKey: "medal.links_10.desc", icon: "link.badge.plus", colorHex: "#F5576C", threshold: 10, category: .connection),
+        Medal(id: MedalConstants.MedalID.links5, titleKey: MedalConstants.L10nKey.links5Title, descKey: MedalConstants.L10nKey.links5Desc, icon: DesignSystem.Icons.link, colorHex: MedalConstants.ColorHex.pink, threshold: 5, category: .connection),
+        Medal(id: MedalConstants.MedalID.links10, titleKey: MedalConstants.L10nKey.links10Title, descKey: MedalConstants.L10nKey.links10Desc, icon: DesignSystem.Icons.linkBadgePlus, colorHex: MedalConstants.ColorHex.coral, threshold: 10, category: .connection),
         // 修正：将非法的系统图标 'hubball.fill' 替换为苹果原生支持的 'network'，以防勋章在界面上显示为隐形
-        Medal(id: "links_100", titleKey: "medal.links_100.title", descKey: "medal.links_100.desc", icon: "network", colorHex: "#8EC5FC", threshold: 100, category: .connection)
+        Medal(id: MedalConstants.MedalID.links100, titleKey: MedalConstants.L10nKey.links100Title, descKey: MedalConstants.L10nKey.links100Desc, icon: DesignSystem.Icons.networkSymbol, colorHex: MedalConstants.ColorHex.periwinkle, threshold: 100, category: .connection)
     ]
 
     private init() {
@@ -87,7 +88,7 @@ final class MedalService: ObservableObject {
 
             var isEarned = false
             switch medal.category {
-            case .explore where medal.id == "first_page":
+            case .explore where medal.id == MedalConstants.MedalID.firstPage:
                 isEarned = nodeCount >= 1
             case .accumulation:
                 isEarned = nodeCount >= medal.threshold

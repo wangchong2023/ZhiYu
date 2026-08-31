@@ -20,6 +20,8 @@ import Dependencies
 public final class AIWorkflowStore: AIWorkflowCapabilities {
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
+    public static let defaultSimilarPageLimit: Int = FeatureConstants.AIWorkflow.defaultSimilarPageLimit
+
     // ── 子 Store 聚合 ──
     public var insightStore: AIInsightStore = AIInsightStore()
 
@@ -118,7 +120,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
     /// 运行AI扫描
     public func runAIScan(forPage specificPage: KnowledgePage? = nil) async {
         guard llmService.isEnabled else {
-            logger.addLog(action: .aiscanSkipped, target: specificPage?.title ?? AIScanConfig.systemTarget, details: "LLM service disabled")
+            logger.addLog(action: .aiscanSkipped, target: specificPage?.title ?? AIScanConfig.systemTarget, details: FeatureConstants.LogDetails.llmServiceDisabled)
             return
         }
 
@@ -192,7 +194,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
     }
 
     /// 查找与当前页面语义相似的页面（基于向量嵌入）
-    public func findSimilarPages(for page: KnowledgePage, limit: Int = 3) async -> [KnowledgePage] {
+    public func findSimilarPages(for page: KnowledgePage, limit: Int = defaultSimilarPageLimit) async -> [KnowledgePage] {
         let results = await vectorStore.embeddingProvider.search(query: page.title, topK: limit + 1)
         
         var similarPages: [KnowledgePage] = []
@@ -287,7 +289,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
         keyStore?.removeObject(forKey: AppConstants.Keys.Storage.lastLintIssues)
 
-        logger.addLog(action: .systemInit, target: "AIWorkflowStore", details: "AI Workflow data cleared.", module: "AIWorkflowStore")
+        logger.addLog(action: .systemInit, target: FeatureConstants.ModuleName.aiWorkflowStore, details: FeatureConstants.LogDetails.aiWorkflowDataCleared, module: FeatureConstants.ModuleName.aiWorkflowStore)
     }
 
     // ── 建议清理方法 ──

@@ -39,6 +39,12 @@ public final class SearchStore {
 
     /// 执行高级（混合）搜索
     func performAdvancedSearch(query: String) async -> [KnowledgePage] {
+        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            searchResults = []
+            lastSearchDiagnostic = nil
+            return []
+        }
+
         isSearching = true
         defer { isSearching = false }
 
@@ -63,10 +69,16 @@ public final class SearchStore {
         }
 
         searchTask = Task {
+            // Bug #128 修复：在设置 isSearching 前检查是否已取消
+            if Task.isCancelled { return }
             isSearching = true
             // 300ms 防抖
             try? await Task.sleep(nanoseconds: 300_000_000)
-            if Task.isCancelled { return }
+            if Task.isCancelled {
+                // Bug #128 修复：取消时重置 isSearching，避免卡在 true
+                isSearching = false
+                return
+            }
 
             let res = await linkService.hybridSearchWithDiagnostics(
                 query: query,

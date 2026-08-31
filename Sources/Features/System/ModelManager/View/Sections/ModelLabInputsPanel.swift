@@ -26,14 +26,14 @@ extension ModelLabView {
                 VStack(spacing: DesignSystem.standardPadding) {
                     if isImageSelected {
                         // 展现模拟工作台图片
-                        Image(systemName: "photo")
+                        Image(systemName: DesignSystem.Icons.photo)
                             .font(.largeTitle)
-                            .foregroundStyle(.cyan)
-                        Text("workspace_bench.jpg")
+                            .foregroundStyle(Color.theme.cyan)
+                        Text(FeatureConstants.MockData.workspaceBenchFileName)
                             .font(.caption)
                             .foregroundStyle(.appText)
                     } else {
-                        Image(systemName: "plus.viewfinder")
+                        Image(systemName: DesignSystem.Icons.plusViewfinder)
                             .font(.largeTitle)
                             .foregroundStyle(.secondary)
                         Text(L10n.ModelManager.Lab.selectImage)
@@ -82,7 +82,7 @@ extension ModelLabView {
                 } label: {
                     HStack {
                         Image(systemName: isAudioRecording ? "stop.circle.fill" : "record.circle")
-                            .foregroundStyle(isAudioRecording ? .red : .cyan)
+                            .foregroundStyle(isAudioRecording ? Color.theme.red : Color.theme.cyan)
                         Text(isAudioRecording ? L10n.ModelManager.Lab.stopRecording : L10n.ModelManager.Lab.recordAudio)
                     }
                     .padding(.horizontal, ComponentSpacing.sectionLarge)
@@ -94,7 +94,7 @@ extension ModelLabView {
 
                 if isAudioRecording {
                     HStack(spacing: SystemSpacing.small) {
-                        ForEach(0..<6) { _ in
+                        ForEach(0..<FeatureConstants.AudioWaveform.barCount) { _ in
                             RoundedRectangle(cornerRadius: SystemStroke.selected)
                                 .fill(Color.theme.cyan)
                                 .frame(width: SystemStroke.heavy, height: CGFloat.random(in: DesignSystem.standardPadding...DesignSystem.large))
@@ -107,7 +107,7 @@ extension ModelLabView {
             if isAudioCompleted {
                 Text(L10n.ModelManager.Lab.audioCompleted)
                     .font(.caption)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.theme.green)
             }
         }
         .padding(.bottom, SystemSpacing.element)
@@ -116,8 +116,8 @@ extension ModelLabView {
     /// Prompt Lab 滑块项
     var promptLabSliders: some View {
         VStack(spacing: DesignSystem.standardPadding) {
-            sliderRow(title: "Temperature", val: $tempTemperature, range: 0.0...2.0, spec: "%.2f")
-            sliderRow(title: "Top-P", val: $tempTopP, range: 0.0...1.0, spec: "%.2f")
+            sliderRow(title: FeatureConstants.ModelParameterLabel.temperature, val: $tempTemperature, range: 0.0...2.0, spec: FeatureConstants.FormatString.float2)
+            sliderRow(title: FeatureConstants.ModelParameterLabel.topP, val: $tempTopP, range: 0.0...1.0, spec: FeatureConstants.FormatString.float2)
         }
         .padding(.bottom, SystemSpacing.element)
     }
@@ -131,10 +131,10 @@ extension ModelLabView {
                 Spacer()
                 Text(String(format: spec, val.wrappedValue))
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(.cyan)
+                    .foregroundStyle(Color.theme.cyan)
             }
             Slider(value: val, in: range)
-                .tint(.cyan)
+                .tint(Color.theme.cyan)
         }
     }
 }

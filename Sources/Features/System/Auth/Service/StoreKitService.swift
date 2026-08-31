@@ -148,18 +148,17 @@ public final class StoreKitService {
             
             if success {
                 Logger.shared.info("[StoreKitService] 后端收据验证成功，Pro 权益已激活")
+                await transaction.finish()
             } else {
                 // 后端验证失败时，不立即降级（可能是网络波动）。
-                // 保留本地 Pro 权益，待下次刷新时重试验证。
-                Logger.shared.warning("[StoreKitService] 后端收据验证失败，保留本地权益待重试")
+                // 保留本地 Pro 权益，不 finish 交易以便 StoreKit 下次重新推送重试验证。
+                Logger.shared.warning("[StoreKitService] 后端收据验证失败，保留本地权益待重试（交易未 finish）")
             }
         } else {
             // 未知 productId：记录 warning 便于排查配置不一致
             Logger.shared.warning("[StoreKitService] 收到未知 productId: \(productId)，未在 allProductIds 中注册")
+            await transaction.finish()
         }
-        
-        // 标记交易已完成（防止重复处理）
-        await transaction.finish()
     }
     
     // MARK: - 权益降级
@@ -176,7 +175,7 @@ public final class StoreKitService {
             phone: user.phone,
             avatarURL: user.avatarURL,
             planKey: PlanKey.lite,
-            maxVaults: user.maxVaults,
+            maxVaults: User.DefaultQuotas.liteMaxVaults,
             maxPages: User.DefaultQuotas.liteMaxPages,
             maxPlugins: User.DefaultQuotas.liteMaxPlugins,
             gender: user.gender,

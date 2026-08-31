@@ -15,6 +15,7 @@ import Dependencies
 // MARK: - Backup Service
 /// Automatic data backup and crash recovery service.
 /// Creates timestamped backups on each save, auto-cleans old backups, and recovers from crash.
+@MainActor
 final class BackupService: ObservableObject {
     @Published var backupEntries: [BackupEntry] = []
     @Published var lastBackupDate: Date?
@@ -75,23 +76,41 @@ final class BackupService: ObservableObject {
     }
 
     // MARK: - Create Backup
-    /// 创建备份
+    /// 创建自动备份（受 `isAutoBackupEnabled` 开关与节流策略控制）。
     /// - Parameter pages: pages
     func createBackup(pages: [KnowledgePage]) {
         guard isAutoBackupEnabled else { return }
 
-        // Throttle: don't backup too frequently
-        if let last = lastBackupDate, Date().timeIntervalSince(last) < Self.backupInterval {
-            return
+        // Throttle: don't backup too frequently, with protection against clock rollback
+        if let last = lastBackupDate {
+            let elapsed = Date().timeIntervalSince(last)
+            if elapsed >= 0 && elapsed < Self.backupInterval {
+                return
+            }
         }
 
+        writeBackup(pages: pages)
+    }
+
+    /// 创建强制备份（绕过 `isAutoBackupEnabled` 开关与节流策略）。
+    ///
+    /// 用于"立即创建备份"按钮、恢复前的安全备份等不可错过的场景，
+    /// 避免因开关关闭或节流窗口未到而静默丢失数据（Bug #56/#57）。
+    /// - Parameter pages: pages
+    func createForcedBackup(pages: [KnowledgePage]) {
+        writeBackup(pages: pages)
+    }
+
+    /// 实际写入备份文件并更新索引的内部实现，由 `createBackup`/`createForcedBackup` 共用。
+    private func writeBackup(pages: [KnowledgePage]) {
         let startTime = Date()
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
 
         let timestamp = Date()
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        // Bug #42 修复：文件名包含毫秒，避免同秒备份文件名冲突
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss-SSS"
         let fileName = "backup_\(formatter.string(from: timestamp)).json"
 
         do {
@@ -223,14 +242,24 @@ final class BackupService: ObservableObject {
         guard backupEntries.count > Self.maxBackups else { return }
 
         let sorted = backupEntries.sorted { $0.timestamp > $1.timestamp }
-        let toRemove = sorted.suffix(from: Self.maxBackups)
+        let toRemove = Array(sorted.suffix(from: Self.maxBackups))
 
+        // Bug #137 修复：删除文件成功才从 entries 移除，避免索引与磁盘不一致
+        // 文件不存在的条目（如被覆盖）直接移除，避免索引孤儿
+        var kept = Array(sorted.prefix(Self.maxBackups))
         for entry in toRemove {
             let url = backupDirectory.appendingPathComponent(entry.fileName)
-            try? FileManager.default.removeItem(at: url)
+            if FileManager.default.fileExists(atPath: url.path) {
+                do {
+                    try FileManager.default.removeItem(at: url)
+                } catch {
+                    // 删除失败则保留该条目，避免索引孤儿
+                    kept.append(entry)
+                }
+            }
+            // 文件不存在则直接丢弃条目（已被覆盖或手动删除）
         }
-
-        backupEntries = Array(sorted.prefix(Self.maxBackups))
+        backupEntries = kept.sorted { $0.timestamp > $1.timestamp }
         saveBackupEntries()
     }
 
@@ -255,7 +284,8 @@ final class BackupService: ObservableObject {
         do {
             let data = try Data(contentsOf: url)
             backupEntries = try decoder.decode([BackupEntry].self, from: data)
-            lastBackupDate = backupEntries.last?.timestamp
+            // Bug #138 修复：取最大时间戳而非 .last，避免降序数组下取到最旧时间
+            lastBackupDate = backupEntries.map(\.timestamp).max()
         } catch {
             // No index file yet, scan directory
             scanBackupDirectory()

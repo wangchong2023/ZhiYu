@@ -25,6 +25,16 @@ enum PluginConstants {
         static let maxResponseSizeMB: Int = 5
         /// 插件预处理/后处理响应最大字节数（maxResponseSizeMB * KB²）
         static let maxResponseSizeBytes: Int = maxResponseSizeMB * Int(SystemConstants.bytesPerKB) * Int(SystemConstants.bytesPerKB)
+        /// JSContext 引擎连接池物理上限
+        static let maxEngineContextPoolSize: Int = 4
+        /// 单插件拦截执行超时时间（秒）
+        static let pluginTimeoutSeconds: TimeInterval = 0.5
+        /// 限流窗口内最大调用次数
+        static let maxCallsPerWindow: Int = 50
+        /// 限流窗口时间（秒）
+        static let throttlingWindowSeconds: TimeInterval = 60.0
+        /// 当前插件宿主内核版本号
+        static let defaultHostVersion: String = "2.0.0"
     }
 
     // MARK: - 本地化语言要求 (Localization)
@@ -59,6 +69,22 @@ enum PluginConstants {
         static let pagesRead: String = "pages.read"
         /// 内容写入权限
         static let writeContent: String = "writeContent"
+        /// HTTP method 权限
+        static let httpMethod: String = "httpMethod"
+        /// HTTP header 权限
+        static let httpHeader: String = "httpHeader"
+    }
+
+    // MARK: - 网络安全 (Network Security)
+    /// 插件网络请求安全策略常量
+    enum NetworkSecurity {
+        /// 允许的 HTTP 方法白名单（拒绝 DELETE/TRACE/CONNECT 等危险方法）
+        static let allowedHTTPMethods: Set<String> = ["GET", "POST", "PUT", "PATCH", "HEAD", "OPTIONS"]
+        /// 危险 header 黑名单（插件不可注入宿主凭证相关 header）
+        static let blockedHeaders: Set<String> = [
+            "Authorization", "Cookie", "Set-Cookie",
+            "Proxy-Authorization", "X-API-Key"
+        ]
     }
 
     // MARK: - 插件市场 JSON 文件名 (Market JSON Filenames)
@@ -103,6 +129,17 @@ enum PluginConstants {
         static let v1VersionPrefix: String = "1."
     }
 
+    // MARK: - 插件 ID 前缀分类 (Plugin ID Prefix by Scope)
+    /// 插件 ID 前缀分类（local/remote/base），用于 displayName 裁剪
+    enum IDPrefix {
+        /// 本地插件 ID 前缀
+        static let local: String = "com.zhiyu.plugin.local."
+        /// 远程插件 ID 前缀
+        static let remote: String = "com.zhiyu.plugin.remote."
+        /// 基础插件 ID 前缀
+        static let base: String = "com.zhiyu.plugin."
+    }
+
     // MARK: - JS 全局对象名 (JS Global Object Name)
     /// JSContext 注入的全局对象名常量集
     enum JSGlobal {
@@ -119,5 +156,66 @@ enum PluginConstants {
         static let duration: String = "duration"
         /// 错误描述字段 key
         static let error: String = "error"
+    }
+
+    // MARK: - 插件分类 (Category)
+    /// 插件分类字符串常量集，消除 categoryPillsSection 与筛选逻辑中的魔鬼字符串
+    enum Category {
+        /// 效率工具分类
+        static let efficiency: String = "efficiency"
+        /// 社交分类
+        static let social: String = "social"
+        /// 阅读分类
+        static let reading: String = "reading"
+        /// 其他分类（含 nil category 的兜底匹配）
+        static let other: String = "other"
+    }
+
+    // MARK: - 本地图标关键词 (Local Icon Keyword)
+    /// localIconName(for:) 匹配用的插件 ID 关键词常量集
+    enum LocalIconKeyword {
+        /// 目录生成器
+        static let tocGenerator: String = "toc-generator"
+        /// 字数统计
+        static let wordCounter: String = "word-counter"
+        /// 智能清理
+        static let smartCleaner: String = "smart-cleaner"
+        /// AI 摘要
+        static let aiSummary: String = "ai-summary"
+        /// 代码高亮
+        static let codeHighlighter: String = "code-highlighter"
+        /// 链接预览
+        static let linkPreview: String = "link-preview"
+        /// AI 翻译
+        static let aiTranslator: String = "ai-translator"
+        /// Markdown 美化
+        static let markdownBeautifier: String = "markdown-beautifier"
+    }
+
+    // MARK: - URL 前缀 (URL Prefix)
+    /// URL scheme 前缀判断常量
+    enum URLPrefix {
+        /// HTTP/HTTPS 协议前缀
+        static let http: String = "http"
+    }
+
+    // MARK: - SF Symbol 图标名 (SF Symbol Name)
+    /// PluginCard 中使用的 SF Symbol 图标名常量集
+    enum IconName {
+        /// 远程图标加载失败/未知 default 的拼图块图标
+        static let puzzleExtensionFill: String = "puzzlepiece.extension.fill"
+        /// 重试箭头图标
+        static let arrowClockwise: String = "arrow.clockwise"
+        /// WiFi 断开图标
+        static let wifiSlash: String = "wifi.slash"
+    }
+
+    // MARK: - 文件名安全 (File Name Security)
+    /// 文件名路径穿越校验常量集
+    enum FileNameSecurity {
+        /// 路径穿越标记（..）
+        static let pathTraversalMarker: String = ".."
+        /// 路径分隔符（/）
+        static let pathSeparator: String = "/"
     }
 }

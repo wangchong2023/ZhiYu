@@ -188,7 +188,7 @@ struct KnowledgeStatsWidgetEntryView: View {
             HStack(spacing: WidgetMetrics.spacingCompact) {
                 Image(systemName: "books.vertical.fill")
                     .font(.footnote)
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(WidgetSharedConstants.Color.purple)
                 Text(entry.vaultName)
                     .font(.caption2.bold())
                     .foregroundStyle(.secondary)
@@ -209,8 +209,8 @@ struct KnowledgeStatsWidgetEntryView: View {
             }
             
             HStack(spacing: WidgetMetrics.spacingWide) {
-                statItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: .blue)
-                statItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: .orange)
+                statItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
+                statItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
             }
         }
         .padding(WidgetMetrics.contentPadding)
@@ -223,7 +223,7 @@ struct KnowledgeStatsWidgetEntryView: View {
             VStack(alignment: .leading, spacing: WidgetMetrics.spacingWide) {
                 HStack(spacing: WidgetMetrics.spacingCompact) {
                     Image(systemName: "books.vertical.fill")
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(WidgetSharedConstants.Color.purple)
                         .font(.caption)
                     Text(entry.vaultName)
                         .font(.caption.bold())
@@ -232,12 +232,12 @@ struct KnowledgeStatsWidgetEntryView: View {
                 }
                 
                 HStack(spacing: WidgetMetrics.spacingLarge) {
-                    mainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: .purple)
-                    mainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: .blue)
+                    mainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
+                    mainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
                 }
                 
                 HStack(spacing: WidgetMetrics.spacingLarge) {
-                    mainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: .orange)
+                    mainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
                     Spacer()
                 }
             }
@@ -249,9 +249,9 @@ struct KnowledgeStatsWidgetEntryView: View {
 
             // 右侧：Deep Link 快捷操作区
             VStack(spacing: WidgetMetrics.spacingStandard) {
-                actionButton(label: WidgetL10n.create, icon: "plus.circle.fill", color: .purple, url: "zhiyu://create")
-                actionButton(label: WidgetL10n.aiChat, icon: "sparkles", color: .blue, url: "zhiyu://chat")
-                actionButton(label: WidgetL10n.search, icon: "magnifyingglass", color: .orange, url: "zhiyu://search")
+                actionButton(label: WidgetL10n.create, icon: "plus.circle.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.create)
+                actionButton(label: WidgetL10n.aiChat, icon: "sparkles", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.chat)
+                actionButton(label: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
             }
             .frame(width: WidgetMetrics.progressBarWidth)
         }
@@ -266,7 +266,7 @@ struct KnowledgeStatsWidgetEntryView: View {
                 VStack(alignment: .leading, spacing: WidgetMetrics.spacingStandard) {
                     HStack(spacing: WidgetMetrics.spacingCompact) {
                         Image(systemName: "books.vertical.fill")
-                            .foregroundStyle(.purple)
+                            .foregroundStyle(WidgetSharedConstants.Color.purple)
                             .font(.caption)
                         Text(entry.vaultName)
                             .font(.caption.bold())
@@ -274,16 +274,16 @@ struct KnowledgeStatsWidgetEntryView: View {
                     }
                     
                     HStack(spacing: WidgetMetrics.spacingXLarge) {
-                        mainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: .purple)
-                        mainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: .blue)
-                        mainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: .orange)
+                        mainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
+                        mainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
+                    mainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
                     }
                 }
                 
                 Spacer()
                 
                 // 快捷大按钮
-                Link(destination: URL(string: "zhiyu://chat")!) {
+                Link(destination: URL(string: WidgetSharedConstants.DeepLink.chat) ?? URL(string: "about:blank")!) {
                     HStack(spacing: WidgetMetrics.spacingCompact) {
                         Image(systemName: "sparkles")
                         Text(WidgetL10n.ai)
@@ -310,7 +310,7 @@ struct KnowledgeStatsWidgetEntryView: View {
                     HStack(spacing: WidgetMetrics.spacingStandard) {
                         Image(systemName: page.typeName == "concept" ? "lightbulb.fill" : "person.text.rectangle.fill")
                             .font(.system(size: WidgetMetrics.captionFontSize))
-                            .foregroundStyle(page.colorName == "accent" ? .blue : .purple)
+                            .foregroundStyle(page.colorName == "accent" ? WidgetSharedConstants.Color.blue : WidgetSharedConstants.Color.purple)
                             .frame(width: WidgetMetrics.iconSize, height: WidgetMetrics.iconSize)
                             .background(Color.white.opacity(WidgetMetrics.opacitySubtle))
                             .clipShape(RoundedRectangle(cornerRadius: WidgetMetrics.microCornerRadius))

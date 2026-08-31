@@ -112,10 +112,13 @@ struct AuthView: View {
     /// 触发 3D 卡片翻转动效
     private func triggerRegionFlip() {
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-            rotateDegrees += 180
+            rotateDegrees += FeatureConstants.AuthFlip.rotationDegrees
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            displayedRegion = currentRegion
+        Task {
+            try? await Task.sleep(for: .seconds(AppConfig.UI.animationDuration))
+            await MainActor.run {
+                displayedRegion = currentRegion
+            }
         }
     }
 
@@ -137,7 +140,7 @@ struct AuthView: View {
                 }
             } label: {
                 HStack(spacing: SystemSpacing.tiny) {
-                    Image(systemName: "globe")
+                    Image(systemName: DesignSystem.Icons.globe)
                         .font(.subheadline)
                     Text(selectedLanguage.displayName)
                         .font(.caption)
@@ -223,31 +226,16 @@ struct AuthView: View {
     // MARK: - 逻辑
 
     private func handleAuth() {
-        if !isAgreementChecked {
-            toastManager.show(type: .error, message: L10n.Auth.agreementRequired)
-            HapticFeedback.shared.trigger(.error)
-            return
-        }
-
-        Task {
-            isLoading = true
-            errorMessage = nil
-
-            let success = await authService.login(using: CarrierAuthStrategy())
-
-            if !success {
-                errorMessage = L10n.Auth.authFailed
-                HapticFeedback.shared.trigger(.error)
-            } else {
-                HapticFeedback.shared.trigger(.success)
-            }
-
-            isLoading = false
-        }
+        performLogin(using: CarrierAuthStrategy())
     }
 
     /// 触发第三方账号授权登录逻辑
     func handleThirdPartyLogin(using strategy: any AuthStrategy) {
+        performLogin(using: strategy)
+    }
+
+    /// 统一的登录执行逻辑
+    private func performLogin(using strategy: any AuthStrategy) {
         if !isAgreementChecked {
             toastManager.show(type: .error, message: L10n.Auth.agreementRequired)
             HapticFeedback.shared.trigger(.error)

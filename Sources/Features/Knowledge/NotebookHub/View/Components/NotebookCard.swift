@@ -96,7 +96,7 @@ struct NotebookCard: View {
         // MARK: - A11y 无障碍适配
         // UI 测试模式下使用 .contain 允许 XCUITest 穿透容器定位 Button，
         // 确保 element.tap() 能正常触发 SwiftUI Button action（coordinate.tap() 兜底不可靠）
-        .accessibilityElement(children: ProcessInfo.processInfo.arguments.contains("--uitesting") ? .contain : .combine)
+        .accessibilityElement(children: ProcessInfo.processInfo.arguments.contains(FeatureConstants.UITestingArg.uiTesting) ? .contain : .combine)
         .accessibilityLabel("\(notebook.name)\(L10n.Accessibility.notebookCardLabel)")
         .accessibilityValue(notebook.description ?? L10n.Vault.defaultDescription)
         .accessibilityHint("\(L10n.Vault.lastEdited) \(notebook.updatedAt.formatted(.relative(presentation: .numeric)))\(L10n.Accessibility.notebookCardHint)")
@@ -104,7 +104,7 @@ struct NotebookCard: View {
     
     /// 根据笔记本名称的哈希值自动计算底座主色调，确保不同笔记本具有差异化的视觉令牌颜色
     private var colorForVault: Color {
-        let colors: [Color] = [.blue, .purple, .orange, .green, .pink, .teal]
+        let colors: [Color] = [Color.theme.blue, Color.theme.purple, Color.theme.orange, Color.theme.green, Color.theme.pink, Color.theme.teal]
         let index = abs(notebook.name.hashValue) % colors.count
         return colors[index]
     }

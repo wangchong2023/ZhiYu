@@ -20,6 +20,11 @@ import UFPCore
 final class CatalystFloatingMenuManager: NSObject {
     static let shared = CatalystFloatingMenuManager()
 
+    private enum CatalystFloatingConstants {
+        static let animationDuration: TimeInterval = 0.2
+        static let framePollingInterval: TimeInterval = 0.25
+    }
+
     private var overlayWindow: UIWindow?
     private var windowFrameTimer: Timer?
 
@@ -75,13 +80,13 @@ final class CatalystFloatingMenuManager: NSObject {
         window.makeKeyAndVisible()
 
         window.alpha = 0
-        UIView.animate(withDuration: 0.2) { window.alpha = 1 }
+        UIView.animate(withDuration: CatalystFloatingConstants.animationDuration) { window.alpha = 1 }
 
         overlayWindow = window
 
         // 监听 app 窗口 frame 变化：用户拖拽/缩放窗口时自动关闭菜单
         let capturedFrame = appWindowFrame
-        windowFrameTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+        windowFrameTimer = Timer.scheduledTimer(withTimeInterval: CatalystFloatingConstants.framePollingInterval, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             runOnMainSync {
                 let currentFrame = UIApplication.shared.connectedScenes

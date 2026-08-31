@@ -118,7 +118,7 @@ public protocol AnyPageStore: Sendable {
         fileSize: Int64?,
         sourceType: String?,
         forceDeepScan: Bool
-    ) async -> KnowledgePage
+    ) async -> KnowledgePage?
     
     /// 更新已存在的知识页面元数据与正文。
     ///
@@ -269,7 +269,7 @@ public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, Sendable
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?,
         forceDeepScan: Bool
-    ) async -> KnowledgePage {
+    ) async -> KnowledgePage? {
         KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
     }
     public func updatePage(_ page: KnowledgePage) async throws {}

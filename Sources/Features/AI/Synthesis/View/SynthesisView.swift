@@ -173,7 +173,7 @@ struct SynthesisView: View {
                         HStack(spacing: DesignSystem.tiny) {
                             Text(L10n.Search.all)
                                 .font(.caption.bold())
-                            Image(systemName: "arrow.uturn.left")
+                            Image(systemName: DesignSystem.Icons.arrowUturnLeft)
                                 .font(.caption2)
                         }
                         .padding(.horizontal, DesignSystem.medium)
@@ -241,7 +241,7 @@ struct SynthesisView: View {
     private var listHeader: some View {
         AppSectionHeader(
             title: L10n.AI.Synthesis.documentList,
-            icon: "doc.text",
+            icon: DesignSystem.Icons.docText,
             trailing: AnyView(
                 HStack(spacing: DesignSystem.medium) {
                     if editMode == .active {
@@ -297,7 +297,6 @@ struct SynthesisView: View {
     }
 
     private func batchDelete() {
-        HapticFeedback.shared.trigger(.warning)
         synthesisStore.batchDeleteSynthesisDocs(ids: selectedDocIDs)
         selectedDocIDs.removeAll()
         editMode = .inactive
@@ -322,7 +321,7 @@ struct SynthesisView: View {
                             if store.pages.contains(where: { $0.id == pageID }) {
                                 router.selectedTab = .knowledge
                                 Task { @MainActor in
-                                    try? await Task.sleep(nanoseconds: 100_000_000)
+                                    try? await Task.sleep(nanoseconds: AppConstants.Keys.ImportLimits.navigationTransitionDelayNS)
                                     router.navigateToPage(id: pageID)
                                 }
                             } else {
@@ -535,8 +534,10 @@ extension View {
             TextField(L10n.Tag.Management.inputName, text: name)
             Button(L10n.Common.rename) {
                 if let doc = doc {
+                    let trimmed = name.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { return }
                     @Dependency(\.synthesisStore) var store: SynthesisStore
-                    store.renameSynthesisDoc(type: doc.type, docID: doc.id, newName: name.wrappedValue)
+                    store.renameSynthesisDoc(type: doc.type, docID: doc.id, newName: trimmed)
                 }
             }
             Button(L10n.Common.cancel, role: .cancel) { }

@@ -119,6 +119,9 @@ extension L10n {
                 /// - Parameter n: n
                 /// - Returns: 字符串
                 public static func confirmAction(_ n: Int) -> String { Localized.trf("settings.developer.stressTest.confirmAction", table: t, n) }
+
+                /// noDataInjected: 压力测试未注入任何数据
+                public static var noDataInjected: String { Localized.tr("settings.developer.stressTest.noDataInjected", table: t) }
             }
         }
 

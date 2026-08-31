@@ -117,8 +117,6 @@ final class IngestStoreDeepTests: XCTestCase {
         pageStore = nil
         resetPersistentTestState()
         try? await Task.sleep(nanoseconds: 50_000_000)
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
         try await super.tearDown()
     }
 
@@ -283,7 +281,11 @@ final class IngestStoreDeepTests: XCTestCase {
 
         let page = await store.finalizeSmartIngest(title: "新页面", result: result, customIcon: nil)
 
-        XCTAssertEqual(Set(page.relatedPageIDs), Set([existingPage1.id, existingPage2.id]),
+        guard let page1 = existingPage1, let page2 = existingPage2 else {
+            XCTFail("预置页面创建失败")
+            return
+        }
+        XCTAssertEqual(Set(page.relatedPageIDs), Set([page1.id, page2.id]),
                        "应仅关联标题匹配的已有页面，忽略不存在的标题")
     }
 

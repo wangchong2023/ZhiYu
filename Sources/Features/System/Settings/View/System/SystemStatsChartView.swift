@@ -53,7 +53,7 @@ struct ChartView: View {
         let start = monthRange.start
         let end = monthRange.end.addingTimeInterval(86400)
         let domainX = start...end
-        let domainY = 0.0...(max(100.0, maxValue() * 1.2))
+        let domainY = 0.0...(max(FeatureConstants.ChartDomain.baseValue, maxValue() * FeatureConstants.ChartDomain.maxValueScale))
         
         Chart {
             ForEach(stats) { stat in
@@ -117,7 +117,7 @@ struct ChartView: View {
         let start = monthRange.start
         let end = monthRange.end.addingTimeInterval(86400)
         let domainX = start...end
-        let domainY = 0.0...(max(100.0, maxValue() * 1.2))
+        let domainY = 0.0...(max(FeatureConstants.ChartDomain.baseValue, maxValue() * FeatureConstants.ChartDomain.maxValueScale))
         
         Chart {
             ForEach(stats) { stat in

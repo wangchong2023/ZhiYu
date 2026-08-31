@@ -173,8 +173,8 @@ struct SearchDiagnosticSheet: View {
                     // ── 1. AI 查询重写诊断卡 ──
                     VStack(alignment: .leading, spacing: DesignSystem.small) {
                         HStack {
-                            Image(systemName: "sparkles")
-                                .foregroundStyle(.purple)
+                            Image(systemName: DesignSystem.Icons.sparkles)
+                                .foregroundStyle(Color.theme.purple)
                                 .font(.headline)
                             Text(L10n.Search.Diag.rewrite)
                                 .font(.headline)
@@ -202,12 +202,12 @@ struct SearchDiagnosticSheet: View {
                         VStack(alignment: .leading, spacing: DesignSystem.tiny) {
                             Text(L10n.Search.Diag.rewrittenQuery)
                                 .font(.caption2)
-                                .foregroundStyle(.purple)
+                                .foregroundStyle(Color.theme.purple)
                                 .bold()
                             Text(info.rewrittenQuery)
                                 .font(.subheadline)
                                 .bold()
-                                .foregroundStyle(.purple)
+                                .foregroundStyle(Color.theme.purple)
                                 .padding(DesignSystem.small)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(Color.theme.purple.opacity(DesignSystem.Opacity.subtle))
@@ -287,8 +287,8 @@ struct SearchDiagnosticSheet: View {
                     // ── 3. RRF (Reciprocal Rank Fusion) 重排精细得分列表 ──
                     VStack(alignment: .leading, spacing: DesignSystem.small) {
                         HStack {
-                            Image(systemName: "list.number")
-                                .foregroundStyle(.orange)
+                            Image(systemName: DesignSystem.Icons.listNumber)
+                                .foregroundStyle(Color.theme.orange)
                             Text(L10n.Search.Diag.rrfDetail)
                                 .font(.headline)
                                 .bold()

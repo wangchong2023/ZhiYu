@@ -60,7 +60,7 @@ struct TappableSceneView: UIViewRepresentable {
         scnView.backgroundColor = .clear
         
         // 关键：如果场景中有指定的相机节点，则将其设为观察点
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: "mainCamera", recursively: true) {
+        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
             scnView.pointOfView = cameraNode
             context.coordinator.syncCameraState(from: cameraNode)
         }
@@ -86,7 +86,7 @@ struct TappableSceneView: UIViewRepresentable {
     func updateUIView(_ uiView: SCNView, context: Context) {
         uiView.scene = scene
         // 持续同步观察点，确保外部控制（缩放/重置）能生效
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: "mainCamera", recursively: true) {
+        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
             if uiView.pointOfView != cameraNode {
                 uiView.pointOfView = cameraNode
             }
@@ -140,7 +140,7 @@ struct TappableSceneView: UIViewRepresentable {
         /// - Parameter gesture: gesture
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
+                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
 
             let translation = gesture.translation(in: scnView)
             let dampening: Float = Graph3DSceneConfig.panDampening
@@ -162,7 +162,7 @@ struct TappableSceneView: UIViewRepresentable {
         /// - Parameter gesture: gesture
         @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
+                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
 
             if gesture.state == .changed {
                 let factor = Float(gesture.scale)
@@ -194,7 +194,7 @@ struct TappableSceneView: NSViewRepresentable {
         scnView.backgroundColor = .clear
         
         // 关键：如果场景中有指定的相机节点，则将其设为观察点
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: "mainCamera", recursively: true) {
+        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
             scnView.pointOfView = cameraNode
             context.coordinator.syncCameraState(from: cameraNode)
         }
@@ -220,7 +220,7 @@ struct TappableSceneView: NSViewRepresentable {
     func updateNSView(_ nsView: SCNView, context: Context) {
         nsView.scene = scene
         // 持续同步观察点，确保外部控制（缩放/重置）能生效
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: "mainCamera", recursively: true) {
+        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
             if nsView.pointOfView != cameraNode {
                 nsView.pointOfView = cameraNode
             }
@@ -274,7 +274,7 @@ struct TappableSceneView: NSViewRepresentable {
         /// - Parameter gesture: gesture
         @objc func handlePan(_ gesture: NSPanGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
+                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
 
             let translation = gesture.translation(in: scnView)
             let dampening: Float = Graph3DSceneConfig.panDampening
@@ -296,7 +296,7 @@ struct TappableSceneView: NSViewRepresentable {
         /// - Parameter gesture: gesture
         @objc func handleMagnify(_ gesture: NSMagnificationGestureRecognizer) {
             guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: "mainCamera", recursively: true) else { return }
+                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
 
             if gesture.state == .changed {
                 let factor = Float(1.0 + gesture.magnification)

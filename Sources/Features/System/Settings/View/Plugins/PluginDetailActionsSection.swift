@@ -55,12 +55,12 @@ extension PluginDetailView {
                 .padding(.vertical, DesignSystem.small)
             }
             .buttonStyle(.borderedProminent)
-            .tint(isInstalled ? .red : .appAccent)
+            .tint(isInstalled ? Color.theme.red : .appAccent)
             .disabled(isInstalling || marketService.downloadingPluginID == plugin.id)
 
             // 分享
             ShareLink(item: "\(plugin.name) — v\(plugin.version)\n\(plugin.description)") {
-                Image(systemName: "square.and.arrow.up")
+                Image(systemName: DesignSystem.Icons.export)
             }
             .buttonStyle(.bordered)
         }

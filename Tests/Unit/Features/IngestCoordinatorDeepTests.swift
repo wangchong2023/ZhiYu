@@ -26,8 +26,6 @@ final class IngestCoordinatorDeepTests: XCTestCase {
 
     override func tearDown() async throws {
         try? await Task.sleep(nanoseconds: 100_000_000)
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
         coordinator = nil
         try await super.tearDown()
     }

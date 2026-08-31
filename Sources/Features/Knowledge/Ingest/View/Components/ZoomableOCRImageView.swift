@@ -97,19 +97,19 @@ struct ZoomableOCRImageView: View {
                         .padding(.horizontal, DesignSystem.small)
                     
                     Button(action: zoomOut) {
-                        Image(systemName: "minus.magnifyingglass")
+                        Image(systemName: DesignSystem.Icons.minusMagnifyingglass)
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                     }
                     
                     Button(action: zoomIn) {
-                        Image(systemName: "plus.magnifyingglass")
+                        Image(systemName: DesignSystem.Icons.plusMagnifyingglass)
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                     }
                     
                     Button(action: resetZoom) {
-                        Image(systemName: "arrow.counterclockwise")
+                        Image(systemName: DesignSystem.Icons.arrowCounterclockwise)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

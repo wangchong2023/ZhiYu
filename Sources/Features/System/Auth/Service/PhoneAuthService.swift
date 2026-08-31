@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 extension AuthService {
 
@@ -25,10 +26,10 @@ extension AuthService {
         #if DEBUG
         if isMockBackend {
             let response = LoginResponse(
-                accessToken: "mock_jwt_access_token",
-                refreshToken: "mock_jwt_refresh_token",
+                accessToken: FeatureConstants.MockData.mockJwtAccess,
+                refreshToken: FeatureConstants.MockData.mockJwtRefresh,
                 expiresIn: 3600,
-                tokenType: "Bearer",
+                tokenType: FeatureConstants.MockData.bearer,
                 isNewUser: false,
                 totpRequired: false
             )
@@ -39,7 +40,7 @@ extension AuthService {
         do {
             let response: LoginResponse = try await NetworkClient.shared.request(
                 path: APIPaths.phoneLoginPath,
-                method: "POST",
+                method: SystemConstants.HTTPMethod.post,
                 body: req,
                 requiresAuth: false
             )
@@ -64,7 +65,7 @@ extension AuthService {
         do {
             let _: EmptyData = try await NetworkClient.shared.request(
                 path: APIPaths.smsSendPath,
-                method: "POST",
+                method: SystemConstants.HTTPMethod.post,
                 body: req,
                 requiresAuth: false
             )
@@ -89,7 +90,7 @@ extension AuthService {
         do {
             let response: LoginResponse = try await NetworkClient.shared.request(
                 path: APIPaths.phoneLoginPath,
-                method: "POST",
+                method: SystemConstants.HTTPMethod.post,
                 body: req,
                 requiresAuth: false
             )

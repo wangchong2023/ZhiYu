@@ -199,6 +199,12 @@ public enum CoreConstants {
     public enum ErrorCode {
         /// 引用 SystemConstants.ErrorCode.default，避免重复定义
         public static let `default`: Int = SystemConstants.ErrorCode.default
+        /// LLM 连接测试：未分类错误代码（errorCode 为 nil 时使用）
+        public static let llmTestUnclassified: String = "ERR"
+        /// LLM 连接测试：未提供错误消息（errorMessage 为 nil 时使用）
+        public static let llmTestUnknownError: String = "Unknown_Error"
+        /// LLM 连接测试：catch 捕获的异常错误代码
+        public static let llmTestCatchAll: String = "CATCH"
     }
 
     // MARK: - 日志模块名 (Log Module)

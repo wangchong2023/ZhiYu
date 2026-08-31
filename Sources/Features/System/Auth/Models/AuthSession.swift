@@ -39,7 +39,7 @@ public final class AuthSession {
         // 如果是 UI 测试环境，默认以游客身份直接进入系统，避开 Onboarding 玻璃拟态登录界面以供用例直接进入主界面
         #if DEBUG
         if TestModeDetector.isUITesting &&
-           !ProcessInfo.processInfo.arguments.contains("--reset-auth-state") {
+           !ProcessInfo.processInfo.arguments.contains(FeatureConstants.UITestingArg.resetAuthState) {
             self.isGuest = true
         }
         #endif

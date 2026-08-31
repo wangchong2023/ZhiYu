@@ -319,12 +319,13 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
                     .order(RetrievalSnapshot.Columns.rank)
                     .fetchAll(db)
 
-                for (idx, snap) in snapshots.enumerated() {
+                for snap in snapshots {
                     let judgment = try RelevanceJudgment
                         .filter(RelevanceJudgment.Columns.sourceID == snap.sourceID && RelevanceJudgment.Columns.relevanceLevel >= 1)
                         .fetchOne(db)
                     if judgment != nil {
-                        totalRR += 1.0 / Double(idx + 1)  // rank = idx + 1
+                        // Bug #36 修复：MRR 应使用实际 rank 字段，而非数组位置 idx+1
+                        totalRR += 1.0 / Double(snap.rank)
                         break
                     }
                 }
@@ -372,9 +373,11 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
 
                 // DCG@K = Σ (2^rel_i - 1) / log2(rank_i + 1)
                 var dcg: Double = 0
-                for (idx, rel) in relevanceLevels.enumerated() {
+                for (idx, snap) in snapshots.enumerated() {
+                    let rel = relevanceLevels[idx]  // 用数组索引取相关性
                     let gain = pow(2.0, Double(rel)) - 1.0
-                    let discount = log2(Double(idx + 1) + 1.0)  // rank = idx + 1
+                    // Bug #37 修复：DCG discount 应使用实际 rank 字段，而非数组位置 idx+1
+                    let discount = log2(Double(snap.rank) + 1.0)
                     dcg += gain / discount
                 }
 

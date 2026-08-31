@@ -31,6 +31,11 @@ private enum VoicePlaybackConfig {
     static let waveformRandomMax: CGFloat = 1.0
     static let seekInterval: TimeInterval = 5
     static let defaultDuration: TimeInterval = 45
+    /// 默认波形可视化高度比例（18 个采样点）
+    static let defaultWaveformLevels: [CGFloat] = [
+        0.3, 0.6, 0.4, 0.8, 0.5, 0.9, 0.3, 0.7, 0.4,
+        0.6, 0.8, 0.3, 0.5, 0.7, 0.4, 0.9, 0.6, 0.3
+    ]
 }
 
 /// 语音笔记时间戳定界符（首行 [00:00] 格式标记）
@@ -48,7 +53,7 @@ struct VoiceAudioPlayerView: View {
     @State private var isPlaying = false
     @State private var currentTime: TimeInterval = 0
     @State private var duration: TimeInterval = VoicePlaybackConfig.defaultDuration
-    @State private var waveformLevels: [CGFloat] = [0.3, 0.6, 0.4, 0.8, 0.5, 0.9, 0.3, 0.7, 0.4, 0.6, 0.8, 0.3, 0.5, 0.7, 0.4, 0.9, 0.6, 0.3]
+    @State private var waveformLevels: [CGFloat] = VoicePlaybackConfig.defaultWaveformLevels
     @Environment(\.interfaceIdiom) private var idiom
 
     private let timer = Timer.publish(every: VoicePlaybackConfig.timerInterval, on: .main, in: .common).autoconnect()
@@ -58,7 +63,7 @@ struct VoiceAudioPlayerView: View {
             // 1. 音频播放器主卡片
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 HStack {
-                    Label(L10n.Ingest.voiceNote, systemImage: "waveform")
+                    Label(L10n.Ingest.voiceNote, systemImage: DesignSystem.Icons.waveform)
                         .font(.caption.weight(.bold))
                         .padding(.horizontal, DesignSystem.medium)
                         .padding(.vertical, DesignSystem.tightPadding)
@@ -112,7 +117,7 @@ struct VoiceAudioPlayerView: View {
                     Spacer()
                     
                     Button(action: { seekBy(-VoicePlaybackConfig.seekInterval) }) {
-                        Image(systemName: "gobackward.5")
+                        Image(systemName: DesignSystem.Icons.goBackward5)
                             .font(.title3)
                             .foregroundStyle(.primary)
                     }
@@ -125,7 +130,7 @@ struct VoiceAudioPlayerView: View {
                     }
 
                     Button(action: { seekBy(VoicePlaybackConfig.seekInterval) }) {
-                        Image(systemName: "goforward.5")
+                        Image(systemName: DesignSystem.Icons.goForward5)
                             .font(.title3)
                             .foregroundStyle(.primary)
                     }
@@ -145,7 +150,7 @@ struct VoiceAudioPlayerView: View {
             
             // 2. 语音转写正文
             VStack(alignment: .leading, spacing: DesignSystem.small) {
-                Label(L10n.Voice.Speech.result, systemImage: "doc.plaintext")
+                Label(L10n.Voice.Speech.result, systemImage: DesignSystem.Icons.docPlaintext)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
                 
@@ -159,8 +164,8 @@ struct VoiceAudioPlayerView: View {
     
     private var cleanText: String {
         transcribedText
-            .replacingOccurrences(of: "[[", with: "「")
-            .replacingOccurrences(of: "]]", with: "」")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "「")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "」")
     }
     
     private func setupAudioPlayer() {
@@ -239,8 +244,8 @@ struct VoiceAudioPlayerView: View {
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
-        let mins = Int(time) / 60
-        let secs = Int(time) % 60
+        let mins = Int(time) / FeatureConstants.VoiceAudioPlayer.secondsPerMinute
+        let secs = Int(time) % FeatureConstants.VoiceAudioPlayer.secondsPerMinute
         return String(format: "%02d:%02d", mins, secs)
     }
 }
@@ -266,36 +271,36 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
         var cleanText = text
         if let firstLineEnd = cleanText.firstIndex(of: "\n") {
             let firstLine = cleanText[..<firstLineEnd]
-            if firstLine.hasPrefix("🎙️") || (firstLine.contains(VoiceTimestampDelimiter.openBracket) && firstLine.contains(VoiceTimestampDelimiter.closeBracket)) {
+            if firstLine.hasPrefix(FeatureConstants.VoiceMarker.micEmoji) || (firstLine.contains(VoiceTimestampDelimiter.openBracket) && firstLine.contains(VoiceTimestampDelimiter.closeBracket)) {
                 cleanText = String(cleanText[firstLineEnd...]).trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
         
         cleanText = cleanText
-            .replacingOccurrences(of: "[[", with: "")
-            .replacingOccurrences(of: "]]", with: "")
-            .replacingOccurrences(of: "#", with: "")
-            .replacingOccurrences(of: "*", with: "")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "")
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "")
+            .replacingOccurrences(of: SystemConstants.Character.hash, with: "")
+            .replacingOccurrences(of: SystemConstants.Character.asterisk, with: "")
         
         let recognizer = NLLanguageRecognizer()
         recognizer.processString(cleanText)
-        let detectedLang = recognizer.dominantLanguage?.rawValue ?? "zh-CN"
+        let detectedLang = recognizer.dominantLanguage?.rawValue ?? FeatureConstants.VoiceMarker.zhCN
         
         let languageCode: String
         switch detectedLang {
-        case "en": languageCode = "en-US"
-        case "ja": languageCode = "ja-JP"
-        case "ko": languageCode = "ko-KR"
-        case "fr": languageCode = "fr-FR"
-        case "de": languageCode = "de-DE"
-        case "es": languageCode = "es-ES"
-        case "zh-Hant": languageCode = "zh-TW"
-        default: languageCode = "zh-CN"
+        case FeatureConstants.LanguageCode.en: languageCode = FeatureConstants.LanguageCode.enUS
+        case FeatureConstants.LanguageCode.ja: languageCode = FeatureConstants.LanguageCode.jaJP
+        case FeatureConstants.LanguageCode.ko: languageCode = FeatureConstants.LanguageCode.koKR
+        case FeatureConstants.LanguageCode.fr: languageCode = FeatureConstants.LanguageCode.frFR
+        case FeatureConstants.LanguageCode.de: languageCode = FeatureConstants.LanguageCode.deDE
+        case FeatureConstants.LanguageCode.es: languageCode = FeatureConstants.LanguageCode.esES
+        case FeatureConstants.LanguageCode.zhHant: languageCode = FeatureConstants.LanguageCode.zhTW
+        default: languageCode = FeatureConstants.VoiceMarker.zhCN
         }
         
         let utterance = AVSpeechUtterance(string: cleanText)
-        utterance.voice = AVSpeechSynthesisVoice(language: languageCode) ?? AVSpeechSynthesisVoice(language: "zh-CN")
-        utterance.rate = 0.5
+        utterance.voice = AVSpeechSynthesisVoice(language: languageCode) ?? AVSpeechSynthesisVoice(language: FeatureConstants.VoiceMarker.zhCN)
+        utterance.rate = FeatureConstants.VoiceAudioPlayer.defaultSpeechRate
         isSpeaking = true
         synthesizer.speak(utterance)
     }

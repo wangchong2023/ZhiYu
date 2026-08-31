@@ -40,8 +40,6 @@ final class IngestFileHandlerDeepTests: XCTestCase {
         try? FileManager.default.removeItem(at: tempDir)
         resetPersistentTestState()
         try? await Task.sleep(nanoseconds: 50_000_000)
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
         try await super.tearDown()
     }
 

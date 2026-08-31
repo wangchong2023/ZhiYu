@@ -222,8 +222,16 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
                 let isCompanion = fileURL.path.hasSuffix(StorageConstants.SQLiteExtension.walSuffix) || fileURL.path.hasSuffix(StorageConstants.SQLiteExtension.shmSuffix)
                 
                 if isSqlite || isCompanion {
-                    // 排除已经累计过的当前活跃库路径
-                    if !dbPath.isEmpty && !fileURL.path.hasPrefix(dbPath) {
+                    // Bug #135 修复：用标准化路径精确比较，排除当前活跃库和全局库
+                    let normalizedFilePath = URL(fileURLWithPath: fileURL.path).standardizedFileURL.path
+                    let normalizedDbPath = URL(fileURLWithPath: dbPath).standardizedFileURL.path
+                    let normalizedGlobalPath = URL(fileURLWithPath: globalDBPath).standardizedFileURL.path
+                    let isCurrentDB = !dbPath.isEmpty && normalizedFilePath == normalizedDbPath
+                    let isCurrentCompanion = !dbPath.isEmpty && (normalizedFilePath == normalizedDbPath + StorageConstants.SQLiteExtension.walSuffix || normalizedFilePath == normalizedDbPath + StorageConstants.SQLiteExtension.shmSuffix)
+                    let isGlobalDB = !globalDBPath.isEmpty && normalizedFilePath == normalizedGlobalPath
+                    let isGlobalCompanion = !globalDBPath.isEmpty && (normalizedFilePath == normalizedGlobalPath + StorageConstants.SQLiteExtension.walSuffix || normalizedFilePath == normalizedGlobalPath + StorageConstants.SQLiteExtension.shmSuffix)
+
+                    if !isCurrentDB && !isCurrentCompanion && !isGlobalDB && !isGlobalCompanion {
                         let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey])
                         if let fileSize = resourceValues?.fileSize {
                             totalDbSize += Int64(fileSize)
@@ -322,18 +330,24 @@ extension SQLiteStore {
         fileSize: Int64?,
         sourceType: String?,
         forceDeepScan: Bool
-    ) async -> KnowledgePage {
-        (try? await createPage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
-        )) ?? KnowledgePage(title: title, pageType: pageType)
+    ) async -> KnowledgePage? {
+        // Bug #136 修复：失败时返回 nil 而非空 KnowledgePage，让调用方感知失败
+        do {
+            return try await createPage(
+                title: title,
+                pageType: pageType,
+                customIcon: customIcon,
+                content: content,
+                tags: tags,
+                sourceURL: sourceURL,
+                rawSnippet: rawSnippet,
+                fileSize: fileSize,
+                sourceType: sourceType
+            )
+        } catch {
+            Logger.shared.error("anyCreatePage failed: \(error)")
+            return nil
+        }
     }
 
     /// any更新Page

@@ -53,6 +53,10 @@ public enum SystemConstants {
         public static let noContent: Int = 204
         /// 401 Unauthorized
         public static let unauthorized: Int = 401
+        /// 402 Payment Required
+        public static let paymentRequired: Int = 402
+        /// 403 Forbidden
+        public static let forbidden: Int = 403
         /// 404 Not Found
         public static let notFound: Int = 404
         /// 429 Too Many Requests
@@ -194,8 +198,12 @@ public enum SystemConstants {
         public static let doc: String = "doc"
         /// .xlsx（Excel 文档）
         public static let xlsx: String = "xlsx"
+        /// .xls（Excel 旧版文档，子串匹配亦覆盖 .xlsx）
+        public static let xls: String = "xls"
         /// .pptx（PowerPoint 文档）
         public static let pptx: String = "pptx"
+        /// .ppt（PowerPoint 旧版文档，子串匹配亦覆盖 .pptx）
+        public static let ppt: String = "ppt"
         /// .png（PNG 图片）
         public static let png: String = "png"
         /// .jpg（JPEG 图片）
@@ -204,6 +212,12 @@ public enum SystemConstants {
         public static let jpeg: String = "jpeg"
         /// .gif（GIF 图片）
         public static let gif: String = "gif"
+        /// .wav（WAV 音频）
+        public static let wav: String = "wav"
+        /// .mp3（MP3 音频）
+        public static let mp3: String = "mp3"
+        /// .m4a（M4A 音频）
+        public static let m4a: String = "m4a"
         /// 文本类文件扩展名集合（用于导入识别）
         public static let textFileExtensions: Set<String> = [
             "txt", "md", "json", "csv", "js", "py",
@@ -231,12 +245,18 @@ public enum SystemConstants {
         public static let h1Prefix: String = "# "
         /// H2 前缀
         public static let h2Prefix: String = "## "
+        /// H3 前缀
+        public static let h3Prefix: String = "### "
         /// 无序列表项标记（星号）
         public static let bulletAsterisk: String = "* "
         /// 无序列表项标记（短横线）
         public static let bulletDash: String = "- "
         /// 表格行分隔符（Markdown 表格分隔行 `---`）
         public static let tableRowSeparator: String = "---"
+        /// 表格分隔行前缀 `|:`（对齐分隔行）
+        public static let tableSeparatorColon: String = "|:"
+        /// 表格分隔行前缀 `|-`（对齐分隔行）
+        public static let tableSeparatorDash: String = "|-"
         /// 代码块围栏标记（```）
         public static let codeFence: String = "```"
         /// JSON 代码块围栏标记（```json）
@@ -291,6 +311,10 @@ public enum SystemConstants {
         public static let https: String = "https://"
         /// http://
         public static let http: String = "http://"
+        /// URL scheme 名称字面量 "http"（用于 url.scheme == "http" 比较）
+        public static let httpLiteral: String = "http"
+        /// URL scheme 名称字面量 "https"（用于 url.scheme == "https" 比较）
+        public static let httpsLiteral: String = "https"
     }
 
     // MARK: - 基础字符 (Base Characters)
@@ -329,5 +353,6 @@ public enum SystemConstants {
         public static let openBrace: String = "{"
         public static let closeBrace: String = "}"
         public static let exclamation: String = "!"
+        public static let backtick: String = "`"
     }
 }

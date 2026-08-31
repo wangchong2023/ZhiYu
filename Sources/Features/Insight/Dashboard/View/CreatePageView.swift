@@ -9,6 +9,7 @@
 //  核心职责：构建 CreatePage 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPCore
 
 struct CreatePageView: View {
     @Environment(AppStore.self) var store
@@ -143,8 +144,8 @@ struct CreatePageView: View {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 labeledField(
                     L10n.Creation.template.entity.overview
-                        .replacingOccurrences(of: "## ", with: "")
-                        .replacingOccurrences(of: "\n", with: "")
+                        .replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
+                        .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
                         .trimmingCharacters(in: .whitespaces),
                     hint: L10n.Creation.template.entity.desc,
                     text: $summary
@@ -157,8 +158,8 @@ struct CreatePageView: View {
                 Divider()
                 labeledField(
                     L10n.Creation.template.entity.related
-                        .replacingOccurrences(of: "## ", with: "")
-                        .replacingOccurrences(of: "\n", with: "")
+                        .replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
+                        .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
                         .trimmingCharacters(in: .whitespaces),
                     hint: L10n.Creation.tagsPlaceholder,
                     text: $relatedItems
@@ -176,8 +177,8 @@ struct CreatePageView: View {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 labeledField(
                     L10n.Creation.template.concept.definition
-                        .replacingOccurrences(of: "## ", with: "")
-                        .replacingOccurrences(of: "\n", with: "")
+                        .replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
+                        .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
                         .trimmingCharacters(in: .whitespaces),
                     hint: L10n.Creation.template.concept.desc,
                     text: $summary
@@ -212,7 +213,7 @@ struct CreatePageView: View {
                         TextField(L10n.Creation.compareItemA, text: $compareItemA).font(.body)
                     }
                     VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                        Text(L10n.Creation.compareItemB).font(.caption.weight(.semibold)).foregroundStyle(.orange)
+                        Text(L10n.Creation.compareItemB).font(.caption.weight(.semibold)).foregroundStyle(Color.theme.orange)
                         TextField(L10n.Creation.compareItemB, text: $compareItemB).font(.body)
                     }
                 }

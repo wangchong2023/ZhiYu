@@ -278,19 +278,23 @@ final class SSEParser {
     }
 
     /// 从 LLM 响应 JSON 的 choices[0] 中提取 content 或 reasoning_content。
-    /// 兼容 delta（流式）和 message（非流式）两种 SSE 结构。
+    /// 兼容 delta（流式）和 message（非流式）两种 SSE 结构，并防御 content 为空字符串时 reasoning_content 丢失问题。
     static func extractContent(from json: [String: Any]) -> String? {
         guard let choices = json["choices"] as? [[String: Any]],
               let first = choices.first else { return nil }
-        let content: String?
-        if let delta = first["delta"] as? [String: Any] {
-            content = (delta["content"] as? String) ?? (delta["reasoning_content"] as? String)
-        } else if let message = first["message"] as? [String: Any] {
-            content = (message["content"] as? String) ?? (message["reasoning_content"] as? String)
-        } else {
-            content = nil
+        let payload = (first["delta"] as? [String: Any]) ?? (first["message"] as? [String: Any])
+        guard let payload else { return nil }
+        
+        let directContent = (payload["content"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let directContent, !directContent.isEmpty {
+            return payload["content"] as? String
         }
-        guard let content, !content.isEmpty else { return nil }
-        return content
+        
+        let reasoning = (payload["reasoning_content"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let reasoning, !reasoning.isEmpty {
+            return payload["reasoning_content"] as? String
+        }
+        
+        return nil
     }
 }

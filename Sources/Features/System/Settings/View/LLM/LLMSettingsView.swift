@@ -105,7 +105,7 @@ struct LLMSettingsView: View {
                     .padding(.top, DesignSystem.small)
                 } label: {
                     HStack {
-                        Label(L10n.AI.LLM.Provider.title, systemImage: "cpu")
+                        Label(L10n.AI.LLM.Provider.title, systemImage: DesignSystem.Icons.cpuOutline)
                             .foregroundStyle(.appText)
                         Spacer()
                         Text(config.provider.displayName)
@@ -155,10 +155,10 @@ struct LLMSettingsView: View {
                         case .success(let latency, _, _):
                           HStack {
                               Image(systemName: DesignSystem.Icons.checkCircle)
-                                  .foregroundStyle(.green)
+                                  .foregroundStyle(Color.theme.green)
                               Text(L10n.AI.OnDevice.connected)
                                   .font(.subheadline.bold())
-                                  .foregroundStyle(.green)
+                                  .foregroundStyle(Color.theme.green)
                               Spacer()
                               Text(L10n.AI.LLM.latency("\(latency) \(L10n.Dashboard.unitMs)"))
                                   .font(.caption.monospaced())
@@ -167,7 +167,7 @@ struct LLMSettingsView: View {
                         case .failure(let code, let message, let latency, _):
                           HStack(alignment: .top) {
                               Image(systemName: DesignSystem.Icons.errorCircle)
-                                  .foregroundStyle(.red)
+                                  .foregroundStyle(Color.theme.red)
                               VStack(alignment: .leading, spacing: DesignSystem.tiny) {
                                   Text(L10n.AI.OnDevice.errorFormat("\(code)"))
                                       .font(.subheadline.bold())
@@ -245,7 +245,7 @@ struct LLMSettingsView: View {
                 Text(L10n.AI.LLM.apiAddress)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appSecondary)
-                TextField("https://api.example.com/v1", text: $config.baseURL)
+                TextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL)
                     .textFieldStyle(.plain)
                     .font(.system(.body, design: .monospaced))
                     .foregroundStyle(.appText)
@@ -282,7 +282,7 @@ struct LLMSettingsView: View {
                 
                 if config.provider == .custom || isCustomModelInput || config.provider.suggestedModels.isEmpty {
                     // 自定义输入框
-                    TextField("model-name", text: $config.model)
+                    TextField(FeatureConstants.Placeholder.modelName, text: $config.model)
                         .textFieldStyle(.plain)
                         .font(.system(.body, design: .monospaced))
                         .foregroundStyle(.appText)
@@ -308,7 +308,7 @@ struct LLMSettingsView: View {
                                 .font(.system(.body, design: .monospaced))
                                 .foregroundStyle(.appText)
                             Spacer()
-                            Image(systemName: "chevron.up.chevron.down")
+                            Image(systemName: DesignSystem.Icons.chevronUpDown)
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                         }
@@ -338,13 +338,13 @@ struct LLMSettingsView: View {
                     if res.isSuccess {
                         testResult = .success(latency: res.latencyMS, streamOK: res.streamOK, streamTested: res.streamTested)
                     } else {
-                        testResult = .failure(code: res.errorCode ?? "ERR", message: res.errorMessage ?? "Unknown_Error", latency: res.latencyMS, streamTested: res.streamTested)
+                        testResult = .failure(code: res.errorCode ?? CoreConstants.ErrorCode.llmTestUnclassified, message: res.errorMessage ?? CoreConstants.ErrorCode.llmTestUnknownError, latency: res.latencyMS, streamTested: res.streamTested)
                     }
                 }
             } catch {
                 await MainActor.run {
                     testing = false
-                    testResult = .failure(code: "CATCH", message: error.localizedDescription, latency: nil, streamTested: false)
+                    testResult = .failure(code: CoreConstants.ErrorCode.llmTestCatchAll, message: error.localizedDescription, latency: nil, streamTested: false)
                 }
             }
         }

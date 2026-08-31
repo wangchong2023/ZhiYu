@@ -159,7 +159,7 @@ struct WeeklyInsightCard: View {
         .background(
             ZStack {
                 DesignSystem.containerBackground
-                LinearGradient(colors: [.purple.opacity(SystemOpacity.ghost), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
+                LinearGradient(colors: [Color.theme.purple.opacity(SystemOpacity.ghost), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.loosePadding)) // 20
@@ -231,7 +231,7 @@ struct WeeklyReportView: View {
                 VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
                     HStack {
                         Image(systemName: DesignSystem.Icons.concept)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color.theme.orange)
                         Text(L10n.Dashboard.insight.tips.title)
                             .font(.headline)
                     }
@@ -256,7 +256,7 @@ struct WeeklyReportView: View {
             }
             .padding(DesignSystem.loosePadding)
         }
-        .background(PageBackgroundView(accentColor: .purple))
+        .background(PageBackgroundView(accentColor: Color.theme.purple))
         .appSubPageToolbar(title: L10n.Common.Sidebar.weeklyInsight)
     }
 }

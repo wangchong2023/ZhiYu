@@ -143,7 +143,7 @@ struct RAGRetrievalPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
             infoSectionHeader(id: "retrievalPhase", title: L10n.Dashboard.stats.retrievalQuality,
-                              icon: "magnifyingglass.circle.fill", color: .teal, tip: L10n.Dashboard.stats.tipRetrievalPhase)
+                               icon: "magnifyingglass.circle.fill", color: Color.theme.teal, tip: L10n.Dashboard.stats.tipRetrievalPhase)
 
             subSectionLabel(L10n.Dashboard.stats.rankingQuality, icon: "list.number")
             HStack(spacing: DesignSystem.medium) {
@@ -220,7 +220,7 @@ struct RAGRetrievalPanel: View {
             HapticFeedback.shared.trigger(.selection)
             activeTooltip = (activeTooltip == id) ? nil : id
         }) {
-            Image(systemName: "info.circle")
+            Image(systemName: DesignSystem.Icons.settingsAbout)
                 .font(.caption)
                 .foregroundStyle((activeTooltip == id) ? .appAccent : .appSecondary.opacity(DesignSystem.Opacity.soft))
                 .frame(width: TooltipVisual.iconHitTarget, height: TooltipVisual.iconHitTarget)
@@ -253,9 +253,9 @@ struct RAGRetrievalPanel: View {
                     .frame(width: RingStyle.size, height: RingStyle.size)
                     .animation(.easeInOut(duration: 0.8), value: score)
                 VStack(spacing: 0) {
-                    Text(String(format: FormatPattern.percentInt, score * 100))
+                    Text(String(format: FormatPattern.percentInt, score * FeatureConstants.PercentageBase.full))
                         .font(.system(size: FontSize.ringPercent, weight: .bold, design: .rounded)).foregroundStyle(color)
-                    Text("%").font(.system(size: FontSize.ringPercentSign, weight: .medium))
+                    Text(FeatureConstants.Decorator.percent).font(.system(size: FontSize.ringPercentSign, weight: .medium))
                         .foregroundStyle(color.opacity(CardVisual.percentAuxOpacity))
                 }
             }
@@ -321,21 +321,21 @@ struct RAGRetrievalPanel: View {
     // MARK: - 评分与颜色
 
     func scoreColor(_ s: Double) -> Color {
-        if s >= ScoreThreshold.excellent { return .green }
-        if s >= ScoreThreshold.fair { return .orange }
-        return .red
+        if s >= ScoreThreshold.excellent { return Color.theme.green }
+        if s >= ScoreThreshold.fair { return Color.theme.orange }
+        return Color.theme.red
     }
 
     func invertedScoreColor(_ s: Double) -> Color {
-        if s <= ScoreThreshold.invertedExcellent { return .green }
-        if s <= ScoreThreshold.invertedFair { return .orange }
-        return .red
+        if s <= ScoreThreshold.invertedExcellent { return Color.theme.green }
+        if s <= ScoreThreshold.invertedFair { return Color.theme.orange }
+        return Color.theme.red
     }
 
     func latencyColor(_ ms: Int) -> Color {
-        if ms < LatencyThreshold.low { return .green }
-        if ms < LatencyThreshold.medium { return .orange }
-        return .red
+        if ms < LatencyThreshold.low { return Color.theme.green }
+        if ms < LatencyThreshold.medium { return Color.theme.orange }
+        return Color.theme.red
     }
 }
 
@@ -355,7 +355,7 @@ struct RAGGenerationPanel: View {
         )
         return VStack(alignment: .leading, spacing: DesignSystem.medium) {
             HStack(spacing: DesignSystem.small) {
-                Label(L10n.Dashboard.stats.generationQuality, systemImage: "text.bubble.fill").font(.headline).foregroundStyle(.appAccent)
+                Label(L10n.Dashboard.stats.generationQuality, systemImage: DesignSystem.Icons.textBubble).font(.headline).foregroundStyle(.appAccent)
                 benchmark.infoIcon(id: "generationPhase", tip: L10n.Dashboard.stats.tipGenerationPhase)
             }
             VStack(spacing: DesignSystem.small) {
@@ -363,9 +363,9 @@ struct RAGGenerationPanel: View {
                     benchmark.scoreCard(id: "faithfulness", title: L10n.Dashboard.stats.faithfulness,
                               score: avgScores.faithfulness, icon: "checkmark.shield", tip: L10n.Dashboard.stats.tipFaithfulness)
                     benchmark.scoreCard(id: "relevance", title: L10n.Dashboard.stats.relevance,
-                              score: avgScores.relevance, icon: "target", tip: L10n.Dashboard.stats.tipRelevance)
+                              score: avgScores.relevance, icon: DesignSystem.Icons.target, tip: L10n.Dashboard.stats.tipRelevance)
                     benchmark.scoreCard(id: "hallucination", title: L10n.Dashboard.stats.hallucinationRate,
-                              score: avgScores.hallucinationRate, icon: "exclamationmark.bubble",
+                              score: avgScores.hallucinationRate, icon: DesignSystem.Icons.exclamationmarkBubble,
                               inverted: true, tip: L10n.Dashboard.stats.tipHallucination)
                 }
                 HStack(spacing: DesignSystem.medium) {

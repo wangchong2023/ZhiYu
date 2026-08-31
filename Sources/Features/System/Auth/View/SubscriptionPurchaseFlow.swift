@@ -33,7 +33,7 @@ struct SubscriptionPurchaseFlow: View {
 
             AppPrimaryButton(
                 title: btnText,
-                icon: "applelogo",
+                icon: DesignSystem.Icons.applelogo,
                 isLoading: isPurchasing
             ) {
                 handleApplePurchase()
@@ -124,10 +124,23 @@ struct SubscriptionPurchaseFlow: View {
                     }
                     isPurchasing = false
                 } else {
+                    #if DEBUG
                     try await performMockPurchase()
+                    #else
+                    errorMessage = L10n.Auth.verifyFailed
+                    isPurchasing = false
+                    #endif
                 }
             } catch {
+                #if DEBUG
+                // Bug #95 修复：catch 块用 defer 确保 isPurchasing 必定重置，
+                // 即使 performMockPurchase 抛错也不会卡在 purchasing 状态。
+                defer { isPurchasing = false }
                 try? await performMockPurchase()
+                #else
+                errorMessage = L10n.Auth.verifyFailed
+                isPurchasing = false
+                #endif
             }
         }
     }

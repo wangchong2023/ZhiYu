@@ -33,6 +33,10 @@ public enum GraphConstants {
         public static let canvasRadiusRatio: CGFloat = 0.4
         /// 温度补偿引力系数
         public static let temperatureGravityCompensation: CGFloat = 0.01
+        /// 图谱画布边缘留白 padding
+        public static let layoutPadding: CGFloat = 40.0
+        /// 社区聚类引力系数
+        public static let clusterAttraction: CGFloat = 0.05
         /// 空间网格哈希位移位数（将 gx 编码到高位）
         public static let gridHashShift: Int = 16
         /// 空间网格哈希低位掩码（gy 占低 16 位）
@@ -45,6 +49,8 @@ public enum GraphConstants {
         public static let simulationIterations: Int = 100
         public static let baseExpansionOffset: CGFloat = 20.0
         public static let expansionFactor: CGFloat = 0.05
+        /// 节点点击时的缩放倍数
+        public static let nodeTapScale: CGFloat = 1.2
     }
     
     /// 3D 图谱逻辑配置

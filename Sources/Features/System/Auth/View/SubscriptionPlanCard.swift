@@ -49,7 +49,7 @@ struct SubscriptionPlanCard: View {
                 RoundedRectangle(cornerRadius: SystemRadius.card)
                     .stroke(
                         selectedCycle == .monthly
-                            ? AnyShapeStyle(LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            ? AnyShapeStyle(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                             : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
                         lineWidth: selectedCycle == .monthly ? 2 : 1
                     )
@@ -85,7 +85,7 @@ struct SubscriptionPlanCard: View {
                 RoundedRectangle(cornerRadius: SystemRadius.card)
                     .stroke(
                         selectedCycle == .yearly
-                            ? AnyShapeStyle(LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            ? AnyShapeStyle(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                             : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
                         lineWidth: selectedCycle == .yearly ? 2 : 1
                     )
@@ -100,7 +100,7 @@ struct SubscriptionPlanCard: View {
             // Lite Card
             VStack(alignment: .leading, spacing: SystemSpacing.element) {
                 HStack {
-                    Image(systemName: "lightbulb")
+                    Image(systemName: DesignSystem.Icons.lightbulb)
                         .font(.title3)
                         .foregroundStyle(.appSecondary)
                         .frame(width: DesignSystem.Timeline.iconCircleSize, height: DesignSystem.Timeline.iconCircleSize)
@@ -109,7 +109,7 @@ struct SubscriptionPlanCard: View {
 
                     Spacer()
 
-                    Text("Lite")
+                    Text(FeatureConstants.MockData.litePlanName)
                         .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
                         .padding(.horizontal, SystemSpacing.small)
@@ -139,11 +139,11 @@ struct SubscriptionPlanCard: View {
             // Pro Card
             VStack(alignment: .leading, spacing: SystemSpacing.element) {
                 HStack {
-                    Image(systemName: "bolt.fill")
+                    Image(systemName: DesignSystem.Icons.boltFill)
                         .font(.title3)
                         .foregroundStyle(.white)
                         .frame(width: DesignSystem.Timeline.iconCircleSize, height: DesignSystem.Timeline.iconCircleSize)
-                        .background(LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .background(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .clipShape(Circle())
 
                     Spacer()
@@ -153,7 +153,7 @@ struct SubscriptionPlanCard: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, SystemSpacing.small)
                         .padding(.vertical, SystemSpacing.atomic)
-                        .background(LinearGradient(colors: [.purple, .blue], startPoint: .leading, endPoint: .trailing))
+                        .background(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .leading, endPoint: .trailing))
                         .clipShape(Capsule())
                 }
                 let proPriceStr: String = selectedCycle == .monthly ? L10n.Auth.priceMonthlyPro : L10n.Auth.priceMonthlyProEquivalent
@@ -174,7 +174,7 @@ struct SubscriptionPlanCard: View {
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                     .stroke(
-                        LinearGradient(colors: [.purple, .blue], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing),
                         lineWidth: SystemStroke.heavy
                     )
             )

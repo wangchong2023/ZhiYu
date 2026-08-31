@@ -22,6 +22,11 @@ private enum MermaidConflictChar {
     static let closeBracket: String = SystemConstants.Character.closeBracket
 }
 
+/// Mermaid 代码块提取正则模式（匹配 ```mermaid ... ``` 或 ``` ... ``` 代码块内容）
+private enum MermaidPattern {
+    static let codeBlock: String = "```(?:mermaid)?\\n([\\s\\S]*?)```"
+}
+
 /// 渲染思维导图 / 信息图类型的合成文档内容
 /// 从文档 Markdown 内容中提取标题与 Mermaid 代码，驱动 MermaidWebView 进行可视化渲染
 struct SynthesisMindmapView: View {
@@ -78,14 +83,14 @@ struct SynthesisMindmapView: View {
     private func extractTitle(from content: String) -> String? {
         let lines = content.components(separatedBy: .newlines)
         if let firstLine = lines.map({ $0.trimmingCharacters(in: .whitespaces) }).first(where: { !$0.isEmpty }),
-           firstLine.hasPrefix("# ") {
-            return firstLine.replacingOccurrences(of: "# ", with: "")
+           firstLine.hasPrefix(SystemConstants.MarkdownSyntax.h1Prefix) {
+            return firstLine.replacingOccurrences(of: SystemConstants.MarkdownSyntax.h1Prefix, with: "")
         }
         return nil
     }
 
     private func extractMermaidCode(from content: String) -> String {
-        if let regex = try? NSRegularExpression(pattern: "```(?:mermaid)?\\n([\\s\\S]*?)```", options: []),
+        if let regex = try? NSRegularExpression(pattern: MermaidPattern.codeBlock, options: []),
            let match = regex.firstMatch(in: content, options: [], range: NSRange(content.startIndex..., in: content)),
            let range = Range(match.range(at: 1), in: content) {
             let extracted = String(content[range]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -97,12 +102,12 @@ struct SynthesisMindmapView: View {
         let lines = content.components(separatedBy: .newlines)
         let filtered = lines.filter { line in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            return !trimmed.hasPrefix("#") && !trimmed.hasPrefix("```") && !trimmed.isEmpty
+            return !trimmed.hasPrefix(SystemConstants.Character.hash) && !trimmed.hasPrefix(SystemConstants.MarkdownSyntax.codeFence) && !trimmed.isEmpty
         }
         .joined(separator: "\n")
         .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if filtered.hasPrefix("mindmap") || filtered.hasPrefix("graph") || filtered.hasPrefix("sequenceDiagram") || filtered.hasPrefix("gantt") || filtered.hasPrefix("pie") {
+        if filtered.hasPrefix(ProcessorConstants.MermaidSyntax.mindmap) || filtered.hasPrefix(ProcessorConstants.MermaidSyntax.graph) || filtered.hasPrefix(ProcessorConstants.MermaidSyntax.sequenceDiagram) || filtered.hasPrefix(ProcessorConstants.MermaidSyntax.gantt) || filtered.hasPrefix(ProcessorConstants.MermaidSyntax.pie) {
             return filtered
         }
         
@@ -120,7 +125,7 @@ struct SynthesisMindmapView: View {
                 .replacingOccurrences(of: MermaidConflictChar.closeBracket, with: "")
                 .replacingOccurrences(of: "：", with: " ")
                 .replacingOccurrences(of: ":", with: " ")
-                .replacingOccurrences(of: "\n", with: "\n    ")
+                .replacingOccurrences(of: SystemConstants.Character.newline, with: FeatureConstants.MarkdownIndent.newlineIndent)
             return "mindmap\n  root((\(sanitizedTitle)))\n    \(sanitizedBody)"
         } else if doc.type == .infographic {
             return "graph TD\n  A[\(extractTitle(from: content) ?? L10n.AI.Synthesis.title)] --> B[\(filtered.prefix(100))]"

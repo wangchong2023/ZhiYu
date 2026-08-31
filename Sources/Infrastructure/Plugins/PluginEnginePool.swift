@@ -22,7 +22,7 @@ final class PluginEnginePool: @unchecked Sendable {
     static let shared = PluginEnginePool()
     
     /// 连接池物理上限
-    private let maxPoolSize = 4
+    private let maxPoolSize = PluginConstants.Sandbox.maxEngineContextPoolSize
     
     /// 缓存的可用 JSContext 实例队列
     private var availableContexts: [JSContext] = []

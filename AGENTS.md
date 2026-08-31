@@ -29,6 +29,7 @@
 | `Docs/Requirements/SOFTWARE_REQUIREMENTS_SPECIFICATION.md` | 软件需求规格说明 |
 | `Docs/Testing/TEST_CASES.md` | 各模块测试用例 |
 | `Docs/Testing/UNIT_TEST_GUIDE.md` | 单元测试编写指南 |
+| `Docs/Testing/TEST_DRIVEN_FINDINGS.md` | 🆕 测试驱动发现问题台账（含序号、问题描述、严重程度、修改方案、是否解决） |
 | `Docs/Testing/SYSTEM_TEST_PLAN.md` | 系统测试计划 |
 | `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署、Git 分支管理与 MR 卡控规范（对齐 ZhiYu-Backend） |
 | `Docs/Design/SECURITY_THREAT_MODEL.md` | 安全威胁模型 |
@@ -77,7 +78,7 @@
    - **三层守门全覆盖**（CI 静态分析 + pre-push 钩子，均阻断）：
      - `audit-design-magic-numbers.py` — UI 设计令牌层（padding/frame/color）
      - `audit-code-magic-strings.py` — Features/Platforms 字符串层（UserDefaults key/URL）
-     - `audit-code-business-magic-numbers.py` — **Domain/Infrastructure/Core 业务逻辑层**（业务阈值数字/硬编码 Prompt/硬编码正则）
+      - `audit-code-business-magic-numbers.py` — **Domain/Infrastructure/Core/Features 业务逻辑层**（业务阈值数字/硬编码 Prompt/硬编码正则；Features 层 magic_number 全量检测，magic_string 通过 `--magic-string-scope` 逐步启用）
    - **协议常量也必须抽取**：HTTP 状态码（`200`→`HTTPStatusCode.ok`）、字节换算（`1024`→`BytesPerKB`）、位运算移位（`<< 24`→`BitShift.octet1`）、IP 段（`192.168`→`PrivateIPRange.classC`）等不通过文件白名单豁免。
    - **复合表达式中的换算常量必须抽取**：`5 * 1024 * 1024` 应改为 `5 * BytesPerKB * BytesPerKB`，`1024` 不被「常量定义行」规则吞掉。
    - **豁免统一走 ExemptionRegistry**：在 `Config/exemptions/manual_whitelist.yml` 的 `business_magic_exempt` 分类下登记，含 file/line/reason/expiry_check，不支持行注释豁免。

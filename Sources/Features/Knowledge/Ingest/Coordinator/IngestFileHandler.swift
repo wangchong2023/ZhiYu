@@ -97,7 +97,7 @@ extension IngestCoordinator {
             return try? String(contentsOf: url, encoding: .utf8)
         }
         // RTF 文件需用 NSAttributedString 解析为纯文本，不能用 String(contentsOf:) 读取源码
-        if ext == "rtf" {
+        if ext == FeatureConstants.FileExtension.rtf {
             #if canImport(UIKit) || canImport(AppKit)
             return try? NSAttributedString(
                 url: url,

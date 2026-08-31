@@ -16,13 +16,23 @@ import XCTest
 final class SecureEnclaveCryptoServiceTests: XCTestCase {
 
     private var service: SecureEnclaveCryptoService!
+    private var originalKeychainOverride: KeychainService?
+    private var originalSecurityManagerOverride: SecurityManager?
 
     override func setUp() {
         super.setUp()
         service = SecureEnclaveCryptoService()
+        // 保存并强制清理 testOverride，避免其他测试类遗留的 Mock 污染
+        originalKeychainOverride = KeychainService.testOverride
+        originalSecurityManagerOverride = SecurityManager.testOverride
+        KeychainService.testOverride = MockKeychainService()
+        SecurityManager.testOverride = nil
     }
 
     override func tearDown() {
+        KeychainService.testOverride = originalKeychainOverride
+        SecurityManager.testOverride = originalSecurityManagerOverride
+        SecureEnclaveCryptoService.testOverride = nil
         service = nil
         super.tearDown()
     }
