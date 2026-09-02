@@ -100,6 +100,7 @@ enum SnapshotServiceKey: DependencyKey {
     static var testValue: SnapshotService {
         ServiceContainer.shared.resolveOptional(SnapshotService.self) ?? SnapshotService()
     }
+    static var previewValue: SnapshotService { testValue }
 }
 
 extension DependencyValues {

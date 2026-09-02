@@ -219,6 +219,8 @@ enum IngestStoreKey: DependencyKey {
     static var testValue: IngestStore {
         ServiceContainer.shared.resolveOptional(IngestStore.self) ?? IngestStore()
     }
+    @MainActor
+    static var previewValue: IngestStore { testValue }
 }
 
 extension DependencyValues {

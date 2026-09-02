@@ -87,6 +87,8 @@ enum UndoServiceKey: DependencyKey {
     public static var testValue: UndoService? {
         ServiceContainer.shared.resolveOptional(UndoService.self)
     }
+    @MainActor
+    static var previewValue: UndoService? { testValue }
 }
 
 extension DependencyValues {

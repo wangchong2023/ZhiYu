@@ -220,13 +220,7 @@ struct ChatBubbleView: View {
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.appSecondary)
                     Spacer()
-                    Text("\(message.relatedPageIDs.count)")
-                        .font(.caption2)
-                        .foregroundStyle(.appAccent)
-                        .padding(.horizontal, DesignSystem.small)
-                        .padding(.vertical, DesignSystem.atomic)
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                        .clipShape(Capsule())
+                    AppSubtlePill(text: "\(message.relatedPageIDs.count)")
                 }
                 .contentShape(Rectangle())
             }

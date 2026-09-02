@@ -122,6 +122,8 @@ enum VaultStorageSecurityServiceKey: DependencyKey {
     static var testValue: VaultStorageSecurityService {
         ServiceContainer.shared.resolveOptional(VaultStorageSecurityService.self) ?? VaultStorageSecurityService()
     }
+    @MainActor
+    static var previewValue: VaultStorageSecurityService { testValue }
 }
 
 extension DependencyValues {

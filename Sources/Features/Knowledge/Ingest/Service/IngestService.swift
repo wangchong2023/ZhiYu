@@ -162,19 +162,54 @@ actor IngestService: IngestServiceProtocol {
     ) async -> KnowledgePage {
         let allPages = await pageStore.pages
         let concepts = extractConcepts(from: processedContent, pages: allPages)
-        var updatedContent = rawPage.content
+        let updatedContent = Self.linkConceptsSafely(content: rawPage.content, concepts: concepts)
 
-        // Bug #121 修复：按 concept 长度降序排序，避免短标题破坏长标题；
-        // 用占位符替换避免二次包装 [[concept]]
+        var page = rawPage
+        page.content = updatedContent
+        await pageStore.anyUpdatePage(page, forceDeepScan: forceDeepScan)
+        return page
+    }
+
+    /// 安全地将文本中的概念匹配替换为双链（Bug #58 修复：保护已有双链、Markdown 链接与代码块）
+    static func linkConceptsSafely(content: String, concepts: [String]) -> String {
+        guard !concepts.isEmpty else { return content }
+
+        // 1. 保护已有双链、Markdown 链接和代码块
+        var protectedMap: [String: String] = [:]
+        var protectedIndex = 0
+        var sanitized = content
+
+        let patterns = [
+            #"`{3}[\s\S]*?`{3}"#,
+            #"`[^`\n]+`"#,
+            #"\[\[[^\]\n]+\]\]"#,
+            #"\[([^\]\n]+)\]\(([^)\n]+)\)"#
+        ]
+
+        for pattern in patterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+                let matches = regex.matches(in: sanitized, options: [], range: NSRange(location: 0, length: (sanitized as NSString).length))
+                // 从后往前替换，避免偏移量错乱
+                for match in matches.reversed() {
+                    let matchedString = (sanitized as NSString).substring(with: match.range)
+                    let guardSentinel = "\u{1}\(protectedIndex)\u{1}"
+                    protectedMap[guardSentinel] = matchedString
+                    sanitized = (sanitized as NSString).replacingCharacters(in: match.range, with: guardSentinel)
+                    protectedIndex += 1
+                }
+            }
+        }
+
+        // 2. 按 concept 长度降序匹配并替换为双链占位符
         let sortedConcepts = concepts.sorted { $0.count > $1.count }
         var placeholderMap: [String: String] = [:]
         var placeholderIndex = 0
         for concept in sortedConcepts {
             let placeholder = "\u{0}\(placeholderIndex)\u{0}"
             placeholderMap[placeholder] = "[[\(concept)]]"
-            let nsContent = updatedContent as NSString
+            let nsContent = sanitized as NSString
             let fullRange = NSRange(location: 0, length: nsContent.length)
-            updatedContent = nsContent.replacingOccurrences(
+            sanitized = nsContent.replacingOccurrences(
                 of: concept,
                 with: placeholder,
                 options: .caseInsensitive,
@@ -182,15 +217,18 @@ actor IngestService: IngestServiceProtocol {
             )
             placeholderIndex += 1
         }
-        // 将占位符替换为最终的双链格式
+
+        // 3. 还原双链占位符
         for (placeholder, replacement) in placeholderMap {
-            updatedContent = updatedContent.replacingOccurrences(of: placeholder, with: replacement)
+            sanitized = sanitized.replacingOccurrences(of: placeholder, with: replacement)
         }
 
-        var page = rawPage
-        page.content = updatedContent
-        await pageStore.anyUpdatePage(page, forceDeepScan: forceDeepScan)
-        return page
+        // 4. 还原受保护的原始区域（代码块、已有链接等）
+        for (guardSentinel, original) in protectedMap {
+            sanitized = sanitized.replacingOccurrences(of: guardSentinel, with: original)
+        }
+
+        return sanitized
     }
 
     /// 从给定的网络 URL 地址中抓取并摄入网页内容
@@ -353,6 +391,7 @@ enum IngestServiceConcreteKey: DependencyKey {
     static var testValue: IngestService {
         ServiceContainer.shared.resolveOptional(IngestService.self) ?? IngestService()
     }
+    static var previewValue: IngestService { testValue }
 }
 
 extension DependencyValues {

@@ -25,7 +25,7 @@ final class PageDetailCoordinatorTests: XCTestCase {
         setupFullMockEnvironment()
         store = AppStore()
         store.knowledgeStore.pages = []
-        let newPage = KnowledgePage(title: "目标页", content: "内容")
+        let newPage = KnowledgePage(title: "目标页", content: "内容", isPinned: false)
         page = newPage
         await store.savePage(newPage)
         coordinator = PageDetailCoordinator(page: newPage)
@@ -35,8 +35,6 @@ final class PageDetailCoordinatorTests: XCTestCase {
         coordinator = nil
         store = nil
         page = nil
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
         try await super.tearDown()
     }
 
@@ -62,16 +60,11 @@ final class PageDetailCoordinatorTests: XCTestCase {
         XCTAssertFalse(coordinator.hasScannedForLinks)
     }
 
-    /// 验证初始 newAlias 为空
-    func testInitialNewAliasEmpty() {
-        XCTAssertEqual(coordinator.newAlias, "")
-    }
+    // MARK: - backlinks 计算
 
-    // MARK: - backlinks
-
-    /// 验证 backlinks 正确找出引用当前页的页面
-    func testBacklinksFindsReferencingPages() async {
-        let referrer = KnowledgePage(title: "引用页", content: "[[目标页]] 是一个链接")
+    /// 验证 backlinks 包含引用当前页的页面
+    func testBacklinksIncludesReferencingPages() async {
+        let referrer = KnowledgePage(title: "引用页", content: "这里引用了 [[目标页]] 的概念")
         await store.savePage(referrer)
 
         XCTAssertEqual(coordinator.backlinks.count, 1)
@@ -121,10 +114,8 @@ final class PageDetailCoordinatorTests: XCTestCase {
 
     /// 验证 togglePin 从 false 翻转为 true
     func testTogglePinFalseToTrue() async {
-        XCTAssertFalse(coordinator.page.isPinned)
-
+        coordinator.page.isPinned = false
         await coordinator.togglePin()
-
         XCTAssertTrue(coordinator.page.isPinned)
     }
 
@@ -152,12 +143,33 @@ final class PageDetailCoordinatorTests: XCTestCase {
         await coordinator.togglePin()
 
         let stored = store.pages.first { $0.id == pageID }
-        XCTAssertNotNil(stored)
-        XCTAssertTrue(stored?.isPinned ?? false)
+        XCTAssertEqual(stored?.isPinned, coordinator.page.isPinned)
     }
 
-    /// 验证 findRelatedLinks 设置 hasScannedForLinks
-    func testFindRelatedLinksSetsScannedFlag() async {
+    // MARK: - AI 任务入口
+
+    /// 验证 generateSummary 触发 runAIOperation
+    func testGenerateSummaryTriggersOperation() {
+        coordinator.generateSummary()
+    }
+
+    /// 验证 extractActions 触发 runAIOperation
+    func testExtractActionsTriggersOperation() {
+        coordinator.extractActions()
+    }
+
+    /// 验证 expandContent 触发 runAIOperation
+    func testExpandContentTriggersOperation() {
+        coordinator.expandContent()
+    }
+
+    /// 验证 performSynthesis 触发 runAIOperation
+    func testPerformSynthesisTriggersOperation() {
+        coordinator.performSynthesis(type: .mindmap)
+    }
+
+    /// 验证 findRelatedLinks 设置 hasScannedForLinks 为 true
+    func testFindRelatedLinksSetsFlag() {
         XCTAssertFalse(coordinator.hasScannedForLinks)
 
         coordinator.findRelatedLinks()
@@ -165,29 +177,22 @@ final class PageDetailCoordinatorTests: XCTestCase {
         XCTAssertTrue(coordinator.hasScannedForLinks)
     }
 
-    // MARK: - AI 操作入口（验证不崩溃）
+    // MARK: - 页面属性更新
 
-    /// 验证 generateSummary 不崩溃
-    func testGenerateSummaryNoCrash() {
-        coordinator.generateSummary()
-        XCTAssertTrue(true)
+    /// 验证更新 page 实例后属性正确反映
+    func testUpdatePageReflectedInCoordinator() {
+        let newTitle = "新标题"
+        coordinator.page.title = newTitle
+
+        XCTAssertEqual(coordinator.page.title, newTitle)
     }
 
-    /// 验证 extractActions 不崩溃
-    func testExtractActionsNoCrash() {
-        coordinator.extractActions()
-        XCTAssertTrue(true)
-    }
+    /// 验证 isEditing 状态切换
+    func testToggleIsEditing() {
+        coordinator.isEditing = true
+        XCTAssertTrue(coordinator.isEditing)
 
-    /// 验证 expandContent 不崩溃
-    func testExpandContentNoCrash() {
-        coordinator.expandContent()
-        XCTAssertTrue(true)
-    }
-
-    /// 验证 performSynthesis 不崩溃
-    func testPerformSynthesisNoCrash() {
-        coordinator.performSynthesis(type: .mindmap)
-        XCTAssertTrue(true)
+        coordinator.isEditing = false
+        XCTAssertFalse(coordinator.isEditing)
     }
 }

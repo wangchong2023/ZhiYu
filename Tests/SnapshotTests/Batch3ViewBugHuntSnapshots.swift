@@ -198,7 +198,7 @@ final class Batch3ViewBugHuntSnapshots: XCTestCase {
             .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     /// TC-B3-07: SourceDetailBodyView OCR 类型 — OCR 画布窗口

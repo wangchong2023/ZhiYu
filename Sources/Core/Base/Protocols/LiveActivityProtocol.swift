@@ -77,6 +77,8 @@ public enum LiveActivityKey: DependencyKey {
     public static var testValue: (any LiveActivityProtocol)? {
         ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
     }
+    @MainActor
+    public static var previewValue: (any LiveActivityProtocol)? { testValue }
 }
 
 extension DependencyValues {

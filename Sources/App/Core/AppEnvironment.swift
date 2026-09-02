@@ -92,10 +92,17 @@ final class AppEnvironment {
             self.ingestStore = IngestStore()
             self.synthesisStore = SynthesisStore()
             self.store = AppStore()
+            registerStoresToContainer()
             Logger.shared.info("[AppEnvironment] DI services registered (test mode, chain NOT locked).")
             return
         }
 
+        initProductionStoresAndServices()
+        Logger.shared.info("[AppEnvironment] Initialization completed.")
+    }
+
+    /// 初始化生产环境 Store 实例与后续服务编排
+    private func initProductionStoresAndServices() {
         // 🔒 生产路径：锁定 DI 容器，禁止 reset() 清空
         ServiceContainer.shared.markProductionChainComplete() // inject_exempt: DI 核心初始化代码
 
@@ -103,13 +110,11 @@ final class AppEnvironment {
         self.llmConfig = ServiceContainer.shared.resolve(LLMConfigManager.self) // inject_exempt: DI 核心初始化代码
 
         // 3. DI 就绪后实例化核心 Store（@Inject 首次访问安全）
-        //    AppStore.init 内部会自注册到 DI 容器
         self.ingestStore = IngestStore()
         self.synthesisStore = SynthesisStore()
         self.store = AppStore()
 
         // 3.1 Store 自注册断言：验证 AppStore.init 内自注册的 Store 已全部就绪
-        //     若断言失败，说明 AppStore.init 自注册逻辑有遗漏
         ServiceContainer.shared.assertRegistered(
             [
                 AppStore.self,
@@ -130,8 +135,6 @@ final class AppEnvironment {
 
         // 5. 审查修复 MED-6: 启动安全检查 — 越狱检测
         performSecurityCheck()
-
-        Logger.shared.info("[AppEnvironment] Initialization completed.")
     }
 
     /// 启动安全检查：越狱检测（审查修复 MED-6）

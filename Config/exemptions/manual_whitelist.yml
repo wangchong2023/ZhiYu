@@ -1680,6 +1680,18 @@ planned_test_classes:
   category:
   - doc-drift
 business_magic_exempt:
+- file: Sources/Infrastructure/Storage/Utility/SQLQuerySanitizer.swift
+  line: 22
+  reason: SQL LIKE 通配符转义字面量（反斜杠），标准 SQL 语法，无法进一步抽象
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/SQLQuerySanitizer.swift
+  line: 23
+  reason: SQL LIKE 百分号通配符转义字面量，标准 SQL 语法，无法进一步抽象
+  expiry_check: false
+- file: Sources/Infrastructure/Storage/Utility/SQLQuerySanitizer.swift
+  line: 24
+  reason: SQL LIKE 下划线通配符转义字面量，标准 SQL 语法，无法进一步抽象
+  expiry_check: false
 - file: Sources/Features/Knowledge/Graph/View/Graph3DView.swift
   line: 264
   reason: 元组索引 $0.0/$0.1 被误判为数字字面量，实为 Swift 元组成员访问语法

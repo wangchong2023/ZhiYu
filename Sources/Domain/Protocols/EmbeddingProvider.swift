@@ -67,6 +67,7 @@ public enum EmbeddingProviderKey: DependencyKey {
     public static var testValue: any EmbeddingProvider {
         ServiceContainer.shared.resolveOptional((any EmbeddingProvider).self) ?? NoOpEmbeddingProvider()
     }
+    public static var previewValue: any EmbeddingProvider { testValue }
 }
 
 /// 无操作嵌入向量化服务（测试/预览占位，DI 未就绪时降级）

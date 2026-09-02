@@ -241,7 +241,9 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
         return expanded
     }
 
-    @ObservationIgnored @Inject private var synthesisStore: SynthesisStore  // inject_exempt: DI 就绪后由 AppEnvironment 实例化
+    private var synthesisStore: SynthesisStore {
+        ServiceContainer.shared.resolveOptional(SynthesisStore.self) ?? SynthesisStore()
+    }
 
     /// 执行通用页面综合任务（MindMap, Quiz, etc.）
     public func performPageSynthesis(type: SynthesisStore.SynthesisType, title: String, content: String) async throws -> String {
@@ -317,6 +319,8 @@ public enum AIWorkflowStoreKey: DependencyKey {
     public static var testValue: AIWorkflowStore {
         ServiceContainer.shared.resolveOptional(AIWorkflowStore.self) ?? AIWorkflowStore()
     }
+    @MainActor
+    public static var previewValue: AIWorkflowStore { testValue }
 }
 
 extension DependencyValues {

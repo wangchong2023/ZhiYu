@@ -342,6 +342,8 @@ public enum KnowledgeStoreKey: DependencyKey {
     public static var testValue: KnowledgeStore {
         ServiceContainer.shared.resolveOptional(KnowledgeStore.self) ?? KnowledgeStore()
     }
+    @MainActor
+    public static var previewValue: KnowledgeStore { testValue }
 }
 
 extension DependencyValues {

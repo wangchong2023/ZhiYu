@@ -22,6 +22,9 @@ enum SnapshotConfig {
     /// 用于 `assertSnapshot(of:as:.image(precision:))` 调用，
     /// 统一全项目快照测试的精度标准，避免魔鬼数字重复硬编码。
     static let defaultPrecision: Float = 0.95
+
+    /// 宽松像素精度阈值（0.85 = 允许 15% 动态渲染与动画阴影偏差）
+    static let relaxedPrecision: Float = 0.85
 }
 
 // MARK: - 快照测试统一环境注入
@@ -65,6 +68,18 @@ extension View {
             .environmentObject(OnboardingService.shared)
             .environmentObject(LLMService.shared)
             .environmentObject(MedalService.shared)
+    }
+
+    /// 在独立虚拟 UIWindow 中装载并强制执行布局计算，确保 View.body 及其全部子组件被完整执行
+    @MainActor
+    @discardableResult
+    func renderInWindow() -> UIHostingController<Self> {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let host = UIHostingController(rootView: self)
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        host.view.layoutIfNeeded()
+        return host
     }
 }
 

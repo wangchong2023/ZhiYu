@@ -98,6 +98,8 @@ public enum LLMConfigManagerKey: DependencyKey {
     public static var testValue: LLMConfigManager {
         ServiceContainer.shared.resolveOptional(LLMConfigManager.self) ?? LLMConfigManager()
     }
+    @MainActor
+    public static var previewValue: LLMConfigManager { testValue }
 }
 
 extension DependencyValues {

@@ -236,6 +236,7 @@ public enum AnyPageStoreKey: DependencyKey {
     public static var testValue: any AnyPageStore {
         ServiceContainer.shared.resolveOptional((any AnyPageStore).self) ?? NoOpPageStoreCapabilities()
     }
+    public static var previewValue: any AnyPageStore { testValue }
 }
 
 /// AnyPageStoreCapabilities 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -247,6 +248,7 @@ public enum AnyPageStoreCapabilitiesKey: DependencyKey {
     public static var testValue: any AnyPageStoreCapabilities {
         ServiceContainer.shared.resolveOptional((any AnyPageStoreCapabilities).self) ?? NoOpPageStoreCapabilities()
     }
+    public static var previewValue: any AnyPageStoreCapabilities { testValue }
 }
 
 /// 无操作页面存储能力服务（测试/预览占位，DI 未就绪时降级）

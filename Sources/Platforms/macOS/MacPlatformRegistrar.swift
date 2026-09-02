@@ -33,19 +33,20 @@ struct MacPlatformRegistrar: PlatformRegistrar {
         container.register(iOSOCRService(), for: (any OCRServiceProtocol).self)
         container.register(iOSSpeechService(), for: (any SpeechServiceProtocol).self)
         
-        // 4. 系统集成
-        container.register(DummyActivityService() as any LiveActivityProtocol, for: (any LiveActivityProtocol).self)
+        // 4. macOS 桌面环境与无障碍
         container.register(MacAppEnvironment(), for: (any AppEnvironmentProtocol).self)
+        container.register(MacAccessibilityService(), for: (any AccessibilityServiceProtocol).self)
         container.register(MacHapticService(), for: (any HapticFeedbackProtocol).self)
         container.register(MacFileArchiver(), for: (any FileArchiverProtocol).self)
-        container.register(MacAccessibilityService(), for: (any AccessibilityServiceProtocol).self)
-        
+
+        // 5. 跨端兼容与未支持功能占位
+        container.register(DummyActivityService() as any LiveActivityProtocol, for: (any LiveActivityProtocol).self)
         container.register(StubWatchSyncService(), for: (any WatchSyncProtocol).self)
         container.register(iOSReminderService(), for: (any ReminderServiceProtocol).self)
         container.register(UnsupportedExportService(), for: (any ExportServiceProtocol).self)
         container.register(UnsupportedSearchIndexer(), for: (any SearchIndexerProtocol).self)
 
-        // 5. 设备信息 / URL 打开 / 分享面板
+        // 6. 桌面外设与系统面板
         container.register(MacDeviceInfoService(), for: (any DeviceInfoProtocol).self)
         container.register(MacURLOpenerService(), for: (any URLOpenerProtocol).self)
         container.register(MacShareSheetService(), for: (any ShareSheetProtocol).self)

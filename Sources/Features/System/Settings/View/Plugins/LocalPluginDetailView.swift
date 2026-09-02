@@ -131,7 +131,7 @@ struct LocalPluginDetailView: View {
                     Text(L10n.Plugin.section.permissions).font(.headline).foregroundStyle(.appText)
                     ForEach(manifest.permissions, id: \.self) { perm in
                         HStack(spacing: DesignSystem.medium) {
-                            Image(systemName: permIcon(for: perm)).foregroundStyle(.appAccent)
+                            Image(systemName: PluginDetailView.permIcon(for: perm)).foregroundStyle(.appAccent)
                             Text(L10n.Plugin.permTitle(perm)).font(.subheadline).foregroundStyle(.appText)
                         }
                         .padding(DesignSystem.medium).frame(maxWidth: .infinity, alignment: .leading)
@@ -165,16 +165,5 @@ struct LocalPluginDetailView: View {
             Text(value).font(.subheadline.weight(.medium)).foregroundStyle(.appText)
         }
         .padding(.horizontal, DesignSystem.medium).padding(.vertical, SystemSpacing.small)
-    }
-
-    private func permIcon(for perm: String) -> String {
-        switch perm {
-        case FeatureConstants.PermissionName.readContent: return DesignSystem.Icons.docMagnify
-        case FeatureConstants.PermissionName.writeContent: return DesignSystem.Icons.squareAndPencil
-        case FeatureConstants.PermissionName.network: return DesignSystem.Icons.globe
-        case FeatureConstants.PermissionName.aiAccess: return DesignSystem.Icons.brainProfile
-        case FeatureConstants.PermissionName.log: return DesignSystem.Icons.listBulletClipboard
-        default: return DesignSystem.Icons.keyFill
-        }
     }
 }

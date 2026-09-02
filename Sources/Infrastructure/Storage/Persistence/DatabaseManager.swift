@@ -443,6 +443,8 @@ enum DatabaseManagerKey: DependencyKey {
 
     @MainActor
     static var testValue: DatabaseManager { DatabaseManager.shared }
+    @MainActor
+    static var previewValue: DatabaseManager { testValue }
 }
 
 extension DependencyValues {

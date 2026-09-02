@@ -104,6 +104,17 @@ public enum ImportCategory: String, CaseIterable, Sendable {
         case .voice: return L10n.Ingest.voiceNote
         }
     }
+
+    public var directoryName: String {
+        switch self {
+        case .file: return "document"
+        case .voice: return "audio"
+        case .ocr: return "ocr"
+        case .link: return "web"
+        case .clipboard: return "clipboard"
+        case .manual: return "manual"
+        }
+    }
 }
 
 /// ImportRecord 标签分组工具（领域层）

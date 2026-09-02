@@ -95,6 +95,8 @@ public enum SpeechServiceKey: DependencyKey {
     public static var testValue: any SpeechServiceProtocol {
         ServiceContainer.shared.resolveOptional((any SpeechServiceProtocol).self) ?? NoOpSpeechService()
     }
+    @MainActor
+    public static var previewValue: any SpeechServiceProtocol { testValue }
 }
 
 /// 无操作语音服务（测试/预览占位，DI 未就绪时降级）

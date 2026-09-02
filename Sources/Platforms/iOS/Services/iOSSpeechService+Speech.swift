@@ -55,14 +55,7 @@ extension iOSSpeechService {
             SFSpeechRecognizer(locale: Locale(identifier: locale.0)) != nil
         }
 
-        let preferred = Locale.preferredLanguages.first ?? "en-US"
-        if preferred.hasPrefix("zh-Hans") || preferred.hasPrefix("zh-CN") {
-            selectedLanguage = "zh-CN"
-        } else if preferred.hasPrefix("zh-Hant") || preferred.hasPrefix("zh-TW") {
-            selectedLanguage = "zh-TW"
-        } else if let match = supportedLanguages.first(where: { preferred.hasPrefix($0.code) }) {
-            selectedLanguage = match.code
-        }
+        selectedLanguage = Self.detectPreferredSpeechLanguage(from: supportedLanguages)
     }
 
     /// 启动Recording

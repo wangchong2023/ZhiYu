@@ -152,17 +152,27 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
         if let data = try? JSONEncoder().encode(recordings) { keyStore.set(data, forKey: recordingsKey) }
     }
 
+    /// 根据系统首选语言自动推导录音识别语言标识
+    static func detectPreferredSpeechLanguage(from supported: [(code: String, name: String)] = []) -> String {
+        let preferred = Locale.preferredLanguages.first ?? "en-US"
+        if preferred.hasPrefix("zh-Hans") || preferred.hasPrefix("zh-CN") {
+            return "zh-CN"
+        }
+        if preferred.hasPrefix("zh-Hant") || preferred.hasPrefix("zh-TW") {
+            return "zh-TW"
+        }
+        if let match = supported.first(where: { preferred.hasPrefix($0.code) }) {
+            return match.code
+        }
+        return "en-US"
+    }
+
     // MARK: - no-op 回退（非 Speech 平台）
 
 #if !canImport(Speech)
     func checkPermission() {}
     func loadSupportedLanguages() {
-        let preferred = Locale.preferredLanguages.first ?? "en-US"
-        if preferred.hasPrefix("zh-Hans") || preferred.hasPrefix("zh-CN") {
-            selectedLanguage = "zh-CN"
-        } else if preferred.hasPrefix("zh-Hant") || preferred.hasPrefix("zh-TW") {
-            selectedLanguage = "zh-TW"
-        }
+        selectedLanguage = Self.detectPreferredSpeechLanguage()
     }
     func startRecording() {
         statusMessage = L10n.Voice.Speech.Status.denied

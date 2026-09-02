@@ -31,6 +31,7 @@ public enum FeedbackRepositoryKey: DependencyKey {
     public static var testValue: any FeedbackRepository {
         ServiceContainer.shared.resolveOptional((any FeedbackRepository).self) ?? NoOpFeedbackRepository()
     }
+    public static var previewValue: any FeedbackRepository { testValue }
 }
 
 /// 无操作反馈仓储（测试/预览占位，DI 未就绪时降级）

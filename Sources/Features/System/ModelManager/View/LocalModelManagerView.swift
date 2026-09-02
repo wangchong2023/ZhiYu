@@ -51,9 +51,7 @@ public struct LocalModelManagerView: View {
                         .environment(store)
                         .environment(router)
                     }
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                    .cornerRadius(DesignSystem.mediumRadius)
-                    .padding(.horizontal)
+                    .modifier(ModelSectionCardModifier())
                     .id("store_section")
                     
                     // Section 2: 测试实验室
@@ -77,14 +75,21 @@ public struct LocalModelManagerView: View {
                         .environment(store)
                         .environment(router)
                     }
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                    .cornerRadius(DesignSystem.mediumRadius)
-                    .padding(.horizontal)
+                    .modifier(ModelSectionCardModifier())
                     .id("lab_section")
                 }
                 .padding(.vertical)
             }
         }
+    }
+}
+
+private struct ModelSectionCardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
+            .cornerRadius(DesignSystem.mediumRadius)
+            .padding(.horizontal)
     }
 }
 

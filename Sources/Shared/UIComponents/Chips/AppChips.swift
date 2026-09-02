@@ -159,3 +159,26 @@ public struct AppScrollableChips<Data: RandomAccessCollection, Content: View>: V
         }
     }
 }
+
+// MARK: - App Subtle Pill
+
+/// 浅色半透明胶囊标签，用于辅助状态或数量标记 (消除重绘与重复代码)
+public struct AppSubtlePill: View {
+    public let text: String
+    public var color: Color
+
+    public init(text: String, color: Color = .appAccent) {
+        self.text = text
+        self.color = color
+    }
+
+    public var body: some View {
+        Text(text)
+            .font(.caption2)
+            .foregroundStyle(color)
+            .padding(.horizontal, DesignSystem.small)
+            .padding(.vertical, DesignSystem.atomic)
+            .background(color.opacity(DesignSystem.Opacity.subtle))
+            .clipShape(Capsule())
+    }
+}

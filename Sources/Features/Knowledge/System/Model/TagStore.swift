@@ -86,6 +86,8 @@ public enum TagStoreKey: DependencyKey {
     public static var testValue: TagStore {
         ServiceContainer.shared.resolveOptional(TagStore.self) ?? TagStore()
     }
+    @MainActor
+    public static var previewValue: TagStore { testValue }
 }
 
 extension DependencyValues {

@@ -192,6 +192,7 @@ public enum RAGGovernanceRepositoryKey: DependencyKey {
     public static var testValue: any RAGGovernanceRepository {
         ServiceContainer.shared.resolveOptional((any RAGGovernanceRepository).self) ?? NoOpRAGGovernanceRepository()
     }
+    public static var previewValue: any RAGGovernanceRepository { testValue }
 }
 
 /// 无操作 RAG 治理仓储（测试/预览占位，DI 未就绪时降级）

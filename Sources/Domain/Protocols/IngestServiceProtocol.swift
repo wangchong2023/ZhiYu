@@ -36,6 +36,7 @@ public enum IngestServiceKey: DependencyKey {
     public static var testValue: any IngestServiceProtocol {
         ServiceContainer.shared.resolveOptional((any IngestServiceProtocol).self) ?? NoOpIngestService()
     }
+    public static var previewValue: any IngestServiceProtocol { testValue }
 }
 
 /// 无操作导入服务（测试/预览占位，DI 未就绪时降级）

@@ -65,6 +65,8 @@ public enum BiometricAuthProviderKey: DependencyKey {
     public static var testValue: any BiometricAuthProviderProtocol {
         ServiceContainer.shared.resolveOptional((any BiometricAuthProviderProtocol).self) ?? NoOpBiometricAuthProvider()
     }
+    @MainActor
+    public static var previewValue: any BiometricAuthProviderProtocol { testValue }
 }
 
 /// 无操作生物识别服务（测试/预览占位，DI 未就绪时降级）

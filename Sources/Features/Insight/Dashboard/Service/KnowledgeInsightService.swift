@@ -277,6 +277,7 @@ enum KnowledgeInsightServiceKey: DependencyKey {
     static var testValue: KnowledgeInsightService {
         ServiceContainer.shared.resolveOptional(KnowledgeInsightService.self) ?? KnowledgeInsightService()
     }
+    static var previewValue: KnowledgeInsightService { testValue }
 }
 
 extension DependencyValues {

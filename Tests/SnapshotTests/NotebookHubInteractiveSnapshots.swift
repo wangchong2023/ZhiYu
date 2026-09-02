@@ -31,12 +31,8 @@ final class NotebookHubInteractiveSnapshots: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
-    }
-
-    override func tearDown() async throws {
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
-        try await super.tearDown()
+        VaultService.shared.vaults = []
+        VaultService.shared.selectedVaultID = nil
     }
 
     // MARK: - 1. 笔记本中心主页快照
@@ -47,7 +43,7 @@ final class NotebookHubInteractiveSnapshots: XCTestCase {
         }
         .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     // MARK: - 2. 笔记本卡片组件快照

@@ -43,17 +43,12 @@ struct SourceDetailBodyView: View {
                 .opacity(DesignSystem.softOpacity)
             
             // 3. 正文转录详细内容区
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
-                Text(L10n.Ingest.PDF.contentPreview)
-                    .font(.caption2.bold())
-                    .foregroundStyle(.appSecondary)
-                
-                MarkdownRendererView(
-                    content: bodyText.isEmpty ? page.content : bodyText,
-                    isPrivate: page.isPrivate,
-                    onLinkTap: onLinkTap
-                )
-            }
+            DetailBodyMarkdownSection(
+                title: L10n.Ingest.PDF.contentPreview,
+                content: bodyText.isEmpty ? page.content : bodyText,
+                isPrivate: page.isPrivate,
+                onLinkTap: onLinkTap
+            )
         }
         .onAppear {
             parseMarkdownData()
@@ -165,13 +160,7 @@ struct SourceDetailBodyView: View {
                 .frame(height: Spacing.atomic)
             }
         }
-        .padding(DesignSystem.standardPadding)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-        )
+        .appCardStyle(cornerRadius: DesignSystem.standardRadius)
     }
     
     /// OCR 扫描图片文字窗口

@@ -183,6 +183,8 @@ enum LLMChatServiceKey: DependencyKey {
     public static var testValue: any LLMChatServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self) ?? NoOpLLMChatService()
     }
+    @MainActor
+    static var previewValue: any LLMChatServiceProtocol { testValue }
 }
 
 /// LLMKnowledgeServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -196,6 +198,8 @@ enum LLMKnowledgeServiceKey: DependencyKey {
     public static var testValue: any LLMKnowledgeServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self) ?? NoOpLLMKnowledgeService()
     }
+    @MainActor
+    static var previewValue: any LLMKnowledgeServiceProtocol { testValue }
 }
 
 /// LLMRetrievalServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
@@ -209,6 +213,8 @@ enum LLMRetrievalServiceKey: DependencyKey {
     public static var testValue: any LLMRetrievalServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self) ?? NoOpLLMRetrievalService()
     }
+    @MainActor
+    static var previewValue: any LLMRetrievalServiceProtocol { testValue }
 }
 
 extension DependencyValues {
@@ -248,6 +254,8 @@ enum LLMServiceKey: DependencyKey {
     public static var testValue: any LLMServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) ?? NoOpLLMService()
     }
+    @MainActor
+    static var previewValue: any LLMServiceProtocol { testValue }
 }
 
 // MARK: - NoOp LLM 服务实现（测试/预览占位，DI 未就绪时降级）

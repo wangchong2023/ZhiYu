@@ -36,6 +36,8 @@ public enum AccessibilityServiceKey: DependencyKey {
     public static var testValue: any AccessibilityServiceProtocol {
         ServiceContainer.shared.resolveOptional((any AccessibilityServiceProtocol).self) ?? NoOpAccessibilityService()
     }
+    @MainActor
+    public static var previewValue: any AccessibilityServiceProtocol { testValue }
 }
 
 /// 无操作辅助功能服务（测试/预览占位，DI 未就绪时降级）

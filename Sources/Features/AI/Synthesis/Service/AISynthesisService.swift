@@ -90,15 +90,16 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// 生成Presentation
     /// - Parameter content: content
     /// - Returns: 字符串
+    /// 生成Presentation
+    /// - Parameter content: content
+    /// - Returns: 字符串
     func generatePresentation(content: String) async throws -> String {
         let prompt = promptService.slidesPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = L10n.AI.Prompt.System.slides
-        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
-        let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
-        if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            return cleaned
-        }
-        return SynthesisProcessor.generateFallbackPresentation(from: content, title: L10n.AI.Prompt.Expert.Slides.title)
+        return await executeSynthesisPipeline(
+            prompt: prompt,
+            systemPrompt: L10n.AI.Prompt.System.slides,
+            fallback: { _ in SynthesisProcessor.generateFallbackPresentation(from: content, title: L10n.AI.Prompt.Expert.Slides.title) }
+        )
     }
 
     /// 生成测验题
@@ -143,25 +144,34 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Returns: 字符串
     func generateReport(content: String) async throws -> String {
         let prompt = promptService.reportPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = L10n.AI.Prompt.System.report
-        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
-        let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
-        if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            return cleaned
-        }
-        return SynthesisProcessor.generateFallbackReport(from: content, title: L10n.AI.Prompt.Expert.Report.title)
+        return await executeSynthesisPipeline(
+            prompt: prompt,
+            systemPrompt: L10n.AI.Prompt.System.report,
+            fallback: { _ in SynthesisProcessor.generateFallbackReport(from: content, title: L10n.AI.Prompt.Expert.Report.title) }
+        )
     }
 
     /// 知识深度扩充：对现有内容进行多维度深挖与背景补充
     func expandKnowledge(content: String) async throws -> String {
         let prompt = promptService.expansionPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = L10n.AI.Prompt.System.expansion
+        return await executeSynthesisPipeline(
+            prompt: prompt,
+            systemPrompt: L10n.AI.Prompt.System.expansion,
+            fallback: { _ in SynthesisProcessor.generateFallbackExpansion(from: content, title: L10n.Knowledge.Page.AI.expansion) }
+        )
+    }
+
+    private func executeSynthesisPipeline(
+        prompt: String,
+        systemPrompt: String,
+        fallback: (String) -> String
+    ) async -> String {
         let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
         let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
         if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
             return cleaned
         }
-        return SynthesisProcessor.generateFallbackExpansion(from: content, title: L10n.Knowledge.Page.AI.expansion)
+        return fallback(rawResult)
     }
 
     /// 针对具体的 Lint 问题提供 AI 修复建议

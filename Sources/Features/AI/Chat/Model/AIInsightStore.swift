@@ -136,6 +136,8 @@ public enum AIInsightStoreKey: DependencyKey {
     public static var testValue: AIInsightStore {
         ServiceContainer.shared.resolveOptional(AIInsightStore.self) ?? AIInsightStore()
     }
+    @MainActor
+    public static var previewValue: AIInsightStore { testValue }
 }
 
 extension DependencyValues {

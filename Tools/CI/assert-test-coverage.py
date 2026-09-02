@@ -657,6 +657,12 @@ def _parse_args():
         help=f"分支覆盖率红线（默认 {DEFAULT_BRANCH_THRESHOLD}%%）",
     )
     parser.add_argument(
+        "--xcresult",
+        type=str,
+        default=None,
+        help="指定 .xcresult 路径（默认自动搜索最新包）",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="JSON 机器可读输出（不打印表格，不熔断）",
@@ -664,16 +670,23 @@ def _parse_args():
     return parser.parse_args()
 
 
-def _load_coverage_data():
+def _load_coverage_data(custom_xcresult=None):
     """定位并解析最新 xcresult 的覆盖率数据（文本格式，含分支）"""
-    if not os.path.exists(SEARCH_DIR):
-        log_error(f"未找到 Xcode 派生数据目录: {SEARCH_DIR}。请先执行自动化跑测。")
-        sys.exit(1)
+    if custom_xcresult and os.path.exists(custom_xcresult):
+        latest_result = custom_xcresult
+    else:
+        search_dirs = [SEARCH_DIR, "build"]
+        latest_result = None
+        for s_dir in search_dirs:
+            if os.path.exists(s_dir):
+                candidate = find_latest_xcresult(s_dir)
+                if candidate:
+                    if not latest_result or os.path.getmtime(candidate) > os.path.getmtime(latest_result):
+                        latest_result = candidate
 
-    latest_result = find_latest_xcresult(SEARCH_DIR)
-    if not latest_result:
-        log_error("在 build/DerivedData 中未搜索到任何有效的 .xcresult 结果包")
-        sys.exit(1)
+        if not latest_result:
+            log_error("未搜索到任何有效的 .xcresult 结果包。请先执行自动化跑测。")
+            sys.exit(1)
 
     log_info(f"定位最新测试结果集: {latest_result}")
     raw_text = extract_coverage_text(latest_result)
@@ -718,7 +731,7 @@ def main():
 
     log_info("启动代码覆盖率熔断校验程序...")
 
-    all_files = _load_coverage_data()
+    all_files = _load_coverage_data(args.xcresult)
 
     layer_stats = aggregate_by_layer(all_files)
     total_stats = _aggregate_total_stats(layer_stats)

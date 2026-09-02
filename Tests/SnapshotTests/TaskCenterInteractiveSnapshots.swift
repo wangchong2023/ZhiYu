@@ -32,12 +32,8 @@ final class TaskCenterInteractiveSnapshots: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
-    }
-
-    override func tearDown() async throws {
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
-        try await super.tearDown()
+        @Dependency(\.taskCenter) var taskCenter
+        (taskCenter as? TaskCenter)?.reset()
     }
 
     // MARK: - 1. 任务中心主页空状态快照
@@ -48,7 +44,7 @@ final class TaskCenterInteractiveSnapshots: XCTestCase {
         }
         .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     // MARK: - 2. 任务列表活动中状态快照

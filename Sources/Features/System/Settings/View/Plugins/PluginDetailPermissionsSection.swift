@@ -16,6 +16,11 @@ import SwiftUI
 
 extension PluginDetailView {
 
+    /// 规整后的插件权限清单，提供稳定的非空数组语义
+    var permissionsList: [String] {
+        plugin.requiredPermissions ?? []
+    }
+
     var permissionsSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
             HStack(spacing: DesignSystem.small) {
@@ -23,20 +28,14 @@ extension PluginDetailView {
                     .font(.headline)
                     .foregroundStyle(.appText)
 
-                if let perms = plugin.requiredPermissions, !perms.isEmpty {
-                    Text("\(perms.count)")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.appAccent)
-                        .padding(.horizontal, DesignSystem.small)
-                        .padding(.vertical, DesignSystem.atomic)
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                        .clipShape(Capsule())
+                if !permissionsList.isEmpty {
+                    AppSubtlePill(text: "\(permissionsList.count)")
                 }
             }
 
-            if let perms = plugin.requiredPermissions, !perms.isEmpty {
+            if !permissionsList.isEmpty {
                 VStack(spacing: DesignSystem.small) {
-                    ForEach(perms, id: \.self) { perm in
+                    ForEach(permissionsList, id: \.self) { perm in
                         HStack(spacing: DesignSystem.medium) {
                             Image(systemName: permIcon(for: perm))
                                 .foregroundStyle(permColor(for: perm))
@@ -76,8 +75,8 @@ extension PluginDetailView {
 
     // MARK: - 权限辅助方法
 
-    /// 权限图标
-    func permIcon(for perm: String) -> String {
+    /// 权限图标（静态复用）
+    static func permIcon(for perm: String) -> String {
         switch perm {
         case FeatureConstants.PermissionName.readContent: return DesignSystem.Icons.docMagnify
         case FeatureConstants.PermissionName.writeContent: return DesignSystem.Icons.squareAndPencil
@@ -86,6 +85,11 @@ extension PluginDetailView {
         case FeatureConstants.PermissionName.log: return DesignSystem.Icons.listBulletClipboard
         default: return DesignSystem.Icons.keyFill
         }
+    }
+
+    /// 权限图标（实例快捷方式）
+    func permIcon(for perm: String) -> String {
+        Self.permIcon(for: perm)
     }
 
     /// 权限颜色

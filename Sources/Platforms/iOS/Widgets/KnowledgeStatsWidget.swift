@@ -305,8 +305,7 @@ struct KnowledgeStatsWidgetEntryView: View {
                     .foregroundStyle(.secondary)
                     .padding(.bottom, WidgetMetrics.spacingTiny)
                 
-                ForEach(entry.lastUpdatedPages.indices, id: \.self) { index in
-                    let page = entry.lastUpdatedPages[index]
+                ForEach(entry.lastUpdatedPages) { page in
                     HStack(spacing: WidgetMetrics.spacingStandard) {
                         Image(systemName: page.typeName == "concept" ? "lightbulb.fill" : "person.text.rectangle.fill")
                             .font(.system(size: WidgetMetrics.captionFontSize))

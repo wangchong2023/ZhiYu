@@ -330,6 +330,8 @@ enum BackupServiceKey: DependencyKey {
     public static var testValue: BackupService {
         ServiceContainer.shared.resolveOptional(BackupService.self) ?? BackupService()
     }
+    @MainActor
+    static var previewValue: BackupService { testValue }
 }
 
 extension DependencyValues {

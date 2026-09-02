@@ -61,17 +61,19 @@ final class PluginEnginePool: @unchecked Sendable {
         // 安全硬化：禁用 eval/Function（纯 JS 语法，无 Swift 代码）
         newContext.evaluateScript("""
         (function() {
+            var fnProto = (typeof Function !== 'undefined') ? Function.prototype : null;
             try { delete globalThis.eval; } catch(e) {}
             globalThis.eval = undefined;
             globalThis.Function = undefined;
             globalThis.__zhiyu_initial_keys = new Set(Object.getOwnPropertyNames(globalThis));
             var frozen = [Object.prototype, Array.prototype, String.prototype,
-                         Number.prototype, Boolean.prototype, Function.prototype, RegExp.prototype];
+                         Number.prototype, Boolean.prototype, fnProto, RegExp.prototype];
             for (var i = 0; i < frozen.length; i++) {
                 if (frozen[i]) { try { Object.freeze(frozen[i]); } catch(e) {} }
             }
         })();
         """)
+        newContext.exception = nil
 
         return newContext
     }

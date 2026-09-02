@@ -35,6 +35,7 @@ public enum ImportFileStoreKey: DependencyKey {
     public static var testValue: any ImportFileStore {
         ServiceContainer.shared.resolveOptional((any ImportFileStore).self) ?? NoOpImportFileStore()
     }
+    public static var previewValue: any ImportFileStore { testValue }
 }
 
 /// 无操作导入文件存储（测试/预览占位，DI 未就绪时降级）

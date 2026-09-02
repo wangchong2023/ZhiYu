@@ -233,9 +233,8 @@ public actor NetworkClient {
 
     private func extractPayload<T: Codable>(_ apiResponse: ApiResponse<T>) throws -> T {
         if let payload = apiResponse.data { return payload }
-        if T.self == EmptyData.self {
-            // swiftlint:disable:next force_cast
-            return EmptyData() as! T
+        if let empty = EmptyData() as? T {
+            return empty
         }
         throw NetworkError.missingDataPayload
     }

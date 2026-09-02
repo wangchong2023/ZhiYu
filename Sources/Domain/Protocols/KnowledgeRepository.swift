@@ -66,6 +66,7 @@ enum KnowledgePageRepositoryKey: DependencyKey {
         // 注意：KnowledgePageRepository 是具体类，此处通过 resolveOptional 保证测试已注册时优先返回
         return ServiceContainer.shared.resolve(KnowledgePageRepository.self)
     }
+    static var previewValue: KnowledgePageRepository { testValue }
 }
 
 extension DependencyValues {
@@ -87,6 +88,7 @@ public enum KnowledgeRepositoryKey: DependencyKey {
     public static var testValue: any KnowledgeRepository {
         ServiceContainer.shared.resolveOptional((any KnowledgeRepository).self) ?? NoOpKnowledgeRepository()
     }
+    public static var previewValue: any KnowledgeRepository { testValue }
 }
 
 /// 无操作知识库仓储（测试/预览占位，DI 未就绪时降级）

@@ -217,7 +217,7 @@ public struct ServerConfigView: View {
 
 // MARK: - 服务器编辑 Sheet
 
-private struct ServerEditSheet: View {
+struct ServerEditSheet: View {
     @Environment(\.dismiss) var dismiss
     @Environment(ThemeManager.self) private var themeManager
 

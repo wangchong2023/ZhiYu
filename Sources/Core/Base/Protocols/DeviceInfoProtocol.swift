@@ -35,6 +35,7 @@ public enum DeviceInfoKey: DependencyKey {
     public static var testValue: any DeviceInfoProtocol {
         ServiceContainer.shared.resolveOptional((any DeviceInfoProtocol).self) ?? NoOpDeviceInfo()
     }
+    public static var previewValue: any DeviceInfoProtocol { testValue }
 }
 
 /// 无操作设备信息服务（测试/预览占位，DI 未就绪时降级）

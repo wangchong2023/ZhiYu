@@ -45,6 +45,8 @@ public enum HapticFeedbackKey: DependencyKey {
     public static var testValue: any HapticFeedbackProtocol {
         ServiceContainer.shared.resolveOptional((any HapticFeedbackProtocol).self) ?? NoOpHapticFeedback()
     }
+    @MainActor
+    public static var previewValue: any HapticFeedbackProtocol { testValue }
 }
 
 /// 无操作触感反馈服务（测试/预览占位，DI 未就绪时降级）

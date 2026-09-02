@@ -67,6 +67,7 @@ public enum ModelDownloadKey: DependencyKey {
     public static var testValue: any ModelDownloadCapabilities {
         ServiceContainer.shared.resolveOptional((any ModelDownloadCapabilities).self) ?? NoOpModelDownload()
     }
+    public static var previewValue: any ModelDownloadCapabilities { testValue }
 }
 
 /// 无操作模型下载服务（测试/预览占位，DI 未就绪时降级）

@@ -36,17 +36,20 @@ final class IngestProcessor: LLMKnowledgeServiceProtocol {
     // MARK: - 初始化
     
     init() {
-        updateSubServices()
-        
-        configManager.setRefreshHandler { [weak self] in
-            self?.updateSubServices()
-        }
+        bindConfigUpdates()
     }
     
-    private func updateSubServices() {
+    private func bindConfigUpdates() {
+        rebuildSubServices()
+        configManager.setRefreshHandler { [weak self] in
+            self?.rebuildSubServices()
+        }
+    }
+
+    private func rebuildSubServices() {
         let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
-        self.ingestService = LLMIngestService(client: client, model: configManager.model, contextBuilder: contextBuilder)
-        self.refactorService = LLMRefactorService(client: client, model: configManager.model)
+        ingestService = LLMIngestService(client: client, model: configManager.model, contextBuilder: contextBuilder)
+        refactorService = LLMRefactorService(client: client, model: configManager.model)
     }
 
     // MARK: - LLMKnowledgeServiceProtocol 契约方法

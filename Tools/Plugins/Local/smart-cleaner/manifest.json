@@ -1,0 +1,43 @@
+{
+  "id": "com.zhiyu.plugin.smart-cleaner",
+  "version": "1.0.0",
+  "author": "ZhiYu Team",
+  "permissions": [
+    "writeContent",
+    "log"
+  ],
+  "allowedDomains": [],
+  "names": {
+    "en": "Smart Cleaner",
+    "zh-Hans": "智能清洗器"
+  },
+  "descriptions": {
+    "en": "Automatically cleans redundant blank lines, normalizes whitespace, and optimizes Markdown formatting.",
+    "zh-Hans": "自动清理冗余空行、规范化空白字符并优化 Markdown 格式。"
+  },
+  "iconFile": "icon.png",
+  "readmeFiles": {
+    "en": "README.md",
+    "zh-Hans": "README.zh-Hans.md"
+  },
+  "category": "built-in",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "content": {
+        "type": "string",
+        "description": "Markdown document content"
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "content": {
+        "type": "string",
+        "description": "Cleaned document content"
+      }
+    }
+  },
+  "source": "community"
+}

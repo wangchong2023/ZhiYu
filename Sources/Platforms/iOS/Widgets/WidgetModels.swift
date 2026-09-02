@@ -100,7 +100,8 @@ struct WidgetStats: Codable {
 }
 
 /// 最近更新的知识页摘要
-struct WidgetRecentPage: Codable {
+struct WidgetRecentPage: Codable, Identifiable {
+    var id: String { title }
     let title: String
     let typeName: String
     let colorName: String

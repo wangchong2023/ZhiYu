@@ -53,17 +53,11 @@ struct ConceptDetailBodyView: View {
                 .opacity(DesignSystem.softOpacity)
             
             // 4. 正文详情展示
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
-                Text(L10n.Editor.placeholder) // 对齐提示：展示详细正文
-                    .font(.caption2.bold())
-                    .foregroundStyle(.appSecondary)
-                
-                MarkdownRendererView(
-                    content: bodyText.isEmpty ? page.content : bodyText,
-                    isPrivate: page.isPrivate,
-                    onLinkTap: onLinkTap
-                )
-            }
+            DetailBodyMarkdownSection(
+                content: bodyText.isEmpty ? page.content : bodyText,
+                isPrivate: page.isPrivate,
+                onLinkTap: onLinkTap
+            )
         }
         .onAppear {
             parseMarkdownData()

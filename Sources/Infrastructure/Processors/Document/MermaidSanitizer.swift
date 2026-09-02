@@ -42,45 +42,32 @@ public enum MermaidSanitizer {
     private static func sanitizeLineNodes(_ line: String) -> String {
         // 缺陷 #11 修复：正则 [^"\]]+ 不允许 ] 字符，导致含嵌套方括号的标签无法匹配
         // 采用两步策略：
-        // 1. 先匹配不含 ] 的标准 NodeID[Label]（兼容原有行为）
-        // 2. 再匹配含嵌套 ] 的 NodeID[Label[...]]（新增支持）
-        let standardRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.mermaidNodeStandard)
+        // 1. 先匹配含嵌套 ] 的 NodeID[Label[...]]（更具体模式优先）
+        // 2. 再匹配不含 ] 的标准 NodeID[Label]（兼容原有行为）
         let nestedRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.mermaidNodeNested)
+        let standardRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.mermaidNodeStandard)
         var result = line
 
-        // 先处理嵌套方括号（更具体的模式优先）
-        if let nestedMatches = nestedRegex?.matches(in: line, range: NSRange(line.startIndex..., in: line)) {
-            for match in nestedMatches.reversed() {
-                guard let idRange = Range(match.range(at: 1), in: line),
-                      let labelRange = Range(match.range(at: 2), in: line),
-                      let fullRange = Range(match.range(at: 0), in: line) else { continue }
-
-                let nodeID = String(line[idRange])
-                let labelText = String(line[labelRange]).trimmingCharacters(in: .whitespaces)
-
-                if labelText.contains(where: { ProcessorConstants.Synthesis.mermaidSpecialChars.contains($0) }) {
-                    let replacement = "\(nodeID)\(ProcessorConstants.Synthesis.mermaidQuotedNodeOpen)\(labelText)\(ProcessorConstants.Synthesis.mermaidQuotedNodeClose)"
-                    result.replaceSubrange(fullRange, with: replacement)
-                }
-            }
-        }
-
-        // 再处理标准节点（在已处理后的 result 上重新匹配）
-        if let standardMatches = standardRegex?.matches(in: result, range: NSRange(result.startIndex..., in: result)) {
-            for match in standardMatches.reversed() {
-                guard let idRange = Range(match.range(at: 1), in: result),
-                      let labelRange = Range(match.range(at: 2), in: result),
-                      let fullRange = Range(match.range(at: 0), in: result) else { continue }
-
-                let nodeID = String(result[idRange])
-                let labelText = String(result[labelRange]).trimmingCharacters(in: .whitespaces)
-
-                if labelText.contains(where: { ProcessorConstants.Synthesis.mermaidSpecialChars.contains($0) }) {
-                    let replacement = "\(nodeID)\(ProcessorConstants.Synthesis.mermaidQuotedNodeOpen)\(labelText)\(ProcessorConstants.Synthesis.mermaidQuotedNodeClose)"
-                    result.replaceSubrange(fullRange, with: replacement)
-                }
-            }
-        }
+        applyNodeReplacements(in: &result, regex: nestedRegex)
+        applyNodeReplacements(in: &result, regex: standardRegex)
         return result
+    }
+
+    private static func applyNodeReplacements(in text: inout String, regex: NSRegularExpression?) {
+        guard let regex else { return }
+        let matches = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
+        for match in matches.reversed() {
+            guard let idRange = Range(match.range(at: 1), in: text),
+                  let labelRange = Range(match.range(at: 2), in: text),
+                  let fullRange = Range(match.range(at: 0), in: text) else { continue }
+
+            let nodeID = String(text[idRange])
+            let labelText = String(text[labelRange]).trimmingCharacters(in: .whitespaces)
+
+            if labelText.contains(where: { ProcessorConstants.Synthesis.mermaidSpecialChars.contains($0) }) {
+                let replacement = "\(nodeID)\(ProcessorConstants.Synthesis.mermaidQuotedNodeOpen)\(labelText)\(ProcessorConstants.Synthesis.mermaidQuotedNodeClose)"
+                text.replaceSubrange(fullRange, with: replacement)
+            }
+        }
     }
 }

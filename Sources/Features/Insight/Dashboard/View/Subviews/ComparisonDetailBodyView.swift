@@ -46,17 +46,11 @@ struct ComparisonDetailBodyView: View {
             }
             
             // 3. 详细正文渲染
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
-                Text(L10n.Editor.placeholder)
-                    .font(.caption2.bold())
-                    .foregroundStyle(.appSecondary)
-                
-                MarkdownRendererView(
-                    content: bodyText.isEmpty ? page.content : bodyText,
-                    isPrivate: page.isPrivate,
-                    onLinkTap: onLinkTap
-                )
-            }
+            DetailBodyMarkdownSection(
+                content: bodyText.isEmpty ? page.content : bodyText,
+                isPrivate: page.isPrivate,
+                onLinkTap: onLinkTap
+            )
         }
         .onAppear {
             parseMarkdownData()

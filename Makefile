@@ -50,7 +50,7 @@ watch: gen
 
 test: gen
 	@echo "🧪 运行主 App 全量测试（单元 + UI）..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 test-unit: gen
 	@echo "🧪 仅运行单元测试（排除 UI 测试）..."

@@ -99,6 +99,8 @@ enum CollaborationProviderKey: DependencyKey {
     static var testValue: any CollaborationProviderProtocol {
         ServiceContainer.shared.resolveOptional((any CollaborationProviderProtocol).self) ?? NoOpCollaborationProvider()
     }
+    @MainActor
+    static var previewValue: any CollaborationProviderProtocol { testValue }
 }
 
 /// 无操作协作服务（测试/预览占位，DI 未就绪时降级）

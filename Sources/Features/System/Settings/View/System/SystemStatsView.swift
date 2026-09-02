@@ -27,8 +27,8 @@ struct SystemStatsView: View {
     
     // 使用协调器管理状态与交互
     @State private var coordinator = SystemStatsCoordinator()
-    @State private var selectedTab: Tab = .performance
-    
+    @State private var selectedTab: Tab
+
     enum Tab: String, CaseIterable {
         case performance
         case storage
@@ -40,6 +40,13 @@ struct SystemStatsView: View {
             case .storage: return L10n.Dashboard.stats.tabStorage
             case .plugins: return L10n.Dashboard.stats.tabPlugins
             }
+        }
+    }
+
+    init(initialTab: Tab = .performance, coordinator: SystemStatsCoordinator? = nil) {
+        _selectedTab = State(initialValue: initialTab)
+        if let coordinator = coordinator {
+            _coordinator = State(initialValue: coordinator)
         }
     }
     
@@ -221,8 +228,8 @@ struct SystemStatsView: View {
             
             // 2. 存储空间分布列表
             StandardSection(title: L10n.Dashboard.stats.storageDetails) {
-                ForEach(coordinator.storageCategories.indices, id: \.self) { index in
-                    let category = coordinator.storageCategories[index]
+                ForEach(coordinator.storageCategories) { category in
+                    let isLast = category.id == coordinator.storageCategories.last?.id
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: Spacing.standardPadding) {
                             Image(systemName: coordinator.iconForCategory(category.label))
@@ -272,15 +279,15 @@ struct SystemStatsView: View {
                             .padding(.leading, SystemStatsConstants.assetGridLeadingPadding)
                         }
                     }
-                    .appListRowStyle(showDivider: index < coordinator.storageCategories.count - 1)
+                    .appListRowStyle(showDivider: !isLast)
                 }
             }
             
             // 2.5 各笔记本存储占用 (仅在存在多笔记本时渲染)
             if !coordinator.vaultStorageItems.isEmpty {
                 StandardSection(title: L10n.Dashboard.stats.vaultStorageTitle) {
-                    ForEach(coordinator.vaultStorageItems.indices, id: \.self) { index in
-                        let item = coordinator.vaultStorageItems[index]
+                    ForEach(coordinator.vaultStorageItems) { item in
+                        let isLast = item.id == coordinator.vaultStorageItems.last?.id
                         HStack(spacing: Spacing.standardPadding) {
                             // 笔记本专属图标
                             ZStack {
@@ -324,7 +331,7 @@ struct SystemStatsView: View {
                                     .foregroundStyle(.appSecondary)
                             }
                         }
-                    .appListRowStyle(showDivider: index < coordinator.vaultStorageItems.count - 1)
+                        .appListRowStyle(showDivider: !isLast)
                     }
                 }
             }

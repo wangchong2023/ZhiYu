@@ -74,6 +74,7 @@ public enum AIAnalyticsServiceKey: DependencyKey {
     public static var testValue: AIAnalyticsService {
         ServiceContainer.shared.resolveOptional(AIAnalyticsService.self) ?? AIAnalyticsService()
     }
+    public static var previewValue: AIAnalyticsService { testValue }
 }
 
 extension DependencyValues {

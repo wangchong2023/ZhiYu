@@ -40,6 +40,8 @@ public enum AIWorkflowCapabilitiesKey: DependencyKey {
     public static var testValue: any AIWorkflowCapabilities {
         ServiceContainer.shared.resolveOptional((any AIWorkflowCapabilities).self) ?? NoOpAIWorkflowCapabilities()
     }
+    @MainActor
+    public static var previewValue: any AIWorkflowCapabilities { testValue }
 }
 
 /// 无操作 AIWorkflowCapabilities 服务（测试/预览占位，DI 未就绪时降级）

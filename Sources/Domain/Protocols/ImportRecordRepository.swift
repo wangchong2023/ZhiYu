@@ -35,6 +35,7 @@ public enum ImportRecordRepositoryKey: DependencyKey {
     public static var testValue: any ImportRecordRepository {
         ServiceContainer.shared.resolveOptional((any ImportRecordRepository).self) ?? NoOpImportRecordRepository()
     }
+    public static var previewValue: any ImportRecordRepository { testValue }
 }
 
 /// 无操作导入记录仓储（测试/预览占位，DI 未就绪时降级）

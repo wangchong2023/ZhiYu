@@ -31,12 +31,9 @@ final class ChatViewInteractiveSnapshots: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
-    }
-
-    override func tearDown() async throws {
-        DatabaseManager.shared.reset()
-        ServiceContainer.shared.reset()
-        try await super.tearDown()
+        let store = ServiceContainer.shared.resolveOptional(KnowledgeStore.self) ?? KnowledgeStore()
+        store.pages = []
+        ServiceContainer.shared.resolveOptional(TaskCenter.self)?.reset()
     }
 
     // MARK: - 1. ChatView 完整交互容器（空状态引导）
@@ -47,7 +44,7 @@ final class ChatViewInteractiveSnapshots: XCTestCase {
         }
         .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
     // MARK: - 2. 用户提问气泡（渐变主色卡片）

@@ -159,6 +159,8 @@ public enum MaintenanceServiceKey: DependencyKey {
     public static var testValue: MaintenanceService {
         ServiceContainer.shared.resolveOptional(MaintenanceService.self) ?? MaintenanceService()
     }
+    @MainActor
+    public static var previewValue: MaintenanceService { testValue }
 }
 
 extension DependencyValues {

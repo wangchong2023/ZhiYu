@@ -115,11 +115,7 @@ extension GitHubAuthStrategy: ASWebAuthenticationPresentationContextProviding {
     /// presentationAnchor
     /// - Returns: 返回值
     public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        let activeScene = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }
-        
-        return activeScene?.windows.first { $0.isKeyWindow } ?? UIWindow()
+        PlatformPresentationAnchor.keyWindow
     }
 }
 #endif

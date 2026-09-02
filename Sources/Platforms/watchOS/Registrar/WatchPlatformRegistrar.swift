@@ -33,19 +33,20 @@ struct WatchPlatformRegistrar: PlatformRegistrar {
         container.register(WatchOCRService(), for: (any OCRServiceProtocol).self)
         container.register(WatchSpeechService(), for: (any SpeechServiceProtocol).self)
         
-        // 4. 系统集成
-        container.register(DummyActivityService() as any LiveActivityProtocol, for: (any LiveActivityProtocol).self)
+        // 4. watchOS 系统环境与专属同步
         container.register(WatchAppEnvironment(), for: (any AppEnvironmentProtocol).self)
         container.register(WatchHapticService(), for: (any HapticFeedbackProtocol).self)
         container.register(WatchWatchSyncService(), for: (any WatchSyncProtocol).self)
-        
+        container.register(WatchAccessibilityService(), for: (any AccessibilityServiceProtocol).self)
+
+        // 5. 独立手表端占位与未支持能力
+        container.register(DummyActivityService() as any LiveActivityProtocol, for: (any LiveActivityProtocol).self)
         container.register(UnsupportedFileArchiver(), for: (any FileArchiverProtocol).self)
         container.register(UnsupportedReminderService(), for: (any ReminderServiceProtocol).self)
         container.register(UnsupportedExportService(), for: (any ExportServiceProtocol).self)
         container.register(UnsupportedSearchIndexer(), for: (any SearchIndexerProtocol).self)
-        container.register(WatchAccessibilityService(), for: (any AccessibilityServiceProtocol).self)
 
-        // 5. 设备信息 / URL 打开 / 分享面板
+        // 6. 手表端设备信息与 URL 打开
         container.register(WatchDeviceInfoService(), for: (any DeviceInfoProtocol).self)
         container.register(WatchURLOpenerService(), for: (any URLOpenerProtocol).self)
         container.register(WatchShareSheetService(), for: (any ShareSheetProtocol).self)

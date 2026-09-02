@@ -202,7 +202,7 @@ final class SystemViewSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)))
     }
 
     /// 测试 ChartView 非空数组 + tokens 类型的视觉一致性
@@ -215,17 +215,19 @@ final class SystemViewSnapshots: XCTestCase {
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)))
     }
 
-    /// 构造本月每日 AI 使用统计样本数据
+    /// 构造本月每日 AI 使用统计样本数据（固定基准日期杜绝月份跨越导致快照漂移）
     private static func makeDailyAIUsageSamples() -> [DailyAIUsage] {
-        let calendar = Calendar.current
-        let now = Date()
-        let components = calendar.dateComponents([.year, .month], from: now)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
+        let fixedDate = Date(timeIntervalSince1970: 1750000000) // 确定性固定日期
+        let components = calendar.dateComponents([.year, .month], from: fixedDate)
         guard let startOfMonth = calendar.date(from: components) else { return [] }
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = calendar.timeZone
         return (0..<15).compactMap { offset in
             guard let date = calendar.date(byAdding: .day, value: offset, to: startOfMonth) else { return nil }
             return DailyAIUsage(

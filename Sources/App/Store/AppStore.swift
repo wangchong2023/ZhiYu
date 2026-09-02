@@ -291,12 +291,16 @@ extension ToolItem {
 @MainActor
 public enum AppStoreKey: DependencyKey {
     @MainActor
-    public static var liveValue: AppStore { ServiceContainer.shared.resolve(AppStore.self) }
+    public static var liveValue: AppStore {
+        ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+    }
 
     @MainActor
     public static var testValue: AppStore {
         ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
     }
+    @MainActor
+    public static var previewValue: AppStore { testValue }
 }
 
 extension DependencyValues {

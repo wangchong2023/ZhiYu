@@ -54,7 +54,7 @@ final class PluginLoadUnloadTests: XCTestCase {
         let paths: [(String, String)] = [
             ("toc-generator", "Tools/Plugins/Local/toc-generator/index.js"),
             ("word-counter", "Tools/Plugins/Local/word-counter/index.js"),
-            ("smart-cleaner", "Tools/Plugins/smart-cleaner/index.js"),
+            ("smart-cleaner", "Tools/Plugins/Local/smart-cleaner/index.js"),
             ("link-preview", "Tools/Plugins/Remote/link-preview/index.js"),
             ("ai-translator", "Tools/Plugins/Remote/ai-translator/index.js")
         ]
@@ -134,7 +134,7 @@ final class PluginLoadUnloadTests: XCTestCase {
 
     /// 智能清洗器：preProcess 应合并多余空行
     func testSmartCleanerMergesBlankLines() {
-        guard let js = readJS("Tools/Plugins/smart-cleaner/index.js") else { XCTFail("读取"); return }
+        guard let js = readJS("Tools/Plugins/Local/smart-cleaner/index.js") else { XCTFail("读取"); return }
         let m = PluginManifest(id: "test.clean.func", version: "1.0.0", author: "T",
                                 permissions: ["writeContent", "log"], names: ["en": "SC"], descriptions: ["en": "SC"])
         guard let p = JavaScriptPlugin(script: js, manifest: m) else { XCTFail("init"); return }
@@ -151,7 +151,7 @@ final class PluginLoadUnloadTests: XCTestCase {
     func testLinkPreviewPostProcess() {
         guard let js = readJS("Tools/Plugins/Remote/link-preview/index.js") else { XCTFail("读取"); return }
         let m = PluginManifest(id: "test.link.func", version: "1.0.0", author: "T",
-                                permissions: ["network", "log"], names: ["en": "LP"], descriptions: ["en": "LP"])
+                                permissions: ["readContent", "writeContent", "network", "log"], names: ["en": "LP"], descriptions: ["en": "LP"])
         guard let p = JavaScriptPlugin(script: js, manifest: m) else { XCTFail("init"); return }
         registry.loadPlugin(p)
         XCTAssertNoThrow(try p.postProcess(content: "Check https://example.com"), "postProcess 不应抛异常")
@@ -179,7 +179,7 @@ final class PluginLoadUnloadTests: XCTestCase {
         let specs: [PluginSpec] = [
             PluginSpec(name: "toc", path: "Tools/Plugins/Local/toc-generator/index.js", id: "test.b.toc", perms: ["writeContent", "log"]),
             PluginSpec(name: "word", path: "Tools/Plugins/Local/word-counter/index.js", id: "test.b.word", perms: ["readContent", "log"]),
-            PluginSpec(name: "clean", path: "Tools/Plugins/smart-cleaner/index.js", id: "test.b.clean", perms: ["writeContent", "log"]),
+            PluginSpec(name: "clean", path: "Tools/Plugins/Local/smart-cleaner/index.js", id: "test.b.clean", perms: ["writeContent", "log"]),
             PluginSpec(name: "link", path: "Tools/Plugins/Remote/link-preview/index.js", id: "test.b.link", perms: ["network", "log"]),
             PluginSpec(name: "trans", path: "Tools/Plugins/Remote/ai-translator/index.js", id: "test.b.trans", perms: ["aiAccess", "log"])
         ]

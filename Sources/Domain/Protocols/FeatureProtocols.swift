@@ -142,6 +142,8 @@ public enum VaultServiceKey: DependencyKey {
     public static var testValue: any VaultServiceProtocol {
         ServiceContainer.shared.resolveOptional((any VaultServiceProtocol).self) ?? NoOpVaultService()
     }
+    @MainActor
+    public static var previewValue: any VaultServiceProtocol { testValue }
 }
 
 /// 无操作笔记本服务（测试/预览占位，DI 未就绪时降级）
@@ -208,6 +210,8 @@ enum ChatServiceKey: DependencyKey {
     static var testValue: any ChatServiceProtocol {
         ServiceContainer.shared.resolveOptional((any ChatServiceProtocol).self) ?? NoOpChatService()
     }
+    @MainActor
+    static var previewValue: any ChatServiceProtocol { testValue }
 }
 
 /// 无操作聊天服务（测试/预览占位，DI 未就绪时降级）

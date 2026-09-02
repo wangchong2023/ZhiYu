@@ -234,6 +234,8 @@ enum RAGEvaluationServiceKey: DependencyKey {
         ServiceContainer.shared.resolveOptional(RAGEvaluationService.self)
             ?? RAGEvaluationService(llmService: NoOpLLMService(), governanceStore: NoOpRAGGovernanceRepository())
     }
+    @MainActor
+    static var previewValue: RAGEvaluationService { testValue }
 }
 
 extension DependencyValues {
