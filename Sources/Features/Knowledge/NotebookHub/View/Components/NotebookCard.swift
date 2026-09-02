@@ -75,20 +75,7 @@ struct NotebookCard: View {
             .premiumAmbientShadow(color: .primary.opacity(DesignSystem.Opacity.light), radius: 10)
             .scaleOnHover()
             // 绑定长按上下文菜单 (ContextMenu)，支持重命名与沙盒物理彻底擦除
-            .contextMenu {
-                Button {
-                    viewModel.prepareEdit(notebook)
-                } label: {
-                    Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
-                }
-                
-                // 统一删除操作文案：使用“删除笔记本”以确保与“编辑笔记本”的动宾结构对齐
-                Button(role: .destructive) {
-                    viewModel.deleteNotebook(id: notebook.id)
-                } label: {
-                    Label(L10n.Vault.deleteNotebook, systemImage: DesignSystem.Icons.delete)
-                }
-            }
+            .contextMenu { notebookContextMenu }
         }
         // 绑定 Task 2 微动效交互的核心成果，使用户物理压下卡片时得到即时的 Spring 回弹与下沉反馈
         .buttonStyle(AppCardButtonStyle())
@@ -113,5 +100,21 @@ struct NotebookCard: View {
     private var defaultIcon: String {
         let index = abs(notebook.id.hashValue) % DesignSystem.Icons.Notebook.options.count
         return DesignSystem.Icons.Notebook.options[index]
+    }
+
+    /// 笔记本上下文菜单（编辑 + 删除）
+    private var notebookContextMenu: some View {
+        Group {
+            Button {
+                viewModel.prepareEdit(notebook)
+            } label: {
+                Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
+            }
+            Button(role: .destructive) {
+                viewModel.deleteNotebook(id: notebook.id)
+            } label: {
+                Label(L10n.Vault.deleteNotebook, systemImage: DesignSystem.Icons.delete)
+            }
+        }
     }
 }

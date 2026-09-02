@@ -82,42 +82,11 @@ struct OverseasLoginCardView: View {
     // MARK: - 协议勾选
     
     private var agreementSection: some View {
-        HStack(alignment: .top, spacing: Spacing.tightPadding) {
-            Button(action: {
-                withAnimation { isAgreementChecked.toggle() }
-            }) {
-                Image(systemName: isAgreementChecked ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isAgreementChecked ? Color.appAccent : Color.appSecondary)
-                    .font(.system(size: Spacing.smallIconSize))
-            }
-            .accessibilityIdentifier("agreementCheckbox")
-            .accessibilityValue(isAgreementChecked ? "checked" : "unchecked")
-            
-            VStack(alignment: .leading, spacing: Spacing.tiny) {
-                Text(LocalizedStringKey(L10n.Auth.agreementText))
-                    .font(.caption2)
-                    .foregroundStyle(.appSecondary)
-                    .lineSpacing(Spacing.atomic)
-                    .environment(\.openURL, OpenURLAction { url in
-                        if url.scheme == FeatureConstants.URLSchemeName.privacy {
-                            if url.host == FeatureConstants.URLSchemeName.terms {
-                                showTermsSheet = true
-                            } else {
-                                showPrivacySheet = true
-                            }
-                            return .handled
-                        }
-                        return .systemAction
-                    })
-                
-                if !isAgreementChecked {
-                    Text(L10n.Auth.pleaseCheckAgreement)
-                        .font(.caption2)
-                        .foregroundStyle(Color.appAccent)
-                }
-            }
-        }
-        .padding(.horizontal, Spacing.small)
+        AgreementCheckboxView(
+            isAgreementChecked: $isAgreementChecked,
+            showTermsSheet: $showTermsSheet,
+            showPrivacySheet: $showPrivacySheet
+        )
     }
     
     // MARK: - 协议 Sheet

@@ -87,20 +87,7 @@ struct NotebookListRow: View {
                 }
             }
             // 绑定长按上下文菜单 (ContextMenu)
-            .contextMenu {
-                Button {
-                    viewModel.prepareEdit(notebook)
-                } label: {
-                    Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
-                }
-                
-                // 统一删除操作文案：使用“删除笔记本”以确保与“编辑笔记本”的动宾结构对齐
-                Button(role: .destructive) {
-                    viewModel.deleteNotebook(id: notebook.id)
-                } label: {
-                    Label(L10n.Vault.deleteNotebook, systemImage: DesignSystem.Icons.delete)
-                }
-            }
+            .contextMenu { notebookContextMenu }
         }
         // 绑定 Task 2 微动效交互的核心成果，在点击单行时赋予舒适的欠阻尼物理按压反馈
         .buttonStyle(AppCardButtonStyle())
@@ -117,5 +104,21 @@ struct NotebookListRow: View {
     private var defaultIcon: String {
         let index = abs(notebook.id.hashValue) % DesignSystem.Icons.Notebook.options.count
         return DesignSystem.Icons.Notebook.options[index]
+    }
+
+    /// 笔记本上下文菜单（编辑 + 删除）
+    private var notebookContextMenu: some View {
+        Group {
+            Button {
+                viewModel.prepareEdit(notebook)
+            } label: {
+                Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
+            }
+            Button(role: .destructive) {
+                viewModel.deleteNotebook(id: notebook.id)
+            } label: {
+                Label(L10n.Vault.deleteNotebook, systemImage: DesignSystem.Icons.delete)
+            }
+        }
     }
 }

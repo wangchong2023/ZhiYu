@@ -56,31 +56,16 @@ public struct MeshGradientView: View {
     
     @ViewBuilder
     private func watchOSCanvasBackground(size: CGSize) -> some View {
-        Canvas { context, size in
-            let gridPadding: CGFloat = 40
-            let rows = Int(size.height / gridPadding)
-            let cols = Int(size.width / gridPadding)
-            
-            for row in 0...rows {
-                let y = CGFloat(row) * gridPadding
-                context.stroke(Path { p in
-                    p.move(to: CGPoint(x: 0, y: y))
-                    p.addLine(to: CGPoint(x: size.width, y: y))
-                }, with: .color(Color.appAccent.opacity(DesignSystem.Opacity.ghost)), lineWidth: 0.5)
-            }
-            
-            for col in 0...cols {
-                let x = CGFloat(col) * gridPadding
-                context.stroke(Path { p in
-                    p.move(to: CGPoint(x: x, y: 0))
-                    p.addLine(to: CGPoint(x: x, y: size.height))
-                }, with: .color(Color.appAccent.opacity(DesignSystem.Opacity.ghost)), lineWidth: 0.5)
-            }
-        }
+        canvasGridBackground(size: size)
     }
     
     @ViewBuilder
-    private func legacyCanvasBackground(size _: CGSize) -> some View {
+    private func legacyCanvasBackground(size: CGSize) -> some View {
+        canvasGridBackground(size: size)
+    }
+
+    @ViewBuilder
+    private func canvasGridBackground(size: CGSize) -> some View {
         Canvas { context, size in
             let gridPadding: CGFloat = 40
             let rows = Int(size.height / gridPadding)

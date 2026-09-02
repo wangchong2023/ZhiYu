@@ -39,6 +39,8 @@ GATEKEEPER_AUDIT_STEPS = [
     ("死代码与迁移残留审计 (Periphery)", ["python3", "Tools/ios/audit-code-dead-code.py"]),
     ("设计令牌命名规范审计", ["python3", "Tools/ios/audit-design-token-naming.py"]),
     ("设计令牌数量预算审计", ["python3", "Tools/ios/audit-design-token-budget.py"]),
+    ("文件大小 SRP 审计", ["python3", "Tools/ios/audit-code-file-size.py"]),
+    ("强制解包安全审计", ["python3", "Tools/ios/audit-code-force-unwrap.py"]),
 ]
 
 

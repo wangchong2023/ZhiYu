@@ -49,7 +49,11 @@ ALLOW_NON_ASCII_FILES = {
     'SwarmMemoryAdapter.swift',    # 开源 Swarm 框架记忆适配器数据
     'PromptConstants.swift',        # Prompt 常量及 JSON Schema 结构描述定义
     'ProcessorConstants.swift',     # 处理器常量集（含 ThinkingProcessor 中文 AI 输出检测关键词）
-    'FeatureConstants.swift'        # Features 模块常量集（含 ModelLab Mock 中文演示数据与日志文本）
+    'FeatureConstants.swift',       # Features 模块常量集（含 ModelLab Mock 中文演示数据与日志文本）
+    'FeatureConstants+Auth.swift',  # 认证相关常量扩展
+    'FeatureConstants+AI.swift',    # AI 功能相关常量扩展
+    'FeatureConstants+Knowledge.swift', # 知识管理相关常量扩展
+    'FeatureConstants+Common.swift',    # 跨领域共享常量扩展（含 Mock 中文演示数据与日志文本）
 }
 
 # 匹配模式： " ... " 字符串字面量

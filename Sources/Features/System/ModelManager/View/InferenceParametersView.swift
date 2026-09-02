@@ -42,48 +42,6 @@ public struct InferenceParametersView: View {
 
     private let parametersStore = InferenceParametersStore.shared
 
-    // MARK: - 预设模板
-
-    private enum ParameterPreset: String, CaseIterable {
-        case balanced
-        case creative
-        case precise
-
-        var displayName: String {
-            switch self {
-            case .creative:
-                return L10n.ModelManager.Parameters.presetCreative
-            case .balanced:
-                return L10n.ModelManager.Parameters.presetBalanced
-            case .precise:
-                return L10n.ModelManager.Parameters.presetPrecise
-            }
-        }
-
-        var icon: String {
-            switch self {
-            case .creative:
-                return "paintbrush.fill"
-            case .balanced:
-                return "scale.3d"
-            case .precise:
-                return "target"
-            }
-        }
-
-        struct InferenceParams { var temperature: Double; var topP: Double; var topK: Int; var maxTokens: Int }
-        var parameters: InferenceParams {
-            switch self {
-            case .creative:
-                return InferenceParams(temperature: 1.2, topP: 0.95, topK: 50, maxTokens: 2048)
-            case .balanced:
-                return InferenceParams(temperature: 0.7, topP: 0.9, topK: 40, maxTokens: 2048)
-            case .precise:
-                return InferenceParams(temperature: 0.3, topP: 0.85, topK: 20, maxTokens: 1024)
-            }
-        }
-    }
-
     public init() {}
 
     public var body: some View {

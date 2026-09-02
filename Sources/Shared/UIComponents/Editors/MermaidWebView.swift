@@ -18,6 +18,86 @@ struct IdentifiableURL: Identifiable {
     let url: URL
 }
 
+// MARK: - Mermaid HTML 生成共享函数
+
+/// 为 iOS/macOS 双平台提供统一的 Mermaid 渲染 HTML 模板，消除两处 `generateHTML()` 的重复。
+/// - Parameters:
+///   - mermaidCode: 原始 Mermaid 图表代码
+///   - theme: Mermaid 主题名称（iOS 使用 `'neutral'`，macOS 使用 `'dark'`）
+///   - viewportMeta: 是否注入 `<meta name="viewport">` 标签（仅 iOS 需要）
+///   - bodyExtraStyle: 追加到 body CSS 的额外样式片段
+///   - fallbackBulletPrefix: fallback 列表项前缀（iOS 无，macOS 使用 `'• '`）
+private func generateMermaidHTML(
+    mermaidCode: String,
+    theme: String,
+    viewportMeta: Bool = false,
+    bodyExtraStyle: String = "",
+    fallbackBulletPrefix: String = ""
+) -> String {
+    let escapedCode = mermaidCode
+        .replacingOccurrences(of: "\\", with: "\\\\")
+        .replacingOccurrences(of: "`", with: "\\`")
+        .replacingOccurrences(of: "$", with: "\\$")
+        .replacingOccurrences(of: "\n", with: "\\n")
+        .replacingOccurrences(of: "\r", with: "")
+
+    let viewportTag = viewportMeta
+        ? #"<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">"#
+        : ""
+
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        \(viewportTag)
+        <script src="mermaid.min.js"></script>
+        <style>
+            body { background-color: transparent; margin: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system, sans-serif; color: #1c1c1e;\(bodyExtraStyle) }
+            @media (prefers-color-scheme: dark) { body { color: #f2f2f7; } }
+            #mermaid-root { background-color: transparent; width: 100%; padding: 20px; box-sizing: border-box; }
+            svg { max-width: 100% !important; height: auto !important; }
+            .fallback-box { padding: 24px; background: rgba(120, 120, 128, 0.08); border-radius: 16px; border: 1px solid rgba(120, 120, 128, 0.16); }
+            .fallback-h3 { color: #0A84FF; margin-top: 12px; margin-bottom: 12px; font-size: 17px; font-weight: 600; }
+            .fallback-item { padding-left: 12px; margin: 8px 0; font-size: 15px; border-left: 3px solid #0A84FF; line-height: 1.4; opacity: 0.9; }
+        </style>
+    </head>
+    <body>
+        <div id="mermaid-root"></div>
+        <script>
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: '\(theme)',
+                securityLevel: 'loose',
+                mindmap: { useMaxWidth: true }
+            });
+            (async () => {
+                const root = document.getElementById('mermaid-root');
+                try {
+                    const { svg } = await mermaid.render('mindmap-svg', `\(escapedCode)`);
+                    root.innerHTML = svg;
+                } catch (e) {
+                    const rawCode = `\(escapedCode)`;
+                    const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
+                    let listHtml = '<div class="fallback-box">';
+                    lines.forEach(line => {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('#')) {
+                            const headerText = trimmed.replace(/^#+\\s*/, '');
+                            listHtml += `<h3 class="fallback-h3">${headerText}</h3>`;
+                        } else {
+                            listHtml += `<div class="fallback-item">\(fallbackBulletPrefix)${trimmed}</div>`;
+                        }
+                    });
+                    listHtml += '</div>';
+                    root.innerHTML = listHtml;
+                }
+            })();
+        </script>
+    </body>
+    </html>
+    """
+}
+
 @MainActor
 /// Mermaid 图表渲染视图
 /// 负责在 WebKit 容器中加载 Mermaid.js 并渲染流程图、甘特图等知识图谱扩展内容
@@ -141,70 +221,13 @@ struct MermaidWKWebView: UIViewRepresentable {
         uiView.loadHTMLString(generateHTML(), baseURL: Bundle.main.bundleURL)
     }
     
-    // swiftlint:disable:next function_body_length
     private func generateHTML() -> String {
-        let escapedCode = mermaidCode
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "`", with: "\\`")
-            .replacingOccurrences(of: "$", with: "\\$")
-            .replacingOccurrences(of: "\n", with: "\\n")
-            .replacingOccurrences(of: "\r", with: "")
-
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-            <script src="mermaid.min.js"></script>
-            <style>
-                body { background-color: transparent; margin: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; width: 100vw; font-family: -apple-system, sans-serif; color: #1c1c1e; }
-                @media (prefers-color-scheme: dark) {
-                    body { color: #f2f2f7; }
-                }
-                #mermaid-root { background-color: transparent; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; }
-                svg { max-width: 100% !important; height: auto !important; }
-                .fallback-box { padding: 24px; background: rgba(120, 120, 128, 0.08); border-radius: 16px; border: 1px solid rgba(120, 120, 128, 0.16); }
-                .fallback-h3 { color: #0A84FF; margin-top: 12px; margin-bottom: 12px; font-size: 17px; font-weight: 600; }
-                .fallback-item { padding-left: 12px; margin: 8px 0; font-size: 15px; border-left: 3px solid #0A84FF; line-height: 1.4; opacity: 0.9; }
-            </style>
-        </head>
-        <body>
-            <div id="mermaid-root"></div>
-            <script>
-                mermaid.parseError = function(err, hash) {};
-                mermaid.initialize({
-                    startOnLoad: false,
-                    theme: 'neutral',
-                    securityLevel: 'loose',
-                    suppressErrorRendering: true,
-                    mindmap: { useMaxWidth: true }
-                });
-                (async () => {
-                    const root = document.getElementById('mermaid-root');
-                    try {
-                        const { svg } = await mermaid.render('mindmap-svg', `\(escapedCode)`);
-                        root.innerHTML = svg;
-                    } catch (e) {
-                        const rawCode = `\(escapedCode)`;
-                        const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
-                        let listHtml = '<div class="fallback-box">';
-                        lines.forEach(line => {
-                            const trimmed = line.trim();
-                            if (trimmed.startsWith('#')) {
-                                const headerText = trimmed.replace(/^#+\\s*/, '');
-                                listHtml += `<h3 class="fallback-h3">${headerText}</h3>`;
-                            } else {
-                                listHtml += `<div class="fallback-item">${trimmed}</div>`;
-                            }
-                        });
-                        listHtml += '</div>';
-                        root.innerHTML = listHtml;
-                    }
-                })();
-            </script>
-        </body>
-        </html>
-        """
+        generateMermaidHTML(
+            mermaidCode: mermaidCode,
+            theme: "neutral",
+            viewportMeta: true,
+            bodyExtraStyle: " width: 100vw;"
+        )
     }
 }
 
@@ -249,63 +272,11 @@ struct MermaidWKWebViewMac: NSViewRepresentable {
     }
     
     private func generateHTML() -> String {
-        let escapedCode = mermaidCode
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "`", with: "\\`")
-            .replacingOccurrences(of: "$", with: "\\$")
-            .replacingOccurrences(of: "\n", with: "\\n")
-            .replacingOccurrences(of: "\r", with: "")
-
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <script src="mermaid.min.js"></script>
-            <style>
-                body { background-color: transparent; margin: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; font-family: -apple-system; color: white; }
-                #mermaid-root { background-color: transparent; width: 100%; padding: 20px; box-sizing: border-box; }
-                svg { max-width: 100% !important; height: auto !important; }
-                .error-container { color: #ff453a; text-align: center; padding: 40px 20px; font-size: 14px; background: rgba(255,69,58,0.1); border-radius: 12px; margin: 20px; border: 1px solid rgba(255,69,58,0.2); }
-                .fallback-box { padding: 20px; color: #e0e0e0; font-family: -apple-system, sans-serif; }
-                .fallback-h3 { color: #0A84FF; margin-top: 16px; font-size: 16px; font-weight: 600; }
-                .fallback-item { padding-left: 16px; margin: 4px 0; border-left: 2px solid #0A84FF; }
-            </style>
-        </head>
-        <body>
-            <div id="mermaid-root"></div>
-            <script>
-                mermaid.initialize({
-                    startOnLoad: false,
-                    theme: 'dark',
-                    securityLevel: 'loose',
-                    mindmap: { useMaxWidth: true }
-                });
-                (async () => {
-                    const root = document.getElementById('mermaid-root');
-                    try {
-                        const { svg } = await mermaid.render('mindmap-svg', `\(escapedCode)`);
-                        root.innerHTML = svg;
-                    } catch (e) {
-                        const rawCode = `\(escapedCode)`;
-                        const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
-                        let listHtml = '<div class="fallback-box">';
-                        lines.forEach(line => {
-                            const trimmed = line.trim();
-                            if (trimmed.startsWith('#')) {
-                                const headerText = trimmed.replace(/^#+\\s*/, '');
-                                listHtml += `<h3 class="fallback-h3">${headerText}</h3>`;
-                            } else {
-                                listHtml += `<div class="fallback-item">• ${trimmed}</div>`;
-                            }
-                        });
-                        listHtml += '</div>';
-                        root.innerHTML = listHtml;
-                    }
-                })();
-            </script>
-        </body>
-        </html>
-        """
+        generateMermaidHTML(
+            mermaidCode: mermaidCode,
+            theme: "dark",
+            fallbackBulletPrefix: "• "
+        )
     }
 }
 #endif

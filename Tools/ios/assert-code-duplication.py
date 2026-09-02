@@ -184,6 +184,7 @@ def try_pmd_cpd():
 def run_fallback():
     """
     在无外部工具时，运行原生滑动窗口哈希算法做静默降级检测。
+    发现重复代码块时以非零退出码阻断流水线。
     """
     print("\n⚠️  [Code Duplication] Standard tools ('jscpd' or 'pmd') not found in system.")
     print("   To activate full AST-level scanning, it is highly recommended to run:")
@@ -215,6 +216,10 @@ def run_fallback():
         reporter.add_issue(primary_file, start_line, msg, "WARNING")
         
     reporter.report()
+    
+    if duplicates_list:
+        print(f"\n❌ [Code Duplication (Fallback)] 审计完成：发现 {len(duplicates_list)} 处重复代码块，阻断流水线。")
+        sys.exit(1)
 
 
 def main():
