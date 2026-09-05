@@ -238,7 +238,7 @@ jobs:
         run: bash Tools/CI/Build/inject_version.sh Sources/Info.plist
 
       - name: Restore SPM Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
           key: spm-${{ runner.os }}-${{ hashFiles('ZhiYu.xcodeproj/project.pbxproj') }}
@@ -283,7 +283,7 @@ jobs:
         run: bash Tools/CI/Build/inject_version.sh Sources/Info.plist
 
       - name: Restore SPM Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
           key: spm-${{ runner.os }}-${{ hashFiles('ZhiYu.xcodeproj/project.pbxproj') }}
