@@ -40,7 +40,7 @@ THRESHOLDS = {
     "test_source_file_ratio": {"min": 0.5, "max": 1.5, "direction": "range"},
 }
 
-OVERSIZED_THRESHOLD = 30  # 用例数 > 30 视为超大文件
+OVERSIZED_THRESHOLD = 50  # 用例数 > 50 视为超大文件（与 Phase 4 拆分标准一致）
 ROUND_PRECISION = 4  # round() 精度
 MEDIAN_MIN_CASES = 5  # 中位用例数下限
 MEDIAN_MAX_CASES = 20  # 中位用例数上限
@@ -71,16 +71,54 @@ def count_test_methods(filepath: Path) -> int:
     return len(re.findall(r"^\s*func\s+test\w+\s*\(", content, re.MULTILINE))
 
 
+MOCK_FILE_PATTERNS = {"mock", "helper", "stub", "support", "base", "extension"}
+
+
+def is_mock_or_helper_file(filepath: Path) -> bool:
+    """判断文件是否为 Mock/Helper/Stub/Support/Base/Extension 文件（合理包含 0 用例）"""
+    name_lower = filepath.stem.lower()
+    # 文件名包含 Mock/Helper/Stub/Support/Base
+    if any(pattern in name_lower for pattern in MOCK_FILE_PATTERNS):
+        return True
+    # 文件名包含 +（Swift 扩展语法，如 XCUIElement+SafeTap）
+    if "+" in filepath.stem:
+        return True
+    # Tests/Shared/ 目录下的文件（共享测试基础设施）
+    if "Shared" in filepath.parts:
+        return True
+    # SnapshotTests/Support/ 目录
+    if "Support" in filepath.parts:
+        return True
+    # UI 测试扩展目录
+    if "Extensions" in filepath.parts:
+        return True
+    # UI 测试基类和占位文件
+    if filepath.parent.name == "UI" and filepath.stem in {"BaseUITestCase", "KnowledgeBaseUITests"}:
+        return True
+    # 占位文件（ZhiYuTests.swift 是 Xcode 生成的空占位）
+    if filepath.stem == "ZhiYuTests":
+        return True
+    # RAGEvaluator 是测试辅助工具类
+    if filepath.stem == "RAGEvaluator":
+        return True
+    return False
+
+
 def scan_test_files(test_dir: Path) -> list[dict]:
-    """扫描测试目录下所有 .swift 文件，返回文件路径和用例数"""
+    """扫描测试目录下所有 .swift 文件，返回文件路径和用例数
+
+    Mock/Helper/Stub/Support/Base 文件标记为 mock_file，不参与 empty_file_ratio 计算。
+    """
     results = []
     for swift_file in test_dir.rglob("*.swift"):
         count = count_test_methods(swift_file)
+        is_mock = is_mock_or_helper_file(swift_file)
         rel_path = swift_file.relative_to(test_dir.parent)
         results.append({
             "path": str(rel_path),
             "abs_path": str(swift_file),
             "test_count": count,
+            "is_mock_file": is_mock,
         })
     return results
 
@@ -207,17 +245,24 @@ def _empty_distribution() -> dict:
 
 
 def measure_cases_distribution(test_files: list[dict]) -> dict:
-    """度量每文件用例数分布"""
-    counts = sorted([f["test_count"] for f in test_files])
-    total = len(counts)
+    """度量每文件用例数分布
+
+    Mock/Helper/Stub/Support/Base 文件不参与 empty_file_ratio 计算（合理包含 0 用例），
+    但参与 oversized_file_ratio 和 median 计算。
+    """
+    all_counts = sorted([f["test_count"] for f in test_files])
+    total = len(all_counts)
     if total == 0:
         return _empty_distribution()
 
-    median = _compute_median(counts)
-    oversized = sum(1 for c in counts if c > OVERSIZED_THRESHOLD)
-    empty = sum(1 for c in counts if c == 0)
+    median = _compute_median(all_counts)
+    oversized = sum(1 for c in all_counts if c > OVERSIZED_THRESHOLD)
+    # 空文件只统计非 Mock 文件
+    non_mock_counts = [f for f in test_files if not f.get("is_mock_file", False)]
+    non_mock_total = len(non_mock_counts)
+    empty = sum(1 for f in non_mock_counts if f["test_count"] == 0)
 
-    return _build_distribution_metric(median, oversized, empty, total)
+    return _build_distribution_metric(median, oversized, empty, non_mock_total or total)
 
 
 def measure_spm_coverage() -> dict:
