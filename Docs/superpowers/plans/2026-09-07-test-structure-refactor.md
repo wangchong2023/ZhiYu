@@ -594,7 +594,7 @@ git commit -m "refactor: 迁移 Processors 测试到 Infrastructure 目录（SSR
 ```bash
 #!/bin/bash
 # 按被测源码位置分类 Tests/Unit/System/ 下的文件
-cd /Users/constantine/Documents/work/code/projects/ZhiYu
+cd "$(git rev-parse --show-toplevel)"
 
 for f in Tests/Unit/System/*.swift; do
   basename=$(basename "$f")
