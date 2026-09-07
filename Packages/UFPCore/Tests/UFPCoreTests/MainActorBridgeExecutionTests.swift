@@ -60,6 +60,42 @@ final class MainActorBridgeExecutionTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
         XCTAssertTrue(flagBox.get())
     }
+
+    // MARK: - @MainActor 隔离代码访问
+
+    /// 后台线程通过 runOnMainSync 访问 @MainActor 隔离属性不应崩溃
+    func testRunOnMainSync_mainActorIsolatedProperty_accessFromBackground() {
+        let expectation = expectation(description: "@MainActor 属性访问完成")
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let version = runOnMainSync {
+                ProcessInfo.processInfo.operatingSystemVersionString
+            }
+            XCTAssertFalse(version.isEmpty, "应从主线程成功获取系统版本")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
+
+    // MARK: - 并发串行化
+
+    /// 验证并发场景下多个后台线程同时调用不产生竞态
+    func testRunOnMainSync_concurrentBackgroundCalls_areSerialized() {
+        let iterations = 20
+        let expectation = expectation(description: "并发调用完成")
+        expectation.expectedFulfillmentCount = iterations
+
+        for index in 0..<iterations {
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = runOnMainSync { index * 2 }
+                XCTAssertEqual(result, index * 2, "每次调用应返回正确计算结果")
+                expectation.fulfill()
+            }
+        }
+
+        waitForExpectations(timeout: 5.0)
+    }
 }
 
 private final class LockedFlag: @unchecked Sendable {

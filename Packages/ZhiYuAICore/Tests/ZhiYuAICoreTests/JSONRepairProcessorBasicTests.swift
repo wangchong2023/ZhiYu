@@ -78,4 +78,21 @@ final class JSONRepairProcessorBasicTests: XCTestCase {
         let result = JSONRepairProcessor.repair(input)
         XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(result.utf8)))
     }
+
+    /// 未闭合的括号必须自动补齐
+    func testUnclosedBracketsAutoClosed() {
+        let broken = """
+        {
+            "quizTitle": "demo",
+            "questions": [
+                {
+                    "id": 1,
+                    "question": "What is bidirectional link?",
+                    "options": ["A", "B", "C", "D"]
+        """
+
+        let repaired = JSONRepairProcessor.repair(broken)
+        XCTAssertTrue(repaired.hasSuffix("}]}"), "应自动补齐未闭合的集合与对象括号")
+        XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(repaired.utf8)), "修复后应为合法 JSON")
+    }
 }
