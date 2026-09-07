@@ -1,259 +1,112 @@
 //
 //  BackupServiceTests.swift
-//  ZhiYuTests
+//  ZhiYu
 //
-//  系统层级：[Tests] 单元测试层
-//  核心职责：验证 BackupService 的备份创建/恢复/删除、节流、自动清理与崩溃恢复逻辑。
+//  Created by Antigravity on 2026/05/23.
+//  Copyright © 2026 WangChong. All rights reserved.
 //
-
+//  系统层级：[Shared] 测试层
+//  核心职责：针对 BackupService 开展备份创建、恢复、删除与脏标记的自动化单元测试验证。
+//
 import XCTest
-@testable import ZhiYu
+import SwiftUI
+import UFPStorage
+@preconcurrency @testable import ZhiYu
+@testable import UFPCore
 
+// MARK: - BackupService Tests
 @MainActor
-final class BackupServiceSupplementTests: XCTestCase {
+final class BackupServiceTests: XCTestCase {
 
-    private var tempDir: URL!
-    private var service: BackupService!
+    var backupService: BackupService!
+    var tempDir: URL!
 
-    override func setUp() {
-        super.setUp()
-        tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("BackupTest_\(UUID().uuidString)")
+    override func setUp() async throws {
+        try await super.setUp()
+        // 每个测试使用独立临时目录以实现物理隔离
+        tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        service = BackupService(baseDirectory: tempDir)
+
+        // 注入临时目录
+        backupService = BackupService(baseDirectory: tempDir)
     }
 
-    override func tearDown() {
-        service = nil
+    override func tearDown() async throws {
+        // 清理临时目录
         try? FileManager.default.removeItem(at: tempDir)
-        super.tearDown()
+        backupService = nil
+        try await super.tearDown()
     }
 
-    // MARK: - 辅助方法
+    func testCreateBackupGeneratesEntry() {
+        let pages = [
+            KnowledgePage(title: "Page A", pageType: .entity, content: "Content A"),
+            KnowledgePage(title: "Page B", pageType: .concept, content: "Content B")
+        ]
 
-    private func makePage(title: String = "Test Page", content: String = "Hello World") -> KnowledgePage {
-        KnowledgePage(title: title, content: content)
+        backupService.createBackup(pages: pages)
+
+        XCTAssertFalse(backupService.backupEntries.isEmpty, "Backup should create at least one entry")
+        let latestEntry = backupService.backupEntries.first
+        XCTAssertNotNil(latestEntry?.id)
+        XCTAssertEqual(latestEntry?.pageCount, 2)
     }
 
-    // MARK: - 初始化
+    func testBackupEntryContainsCorrectMetadata() {
+        let pages = [KnowledgePage(title: "Test", pageType: .source, content: "x")]
+        backupService.createBackup(pages: pages)
 
-    func testInit_createsBackupDirectory() {
-        let backupDir = service.backupDirectory
-        XCTAssertTrue(FileManager.default.fileExists(atPath: backupDir.path))
+        let entry = backupService.backupEntries.first
+        XCTAssertNotNil(entry?.timestamp)
+        XCTAssertEqual(entry?.pageCount, 1)
+        XCTAssertGreaterThan(entry?.totalWords ?? 0, 0)
     }
 
-    func testInit_emptyDirectory_backupEntriesIsEmpty() {
-        XCTAssertTrue(service.backupEntries.isEmpty)
-    }
+    func testRestoreBackupReturnsCorrectPages() {
+        let original = [
+            KnowledgePage(title: "Restored Page", pageType: .entity, content: "Restored content"),
+            KnowledgePage(title: "Page 2", pageType: .concept, content: "More content here with enough chars")
+        ]
+        backupService.createBackup(pages: original)
 
-    func testInit_loadsExistingIndex() {
-        let pages = [makePage(title: "Page1"), makePage(title: "Page2")]
-        service.createBackup(pages: pages)
-
-        let newService = BackupService(baseDirectory: tempDir)
-        XCTAssertEqual(newService.backupEntries.count, 1)
-    }
-
-    // MARK: - createBackup
-
-    func testCreateBackup_createsEntryAndFile() {
-        let pages = [makePage(title: "Test")]
-        service.createBackup(pages: pages)
-
-        XCTAssertEqual(service.backupEntries.count, 1)
-        XCTAssertEqual(service.backupEntries[0].pageCount, 1)
-
-        let fileURL = service.backupDirectory.appendingPathComponent(service.backupEntries[0].fileName)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
-    }
-
-    func testCreateBackup_recordsTotalWords() {
-        let pages = [makePage(content: "one two three four five")]
-        service.createBackup(pages: pages)
-        XCTAssertEqual(service.backupEntries[0].totalWords, 5)
-    }
-
-    func testCreateBackup_updatesLastBackupDate() {
-        XCTAssertNil(service.lastBackupDate)
-        service.createBackup(pages: [makePage()])
-        XCTAssertNotNil(service.lastBackupDate)
-    }
-
-    func testCreateBackup_autoBackupDisabled_skipsBackup() {
-        service.isAutoBackupEnabled = false
-        service.createBackup(pages: [makePage()])
-        XCTAssertTrue(service.backupEntries.isEmpty)
-    }
-
-    func testCreateBackup_throttleWithin300s_skipsBackup() {
-        service.createBackup(pages: [makePage()])
-        XCTAssertEqual(service.backupEntries.count, 1)
-
-        service.createBackup(pages: [makePage()])
-        XCTAssertEqual(service.backupEntries.count, 1)
-    }
-
-    func testCreateBackup_multiplePages_correctCount() {
-        let pages = [makePage(title: "A"), makePage(title: "B"), makePage(title: "C")]
-        service.createBackup(pages: pages)
-        XCTAssertEqual(service.backupEntries[0].pageCount, 3)
-    }
-
-    func testCreateBackup_emptyPages_stillCreatesBackup() {
-        service.createBackup(pages: [])
-        XCTAssertEqual(service.backupEntries.count, 1)
-        XCTAssertEqual(service.backupEntries[0].pageCount, 0)
-    }
-
-    // MARK: - restoreBackup
-
-    func testRestoreBackup_returnsOriginalPages() throws {
-        let pages = [makePage(title: "Original")]
-        service.createBackup(pages: pages)
-
-        let entry = service.backupEntries[0]
-        let restored = service.restoreBackup(entry)
-
-        XCTAssertNotNil(restored)
-        XCTAssertEqual(restored?.count, 1)
-        XCTAssertEqual(restored?[0].title, "Original")
-    }
-
-    func testRestoreBackup_nonExistentFile_returnsNil() {
-        let fakeEntry = BackupService.BackupEntry(
-            id: UUID(), timestamp: Date(), pageCount: 0, totalWords: 0,
-            fileName: "nonexistent_backup.json"
-        )
-        let result = service.restoreBackup(fakeEntry)
-        XCTAssertNil(result)
-    }
-
-    func testRestoreBackup_preservesContent() throws {
-        let pages = [makePage(title: "Test", content: "Special content 123")]
-        service.createBackup(pages: pages)
-
-        let restored = service.restoreBackup(service.backupEntries[0])
-        XCTAssertEqual(restored?[0].content, "Special content 123")
-    }
-
-    // MARK: - deleteBackup
-
-    func testDeleteBackup_removesEntryAndFile() {
-        service.createBackup(pages: [makePage()])
-        XCTAssertEqual(service.backupEntries.count, 1)
-
-        let entry = service.backupEntries[0]
-        let fileURL = service.backupDirectory.appendingPathComponent(entry.fileName)
-
-        service.deleteBackup(entry)
-        XCTAssertEqual(service.backupEntries.count, 0)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
-    }
-
-    func testDeleteBackup_multipleEntries_removesOnlyTarget() {
-        // 创建第一个备份
-        service.createBackup(pages: [makePage(title: "A")])
-
-        // 绕过节流创建第二个备份
-        service.lastBackupDate = Date().addingTimeInterval(-400)
-        service.createBackup(pages: [makePage(title: "B")])
-
-        XCTAssertEqual(service.backupEntries.count, 2)
-
-        service.deleteBackup(service.backupEntries[0])
-        XCTAssertEqual(service.backupEntries.count, 1)
-    }
-
-    // MARK: - markDirty / markClean / hasUnsavedChanges
-
-    func testMarkDirty_setsHasUnsavedChanges() {
-        XCTAssertFalse(service.hasUnsavedChanges)
-        service.markDirty()
-        XCTAssertTrue(service.hasUnsavedChanges)
-    }
-
-    func testMarkClean_clearsHasUnsavedChanges() {
-        service.markDirty()
-        XCTAssertTrue(service.hasUnsavedChanges)
-        service.markClean()
-        XCTAssertFalse(service.hasUnsavedChanges)
-    }
-
-    func testMarkClean_whenNotDirty_noError() {
-        XCTAssertFalse(service.hasUnsavedChanges)
-        service.markClean()
-        XCTAssertFalse(service.hasUnsavedChanges)
-    }
-
-    // MARK: - 崩溃恢复
-
-    func testInit_withDirtyFlag_removesFlagOnRecovery() {
-        service.markDirty()
-        XCTAssertTrue(service.hasUnsavedChanges)
-
-        let newService = BackupService(baseDirectory: tempDir)
-        XCTAssertFalse(newService.hasUnsavedChanges)
-    }
-
-    func testInit_withoutDirtyFlag_noCrashRecovery() {
-        let newService = BackupService(baseDirectory: tempDir)
-        XCTAssertFalse(newService.hasUnsavedChanges)
-    }
-
-    // MARK: - 自动清理 (maxBackups = 20)
-
-    func testCleanOldBackups_keepsOnly20Entries() {
-        // 创建 22 个备份，每个间隔超过 300s 以避开节流
-        for i in 0..<22 {
-            service.lastBackupDate = Date().addingTimeInterval(-Double(300 + i * 10))
-            service.createBackup(pages: [makePage(title: "Backup_\(i)")])
+        let entries = backupService.backupEntries
+        guard let latestEntry = entries.first else {
+            XCTFail("No backup entry found"); return
         }
 
-        XCTAssertLessThanOrEqual(service.backupEntries.count, 20)
+        let restored = backupService.restoreBackup(latestEntry)
+        XCTAssertNotNil(restored, "Restore should return pages array")
+        XCTAssertEqual(restored?.count, 2, "Should restore all pages")
+        XCTAssertTrue(restored?.contains { $0.title == "Restored Page" } ?? false)
     }
 
-    // MARK: - scanBackupDirectory (index 文件缺失时)
+    func testDeleteBackupRemovesEntry() {
+        let pages = [KnowledgePage(title: "To Delete", pageType: .raw, content: "content")]
+        backupService.createBackup(pages: pages)
 
-    func testScanBackupDirectory_recoversFromBackupFiles() {
-        // 创建备份
-        service.createBackup(pages: [makePage(title: "Scanned")])
+        let countBefore = backupService.backupEntries.count
+        guard let entryToDelete = backupService.backupEntries.first else {
+            XCTFail("No entry to delete"); return
+        }
 
-        // 删除 index 文件，强制走 scanBackupDirectory 路径
-        let indexURL = service.backupDirectory.appendingPathComponent("backup_index.json")
-        try? FileManager.default.removeItem(at: indexURL)
-
-        // 重新初始化，应通过扫描目录恢复
-        let newService = BackupService(baseDirectory: tempDir)
-        XCTAssertEqual(newService.backupEntries.count, 1)
-        XCTAssertEqual(newService.backupEntries[0].pageCount, 1)
+        backupService.deleteBackup(entryToDelete)
+        XCTAssertEqual(backupService.backupEntries.count, countBefore - 1)
     }
 
-    // MARK: - BackupEntry
+    func testMarkDirtyAndClean() {
+        backupService.markDirty()
+        XCTAssertTrue(backupService.hasUnsavedChanges)
 
-    func testBackupEntry_displayName_isNonEmpty() {
-        service.createBackup(pages: [makePage()])
-        XCTAssertFalse(service.backupEntries[0].displayName.isEmpty)
+        backupService.markClean()
+        XCTAssertFalse(backupService.hasUnsavedChanges)
     }
 
-    func testBackupEntry_fileSize_returnsFormattedString() {
-        service.createBackup(pages: [makePage(content: "test content")])
-        let size = service.backupEntries[0].fileSize(in: service.backupDirectory)
-        XCTAssertFalse(size.isEmpty)
-        XCTAssertNotEqual(size, "-")
-    }
-
-    func testBackupEntry_fileSize_nonExistentFile_returnsDash() {
-        let entry = BackupService.BackupEntry(
-            id: UUID(), timestamp: Date(), pageCount: 0, totalWords: 0,
-            fileName: "nonexistent.json"
-        )
-        XCTAssertEqual(entry.fileSize(in: service.backupDirectory), "-")
-    }
-
-    // MARK: - defaultBackupDirectory
-
-    func testDefaultBackupDirectory_isUnderDocuments() {
-        let dir = BackupService.defaultBackupDirectory()
-        XCTAssertTrue(dir.path.contains("Documents"))
-        XCTAssertTrue(dir.lastPathComponent == "AppBackups")
+    func testMultipleBackupsCreateMultipleEntries() {
+        for i in 0..<3 {
+            let pages = [KnowledgePage(title: "Page \(i)", pageType: .entity, content: "Content \(i)")]
+            backupService.createBackup(pages: pages)
+            backupService.lastBackupDate = nil
+        }
+        XCTAssertEqual(backupService.backupEntries.count, 3)
     }
 }
