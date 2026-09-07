@@ -51,6 +51,15 @@ BANNER_WIDTH = 60
 # SPM 包名集合
 SPM_PACKAGE_NAMES = {"UFPCore", "UFPStorage", "UFPDesignSystem", "ZhiYuDomain", "ZhiYuAICore", "ZhiYuFeatures"}
 
+# 功能域枚举（对应 FeatureDomain enum）— 测试子目录名匹配这些名称视为功能域对齐
+FEATURE_DOMAINS = {"knowledge", "ai", "insight", "system"}
+
+# 架构层级目录（对应 Sources/ 顶层目录）— 测试子目录名匹配这些名称视为架构层对齐
+ARCH_LAYER_DIRS = {"App", "Core", "Domain", "Features", "Infrastructure", "Localization", "Platforms", "Shared"}
+
+# 功能域到 Features 子目录的映射（用于识别 Tests/Unit/Features/<域>/ 结构）
+FEATURE_DOMAIN_SUBDIRS = {"Knowledge", "AI", "Insight", "System"}
+
 
 def count_test_methods(filepath: Path) -> int:
     """统计单个测试文件中的 test 方法数"""
@@ -76,18 +85,43 @@ def scan_test_files(test_dir: Path) -> list[dict]:
     return results
 
 
+def is_features_subdir_aligned(features_dir: Path) -> bool:
+    """检查 Tests/Unit/Features/<域>/ 结构中所有子目录是否匹配功能域"""
+    for sub in features_dir.iterdir():
+        if sub.is_dir() and sub.name not in FEATURE_DOMAIN_SUBDIRS:
+            return False
+    return True
+
+
+def is_subdir_aligned(subdir: str) -> bool:
+    """判断单个测试子目录是否对齐（架构层级或功能域）"""
+    if subdir in ARCH_LAYER_DIRS:
+        return True
+    if subdir.lower() in FEATURE_DOMAINS:
+        return True
+    if subdir == "Features":
+        features_dir = TESTS_UNIT_DIR / subdir
+        return is_features_subdir_aligned(features_dir)
+    return False
+
+
 def measure_directory_alignment() -> dict:
-    """度量 Tests/Unit 子目录与 Sources/ 目录的对齐率"""
-    test_subdirs = []
-    for item in sorted(TESTS_UNIT_DIR.iterdir()):
-        if item.is_dir():
-            test_subdirs.append(item.name)
+    """度量 Tests/Unit 子目录的功能域对齐率
+
+    对齐规则（业界实践：按功能域分组，非 1:1 物理路径镜像）：
+    1. 架构层级对齐：子目录名匹配 Sources/ 顶层目录（App/Core/Domain/Features/Infrastructure/Localization/Platforms/Shared）
+    2. 功能域对齐：子目录名匹配 FeatureDomain 枚举（knowledge/ai/insight/system，大小写不敏感）
+    3. Features 子目录对齐：Tests/Unit/Features/<域>/ 结构中 <域> 匹配功能域
+    不要求与 Sources 物理路径 1:1 镜像，允许按功能域组织测试。
+    """
+    test_subdirs = [
+        item.name for item in sorted(TESTS_UNIT_DIR.iterdir()) if item.is_dir()
+    ]
 
     aligned = 0
     misaligned = []
     for subdir in test_subdirs:
-        source_counterpart = SOURCES_DIR / subdir
-        if source_counterpart.exists() and source_counterpart.is_dir():
+        if is_subdir_aligned(subdir):
             aligned += 1
         else:
             file_count = len(list((TESTS_UNIT_DIR / subdir).glob("*.swift")))
