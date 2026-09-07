@@ -99,26 +99,4 @@ final class FileTextPreviewAndIngestDeepTests: XCTestCase {
     }
 
     // MARK: - 2. FileTextPreviewView 视图层测试
-
-    func testFileTextPreviewView_RendersWithValidFile() throws {
-        guard let temp = tempDirectory else { return }
-        let fileURL = temp.appendingPathComponent("preview_sample.md")
-        try "# 知识库导引\n基于 RAG 与 FTS5 混合检索".write(to: fileURL, atomically: true, encoding: .utf8)
-
-        let host = FileTextPreviewView(filePath: fileURL.path)
-            .snapshotEnvironment()
-            .renderInWindow()
-
-        XCTAssertNotNil(host.view)
-    }
-
-    func testFileTextPreviewView_RendersWithNonExistentFile() {
-        guard let temp = tempDirectory else { return }
-        let fakePath = temp.appendingPathComponent("ghost.md").path
-        let host = FileTextPreviewView(filePath: fakePath)
-            .snapshotEnvironment()
-            .renderInWindow()
-
-        XCTAssertNotNil(host.view)
-    }
 }

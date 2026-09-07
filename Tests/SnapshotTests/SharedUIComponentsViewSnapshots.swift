@@ -35,6 +35,11 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
         }
     }
 
+    override func setUp() async throws {
+        try await super.setUp()
+        resetPersistentTestState()
+    }
+
     override func tearDown() async throws {
         if let original = originalLanguageMode {
             Localized.languageMode = original
@@ -505,6 +510,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
     /// 测试 FloatingContextCapsule 无当前 Vault（hubIndicator 分支）的视觉一致性
     func testFloatingContextCapsuleHubIndicator() {
         setupMockEnvironment()
+        if let vaultService = ServiceContainer.shared.resolveOptional(VaultService.self) {
+            vaultService.selectedVaultID = nil
+        }
+        VaultService.shared.selectedVaultID = nil
 
         let view = FloatingContextCapsule()
             .snapshotEnvironment()

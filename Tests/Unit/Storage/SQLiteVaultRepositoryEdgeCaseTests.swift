@@ -107,8 +107,10 @@ final class VaultRepoEdgeTests: XCTestCase {
 
     /// 验证：updateLastAccessed 对不存在的 ID 静默跳过。
     func testUpdateLastAccessedNonExistentIsNoop() async throws {
-        try await vaultRepo.updateLastAccessed(id: UUID())
-        // 不应抛出异常
+        let nonExistentID = UUID()
+        try await vaultRepo.updateLastAccessed(id: nonExistentID)
+        let all = try await vaultRepo.fetchAllVaults()
+        XCTAssertFalse(all.contains { $0.id == nonExistentID }, "不存在的笔记本不应被创建")
     }
 
     // MARK: - deleteVault
@@ -126,8 +128,10 @@ final class VaultRepoEdgeTests: XCTestCase {
 
     /// 验证：deleteVault 对不存在的 ID 不报错。
     func testDeleteVaultNonExistentIsNoop() async throws {
-        try await vaultRepo.deleteVault(id: UUID())
-        // 不应抛出异常
+        let nonExistentID = UUID()
+        try await vaultRepo.deleteVault(id: nonExistentID)
+        let all = try await vaultRepo.fetchAllVaults()
+        XCTAssertFalse(all.contains { $0.id == nonExistentID }, "删除不存在的笔记本后仍不应检索到")
     }
 
     // MARK: - saveSetting

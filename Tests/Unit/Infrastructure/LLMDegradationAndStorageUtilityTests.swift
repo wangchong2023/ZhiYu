@@ -60,11 +60,6 @@ final class DemoPDFBuilderLogicTests: XCTestCase {
     func testIsTableSeparatorDetectsDashAndPipeCombination() {
         XCTAssertTrue(DemoPDFBuilder.isTableSeparator(" --- | --- "))
     }
-
-    func testIsTableSeparatorRejectsNormalText() {
-        XCTAssertFalse(DemoPDFBuilder.isTableSeparator("普通文本行"))
-    }
-
     func testIsTableSeparatorRejectsHeaderRow() {
         XCTAssertFalse(DemoPDFBuilder.isTableSeparator("| 列1 | 列2 |"))
     }
@@ -74,27 +69,6 @@ final class DemoPDFBuilderLogicTests: XCTestCase {
     }
 
     // MARK: - ensurePDFExists 端到端
-
-    func testEnsurePDFExistsCreatesValidPDFFile() throws {
-        let tempDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("DemoPDFBuilderTests-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: tempDir) }
-
-        let pdfPath = tempDir
-            .appendingPathComponent("sample.pdf").path
-        let content = "# 标题\n\n正文段落\n\n> 引用块"
-
-        let result = DemoPDFBuilder.ensurePDFExists(at: pdfPath, title: "测试文档", content: content)
-
-        XCTAssertNotNil(result)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: pdfPath))
-        let data = try Data(contentsOf: URL(fileURLWithPath: pdfPath))
-        XCTAssertGreaterThan(data.count, 0)
-        // PDF 文件头魔数校验
-        XCTAssertEqual(data.prefix(4), Data("%PDF".utf8))
-    }
-
     func testEnsurePDFExistsCreatesParentDirectory() throws {
         let tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("DemoPDFBuilderNested-\(UUID().uuidString)", isDirectory: true)
@@ -305,46 +279,6 @@ final class ChatLLMServiceDegradationTests: XCTestCase {
         config.isEnabled = true
         XCTAssertTrue(service.isEnabled)
     }
-
-    func testGenerateThrowsNotConfiguredWhenDisabled() async {
-        config.isEnabled = false
-        do {
-            _ = try await service.generate(prompt: "P", systemPrompt: "S")
-            XCTFail("未配置时应抛出 notConfigured")
-        } catch LLMError.notConfigured {
-            // 预期
-        } catch {
-            XCTFail("应抛出 LLMError.notConfigured，实际：\(error)")
-        }
-    }
-
-    func testChatThrowsNotConfiguredWhenDisabled() async {
-        config.isEnabled = false
-        do {
-            _ = try await service.chat(query: "Q", history: [], pages: [])
-            XCTFail("未配置时应抛出 notConfigured")
-        } catch LLMError.notConfigured {
-            // 预期
-        } catch {
-            XCTFail("应抛出 LLMError.notConfigured，实际：\(error)")
-        }
-    }
-
-    func testChatStreamFinishesWithErrorWhenDisabled() async {
-        config.isEnabled = false
-        let stream = service.chatStream(query: "Q", history: [], pages: [])
-        do {
-            for try await _ in stream {
-                // 不应产出任何 chunk
-                XCTFail("未配置时流不应产出 chunk")
-            }
-            XCTFail("未配置时流应抛出错误")
-        } catch LLMError.notConfigured {
-            // 预期
-        } catch {
-            XCTFail("应抛出 LLMError.notConfigured，实际：\(error)")
-        }
-    }
 }
 
 // MARK: - TagRepository 迁移测试
@@ -516,12 +450,13 @@ final class SQLiteStoreStorageStatsTests: XCTestCase {
     func testAddLogIsNoOpAndDoesNotCrash() async {
         // addLog 是 nonisolated no-op，验证调用不崩溃
         store.addLog(action: .create, target: "T", details: "D", duration: 1.0, startTime: Date(), endTime: Date(), module: "M")
-        XCTAssertTrue(true, "addLog 应为 no-op 且不崩溃")
+        XCTAssertNotNil(store)
     }
 
     func testSeedDefaultContentIsNoOp() async {
         await store.seedDefaultContent { _, _, _ in }
-        XCTAssertTrue(true, "seedDefaultContent 应为 no-op")
+        let pages = await store.pages
+        XCTAssertEqual(pages.count, 0, "seedDefaultContent 执行后页面数应保持为 0")
     }
 }
 

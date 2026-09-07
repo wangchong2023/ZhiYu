@@ -254,7 +254,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
         })();
         """
         
-        guard let base64String = try await webView.evaluateJavaScript(js) as? String,
+        guard let base64String = try await evaluatePPTXScript(webView, js: js) as? String,
               let data = Data(base64Encoded: base64String) else {
             throw ExportError.internalError("PPTX_Failed")
         }
@@ -267,6 +267,15 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
     private struct SlideData: Codable {
         let title: String
         let bullets: [String]
+    }
+
+    /// 执行 PPTX 生成脚本，将底层 WKWebView 错误统一包装为 ExportError
+    private func evaluatePPTXScript(_ webView: WKWebView, js: String) async throws -> Any? {
+        do {
+            return try await webView.evaluateJavaScript(js)
+        } catch {
+            throw ExportError.internalError("PPTX_ScriptError: \(error.localizedDescription)")
+        }
     }
     
     private func parseMarkdownForSlides(_ markdown: String) -> [SlideData] {

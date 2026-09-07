@@ -105,10 +105,9 @@ final class JSPluginPostProcessSizeTests: XCTestCase {
         }
     }
 
-    // MARK: - 源码审计验证：postProcess 已添加大小检查
+    // MARK: - 源码审计验证：postProcess 与 preProcess 统一使用 processContent 进行大小检查
 
-    /// 验证 postProcess 源码中包含 maxResponseSize 检查（与 preProcess 一致）
-    /// 此测试确保安全防护一致性——如果未来有人移除检查，此测试会失败
+    /// 验证 postProcess 与 preProcess 均委托至包含 maxResponseSize 检查的通用处理函数
     func testPostProcessSourceCodeHasSizeCheck() {
         let sourcePath = Self.projectRoot + "/Sources/Infrastructure/Plugins/JavaScriptPlugin.swift"
         guard let source = try? String(contentsOfFile: sourcePath, encoding: .utf8) else {
@@ -116,21 +115,22 @@ final class JSPluginPostProcessSizeTests: XCTestCase {
             return
         }
 
-        // 提取 postProcess 函数体（从 "func postProcess" 到文件末尾的类结束 }）
-        guard let postProcessStart = source.range(of: "func postProcess(content: String)") else {
-            XCTFail("应找到 postProcess 函数")
+        // 验证 postProcess 与 preProcess 均调用 processContent
+        XCTAssertTrue(source.contains("func postProcess(content: String) throws -> String"), "应找到 postProcess 函数")
+        XCTAssertTrue(source.contains("func preProcess(content: String) throws -> String"), "应找到 preProcess 函数")
+        XCTAssertTrue(source.contains("func processContent("), "应包含统一的 processContent 通用处理函数")
+
+        // 验证 processContent 包含 maxResponseSize 与 payloadTooLarge
+        guard let processContentRange = source.range(of: "func processContent(") else {
+            XCTFail("应找到 processContent 函数")
             return
         }
-
-        // 从 postProcess 开始到文件末尾
-        let postProcessSection = String(source[postProcessStart.lowerBound...])
-
-        // 验证 postProcess 包含 maxResponseSize 检查
-        XCTAssertTrue(postProcessSection.contains("maxResponseSize"), "postProcess 应包含 maxResponseSize 检查")
-        XCTAssertTrue(postProcessSection.contains("payloadTooLarge"), "postProcess 应抛出 payloadTooLarge 错误")
+        let processContentSection = String(source[processContentRange.lowerBound...])
+        XCTAssertTrue(processContentSection.contains("maxResponseSize"), "processContent 应包含 maxResponseSize 检查")
+        XCTAssertTrue(processContentSection.contains("payloadTooLarge"), "processContent 应抛出 payloadTooLarge 错误")
     }
 
-    /// 对比验证：preProcess 和 postProcess 都应有大小检查
+    /// 对比验证：preProcess 和 postProcess 统一经过 processContent 大小检查
     func testBothPreAndPostProcessHaveSizeCheck() {
         let sourcePath = Self.projectRoot + "/Sources/Infrastructure/Plugins/JavaScriptPlugin.swift"
         guard let source = try? String(contentsOfFile: sourcePath, encoding: .utf8) else {
@@ -138,13 +138,55 @@ final class JSPluginPostProcessSizeTests: XCTestCase {
             return
         }
 
-        // 统计 maxResponseSize 出现次数——应为 2 次（preProcess + postProcess）
-        let count = source.components(separatedBy: "maxResponseSize").count - 1
-        XCTAssertGreaterThanOrEqual(count, 2, "preProcess 和 postProcess 都应包含 maxResponseSize 检查，实际: \(count)")
+        // 验证 preProcess 和 postProcess 均调用 processContent
+        let hasPreProcess = source.contains("processContent(content: content, functionName: PluginConstants.FunctionNames.preProcess") ||
+                            source.contains("processContent(content: content, functionName: \"preProcess\"")
+        let hasPostProcess = source.contains("processContent(content: content, functionName: PluginConstants.FunctionNames.postProcess") ||
+                             source.contains("processContent(content: content, functionName: \"postProcess\"")
+        XCTAssertTrue(hasPreProcess, "preProcess 应调用 processContent")
+        XCTAssertTrue(hasPostProcess, "postProcess 应调用 processContent")
+        XCTAssertTrue(source.contains("maxResponseSize"), "源码应包含 maxResponseSize")
+        XCTAssertTrue(source.contains("payloadTooLarge"), "源码应抛出 payloadTooLarge")
+    }
 
-        // 统计 payloadTooLarge 在 process 函数中的出现次数
-        let payloadCount = source.components(separatedBy: "payloadTooLarge").count - 1
-        XCTAssertGreaterThanOrEqual(payloadCount, 2, "preProcess 和 postProcess 都应抛出 payloadTooLarge，实际: \(payloadCount)")
+    /// 行为测试：超大响应在 preProcess 和 postProcess 中均被硬拦截
+    func testOversizedPayload_PreProcessAndPostProcess_ThrowsPayloadTooLarge() {
+        let js = """
+        function preProcess(content) {
+            return "A".repeat(6000000);
+        }
+        function postProcess(content) {
+            return "B".repeat(6000000);
+        }
+        """
+        let manifest = PluginManifest(
+            id: "test.js.oversized.payload",
+            version: "1.0.0",
+            author: "Tester",
+            permissions: ["writeContent"],
+            allowedDomains: [],
+            names: ["en": "Oversized Payload Test"],
+            descriptions: ["en": "Oversized Payload Test"]
+        )
+
+        guard let plugin = JavaScriptPlugin(script: js, manifest: manifest) else {
+            XCTFail("无法实例化 JavaScriptPlugin")
+            return
+        }
+
+        XCTAssertThrowsError(try plugin.preProcess(content: "input")) { error in
+            guard let sandboxError = error as? PluginSandboxError, case .payloadTooLarge = sandboxError else {
+                XCTFail("preProcess 应当抛出 payloadTooLarge 错误，实际: \(error)")
+                return
+            }
+        }
+
+        XCTAssertThrowsError(try plugin.postProcess(content: "input")) { error in
+            guard let sandboxError = error as? PluginSandboxError, case .payloadTooLarge = sandboxError else {
+                XCTFail("postProcess 应当抛出 payloadTooLarge 错误，实际: \(error)")
+                return
+            }
+        }
     }
 }
 

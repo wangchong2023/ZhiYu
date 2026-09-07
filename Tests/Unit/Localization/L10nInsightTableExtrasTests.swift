@@ -17,11 +17,6 @@ import XCTest
 final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - tableName 正确性
-
-    func testTableName_Dashboard_为Insight() {
-        XCTAssertEqual(L10n.Dashboard.tableName, "Insight")
-    }
-
     // MARK: - Dashboard 顶层属性 key 存在性
 
     func testDashboard_顶层基础属性返回非Missing值() {

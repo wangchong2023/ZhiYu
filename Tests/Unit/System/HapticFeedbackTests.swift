@@ -34,6 +34,7 @@ final class HapticFeedbackTests: XCTestCase {
         for pattern in patterns {
             service.trigger(pattern)
         }
+        XCTAssertEqual(patterns.count, 9, "应遍历触发全部 9 种触觉反馈模式")
     }
     
     /// TC-HAP-02: 测试 UserProfileMenu 视图的正确实例化与依赖解析

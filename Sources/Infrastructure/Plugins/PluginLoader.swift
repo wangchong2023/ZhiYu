@@ -401,6 +401,9 @@ final class PluginLoader {
 /// 审查修复 LOW-5: String 正则匹配辅助
 extension String {
     func matchesRegex(_ pattern: String) -> Bool {
+        // 空模式可被 NSRegularExpression 编译，且语义上匹配任意字符串（含空串）。
+        // 但 firstMatch 在 NSRange(length: 0) 上可能返回 nil，故空模式直接返回 true。
+        if pattern.isEmpty { return true }
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return false }
         let range = NSRange(location: 0, length: self.utf16.count)
         return regex.firstMatch(in: self, options: [], range: range) != nil

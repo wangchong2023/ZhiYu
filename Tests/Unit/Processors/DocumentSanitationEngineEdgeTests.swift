@@ -113,7 +113,8 @@ final class DocumentSanitationEngineEdgeTests: XCTestCase {
     }
 
     func testDocumentSanitationEngine_isSendable() {
-        // 编译时验证 Sendable
-        _ = DocumentSanitationEngine.shared
+        // 编译时与运行时验证 Sendable
+        let engine = DocumentSanitationEngine.shared
+        XCTAssertNotNil(engine, "单例应有效存在")
     }
 }

@@ -56,6 +56,7 @@ final class FileImportFileStoreTests: XCTestCase {
 
     func testSaveContent_emptyString_stillWrites() throws {
         let path = try XCTUnwrap(store.saveContent("", category: .manual))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: path), "保存空字符串也应在磁盘生成文件")
         try? FileManager.default.removeItem(atPath: path)
     }
 
@@ -127,16 +128,19 @@ final class FileImportFileStoreTests: XCTestCase {
 
     func testSaveContent_linkCategory_writesSuccessfully() throws {
         let path = try XCTUnwrap(store.saveContent("https://example.com", category: .link))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: path))
         try? FileManager.default.removeItem(atPath: path)
     }
 
     func testSaveContent_fileCategory_writesSuccessfully() throws {
         let path = try XCTUnwrap(store.saveContent("file content", category: .file))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: path))
         try? FileManager.default.removeItem(atPath: path)
     }
 
     func testSaveContent_clipboardCategory_writesSuccessfully() throws {
         let path = try XCTUnwrap(store.saveContent("clipboard text", category: .clipboard))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: path))
         try? FileManager.default.removeItem(atPath: path)
     }
 

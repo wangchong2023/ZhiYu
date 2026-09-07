@@ -18,7 +18,7 @@ import Dependencies
 /// 全局大模型状态控制中枢，使用 Swift 17 @Observable 宏，全局唯一并以 Environment/DI 形式分发
 @MainActor
 @Observable
-public final class GlobalModelManager {
+public final class GlobalModelManager: TestStateResettable {
     
     /// 全局共享实例
     public static let shared = GlobalModelManager()
@@ -115,7 +115,10 @@ public final class GlobalModelManager {
     public init() {
         self.physicalMemory = ProcessInfo.processInfo.physicalMemory
         self.hardwareGuard = DeviceHardwareGuard(physicalMemory: self.physicalMemory)
-        
+
+        // 单例自注册到测试状态重置注册表（仅 shared 实例触发）
+        TestStateResetRegistry.shared.register(self)
+
         // 异步加载模型列表并建立初始状态
         Task {
             await initializeManager()
@@ -323,6 +326,23 @@ public final class GlobalModelManager {
     }
     
     // MARK: - 兼容度与就绪状态查询
+    
+    /// 重置响应式状态用于单元测试隔离（仅 @testable 可见）
+    /// - Note: 清空远程清单、下载状态、存储占用与调用计数，避免跨测试单例状态泄漏导致快照漂移
+    func resetForTesting() {
+        remoteManifests = []
+        downloadStates = [:]
+        modelStorageUsage = [:]
+        modelCallCounts = [:]
+        isLoading = false
+    }
+
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离
+    public func resetStateForTesting() {
+        resetForTesting()
+    }
     
     /// 判定目标模型对当前物理硬件的运存支持度 (.supported / .warning / .restricted)
     public func evaluateEligibility(for manifest: LLMManifest) -> DeviceEligibility {

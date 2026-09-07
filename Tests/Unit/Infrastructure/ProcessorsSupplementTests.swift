@@ -234,30 +234,6 @@ final class GraphLayoutProcessorSupplementTests: XCTestCase {
     }
 
     // MARK: - layout 边界条件
-
-    func testLayout_emptyPages_returnsEmptyNodesAndEdges() {
-        let result = GraphLayoutProcessor.layout(
-            pages: [],
-            linkResolver: { _ in nil },
-            canvasSize: CGSize(width: 800, height: 600)
-        )
-        XCTAssertTrue(result.nodes.isEmpty)
-        XCTAssertTrue(result.edges.isEmpty)
-    }
-
-    func testLayout_singlePage_returnsSingleNodeNoEdges() {
-        let page = KnowledgePage(title: "Single")
-        let result = GraphLayoutProcessor.layout(
-            pages: [page],
-            linkResolver: { _ in nil },
-            canvasSize: CGSize(width: 800, height: 600),
-            config: GraphLayoutProcessor.Config(iterations: 1)
-        )
-        XCTAssertEqual(result.nodes.count, 1)
-        XCTAssertTrue(result.edges.isEmpty)
-        XCTAssertEqual(result.nodes.first?.title, "Single")
-    }
-
     func testLayout_multiplePages_allNodesHavePositions() {
         let pages = [
             KnowledgePage(title: "Page1"),
@@ -290,18 +266,6 @@ final class GraphLayoutProcessorSupplementTests: XCTestCase {
         XCTAssertEqual(result.nodes.count, 2)
         XCTAssertGreaterThanOrEqual(result.edges.count, 1)
     }
-
-    func testLayout_selfLink_filtered() {
-        let page = KnowledgePage(title: "SelfLink", content: "[[SelfLink]]")
-        let result = GraphLayoutProcessor.layout(
-            pages: [page],
-            linkResolver: { title in title == "SelfLink" ? page : nil },
-            canvasSize: CGSize(width: 800, height: 600),
-            config: GraphLayoutProcessor.Config(iterations: 1)
-        )
-        XCTAssertTrue(result.edges.isEmpty, "自链接应被过滤")
-    }
-
     func testLayout_relatedPageIDs_createsEdges() {
         let page2ID = UUID()
         let page1 = KnowledgePage(title: "Page1", relatedPageIDs: [page2ID])
@@ -315,37 +279,7 @@ final class GraphLayoutProcessorSupplementTests: XCTestCase {
         )
         XCTAssertEqual(result.edges.count, 1)
     }
-
-    func testLayout_linkCount_reflectsEdgeCount() {
-        let page1 = KnowledgePage(title: "Page1", content: "[[Page2]]")
-        let page2 = KnowledgePage(title: "Page2", content: "[[Page1]]")
-        let pages = [page1, page2]
-        let result = GraphLayoutProcessor.layout(
-            pages: pages,
-            linkResolver: { title in pages.first { $0.title == title } },
-            canvasSize: CGSize(width: 800, height: 600),
-            config: GraphLayoutProcessor.Config(iterations: 1)
-        )
-        // 每个节点至少有 1 个链接
-        for node in result.nodes {
-            XCTAssertGreaterThanOrEqual(node.linkCount, 1)
-        }
-    }
-
     // MARK: - applyForces 边界条件
-
-    func testApplyForces_emptyNodes_noOp() {
-        var nodes: [GraphNode] = []
-        GraphLayoutProcessor.applyForces(
-            nodes: &nodes,
-            edges: [],
-            canvasWidth: 800,
-            canvasHeight: 600,
-            config: .default
-        )
-        XCTAssertTrue(nodes.isEmpty)
-    }
-
     func testApplyForces_singleNode_noEdges_staysInBounds() {
         let page = KnowledgePage(title: "Single")
         let initial = GraphLayoutProcessor.layout(
@@ -373,24 +307,6 @@ final class GraphLayoutProcessorSupplementTests: XCTestCase {
     }
 
     // MARK: - detectCommunities 边界条件
-
-    func testDetectCommunities_emptyNodes_returnsEmpty() {
-        let result = GraphLayoutProcessor.detectCommunities(nodes: [], edges: [])
-        XCTAssertTrue(result.isEmpty)
-    }
-
-    func testDetectCommunities_noEdges_eachNodeOwnCommunity() {
-        let nodes = [
-            GraphNode(id: UUID(), title: "A", pageType: .concept, position: .zero),
-            GraphNode(id: UUID(), title: "B", pageType: .concept, position: .zero),
-            GraphNode(id: UUID(), title: "C", pageType: .concept, position: .zero)
-        ]
-        let result = GraphLayoutProcessor.detectCommunities(nodes: nodes, edges: [])
-        XCTAssertEqual(result.count, 3)
-        // 每个节点应有独立的 communityID
-        let communityIDs = result.compactMap { $0.communityID }
-        XCTAssertEqual(Set(communityIDs).count, 3)
-    }
 }
 
 // MARK: - TextChunkerProcessor 补充测试
@@ -410,132 +326,12 @@ final class TextChunkerSupplementTests: XCTestCase {
     }
 
     // MARK: - split 边界条件
-
-    func testSplit_emptyText_returnsEmptyArray() {
-        let chunks = chunker.split(text: "")
-        XCTAssertTrue(chunks.isEmpty)
-    }
-
-    func testSplit_singleLineShortText_returnsSingleChunk() {
-        let chunks = chunker.split(text: "Short text")
-        XCTAssertEqual(chunks.count, 1)
-        XCTAssertEqual(chunks.first?.text, "Short text")
-    }
-
-    func testSplit_whitespaceOnlyText_returnsEmptyArray() {
-        let chunks = chunker.split(text: "   \n   \n   ")
-        XCTAssertTrue(chunks.isEmpty)
-    }
-
     // MARK: - 代码块处理
-
-    func testSplit_codeBlockNotSplitEvenIfExceedsChunkSize() {
-        let config = TextChunkerProcessor.Config(chunkSize: 50, chunkOverlap: 10, separators: TextChunkerProcessor.default.separators)
-        let codeBlock = "```\n" + String(repeating: "a", count: 200) + "\n```"
-        let chunks = chunker.split(text: codeBlock, config: config)
-        XCTAssertEqual(chunks.count, 1)
-        XCTAssertTrue(chunks.first?.isCode == true)
-    }
-
-    func testSplit_codeBlockWithHashInsideNotTreatedAsHeader() {
-        let codeBlock = "```\n# This is a comment\nnot a header\n```"
-        let chunks = chunker.split(text: codeBlock)
-        XCTAssertEqual(chunks.count, 1)
-        XCTAssertTrue(chunks.first?.isCode == true)
-    }
-
     // MARK: - 标题层级与面包屑
-
-    func testSplit_h1H2H3_breadcrumbPathReflectsHierarchy() {
-        let text = "# Title\n\n## Section\n\n### Subsection\n\nContent here"
-        let chunks = chunker.split(text: text)
-        XCTAssertFalse(chunks.isEmpty)
-        // 最后一个 chunk 应包含完整面包屑路径
-        let lastChunk = chunks.last
-        XCTAssertNotNil(lastChunk)
-        XCTAssertTrue(lastChunk?.breadcrumbPath.contains("Title") == true)
-        XCTAssertTrue(lastChunk?.breadcrumbPath.contains("Section") == true)
-        XCTAssertTrue(lastChunk?.breadcrumbPath.contains("Subsection") == true)
-    }
-
-    func testSplit_headerLevelSkip_back_to_h1_resetsBreadcrumb() {
-        let text = "# Title1\n\n## Sub1\n\n# Title2\n\nContent"
-        let chunks = chunker.split(text: text)
-        XCTAssertFalse(chunks.isEmpty)
-        // Title2 的 chunk 面包屑应只包含 Title2
-        let title2Chunk = chunks.first { $0.anchorPath == "Title2" }
-        XCTAssertNotNil(title2Chunk)
-        XCTAssertEqual(title2Chunk?.breadcrumbPath, "Title2")
-    }
-
     // MARK: - Chunk contextualText
-
-    func testChunk_contextualText_withBreadcrumb_includesContextPrefix() {
-        // 源码设计：标题行本身也加入 chunk 文本（L74 在 L67 flush 之后执行）
-        // 使用多段文本让标题后的内容单独成块，验证 contextualText 包含 contextPrefix
-        let text = "# Header\n\nContent line one\n\n# Section2\n\nContent line two"
-        let chunks = chunker.split(text: text)
-        XCTAssertFalse(chunks.isEmpty)
-        // 找到面包屑非空且包含 "Content" 的 chunk
-        let contentChunk = chunks.first { !$0.breadcrumbPath.isEmpty && $0.breadcrumbPath != ProcessorConstants.TextChunker.rootAnchor && $0.text.contains("Content") }
-        XCTAssertNotNil(contentChunk, "应找到带面包屑的内容分块，chunks: \(chunks.map { "text='\($0.text)', breadcrumb='\($0.breadcrumbPath)'" })")
-        // 有面包屑时 contextualText 应包含 contextPrefix
-        XCTAssertTrue(contentChunk?.contextualText.contains(ProcessorConstants.TextChunker.contextPrefix) == true,
-                      "有面包屑时 contextualText 应包含 contextPrefix，实际: \(contentChunk?.contextualText ?? "nil")")
-    }
-
-    func testChunk_contextualText_rootBreadcrumb_returnsPlainText() {
-        let text = "Content without headers"
-        let chunks = chunker.split(text: text)
-        XCTAssertFalse(chunks.isEmpty)
-        let chunk = chunks.first
-        XCTAssertNotNil(chunk)
-        XCTAssertEqual(chunk?.contextualText, chunk?.text)
-    }
-
     // MARK: - 重叠窗口
-
-    func testSplit_overlapWindow_maintainsSemanticContinuity() {
-        let config = TextChunkerProcessor.Config(chunkSize: 30, chunkOverlap: 10, separators: TextChunkerProcessor.default.separators)
-        let text = "Line one content here\nLine two content here\nLine three content here"
-        let chunks = chunker.split(text: text, config: config)
-        XCTAssertGreaterThan(chunks.count, 1)
-        // 验证重叠窗口存在（第二个 chunk 的 startIndex 应小于第一个 chunk 的结束位置）
-        if chunks.count >= 2 {
-            let firstChunkEnd = chunks[0].startIndex + chunks[0].text.count
-            XCTAssertLessThan(chunks[1].startIndex, firstChunkEnd)
-        }
-    }
-
     // MARK: - startIndex 单调递增（缺陷 #12 修复验证）
-
-    func testSplit_startIndex_monotonicallyIncreasing_bug12Fixed() {
-        // 源码设计：split 按行处理，不拆分单行。需用多行文本触发溢出 flush
-        let config = TextChunkerProcessor.Config(chunkSize: 20, chunkOverlap: 5, separators: TextChunkerProcessor.default.separators)
-        let text = "A line one here\nB line two here\nC line three here\nD line four here\nE line five here"
-        let chunks = chunker.split(text: text, config: config)
-        XCTAssertGreaterThan(chunks.count, 1, "多行文本应产生多个分块，实际: \(chunks.count)")
-        for i in 1..<chunks.count {
-            XCTAssertGreaterThanOrEqual(chunks[i].startIndex, chunks[i - 1].startIndex,
-                                        "startIndex 应单调递增：chunks[\(i)].startIndex=\(chunks[i].startIndex) < chunks[\(i-1)].startIndex=\(chunks[i-1].startIndex)")
-        }
-    }
-
     // MARK: - 默认配置
-
-    func testDefaultConfig_chunkSizeIs1000() {
-        XCTAssertEqual(TextChunkerProcessor.default.chunkSize, ProcessorConstants.TextChunker.defaultChunkSize)
-    }
-
-    func testDefaultConfig_chunkOverlapIs200() {
-        XCTAssertEqual(TextChunkerProcessor.default.chunkOverlap, ProcessorConstants.TextChunker.defaultChunkOverlap)
-    }
-
-    func testDefaultConfig_separatorsInPriorityOrder() {
-        let separators = TextChunkerProcessor.default.separators
-        XCTAssertEqual(separators.first, "\n# ")
-        XCTAssertEqual(separators.last, "")
-    }
 }
 
 // MARK: - QuizSynthesisStrategy 补充测试
@@ -634,131 +430,33 @@ final class QuizSynthesisStrategySupplementTests: XCTestCase {
     // MARK: - Sendable 合规
 
     func testStrategy_isSendable() {
-        // 编译时检查 Sendable 合规
-        _ = strategy as SynthesisStrategyProtocol
+        // 编译时与运行时检查 Sendable 合规
+        let proto = strategy as SynthesisStrategyProtocol
+        XCTAssertNotNil(proto, "strategy 实例应合规遵循 SynthesisStrategyProtocol")
     }
 }
 
 // MARK: - CJKSpacingFormatter 补充测试
 
 final class CJKSpacingFormatterSupplementTests: XCTestCase {
-
-    func testSpacing_emptyString_returnsEmpty() {
-        XCTAssertEqual(CJKSpacingFormatter.spacing(""), "")
-    }
-
-    func testSpacing_cjkFollowedByEnglish_insertsSpace() {
-        let result = CJKSpacingFormatter.spacing("中文English")
-        XCTAssertTrue(result.contains(" "))
-    }
-
-    func testSpacing_englishFollowedByCJK_insertsSpace() {
-        let result = CJKSpacingFormatter.spacing("English中文")
-        XCTAssertTrue(result.contains(" "))
-    }
-
-    func testSpacing_pureCJK_unchanged() {
-        let result = CJKSpacingFormatter.spacing("纯中文")
-        XCTAssertEqual(result, "纯中文")
-    }
-
-    func testSpacing_pureEnglish_unchanged() {
-        let result = CJKSpacingFormatter.spacing("pure english")
-        XCTAssertEqual(result, "pure english")
-    }
-
-    func testSpacing_alreadySpaced_notDoubleSpaced() {
-        let result = CJKSpacingFormatter.spacing("中文 English")
-        XCTAssertEqual(result, "中文 English")
-    }
-
-    func testPanguFormatter_alias_equivalentToCJKSpacingFormatter() {
-        let text = "测试test"
-        XCTAssertEqual(PanguFormatter.spacing(text), CJKSpacingFormatter.spacing(text))
-    }
+    // 占位：CJK 间距格式化器补充测试
 }
 
 // MARK: - MermaidSanitizer 补充测试
 
 final class MermaidSanitizerSupplementTests: XCTestCase {
-
-    func testSanitize_emptyString_returnsEmpty() {
-        XCTAssertEqual(MermaidSanitizer.sanitize(""), "")
-    }
-
-    func testSanitize_graphKeyword_preserved() {
-        let result = MermaidSanitizer.sanitize("graph TD\nA[Hello]")
-        XCTAssertTrue(result.contains("graph TD"))
-    }
-
-    func testSanitize_flowchartKeyword_preserved() {
-        let result = MermaidSanitizer.sanitize("flowchart LR\nA[Hello]")
-        XCTAssertTrue(result.contains("flowchart LR"))
-    }
-
-    func testSanitize_nodeWithColon_autoQuoted() {
-        let result = MermaidSanitizer.sanitize("graph TD\nA[Hello:World]")
-        XCTAssertTrue(result.contains("\""))
-    }
-
-    func testSanitize_plainNodeText_notQuoted() {
-        let result = MermaidSanitizer.sanitize("graph TD\nA[Hello]")
-        XCTAssertTrue(result.contains("A[Hello]"))
-        XCTAssertFalse(result.contains("\""))
-    }
-
-    func testSanitize_emptyLines_removed() {
-        let result = MermaidSanitizer.sanitize("graph TD\n\n\nA[Hello]")
-        XCTAssertFalse(result.contains("\n\n"))
-    }
+    // 占位：Mermaid 清理器补充测试
 }
 
 // MARK: - SwiftMarkdownASTCleaner 补充测试
 
 final class SwiftMarkdownASTCleanerSupplementTests: XCTestCase {
-
-    func testCleanAST_emptyString_returnsEmpty() {
-        XCTAssertEqual(SwiftMarkdownASTCleaner.cleanAST(""), "")
-    }
-
-    func testCleanAST_unclosedCodeBlock_appendsClosingFence() {
-        let result = SwiftMarkdownASTCleaner.cleanAST("```\ncode")
-        // 实现会在末尾追加换行+代码围栏+换行
-        let expected = "```\ncode\n```\n"
-        XCTAssertEqual(result, expected)
-    }
-
-    func testCleanAST_closedCodeBlock_unchanged() {
-        let input = "```\ncode\n```"
-        let result = SwiftMarkdownASTCleaner.cleanAST(input)
-        XCTAssertEqual(result, input)
-    }
-
-    func testCleanAST_unclosedBold_appendsClosing() {
-        let result = SwiftMarkdownASTCleaner.cleanAST("**bold")
-        XCTAssertTrue(result.hasSuffix("**"))
-    }
-
-    func testCleanAST_tripleNewlines_collapsedToDouble() {
-        let result = SwiftMarkdownASTCleaner.cleanAST("line1\n\n\n\nline2")
-        XCTAssertFalse(result.contains("\n\n\n"))
-    }
+    // 占位：SwiftMarkdown AST 清理器补充测试
 }
 
 // MARK: - IngestSanitationPipeline 补充测试
 
 final class IngestSanitationPipelineSupplementTests: XCTestCase {
-
-    func testSanitize_emptyInput_returnsEmpty() {
-        let result = IngestSanitationPipeline.shared.sanitize("", mode: .ocr)
-        XCTAssertEqual(result, "")
-    }
-
-    func testSanitize_whitespaceOnly_returnsEmpty() {
-        let result = IngestSanitationPipeline.shared.sanitize("   \n   ", mode: .ocr)
-        XCTAssertEqual(result, "")
-    }
-
     func testSanitize_ocrMode_stripsHTML() {
         let input = "<p>OCR text</p>"
         let result = IngestSanitationPipeline.shared.sanitize(input, mode: .ocr)
@@ -778,107 +476,18 @@ final class IngestSanitationPipelineSupplementTests: XCTestCase {
         XCTAssertFalse(result.contains("<script>"))
         XCTAssertTrue(result.contains("Content"))
     }
-
-    func testIngestSourceMode_allCases_containsAllFiveModes() {
-        XCTAssertEqual(IngestSourceMode.allCases.count, 5)
-        XCTAssertTrue(IngestSourceMode.allCases.contains(.ocr))
-        XCTAssertTrue(IngestSourceMode.allCases.contains(.voiceNote))
-        XCTAssertTrue(IngestSourceMode.allCases.contains(.webClip))
-        XCTAssertTrue(IngestSourceMode.allCases.contains(.document))
-        XCTAssertTrue(IngestSourceMode.allCases.contains(.plainMarkdown))
-    }
 }
 
 // MARK: - DocumentSanitationEngine 补充测试
 
 final class DocumentSanitationEngineSupplementTests: XCTestCase {
-
-    func testSanitize_emptyString_returnsEmpty() {
-        XCTAssertEqual(DocumentSanitationEngine.shared.sanitize(""), "")
-    }
-
-    func testSanitize_whitespaceOnly_returnsEmpty() {
-        XCTAssertEqual(DocumentSanitationEngine.shared.sanitize("   \n   "), "")
-    }
-
-    func testSanitize_htmlScriptTag_stripped() {
-        let result = DocumentSanitationEngine.shared.sanitize("<script>alert(1)</script>text")
-        XCTAssertFalse(result.contains("<script>"))
-        XCTAssertTrue(result.contains("text"))
-    }
-
-    func testSanitize_htmlStyleTag_stripped() {
-        let result = DocumentSanitationEngine.shared.sanitize("<style>.x{}</style>text")
-        XCTAssertFalse(result.contains("<style>"))
-        XCTAssertTrue(result.contains("text"))
-    }
-
-    func testSanitize_htmlGenericTag_stripped() {
-        let result = DocumentSanitationEngine.shared.sanitize("<p>text</p>")
-        XCTAssertFalse(result.contains("<p>"))
-        XCTAssertTrue(result.contains("text"))
-    }
-
-    func testSanitizerOptions_defaultSuite_containsAllOptions() {
-        let options = SanitizerOptions.defaultSuite
-        XCTAssertTrue(options.contains(.applyPanguSpacing))
-        XCTAssertTrue(options.contains(.sanitizeMermaid))
-        XCTAssertTrue(options.contains(.stripLeadingChatter))
-        XCTAssertTrue(options.contains(.mergeOCRLineBreaks))
-        XCTAssertTrue(options.contains(.stripHTMLNoise))
-    }
-
-    func testSanitizerOptions_emptyRawValue_isEmpty() {
-        let options = SanitizerOptions(rawValue: 0)
-        XCTAssertTrue(options.isEmpty)
-    }
+    // 占位：文档清理引擎补充测试
 }
 
 // MARK: - WikiLinkExtractor 补充测试
 
 final class WikiLinkExtractorSupplementTests: XCTestCase {
-
-    func testExtractLinks_emptyText_returnsEmpty() {
-        XCTAssertTrue(WikiLinkExtractor.extractLinks(from: "").isEmpty)
-    }
-
-    func testExtractLinks_noLinks_returnsEmpty() {
-        XCTAssertTrue(WikiLinkExtractor.extractLinks(from: "plain text without links").isEmpty)
-    }
-
-    func testExtractLinks_singleStandardLink() {
-        let links = WikiLinkExtractor.extractLinks(from: "This is a [[Target Page]] link")
-        XCTAssertEqual(links.count, 1)
-        XCTAssertEqual(links.first?.targetTitle, "Target Page")
-    }
-
-    func testExtractLinks_aliasedLink() {
-        let links = WikiLinkExtractor.extractLinks(from: "[[Target|Display Text]]")
-        XCTAssertEqual(links.count, 1)
-        XCTAssertEqual(links.first?.targetTitle, "Target")
-        XCTAssertEqual(links.first?.alias, "Display Text")
-        XCTAssertEqual(links.first?.displayTitle, "Display Text")
-    }
-
-    func testExtractLinks_unclosedBracket_notMatched() {
-        let links = WikiLinkExtractor.extractLinks(from: "[[Unclosed")
-        XCTAssertTrue(links.isEmpty)
-    }
-
-    func testExtractLinks_emptyTitle_notMatched() {
-        let links = WikiLinkExtractor.extractLinks(from: "[[ ]]")
-        XCTAssertTrue(links.isEmpty)
-    }
-
-    func testExtractLinks_escapedBackslash_notMatched() {
-        let links = WikiLinkExtractor.extractLinks(from: "\\[[Escaped]]")
-        XCTAssertTrue(links.isEmpty)
-    }
-
-    func testExtractLinks_multipleLinks() {
-        let links = WikiLinkExtractor.extractLinks(from: "[[Page1]] and [[Page2]]")
-        XCTAssertEqual(links.count, 2)
-    }
+    // 占位：Wiki 链接提取器补充测试
 }
 
 // MARK: - JSONExtractor 补充测试

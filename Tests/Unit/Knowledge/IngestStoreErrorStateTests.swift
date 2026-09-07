@@ -62,17 +62,7 @@ final class IngestStoreErrorStateTests: XCTestCase {
 
     func testFinalizeSmartIngestLinkResolution() async throws {
         // 先在仓库中建立一个已存在的关联页面
-        _ = try await pageStore.createPage(
-            title: "关联已有页面",
-            pageType: .concept,
-            customIcon: nil,
-            content: "前置知识点",
-            tags: [],
-            sourceURL: nil,
-            rawSnippet: nil,
-            fileSize: nil,
-            sourceType: nil
-        )
+        _ = try await pageStore.createPage(title: "关联已有页面", pageType: .concept, customIcon: nil, content: "前置知识点", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil)
 
         let smartResult = SmartIngestResult(
             title: "新智能页面",

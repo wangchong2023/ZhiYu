@@ -129,10 +129,8 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
 
     /// 验证：重复运行 migrator 不崩溃（幂等性）。
     func testMigratorIsIdempotent() async throws {
-        // setupForTesting 已运行一次迁移，再运行一次应不崩溃
         let migrator = await DatabaseManager.shared.migrator
-        try migrator.migrate(dbQueue)
-        // 不应抛出异常
+        XCTAssertNoThrow(try migrator.migrate(dbQueue), "重复运行 migrator 不应抛出异常")
     }
 
     /// 验证：重复运行 globalMigrator 不崩溃（幂等性）。

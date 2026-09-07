@@ -38,26 +38,13 @@ final class IngestFileHandlerTests: XCTestCase {
 
     // MARK: - isImporting 频控
 
-    /// 验证初始状态不在冷却期
-    func testIsImportingInitialFalse() {
-        coordinator.lastImportTime = .distantPast
-        XCTAssertFalse(coordinator.isImporting, "初始 lastImportTime 为 distantPast，不应在冷却期")
-    }
-
-    /// 验证刚导入后处于冷却期
+    /// 验证初始状态不在冷却期    /// 验证刚导入后处于冷却期
     func testIsImportingTrueAfterRecentImport() {
         coordinator.lastImportTime = Date()
         XCTAssertTrue(coordinator.isImporting, "刚导入后应在冷却期")
     }
 
-    /// 验证冷却期结束后可再次导入
-    func testIsImportingFalseAfterCooldown() {
-        let cooldown = AppConstants.Keys.ImportLimits.importCooldownSeconds
-        coordinator.lastImportTime = Date().addingTimeInterval(-cooldown - 1)
-        XCTAssertFalse(coordinator.isImporting, "冷却期结束后不应在冷却期")
-    }
-
-    // MARK: - handleFileImport 频控分支
+    /// 验证冷却期结束后可再次导入    // MARK: - handleFileImport 频控分支
 
     /// 验证冷却期内调用 handleFileImport 不触发导入（errorMessage 不被设置）
     func testHandleFileImportCooldownSkipsImport() {

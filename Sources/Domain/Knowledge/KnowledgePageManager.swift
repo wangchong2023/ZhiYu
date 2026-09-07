@@ -237,12 +237,13 @@ public final class KnowledgePageManager {
     /// 应用潜在链接建议
     public func applyPotentialLink(_ suggestion: PotentialLinkSuggestion, currentPages: [KnowledgePage]) async throws {
         guard var page = currentPages.first(where: { $0.id == suggestion.sourcePageID }) else { return }
-        
+
         let oldContent = page.content
-        let newContent = oldContent.replacingOccurrences(
-            of: suggestion.targetTitle,
-            with: SystemConstants.MarkdownSyntax.wikiLinkOpen + suggestion.targetTitle + SystemConstants.MarkdownSyntax.wikiLinkClose,
-            options: .caseInsensitive
+        let newContent = Self.wrapPlainOccurrences(
+            in: oldContent,
+            target: suggestion.targetTitle,
+            open: SystemConstants.MarkdownSyntax.wikiLinkOpen,
+            close: SystemConstants.MarkdownSyntax.wikiLinkClose
         )
 
         if oldContent != newContent {
@@ -250,6 +251,44 @@ public final class KnowledgePageManager {
             try await updatePage(page, currentPages: currentPages)
             logger.addLog(action: .update, target: page.title, details: KnowledgeLogSpec.appliedPotentialLinkPrefix + KnowledgeLogSpec.linkToConnector + " \(SystemConstants.MarkdownSyntax.wikiLinkOpen)\(suggestion.targetTitle)\(SystemConstants.MarkdownSyntax.wikiLinkClose)", module: KnowledgeLogSpec.module)
         }
+    }
+
+    /// 将文本中未被双链包裹的目标标题出现位置包裹为双链，跳过已处于 `[[...]]` 内的匹配，避免重复嵌套。
+    /// - Parameters:
+    ///   - content: 原始正文
+    ///   - target: 待链接化的标题（大小写不敏感）
+    ///   - open: 双链左括号
+    ///   - close: 双链右括号
+    /// - Returns: 处理后的正文；若无合法匹配则原样返回
+    private static func wrapPlainOccurrences(
+        in content: String,
+        target: String,
+        open: String,
+        close: String
+    ) -> String {
+        guard !target.isEmpty else { return content }
+
+        let escaped = NSRegularExpression.escapedPattern(for: target)
+        // 匹配目标标题，前置与后置不能是双链括号，避免命中已有 [[...]] 内部
+        let pattern = "(?<!\\[\\[)" + escaped + "(?!\\]\\])"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return content
+        }
+
+        let nsContent = content as NSString
+        let matches = regex.matches(in: content, range: NSRange(location: 0, length: nsContent.length))
+        guard !matches.isEmpty else { return content }
+
+        var result = content
+        // 从后向前替换，避免索引偏移
+        for match in matches.reversed() {
+            guard match.range.location != NSNotFound, match.range.location + match.range.length <= nsContent.length else { continue }
+            let startIdx = result.index(result.startIndex, offsetBy: match.range.location)
+            let endIdx = result.index(startIdx, offsetBy: match.range.length)
+            let plain = String(result[startIdx..<endIdx])
+            result.replaceSubrange(startIdx..<endIdx, with: open + plain + close)
+        }
+        return result
     }
 
     /// 应用 AI 重构建议

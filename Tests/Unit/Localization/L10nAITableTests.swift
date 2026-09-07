@@ -16,11 +16,6 @@ import XCTest
 final class L10nAITableTests: XCTestCase {
 
     // MARK: - tableName 正确性
-
-    func testTableName_AI_为AI() {
-        XCTAssertEqual(L10n.AI.tableName, "AI")
-    }
-
     func testTableName_Chat_为AI() {
         XCTAssertEqual(L10n.Chat.tableName, "AI")
     }

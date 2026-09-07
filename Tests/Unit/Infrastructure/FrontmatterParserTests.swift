@@ -353,23 +353,13 @@ final class FrontmatterParserTests: XCTestCase {
         let original = MatrixValue.null
         let encoded = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(MatrixValue.self, from: encoded)
-
-        if case .null = decoded {
-            XCTAssertTrue(true)
-        } else {
-            XCTFail("应为 null case")
-        }
+        XCTAssertEqual(decoded, .null, "应解码为 null case")
     }
 
     func testMatrixValue_nullFromJSONNull_decodesAsNull() throws {
         let json = Data("null".utf8)
         let decoded = try JSONDecoder().decode(MatrixValue.self, from: json)
-
-        if case .null = decoded {
-            XCTAssertTrue(true)
-        } else {
-            XCTFail("JSON null 应解码为 .null")
-        }
+        XCTAssertEqual(decoded, .null, "JSON null 应解码为 .null")
     }
 
     func testMatrixValue_rangeFromDict_decodesAsRange() throws {
@@ -387,12 +377,7 @@ final class FrontmatterParserTests: XCTestCase {
     func testMatrixValue_rangeFromIncompleteDict_fallsBackToNull() throws {
         let json = Data("{\"min\": 5}".utf8)
         let decoded = try JSONDecoder().decode(MatrixValue.self, from: json)
-
-        if case .null = decoded {
-            XCTAssertTrue(true, "不完整的 range dict 应回退为 null")
-        } else {
-            XCTFail("不完整 range dict 应回退为 null")
-        }
+        XCTAssertEqual(decoded, .null, "不完整的 range dict 应回退为 null")
     }
 
     // MARK: - ConceptFrontmatter 编解码

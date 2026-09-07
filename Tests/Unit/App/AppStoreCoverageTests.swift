@@ -63,7 +63,7 @@ final class AppStoreCoverageTests: XCTestCase {
         XCTAssertEqual(found?.content, "throws updated")
     }
 
-    /// 验证 resetDatabase 重置数据库不崩溃
+    /// 验证 resetDatabase 重置数据库并验证页面清空
     func testResetDatabase_DoesNotCrash() async throws {
         _ = await store.createPage(title: "BeforeReset", pageType: .concept)
         try? await Task.sleep(nanoseconds: 200_000_000)
@@ -71,39 +71,48 @@ final class AppStoreCoverageTests: XCTestCase {
         try await store.resetDatabase()
         try? await Task.sleep(nanoseconds: 200_000_000)
 
-        XCTAssertTrue(true, "resetDatabase 应安全执行")
+        XCTAssertTrue(store.pages.isEmpty, "resetDatabase 后 store.pages 必须被清空")
+        XCTAssertEqual(store.totalPages, 0, "resetDatabase 后 totalPages 必须归零")
     }
 
-    /// 验证 performBatchWrite 批量写入不崩溃
+    /// 验证 performBatchWrite 批量写入能够持久化落库
     func testPerformBatchWrite_DoesNotCrash() async throws {
-        try await store.performBatchWrite { _ in
-            // 空操作批量写入，仅验证调用路径
+        let countBefore = store.totalPages
+        try await store.performBatchWrite { db in
+            var newPage = KnowledgePage(title: "BatchCreatedPage", pageType: .concept, content: "batch content")
+            try newPage.insert(db)
         }
+        await store.refresh()
         try? await Task.sleep(nanoseconds: 200_000_000)
-        XCTAssertTrue(true, "performBatchWrite 应安全执行")
+        XCTAssertEqual(store.totalPages, countBefore + 1, "performBatchWrite 批量写入后页面数必须递增")
+        XCTAssertTrue(store.pages.contains(where: { $0.title == "BatchCreatedPage" }))
     }
 
     // MARK: - AppStore: 基础管理未覆盖方法
 
-    /// 验证 seedDefaultContent 带 vaultName 参数不崩溃
+    /// 验证 seedDefaultContent 带 vaultName 参数成功填充页面
     func testSeedDefaultContent_WithVaultName_DoesNotCrash() async {
         await store.seedDefaultContent(vaultName: "TestVault")
-        XCTAssertTrue(true, "带 vaultName 的 seedDefaultContent 应安全执行")
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertFalse(store.pages.isEmpty, "seedDefaultContent 植入内容后页面集合不应为空")
+        XCTAssertTrue(store.totalPages > 0, "seedDefaultContent 后总页面数应大于 0")
     }
 
-    /// 验证 saveToDisk 保存到磁盘不崩溃
+    /// 验证 saveToDisk 保存到磁盘后页面状态完整
     func testSaveToDisk_DoesNotCrash() async {
-        _ = await store.createPage(title: "DiskTest", pageType: .concept)
+        let created = await store.createPage(title: "DiskTest", pageType: .concept)
         try? await Task.sleep(nanoseconds: 200_000_000)
 
         await store.saveToDisk()
-        XCTAssertTrue(true, "saveToDisk 应安全执行")
+        let found = store.pages.first(where: { $0.id == created.id })
+        XCTAssertNotNil(found, "saveToDisk 执行后页面依然能被正常定位")
+        XCTAssertEqual(found?.title, "DiskTest")
     }
 
-    /// 验证 clearLogs 清除日志不崩溃
+    /// 验证 clearLogs 清除日志成功清空
     func testClearLogs_DoesNotCrash() async {
         await store.clearLogs()
-        XCTAssertTrue(true, "clearLogs 应安全执行")
+        XCTAssertTrue(store.logEntries.isEmpty, "clearLogs 执行后日志列表必须为空")
     }
 
     /// 验证 getBacklinks 返回反向链接
@@ -260,11 +269,7 @@ final class AppStoreCoverageTests: XCTestCase {
     /// 验证 ToolItem.route pageList 映射
     func testToolItemRoute_PageList_MapsCorrectly() {
         let route = ToolItem.pageList.route
-        if case .pageList = route {
-            XCTAssertTrue(true, "pageList 应映射到 .pageList")
-        } else {
-            XCTFail("pageList 应映射到 .pageList，实际: \(route)")
-        }
+        XCTAssertEqual(route, AppRoute.pageList(), "pageList 应映射到 .pageList()")
     }
 
     /// 验证 ToolItem.route lint 与 healthCheck 都映射到 .lint
@@ -285,23 +290,26 @@ final class AppStoreCoverageTests: XCTestCase {
 
     // MARK: - AppStore+Knowledge: applyRemoteUpdate 边界
 
-    /// 验证 applyRemoteUpdate 对不存在的页面安全处理
+    /// 验证 applyRemoteUpdate 成功同步并插入远端页面数据
     func testApplyRemoteUpdate_NonExistentPage_DoesNotCrash() async {
         let fakePage = KnowledgePage(title: "NonExistentRemote", pageType: .concept, content: "fake")
+        let countBefore = store.totalPages
         await store.applyRemoteUpdate(fakePage)
         try? await Task.sleep(nanoseconds: 200_000_000)
-        XCTAssertTrue(true, "对不存在的页面调用 applyRemoteUpdate 应安全执行")
+        XCTAssertEqual(store.totalPages, countBefore + 1, "applyRemoteUpdate 远端同步应以 upsert 语义新增页面")
+        XCTAssertTrue(store.pages.contains(where: { $0.title == "NonExistentRemote" }))
     }
 
     // MARK: - AppStore+AI: addNewTag 与 getAllTags 边界
 
-    /// 验证 addNewTag 添加后 getAllTags 包含该标签
+    /// 验证 addNewTag 注册标签且 getAllTags 正确统计已有页面标签
     func testAddNewTag_ThenGetAllTags_ContainsTag() async {
         _ = await store.createPage(title: "AddTagPage", pageType: .concept, tags: ["existingTag"])
         try? await Task.sleep(nanoseconds: 200_000_000)
 
         store.addNewTag("newTagFromAdd")
+        try? await Task.sleep(nanoseconds: 200_000_000)
         let tags = store.getAllTags()
-        XCTAssertNotNil(tags["existingTag"], "existingTag 应存在")
+        XCTAssertNotNil(tags["existingTag"], "existingTag 来自页面应被正常检索")
     }
 }

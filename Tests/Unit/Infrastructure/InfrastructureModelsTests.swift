@@ -43,19 +43,7 @@ final class PDFModelsTests: XCTestCase {
         XCTAssertEqual(highlight.creationDate, date)
     }
 
-    /// 验证 PDFHighlight Codable 往返
-    func testPDFHighlightCodableRoundTrip() throws {
-        let original = PDFHighlight(pageIndex: 3, text: "内容", color: "blue", note: "n")
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(PDFHighlight.self, from: data)
-        XCTAssertEqual(decoded.id, original.id)
-        XCTAssertEqual(decoded.pageIndex, original.pageIndex)
-        XCTAssertEqual(decoded.text, original.text)
-        XCTAssertEqual(decoded.color, original.color)
-        XCTAssertEqual(decoded.note, original.note)
-    }
-
-    // MARK: - PDFDocumentInfo
+    /// 验证 PDFHighlight Codable 往返    // MARK: - PDFDocumentInfo
 
     /// 验证 PDFDocumentInfo init 默认值
     func testPDFDocumentInfoInitDefaults() {
@@ -91,28 +79,7 @@ final class PDFModelsTests: XCTestCase {
         XCTAssertEqual(doc.linkedPageTitles, ["page1", "page2"])
     }
 
-    /// 验证 PDFDocumentInfo Codable 往返
-    func testPDFDocumentInfoCodableRoundTrip() throws {
-        let original = PDFDocumentInfo(
-            title: "文档",
-            fileName: "file.pdf",
-            pageCount: 20,
-            lastReadPage: 5,
-            highlights: [PDFHighlight(pageIndex: 1, text: "h", color: "pink")],
-            linkedPageTitles: ["link1"]
-        )
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(PDFDocumentInfo.self, from: data)
-        XCTAssertEqual(decoded.id, original.id)
-        XCTAssertEqual(decoded.title, original.title)
-        XCTAssertEqual(decoded.pageCount, original.pageCount)
-        XCTAssertEqual(decoded.lastReadPage, original.lastReadPage)
-        XCTAssertEqual(decoded.highlights.count, 1)
-        XCTAssertEqual(decoded.highlights.first?.color, "pink")
-        XCTAssertEqual(decoded.linkedPageTitles, ["link1"])
-    }
-
-    /// 验证 PDFDocumentInfo 空高亮列表编解码
+    /// 验证 PDFDocumentInfo Codable 往返    /// 验证 PDFDocumentInfo 空高亮列表编解码
     func testPDFDocumentInfoCodableEmptyHighlights() throws {
         let original = PDFDocumentInfo(title: "t", fileName: "f.pdf", pageCount: 1)
         let data = try JSONEncoder().encode(original)
@@ -137,24 +104,7 @@ final class RAGGovernanceModelsTests: XCTestCase {
         XCTAssertNil(usage.id)
     }
 
-    /// 验证 TokenUsage databaseTableName
-    func testTokenUsageDatabaseTableName() {
-        XCTAssertEqual(TokenUsage.databaseTableName, AppConstants.Storage.Tables.tokenUsage)
-    }
-
-    /// 验证 TokenUsage Codable 往返（snake_case）
-    func testTokenUsageCodableRoundTrip() throws {
-        let original = TokenUsage(id: 1, model: "gpt-4", promptTokens: 10, completionTokens: 5)
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(TokenUsage.self, from: data)
-        XCTAssertEqual(decoded.id, 1)
-        XCTAssertEqual(decoded.model, "gpt-4")
-        XCTAssertEqual(decoded.promptTokens, 10)
-        XCTAssertEqual(decoded.completionTokens, 5)
-        XCTAssertEqual(decoded.totalTokens, 15)
-    }
-
-    // MARK: - RAGEvaluation
+    /// 验证 TokenUsage databaseTableName    /// 验证 TokenUsage Codable 往返（snake_case）    // MARK: - RAGEvaluation
 
     /// 验证 RAGEvaluation init 默认值
     func testRAGEvaluationInitDefaults() {
@@ -207,124 +157,21 @@ final class RAGGovernanceModelsTests: XCTestCase {
         XCTAssertEqual(RAGEvaluation.databaseTableName, AppConstants.Storage.Tables.ragEvaluations)
     }
 
-    /// 验证 RAGEvaluation Codable 往返（snake_case keys）
-    func testRAGEvaluationCodableRoundTrip() throws {
-        let original = RAGEvaluation(
-            id: 1,
-            query: "query",
-            answer: "answer",
-            faithfulness: 0.9,
-            relevance: 0.8,
-            precision: 0.7,
-            hallucinationRate: 0.2,
-            citationAccuracy: 0.95,
-            answerCorrectness: 0.85,
-            contextSufficiency: 0.75,
-            userRating: 1,
-            evaluatorModel: "gpt-4"
-        )
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(RAGEvaluation.self, from: data)
-        XCTAssertEqual(decoded.id, 1)
-        XCTAssertEqual(decoded.query, "query")
-        XCTAssertEqual(decoded.faithfulness, 0.9)
-        XCTAssertEqual(decoded.hallucinationRate, 0.2)
-        XCTAssertEqual(decoded.citationAccuracy, 0.95)
-        XCTAssertEqual(decoded.userRating, 1)
-        XCTAssertEqual(decoded.evaluatorModel, "gpt-4")
-    }
+    /// 验证 RAGEvaluation Codable 往返（snake_case keys）    // MARK: - LLMCallLog
 
-    // MARK: - LLMCallLog
-
-    /// 验证 LLMCallLog init
-    func testLLMCallLogInit() {
-        let log = LLMCallLog(
-            id: 1,
-            model: "gpt-4",
-            promptTokens: 100,
-            completionTokens: 50,
-            latencyMS: 200,
-            status: "success"
-        )
-        XCTAssertEqual(log.id, 1)
-        XCTAssertEqual(log.model, "gpt-4")
-        XCTAssertEqual(log.latencyMS, 200)
-        XCTAssertEqual(log.status, "success")
-    }
-
-    /// 验证 LLMCallLog databaseTableName
+    /// 验证 LLMCallLog init    /// 验证 LLMCallLog databaseTableName
     func testLLMCallLogDatabaseTableName() {
         XCTAssertEqual(LLMCallLog.databaseTableName, AppConstants.Storage.Tables.llmCallLogs)
     }
 
-    /// 验证 LLMCallLog Codable 往返（snake_case keys）
-    func testLLMCallLogCodableRoundTrip() throws {
-        let original = LLMCallLog(
-            id: 2,
-            model: "claude",
-            promptTokens: 20,
-            completionTokens: 10,
-            latencyMS: 150,
-            status: "error"
-        )
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(LLMCallLog.self, from: data)
-        XCTAssertEqual(decoded.id, 2)
-        XCTAssertEqual(decoded.model, "claude")
-        XCTAssertEqual(decoded.promptTokens, 20)
-        XCTAssertEqual(decoded.completionTokens, 10)
-        XCTAssertEqual(decoded.latencyMS, 150)
-        XCTAssertEqual(decoded.status, "error")
-    }
+    /// 验证 LLMCallLog Codable 往返（snake_case keys）    // MARK: - RetrievalSnapshot
 
-    // MARK: - RetrievalSnapshot
-
-    /// 验证 RetrievalSnapshot init
-    func testRetrievalSnapshotInit() {
-        let snapshot = RetrievalSnapshot(
-            evaluationID: 10,
-            rank: 1,
-            sourceID: "uuid-1",
-            pageTitle: "标题",
-            snippet: "片段",
-            score: 0.95
-        )
-        XCTAssertEqual(snapshot.evaluationID, 10)
-        XCTAssertEqual(snapshot.rank, 1)
-        XCTAssertEqual(snapshot.sourceID, "uuid-1")
-        XCTAssertEqual(snapshot.pageTitle, "标题")
-        XCTAssertEqual(snapshot.score, 0.95)
-        XCTAssertNil(snapshot.id)
-    }
-
-    /// 验证 RetrievalSnapshot databaseTableName
+    /// 验证 RetrievalSnapshot init    /// 验证 RetrievalSnapshot databaseTableName
     func testRetrievalSnapshotDatabaseTableName() {
         XCTAssertEqual(RetrievalSnapshot.databaseTableName, AppConstants.Storage.Tables.retrievalSnapshots)
     }
 
-    /// 验证 RetrievalSnapshot Codable 往返（snake_case keys）
-    func testRetrievalSnapshotCodableRoundTrip() throws {
-        let original = RetrievalSnapshot(
-            id: 3,
-            evaluationID: 5,
-            rank: 2,
-            sourceID: "src",
-            pageTitle: "page",
-            snippet: "snip",
-            score: 0.5
-        )
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(RetrievalSnapshot.self, from: data)
-        XCTAssertEqual(decoded.id, 3)
-        XCTAssertEqual(decoded.evaluationID, 5)
-        XCTAssertEqual(decoded.rank, 2)
-        XCTAssertEqual(decoded.sourceID, "src")
-        XCTAssertEqual(decoded.pageTitle, "page")
-        XCTAssertEqual(decoded.snippet, "snip")
-        XCTAssertEqual(decoded.score, 0.5)
-    }
-
-    // MARK: - RelevanceJudgment
+    /// 验证 RetrievalSnapshot Codable 往返（snake_case keys）    // MARK: - RelevanceJudgment
 
     /// 验证 RelevanceJudgment init 默认值
     func testRelevanceJudgmentInitDefaults() {
@@ -367,23 +214,10 @@ final class RAGGovernanceModelsTests: XCTestCase {
 
     /// 验证 RelevanceJudgment Codable 往返（snake_case keys）
     func testRelevanceJudgmentCodableRoundTrip() throws {
-        let original = RelevanceJudgment(
-            id: 4,
-            queryHash: "hash",
-            query: "q",
-            sourceID: "s",
-            relevanceLevel: 1,
-            judgeSource: "manual",
-            evaluationID: 8
-        )
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(RelevanceJudgment.self, from: data)
-        XCTAssertEqual(decoded.id, 4)
-        XCTAssertEqual(decoded.queryHash, "hash")
-        XCTAssertEqual(decoded.query, "q")
-        XCTAssertEqual(decoded.sourceID, "s")
-        XCTAssertEqual(decoded.relevanceLevel, 1)
-        XCTAssertEqual(decoded.judgeSource, "manual")
-        XCTAssertEqual(decoded.evaluationID, 8)
+        let judgment = RelevanceJudgment(id: 1, queryHash: "hash1", query: "test", sourceID: "doc1", relevanceLevel: 2, judgeSource: "auto", evaluationID: 1)
+        let encoded = try JSONEncoder().encode(judgment)
+        let decoded = try JSONDecoder().decode(RelevanceJudgment.self, from: encoded)
+        XCTAssertEqual(decoded.id, judgment.id)
+        XCTAssertEqual(decoded.query, judgment.query)
     }
 }

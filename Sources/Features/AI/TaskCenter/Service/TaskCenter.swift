@@ -113,6 +113,7 @@ public final class TaskCenter: @unchecked Sendable {
         @Dependency(\.liveActivity) var resolvedActivity: (any LiveActivityProtocol)?
         self.activityService = activityService ?? resolvedActivity
         setupSubscriptions()
+        TestStateResetRegistry.shared.register(self)
     }
 
     private func setupSubscriptions() {
@@ -183,9 +184,7 @@ public final class TaskCenter: @unchecked Sendable {
         let task = GlobalTask(type: type, name: name, target: target, status: .pending)
         self.tasks.insert(task, at: 0)
         // Bug #141 修复：addTask 时也做长度清理，避免运行中任务无限堆积
-        if self.tasks.count > FeatureConstants.TaskCenter.maxRetainedTasks {
-            self.tasks.removeLast()
-        }
+        trimExcessTasks()
         self.latestStatus = L10n.AI.Task.starting( name, target)
 
         activityService?.startActivity(id: task.id, name: name, target: target)
@@ -228,11 +227,28 @@ public final class TaskCenter: @unchecked Sendable {
             }
 
             if case .completed = status {
-                if self.tasks.count > FeatureConstants.TaskCenter.maxRetainedTasks {
-                    self.tasks.removeLast()
-                }
+                trimExcessTasks()
             }
         }
+    }
+
+    /// 裁剪超出容量上限的历史任务，但始终保护正在运行中的任务不被丢弃。
+    /// 裁剪策略：从末尾向前移除「非运行中」任务，直到总数不超过 maxRetainedTasks；
+    /// 若剩余任务全部处于运行中状态则停止裁剪，避免误删活跃任务。
+    private func trimExcessTasks() {
+        while self.tasks.count > FeatureConstants.TaskCenter.maxRetainedTasks {
+            guard let lastIndex = self.tasks.indices.last,
+                  !isRunningStatus(self.tasks[lastIndex].status) else {
+                break
+            }
+            self.tasks.removeLast()
+        }
+    }
+
+    /// 判断任务状态是否为运行中
+    private func isRunningStatus(_ status: TaskStatus) -> Bool {
+        if case .running = status { return true }
+        return false
     }
 
     /// completeTask
@@ -295,6 +311,13 @@ public final class TaskCenter: @unchecked Sendable {
     public func reset() {
         self.tasks.removeAll()
         self.latestStatus = ""
+    }
+}
+
+// MARK: - 测试隔离注册
+extension TaskCenter: TestStateResettable {
+    public func resetStateForTesting() {
+        reset()
     }
 }
 

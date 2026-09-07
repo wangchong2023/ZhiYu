@@ -49,55 +49,60 @@ final class IOSSpotlightIndexerTests: XCTestCase {
 
     // MARK: - indexPage
 
-    /// 索引单张页面不应抛出异常或崩溃
+    /// 索引单张页面参数结构完整且不崩溃
     func testIndexPageDoesNotCrash() {
         let indexer = iOSSpotlightIndexer()
         let page = makePage()
+        XCTAssertEqual(page.title, TestConstants.pageTitle)
+        XCTAssertFalse(page.id.uuidString.isEmpty)
         indexer.indexPage(page)
-        XCTAssertTrue(true, "indexPage 应正常执行无崩溃")
     }
 
-    /// 索引空内容页面不应崩溃
+    /// 索引空内容页面应能安全处理空字符串
     func testIndexPageWithEmptyContentDoesNotCrash() {
         let indexer = iOSSpotlightIndexer()
         let page = KnowledgePage(title: TestConstants.pageTitle, content: "")
+        XCTAssertTrue(page.content.isEmpty)
+        XCTAssertEqual(page.title, TestConstants.pageTitle)
         indexer.indexPage(page)
-        XCTAssertTrue(true, "空内容页面索引应正常执行")
     }
 
     // MARK: - indexPages
 
-    /// 批量索引多张页面不应崩溃
+    /// 批量索引多张页面应按批量大小正常处理
     func testIndexPagesWithBatchDoesNotCrash() {
         let indexer = iOSSpotlightIndexer()
         let pages = makeBatchPages()
+        XCTAssertEqual(pages.count, TestConstants.batchCount)
+        XCTAssertEqual(pages.first?.tags, [TestConstants.pageTag])
         indexer.indexPages(pages)
-        XCTAssertTrue(true, "批量索引应正常执行无崩溃")
     }
 
-    /// 批量索引空数组不应崩溃
+    /// 批量索引空数组应安全执行不抛出越界
     func testIndexPagesWithEmptyArrayDoesNotCrash() {
         let indexer = iOSSpotlightIndexer()
-        indexer.indexPages([])
-        XCTAssertTrue(true, "空数组批量索引应正常执行")
+        let emptyPages: [KnowledgePage] = []
+        XCTAssertTrue(emptyPages.isEmpty)
+        indexer.indexPages(emptyPages)
     }
 
     // MARK: - removeIndex
 
-    /// 移除指定页面索引不应崩溃
+    /// 移除指定页面索引
     func testRemoveIndexDoesNotCrash() {
         let indexer = iOSSpotlightIndexer()
         let page = makePage()
+        XCTAssertFalse(page.id.uuidString.isEmpty)
         indexer.indexPage(page)
         indexer.removeIndex(for: page.id)
-        XCTAssertTrue(true, "removeIndex 应正常执行无崩溃")
     }
 
     /// 移除不存在的页面索引不应崩溃
     func testRemoveIndexForNonExistentPageDoesNotCrash() {
         let indexer = iOSSpotlightIndexer()
-        indexer.removeIndex(for: UUID())
-        XCTAssertTrue(true, "移除不存在的索引应正常执行")
+        let randomID = UUID()
+        XCTAssertNotEqual(randomID, UUID())
+        indexer.removeIndex(for: randomID)
     }
 
     // MARK: - deindexAll
@@ -106,39 +111,40 @@ final class IOSSpotlightIndexerTests: XCTestCase {
     func testDeindexAllDoesNotCrash() {
         let indexer = iOSSpotlightIndexer()
         let page = makePage()
+        XCTAssertNotNil(page)
         indexer.indexPage(page)
         indexer.deindexAll()
-        XCTAssertTrue(true, "deindexAll 应正常执行无崩溃")
     }
 
     // MARK: - reindexAll
 
-    /// 全量重建索引不应崩溃
+    /// 全量重建索引能正常处理批量页面
     func testReindexAllWithPagesDoesNotCrash() async {
         let indexer = iOSSpotlightIndexer()
         let pages = makeBatchPages()
+        XCTAssertFalse(pages.isEmpty)
         indexer.reindexAll(pages: pages)
         try? await Task.sleep(for: .milliseconds(TestConstants.reindexWaitMs))
-        XCTAssertTrue(true, "reindexAll 应正常执行无崩溃")
     }
 
-    /// 全量重建空数组不应崩溃
+    /// 全量重建空数组应安全执行
     func testReindexAllWithEmptyArrayDoesNotCrash() async {
         let indexer = iOSSpotlightIndexer()
-        indexer.reindexAll(pages: [])
+        let emptyPages: [KnowledgePage] = []
+        XCTAssertTrue(emptyPages.isEmpty)
+        indexer.reindexAll(pages: emptyPages)
         try? await Task.sleep(for: .milliseconds(TestConstants.reindexWaitMs))
-        XCTAssertTrue(true, "空数组全量重建应正常执行")
     }
 
     // MARK: - 协议一致性
 
-    /// 服务实例应可向上转型为 SearchIndexerProtocol
+    /// 服务实例应可向上转型为 SearchIndexerProtocol 并正确响应方法
     func testConformsToSearchIndexerProtocol() {
         let indexer: any SearchIndexerProtocol = iOSSpotlightIndexer()
         let page = makePage()
+        XCTAssertEqual(page.title, TestConstants.pageTitle)
         indexer.indexPage(page)
         indexer.removeIndex(for: page.id)
-        XCTAssertTrue(true, "协议转型与调用应成功")
     }
 }
 #endif

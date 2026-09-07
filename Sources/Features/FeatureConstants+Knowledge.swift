@@ -196,6 +196,8 @@ extension FeatureConstants {
     enum SearchView {
         static let skeletonRowCount: Int = 6
         static let emptyIconSizeMultiplier: CGFloat = 1.5
+        static let skeletonTitleWidth: CGFloat = 120
+        static let skeletonSubtitleWidth: CGFloat = 80
     }
 
     // MARK: - 知识库引导 (Knowledge Coach Mark)

@@ -108,13 +108,14 @@ final class IOSURLOpenerServiceTests: XCTestCase {
             XCTFail("测试 URL 构造失败")
             return
         }
+        XCTAssertNotNil(noOp)
         await noOp.open(url)
-        XCTAssertTrue(true, "NoOpURLOpener 应正常执行")
     }
 
     /// 生产环境 init() 应可正常实例化（不调用 open，避免触发系统进程）
-    func testProductionInitDoesNotCrash() {
-        _ = iOSURLOpenerService()
+    func testProductionInitSucceeds() {
+        let service = iOSURLOpenerService()
+        XCTAssertNotNil(service)
     }
 }
 #endif

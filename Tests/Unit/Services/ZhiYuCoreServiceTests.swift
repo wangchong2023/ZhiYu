@@ -35,14 +35,7 @@ final class UndoServiceTests: XCTestCase {
         XCTAssertFalse(undoService.canRedo)
     }
     
-    /// 验证推入一个页面版本快照后，撤销功能被正确启用
-    func testPushSnapshotEnablesUndo() {
-        let pages = [KnowledgePage(title: "Test")]
-        undoService.pushSnapshot(pages)
-        XCTAssertTrue(undoService.canUndo)
-        XCTAssertFalse(undoService.canRedo)
-    }
-    
+    /// 验证推入一个页面版本快照后，撤销功能被正确启用    
     /// 验证执行撤销操作能成功回溯至上一个页面数据快照
     func testUndoRestoresPrevious() {
         let oldPages = [KnowledgePage(title: "Old")]

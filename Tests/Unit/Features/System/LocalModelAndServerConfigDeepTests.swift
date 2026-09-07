@@ -32,6 +32,8 @@ final class LocalModelAndServerConfigDeepTests: XCTestCase {
         .snapshotEnvironment()
         .renderInWindow()
 
+        let service = ServiceContainer.shared.resolveOptional((any ModelDownloadCapabilities).self)
+        XCTAssertNotNil(service)
         XCTAssertNotNil(host.view)
     }
 
@@ -44,14 +46,18 @@ final class LocalModelAndServerConfigDeepTests: XCTestCase {
         .snapshotEnvironment()
         .renderInWindow()
 
+        let settings = ServiceContainer.shared.resolveOptional(SettingsStore.self)
+        XCTAssertNotNil(settings)
         XCTAssertNotNil(host.view)
     }
 
     func testServerEditSheet_Hierarchy() {
-        let host = ServerEditSheet(server: nil as MockServerConfig?, onSave: { _ in })
+        let sheet = ServerEditSheet(server: nil as MockServerConfig?, onSave: { _ in })
+        let host = sheet
             .snapshotEnvironment()
             .renderInWindow()
 
+        XCTAssertNil(sheet.server)
         XCTAssertNotNil(host.view)
     }
 
@@ -62,10 +68,12 @@ final class LocalModelAndServerConfigDeepTests: XCTestCase {
         let binding = Binding(get: { text }, set: { text = $0 })
 
         var imported: [URL] = []
-        let host = URLImportSheet(urlText: binding, onImport: { imported = $0 })
+        let sheet = URLImportSheet(urlText: binding, onImport: { imported = $0 })
+        let host = sheet
             .snapshotEnvironment()
             .renderInWindow()
 
+        XCTAssertEqual(binding.wrappedValue, text)
         XCTAssertNotNil(host.view)
         _ = imported
     }
@@ -74,10 +82,12 @@ final class LocalModelAndServerConfigDeepTests: XCTestCase {
         var text = "https://valid.com\nnot_a_valid_url\nhttp://another.com"
         let binding = Binding(get: { text }, set: { text = $0 })
 
-        let host = URLImportSheet(urlText: binding, onImport: { _ in })
+        let sheet = URLImportSheet(urlText: binding, onImport: { _ in })
+        let host = sheet
             .snapshotEnvironment()
             .renderInWindow()
 
+        XCTAssertTrue(binding.wrappedValue.contains("not_a_valid_url"))
         XCTAssertNotNil(host.view)
     }
 }

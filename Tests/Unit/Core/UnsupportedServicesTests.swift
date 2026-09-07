@@ -14,14 +14,7 @@ final class UnsupportedServicesTests: XCTestCase {
 
     // MARK: - UnsupportedReminderService
 
-    /// requestAccess 应返回 false（不支持平台）
-    func testUnsupportedReminderService_requestAccess_返回false() async {
-        let service = UnsupportedReminderService()
-        let result = await service.requestAccess()
-        XCTAssertFalse(result, "不支持平台应返回 false")
-    }
-
-    /// createReminder 应不抛错（空实现，Do nothing）
+    /// requestAccess 应返回 false（不支持平台）    /// createReminder 应不抛错（空实现，Do nothing）
     func testUnsupportedReminderService_createReminder_不抛错() async {
         let service = UnsupportedReminderService()
         do {

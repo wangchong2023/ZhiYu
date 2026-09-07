@@ -81,11 +81,8 @@ final class RouterTests: XCTestCase {
     
     /// 验证清空历史功能 (SRS-6.4)
     func testClearHistory() {
-        let pageA = KnowledgePage(title: "Page A")
-        router.addToHistory(pageA)
-        XCTAssertFalse(router.navigationHistory.isEmpty)
-        
+        router.addToHistory(KnowledgePage(id: UUID(), title: "Page 1", content: "", createdAt: Date(), updatedAt: Date()))
         router.clearHistory()
-        XCTAssertTrue(router.navigationHistory.isEmpty)
+        XCTAssertTrue(router.navigationHistory.isEmpty, "清空后历史应为空")
     }
 }

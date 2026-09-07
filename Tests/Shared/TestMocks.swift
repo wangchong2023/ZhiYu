@@ -13,6 +13,7 @@ import UFPCore
 import XCTest
 import Combine
 import UFPStorage
+@_spi(Internals) import Dependencies
 import LocalAuthentication
 #if os(watchOS)
 @testable import ZhiYuWatch
@@ -23,17 +24,28 @@ import LocalAuthentication
 // MARK: - Mock Logger
 final class MockLogger: LoggerProtocol, @unchecked Sendable {
     var logEntries: [LogEntry] = []
-    var logEntriesPublisher: AnyPublisher<[LogEntry], Never> { Just([]).eraseToAnyPublisher() }
-    func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?, startTime: Date?, endTime: Date?, module: String?, status: LogStatus?, failureReason: String?) {}
-    func debug(_ message: String, file: String, function: String, line: Int) {}
-    func info(_ message: String, file: String, function: String, line: Int) {}
-    func warning(_ message: String, file: String, function: String, line: Int) {}
-    func error(_ message: String, error: Error?, file: String, function: String, line: Int) {}
+    private let subject = CurrentValueSubject<[LogEntry], Never>([])
+    var logEntriesPublisher: AnyPublisher<[LogEntry], Never> { subject.eraseToAnyPublisher() }
+    func addLog(_ entry: LogEntry) {
+        logEntries.append(entry)
+        subject.send(logEntries)
+    }
+    func addLog(action: LogAction, target: String, details: String, duration: TimeInterval? = nil, startTime: Date? = nil, endTime: Date? = nil, module: String? = nil, status: LogStatus? = nil, failureReason: String? = nil) {
+        let entry = LogEntry(action: action, target: target, details: details, duration: duration, startTime: startTime, endTime: endTime, module: module, status: status, failureReason: failureReason)
+        addLog(entry)
+    }
+    func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {}
+    func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {}
+    func warning(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {}
+    func error(_ message: String, error: Error? = nil, file: String = #file, function: String = #function, line: Int = #line) {}
     func saveToDisk() async {}
     func loadFromDisk() async {}
-    func clearAllLogs() async {}
+    func clearAllLogs() async {
+        logEntries.removeAll()
+        subject.send([])
+    }
     func logTimed<T>(action: LogAction, target: String, module: String?, details: String, operation: () throws -> T) rethrows -> T { try operation() }
-    func getLogEntries() async -> [LogEntry] { [] }
+    func getLogEntries() async -> [LogEntry] { logEntries }
 }
 
 // MARK: - Mock LLM Service
@@ -599,9 +611,21 @@ final class MockFileArchiver: FileArchiverProtocol, @unchecked Sendable {
 }
 
 final class MockExportService: ExportServiceProtocol, @unchecked Sendable {
-    func exportToPDF(markdown: String, fileName: String) async throws -> URL { URL(fileURLWithPath: "/tmp/\(fileName).pdf") }
-    func exportMindmapToPDF(mermaidCode: String, fileName: String) async throws -> URL { URL(fileURLWithPath: "/tmp/\(fileName).pdf") }
-    func exportToPPTX(markdown: String, fileName: String) async throws -> URL { URL(fileURLWithPath: "/tmp/\(fileName).pptx") }
+    func exportToPDF(markdown: String, fileName: String) async throws -> URL {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(fileName).pdf")
+        try? Data("Mock PDF Data".utf8).write(to: url)
+        return url
+    }
+    func exportMindmapToPDF(mermaidCode: String, fileName: String) async throws -> URL {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(fileName).pdf")
+        try? Data("Mock Mindmap Data".utf8).write(to: url)
+        return url
+    }
+    func exportToPPTX(markdown: String, fileName: String) async throws -> URL {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(fileName).pptx")
+        try? Data("Mock PPTX Data".utf8).write(to: url)
+        return url
+    }
 }
 
 // MARK: - Mock Security Services (P1: 单例 TestOverride 模式)
@@ -801,14 +825,21 @@ final class MockImportRecordRepository: ImportRecordRepository, @unchecked Senda
 /// 3. `KeychainService.testOverride` 单例内部 store 残留 apiKey
 extension XCTestCase {
 
-    /// 清理所有跨测试残留的持久化状态（UserDefaults + Keychain mock）
+    /// 清理所有跨测试残留的持久化状态与单例响应式状态
     ///
     /// 应在 `setUp` 开头与 `tearDown` 结尾调用，确保测试隔离。
+    ///
+    /// **注册式架构**：单例通过 `TestStateResettable` 协议自注册到 `TestStateResetRegistry`，
+    /// 此方法只需遍历注册表统一调用，无需硬编码维护重置列表。
+    /// 新增单例只需实现协议并在 `init` 中注册，此方法自动覆盖。
+    ///
+    /// **UserDefaults 清理**：部分持久化 key 由单例直接写入 UserDefaults.standard，
+    /// 无法通过单例 reset 清理，需显式删除（保留硬编码，因为这些 key 分散在各模块）。
     @MainActor
     func resetPersistentTestState() {
         let defaults = UserDefaults.standard
 
-        // 1. GlobalModelManager 持久化属性
+        // 1. GlobalModelManager 持久化属性（直接写入 UserDefaults.standard，需显式清理）
         defaults.removeObject(forKey: AppConstants.Keys.Storage.activeModelId)
         defaults.removeObject(forKey: AppConstants.Keys.Storage.activeCloudModelId)
         defaults.removeObject(forKey: AppConstants.Keys.Storage.isCloudEscalationEnabled)
@@ -820,33 +851,34 @@ extension XCTestCase {
         defaults.removeObject(forKey: "zhiyu_llm_config")
 
         // 4. LLMConfigStore 各提供商绑定的 baseURL / model（custom 提供商）
-        //    官方提供商的 baseURL/model 由 provider.defaultBaseURL/defaultModel 计算，不持久化
         for providerKey in ["deepseek", "zhipu", "minimax", "qwen", "openai", "custom"] {
             defaults.removeObject(forKey: "llm_base_url_\(providerKey)")
             defaults.removeObject(forKey: "llm_model_\(providerKey)")
         }
 
         // 5. Localized.languageMode 持久化值
-        //    setter 内部 Task { @MainActor } 异步写入 UserDefaults，defer 还原 _inMemoryFallback
-        //    但 UserDefaults 残留的 portuguese/japanese 等值会被 loadCachedLanguageMode 读取
         defaults.removeObject(forKey: AppConstants.Keys.Storage.languageMode)
 
-        // 6. 重置 KeychainService mock 内部 store，清除残留 apiKey
-        //    testOverride 在 setupFullMockEnvironment 中首次设置后不再重建，
-        //    需主动清理其内部存储，避免跨测试 apiKey 残留
+        // 6. 重置 KeychainService mock 内部 store
         if let mock = KeychainService.testOverride as? MockKeychainService {
             mock.resetStore()
         }
 
-        // 7. 重置 Localized._inMemoryFallback 跨测试残留
-        //    某些测试会设置 Localized.languageMode（如 LocalizationTests.testLanguageSwitchingLogic），
-        //    若未清理会污染后续测试的 locale 依赖行为
-        Localized.resetForTesting()
+        // 7. 遍历 TestStateResetRegistry 重置所有已注册单例
+        //    覆盖：Router、GlobalModelManager、DatabaseManager、OnboardingService、
+        //    IntentRateLimiter、MedalService、DynamicComplianceManager
+        //    注：ServiceContainer 不在此列表中（DI 容器清空语义不同，由 setupFullMockEnvironment 管理）；
+        //    PluginRegistry/TaskCenter/PromptService 通过 @Dependency 注入（非单例）；
+        //    Localized 是 struct，通过上方 UserDefaults 清理覆盖
+        TestStateResetRegistry.shared.resetAll()
 
-        // 8. 重置 DynamicComplianceManager 远程覆盖
-        //    某些测试（如 ContentModerationEngineTests.testDynamicComplianceManager_RemoteTextAndPatternOverride_AppliedDynamically）
-        //    会注入远程 patternOverrides 覆盖 fallback patterns，若未清理会污染后续 ContentModerationEngine 测试
-        DynamicComplianceManager.shared.clearRemoteOverridesForTesting()
+        // 8. 清除 swift-dependencies 的 @Dependency 缓存
+        //    @Dependency(\.keyStore) 等依赖在首次访问后会被 CachedValues 缓存，
+        //    即使 ServiceContainer 重新注册新实例，缓存仍返回旧值。
+        //    swift-dependencies 已在 testCaseWillStart 时自动 resetCache，
+        //    但 setUp 中 setupFullMockEnvironment 注册新 keyStore 后需再次清缓存，
+        //    确保后续 @Dependency 访问能解析到最新注册的 mock 实例。
+        DependencyValues._current.cachedValues.resetCache()
     }
 }
 

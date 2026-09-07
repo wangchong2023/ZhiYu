@@ -864,14 +864,14 @@ final class PluginSandboxAndMarketTests: XCTestCase {
 
     /// matchesRegex 空字符串空模式应匹配（NSRegularExpression 空模式匹配位置 0）
     func testMatchesRegexEmptyStringEmptyPatternReturnsTrue() {
-        // NSRegularExpression 空模式会匹配，但 firstMatch 在空字符串上可能返回 nil
-        // 行为依赖 NSRegularExpression 实现，此处验证不崩溃即可
-        _ = "".matchesRegex("")
+        let result = "".matchesRegex("")
+        XCTAssertTrue(result, "空字符串应匹配空正则")
     }
 
     /// matchesRegex 非空字符串空模式应不崩溃
     func testMatchesRegexNonEmptyStringEmptyPatternDoesNotCrash() {
-        _ = "abc".matchesRegex("")
+        let result = "abc".matchesRegex("")
+        XCTAssertTrue(result, "非空字符串匹配空正则应返回 true")
     }
 
     // MARK: - PluginLoader.verifyPluginSignature

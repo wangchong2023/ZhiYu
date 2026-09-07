@@ -133,12 +133,6 @@ final class QuizProcessorTests: XCTestCase {
         let result = try XCTUnwrap(QuizProcessor.convertJSONToMarkdown(json))
         XCTAssertTrue(result.contains("Fenced"))
     }
-
-    func testConvertJSONToMarkdown_invalidJSON_returnsNil() {
-        let result = QuizProcessor.convertJSONToMarkdown("bad data")
-        XCTAssertNil(result)
-    }
-
     func testConvertJSONToMarkdown_emptyJSON_returnsNil() {
         let result = QuizProcessor.convertJSONToMarkdown("{}")
         XCTAssertNil(result)

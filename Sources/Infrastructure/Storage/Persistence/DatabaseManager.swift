@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPStorage
+import UFPCore
 
 /// DatabaseManager 业务常量（避免魔数）。
 private enum DatabaseManagerConstants {
@@ -21,7 +22,7 @@ private enum DatabaseManagerConstants {
 /// 它是知识笔记本高内聚持久化层（Persistence）的基座大脑，托管了专属笔记本数据库（Workspace DB）
 /// 和全局共享设置数据库（Global DB）的双轨道生命周期。
 @MainActor
-final class DatabaseManager {
+final class DatabaseManager: TestStateResettable {
     
     /// 全局唯一的线程安全单例实例。
     static let shared = DatabaseManager()
@@ -71,7 +72,10 @@ final class DatabaseManager {
     var isInTesting: Bool = false
     
     /// 私有化单例构造方法。
-    private init() {}
+    private init() {
+        // 单例自注册到测试状态重置注册表
+        TestStateResetRegistry.shared.register(self)
+    }
     
     // MARK: - 初始化方法组
     
@@ -340,6 +344,13 @@ final class DatabaseManager {
         globalDBURL = nil
         state = .uninitialized
     }
+
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离
+    func resetStateForTesting() {
+        reset()
+    }
     
     /// 强制对指定的数据库连接执行 Schema 架构迁移以重新构建物理表。
     /// - Parameter writer: 目标数据库连接写入器 (DatabaseWriter)。
@@ -359,6 +370,18 @@ final class DatabaseManager {
                 Logger.shared.error(" [DatabaseManager] Failed to close DatabasePool connection: \(error.localizedDescription)", error: error)
             }
         }
+    }
+
+    // MARK: - 测试辅助方法
+
+    /// 设置排空状态（仅测试使用）。
+    func setDrainingForTesting(_ value: Bool) async {
+        await transactionGatekeeper.setDrainingForTesting(value)
+    }
+
+    /// 重置排空状态（仅测试使用）。
+    func resetDrainingState() async {
+        await transactionGatekeeper.reset()
     }
 }
 
@@ -434,7 +457,6 @@ extension Notification.Name {
 // MARK: - DependencyKey
 
 import Dependencies
-import UFPCore
 
 @MainActor
 enum DatabaseManagerKey: DependencyKey {

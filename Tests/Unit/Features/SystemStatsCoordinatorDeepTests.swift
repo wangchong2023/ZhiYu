@@ -49,6 +49,13 @@ final class RecordableLogger: LoggerProtocol, @unchecked Sendable {
 
     var logEntriesPublisher: AnyPublisher<[LogEntry], Never> { Just([]).eraseToAnyPublisher() }
 
+    func addLog(_ entry: LogEntry) {
+        addLogCallCount += 1
+        lastAction = entry.action
+        lastTarget = entry.target
+        lastModule = entry.module
+    }
+
     func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?, startTime: Date?, endTime: Date?, module: String?, status: LogStatus?, failureReason: String?) {
         addLogCallCount += 1
         lastAction = action
@@ -186,11 +193,32 @@ final class ConfigurablePageStoreCapabilities: AnyPageStoreCapabilities, @unchec
     func replaceAllPages(_ newPages: [KnowledgePage]) async {}
     func resetDatabase() async throws {}
     func performBatchWrite(_ block: @escaping @Sendable (Database) throws -> Void) async throws {}
-    func createPage(title: String, pageType: PageType, customIcon: String?, content: String, tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?) async throws -> KnowledgePage {
+    func createPage(
+        title: String,
+        pageType: PageType,
+        customIcon: String?,
+        content: String,
+        tags: [String],
+        sourceURL: String?,
+        rawSnippet: String?,
+        fileSize: Int64?,
+        sourceType: String?
+    ) async throws -> KnowledgePage {
         KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
     }
     @discardableResult
-    func anyCreatePage(title: String, pageType: PageType, customIcon: String?, content: String, tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?, forceDeepScan: Bool) async -> KnowledgePage? {
+    func anyCreatePage(
+        title: String,
+        pageType: PageType,
+        customIcon: String?,
+        content: String,
+        tags: [String],
+        sourceURL: String?,
+        rawSnippet: String?,
+        fileSize: Int64?,
+        sourceType: String?,
+        forceDeepScan: Bool
+    ) async -> KnowledgePage? {
         KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
     }
     func updatePage(_ page: KnowledgePage) async throws {}

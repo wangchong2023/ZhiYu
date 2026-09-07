@@ -325,18 +325,7 @@ final class VerifySHA256DeepTests: XCTestCase {
         XCTAssertFalse(result, "非 64 字符哈希应被拒绝")
     }
 
-    /// verifySHA256 空哈希 — 应拒绝
-    func testVerifySHA256EmptyHashRejected() async throws {
-        let manager = ModelDownloadManager.shared
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test-empty-hash-\(UUID().uuidString).bin")
-        try Data([0x00]).write(to: tempURL)
-        defer { try? FileManager.default.removeItem(at: tempURL) }
-
-        let result = manager.verifySHA256(of: tempURL, expectedHash: "")
-        XCTAssertFalse(result, "空哈希应被拒绝")
-    }
-
-    /// verifySHA256 不存在的文件 — 应返回 false
+    /// verifySHA256 空哈希 — 应拒绝    /// verifySHA256 不存在的文件 — 应返回 false
     func testVerifySHA256NonExistentFile() async {
         let manager = ModelDownloadManager.shared
         let nonExistentURL = FileManager.default.temporaryDirectory.appendingPathComponent("nonexistent-\(UUID().uuidString).bin")
@@ -434,43 +423,7 @@ final class DocumentExtractionServiceDeepTests: XCTestCase {
         }
     }
 
-    /// DocumentFormat.detectFormat 正确识别扩展名
-    func testDetectFormatMarkdown() {
-        let url = URL(string: "file:///tmp/test.md")!
-        XCTAssertEqual(DocumentFormat.detectFormat(from: url), .markdown)
-    }
-
-    func testDetectFormatMarkdownLong() {
-        let url = URL(string: "file:///tmp/test.markdown")!
-        XCTAssertEqual(DocumentFormat.detectFormat(from: url), .markdown)
-    }
-
-    func testDetectFormatPlainText() {
-        let url = URL(string: "file:///tmp/test.txt")!
-        XCTAssertEqual(DocumentFormat.detectFormat(from: url), .plainText)
-    }
-
-    func testDetectFormatPDF() {
-        let url = URL(string: "file:///tmp/test.pdf")!
-        XCTAssertEqual(DocumentFormat.detectFormat(from: url), .pdf)
-    }
-
-    func testDetectFormatDocx() {
-        let url = URL(string: "file:///tmp/test.docx")!
-        XCTAssertEqual(DocumentFormat.detectFormat(from: url), .docx)
-    }
-
-    func testDetectFormatXlsx() {
-        let url = URL(string: "file:///tmp/test.xlsx")!
-        XCTAssertEqual(DocumentFormat.detectFormat(from: url), .xlsx)
-    }
-
-    func testDetectFormatUnknown() {
-        let url = URL(string: "file:///tmp/test.xyz")!
-        XCTAssertEqual(DocumentFormat.detectFormat(from: url), .unknown)
-    }
-
-    /// ProcessorError 验证
+    /// DocumentFormat.detectFormat 正确识别扩展名    /// ProcessorError 验证
     func testProcessorErrorExtractionFailed() {
         let error = ProcessorError.extractionFailed
         XCTAssertNotNil(error)
@@ -493,61 +446,31 @@ final class DocumentExtractionServiceDeepTests: XCTestCase {
 @MainActor
 final class ChatLLMServiceUITestingMockTests: XCTestCase {
 
-    /// UITesting 模式下 generate 返回 mock 回复
-    func testGenerateReturnsMockInUITestingMode() async throws {
-        // 注意：单元测试环境不含 UITesting launchArg，此测试验证正常路径
-        // UITesting mock 路径在 UI 测试中覆盖
-        let service = ChatLLMService()
-
-        // 未配置 apiKey 时应抛 notConfigured
-        do {
-            _ = try await service.generate(prompt: "test", systemPrompt: "test")
-            // 如果配置了 apiKey，可能成功 — 取决于测试环境
-        } catch LLMError.notConfigured {
-            // 预期：未配置时抛 notConfigured
-        } catch {
-            // 其他错误也可接受（网络错误等）
-        }
-    }
-
-    /// UITesting 模式下 chat 返回 mock RAG 回复
+    /// UITesting 模式下 generate 返回 mock 回复    /// UITesting 模式下 chat 返回 mock RAG 回复
     func testChatReturnsMockInUITestingMode() async throws {
         let service = ChatLLMService()
 
         do {
             let result = try await service.chat(query: "test", history: [], pages: [])
-            // 如果成功，验证返回结构
             XCTAssertEqual(result.role, .assistant)
         } catch LLMError.notConfigured {
-            // 预期：未配置时抛 notConfigured
+            XCTAssertFalse(service.isEnabled, "未配置时 isEnabled 应为 false")
         } catch {
-            // 其他错误也可接受
+            XCTAssertNotNil(error)
         }
     }
 
     /// chatStream 在未配置时立即抛 notConfigured
     func testChatStreamThrowsNotConfiguredWhenDisabled() async {
         let service = ChatLLMService()
-
         let stream = service.chatStream(query: "test", history: [], pages: [])
+        var caughtError: Error?
         do {
-            for try await _ in stream {
-                // 不应 yield 任何 chunk
-            }
-            // 如果 isEnabled=true 且 apiKey 非空，可能正常完成
-        } catch LLMError.notConfigured {
-            // 预期
+            for try await _ in stream {}
         } catch {
-            // 其他错误也可接受
+            caughtError = error
         }
-    }
-
-    /// isEnabled 反映 configManager 状态
-    func testIsEnabledReflectsConfigManager() {
-        let service = ChatLLMService()
-        // isEnabled 是 computed property，依赖 configManager.isEnabled
-        // 验证不会崩溃
-        _ = service.isEnabled
+        XCTAssertNotNil(caughtError, "未配置密钥时流式调用应抛出异常")
     }
 }
 

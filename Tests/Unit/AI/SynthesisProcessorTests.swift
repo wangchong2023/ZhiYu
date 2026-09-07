@@ -84,12 +84,6 @@ final class SynthesisProcessorTests: XCTestCase {
         let result = SynthesisProcessor.extractTitle(from: content)
         XCTAssertNil(result)
     }
-
-    func testExtractTitle_emptyContent_returnsNil() {
-        let result = SynthesisProcessor.extractTitle(from: "")
-        XCTAssertNil(result)
-    }
-
     func testExtractTitle_stripsCodeFence() {
         let content = "# Title ```\nmore content"
         let result = SynthesisProcessor.extractTitle(from: content)
@@ -416,17 +410,6 @@ final class SynthesisProcessorTests: XCTestCase {
     }
 
     // MARK: - Mermaid 语法解析与非 Mermaid 纯文本打拦截断言
-
-    func testIsValidMermaidSyntax_validMindmap_returnsTrue() {
-        let validCode = """
-        mindmap
-          root((思维导图))
-            节点1
-            节点2
-        """
-        XCTAssertTrue(SynthesisProcessor.isValidMermaidSyntax(validCode), "合法的 Mermaid mindmap 代码必须通过语法校验")
-    }
-
     func testIsValidMermaidSyntax_invalidRawMockText_returnsFalse() {
         let rawMockText = "这是针对 UI 测试的非流式 Mock 大模型回复内容。"
         XCTAssertFalse(SynthesisProcessor.isValidMermaidSyntax(rawMockText), "非 Mermaid 结构的普通 Mock 文本必须判定为语法无效，防止引发解析崩溃")

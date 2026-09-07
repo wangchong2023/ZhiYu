@@ -120,7 +120,7 @@ final class LLMRetrievalServiceSupplementTests: XCTestCase {
             _ = try await service.rerank(query: "test", candidates: [page])
             XCTFail("应抛出错误")
         } catch {
-            XCTAssertTrue(true, "rerank 应向上抛出错误而非降级")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "rerank 应向上抛出有效错误而非降级：\(error)")
         }
     }
 

@@ -148,24 +148,28 @@ final class PageDetailCoordinatorTests: XCTestCase {
 
     // MARK: - AI 任务入口
 
-    /// 验证 generateSummary 触发 runAIOperation
+    /// 验证 generateSummary 触发 runAIOperation 且不篡改当前页面上下文
     func testGenerateSummaryTriggersOperation() {
         coordinator.generateSummary()
+        XCTAssertEqual(coordinator.page.title, "目标页")
     }
 
-    /// 验证 extractActions 触发 runAIOperation
+    /// 验证 extractActions 触发 runAIOperation 且不篡改当前页面上下文
     func testExtractActionsTriggersOperation() {
         coordinator.extractActions()
+        XCTAssertEqual(coordinator.page.title, "目标页")
     }
 
-    /// 验证 expandContent 触发 runAIOperation
+    /// 验证 expandContent 触发 runAIOperation 且不篡改当前页面上下文
     func testExpandContentTriggersOperation() {
         coordinator.expandContent()
+        XCTAssertEqual(coordinator.page.title, "目标页")
     }
 
-    /// 验证 performSynthesis 触发 runAIOperation
+    /// 验证 performSynthesis 触发 runAIOperation 且不篡改当前页面上下文
     func testPerformSynthesisTriggersOperation() {
         coordinator.performSynthesis(type: .mindmap)
+        XCTAssertEqual(coordinator.page.title, "目标页")
     }
 
     /// 验证 findRelatedLinks 设置 hasScannedForLinks 为 true

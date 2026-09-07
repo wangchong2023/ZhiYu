@@ -97,7 +97,7 @@ final class CrossPlatformProtocolDefinitionTests: XCTestCase {
 final class CrossPlatformiOSImplementationTests: XCTestCase {
 
     /// TC-IOS-01: iOSDeviceInfoService 实现 DeviceInfoProtocol，返回值非空
-    func test_iOSDeviceInfoService_conformsToProtocol_andReturnsNonNil() {
+    func test_iOSDeviceInfoService_conformsToProtocol_andReturnsNonNil() throws {
         #if os(iOS) && !os(watchOS)
         let service = iOSDeviceInfoService()
         let protocolRef: DeviceInfoProtocol = service
@@ -107,41 +107,39 @@ final class CrossPlatformiOSImplementationTests: XCTestCase {
         XCTAssertFalse(protocolRef.deviceName.isEmpty, "deviceName 不应为空")
         XCTAssertGreaterThan(protocolRef.screenHeight, 0, "screenHeight 应 > 0")
         #else
-        // 非 iOS 平台：该实现不存在，跳过测试
-        XCTAssertTrue(true, "iOSDeviceInfoService 仅适用于 iOS 平台")
+        throw XCTSkip("iOSDeviceInfoService 仅适用于 iOS 平台")
         #endif
     }
 
     /// TC-IOS-02: iOSURLOpenerService 实现 URLOpenerProtocol
     @MainActor
-    func test_iOSURLOpenerService_conformsToProtocol() async {
+    func test_iOSURLOpenerService_conformsToProtocol() async throws {
         #if os(iOS) && !os(watchOS)
         let service = iOSURLOpenerService()
         let protocolRef: URLOpenerProtocol = service
 
         // 验证方法可调用且编译通过（实际不会打开 URL — 单元测试在模拟器无真实 scene）
         let testURL = URL(string: "https://zhiyu.app/test")!
+        XCTAssertNotNil(testURL)
         await protocolRef.open(testURL)
-        // 无崩溃即通过
-        XCTAssertTrue(true)
+        XCTAssertNotNil(service)
         #else
-        XCTAssertTrue(true, "iOSURLOpenerService 仅适用于 iOS 平台")
+        throw XCTSkip("iOSURLOpenerService 仅适用于 iOS 平台")
         #endif
     }
 
     /// TC-IOS-03: iOSShareSheetService 实现 ShareSheetProtocol
     @MainActor
-    func test_iOSShareSheetService_conformsToProtocol() async {
+    func test_iOSShareSheetService_conformsToProtocol() async throws {
         #if os(iOS) && !os(watchOS)
         let service = iOSShareSheetService()
         let protocolRef: ShareSheetProtocol = service
 
         // 验证方法可调用且编译通过（实际不会弹出面板 — 单元测试在无 keyWindow 场景）
+        XCTAssertNotNil(service)
         await protocolRef.presentShareSheet(items: ["Test"])
-        // 无崩溃即通过
-        XCTAssertTrue(true)
         #else
-        XCTAssertTrue(true, "iOSShareSheetService 仅适用于 iOS 平台")
+        throw XCTSkip("iOSShareSheetService 仅适用于 iOS 平台")
         #endif
     }
 }

@@ -62,15 +62,15 @@ final class IOSWatchSyncServiceTests: XCTestCase {
     /// sendContent 在模拟器（无配对手表）不应崩溃
     func testSendContentDoesNotCrashWithoutPairedWatch() {
         let service = iOSWatchSyncService()
+        XCTAssertNotNil(service)
         service.sendContent(TestConstants.sampleText)
-        XCTAssertTrue(true, "sendContent 应正常执行无崩溃")
     }
 
     /// sendContent 空字符串不应崩溃
     func testSendContentWithEmptyStringDoesNotCrash() {
         let service = iOSWatchSyncService()
+        XCTAssertNotNil(service)
         service.sendContent("")
-        XCTAssertTrue(true, "sendContent 空字符串应正常执行")
     }
 
     // MARK: - requestDailyBriefing / handleBriefingResponse
@@ -78,15 +78,15 @@ final class IOSWatchSyncServiceTests: XCTestCase {
     /// requestDailyBriefing 在 iOS 端是预留接口，不应崩溃
     func testRequestDailyBriefingDoesNotCrash() {
         let service = iOSWatchSyncService()
+        XCTAssertFalse(service.isBriefingLoading)
         service.requestDailyBriefing()
-        XCTAssertTrue(true, "requestDailyBriefing 应正常执行无崩溃")
     }
 
     /// handleBriefingResponse 在 iOS 端不处理，不应崩溃
     func testHandleBriefingResponseDoesNotCrash() {
         let service = iOSWatchSyncService()
+        XCTAssertNotNil(service)
         service.handleBriefingResponse("简报内容")
-        XCTAssertTrue(true, "handleBriefingResponse 应正常执行无崩溃")
     }
 
     // MARK: - handleReceivedAudioChunk
@@ -150,8 +150,8 @@ final class IOSWatchSyncServiceTests: XCTestCase {
     func testSendAudioDataDefaultImplementationDoesNotCrash() {
         let service = iOSWatchSyncService()
         let audioData = Data([0x01, 0x02, 0x03, 0x04])
+        XCTAssertEqual(audioData.count, 4)
         service.sendAudioData(audioData, filename: TestConstants.audioFileName)
-        XCTAssertTrue(true, "sendAudioData 默认实现应正常执行")
     }
 
     // MARK: - 协议一致性
@@ -159,9 +159,8 @@ final class IOSWatchSyncServiceTests: XCTestCase {
     /// 服务实例应可向上转型为 WatchSyncProtocol
     func testConformsToWatchSyncProtocol() {
         let service: any WatchSyncProtocol = iOSWatchSyncService()
+        XCTAssertNotNil(service)
         service.sendContent(TestConstants.sampleText)
-        XCTAssertTrue(service.lastReceivedText.isEmpty || service.lastReceivedText.count >= 0,
-                      "协议转型与调用应成功")
     }
 
     /// latestBriefing 可读可写

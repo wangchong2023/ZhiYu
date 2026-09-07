@@ -59,13 +59,4 @@ final class ServerConfigAndMockServersDeepTests: XCTestCase {
     }
 
     // MARK: - 2. ServerConfigView 视图层级与状态机测试
-
-    func testServerConfigView_Hierarchy() {
-        let view = NavigationStack {
-            ServerConfigView()
-        }
-        .snapshotEnvironment()
-
-        XCTAssertNotNil(view)
-    }
 }

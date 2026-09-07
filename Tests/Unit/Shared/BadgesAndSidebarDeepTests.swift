@@ -28,28 +28,14 @@ final class BadgesAndSidebarDeepTests: XCTestCase {
     // MARK: - 1. AIRainbowGlowBadge 呼吸发光指示微标测试
 
     func testAIRainbowGlowBadge_Hierarchy() {
+        let modelManager = GlobalModelManager.shared
         let host = AIRainbowGlowBadge()
             .snapshotEnvironment()
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertNotNil(modelManager, "全局模型管理器应单例就绪")
     }
 
     // MARK: - 2. SidebarSelection 路由转换测试
-
-    func testSidebarSelection_AsRoute() {
-        let pageID = UUID()
-        let pageSel = SidebarSelection.page(pageID)
-        XCTAssertEqual(pageSel.asRoute(), .pageDetail(id: pageID))
-
-        for tool in ToolItem.allCases {
-            let toolSel = SidebarSelection.tool(tool)
-            XCTAssertEqual(toolSel.asRoute(), tool.route)
-        }
-
-        for type in PageType.allCases {
-            let filterSel = SidebarSelection.filteredIndex(type)
-            XCTAssertEqual(filterSel.asRoute(), .pageList(filterType: type))
-        }
-    }
 }

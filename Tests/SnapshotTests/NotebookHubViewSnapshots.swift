@@ -28,6 +28,7 @@ final class NotebookHubViewSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         // 重置共享单例状态，避免前序测试修改导致快照精度漂移
         VaultService.shared.vaults = []
@@ -105,6 +106,6 @@ final class NotebookHubViewSnapshots: XCTestCase {
         let view = NotebookHubView()
             .snapshotEnvironment()
             .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

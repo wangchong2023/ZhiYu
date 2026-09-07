@@ -13,6 +13,12 @@ final class ModelDownloadManagerTests: XCTestCase {
 
     private let testModelId = "test-model-batch7b"
 
+    override func setUp() async throws {
+        try await super.setUp()
+        let manager = ModelDownloadManager.shared
+        await manager.clearActiveTask(for: testModelId)
+    }
+
     // MARK: - checksum 注册与查询
 
     func testRegisterChecksum_thenGetReturnsValue() async {
@@ -130,14 +136,15 @@ final class ModelDownloadManagerTests: XCTestCase {
 
     func testUpdateProgress_zeroExpectedBytes_guardSkips() async {
         let manager = ModelDownloadManager.shared
+        let isolatedModelId = "test-model-zero-expected-guard"
+        await manager.clearActiveTask(for: isolatedModelId)
         await manager.updateProgress(
-            for: testModelId,
+            for: isolatedModelId,
             totalBytesWritten: 50,
             totalBytesExpectedToWrite: 0
         )
-
-        // totalBytesExpectedToWrite == 0 时 guard 直接 return，状态不更新
-        // 验证不崩溃即可
+        let checksum = await manager.getChecksum(for: isolatedModelId)
+        XCTAssertNil(checksum, "totalBytesExpectedToWrite == 0 时 guard 直接 return，状态不更新")
     }
 
     func testUpdateProgress_legacyOverload_updatesState() async {
@@ -166,7 +173,8 @@ final class ModelDownloadManagerTests: XCTestCase {
     func testClearActiveTask_doesNotCrash() async {
         let manager = ModelDownloadManager.shared
         await manager.clearActiveTask(for: testModelId)
-        // 验证不崩溃即可
+        let checksum = await manager.getChecksum(for: testModelId)
+        XCTAssertNil(checksum, "清理未初始化的任务应无残留校验和")
     }
 
     // MARK: - handleDownloadError

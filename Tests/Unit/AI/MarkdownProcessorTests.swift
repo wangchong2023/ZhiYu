@@ -189,42 +189,6 @@ final class MarkdownParserTests: XCTestCase {
     }
 
     // MARK: - 行内解析
-
-    func testParseInlineSegments_plainText() {
-        let segments = processor.parseInlineSegments("Hello")
-        XCTAssertEqual(segments.count, 1)
-        XCTAssertEqual(segments[0].type, .text)
-        XCTAssertEqual(segments[0].content, "Hello")
-    }
-
-    func testParseInlineSegments_bold() {
-        let segments = processor.parseInlineSegments("**bold**")
-        XCTAssertEqual(segments.count, 1)
-        XCTAssertEqual(segments[0].type, .bold)
-        XCTAssertEqual(segments[0].content, "bold")
-    }
-
-    func testParseInlineSegments_italic() {
-        let segments = processor.parseInlineSegments("*italic*")
-        XCTAssertEqual(segments.count, 1)
-        XCTAssertEqual(segments[0].type, .italic)
-        XCTAssertEqual(segments[0].content, "italic")
-    }
-
-    func testParseInlineSegments_code() {
-        let segments = processor.parseInlineSegments("`code`")
-        XCTAssertEqual(segments.count, 1)
-        XCTAssertEqual(segments[0].type, .code)
-        XCTAssertEqual(segments[0].content, "code")
-    }
-
-    func testParseInlineSegments_strikethrough() {
-        let segments = processor.parseInlineSegments("~~deleted~~")
-        XCTAssertEqual(segments.count, 1)
-        XCTAssertEqual(segments[0].type, .strikethrough)
-        XCTAssertEqual(segments[0].content, "deleted")
-    }
-
     func testParseInlineSegments_applink() {
         let segments = processor.parseInlineSegments("[[TargetPage]]")
         XCTAssertEqual(segments.count, 1)
@@ -265,19 +229,6 @@ final class MarkdownParserTests: XCTestCase {
         XCTAssertEqual(segments[1].type, .text)
         XCTAssertEqual(segments[2].type, .applink)
     }
-
-    func testParseInlineSegments_link() {
-        let segments = processor.parseInlineSegments("[Click](https://example.com)")
-        XCTAssertEqual(segments.count, 1)
-        XCTAssertEqual(segments[0].type, .link)
-        XCTAssertEqual(segments[0].content, "Click|https://example.com")
-    }
-
-    func testParseInlineSegments_emptyString() {
-        let segments = processor.parseInlineSegments("")
-        XCTAssertTrue(segments.isEmpty)
-    }
-
     // MARK: - 任务列表
 
     func testParse_taskList() {

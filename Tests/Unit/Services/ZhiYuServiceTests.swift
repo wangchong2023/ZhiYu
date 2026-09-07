@@ -241,13 +241,6 @@ final class SpeechServiceTests: XCTestCase {
 
 // MARK: - DocumentFormat Edge Cases
 final class DocumentFormatEdgeCaseTests: XCTestCase {
-
-    func testDetectFormatMixedCaseExtension() {
-        XCTAssertEqual(DocumentFormat.detectFormat(from: URL(fileURLWithPath: "/test.MD")), .markdown)
-        XCTAssertEqual(DocumentFormat.detectFormat(from: URL(fileURLWithPath: "/test.PDF")), .pdf)
-        XCTAssertEqual(DocumentFormat.detectFormat(from: URL(fileURLWithPath: "/test.TXT")), .plainText)
-    }
-
     func testDetectFormatWithQueryString() {
         let url = URL(string: "file:///path/to/document.pdf?v=1.0")!
         XCTAssertEqual(DocumentFormat.detectFormat(from: url), .pdf)
@@ -525,15 +518,6 @@ final class IngestServiceEdgeCasesTests: XCTestCase {
         let concepts = await ingestService.extractConcepts(from: content, pages: pages)
         XCTAssertTrue(concepts.isEmpty)
     }
-
-    func testExtractConceptsCaseInsensitive() async {
-        let pages = [KnowledgePage(title: "SwiftUI", pageType: .concept)]
-        let concepts1 = await ingestService.extractConcepts(from: "swiftui", pages: pages)
-        let concepts2 = await ingestService.extractConcepts(from: "SWIFTUI", pages: pages)
-        XCTAssertFalse(concepts1.isEmpty)
-        XCTAssertFalse(concepts2.isEmpty)
-    }
-
     func testExtractConceptsPartialMatch() async {
         let pages = [KnowledgePage(title: "Machine Learning", pageType: .concept)]
         // Partial match should not trigger

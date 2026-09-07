@@ -190,6 +190,8 @@ final class MockFullLLMService: LLMServiceProtocol {
 /// 最小化 LoggerProtocol 实现
 final class MockLoggerProtocol: LoggerProtocol {
 
+    func addLog(_ entry: LogEntry) {}
+
     func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?,
                 startTime: Date?, endTime: Date?, module: String?, status: LogStatus?, failureReason: String?) {}
 

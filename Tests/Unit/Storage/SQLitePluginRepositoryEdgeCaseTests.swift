@@ -158,10 +158,11 @@ final class PluginRepoEdgeTests: XCTestCase {
         XCTAssertTrue(searchAfterDelete.isEmpty, "删除后 FTS 索引应被清理")
     }
 
-    /// 验证：delete 不存在的 ID 不报错。
+    /// 验证：delete 不存在的 ID 不报错且不影响数据库。
     func testDeleteNonExistentIsNoop() async throws {
         try await pluginRepo.delete(id: "non-existent")
-        // 不应抛出异常
+        let nonExistent = try await pluginRepo.fetch(id: "non-existent")
+        XCTAssertNil(nonExistent, "不存在的插件删除后仍应为 nil")
     }
 
     // MARK: - deleteAll 清空

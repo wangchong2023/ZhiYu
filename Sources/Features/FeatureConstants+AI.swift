@@ -96,6 +96,16 @@ extension FeatureConstants {
         static let scoreFontScale: Double = 1.5
     }
 
+    // MARK: - 问答解释编号清洗 (Quiz Pattern)
+    /// 答案解释编号清洗正则
+    enum QuizPattern {
+        /// 匹配答案前缀并捕获前缀文本与答案编号 (Bug #152 防腐)。
+        /// 支持中英文前缀：正确答案 / 参考答案 / 答案 / The answer is / Correct Option / Answer。
+        /// 行首锚定，避免普通句子中的阿拉伯数字被误判为答案编号。
+        /// 捕获组 1 = 前缀文本，捕获组 2 = 答案编号数字。
+        static let explanationAnswerRegex: String = #"^(?i)(正确答案|参考答案|答案|The\s+answer\s+is|Correct\s+Option|Answer)\s*[:：是]?\s*(\d+)"#
+    }
+
     // MARK: - AI 合成服务 (AI Synthesis)
     /// AISynthesisService 上下文截取数量
     enum AISynthesis {
@@ -140,6 +150,7 @@ extension FeatureConstants {
     /// 服务器连接测试相关阈值
     enum ServerConfig {
         static let latencyMsPerSecond: Int = 1000
+        static let storageKey: String = "FeatureConstants.ServerConfig"
     }
 
     // MARK: - 模型卡片 (Model Card)

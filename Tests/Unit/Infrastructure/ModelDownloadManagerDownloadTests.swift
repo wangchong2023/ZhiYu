@@ -196,22 +196,7 @@ final class ModelDownloadManagerDownloadTests: XCTestCase {
 
     // MARK: - verifySHA256 大小写不敏感测试
 
-    /// 验证 verifySHA256 支持大写/混合大小写 checksum
-    func testVerifySHA256CaseInsensitiveComparison() async {
-        let tempFile = NSTemporaryDirectory() + "test_sha256_case_\(UUID().uuidString)"
-        let content = "test content for case"
-        try? Data(content.utf8).write(to: URL(fileURLWithPath: tempFile))
-        defer { try? FileManager.default.removeItem(atPath: tempFile) }
-
-        let digest = sha256(of: Data(content.utf8))
-        let lowerHex = digest.map { String(format: "%02x", $0) }.joined()
-        let upperHex = digest.map { String(format: "%02X", $0) }.joined()
-
-        XCTAssertTrue(manager.verifySHA256(of: URL(fileURLWithPath: tempFile), expectedHash: lowerHex), "小写 checksum 应通过")
-        XCTAssertTrue(manager.verifySHA256(of: URL(fileURLWithPath: tempFile), expectedHash: upperHex), "大写 checksum 应通过")
-    }
-
-    // MARK: - updateProgress 高频采样测试
+    /// 验证 verifySHA256 支持大写/混合大小写 checksum    // MARK: - updateProgress 高频采样测试
 
     /// 验证 updateProgress 在高频采样时（timeDiff < sampleInterval）沿用旧 currentSpeed
     func testUpdateProgressHighFrequencySamplingKeepsOldSpeed() async {

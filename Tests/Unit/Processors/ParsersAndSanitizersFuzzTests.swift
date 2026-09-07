@@ -89,6 +89,7 @@ final class ParsersAndSanitizersFuzzTests: XCTestCase {
                 _ = SSEParser.parseJSONLine(dataStr, logger: nil)
             }
         }
+        XCTAssertEqual(chunks.count, 9, "应包含 9 个 Fuzz 测试分块")
     }
 
     // MARK: - 3. JSONExtractor 容错提取 Fuzz 测试
@@ -107,6 +108,7 @@ final class ParsersAndSanitizersFuzzTests: XCTestCase {
         for json in corruptJSONs {
             _ = JSONExtractor.extractFirstJSONObject(from: json)
         }
+        XCTAssertEqual(corruptJSONs.count, 7, "应包含 7 个 Fuzz JSON 样本")
     }
 
     // MARK: - 4. WikiLinkExtractor 双向链接抽取 Fuzz 测试

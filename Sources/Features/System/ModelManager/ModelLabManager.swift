@@ -197,8 +197,8 @@ public final class ModelLabManager {
     ///   - useCase: 实验室用例类型
     /// - Returns: 是否支持该场景
     public func isModelCompatible(_ model: LLMManifest, for useCase: UseCaseType) -> Bool {
-        let task = useCase.requiredTask
-        return model.supportedTasks.contains(task)
+        let task = useCase.requiredTask.lowercased()
+        return model.supportedTasks.contains { $0.lowercased() == task }
     }
     
     /// 启动所选场景的推理（优先调用真实 LLM 引擎，无配置时回退至离线展演）

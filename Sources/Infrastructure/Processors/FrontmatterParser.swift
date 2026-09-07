@@ -137,7 +137,7 @@ public struct ComparisonFrontmatter: Codable, Sendable {
 }
 
 /// 灵活存储对比指标的枚举类型
-public enum MatrixValue: Codable, Sendable {
+public enum MatrixValue: Codable, Sendable, Equatable {
     case text(String)
     case rating(Double)
     case range(min: Double, max: Double)

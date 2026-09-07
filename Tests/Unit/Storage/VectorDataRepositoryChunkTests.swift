@@ -107,11 +107,12 @@ final class VectorDataChunkTests: XCTestCase {
         XCTAssertTrue(remaining.isEmpty, "deleteChunks 后应无分块")
     }
 
-    /// 验证：deleteChunks 对不存在的 pageID 不报错。
+    /// 验证：deleteChunks 对不存在的 pageID 不报错且分块列表仍为空。
     func testDeleteChunksForNonExistentPageIsNoop() async throws {
         let nonExistentID = UUID()
         try await vectorRepo.deleteChunks(for: nonExistentID)
-        // 不应抛出异常
+        let chunks = try await vectorRepo.fetchChunks(for: nonExistentID)
+        XCTAssertTrue(chunks.isEmpty, "不存在页面的分块应始终为空")
     }
 
     // MARK: - fetchAllChunksWithEmbeddings

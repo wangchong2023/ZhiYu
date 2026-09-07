@@ -27,8 +27,9 @@ final class AuthAndSubscriptionDeepAuditTests: XCTestCase {
     // MARK: - 1. SubscriptionPlanView 渲染
 
     func testSubscriptionPlanView_Rendering() {
-        let planView = SubscriptionPlanView()
-            .snapshotEnvironment()
+        let rawView = SubscriptionPlanView()
+        XCTAssertNotNil(rawView)
+        let planView = rawView.snapshotEnvironment()
 
         let host = UIHostingController(rootView: planView)
         _ = host.view
@@ -40,8 +41,9 @@ final class AuthAndSubscriptionDeepAuditTests: XCTestCase {
     // MARK: - 2. AuthView 认证主视图渲染
 
     func testAuthView_Rendering() {
-        let authView = AuthView()
-            .snapshotEnvironment()
+        let rawView = AuthView()
+        XCTAssertNotNil(rawView)
+        let authView = rawView.snapshotEnvironment()
 
         let host = UIHostingController(rootView: authView)
         _ = host.view
@@ -53,8 +55,9 @@ final class AuthAndSubscriptionDeepAuditTests: XCTestCase {
     // MARK: - 3. UserProfileView 用户信息面板渲染
 
     func testUserProfileView_Rendering() {
-        let profileView = UserProfileView()
-            .snapshotEnvironment()
+        let rawView = UserProfileView()
+        XCTAssertNotNil(rawView)
+        let profileView = rawView.snapshotEnvironment()
 
         let host = UIHostingController(rootView: profileView)
         _ = host.view

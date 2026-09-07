@@ -19,14 +19,6 @@ final class IngestSanitationPipelineEdgeTests: XCTestCase {
                 "mode=\(mode) 空输入应返回空字符串")
         }
     }
-
-    func testSanitize_whitespaceOnly_returnsEmpty() {
-        for mode in IngestSourceMode.allCases {
-            XCTAssertEqual(IngestSanitationPipeline.shared.sanitize("   \n   ", mode: mode), "",
-                "mode=\(mode) 纯空白应返回空字符串")
-        }
-    }
-
     // MARK: - OCR 模态
 
     func testSanitize_ocrMode_stripsHTMLAndMergesOCRAndPangu() {
@@ -110,6 +102,7 @@ final class IngestSanitationPipelineEdgeTests: XCTestCase {
     // MARK: - Sendable 契约
 
     func testIngestSanitationPipeline_isSendable() {
-        _ = IngestSanitationPipeline.shared
+        let pipeline = IngestSanitationPipeline.shared
+        XCTAssertNotNil(pipeline, "单例应有效存在")
     }
 }

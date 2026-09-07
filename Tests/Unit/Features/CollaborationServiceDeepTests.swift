@@ -584,6 +584,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
         mockProvider.simulateDataReceived(data, from: testUserId)
 
         try await Task.sleep(nanoseconds: asyncWaitNanoseconds)
+        XCTAssertNil(service.delegate, "delegate 为 nil 时应安全忽略事件")
     }
 
     /// 验证接收 pageSync 数据但 payload 缺少必需字段时不崩溃

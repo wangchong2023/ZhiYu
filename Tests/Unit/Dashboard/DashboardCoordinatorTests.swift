@@ -54,7 +54,7 @@ final class DashboardCoordinatorTests: XCTestCase {
 
     /// 验证空页面库时 updateTags 不产生标签
     func testUpdateTagsEmptyStore() {
-        coordinator.updateTags()
+        coordinator.updateTags(store: store)
         XCTAssertTrue(coordinator.tags.isEmpty, "空页面库时标签集合应保持为空")
     }
 
@@ -64,7 +64,7 @@ final class DashboardCoordinatorTests: XCTestCase {
         _ = await store.createPage(title: "P2", pageType: .concept, content: "c2", tags: ["Swift", "SwiftUI"])
         _ = await store.createPage(title: "P3", pageType: .concept, content: "c3", tags: ["Swift"])
 
-        coordinator.updateTags()
+        coordinator.updateTags(store: store)
 
         XCTAssertEqual(coordinator.tags.count, 3, "应聚合出 3 个唯一标签")
         XCTAssertEqual(coordinator.tags.first?.tag, "Swift", "Swift 出现 3 次应排在首位")
@@ -76,7 +76,7 @@ final class DashboardCoordinatorTests: XCTestCase {
     func testUpdateTagsIncludesContentHashtags() async {
         _ = await store.createPage(title: "P1", pageType: .concept, content: "正文 #Markdown 备注", tags: [])
 
-        coordinator.updateTags()
+        coordinator.updateTags(store: store)
 
         XCTAssertTrue(coordinator.tags.contains { $0.tag == "Markdown" }, "应从内容中提取 #Markdown 标签")
     }
@@ -85,7 +85,7 @@ final class DashboardCoordinatorTests: XCTestCase {
 
     /// 验证空页面库时 calculateStats 重置统计
     func testCalculateStatsEmptyStore() async {
-        await coordinator.calculateStats()
+        await coordinator.calculateStats(store: store)
         XCTAssertEqual(coordinator.totalLinks, 0, "空库时总链接数应为 0")
         XCTAssertTrue(coordinator.densityData.isEmpty, "空库时密度数据应为空")
     }
@@ -97,7 +97,7 @@ final class DashboardCoordinatorTests: XCTestCase {
         _ = await store.createPage(title: "P2", pageType: .concept, content: "[[P1]]", tags: [])
         _ = await store.createPage(title: "P3", pageType: .concept, content: "", tags: [])
 
-        await coordinator.calculateStats()
+        await coordinator.calculateStats(store: store)
 
         // 总链接数 = P1(2) + P2(1) + P3(0) = 3
         XCTAssertEqual(coordinator.totalLinks, 3, "总链接数应为 3")
@@ -114,7 +114,7 @@ final class DashboardCoordinatorTests: XCTestCase {
             _ = await store.createPage(title: "P\(i)", pageType: .concept, content: "[[P\(i + 1)]]", tags: [])
         }
 
-        await coordinator.calculateStats()
+        await coordinator.calculateStats(store: store)
 
         XCTAssertEqual(coordinator.densityData.count, 5, "密度数据应只保留 Top 5")
     }
@@ -125,7 +125,7 @@ final class DashboardCoordinatorTests: XCTestCase {
         _ = await store.createPage(title: "High", pageType: .concept, content: "[[Low]] [[Mid]]", tags: [])
         _ = await store.createPage(title: "Mid", pageType: .concept, content: "[[Low]]", tags: [])
 
-        await coordinator.calculateStats()
+        await coordinator.calculateStats(store: store)
 
         let scores = coordinator.densityData.map { $0.inbound + $0.outbound }
         XCTAssertEqual(scores, scores.sorted(by: >), "密度数据应按总分降序排列")
@@ -135,7 +135,7 @@ final class DashboardCoordinatorTests: XCTestCase {
 
     /// 验证 refreshAll 在空库时正确重置状态并完成
     func testRefreshAllEmptyStore() async {
-        await coordinator.refreshAll()
+        await coordinator.refreshAll(store: store)
         XCTAssertEqual(coordinator.totalLinks, 0, "空库刷新后总链接数应为 0")
         XCTAssertTrue(coordinator.tags.isEmpty, "空库刷新后标签应为空")
         XCTAssertFalse(coordinator.isCalculating, "刷新完成后 isCalculating 应重置为 false")
@@ -146,7 +146,7 @@ final class DashboardCoordinatorTests: XCTestCase {
         _ = await store.createPage(title: "P1", pageType: .concept, content: "[[P2]]", tags: ["Swift"])
         _ = await store.createPage(title: "P2", pageType: .concept, content: "", tags: ["Swift", "iOS"])
 
-        await coordinator.refreshAll()
+        await coordinator.refreshAll(store: store)
 
         XCTAssertEqual(coordinator.totalLinks, 1, "总链接数应为 1")
         XCTAssertEqual(coordinator.tags.count, 2, "标签应聚合为 2 个")

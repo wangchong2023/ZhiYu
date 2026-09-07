@@ -215,10 +215,11 @@ struct QuizView: View {
     }
 
     /// 将解释文本中的数字答案引用替换为字母（如"1" → "A"）
+    /// 使用 FeatureConstants.QuizPattern.explanationAnswerRegex 统一正则，避免空备选分支导致空匹配与捕获组越界。
     private func fixExplanationNumbering(_ explanation: String, correctIndex: Int) -> String {
         let letter = optionLabel(for: correctIndex).replacingOccurrences(of: ".", with: "")
         let targetNums = Set([correctIndex, correctIndex + 1])
-        let pattern = "(||||||Correct Answer|Answer|Correct Option|Option|The answer is)[:\\s]*(\\d+)"
+        let pattern = FeatureConstants.QuizPattern.explanationAnswerRegex
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return explanation }
         let nsRange = NSRange(explanation.startIndex..<explanation.endIndex, in: explanation)
         let matches = regex.matches(in: explanation, range: nsRange)

@@ -20,6 +20,7 @@ final class ImportSynthesisE2ETests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         dbQueue = try DatabaseQueue()
         try DatabaseManager.shared.setupForTesting(with: dbQueue)

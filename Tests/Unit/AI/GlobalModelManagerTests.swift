@@ -137,15 +137,13 @@ final class GlobalModelManagerTests: XCTestCase {
 
     func testReloadNoCrash() async {
         await manager.reload()
-
-        // 不崩溃即可
+        XCTAssertNotNil(manager, "重载后 manager 实例应保持有效")
     }
 
     // MARK: - refreshLocalModelFiles
 
     func testRefreshLocalModelFilesNoManifestsNoCrash() {
         manager.refreshLocalModelFiles()
-
-        // 无 manifest 时不崩溃
+        XCTAssertNotNil(manager, "刷新本地模型文件后 manager 实例应保持有效")
     }
 }

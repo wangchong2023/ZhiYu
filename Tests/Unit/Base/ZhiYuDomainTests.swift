@@ -19,6 +19,8 @@ final class ZhiYuDomainTests: XCTestCase {
     @MainActor
     override func setUp() async throws {
         try await super.setUp()
+        // 清除跨测试残留状态与 swift-dependencies 缓存，确保 @Dependency 解析到最新 mock
+        resetPersistentTestState()
         // 统一配置标准测试 Mock 环境，确保 LiveActivityProtocol 等所有基础 DI 服务注册完成
         setupFullMockEnvironment()
         
@@ -450,17 +452,31 @@ final class ZhiYuDomainTests: XCTestCase {
     /// 确保全面覆盖 KnowledgePageManager.swift 的所有方法，冲关领域层最终极覆盖率！
     @MainActor
     func testKnowledgePageManagerProcessorsAndCRUD() async throws {
-        let manager = ServiceContainer.shared.resolve(KnowledgePageManager.self)
-        let pageStore = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
-        
-        // 1. 动态注入并注册 MockAIWorkflowStore 和 TagStore 防止空依赖断言闪退
+        // 1. 动态注入并注册 MockAIWorkflowStore 和 TagStore
+        // ⚠️ 必须在创建 KnowledgePageManager 之前完成注册：
+        //    @Dependency(\.aiWorkflowCapabilities) / @Dependency(\.tagStore) 为存储属性，
+        //    在 init 时解析一次并缓存。若先创建 manager 再注册 mock，
+        //    manager 内部会命中 NoOpAIWorkflowCapabilities / 旧 TagStore，
+        //    导致 applyRefactorSuggestion 的 removeRefactorSuggestion 调用落空，
+        //    mockWorkflowStore.removedSuggestionID 永远为 nil（全量运行时测试顺序污染）。
         let mockWorkflowStore = MockAIWorkflowStore()
         ServiceContainer.shared.register(mockWorkflowStore as any AIWorkflowCapabilities, for: (any AIWorkflowCapabilities).self)
-        
+
         let tagStore = TagStore()
         ServiceContainer.shared.register(tagStore, for: TagStore.self)
-        
-        // 2. 处理器注册与注销测试
+
+        // 2. 在 withDependencies 闭包内创建 KnowledgePageManager，确保 @Dependency(\.aiWorkflowCapabilities)
+        //    解析到 mockWorkflowStore。@Dependency 属性在 init 时捕获 DependencyValues._current 快照
+        //    （initialValues），withDependencies 将 mockWorkflowStore 写入 _current.storage，
+        //    优先级高于 CachedValues 的 testValue 解析，彻底规避跨测试缓存污染。
+        let manager = withDependencies {
+            $0.aiWorkflowCapabilities = mockWorkflowStore
+        } operation: {
+            KnowledgePageManager()
+        }
+        let pageStore = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
+
+        // 3. 处理器注册与注销测试
         let processor = MockKnowledgePageProcessor()
         manager.registerProcessor(processor, pluginID: "test_plugin")
         

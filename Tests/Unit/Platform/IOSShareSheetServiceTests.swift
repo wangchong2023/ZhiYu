@@ -29,31 +29,32 @@ final class IOSShareSheetServiceTests: XCTestCase {
     /// 分享文本在无 keyWindow 时应静默返回不崩溃
     func testPresentShareSheetWithTextDoesNotCrash() async {
         let service = iOSShareSheetService()
+        XCTAssertFalse(TestConstants.shareText.isEmpty)
         await service.presentShareSheet(items: [TestConstants.shareText])
-        XCTAssertTrue(true, "分享文本应正常执行无崩溃")
     }
 
     /// 分享 URL 在无 keyWindow 时应静默返回不崩溃
     func testPresentShareSheetWithURLDoesNotCrash() async {
         let service = iOSShareSheetService()
         let url = URL(string: TestConstants.shareURL)
+        XCTAssertNotNil(url)
         await service.presentShareSheet(items: [url as Any])
-        XCTAssertTrue(true, "分享 URL 应正常执行无崩溃")
     }
 
     /// 分享空 items 数组不应崩溃
     func testPresentShareSheetWithEmptyItemsDoesNotCrash() async {
         let service = iOSShareSheetService()
-        await service.presentShareSheet(items: [])
-        XCTAssertTrue(true, "空 items 分享应正常执行")
+        let emptyItems: [Any] = []
+        XCTAssertTrue(emptyItems.isEmpty)
+        await service.presentShareSheet(items: emptyItems)
     }
 
     /// 分享多种类型混合 items 不应崩溃
     func testPresentShareSheetWithMixedItemsDoesNotCrash() async {
         let service = iOSShareSheetService()
         let url = URL(string: TestConstants.shareURL)
+        XCTAssertNotNil(url)
         await service.presentShareSheet(items: [TestConstants.shareText, url as Any])
-        XCTAssertTrue(true, "混合类型分享应正常执行")
     }
 
     // MARK: - 协议一致性
@@ -61,15 +62,15 @@ final class IOSShareSheetServiceTests: XCTestCase {
     /// 服务实例应可向上转型为 ShareSheetProtocol
     func testConformsToShareSheetProtocol() async {
         let service: any ShareSheetProtocol = iOSShareSheetService()
+        XCTAssertNotNil(service)
         await service.presentShareSheet(items: [TestConstants.shareText])
-        XCTAssertTrue(true, "协议转型与调用应成功")
     }
 
     /// NoOpShareSheet 调用应不崩溃
     func testNoOpShareSheetDoesNotCrash() async {
         let noOp = NoOpShareSheet()
+        XCTAssertNotNil(noOp)
         await noOp.presentShareSheet(items: [TestConstants.shareText])
-        XCTAssertTrue(true, "NoOpShareSheet 应正常执行")
     }
 }
 #endif

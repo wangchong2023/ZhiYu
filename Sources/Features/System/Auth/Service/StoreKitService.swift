@@ -81,14 +81,24 @@ public final class StoreKitService {
     /// - 调用 `AppStore.sync()` 触发票据核验，已购但未激活的 Transaction 会通过
     ///   `Transaction.updates` 流重新推送，由 `handle(transactionResult:)` 完成本地激活。
     /// - 若用户未购买过任何项目，此调用会静默完成（不产生错误）。
+    /// - 包含超时保护，避免在模拟器无沙盒账号环境下无限挂起。
     public func restorePurchases() async -> Bool {
         isRestoring = true
         restoreMessage = nil
-        
+
         do {
-            // 触发 App Store 同步
-            // 使用 StoreKit. 前缀避免与项目自定义 AppStore 类命名冲突
-            try await StoreKit.AppStore.sync()
+            // 触发 App Store 同步，附带超时保护防止模拟器环境死锁
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await StoreKit.AppStore.sync()
+                }
+                group.addTask {
+                    try await Task.sleep(nanoseconds: 5_000_000_000)
+                    throw StoreKitSyncTimeout()
+                }
+                try await group.next()
+                group.cancelAll()
+            }
             Logger.shared.info("[StoreKitService] 恢复购买同步成功")
             isRestoring = false
             restoreMessage = L10n.Auth.restoreSuccess
@@ -164,7 +174,7 @@ public final class StoreKitService {
     // MARK: - 权益降级
     
     /// 将当前用户降级为 Lite 配额（订阅过期 / 退款时调用）
-    private func downgradeToLite() {
+    func downgradeToLite() {
         guard let user = AuthSession.shared.currentUser,
               user.isPro else { return }
         
@@ -185,3 +195,6 @@ public final class StoreKitService {
         Logger.shared.info("[StoreKitService] 用户权益已降级为 Lite")
     }
 }
+
+/// StoreKit 同步超时错误
+private struct StoreKitSyncTimeout: Error {}

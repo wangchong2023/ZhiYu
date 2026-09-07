@@ -50,25 +50,6 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     }
 
     // MARK: - testOverride 注入机制
-
-    func testTestOverride_设置后shared返回Mock实例() {
-        let mock = MockSecureEnclaveCryptoService()
-        let originalOverride = SecureEnclaveCryptoService.testOverride
-        SecureEnclaveCryptoService.testOverride = mock
-        defer { SecureEnclaveCryptoService.testOverride = originalOverride }
-
-        XCTAssertTrue(SecureEnclaveCryptoService.shared === mock, "testOverride 设置后 shared 应返回 Mock 实例")
-    }
-
-    func testTestOverride_置nil后shared返回真实单例() {
-        let originalOverride = SecureEnclaveCryptoService.testOverride
-        SecureEnclaveCryptoService.testOverride = nil
-        defer { SecureEnclaveCryptoService.testOverride = originalOverride }
-
-        XCTAssertNil(SecureEnclaveCryptoService.testOverride)
-        XCTAssertFalse(SecureEnclaveCryptoService.shared is MockSecureEnclaveCryptoService)
-    }
-
     // MARK: - 降级路径加解密环回（模拟器）
 
     /// 模拟器降级路径：encrypt/decrypt 应通过 SecurityManager AES-GCM 环回

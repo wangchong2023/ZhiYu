@@ -86,7 +86,7 @@ final class ZIPFoundationArchiverTests: XCTestCase {
 
         let archiver = ZIPFoundationArchiver()
         try await archiver.zip(directory: emptyDir, to: destZip)
-        XCTAssertTrue(true, "空目录压缩应正常完成")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: destZip.path), "空目录压缩后应生成 zip 物理文件")
     }
 
     // MARK: - extractContents 解压
@@ -137,8 +137,8 @@ final class ZIPFoundationArchiverTests: XCTestCase {
                 XCTFail("应抛出 FileArchiverError，实际：\(error)")
                 return
             }
-            if case .extractionFailed = archiverError {
-                XCTAssertTrue(true, "应抛出 extractionFailed")
+            if case .extractionFailed(let reason) = archiverError {
+                XCTAssertFalse(reason.isEmpty, "extractionFailed 失败原因不应为空")
             } else {
                 XCTFail("应抛出 extractionFailed，实际：\(archiverError)")
             }

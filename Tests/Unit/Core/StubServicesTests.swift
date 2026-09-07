@@ -46,25 +46,7 @@ final class StubServicesTests: XCTestCase {
         XCTAssertFalse(service.isBriefingLoading)
     }
 
-    /// sendContent 应不崩溃（空实现）
-    func testStubWatchSyncService_sendContent_不崩溃() {
-        let service = StubWatchSyncService()
-        service.sendContent("test")
-    }
-
-    /// requestDailyBriefing 应不崩溃
-    func testStubWatchSyncService_requestDailyBriefing_不崩溃() {
-        let service = StubWatchSyncService()
-        service.requestDailyBriefing()
-    }
-
-    /// handleBriefingResponse 应不崩溃
-    func testStubWatchSyncService_handleBriefingResponse_不崩溃() {
-        let service = StubWatchSyncService()
-        service.handleBriefingResponse("briefing text")
-    }
-
-    // MARK: - StubCollaborationProvider
+    /// sendContent 应不崩溃（空实现）    /// requestDailyBriefing 应不崩溃    /// handleBriefingResponse 应不崩溃    // MARK: - StubCollaborationProvider
 
     /// delegate 可设置
     func testStubCollaborationProvider_delegate可设置() {

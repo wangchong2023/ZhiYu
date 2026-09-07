@@ -90,8 +90,9 @@ final class SecurityComponentsSupplementTests: XCTestCase {
     /// MockKeychainService 删除不存在的 key 应不崩溃
     func testMockKeychainService_DeleteNonExistentKey_DoesNotCrash() throws {
         let mock = MockKeychainService()
-        try mock.delete(key: "nonexistent_\(UUID().uuidString)")
-        // 不崩溃即通过
+        let key = "nonexistent_\(UUID().uuidString)"
+        try mock.delete(key: key)
+        XCTAssertNil(try mock.retrieve(key: key), "删除不存在的 key 后仍应检索不到")
     }
 
     /// KeychainService testOverride 置 nil 后 shared 应返回真实单例
@@ -195,7 +196,8 @@ final class SecurityComponentsSupplementTests: XCTestCase {
         let manager = SecurityManager.shared
         let nonExistentURL = URL(fileURLWithPath: "/tmp/nonexistent_update_\(UUID().uuidString).txt")
         await manager.updateSignature(for: nonExistentURL)
-        // 不崩溃即通过
+        let isValid = await manager.verifyIntegrity(for: nonExistentURL)
+        XCTAssertFalse(isValid, "不存在的文件完整性校验应返回 false")
     }
 
     // MARK: - AhoCorasickEngine 深度边界

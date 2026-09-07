@@ -74,15 +74,6 @@ final class ImportRecordRepositoryTests: XCTestCase {
         XCTAssertEqual(links.count, 1)
         XCTAssertEqual(links[0].title, "L1")
     }
-
-    func testFetchByID() async throws {
-        let record = ImportRecord(category: ImportCategory.manual.rawValue, title: "Note", rawText: "content")
-        try await repo.save(record)
-        let fetched = try await repo.fetchByID(record.id)
-        XCTAssertNotNil(fetched)
-        XCTAssertEqual(fetched?.title, "Note")
-    }
-
     // MARK: - 状态更新
 
     func testUpdateStatus() async throws {

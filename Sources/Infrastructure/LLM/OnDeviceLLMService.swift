@@ -497,7 +497,7 @@ public struct OnDeviceModel: Identifiable, Sendable {
 }
 
 // MARK: - On-Device LLM 专属本地化错误类型
-public enum OnDeviceError: LocalizedError {
+public enum OnDeviceError: LocalizedError, Equatable {
     case modelNotFound
     case modelNotLoaded
     case notSupported

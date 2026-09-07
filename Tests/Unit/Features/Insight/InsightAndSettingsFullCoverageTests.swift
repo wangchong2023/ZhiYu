@@ -36,8 +36,9 @@ final class InsightAndSettingsFullCoverageTests: XCTestCase {
     // MARK: - 1. LogView 日志控制台测试
 
     func testLogViewRendering() {
-        let view = LogView()
-            .snapshotEnvironment()
+        let rawView = LogView()
+        XCTAssertNotNil(rawView)
+        let view = rawView.snapshotEnvironment()
         let hosting = UIHostingController(rootView: view)
         XCTAssertNotNil(hosting.view)
         hosting.view.layoutIfNeeded()
@@ -46,8 +47,9 @@ final class InsightAndSettingsFullCoverageTests: XCTestCase {
     // MARK: - 2. SettingsView 设置中心测试
 
     func testSettingsViewRendering() {
-        let view = SettingsView()
-            .snapshotEnvironment()
+        let rawView = SettingsView()
+        XCTAssertNotNil(rawView)
+        let view = rawView.snapshotEnvironment()
         let hosting = UIHostingController(rootView: view)
         XCTAssertNotNil(hosting.view)
         hosting.view.layoutIfNeeded()
@@ -56,8 +58,9 @@ final class InsightAndSettingsFullCoverageTests: XCTestCase {
     // MARK: - 3. WeeklyInsightCard 周报卡片渲染测试
 
     func testWeeklyInsightCardRendering() {
-        let card = WeeklyInsightCard()
-            .snapshotEnvironment()
+        let rawCard = WeeklyInsightCard()
+        XCTAssertNotNil(rawCard)
+        let card = rawCard.snapshotEnvironment()
         let hosting = UIHostingController(rootView: card)
         XCTAssertNotNil(hosting.view)
         hosting.view.layoutIfNeeded()

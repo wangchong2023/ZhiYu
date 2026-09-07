@@ -31,6 +31,7 @@ final class ChatComponentsSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         // 清空 TaskCenter 单例，确保 AIPulseIndicator 空闲状态
         taskCenter.reset()

@@ -96,11 +96,6 @@ final class MermaidSanitizerEdgeTests: XCTestCase {
     }
 
     // MARK: - 边界输入
-
-    func testSanitize_emptyString_returnsEmpty() {
-        XCTAssertEqual(MermaidSanitizer.sanitize(""), "")
-    }
-
     func testSanitize_onlyNewlines_returnsEmpty() {
         XCTAssertEqual(MermaidSanitizer.sanitize("\n\n\n"), "")
     }

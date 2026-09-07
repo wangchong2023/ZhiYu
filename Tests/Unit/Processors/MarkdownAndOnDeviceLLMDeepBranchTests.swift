@@ -39,7 +39,7 @@ final class MarkdownAndOnDeviceLLMDeepBranchTests: XCTestCase {
         | Domain | 业务大脑 | 92% |
 
         ```swift
-        func testConcurrent() async throws {
+        func runConcurrent() async throws {
             print("Safe")
         }
         ```

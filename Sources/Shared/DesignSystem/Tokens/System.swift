@@ -19,7 +19,6 @@ public enum SystemSpacing {
     public static let tiny: CGFloat = Reference.Spacing.four
     public static let extraSmall: CGFloat = Reference.Spacing.five
     public static let small: CGFloat = Reference.Spacing.six
-    public static let smallMedium: CGFloat = Reference.Spacing.seven
     public static let element: CGFloat = Reference.Spacing.eight
     public static let elementLarge: CGFloat = Reference.Spacing.ten
     public static let medium: CGFloat = Reference.Spacing.twelve
@@ -94,4 +93,11 @@ public enum SystemShadow {
     public static let radiusSmall: CGFloat = Reference.Spacing.four
     public static let radiusMedium: CGFloat = Reference.Spacing.eight
     public static let offsetSmall: CGFloat = Reference.Spacing.four
+}
+
+// MARK: - SystemLineLimit（语义行数限制）
+public enum SystemLineLimit {
+    public static let single: Int = 1
+    public static let brief: Int = 2
+    public static let standard: Int = 3
 }

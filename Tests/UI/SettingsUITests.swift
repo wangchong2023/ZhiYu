@@ -128,7 +128,11 @@ final class SettingsTests: KnowledgeBaseUITests {
 final class BackupTests: KnowledgeBaseUITests {
 
     /// 验证备份视图内有备份相关内容可访问
+    ///
+    /// 业界标准超时防护：`executionTimeAllowance` 配合 `-test-timeouts-enabled` 编译标志，
+    /// 当测试超时时 XCTest 框架自动标记失败并继续下一个测试，而非挂起整个测试套件。
     func testBackupViewExists() async {
+        executionTimeAllowance = 120
         tapTab(named: "设置")
         try? await Task.sleep(nanoseconds: UInt64(1 * 1_000_000_000))
 

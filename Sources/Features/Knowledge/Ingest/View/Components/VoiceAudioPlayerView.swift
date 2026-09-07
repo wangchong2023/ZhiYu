@@ -266,8 +266,26 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
     /// - Parameter text: 待转换朗读的原始 Markdown 或纯文本
     func speak(text: String) {
         configurePlaybackSessionIfNeeded()
-        
         stop()
+
+        let cleanText = Self.cleanSpeechText(text)
+        // 清洗后为空（纯空白或仅 Markdown 语法符号）时直接返回，避免锁死 isSpeaking 状态
+        guard !cleanText.isEmpty else {
+            isSpeaking = false
+            return
+        }
+
+        let utterance = AVSpeechUtterance(string: cleanText)
+        utterance.voice = AVSpeechSynthesisVoice(language: Self.resolveLanguageCode(for: cleanText)) ?? AVSpeechSynthesisVoice(language: FeatureConstants.VoiceMarker.zhCN)
+        utterance.rate = FeatureConstants.VoiceAudioPlayer.defaultSpeechRate
+        isSpeaking = true
+        synthesizer.speak(utterance)
+    }
+
+    /// 清洗原始文本：剥离首行麦克风/时间戳标记，移除双链与 Markdown 语法符号，修剪首尾空白
+    /// - Parameter text: 原始 Markdown 或纯文本
+    /// - Returns: 可供语音合成的纯净文本
+    private static func cleanSpeechText(_ text: String) -> String {
         var cleanText = text
         if let firstLineEnd = cleanText.firstIndex(of: "\n") {
             let firstLine = cleanText[..<firstLineEnd]
@@ -275,34 +293,31 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
                 cleanText = String(cleanText[firstLineEnd...]).trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
-        
-        cleanText = cleanText
+        return cleanText
             .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "")
             .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "")
             .replacingOccurrences(of: SystemConstants.Character.hash, with: "")
             .replacingOccurrences(of: SystemConstants.Character.asterisk, with: "")
-        
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// 根据文本主导语言解析 AVSpeechSynthesisVoice 所需的语言代码
+    /// - Parameter text: 已清洗的文本
+    /// - Returns: 语言代码字符串（如 "zh-CN"、"en-US"）
+    private static func resolveLanguageCode(for text: String) -> String {
         let recognizer = NLLanguageRecognizer()
-        recognizer.processString(cleanText)
+        recognizer.processString(text)
         let detectedLang = recognizer.dominantLanguage?.rawValue ?? FeatureConstants.VoiceMarker.zhCN
-        
-        let languageCode: String
         switch detectedLang {
-        case FeatureConstants.LanguageCode.en: languageCode = FeatureConstants.LanguageCode.enUS
-        case FeatureConstants.LanguageCode.ja: languageCode = FeatureConstants.LanguageCode.jaJP
-        case FeatureConstants.LanguageCode.ko: languageCode = FeatureConstants.LanguageCode.koKR
-        case FeatureConstants.LanguageCode.fr: languageCode = FeatureConstants.LanguageCode.frFR
-        case FeatureConstants.LanguageCode.de: languageCode = FeatureConstants.LanguageCode.deDE
-        case FeatureConstants.LanguageCode.es: languageCode = FeatureConstants.LanguageCode.esES
-        case FeatureConstants.LanguageCode.zhHant: languageCode = FeatureConstants.LanguageCode.zhTW
-        default: languageCode = FeatureConstants.VoiceMarker.zhCN
+        case FeatureConstants.LanguageCode.en: return FeatureConstants.LanguageCode.enUS
+        case FeatureConstants.LanguageCode.ja: return FeatureConstants.LanguageCode.jaJP
+        case FeatureConstants.LanguageCode.ko: return FeatureConstants.LanguageCode.koKR
+        case FeatureConstants.LanguageCode.fr: return FeatureConstants.LanguageCode.frFR
+        case FeatureConstants.LanguageCode.de: return FeatureConstants.LanguageCode.deDE
+        case FeatureConstants.LanguageCode.es: return FeatureConstants.LanguageCode.esES
+        case FeatureConstants.LanguageCode.zhHant: return FeatureConstants.LanguageCode.zhTW
+        default: return FeatureConstants.VoiceMarker.zhCN
         }
-        
-        let utterance = AVSpeechUtterance(string: cleanText)
-        utterance.voice = AVSpeechSynthesisVoice(language: languageCode) ?? AVSpeechSynthesisVoice(language: FeatureConstants.VoiceMarker.zhCN)
-        utterance.rate = FeatureConstants.VoiceAudioPlayer.defaultSpeechRate
-        isSpeaking = true
-        synthesizer.speak(utterance)
     }
     
     /// 在 iOS 平台配置 AVAudioSession 为播放模式

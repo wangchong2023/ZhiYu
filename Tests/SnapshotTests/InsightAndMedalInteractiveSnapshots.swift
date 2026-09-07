@@ -20,6 +20,7 @@ final class InsightAndMedalInteractiveSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
     }
 

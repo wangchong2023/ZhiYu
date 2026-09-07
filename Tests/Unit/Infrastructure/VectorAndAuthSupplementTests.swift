@@ -32,8 +32,10 @@ final class VectorAndAuthSupplementTests: XCTestCase {
     func testEmbeddingManager_indexEmptyChunks_returnsEarly() async {
         let repo = MockVectorRepository()
         let manager = EmbeddingManager(repository: repo)
-        await manager.indexChunks(pageID: UUID(), chunks: [])
-        // 不崩溃即通过
+        let pageID = UUID()
+        await manager.indexChunks(pageID: pageID, chunks: [])
+        let vectors = await manager.getAllEmbeddings()
+        XCTAssertTrue(vectors.isEmpty, "空分块不应生成任何向量")
     }
 
     /// indexChunks 非空列表生成向量并持久化
@@ -336,7 +338,7 @@ final class VectorAndAuthSupplementTests: XCTestCase {
         let provider = NoOpEmbeddingProvider()
         let indexer = VectorIndexer(embeddingProvider: provider)
         await indexer.index(pageID: UUID(), chunks: [])
-        // 不崩溃即通过
+        XCTAssertNotNil(indexer)
     }
 
     /// VectorIndexer 非空列表委托给 provider
@@ -347,6 +349,6 @@ final class VectorAndAuthSupplementTests: XCTestCase {
             id: "test", pageID: UUID(), content: "content", index: 0
         )
         await indexer.index(pageID: UUID(), chunks: [chunk])
-        // NoOp 不崩溃即通过
+        XCTAssertNotNil(indexer)
     }
 }

@@ -39,22 +39,19 @@ final class VaultWidgetSyncManagerTests: XCTestCase {
     /// 验证 writeWidgetStatsSnapshot 不崩溃（App Group 不可用时静默返回）
     func testWriteWidgetStatsSnapshotNoCrash() async {
         await vaultService.writeWidgetStatsSnapshot(pageCount: 5, linkCount: 3, tagCount: 2)
-
-        XCTAssertTrue(true)
+        XCTAssertNotNil(vaultService)
     }
 
     /// 验证 writeWidgetStatsSnapshot 默认参数不崩溃
     func testWriteWidgetStatsSnapshotDefaultArgs() async {
         await vaultService.writeWidgetStatsSnapshot(pageCount: 10)
-
-        XCTAssertTrue(true)
+        XCTAssertNotNil(vaultService)
     }
 
     /// 验证 writeWidgetStatsSnapshot 零计数不崩溃
     func testWriteWidgetStatsSnapshotZeroCounts() async {
         await vaultService.writeWidgetStatsSnapshot(pageCount: 0, linkCount: 0, tagCount: 0)
-
-        XCTAssertTrue(true)
+        XCTAssertNotNil(vaultService)
     }
 
     // MARK: - refreshPageCount
@@ -123,8 +120,8 @@ final class VaultWidgetSyncManagerTests: XCTestCase {
 
         await vaultService.refreshPageCountFromMainDB(for: vaultID)
 
-        // 主库可能无 dbWriter，静默返回
-        XCTAssertTrue(true)
+        // 主库可能无 dbWriter，静默返回但 vault 对象完好
+        XCTAssertEqual(vaultService.vaults.first?.id, vaultID, "vault 应依然保留在列表中")
     }
 
     /// 验证 refreshPageCountFromMainDB 非匹配 vault 不更新

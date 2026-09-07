@@ -164,11 +164,9 @@ final class PluginSandboxTests: XCTestCase {
         let slowPlugin = MockSlowPlugin()
         registry.loadPlugin(slowPlugin)
         
-        _ = registry.applyPreProcess(to: "test")
-        
-        // 验证该插件是否被 Watchdog 挂起
-        // 注意：在单元测试中由于 intercepter 是 Swift 实现，
-        // preProcess 的耗时会被准确记录并触发熔断
+        let result = registry.applyPreProcess(to: "test")
+        XCTAssertEqual(result, "test")
+        XCTAssertTrue(registry.suspendedPluginIDs.contains("test.slow"), "超时插件应被 Watchdog 挂起")
     }
 }
 

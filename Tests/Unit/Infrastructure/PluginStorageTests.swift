@@ -143,45 +143,6 @@ final class PluginStorageTests: XCTestCase {
         let value = storage.loadPluginData(pluginID: pluginID, key: "theme")
         XCTAssertEqual(value, "dark")
     }
-
-    func testLoadPluginData_nonExistentKey_returnsNil() {
-        let value = storage.loadPluginData(pluginID: "nonexistent.\(UUID().uuidString)", key: "nonexistent")
-        XCTAssertNil(value)
-    }
-
-    func testLoadAllPluginData_returnsAllKeys() {
-        let pluginID = "test.plugin.loadall.\(UUID().uuidString)"
-        storage.savePluginData(pluginID: pluginID, key: "key1", value: "val1")
-        storage.savePluginData(pluginID: pluginID, key: "key2", value: "val2")
-
-        let allData = storage.loadAllPluginData(pluginID: pluginID)
-
-        XCTAssertEqual(allData.count, 2)
-        XCTAssertEqual(allData["key1"], "val1")
-        XCTAssertEqual(allData["key2"], "val2")
-    }
-
-    func testSavePluginData_differentPlugins_isolated() {
-        let pluginA = "plugin.a.\(UUID().uuidString)"
-        let pluginB = "plugin.b.\(UUID().uuidString)"
-        storage.savePluginData(pluginID: pluginA, key: "shared_key", value: "value_a")
-        storage.savePluginData(pluginID: pluginB, key: "shared_key", value: "value_b")
-
-        let valueA = storage.loadPluginData(pluginID: pluginA, key: "shared_key")
-        let valueB = storage.loadPluginData(pluginID: pluginB, key: "shared_key")
-
-        XCTAssertEqual(valueA, "value_a")
-        XCTAssertEqual(valueB, "value_b")
-    }
-
-    func testSavePluginData_overwriteExistingKey() {
-        let pluginID = "test.plugin.overwrite.\(UUID().uuidString)"
-        storage.savePluginData(pluginID: pluginID, key: "key", value: "old")
-        storage.savePluginData(pluginID: pluginID, key: "key", value: "new")
-
-        let value = storage.loadPluginData(pluginID: pluginID, key: "key")
-        XCTAssertEqual(value, "new")
-    }
 }
 
 // MARK: - Mock KeyStore

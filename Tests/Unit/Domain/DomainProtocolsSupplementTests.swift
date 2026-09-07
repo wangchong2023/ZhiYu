@@ -531,11 +531,7 @@ final class DomainProtocolsSupplementTests: XCTestCase {
     /// NoOpPageStoreCapabilities createPage 应返回传入参数构造的页面
     func testNoOpPageStoreCapabilities_createPage_保留参数() async throws {
         let store = NoOpPageStoreCapabilities()
-        let page = try await store.createPage(
-            title: "test", pageType: .concept, customIcon: nil,
-            content: "content", tags: ["tag"], sourceURL: nil,
-            rawSnippet: nil, fileSize: nil, sourceType: nil
-        )
+        let page = try await store.createPage(title: "test", pageType: .concept, customIcon: nil, content: "content", tags: ["tag"], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil)
         XCTAssertEqual(page.title, "test")
         XCTAssertEqual(page.content, "content")
     }
@@ -553,11 +549,7 @@ final class DomainProtocolsSupplementTests: XCTestCase {
     /// NoOpPageStoreCapabilities anyCreatePage 应不崩溃
     func testNoOpPageStoreCapabilities_anyCreatePage_不崩溃() async {
         let store = NoOpPageStoreCapabilities()
-        _ = await store.anyCreatePage(
-            title: "test", pageType: .concept, customIcon: nil,
-            content: "content", tags: [], sourceURL: nil,
-            rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false
-        )
+        _ = await store.anyCreatePage(title: "test", pageType: .concept, customIcon: nil, content: "content", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
         // 不崩溃即通过
     }
 

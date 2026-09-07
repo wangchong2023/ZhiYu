@@ -45,6 +45,8 @@ final class ConceptDetailAndWeeklyDeepTests: XCTestCase {
             """
         )
 
+        XCTAssertEqual(page.title, "Transformer 架构详解")
+
         let host = NavigationStack {
             ConceptDetailBodyView(page: page, onLinkTap: { _ in })
         }
@@ -57,7 +59,9 @@ final class ConceptDetailAndWeeklyDeepTests: XCTestCase {
     // MARK: - 2. WeeklyInsightCard 状态流测试
 
     func testWeeklyInsightCard_Hierarchy() {
-        let host = WeeklyInsightCard()
+        let card = WeeklyInsightCard()
+        XCTAssertNotNil(card)
+        let host = card
             .snapshotEnvironment()
             .renderInWindow()
 

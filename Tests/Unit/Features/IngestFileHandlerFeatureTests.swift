@@ -95,13 +95,13 @@ final class IngestFileHandlerFeatureTests: XCTestCase {
         XCTAssertEqual(message.id, id, "Identifiable.id 应与模型 id 一致")
     }
 
-    /// 验证 Sendable — 跨 actor 传递不触发编译错误（运行时无断言）
+    /// 验证 Sendable — 跨 actor 传递不触发编译错误
     func testLabChatMessageSendableCrossActor() async {
         let message = LabChatMessage(isUser: true, text: "跨 actor")
-        await Task.detached { @Sendable in
-            // 仅验证可被跨 actor 捕获读取，无运行时断言即通过
-            _ = message.text
+        let text = await Task.detached { @Sendable in
+            return message.text
         }.value
+        XCTAssertEqual(text, "跨 actor", "跨 actor 传递文本应一致")
     }
 
     /// 验证 LabChatMessage 可作为数组元素并按 id 去重

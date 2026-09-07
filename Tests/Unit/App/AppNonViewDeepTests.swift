@@ -146,8 +146,7 @@ final class AppNonViewDeepTests: XCTestCase {
     @MainActor
     func testiOSAppEnvironment_supportsPencil() {
         let env = iOSAppEnvironment()
-        // 模拟器上可能是 false
-        _ = env.supportsPencil
+        XCTAssertEqual(env.supportsPencil, UIDevice.current.userInterfaceIdiom == .pad, "supportsPencil 应在 iPad 设备下为 true")
     }
 
     @MainActor
@@ -159,7 +158,7 @@ final class AppNonViewDeepTests: XCTestCase {
     @MainActor
     func testiOSAppEnvironment_isMobile() {
         let env = iOSAppEnvironment()
-        _ = env.isMobile
+        XCTAssertEqual(env.isMobile, UIDevice.current.userInterfaceIdiom == .phone, "isMobile 应在 iPhone 设备下为 true")
     }
 
     @MainActor

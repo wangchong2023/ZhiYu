@@ -274,7 +274,7 @@ Tools/
 │   ├── check-pipeline-perf-regression.py         # 性能回归分析
 │   ├── generate-pipeline-perf-baseline.sh          # 性能基线更新
 │   ├── run-test-flaky-report.sh           # Flaky 测试收集
-│   ├── ci-run-test-progress.sh              # 测试用例数统计
+│   ├── ci-run-test-progress.sh              # 管道式实时测试进度监控（百分比+失败提示+Top5最慢+汇总）
 │   ├── ci-audit-spm-dependencies.py        # SPM 依赖漏洞审计
 │   ├── check-arch-spm-integrity.sh          # SPM 包完整性校验
 │   ├── ci-check-security-commit-signature.sh       # GPG 提交签名校验

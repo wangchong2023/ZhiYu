@@ -20,6 +20,7 @@ final class ImportSynthesisLinkTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         dbQueue = try DatabaseQueue()
         var migrator = DatabaseMigrator()
         migrator.registerMigration("v7_test") { db in

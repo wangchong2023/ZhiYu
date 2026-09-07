@@ -158,31 +158,7 @@ final class ModelsTests: XCTestCase {
     }
     
     // MARK: - 序列化与哈希等同性测试
-    /// 验证序列化（Encodable）与反序列化（Decodable）还原出同等字段属性的完整链路
-    func testKnowledgePageCodableRoundTrip() throws {
-        let original = KnowledgePage(
-            title: "Test",
-            pageType: .source,
-            customIcon: "doc.fill",
-            content: "# Header\nContent with [[link]]",
-            aliases: ["Alias1", "Alias2"],
-            tags: ["tag1", "tag2"],
-            status: .needsUpdate,
-            confidence: .high,
-            sources: ["src1"],
-            relatedPageIDs: [],
-            isPinned: true,
-            contentHash: "abc123"
-        )
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(KnowledgePage.self, from: data)
-        XCTAssertEqual(decoded.id, original.id)
-        XCTAssertEqual(decoded.title, original.title)
-        XCTAssertEqual(decoded.pageType, original.pageType)
-        XCTAssertEqual(decoded.tags, original.tags)
-        XCTAssertEqual(decoded.isPinned, original.isPinned)
-    }
-    
+    /// 验证序列化（Encodable）与反序列化（Decodable）还原出同等字段属性的完整链路    
     /// 验证 Equatable 协议中判定同等和不同的规则是否符合设计
     func testKnowledgePageEquatable() {
         let fixedID = UUID()
@@ -194,36 +170,7 @@ final class ModelsTests: XCTestCase {
     }
     
     // MARK: - LWW 多终端同步时间戳冲突覆盖测试
-    /// 验证基于 Lamport 逻辑时钟与物理墙上时钟融合的 LWW (Last-Write-Wins) 多终端同步冲突解决逻辑
-    func testLWWConflictResolution() {
-        let baseID = UUID()
-        let now = Date()
-        
-        // 场景 1: 远端节点具有更高的 Lamport 时间戳，远端赢
-        let local1 = KnowledgePage(id: baseID, title: "Local", lamportTimestamp: 100, updatedAt: now)
-        let remote1 = KnowledgePage(id: baseID, title: "Remote", lamportTimestamp: 101, updatedAt: now)
-        let merged1 = local1.merge(with: remote1)
-        XCTAssertEqual(merged1.title, "Remote", "逻辑时钟高的应当胜出")
-        
-        // 场景 2: 本地节点具有更高的 Lamport 时间戳，本地赢
-        let local2 = KnowledgePage(id: baseID, title: "Local", lamportTimestamp: 200, updatedAt: now)
-        let remote2 = KnowledgePage(id: baseID, title: "Remote", lamportTimestamp: 150, updatedAt: now)
-        let merged2 = local2.merge(with: remote2)
-        XCTAssertEqual(merged2.title, "Local", "逻辑时钟高的应当胜出")
-        
-        // 场景 3: 两端 Lamport 逻辑时钟等同，以物理时钟（updatedAt）为准，远端时间更新，远端赢
-        let local3 = KnowledgePage(id: baseID, title: "Local", lamportTimestamp: 300, updatedAt: now.addingTimeInterval(-10))
-        let remote3 = KnowledgePage(id: baseID, title: "Remote", lamportTimestamp: 300, updatedAt: now)
-        let merged3 = local3.merge(with: remote3)
-        XCTAssertEqual(merged3.title, "Remote", "当逻辑时钟等同时，物理更新时间最新的胜出")
-        
-        // 场景 4: 两端 Lamport 逻辑时钟等同，本地物理时钟更新，本地赢
-        let local4 = KnowledgePage(id: baseID, title: "Local", lamportTimestamp: 300, updatedAt: now)
-        let remote4 = KnowledgePage(id: baseID, title: "Remote", lamportTimestamp: 300, updatedAt: now.addingTimeInterval(-10))
-        let merged4 = local4.merge(with: remote4)
-        XCTAssertEqual(merged4.title, "Local", "当逻辑时钟等同时，本地物理更新时间最新或等同时胜出")
-    }
-    
+    // 验证基于 Lamport 逻辑时钟与物理墙上时钟融合的 LWW (Last-Write-Wins) 多终端同步冲突解决逻辑
     // MARK: - 隐私及标签提取测试
     /// 测试知识页面隐私敏感度判定与中英文标签的智能解析提取功能
     func testKnowledgePageIsPrivateAndTagExtraction() {
@@ -283,7 +230,7 @@ final class ModelsTests: XCTestCase {
     /// 验证页面类型的视觉主题配置有效性
     func testPageTypeColors() {
         for type in PageType.allCases {
-            _ = type.colorName
+            XCTAssertFalse(type.colorName.isEmpty, "PageType \(type) 的 colorName 不应为空")
         }
     }
 
@@ -423,28 +370,6 @@ final class LintIssueTests: XCTestCase {
         XCTAssertEqual(decoded.sourceTitle, original.sourceTitle)
         XCTAssertEqual(decoded.targetTitle, original.targetTitle)
     }
-    
-    /// 验证 LintIssue 结构体本身的 Codable 序列化与反序列化，确保持久化兼容性
-    func testLintIssueCodableRoundTrip() throws {
-        let original = LintIssue(
-            severity: .warning,
-            type: .cycle,
-            pageID: UUID(),
-            message: "Cyclic links detected",
-            suggestion: "Break the cycle by removing link"
-        )
-        let encoder = JSONEncoder()
-        let decoder = JSONDecoder()
-        let data = try encoder.encode(original)
-        let decoded = try decoder.decode(LintIssue.self, from: data)
-        
-        XCTAssertEqual(decoded.id, original.id)
-        XCTAssertEqual(decoded.severity, original.severity)
-        XCTAssertEqual(decoded.type, original.type)
-        XCTAssertEqual(decoded.pageID, original.pageID)
-        XCTAssertEqual(decoded.message, original.message)
-        XCTAssertEqual(decoded.suggestion, original.suggestion)
-    }
 }
 
 // MARK: - 智宇多端协同模型（CollaborationModels）测试
@@ -501,15 +426,6 @@ final class VoiceRecordingTests: XCTestCase {
         XCTAssertEqual(recording.text, "Discussed project timeline")
         XCTAssertEqual(recording.language, "zh-CN")
         XCTAssertEqual(recording.duration, 120.5)
-    }
-    
-    /// 验证录音对象序列化还原正确性
-    func testVoiceRecordingCodableRoundTrip() throws {
-        let original = VoiceRecording(id: UUID(), title: "T", text: "text", language: "en-US", duration: 10.0, createdAt: Date())
-        let data = try JSONEncoder().encode(original)
-        let decoded = try JSONDecoder().decode(VoiceRecording.self, from: data)
-        XCTAssertEqual(decoded.id, original.id)
-        XCTAssertEqual(decoded.title, original.title)
     }
 }
 

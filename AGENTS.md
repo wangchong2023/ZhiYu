@@ -96,7 +96,9 @@
 make ios                  # 构建 iOS App (ZhiYu scheme)
 make mac                  # 构建 macOS Catalyst App (ZhiYuMac scheme)
 make watch                # 构建 watchOS App (ZhiYuWatch scheme)
-make test                 # 运行主 App 单元测试
+make test                 # 运行主 App 全量测试（单元 + UI，实时进度监控 + 超时保护）
+make test-unit            # 仅运行单元测试（排除 UI 测试，约 3 分钟）
+make test-ui              # 仅运行 UI 测试（实时进度监控 + 超时保护）
 make test-spm PKG=包名     # 运行指定 SPM 本地包极速单测 (例: make test-spm PKG=UFPStorage)
 make test-spm-all         # 运行全量 6 大 SPM 本地包极速单测 (UFPCore/Storage/DesignSystem/Domain/AICore/Features)
 make test-all             # 运行全量 SPM 单测 + 主 App 单元测试
@@ -104,7 +106,7 @@ make audit                # 运行 CI 8 大架构与依赖审计门禁
 make gen                  # 仅运行 bootstrap 加载环境并重生成 ZhiYu.xcodeproj
 make lint                 # 运行 SwiftLint 严格检查
 
-# 直接使用 xcodebuild（需手动先 source Config/.env.local）
+# 排障场景可直接使用 xcodebuild（需手动先 source Config/.env.local；正常流程必须用 make 命令）
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'generic/platform=iOS'
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuMac -destination 'platform=macOS'
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'generic/platform=watchOS'

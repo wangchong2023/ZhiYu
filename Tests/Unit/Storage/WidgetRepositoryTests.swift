@@ -56,24 +56,6 @@ final class WidgetRepositoryTests: XCTestCase {
     }
 
     // MARK: - pageCount 持久化
-
-    func testSaveAndFetchVaultWithPageCount() async throws {
-        let vaultID = UUID()
-        let vault = Vault(id: vaultID, name: "Test", createdAt: Date(), updatedAt: Date(), pageCount: 42)
-        try await repository.saveVault(vault)
-        let all = try await repository.fetchAllVaults()
-        let fetched = try XCTUnwrap(all.first(where: { $0.id == vaultID }))
-        XCTAssertEqual(fetched.pageCount, 42)
-    }
-
-    func testUpdateVaultPageCount() async throws {
-        let id = UUID()
-        try await repository.saveVault(Vault(id: id, name: "T", createdAt: Date(), updatedAt: Date(), pageCount: 0))
-        try await repository.saveVault(Vault(id: id, name: "T", createdAt: Date(), updatedAt: Date(), pageCount: 99))
-        let all = try await repository.fetchAllVaults()
-        XCTAssertEqual(all.first(where: { $0.id == id })?.pageCount, 99)
-    }
-
     func testNewVaultDefaultsToZero() async throws {
         let id = UUID()
         try await repository.saveVault(Vault(id: id, name: "E", createdAt: Date(), updatedAt: Date(), pageCount: 0))

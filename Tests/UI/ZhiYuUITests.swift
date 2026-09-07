@@ -401,7 +401,14 @@ final class ZhiYuUITests: KnowledgeBaseUITests {
 
     // UI 冒烟测试：切入 AI 对话面板 -> 模拟发送提问 -> 捕获并校验国际化加载状态 (AppAILoadingSkeleton) 文案 -> 物理中断流式输出
     // CI 环境下：Chat Tab 依赖 AI 服务初始化，Keychain 不可用 (-34018) 可能导致 UI 未渲染，自动跳过
+    //
+    // 业界标准超时防护：`executionTimeAllowance` 配合 `-test-timeouts-enabled` 编译标志，
+    // 当测试超时时 XCTest 框架自动标记失败并继续下一个测试，而非挂起整个测试套件。
+    // 这解决了全量测试运行后期模拟器内存耗尽导致 `tap()` 事件合成无限等待 idle 的问题。
     func testChatAISkeletonLoadingState() async throws {
+        // 设置 120s 上限：正常耗时约 30s + 90s 安全余量，防止 tap() 事件合成挂起 200s+
+        executionTimeAllowance = 120
+
         let isCI = ProcessInfo.processInfo.environment["CI"] == "true"
 
         // 使用 findFirstExisting 统一查找 Chat Tab，与 testPageLinkNavigation 中 Knowledge Tab 一致

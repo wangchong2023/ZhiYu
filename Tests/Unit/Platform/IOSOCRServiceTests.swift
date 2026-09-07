@@ -87,12 +87,12 @@ final class IOSOCRServiceTests: XCTestCase {
             throw XCTSkip("当前环境无法生成有效 CGImage")
         }
         do {
-            _ = try await service.recognizeText(from: image)
-            XCTAssertTrue(true, "有效图像不应抛出 invalidImage")
+            let text = try await service.recognizeText(from: image)
+            XCTAssertNotNil(text)
         } catch let ocrError as OCRError {
             XCTAssertNotEqual(ocrError, .invalidImage, "有效图像不应抛出 invalidImage")
         } catch {
-            XCTAssertTrue(true, "Vision 识别其他错误可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "Vision 识别其他错误描述非空：\(error)")
         }
     }
 }

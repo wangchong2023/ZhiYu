@@ -177,6 +177,16 @@ final class PromptServiceSupplementTests: XCTestCase {
 
 final class MemoryEngineSupplementTests: XCTestCase {
 
+    override func setUp() async throws {
+        try await super.setUp()
+        await MainActor.run { resetPersistentTestState() }
+    }
+
+    override func tearDown() async throws {
+        await MainActor.run { resetPersistentTestState() }
+        try await super.tearDown()
+    }
+
     // MARK: - NativeMemoryEngine
 
     func testNativeMemoryEngineType() {
@@ -216,10 +226,12 @@ final class MemoryEngineSupplementTests: XCTestCase {
         let history = (1...10).map { i in
             ChatMessageDTO(role: i % 2 == 1 ? .user : .assistant, content: "Content\(i)")
         }
+        // 先捕获当前 summaryPrefix，避免 async 挂起期间 languageMode 被其他测试污染导致两次解析不一致
+        let prefixSnapshot = L10n.AI.Prompt.summaryPrefix
         let (summary, recent) = await engine.processMemory(history: history, recentCount: 3)
         XCTAssertNotNil(summary, "超出 recentCount 的历史应生成 summary")
         XCTAssertEqual(recent.count, 3, "应只保留最近 3 条消息")
-        XCTAssertTrue(summary?.contains("Conversation Background Summary") == true, "summary 应包含背景摘要标识")
+        XCTAssertTrue(summary?.contains(prefixSnapshot) == true, "summary 应包含背景摘要标识")
         XCTAssertTrue(summary?.contains("user") == true, "summary 应包含角色信息")
     }
 
@@ -229,9 +241,13 @@ final class MemoryEngineSupplementTests: XCTestCase {
         let history = (1...10).map { _ in
             ChatMessageDTO(role: .user, content: longContent)
         }
+        // 先捕获当前 summaryPrefix，避免 async 挂起期间 languageMode 被其他测试污染导致两次解析不一致
+        let prefixSnapshot = L10n.AI.Prompt.summaryPrefix
         let (summary, _) = await engine.processMemory(history: history, recentCount: 3)
         XCTAssertNotNil(summary)
-        let maxSummaryLength = "[Conversation Background Summary: ]".count + LLMConstants.LogPreview.memorySummaryLength
+        // 源码格式："[\(summaryPrefix): \(summaryText.prefix(memorySummaryLength))]"
+        // 固定开销 = "[" + ": " + "]" = 4 字符
+        let maxSummaryLength = prefixSnapshot.count + 4 + LLMConstants.LogPreview.memorySummaryLength
         XCTAssertLessThanOrEqual(summary?.count ?? 0, maxSummaryLength, "summary 应被截断到 memorySummaryLength")
     }
 
@@ -239,12 +255,14 @@ final class MemoryEngineSupplementTests: XCTestCase {
         let engine = NativeMemoryEngine()
         try await engine.recordSessionSummary(sessionID: "session-1", summary: "测试摘要")
         try await engine.recordSessionSummary(sessionID: "session-2", summary: "另一个摘要")
+        XCTAssertEqual(engine.engineType, .native, "引擎类型应为 .native")
     }
 
     func testNativeRecordSessionSummaryOverwritesExisting() async throws {
         let engine = NativeMemoryEngine()
         try await engine.recordSessionSummary(sessionID: "dup-session", summary: "第一次")
         try await engine.recordSessionSummary(sessionID: "dup-session", summary: "第二次")
+        XCTAssertEqual(engine.engineType, .native, "多次覆写后引擎状态应正常")
     }
 
     // MARK: - SwarmMemoryAdapter
@@ -285,6 +303,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     func testSwarmRecordSessionSummarySucceeds() async throws {
         let adapter = SwarmMemoryAdapter()
         try await adapter.recordSessionSummary(sessionID: "swarm-1", summary: "Swarm 摘要")
+        XCTAssertEqual(adapter.engineType, .openSourceAdapter, "Swarm adapter 记录会话摘要后引擎类型应为 .openSourceAdapter")
     }
 
     // MARK: - 引擎一致性对比
@@ -512,16 +531,19 @@ final class AIAnalyticsServiceSupplementTests: XCTestCase {
 
     func testRecordUsageDoesNotCrashWithMissingUsageField() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting, "单测环境防护开启")
         service.recordUsage(model: "test", response: [:], latency: 100)
     }
 
     func testRecordUsageDoesNotCrashWithMissingPromptTokens() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting)
         service.recordUsage(model: "test", response: ["usage": [:]], latency: 100)
     }
 
     func testRecordUsageDoesNotCrashWithNonIntTokens() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting)
         service.recordUsage(
             model: "test",
             response: ["usage": ["prompt_tokens": "not-an-int", "completion_tokens": 5]],
@@ -531,6 +553,7 @@ final class AIAnalyticsServiceSupplementTests: XCTestCase {
 
     func testRecordUsageDoesNotCrashWithValidUsageInTestMode() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting)
         service.recordUsage(
             model: "test",
             response: ["usage": ["prompt_tokens": 10, "completion_tokens": 5]],
@@ -540,6 +563,7 @@ final class AIAnalyticsServiceSupplementTests: XCTestCase {
 
     func testRecordRAGMetricsDoesNotCrashWithNilSources() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting)
         service.recordRAGMetrics(
             query: "测试查询",
             response: "测试响应",
@@ -553,6 +577,7 @@ final class AIAnalyticsServiceSupplementTests: XCTestCase {
 
     func testRecordRAGMetricsDoesNotCrashWithEmptySources() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting)
         service.recordRAGMetrics(
             query: "测试查询",
             response: "测试响应",
@@ -572,6 +597,7 @@ final class AIAnalyticsServiceSupplementTests: XCTestCase {
             snippet: "引用片段",
             score: 0.9
         )
+        XCTAssertTrue(TestModeDetector.isUnitTesting)
         service.recordRAGMetrics(
             query: "测试查询",
             response: "测试响应",
@@ -648,6 +674,8 @@ final class LLMServiceDegradationPropertyTests: XCTestCase {
         service.isEnabled = true
         service.autoScan = true
         service.autoRefactor = true
+        XCTAssertEqual(service.baseURL, "", "configManager 缺失时 getter 应安全返回默认值")
+        XCTAssertEqual(service.provider, .deepSeek, "configManager 缺失时 provider 应为默认 deepSeek")
     }
 }
 
@@ -756,6 +784,8 @@ private final class StreamableMockLLMClient: LLMClientProtocol, @unchecked Senda
 /// 测试用 Logger（记录 debug 消息用于断言）
 private final class TestLogger: LoggerProtocol, @unchecked Sendable {
     var debugMessages: [String] = []
+
+    func addLog(_ entry: LogEntry) {}
 
     func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?,
                 startTime: Date?, endTime: Date?, module: String?, status: LogStatus?, failureReason: String?) {}

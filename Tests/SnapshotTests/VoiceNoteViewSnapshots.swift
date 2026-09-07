@@ -61,6 +61,7 @@ final class VoiceNoteViewSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         mockSpeech = MockSpeechService()
         ServiceContainer.shared.register(mockSpeech, for: (any SpeechServiceProtocol).self)

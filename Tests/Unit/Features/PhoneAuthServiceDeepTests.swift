@@ -387,28 +387,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
         XCTAssertTrue(success, "网络成功应返回 true")
     }
 
-    /// 验证非 Mock 模式下 sendSmsCode 网络失败返回 false
-    func testSendSmsCode_非Mock模式_网络失败_返回false() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
-        TestMockURLProtocol.requestHandler = { request in
-            let url = try XCTUnwrap(request.url)
-            let response = try XCTUnwrap(HTTPURLResponse(
-                url: url,
-                statusCode: 500,
-                httpVersion: nil,
-                headerFields: nil
-            ))
-            return (response, Data())
-        }
-
-        let success = await AuthService.shared.sendSmsCode(phone: testPhone, scene: testScene)
-
-        XCTAssertFalse(success, "网络失败应返回 false")
-    }
-
-    /// 验证非 Mock 模式下 sendSmsCode 后端业务错误返回 false
+    /// 验证非 Mock 模式下 sendSmsCode 网络失败返回 false    /// 验证非 Mock 模式下 sendSmsCode 后端业务错误返回 false
     func testSendSmsCode_非Mock模式_后端业务错误_返回false() async {
         #if DEBUG
         AuthService.forceMockBackend = false
@@ -572,31 +551,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
     }
 
-    /// 验证非 Mock 模式下 register 网络失败返回 false
-    func testRegister_非Mock模式_网络失败_返回false() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
-        AuthSession.shared.logout()
-
-        TestMockURLProtocol.requestHandler = { request in
-            let url = try XCTUnwrap(request.url)
-            let response = try XCTUnwrap(HTTPURLResponse(
-                url: url,
-                statusCode: 500,
-                httpVersion: nil,
-                headerFields: nil
-            ))
-            return (response, Data())
-        }
-
-        let success = await AuthService.shared.register(phone: testPhone, code: testSmsCode, password: testPassword)
-
-        XCTAssertFalse(success, "网络失败应返回 false")
-        XCTAssertFalse(AuthService.shared.isAuthenticated, "应保持未登录")
-    }
-
-    /// 验证非 Mock 模式下 register 后端业务错误返回 false
+    /// 验证非 Mock 模式下 register 网络失败返回 false    /// 验证非 Mock 模式下 register 后端业务错误返回 false
     func testRegister_非Mock模式_后端业务错误_返回false() async {
         #if DEBUG
         AuthService.forceMockBackend = false

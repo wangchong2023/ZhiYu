@@ -167,6 +167,8 @@ final class ServiceContainerTests: XCTestCase {
             }
             await group.waitForAll()
         }
+        let resolved = container.resolveOptional((any MockLoggerForDIProtocol).self)
+        XCTAssertNotNil(resolved, "并发注册与解析后服务应依然能够成功解析")
     }
     
     /// TC-DI-05: 验证循环依赖下的防御性安全隔离，防止实例化构造过程中的无限递归死锁

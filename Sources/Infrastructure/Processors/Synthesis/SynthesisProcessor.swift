@@ -331,7 +331,9 @@ enum SynthesisProcessor {
     /// 柔性自愈：如果演示文稿缺乏 --- 分页符，自动根据标题层级将文本切割组装为 Slides
     static func formatSlidesIfNeeded(_ text: String, fallbackTitle: String) -> String {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.contains(ProcessorConstants.MarkdownSyntax.slideSeparator) || trimmed.contains(ProcessorConstants.MarkdownSyntax.slideSeparatorSpaced) {
+        let hasSlideSeparator = trimmed.contains(ProcessorConstants.MarkdownSyntax.slideSeparator)
+            || trimmed.contains(ProcessorConstants.MarkdownSyntax.slideSeparatorSpaced)
+        if hasSlideSeparator && trimmed.contains(ProcessorConstants.MarkdownSyntax.hash) {
             return trimmed
         }
         let lines = sanitizeSourceLines(trimmed)

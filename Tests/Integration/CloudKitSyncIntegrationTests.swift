@@ -54,6 +54,7 @@ final class CloudKitSyncIntegrationTests: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         mockProvider = MockCloudStorageProvider()
         syncService = iCloudSyncService(provider: mockProvider)
     }

@@ -22,7 +22,7 @@ final class IOSAccessibilityServiceTests: XCTestCase {
     private enum TestConstants {
         static let announcementText: String = "导出已完成"
         static let emptyText: String = ""
-        static let longTextRepeatCount: Int = 50
+        static let longTextRepeatCount: Int = 51
         static let longText: String = String(repeating: "智宇", count: longTextRepeatCount)
     }
 
@@ -39,22 +39,22 @@ final class IOSAccessibilityServiceTests: XCTestCase {
     /// 发布普通中文公告不应抛出异常或崩溃
     func testPostAnnouncementWithChineseTextDoesNotCrash() {
         let service = iOSAccessibilityService()
+        XCTAssertFalse(TestConstants.announcementText.isEmpty)
         service.postAnnouncement(TestConstants.announcementText)
-        XCTAssertTrue(true, "postAnnouncement 应正常执行无崩溃")
     }
 
     /// 发布空字符串公告不应崩溃
     func testPostAnnouncementWithEmptyTextDoesNotCrash() {
         let service = iOSAccessibilityService()
+        XCTAssertTrue(TestConstants.emptyText.isEmpty)
         service.postAnnouncement(TestConstants.emptyText)
-        XCTAssertTrue(true, "postAnnouncement 空字符串应正常执行")
     }
 
     /// 发布长文本公告不应崩溃
     func testPostAnnouncementWithLongTextDoesNotCrash() {
         let service = iOSAccessibilityService()
+        XCTAssertGreaterThan(TestConstants.longText.count, 100)
         service.postAnnouncement(TestConstants.longText)
-        XCTAssertTrue(true, "postAnnouncement 长文本应正常执行")
     }
 
     // MARK: - 协议一致性
@@ -62,8 +62,8 @@ final class IOSAccessibilityServiceTests: XCTestCase {
     /// 服务实例应可向上转型为 AccessibilityServiceProtocol
     func testConformsToAccessibilityServiceProtocol() {
         let service: any AccessibilityServiceProtocol = iOSAccessibilityService()
+        XCTAssertNotNil(service)
         service.postAnnouncement(TestConstants.announcementText)
-        XCTAssertTrue(true, "协议转型与调用应成功")
     }
 }
 #endif

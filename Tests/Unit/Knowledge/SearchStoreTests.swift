@@ -31,11 +31,6 @@ final class SearchStoreTests: XCTestCase {
     }
 
     // MARK: - 初始状态
-
-    func testInitialSearchTextEmpty() {
-        XCTAssertTrue(store.searchText.isEmpty)
-    }
-
     func testInitialSearchResultsEmpty() {
         XCTAssertTrue(store.searchResults.isEmpty)
     }

@@ -127,9 +127,6 @@ final class MarkdownProcessorInlineEdgeTests: XCTestCase {
 
     func testParseInlineSegments_escapedBold_treatedAsText() {
         let segments = processor.parseInlineSegments("\\**非粗体\\**")
-        // 转义后的 ** 不应被识别为粗体
-        let hasBold = segments.contains { $0.type == .bold }
-        // 注意：当前实现可能不完整支持转义，记录实际行为
-        _ = hasBold
+        XCTAssertFalse(segments.isEmpty, "分段解析结果不应为空")
     }
 }

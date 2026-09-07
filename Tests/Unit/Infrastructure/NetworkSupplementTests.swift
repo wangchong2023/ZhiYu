@@ -187,7 +187,8 @@ final class NetworkSupplementTests: XCTestCase {
     func testModelDownloadManager_pauseDownload_noActiveTask_noCrash() async throws {
         let manager = ModelDownloadManager.shared
         try await manager.pauseDownload(modelId: "test-pause-no-task")
-        // 无活动任务时直接 return，不更新状态
+        let checksum = await manager.getChecksum(for: "test-pause-no-task")
+        XCTAssertNil(checksum, "无活动任务时无校验和")
     }
 
     /// startDownload 对已处于 pending 状态的 modelId 直接返回
@@ -195,9 +196,8 @@ final class NetworkSupplementTests: XCTestCase {
         let manager = ModelDownloadManager.shared
         let modelId = "test-start-pending-early"
         await manager.updateState(for: modelId, to: .pending)
-        // 再次 startDownload 应直接返回（pending 不在 downloading/verifying/completed 中，但会走 default 分支）
-        // pending 状态下 startDownload 会清理历史并创建新 task
-        // 这里验证不崩溃即可
+        let checksum = await manager.getChecksum(for: modelId)
+        XCTAssertNil(checksum, "pending 状态初始无校验和")
     }
 
     // MARK: - ModelDownloadManager 常量验证
@@ -373,7 +373,7 @@ final class NetworkSupplementTests: XCTestCase {
         let original = EmptyData()
         let data = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(EmptyData.self, from: data)
-        _ = decoded // 验证不崩溃
+        XCTAssertNotNil(decoded)
     }
 
     // MARK: - NoOpModelDownload
@@ -385,9 +385,8 @@ final class NetworkSupplementTests: XCTestCase {
         try await noOp.pauseDownload(modelId: "test")
         try await noOp.resumeDownload(modelId: "test")
         try await noOp.cancelDownload(modelId: "test")
-        // NoOp 的 observeDownloadState 返回 AsyncStream { _ in } 会立即结束
-        // 不调用 first(where:) 避免挂起
-        _ = await noOp.observeDownloadState(for: "test")
+        let stream = await noOp.observeDownloadState(for: "test")
+        XCTAssertNotNil(stream)
     }
 
     // MARK: - ModelDownloadKey DependencyKey

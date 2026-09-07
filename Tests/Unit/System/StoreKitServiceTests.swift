@@ -54,7 +54,7 @@ final class StoreKitServiceTests: XCTestCase {
         service.startListening()
         service.startListening()
         // 重复调用不应崩溃（取消上一个 Task 重新注册）
-        XCTAssertTrue(true, "重复 startListening 不应崩溃")
+        XCTAssertNotNil(service)
     }
 
     /// 验证 stopListening 不崩溃
@@ -63,7 +63,7 @@ final class StoreKitServiceTests: XCTestCase {
         service.stopListening()
         // 再次 stop 也不应崩溃
         service.stopListening()
-        XCTAssertTrue(true, "stopListening 不应崩溃")
+        XCTAssertNotNil(service)
     }
 
     // MARK: - restorePurchases

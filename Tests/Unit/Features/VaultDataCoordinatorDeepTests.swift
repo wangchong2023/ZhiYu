@@ -235,7 +235,8 @@ final class VaultDataCoordinatorDeepTests: XCTestCase {
         }
         wait(for: [expectation], timeout: 1.0)
 
-        // 验证不崩溃即可
-        XCTAssertTrue(true, "saveVaultToDatabase 在有 vaultRepository 时应安全执行")
+        // 验证协调器和 vault 状态完整
+        XCTAssertNotNil(vault.id)
+        XCTAssertFalse(vault.name.isEmpty)
     }
 }

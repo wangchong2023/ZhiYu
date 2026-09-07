@@ -22,6 +22,7 @@ final class IngestQueueTests: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         store = AppStore()
         llmService = MockLLMService()

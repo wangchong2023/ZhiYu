@@ -44,21 +44,26 @@ extension View {
     ///
     /// **维护方式**：新增 `@Environment` 依赖类型时，只需在此处追加一行 `.environment(...)`。
     /// 全量依赖清单通过 `rg "@Environment\([A-Z].*\.(self|shared)\)" Sources/` 盘点。
-    func snapshotEnvironment(synthesisStore: SynthesisStore? = nil) -> some View {
+    func snapshotEnvironment(
+        synthesisStore: SynthesisStore? = nil,
+        aiWorkflowStore: AIWorkflowStore? = nil,
+        knowledgeStore: KnowledgeStore? = nil,
+        appStore: AppStore? = nil
+    ) -> some View {
         @Dependency(\.themeService) var themeManager
         return self
             // MARK: @Environment（@Observable 类型，共 16 个）
-            .environment(AppStore())
+            .environment(appStore ?? AppStore())
             .environment(Router.shared)
             .environment(VaultService.shared)
             .environment(AuthService.shared)
             .environment(AppEnvironment.shared)
             .environment(SettingsStore())
-            .environment(KnowledgeStore())
+            .environment(knowledgeStore ?? KnowledgeStore())
             .environment(IngestStore())
             .environment(synthesisStore ?? SynthesisStore())
             .environment(SearchStore())
-            .environment(AIWorkflowStore())
+            .environment(aiWorkflowStore ?? AIWorkflowStore())
             .environment(AIInsightStore())
             .environment(ChatCoordinator())
             .environment(LLMConfigManager())

@@ -17,12 +17,21 @@ private final class TriggerBox: @unchecked Sendable {
 
 @MainActor
 final class AIContentEnricherTests: XCTestCase {
-    
+
+    /// 使用 shared actor（init 为 private，无法创建独立实例）
+    private var enricher: AIContentEnricher!
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
+        enricher = AIContentEnricher.shared
     }
-    
+
+    override func tearDown() async throws {
+        enricher = nil
+        try await super.tearDown()
+    }
+
     // MARK: - 纯文本测试
     
     /// 验证普通 Markdown 段落（不含表格和图片）在 Actor 中秒回原文本，且不触发大模型
@@ -36,7 +45,7 @@ final class AIContentEnricherTests: XCTestCase {
             return "不应该被触发"
         }
         
-        let enriched = await AIContentEnricher.shared.enrich(content, llm: mockLLM)
+        let enriched = await enricher.enrich(content, llm: mockLLM)
         
         XCTAssertEqual(enriched, content)
         XCTAssertFalse(triggerBox.isTriggered, "普通段落应该秒回，绝不触发大模型请求")
@@ -59,12 +68,12 @@ final class AIContentEnricherTests: XCTestCase {
         
         let mockLLM = MockLLMService()
         mockLLM.generateHandler = { prompt, systemPrompt in
-            XCTAssertTrue(systemPrompt.contains("数据分析师"))
+            XCTAssertEqual(systemPrompt, L10n.AI.Prompt.enrichTableSystem)
             XCTAssertTrue(prompt.contains("Q2"))
             return "> [数据洞察]: Token 消耗呈现爆发式增长，第二季度环比飙升 140%，证明用户依赖加深。"
         }
         
-        let enriched = await AIContentEnricher.shared.enrich(content, llm: mockLLM)
+        let enriched = await enricher.enrich(content, llm: mockLLM)
         
         XCTAssertTrue(enriched.contains("| 季度 | Token 消耗 | 环比增长 |"))
         XCTAssertTrue(enriched.contains("> [数据洞察]: Token 消耗呈现爆发式增长"))
@@ -85,12 +94,12 @@ final class AIContentEnricherTests: XCTestCase {
         
         let mockLLM = MockLLMService()
         mockLLM.generateHandler = { prompt, systemPrompt in
-            XCTAssertTrue(systemPrompt.contains("视觉理解专家"))
+            XCTAssertEqual(systemPrompt, L10n.AI.Prompt.enrichImageSystem)
             XCTAssertTrue(prompt.contains("量子纠缠状态演变图"))
             return "> [图片语义]: 模拟量子纠缠系统随时间的退相干效应，直观展现了态密度的收敛轨迹。"
         }
         
-        let enriched = await AIContentEnricher.shared.enrich(content, llm: mockLLM)
+        let enriched = await enricher.enrich(content, llm: mockLLM)
         
         XCTAssertTrue(enriched.contains("![量子纠缠状态演变图](https://zhiyu.app/assets/entanglement.png)"))
         XCTAssertTrue(enriched.contains("> [图片语义]: 模拟量子纠缠系统随时间的退相干效应"))

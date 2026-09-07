@@ -111,18 +111,19 @@ final class IOSReminderServiceTests: XCTestCase {
 
     /// 无默认日历但 calendars 列表非空时，应使用第一个日历创建成功
     func testCreateReminderFallbackToCalendarsListSucceeds() async throws {
+        var saveCalled = false
         let fallbackCalendar = EKCalendar(for: .reminder, eventStore: EKEventStore())
-        let service = makeService(
-            accessGranted: true,
-            defaultCalendar: nil,
-            calendars: [fallbackCalendar],
-            saveThrows: false
+        let service = iOSReminderService(
+            requestAccess: { true },
+            defaultCalendar: { nil },
+            calendars: { _ in [fallbackCalendar] },
+            save: { _, _ in saveCalled = true }
         )
         try await service.createReminder(
             title: TestConstants.reminderTitle,
             notes: TestConstants.reminderNotes
         )
-        // 无抛错即成功
+        XCTAssertTrue(saveCalled, "使用 fallback 日历应触发保存")
     }
 
     /// 无默认日历且 calendars 列表为空时，应抛出 NSError(404)
@@ -174,17 +175,19 @@ final class IOSReminderServiceTests: XCTestCase {
 
     /// 空标题创建提醒不应导致服务崩溃
     func testCreateReminderWithEmptyTitleDoesNotCrash() async throws {
+        var saveCalled = false
         let calendar = EKCalendar(for: .reminder, eventStore: EKEventStore())
-        let service = makeService(
-            accessGranted: true,
-            defaultCalendar: calendar,
-            saveThrows: false
+        let service = iOSReminderService(
+            requestAccess: { true },
+            defaultCalendar: { calendar },
+            calendars: { _ in [] },
+            save: { _, _ in saveCalled = true }
         )
         try await service.createReminder(
             title: TestConstants.emptyTitle,
             notes: TestConstants.reminderNotes
         )
-        // 无抛错即成功（空标题由调用方校验，服务层不拦截）
+        XCTAssertTrue(saveCalled, "空标题创建应正常调用保存")
     }
 
     // MARK: - 协议一致性
@@ -199,7 +202,8 @@ final class IOSReminderServiceTests: XCTestCase {
     /// 生产环境 init() 应可正常实例化（不触发权限弹窗，仅构造 EKEventStore）
     func testProductionInitDoesNotCrash() {
         // 仅验证 init() 不崩溃，不调用 requestAccess（避免触发权限弹窗）
-        _ = iOSReminderService()
+        let service = iOSReminderService()
+        XCTAssertNotNil(service, "生产初始化应成功")
     }
 }
 #endif

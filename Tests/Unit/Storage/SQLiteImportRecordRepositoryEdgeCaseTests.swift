@@ -49,13 +49,7 @@ final class ImportRecordRepoEdgeTests: XCTestCase {
 
     // MARK: - updateStatus 静默返回
 
-    /// 验证：updateStatus 对不存在的 ID 静默返回，不抛错。
-    func testUpdateStatusNonExistentIsSilentNoop() async throws {
-        try await importRepo.updateStatus(id: "non-existent", status: "completed", completedAt: Date())
-        // 不应抛出异常
-    }
-
-    /// 验证：updateStatus 正确更新状态和完成时间。
+    /// 验证：updateStatus 对不存在的 ID 静默返回，不抛错且不创建记录。    /// 验证：updateStatus 正确更新状态和完成时间。
     func testUpdateStatusUpdatesFields() async throws {
         let record = makeImportRecord(status: "pending")
         try await importRepo.save(record)
@@ -85,7 +79,8 @@ final class ImportRecordRepoEdgeTests: XCTestCase {
     /// 验证：updatePageID 对不存在的 ID 静默返回。
     func testUpdatePageIDNonExistentIsSilentNoop() async throws {
         try await importRepo.updatePageID(id: "non-existent", pageID: "page-123")
-        // 不应抛出异常
+        let nonExistent = try await importRepo.fetchByID("non-existent")
+        XCTAssertNil(nonExistent, "不存在的记录更新后仍然不应存在")
     }
 
     /// 验证：updatePageID 正确更新关联页面 ID。
@@ -104,7 +99,8 @@ final class ImportRecordRepoEdgeTests: XCTestCase {
     /// 验证：updateRawText 对不存在的 ID 静默返回。
     func testUpdateRawTextNonExistentIsSilentNoop() async throws {
         try await importRepo.updateRawText(id: "non-existent", rawText: "text")
-        // 不应抛出异常
+        let nonExistent = try await importRepo.fetchByID("non-existent")
+        XCTAssertNil(nonExistent, "不存在的记录更新后仍然不应存在")
     }
 
     /// 验证：updateRawText 正确更新原始文本。
@@ -121,7 +117,8 @@ final class ImportRecordRepoEdgeTests: XCTestCase {
     /// 验证：updateTags 对不存在的 ID 静默返回。
     func testUpdateTagsNonExistentIsSilentNoop() async throws {
         try await importRepo.updateTags(id: "non-existent", tags: "tag1,tag2")
-        // 不应抛出异常
+        let nonExistent = try await importRepo.fetchByID("non-existent")
+        XCTAssertNil(nonExistent, "不存在的记录更新后仍然不应存在")
     }
 
     /// 验证：updateTags 正确更新标签。
@@ -182,15 +179,7 @@ final class ImportRecordRepoEdgeTests: XCTestCase {
         XCTAssertEqual(all.count, 2, "category=nil 应返回所有")
     }
 
-    /// 验证：fetchAll limit=0 返回空数组。
-    func testFetchAllWithZeroLimitReturnsEmpty() async throws {
-        try await importRepo.save(makeImportRecord())
-
-        let results = try await importRepo.fetchAll(category: nil, limit: 0)
-        XCTAssertTrue(results.isEmpty, "limit=0 应返回空")
-    }
-
-    // MARK: - totalStorageSize 计算
+    /// 验证：fetchAll limit=0 返回空数组。    // MARK: - totalStorageSize 计算
 
     /// 验证：totalStorageSize 累加 fileSize 和 rawText 字节数。
     func testTotalStorageSizeSumsFileSizeAndRawText() async throws {

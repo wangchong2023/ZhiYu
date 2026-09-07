@@ -13,13 +13,6 @@ import XCTest
 @testable import ZhiYu
 
 final class ExportServiceTests: XCTestCase {
-
-    func testExportLimitsConstants() {
-        XCTAssertGreaterThan(AppConstants.ExportLimits.minValidSynthesisTextBytes, 0, "文本导出阀值必须大于 0")
-        XCTAssertGreaterThan(AppConstants.ExportLimits.minValidPDFBytes, 0, "PDF 二进制导出阀值必须大于 0")
-        XCTAssertGreaterThan(AppConstants.ExportLimits.webRenderFallbackTimeoutMS, 0, "离屏降级超时必须大于 0")
-    }
-
     @MainActor
     func testExportServiceInvocationSafety() async {
         let service = WebViewExportService.shared

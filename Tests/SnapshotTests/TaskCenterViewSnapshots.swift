@@ -31,6 +31,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         // 清空 TaskCenter 单例，确保空状态测试不受残留任务影响
         taskCenter.reset()

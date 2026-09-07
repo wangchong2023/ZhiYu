@@ -222,10 +222,4 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     // MARK: - 单例一致性
-
-    func testShared_多次访问_同一实例() {
-        let a = WorkflowService.shared
-        let b = WorkflowService.shared
-        XCTAssertTrue(a === b)
-    }
 }

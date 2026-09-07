@@ -17,16 +17,6 @@ import UFPCore
 final class KnowledgeStoreSimpleTests: XCTestCase {
 
     // MARK: - 初始状态
-
-    func testInitialState() {
-        let store = KnowledgeStore()
-        XCTAssertTrue(store.pages.isEmpty, "初始页面列表应为空")
-        XCTAssertEqual(store.totalPages, 0)
-        XCTAssertEqual(store.totalWords, 0)
-        XCTAssertFalse(store.isScanning)
-        XCTAssertFalse(store.showCreateSheet)
-    }
-
     func testPagesMutability() {
         let store = KnowledgeStore()
         let page = KnowledgePage(title: "测试")

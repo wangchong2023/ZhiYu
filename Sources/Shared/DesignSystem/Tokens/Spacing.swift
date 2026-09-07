@@ -376,6 +376,12 @@ public enum Spacing {
         public static let width: CGFloat = 280
         /// 返回按钮点击区域宽度
         public static let backButtonWidth: CGFloat = Action.backButtonWidth
+        /// Mac Catalyst 紧凑模式侧边栏宽度
+        public static let macCompactWidth: CGFloat = 220
+        /// iPad 侧边栏宽度
+        public static let padSidebarWidth: CGFloat = 320
+        /// 弹出层默认宽度
+        public static let popoverDefaultWidth: CGFloat = 360
     }
     
     /// 笔记本枢纽规范

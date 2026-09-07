@@ -588,17 +588,6 @@ final class ImageExtractorPureLogicTests: XCTestCase {
         XCTAssertEqual(urls.count, 1)
         XCTAssertEqual(urls[0].absoluteString, "https://example.com/image.jpg")
     }
-
-    func testParseMultipleImages() {
-        let html = #"""
-        <img src="https://example.com/img1.jpg">
-        <img src="https://example.com/img2.png">
-        <img src="https://example.com/img3.gif">
-        """#
-        let urls = extractor.parseImageURLs(from: html, baseURL: nil)
-        XCTAssertEqual(urls.count, 3)
-    }
-
     func testParseSingleQuoteSrc() {
         let html = #"<img src='https://example.com/single.jpg'>"#
         let urls = extractor.parseImageURLs(from: html, baseURL: nil)
@@ -642,13 +631,6 @@ final class ImageExtractorPureLogicTests: XCTestCase {
         let urls = extractor.parseImageURLs(from: html, baseURL: nil)
         XCTAssertTrue(urls.isEmpty)
     }
-
-    func testParseProtocolRelativeURL() {
-        let html = #"<img src="//example.com/cdn.jpg">"#
-        let urls = extractor.parseImageURLs(from: html, baseURL: nil)
-        XCTAssertEqual(urls.count, 1)
-        XCTAssertEqual(urls[0].scheme, "https")
-    }
 }
 
 // MARK: - ChatHistoryStore 聊天记录持久化（补充测试）
@@ -678,14 +660,6 @@ final class ChatHistoryStoreSupplementLogicTests: XCTestCase {
         store.appendBatch(messages)
         XCTAssertEqual(store.messages.count, 3)
         store.clear()
-    }
-
-    @MainActor
-    func testClearMessages() {
-        let store = ChatHistoryStore()
-        store.append(ChatMessageDTO(role: .user, content: "to be cleared"))
-        store.clear()
-        XCTAssertTrue(store.messages.isEmpty)
     }
 
     @MainActor

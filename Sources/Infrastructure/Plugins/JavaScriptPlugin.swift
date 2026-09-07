@@ -250,67 +250,57 @@ final class JavaScriptPlugin: InterceptionPlugin {
     
     private let maxResponseSize = PluginConstants.Sandbox.maxResponseSizeBytes
     
+    /// 统一的通用处理函数：调用指定 JS 函数并执行大小检查
+    /// - Parameters:
+    ///   - content: 输入内容
+    ///   - functionName: JS 函数名（preProcess / postProcess）
+    /// - Returns: 处理后的字符串
+    private func processContent(content: String, functionName: String) throws -> String {
+        return try executeInContext { ctx in
+            guard let funcRef = ctx.objectForKeyedSubscript(functionName), !funcRef.isUndefined else {
+                return content
+            }
+            let group = JSContextGetGroup(ctx.jsGlobalContextRef)
+            JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
+            
+            defer {
+                JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
+                JSGarbageCollect(ctx.jsGlobalContextRef)
+            }
+            
+            let result = funcRef.call(withArguments: [content])
+            
+            if let exception = ctx.exception {
+                ctx.exception = nil
+                let message = exception.toString() ?? "unknown"
+                if functionName == "preProcess" {
+                    throw PluginSandboxError.preProcessException(message)
+                } else {
+                    throw PluginSandboxError.postProcessException(message)
+                }
+            }
+            
+            let resultString = result?.toString() ?? content
+            // 安全防护：统一大小检查，preProcess 与 postProcess 保持一致
+            if resultString.count > maxResponseSize {
+                throw PluginSandboxError.payloadTooLarge
+            }
+            return resultString
+        }
+    }
+    
     /// pre处理
     /// - Parameter content: content
     /// - Returns: 字符串
     func preProcess(content: String) throws -> String {
-        return try executeInContext { ctx in
-            if let preProcessFunc = ctx.objectForKeyedSubscript("preProcess"), !preProcessFunc.isUndefined {
-                let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
-                
-                defer {
-                    JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
-                    JSGarbageCollect(ctx.jsGlobalContextRef)
-                }
-                
-                let result = preProcessFunc.call(withArguments: [content])
-                
-                if let exception = ctx.exception {
-                    ctx.exception = nil
-                    throw PluginSandboxError.preProcessException(exception.toString() ?? "unknown")
-                }
-
-                let resultString = result?.toString() ?? content
-                if resultString.count > maxResponseSize {
-                    throw PluginSandboxError.payloadTooLarge
-                }
-                return resultString
-            }
-            return content
-        }
+        return try processContent(content: content, functionName: "preProcess")
     }
     
     /// post处理
     /// - Parameter content: content
     /// - Returns: 字符串
     func postProcess(content: String) throws -> String {
-        return try executeInContext { ctx in
-            if let postProcessFunc = ctx.objectForKeyedSubscript("postProcess"), !postProcessFunc.isUndefined {
-                let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
-                
-                defer {
-                    JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
-                    JSGarbageCollect(ctx.jsGlobalContextRef)
-                }
-                
-                let result = postProcessFunc.call(withArguments: [content])
-                
-                if let exception = ctx.exception {
-                    ctx.exception = nil
-                    throw PluginSandboxError.postProcessException(exception.toString() ?? "unknown")
-                }
-                
-                let resultString = result?.toString() ?? content
-                // 安全防护：postProcess 返回值也应检查大小限制，与 preProcess 保持一致
-                if resultString.count > maxResponseSize {
-                    throw PluginSandboxError.payloadTooLarge
-                }
-                return resultString
-            }
-            return content
-        }
+        return try processContent(content: content, functionName: "postProcess")
     }
 }
 

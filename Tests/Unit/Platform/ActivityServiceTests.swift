@@ -50,8 +50,9 @@ final class ActivityServiceTests: XCTestCase {
     /// 基础 startActivity 不应崩溃（模拟器/非 iOS 实际 no-op）
     func testStartActivityBasicDoesNotCrash() {
         let service = ActivityService.shared
-        service.startActivity(id: UUID(), name: TestConstants.taskName, target: TestConstants.targetName)
-        XCTAssertTrue(true, "基础 startActivity 应正常执行无崩溃")
+        let taskID = UUID()
+        XCTAssertFalse(taskID.uuidString.isEmpty)
+        service.startActivity(id: taskID, name: TestConstants.taskName, target: TestConstants.targetName)
     }
 
     // MARK: - startActivity（扩展接口）
@@ -59,8 +60,11 @@ final class ActivityServiceTests: XCTestCase {
     /// 扩展 startActivity 含完整参数不应崩溃
     func testStartActivityExtendedWithFullParametersDoesNotCrash() {
         let service = ActivityService.shared
+        let taskID = UUID()
+        XCTAssertEqual(TestConstants.sourceCount, 3)
+        XCTAssertEqual(TestConstants.estimatedSeconds, 60)
         service.startActivity(
-            id: UUID(),
+            id: taskID,
             name: TestConstants.taskName,
             target: TestConstants.targetName,
             kind: .synthesis,
@@ -68,14 +72,15 @@ final class ActivityServiceTests: XCTestCase {
             currentFileName: TestConstants.currentFileName,
             estimatedSecondsRemaining: TestConstants.estimatedSeconds
         )
-        XCTAssertTrue(true, "扩展 startActivity 应正常执行无崩溃")
     }
 
     /// 使用 ingestOCR 类型启动活动不应崩溃
     func testStartActivityWithIngestOCRKindDoesNotCrash() {
         let service = ActivityService.shared
+        let taskID = UUID()
+        XCTAssertEqual(ActivityKind.ingestOCR.rawValue, "ingestOCR")
         service.startActivity(
-            id: UUID(),
+            id: taskID,
             name: TestConstants.taskName,
             target: TestConstants.targetName,
             kind: .ingestOCR,
@@ -83,14 +88,15 @@ final class ActivityServiceTests: XCTestCase {
             currentFileName: TestConstants.emptyFileName,
             estimatedSecondsRemaining: TestConstants.zeroEstimatedSeconds
         )
-        XCTAssertTrue(true, "ingestOCR 类型启动应正常执行")
     }
 
     /// 使用 voiceNote 类型启动活动不应崩溃
     func testStartActivityWithVoiceNoteKindDoesNotCrash() {
         let service = ActivityService.shared
+        let taskID = UUID()
+        XCTAssertEqual(ActivityKind.voiceNote.rawValue, "voiceNote")
         service.startActivity(
-            id: UUID(),
+            id: taskID,
             name: TestConstants.taskName,
             target: TestConstants.targetName,
             kind: .voiceNote,
@@ -98,7 +104,6 @@ final class ActivityServiceTests: XCTestCase {
             currentFileName: TestConstants.emptyFileName,
             estimatedSecondsRemaining: TestConstants.zeroEstimatedSeconds
         )
-        XCTAssertTrue(true, "voiceNote 类型启动应正常执行")
     }
 
     // MARK: - updateProgress
@@ -106,15 +111,17 @@ final class ActivityServiceTests: XCTestCase {
     /// 基础 updateProgress 对不存在的任务 ID 不应崩溃
     func testUpdateProgressForNonExistentTaskDoesNotCrash() async {
         let service = ActivityService.shared
-        await service.updateProgress(id: UUID(), progress: TestConstants.progressHalf,
+        let nonExistentID = UUID()
+        XCTAssertNotNil(nonExistentID)
+        await service.updateProgress(id: nonExistentID, progress: TestConstants.progressHalf,
                                      message: TestConstants.message)
-        XCTAssertTrue(true, "更新不存在任务的进度应正常执行")
     }
 
     /// 扩展 updateProgress 含完整参数不应崩溃
     func testUpdateProgressExtendedWithFullParametersDoesNotCrash() async {
         let service = ActivityService.shared
         let taskID = UUID()
+        XCTAssertEqual(TestConstants.progressHalf, 0.5)
         service.startActivity(id: taskID, name: TestConstants.taskName, target: TestConstants.targetName)
         await service.updateProgress(
             id: taskID,
@@ -124,17 +131,16 @@ final class ActivityServiceTests: XCTestCase {
             currentFileName: TestConstants.currentFileName,
             estimatedSecondsRemaining: TestConstants.estimatedSeconds
         )
-        XCTAssertTrue(true, "扩展 updateProgress 应正常执行")
     }
 
     /// 进度为 1.0 时更新不应崩溃
     func testUpdateProgressWithFullValueDoesNotCrash() async {
         let service = ActivityService.shared
         let taskID = UUID()
+        XCTAssertEqual(TestConstants.progressFull, 1.0)
         service.startActivity(id: taskID, name: TestConstants.taskName, target: TestConstants.targetName)
         await service.updateProgress(id: taskID, progress: TestConstants.progressFull,
                                      message: TestConstants.message)
-        XCTAssertTrue(true, "进度 1.0 更新应正常执行")
     }
 
     // MARK: - endActivity
@@ -142,17 +148,18 @@ final class ActivityServiceTests: XCTestCase {
     /// 结束不存在的任务 ID 不应崩溃
     func testEndActivityForNonExistentTaskDoesNotCrash() async {
         let service = ActivityService.shared
-        await service.endActivity(id: UUID())
-        XCTAssertTrue(true, "结束不存在任务应正常执行")
+        let nonExistentID = UUID()
+        XCTAssertNotNil(nonExistentID)
+        await service.endActivity(id: nonExistentID)
     }
 
     /// 启动后结束同一任务不应崩溃
     func testStartAndEndSameTaskDoesNotCrash() async {
         let service = ActivityService.shared
         let taskID = UUID()
+        XCTAssertFalse(taskID.uuidString.isEmpty)
         service.startActivity(id: taskID, name: TestConstants.taskName, target: TestConstants.targetName)
         await service.endActivity(id: taskID)
-        XCTAssertTrue(true, "启动后结束同一任务应正常执行")
     }
 
     // MARK: - 协议一致性
@@ -161,10 +168,10 @@ final class ActivityServiceTests: XCTestCase {
     func testConformsToLiveActivityProtocol() async {
         let service: any LiveActivityProtocol = ActivityService.shared
         let taskID = UUID()
+        XCTAssertNotNil(service)
         service.startActivity(id: taskID, name: TestConstants.taskName, target: TestConstants.targetName)
         await service.updateProgress(id: taskID, progress: TestConstants.progressHalf,
                                      message: TestConstants.message)
         await service.endActivity(id: taskID)
-        XCTAssertTrue(true, "协议转型与完整生命周期调用应成功")
     }
 }

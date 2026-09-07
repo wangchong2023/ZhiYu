@@ -121,7 +121,7 @@ final class OnDeviceLLMServiceSupplementTests: XCTestCase {
     func testDeleteModelDoesNotCrashWhenURLIsNil() throws {
         let systemModel = OnDeviceModel(id: "test_system", name: "Test", url: nil, size: 0, type: .system)
         // 不应崩溃（url 为 nil 时跳过文件删除）
-        try service.deleteModel(systemModel)
+        XCTAssertNoThrow(try service.deleteModel(systemModel))
     }
 
     // MARK: - importModel（不存在的文件应抛错）

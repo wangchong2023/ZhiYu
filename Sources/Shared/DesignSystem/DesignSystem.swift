@@ -104,6 +104,9 @@ public enum DesignSystem {
     public static var standardAnimation: SwiftUI.Animation { Animations.Interaction.standardAnimation }
     public static var fastAnimation: SwiftUI.Animation { Animations.Interaction.fastAnimation }
     
+    // MARK: - 21.5 行数限制令牌 (Line Limit)
+    public typealias LineLimit = SystemLineLimit
+    
     // MARK: - 21. 组件兼容性别名 (Component Aliases)
     #if !WIDGET && !os(watchOS)
     public typealias AppSection<Content: View> = StandardSection<Content>

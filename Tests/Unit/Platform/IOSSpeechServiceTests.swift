@@ -128,8 +128,8 @@ final class IOSSpeechServiceTests: XCTestCase {
         let service = iOSSpeechService()
         let fakeRecording = VoiceRecording(title: "不存在", text: "", language: "zh-CN",
                                            duration: TestConstants.zeroDuration)
+        XCTAssertFalse(fakeRecording.id.uuidString.isEmpty)
         service.deleteRecording(fakeRecording)
-        XCTAssertTrue(true, "删除不存在的录音应正常执行")
     }
 
     // MARK: - stopRecording
@@ -159,10 +159,10 @@ final class IOSSpeechServiceTests: XCTestCase {
         let service = iOSSpeechService()
         let fakeURL = URL(fileURLWithPath: "/tmp/non_existent_audio_\(UUID().uuidString).m4a")
         do {
-            _ = try await service.transcribeFile(url: fakeURL)
-            XCTAssertTrue(true, "transcribeFile 应正常执行")
+            let result = try await service.transcribeFile(url: fakeURL)
+            XCTAssertNotNil(result)
         } catch {
-            XCTAssertTrue(true, "transcribeFile 抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "transcribeFile 不存在音频抛错原因不应为空：\(error)")
         }
     }
 }

@@ -87,27 +87,33 @@ final class FileTextPreviewTests: XCTestCase {
     
     /// 性能测试：评估背景 I/O 读取切片的速度
     func testLargeFilePreviewLoadingPerformance() throws {
+        var readSuccess = false
         self.measure {
             let exp = self.expectation(description: "Wait for performance read")
             Task {
                 var iterator = FileChunkSequence(filePath: self.tempFilePath, chunkSize: self.chunkSize).makeAsyncIterator()
-                _ = try? await iterator.next()
+                let chunk = try? await iterator.next()
+                if chunk != nil { readSuccess = true }
                 exp.fulfill()
             }
             self.wait(for: [exp], timeout: 2.0)
         }
+        XCTAssertTrue(readSuccess, "性能读取应成功获取分块")
     }
     
     /// 内存稳定性压力测试：模拟大文件多轮增量循环读取，断言内存无泄漏和暴涨
     func testIngestMemoryStabilityStress() throws {
+        var completed = false
         self.measure(metrics: [XCTMemoryMetric()]) {
             let exp = self.expectation(description: "Wait for stress test read")
             Task {
                 var iterator = FileChunkSequence(filePath: self.tempFilePath, chunkSize: self.chunkSize).makeAsyncIterator()
                 while (try? await iterator.next()) != nil {}
+                completed = true
                 exp.fulfill()
             }
             self.wait(for: [exp], timeout: 5.0)
         }
+        XCTAssertTrue(completed, "大文件内存读取压力测试应顺利完成")
     }
 }

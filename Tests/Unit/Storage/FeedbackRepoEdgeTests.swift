@@ -125,10 +125,11 @@ final class FeedbackRepoEdgeTests: XCTestCase {
         XCTAssertEqual(fetched?.status, .synced, "状态应更新为 synced")
     }
 
-    /// 验证：updateStatus 对不存在的 ID 静默返回（原生 SQL UPDATE 不抛错）。
+    /// 验证：updateStatus 对不存在的 ID 静默返回（原生 SQL UPDATE 不抛错且不产生虚假记录）。
     func testUpdateStatusNonExistentIsSilentNoop() async throws {
         try await feedbackRepo.updateStatus(id: "non-existent", status: .failed)
-        // 不应抛出异常
+        let nonExistent = try await feedbackRepo.fetchByID(id: "non-existent")
+        XCTAssertNil(nonExistent, "不存在的反馈更新后仍然不应存在")
     }
 
     /// 验证：updateStatus 多次更新状态。

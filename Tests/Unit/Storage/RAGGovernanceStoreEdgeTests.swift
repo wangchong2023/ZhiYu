@@ -197,10 +197,11 @@ final class RAGGovernanceStoreEdgeTests: XCTestCase {
 
     // MARK: - 检索快照 (Retrieval Snapshots)
 
-    /// 验证：saveRetrievalSnapshots 空数组是 no-op。
+    /// 验证：saveRetrievalSnapshots 空数组是 no-op 且不插入快照。
     func testSaveRetrievalSnapshotsEmptyIsNoop() async throws {
         try await store.saveRetrievalSnapshots([])
-        // 不应抛出异常
+        let fetched = try await store.fetchRetrievalSnapshots(evaluationID: 99999)
+        XCTAssertTrue(fetched.isEmpty, "空保存后快照列表应为空")
     }
 
     /// 验证：saveRetrievalSnapshots 后 fetchRetrievalSnapshots 按 rank 排序。
@@ -230,10 +231,10 @@ final class RAGGovernanceStoreEdgeTests: XCTestCase {
 
     // MARK: - 相关性标注 (Relevance Judgments)
 
-    /// 验证：saveRelevanceJudgments 空数组是 no-op。
     func testSaveRelevanceJudgmentsEmptyIsNoop() async throws {
         try await store.saveRelevanceJudgments([])
-        // 不应抛出异常
+        let hitRate = try await store.calculateHitRate(days: 7, k: 3)
+        XCTAssertEqual(hitRate, 0.0)
     }
 
     // MARK: - Hit@K
@@ -477,10 +478,11 @@ final class RAGGovernanceStoreEdgeTests: XCTestCase {
 
     // MARK: - updateUserRating
 
-    /// 验证：updateUserRating 对不存在的 ID 静默返回。
+    /// 验证：updateUserRating 对不存在的 ID 静默返回且不产生数据。
     func testUpdateUserRatingNonExistentIsSilent() async throws {
         try await store.updateUserRating(evaluationID: 99999, rating: 5)
-        // 不应抛出异常
+        let evals = try await store.fetchRAGEvaluations(limit: 10)
+        XCTAssertFalse(evals.contains { $0.id == 99999 }, "不存在的评估不应被评分操作创建")
     }
 
     /// 验证：updateUserRating 正确更新评分。

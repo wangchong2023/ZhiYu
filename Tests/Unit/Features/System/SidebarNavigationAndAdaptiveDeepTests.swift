@@ -67,6 +67,8 @@ final class SidebarNavigationAndAdaptiveDeepTests: XCTestCase {
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()
         XCTAssertNotNil(host.view)
+        XCTAssertEqual(store.pages.count, 2)
+        XCTAssertEqual(sourceStore.activeSources.count, 1)
 
         // 独立测试子组件
         let iconRow = SidebarIconRow(

@@ -59,7 +59,7 @@ struct KnowledgeDashboardView: View {
         .appTabToolbar(title: L10n.Common.Sidebar.dashboard, showVaultBadge: false)
         .task(id: store.pages.count) {
             guard !Task.isCancelled else { return }
-            await coordinator.refreshAll()
+            await coordinator.refreshAll(store: store)
         }
     }
     

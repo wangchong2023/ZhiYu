@@ -4,6 +4,10 @@
 -include Config/.env.local
 export
 
+# 使用 bash 执行 Makefile 命令（管道进度监控需要 pipefail + PIPESTATUS）
+SHELL := /bin/bash
+.SHELLFLAGS := -o pipefail -c
+
 .PHONY: all gen bootstrap ios mac watch test test-unit test-ui test-spm test-spm-all test-all audit lint perf perf-baseline plugin-scan doc-drift exemptions-check exemptions-rebuild coverage-spm help
 
 help:
@@ -12,9 +16,12 @@ help:
 	@echo "  make ios               - 构建 iOS Scheme"
 	@echo "  make mac               - 构建 macOS Catalyst Scheme"
 	@echo "  make watch             - 构建 watchOS Scheme"
-	@echo "  make test              - 运行主 App 全量测试（单元 + UI）"
+	@echo "  make test              - 运行主 App 全量测试（单元 + UI，实时进度监控 + 超时保护）"
 	@echo "  make test-unit         - 仅运行单元测试（排除 UI 测试，约 3 分钟）"
-	@echo "  make test-ui           - 仅运行 UI 测试"
+	@echo "  make test-ui           - 仅运行 UI 测试（实时进度监控 + 超时保护）"
+	@echo "  make test-ui TEST_CLASS=ZhiYuMonkeyTests  - 仅运行指定 UI 测试类"
+	@echo "  make test-unit TEST_CLASS=GlobalModelManagerTests  - 仅运行指定单元测试类"
+	@echo "  make test TIMEOUT=300  - 自定义测试超时上限（秒，默认 600）"
 	@echo "  make test-spm PKG=包名  - 运行指定 SPM 本地包极速单测 (例: make test-spm PKG=UFPStorage)"
 	@echo "  make test-spm-all      - 运行所有 SPM 本地包极速单测 (UFPCore/Storage/DesignSystem/Domain/AICore/Features)"
 	@echo "  make test-all          - 运行全量 SPM 包单测 + 主 App 单元测试"
@@ -48,17 +55,23 @@ watch: gen
 	@echo "⌚️ 正在构建 watchOS Targets..."
 	@xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
+# 测试超时上限（秒），可通过 make test TIMEOUT=300 覆盖
+TIMEOUT ?= 600
+
+# 测试类过滤，可通过 make test-ui TEST_CLASS=ZhiYuMonkeyTests 仅运行指定测试类
+TEST_CLASS ?=
+
 test: gen
-	@echo "🧪 运行主 App 全量测试（单元 + UI）..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+	@echo "🧪 运行主 App 全量测试（单元 + UI，实时进度监控 + 超时保护 $(TIMEOUT)s）..."
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS) -only-testing:ZhiYuUITests/$(TEST_CLASS),) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-unit: gen
-	@echo "🧪 仅运行单元测试（排除 UI 测试）..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+	@echo "🧪 仅运行单元测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS),-only-testing:ZhiYuTests) -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-ui: gen
-	@echo "🧪 仅运行 UI 测试..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuUITests -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+	@echo "🧪 仅运行 UI 测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' $(if $(TEST_CLASS),-only-testing:ZhiYuUITests/$(TEST_CLASS),-only-testing:ZhiYuUITests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-spm:
 	@if [ -z "$(PKG)" ]; then \

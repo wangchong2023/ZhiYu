@@ -71,7 +71,6 @@ final class LiveActivityServiceTests: XCTestCase {
         )
         
         await dummy.endActivity(id: id)
-        
-        XCTAssertTrue(true, "DummyActivityService 的扩展协议重载必须平滑无缝执行")
+        XCTAssertNotNil(dummy)
     }
 }

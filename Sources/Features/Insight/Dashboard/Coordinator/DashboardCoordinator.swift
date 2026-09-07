@@ -29,7 +29,6 @@ final class DashboardCoordinator {
     var dailyRecap: KnowledgeInsightService.DailyRecap?
     
     // ── 基础设施依赖 ──
-    @ObservationIgnored @Dependency(\.appStore) private var store: AppStore
     @ObservationIgnored @Dependency(\.aiInsightStore) private var aiStore: AIInsightStore
     @ObservationIgnored @Dependency(\.logger) private var logger: any LoggerProtocol
 
@@ -44,12 +43,12 @@ final class DashboardCoordinator {
     // ── 业务动作 ──
 
     /// 刷新所有统计数据与 AI 洞察
-    func refreshAll() async {
+    func refreshAll(store: AppStore) async {
         guard !Task.isCancelled else { return }
         isCalculating = true
-        updateTags()
+        updateTags(store: store)
         guard !Task.isCancelled else { isCalculating = false; return }
-        await calculateStats()
+        await calculateStats(store: store)
         guard !Task.isCancelled else { isCalculating = false; return }
         await refreshInsights()
         isCalculating = false
@@ -70,7 +69,7 @@ final class DashboardCoordinator {
     }
 
     /// 计算知识库核心统计指标（反链、密度等）
-    func calculateStats() async {
+    func calculateStats(store: AppStore) async {
         let pages = store.pages
         guard !pages.isEmpty else {
             self.totalLinks = 0
@@ -107,7 +106,7 @@ final class DashboardCoordinator {
     }
 
     /// 聚合标签分布
-    func updateTags() {
+    func updateTags(store: AppStore) {
         var dict: [String: Int] = [:]
         for page in store.pages {
             for tag in page.getAllTags() {

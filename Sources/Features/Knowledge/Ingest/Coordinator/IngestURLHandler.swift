@@ -18,6 +18,10 @@ extension IngestCoordinator {
     /// 从网页 URL 提取图片并 OCR，返回追加的 Markdown 文本
     func extractImagesFromURL(_ urlString: String) async throws -> String {
         guard let url = URL(string: urlString) else { return "" }
+        // Scheme 白名单校验 — 仅允许 http/https，拦截 ftp/file/gopher 等非 HTTP scheme
+        // 避免 URLSession 对非 HTTP URL 发起挂起式连接（如 ftp://example.com 长时间超时）
+        guard let scheme = url.scheme?.lowercased(),
+              NetworkConstants.URLScheme.allowed.contains(scheme) else { return "" }
         // VULN-005 修复：SSRF 防护 — 拒绝内网地址
         guard SSRFGuard.isSafeURL(url) else { return "" }
         guard let (htmlData, _) = try? await URLSession.shared.data(from: url) else { return "" }

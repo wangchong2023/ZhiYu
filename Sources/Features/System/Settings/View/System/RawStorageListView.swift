@@ -196,7 +196,7 @@ struct RawStorageListView: View {
     /// 根据原始文件的后缀名将其自动映射至对应的强类型业务分类中
     /// - Parameter page: 待映射的原始页面实体
     /// - Returns: 对应的 RawCategoryType 分类
-    private func getCategory(for page: KnowledgePage) -> RawCategoryType {
+    static func getCategory(for page: KnowledgePage) -> RawCategoryType {
         guard let st = page.sourceType?.lowercased() else { return .manual }
         if Self.documentExtensions.contains(st) {
             return .document
@@ -257,7 +257,7 @@ struct RawStorageListView: View {
                 } else {
                     List {
                         ForEach(RawCategoryType.allCases) { category in
-                            let pagesInCategory = filteredRawPages.filter { getCategory(for: $0) == category }
+                            let pagesInCategory = filteredRawPages.filter { Self.getCategory(for: $0) == category }
                             if !pagesInCategory.isEmpty {
                                 DisclosureGroup(isExpanded: isExpandedBinding(for: category)) {
                                     ForEach(pagesInCategory) { page in
@@ -306,7 +306,7 @@ struct RawStorageListView: View {
                 let matches = store.pages.filter { $0.sourceURL != nil }
                     .filter { $0.title.localizedCaseInsensitiveContains(newValue) || ($0.sourceType?.localizedCaseInsensitiveContains(newValue) ?? false) }
                 for page in matches {
-                    let cat = getCategory(for: page)
+                    let cat = Self.getCategory(for: page)
                     expandedCategories.insert(cat)
                 }
             }

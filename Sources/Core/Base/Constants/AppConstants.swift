@@ -429,6 +429,14 @@ extension AppConstants {
         /// 构建时间戳 ISO 8601（构建时自动注入）
         public static let buildTimestamp = "2026-08-01T03:02:45Z"
     }
+
+    /// 通用格式化常量
+    public enum Formatting {
+        /// 徽章最大显示数字（超过则显示溢出文本）
+        public static let badgeMax: Int = 99
+        /// 徽章溢出文本
+        public static let badgeOverflowText: String = "99+"
+    }
 }
 
 /// 支持的 AI 模型枚举 (技术层标识)

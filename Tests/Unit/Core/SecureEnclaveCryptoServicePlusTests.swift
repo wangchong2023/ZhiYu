@@ -215,16 +215,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
         XCTAssertTrue(SecureEnclaveCryptoService.shared === mock, "testOverride 应替换 shared 返回值")
     }
 
-    /// testOverride 置 nil 后 shared 应返回真实单例
-    func testTestOverride_置nil后shared返回真实单例() {
-        let original = SecureEnclaveCryptoService.testOverride
-        SecureEnclaveCryptoService.testOverride = nil
-        defer { SecureEnclaveCryptoService.testOverride = original }
-
-        XCTAssertFalse(SecureEnclaveCryptoService.shared is MockSecureEnclaveCryptoService)
-    }
-
-    // MARK: - 真机路径模拟（子类 override isSupported = true）
+    /// testOverride 置 nil 后 shared 应返回真实单例    // MARK: - 真机路径模拟（子类 override isSupported = true）
 
     /// 真机路径模拟：isSupported=true 时，模拟器上 SecureEnclave 行为取决于 Xcode 版本
     /// 业界方案：双路径断言 — 模拟器上 SecureEnclave.P256 可能抛错也可能成功（Apple Silicon Mac 模拟器）

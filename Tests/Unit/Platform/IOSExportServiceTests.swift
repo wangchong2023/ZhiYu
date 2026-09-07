@@ -38,18 +38,18 @@ final class IOSExportServiceTests: XCTestCase {
 
     // MARK: - exportToPDF
 
-    /// 导出简单 Markdown 为 PDF 应返回有效 URL 或抛出可接受错误
+    /// 导出简单 Markdown 为 PDF 应返回有效 URL 或抛出受控导出错误
     func testExportToPDFWithSimpleMarkdownReturnsURL() async {
         let service = iOSExportService()
         do {
             let url = try await service.exportToPDF(markdown: TestConstants.simpleMarkdown,
                                                     fileName: TestConstants.fileName)
-            XCTAssertTrue(url.pathExtension == "pdf", "导出文件应以 .pdf 结尾")
-            if FileManager.default.fileExists(atPath: url.path) {
-                try? FileManager.default.removeItem(at: url)
-            }
+            XCTAssertEqual(url.pathExtension, "pdf", "导出文件应以 .pdf 结尾")
+            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path), "成功导出的 PDF 文件应物理存在")
+            try? FileManager.default.removeItem(at: url)
         } catch {
-            XCTAssertTrue(true, "模拟器环境导出 PDF 抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "导出失败抛出的错误描述不应为空: \(error)")
+            XCTAssertTrue(error is ExportError || (error as NSError).domain.contains("WK") || (error as NSError).domain.contains("WebKit"), "异常必须属于受控 ExportError 或 WebKit 域")
         }
     }
 
@@ -57,27 +57,28 @@ final class IOSExportServiceTests: XCTestCase {
     func testExportToPDFWithEmptyMarkdownDoesNotCrash() async {
         let service = iOSExportService()
         do {
-            _ = try await service.exportToPDF(markdown: TestConstants.emptyMarkdown,
-                                             fileName: TestConstants.fileName)
+            let url = try await service.exportToPDF(markdown: TestConstants.emptyMarkdown,
+                                                    fileName: TestConstants.fileName)
+            XCTAssertEqual(url.pathExtension, "pdf", "空内容若导出成功应依然为 pdf")
+            try? FileManager.default.removeItem(at: url)
         } catch {
-            XCTAssertTrue(true, "空 Markdown 导出抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "空 Markdown 导出失败时必须包含明确错误说明")
         }
     }
 
     // MARK: - exportMindmapToPDF
 
-    /// 导出 Mermaid 思维导图为 PDF 应返回 URL 或抛出可接受错误
+    /// 导出 Mermaid 思维导图为 PDF 应返回 URL 或抛出受控错误
     func testExportMindmapToPDFReturnsURL() async {
         let service = iOSExportService()
         do {
             let url = try await service.exportMindmapToPDF(mermaidCode: TestConstants.mermaidCode,
-                                                          fileName: TestConstants.fileName)
-            XCTAssertTrue(url.pathExtension == "pdf", "思维导图导出应以 .pdf 结尾")
-            if FileManager.default.fileExists(atPath: url.path) {
-                try? FileManager.default.removeItem(at: url)
-            }
+                                                           fileName: TestConstants.fileName)
+            XCTAssertEqual(url.pathExtension, "pdf", "思维导图导出应以 .pdf 结尾")
+            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path), "生成的思维导图 PDF 应存在于文件系统")
+            try? FileManager.default.removeItem(at: url)
         } catch {
-            XCTAssertTrue(true, "模拟器环境导出思维导图抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "思维导图渲染失败必须具有清晰错误描述")
         }
     }
 
@@ -85,27 +86,28 @@ final class IOSExportServiceTests: XCTestCase {
     func testExportMindmapToPDFWithEmptyCodeDoesNotCrash() async {
         let service = iOSExportService()
         do {
-            _ = try await service.exportMindmapToPDF(mermaidCode: TestConstants.emptyMarkdown,
-                                                    fileName: TestConstants.fileName)
+            let url = try await service.exportMindmapToPDF(mermaidCode: TestConstants.emptyMarkdown,
+                                                           fileName: TestConstants.fileName)
+            XCTAssertEqual(url.pathExtension, "pdf", "空图谱若导出成功应依然为 pdf")
+            try? FileManager.default.removeItem(at: url)
         } catch {
-            XCTAssertTrue(true, "空 Mermaid 导出抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "空 Mermaid 抛错原因不应为空")
         }
     }
 
     // MARK: - exportToPPTX
 
-    /// 导出幻灯片 Markdown 为 PPTX 应返回 URL 或抛出可接受错误
+    /// 导出幻灯片 Markdown 为 PPTX 应返回 URL 或抛出受控错误
     func testExportToPPTXWithSlidesMarkdownReturnsURL() async {
         let service = iOSExportService()
         do {
             let url = try await service.exportToPPTX(markdown: TestConstants.slidesMarkdown,
-                                                    fileName: TestConstants.fileName)
-            XCTAssertTrue(url.pathExtension == "pptx", "导出文件应以 .pptx 结尾")
-            if FileManager.default.fileExists(atPath: url.path) {
-                try? FileManager.default.removeItem(at: url)
-            }
+                                                     fileName: TestConstants.fileName)
+            XCTAssertEqual(url.pathExtension, "pptx", "导出文件应以 .pptx 结尾")
+            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path), "成功导出的 PPTX 应物理存在")
+            try? FileManager.default.removeItem(at: url)
         } catch {
-            XCTAssertTrue(true, "模拟器环境导出 PPTX 抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "PPTX 导出失败描述不应为空")
         }
     }
 
@@ -113,10 +115,12 @@ final class IOSExportServiceTests: XCTestCase {
     func testExportToPPTXWithEmptyMarkdownDoesNotCrash() async {
         let service = iOSExportService()
         do {
-            _ = try await service.exportToPPTX(markdown: TestConstants.emptyMarkdown,
-                                              fileName: TestConstants.fileName)
+            let url = try await service.exportToPPTX(markdown: TestConstants.emptyMarkdown,
+                                                     fileName: TestConstants.fileName)
+            XCTAssertEqual(url.pathExtension, "pptx", "空幻灯片若导出成功应依然为 pptx")
+            try? FileManager.default.removeItem(at: url)
         } catch {
-            XCTAssertTrue(true, "空 Markdown 导出 PPTX 抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "空 Markdown 导出 PPTX 失败描述不应为空")
         }
     }
 
@@ -196,28 +200,28 @@ final class IOSExportServiceTests: XCTestCase {
 
     // MARK: - 并发槽位
 
-    /// 连续两次导出不应因 systemBusy 永久阻塞（第二次应等待后执行或抛 systemBusy）
+    /// 连续两次导出不应因 systemBusy 永久阻塞（第二次应等待后执行或抛出受控 systemBusy）
     func testConsecutiveExportsDoNotDeadlock() async {
         let service = iOSExportService()
         do {
-            _ = try await service.exportToPDF(markdown: TestConstants.simpleMarkdown,
-                                             fileName: TestConstants.fileName + "_1")
+            let url1 = try await service.exportToPDF(markdown: TestConstants.simpleMarkdown,
+                                                     fileName: TestConstants.fileName + "_1")
+            XCTAssertEqual(url1.pathExtension, "pdf")
+            try? FileManager.default.removeItem(at: url1)
         } catch {
-            XCTAssertTrue(true, "首次导出抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "首次导出若抛错必须包含有效描述")
             return
         }
+
         do {
-            _ = try await service.exportToPDF(markdown: TestConstants.simpleMarkdown,
-                                             fileName: TestConstants.fileName + "_2")
-            XCTAssertTrue(true, "第二次导出应正常完成")
+            let url2 = try await service.exportToPDF(markdown: TestConstants.simpleMarkdown,
+                                                     fileName: TestConstants.fileName + "_2")
+            XCTAssertEqual(url2.pathExtension, "pdf", "连续调用第二次导出若成功应生成合法 PDF")
+            try? FileManager.default.removeItem(at: url2)
         } catch let exportError as ExportError {
-            if exportError.errorDescription == ExportError.systemBusy.errorDescription {
-                XCTAssertTrue(true, "第二次导出因 systemBusy 抛错可接受")
-            } else {
-                XCTAssertTrue(true, "第二次导出其他错误可接受：\(exportError)")
-            }
+            XCTAssertFalse(exportError.localizedDescription.isEmpty, "第二次导出抛出的 ExportError 描述不应为空")
         } catch {
-            XCTAssertTrue(true, "第二次导出抛错可接受：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "第二次导出底层抛错描述不应为空")
         }
     }
 }
