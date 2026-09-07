@@ -12,18 +12,10 @@ import Foundation
 import UFPCore
 import UFPStorage
 
-// MARK: - 注册协议
-/// 模块注册器协议：定义统一的注入入口 (@SR-04: 模块化沙盒管控基础)
-@MainActor
-protocol ModuleRegistrar {
-    /// 在指定的容器中注册模块服务
-    static func register(in container: ServiceContainer)
-}
-
 // MARK: - 基础设施模块 (L0)
 /// 核心基础设施注册器：负责日志、平台适配、基础 UI 路由等底层服务
 @MainActor
-struct CoreModuleRegistrar: ModuleRegistrar {
+struct CoreModuleRegistrar {
 
     /// 注册
     static func register(in container: ServiceContainer) {
@@ -56,7 +48,7 @@ struct CoreModuleRegistrar: ModuleRegistrar {
 // MARK: - 存储模块 (L1)
 /// 存储模块注册器：负责数据库管理、备份、加密及向量索引初始化 (@SR-02, @RR-01)
 @MainActor
-struct StorageModuleRegistrar: ModuleRegistrar {
+struct StorageModuleRegistrar {
 
     /// 注册
     static func register(in container: ServiceContainer) {
@@ -141,7 +133,7 @@ struct StorageModuleRegistrar: ModuleRegistrar {
 // MARK: - 应用模块 (L3)
 /// 应用层注册器：负责路由、全局环境等顶层服务注册
 @MainActor
-struct AppModuleRegistrar: ModuleRegistrar {
+struct AppModuleRegistrar {
 
     /// 注册
     static func register(in container: ServiceContainer) {

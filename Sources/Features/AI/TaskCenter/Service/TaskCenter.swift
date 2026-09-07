@@ -83,7 +83,7 @@ public enum TaskStatus: Equatable, Sendable {
 }
 
 /// 全球异步任务模型
-public struct GlobalTask: Identifiable, Equatable {
+public struct GlobalTask: Identifiable, Equatable, Sendable {
     public let id = UUID()
     public let type: TaskType
     public let name: String                // 任务名称

@@ -10,24 +10,6 @@
 //
 import SwiftUI
 
-// MARK: - Graph Legend Row
-/// 图谱图例行组件
-private struct GraphLegendRow: View {
-    let color: Color
-    let title: String
-    
-    var body: some View {
-        HStack(spacing: SystemSpacing.small) {
-            Circle()
-                .fill(color)
-                .frame(width: DesignSystem.microIconSize, height: DesignSystem.microIconSize)
-            Text(title)
-                .font(.caption2)
-                .foregroundStyle(.appSecondary)
-        }
-    }
-}
-
 // MARK: - Graph Selected Node Card
 /// 选中节点的详情卡片。
 /**

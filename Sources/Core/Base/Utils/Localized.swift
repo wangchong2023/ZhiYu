@@ -13,7 +13,7 @@ import UFPCore
 import os
 
 /// 智宇系统支持的语言模式定义。
-public enum LanguageMode: String, CaseIterable, Identifiable {
+public enum LanguageMode: String, CaseIterable, Identifiable, Sendable {
     /// 自动随系统首选语言环境。
     case auto = "auto"
     
@@ -81,11 +81,11 @@ internal struct Localized {
     
     /// 缓存的已加载本地化 Bundle 实例，实现内存级常驻。
     /// 由 `cacheLock` 保护，所有读写必须在 `cacheLock.withLock { }` 内执行。
-    private static var cachedBundle: Bundle?
+    private nonisolated(unsafe) static var cachedBundle: Bundle?
     
     /// 当前缓存的 Bundle 对应的语言标识码（如 "zh-Hans" 或 "en"）。
     /// 由 `cacheLock` 保护，所有读写必须在 `cacheLock.withLock { }` 内执行。
-    private static var cachedLanguage: String?
+    private nonisolated(unsafe) static var cachedLanguage: String?
     
     /// 获取当前应用处于激活状态的首选语言代码（如 "zh-Hans", "zh-Hant", "en", "es", "fr", "ar", "ru", "ko", "ja", "pt"）。
     static var currentLanguage: String {
@@ -139,7 +139,7 @@ internal struct Localized {
     /// 内存回退：当 KeyStoreProtocol 未就绪时（单测环境），用静态变量暂存语言偏好。
     /// 由 `fallbackLock` 保护，所有读写必须在 `fallbackLock.withLock { }` 内执行。
     private static let fallbackLock = OSAllocatedUnfairLock()
-    private static var _inMemoryFallback: String?
+    private nonisolated(unsafe) static var _inMemoryFallback: String?
 
     /// 用户在应用偏好设置中手动指定的语言模式。
     /// getter 始终从线程安全的内存缓存读取，避免跨 actor 访问 keyStore 导致 crash。

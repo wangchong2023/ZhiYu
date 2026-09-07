@@ -77,7 +77,7 @@ public final class TestStateResetRegistry: @unchecked Sendable {
     /// 注销一个可重置单例（通常不需要，单例生命周期 = 进程生命周期）
     public func unregister(_ resettable: TestStateResettable) {
         let id = ObjectIdentifier(resettable)
-        lock.withLock {
+        _ = lock.withLock {
             resettables.removeValue(forKey: id)
         }
     }

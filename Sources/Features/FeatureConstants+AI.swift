@@ -159,12 +159,6 @@ extension FeatureConstants {
         static let checksumPrefixLength: Int = 12
     }
 
-    // MARK: - 音频波形 (Audio Waveform)
-    /// 录音波形可视化条数
-    enum AudioWaveform {
-        static let barCount: Int = 6
-    }
-
     // MARK: - ModelLab 模拟参数 (ModelLab Simulation)
     /// ModelLab 模拟推理参数阈值
     enum ModelLabSimulation {

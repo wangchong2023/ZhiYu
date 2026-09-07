@@ -133,25 +133,4 @@ extension DependencyValues {
         set { self[ThemeManagerKey.self] = newValue }
     }
 
-    /// KeyStore 服务依赖（用于 ThemeManager 注入 KeyStoreProtocol）
-    var keyStoreService: (any KeyStoreProtocol)? {
-        get { self[KeyStoreServiceKey.self] }
-        set { self[KeyStoreServiceKey.self] = newValue }
-    }
-}
-
-private enum KeyStoreServiceKey: DependencyKey {
-    @MainActor
-    static var liveValue: (any KeyStoreProtocol)? {
-        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
-    }
-    @MainActor
-    static let testValue: (any KeyStoreProtocol)? = {
-        guard let defaults = UserDefaults(suiteName: "test") else {
-            return nil as (any KeyStoreProtocol)?
-        }
-        return UserDefaultsKeyStore(defaults: defaults)
-    }()
-    @MainActor
-    static let previewValue: (any KeyStoreProtocol)? = nil
 }

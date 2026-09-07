@@ -47,8 +47,6 @@ extension FeatureConstants {
         static let entity = "entity"
         static let source = "source"
         static let map = "map"
-        static let notebook = "notebook"
-        static let pen = "pen"
         static let manual = "manual"
 
         /// Widget 默认来源分布比例（source 40% / concept 30% / entity 20% / map 10%）
@@ -67,12 +65,6 @@ extension FeatureConstants {
     /// 导入记录分类筛选标签
     enum CategoryFilter {
         static let all = "all"
-    }
-
-    // MARK: - 标签前缀 (Tag Prefix)
-    /// 标签展示前缀
-    enum TagPrefix {
-        static let hash = "#"
     }
 
     // MARK: - 页面详情元数据 (Page Detail Metadata)
@@ -194,10 +186,7 @@ extension FeatureConstants {
     // MARK: - 搜索视图 (Search View)
     /// SearchView 骨架屏行数与空状态图标缩放
     enum SearchView {
-        static let skeletonRowCount: Int = 6
         static let emptyIconSizeMultiplier: CGFloat = 1.5
-        static let skeletonTitleWidth: CGFloat = 120
-        static let skeletonSubtitleWidth: CGFloat = 80
     }
 
     // MARK: - 知识库引导 (Knowledge Coach Mark)
@@ -221,7 +210,6 @@ extension FeatureConstants {
     /// 插件详情描述折叠阈值
     enum PluginDescription {
         static let expandLineThreshold: Int = 5
-        static let collapsedMaxHeight: CGFloat = 180
     }
 
     // MARK: - 笔记本创建按钮 (Create Notebook Button)

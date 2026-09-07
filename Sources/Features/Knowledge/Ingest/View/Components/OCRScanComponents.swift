@@ -144,29 +144,3 @@ struct OCRResultDisplay: View {
         }
     }
 }
-
-// MARK: - Tag Pill
-/// 标签胶囊组件
-/// 标签胶囊小组件
-/// 负责在 OCR 保存表单中以胶囊形态展示已选标签，并提供删除交互
-struct TagPill: View {
-    let tag: String
-    var onRemove: () -> Void = {}
-
-    var body: some View {
-        HStack(spacing: SystemSpacing.tiny) { // 4
-            Text(tag)
-                .font(.caption2)
-                .foregroundStyle(.appAccent)
-
-            Button(action: onRemove) {
-                Image(systemName: DesignSystem.Icons.errorCircle)
-                    .font(.caption2)
-                    .foregroundStyle(.appSecondary)
-            }
-        }
-        .padding(.horizontal, DesignSystem.small) // 8
-        .padding(.vertical, DesignSystem.tiny) // 4
-        .background(Color.appAccent.opacity(DesignSystem.glassOpacity), in: Capsule()) // 0.1
-    }
-}

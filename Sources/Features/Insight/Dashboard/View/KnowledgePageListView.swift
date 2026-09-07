@@ -12,12 +12,6 @@ import SwiftUI
 import UFPCore
 import Dependencies
 
-// MARK: - 常量
-private enum PageListConstants {
-    /// 搜索中骨架屏呼吸卡片展示数量
-    static let skeletonCardCount = 4
-}
-
 // MARK: - Index View (entry point with NavigationStack)
 @MainActor
 struct KnowledgePageListView: View {
@@ -171,7 +165,7 @@ struct KnowledgePageListContent: View {
             if store.searchStore.isSearching {
                 // 如果正在执行混合检索，展示高精度骨架屏呼吸卡片
                 VStack(spacing: DesignSystem.standardPadding) {
-                    ForEach(0..<PageListConstants.skeletonCardCount) { _ in
+                    ForEach(0..<4, id: \.self) { _ in
                         HStack(spacing: DesignSystem.medium) {
                             AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize)
                             VStack(alignment: .leading, spacing: DesignSystem.tiny) {

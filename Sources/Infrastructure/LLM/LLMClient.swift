@@ -28,7 +28,7 @@ protocol LLMClientProtocol: Sendable {
 // MARK: - LLM 网络客户端
 
 /// 负责与兼容 OpenAI 协议的 LLM API 进行所有网络通信。
-class LLMClient: LLMClientProtocol, Sendable {
+final class LLMClient: LLMClientProtocol, Sendable {
 
     // MARK: - Properties
     private let baseURL: String
@@ -63,19 +63,20 @@ class LLMClient: LLMClientProtocol, Sendable {
     /// - Returns: API 响应字典
     /// - Throws: 网络或 API 错误
     func sendRequest(body: [String: Any]) async throws -> [String: Any] {
-        try await RetryTask.execute(
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        return try await RetryTask.execute(
             maxRetries: LLMConstants.Retry.maxAttempts - 1,
             initialDelay: LLMConstants.Retry.initialDelaySeconds,
             multiplier: LLMConstants.Retry.backoffMultiplier,
             shouldRetry: { error in Self.isRetryableError(error) },
             operation: { [weak self] in
                 guard let self else { throw LLMError.invalidResponse }
-                return try await self.performRequest(body: body)
+                return try await self.performRequest(bodyData: bodyData)
             }
         )
     }
 
-    private func performRequest(body: [String: Any]) async throws -> [String: Any] {
+    private func performRequest(bodyData: Data) async throws -> [String: Any] {
         // VULN-013 修复 + 审查修复 MED-1: 强制 HTTPS，但对 loopback 地址豁免
         // 本地回环不经过网络，无明文泄露风险，支持本地 LLM 开发（如 Ollama/llama.cpp）
         let lowerURL = normalizedBaseURL.lowercased()
@@ -95,8 +96,7 @@ class LLMClient: LLMClientProtocol, Sendable {
         request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: SystemConstants.HTTPHeader.authorization)
         request.timeoutInterval = Self.defaultTimeout
 
-        let httpBody = try JSONSerialization.data(withJSONObject: body)
-        request.httpBody = httpBody
+        request.httpBody = bodyData
 
         let (data, response) = try await URLSession.shared.data(for: request)
 

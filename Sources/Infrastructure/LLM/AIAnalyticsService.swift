@@ -13,7 +13,7 @@ import UFPCore
 import Dependencies
 
 /// AI 指标分析服务 (L1-Infra)
-public final class AIAnalyticsService: Sendable {
+public final class AIAnalyticsService: @unchecked Sendable {
     @Dependency(\.ragGovernanceRepository) private var governance: any RAGGovernanceRepository
     @Dependency(\.ragEvaluationService) private var evalService: RAGEvaluationService
 
