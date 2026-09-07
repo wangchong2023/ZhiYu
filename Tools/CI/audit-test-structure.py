@@ -73,35 +73,36 @@ def count_test_methods(filepath: Path) -> int:
 
 MOCK_FILE_PATTERNS = {"mock", "helper", "stub", "support", "base", "extension"}
 
+# 按文件名豁免的占位/工具类文件（合理包含 0 用例）
+MOCK_FILE_NAME_EXEMPTIONS = {"BaseUITestCase", "KnowledgeBaseUITests", "ZhiYuTests", "RAGEvaluator"}
+
+# 按路径片段豁免的目录（共享测试基础设施）
+MOCK_FILE_PATH_EXEMPTIONS = {"Shared", "Support", "Extensions"}
+
+
+def _is_mock_by_name(filepath: Path) -> bool:
+    """通过文件名判断是否为 Mock/Helper/Stub 文件"""
+    name_lower = filepath.stem.lower()
+    if any(pattern in name_lower for pattern in MOCK_FILE_PATTERNS):
+        return True
+    if "+" in filepath.stem:
+        return True
+    return filepath.stem in MOCK_FILE_NAME_EXEMPTIONS
+
+
+def _is_mock_by_path(filepath: Path) -> bool:
+    """通过路径判断是否为共享测试基础设施文件"""
+    return any(part in MOCK_FILE_PATH_EXEMPTIONS for part in filepath.parts)
+
 
 def is_mock_or_helper_file(filepath: Path) -> bool:
     """判断文件是否为 Mock/Helper/Stub/Support/Base/Extension 文件（合理包含 0 用例）"""
-    name_lower = filepath.stem.lower()
-    # 文件名包含 Mock/Helper/Stub/Support/Base
-    if any(pattern in name_lower for pattern in MOCK_FILE_PATTERNS):
+    if _is_mock_by_name(filepath):
         return True
-    # 文件名包含 +（Swift 扩展语法，如 XCUIElement+SafeTap）
-    if "+" in filepath.stem:
+    if _is_mock_by_path(filepath):
         return True
-    # Tests/Shared/ 目录下的文件（共享测试基础设施）
-    if "Shared" in filepath.parts:
-        return True
-    # SnapshotTests/Support/ 目录
-    if "Support" in filepath.parts:
-        return True
-    # UI 测试扩展目录
-    if "Extensions" in filepath.parts:
-        return True
-    # UI 测试基类和占位文件
-    if filepath.parent.name == "UI" and filepath.stem in {"BaseUITestCase", "KnowledgeBaseUITests"}:
-        return True
-    # 占位文件（ZhiYuTests.swift 是 Xcode 生成的空占位）
-    if filepath.stem == "ZhiYuTests":
-        return True
-    # RAGEvaluator 是测试辅助工具类
-    if filepath.stem == "RAGEvaluator":
-        return True
-    return False
+    # UI 测试基类
+    return filepath.parent.name == "UI" and filepath.stem in MOCK_FILE_NAME_EXEMPTIONS
 
 
 def scan_test_files(test_dir: Path) -> list[dict]:
