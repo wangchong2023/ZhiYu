@@ -7,10 +7,13 @@
 #  系统层级：[Tools/CI] 持续集成
 #  核心职责：本地 SPM 包覆盖率一键测量与报告。
 #           1. 对指定 SPM 包（或全部 6 个包）运行 swift test --enable-code-coverage
-#           2. 通过 xcrun llvm-cov 提取语句覆盖率（Line）和分支覆盖率（Branch）
+#           2. 通过 xcrun llvm-cov 提取语句覆盖率（Line）和函数覆盖率（Function）
 #           3. 汇总总体 + 各模块 + 各文件三层粒度
-#           4. 对照阈值（语句 ≥90%、分支 ≥90%）判定达标
+#           4. 对照阈值（语句 ≥90%）判定达标
 #           5. 支持 --json 机器可读输出、--details 展示每文件覆盖率
+#
+#  注：Swift 编译器（swiftc）的 coverage mapping 不包含 branch 信息，
+#      因此分支覆盖率无法收集。语句覆盖率 + 函数覆盖率已足够衡量测试质量。
 #
 #  用法：
 #      python3 Tools/CI/coverage-spm.py                    # 测量全部 6 个 SPM 包
@@ -42,7 +45,6 @@ ALL_PACKAGES = ["UFPCore", "UFPStorage", "UFPDesignSystem",
                 "ZhiYuDomain", "ZhiYuAICore", "ZhiYuFeatures"]
 
 DEFAULT_LINE_THRESHOLD = 90.0
-DEFAULT_BRANCH_THRESHOLD = 90.0
 
 # 报告表格宽度与着色阈值
 REPORT_WIDTH = 90
@@ -52,14 +54,14 @@ TIMEOUT_TEST_SECONDS = 300
 TIMEOUT_COV_SECONDS = 60
 
 # llvm-cov report 正则捕获组索引（见 parse_llvm_cov_report）
+# 格式: Filename  Regions  Missed  Cover  Functions  Missed  Executed  Lines  Missed  Cover
+# Swift 不生成 branch mapping，Branches 列始终为 0/0/-，正则中不捕获
 REGEX_GROUP_FILENAME = 1
 REGEX_GROUP_FUNCTIONS_TOTAL = 3
 REGEX_GROUP_FUNCTIONS_MISSED = 4
 REGEX_GROUP_LINES_TOTAL = 6
 REGEX_GROUP_LINES_MISSED = 7
 REGEX_GROUP_LINE_RATE = 8
-REGEX_GROUP_BRANCH_RATE = 11
-
 # 百分比换算
 PERCENT_MULTIPLIER = 100
 
@@ -76,7 +78,6 @@ class FileCoverage:
     """单个文件的覆盖率"""
     filename: str
     line_rate: float          # 语句覆盖率 %
-    branch_rate: float        # 分支覆盖率 %（-1 表示未收集）
     functions_total: int
     functions_covered: int
     lines_total: int
@@ -88,7 +89,6 @@ class PackageCoverage:
     name: str
     tested: bool              # 是否成功运行测试
     line_rate: float = 0.0
-    branch_rate: float = -1.0
     functions_total: int = 0
     functions_covered: int = 0
     lines_total: int = 0
@@ -109,7 +109,8 @@ def run_swift_test_with_coverage(pkg_name: str) -> tuple[bool, Optional[str]]:
 
     try:
         result = subprocess.run(
-            ["swift", "test", "--package-path", pkg_path, "--enable-code-coverage"],
+            ["swift", "test", "--package-path", pkg_path,
+             "--enable-code-coverage"],
             capture_output=True, text=True, timeout=TIMEOUT_TEST_SECONDS
         )
         if result.returncode != 0:
@@ -150,17 +151,18 @@ def parse_llvm_cov_report(binary: str, profdata: str, pkg_name: str) -> tuple[li
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT_COV_SECONDS)
         if result.returncode != 0:
-            return [], FileCoverage("ERROR", 0, -1, 0, 0, 0, 0)
+            return [], FileCoverage("ERROR", 0, 0, 0, 0, 0)
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        return [], FileCoverage("ERROR", 0, -1, 0, 0, 0, 0)
+        return [], FileCoverage("ERROR", 0, 0, 0, 0, 0)
 
     files = []
-    total = FileCoverage("TOTAL", 0, -1, 0, 0, 0, 0)
+    total = FileCoverage("TOTAL", 0, 0, 0, 0, 0)
 
     for line in result.stdout.splitlines():
-        # 匹配表格行：Filename  Regions  Missed  Cover  Functions  Missed  Executed  Lines  Missed  Cover  Branches  Missed  Cover
+        # 匹配表格行：Filename  Regions  Missed  Cover  Functions  Missed  Executed  Lines  Missed  Cover  [Branches ...]
+        # Swift 不生成 branch mapping，末尾 Branches 列恒为 0/0/-，用 \S+ 消耗即可
         m = re.match(
-            r"^(\S.*?)\s+\d+\s+\d+\s+([\d.]+)%\s+(\d+)\s+(\d+)\s+([\d.]+)%\s+(\d+)\s+(\d+)\s+([\d.]+)%\s+(\d+)\s+(\d+)\s+([\d.-]+)%?\s*$",
+            r"^(\S.*?)\s+\d+\s+\d+\s+([\d.]+)%\s+(\d+)\s+(\d+)\s+([\d.]+)%\s+(\d+)\s+(\d+)\s+([\d.]+)%(?:\s+\S+){3}\s*$",
             line
         )
         if not m:
@@ -173,11 +175,7 @@ def parse_llvm_cov_report(binary: str, profdata: str, pkg_name: str) -> tuple[li
         lines_total = int(m.group(REGEX_GROUP_LINES_TOTAL))
         lines_covered = int(m.group(REGEX_GROUP_LINES_TOTAL)) - int(m.group(REGEX_GROUP_LINES_MISSED))
 
-        # 分支覆盖率（llvm-cov 默认不收集时为 0/0，显示 "-"）
-        branch_str = m.group(REGEX_GROUP_BRANCH_RATE)
-        branch_rate = float(branch_str) if branch_str not in ("-", "") else -1.0
-
-        fc = FileCoverage(filename, line_rate, branch_rate,
+        fc = FileCoverage(filename, line_rate,
                           functions_total, functions_covered,
                           lines_total, lines_covered)
 
@@ -209,7 +207,6 @@ def measure_package(pkg_name: str, skip_test: bool) -> PackageCoverage:
     files, total = parse_llvm_cov_report(binary, profdata, pkg_name)
     pc.files = files
     pc.line_rate = total.line_rate
-    pc.branch_rate = total.branch_rate
     pc.functions_total = total.functions_total
     pc.functions_covered = total.functions_covered
     pc.lines_total = total.lines_total
@@ -255,32 +252,30 @@ def colorize_rate(rate: float, threshold: float) -> str:
         return f"\033[33m{rate:6.2f}%\033[0m"
     return f"\033[31m{rate:6.2f}%\033[0m"
 
-def _print_report_header(line_threshold: float, branch_threshold: float):
+def _print_report_header(line_threshold: float):
     """打印报告头部（标题 + 阈值 + 表头）"""
     print("=" * REPORT_WIDTH)
     print("📊 SPM 包覆盖率报告 (llvm-cov)")
     print("=" * REPORT_WIDTH)
-    print(f"语句覆盖率阈值: ≥{line_threshold:.0f}%   分支覆盖率阈值: ≥{branch_threshold:.0f}%")
-    print("（注：分支覆盖率需编译时启用 -profile-coverage-mapping，默认未收集显示 '-'）")
+    print(f"语句覆盖率阈值: ≥{line_threshold:.0f}%")
     print("-" * REPORT_WIDTH)
-    print(f"{'包名':<20} {'语句覆盖':>10} {'分支覆盖':>10} {'函数':>10} {'行数':>12} {'状态':>8}")
+    print(f"{'包名':<20} {'语句覆盖':>10} {'函数':>10} {'行数':>12} {'状态':>8}")
     print("-" * REPORT_WIDTH)
 
 def _print_package_row(pc: PackageCoverage, line_threshold: float,
-                       branch_threshold: float, show_details: bool) -> bool:
+                       show_details: bool) -> bool:
     """打印单个包的覆盖率行，返回是否达标（出错/未达标返回 False）"""
     if pc.error:
-        print(f"{pc.name:<20} {'ERROR':>10} {'-':>10} {'-':>10} {'-':>12} {'❌ 失败':>8}")
+        print(f"{pc.name:<20} {'ERROR':>10} {'-':>10} {'-':>12} {'❌ 失败':>8}")
         print(f"  └─ {pc.error[:ERROR_SNIPPET_LEN]}")
         return False
 
     if pc.no_executable_code:
-        print(f"{pc.name:<20} {'N/A':>10} {'-':>10} {'-':>10} {'0/0':>12} {'⏭️ 无可测代码':>8}")
+        print(f"{pc.name:<20} {'N/A':>10} {'-':>10} {'0/0':>12} {'⏭️ 无可测代码':>8}")
         return True  # N/A 不算失败
 
     status = "✅" if pc.line_rate >= line_threshold else "⚠️"
     print(f"{pc.name:<20} {colorize_rate(pc.line_rate, line_threshold):>16} "
-          f"{colorize_rate(pc.branch_rate, branch_threshold):>16} "
           f"{pc.functions_covered}/{pc.functions_total:<6} "
           f"{pc.lines_covered}/{pc.lines_total:<8} {status:>8}")
 
@@ -293,12 +288,11 @@ def _print_package_row(pc: PackageCoverage, line_threshold: float,
     return pc.line_rate >= line_threshold
 
 def _print_report_footer(packages: list, overall: dict,
-                          line_threshold: float, branch_threshold: float,
+                          line_threshold: float,
                           all_pass: bool):
     """打印报告尾部（总体行 + 达标判定）"""
     print("-" * REPORT_WIDTH)
     print(f"{'总体（加权）':<20} {colorize_rate(overall['line_rate'], line_threshold):>16} "
-          f"{'-':>16} "
           f"{overall['functions_covered']}/{overall['functions_total']:<6} "
           f"{overall['lines_covered']}/{overall['lines_total']:<8}")
     print("=" * REPORT_WIDTH)
@@ -317,16 +311,16 @@ def _print_report_footer(packages: list, overall: dict,
     print()
 
 def print_text_report(packages: list, overall: dict,
-                      line_threshold: float, branch_threshold: float,
+                      line_threshold: float,
                       show_details: bool):
     """打印文本格式覆盖率报告"""
-    _print_report_header(line_threshold, branch_threshold)
+    _print_report_header(line_threshold)
     all_pass = True
     for pc in packages:
-        if not _print_package_row(pc, line_threshold, branch_threshold, show_details):
+        if not _print_package_row(pc, line_threshold, show_details):
             if pc.error is None and not pc.no_executable_code:
                 all_pass = False
-    _print_report_footer(packages, overall, line_threshold, branch_threshold, all_pass)
+    _print_report_footer(packages, overall, line_threshold, all_pass)
 
 def print_json_report(packages: list, overall: dict):
     """打印 JSON 格式覆盖率报告"""
@@ -365,8 +359,6 @@ def _build_arg_parser() -> argparse.ArgumentParser:
                         help="跳过测试运行（复用已有 profdata）")
     parser.add_argument("--threshold", type=float, default=DEFAULT_LINE_THRESHOLD,
                         help=f"语句覆盖率阈值（默认 {DEFAULT_LINE_THRESHOLD}%%）")
-    parser.add_argument("--branch-threshold", type=float, default=DEFAULT_BRANCH_THRESHOLD,
-                        help=f"分支覆盖率阈值（默认 {DEFAULT_BRANCH_THRESHOLD}%%）")
     return parser
 
 def _resolve_package_list(args) -> list:
@@ -408,7 +400,7 @@ def main():
     if args.json:
         print_json_report(packages, overall)
     else:
-        print_text_report(packages, overall, args.threshold, args.branch_threshold, args.details)
+        print_text_report(packages, overall, args.threshold, args.details)
 
     sys.exit(_determine_exit_code(packages, args.threshold))
 
