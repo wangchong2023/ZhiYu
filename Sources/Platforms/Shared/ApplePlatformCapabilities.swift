@@ -13,8 +13,9 @@ import Foundation
 import LocalAuthentication
 import CoreML
 
-#if canImport(LocalAuthentication)
+#if canImport(LocalAuthentication) && !os(watchOS)
 /// Apple 平台通用生物识别提供者 (iOS / macOS / iPadOS) (DRY)
+/// watchOS 不支持生物识别，需排除编译
 @MainActor
 public struct AppleBiometricAuthProvider: BiometricAuthProviderProtocol {
     public var authenticationPolicy: LAPolicy { .deviceOwnerAuthenticationWithBiometrics }
