@@ -41,8 +41,15 @@ THRESHOLDS = {
 }
 
 OVERSIZED_THRESHOLD = 30  # 用例数 > 30 视为超大文件
-
+ROUND_PRECISION = 4  # round() 精度
+MEDIAN_MIN_CASES = 5  # 中位用例数下限
+MEDIAN_MAX_CASES = 20  # 中位用例数上限
+RATIO_MIN = 0.5  # 测试源码比下限
+RATIO_MAX = 1.5  # 测试源码比上限
 BANNER_WIDTH = 60
+
+# SPM 包名集合
+SPM_PACKAGE_NAMES = {"UFPCore", "UFPStorage", "UFPDesignSystem", "ZhiYuDomain", "ZhiYuAICore", "ZhiYuFeatures"}
 
 
 def count_test_methods(filepath: Path) -> int:
@@ -90,7 +97,7 @@ def measure_directory_alignment() -> dict:
     rate = aligned / total if total > 0 else 0
     return {
         "metric": "directory_alignment_rate",
-        "value": round(rate, 4),
+        "value": round(rate, ROUND_PRECISION),
         "aligned_dirs": aligned,
         "total_dirs": total,
         "misaligned": misaligned,
@@ -99,64 +106,84 @@ def measure_directory_alignment() -> dict:
     }
 
 
-def measure_cases_distribution(test_files: list[dict]) -> dict:
-    """度量每文件用例数分布"""
-    counts = sorted([f["test_count"] for f in test_files])
+def _compute_median(counts: list[int]) -> float:
+    """计算中位数"""
     total = len(counts)
     if total == 0:
-        return {
-            "median_cases_per_file": {
-                "metric": "median_cases_per_file",
-                "value": 0,
-                "threshold": THRESHOLDS["median_cases_per_file"],
-                "passed": False,
-            },
-            "oversized_file_ratio": {
-                "metric": "oversized_file_ratio",
-                "value": 0,
-                "oversized_count": 0,
-                "total_files": 0,
-                "threshold": THRESHOLDS["oversized_file_ratio"],
-                "passed": True,
-            },
-            "empty_file_ratio": {
-                "metric": "empty_file_ratio",
-                "value": 0,
-                "empty_count": 0,
-                "total_files": 0,
-                "threshold": THRESHOLDS["empty_file_ratio"],
-                "passed": True,
-            },
-        }
+        return 0
+    if total % 2 == 1:
+        return counts[total // 2]
+    return (counts[total // 2 - 1] + counts[total // 2]) / 2
 
-    median = counts[total // 2] if total % 2 == 1 else (counts[total // 2 - 1] + counts[total // 2]) / 2
-    oversized = sum(1 for c in counts if c > OVERSIZED_THRESHOLD)
-    empty = sum(1 for c in counts if c == 0)
 
+def _build_distribution_metric(median: float, oversized: int, empty: int, total: int) -> dict:
+    """构建用例分布度量结果"""
     return {
         "median_cases_per_file": {
             "metric": "median_cases_per_file",
             "value": median,
             "threshold": THRESHOLDS["median_cases_per_file"],
-            "passed": 5 <= median <= 20,
+            "passed": MEDIAN_MIN_CASES <= median <= MEDIAN_MAX_CASES,
         },
         "oversized_file_ratio": {
             "metric": "oversized_file_ratio",
-            "value": round(oversized / total, 4),
+            "value": round(oversized / total, ROUND_PRECISION) if total > 0 else 0,
             "oversized_count": oversized,
             "total_files": total,
             "threshold": THRESHOLDS["oversized_file_ratio"],
-            "passed": oversized / total <= THRESHOLDS["oversized_file_ratio"]["max"],
+            "passed": (oversized / total if total > 0 else 0) <= THRESHOLDS["oversized_file_ratio"]["max"],
         },
         "empty_file_ratio": {
             "metric": "empty_file_ratio",
-            "value": round(empty / total, 4),
+            "value": round(empty / total, ROUND_PRECISION) if total > 0 else 0,
             "empty_count": empty,
             "total_files": total,
             "threshold": THRESHOLDS["empty_file_ratio"],
             "passed": empty == 0,
         },
     }
+
+
+def _empty_distribution() -> dict:
+    """返回空分布结果（无测试文件时）"""
+    return {
+        "median_cases_per_file": {
+            "metric": "median_cases_per_file",
+            "value": 0,
+            "threshold": THRESHOLDS["median_cases_per_file"],
+            "passed": False,
+        },
+        "oversized_file_ratio": {
+            "metric": "oversized_file_ratio",
+            "value": 0,
+            "oversized_count": 0,
+            "total_files": 0,
+            "threshold": THRESHOLDS["oversized_file_ratio"],
+            "passed": True,
+        },
+        "empty_file_ratio": {
+            "metric": "empty_file_ratio",
+            "value": 0,
+            "empty_count": 0,
+            "total_files": 0,
+            "threshold": THRESHOLDS["empty_file_ratio"],
+            "passed": True,
+        },
+    }
+
+
+def measure_cases_distribution(test_files: list[dict]) -> dict:
+    """度量每文件用例数分布"""
+    counts = sorted([f["test_count"] for f in test_files])
+    total = len(counts)
+    if total == 0:
+        return _empty_distribution()
+
+    median = _compute_median(counts)
+    oversized = sum(1 for c in counts if c > OVERSIZED_THRESHOLD)
+    empty = sum(1 for c in counts if c == 0)
+
+    return _build_distribution_metric(median, oversized, empty, total)
 
 
 def measure_spm_coverage() -> dict:
@@ -171,14 +198,13 @@ def measure_spm_coverage() -> dict:
                 spm_test_cases += count_test_methods(swift_file)
 
     # 统计主 App 中测试 SPM 代码的文件（通过 @testable import SPM 包名判断）
-    spm_imports = {"UFPCore", "UFPStorage", "UFPDesignSystem", "ZhiYuDomain", "ZhiYuAICore", "ZhiYuFeatures"}
     main_app_spm_cases = 0
     for swift_file in TESTS_UNIT_DIR.rglob("*.swift"):
         try:
             content = swift_file.read_text(encoding="utf-8", errors="ignore")
         except Exception:
             continue
-        for pkg in spm_imports:
+        for pkg in SPM_PACKAGE_NAMES:
             if f"@testable import {pkg}" in content:
                 main_app_spm_cases += count_test_methods(swift_file)
                 break
@@ -187,7 +213,7 @@ def measure_spm_coverage() -> dict:
     ratio = spm_test_cases / total if total > 0 else 0
     return {
         "metric": "spm_test_coverage_ratio",
-        "value": round(ratio, 4),
+        "value": round(ratio, ROUND_PRECISION),
         "spm_test_cases": spm_test_cases,
         "main_app_spm_cases": main_app_spm_cases,
         "threshold": THRESHOLDS["spm_test_coverage_ratio"],
@@ -202,55 +228,70 @@ def measure_test_source_ratio(test_files: list[dict]) -> dict:
     ratio = test_count / source_count if source_count > 0 else 0
     return {
         "metric": "test_source_file_ratio",
-        "value": round(ratio, 4),
+        "value": round(ratio, ROUND_PRECISION),
         "test_files": test_count,
         "source_files": source_count,
         "threshold": THRESHOLDS["test_source_file_ratio"],
-        "passed": 0.5 <= ratio <= 1.5,
+        "passed": RATIO_MIN <= ratio <= RATIO_MAX,
     }
 
 
-def main():
-    parser = argparse.ArgumentParser(description="测试结构度量脚本")
-    parser.add_argument("--json", action="store_true", help="输出 JSON 格式")
-    parser.add_argument("--verbose", action="store_true", help="显示详细信息")
-    args = parser.parse_args()
-
-    test_files = scan_test_files(TESTS_UNIT_DIR)
-
+def _collect_all_metrics(test_files: list[dict]) -> dict:
+    """收集全部度量指标并展开 cases_distribution"""
     results = {
         "directory_alignment": measure_directory_alignment(),
         "cases_distribution": measure_cases_distribution(test_files),
         "spm_coverage": measure_spm_coverage(),
         "test_source_ratio": measure_test_source_ratio(test_files),
     }
-
-    all_passed = all(
-        results[k].get("passed", True) for k in results
-        if isinstance(results[k], dict) and "passed" in results[k]
-    )
     # 展开 cases_distribution
     for k, v in results["cases_distribution"].items():
         results[k] = v
     del results["cases_distribution"]
+    return results
+
+
+def _check_all_passed(results: dict) -> bool:
+    """检查所有指标是否达标"""
+    return all(
+        results[k].get("passed", True) for k in results
+        if isinstance(results[k], dict) and "passed" in results[k]
+    )
+
+
+def _print_text_report(results: dict, verbose: bool, all_passed: bool) -> None:
+    """打印文本格式报告"""
+    print("=" * BANNER_WIDTH)
+    print("测试结构度量报告")
+    print("=" * BANNER_WIDTH)
+    for key, val in results.items():
+        if isinstance(val, dict) and "metric" in val:
+            status = "✅" if val.get("passed") else "❌"
+            print(f"\n{status} {val['metric']}: {val['value']}")
+            if verbose:
+                for k2, v2 in val.items():
+                    if k2 not in ("metric", "value", "passed", "threshold"):
+                        print(f"    {k2}: {v2}")
+    print("\n" + "=" * BANNER_WIDTH)
+    print(f"总体: {'✅ 全部达标' if all_passed else '❌ 存在不达标项'}")
+    print("=" * BANNER_WIDTH)
+
+
+def main():
+    """主入口：解析参数、收集度量指标、输出报告并返回退出码"""
+    parser = argparse.ArgumentParser(description="测试结构度量脚本")
+    parser.add_argument("--json", action="store_true", help="输出 JSON 格式")
+    parser.add_argument("--verbose", action="store_true", help="显示详细信息")
+    args = parser.parse_args()
+
+    test_files = scan_test_files(TESTS_UNIT_DIR)
+    results = _collect_all_metrics(test_files)
+    all_passed = _check_all_passed(results)
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
-        print("=" * BANNER_WIDTH)
-        print("测试结构度量报告")
-        print("=" * BANNER_WIDTH)
-        for key, val in results.items():
-            if isinstance(val, dict) and "metric" in val:
-                status = "✅" if val.get("passed") else "❌"
-                print(f"\n{status} {val['metric']}: {val['value']}")
-                if args.verbose:
-                    for k2, v2 in val.items():
-                        if k2 not in ("metric", "value", "passed", "threshold"):
-                            print(f"    {k2}: {v2}")
-        print("\n" + "=" * BANNER_WIDTH)
-        print(f"总体: {'✅ 全部达标' if all_passed else '❌ 存在不达标项'}")
-        print("=" * BANNER_WIDTH)
+        _print_text_report(results, args.verbose, all_passed)
 
     sys.exit(0 if all_passed else 1)
 
