@@ -102,7 +102,7 @@ make test-ui              # 仅运行 UI 测试（实时进度监控 + 超时保
 make test-spm PKG=包名     # 运行指定 SPM 本地包极速单测 (例: make test-spm PKG=UFPStorage)
 make test-spm-all         # 运行全量 6 大 SPM 本地包极速单测 (UFPCore/Storage/DesignSystem/Domain/AICore/Features)
 make test-all             # 运行全量 SPM 单测 + 主 App 单元测试
-make audit                # 运行 CI 8 大架构与依赖审计门禁
+make audit                # 运行 CI 架构与依赖审计门禁（含测试结构 6 项度量指标）
 make gen                  # 仅运行 bootstrap 加载环境并重生成 ZhiYu.xcodeproj
 make lint                 # 运行 SwiftLint 严格检查
 
@@ -178,7 +178,18 @@ Sources/
 ├── Platforms/                   # 平台特定实现 (iOS / macOS / watchOS)
 └── Localization/                # 多语言 .xcstrings（含分表，通过 update_localization.py 合并）
 Tests/
-├── Unit/                        # 单元测试（AI、Graph、Plugins、Security、Services、Storage）
+├── Unit/                        # 单元测试（按架构层级 + 功能域组织）
+│   ├── App/                     # App 层测试（AppStore、Router 等）
+│   ├── Core/                    # L0 基础设施层测试（ServiceContainer、Logger 等）
+│   ├── Domain/                  # L1.5 领域层测试（RAG、KnowledgePageManager 等）
+│   ├── Features/                # L2-L3 功能层测试（按功能域组织）
+│   │   ├── AI/                  # AI 功能域（Chat、Synthesis、Quiz 等）
+│   │   ├── Insight/             # Insight 功能域（Dashboard、Lint 等）
+│   │   ├── Knowledge/           # Knowledge 功能域（Ingest、Graph、Search 等）
+│   │   └── System/              # System 功能域（Settings、Auth 等）
+│   ├── Infrastructure/          # L1 服务层测试（SQLite、LLM 适配、向量引擎等）
+│   ├── Localization/            # 本地化测试（L10n 强类型访问验证）
+│   └── Platforms/               # 平台特定测试（Widget、watchOS 等）
 ├── Integration/                 # 集成测试（如 RAGPipelineTests）
 ├── UI/                          # UI 测试
 ├── SnapshotTests/               # 快照测试（使用 pointfreeco/swift-snapshot-testing）

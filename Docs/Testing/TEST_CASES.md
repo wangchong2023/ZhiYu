@@ -8,12 +8,25 @@
 
 | 包/模块 (SPM Package) | 测试套件 (Test Suite) | 测试场景 | 命令行执行命令 | 优先级 |
 | :--- | :--- | :--- | :--- | :--- |
-| **UFPCore** | `UFPCoreTests` | `ServiceContainer` 并发线程安全、未注册断言与 `Logger` 格式 | `swift test --package-path Packages/UFPCore` | P0 |
+| **UFPCore** | `UFPCoreTests` | `ServiceContainer` 并发线程安全、未注册断言、`Logger` 格式、`NetworkConstants` RFC 常量回归、`SSRFGuard` IPv6 环回检测 | `swift test --package-path Packages/UFPCore` | P0 |
 | **UFPStorage** | `UFPStorageTests` | `SQLiteStore` GRDB 封装逻辑与 `StorageConstants` 完整性 | `swift test --package-path Packages/UFPStorage` | P0 |
 | **UFPDesignSystem** | `UFPDesignSystemTests` | `Spacing` Token 矩阵与 `Bundle.module` 资源包装载 | `swift test --package-path Packages/UFPDesignSystem` | P1 |
 | **ZhiYuDomain** | `ZhiYuDomainTests` | `PromptConstants` 限额约束与 `MemoryEngineProtocol` 契约存根 | `swift test --package-path Packages/ZhiYuDomain` | P0 |
 | **ZhiYuAICore** | `ZhiYuAICoreTests` | XML 沙箱转义、越狱拦截、`ContextReranker` 降噪重排与热切换 | `swift test --package-path Packages/ZhiYuAICore` | P0 |
 | **ZhiYuFeatures** | `ZhiYuFeaturesTests` | AI / Knowledge / Insight 垂直业务模块入口与状态装载 | `swift test --package-path Packages/ZhiYuFeatures` | P1 |
+
+### 测试结构度量指标（CI 门禁）
+
+`Tools/CI/audit-test-structure.py` 在 `make audit` 中强制校验 6 项指标（2026-09-07 测试结构重构后全部达标）：
+
+| 指标 | 当前值 | 阈值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `directory_alignment_rate` | 1.0 | ≥ 0.95 | `Tests/Unit/` 子目录与架构层级/功能域对齐率 |
+| `spm_test_coverage_ratio` | 0.80 | ≥ 0.80 | SPM 包测试用例占 SPM 相关测试总用例比例 |
+| `test_source_file_ratio` | 0.90 | 0.5–1.5 | 测试文件与源文件比例 |
+| `median_cases_per_file` | 7 | 5–20 | 每文件用例数中位数 |
+| `oversized_file_ratio` | 0.003 | < 0.05 | 用例数 > 50 的文件比例 |
+| `empty_file_ratio` | 0.0 | = 0.0 | 空测试文件比例（Mock/Helper 文件豁免） |
 
 ---
 

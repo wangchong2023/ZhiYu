@@ -126,10 +126,17 @@ func testActorStateIsolation() async throws {
 ```
 Tests/
 ├── Unit/                    # 纯业务逻辑单元测试（无 IO 依赖）
-│   ├── AI/                  # RAGOrchestrator、EmbeddingManager 测试
-│   │   └── RAGOrchestratorTests.swift
-│   ├── Domain/              # 领域服务测试（PageService、VaultService 等）
-│   └── Infrastructure/      # 存储引擎 Mock 注入测试
+│   ├── App/                 # App 层测试（AppStore、Router 等）
+│   ├── Core/                # L0 基础设施层测试（ServiceContainer、Logger 等）
+│   ├── Domain/              # L1.5 领域层测试（RAG、KnowledgePageManager 等）
+│   ├── Features/            # L2-L3 功能层测试（按功能域组织）
+│   │   ├── AI/              # AI 功能域（Chat、Synthesis、Quiz 等）
+│   │   ├── Insight/         # Insight 功能域（Dashboard、Lint 等）
+│   │   ├── Knowledge/       # Knowledge 功能域（Ingest、Graph、Search 等）
+│   │   └── System/          # System 功能域（Settings、Auth 等）
+│   ├── Infrastructure/      # L1 服务层测试（SQLite、LLM 适配、向量引擎等）
+│   ├── Localization/        # 本地化测试（L10n 强类型访问验证）
+│   └── Platforms/           # 平台特定测试（Widget、watchOS 等）
 ├── Integration/             # 集成测试（真实 DB 或网络的有界集成）
 ├── Performance/             # 基准测试（XCTest measureBlock）
 │   └── SearchPerformanceTests.swift
@@ -137,8 +144,25 @@ Tests/
 ├── Boundary/                # 边界条件与异常路径
 ├── SnapshotTests/           # SwiftUI 快照测试（需 SnapshotTesting 库）
 └── Shared/                  # 测试共享工具（Mock 工厂、Fixture 数据）
-    └── TestFixtures.swift
+    └── TestMocks.swift
 ```
+
+### 4.1 功能域对齐原则
+
+`Tests/Unit/` 子目录必须与架构层级（`App`、`Core`、`Domain`、`Infrastructure`、`Localization`、`Platforms`）或 `FeatureDomain` 枚举（`knowledge`、`ai`、`insight`、`system`）对齐。`Tests/Unit/Features/` 下的子目录必须匹配 `FeatureDomain` 枚举值。
+
+### 4.2 测试结构度量指标（CI 门禁）
+
+`Tools/CI/audit-test-structure.py` 在 `make audit` 中强制校验以下 6 项指标：
+
+| 指标 | 阈值 | 说明 |
+| :--- | :--- | :--- |
+| `directory_alignment_rate` | ≥ 0.95 | `Tests/Unit/` 子目录与架构层级/功能域对齐率 |
+| `spm_test_coverage_ratio` | ≥ 0.80 | SPM 包测试用例占 SPM 相关测试总用例比例 |
+| `test_source_file_ratio` | 0.5–1.5 | 测试文件与源文件比例 |
+| `median_cases_per_file` | 5–20 | 每文件用例数中位数 |
+| `oversized_file_ratio` | < 0.05 | 用例数 > 50 的文件比例（Mock/Helper 文件豁免） |
+| `empty_file_ratio` | = 0.0 | 空测试文件比例（Mock/Helper/Stub/Support/Base/Extension 文件豁免） |
 
 ---
 
@@ -226,4 +250,5 @@ func testSomeFeature() async throws {
 ---
 
 *本文档是 2026-05-21 P1 重构阶段新增的测试规范文件，应随测试体系演进持续维护。*
-*相关文档：`Docs/Testing/SYSTEM_TEST_PLAN.md`、`Docs/Testing/PERFORMANCE_BENCHMARK.md`。*
+*2026-09-07 更新：测试目录结构重构（Phase 1-4），新增功能域对齐原则与 6 项结构度量指标。*
+*相关文档：`Docs/Testing/SYSTEM_TEST_PLAN.md`、`Docs/Testing/PERFORMANCE_BENCHMARK.md`、`Tools/CI/audit-test-structure.py`。*
