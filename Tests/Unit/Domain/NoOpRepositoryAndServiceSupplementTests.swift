@@ -1,9 +1,9 @@
 //
-//  DomainProtocolsSupplementTests.swift
+//  NoOpRepositoryAndServiceSupplementTests.swift
 //  ZhiYu
 //
 //  系统层级：[L0] 测试层
-//  核心职责：验证 Domain/Protocols 下 18 个 NoOp/Stub/Unsupported 默认实现
+//  核心职责：验证 Repository/Store/Service 相关 NoOp 实现
 //           返回安全默认值（空/false/nil/throw），不崩溃。
 //
 
@@ -11,154 +11,9 @@ import XCTest
 import UFPCore
 @testable import ZhiYu
 
-/// Domain/Protocols NoOp/Stub 实现补盲测试
-///
-/// 覆盖 18 个 NoOp/Stub/Unsupported 类：
-/// - LLMServiceProtocol: NoOpLLMChatService/NoOpLLMKnowledgeService/NoOpLLMRetrievalService/NoOpLLMService
-/// - KnowledgeRepository: NoOpKnowledgeRepository
-/// - EmbeddingProvider: NoOpEmbeddingProvider
-/// - ImportFileStore: NoOpImportFileStore
-/// - ImportRecordRepository: NoOpImportRecordRepository
-/// - ModelDownloadCapabilities: NoOpModelDownload
-/// - RAGGovernanceRepository: NoOpRAGGovernanceRepository
-/// - StoreCapabilities: NoOpPageStoreCapabilities
-/// - IngestServiceProtocol: NoOpIngestService
-/// - FeedbackRepository: NoOpFeedbackRepository
-/// - FeatureProtocols: NoOpVaultService/NoOpChatService
-/// - SpeechServiceProtocol: NoOpSpeechService
-/// - PDFServiceProtocol: NoOpPDFService
-/// - SearchIndexerProtocol: UnsupportedSearchIndexer
+/// Repository/Store/Service 相关 NoOp 实现补盲测试
 @MainActor
-final class DomainProtocolsSupplementTests: XCTestCase {
-
-    // MARK: - NoOpLLMChatService
-
-    /// NoOpLLMChatService 应返回安全默认值
-    func testNoOpLLMChatService_返回安全默认值() async throws {
-        let service = NoOpLLMChatService()
-        XCTAssertFalse(service.isEnabled, "NoOp isEnabled 应为 false")
-        let chat = try await service.chat(query: "test", history: [], pages: [])
-        XCTAssertEqual(chat.content, "", "NoOp chat 应返回空内容")
-        let generated = try await service.generate(prompt: "test", systemPrompt: "test", maxTokens: 100)
-        XCTAssertEqual(generated, "", "NoOp generate 应返回空字符串")
-    }
-
-    /// NoOpLLMChatService chatStream 应立即 finish
-    func testNoOpLLMChatService_chatStream_立即finish() async throws {
-        let service = NoOpLLMChatService()
-        let stream = service.chatStream(query: "test", history: [], pages: [])
-        var count = 0
-        for try await _ in stream {
-            count += 1
-        }
-        XCTAssertEqual(count, 0, "NoOp chatStream 应不产生任何 chunk")
-    }
-
-    // MARK: - NoOpLLMKnowledgeService
-
-    /// NoOpLLMKnowledgeService smartIngest 应保留 title 返回空内容
-    func testNoOpLLMKnowledgeService_smartIngest_保留title() async throws {
-        let service = await NoOpLLMKnowledgeService()
-        let result = try await service.smartIngest(title: "test", rawContent: "content", pages: [])
-        XCTAssertEqual(result.title, "test", "NoOp smartIngest 应保留 title")
-        XCTAssertEqual(result.compiledContent, "", "NoOp smartIngest 应返回空内容")
-        XCTAssertTrue(result.suggestedTags.isEmpty, "NoOp smartIngest 应返回空标签")
-    }
-
-    /// NoOpLLMKnowledgeService discoverPotentialLinks 应返回空数组
-    func testNoOpLLMKnowledgeService_discoverPotentialLinks_返回空数组() async throws {
-        let service = await NoOpLLMKnowledgeService()
-        let links = try await service.discoverPotentialLinks(content: "test", existingTitles: [])
-        XCTAssertTrue(links.isEmpty, "NoOp discoverPotentialLinks 应返回空数组")
-    }
-
-    /// NoOpLLMKnowledgeService foldContent 应返回 existingContent
-    func testNoOpLLMKnowledgeService_foldContent_返回existingContent() async throws {
-        let service = await NoOpLLMKnowledgeService()
-        let folded = try await service.foldContent(existingContent: "old", newContent: "new", title: "test")
-        XCTAssertEqual(folded, "old", "NoOp foldContent 应返回 existingContent")
-    }
-
-    /// NoOpLLMKnowledgeService analyzeForRefactoring 应返回空数组
-    func testNoOpLLMKnowledgeService_analyzeForRefactoring_返回空数组() async throws {
-        let service = await NoOpLLMKnowledgeService()
-        let suggestions = try await service.analyzeForRefactoring(pages: [])
-        XCTAssertTrue(suggestions.isEmpty, "NoOp analyzeForRefactoring 应返回空数组")
-    }
-
-    // MARK: - NoOpLLMRetrievalService
-
-    /// NoOpLLMRetrievalService rewriteQuery 应返回原 query
-    func testNoOpLLMRetrievalService_rewriteQuery_返回原query() async {
-        let service = await NoOpLLMRetrievalService()
-        let rewritten = await service.rewriteQuery("test")
-        XCTAssertEqual(rewritten, "test", "NoOp rewriteQuery 应返回原 query")
-    }
-
-    /// NoOpLLMRetrievalService expandQuery 应返回空数组
-    func testNoOpLLMRetrievalService_expandQuery_返回空数组() async {
-        let service = await NoOpLLMRetrievalService()
-        let expanded = await service.expandQuery("test")
-        XCTAssertTrue(expanded.isEmpty, "NoOp expandQuery 应返回空数组")
-    }
-
-    /// NoOpLLMRetrievalService rerank 应原样返回 candidates
-    func testNoOpLLMRetrievalService_rerank_原样返回candidates() async throws {
-        let service = await NoOpLLMRetrievalService()
-        let reranked = try await service.rerank(query: "test", candidates: [])
-        XCTAssertTrue(reranked.isEmpty, "NoOp rerank 空输入应返回空数组")
-    }
-    /// NoOpLLMRetrievalService generateHypotheticalDocument 应返回空字符串
-    func testNoOpLLMRetrievalService_generateHypotheticalDocument_返回空字符串() async {
-        let service = await NoOpLLMRetrievalService()
-        let hyde = await service.generateHypotheticalDocument(query: "test")
-        XCTAssertEqual(hyde, "", "NoOp generateHypotheticalDocument 应返回空字符串")
-    }
-
-    // MARK: - NoOpLLMService
-
-    /// NoOpLLMService 应返回安全默认值
-    func testNoOpLLMService_返回安全默认值() async throws {
-        let service = await NoOpLLMService()
-        XCTAssertFalse(service.isEnabled, "NoOp isEnabled 应为 false")
-        XCTAssertEqual(service.apiKey, "", "NoOp apiKey 应为空")
-        XCTAssertEqual(service.baseURL, "", "NoOp baseURL 应为空")
-        XCTAssertEqual(service.model, "", "NoOp model 应为空")
-        XCTAssertFalse(service.autoScan, "NoOp autoScan 应为 false")
-        XCTAssertFalse(service.autoRefactor, "NoOp autoRefactor 应为 false")
-    }
-
-    /// NoOpLLMService chat 应返回空内容
-    func testNoOpLLMService_chat_返回空内容() async throws {
-        let service = await NoOpLLMService()
-        let chat = try await service.chat(query: "test", history: [], pages: [])
-        XCTAssertEqual(chat.content, "", "NoOpLLMService chat 应返回空内容")
-    }
-
-    /// NoOpLLMService chatStream 应立即 finish
-    func testNoOpLLMService_chatStream_立即finish() async throws {
-        let service = await NoOpLLMService()
-        let stream = service.chatStream(query: "test", history: [], pages: [])
-        var count = 0
-        for try await _ in stream {
-            count += 1
-        }
-        XCTAssertEqual(count, 0, "NoOpLLMService chatStream 应不产生任何 chunk")
-    }
-
-    /// NoOpLLMService smartIngest 应保留 title
-    func testNoOpLLMService_smartIngest_保留title() async throws {
-        let service = await NoOpLLMService()
-        let result = try await service.smartIngest(title: "test", rawContent: "content", pages: [])
-        XCTAssertEqual(result.title, "test")
-    }
-
-    /// NoOpLLMService rewriteQuery 应返回原 query
-    func testNoOpLLMService_rewriteQuery_返回原query() async {
-        let service = await NoOpLLMService()
-        let rewritten = await service.rewriteQuery("test")
-        XCTAssertEqual(rewritten, "test")
-    }
+final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     // MARK: - NoOpKnowledgeRepository
 
@@ -181,7 +36,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         let repo = NoOpKnowledgeRepository()
         try await repo.save(KnowledgePage(title: "test", pageType: .concept, content: ""))
         try await repo.delete(id: UUID())
-        // 不崩溃即通过
     }
 
     /// NoOpKnowledgeRepository search 应返回空数组
@@ -210,7 +64,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         let repo = NoOpKnowledgeRepository()
         try await repo.renameTag(old: "old", to: "new")
         try await repo.deleteTag("tag")
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpEmbeddingProvider
@@ -264,7 +117,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         await provider.updateEmbedding(for: page)
         await provider.indexChunks(pageID: UUID(), chunks: [])
         await provider.syncEmbeddings(pages: [page])
-        // 不崩溃即通过
     }
 
     /// NoOpEmbeddingProvider loadInitialCache/clearCacheAndReload 应不崩溃
@@ -272,7 +124,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         let provider = NoOpEmbeddingProvider()
         await provider.loadInitialCache()
         await provider.clearCacheAndReload()
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpImportFileStore
@@ -340,7 +191,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         try await repo.updatePageID(id: "test", pageID: UUID().uuidString)
         try await repo.updateRawText(id: "test", rawText: "text")
         try await repo.updateTags(id: "test", tags: "tag1,tag2")
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpModelDownload
@@ -349,7 +199,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
     func testNoOpModelDownload_startDownload_不崩溃() async throws {
         let download = NoOpModelDownload()
         try await download.startDownload(modelId: "test", remoteURL: URL(string: "https://example.com")!)
-        // 不崩溃即通过
     }
 
     /// NoOpModelDownload pause/resume/cancel 应不崩溃
@@ -358,7 +207,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         try await download.pauseDownload(modelId: "test")
         try await download.resumeDownload(modelId: "test")
         try await download.cancelDownload(modelId: "test")
-        // 不崩溃即通过
     }
 
     /// NoOpModelDownload observeDownloadState 应返回空流
@@ -463,7 +311,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
             hallucinationRate: 0, citationAccuracy: 1.0,
             evaluatorModel: "test-model", createdAt: Date()
         ))
-        // 不崩溃即通过
     }
 
     /// NoOpRAGGovernanceRepository fetchRetrievalSnapshots 应返回空数组
@@ -486,7 +333,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         try await repo.saveRetrievalSnapshots([])
         try await repo.saveRelevanceJudgments([])
         try await repo.updateUserRating(evaluationID: 1, rating: 5)
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpPageStoreCapabilities
@@ -543,14 +389,12 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         try await store.updatePage(page)
         try await store.deletePage(page)
         await store.syncRemotePage(page)
-        // 不崩溃即通过
     }
 
     /// NoOpPageStoreCapabilities anyCreatePage 应不崩溃
     func testNoOpPageStoreCapabilities_anyCreatePage_不崩溃() async {
         let store = NoOpPageStoreCapabilities()
         _ = await store.anyCreatePage(title: "test", pageType: .concept, customIcon: nil, content: "content", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
-        // 不崩溃即通过
     }
 
     /// NoOpPageStoreCapabilities anyUpdatePage/anyDeletePage 应不崩溃
@@ -559,7 +403,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         let page = KnowledgePage(title: "test", pageType: .concept, content: "")
         await store.anyUpdatePage(page, forceDeepScan: false)
         await store.anyDeletePage(page)
-        // 不崩溃即通过
     }
 
     /// NoOpPageStoreCapabilities reloadFromDisk/replaceAllPages/resetDatabase/performBatchWrite 应不崩溃
@@ -569,7 +412,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         await store.replaceAllPages([])
         try await store.resetDatabase()
         try await store.performBatchWrite { _ in }
-        // 不崩溃即通过
     }
 
     /// NoOpPageStoreCapabilities renameTag/deleteTag/seedDefaultContent/addLog 应不崩溃
@@ -579,7 +421,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         await store.deleteTag("tag")
         await store.seedDefaultContent { _, _, _ in }
         store.addLog(action: .create, target: "test", details: "", duration: nil, startTime: nil, endTime: nil, module: nil)
-        // 不崩溃即通过
     }
 
     /// NoOpPageStoreCapabilities embeddingProvider 应返回 NoOpEmbeddingProvider
@@ -621,7 +462,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         let entry = FeedbackEntry(id: "test", title: "test", category: "bug", rating: 5, content: "content", status: .pending, createdAt: Date())
         try await repo.save(entry)
         try await repo.updateStatus(id: "test", status: .synced)
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpVaultService
@@ -646,7 +486,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         service.updateVault(id: UUID(), name: "updated", icon: nil, description: nil)
         service.renameVault(id: UUID(), newName: "renamed")
         service.deleteVault(id: UUID())
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpChatService
@@ -675,7 +514,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         service.clearHistory()
         service.saveUserMessage("test")
         service.saveAssistantMessage("response")
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpSpeechService
@@ -702,7 +540,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         service.checkPermission()
         service.startRecording()
         service.stopRecording()
-        // 不崩溃即通过
     }
 
     /// NoOpSpeechService transcribeFile 应返回空字符串
@@ -726,7 +563,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         let recording = service.saveRecording(title: "test")
         service.deleteRecording(recording)
         service.clearTranscription()
-        // 不崩溃即通过
     }
 
     // MARK: - NoOpPDFService
@@ -791,7 +627,6 @@ final class DomainProtocolsSupplementTests: XCTestCase {
     func testNoOpPDFService_saveDocumentsInfo_不崩溃() async {
         let service = await NoOpPDFService()
         await service.saveDocumentsInfo([])
-        // 不崩溃即通过
     }
 
     // MARK: - UnsupportedSearchIndexer
@@ -805,6 +640,5 @@ final class DomainProtocolsSupplementTests: XCTestCase {
         indexer.removeIndex(for: UUID())
         indexer.deindexAll()
         indexer.reindexAll(pages: [page])
-        // 不崩溃即通过
     }
 }
