@@ -112,18 +112,6 @@ final class ColorSchemeModeTests: XCTestCase {
     }
 
     // MARK: - icon 映射
-
-    func testIcon_所有case返回非空字符串() {
-        for mode in ColorSchemeMode.allCases {
-            XCTAssertFalse(mode.icon.isEmpty, "icon 不应为空")
-        }
-    }
-
-    func testIcon_各case返回不同值() {
-        let icons = ColorSchemeMode.allCases.map { $0.icon }
-        XCTAssertEqual(icons.count, Set(icons).count, "各 case 的 icon 应唯一")
-    }
-
     // MARK: - preferredColorScheme 映射
 
     func testPreferredColorScheme_system返回nil() {

@@ -103,6 +103,38 @@ public enum NetworkConstants {
         public static let linkLocalPrefixFEA: String = "fea"
         /// fe80::/10 — 链路本地地址前缀起始（feb）
         public static let linkLocalPrefixFEB: String = "feb"
+        /// IPv6 地址总字节数
+        public static let totalBytes: Int = 16
+        /// 环回地址最后字节索引
+        public static let lastByteIndex: Int = 15
+        /// 环回地址标记字节
+        public static let loopbackMarker: UInt8 = 0x01
+        /// IPv4 映射地址零前缀字节数
+        public static let v4MappedZeroPrefixCount: Int = 10
+        /// IPv4 映射地址前导标记索引 1
+        public static let v4MappedIndex1: Int = 10
+        /// IPv4 映射地址前导标记索引 2
+        public static let v4MappedIndex2: Int = 11
+        /// IPv4 映射地址前导标记值
+        public static let v4MappedMarker: UInt8 = 0xFF
+        /// IPv4 映射地址八位组索引 0
+        public static let v4MappedOctetIndex0: Int = 12
+        /// IPv4 映射地址八位组索引 1
+        public static let v4MappedOctetIndex1: Int = 13
+        /// IPv4 映射地址八位组索引 2
+        public static let v4MappedOctetIndex2: Int = 14
+        /// IPv4 映射地址八位组索引 3
+        public static let v4MappedOctetIndex3: Int = 15
+        /// 唯一本地地址掩码
+        public static let uniqueLocalMask: UInt8 = 0xFE
+        /// 唯一本地地址期望值
+        public static let uniqueLocalExpected: UInt8 = 0xFC
+        /// 链路本地地址首字节
+        public static let linkLocalFirstByte: UInt8 = 0xFE
+        /// 链路本地地址次字节掩码
+        public static let linkLocalSecondByteMask: UInt8 = 0xC0
+        /// 链路本地地址次字节期望值
+        public static let linkLocalSecondByteExpected: UInt8 = 0x80
     }
 
     // MARK: - IP 编码前缀 (IP Encoding Prefix)
@@ -151,5 +183,18 @@ public enum NetworkConstants {
     public enum DNSRebinding {
         /// 已知 DNS rebinding 服务后缀列表
         public static let suffixes: [String] = [".nip.io", ".sslip.io", ".localtest.me", ".xip.io"]
+    }
+
+    // MARK: - URL Scheme 白名单 (URL Scheme Whitelist)
+
+    /// URL scheme 白名单常量 — 仅允许 http/https 协议发起网络请求，
+    /// 拦截 ftp/file/ftp/gopher 等非 HTTP scheme 导致的潜在 SSRF 与超时挂起
+    public enum URLScheme {
+        /// HTTP 协议 scheme
+        public static let http: String = "http"
+        /// HTTPS 协议 scheme
+        public static let https: String = "https"
+        /// 允许的 scheme 白名单集合
+        public static let allowed: Set<String> = [http, https]
     }
 }

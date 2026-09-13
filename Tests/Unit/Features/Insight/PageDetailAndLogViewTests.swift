@@ -66,5 +66,7 @@ final class PageDetailAndLogViewTests: XCTestCase {
         coordinator.expandContent()
         coordinator.performSynthesis(type: .mindmap)
         coordinator.performSynthesis(type: .quiz)
+
+        XCTAssertEqual(coordinator.page.title, "AI 概括页")
     }
 }

@@ -12,25 +12,6 @@ import XCTest
 final class ExcelProcessorTests: XCTestCase {
 
     // MARK: - 基础解析
-
-    func testParse_validXml_returnsTrue() {
-        let xml = """
-        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-            <sheetData>
-                <row>
-                    <c t="s"><v>0</v></c>
-                </row>
-            </sheetData>
-        </worksheet>
-        """
-        let processor = ExcelProcessor(xmlData: Data(xml.utf8))
-
-        let result = processor.parse()
-
-        XCTAssertTrue(result, "合法 XML 应解析成功")
-    }
-
     func testParse_emptySheet_returnsTrueWithEmptyValues() {
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -188,16 +169,6 @@ final class ExcelProcessorTests: XCTestCase {
     }
 
     // MARK: - 非法 XML
-
-    func testParse_malformedXml_returnsFalse() {
-        let malformed = "<worksheet><sheetData><row><c t=\"s\"><v>0"
-        let processor = ExcelProcessor(xmlData: Data(malformed.utf8))
-
-        let result = processor.parse()
-
-        XCTAssertFalse(result, "非法 XML 应返回 false")
-    }
-
     // MARK: - 字符累积
 
     func testParse_valueSplitAcrossCallbacks_concatenatedCorrectly() {

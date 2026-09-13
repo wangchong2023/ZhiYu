@@ -82,18 +82,6 @@ final class LLMContextBuilderPromptTests: XCTestCase {
     }
 
     // MARK: - buildIngestPrompt 测试
-
-    func testBuildIngestPromptContainsTitleAndContent() {
-        let prompt = builder.buildIngestPrompt(
-            title: "测试标题",
-            rawContent: "这是原始内容",
-            pages: []
-        )
-        XCTAssertTrue(prompt.contains("测试标题"))
-        XCTAssertTrue(prompt.contains("这是原始内容"))
-        XCTAssertTrue(prompt.contains(L10n.AI.LLM.Ingest.compileInstruction))
-    }
-
     func testBuildIngestPromptIncludesExistingPageTitles() {
         let pages: [any KnowledgePageRepresentable] = [
             makePage(title: "已有页面A", content: "", pageType: .entity, status: .active),

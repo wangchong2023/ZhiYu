@@ -78,4 +78,38 @@ final class ServiceContainerEdgeCaseTests: XCTestCase {
         let snapshot = container.diagnosticSnapshot
         XCTAssertTrue(snapshot.isEmpty)
     }
+
+    // MARK: - 循环依赖防御
+
+    /// 验证循环依赖下的防御性安全隔离，防止实例化构造过程中的无限递归死锁
+    func testCircularDependencyResolutionSafety() {
+        let container = ServiceContainer.shared
+
+        let circularA = CircularServiceA()
+        let circularB = CircularServiceB()
+
+        circularA.dependencyB = circularB
+        circularB.dependencyA = circularA
+
+        container.register(circularA, for: CircularServiceA.self)
+        container.register(circularB, for: CircularServiceB.self)
+
+        let resolvedA = container.resolve(CircularServiceA.self)
+        let resolvedB = container.resolve(CircularServiceB.self)
+
+        XCTAssertNotNil(resolvedA)
+        XCTAssertNotNil(resolvedB)
+        XCTAssertTrue(resolvedA.dependencyB === resolvedB)
+        XCTAssertTrue(resolvedB.dependencyA === resolvedA)
+    }
+}
+
+private final class CircularServiceA: @unchecked Sendable {
+    var dependencyB: CircularServiceB?
+    init() {}
+}
+
+private final class CircularServiceB: @unchecked Sendable {
+    var dependencyA: CircularServiceA?
+    init() {}
 }

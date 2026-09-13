@@ -14,7 +14,7 @@ import UFPCore
 
 /// AI 模块注册器：负责 LLM、RAG 编排、合成、Prompt 等 AI 核心服务 (@PR-02)
 @MainActor
-struct AIModuleRegistrar: ModuleRegistrar {
+struct AIModuleRegistrar {
 
     /// 注册 AI 能力领域的全部服务
     static func register(in container: ServiceContainer) {

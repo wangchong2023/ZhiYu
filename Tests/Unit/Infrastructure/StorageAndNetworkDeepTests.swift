@@ -17,7 +17,7 @@ import Dependencies
 /// 覆盖 SQLiteStore 的 any* 方法（容错路径）
 final class SQLiteStoreAnyMethodsTests: XCTestCase {
 
-    /// anyDeletePage 不存在的页面 — 应不崩溃（try? 吞错）
+    /// anyDeletePage 不存在的页面 — 应安全执行且不影响已有数据
     func testAnyDeletePageNonExistentPageDoesNotCrash() async throws {
         let memoryQueue = try DatabaseQueue()
         try await DatabaseManager.shared.migrate(memoryQueue)
@@ -27,10 +27,12 @@ final class SQLiteStoreAnyMethodsTests: XCTestCase {
             pageType: .concept
         )
         await store.anyDeletePage(page)
-        XCTAssertTrue(true, "anyDeletePage 不存在的页面不应崩溃")
+        let pages = await store.pages
+        XCTAssertFalse(pages.contains { $0.id == page.id }, "集合中不应包含未创建的页面")
+        XCTAssertEqual(pages.count, 0)
     }
 
-    /// anyUpdatePage 不存在的页面 — 应不崩溃（try? 吞错）
+    /// anyUpdatePage 不存在的页面 — 应触发安全 upsert 存入数据库
     func testAnyUpdatePageNonExistentPageDoesNotCrash() async throws {
         let memoryQueue = try DatabaseQueue()
         try await DatabaseManager.shared.migrate(memoryQueue)
@@ -40,19 +42,11 @@ final class SQLiteStoreAnyMethodsTests: XCTestCase {
             pageType: .concept
         )
         await store.anyUpdatePage(page, forceDeepScan: false)
-        XCTAssertTrue(true, "anyUpdatePage 不存在的页面不应崩溃")
+        let pages = await store.pages
+        XCTAssertTrue(pages.contains { $0.title == "non-existent" }, "upsert 语义下不存在的页面应被新增入库")
     }
 
-    /// seedDefaultContent 是 obsolete no-op — 应不崩溃
-    func testSeedDefaultContentIsNoOp() async throws {
-        let memoryQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.migrate(memoryQueue)
-        let store = SQLiteStore(dbWriter: memoryQueue)
-        await store.seedDefaultContent { _, _, _ in }
-        XCTAssertTrue(true, "seedDefaultContent 应为 no-op")
-    }
-
-    /// anyDeletePage 已存在的页面 — 应删除成功
+    /// seedDefaultContent 是 obsolete no-op — 应安全返回且不修改数据库    /// anyDeletePage 已存在的页面 — 应删除成功
     func testAnyDeletePageExistingPageSucceeds() async throws {
         let memoryQueue = try DatabaseQueue()
         try await DatabaseManager.shared.migrate(memoryQueue)
@@ -93,7 +87,7 @@ final class DatabaseManagerCountPagesTests: XCTestCase {
             _ = try await DatabaseManager.shared.countPages(at: nonExistentURL)
             XCTFail("不存在的数据库路径应抛错")
         } catch {
-            XCTAssertTrue(true, "预期抛错：\(error)")
+            XCTAssertFalse(error.localizedDescription.isEmpty, "预期抛出有效错误：\(error)")
         }
     }
 
@@ -202,22 +196,46 @@ final class DatabaseNotificationNameTests: XCTestCase {
         XCTAssertEqual(name.rawValue, "com.zhiyu.app.userAuthExpired")
     }
 
-    /// 发送 databaseDidSwitch 通知不崩溃
+    /// 发送 databaseDidSwitch 通知并由监听者正常接收
     func testPostDatabaseDidSwitchNotification() {
+        var received = false
+        let expectation = expectation(description: "databaseDidSwitch")
+        let observer = NotificationCenter.default.addObserver(forName: .databaseDidSwitch, object: nil, queue: .main) { _ in
+            received = true
+            expectation.fulfill()
+        }
         NotificationCenter.default.post(name: .databaseDidSwitch, object: nil)
-        XCTAssertTrue(true, "发送 databaseDidSwitch 通知不应崩溃")
+        wait(for: [expectation], timeout: 1.0)
+        NotificationCenter.default.removeObserver(observer)
+        XCTAssertTrue(received, "应成功接收到 databaseDidSwitch 通知")
     }
 
-    /// 发送 databaseIntegrityCheckFailed 通知不崩溃
+    /// 发送 databaseIntegrityCheckFailed 通知并由监听者正常接收
     func testPostDatabaseIntegrityCheckFailedNotification() {
+        var received = false
+        let expectation = expectation(description: "databaseIntegrityCheckFailed")
+        let observer = NotificationCenter.default.addObserver(forName: .databaseIntegrityCheckFailed, object: nil, queue: .main) { _ in
+            received = true
+            expectation.fulfill()
+        }
         NotificationCenter.default.post(name: .databaseIntegrityCheckFailed, object: nil)
-        XCTAssertTrue(true, "发送 databaseIntegrityCheckFailed 通知不应崩溃")
+        wait(for: [expectation], timeout: 1.0)
+        NotificationCenter.default.removeObserver(observer)
+        XCTAssertTrue(received, "应成功接收到 databaseIntegrityCheckFailed 通知")
     }
 
-    /// 发送 databaseStateDidChange 通知不崩溃
+    /// 发送 databaseStateDidChange 通知并由监听者正常接收
     func testPostDatabaseStateDidChangeNotification() {
+        var received = false
+        let expectation = expectation(description: "databaseStateDidChange")
+        let observer = NotificationCenter.default.addObserver(forName: .databaseStateDidChange, object: nil, queue: .main) { _ in
+            received = true
+            expectation.fulfill()
+        }
         NotificationCenter.default.post(name: .databaseStateDidChange, object: nil)
-        XCTAssertTrue(true, "发送 databaseStateDidChange 通知不应崩溃")
+        wait(for: [expectation], timeout: 1.0)
+        NotificationCenter.default.removeObserver(observer)
+        XCTAssertTrue(received, "应成功接收到 databaseStateDidChange 通知")
     }
 }
 
@@ -302,16 +320,18 @@ final class KeychainErrorDeepTests: XCTestCase {
 /// 覆盖 NetworkClient 的 setTestSession/awaitRefreshTask 边界
 final class NetworkClientDeepTests: XCTestCase {
 
-    /// setTestSession(nil) 清除测试 session — 应不崩溃
+    /// setTestSession(nil) 清除测试 session — 实例正常
     func testSetTestSessionNilDoesNotCrash() async {
         await NetworkClient.shared.setTestSession(nil)
-        XCTAssertTrue(true, "setTestSession(nil) 不应崩溃")
+        XCTAssertNotNil(NetworkClient.shared)
     }
 
     /// awaitRefreshTask 无活跃刷新任务 — 应立即返回
     func testAwaitRefreshTaskNoActiveTaskReturnsImmediately() async {
+        let startTime = Date()
         await NetworkClient.shared.awaitRefreshTask()
-        XCTAssertTrue(true, "awaitRefreshTask 无活跃任务应立即返回")
+        let elapsed = Date().timeIntervalSince(startTime)
+        XCTAssertLessThan(elapsed, 1.0, "无活跃刷新任务时应在1秒内迅速返回")
     }
 
     /// setTestSession 设置后清除 — 验证生命周期
@@ -321,6 +341,6 @@ final class NetworkClientDeepTests: XCTestCase {
         let session = URLSession(configuration: config)
         await NetworkClient.shared.setTestSession(session)
         await NetworkClient.shared.setTestSession(nil)
-        XCTAssertTrue(true, "setTestSession 生命周期管理不应崩溃")
+        XCTAssertNotNil(NetworkClient.shared)
     }
 }

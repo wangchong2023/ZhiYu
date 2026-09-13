@@ -22,7 +22,6 @@ private enum SystemStatsConstants {
 /// 提供 AI 资源消耗、存储空间分布及数据溯源的多维度监控。
 struct SystemStatsView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(AppStore.self) var store
     @Environment(ThemeManager.self) var themeManager
     
     // 使用协调器管理状态与交互

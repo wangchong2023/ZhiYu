@@ -29,8 +29,11 @@ public struct SSRFGuard: Sendable {
     public static func isSafeURL(_ url: URL) -> Bool {
         guard let host = url.host?.lowercased() else { return false }
 
-        // 1. 拒绝环回地址
-        if host == NetworkConstants.Loopback.localhost || host == NetworkConstants.Loopback.loopbackIPv4 || host == NetworkConstants.Loopback.loopbackIPv6 || host == NetworkConstants.Loopback.loopbackIPv6Bracketed {
+        // 1. 拒绝环回地址（IPv4 字符串精确匹配 + IPv6 归一化字节级检测）
+        if host == NetworkConstants.Loopback.localhost || host == NetworkConstants.Loopback.loopbackIPv4 {
+            return false
+        }
+        if isIPv6Loopback(host) {
             return false
         }
 
@@ -78,6 +81,31 @@ public struct SSRFGuard: Sendable {
         // IPv6 地址至少含 2 个冒号
         let colonCount = host.filter { $0 == ":" }.count
         return colonCount >= 2
+    }
+
+    /// 判断 host 是否为 IPv6 环回地址（::1 的任何等价形式）
+    /// 使用 POSIX inet_pton 归一化为 16 字节后做字节级检测，
+    /// 覆盖 ::1、0:0:0:0:0:0:0:1、[::1]、[0:0:0:0:0:0:0:1] 等所有形式
+    static func isIPv6Loopback(_ host: String) -> Bool {
+        let cleaned = host.replacingOccurrences(of: "[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+        var address = in6_addr()
+        let result = cleaned.withCString { ptr in
+            inet_pton(AF_INET6, ptr, &address)
+        }
+        guard result == 1 else { return false }
+        return isIPv6LoopbackBytes(address)
+    }
+
+    /// 校验 in6_addr 的 16 字节是否为环回地址（::1 = 前 15 字节为 0，末字节为 1）
+    private static func isIPv6LoopbackBytes(_ address: in6_addr) -> Bool {
+        withUnsafeBytes(of: address) { bytes in
+            guard bytes.count == NetworkConstants.IPv6PrivateRange.totalBytes else { return false }
+            for index in 0..<NetworkConstants.IPv6PrivateRange.lastByteIndex {
+                if bytes[index] != 0 { return false }
+            }
+            return bytes[NetworkConstants.IPv6PrivateRange.lastByteIndex] == NetworkConstants.IPv6PrivateRange.loopbackMarker
+        }
     }
 
     // MARK: - IPv4 归一化（审查修复 HIGH-5）

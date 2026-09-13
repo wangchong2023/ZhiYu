@@ -249,25 +249,39 @@ private final class CountingPageStore: AnyPageStore, @unchecked Sendable {
     func resetDatabase() async throws {}
     func performBatchWrite(_ block: @escaping @Sendable (Database) throws -> Void) async throws {}
     func createPage(
-        title: String, pageType: PageType, customIcon: String?, content: String,
-        tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
+        title: String,
+        pageType: PageType,
+        customIcon: String?,
+        content: String,
+        tags: [String],
+        sourceURL: String?,
+        rawSnippet: String?,
+        fileSize: Int64?,
+        sourceType: String?
     ) async throws -> KnowledgePage {
         lock.withLock {
             _createCount += 1
             _createdTitles.append(title)
         }
-        return KnowledgePage(title: title, pageType: pageType, customIcon: customIcon,
-                             content: content, tags: tags, sourceURL: sourceURL,
-                             rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+        return KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
     }
     func anyCreatePage(
-        title: String, pageType: PageType, customIcon: String?, content: String,
-        tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?,
+        title: String,
+        pageType: PageType,
+        customIcon: String?,
+        content: String,
+        tags: [String],
+        sourceURL: String?,
+        rawSnippet: String?,
+        fileSize: Int64?,
+        sourceType: String?,
         forceDeepScan: Bool
     ) async -> KnowledgePage? {
-        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon,
-                      content: content, tags: tags, sourceURL: sourceURL,
-                      rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+        lock.withLock {
+            _createCount += 1
+            _createdTitles.append(title)
+        }
+        return KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
     }
     func updatePage(_ page: KnowledgePage) async throws {}
     func anyUpdatePage(_ page: KnowledgePage, forceDeepScan: Bool) async {}

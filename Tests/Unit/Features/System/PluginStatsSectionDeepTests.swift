@@ -34,6 +34,7 @@ final class PluginStatsSectionDeepTests: XCTestCase {
             .snapshotEnvironment()
             .renderInWindow()
 
+        XCTAssertTrue(registry.pluginResourceUsage.isEmpty)
         XCTAssertNotNil(host.view)
     }
 
@@ -68,6 +69,7 @@ final class PluginStatsSectionDeepTests: XCTestCase {
             .snapshotEnvironment()
             .renderInWindow()
 
+        XCTAssertEqual(registry.pluginResourceUsage.count, 3)
         XCTAssertNotNil(host.view)
     }
 }

@@ -10,16 +10,20 @@
 //
 import Foundation
 import os
+import UFPCore
 
 /// 动态合规告示与敏感词库管理中心
-public final class DynamicComplianceManager: @unchecked Sendable {
+public final class DynamicComplianceManager: @unchecked Sendable, TestStateResettable {
     public static let shared = DynamicComplianceManager()
 
     private let lock = OSAllocatedUnfairLock()
     private var remoteTextOverrides: [String: [String: String]] = [:]
     private var remotePatternOverrides: [ComplianceCategory: [String]] = [:]
 
-    private init() {}
+    private init() {
+        // 单例自注册到测试状态重置注册表
+        TestStateResetRegistry.shared.register(self)
+    }
 
     /// 注册来自 RemoteConfig 或云端配置的动态覆盖文案与正则词库
     /// - Parameters:
@@ -77,5 +81,17 @@ public final class DynamicComplianceManager: @unchecked Sendable {
             remotePatternOverrides.removeAll()
         }
     }
+
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离
+    public func resetStateForTesting() {
+        clearRemoteOverridesForTesting()
+    }
+    #else
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离（Release 下无远程覆盖状态需清理，空实现）
+    public func resetStateForTesting() {}
     #endif
 }

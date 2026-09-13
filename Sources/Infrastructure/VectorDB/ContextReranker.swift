@@ -44,11 +44,12 @@ public struct ContextReranker: Sendable {
         minScore: Float = Constants.defaultMinScore
     ) -> [(chunk: PageChunk, score: Float)] {
         guard !candidates.isEmpty else { return [] }
+        guard topK > 0 else { return [] }
 
         let queryTokens = Set(query.lowercased().split(separator: " ").map(String.init))
 
-        // 1. 噪点剪枝：先过滤低于极低门槛的非相关切片
-        let filtered = candidates.filter { $0.score >= minScore }
+        // 1. 噪点剪枝：先过滤低于极低门槛的非相关切片，同时剔除 NaN/Infinity 等非法分值候选
+        let filtered = candidates.filter { $0.score.isFinite && $0.score >= minScore }
         guard !filtered.isEmpty else { return [] }
 
         // 2. 二次评分重排：结合向量得分 + 关键词精确覆盖密度 (Cross-Matching Density)

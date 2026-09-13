@@ -118,6 +118,11 @@ actor TransactionGatekeeper {
         }
     }
 
+    /// 设置排空状态（仅测试使用）。
+    func setDrainingForTesting(_ value: Bool) {
+        draining = value
+    }
+
     /// 唤醒指定等待者（超时 Task 调用，确保只 resume 一次）。
     private func resumeWaiter(_ waiter: DrainWaiter) {
         // 从队列中移除（如果还在）

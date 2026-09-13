@@ -14,7 +14,7 @@ import UFPCore
 
 /// 认证模块注册器：负责 Auth、Vault、Settings 等系统核心服务
 @MainActor
-struct AuthModuleRegistrar: ModuleRegistrar {
+struct AuthModuleRegistrar {
 
     /// 注册认证与库服务 (@SR-03: 集成 LocalAuthentication)
     static func register(in container: ServiceContainer) {

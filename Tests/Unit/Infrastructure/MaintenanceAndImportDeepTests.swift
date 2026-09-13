@@ -30,37 +30,37 @@ final class MaintenanceServiceDeepTests: XCTestCase {
     func testSeedDefaultContentNonEmptyPagesSkips() async {
         let service = MaintenanceService()
         let pages = [KnowledgePage(title: "existing", pageType: .concept)]
+        XCTAssertFalse(pages.isEmpty)
         // pages 非空，应直接返回不注入
         await service.seedDefaultContent(pages: pages, vaultName: L10n.Vault.defaultName)
-        XCTAssertTrue(true, "pages 非空时应跳过种子注入")
     }
 
     /// saveToDisk 应不崩溃
     func testSaveToDiskDoesNotCrash() async {
         let service = MaintenanceService()
+        XCTAssertNotNil(service)
         await service.saveToDisk(pages: [])
-        XCTAssertTrue(true, "saveToDisk 不应崩溃")
     }
 
     /// loadFromDisk 应不崩溃
     func testLoadFromDiskDoesNotCrash() async {
         let service = MaintenanceService()
+        XCTAssertNotNil(service)
         await service.loadFromDisk()
-        XCTAssertTrue(true, "loadFromDisk 不应崩溃")
     }
 
     /// clearLogs 应不崩溃
     func testClearLogsDoesNotCrash() async {
         let service = MaintenanceService()
+        XCTAssertNotNil(service)
         await service.clearLogs()
-        XCTAssertTrue(true, "clearLogs 不应崩溃")
     }
 
     /// clearAllDeveloperData 应不崩溃并发布 pagesCleared 事件
     func testClearAllDeveloperDataPublishesEvent() async {
         let service = MaintenanceService()
+        XCTAssertNotNil(service)
         await service.clearAllDeveloperData()
-        XCTAssertTrue(true, "clearAllDeveloperData 不应崩溃")
     }
 }
 

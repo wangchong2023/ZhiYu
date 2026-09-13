@@ -15,7 +15,7 @@ import Dependencies
 
 /// 新手引导服务
 /// 负责维护和持久化新手引导的状态，并在需要时触发引导视图
-@MainActor final class OnboardingService: ObservableObject {
+@MainActor final class OnboardingService: ObservableObject, TestStateResettable {
     static let shared = OnboardingService()
 
     private let onboardingKey = AppConstants.Keys.Storage.hasCompletedOnboarding
@@ -35,6 +35,9 @@ import Dependencies
         // 使用 ServiceContainer.shared.resolveOptional 优雅降级
         self.hasCompletedOnboarding = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)?
             .bool(forKey: AppConstants.Keys.Storage.hasCompletedOnboarding) ?? false
+
+        // 单例自注册到测试状态重置注册表（仅 shared 实例触发）
+        TestStateResetRegistry.shared.register(self)
     }
     
     enum OnboardingStep: Int, CaseIterable, Identifiable {
@@ -73,6 +76,13 @@ import Dependencies
     func reset() {
         hasCompletedOnboarding = false
         currentStep = .graph
+    }
+
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离
+    func resetStateForTesting() {
+        reset()
     }
     
     /// nextStep

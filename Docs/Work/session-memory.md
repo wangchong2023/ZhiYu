@@ -17,7 +17,8 @@
 - UFPCore 只放业务无关的通用公共常量，ZhiYu 业务公共常量放 `CoreConstants.swift`
 - pre-push hook 需全部通过才能提交（13 项门禁）
 - `make test` 耗时极长（含 UI 测试约 60-75 分钟），需用后台运行 + 日志轮询方式
-- xcodebuild 需用 `-derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution` 避免网络问题
+- **必须使用 `make` 命令进行构建和测试**（`make ios`/`make mac`/`make watch`/`make test`/`make test-unit`/`make test-ui`），不要直接用 `xcodebuild`；`make` 已集成实时进度监控（`run-test-progress.sh`）+ 超时保护（`-test-timeouts-enabled`）+ 环境变量自动加载 + xcodegen 自动重生成
+- xcodebuild 需用 `-derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution` 避免网络问题（仅单个测试类快速验证时可直接用 xcodebuild）
 - iOS Simulator 名称用 `iPhone 17 Pro`（非 iPhone 16）
 - **测试目的是发现问题而非提高覆盖率**，使用业界最佳实践思路进行用例编写
 - **发现源码问题直接修复源码 + 测试**，任务完成后统一整理表格（用户最新指示）
@@ -202,19 +203,18 @@
 > "读 `Docs/Work/session-memory.md` 继续"
 
 **当前应继续的下一步**：运行覆盖率报告确认 Infrastructure 层提升情况，然后规划批次 7-G 补测剩余低覆盖率文件（ChatRunner 440 行 14.3%、MaintenanceService 116 行 34.5%、DataCoordinator 56 行 1.8% 等）。
-命令参考：
+命令参考（**必须使用 `make` 命令，不要直接用 `xcodebuild`**）：
 ```bash
-# 全量单元测试（排除 UI 测试，~3 分钟）
-xcodebuild test \
-  -project ZhiYu.xcodeproj \
-  -scheme ZhiYu \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -only-testing:ZhiYuTests \
-  -enableCodeCoverage YES \
-  -derivedDataPath build/DerivedData-ios \
-  -disableAutomaticPackageResolution
+# 全量单元测试（排除 UI 测试，~3 分钟，含实时进度监控 + 超时保护）
+make test-unit
 
-# 单个测试类（快速验证）
+# 全量测试（单元 + UI，含实时进度监控 + 超时保护）
+make test
+
+# 仅 UI 测试（含实时进度监控 + 超时保护）
+make test-ui
+
+# 单个测试类（快速验证，此场景可直接用 xcodebuild）
 xcodebuild test \
   -project ZhiYu.xcodeproj \
   -scheme ZhiYu \

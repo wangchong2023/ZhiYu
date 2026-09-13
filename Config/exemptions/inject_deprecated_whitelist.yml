@@ -258,3 +258,21 @@ inject_deprecated_whitelist:
   reason: Task 内局部解析 LLMServiceProtocol，与 L72 AppStore 同一 guard 块
   added: '2026-08-20'
   expiry_check: P11
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 118
+  type: ServiceContainer.shared
+  reason: 启动序列 Store 自注册断言，DI 容器初始化核心路径
+  added: '2026-09-13'
+  expiry_check: P11
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 232
+  type: ServiceContainer.shared
+  reason: registerStoresToContainer 注册 IngestStore/SynthesisStore 到 DI 容器
+  added: '2026-09-13'
+  expiry_check: P11
+- file: Sources/Features/AI/Chat/Model/AIWorkflowStore.swift
+  line: 245
+  type: ServiceContainer.shared
+  reason: synthesisStore 局部解析，避免循环依赖
+  added: '2026-09-13'
+  expiry_check: P11

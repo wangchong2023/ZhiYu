@@ -43,14 +43,6 @@ extension FeatureConstants {
         static let nickname = "nickname"
         static let state = "state"
         static let code = "code"
-        static let idToken = "idToken"
-    }
-
-    // MARK: - Google 配置 (Google Config)
-    /// Google SDK 配置键与占位符
-    enum GoogleConfig {
-        static let clientIDKey = "GIDClientID"
-        static let placeholderClientID = "YOUR_GOOGLE_CLIENT_ID"
     }
 
     // MARK: - 插件权限名 (Permission Name)
@@ -100,11 +92,9 @@ extension FeatureConstants {
     // MARK: - 错误描述 (Error Description)
     /// AppError / NSError 描述文本
     enum ErrorDescription {
-        static let weChatSDKNotConfigured = "WeChat SDK not configured"
         static let githubURLError = "GitHub URL Error"
         static let githubCallbackError = "GitHub Callback Error"
         static let githubStateMismatch = "GitHub State Mismatch"
-        static let watchOSNotSupported = "WatchOS not supported"
     }
 
     // MARK: - Mock 凭证 (Mock Credential)
@@ -137,5 +127,7 @@ extension FeatureConstants {
         static let defaultMaxPlugins: Int = 3
         /// 无限额度显示符号
         static let unlimitedSymbol: String = "∞"
+        /// 无限额度判定阈值（超过此值视为无限）
+        static let unlimitedThreshold: Int = 999999
     }
 }

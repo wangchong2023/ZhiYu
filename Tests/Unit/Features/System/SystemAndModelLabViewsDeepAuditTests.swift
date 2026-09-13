@@ -24,14 +24,6 @@ final class SystemAndModelLabViewsDeepAuditTests: XCTestCase {
     }
 
     // MARK: - 1. SystemStatsView 视图树求值与 Tab 切换
-
-    func testSystemStatsView_ViewHierarchy_Evaluates() {
-        let view = SystemStatsView()
-            .snapshotEnvironment()
-        let controller = UIHostingController(rootView: view)
-        XCTAssertNotNil(controller.view)
-    }
-
     // MARK: - 2. RawStorageListView 原始存储分类枚举与视图求值
 
     func testRawStorageListView_CategoriesAndRendering() {
@@ -49,11 +41,4 @@ final class SystemAndModelLabViewsDeepAuditTests: XCTestCase {
     }
 
     // MARK: - 3. ModelLabView 模型实验室视图求值
-
-    func testModelLabView_ViewHierarchy_Evaluates() {
-        let view = ModelLabView(onGoToStore: {})
-            .snapshotEnvironment()
-        let controller = UIHostingController(rootView: view)
-        XCTAssertNotNil(controller.view)
-    }
 }

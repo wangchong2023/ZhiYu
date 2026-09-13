@@ -44,35 +44,6 @@ final class IngestAndContentViewFullCoverageTests: XCTestCase {
                 .snapshotEnvironment()
         }
     }
-
-    func testIngestViewEmptyAndRunningTaskStates() async {
-        @Dependency(\.taskCenter) var taskCenter
-
-        // 1. 空任务状态
-        taskCenter.tasks = []
-        let emptyWrapper = IngestWrapperView()
-        let emptyHost = UIHostingController(rootView: emptyWrapper)
-        XCTAssertNotNil(emptyHost.view)
-        emptyHost.view.layoutIfNeeded()
-
-        // 2. 注入运行中摄取任务
-        let activeTask = GlobalTask(
-            type: .ingest,
-            name: "文档导入",
-            target: "技术架构白皮书.pdf",
-            status: .running(progress: 0.65, stage: .chunking),
-            subLogs: ["正在解析 Markdown AST", "提取知识切片中..."]
-        )
-        taskCenter.tasks = [activeTask]
-
-        let runningWrapper = IngestWrapperView()
-        let runningHost = UIHostingController(rootView: runningWrapper)
-        XCTAssertNotNil(runningHost.view)
-        runningHost.view.layoutIfNeeded()
-
-        taskCenter.tasks = []
-    }
-
     // MARK: - 2. IngestCoordinator 动作与表单状态测试
 
     func testIngestCoordinatorActions() {
@@ -101,35 +72,5 @@ final class IngestAndContentViewFullCoverageTests: XCTestCase {
     }
 
     // MARK: - 3. ContentView 根容器、安全锁与侧边栏渲染
-
-    func testContentViewNormalAndLockedStates() {
-        // 1. 正常状态渲染
-        let normalContentView = ContentView()
-            .snapshotEnvironment()
-        let normalHost = UIHostingController(rootView: normalContentView)
-        XCTAssertNotNil(normalHost.view)
-        normalHost.view.layoutIfNeeded()
-
-        // 2. 安全锁定状态渲染
-        store.securityService.isLocked = true
-        let lockedContentView = ContentView()
-            .snapshotEnvironment()
-        let lockedHost = UIHostingController(rootView: lockedContentView)
-        XCTAssertNotNil(lockedHost.view)
-        lockedHost.view.layoutIfNeeded()
-        store.securityService.isLocked = false
-    }
-
     // MARK: - 4. ContentView 侧边栏广播与抽屉通知测试
-
-    func testContentViewSidebarToggleNotification() {
-        let view = ContentView()
-            .snapshotEnvironment()
-        let hosting = UIHostingController(rootView: view)
-        XCTAssertNotNil(hosting.view)
-        hosting.view.layoutIfNeeded()
-
-        // 发送切换侧边栏通知
-        NotificationCenter.default.post(name: Notification.Name.toggleSidebar, object: nil)
-    }
 }

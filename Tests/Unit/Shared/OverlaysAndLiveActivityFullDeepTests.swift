@@ -28,19 +28,25 @@ final class OverlaysAndLiveActivityFullDeepTests: XCTestCase {
     // MARK: - 1. SplashComponents 启动开屏与星空背景测试
 
     func testSplashBackgroundView_Hierarchy() {
-        let host = SplashBackgroundView(starTwinkle: true, nodeGlow: true)
+        let bg = SplashBackgroundView(starTwinkle: true, nodeGlow: true)
+        let host = bg
             .snapshotEnvironment()
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertTrue(bg.starTwinkle)
+        XCTAssertTrue(bg.nodeGlow)
     }
 
     func testSplashView_Hierarchy() {
-        let host = SplashView(onDismiss: {})
+        var dismissed = false
+        let splash = SplashView(onDismiss: { dismissed = true })
+        let host = splash
             .snapshotEnvironment()
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertFalse(dismissed)
     }
 
     // MARK: - 2. LockOverlayView 锁定遮罩状态机测试
@@ -51,6 +57,8 @@ final class OverlaysAndLiveActivityFullDeepTests: XCTestCase {
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        let session = AuthSession.shared
+        XCTAssertNotNil(session)
     }
 
     // MARK: - 3. UserProfileMenu 用户菜单与操作分发测试
@@ -63,6 +71,8 @@ final class OverlaysAndLiveActivityFullDeepTests: XCTestCase {
         .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        let session = AuthSession.shared
+        XCTAssertNotNil(session)
     }
 
     // MARK: - 4. 灵动岛与跨端小组件视图测试

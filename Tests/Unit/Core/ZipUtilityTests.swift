@@ -62,13 +62,14 @@ final class ZipUtilityTests: XCTestCase {
         XCTAssertNil(result, "空文件应返回 nil（无有效文件头）")
     }
 
-    // MARK: - 已知限制记录（P0 finding #3 已修复）
-
-    /// finding #3 已修复：readZipArchive 改用 loadUnaligned 避免对齐违规崩溃。
-    /// 此测试验证修复后解析路径不再崩溃。
-    func testReadZipArchive_P0修复_解析不崩溃() {
-        // 仅验证修复后调用不崩溃（真实解析测试在下方）
-        XCTAssertTrue(true, "P0 对齐崩溃已修复（loadUnaligned）")
+    // MARK: - 内存对齐边界测试
+    func testReadZipArchive_unalignedBuffer_recoversWithoutCrashing() {
+        // 使用非4字节对齐的未对齐数据校验解析容错性
+        let unalignedData = Data([0x01, 0x50, 0x4B, 0x03, 0x04, 0x00, 0x00])
+        let tempFile = tempDir.appendingPathComponent("unaligned.zip")
+        try? unalignedData.write(to: tempFile)
+        let entries = ZipUtility.readZipArchive(at: tempFile)
+        XCTAssertNil(entries, "未对齐且截断的 ZIP 数据应安全返回 nil 而非崩溃")
     }
 
     // MARK: - 解析：单文件 ZIP（stored method 0）

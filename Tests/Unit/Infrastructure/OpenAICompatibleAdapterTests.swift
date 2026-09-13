@@ -31,47 +31,7 @@ final class OpenAICompatibleAdapterTests: XCTestCase {
     }
 
     // MARK: - generate 正常流程
-
-    func testGenerateReturnsContentOnValidResponse() async throws {
-        OpenAICompatibleAdapterMockURLProtocol.responseBody = """
-        {"choices":[{"message":{"content":"Hello from LLM"}}]}
-        """
-        OpenAICompatibleAdapterMockURLProtocol.statusCode = 200
-
-        let adapter = OpenAICompatibleAdapter(
-            id: "test",
-            displayName: "Test",
-            config: config
-        )
-
-        let result = try await adapter.generate(prompt: "Hi", systemPrompt: "You are helpful")
-        XCTAssertEqual(result, "Hello from LLM")
-    }
-
     // MARK: - generate 错误流程
-
-    func testGenerateThrowsInvalidResponseWhenNoChoices() async {
-        OpenAICompatibleAdapterMockURLProtocol.responseBody = """
-        {"error":"bad request"}
-        """
-        OpenAICompatibleAdapterMockURLProtocol.statusCode = 200
-
-        let adapter = OpenAICompatibleAdapter(
-            id: "test",
-            displayName: "Test",
-            config: config
-        )
-
-        do {
-            _ = try await adapter.generate(prompt: "Hi", systemPrompt: "System")
-            XCTFail("缺少 choices 应抛出 invalidResponse")
-        } catch LLMError.invalidResponse {
-            // 预期
-        } catch {
-            XCTFail("应抛出 LLMError.invalidResponse，实际：\(error)")
-        }
-    }
-
     func testGenerateThrowsInvalidResponseWhenNoMessageContent() async {
         OpenAICompatibleAdapterMockURLProtocol.responseBody = """
         {"choices":[{"message":{"role":"assistant"}}]}

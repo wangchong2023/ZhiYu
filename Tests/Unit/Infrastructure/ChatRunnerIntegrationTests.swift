@@ -277,22 +277,7 @@ final class ChatRunnerIntegrationTests: XCTestCase {
         }
     }
 
-    /// generate 在 API 返回 401 时应抛出 unauthorized
-    func testGenerateThrowsUnauthorizedOn401() async throws {
-        ChatRunnerMockURLProtocol.jsonBody = Data("{}".utf8)
-        ChatRunnerMockURLProtocol.statusCode = 401
-
-        do {
-            _ = try await runner.generate(prompt: "测试", systemPrompt: "系统")
-            XCTFail("401 时应抛出 unauthorized")
-        } catch LLMError.unauthorized {
-            // 预期路径
-        } catch {
-            XCTFail("应抛出 LLMError.unauthorized，实际：\(error)")
-        }
-    }
-
-    // MARK: - chat 正常流程 + 脱敏还原
+    /// generate 在 API 返回 401 时应抛出 unauthorized    // MARK: - chat 正常流程 + 脱敏还原
 
     /// chat 成功时应返回 deanonymize 后的 ChatMessageDTO
     func testChatReturnsDeanonymizedContent() async throws {

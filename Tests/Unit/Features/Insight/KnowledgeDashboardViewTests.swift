@@ -37,7 +37,7 @@ final class KnowledgeDashboardViewTests: XCTestCase {
         await store.savePage(pageC)
 
         let coordinator = DashboardCoordinator()
-        await coordinator.calculateStats()
+        await coordinator.calculateStats(store: store)
 
         XCTAssertGreaterThan(coordinator.totalLinks, 0)
         XCTAssertFalse(coordinator.densityData.isEmpty)
@@ -60,7 +60,7 @@ final class KnowledgeDashboardViewTests: XCTestCase {
         await store.savePage(page2)
 
         let coordinator = DashboardCoordinator()
-        coordinator.updateTags()
+        coordinator.updateTags(store: store)
 
         XCTAssertFalse(coordinator.tags.isEmpty)
         let swiftTag = coordinator.tags.first { $0.tag == "Swift" }

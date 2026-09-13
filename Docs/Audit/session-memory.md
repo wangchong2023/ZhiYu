@@ -14,7 +14,8 @@
 - 发现源码问题直接修复源码 + 测试，任务完成后统一整理表格
 - pre-push hook 需全部通过（13 项门禁）
 - `make test` 耗时极长（60-75 分钟），需后台运行 + 日志轮询
-- xcodebuild 需用 `-derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution`
+- **必须使用 `make` 命令进行构建和测试**（`make ios`/`make mac`/`make watch`/`make test`/`make test-unit`/`make test-ui`），不要直接用 `xcodebuild`；`make` 已集成实时进度监控（`run-test-progress.sh`）+ 超时保护（`-test-timeouts-enabled`）+ 环境变量自动加载 + xcodegen 自动重生成
+- xcodebuild 需用 `-derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution`（仅单个测试类快速验证时可直接用 xcodebuild）
 - iOS Simulator 名称用 `iPhone 17 Pro`
 - Mock 扩展现有 `Tests/Shared/TestMocks.swift` 或按域放 `Tests/Unit/<域>/Mock*.swift`，不引入新框架
 - 按层分批，每批独立验证 + commit
@@ -175,7 +176,7 @@
 - `StorageConstants` 新增 `LaunchEnvironment` 命名空间（原 `Environment`，因与 SwiftUI 豁免冲突改名）
 - `ProcessorConstants` 新增 `HTMLRegex`/`HTMLEntity`/`OCRAnnotation` 命名空间
 - 模拟器 `server died` 错误（Mach Error -308）需 `xcrun simctl shutdown all` + `simctl boot` 重启解决
-- `make test-unit` 内部调用 `make gen`（bootstrap），可能因 Package Graph resolve 卡住；直接用 xcodebuild 更可靠
+- `make test-unit` 内部调用 `make gen`（bootstrap），可能因 Package Graph resolve 卡住；此时可直接用 xcodebuild（仅限排障场景，正常流程必须用 `make`）
 - 批次 7-J 策略：重点覆盖可独立测试的纯逻辑组件，而非依赖 `@Inject` DI 的 `@MainActor` 类
 - **Jailbreak 检测特征词策略**：扩充为中英文混合特征集（不走 L10n），安全检测特征不应依赖语言环境切换
 - **Swift Regex `AnyRegexOutput` 访问方式**：需用 `output[output.startIndex.advanced(by: 1)].substring` 获取捕获组

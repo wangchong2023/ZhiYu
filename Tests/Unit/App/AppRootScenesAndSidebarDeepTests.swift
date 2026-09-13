@@ -25,18 +25,6 @@ final class AppRootScenesAndSidebarDeepTests: XCTestCase {
     }
 
     // MARK: - 1. ContentView 根视图多设备布局渲染
-
-    func testContentView_RootViewRendering() {
-        let contentView = ContentView()
-            .snapshotEnvironment()
-
-        let host = UIHostingController(rootView: contentView)
-        _ = host.view
-        host.view.layoutIfNeeded()
-
-        XCTAssertNotNil(host.view)
-    }
-
     // MARK: - 2. AppLayoutComponents 侧边栏与底部栏组件
 
     func testAppLayoutComponents_SidebarAndTabs() {

@@ -31,6 +31,7 @@ final class UIComponentsEditorAndToolbarSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
     }
 

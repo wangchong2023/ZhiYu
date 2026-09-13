@@ -158,7 +158,7 @@ public enum AppRoute: Hashable, Identifiable {
 /// 集中管理导航状态，支持解耦跳转与状态持久化
 @Observable
 @MainActor
-final class Router {
+final class Router: TestStateResettable {
     /// 全局单例，方便非视图层级调用（如 DeepLink 处理）
     static let shared = Router()
 
@@ -277,6 +277,9 @@ final class Router {
         let storedRaw = keyStore?
             .string(forKey: AppConstants.Keys.Storage.selectedTab)
         self.selectedTab = AppTab(rawValue: storedRaw ?? "") ?? .knowledge
+
+        // 单例自注册到测试状态重置注册表（仅 shared 实例触发）
+        TestStateResetRegistry.shared.register(self)
     }
     
     // MARK: - 导航指令
@@ -296,6 +299,24 @@ final class Router {
     /// 清空导航历史
     func clearHistory() {
         navigationHistory.removeAll()
+    }
+
+    // MARK: - TestStateResettable
+
+    /// 重置路由状态用于测试隔离
+    func resetStateForTesting() {
+        clearHistory()
+        path = NavigationPath()
+        selectedTab = .knowledge
+        sidebarSelection = nil
+        pendingInitialChatPrompt = nil
+        isShowingSettingsSheet = false
+        isShowingProfileMenu = false
+        isShowingProfileSheet = false
+        isShowingPlanSheet = false
+        isShowingPluginsSheet = false
+        isShowingAboutSheet = false
+        isShowingAISettingsSheet = false
     }
     
     /// 跳转到指定目标

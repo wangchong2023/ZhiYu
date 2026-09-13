@@ -14,7 +14,7 @@ import UFPCore
 
 /// 知识模块注册器：负责 Knowledge 领域核心服务
 @MainActor
-struct KnowledgeModuleRegistrar: ModuleRegistrar {
+struct KnowledgeModuleRegistrar {
 
     /// 注册知识管理领域的逻辑与处理器
     static func register(in container: ServiceContainer) {

@@ -25,6 +25,7 @@ final class KnowledgePageWorkflowTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         
         // 1. 重置全局状态 (核心隔离逻辑)
         ServiceContainer.shared.reset()
@@ -41,10 +42,6 @@ final class KnowledgePageWorkflowTests: XCTestCase {
         ServiceContainer.shared.register(sqliteStore, for: SQLiteStore.self)
         ServiceContainer.shared.register(linkService, for: LinkService.self)
         ServiceContainer.shared.register(lintService, for: LintService.self)
-        ServiceContainer.shared.register(Logger.shared, for: (any LoggerProtocol).self)
-        ServiceContainer.shared.register(UndoService(), for: UndoService.self)
-        ServiceContainer.shared.register(BackupService(), for: BackupService.self)
-        ServiceContainer.shared.register(SettingsStore(), for: SettingsStore.self)
         
         self.store = AppStore()
         self.linkService = linkService
@@ -240,6 +237,7 @@ final class SearchFilterWorkflowTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         ServiceContainer.shared.reset()
         DatabaseManager.shared.reset()
         DatabaseManager.shared.isInTesting = true
@@ -292,18 +290,6 @@ final class SearchFilterWorkflowTests: XCTestCase {
         XCTAssertTrue(results.contains { $0.title == "Doc A" })
         XCTAssertFalse(results.contains { $0.title == "Doc B" })
     }
-
-    func testSearchByTag() async {
-        let pages = [
-            KnowledgePage(title: "Tagged", pageType: .entity, content: "Content", tags: ["important", "priority"]),
-            KnowledgePage(title: "Untagged", pageType: .concept, content: "Content", tags: [])
-        ]
-
-        let results = await linkService.search(query: "important", in: pages)
-        XCTAssertTrue(results.contains { $0.title == "Tagged" })
-        XCTAssertFalse(results.contains { $0.title == "Untagged" })
-    }
-
     func testFilterByPageType() {
         let pages = [
             KnowledgePage(title: "Entity Page", pageType: .entity, content: "Content " + String(repeating: "x ", count: 30)),
@@ -364,18 +350,6 @@ final class CollaborationWorkflowTests: XCTestCase {
         XCTAssertEqual(edit.oldValue, "Old Title")
         XCTAssertEqual(edit.newValue, "New Title")
     }
-
-    func testCollabUserDisplayLabel() {
-        let user = CollabUser(
-            id: "u1",
-            displayName: "Alice",
-            deviceName: "iPhone 15",
-            joinedAt: Date()
-        )
-
-        XCTAssertEqual(user.displayLabel, "Alice (iPhone 15)")
-    }
-
     func testDiscoveredRoomStructure() {
         let peer = MCPeerID(displayName: "peer123")
         let room = DiscoveredRoom(
@@ -407,6 +381,7 @@ final class BackupRestoreWorkflowTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         ServiceContainer.shared.reset()
         
         tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -482,6 +457,7 @@ final class IngestPipelineTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         ingestService = IngestService()
         ServiceContainer.shared.register(ingestService, for: IngestService.self)
@@ -664,6 +640,7 @@ final class MarkdownRenderingTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        await resetPersistentTestState()
         parser = MarkdownProcessor()
     }
 

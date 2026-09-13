@@ -27,8 +27,9 @@ final class SettingsAndPluginsDeepAuditTests: XCTestCase {
     // MARK: - 1. PluginCenterView 插件市场与安全模式切换
 
     func testPluginCenterView_FullRendering() {
-        let pluginCenter = PluginCenterView()
-            .snapshotEnvironment()
+        let rawPlugin = PluginCenterView()
+        XCTAssertNotNil(rawPlugin)
+        let pluginCenter = rawPlugin.snapshotEnvironment()
 
         let host = UIHostingController(rootView: pluginCenter)
         _ = host.view
@@ -40,8 +41,9 @@ final class SettingsAndPluginsDeepAuditTests: XCTestCase {
     // MARK: - 2. ServerConfigView 服务器配置列表与 Sheet 弹窗
 
     func testServerConfigView_Rendering() {
-        let serverView = ServerConfigView()
-            .snapshotEnvironment()
+        let rawServer = ServerConfigView()
+        XCTAssertNotNil(rawServer)
+        let serverView = rawServer.snapshotEnvironment()
 
         let host = UIHostingController(rootView: serverView)
         _ = host.view

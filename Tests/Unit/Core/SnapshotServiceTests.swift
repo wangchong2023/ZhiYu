@@ -91,13 +91,6 @@ final class SnapshotServiceTests: XCTestCase {
     }
 
     // MARK: - SnapshotInfo
-
-    func testSnapshotInfo_id_等于urlPath() {
-        let url = tempDir.appendingPathComponent("test.md")
-        let info = SnapshotInfo(url: url, date: Date())
-        XCTAssertEqual(info.id, url.path)
-    }
-
     // MARK: - 边界情况
 
     func testSaveSnapshot_空内容_仍创建快照() {

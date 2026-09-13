@@ -46,8 +46,13 @@ final class ZhiYuMonkeyTests: XCTestCase {
     ///
     /// 在 CI 环境中自动缩减至 20 步，本地开发保持 100 步。
     /// 本地 100 步 × 0.4s 休眠 + UI 响应延迟可能超过默认 120s 超时，故显式提升至 300s。
+    ///
+    /// 业界标准超时防护：`executionTimeAllowance` 配合 `-test-timeouts-enabled` 编译标志，
+    /// 当测试超时时 XCTest 框架自动标记失败并继续下一个测试，而非挂起整个测试套件。
+    /// 这解决了全量测试运行后期模拟器内存耗尽导致 `tap()`/`press()` 事件合成无限等待 idle 的问题。
     func testWildMonkeyClickTraversal() throws {
         // 本地 100 步 Monkey 测试需要更长的执行时间 allowance
+        // 设置 300s 上限：100 步 × 0.4s 休眠 + UI 响应延迟 ≈ 200s 正常耗时 + 100s 安全余量
         executionTimeAllowance = 300
 
         let isCI = ProcessInfo.processInfo.environment["CI"] == "true"

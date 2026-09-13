@@ -16,7 +16,7 @@ import CoreSpotlight
 
 /// iOS 平台专用服务注册器
 @MainActor
-struct iOSPlatformRegistrar: PlatformRegistrar {
+struct iOSPlatformRegistrar {
     
     /// 注册 iOS 特有能力
     static func registerServices(in container: ServiceContainer) {

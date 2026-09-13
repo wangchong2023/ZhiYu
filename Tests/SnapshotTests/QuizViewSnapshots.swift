@@ -28,6 +28,7 @@ final class QuizViewSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
     }
 

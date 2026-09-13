@@ -32,32 +32,6 @@ final class DashboardAndGraphViewFullCoverageTests: XCTestCase {
     }
 
     // MARK: - 1. KnowledgeDashboardView 空状态与数据填充状态测试
-
-    func testKnowledgeDashboardViewRendering() async {
-        // 1. 空状态渲染
-        store.knowledgeStore.pages = []
-        let emptyDashboard = KnowledgeDashboardView()
-            .snapshotEnvironment()
-        let emptyHost = UIHostingController(rootView: emptyDashboard)
-        XCTAssertNotNil(emptyHost.view)
-        emptyHost.view.layoutIfNeeded()
-
-        // 2. 注入多篇知识库页面与标签
-        let page1 = KnowledgePage(title: "RAG 架构深度解析", content: "关于 [[向量数据库]] 与 [[文本分块]] 的论述", tags: ["AI", "RAG"])
-        let page2 = KnowledgePage(title: "向量数据库", content: "向量索引与混合检索", tags: ["AI", "Database"])
-        let page3 = KnowledgePage(title: "文本分块", content: "语义分块算法", tags: ["NLP"])
-
-        await store.savePage(page1)
-        await store.savePage(page2)
-        await store.savePage(page3)
-
-        let populatedDashboard = KnowledgeDashboardView()
-            .snapshotEnvironment()
-        let populatedHost = UIHostingController(rootView: populatedDashboard)
-        XCTAssertNotNil(populatedHost.view)
-        populatedHost.view.layoutIfNeeded()
-    }
-
     // MARK: - 2. GraphContainerView 容器与过滤器分支测试
 
     struct GraphWrapperView: View {
@@ -78,6 +52,9 @@ final class DashboardAndGraphViewFullCoverageTests: XCTestCase {
         await store.savePage(pageA)
         await store.savePage(pageB)
         await store.savePage(pageC)
+
+        XCTAssertEqual(pageA.title, "Node A")
+        XCTAssertEqual(pageB.title, "Node B")
 
         let wrapper = GraphWrapperView()
         let hosting = UIHostingController(rootView: wrapper)

@@ -55,6 +55,7 @@ final class MultiVaultSwitchTests: XCTestCase {
         
         // 核心步骤 3：重置 DI 容器，搭建纯净的全局 Mock 环境
         ServiceContainer.shared.reset()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         
         cancellables.removeAll()
@@ -92,17 +93,47 @@ final class MultiVaultSwitchTests: XCTestCase {
         try await DatabaseManager.shared.switchDatabase(to: vaultAID, at: dbAURL)
         StorageModuleRegistrar.register(in: ServiceContainer.shared)
         let storeA = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
-        _ = await storeA.anyCreatePage(title: "PageA", pageType: .concept, customIcon: "doc", content: "ContentA", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
+        _ = try? await storeA.createPage(
+            title: "PageA",
+            pageType: .concept,
+            customIcon: "doc",
+            content: "ContentA",
+            tags: [],
+            sourceURL: nil,
+            rawSnippet: nil,
+            fileSize: nil,
+            sourceType: nil
+        )
         
         try await DatabaseManager.shared.switchDatabase(to: vaultBID, at: dbBURL)
         StorageModuleRegistrar.register(in: ServiceContainer.shared)
         let storeB = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
-        _ = await storeB.anyCreatePage(title: "PageB", pageType: .concept, customIcon: "doc", content: "ContentB", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
+        _ = try? await storeB.createPage(
+            title: "PageB",
+            pageType: .concept,
+            customIcon: "doc",
+            content: "ContentB",
+            tags: [],
+            sourceURL: nil,
+            rawSnippet: nil,
+            fileSize: nil,
+            sourceType: nil
+        )
         
         try await DatabaseManager.shared.switchDatabase(to: vaultCID, at: dbCURL)
         StorageModuleRegistrar.register(in: ServiceContainer.shared)
         let storeC = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
-        _ = await storeC.anyCreatePage(title: "PageC", pageType: .concept, customIcon: "doc", content: "ContentC", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
+        _ = try? await storeC.createPage(
+            title: "PageC",
+            pageType: .concept,
+            customIcon: "doc",
+            content: "ContentC",
+            tags: [],
+            sourceURL: nil,
+            rawSnippet: nil,
+            fileSize: nil,
+            sourceType: nil
+        )
         
         // 阶段二：使用 TaskGroup 发起 12 个多线程高并发 Task，高频竞速切换这三个库，并在切换后尝试立即读写
         let concurrencyLevel = 12

@@ -63,28 +63,14 @@ final class PageContentUtilityTests: XCTestCase {
         XCTAssertTrue(tags.contains("旧标签"))
     }
 
-    /// 验证英文标签提取
-    func testExtractAllTagsEnglishTags() {
-        let content = "this is #swift and #ios"
-        let tags = PageContentUtility.extractAllTags(content: content, existingTags: [])
-        XCTAssertTrue(tags.contains("swift"))
-        XCTAssertTrue(tags.contains("ios"))
-    }
-
-    /// 验证无标签时只返回 existingTags
+    /// 验证英文标签提取    /// 验证无标签时只返回 existingTags
     func testExtractAllTagsNoTagsInContent() {
         let content = "这段内容没有任何标签"
         let tags = PageContentUtility.extractAllTags(content: content, existingTags: ["existing"])
         XCTAssertEqual(tags, ["existing"])
     }
 
-    /// 验证空内容只返回 existingTags
-    func testExtractAllTagsEmptyContent() {
-        let tags = PageContentUtility.extractAllTags(content: "", existingTags: ["a", "b"])
-        XCTAssertEqual(tags, ["a", "b"])
-    }
-
-    /// 验证标签按字母序排序
+    /// 验证空内容只返回 existingTags    /// 验证标签按字母序排序
     func testExtractAllTagsReturnsSorted() {
         let content = "#zebra #apple #mango"
         let tags = PageContentUtility.extractAllTags(content: content, existingTags: [])

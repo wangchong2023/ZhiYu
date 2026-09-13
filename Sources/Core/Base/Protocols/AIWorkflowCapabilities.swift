@@ -15,7 +15,7 @@ import Foundation
 /// 本协议定义了领域层可以直接调用的 AI 工作流关键操作，
 /// 通过协议抽象避免领域层（Domain）直接引用具体的业务层 Store（Features），保持架构纯净与单向依赖。
 @MainActor
-public protocol AIWorkflowCapabilities: AnyObject {
+public protocol AIWorkflowCapabilities: AnyObject, Sendable {
     
     /// 移除特定的 AI 重构建议
     ///

@@ -329,7 +329,7 @@ final class SpeechErrorDescriptionTests: XCTestCase {
 // MARK: - AIAnalyticsService token 计算逻辑测试
 
 /// 覆盖 `AIAnalyticsService.recordRAGMetrics` 中的 token 计算公式（通过提取的纯函数验证）
-final class AIAnalyticsTokenCalculationTests: XCTestCase {
+final class InfraAIAnalyticsTokenCalculationTests: XCTestCase {
 
     /// 验证 token 计算公式：字符数 / charactersPerToken
     func testTokenCalculationFormula() {
@@ -364,18 +364,18 @@ final class AIAnalyticsTokenCalculationTests: XCTestCase {
     /// 验证 recordUsage 在单测环境下被 guard 拦截（不崩溃）
     func testRecordUsageNoCrashInTestEnvironment() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting, "单测环境防护应开启")
         service.recordUsage(model: "test", response: ["usage": ["prompt_tokens": 10, "completion_tokens": 5]], latency: 100)
-        // 不崩溃即通过（guard NSClassFromString("XCTestCase") == nil else { return }）
     }
 
     /// 验证 recordRAGMetrics 在单测环境下被 guard 拦截（不崩溃）
     func testRecordRAGMetricsNoCrashInTestEnvironment() {
         let service = AIAnalyticsService()
+        XCTAssertTrue(TestModeDetector.isUnitTesting, "单测环境防护应开启")
         service.recordRAGMetrics(
             query: "测试查询", response: "测试回复", context: "上下文",
             sources: nil, systemPrompt: "系统提示", modelName: "test-model", latency: 50
         )
-        // 不崩溃即通过
     }
 }
 
@@ -438,9 +438,8 @@ final class MaintenanceServiceSeedContentTests: XCTestCase {
         // pages 非空时应直接 return，不调用 InitialNotebookGenerator
         let service = MaintenanceService()
         let page = KnowledgePage(title: "已有页面", content: "内容")
-        // 不应崩溃，且不应注入新数据
         await service.seedDefaultContent(pages: [page], vaultName: nil)
-        // 通过即说明 guard return 分支被覆盖
+        XCTAssertEqual(page.title, "已有页面", "非空页面列表应跳过默认内容注入")
     }
 
     /// 覆盖 pages 为空 + vaultName 为 nil 时的空路径分支。

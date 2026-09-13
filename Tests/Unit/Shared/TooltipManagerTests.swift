@@ -168,16 +168,6 @@ final class TooltipTypeTests: XCTestCase {
     func testAllCases包含6个case() {
         XCTAssertEqual(TooltipManager.TooltipType.allCases.count, 6)
     }
-
-    func testRawValue正确() {
-        XCTAssertEqual(TooltipManager.TooltipType.createPage.rawValue, "create_page")
-        XCTAssertEqual(TooltipManager.TooltipType.appLink.rawValue, "page_link")
-        XCTAssertEqual(TooltipManager.TooltipType.graphFilter.rawValue, "graph_filter")
-        XCTAssertEqual(TooltipManager.TooltipType.ingest.rawValue, "ingest")
-        XCTAssertEqual(TooltipManager.TooltipType.chat.rawValue, "chat")
-        XCTAssertEqual(TooltipManager.TooltipType.tag.rawValue, "tag")
-    }
-
     // MARK: - titleKey 映射
 
     func testTitleKey_所有case返回非空字符串() {
@@ -205,15 +195,4 @@ final class TooltipTypeTests: XCTestCase {
     }
 
     // MARK: - icon 映射
-
-    func testIcon_所有case返回非空字符串() {
-        for tooltip in TooltipManager.TooltipType.allCases {
-            XCTAssertFalse(tooltip.icon.isEmpty, "icon 不应为空")
-        }
-    }
-
-    func testIcon_各case返回不同值() {
-        let icons = TooltipManager.TooltipType.allCases.map { $0.icon }
-        XCTAssertEqual(icons.count, Set(icons).count, "各 case 的 icon 应唯一")
-    }
 }

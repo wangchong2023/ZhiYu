@@ -26,19 +26,23 @@ final class UserProfileMenuAndContentViewDeepTests: XCTestCase {
     // MARK: - 1. UserProfileMenu 渲染测试
 
     func testUserProfileMenu_Hierarchy() {
+        let authSession = AuthSession.shared
         let host = UserProfileMenu()
             .snapshotEnvironment()
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertNotNil(authSession)
     }
 
     func testUserProfileMenuSheetContent_Hierarchy() {
-        let host = UserProfileMenuSheetContent(isShowingPopover: .constant(true))
+        var isShowing = true
+        let host = UserProfileMenuSheetContent(isShowingPopover: Binding(get: { isShowing }, set: { isShowing = $0 }))
             .snapshotEnvironment()
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertTrue(isShowing)
     }
 
     func testUserProfileMenu_MenuActionEnum() {
@@ -51,10 +55,12 @@ final class UserProfileMenuAndContentViewDeepTests: XCTestCase {
     // MARK: - 2. ContentView 主场景容器测试
 
     func testContentView_Hierarchy() {
+        let router = Router.shared
         let host = ContentView()
             .snapshotEnvironment()
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertNotNil(router)
     }
 }

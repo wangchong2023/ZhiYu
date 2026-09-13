@@ -14,7 +14,13 @@
 
 #if !os(watchOS)
 import Foundation
-import EventKit
+@preconcurrency import EventKit
+
+/// 线程安全包装器，用于在 @Sendable 闭包中持有非 Sendable 的 EKEventStore
+private final class UnsafeBox<T>: @unchecked Sendable {
+    let value: T
+    init(_ value: T) { self.value = value }
+}
 
 /// iOS/macOS 提醒事项服务实现
 final class iOSReminderService: ReminderServiceProtocol, @unchecked Sendable {
@@ -40,17 +46,18 @@ final class iOSReminderService: ReminderServiceProtocol, @unchecked Sendable {
     init() {
         let store = EKEventStore()
         self.eventStore = store
+        let unsafeStore = UnsafeBox(store)
         self.requestAccessHandler = {
             if #available(iOS 17.0, macOS 14.0, *) {
-                return try await store.requestFullAccessToReminders()
+                return try await unsafeStore.value.requestFullAccessToReminders()
             } else {
-                return try await store.requestAccess(to: .reminder)
+                return try await unsafeStore.value.requestAccess(to: .reminder)
             }
         }
-        self.defaultCalendarHandler = { store.defaultCalendarForNewReminders() }
-        self.calendarsHandler = { store.calendars(for: $0) }
+        self.defaultCalendarHandler = { unsafeStore.value.defaultCalendarForNewReminders() }
+        self.calendarsHandler = { unsafeStore.value.calendars(for: $0) }
         self.saveHandler = { reminder, commit in
-            try store.save(reminder, commit: commit)
+            try unsafeStore.value.save(reminder, commit: commit)
         }
     }
 

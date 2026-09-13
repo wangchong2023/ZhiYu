@@ -30,6 +30,7 @@ final class NotebookHubInteractiveSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         VaultService.shared.vaults = []
         VaultService.shared.selectedVaultID = nil

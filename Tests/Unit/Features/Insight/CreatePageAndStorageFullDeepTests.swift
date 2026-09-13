@@ -25,7 +25,9 @@ final class CreatePageAndStorageFullDeepTests: XCTestCase {
     }
 
     func testCreatePageView_Hierarchy() {
-        let host = CreatePageView()
+        let createPage = CreatePageView()
+        XCTAssertNotNil(createPage)
+        let host = createPage
             .snapshotEnvironment()
             .renderInWindow()
 

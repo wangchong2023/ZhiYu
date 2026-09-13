@@ -27,23 +27,27 @@ final class IconPickerAndLintFixDeepTests: XCTestCase {
     // MARK: - 1. IconPickerView 测试
 
     func testIconPickerView_DefaultState() {
+        var selectedIcon: String?
         let host = NavigationStack {
-            IconPickerView(selectedIcon: .constant(nil))
+            IconPickerView(selectedIcon: Binding(get: { selectedIcon }, set: { selectedIcon = $0 }))
         }
         .snapshotEnvironment()
         .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertNil(selectedIcon, "初始未选择图标")
     }
 
     func testIconPickerView_SelectedState() {
+        var selectedIcon: String? = "star.fill"
         let host = NavigationStack {
-            IconPickerView(selectedIcon: .constant("star.fill"))
+            IconPickerView(selectedIcon: Binding(get: { selectedIcon }, set: { selectedIcon = $0 }))
         }
         .snapshotEnvironment()
         .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertEqual(selectedIcon, "star.fill")
     }
 
     // MARK: - 2. LintIssueRow 测试
@@ -62,5 +66,7 @@ final class IconPickerAndLintFixDeepTests: XCTestCase {
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertEqual(issue.severity, .warning)
+        XCTAssertEqual(issue.type, .brokenLink)
     }
 }

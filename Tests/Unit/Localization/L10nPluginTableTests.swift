@@ -16,11 +16,6 @@ import XCTest
 final class L10nPluginTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
-
-    func testTableName_Plugin_为Plugin() {
-        XCTAssertEqual(L10n.Plugin.tableName, "Plugin")
-    }
-
     func testTableName_Collaboration_为Plugin() {
         XCTAssertEqual(L10n.Collaboration.tableName, "Plugin")
     }

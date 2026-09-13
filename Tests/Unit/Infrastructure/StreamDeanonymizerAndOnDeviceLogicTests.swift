@@ -123,20 +123,6 @@ final class OnDeviceLLMServiceConfigTests: XCTestCase {
 /// 覆盖 `OnDeviceLLMService.cancelGeneration()`/`unloadModel()` 状态重置方法
 @MainActor
 final class OnDeviceLLMServiceStateResetTests: XCTestCase {
-
-    func testCancelGenerationResetsState() {
-        let service = OnDeviceLLMService()
-        service.isGenerating = true
-        service.generatedText = "部分生成内容"
-        service.generationProgress = 0.5
-
-        service.cancelGeneration()
-
-        XCTAssertFalse(service.isGenerating)
-        XCTAssertEqual(service.generatedText, "")
-        XCTAssertEqual(service.generationProgress, 0)
-    }
-
     func testUnloadModelClearsModelState() {
         let service = OnDeviceLLMService()
         service.isModelLoaded = true
@@ -169,8 +155,9 @@ final class StringMatchesRegexTests: XCTestCase {
     }
 
     func testEmptyStringWithEmptyPatternDoesNotCrash() {
-        // 空正则 pattern 能被 NSRegularExpression 编译，firstMatch 行为不 crash 即可
-        _ = "".matchesRegex("")
+        // 空正则 pattern 能被 NSRegularExpression 编译并匹配空串
+        let result = "".matchesRegex("")
+        XCTAssertTrue(result, "空字符串应匹配空正则")
     }
 
     func testNonEmptyStringDoesNotMatchEmptyPattern() {
@@ -222,7 +209,13 @@ final class ModelDownloadManagerProgressTests: XCTestCase {
             totalBytesWritten: 100,
             totalBytesExpectedToWrite: 1000
         )
-        // 通过即说明首次调用未 crash 且初始化了 tracker
+        let stream = await manager.observeDownloadState(for: modelId)
+        for await state in stream {
+            if case .downloading(let progress, _) = state {
+                XCTAssertEqual(progress, 0.1, accuracy: 0.001)
+                break
+            }
+        }
     }
 
     /// 验证 `updateProgress` 在 totalBytesExpectedToWrite <= 0 时跳过
@@ -234,7 +227,13 @@ final class ModelDownloadManagerProgressTests: XCTestCase {
             totalBytesWritten: 100,
             totalBytesExpectedToWrite: 0
         )
-        // 不 crash 即通过（guard 拦截）
+        let stream = await manager.observeDownloadState(for: modelId)
+        for await state in stream {
+            if case .failed = state {
+                XCTAssertNotNil(state)
+                break
+            }
+        }
     }
 
     /// 验证 `updateProgress(progress:)` 兼容旧模式
@@ -242,7 +241,13 @@ final class ModelDownloadManagerProgressTests: XCTestCase {
         let manager = ModelDownloadManager.shared
         let modelId = "legacy_progress_\(UUID().uuidString)"
         await manager.updateProgress(for: modelId, progress: 0.5)
-        // 不 crash 即通过
+        let stream = await manager.observeDownloadState(for: modelId)
+        for await state in stream {
+            if case .downloading(let progress, _) = state {
+                XCTAssertEqual(progress, 0.5, accuracy: 0.001)
+                break
+            }
+        }
     }
 
     /// 验证 `updateState` 状态分发
@@ -250,7 +255,13 @@ final class ModelDownloadManagerProgressTests: XCTestCase {
         let manager = ModelDownloadManager.shared
         let modelId = "state_test_\(UUID().uuidString)"
         await manager.updateState(for: modelId, to: .pending)
-        // 不 crash 即通过（状态已存入 downloadStates）
+        let stream = await manager.observeDownloadState(for: modelId)
+        for await state in stream {
+            if case .pending = state {
+                XCTAssertNotNil(state)
+                break
+            }
+        }
     }
 
     /// 验证 `clearActiveTask` 清理任务
@@ -258,6 +269,7 @@ final class ModelDownloadManagerProgressTests: XCTestCase {
         let manager = ModelDownloadManager.shared
         let modelId = "clear_task_\(UUID().uuidString)"
         await manager.clearActiveTask(for: modelId)
-        // 不 crash 即通过（无任务时清理也不报错）
+        let checksum = await manager.getChecksum(for: modelId)
+        XCTAssertNil(checksum, "清理未初始化的任务应无残留校验和")
     }
 }

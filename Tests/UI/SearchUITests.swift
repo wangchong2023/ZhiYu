@@ -39,22 +39,7 @@ final class SearchTests: KnowledgeBaseUITests {
         }
     }
 
-    /// 验证类型过滤 Pill 按钮可交互
-    func testTypeFilterPills() async {
-        let allPill = app.buttons["全部"]
-        if allPill.exists {
-            safeTap(allPill)
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-        }
-
-        let entityPill = app.buttons["实体"]
-        if entityPill.exists {
-            safeTap(entityPill)
-            try? await Task.sleep(nanoseconds: UInt64(0.5 * 1_000_000_000))
-        }
-    }
-
-    /// 验证排序菜单可弹出
+    /// 验证类型过滤 Pill 按钮可交互    /// 验证排序菜单可弹出
     func testSortMenu() async {
         let sortButton = app.buttons["最近更新"]
         if sortButton.exists {

@@ -31,6 +31,7 @@ final class TaskCenterInteractiveSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
         @Dependency(\.taskCenter) var taskCenter
         (taskCenter as? TaskCenter)?.reset()

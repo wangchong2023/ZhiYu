@@ -15,7 +15,7 @@ import NaturalLanguage
 
 // MARK: - LLM Context Builder
 /// 构建系统提示词并为 LLM 查询检索相关知识库上下文。
-final class LLMContextBuilder: Sendable {
+final class LLMContextBuilder: @unchecked Sendable {
 
     // MARK: - 依赖注入
     @Dependency(\.embeddingProvider) private var embeddingProvider: any EmbeddingProvider

@@ -11,9 +11,10 @@
 
 import Foundation
 import os
+import UFPCore
 
 /// 限制特定写入操作的频率，采用 10Hz 滑动窗口限流算法保护底盘 (TC-DEE-06)
-final class IntentRateLimiter: @unchecked Sendable {
+final class IntentRateLimiter: @unchecked Sendable, TestStateResettable {
     /// 单例实例
     static let shared = IntentRateLimiter()
 
@@ -24,7 +25,10 @@ final class IntentRateLimiter: @unchecked Sendable {
     private let lock = OSAllocatedUnfairLock()
     private var requests: [Date] = []
 
-    private init() {}
+    private init() {
+        // 单例自注册到测试状态重置注册表
+        TestStateResetRegistry.shared.register(self)
+    }
 
     /// 尝试获取访问许可。如果 1 秒内请求次数超过 10 次，则熔断拒绝，否则允许并记录。
     /// - Returns: 是否允许本次操作
@@ -48,5 +52,12 @@ final class IntentRateLimiter: @unchecked Sendable {
     /// 重置限流器（主要用于单元测试）
     func reset() {
         lock.withLock { requests.removeAll() }
+    }
+
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离
+    func resetStateForTesting() {
+        reset()
     }
 }

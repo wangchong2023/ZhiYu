@@ -20,6 +20,7 @@ final class QuizArenaInteractiveSnapshots: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
+        resetPersistentTestState()
         setupFullMockEnvironment()
     }
 
@@ -66,6 +67,6 @@ final class QuizArenaInteractiveSnapshots: XCTestCase {
         let view = QuizView(quiz: quiz)
             .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

@@ -87,7 +87,7 @@ Tools/
 - `ci-run-test-with-coverage.sh`：汇总跑测并触发生命周期门禁。
 - `ci-assert-test-coverage.py`：解析 `.xcresult` 报文，强制执行核心 Domain 覆盖率门禁。
 - `analyze_coverage_gaps.py`：全工程代码覆盖率与分支缺口系统性分析工具，定位拉低覆盖率的核心文件与代码块。
-- `ci-run-test-progress.sh`：解析 xcodebuild 管道输出，实时格式化当前跑测进度。
+- `ci-run-test-progress.sh`：管道式实时监控 xcodebuild 测试进展，输出进度百分比、通过/失败/跳过数、失败即时提示 + 错误详情、Top 5 最慢用例、最终失败汇总。已集成至 Makefile `test`/`test-unit`/`test-ui` 目标。
 
 ### Analyze (静态分析)
 - `ci-run-code-static-analysis.sh`：并发执行架构、规范、卫生等 12 项检查。

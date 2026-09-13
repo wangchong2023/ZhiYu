@@ -84,7 +84,7 @@ final class PluginRuntimeTests: XCTestCase {
         let manifest = PluginManifest(id: "v1.plugin", version: "1.5.0", permissions: [], names: ["en": "V1"], descriptions: ["en": "V1 plugin"])
         let plugin = MockKnowledgePlugin(manifest: manifest)
         runtime.loadPlugin(plugin)
-        // 验证不崩溃即可
+        XCTAssertTrue(registry.plugins.contains(where: { $0.manifest.id == "v1.plugin" }), "v1 插件应成功注册")
     }
 
     // MARK: - unloadPlugin
@@ -100,7 +100,7 @@ final class PluginRuntimeTests: XCTestCase {
 
     func testUnloadPlugin_nonExistentId_noCrash() {
         runtime.unloadPlugin(id: "nonexistent.plugin")
-        // 验证不崩溃即可
+        XCTAssertFalse(registry.plugins.contains(where: { $0.manifest.id == "nonexistent.plugin" }), "不存在的插件卸载后仍不应在注册表中")
     }
 
     func testUnloadPlugin_clearsExtensionPoints() {

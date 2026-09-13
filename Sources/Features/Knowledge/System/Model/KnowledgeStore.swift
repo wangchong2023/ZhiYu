@@ -42,7 +42,6 @@ public final class KnowledgeStore {
     // MARK: - 核心依赖 (DI)
 
     /// [L1.5] 知识库领域仓储 — 遵循 DIP，L2 不再直接依赖 L1 SQLiteStore
-    @ObservationIgnored @Dependency(\.pageStoreCapabilities) private var pageStore: any AnyPageStoreCapabilities
     @ObservationIgnored @Dependency(\.pageManager) private var pageManager: KnowledgePageManager
     /// Factory 风格：可选依赖，测试环境或 DI 未就绪时为 nil。
     /// 注册点在 KnowledgeModuleRegistrar，但测试路径可能跳过注册链。

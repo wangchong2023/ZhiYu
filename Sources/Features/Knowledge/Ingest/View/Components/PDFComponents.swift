@@ -21,6 +21,23 @@ private enum PDFUIConstants {
     static let pageStartPlaceholder: String = "1"
 }
 
+// MARK: - PDF 页码安全计算工具
+enum PDFPageRangeCalculator {
+    /// 计算安全的 PDF 页码范围（0-indexed）
+    /// - Parameters:
+    ///   - pageStart: 用户输入的起始页（1-indexed）
+    ///   - pageEnd: 用户输入的终止页（1-indexed）
+    ///   - pageCount: PDF 总页数
+    /// - Returns: 安全的 0-indexed Range，如果输入无效则返回 nil
+    static func calculateSafeRange(pageStart: Int, pageEnd: Int, pageCount: Int) -> Range<Int>? {
+        guard pageCount > 0, pageEnd > 0, pageStart <= pageEnd else { return nil }
+        let clampedStart = max(0, pageStart - 1)
+        let clampedEnd = min(pageCount, pageEnd)
+        guard clampedStart < clampedEnd else { return nil }
+        return clampedStart..<clampedEnd
+    }
+}
+
 // MARK: - PDF Ingest Sheet
 /// PDF 资料入库配置面板组件
 /// 负责配置 PDF 内容的提取方式（全文、范围或仅高亮），并设定目标 知识库 页面的元数据

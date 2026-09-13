@@ -51,16 +51,6 @@ class TooltipManager: ObservableObject {
             }
         }
 
-        var icon: String {
-            switch self {
-            case .createPage: return "plus.circle.fill"
-            case .appLink: return "link"
-            case .graphFilter: return "line.3.horizontal.decrease.circle"
-            case .ingest: return "tray.and.arrow.down.fill"
-            case .chat: return "brain.head.profile"
-            case .tag: return "tag.fill"
-            }
-        }
     }
 
     init(defaults: UserDefaults = .standard) {

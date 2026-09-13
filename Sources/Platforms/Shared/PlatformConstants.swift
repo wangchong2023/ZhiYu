@@ -57,6 +57,10 @@ public enum PlatformConstants {
     public enum WidgetWatch {
         /// 进度环分母（页面数满格阈值）
         public static let progressRingDenominator: Double = 100.0
+        /// 进度环尺寸（直径）
+        public static let progressRingSize: CGFloat = 80.0
+        /// 最近更新列表圆点尺寸
+        public static let recentItemDotSize: CGFloat = 6.0
         /// 最近更新列表最大显示条数
         public static let maxRecentTitles: Int = 5
         /// "万" 单位阈值

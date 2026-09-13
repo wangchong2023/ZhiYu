@@ -53,6 +53,9 @@ final class PluginDetailAndPageDetailDeepTests: XCTestCase {
         .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertEqual(plugin.id, "com.zhiyu.plugin.test")
+        XCTAssertEqual(plugin.version, "1.2.0")
+        XCTAssertEqual(plugin.category, "Tool")
     }
 
     // MARK: - 2. PageDetailAISection 渲染测试
@@ -69,6 +72,8 @@ final class PluginDetailAndPageDetailDeepTests: XCTestCase {
             .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertEqual(page.title, "LLM 核心原理解析")
+        XCTAssertEqual(page.pageType, .concept)
     }
 
     // MARK: - 3. ComparisonDetailBodyView 渲染测试
@@ -102,5 +107,8 @@ final class PluginDetailAndPageDetailDeepTests: XCTestCase {
         .renderInWindow()
 
         XCTAssertNotNil(host.view)
+        XCTAssertEqual(page.title, "Swift vs Rust")
+        XCTAssertEqual(page.pageType, .comparison)
+        XCTAssertTrue(page.content.contains("Swift"))
     }
 }

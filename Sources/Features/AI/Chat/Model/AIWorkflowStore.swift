@@ -194,7 +194,7 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
     }
 
     /// 查找与当前页面语义相似的页面（基于向量嵌入）
-    public func findSimilarPages(for page: KnowledgePage, limit: Int = defaultSimilarPageLimit) async -> [KnowledgePage] {
+    public func findSimilarPages(for page: KnowledgePage, limit: Int = AIWorkflowStore.defaultSimilarPageLimit) async -> [KnowledgePage] {
         let results = await vectorStore.embeddingProvider.search(query: page.title, topK: limit + 1)
         
         var similarPages: [KnowledgePage] = []

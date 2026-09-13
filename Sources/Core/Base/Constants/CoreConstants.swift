@@ -170,6 +170,10 @@ public enum CoreConstants {
         public static let bold: String = SystemConstants.MarkdownSyntax.bold
         public static let italic = "__"
         public static let strikethrough = "~~"
+        /// 引用 SystemConstants.MarkdownSyntax.wikiLinkOpen
+        public static let wikiLinkOpen: String = SystemConstants.MarkdownSyntax.wikiLinkOpen
+        /// 引用 SystemConstants.MarkdownSyntax.wikiLinkClose
+        public static let wikiLinkClose: String = SystemConstants.MarkdownSyntax.wikiLinkClose
     }
 
     // MARK: - 日志拼接符 (Log Concatenation)

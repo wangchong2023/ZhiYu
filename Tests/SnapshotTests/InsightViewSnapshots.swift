@@ -37,6 +37,11 @@ final class InsightViewSnapshots: XCTestCase {
         }
     }
 
+    override func setUp() async throws {
+        try await super.setUp()
+        resetPersistentTestState()
+    }
+
     override func tearDown() async throws {
         if let original = originalLanguageMode {
             Localized.languageMode = original

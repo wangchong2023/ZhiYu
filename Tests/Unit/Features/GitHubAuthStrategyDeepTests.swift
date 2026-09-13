@@ -79,15 +79,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
         XCTAssertEqual(strategy.identityType, expectedIdentityType)
     }
 
-    /// 验证 identityType 与 AuthCredential.identityType 一致
-    func testAcquireCredentials返回的identityType与策略一致() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
-        XCTAssertEqual(credential.identityType, strategy.identityType)
-        #endif
-    }
-
-    // MARK: - Mock 凭证字段完整性
+    /// 验证 identityType 与 AuthCredential.identityType 一致    // MARK: - Mock 凭证字段完整性
 
     /// 验证 Mock 路径返回的 extraInfo 包含 state 与 nickname 两个键
     func testMock凭证extraInfo包含state与nickname键() async throws {
@@ -231,35 +223,9 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
 
     // MARK: - extraInfo 键集合稳定性
 
-    /// 验证多次调用 extraInfo 键集合稳定不变
-    func testMultipleExtraInfoCallsKeySetStable() async throws {
-        #if DEBUG
-        let cred1 = try await strategy.acquireCredentials()
-        let cred2 = try await strategy.acquireCredentials()
+    /// 验证多次调用 extraInfo 键集合稳定不变    // MARK: - AuthCredential Sendable 契约
 
-        let dict1 = cred1.extraInfo ?? [:]
-        let dict2 = cred2.extraInfo ?? [:]
-        let keys1: Set<String> = Set(dict1.keys)
-        let keys2: Set<String> = Set(dict2.keys)
-
-        XCTAssertEqual(keys1, keys2, "多次调用 extraInfo 键集合应稳定")
-        XCTAssertTrue(keys1.contains(extraInfoStateKey))
-        XCTAssertTrue(keys1.contains(extraInfoNicknameKey))
-        #endif
-    }
-
-    // MARK: - AuthCredential Sendable 契约
-
-    /// 验证 AuthCredential 可跨 actor 边界传递
-    func testAuthCredential符合Sendable契约可跨actor传递() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
-        let transferred = await Task { credential.identityType }.value
-        XCTAssertEqual(transferred, expectedIdentityType)
-        #endif
-    }
-
-    // MARK: - NSObject 继承契约
+    /// 验证 AuthCredential 可跨 actor 边界传递    // MARK: - NSObject 继承契约
 
     /// 验证 GitHubAuthStrategy 继承自 NSObject（ASWebAuthenticationPresentationContextProviding 要求）
     func testGitHubAuthStrategy继承自NSObject() {

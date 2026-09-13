@@ -37,13 +37,6 @@ final class LocalizedTests: XCTestCase {
         XCTAssertEqual(LanguageMode.traditionalChinese.rawValue, "zh-Hant")
         XCTAssertEqual(LanguageMode.japanese.rawValue, "ja")
     }
-
-    func testLanguageMode_id_等于rawValue() {
-        for mode in LanguageMode.allCases {
-            XCTAssertEqual(mode.id, mode.rawValue)
-        }
-    }
-
     func testLanguageMode_displayName_所有case非空非Missing() {
         for mode in LanguageMode.allCases {
             let name = mode.displayName

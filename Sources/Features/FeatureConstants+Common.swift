@@ -23,8 +23,6 @@ extension FeatureConstants {
         static let orange: String = "orange"
         static let yellow: String = "yellow"
         static let pink: String = "pink"
-        static let teal: String = "teal"
-        static let gray: String = "gray"
     }
 
     // MARK: - Mock 颜色名补充 (Mock Color Name Supplement)
@@ -54,7 +52,6 @@ extension FeatureConstants {
         static let workspaceBenchFileName: String = "workspace_bench.jpg"
         static let litePlanName: String = "Lite"
         static let github = "github"
-        static let carrier = "carrier"
         static let wifi = "WiFi"
         static let latency23ms = "23ms"
     }
@@ -85,8 +82,6 @@ extension FeatureConstants {
     enum ModuleName {
         static let tagStore = "TagStore"
         static let googleAuthStrategy = "GoogleAuthStrategy"
-        static let weChatAuthStrategy = "WeChatAuthStrategy"
-        static let carrierAuthStrategy = "CarrierAuthStrategy"
         static let aiWorkflowStore = "AIWorkflowStore"
         static let ingestService = "IngestService"
         static let dashboard = "Dashboard"
@@ -229,7 +224,6 @@ extension FeatureConstants {
     // MARK: - 辅助功能标识 (Accessibility Identifier)
     /// accessibilityIdentifier 前缀
     enum AccessibilityID {
-        static let filterPrefix = "filter-"
         static let filterAll = "filter-all"
     }
 

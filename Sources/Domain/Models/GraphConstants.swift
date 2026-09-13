@@ -118,6 +118,8 @@ public enum GraphConstants {
         public static let labelFlatness: CGFloat = 0.2
         /// 标签文字深度
         public static let labelExtrusionDepth: CGFloat = 0.1
+        /// 标签最大字符数（防止 SceneKit C3DMeshCreateText 在超长文本上崩溃）
+        public static let labelMaxCharacterCount: Int = 80
         /// 标签发射强度
         public static let labelEmissionIntensity: Double = 0.3
         /// 边高亮不透明度

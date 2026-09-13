@@ -115,22 +115,4 @@ extension GraphLayoutProcessor {
         }
         return Array(surprising)
     }
-
-    /// 计算节点连接的独立社区数量
-    private static func countDistinctCommunities(
-        node: UUID,
-        nodeMap: [UUID: GraphNode],
-        edges: [GraphEdge]
-    ) -> Int {
-        var communities: Set<Int> = []
-        for edge in edges {
-            let neighborID: UUID?
-            if edge.source == node { neighborID = edge.target } else if edge.target == node { neighborID = edge.source } else { neighborID = nil }
-
-            if let nid = neighborID, let comm = nodeMap[nid]?.communityID {
-                communities.insert(comm)
-            }
-        }
-        return communities.count
-    }
 }

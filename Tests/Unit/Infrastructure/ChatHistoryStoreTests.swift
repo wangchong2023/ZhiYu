@@ -9,7 +9,7 @@
 import XCTest
 @testable import ZhiYu
 
-final class ChatHistoryStorePersistenceTests: XCTestCase {
+final class ChatHistoryStoreLifecycleTests: XCTestCase {
 
     private let historyKey = LLMConstants.ChatHistory.storageKey
 

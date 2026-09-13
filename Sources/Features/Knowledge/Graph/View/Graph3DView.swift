@@ -325,7 +325,15 @@ struct Graph3DView: View {
     }
 
     private func createLabelNode(title: String, nodeSize: CGFloat) -> SCNNode {
-        let text = SCNText(string: title, extrusionDepth: CGFloat(GraphConstants.ThreeD.labelExtrusionDepth))
+        // 防止 SceneKit C3DMeshCreateText 在超长文本上 SIGSEGV（模拟器尤其脆弱）
+        let safeTitle: String
+        if title.count > GraphConstants.ThreeD.labelMaxCharacterCount {
+            let endIndex = title.index(title.startIndex, offsetBy: GraphConstants.ThreeD.labelMaxCharacterCount - 1)
+            safeTitle = String(title[title.startIndex...endIndex]) + "…"
+        } else {
+            safeTitle = title
+        }
+        let text = SCNText(string: safeTitle, extrusionDepth: CGFloat(GraphConstants.ThreeD.labelExtrusionDepth))
         text.font = UIFont.boldSystemFont(ofSize: CGFloat(GraphConstants.ThreeD.labelFontSize))
         text.flatness = CGFloat(GraphConstants.ThreeD.labelFlatness)
         text.isWrapped = false

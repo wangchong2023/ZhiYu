@@ -161,13 +161,3 @@ struct TextChunkerProcessor: Sendable {
         state.currentStartIndex += max(0, oldChunkTextCount - overlapAmount)
     }
 }
-
-private extension String {
-
-    /// 索引
-    /// - Parameter index: 索引
-    /// - Returns: 返回值
-    func index(_ index: String.Index, offsetBy offset: Int, default defaultIndex: String.Index) -> String.Index {
-        return self.index(index, offsetBy: offset, limitedBy: self.startIndex) ?? defaultIndex
-    }
-}

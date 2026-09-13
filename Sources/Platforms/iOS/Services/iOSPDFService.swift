@@ -131,7 +131,9 @@ final class iOSPDFService: PDFServiceProtocol {
                 }
                 
                 text += page.string ?? ""
-                text += String(format: L10n.Ingest.PDF.pageSeparator, i + 1)
+                // 使用字符串插值替代 String(format:)，避免 %@ 与 Int 值类型在
+                // va_list 传递时触发 _NSDescriptionWithStringProxyFunc SIGSEGV
+                text += "\n\n--- \(L10n.Ingest.PDF.page) \(i + 1) ---\n\n"
             }
         }
         return text

@@ -16,7 +16,7 @@ import SwiftUI
 
 /// 奖章系统服务：负责追踪用户成就并触发奖励弹窗
 @MainActor
-final class MedalService: ObservableObject {
+final class MedalService: ObservableObject, TestStateResettable {
     static let shared = MedalService()
 
     private var cancellables: Set<AnyCancellable> = []
@@ -59,6 +59,8 @@ final class MedalService: ObservableObject {
     ]
 
     private init() {
+        // 单例自注册到测试状态重置注册表
+        TestStateResetRegistry.shared.register(self)
         loadEarnedMedals()
         observeEvents()
     }
@@ -129,5 +131,12 @@ final class MedalService: ObservableObject {
         earnedMedalIDs.removeAll()
         newlyEarnedMedal = nil
         keyStore?.removeObject(forKey: AppConstants.Keys.Storage.earnedMedals)
+    }
+
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离
+    func resetStateForTesting() {
+        reset()
     }
 }
