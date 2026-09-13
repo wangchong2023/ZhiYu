@@ -34,6 +34,7 @@ public struct PageDetailMetaSectionView: View {
 
     // MARK: - watchOS: 平铺展开
 
+    #if os(watchOS)
     private var watchOSLayout: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -50,6 +51,7 @@ public struct PageDetailMetaSectionView: View {
         .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
         .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
     }
+    #endif
 
     // MARK: - iOS / macOS: 可折叠
 

@@ -64,6 +64,7 @@ public struct PageDetailAIMenuButton: View {
 
     // MARK: - watchOS: 简化按钮
 
+    #if os(watchOS)
     private var simpleButton: some View {
         Button(action: onGenerateSummary) {
             Image(systemName: DesignSystem.Icons.sparkles)
@@ -71,6 +72,7 @@ public struct PageDetailAIMenuButton: View {
         }
         .disabled(isDisabled)
     }
+    #endif
 
     // MARK: - iOS / macOS: 完整菜单
 

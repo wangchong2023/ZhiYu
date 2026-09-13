@@ -54,10 +54,12 @@ public struct MeshGradientView: View {
         }
     }
     
+    #if os(watchOS)
     @ViewBuilder
     private func watchOSCanvasBackground(size: CGSize) -> some View {
         canvasGridBackground(size: size)
     }
+    #endif
     
     @ViewBuilder
     private func legacyCanvasBackground(size: CGSize) -> some View {
@@ -65,7 +67,7 @@ public struct MeshGradientView: View {
     }
 
     @ViewBuilder
-    private func canvasGridBackground(size: CGSize) -> some View {
+    private func canvasGridBackground(size _: CGSize) -> some View {
         Canvas { context, size in
             let gridPadding: CGFloat = 40
             let rows = Int(size.height / gridPadding)
