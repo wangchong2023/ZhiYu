@@ -42,7 +42,7 @@
 - **DatabaseManager.shared 单例测试隔离**：`reset()` 不重置 `state`/`activeTransactionsCount`；`setupForTesting`/`setup(at:)` 会触发 `databaseStateDidChange` 通知 → crash。测试中避免调用，改用直接赋值 `DatabaseManager.shared.dbWriter` + 独立 `DatabaseQueue`
 - **catch DatabaseError.xxx 模式在测试中需用 `if let dbError = error as? ZhiYu.DatabaseError, case .xxx = dbError`**
 - **全量测试需加 `-enableCodeCoverage YES`** 才能生成覆盖率数据供 `assert-test-coverage.py` 使用
-- **类名冲突需重命名**：`BackupServiceTests` 已存在于 `Tests/Unit/Services/ZhiYuServiceTests.swift` → 新文件重命名为 `BackupServiceSupplementTests`
+- **类名冲突需重命名**：`BackupServiceTests` 已存在于 `Tests/Unit/Services/ZhiYuServiceTests.swift` → 新文件重命名为 BackupServiceSupplementTests
 - **Mock 类不能是 `final class`** 如果需要被其他 Mock 继承
 - **`SecurityManager` 非 final 可子类化**：`MockSecurityManager` 已存在于 `Tests/Shared/TestMocks.swift:622`
 - **`KeyStoreProtocol` 是 `@MainActor`**：Mock 需标注 `@MainActor`，需实现全部 10 个方法

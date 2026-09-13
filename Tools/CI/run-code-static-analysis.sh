@@ -28,22 +28,29 @@ echo ""
 EXIT_CODE=0
 
 # 并行任务运行及日志重定向包装器
+# 第 4 参数（可选）："full" 表示失败时输出完整日志（不截断），适用于 doc drift 等需展示全部结果的检查
 run_parallel_task() {
     local name="$1"
     local log_name="$2"
     local cmd="$3"
-    
+    local output_mode="${4:-grep}"
+
     local log_file="$LOG_DIR/${log_name}.log"
     echo "  [START] $name..."
     eval "$cmd" > "$log_file" 2>&1
     local status=$?
-    
+
     if [ $status -ne 0 ]; then
         echo "  ❌ [FAILED] $name (退出状态码: $status)"
         echo "     👉 错误日志详见: file://$PWD/$log_file"
         echo "--------------------------------------------------"
-        # 提取关键报错行输出，确保 Xcode 可双击跳转定位
-        grep -E "error:|warning:|Exception:|PyCompileError:|L[0-9]+:" "$log_file" || tail -n 10 "$log_file"
+        if [ "$output_mode" = "full" ]; then
+            # 完整输出模式：直接展示全部日志（适用于幽灵引用列表等需完整可见的检查）
+            cat "$log_file"
+        else
+            # 默认模式：提取关键报错行输出，确保 Xcode 可双击跳转定位
+            grep -E "error:|warning:|Exception:|PyCompileError:|L[0-9]+:" "$log_file" || tail -n 10 "$log_file"
+        fi
         echo "--------------------------------------------------"
         return $status
     else
@@ -80,7 +87,7 @@ run_parallel_task "Magic Strings Audit" "magic_strings" "python3 Tools/ios/audit
 run_parallel_task "File Headers" "file_headers" "python3 Tools/ios/check-code-file-headers.py" & pid26=$!
 run_parallel_task "DI Registration" "di_registration" "python3 Tools/ios/check-arch-di-registration.py" & pid27=$!
 run_parallel_task "Inject Safety" "inject_safety" "python3 Tools/ios/check-code-inject-safety.py --strict" & pid28=$!
-run_parallel_task "Doc Drift" "doc_drift" "python3 Tools/CI/check-doc-drift.py --strict" & pid29=$!
+run_parallel_task "Doc Drift" "doc_drift" "python3 Tools/CI/check-doc-drift.py --strict" "full" & pid29=$!
 run_parallel_task "Exemption Stale" "exemption_stale" "python3 Tools/CI/exemption_registry.py check-stale --strict" & pid30=$!
 run_parallel_task "Business Magic Numbers" "business_magic" "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins --magic-string-scope Sources/Features" & pid31=$!
 run_parallel_task "UFPCore Purity" "ufpcore_purity" "python3 Tools/ios/audit-arch-ufpcore-purity.py" & pid32=$!

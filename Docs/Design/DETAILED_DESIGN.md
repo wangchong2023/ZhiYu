@@ -150,7 +150,7 @@ sequenceDiagram
 
 ### 4.2 系统级解耦
 
-所有的平台具体实现均被物理隔离在 `Sources/Platforms/` 目录下。主 App 仅通过 `ModuleRegistrar` 完成各平台的 DI 注册。
+所有的平台具体实现均被物理隔离在 `Sources/Platforms/` 目录下。主 App 仅通过 ModuleRegistrar 完成各平台的 DI 注册。
 
 ## 5. 视觉算法：力导向图谱布局 (Force-Directed Graph)
 
