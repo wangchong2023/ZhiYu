@@ -106,6 +106,8 @@ extension FeatureConstants {
         static let capsuleShadowOpacityFactor: Double = 0.08
         static let capsuleShadowRadius: CGFloat = 2
         static let capsuleShadowY: CGFloat = 1
+        /// 标签气泡默认归一化比例（极值无跨度时的回退值）
+        static let defaultRatio: Double = 0.5
     }
 
     // MARK: - Vault 图表占位 (Vault Chart Placeholder)
@@ -187,6 +189,14 @@ extension FeatureConstants {
     /// SearchView 骨架屏行数与空状态图标缩放
     enum SearchView {
         static let emptyIconSizeMultiplier: CGFloat = 1.5
+        /// 搜索中骨架屏占位行数
+        static let skeletonRowCount: Int = 6
+    }
+
+    // MARK: - 知识页面列表 (Knowledge Page List)
+    /// KnowledgePageListView 骨架屏占位行数
+    enum KnowledgePageList {
+        static let skeletonRowCount: Int = 4
     }
 
     // MARK: - 知识库引导 (Knowledge Coach Mark)

@@ -168,6 +168,8 @@ extension FeatureConstants {
         static let tokenSpeedMultiplier: Int = 4
         static let promptSnippetLength: Int = 15
         static let promptEllipsis: String = "..."
+        /// 录音波形可视化条数
+        static let waveformBarCount: Int = 6
     }
 
     // MARK: - 播放进度增量 (Playback Progress Delta)

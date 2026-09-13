@@ -49,7 +49,7 @@ enum SubscriptionQuotaCalculator {
     static func formatLimitText(
         current: Int,
         max: Int,
-        unlimitedThreshold: Int = 999999,
+        unlimitedThreshold: Int = FeatureConstants.SubscriptionQuota.unlimitedThreshold,
         unlimitedSymbol: String = FeatureConstants.SubscriptionQuota.unlimitedSymbol
     ) -> String {
         let maxString = max < unlimitedThreshold ? "\(max)" : unlimitedSymbol

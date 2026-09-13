@@ -127,5 +127,7 @@ extension FeatureConstants {
         static let defaultMaxPlugins: Int = 3
         /// 无限额度显示符号
         static let unlimitedSymbol: String = "∞"
+        /// 无限额度判定阈值（超过此值视为无限）
+        static let unlimitedThreshold: Int = 999999
     }
 }

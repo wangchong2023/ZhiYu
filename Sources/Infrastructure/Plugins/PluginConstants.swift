@@ -192,6 +192,15 @@ enum PluginConstants {
         static let markdownBeautifier: String = "markdown-beautifier"
     }
 
+    // MARK: - JS 函数名 (JS Function Name)
+    /// 插件预处理/后处理 JS 函数名常量
+    enum JSFunctionName {
+        /// 内容预处理函数名
+        static let preProcess: String = "preProcess"
+        /// 内容后处理函数名
+        static let postProcess: String = "postProcess"
+    }
+
     // MARK: - URL 前缀 (URL Prefix)
     /// URL scheme 前缀判断常量
     enum URLPrefix {

@@ -216,7 +216,7 @@ struct SearchView: View {
             ZStack {
                 if searchStore.isSearching {
                     VStack(spacing: DesignSystem.standardPadding) {
-                        ForEach(0..<6, id: \.self) { _ in
+                        ForEach(0..<FeatureConstants.SearchView.skeletonRowCount, id: \.self) { _ in
                             HStack(spacing: DesignSystem.medium) {
                                 AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize) // 44
                                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {

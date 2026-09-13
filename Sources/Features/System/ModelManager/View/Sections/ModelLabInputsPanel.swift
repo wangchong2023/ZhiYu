@@ -94,7 +94,7 @@ extension ModelLabView {
 
                 if isAudioRecording {
                     HStack(spacing: SystemSpacing.small) {
-                        ForEach(0..<6, id: \.self) { _ in
+                        ForEach(0..<FeatureConstants.ModelLabSimulation.waveformBarCount, id: \.self) { _ in
                             RoundedRectangle(cornerRadius: SystemStroke.selected)
                                 .fill(Color.theme.cyan)
                                 .frame(width: SystemStroke.heavy, height: CGFloat.random(in: DesignSystem.standardPadding...DesignSystem.large))

@@ -273,7 +273,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
             if let exception = ctx.exception {
                 ctx.exception = nil
                 let message = exception.toString() ?? "unknown"
-                if functionName == "preProcess" {
+                if functionName == PluginConstants.JSFunctionName.preProcess {
                     throw PluginSandboxError.preProcessException(message)
                 } else {
                     throw PluginSandboxError.postProcessException(message)
@@ -293,14 +293,14 @@ final class JavaScriptPlugin: InterceptionPlugin {
     /// - Parameter content: content
     /// - Returns: 字符串
     func preProcess(content: String) throws -> String {
-        return try processContent(content: content, functionName: "preProcess")
+        return try processContent(content: content, functionName: PluginConstants.JSFunctionName.preProcess)
     }
     
     /// post处理
     /// - Parameter content: content
     /// - Returns: 字符串
     func postProcess(content: String) throws -> String {
-        return try processContent(content: content, functionName: "postProcess")
+        return try processContent(content: content, functionName: PluginConstants.JSFunctionName.postProcess)
     }
 }
 

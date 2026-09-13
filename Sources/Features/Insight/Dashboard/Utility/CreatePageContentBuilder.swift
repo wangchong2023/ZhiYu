@@ -28,7 +28,7 @@ public enum CreatePageContentBuilder {
         guard !links.isEmpty else { return "" }
 
         let formattedLinks = links.map { item -> String in
-            if item.hasPrefix("[[") && item.hasSuffix("]]") {
+            if item.hasPrefix(CoreConstants.MarkdownSyntax.wikiLinkOpen) && item.hasSuffix(CoreConstants.MarkdownSyntax.wikiLinkClose) {
                 return "- \(item)"
             } else {
                 return "- [[\(item)]]"
