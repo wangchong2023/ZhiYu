@@ -14,18 +14,7 @@ import UFPStorage
 // MARK: - 核心存储 (KnowledgePageRepository)
 
 /// 知识库 页面存储：封装基于 GRDB 的高性能 CRUD 操作。
-final class KnowledgePageRepository: KnowledgeRepository, Sendable {
-    private var dbWriter: any DatabaseWriter {
-        get async throws {
-            // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁
-            if let writer = await DatabaseManager.shared.dbWriter {
-                return writer
-            }
-            // Finding #17：dbWriter 为 nil 时抛错，不再静默降级创建空内存库
-            throw DatabaseError.notReady
-        }
-    }
-
+final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider, Sendable {
     init(dbWriter _: any DatabaseWriter) {
         // 保留原构造函数，但内部实际上不持有静态 dbWriter，使用动态计算属性以支持多笔记本笔记本无缝热切换并消除 closed 连接挂起隐慢
     }

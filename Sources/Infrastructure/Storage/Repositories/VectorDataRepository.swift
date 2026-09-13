@@ -12,18 +12,7 @@ import Foundation
 import UFPStorage
 
 /// [Infra] 向量存储实现
-final class VectorDataRepository: VectorRepository, Sendable {
-    private var dbWriter: any DatabaseWriter {
-        get async throws {
-            // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁
-            if let writer = await DatabaseManager.shared.dbWriter {
-                return writer
-            }
-            // Finding #17：dbWriter 为 nil 时抛错，不再静默降级创建空内存库
-            throw DatabaseError.notReady
-        }
-    }
-
+final class VectorDataRepository: VectorRepository, DatabaseWriterProvider, Sendable {
     init(dbWriter _: any DatabaseWriter) {
         // 保留原构造函数，但内部实际上不持有静态 dbWriter，使用动态计算属性以支持多笔记本笔记本无缝热切换并消除 closed 连接挂起隐慢
     }
