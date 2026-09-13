@@ -113,10 +113,7 @@ final class DatabaseManager: TestStateResettable {
         let path = url.path
         
         // 1. 确保护航目录存在
-        let folderURL = url.deletingLastPathComponent()
-        if !FileManager.default.fileExists(atPath: folderURL.path) {
-            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-        }
+        try ensureDirectoryExists(at: url)
         
         // 2. 配置连接池并注入物理调优 PRAGMA 参数
         let config = createDatabaseConfiguration()
@@ -149,10 +146,7 @@ final class DatabaseManager: TestStateResettable {
             // 3. 建立默认专属物理库连接
             self.dbURL = url
             let path = url.path
-            let folderURL = url.deletingLastPathComponent()
-            if !FileManager.default.fileExists(atPath: folderURL.path) {
-                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-            }
+            try ensureDirectoryExists(at: url)
             
             let config = createDatabaseConfiguration()
             let dbPool = try DatabasePool(path: path, configuration: config)
@@ -279,10 +273,7 @@ final class DatabaseManager: TestStateResettable {
         self.dbURL = url
         
         // 2. 确保目标文件夹在沙盒中物理存在
-        let folderURL = url.deletingLastPathComponent()
-        if !FileManager.default.fileExists(atPath: folderURL.path) {
-            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-        }
+        try ensureDirectoryExists(at: url)
         
         // 3. 重新配置并开辟新库的并发池连接
         let config = createDatabaseConfiguration()
@@ -306,8 +297,15 @@ final class DatabaseManager: TestStateResettable {
     
     // MARK: - 数据库高性能配置
     
+    /// 确保数据库文件所在目录在沙盒中物理存在
+    private func ensureDirectoryExists(at url: URL) throws {
+        let folderURL = url.deletingLastPathComponent()
+        if !FileManager.default.fileExists(atPath: folderURL.path) {
+            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        }
+    }
+    
     /// 构建极尽压榨物理 I/O 并发吞吐的 SQLite 高性能配置
-    /// 包含：WAL 读写分离最大并发度、NORMAL 同步级别、内存 temp_store、10MB 连接页缓存、256MB mmap 内存映射与 5秒锁延迟。
     private func createDatabaseConfiguration() -> Configuration {
         var config = Configuration()
         
