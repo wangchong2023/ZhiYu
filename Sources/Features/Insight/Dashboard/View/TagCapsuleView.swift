@@ -194,8 +194,7 @@ struct TagCapsuleView: View {
     private func labelContent(isSelected: Bool) -> some View {
         if isBubbleMode {
             VStack(spacing: DesignSystem.tiny) {
-                Text(item.tag.replacingOccurrences(of: "#", with: ""))
-                    .font(.system(size: fontSize, design: .rounded).weight(isSelected ? .semibold : .regular))
+                tagTitleText(isSelected: isSelected)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                     .multilineTextAlignment(.center)
@@ -217,17 +216,10 @@ struct TagCapsuleView: View {
                 Circle()
                     .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + clampedBubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignSystem.borderWidth)
             }
-            .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
-            .overlay(alignment: .topTrailing) {
-                if coordinator.isEditMode {
-                    editBadgeView(isSelected: isSelected)
-                }
-            }
+            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, coordinator: coordinator)
         } else {
             HStack(spacing: DesignSystem.Layout.listRowSpacing) {
-                Text(item.tag.replacingOccurrences(of: "#", with: ""))
-                    .font(.system(size: fontSize, design: .rounded).weight(isSelected ? .semibold : .regular))
+                tagTitleText(isSelected: isSelected)
 
                 Text("\(item.count)")
                     .font(.system(size: DesignSystem.microFontSize, weight: .bold, design: .monospaced))
@@ -246,13 +238,7 @@ struct TagCapsuleView: View {
                 Capsule()
                     .stroke(isSelected ? Color.appAccent.opacity(SystemOpacity.textSecondary) : Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.divider)
             }
-            .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
-            .overlay(alignment: .topTrailing) {
-                if coordinator.isEditMode {
-                    editBadgeView(isSelected: isSelected)
-                }
-            }
+            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, coordinator: coordinator)
         }
     }
 
@@ -278,5 +264,25 @@ struct TagCapsuleView: View {
             x: isBubbleMode ? -DesignSystem.small : DesignSystem.small,
             y: isBubbleMode ? DesignSystem.small : -DesignSystem.small
         )
+    }
+
+    /// 标签标题文本：移除 # 前缀并应用统一字体样式
+    @ViewBuilder
+    private func tagTitleText(isSelected: Bool) -> some View {
+        Text(item.tag.replacingOccurrences(of: "#", with: ""))
+            .font(.system(size: fontSize, design: .rounded).weight(isSelected ? .semibold : .regular))
+    }
+
+    /// 应用编辑角标覆盖层：缩放 + 阴影 + 编辑角标
+    @ViewBuilder
+    private func applyEditOverlay(isSelected: Bool, clampedBubbleRatio: CGFloat, coordinator: TagCloudCoordinator) -> some View {
+        self
+            .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
+            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
+            .overlay(alignment: .topTrailing) {
+                if coordinator.isEditMode {
+                    editBadgeView(isSelected: isSelected)
+                }
+            }
     }
 }

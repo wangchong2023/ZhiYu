@@ -143,10 +143,7 @@ struct CreatePageView: View {
         Section {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 labeledField(
-                    L10n.Creation.template.entity.overview
-                        .replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
-                        .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
-                        .trimmingCharacters(in: .whitespaces),
+                    cleanTemplateTitle(L10n.Creation.template.entity.overview),
                     hint: L10n.Creation.template.entity.desc,
                     text: $summary
                 )
@@ -157,10 +154,7 @@ struct CreatePageView: View {
                 )
                 Divider()
                 labeledField(
-                    L10n.Creation.template.entity.related
-                        .replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
-                        .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
-                        .trimmingCharacters(in: .whitespaces),
+                    cleanTemplateTitle(L10n.Creation.template.entity.related),
                     hint: L10n.Creation.tagsPlaceholder,
                     text: $relatedItems
                 )
@@ -176,10 +170,7 @@ struct CreatePageView: View {
         Section {
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 labeledField(
-                    L10n.Creation.template.concept.definition
-                        .replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
-                        .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
-                        .trimmingCharacters(in: .whitespaces),
+                    cleanTemplateTitle(L10n.Creation.template.concept.definition),
                     hint: L10n.Creation.template.concept.desc,
                     text: $summary
                 )
@@ -188,12 +179,7 @@ struct CreatePageView: View {
                     L10n.Creation.template.concept.analysisHint,
                     text: $bodyContent
                 )
-                Divider()
-                labeledField(
-                    L10n.Creation.relatedLinks,
-                    hint: L10n.Creation.tagsPlaceholder,
-                    text: $relatedItems
-                )
+                relatedLinksSection
             }
         } header: {
             detailHeader
@@ -222,12 +208,7 @@ struct CreatePageView: View {
                     L10n.Creation.template.comparison.conclusionHint,
                     text: $bodyContent
                 )
-                Divider()
-                labeledField(
-                    L10n.Creation.relatedLinks,
-                    hint: L10n.Creation.tagsPlaceholder,
-                    text: $relatedItems
-                )
+                relatedLinksSection
             }
         } header: {
             detailHeader
@@ -333,5 +314,23 @@ struct CreatePageView: View {
                 dismiss()
             }
         }
+    }
+
+    /// 清理模板标题：移除 H2 前缀和换行符并修剪空白
+    private func cleanTemplateTitle(_ title: String) -> String {
+        title
+            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
+            .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
+            .trimmingCharacters(in: .whitespaces)
+    }
+
+    /// 关联链接分区：Divider + relatedLinks 字段
+    private var relatedLinksSection: some View {
+        Divider()
+        labeledField(
+            L10n.Creation.relatedLinks,
+            hint: L10n.Creation.tagsPlaceholder,
+            text: $relatedItems
+        )
     }
 }

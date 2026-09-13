@@ -238,16 +238,9 @@ struct SourceDetailBodyView: View {
                 }
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-        )
+        .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.ghost, cornerRadius: DesignSystem.standardRadius, useBorder: true)
     }
-    
+
     // MARK: - 2. 提取关系溯源链 (Extraction Lineage)
     private var extractionLineageSection: some View {
         let refs = frontmatter?.extractedPageIDs ?? []
@@ -290,3 +283,6 @@ struct SourceDetailBodyView: View {
         }
     }
 }
+
+// MARK: - 来源信息卡片修饰符
+// 已迁移至 DesignSystem: View.infoCardStyle(backgroundOpacity:cornerRadius:useBorder:)

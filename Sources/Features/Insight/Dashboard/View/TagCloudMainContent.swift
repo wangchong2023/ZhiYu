@@ -65,13 +65,14 @@ extension TagCloudViewContent {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, SystemSpacing.elementLarge)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: DesignSystem.borderWidth)
+        .borderedCardStyle(
+            horizontalPadding: DesignSystem.standardPadding,
+            verticalPadding: SystemSpacing.elementLarge,
+            backgroundOpacity: DesignSystem.Opacity.dim,
+            cornerRadius: DesignSystem.mediumRadius,
+            borderWidth: DesignSystem.borderWidth,
+            borderColor: .appAccent,
+            borderOpacity: DesignSystem.Opacity.medium
         )
         .padding(.horizontal, DesignSystem.huge)
         .padding(.top, DesignSystem.medium)

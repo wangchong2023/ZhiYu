@@ -120,17 +120,11 @@ struct PageDetailView: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .foregroundStyle(.white)
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, DesignSystem.small)
-                .background(
-                    LinearGradient(
-                        colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.prominent)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                .accentCapsuleStyle(
+                    horizontalPadding: DesignSystem.medium,
+                    verticalPadding: DesignSystem.small,
+                    gradientEndOpacity: DesignSystem.Opacity.prominent
                 )
-                .clipShape(Capsule())
                 .shadow(color: .appAccent.opacity(DesignSystem.Opacity.shadow), radius: 5, x: 0, y: 3)
             }
             .buttonStyle(ScaleButtonStyle())
@@ -411,9 +405,7 @@ struct PageDetailView: View {
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appAccent.opacity(DesignSystem.Opacity.atomic)))
+                    .scanStatusBackground(backgroundOpacity: DesignSystem.Opacity.atomic, useAccent: true)
                     .padding(.vertical, DesignSystem.small)
                 }
             } else if !relevantLinks.isEmpty {
@@ -433,11 +425,11 @@ struct PageDetailView: View {
                         }
                     }
                 }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appAccent.opacity(DesignSystem.Opacity.atomic)))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                        .stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: SystemStroke.divider)
+                .accentGradientCardStyle(
+                    cornerRadius: DesignSystem.largeRadius,
+                    backgroundOpacity: DesignSystem.Opacity.atomic,
+                    borderWidth: SystemStroke.divider,
+                    borderOpacity: DesignSystem.Opacity.medium
                 )
                 .padding(.vertical, DesignSystem.small)
             } else if coordinator.hasScannedForLinks {
@@ -449,9 +441,7 @@ struct PageDetailView: View {
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appCard.opacity(DesignSystem.Opacity.dim)))
+                    .scanStatusBackground(backgroundOpacity: DesignSystem.Opacity.dim, useAccent: false)
                     .padding(.vertical, DesignSystem.small)
                 }
             }
@@ -494,12 +484,28 @@ struct PageDetailView: View {
             }
             .buttonStyle(ScaleButtonStyle())
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.tightPadding))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.tightPadding)
-                .stroke(Color.appBorder.opacity(DesignSystem.glassOpacity), lineWidth: SystemStroke.divider)
+        .borderedCardStyle(
+            horizontalPadding: DesignSystem.medium,
+            verticalPadding: DesignSystem.medium,
+            backgroundOpacity: DesignSystem.Opacity.solid,
+            cornerRadius: DesignSystem.tightPadding,
+            borderWidth: SystemStroke.divider,
+            borderColor: .appBorder,
+            borderOpacity: DesignSystem.glassOpacity
         )
+    }
+}
+
+// MARK: - 扫描状态背景修饰符
+private extension View {
+    /// 扫描状态卡片背景：padding + frame(maxWidth) + background(RoundedRectangle.fill)
+    func scanStatusBackground(backgroundOpacity: Double, useAccent: Bool) -> some View {
+        self
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                    .fill(useAccent ? Color.appAccent.opacity(backgroundOpacity) : Color.appCard.opacity(backgroundOpacity))
+            )
     }
 }

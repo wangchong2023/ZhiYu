@@ -106,11 +106,9 @@ struct ConceptDetailBodyView: View {
                         // 1. 绘制连接线
                         Path { path in
                             for index in 0..<outgoing.count {
-                                let angle = Double(index) * (2 * Double.pi / Double(outgoing.count)) - (Double.pi / 2)
-                                let x = center.x + CGFloat(cos(angle)) * radius
-                                let y = center.y + CGFloat(sin(angle)) * radius
+                                let point = neighborNodePoint(index: index, total: outgoing.count, center: center, radius: radius)
                                 path.move(to: center)
-                                path.addLine(to: CGPoint(x: x, y: y))
+                                path.addLine(to: point)
                             }
                         }
                         .stroke(
@@ -124,10 +122,8 @@ struct ConceptDetailBodyView: View {
                         
                         // 2. 绘制周边关联词条节点 (按极坐标角度分布)
                         ForEach(Array(outgoing.enumerated()), id: \.offset) { index, link in
-                            let angle = Double(index) * (2 * Double.pi / Double(outgoing.count)) - (Double.pi / 2)
-                            let x = center.x + CGFloat(cos(angle)) * radius
-                            let y = center.y + CGFloat(sin(angle)) * radius
-                            
+                            let nodePoint = neighborNodePoint(index: index, total: outgoing.count, center: center, radius: radius)
+
                             Button(action: {
                                 onLinkTap(link)
                             }) {
@@ -149,7 +145,7 @@ struct ConceptDetailBodyView: View {
                                 )
                                 .shadow(color: Color.appText.opacity(DesignSystem.Opacity.shadow), radius: 3)
                             }
-                            .position(x: x, y: y)
+                            .position(nodePoint)
                         }
 
                         // 3. 绘制中心主题节点 (自适应长宽胶囊，防截断)
@@ -164,17 +160,11 @@ struct ConceptDetailBodyView: View {
                                     .font(.caption.weight(.bold))
                                     .lineLimit(1)
                             }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, DesignSystem.standardPadding)
-                            .padding(.vertical, DesignSystem.tightPadding)
-                            .background(
-                                LinearGradient(
-                                    colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.prominent)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                            .accentCapsuleStyle(
+                                horizontalPadding: DesignSystem.standardPadding,
+                                verticalPadding: DesignSystem.tightPadding,
+                                gradientEndOpacity: DesignSystem.Opacity.prominent
                             )
-                            .clipShape(Capsule())
                             .overlay(
                                 Capsule()
                                     .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: Self.neighborNodeBorderWidth)
@@ -220,12 +210,14 @@ struct ConceptDetailBodyView: View {
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding(DesignSystem.medium)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.soft))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                        .stroke(Color.theme.orange.opacity(DesignSystem.Opacity.disabled), lineWidth: Self.neighborNodeBorderWidth)
+                .borderedCardStyle(
+                    horizontalPadding: DesignSystem.medium,
+                    verticalPadding: DesignSystem.medium,
+                    backgroundOpacity: DesignSystem.Opacity.soft,
+                    cornerRadius: DesignSystem.standardRadius,
+                    borderWidth: Self.neighborNodeBorderWidth,
+                    borderColor: Color.theme.orange,
+                    borderOpacity: DesignSystem.Opacity.disabled
                 )
             }
         }
@@ -267,9 +259,12 @@ struct ConceptDetailBodyView: View {
                         }
                     }
                 }
-                .padding()
-                .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                .cardStyle(
+                    horizontalPadding: DesignSystem.standardPadding,
+                    verticalPadding: DesignSystem.standardPadding,
+                    backgroundOpacity: DesignSystem.Opacity.subtle,
+                    cornerRadius: DesignSystem.standardRadius
+                )
             } else {
                 // 降级兜底：扫描 Markdown 的 Header 来生成动态大纲
                 let derivedOutlines = deriveOutlinesFromMarkdown()
@@ -294,9 +289,12 @@ struct ConceptDetailBodyView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                    .cardStyle(
+                        horizontalPadding: DesignSystem.standardPadding,
+                        verticalPadding: DesignSystem.standardPadding,
+                        backgroundOpacity: DesignSystem.Opacity.subtle,
+                        cornerRadius: DesignSystem.standardRadius
+                    )
                 }
             }
         }
@@ -323,5 +321,13 @@ struct ConceptDetailBodyView: View {
             }
         }
         return list
+    }
+
+    /// 计算周边节点的极坐标位置
+    private func neighborNodePoint(index: Int, total: Int, center: CGPoint, radius: CGFloat) -> CGPoint {
+        let angle = Double(index) * (2 * Double.pi / Double(total)) - (Double.pi / 2)
+        let x = center.x + CGFloat(cos(angle)) * radius
+        let y = center.y + CGFloat(sin(angle)) * radius
+        return CGPoint(x: x, y: y)
     }
 }

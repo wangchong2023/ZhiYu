@@ -170,54 +170,46 @@ actor KnowledgeInsightService {
     }
 
     private func loadCachedDailyRecap() async -> DailyRecap? {
-        let key = cacheKey()
-        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
-        guard let keyStore else {
-            return nil
-        }
-        let data = await MainActor.run { keyStore.data(forKey: key) }
-        guard let data, let recap = try? JSONDecoder().decode(DailyRecap.self, from: data) else {
-            return nil
-        }
-        return recap
+        await loadCached(DailyRecap.self, forKey: cacheKey())
     }
 
     private func saveCachedDailyRecap(_ recap: DailyRecap) async {
-        let key = cacheKey()
-        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
-        guard let keyStore else { return }
-        if let data = try? JSONEncoder().encode(recap) {
-            await MainActor.run { keyStore.set(data, forKey: key) }
-        }
+        await saveCached(recap, forKey: cacheKey())
     }
 
     private func weeklyCacheKey() -> String {
         let calendar = Calendar.current
         let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        // 用当前日期的 year/week 作为 fallback，避免硬编码 2026/1
-        let nowComps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
-        let year = comps.yearForWeekOfYear ?? nowComps.yearForWeekOfYear ?? 1970
-        let week = comps.weekOfYear ?? nowComps.weekOfYear ?? 1
+        let year = comps.yearForWeekOfYear ?? 1970
+        let week = comps.weekOfYear ?? 1
         let lang = Localized.currentLanguage
         return "\(AppConstants.Keys.Storage.weeklyInsightPrefix)\(year)_\(week)_\(lang)"
     }
 
     private func loadCachedWeeklyInsight() async -> WeeklyInsight? {
-        let key = weeklyCacheKey()
-        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
-        guard let keyStore else { return nil }
-        let data = await MainActor.run { keyStore.data(forKey: key) }
-        guard let data, let insight = try? JSONDecoder().decode(WeeklyInsight.self, from: data) else {
-            return nil
-        }
-        return insight
+        await loadCached(WeeklyInsight.self, forKey: weeklyCacheKey())
     }
 
     private func saveCachedWeeklyInsight(_ insight: WeeklyInsight) async {
-        let key = weeklyCacheKey()
+        await saveCached(insight, forKey: weeklyCacheKey())
+    }
+
+    /// 泛型缓存读取辅助方法
+    private func loadCached<T: Decodable>(_ type: T.Type, forKey key: String) async -> T? {
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        guard let keyStore else { return nil }
+        let data = await MainActor.run { keyStore.data(forKey: key) }
+        guard let data, let decoded = try? JSONDecoder().decode(T.self, from: data) else {
+            return nil
+        }
+        return decoded
+    }
+
+    /// 泛型缓存写入辅助方法
+    private func saveCached<T: Encodable>(_ value: T, forKey key: String) async {
         @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
         guard let keyStore else { return }
-        if let data = try? JSONEncoder().encode(insight) {
+        if let data = try? JSONEncoder().encode(value) {
             await MainActor.run { keyStore.set(data, forKey: key) }
         }
     }

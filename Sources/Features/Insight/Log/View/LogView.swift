@@ -161,10 +161,10 @@ private struct LogEntryRow: View {
         return status == .success ? Color.theme.green : Color.theme.red
     }
     private var startFormattedString: String {
-        entry.startTime?.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: Localized.currentLocale)) ?? ""
+        formatTime(entry.startTime, timeFormat: .shortened)
     }
     private var endFormattedString: String {
-        entry.endTime?.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: Localized.currentLocale)) ?? ""
+        formatTime(entry.endTime, timeFormat: .shortened)
     }
     private var timeRangeString: String {
         if entry.startTime != nil && entry.endTime != nil {
@@ -174,10 +174,15 @@ private struct LogEntryRow: View {
         }
     }
     private var detailStartString: String {
-        entry.startTime?.formatted(Date.FormatStyle(date: .omitted, time: .standard, locale: Localized.currentLocale)) ?? ""
+        formatTime(entry.startTime, timeFormat: .standard)
     }
     private var detailEndString: String {
-        entry.endTime?.formatted(Date.FormatStyle(date: .omitted, time: .standard, locale: Localized.currentLocale)) ?? ""
+        formatTime(entry.endTime, timeFormat: .standard)
+    }
+
+    /// 格式化时间字符串辅助方法
+    private func formatTime(_ date: Date?, timeFormat: Date.FormatStyle.TimeFormat) -> String {
+        date?.formatted(Date.FormatStyle(date: .omitted, time: timeFormat, locale: Localized.currentLocale)) ?? ""
     }
 
     var body: some View {
@@ -327,10 +332,13 @@ private struct LogEntryRow: View {
                 Text(entry.details)
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.appSecondary)
-                    .padding(DesignSystem.Timeline.detailHorizontalPadding)
+                    .cardStyle(
+                        horizontalPadding: DesignSystem.Timeline.detailHorizontalPadding,
+                        verticalPadding: DesignSystem.Timeline.detailHorizontalPadding,
+                        backgroundOpacity: DesignSystem.Opacity.solid,
+                        cornerRadius: DesignSystem.standardRadius
+                    )
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
             }
         }
         .padding(.leading, DesignSystem.Timeline.indentPadding)

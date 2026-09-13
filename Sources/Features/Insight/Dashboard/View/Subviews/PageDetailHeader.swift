@@ -158,8 +158,7 @@ private struct TypeBadge: View {
             Text(page.pageType.displayName)
                 .font(.caption.weight(.medium))
         }
-        .padding(.horizontal, DesignSystem.small)
-        .padding(.vertical, DesignSystem.tiny)
+        .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
         .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignSystem.Opacity.medium))
         .clipShape(Capsule())
         .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
@@ -182,13 +181,7 @@ private struct StatusBadge: View {
             Text(page.status.displayName)
                 .font(.caption)
         }
-        .padding(.horizontal, DesignSystem.small)
-        .padding(.vertical, DesignSystem.tiny)
-        .background(Color.fromModelColorName(page.status.colorName).opacity(DesignSystem.Opacity.glass))
-        .clipShape(Capsule())
-        .foregroundStyle(Color.fromModelColorName(page.status.colorName))
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(L10n.Knowledge.Page.statusAccessibility(page.status.displayName))
+        .badgeCapsuleStyle(colorName: page.status.colorName, accessibilityLabel: L10n.Knowledge.Page.statusAccessibility(page.status.displayName))
     }
 }
 
@@ -205,12 +198,20 @@ private struct ConfidenceBadge: View {
             Text(page.confidence.displayName)
                 .font(.caption)
         }
-        .padding(.horizontal, DesignSystem.small)
-        .padding(.vertical, DesignSystem.tiny)
-        .background(Color.fromModelColorName(page.confidence.colorName).opacity(DesignSystem.Opacity.glass))
-        .clipShape(Capsule())
-        .foregroundStyle(Color.fromModelColorName(page.confidence.colorName))
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(L10n.Knowledge.Page.confidenceAccessibility(page.confidence.displayName))
+        .badgeCapsuleStyle(colorName: page.confidence.colorName, accessibilityLabel: L10n.Knowledge.Page.confidenceAccessibility(page.confidence.displayName))
+    }
+}
+
+// MARK: - 徽章胶囊样式
+private extension View {
+    /// 徽章胶囊样式：padding + background + clipShape + foregroundStyle + accessibility
+    func badgeCapsuleStyle(colorName: String, accessibilityLabel: String) -> some View {
+        self
+            .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
+            .background(Color.fromModelColorName(colorName).opacity(DesignSystem.Opacity.glass))
+            .clipShape(Capsule())
+            .foregroundStyle(Color.fromModelColorName(colorName))
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(accessibilityLabel)
     }
 }

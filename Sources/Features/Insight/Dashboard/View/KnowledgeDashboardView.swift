@@ -98,9 +98,7 @@ struct KnowledgeDashboardView: View {
                 Text(L10n.Dashboard.density)
                     .font(.headline)
                 Button(action: { showDensityInfo.toggle() }) {
-                    Image(systemName: DesignSystem.Icons.info)
-                        .font(.caption)
-                        .foregroundColor(.appSecondary)
+                    infoButtonIcon(DesignSystem.Icons.info)
                 }
                 .buttonStyle(.plain)
                 
@@ -140,27 +138,8 @@ struct KnowledgeDashboardView: View {
                 } else {
                     // 💡 密度图表重塑：双物理指示直角 Canvas 双箭头坐标轴系统 (去除了所有冗余 layout，彻底对齐 Y 轴与图间距，拉开底轴空气留白)
                     Chart(coordinator.densityData) { item in
-                        BarMark(
-                            x: .value("Outbound", item.outbound),
-                            y: .value("Page", item.name)
-                        )
-                        .cornerRadius(DesignSystem.Radius.small)
-                        .foregroundStyle(LinearGradient(
-                            colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.dim)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ))
-                        
-                        BarMark(
-                            x: .value("Inbound", item.inbound),
-                            y: .value("Page", item.name)
-                        )
-                        .cornerRadius(DesignSystem.Radius.small)
-                        .foregroundStyle(LinearGradient(
-                            colors: [.purple, .purple.opacity(DesignSystem.Opacity.dim)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ))
+                        densityBarMark(value: item.outbound, label: "Outbound", pageName: item.name, color: .appAccent)
+                        densityBarMark(value: item.inbound, label: "Inbound", pageName: item.name, color: .purple)
                     }
                     .frame(height: DesignSystem.Metrics.chartHeight + DesignSystem.medium)
                     .chartXAxis(.hidden) // 彻底删除冗余“0个关联”等繁杂文案，回归极其大气的物理大厂留白
@@ -249,9 +228,7 @@ struct KnowledgeDashboardView: View {
                     .font(.headline)
                 Spacer()
                 Button(action: { Task { await coordinator.refreshInsights() } }) {
-                    Image(systemName: DesignSystem.Icons.refresh)
-                        .font(.caption)
-                        .foregroundColor(.appSecondary)
+                    infoButtonIcon(DesignSystem.Icons.refresh)
                 }
                 .buttonStyle(.plain)
                 .disabled(coordinator.isGeneratingInsights)
@@ -345,6 +322,21 @@ struct KnowledgeDashboardView: View {
                 }
             }
         }
+    }
+
+    /// 密度图表柱状条
+    @ViewBuilder
+    private func densityBarMark(value: Int, label: String, pageName: String, color: Color) -> some View {
+        BarMark(
+            x: .value(label, value),
+            y: .value("Page", pageName)
+        )
+        .cornerRadius(DesignSystem.Radius.small)
+        .foregroundStyle(LinearGradient(
+            colors: [color, color.opacity(DesignSystem.Opacity.dim)],
+            startPoint: .leading,
+            endPoint: .trailing
+        ))
     }
 }
 
@@ -478,4 +470,12 @@ private var emptyView: some View {
             .foregroundColor(.appSecondary)
     }
     .frame(maxWidth: .infinity, minHeight: DesignSystem.Metrics.chartHeight)
+}
+
+// MARK: - 信息按钮图标
+@ViewBuilder
+private func infoButtonIcon(_ systemName: String) -> some View {
+    Image(systemName: systemName)
+        .font(.caption)
+        .foregroundColor(.appSecondary)
 }

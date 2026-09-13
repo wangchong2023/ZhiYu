@@ -99,7 +99,7 @@ struct EntityDetailBodyView: View {
                         lineWidth: Self.cardBorderWidth
                     )
             )
-            
+
             // 别名芯片列表
             let aliasList = frontmatter?.aliases ?? page.aliases
             if !aliasList.isEmpty {
@@ -147,14 +147,7 @@ struct EntityDetailBodyView: View {
                             .foregroundStyle(.appText)
                             .lineLimit(1)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                    )
+                    .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: DesignSystem.smallRadius, useBorder: true)
                 }
             }
         }
@@ -180,10 +173,10 @@ struct EntityDetailBodyView: View {
                     }
                 }
             }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: DesignSystem.smallRadius, useBorder: true)
         }
     }
 }
+
+// MARK: - 实体信息卡片修饰符
+// 已迁移至 DesignSystem: View.infoCardStyle(backgroundOpacity:cornerRadius:useBorder:)

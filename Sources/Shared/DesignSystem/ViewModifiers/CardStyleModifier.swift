@@ -19,6 +19,8 @@ struct CardStyleModifier: ViewModifier {
     var cornerRadius: CGFloat = DesignSystem.mediumRadius
     var showBorder: Bool = false
     var borderWidth: CGFloat = SystemStroke.divider
+    var borderColor: Color = .appBorder
+    var borderOpacity: Double = DesignSystem.Opacity.prominent
 
     func body(content: Content) -> some View {
         content
@@ -30,7 +32,7 @@ struct CardStyleModifier: ViewModifier {
                 Group {
                     if showBorder {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .strokeBorder(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: borderWidth)
+                            .strokeBorder(borderColor.opacity(borderOpacity), lineWidth: borderWidth)
                     }
                 }
             )
@@ -59,7 +61,9 @@ extension View {
         verticalPadding: CGFloat = SystemSpacing.elementLarge,
         backgroundOpacity: Double = DesignSystem.Opacity.dim,
         cornerRadius: CGFloat = DesignSystem.mediumRadius,
-        borderWidth: CGFloat = SystemStroke.divider
+        borderWidth: CGFloat = SystemStroke.divider,
+        borderColor: Color = .appBorder,
+        borderOpacity: Double = DesignSystem.Opacity.prominent
     ) -> some View {
         modifier(CardStyleModifier(
             horizontalPadding: horizontalPadding,
@@ -67,8 +71,32 @@ extension View {
             backgroundOpacity: backgroundOpacity,
             cornerRadius: cornerRadius,
             showBorder: true,
-            borderWidth: borderWidth
+            borderWidth: borderWidth,
+            borderColor: borderColor,
+            borderOpacity: borderOpacity
         ))
+    }
+
+    /// 信息卡片样式：padding + frame(maxWidth) + background + clipShape + optional overlay(stroke)
+    /// 用于实体/来源详情页的信息卡片展示
+    func infoCardStyle(
+        backgroundOpacity: Double = DesignSystem.Opacity.ghost,
+        cornerRadius: CGFloat = DesignSystem.standardRadius,
+        useBorder: Bool = false
+    ) -> some View {
+        self
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.appCard.opacity(backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                Group {
+                    if useBorder {
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                    }
+                }
+            )
     }
 }
 

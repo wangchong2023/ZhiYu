@@ -86,19 +86,13 @@ struct ComparisonDetailBodyView: View {
                 .foregroundStyle(.appSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(DesignSystem.standardPadding)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.theme.purple.opacity(DesignSystem.Opacity.disabled), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: Self.borderGradientWidth
-                )
+        .gradientBorderCardStyle(
+            padding: DesignSystem.standardPadding,
+            cornerRadius: DesignSystem.standardRadius,
+            backgroundOpacity: DesignSystem.Opacity.ghost,
+            gradientStartColor: Color.theme.purple,
+            gradientStartOpacity: DesignSystem.Opacity.disabled,
+            borderWidth: Self.borderGradientWidth
         )
     }
     
@@ -179,12 +173,14 @@ struct ComparisonDetailBodyView: View {
                         .opacity(DesignSystem.softOpacity)
                 }
             }
-            .padding()
-            .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                    .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+            .borderedCardStyle(
+                horizontalPadding: DesignSystem.standardPadding,
+                verticalPadding: DesignSystem.standardPadding,
+                backgroundOpacity: DesignSystem.Opacity.subtle,
+                cornerRadius: DesignSystem.standardRadius,
+                borderWidth: DesignSystem.borderWidth,
+                borderColor: .appBorder,
+                borderOpacity: DesignSystem.Opacity.prominent
             )
         }
     }

@@ -87,13 +87,7 @@ struct WeeklyInsightCard: View {
                             }
                         }
                     }
-                    .padding(DesignSystem.loosePadding) // 添加内边距，解决内容过于拥挤的问题
-                    .background(DesignSystem.containerBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius)) // 16
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth)
-                    )
+                    .weeklyInsightContainerStyle()
 
                     // 摘要正文
                     VStack(alignment: .leading, spacing: DesignSystem.standardPadding) { // 12
@@ -240,14 +234,8 @@ struct WeeklyReportView: View {
                         .font(.subheadline)
                         .lineSpacing(SystemSpacing.small) // 6
                         .foregroundStyle(.appSecondary)
-                        .padding(DesignSystem.loosePadding)
+                        .weeklyInsightContainerStyle()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(DesignSystem.containerBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius)) // 16
-                        .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                                .stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth)
-                        )
                 }
                 .padding(.top, SystemSpacing.elementLarge) // 10
                 
@@ -258,5 +246,20 @@ struct WeeklyReportView: View {
         }
         .background(PageBackgroundView(accentColor: Color.theme.purple))
         .appSubPageToolbar(title: L10n.Common.Sidebar.weeklyInsight)
+    }
+}
+
+// MARK: - 周报洞察容器样式
+private extension View {
+    /// 周报洞察容器：padding + background(containerBackground) + clipShape + overlay(stroke containerBorder)
+    func weeklyInsightContainerStyle() -> some View {
+        self
+            .padding(DesignSystem.loosePadding)
+            .background(DesignSystem.containerBackground)
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                    .stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth)
+            )
     }
 }
