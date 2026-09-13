@@ -100,8 +100,7 @@ struct SynthesisView: View {
     private var runningTasksContainer: some View {
         SynthesisTimelineView(taskCenter: taskCenter)
             .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: DesignSystem.loosePadding, trailing: DesignSystem.standardPadding))
-            .listRowBackground(Color.clear)
+            .standardListRowInsets()
     }
 
     private var entrySection: some View {
@@ -109,8 +108,7 @@ struct SynthesisView: View {
             synthesisEntryView
         }
         .skipOnWatch { $0.listRowSeparator(.hidden) }
-        .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: DesignSystem.loosePadding, trailing: DesignSystem.standardPadding))
-        .listRowBackground(Color.clear)
+        .standardListRowInsets()
     }
 
     private var mainContentSection: some View {
@@ -568,5 +566,14 @@ extension View {
             }
             Button(L10n.Common.cancel, role: .cancel) { }
         }
+    }
+}
+
+// MARK: - 列表行内边距辅助
+private extension View {
+    /// 标准列表行内边距（消除 SynthesisView 内重复的 listRowInsets + listRowBackground 链）
+    func standardListRowInsets() -> some View {
+        self.listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: DesignSystem.loosePadding, trailing: DesignSystem.standardPadding))
+            .listRowBackground(Color.clear)
     }
 }

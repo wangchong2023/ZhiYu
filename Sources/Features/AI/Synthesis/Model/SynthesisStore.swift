@@ -130,14 +130,9 @@ public final class SynthesisStore {
     public init() {
         loadSynthesisResults()
 
-        AppEventBus.shared.subscribe()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] event in
-                if case .clearAllDataRequested = event {
-                    self?.clearAll()
-                }
-            }
-            .store(in: &cancellables)
+        AppEventBus.shared.subscribeClearAllData { [weak self] in
+            self?.clearAll()
+        }.store(in: &cancellables)
     }
 
     /// 加载SynthesisResults

@@ -61,17 +61,9 @@ struct QuizView: View {
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Spacer()
-                Button(action: { dismiss() }) {
-                    Text(L10n.Quiz.backToPage)
-                        .font(.headline.weight(.bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(Spacing.standardPadding)
-                        .background(Color.appAccent)
-                        .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-                }
-                .padding(.horizontal, Spacing.huge)
-                .padding(.bottom, Spacing.standardPadding)
+                backButton
+                    .padding(.horizontal, Spacing.huge)
+                    .padding(.bottom, Spacing.standardPadding)
             } else if !isCompleted {
                 // 进度页眉
                 VStack(spacing: Spacing.small) {
@@ -152,12 +144,7 @@ struct QuizView: View {
                 if showResult {
                     Button(action: nextQuestion) {
                         Text(currentIndex + 1 < quiz.questions.count ? L10n.Common.Misc.nextQuestion : L10n.Common.Misc.viewResults)
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(Spacing.standardPadding)
-                            .background(Color.appAccent)
-                            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                            .primaryButtonLabelStyle()
                             .shadow(color: .appAccent.opacity(DesignSystem.Opacity.shadow), radius: 10, y: 5)
                     }
                     .padding(Spacing.standardPadding)
@@ -180,16 +167,8 @@ struct QuizView: View {
                             .foregroundStyle(.appAccent)
                     }
                     
-                    Button(action: { dismiss() }) {
-                        Text(L10n.Quiz.backToPage)
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(Spacing.standardPadding)
-                            .background(Color.appAccent)
-                            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-                    }
-                    .padding(.horizontal, Spacing.huge)
+                    backButton
+                        .padding(.horizontal, Spacing.huge)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -246,6 +225,28 @@ struct QuizView: View {
                 isCompleted = true
             }
         }
+    }
+
+    /// 返回页面按钮（消除 QuizView 内 3 处重复的按钮样式链）
+    private var backButton: some View {
+        Button(action: { dismiss() }) {
+            Text(L10n.Quiz.backToPage)
+                .primaryButtonLabelStyle()
+        }
+    }
+}
+
+// MARK: - 按钮样式辅助
+private extension View {
+    /// 主按钮标签样式（消除 QuizView 内重复的按钮文本样式链）
+    func primaryButtonLabelStyle() -> some View {
+        self
+            .font(.headline.weight(.bold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(Spacing.standardPadding)
+            .background(Color.appAccent)
+            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
     }
 }
 

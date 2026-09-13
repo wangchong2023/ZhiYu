@@ -239,32 +239,19 @@ struct VoiceNoteView: View {
                 }
             }
             
-            if idiom != .watch {
-                TextEditor(text: Binding(
+            TranscriptionEditor(
+                text: Binding(
                     get: { speechService.transcribedText },
                     set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .frame(minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight, maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight)
-                    .padding(Spacing.medium)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                    )
-            } else {
-                TextField("", text: Binding(
-                    get: { speechService.transcribedText },
-                    set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .padding(Spacing.medium)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                
+                ),
+                idiom: idiom,
+                minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight,
+                maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight,
+                padding: Spacing.medium,
+                cornerRadius: DesignSystem.smallRadius
+            )
+            
+            if idiom == .watch {
                 HStack {
                     Text("\(speechService.transcribedText.count) \(L10n.Voice.Speech.characters)")
                         .font(.caption)

@@ -65,14 +65,8 @@ struct ChatViewContent: View {
         } message: {
             Text(coordinator.errorMessage ?? "")
         }
-        .alert(L10n.Common.configureAI, isPresented: $coordinator.showLLMAlert) {
-            Button(L10n.ModelManager.Lab.configurations) {
-                HapticFeedback.shared.trigger(.selection)
-                router.isShowingAISettingsSheet = true
-            }
-            Button(L10n.Common.cancel, role: .cancel) {}
-        } message: {
-            Text(L10n.Common.configureAI)
+        .alertLLMNotConfigured(isPresented: $coordinator.showLLMAlert) {
+            router.isShowingAISettingsSheet = true
         }
         .confirmationDialog(
             L10n.Chat.clearHistoryConfirmTitle,
@@ -241,14 +235,7 @@ struct ChatViewContent: View {
             VStack(alignment: .leading, spacing: SystemSpacing.small) {
                 if coordinator.streamingContent.isEmpty {
                     // 获取当前活跃任务的阶段
-                    let stage: TaskStage = {
-                        if let runningTask = taskCenter.tasks.first(where: { if case .running = $0.status { return true }; return false }) {
-                            if case .running(_, let stage) = runningTask.status {
-                                return stage
-                            }
-                        }
-                        return .general
-                    }()
+                    let stage = taskCenter.currentRunningStage
                     
                     AppAILoadingSkeleton(stage: stage)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -367,10 +354,7 @@ struct ChatViewContent: View {
                                     .padding(.vertical, Spacing.Chip.horizontalPadding)
                                     .background(Color.appCard.opacity(DesignSystem.Opacity.glass))
                                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                                            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: DesignSystem.borderWidth)
-                                    )
+                                    .overlayStroke()
                                 }
                                 .buttonStyle(.plain)
                             }

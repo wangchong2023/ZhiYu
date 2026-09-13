@@ -100,10 +100,7 @@ struct SuggestionGroupView: View {
                     .padding()
                     .background(Color.appCard)
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                            .stroke(Color.appBorder.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth)
-                    )
+                    .overlayStroke(borderColor: Color.appBorder.opacity(DesignSystem.disabledOpacity))
                 }
                 .buttonStyle(.plain)
             }

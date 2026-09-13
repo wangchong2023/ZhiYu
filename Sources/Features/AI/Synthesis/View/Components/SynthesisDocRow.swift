@@ -100,8 +100,7 @@ struct SynthesisDocRow: View {
                     .foregroundStyle(.appSecondary.opacity(UIConstants.trailingIconOpacity)) // 0.5
             }
         }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.medium)
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.medium)
         .contentShape(Rectangle())
         .onTapGesture {
             onTap()

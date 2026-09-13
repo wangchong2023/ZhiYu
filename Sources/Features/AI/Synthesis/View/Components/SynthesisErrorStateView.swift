@@ -92,7 +92,6 @@ struct SynthesisErrorStateView: View {
                         .stroke(Color.appBorder.opacity(DesignSystem.Opacity.soft), lineWidth: DesignSystem.Metrics.dividerThickness)
                 )
         )
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.medium)
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.medium)
     }
 }

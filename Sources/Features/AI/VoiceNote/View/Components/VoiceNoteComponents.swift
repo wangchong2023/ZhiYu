@@ -77,32 +77,17 @@ struct SaveVoiceNoteSheet: View {
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
             
-            if idiom != .watch {
-                TextEditor(text: Binding(
+            TranscriptionEditor(
+                text: Binding(
                     get: { speechService.transcribedText },
                     set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .frame(minHeight: UIConstants.previewMinHeight, maxHeight: UIConstants.previewMaxHeight) // 120, 300
-                    .padding(DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                    )
-            } else {
-                TextField("", text: Binding(
-                    get: { speechService.transcribedText },
-                    set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .padding(DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-            }
+                ),
+                idiom: idiom,
+                minHeight: UIConstants.previewMinHeight,
+                maxHeight: UIConstants.previewMaxHeight,
+                padding: DesignSystem.small,
+                cornerRadius: DesignSystem.standardRadius
+            )
         }
     }
     
