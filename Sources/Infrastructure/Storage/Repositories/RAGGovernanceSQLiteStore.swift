@@ -21,6 +21,22 @@ private enum RAGGovernanceFormula {
 
 /// [Infra] RAG 全链路质量治理 SQLite 存储
 final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterProvider, @unchecked Sendable {
+    // MARK: - 私有辅助
+
+    /// 计算截止日期：当前时间往前推 days 天
+    private func cutoffDate(days: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+    }
+
+    /// 获取时间范围内的所有 RAG 评估记录，空范围返回 nil
+    private func fetchEvaluations(db: Database, days: Int) throws -> [RAGEvaluation]? {
+        let cutoff = cutoffDate(days: days)
+        let evals = try RAGEvaluation
+            .filter(RAGEvaluation.Columns.createdAt >= cutoff)
+            .fetchAll(db)
+        return evals.isEmpty ? nil : evals
+    }
+
     // MARK: - Token 计费 (Usage)
 
     /// 记录日志TokenUsage
@@ -267,14 +283,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateHitRate(days: Int, k: Int) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-
-            // 获取时间范围内的所有评估
-            let evals = try RAGEvaluation
-                .filter(RAGEvaluation.Columns.createdAt >= cutoff)
-                .fetchAll(db)
-
-            guard !evals.isEmpty else { return 0.0 }
+            guard let evals = try fetchEvaluations(db: db, days: days) else { return 0.0 }
 
             var hitCount = 0
             for eval in evals {
@@ -303,12 +312,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateMRR(days: Int) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation
-                .filter(RAGEvaluation.Columns.createdAt >= cutoff)
-                .fetchAll(db)
-
-            guard !evals.isEmpty else { return 0.0 }
+            guard let evals = try fetchEvaluations(db: db, days: days) else { return 0.0 }
 
             var totalRR: Double = 0
             var queryCount = 0
@@ -344,12 +348,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateNDCG(days: Int, k: Int) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation
-                .filter(RAGEvaluation.Columns.createdAt >= cutoff)
-                .fetchAll(db)
-
-            guard !evals.isEmpty else { return 0.0 }
+            guard let evals = try fetchEvaluations(db: db, days: days) else { return 0.0 }
 
             var totalNDCG: Double = 0
             var queryCount = 0
@@ -402,9 +401,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateRecall(days: Int, k: Int) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
-            guard !evals.isEmpty else { return 0.0 }
+            guard let evals = try fetchEvaluations(db: db, days: days) else { return 0.0 }
             var totalRecall: Double = 0
             var queryCount = 0
             for eval in evals {
@@ -428,9 +425,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateF1Score(days: Int, k: Int) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
-            guard !evals.isEmpty else { return 0.0 }
+            guard let evals = try fetchEvaluations(db: db, days: days) else { return 0.0 }
             var totalF1: Double = 0
             var queryCount = 0
             for eval in evals {
@@ -461,9 +456,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateMAP(days: Int) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
-            guard !evals.isEmpty else { return 0.0 }
+            guard let evals = try fetchEvaluations(db: db, days: days) else { return 0.0 }
             var totalAP: Double = 0
             var queryCount = 0
             for eval in evals {
