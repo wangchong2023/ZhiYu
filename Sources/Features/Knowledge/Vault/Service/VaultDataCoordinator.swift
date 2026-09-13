@@ -79,26 +79,8 @@ extension VaultService {
         let id2 = UUID()
         let now = Date()
         return [
-            Vault(
-                id: id1,
-                name: L10n.Vault.defaultName,
-                createdAt: now,
-                updatedAt: now,
-                pageCount: 0,
-                themePayload: nil,
-                icon: DesignSystem.Icons.Notebook.defaultBook,
-                description: L10n.Vault.defaultDescription
-            ),
-            Vault(
-                id: id2,
-                name: L10n.Vault.researchName,
-                createdAt: now,
-                updatedAt: now,
-                pageCount: 0,
-                themePayload: nil,
-                icon: DesignSystem.Icons.Notebook.defaultResearch,
-                description: L10n.Vault.researchDescription
-            )
+            makeDemoVault(id: id1, name: L10n.Vault.defaultName, icon: DesignSystem.Icons.Notebook.defaultBook, description: L10n.Vault.defaultDescription, now: now),
+            makeDemoVault(id: id2, name: L10n.Vault.researchName, icon: DesignSystem.Icons.Notebook.defaultResearch, description: L10n.Vault.researchDescription, now: now)
         ]
     }
 
@@ -107,27 +89,23 @@ extension VaultService {
     func buildFallbackDemoVaults() -> [Vault] {
         let now = Date()
         return [
-            Vault(
-                id: UUID(),
-                name: L10n.Vault.defaultName,
-                createdAt: now,
-                updatedAt: now,
-                pageCount: 0,
-                themePayload: nil,
-                icon: DesignSystem.Icons.Notebook.defaultBook,
-                description: L10n.Vault.defaultDescription
-            ),
-            Vault(
-                id: UUID(),
-                name: L10n.Vault.researchName,
-                createdAt: now,
-                updatedAt: now,
-                pageCount: 0,
-                themePayload: nil,
-                icon: DesignSystem.Icons.Notebook.defaultResearch,
-                description: L10n.Vault.researchDescription
-            )
+            makeDemoVault(id: UUID(), name: L10n.Vault.defaultName, icon: DesignSystem.Icons.Notebook.defaultBook, description: L10n.Vault.defaultDescription, now: now),
+            makeDemoVault(id: UUID(), name: L10n.Vault.researchName, icon: DesignSystem.Icons.Notebook.defaultResearch, description: L10n.Vault.researchDescription, now: now)
         ]
+    }
+
+    /// 构建演示笔记本，消除 buildDefaultDemoVaults 与 buildFallbackDemoVaults 的重复 Vault 初始化
+    private func makeDemoVault(id: UUID, name: String, icon: String, description: String, now: Date) -> Vault {
+        Vault(
+            id: id,
+            name: name,
+            createdAt: now,
+            updatedAt: now,
+            pageCount: 0,
+            themePayload: nil,
+            icon: icon,
+            description: description
+        )
     }
 
     /// 自动从持久化偏好中恢复最近一次使用的笔记本并执行底层 SQLite 物理热重载联接

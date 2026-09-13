@@ -30,16 +30,12 @@ struct NotebookCard: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
                 // 1. 图标展示 (根据卡片哈希色计算出来的彩色发光底座，赋予视觉独特性)
-                ZStack {
-                    RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
-                        .fill(colorForVault.opacity(DesignSystem.Opacity.subtle))
-                        .frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)
-                    
-                    Text(notebook.icon ?? defaultIcon)
-                        .font(.title2)
-                }
+                NotebookIconView(
+                    emoji: notebook.defaultEmojiIcon,
+                    backgroundShape: RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous),
+                    backgroundColor: colorForVault.opacity(DesignSystem.Opacity.subtle)
+                )
                 .padding(.top, DesignSystem.tiny)
-                .accessibilityHidden(true) // 屏蔽装饰性发光底座及 Emoji 的无谓直译，由外壳统合播报
                 
                 // 2. 笔记本名称标题
                 Text(notebook.name)
@@ -61,13 +57,14 @@ struct NotebookCard: View {
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.secondary.opacity(DesignSystem.Opacity.dim))
             }
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.top, DesignSystem.small)
-            .padding(.bottom, DesignSystem.small) // 统一收紧内边距，减少卡片内部白边
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: DesignSystem.Metrics.notebookCardHeight)
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
+            .borderedCardStyle(
+                horizontalPadding: DesignSystem.small,
+                verticalPadding: DesignSystem.small,
+                backgroundOpacity: DesignSystem.Opacity.dim,
+                cornerRadius: DesignSystem.cardRadius
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
                     .strokeBorder(.primary.opacity(DesignSystem.Opacity.faint), lineWidth: 0.5)
@@ -75,7 +72,7 @@ struct NotebookCard: View {
             .premiumAmbientShadow(color: .primary.opacity(DesignSystem.Opacity.light), radius: 10)
             .scaleOnHover()
             // 绑定长按上下文菜单 (ContextMenu)，支持重命名与沙盒物理彻底擦除
-            .contextMenu { notebookContextMenu }
+            .contextMenu { NotebookContextMenu(notebook: notebook, viewModel: viewModel) }
         }
         // 绑定 Task 2 微动效交互的核心成果，使用户物理压下卡片时得到即时的 Spring 回弹与下沉反馈
         .buttonStyle(AppCardButtonStyle())
@@ -96,25 +93,4 @@ struct NotebookCard: View {
         return colors[index]
     }
     
-    /// 获取根据笔记本 ID 哈希值计算出来的兜底默认 Emoji 图标，收拢至强类型设计令牌
-    private var defaultIcon: String {
-        let index = abs(notebook.id.hashValue) % DesignSystem.Icons.Notebook.options.count
-        return DesignSystem.Icons.Notebook.options[index]
-    }
-
-    /// 笔记本上下文菜单（编辑 + 删除）
-    private var notebookContextMenu: some View {
-        Group {
-            Button {
-                viewModel.prepareEdit(notebook)
-            } label: {
-                Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
-            }
-            Button(role: .destructive) {
-                viewModel.deleteNotebook(id: notebook.id)
-            } label: {
-                Label(L10n.Vault.deleteNotebook, systemImage: DesignSystem.Icons.delete)
-            }
-        }
-    }
 }

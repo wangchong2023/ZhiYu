@@ -119,9 +119,12 @@ struct NotebookFormSheet: View {
                                 
                                 TextField(L10n.Vault.namePlaceholder, text: $name)
                                     .font(.title3.bold())
-                                    .padding()
-                                    .background(Color.appCard)
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                                    .cardStyle(
+                                        horizontalPadding: DesignSystem.standardPadding,
+                                        verticalPadding: DesignSystem.standardPadding,
+                                        backgroundOpacity: DesignSystem.Opacity.dim,
+                                        cornerRadius: DesignSystem.cardRadius
+                                    )
                                     // MARK: [UI 测试自愈] 注入唯一的可测试性定位标识符，以便在新建笔记本笔记本表单弹窗中精准定位名字输入框
                                     .accessibilityIdentifier("notebook_name_textfield")
                             }
@@ -133,9 +136,12 @@ struct NotebookFormSheet: View {
                                 
                                 TextField(L10n.Vault.descriptionPlaceholder, text: $description, axis: .vertical)
                                     .lineLimit(3...5)
-                                    .padding()
-                                    .background(Color.appCard)
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                                    .cardStyle(
+                                        horizontalPadding: DesignSystem.standardPadding,
+                                        verticalPadding: DesignSystem.standardPadding,
+                                        backgroundOpacity: DesignSystem.Opacity.dim,
+                                        cornerRadius: DesignSystem.cardRadius
+                                    )
                             }
                         }
                         .padding(.horizontal)

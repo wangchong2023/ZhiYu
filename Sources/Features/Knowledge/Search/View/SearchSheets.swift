@@ -47,23 +47,8 @@ struct PagePreviewSheet: View {
                             
                             // 状态与置信度胶囊
                             HStack(spacing: DesignSystem.tiny) {
-                                Text(page.status.displayName)
-                                    .font(.caption2)
-                                    .bold()
-                                    .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, SystemSpacing.tiny)
-                                    .background(page.status.color.opacity(DesignSystem.Opacity.glass))
-                                    .foregroundStyle(page.status.color)
-                                    .clipShape(Capsule())
-                                
-                                Text(page.confidence.displayName)
-                                    .font(.caption2)
-                                    .bold()
-                                    .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, SystemSpacing.tiny)
-                                    .background(page.confidence.color.opacity(DesignSystem.Opacity.glass))
-                                    .foregroundStyle(page.confidence.color)
-                                    .clipShape(Capsule())
+                                statusPill(text: page.status.displayName, color: page.status.color)
+                                statusPill(text: page.confidence.displayName, color: page.confidence.color)
                             }
                         }
                         
@@ -105,17 +90,76 @@ struct PagePreviewSheet: View {
                             
                             FlowLayout(spacing: DesignSystem.tiny) {
                                 ForEach(page.tags, id: \.self) { tag in
-                                    Text("#\(tag)")
-                                        .font(.caption2)
-                                        .bold()
-                                        .padding(.horizontal, DesignSystem.small)
-                                        .padding(.vertical, SystemSpacing.tiny)
-                                        .background(Color.secondary.opacity(DesignSystem.Opacity.subtle))
-                                        .foregroundStyle(.secondary)
-                                        .clipShape(Capsule())
-                                }
-                            }
-                        }
+                                    statusPill(text: "#\(tag)", color: .secondary, backgroundOpacity: DesignSystem.Opacity.subtle)
+                }
+        }
+    }
+
+    /// 状态/标签胶囊，消除 status/confidence/tag pill 的重复修饰符链
+    @ViewBuilder
+    private func statusPill(text: String, color: Color, backgroundOpacity: Double = DesignSystem.Opacity.glass) -> some View {
+        Text(text)
+            .font(.caption2)
+            .bold()
+            .padding(.horizontal, DesignSystem.small)
+            .padding(.vertical, SystemSpacing.tiny)
+            .background(color.opacity(backgroundOpacity))
+            .foregroundStyle(color)
+            .clipShape(Capsule())
+    }
+
+    /// 召回指标卡，消除 FTS/向量召回卡的重复修饰符链
+    @ViewBuilder
+    private func recallMetricCard(
+        rankLabel: String,
+        count: Int,
+        engineLabel: String,
+        countColor: Color,
+        engineColor: Color,
+        gradientColors: [Color],
+        borderColor: Color
+    ) -> some View {
+        VStack(spacing: DesignSystem.tiny) {
+            Text(rankLabel)
+                .font(.caption2)
+                .bold()
+                .foregroundStyle(.secondary)
+
+            Text("\(count)")
+                .font(.system(size: SearchDiagConstants.metricFontSize, weight: .bold, design: .rounded))
+                .foregroundStyle(countColor)
+
+            Text(engineLabel)
+                .font(.system(size: SearchDiagConstants.labelFontSize, weight: .bold))
+                .foregroundStyle(engineColor)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(
+            LinearGradient(
+                colors: gradientColors,
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(DesignSystem.cardRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                .stroke(borderColor, lineWidth: 1)
+        )
+    }
+
+    /// 排位 Badge，消除 FTS/向量排位的重复修饰符链
+    @ViewBuilder
+    private func rankBadge(prefix: String, rank: Int, activeColor: Color) -> some View {
+        HStack(spacing: SystemSpacing.atomic) {
+            Text(prefix)
+            Text(rank > 0 ? "#\(rank)" : L10n.Search.Diag.miss)
+        }
+        .font(.system(size: SearchDiagConstants.labelFontSize))
+        .foregroundStyle(rank > 0 ? activeColor : Color.secondary)
+    }
+}
                         .padding(.horizontal)
                     }
                     
@@ -223,63 +267,25 @@ struct SearchDiagnosticSheet: View {
                     // ── 2. 多源召回对比圆环/指标面板 ──
                     HStack(spacing: DesignSystem.large) {
                         // 全文检索召回卡
-                        VStack(spacing: DesignSystem.tiny) {
-                            Text(L10n.Search.Diag.ftsRank)
-                                .font(.caption2)
-                                .bold()
-                                .foregroundStyle(.secondary)
-                            
-                            Text("\(info.ftsCount)")
-                                .font(.system(size: SearchDiagConstants.metricFontSize, weight: .bold, design: .rounded)) // Dynamic Type
-                                .foregroundStyle(Color.theme.blue)
-
-                            Text(L10n.Search.Diag.ftsEngine)
-                                .font(.system(size: SearchDiagConstants.labelFontSize, weight: .bold)) // Dynamic Type
-                                .foregroundStyle(.blue.opacity(DesignSystem.Opacity.prominent))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                colors: [Color.theme.blue.opacity(DesignSystem.Opacity.ghost), Color.theme.blue.opacity(DesignSystem.Opacity.atomic)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .cornerRadius(DesignSystem.cardRadius)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                                .stroke(Color.theme.blue.opacity(DesignSystem.Opacity.glass), lineWidth: 1)
+                        recallMetricCard(
+                            rankLabel: L10n.Search.Diag.ftsRank,
+                            count: info.ftsCount,
+                            engineLabel: L10n.Search.Diag.ftsEngine,
+                            countColor: Color.theme.blue,
+                            engineColor: .blue.opacity(DesignSystem.Opacity.prominent),
+                            gradientColors: [Color.theme.blue.opacity(DesignSystem.Opacity.ghost), Color.theme.blue.opacity(DesignSystem.Opacity.atomic)],
+                            borderColor: Color.theme.blue.opacity(DesignSystem.Opacity.glass)
                         )
                         
                         // 向量检索召回卡
-                        VStack(spacing: DesignSystem.tiny) {
-                            Text(L10n.Search.Diag.vectorRank)
-                                .font(.caption2)
-                                .bold()
-                                .foregroundStyle(.secondary)
-                            
-                            Text("\(info.vectorCount)")
-                                .font(.system(size: SearchDiagConstants.metricFontSize, weight: .bold, design: .rounded)) // Dynamic Type
-                                .foregroundStyle(Color.theme.green)
-
-                            Text(L10n.Search.Diag.vectorEngine)
-                                .font(.system(size: SearchDiagConstants.labelFontSize, weight: .bold)) // Dynamic Type
-                                .foregroundStyle(.green.opacity(DesignSystem.Opacity.prominent))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                colors: [Color.theme.green.opacity(DesignSystem.Opacity.ghost), Color.theme.green.opacity(DesignSystem.Opacity.atomic)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .cornerRadius(DesignSystem.cardRadius)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                                .stroke(Color.theme.green.opacity(DesignSystem.Opacity.glass), lineWidth: 1)
+                        recallMetricCard(
+                            rankLabel: L10n.Search.Diag.vectorRank,
+                            count: info.vectorCount,
+                            engineLabel: L10n.Search.Diag.vectorEngine,
+                            countColor: Color.theme.green,
+                            engineColor: .green.opacity(DesignSystem.Opacity.prominent),
+                            gradientColors: [Color.theme.green.opacity(DesignSystem.Opacity.ghost), Color.theme.green.opacity(DesignSystem.Opacity.atomic)],
+                            borderColor: Color.theme.green.opacity(DesignSystem.Opacity.glass)
                         )
                     }
                     .padding(.horizontal)
@@ -324,20 +330,18 @@ struct SearchDiagnosticSheet: View {
                                             
                                             HStack(spacing: DesignSystem.small) {
                                                 // FTS 排位
-                                                HStack(spacing: SystemSpacing.atomic) {
-                                                    Text(L10n.Search.Diag.ftsPrefix)
-                                                    Text(item.ftsRank > 0 ? "#\(item.ftsRank)" : L10n.Search.Diag.miss)
-                                                }
-                                                .font(.system(size: SearchDiagConstants.labelFontSize)) // Dynamic Type
-                                                .foregroundStyle(item.ftsRank > 0 ? Color.theme.blue : Color.secondary)
+                                                rankBadge(
+                                                    prefix: L10n.Search.Diag.ftsPrefix,
+                                                    rank: item.ftsRank,
+                                                    activeColor: Color.theme.blue
+                                                )
 
                                                 // 向量排位
-                                                HStack(spacing: SystemSpacing.atomic) {
-                                                    Text(L10n.Search.Diag.vecPrefix)
-                                                    Text(item.vectorRank > 0 ? "#\(item.vectorRank)" : L10n.Search.Diag.miss)
-                                                }
-                                                .font(.system(size: SearchDiagConstants.labelFontSize)) // Dynamic Type
-                                                .foregroundStyle(item.vectorRank > 0 ? Color.theme.green : Color.secondary)
+                                                rankBadge(
+                                                    prefix: L10n.Search.Diag.vecPrefix,
+                                                    rank: item.vectorRank,
+                                                    activeColor: Color.theme.green
+                                                )
                                             }
                                         }
                                         

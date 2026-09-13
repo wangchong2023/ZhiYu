@@ -31,15 +31,11 @@ struct NotebookListRow: View {
         Button(action: action) {
             HStack(spacing: DesignSystem.medium) {
                 // 1. 图标展示（圆形背景与 Emoji 图标）
-                ZStack {
-                    Circle()
-                        .fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                        .frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)
-                    
-                    Text(notebook.icon ?? defaultIcon)
-                        .font(.title2)
-                }
-                .accessibilityHidden(true) // 屏蔽装饰性圆形底座与 Emoji 噪读，由行容器强合并朗读
+                NotebookIconView(
+                    emoji: notebook.defaultEmojiIcon,
+                    backgroundShape: Circle(),
+                    backgroundColor: Color.appAccent.opacity(DesignSystem.Opacity.subtle)
+                )
                 
                 // 2. 笔记本元数据展示 (名称标题及描述，描述过长时智能单行截断)
                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -69,8 +65,12 @@ struct NotebookListRow: View {
                 }
             }
             .padding(DesignSystem.medium)
-            .background(Color.appCard.opacity(DesignSystem.glassOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .cardStyle(
+                horizontalPadding: DesignSystem.medium,
+                verticalPadding: DesignSystem.medium,
+                backgroundOpacity: DesignSystem.glassOpacity,
+                cornerRadius: DesignSystem.cardRadius
+            )
             .contentShape(Rectangle())
             // 绑定 iOS 原生滑动快捷动作 (SwipeActions)，支持侧滑删除和快速编辑
             .swipeActions(edge: .trailing) {
@@ -87,7 +87,7 @@ struct NotebookListRow: View {
                 }
             }
             // 绑定长按上下文菜单 (ContextMenu)
-            .contextMenu { notebookContextMenu }
+            .contextMenu { NotebookContextMenu(notebook: notebook, viewModel: viewModel) }
         }
         // 绑定 Task 2 微动效交互的核心成果，在点击单行时赋予舒适的欠阻尼物理按压反馈
         .buttonStyle(AppCardButtonStyle())
@@ -100,25 +100,4 @@ struct NotebookListRow: View {
         .accessibilityHint(L10n.Accessibility.notebookListRowHint)
     }
     
-    /// 获取根据笔记本 ID 哈希值计算出来的兜底默认 Emoji 图标，收拢至强类型设计令牌
-    private var defaultIcon: String {
-        let index = abs(notebook.id.hashValue) % DesignSystem.Icons.Notebook.options.count
-        return DesignSystem.Icons.Notebook.options[index]
-    }
-
-    /// 笔记本上下文菜单（编辑 + 删除）
-    private var notebookContextMenu: some View {
-        Group {
-            Button {
-                viewModel.prepareEdit(notebook)
-            } label: {
-                Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
-            }
-            Button(role: .destructive) {
-                viewModel.deleteNotebook(id: notebook.id)
-            } label: {
-                Label(L10n.Vault.deleteNotebook, systemImage: DesignSystem.Icons.delete)
-            }
-        }
-    }
 }

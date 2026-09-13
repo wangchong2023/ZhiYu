@@ -176,12 +176,48 @@ public struct AppCapsuleButton: View {
 /// 为按钮提供物理反馈效果。
 public struct ScaleButtonStyle: ButtonStyle {
     public init() {}
-    
+
     /// 创建Body
     /// - Parameter configuration: configuration
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? Animations.Interaction.pressScale : 1.0)
             .animation(.easeOut(duration: Spacing.Action.animationDuration), value: configuration.isPressed)
+    }
+}
+
+// MARK: - 清除按钮
+
+/// 搜索框清除按钮，消除多处重复的 Image + foregroundStyle 修饰符链
+public struct ClearSearchButton: View {
+    public init() {}
+
+    public var body: some View {
+        Image(systemName: DesignSystem.Icons.errorCircle)
+            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+    }
+}
+
+// MARK: - 来源 Badge 胶囊
+
+/// 来源 Badge 胶囊组件，消除多处重复的 Label + font + padding + Capsule 修饰符链
+public struct SourceBadge: View {
+    let label: String
+    let icon: String
+    let color: Color
+
+    public init(label: String, icon: String, color: Color) {
+        self.label = label
+        self.icon = icon
+        self.color = color
+    }
+
+    public var body: some View {
+        Label(label, systemImage: icon)
+            .font(.caption.weight(.bold))
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, DesignSystem.tightPadding)
+            .background(Capsule().fill(color.opacity(DesignSystem.Opacity.subtle)))
+            .foregroundStyle(color)
     }
 }

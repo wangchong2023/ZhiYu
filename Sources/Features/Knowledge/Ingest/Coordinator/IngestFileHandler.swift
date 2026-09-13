@@ -163,14 +163,13 @@ extension IngestCoordinator {
             await MainActor.run {
                 if let page = page {
                     Task { @MainActor in
-                        try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
-                        try? await importRecordRepo.updatePageID(id: recordID, pageID: page.id.uuidString)
+                        await self.markImportRecordDone(recordID: recordID, pageID: page.id)
                     }
                     taskCenter.updateTask(taskID, status: .completed)
                     HapticFeedback.shared.trigger(.success)
                 } else {
                     Task { @MainActor in
-                        try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
+                        await self.markImportRecordFailed(recordID: recordID)
                     }
                     taskCenter.updateTask(taskID, status: .failed(error: L10n.Ingest.importFailed))
                     HapticFeedback.shared.trigger(.error)

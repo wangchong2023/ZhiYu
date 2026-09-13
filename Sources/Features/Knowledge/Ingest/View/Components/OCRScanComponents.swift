@@ -126,12 +126,12 @@ struct OCRResultDisplay: View {
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.appText)
                 .frame(minHeight: ComponentSpacing.emptyStateImageHalf, maxHeight: OCRConstants.resultEditorMaxHeight) // 120, 368
-                .padding(DesignSystem.small) // 8
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                        .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth) // 1
+                .borderedCardStyle(
+                    horizontalPadding: DesignSystem.small,
+                    verticalPadding: DesignSystem.small,
+                    backgroundOpacity: DesignSystem.Opacity.dim,
+                    cornerRadius: DesignSystem.smallRadius,
+                    borderWidth: DesignSystem.borderWidth
                 )
 
             HStack {

@@ -41,23 +41,18 @@ struct ImportRecordCard: View {
                 // 来源类型与 AI 标签行
                 HStack(spacing: DesignSystem.atomic) {
                     // 来源类型胶囊标签 (使用高对比度的精致色彩背景)
-                    Text(categoryDisplayName)
-                        .font(.caption2.weight(.bold))
-                        .padding(.horizontal, DesignSystem.tightPadding)
-                        .padding(.vertical, SystemSpacing.atomic)
-                        .background(Capsule().fill(categoryColor))
-                        .foregroundStyle(.white)
-                    
+                    categoryPill(text: categoryDisplayName, color: categoryColor, textColor: .white)
+
                     if !tagList.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: DesignSystem.atomic) {
                                 ForEach(tagList, id: \.self) { tag in
-                                    Text(tag)
-                                        .font(.caption2.weight(.medium))
-                                        .padding(.horizontal, DesignSystem.tightPadding)
-                                        .padding(.vertical, SystemSpacing.atomic)
-                                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
-                                        .foregroundStyle(.appAccent)
+                                    categoryPill(
+                                        text: tag,
+                                        color: Color.appAccent.opacity(DesignSystem.Opacity.subtle),
+                                        textColor: .appAccent,
+                                        weight: .medium
+                                    )
                                 }
                             }
                         }
@@ -69,9 +64,12 @@ struct ImportRecordCard: View {
             Spacer()
             statusBadge
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .cardStyle(
+            horizontalPadding: DesignSystem.medium,
+            verticalPadding: DesignSystem.medium,
+            backgroundOpacity: DesignSystem.Opacity.dim,
+            cornerRadius: DesignSystem.cardRadius
+        )
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
         .contextMenu {
@@ -244,5 +242,16 @@ struct ImportRecordCard: View {
         case .voice: return Color.theme.pink
         case nil: return .secondary
         }
+    }
+
+    /// 分类胶囊标签，消除来源类型与 AI 标签的重复修饰符链
+    @ViewBuilder
+    private func categoryPill(text: String, color: Color, textColor: Color, weight: Font.Weight = .bold) -> some View {
+        Text(text)
+            .font(.caption2.weight(weight))
+            .padding(.horizontal, DesignSystem.tightPadding)
+            .padding(.vertical, SystemSpacing.atomic)
+            .background(Capsule().fill(color))
+            .foregroundStyle(textColor)
     }
 }

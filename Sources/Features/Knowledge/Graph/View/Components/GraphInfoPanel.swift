@@ -18,6 +18,23 @@ import SwiftUI
  */
 /// 图谱选中节点详情卡片组件
 /// 负责在选中节点时于底部弹出信息摘要卡片，展示页面核心元数据并提供跳转入口
+
+/// 详情行组件：标题 + 副标题 + 箭头，消除 GraphSelectedNodeCard 与 GraphInsightsPanel 的重复布局
+@ViewBuilder
+private func detailChevronRow(title: String, subtitle: String, titleWeight: Font.Weight = .semibold) -> some View {
+    VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+        Text(title)
+            .font(.subheadline.weight(titleWeight))
+            .foregroundStyle(.appText)
+        Text(subtitle)
+            .font(.caption)
+            .foregroundStyle(.appSecondary)
+    }
+    Spacer()
+    Image(systemName: DesignSystem.Icons.forward)
+        .foregroundStyle(.appSecondary)
+}
+
 struct GraphSelectedNodeCard: View {
     let page: KnowledgePage
     var heroNamespace: Namespace.ID?
@@ -43,23 +60,17 @@ struct GraphSelectedNodeCard: View {
                 .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignSystem.glassOpacity))
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
 
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                Text(page.title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.appText)
-                Text("\(page.pageType.displayName)  \(page.wordCount) \(L10n.Knowledge.Page.wordCountUnit)  \(page.outgoingLinks.count) \(L10n.Knowledge.Page.outLinkUnit)")
-                    .font(.caption)
-                    .foregroundStyle(.appSecondary)
-            }
-
-            Spacer()
-
-            Image(systemName: DesignSystem.Icons.forward)
-                .foregroundStyle(.appSecondary)
+            detailChevronRow(
+                title: page.title,
+                subtitle: "\(page.pageType.displayName)  \(page.wordCount) \(L10n.Knowledge.Page.wordCountUnit)  \(page.outgoingLinks.count) \(L10n.Knowledge.Page.outLinkUnit)"
+            )
         }
-        .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+        .cardStyle(
+            horizontalPadding: DesignSystem.standardPadding,
+            verticalPadding: DesignSystem.standardPadding,
+            backgroundOpacity: DesignSystem.Opacity.dim,
+            cornerRadius: DesignSystem.mediumRadius
+        )
         .shadow(color: Color.theme.black.opacity(SystemOpacity.glassStrong), radius: DesignSystem.mediumRadius)
     }
 }
@@ -93,19 +104,11 @@ struct GraphInsightsPanel: View {
                             .font(.title2)
                             .foregroundStyle(.appAccent)
                         
-                        VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                            Text(L10n.Graph.guide.entryTitle)
-                                .font(.subheadline.bold())
-                                .foregroundStyle(.appText)
-                            Text(L10n.Graph.guide.entrySubtitle)
-                                .font(.caption)
-                                .foregroundStyle(.appSecondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: DesignSystem.Icons.forward)
-                            .foregroundStyle(.appSecondary)
+                        detailChevronRow(
+                            title: L10n.Graph.guide.entryTitle,
+                            subtitle: L10n.Graph.guide.entrySubtitle,
+                            titleWeight: .bold
+                        )
                     }
                     .padding()
                     .background(.ultraThinMaterial)
@@ -115,7 +118,6 @@ struct GraphInsightsPanel: View {
                             .stroke(Color.appAccent.opacity(SystemOpacity.faint), lineWidth: SystemStroke.hairline)
                     )
                     .shadow(color: Color.theme.black.opacity(SystemOpacity.ghost), radius: DesignSystem.shadowRadius, x: 0, y: SystemShadow.offsetSmall)
-                }
                 .buttonStyle(.plain)
                 .padding(.bottom, DesignSystem.small)
                 .sheet(isPresented: $showGuide) {
@@ -384,8 +386,12 @@ struct GraphConceptGuideSheet: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Color.appCard.opacity(SystemOpacity.glass))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
+        .borderedCardStyle(
+            horizontalPadding: DesignSystem.standardPadding,
+            verticalPadding: DesignSystem.standardPadding,
+            backgroundOpacity: SystemOpacity.glass,
+            cornerRadius: DesignSystem.mediumRadius
+        )
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
                 .stroke(Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.hairline)

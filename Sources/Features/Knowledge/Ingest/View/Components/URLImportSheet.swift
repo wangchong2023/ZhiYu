@@ -66,9 +66,12 @@ struct URLImportSheet: View {
                     AdaptiveTextEditor(text: $urlText)
                     .font(Font.system(.body, design: Font.Design.monospaced))
                     .frame(maxWidth: CGFloat.infinity, maxHeight: CGFloat.infinity)
-                    .padding(DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                    .cardStyle(
+                        horizontalPadding: DesignSystem.small,
+                        verticalPadding: DesignSystem.small,
+                        backgroundOpacity: DesignSystem.Opacity.dim,
+                        cornerRadius: DesignSystem.smallRadius
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
                             .stroke(

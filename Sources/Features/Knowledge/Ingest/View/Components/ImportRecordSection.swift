@@ -202,15 +202,14 @@ struct ImportRecordSection: View {
         if let record = previewRecord {
             VStack(alignment: .leading, spacing: DesignSystem.small) {
                 HStack {
-                    Label(L10n.Ingest.ocrScan, systemImage: DesignSystem.Icons.cameraViewfinder)
-                        .font(.caption.weight(.bold))
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.vertical, DesignSystem.tightPadding)
-                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
-                        .foregroundStyle(.appAccent)
-                    
+                    sourceBadge(
+                        label: L10n.Ingest.ocrScan,
+                        icon: DesignSystem.Icons.cameraViewfinder,
+                        color: .appAccent
+                    )
+
                     Spacer()
-                    
+
                     Text(L10n.Ingest.imageOCRLabel)
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(.secondary)
@@ -234,12 +233,17 @@ struct ImportRecordSection: View {
     @ViewBuilder
     private var previewSourceBadge: some View {
         let cat = previewRecord?.category ?? FeatureConstants.SourceType.file
-        Label(badgeLabel(for: cat), systemImage: badgeIcon(for: cat))
-            .font(.caption.weight(.bold))
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, DesignSystem.tightPadding)
-            .background(Capsule().fill(badgeColor(for: cat).opacity(DesignSystem.Opacity.subtle)))
-            .foregroundStyle(badgeColor(for: cat))
+        sourceBadge(
+            label: badgeLabel(for: cat),
+            icon: badgeIcon(for: cat),
+            color: badgeColor(for: cat)
+        )
+    }
+
+    /// 来源 Badge 胶囊，消除 ocrPreviewHeader 与 previewSourceBadge 的重复修饰符链
+    @ViewBuilder
+    private func sourceBadge(label: String, icon: String, color: Color) -> some View {
+        SourceBadge(label: label, icon: icon, color: color)
     }
 
     private func badgeLabel(for category: String) -> String {

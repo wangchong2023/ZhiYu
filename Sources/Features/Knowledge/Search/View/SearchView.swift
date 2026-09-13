@@ -111,20 +111,22 @@ struct SearchView: View {
                     }
 
                 if !searchText.isEmpty {
-                    Button(action: { 
+                    Button(action: {
                         searchText = ""
                         useAdvancedSearch = false
                         advancedResults = []
                     }) {
-                        Image(systemName: DesignSystem.Icons.errorCircle)
-                            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                        ClearSearchButton()
                     }
                 }
             }
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.vertical, SystemSpacing.elementLarge)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
+            .commonContentPadding()
+            .borderedCardStyle(
+                horizontalPadding: DesignSystem.standardPadding,
+                verticalPadding: SystemSpacing.elementLarge,
+                backgroundOpacity: DesignSystem.Opacity.dim,
+                cornerRadius: DesignSystem.mediumRadius
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
                     .strokeBorder(.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)

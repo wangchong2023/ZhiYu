@@ -114,8 +114,7 @@ final class IngestCoordinator {
                     useSmart: smart,
                     useDeepScan: true
                 )
-                try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
-                try? await importRecordRepo.updatePageID(id: recordID, pageID: page.id.uuidString)
+                try? await markImportRecordDone(recordID: recordID, pageID: page.id)
 
                 if let icon = icon {
                     var updated = page
@@ -130,7 +129,7 @@ final class IngestCoordinator {
                     HapticFeedback.shared.trigger(.success)
                 }
             } catch {
-                try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
+                try? await markImportRecordFailed(recordID: recordID)
                 await MainActor.run {
                     self.isIngesting = false
                     self.errorMessage = L10n.Ingest.importFailed
@@ -253,5 +252,16 @@ final class IngestCoordinator {
         }
 
         self.showManualForm = true
+    }
+
+    /// 标记导入记录为完成状态并关联页面 ID，消除多处重复的 updateStatus + updatePageID 调用
+    func markImportRecordDone(recordID: UUID, pageID: UUID) async {
+        try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
+        try? await importRecordRepo.updatePageID(id: recordID, pageID: pageID.uuidString)
+    }
+
+    /// 标记导入记录为失败状态，消除多处重复的 updateStatus(.failed) 调用
+    func markImportRecordFailed(recordID: UUID) async {
+        try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
     }
 }

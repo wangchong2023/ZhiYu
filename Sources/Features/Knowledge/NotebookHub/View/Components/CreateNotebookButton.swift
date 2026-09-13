@@ -46,8 +46,12 @@ struct CreateNotebookButton: View {
                 Spacer()
             }
             .padding(DesignSystem.medium)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .borderedCardStyle(
+                horizontalPadding: DesignSystem.medium,
+                verticalPadding: DesignSystem.medium,
+                backgroundOpacity: DesignSystem.Opacity.dim,
+                cornerRadius: DesignSystem.cardRadius
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
                     .strokeBorder(style: StrokeStyle(lineWidth: DesignSystem.borderWidth, dash: [4]))
@@ -83,8 +87,12 @@ struct CreateNotebookButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: DesignSystem.Metrics.notebookCardHeight)
-            .background(Color.appCard.opacity(DesignSystem.subtleFillOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
+            .cardStyle(
+                horizontalPadding: DesignSystem.standardPadding,
+                verticalPadding: DesignSystem.standardPadding,
+                backgroundOpacity: DesignSystem.subtleFillOpacity,
+                cornerRadius: DesignSystem.cardRadius
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
                     .strokeBorder(style: StrokeStyle(lineWidth: SystemStroke.emphasis, dash: FeatureConstants.DashedBorder.pattern))
