@@ -41,9 +41,9 @@ extension FileSignatureRecord {
 }
 
 /// [Infra] SQLite 文件防篡改指纹仓储实现类
-final class SQLiteFileSignatureRepository: FileSignatureRepository, @unchecked Sendable {
+final class SQLiteFileSignatureRepository: FileSignatureRepository, RepositoryBootstrap, @unchecked Sendable {
     
-    private let dbWriter: any DatabaseWriter
+    let dbWriter: any DatabaseWriter
     
     /// 初始化指纹仓储
     /// - Parameter dbWriter: GRDB 数据库连接池写入接口
