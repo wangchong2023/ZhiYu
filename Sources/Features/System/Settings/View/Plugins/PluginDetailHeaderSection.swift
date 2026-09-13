@@ -22,12 +22,8 @@ extension PluginDetailView {
             // 插件大图标 — 优先显示已缓存的本地 icon.png，使用 App Store 经典的 Squircle 平滑圆角
             if let uiImage = localIcon {
                 Image(uiImage: uiImage)
-                    .renderingMode(.original)
-                    .resizable().scaledToFit()
-                    .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
-                    .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
+                    .pluginLocalIconBase()
+                    .iconClipShadow(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)
             } else if let iconURL = URL(string: plugin.icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
                 CachedAsyncImage(url: iconURL) { phase in
                     switch phase {
@@ -42,38 +38,16 @@ extension PluginDetailView {
                             )
                     case .failure:
                         // 远程图标拉取失败时，fallback 到带渐变底的拼图块默认图标
-                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
-                            .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
-                            .foregroundStyle(.white)
-                            .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                            .background(
-                                LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.textSecondary)],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing))
+                        fallbackPluginIcon
                     @unknown default:
-                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
-                            .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
-                            .foregroundStyle(.white)
-                            .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                            .background(
-                                LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.textSecondary)],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing))
+                        // 未知状态时，fallback 到带渐变底的拼图块默认图标
+                        fallbackPluginIcon
                     }
                 }
-                .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
-                .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
+                .iconContainerStyle(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)
             } else {
-                Image(systemName: plugin.icon)
-                    .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
-                    .foregroundStyle(.white)
-                    .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                    .background(
-                        LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.textSecondary)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.chip, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
-                    .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
+                fallbackPluginIcon
+                    .iconContainerStyle(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)
             }
 
             VStack(alignment: .leading, spacing: DesignSystem.small) {
@@ -85,12 +59,7 @@ extension PluginDetailView {
 
                     // 版本号标签
                     Text("v\(displayVersion)")
-                        .font(.caption2.weight(.semibold))
-                        .padding(.horizontal, DesignSystem.small)
-                        .padding(.vertical, DesignSystem.tiny)
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                        .foregroundStyle(.appAccent)
-                        .clipShape(Capsule())
+                        .pluginVersionTagStyle()
                 }
 
                 // 作者
@@ -112,5 +81,28 @@ extension PluginDetailView {
                 }
             }
         }
+    }
+
+    /// 远程图标加载失败时的 fallback 拼图块默认图标（带渐变底）
+    private var fallbackPluginIcon: some View {
+        Color.clear
+            .pluginFallbackIconStyle(iconName: DesignSystem.Icons.puzzlepieceExtensionFill, gradientOpacity: SystemOpacity.textSecondary)
+    }
+}
+
+/// 插件图标容器样式修饰符，消除重复的 frame+clipShape+overlay+shadow 链
+private extension View {
+    func iconContainerStyle(cornerRadius: CGFloat, strokeOpacity: Double) -> some View {
+        self
+            .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
+            .iconClipShadow(cornerRadius: cornerRadius, strokeOpacity: strokeOpacity)
+    }
+
+    /// 仅 clipShape+overlay+shadow，用于已包含 frame 的图标
+    func iconClipShadow(cornerRadius: CGFloat, strokeOpacity: Double) -> some View {
+        self
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Color.appBorder.opacity(strokeOpacity), lineWidth: SystemStroke.hairline))
+            .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
     }
 }

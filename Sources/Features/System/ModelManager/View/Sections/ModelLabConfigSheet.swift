@@ -185,9 +185,7 @@ extension ModelLabView {
 
             TextEditor(text: $systemPromptText)
                 .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
-                .padding(DesignSystem.standardPadding)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                .cornerRadius(SystemRadius.small)
+                .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: SystemRadius.small)
                 .overlay(
                     RoundedRectangle(cornerRadius: SystemRadius.small)
                         .stroke(Color.appBorder.opacity(DesignSystem.Opacity.glass), lineWidth: SystemStroke.divider)
@@ -220,10 +218,7 @@ extension ModelLabView {
                     .font(.system(.body, design: .monospaced))
                     .lineLimit(1)
                     .frame(minWidth: Spacing.Sidebar.backButtonWidth, alignment: .trailing)
-                    .padding(.horizontal, DesignSystem.standardPadding)
-                    .padding(.vertical, SystemSpacing.small)
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardPadding))
+                    .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: SystemSpacing.small, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: DesignSystem.standardPadding)
             }
         }
     }
@@ -243,9 +238,7 @@ extension ModelLabView {
                 customButton
             }
         }
-        .padding()
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
     }
 
     var customButton: some View {
@@ -274,17 +267,13 @@ extension ModelLabView {
     func presetButton(for preset: ParameterPreset) -> some View {
         let isSelected = matchedPreset == preset
         return Button(action: { applyPreset(preset) }) {
-            VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: preset.icon)
-                    .font(.title3)
-                Text(preset.displayName)
-                    .font(.caption.weight(.medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.small)
-            .background(isSelected ? Color.theme.cyan : Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .foregroundStyle(isSelected ? .white : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+            PresetButtonContent(preset: preset)
+                .presetButtonStyle(
+                    isSelected: isSelected,
+                    selectedBackground: Color.theme.cyan,
+                    unselectedBackground: Color.appCard.opacity(DesignSystem.Opacity.subtle),
+                    unselectedForeground: .secondary
+                )
         }
         .buttonStyle(.plain)
     }

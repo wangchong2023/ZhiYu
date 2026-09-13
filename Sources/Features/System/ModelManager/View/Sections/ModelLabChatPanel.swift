@@ -36,9 +36,7 @@ extension ModelLabView {
             Divider()
             chatInputBarView
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .cornerRadius(DesignSystem.mediumRadius)
+        .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium)
     }
 
     @ViewBuilder
@@ -137,8 +135,7 @@ extension ModelLabView {
             }
             .disabled(chatInputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !labManager.isGenerating)
         }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.tightPadding)
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.tightPadding)
         .background(labManager.isGenerating ? Color.appCard.opacity(DesignSystem.Opacity.soft) : Color.appCard)
     }
 

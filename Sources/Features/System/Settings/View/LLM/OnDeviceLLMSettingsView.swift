@@ -185,7 +185,7 @@ public struct OnDeviceLLMSettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding()
+                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
                 .frame(maxWidth: .infinity)
             } else {
                 ForEach(onDeviceService.availableModels) { model in

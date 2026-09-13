@@ -249,13 +249,7 @@ struct LLMSettingsView: View {
                     .textFieldStyle(.plain)
                     .font(.system(.body, design: .monospaced))
                     .foregroundStyle(.appText)
-                    .padding()
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: SystemRadius.small)
-                            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
-                    )
+                    .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
                     .skipOnWatch { $0.autocapitalization(.none).keyboardType(.URL) }
             }
             
@@ -286,13 +280,7 @@ struct LLMSettingsView: View {
                         .textFieldStyle(.plain)
                         .font(.system(.body, design: .monospaced))
                         .foregroundStyle(.appText)
-                        .padding()
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: SystemRadius.small)
-                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
-                        )
+                        .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
                         .skipOnWatch { $0.autocapitalization(.none) }
                 } else {
                     // 官方提供商 Dropdown 下拉选择菜单
@@ -312,13 +300,7 @@ struct LLMSettingsView: View {
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                         }
-                        .padding()
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: SystemRadius.small)
-                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
-                        )
+                        .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
                     }
                 }
             }

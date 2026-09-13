@@ -123,12 +123,9 @@ struct RawPageRow: View {
     /// - Parameter bytes: 字节大小
     /// - Returns: 人类可读的文件大小格式化字符串
     private func formatBytes(_ bytes: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useAll]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: bytes)
+        RawStorageFormat.bytes(bytes)
     }
-    
+
     var body: some View {
         HStack(spacing: DesignSystem.medium) {
             Image(systemName: page.displaySourceIcon)
@@ -289,8 +286,19 @@ struct RawStorageListView: View {
                                     .padding(.vertical, Spacing.tiny)
                                 }
                                 .listRowBackground(Color.clear)
-                            }
-                        }
+    }
+}
+
+/// 原始存储格式化工具，消除跨文件的 formatBytes 重复
+enum RawStorageFormat {
+    /// 字节大小格式化为人类可读字符串
+    static func bytes(_ bytes: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useAll]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: bytes)
+    }
+}
                     }
                     .listStyle(.sidebar)
                     .scrollContentBackground(.hidden)
@@ -333,11 +341,8 @@ struct RawStorageListView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.tightPadding)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-        .padding()
+        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.tightPadding, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: SystemRadius.small)
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
     }
     
     /// 空白占位状态
@@ -368,12 +373,9 @@ struct RawPageDetailView: View {
     /// - Parameter bytes: 字节大小
     /// - Returns: 人类可读的大小字符串
     private func formatBytes(_ bytes: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useAll]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: bytes)
+        RawStorageFormat.bytes(bytes)
     }
-    
+
     var body: some View {
         ZStack {
             themeManager.pageBackground()
@@ -387,7 +389,7 @@ struct RawPageDetailView: View {
                     // 2. 文件内容区
                     contentSection
                 }
-                .padding()
+                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
             }
             .background(PageBackgroundView(accentColor: .appAccent))
         }

@@ -43,7 +43,7 @@ struct FeedbackView: View {
                     Text(L10n.Settings.Feedback.history).tag(1)
                 }
                 .pickerStyle(.segmented)
-                .padding()
+                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
 
                 if selectedTab == 0 {
                     submitForm

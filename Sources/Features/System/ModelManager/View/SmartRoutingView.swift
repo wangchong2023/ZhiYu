@@ -72,9 +72,7 @@ public struct SmartRoutingView: View {
                 }
                 .font(.subheadline)
             }
-            .padding()
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
         }
     }
 
@@ -112,9 +110,7 @@ public struct SmartRoutingView: View {
                 statusRow(label: L10n.ModelManager.Routing.networkLatency, value: FeatureConstants.MockData.latency23ms, status: .healthy)
                 statusRow(label: L10n.ModelManager.Routing.networkBandwidth, value: L10n.ModelManager.Routing.networkBandwidthExcellent, status: .healthy)
             }
-            .padding()
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
         }
     }
 

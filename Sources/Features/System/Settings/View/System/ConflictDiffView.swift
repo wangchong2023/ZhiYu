@@ -115,7 +115,7 @@ struct ConflictDiffView: View {
             .buttonStyle(.borderedProminent)
             .tint(.appAccent)
         }
-        .padding()
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
     }
     
     /// 包含左侧列表与右侧分栏 Diff 的核心交互板式
@@ -194,7 +194,7 @@ struct ConflictDiffView: View {
                     // 合并编辑编辑区
                     conflictMergedEditor(for: item)
                 }
-                .padding()
+                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
             }
         }
         .background(Color.clear)
@@ -226,7 +226,7 @@ struct ConflictDiffView: View {
             .font(.subheadline)
             .buttonStyle(.bordered)
         }
-        .padding()
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
         .background(Color.appCard)
     }
 
@@ -239,16 +239,20 @@ struct ConflictDiffView: View {
         Group {
             if isWide {
                 HStack(alignment: .top, spacing: DesignSystem.medium) {
-                    diffContentColumn(title: L10n.ICloud.Conflict.localVersionHeader, content: item.localPage?.content ?? "")
-                    diffContentColumn(title: L10n.ICloud.Conflict.remoteVersionHeader, content: item.remotePage?.content ?? "")
+                    diffColumnsContent(for: item)
                 }
             } else {
                 VStack(spacing: DesignSystem.medium) {
-                    diffContentColumn(title: L10n.ICloud.Conflict.localVersionHeader, content: item.localPage?.content ?? "")
-                    diffContentColumn(title: L10n.ICloud.Conflict.remoteVersionHeader, content: item.remotePage?.content ?? "")
+                    diffColumnsContent(for: item)
                 }
             }
         }
+    }
+
+    /// Diff 列内容（本地版本 + 远程版本），消除 HStack/VStack 分支的重复
+    private func diffColumnsContent(for item: ConflictingPage) -> some View {
+        diffContentColumn(title: L10n.ICloud.Conflict.localVersionHeader, content: item.localPage?.content ?? "")
+        diffContentColumn(title: L10n.ICloud.Conflict.remoteVersionHeader, content: item.remotePage?.content ?? "")
     }
 
     /// 冲突文档的手动合并编辑器视图，允许精细修改并支持快捷载入指定版本内容

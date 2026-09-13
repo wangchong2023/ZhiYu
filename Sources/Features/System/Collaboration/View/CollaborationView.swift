@@ -144,11 +144,9 @@ struct CollaborationViewContent: View {
                     .foregroundStyle(.appAccent)
             }
         }
-        .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
     }
-    
+
     // MARK: - Actions
     private var actionSection: some View {
         VStack(spacing: DesignSystem.medium) {
@@ -176,9 +174,7 @@ struct CollaborationViewContent: View {
                         collabService.setUserName(newValue)
                     }
             }
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: DesignSystem.standardRadius)
         }
     }
 
@@ -193,11 +189,7 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
-        }
-        .disabled(collabService.isSimulator)
-        .opacity(collabService.isSimulator ? 0.5 : 1.0)
-        .accessibilityIdentifier("collab-host-button")
+            .collabButtonContainer(accessibilityID: "collab-host-button")
     }
 
     private var joinButton: some View {
@@ -214,11 +206,7 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
-        }
-        .disabled(collabService.isSimulator)
-        .opacity(collabService.isSimulator ? 0.5 : 1.0)
-        .accessibilityIdentifier("collab-join-button")
+            .collabButtonContainer(accessibilityID: "collab-join-button")
     }
 
     private var stopSearchingButton: some View {
@@ -274,9 +262,7 @@ struct CollaborationViewContent: View {
                 CollabRoleBadge(role: collabService.role)
                     .accessibilityIdentifier("collab-role-badge")
             }
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
             .accessibilityIdentifier("collab-session-info")
 
             leaveButton
@@ -319,9 +305,7 @@ struct CollaborationViewContent: View {
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
             }
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+            .collabCardStyle()
             .accessibilityIdentifier("collab-self-peer")
 
             ForEach(collabService.connectedPeers) { peer in
@@ -355,5 +339,14 @@ struct CollaborationViewContent: View {
                 }
             }
         }
+    }
+
+    /// 协作按钮容器样式，消除 hostButton 与 joinButton 的 disabled+opacity+clipShape 重复
+    private func collabButtonContainer(accessibilityID: String) -> some View {
+        self
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .disabled(collabService.isSimulator)
+            .opacity(collabService.isSimulator ? 0.5 : 1.0)
+            .accessibilityIdentifier(accessibilityID)
     }
 }

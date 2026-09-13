@@ -27,28 +27,9 @@ struct LocalPluginDetailView: View {
         registry.plugins.contains(where: { $0.manifest.id == manifest.id })
     }
 
-    /// 根据插件 ID 智能映射默认 of SF Symbol 兜底图标，防止在未解压或无本地物理图片时各插件展示单一的拼图块
+    /// 根据插件 ID 智能映射默认 SF Symbol 兜底图标，防止在未解压或无本地物理图片时各插件展示单一的拼图块
     private var fallbackIcon: String {
-        let id = manifest.id
-        if id.contains(PluginConstants.LocalIconKeyword.tocGenerator) {
-            return "list.bullet.rectangle.portrait"
-        } else if id.contains(PluginConstants.LocalIconKeyword.wordCounter) {
-            return "character.textbox"
-        } else if id.contains(PluginConstants.LocalIconKeyword.smartCleaner) {
-            return "wand.and.stars"
-        } else if id.contains(PluginConstants.LocalIconKeyword.aiSummary) {
-            return "brain.head.profile"
-        } else if id.contains(PluginConstants.LocalIconKeyword.codeHighlighter) {
-            return "curlybraces"
-        } else if id.contains(PluginConstants.LocalIconKeyword.linkPreview) {
-            return "link"
-        } else if id.contains(PluginConstants.LocalIconKeyword.aiTranslator) {
-            return "translate"
-        } else if id.contains(PluginConstants.LocalIconKeyword.markdownBeautifier) {
-            return "doc.text.magnifyingglass"
-        } else {
-            return "puzzlepiece.extension.fill"
-        }
+        PluginIconResolver.localIconName(for: manifest.id)
     }
 
     var body: some View {
@@ -60,18 +41,11 @@ struct LocalPluginDetailView: View {
                     // 优先显示本地 icon.png，fallback SF Symbol
                     if let image = localIcon {
                         Image(uiImage: image)
-                            .renderingMode(.original)
-                            .resizable().scaledToFit()
-                            .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
+                            .pluginLocalIconBase()
                             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
                     } else {
-                        Image(systemName: fallbackIcon)
-                            .font(.system(size: DesignSystem.Gallery.mainIconSize * FeatureConstants.PluginDetailIconScale.main))
-                            .foregroundStyle(.white)
-                            .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-                            .background(
-                                LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(DesignSystem.Opacity.prominent)],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing))
+                        Color.clear
+                            .pluginFallbackIconStyle(iconName: fallbackIcon)
                             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.giant))
                     }
 
@@ -83,10 +57,7 @@ struct LocalPluginDetailView: View {
 
                         HStack(spacing: DesignSystem.small) {
                             Text("v\(manifest.version)")
-                                .font(.caption2.weight(.semibold))
-                                .padding(.horizontal, DesignSystem.small).padding(.vertical, DesignSystem.tiny)
-                                .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle)).foregroundStyle(.appAccent)
-                                .clipShape(Capsule())
+                                .pluginVersionTagStyle()
 
                             if isInstalled {
                                 Label(L10n.Plugin.Detail.installed, systemImage: DesignSystem.Icons.checkCircle)
@@ -134,9 +105,7 @@ struct LocalPluginDetailView: View {
                             Image(systemName: PluginDetailView.permIcon(for: perm)).foregroundStyle(.appAccent)
                             Text(L10n.Plugin.permTitle(perm)).font(.subheadline).foregroundStyle(.appText)
                         }
-                        .padding(DesignSystem.medium).frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+                        .permissionContainerStyle(cornerRadius: SystemRadius.card)
                     }
                 }
 
@@ -146,7 +115,7 @@ struct LocalPluginDetailView: View {
                     MarkdownRendererView(content: localReadme ?? manifest.description, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
                 }
             }
-            .padding()
+            .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .task {
@@ -158,12 +127,6 @@ struct LocalPluginDetailView: View {
     }
 
     private func detailRow(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: icon).font(.subheadline).foregroundStyle(.appAccent).frame(width: DesignSystem.IconSize.small)
-            Text(label).font(.subheadline).foregroundStyle(.appSecondary).fixedSize(horizontal: true, vertical: false)
-            Spacer()
-            Text(value).font(.subheadline.weight(.medium)).foregroundStyle(.appText)
-        }
-        .padding(.horizontal, DesignSystem.medium).padding(.vertical, SystemSpacing.small)
+        PluginDetailRow(icon: icon, label: label, value: value)
     }
 }

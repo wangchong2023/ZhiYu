@@ -59,9 +59,7 @@ struct DiscoveredRoomRow: View {
                 Image(systemName: DesignSystem.Icons.forwardCircle)
                     .foregroundStyle(.appAccent)
             }
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: DesignSystem.standardRadius)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("collab-discovered-room-\(room.id)")
@@ -95,9 +93,7 @@ struct ConnectedPeerRow: View {
                     .foregroundStyle(.appSecondary)
             }
         }
-        .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: DesignSystem.standardRadius)
         .accessibilityIdentifier("collab-connected-peer-\(peer.id)")
     }
 }
@@ -130,9 +126,7 @@ struct RecentEditRow: View {
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
         }
-        .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+        .collabCardStyle()
         .accessibilityIdentifier("collab-edit-row-\(edit.id)")
     }
 }
@@ -160,5 +154,18 @@ struct CollabRoleBadge: View {
             .background(color.opacity(DesignSystem.glassOpacity)) // 0.15
             .clipShape(Capsule())
             .foregroundStyle(color)
+    }
+}
+
+/// 协作卡片样式修饰符，消除 CollaborationView 与 CollaborationComponents 的 cardStyle 参数重复
+extension View {
+    func collabCardStyle() -> some View {
+        self
+            .cardStyle(
+                horizontalPadding: DesignSystem.standardPadding,
+                verticalPadding: DesignSystem.standardPadding,
+                backgroundOpacity: DesignSystem.Opacity.solid,
+                cornerRadius: DesignSystem.standardRadius
+            )
     }
 }

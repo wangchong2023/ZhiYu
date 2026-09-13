@@ -38,22 +38,9 @@ struct SubscriptionPlanCard: View {
                     Text(L10n.Auth.priceMonthlyPro)
                         .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, SystemSpacing.element)
-                .foregroundStyle(selectedCycle == .monthly ? .appAccent : .appSecondary)
+                .cycleButtonContent(isSelected: selectedCycle == .monthly)
             }
-            .buttonStyle(.plain)
-            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: SystemRadius.card)
-                    .stroke(
-                        selectedCycle == .monthly
-                            ? AnyShapeStyle(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
-                        lineWidth: selectedCycle == .monthly ? 2 : 1
-                    )
-            )
+            .cycleButtonStyle(isSelected: selectedCycle == .monthly)
 
             Button(action: {
                 HapticFeedback.shared.trigger(.selection)
@@ -74,23 +61,50 @@ struct SubscriptionPlanCard: View {
                     Text(L10n.Auth.priceYearlyPro)
                         .font(.system(size: SystemFontSize.micro)) // Dynamic Type
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, SystemSpacing.element)
-                .foregroundStyle(selectedCycle == .yearly ? .appAccent : .appSecondary)
+                .cycleButtonContent(isSelected: selectedCycle == .yearly)
             }
+            .cycleButtonStyle(isSelected: selectedCycle == .yearly)
+        }
+    }
+
+    /// 周期按钮内容容器样式，消除月付/年付按钮的 frame+padding+foregroundStyle 重复
+    private func cycleButtonContent(isSelected: Bool) -> some View {
+        self
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, SystemSpacing.element)
+            .foregroundStyle(isSelected ? .appAccent : .appSecondary)
+    }
+
+    /// 周期按钮样式，消除月付/年付按钮的重复修饰符链
+    private func cycleButtonStyle(isSelected: Bool) -> some View {
+        self
             .buttonStyle(.plain)
             .background(Color.appCard.opacity(SystemOpacity.glassStrong))
             .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
             .overlay(
                 RoundedRectangle(cornerRadius: SystemRadius.card)
                     .stroke(
-                        selectedCycle == .yearly
+                        isSelected
                             ? AnyShapeStyle(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
                             : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
-                        lineWidth: selectedCycle == .yearly ? 2 : 1
+                        lineWidth: isSelected ? 2 : 1
                     )
             )
-        }
+    }
+
+    /// 套餐描述文本样式，消除 Lite/Pro Card 的重复
+    private func planDescStyle() -> some View {
+        self
+            .font(.system(size: SystemFontSize.micro))
+            .foregroundStyle(.appSecondary)
+            .lineLimit(2)
+    }
+
+    /// 套餐卡片容器基础布局，消除 Lite/Pro Card 的 padding+frame 重复
+    private func planCardContainerBase() -> some View {
+        self
+            .padding(DesignSystem.medium)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     // MARK: - 套餐卡片对比
@@ -123,12 +137,9 @@ struct SubscriptionPlanCard: View {
                     .foregroundStyle(.appText)
 
                 Text(L10n.Auth.litePlanDesc)
-                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
-                    .foregroundStyle(.appSecondary)
-                    .lineLimit(2)
+                    .planDescStyle()
             }
-            .padding(DesignSystem.medium)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .planCardContainerBase()
             .background(Color.appCard.opacity(SystemOpacity.glassStrong))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
             .overlay(
@@ -163,12 +174,9 @@ struct SubscriptionPlanCard: View {
                     .foregroundStyle(.appAccent)
 
                 Text(L10n.Auth.proPlanDesc)
-                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
-                    .foregroundStyle(.appSecondary)
-                    .lineLimit(2)
+                    .planDescStyle()
             }
-            .padding(DesignSystem.medium)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .planCardContainerBase()
             .background(Color.appCard.opacity(SystemOpacity.disabled))
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
             .overlay(

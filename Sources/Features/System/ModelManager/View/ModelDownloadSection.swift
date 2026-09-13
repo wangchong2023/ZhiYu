@@ -113,18 +113,13 @@ struct ModelActionButton: View {
 
     /// 渲染因硬件限制而被拦截的下载按钮
     private var restrictedActionButton: some View {
-        Button(action: { alertManifest = manifest }) {
-            HStack(spacing: SystemSpacing.tiny) {
-                Image(systemName: DesignSystem.Icons.exclamationmarkOctagonFill)
-                Text(L10n.ModelManager.Card.unavailable)
-            }
-            .font(.subheadline.bold())
-            .padding(.horizontal, SystemSpacing.content)
-            .padding(.vertical, SystemSpacing.element)
-            .background(Color.theme.red.opacity(DesignSystem.Opacity.glass))
-            .foregroundStyle(Color.theme.red)
-            .clipShape(Capsule())
-        }
+        downloadActionButton(
+            icon: DesignSystem.Icons.exclamationmarkOctagonFill,
+            text: L10n.ModelManager.Card.unavailable,
+            background: Color.theme.red.opacity(DesignSystem.Opacity.glass),
+            foreground: Color.theme.red,
+            action: { alertManifest = manifest }
+        )
     }
 
     /// 渲染已就绪模型的激活与选中切换按钮
@@ -187,18 +182,29 @@ struct ModelActionButton: View {
                 }
             }
         default:
-            Button(action: { modelManager.startDownload(for: manifest) }) {
-                HStack(spacing: SystemSpacing.tiny) {
-                    Image(systemName: DesignSystem.Icons.icloudArrowDown)
-                    Text(L10n.ModelManager.Card.download)
-                }
-                .font(.subheadline.bold())
-                .padding(.horizontal, SystemSpacing.content)
-                .padding(.vertical, SystemSpacing.element)
-                .background(Color.appAccent)
-                .foregroundStyle(.white)
-                .clipShape(Capsule())
+            downloadActionButton(
+                icon: DesignSystem.Icons.icloudArrowDown,
+                text: L10n.ModelManager.Card.download,
+                background: Color.appAccent,
+                foreground: .white,
+                action: { modelManager.startDownload(for: manifest) }
+            )
+        }
+    }
+
+    /// 通用下载操作按钮，消除重复的 HStack+padding+background+clipShape(Capsule) 链
+    private func downloadActionButton(icon: String, text: String, background: Color, foreground: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: SystemSpacing.tiny) {
+                Image(systemName: icon)
+                Text(text)
             }
+            .font(.subheadline.bold())
+            .padding(.horizontal, SystemSpacing.content)
+            .padding(.vertical, SystemSpacing.element)
+            .background(background)
+            .foregroundStyle(foreground)
+            .clipShape(Capsule())
         }
     }
 }

@@ -43,7 +43,7 @@ public struct OnDeviceTestView: View {
                 resultSection
                 Spacer()
             }
-            .padding()
+            .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
             .background(PageBackgroundView(accentColor: .appAccent))
             .navigationTitle(L10n.AI.OnDevice.test)
 .appNavigationBarTitleDisplayMode(.inline)

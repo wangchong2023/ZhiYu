@@ -91,16 +91,14 @@ struct PerformanceDashboardView: View {
                         TimingRowView(label: L10n.Common.Perf.search, duration: service.metrics.searchDuration, color: Color.theme.pink)
                         TimingRowView(label: L10n.Common.Perf.ragChain, duration: service.metrics.ragChainDuration, color: Color.theme.cyan)
                     }
-                    .padding()
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+                    .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
                     
                     // Last Updated
                     Text(L10n.Common.Perf.lastUpdated + ": " + service.metrics.lastUpdated.formatted(Date.FormatStyle(locale: Localized.currentLocale)))
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding()
+                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
             }
             .background(PageBackgroundView(accentColor: .appAccent))
             .navigationTitle(L10n.Common.Perf.title)

@@ -92,10 +92,7 @@ extension ModelLabView {
                     .font(.caption)
                     .foregroundStyle(Color.theme.cyan)
             }
-            .padding(.horizontal, SystemSpacing.medium)
-            .padding(.vertical, SystemSpacing.small)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .clipShape(Capsule())
+            .pillStyle()
         }
     }
 
@@ -224,10 +221,7 @@ extension ModelLabView {
                         .font(.caption)
                 }
                 .foregroundStyle(Color.theme.cyan)
-                .padding(.horizontal, SystemSpacing.medium)
-                .padding(.vertical, SystemSpacing.small)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                .clipShape(Capsule())
+                .pillStyle()
             }
             .buttonStyle(.plain)
         }
@@ -268,9 +262,7 @@ extension ModelLabView {
                     controlButton(for: useCase)
                 }
             }
-            .padding(DesignSystem.medium)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .cornerRadius(DesignSystem.mediumRadius)
+            .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium)
 
             // 推理流输出展示板
             outputScribeBoard
@@ -279,5 +271,14 @@ extension ModelLabView {
         .onAppear {
             setupDefaultPrompt(for: useCase)
         }
+    }
+
+    /// 胶囊 pill 样式修饰符，消除重复的 padding+background+clipShape(Capsule) 链
+    private func pillStyle() -> some View {
+        self
+            .padding(.horizontal, SystemSpacing.medium)
+            .padding(.vertical, SystemSpacing.small)
+            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
+            .clipShape(Capsule())
     }
 }

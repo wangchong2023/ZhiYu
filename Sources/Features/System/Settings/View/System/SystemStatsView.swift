@@ -111,12 +111,7 @@ struct SystemStatsView: View {
             StandardSection(title: L10n.Dashboard.apiRequests + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
                 VStack(alignment: .leading, spacing: Spacing.tiny) {
                     HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
-                        Text("\(coordinator.dailyStats.reduce(0) { $0 + $1.requests })")
-                            .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
-                            .foregroundStyle(.appText)
-                        Text(L10n.Dashboard.stats.requestsUsage)
-                            .font(.caption)
-                            .foregroundStyle(.appSecondary)
+                        statsCardHeader(value: "\(coordinator.dailyStats.reduce(0) { $0 + $1.requests })", label: L10n.Dashboard.stats.requestsUsage)
                     }
                     
                     ChartView(stats: coordinator.dailyStats, type: .requests)
@@ -129,12 +124,7 @@ struct SystemStatsView: View {
             StandardSection(title: L10n.Dashboard.stats.tokensUsage + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
                 VStack(alignment: .leading, spacing: Spacing.tiny) {
                     HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
-                        Text("\(coordinator.dailyStats.reduce(0) { $0 + $1.tokens })")
-                            .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
-                            .foregroundStyle(.appText)
-                        Text(L10n.Dashboard.tokens)
-                            .font(.caption)
-                            .foregroundStyle(.appSecondary)
+                        statsCardHeader(value: "\(coordinator.dailyStats.reduce(0) { $0 + $1.tokens })", label: L10n.Dashboard.tokens)
                     }
                     
                     ChartView(stats: coordinator.dailyStats, type: .tokens)
@@ -257,9 +247,7 @@ struct SystemStatsView: View {
                                 
                                 if coordinator.totalStorage > 0 {
                                     let percent = Int(Double(category.value) / Double(coordinator.totalStorage) * Double(FeatureConstants.PercentageBase.fullInt))
-                                    Text("\(percent)%")
-                                        .font(.system(size: DesignSystem.microFontSize, design: .rounded))
-                                        .foregroundStyle(.appSecondary)
+                                    percentText(percent)
                                 }
                             }
                         }
@@ -325,9 +313,7 @@ struct SystemStatsView: View {
                                 // 计算所占总数据库大小的百分比
                                 let dbTotal = coordinator.storageCategories.first { $0.label == L10n.Dashboard.System.database }?.value ?? 1
                                 let percent = Int(Double(item.size) / Double(max(1, dbTotal)) * Double(FeatureConstants.PercentageBase.fullInt))
-                                Text("\(percent)%")
-                                    .font(.system(size: DesignSystem.microFontSize, design: .rounded))
-                                    .foregroundStyle(.appSecondary)
+                                percentText(percent)
                             }
                         }
                         .appListRowStyle(showDivider: !isLast)
@@ -480,5 +466,24 @@ struct SystemStatsView: View {
             RoundedRectangle(cornerRadius: SystemRadius.small)
                 .stroke(color.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
         )
+    }
+
+    /// 百分比文本，消除存储分类与数据库条目的重复
+    private func percentText(_ percent: Int) -> some View {
+        Text("\(percent)%")
+            .font(.system(size: DesignSystem.microFontSize, design: .rounded))
+            .foregroundStyle(.appSecondary)
+    }
+
+    /// 统计卡片标题行，消除 API 请求与 Token 消耗卡片的重复
+    private func statsCardHeader(value: String, label: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
+            Text(value)
+                .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
+                .foregroundStyle(.appText)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.appSecondary)
+        }
     }
 }

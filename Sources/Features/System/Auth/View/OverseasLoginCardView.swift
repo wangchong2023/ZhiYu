@@ -33,9 +33,7 @@ struct OverseasLoginCardView: View {
             //    字号 / 字重 / 字体设计 / 顶部 padding 与大陆版保持完全一致，
             //    确保 3D 翻转时两侧卡片视觉高度一致，避免下方 OAuth / 游客模式跳变。
             Text(L10n.Auth.overseasWelcome)
-                .font(.system(size: SystemFontSize.hero, weight: .bold, design: .rounded))
-                .foregroundStyle(.appText)
-                .padding(.top, Spacing.medium)
+                .authHeroTextStyle()
 
             // 2. Passkey 一键生物免密注册/登录按钮 (海外首选安全通道)
             Button(action: handlePasskeyLogin) {
@@ -46,11 +44,7 @@ struct OverseasLoginCardView: View {
                         .font(.headline.weight(.semibold))
                 }
                 .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, DesignSystem.Domain.Auth.actionButtonVerticalPadding)
-                .background(Color.appAccent)
-                .clipShape(Capsule())
-                .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: Spacing.shadowRadius, y: Spacing.shadowY)
+                .authActionButtonStyle()
             }
             .disabled(isLoading)
             .accessibilityIdentifier("auth.overseas.passkeyButton")

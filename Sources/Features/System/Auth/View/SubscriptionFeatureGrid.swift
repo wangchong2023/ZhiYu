@@ -25,26 +25,13 @@ struct SubscriptionFeatureGrid: View {
                     Color.clear
                         .frame(maxWidth: .infinity)
 
-                    Text(L10n.Auth.litePlan)
-                        .font(.subheadline.bold())
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .foregroundStyle(.appSecondary)
+                    headerTitle(L10n.Auth.litePlan, color: .appSecondary)
 
-                    Rectangle()
-                        .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
-                        .frame(width: DesignSystem.Metrics.dividerThickness)
-                        .padding(.horizontal, SystemSpacing.tiny)
-                        .frame(maxHeight: Spacing.iconSmall)
+                    verticalDivider(maxHeight: Spacing.iconSmall)
 
-                    Text(L10n.Auth.proPlan)
-                        .font(.subheadline.bold())
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .foregroundStyle(.appAccent)
+                    headerTitle(L10n.Auth.proPlan, color: .appAccent)
                 }
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, DesignSystem.small)
+                .cellPadding()
 
                 AppDivider()
 
@@ -81,11 +68,7 @@ struct SubscriptionFeatureGrid: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .foregroundStyle(.appSecondary)
 
-            Rectangle()
-                .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
-                .frame(width: DesignSystem.Metrics.dividerThickness)
-                .padding(.horizontal, SystemSpacing.tiny)
-                .frame(maxHeight: DesignSystem.medium)
+            verticalDivider(maxHeight: DesignSystem.medium)
 
             // Pro 值
             Text(pro.value)
@@ -93,7 +76,31 @@ struct SubscriptionFeatureGrid: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .foregroundStyle(.appAccent)
         }
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, DesignSystem.small)
+        .cellPadding()
+    }
+
+    /// 垂直分隔线，消除表头与数据行的 Rectangle 重复
+    private func verticalDivider(maxHeight: CGFloat) -> some View {
+        Rectangle()
+            .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
+            .frame(width: DesignSystem.Metrics.dividerThickness)
+            .padding(.horizontal, SystemSpacing.tiny)
+            .frame(maxHeight: maxHeight)
+    }
+
+    /// 单元格内边距，消除表头与数据行的 padding 重复
+    private func cellPadding() -> some View {
+        self
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, DesignSystem.small)
+    }
+
+    /// 表头标题文本，消除 Lite/Pro 表头的 Text 样式重复
+    private func headerTitle(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.subheadline.bold())
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .foregroundStyle(color)
     }
 }

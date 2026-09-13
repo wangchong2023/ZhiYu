@@ -49,12 +49,8 @@ struct ChartView: View {
     
     @ViewBuilder
     private var requestsChart: some View {
-        let monthRange = currentMonthRange()
-        let start = monthRange.start
-        let end = monthRange.end.addingTimeInterval(86400)
-        let domainX = start...end
-        let domainY = 0.0...(max(FeatureConstants.ChartDomain.baseValue, maxValue() * FeatureConstants.ChartDomain.maxValueScale))
-        
+        let domain = chartDomain()
+
         Chart {
             ForEach(stats) { stat in
                 AreaMark(
@@ -81,14 +77,7 @@ struct ChartView: View {
             }
             
             if let selectedDate {
-                RuleMark(x: .value(L10n.Dashboard.chartSelected, selectedDate, unit: .day))
-                    .foregroundStyle(Color.appSecondary.opacity(DesignSystem.Opacity.soft))
-                    .lineStyle(StrokeStyle(lineWidth: SystemStroke.divider, dash: [2]))
-                    .annotation(position: .automatic, alignment: .center, spacing: DesignSystem.tiny) {
-                        if let stat = stats.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
-                            tooltipView(stat: stat)
-                        }
-                    }
+                selectionRuleMark(for: selectedDate)
                 
                 if let stat = stats.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
                     PointMark(
@@ -104,20 +93,12 @@ struct ChartView: View {
                 }
             }
         }
-        .chartXSelection(value: $selectedDate)
-        .chartXAxis { xAxisMarks }
-        .chartYAxis { yAxisMarks }
-        .chartXScale(domain: domainX)
-        .chartYScale(domain: domainY)
+        .chartCommonModifiers(domain: domain)
     }
-    
+
     @ViewBuilder
     private var tokensChart: some View {
-        let monthRange = currentMonthRange()
-        let start = monthRange.start
-        let end = monthRange.end.addingTimeInterval(86400)
-        let domainX = start...end
-        let domainY = 0.0...(max(FeatureConstants.ChartDomain.baseValue, maxValue() * FeatureConstants.ChartDomain.maxValueScale))
+        let domain = chartDomain()
         
         Chart {
             ForEach(stats) { stat in
@@ -131,23 +112,12 @@ struct ChartView: View {
             }
             
             if let selectedDate {
-                RuleMark(x: .value(L10n.Dashboard.chartSelected, selectedDate, unit: .day))
-                    .foregroundStyle(Color.appSecondary.opacity(DesignSystem.Opacity.soft))
-                    .lineStyle(StrokeStyle(lineWidth: SystemStroke.divider, dash: [2]))
-                    .annotation(position: .automatic, alignment: .center, spacing: DesignSystem.tiny) {
-                        if let stat = stats.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
-                            tooltipView(stat: stat)
-                        }
-                    }
+                selectionRuleMark(for: selectedDate)
             }
         }
-        .chartXSelection(value: $selectedDate)
-        .chartXAxis { xAxisMarks }
-        .chartYAxis { yAxisMarks }
-        .chartXScale(domain: domainX)
-        .chartYScale(domain: domainY)
+        .chartCommonModifiers(domain: domain)
     }
-    
+
     @AxisContentBuilder
     private var xAxisMarks: some AxisContent {
         AxisMarks(values: .stride(by: .day, count: 7)) { value in
@@ -218,5 +188,37 @@ struct ChartView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "M-d"
         return formatter.string(from: date)
+    }
+    
+    /// 选中日期的 RuleMark + annotation，消除跨图表的重复
+    private func selectionRuleMark(for selectedDate: Date) -> some ChartContent {
+        RuleMark(x: .value(L10n.Dashboard.chartSelected, selectedDate, unit: .day))
+            .foregroundStyle(Color.appSecondary.opacity(DesignSystem.Opacity.soft))
+            .lineStyle(StrokeStyle(lineWidth: SystemStroke.divider, dash: [2]))
+            .annotation(position: .automatic, alignment: .center, spacing: DesignSystem.tiny) {
+                if let stat = stats.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
+                    tooltipView(stat: stat)
+                }
+            }
+    }
+
+    /// 图表域计算（X 轴日期范围 + Y 轴数值范围），消除 requestsChart 与 tokensChart 的重复
+    private func chartDomain() -> (x: ClosedRange<Date>, y: ClosedRange<Double>) {
+        let monthRange = currentMonthRange()
+        let start = monthRange.start
+        let end = monthRange.end.addingTimeInterval(86400)
+        let domainX = start...end
+        let domainY = 0.0...(max(FeatureConstants.ChartDomain.baseValue, maxValue() * FeatureConstants.ChartDomain.maxValueScale))
+        return (domainX, domainY)
+    }
+
+    /// 应用 chart 通用修饰符链，消除 requestsChart 与 tokensChart 的重复
+    private func chartCommonModifiers(domain: (ClosedRange<Date>, ClosedRange<Double>)) -> some View {
+        self
+            .chartXSelection(value: $selectedDate)
+            .chartXAxis { xAxisMarks }
+            .chartYAxis { yAxisMarks }
+            .chartXScale(domain: domain.x)
+            .chartYScale(domain: domain.y)
     }
 }

@@ -71,3 +71,25 @@ extension View {
         ))
     }
 }
+
+/// 小卡片边框修饰符，消除跨文件的 cornerRadius+overlay(stroke) 重复
+struct SmallCardBorderModifier: ViewModifier {
+    let cornerRadius: CGFloat
+    let strokeOpacity: Double
+
+    func body(content: Content) -> some View {
+        content
+            .cornerRadius(cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.appBorder.opacity(strokeOpacity), lineWidth: SystemStroke.divider)
+            )
+    }
+}
+
+extension View {
+    /// 应用小卡片边框样式（默认 SystemRadius.small + Opacity.subtle）
+    func smallCardBorder(cornerRadius: CGFloat = SystemRadius.small, strokeOpacity: Double = DesignSystem.Opacity.subtle) -> some View {
+        modifier(SmallCardBorderModifier(cornerRadius: cornerRadius, strokeOpacity: strokeOpacity))
+    }
+}

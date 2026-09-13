@@ -124,9 +124,7 @@ public struct InferenceParametersView: View {
                 customButton
             }
         }
-        .padding()
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
     }
 
     /// 自定义模式按钮
@@ -157,17 +155,8 @@ public struct InferenceParametersView: View {
     /// 预设按钮
     private func presetButton(for preset: ParameterPreset) -> some View {
         Button(action: { applyPreset(preset) }) {
-            VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: preset.icon)
-                    .font(.title3)
-                Text(preset.displayName)
-                    .font(.caption.weight(.medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.small)
-            .background(matchedPreset == preset ? Color.appAccent : Color.appBackground)
-            .foregroundStyle(matchedPreset == preset ? .white : .appText)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+            PresetButtonContent(preset: preset)
+                .presetButtonStyle(isSelected: matchedPreset == preset)
         }
         .buttonStyle(.plain)
     }
@@ -178,62 +167,48 @@ public struct InferenceParametersView: View {
     /// 参数滑块（Double 类型）
     @ViewBuilder
     private func parameterSlider(title: String, value: Binding<Double>, range: ClosedRange<Double>, tip: String) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            HStack(spacing: SystemSpacing.tiny) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.appText)
-                infoIcon(id: title, tip: tip)
-            }
-
+        sliderCard(title: title, tip: tip) {
             Slider(value: value, in: range)
                 .tint(.appAccent)
                 .disabled(!isCustomMode)
 
-            HStack {
-                Text(String(format: "%.1f", range.lowerBound))
-                    .font(.caption2).foregroundStyle(.appSecondary)
-                Spacer()
-                Text(String(format: "%.2f", value.wrappedValue))
-                    .font(.caption.weight(.bold)).foregroundStyle(.appAccent)
-                Spacer()
-                Text(String(format: "%.1f", range.upperBound))
-                    .font(.caption2).foregroundStyle(.appSecondary)
-            }
+            sliderRangeLabel(lower: String(format: "%.1f", range.lowerBound), current: String(format: "%.2f", value.wrappedValue), upper: String(format: "%.1f", range.upperBound))
         }
-        .padding()
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
     }
 
     /// 参数滑块（Int 类型）
     @ViewBuilder
     private func parameterIntSlider(title: String, value: Binding<Int>, range: ClosedRange<Int>, tip: String) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            HStack(spacing: SystemSpacing.tiny) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.appText)
-                infoIcon(id: title, tip: tip)
-            }
-
+        sliderCard(title: title, tip: tip) {
             Slider(value: Binding(
                 get: { Double(value.wrappedValue) },
                 set: { value.wrappedValue = Int($0) }
             ), in: Double(range.lowerBound)...Double(range.upperBound), step: 1.0)
                 .tint(.appAccent).disabled(!isCustomMode)
 
-            HStack {
-                Text("\(range.lowerBound)").font(.caption2).foregroundStyle(.appSecondary)
-                Spacer()
-                Text("\(value.wrappedValue)").font(.caption.weight(.bold)).foregroundStyle(.appAccent)
-                Spacer()
-                Text("\(range.upperBound)").font(.caption2).foregroundStyle(.appSecondary)
-            }
+            sliderRangeLabel(lower: "\(range.lowerBound)", current: "\(value.wrappedValue)", upper: "\(range.upperBound)")
         }
-        .padding()
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+    }
+
+    /// 滑块标题行（标题 + 提示图标），消除 parameterSlider 与 parameterIntSlider 的重复
+    private func sliderHeader(title: String, tip: String) -> some View {
+        HStack(spacing: SystemSpacing.tiny) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.appText)
+            infoIcon(id: title, tip: tip)
+        }
+    }
+
+    /// 滑块范围标签行（下限 + 当前值 + 上限），消除 parameterSlider 与 parameterIntSlider 的重复
+    private func sliderRangeLabel(lower: String, current: String, upper: String) -> some View {
+        HStack {
+            Text(lower).font(.caption2).foregroundStyle(.appSecondary)
+            Spacer()
+            Text(current).font(.caption.weight(.bold)).foregroundStyle(.appAccent)
+            Spacer()
+            Text(upper).font(.caption2).foregroundStyle(.appSecondary)
+        }
     }
 
     /// 推理参数说明的提示信息按钮组件
@@ -353,6 +328,16 @@ public struct InferenceParametersView: View {
 
         // 触发成功反馈
         HapticFeedback.shared.trigger(.success)
+    }
+
+    /// 滑块卡片容器，消除 parameterSlider 与 parameterIntSlider 的 VStack+cardStyle 重复
+    @ViewBuilder
+    private func sliderCard<Content: View>(title: String, tip: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.small) {
+            sliderHeader(title: title, tip: tip)
+            content()
+        }
+        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
     }
 }
 
