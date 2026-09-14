@@ -54,14 +54,8 @@ extension L10n {
         public static var syncToReminders: String { tr("syncToReminders") }
         public static var `import`: String { tr("misc.import") }
         public static var create: String { Localized.tr("logAction.create", table: t) }
-        public static var deleteAll: String { Localized.tr("misc.deleteAll", table: t) }
-        public static var bulkDelete: String { Localized.tr("misc.bulkDelete", table: t) }
         public static var close: String { Localized.tr("misc.close", table: t) }
         public static var reset: String { Localized.tr("misc.reset", table: t) }
-        public static var correct: String { Localized.tr("misc.correct", table: t) }
-        public static var incorrect: String { Localized.tr("misc.incorrect", table: t) }
-        public static var nextQuestion: String { Localized.tr("misc.nextQuestion", table: t) }
-        public static var viewResults: String { Localized.tr("misc.viewResults", table: t) }
 
         // MARK: - Generic States
         public static var loading: String { tr("loading") }
@@ -103,13 +97,6 @@ extension L10n {
             public static var ingest: String { Common.tr("logAction.ingest") }
         }
 
-        public enum Stat {
-            public static var newPages: String { Common.tr("stats.newPages") }
-            public static var growth: String { Common.tr("stats.growth") }
-            public static var title: String { Common.tr("stats.title") }
-            public static var totalWords: String { Common.tr("stat.totalWords") }
-        }
-        
         public enum Stats {
             public static var newPages: String { Common.tr("stats.newPages") }
             public static var growth: String { Common.tr("stats.growth") }
@@ -383,7 +370,7 @@ extension L10n {
             public static var clear: String { Localized.tr("misc.clear", table: t) }
             public static var clearAll: String { Localized.tr("misc.clearAll", table: t) }
             public static var listSeparator: String { Localized.tr("misc.listSeparator", table: t) }
-        public static var `import`: String { Localized.tr("misc.import", table: t) }
+            public static var `import`: String { Localized.tr("misc.import", table: t) }
             public static var deleteAll: String { Localized.tr("misc.deleteAll", table: t) }
             public static var bulkDelete: String { Localized.tr("misc.bulkDelete", table: t) }
         }

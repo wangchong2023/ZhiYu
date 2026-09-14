@@ -14,29 +14,16 @@ extension L10n {
     public struct Transfer: L10nTableEntry {
         public static let tableName = "Ingest"
         public static var t: String { tableName }
-        public struct Export {
+        public struct Export: L10nTableEntry {
+            public static let tableName = "Ingest"
 
-            /// 本地化格式化翻译
-            /// - Parameter key: key
-            /// - Parameter args: args
-            /// - Returns: 返回值
-            public static func tr(_ key: String) -> String { Localized.tr(key, table: Transfer.t) }
-
-            /// 本地化格式化翻译
-            /// /// - Parameter key: key
-            /// /// - Parameter args: args
-            /// /// - Returns: 返回值
-            public static func trf(_ key: String, _ args: CVarArg...) -> String {
-                Localized.trf(key, table: Transfer.t, arguments: args)
-            }
-            
             /// 导出引擎正忙本地化文案
             public static let errorSystemBusy = Export.tr("error.busy")
             /// 导出引擎未就绪本地化文案
             public static let errorEngineNotReady = Export.tr("error.notReady")
             /// 导出引擎发生内部异常本地化文案
             public static func errorInternal(_ msg: String) -> String {
-                return Export.trf("error.internalError", msg)
+                Export.trf("error.internalError", msg)
             }
         }
     }

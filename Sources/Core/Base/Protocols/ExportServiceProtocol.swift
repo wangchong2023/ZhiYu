@@ -29,10 +29,10 @@ public protocol ExportServiceProtocol: Sendable {
 /// ExportServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum ExportServiceKey: DependencyKey {
     public static var liveValue: any ExportServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any ExportServiceProtocol).self) ?? NoOpExportService()
+        DIResolver.resolve((any ExportServiceProtocol).self, fallback: NoOpExportService())
     }
     public static var testValue: any ExportServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any ExportServiceProtocol).self) ?? NoOpExportService()
+        DIResolver.resolve((any ExportServiceProtocol).self, fallback: NoOpExportService())
     }
     public static var previewValue: any ExportServiceProtocol { NoOpExportService() }
 }

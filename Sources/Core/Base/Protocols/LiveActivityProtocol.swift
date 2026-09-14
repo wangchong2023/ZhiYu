@@ -9,6 +9,8 @@
 //  核心职责：定义 LiveActivity 模块的抽象契约接口。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 实时活动任务类型
 public enum ActivityKind: String, Codable, Hashable, Sendable {
@@ -62,8 +64,6 @@ public protocol LiveActivityProtocol: Sendable {
 }
 
 // MARK: - DependencyKey
-import Dependencies
-import UFPCore
 
 /// LiveActivityProtocol 的 DependencyKey（可选，返回 nil 时降级为无实时活动）
 @MainActor

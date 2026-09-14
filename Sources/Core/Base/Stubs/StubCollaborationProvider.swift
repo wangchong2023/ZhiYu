@@ -12,18 +12,23 @@ import Foundation
 
 final class StubCollaborationProvider: CollaborationProviderProtocol {
     weak var delegate: CollaborationProviderDelegate?
-    
+
+    /// 统一通知 delegate 当前平台不支持
+    private func notifyUnsupported() {
+        delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.simulatorNotSupported)
+    }
+
     /// 启动Hosting
     /// - Parameter roomName: roomName
     /// - Parameter userName: userName
     func startHosting(roomName: String, userName: String) {
-        delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.simulatorNotSupported)
+        notifyUnsupported()
     }
-    
+
     /// 启动Browsing
     /// - Parameter userName: userName
     func startBrowsing(userName: String) {
-        delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.simulatorNotSupported)
+        notifyUnsupported()
     }
     
     /// 加入Room

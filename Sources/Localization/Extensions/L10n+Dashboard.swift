@@ -14,20 +14,6 @@ extension L10n {
     public struct Dashboard: L10nTableEntry {
         public static let tableName = "Insight"
         public static var t: String { tableName }
-        /// 本地化翻译
-        /// - Parameter key: key
-        /// - Returns: 返回值
-        /// 本地化格式化翻译
-        /// - Parameter key: key
-        /// - Parameter args: args
-        /// - Returns: 返回值
-        public static func trf(_ key: String, _ args: CVarArg...) -> String {
-            let localized = Localized.trf(key, table: t, arguments: args)
-            if localized == key {
-                return Localized.trf(key, table: t, arguments: args)
-            }
-            return localized
-        }
 
         public static var pageListPages: String { Localized.tr("dashboard.pageList.pages", table: t) }
         public static var pageListLinks: String { Localized.tr("dashboard.pageList.links", table: t) }
@@ -262,7 +248,6 @@ extension L10n {
             public static var ratingTotal: String { Localized.tr("dashboard.stats.ratingTotal", table: t) }
 
             public static var evaluation: String { Localized.tr("dashboard.stats.evaluation", table: t) }
-            public static var overview: String { Localized.tr("dashboard.index.overview", table: t) }
             public static var recentEvaluations: String { Localized.tr("dashboard.stats.recentEvaluations", table: t) }
             public static var noEvaluations: String { Localized.tr("dashboard.stats.noEvaluations", table: t) }
             public static var unitDays: String { Localized.tr("dashboard.stats.unitDays", table: t) }
@@ -279,8 +264,6 @@ extension L10n {
             public static var tokenUsage: String { Localized.tr("common.tokenUsage", table: t) }
             public static var requestCount: String { Localized.tr("common.requests", table: t) }
             public static var storageDistribution: String { Localized.tr("dashboard.stats.storageDistribution", table: t) }
-            public static var chartDate: String { Localized.tr("dashboard.stats.chartDate", table: t) }
-            public static var chartSelected: String { Localized.tr("dashboard.stats.chartSelected", table: t) }
             /// Token 使用消耗量卡片标题
             public static var tokensUsage: String { Localized.tr("dashboard.stats.tokensUsage", table: t) }
             /// 响应时延统计卡片标题
@@ -295,7 +278,6 @@ extension L10n {
             public static var measureCount: String { Localized.tr("dashboard.stats.measureCount", table: t) }
             /// 存储空间分布详情卡片标题
             public static var storageDetails: String { Localized.tr("dashboard.stats.storageDetails", table: t) }
-            public static var chartValue: String { Localized.tr("dashboard.stats.chartValue", table: t) }
             /// 存储空间多分库笔记本的详情描述
             public static func multiVaultDesc(_ count: Int) -> String { Localized.trf("dashboard.stats.multiVaultDesc", table: t, count) }
             

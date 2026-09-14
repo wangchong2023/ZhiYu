@@ -174,7 +174,6 @@ extension L10n {
             public static var selectImage: String { Ingest.tr("ocr.selectImage") }
             public static var fromAlbum: String { Ingest.tr("ocr.fromAlbum") }
             public static var recognize: String { Ingest.tr("ocr.recognize") }
-            public static var pageTitle: String { L10n.Common.tr("pageTitle") }
             public static var changeIcon: String { Ingest.tr("ocr.changeIcon") }
             public static var customIcon: String { Ingest.tr("ingest.iconCustom") }
             public static var scanTag: String { Ingest.tr("ocr.scanTag") }
