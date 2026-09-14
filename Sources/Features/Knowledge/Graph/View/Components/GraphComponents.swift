@@ -268,7 +268,7 @@ struct GraphZoomControls: View {
                 lastScale = scale
             }
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
             zoomButton(
                 icon: DesignSystem.Icons.scope,
@@ -284,7 +284,7 @@ struct GraphZoomControls: View {
                 }
             }
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
             zoomButton(
                 icon: DesignSystem.Icons.viewfinder,
@@ -295,7 +295,7 @@ struct GraphZoomControls: View {
                 withAnimation(.spring(response: 0.5)) { onFitToScreen() }
             }
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
             zoomButton(
                 icon: DesignSystem.Icons.refresh,
@@ -306,7 +306,7 @@ struct GraphZoomControls: View {
                 withAnimation(.spring(response: 0.6)) { onRelayout() }
             }
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
             zoomButton(
                 icon: DesignSystem.Icons.view3d,
@@ -319,6 +319,12 @@ struct GraphZoomControls: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
         .shadow(color: .black.opacity(DesignSystem.Opacity.ghost), radius: 5, y: 2)
+    }
+
+    /// 缩放控件分隔线，消除 4 处重复的 Divider().frame().background() 链
+    @ViewBuilder
+    private func zoomDivider() -> some View {
+        Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
     }
 
     /// 缩放控制按钮，消除 6 处重复的 Image+frame+background 链

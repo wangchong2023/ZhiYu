@@ -13,6 +13,12 @@ import UFPCore
 import QuickLook
 import Dependencies
 
+/// 校验是否是纯文本文件后缀（消除 ImportRecordSection 与 ImportPreviewHandler 的重复定义）
+private func isTextFile(path: String) -> Bool {
+    let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
+    return SystemConstants.FileExtension.textFileExtensions.contains(ext)
+}
+
 struct ImportRecordSection: View {
     @State private var selectedCategory: String = FeatureConstants.CategoryFilter.all
     @State private var records: [ImportRecord] = []
@@ -134,12 +140,6 @@ struct ImportRecordSection: View {
     }
 
     // MARK: - 预览分发
-
-    /// 校验是否是纯文本文件后缀
-    private func isTextFile(path: String) -> Bool {
-        let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
-        return SystemConstants.FileExtension.textFileExtensions.contains(ext)
-    }
 
     private func previewContent(_ record: ImportRecord, forceRaw: Bool = false) {
         previewRecord = record
@@ -438,10 +438,5 @@ struct ImportPreviewHandler {
         }
         
         return nil
-    }
-
-    private func isTextFile(path: String) -> Bool {
-        let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
-        return SystemConstants.FileExtension.textFileExtensions.contains(ext)
     }
 }

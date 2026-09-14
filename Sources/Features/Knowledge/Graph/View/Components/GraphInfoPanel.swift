@@ -35,6 +35,29 @@ private func detailChevronRow(title: String, subtitle: String, titleWeight: Font
         .foregroundStyle(.appSecondary)
 }
 
+/// 标题 + 描述文本对，消除 guideRow 与 insightSectionExpandedContent 的重复 Text 链
+@ViewBuilder
+private func titleDescPair(title: String, desc: String) -> some View {
+    VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
+        Text(title)
+            .font(.subheadline.bold())
+            .foregroundStyle(.appText)
+        Text(desc)
+            .font(.caption)
+            .foregroundStyle(.appSecondary)
+            .lineSpacing(DesignSystem.atomic)
+    }
+}
+
+/// 玻璃态卡片修饰符，消除 insightSection 与 guideRow 的重复 background+overlay+shadow 链
+@ViewBuilder
+private func glassmorphicCardStroke(cornerRadius: CGFloat, strokeColor: Color) -> some View {
+    overlay(
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .stroke(strokeColor, lineWidth: SystemStroke.hairline)
+    )
+}
+
 struct GraphSelectedNodeCard: View {
     let page: KnowledgePage
     var heroNamespace: Namespace.ID?

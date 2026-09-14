@@ -112,28 +112,18 @@ struct NotebookFormSheet: View {
                         
                         // 2. 表单
                         VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                                Text(L10n.Vault.nameLabel)
-                                    .font(.caption.bold())
-                                    .foregroundStyle(.secondary)
-                                
-                                TextField(L10n.Vault.namePlaceholder, text: $name)
-                                    .font(.title3.bold())
-                                    .cardStyle(
-                                        horizontalPadding: DesignSystem.standardPadding,
-                                        verticalPadding: DesignSystem.standardPadding,
-                                        backgroundOpacity: DesignSystem.Opacity.dim,
-                                        cornerRadius: DesignSystem.cardRadius
-                                    )
-                                    // MARK: [UI 测试自愈] 注入唯一的可测试性定位标识符，以便在新建笔记本笔记本表单弹窗中精准定位名字输入框
-                                    .accessibilityIdentifier("notebook_name_textfield")
-                            }
-                            
+                            formField(
+                                label: L10n.Vault.nameLabel,
+                                placeholder: L10n.Vault.namePlaceholder,
+                                text: $name,
+                                accessibilityID: "notebook_name_textfield"
+                            )
+
                             VStack(alignment: .leading, spacing: DesignSystem.tiny) {
                                 Text(L10n.Vault.descriptionLabel)
                                     .font(.caption.bold())
                                     .foregroundStyle(.secondary)
-                                
+
                                 TextField(L10n.Vault.descriptionPlaceholder, text: $description, axis: .vertical)
                                     .lineLimit(3...5)
                                     .cardStyle(
@@ -166,6 +156,31 @@ struct NotebookFormSheet: View {
                     .accessibilityIdentifier("notebook_submit_button")
                 }
             }
+        }
+    }
+
+    /// 表单字段（标签 + 输入框），消除 name 与 description 字段的重复布局
+    @ViewBuilder
+    private func formField(
+        label: String,
+        placeholder: String,
+        text: Binding<String>,
+        accessibilityID: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            Text(label)
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+
+            TextField(placeholder, text: text)
+                .font(.title3.bold())
+                .cardStyle(
+                    horizontalPadding: DesignSystem.standardPadding,
+                    verticalPadding: DesignSystem.standardPadding,
+                    backgroundOpacity: DesignSystem.Opacity.dim,
+                    cornerRadius: DesignSystem.cardRadius
+                )
+                .accessibilityIdentifier(accessibilityID)
         }
     }
 }

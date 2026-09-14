@@ -18,10 +18,7 @@ extension IngestCoordinator {
 
     /// 处理File导入
     func handleFileImport(_ result: Result<[URL], Error>) {
-        guard !isImporting else {
-            toastManager.show(type: .info, message: L10n.Ingest.importCooldown)
-            return
-        }
+        if checkImportCooldown() { return }
         switch result {
         case .success(let urls):
             for url in urls {

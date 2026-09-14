@@ -73,12 +73,20 @@ final class IngestCoordinator {
 
     // ── 业务动作 ──
 
-    /// 执行导入摄取
-    func performIngest() {
+    /// 导入冷却检查 — 消除 performIngest/handleFileImport/handleBatchURLImport 的重复 guard
+    /// - Returns: `true` 表示冷却中（已弹提示），调用方应直接 return；`false` 表示可继续
+    @discardableResult
+    func checkImportCooldown() -> Bool {
         guard !isImporting else {
             toastManager.show(type: .info, message: L10n.Ingest.importCooldown)
-            return
+            return true
         }
+        return false
+    }
+
+    /// 执行导入摄取
+    func performIngest() {
+        if checkImportCooldown() { return }
         isIngesting = true
         lastImportTime = Date()
         let recordID = UUID().uuidString

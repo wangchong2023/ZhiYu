@@ -38,10 +38,7 @@ extension IngestCoordinator {
     /// 触发 `fatalError`。返回 Task handle 后测试可 `await task.value` 等待完成再清理 DI。
     @discardableResult
     func handleBatchURLImport(_ urls: [URL]) -> Task<Void, Never> {
-        guard !isImporting else {
-            toastManager.show(type: .info, message: L10n.Ingest.importCooldown)
-            return Task { }
-        }
+        if checkImportCooldown() { return Task { } }
         showURLImport = false
         lastImportTime = Date()
 
