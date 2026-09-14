@@ -66,11 +66,7 @@ actor TransactionGatekeeper {
         }
         // 若计数归零且有 drain 等待者，唤醒它们
         if activeCount == 0 && !drainWaiters.isEmpty {
-            let waiters = drainWaiters
-            drainWaiters.removeAll()
-            for waiter in waiters {
-                waiter.resume()
-            }
+            resumeAllDrainWaiters()
         }
     }
     /// 排空所有活跃事务（Vault 热切换前调用）。
@@ -111,6 +107,11 @@ actor TransactionGatekeeper {
     func reset() {
         activeCount = 0
         draining = false
+        resumeAllDrainWaiters()
+    }
+
+    /// 唤醒所有 drain 等待者并清空队列（消除 release 与 reset 重复）。
+    private func resumeAllDrainWaiters() {
         let waiters = drainWaiters
         drainWaiters.removeAll()
         for waiter in waiters {

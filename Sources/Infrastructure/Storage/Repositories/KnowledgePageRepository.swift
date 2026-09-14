@@ -88,7 +88,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
         let writer = try await dbWriter
         return try await writer.read { db in
             let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
-            return rawPages.map { self.decryptIfPrivate($0) }
+            return decryptPages(rawPages)
         }
     }
 
@@ -98,8 +98,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     func fetch(id: UUID) async throws -> KnowledgePage? {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let page = try KnowledgePage.filter(KnowledgePage.Columns.id == id).fetchOne(db)
-            return page.map { self.decryptIfPrivate($0) }
+            try KnowledgePage.filter(KnowledgePage.Columns.id == id).fetchOne(db).map { decryptIfPrivate($0) }
         }
     }
 
@@ -109,8 +108,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     func fetch(title: String) async throws -> KnowledgePage? {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let page = try KnowledgePage.filter(KnowledgePage.Columns.title == title).fetchOne(db)
-            return page.map { self.decryptIfPrivate($0) }
+            try KnowledgePage.filter(KnowledgePage.Columns.title == title).fetchOne(db).map { decryptIfPrivate($0) }
         }
     }
 
@@ -123,7 +121,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
             let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc)
                 .limit(limit)
                 .fetchAll(db)
-            return rawPages.map { self.decryptIfPrivate($0) }
+            return decryptPages(rawPages)
         }
     }
 
@@ -146,10 +144,10 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
                     .order(sql: StorageConstants.SQL.rank)
                     .fetchAll(db)
                 if !ftsResults.isEmpty {
-                    return ftsResults.map { self.decryptIfPrivate($0) }
+                    return decryptPages(ftsResults)
                 }
             }
-            
+
             // 阶段二：CJK LIKE 后备检索
             // 当 FTS5 分词器无法切分连续 CJK 字符流时（如「神经网络」嵌入长句中），
             // 自动降级到 LIKE 模糊匹配，保证中文内容的可检索性
@@ -158,7 +156,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
                 KnowledgePage.Columns.title.like(likePattern) ||
                 KnowledgePage.Columns.content.like(likePattern)
             ).order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
-            return rawPages.map { self.decryptIfPrivate($0) }
+            return decryptPages(rawPages)
         }
     }
 
@@ -192,13 +190,10 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
         try await writer.write { db in
             let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(oldTag)\"%")).fetchAll(db)
             for p in pagesToUpdate {
-                var updatedTags = p.tags
-                if let idx = updatedTags.firstIndex(of: oldTag) {
-                    updatedTags[idx] = newTag
-                    var updatedPage = p
-                    updatedPage.tags = updatedTags
-                    try updatedPage.update(db)
-                }
+                guard let idx = p.tags.firstIndex(of: oldTag) else { continue }
+                var updatedPage = p
+                updatedPage.tags[idx] = newTag
+                try updatedPage.update(db)
             }
         }
     }
@@ -210,13 +205,10 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
         try await writer.write { db in
             let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(tag)\"%")).fetchAll(db)
             for p in pagesToUpdate {
-                var updatedTags = p.tags
-                if let idx = updatedTags.firstIndex(of: tag) {
-                    updatedTags.remove(at: idx)
-                    var updatedPage = p
-                    updatedPage.tags = updatedTags
-                    try updatedPage.update(db)
-                }
+                guard let idx = p.tags.firstIndex(of: tag) else { continue }
+                var updatedPage = p
+                updatedPage.tags.remove(at: idx)
+                try updatedPage.update(db)
             }
         }
     }
@@ -242,7 +234,12 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     }
 
     // MARK: - 辅助解密逻辑
-    
+
+    /// 批量解密私有页面（消除多处 `rawPages.map { self.decryptIfPrivate($0) }` 重复）。
+    private func decryptPages(_ pages: [KnowledgePage]) -> [KnowledgePage] {
+        pages.map { decryptIfPrivate($0) }
+    }
+
     private func decryptIfPrivate(_ page: KnowledgePage) -> KnowledgePage {
         guard page.isPrivate else { return page }
         var p = page

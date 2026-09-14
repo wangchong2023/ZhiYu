@@ -78,6 +78,11 @@ final class iCloudSyncCoordinator {
             }
         }
 
+        scheduleAutoSyncIfIdle()
+    }
+
+    /// 当未在同步时立即触发一次自动同步（消除 timer 回调与首触发重复）。
+    private func scheduleAutoSyncIfIdle() {
         Task { @MainActor [weak self] in
             guard let self, !isSyncing else { return }
             await performAutoSync()
@@ -116,6 +121,25 @@ final class iCloudSyncCoordinator {
 
     // MARK: - Sync Actions
 
+    /// 执行同步操作并在主线程更新 isSyncing/error 状态（消除 push/pull/bidirectional 样板重复）。
+    private func runSyncOperation(_ operation: () async throws -> [KnowledgePage]) {
+        guard store != nil else { return }
+        isSyncing = true
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let pages = try await operation()
+                if !pages.isEmpty {
+                    replaceLocalData(with: pages)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+                showError = true
+            }
+            isSyncing = false
+        }
+    }
+
     /// 推送ToCloud
     func pushToCloud() {
         guard let store else { return }
@@ -134,20 +158,10 @@ final class iCloudSyncCoordinator {
 
     /// 拉取FromCloud
     func pullFromCloud() {
-        guard store != nil else { return }
-        isSyncing = true
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                let (pages, _) = try await syncService.pullFromCloud()
-                if !pages.isEmpty {
-                    replaceLocalData(with: pages)
-                }
-            } catch {
-                errorMessage = error.localizedDescription
-                showError = true
-            }
-            isSyncing = false
+        runSyncOperation { [weak self] in
+            guard let self else { return [] }
+            let (pages, _) = try await self.syncService.pullFromCloud()
+            return pages
         }
     }
 
@@ -155,7 +169,7 @@ final class iCloudSyncCoordinator {
     func bidirectionalSync() {
         guard let store else { return }
         isSyncing = true
-        
+
         // 挂载异步冲突判定回调，用于唤醒手动合并 Sheet
         syncService.onConflictDetected = { [weak self] localPages, localLogs, remotePages, remoteLogs in
             guard let self else { return .merge }

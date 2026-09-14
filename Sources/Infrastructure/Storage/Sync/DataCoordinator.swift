@@ -40,12 +40,7 @@ final class DataCoordinator {
 
             // 1. 监控存储层的页面变化
             // SQLiteStore 现在只负责通知数据已更新，由协调器决定后续动作
-            self.logger.addLog(
-                action: .sync,
-                target: StorageConstants.LogTarget.dataCoordinator,
-                details: StorageConstants.LogDetails.dataCoordinatorStart,
-                module: StorageConstants.LogModule.core
-            )
+            logSyncEvent(details: StorageConstants.LogDetails.dataCoordinatorStart)
 
             // 2. 触发向量化同步 (@RR-01: 确保向量存储与主库最终一致性)
             let currentPages = await self.sqliteStore.pages
@@ -56,12 +51,17 @@ final class DataCoordinator {
             guard !Task.isCancelled else { return }
             SpotlightService.shared.indexPages(currentPages)
 
-            self.logger.addLog(
-                action: .sync,
-                target: StorageConstants.LogTarget.dataCoordinator,
-                details: StorageConstants.LogDetails.dataCoordinatorEnd,
-                module: StorageConstants.LogModule.core
-            )
+            logSyncEvent(details: StorageConstants.LogDetails.dataCoordinatorEnd)
         }
+    }
+
+    /// 记录同步事件日志（消除 start/end 两处 addLog 样板重复）。
+    private func logSyncEvent(details: String) {
+        logger.addLog(
+            action: .sync,
+            target: StorageConstants.LogTarget.dataCoordinator,
+            details: details,
+            module: StorageConstants.LogModule.core
+        )
     }
 }

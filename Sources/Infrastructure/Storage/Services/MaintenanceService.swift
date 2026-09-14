@@ -103,20 +103,29 @@ public final class MaintenanceService {
         do {
             if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains(StorageConstants.TestName.vaultMarker) == true)) {
                 // 默认知识管理笔记本 — 注入 AI 概念与 API 日志演示数据
-                _ = try await InitialNotebookGenerator.generate(in: pageStore)
-                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.defaultDemoData, details: StorageConstants.LogDetails.seededDefaultContent, module: StorageConstants.LogModule.maintenance)
+                try await seedNotebook(generator: { try await InitialNotebookGenerator.generate(in: pageStore) },
+                                      logTarget: L10n.InitialNotebook.Log.defaultDemoData,
+                                      logDetails: StorageConstants.LogDetails.seededDefaultContent)
             } else if resolvedName == L10n.Vault.researchName || resolvedName == L10n.Vault.researchNameZh || resolvedName == L10n.Vault.researchNameEn || resolvedName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains(StorageConstants.TestName.researchMarker) == true) {
                 // 项目调研笔记本 — 注入行业分析演示数据
-                _ = try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore)
-                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.researchDemoData, details: StorageConstants.LogDetails.seededResearchContent, module: StorageConstants.LogModule.maintenance)
+                try await seedNotebook(generator: { try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore) },
+                                      logTarget: L10n.InitialNotebook.Log.researchDemoData,
+                                      logDetails: StorageConstants.LogDetails.seededResearchContent)
             } else if isTesting || resolvedName != nil {
                 // 兜底：不为空的笔记本都尝试注入默认数据
-                _ = try await InitialNotebookGenerator.generate(in: pageStore)
-                activeLogger.addLog(action: .create, target: L10n.InitialNotebook.Log.fallbackDemoData, details: StorageConstants.LogDetails.seededFallbackContent, module: StorageConstants.LogModule.maintenance)
+                try await seedNotebook(generator: { try await InitialNotebookGenerator.generate(in: pageStore) },
+                                      logTarget: L10n.InitialNotebook.Log.fallbackDemoData,
+                                      logDetails: StorageConstants.LogDetails.seededFallbackContent)
             }
         } catch {
             activeLogger.addLog(action: .error, target: vaultName ?? L10n.InitialNotebook.Log.unknownVault, details: StorageConstants.LogDetails.seedFailedPrefix + "\(error)", module: StorageConstants.LogModule.maintenance)
         }
+    }
+
+    /// 执行笔记本种子注入并记录成功日志（消除三处 generate + addLog 重复）。
+    private func seedNotebook(generator: () async throws -> Void, logTarget: String, logDetails: String) async throws {
+        try await generator()
+        activeLogger.addLog(action: .create, target: logTarget, details: logDetails, module: StorageConstants.LogModule.maintenance)
     }
 
     // MARK: - 系统重置

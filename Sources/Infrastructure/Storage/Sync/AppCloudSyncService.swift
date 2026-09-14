@@ -62,34 +62,36 @@ public final class iCloudSyncService: ObservableObject {
     }
 
     // MARK: - 核心同步 API (委托模式)
-    
-    /// 推送ToCloud
-    /// /// - Parameter pages: pages
-    /// /// - Parameter logEntries: 记录日志Entries
-    public func pushToCloud(pages: [KnowledgePage], logEntries: [LogEntry]) async throws {
+
+    /// 执行同步操作并在成功/失败时统一更新 syncStatus（消除 push/pull/sync 样板重复）。
+    private func runSyncOperation<T>(_ operation: () async throws -> T) async throws -> T {
         self.syncStatus = .syncing
         do {
-            try await provider.push(pages: pages, logs: logEntries)
+            let result = try await operation()
             self.lastSyncDate = Date()
             self.syncStatus = .synced
+            return result
         } catch {
             self.syncStatus = .error(error.localizedDescription)
             throw error
         }
     }
 
+    /// 推送ToCloud
+    /// /// - Parameter pages: pages
+    /// /// - Parameter logEntries: 记录日志Entries
+    public func pushToCloud(pages: [KnowledgePage], logEntries: [LogEntry]) async throws {
+        try await runSyncOperation {
+            try await self.provider.push(pages: pages, logs: logEntries)
+        }
+    }
+
     /// 从云端强制拉取最新数据。
     /// - Returns: 包含云端页面和日志的元组。
     public func pullFromCloud() async throws -> ([KnowledgePage], [LogEntry]) {
-        self.syncStatus = .syncing
-        do {
-            let remote = try await provider.pull()
-            self.lastSyncDate = Date()
-            self.syncStatus = .synced
+        try await runSyncOperation {
+            let remote = try await self.provider.pull()
             return (remote.pages, remote.logs)
-        } catch {
-            self.syncStatus = .error(error.localizedDescription)
-            throw error
         }
     }
 
@@ -98,22 +100,20 @@ public final class iCloudSyncService: ObservableObject {
     /// /// - Parameter localLogs: localLogs
     /// /// - Returns: 返回值
     public func sync(localPages: [KnowledgePage], localLogs: [LogEntry]) async throws -> ([KnowledgePage], [LogEntry]) {
-        self.syncStatus = .syncing
-        
-        do {
-            let remote = try await provider.pull()
-            
+        try await runSyncOperation {
+            let remote = try await self.provider.pull()
+
             // 评估时序：如果云端有更新，执行合并；否则保持本地最新。
             let remoteDate = remote.lastModified
-            let hasRemoteNewer = lastSyncDate.map { remoteDate > $0 } ?? true
-            
+            let hasRemoteNewer = self.lastSyncDate.map { remoteDate > $0 } ?? true
+
             let finalPages: [KnowledgePage]
             let finalLogs: [LogEntry]
-            
+
             if hasRemoteNewer {
                 // 触发冲突策略询问 (支持 Legacy 注入的回调)
                 let resolution: ConflictResolution
-                if let onConflict = onConflictDetected {
+                if let onConflict = self.onConflictDetected {
                     resolution = await onConflict(localPages, localLogs, remote.pages, remote.logs)
                 } else {
                     resolution = .merge
@@ -127,24 +127,18 @@ public final class iCloudSyncService: ObservableObject {
                     finalPages = remote.pages
                     finalLogs = remote.logs
                 case .merge:
-                    finalPages = resolver.mergePages(local: localPages, remote: remote.pages)
-                    finalLogs = resolver.mergeLogs(local: localLogs, remote: remote.logs)
+                    finalPages = self.resolver.mergePages(local: localPages, remote: remote.pages)
+                    finalLogs = self.resolver.mergeLogs(local: localLogs, remote: remote.logs)
                 }
             } else {
                 finalPages = localPages
                 finalLogs = localLogs
             }
-            
+
             // 推送黄金数据集
-            try await provider.push(pages: finalPages, logs: finalLogs)
-            
-            self.lastSyncDate = Date()
-            self.syncStatus = .synced
-            
+            try await self.provider.push(pages: finalPages, logs: finalLogs)
+
             return (finalPages, finalLogs)
-        } catch {
-            self.syncStatus = .error(error.localizedDescription)
-            throw error
         }
     }
 

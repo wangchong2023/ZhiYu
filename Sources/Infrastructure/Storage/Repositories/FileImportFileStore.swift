@@ -21,20 +21,9 @@ final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
     /// Factory 风格：属性类型标注为可选（T?），@Dependency 自动使用 resolveOptional
     @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
-    private func getCategoryDirName(for category: ImportCategory) -> String {
-        switch category {
-        case .file: return "document"
-        case .voice: return "audio"
-        case .ocr: return "ocr"
-        case .link: return "web"
-        case .clipboard: return "clipboard"
-        case .manual: return "manual"
-        }
-    }
-
     private func getRecordsDir(for category: ImportCategory) -> URL {
         let fm = FileManager.default
-        let categoryDirName = getCategoryDirName(for: category)
+        let categoryDirName = category.directoryName
         
         let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? fm.temporaryDirectory
         
