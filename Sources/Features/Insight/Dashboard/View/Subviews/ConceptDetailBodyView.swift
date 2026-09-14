@@ -51,11 +51,12 @@ struct ConceptDetailBodyView: View {
             
             DetailBodyEpilogue(page: page, bodyText: bodyText, onLinkTap: onLinkTap)
         }
-        .onAppear {
-            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: ConceptFrontmatter.self)
-            self.bodyText = result.bodyText
-            self.frontmatter = result.frontmatter
-        }
+        .detailBodyOnAppear(
+            content: page.content,
+            frontmatterType: ConceptFrontmatter.self,
+            bodyText: $bodyText,
+            frontmatter: $frontmatter
+        )
     }
     
     // MARK: - 1. 局部关系脑图 (Local Relation Graph)

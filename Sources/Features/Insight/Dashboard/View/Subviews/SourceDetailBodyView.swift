@@ -41,11 +41,12 @@ struct SourceDetailBodyView: View {
             
             DetailBodyEpilogue(page: page, bodyText: bodyText, onLinkTap: onLinkTap, sectionTitle: L10n.Ingest.PDF.contentPreview)
         }
-        .onAppear {
-            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: SourceFrontmatter.self)
-            self.bodyText = result.bodyText
-            self.frontmatter = result.frontmatter
-        }
+        .detailBodyOnAppear(
+            content: page.content,
+            frontmatterType: SourceFrontmatter.self,
+            bodyText: $bodyText,
+            frontmatter: $frontmatter
+        )
         .onDisappear {
             timer?.invalidate()
             timer = nil
@@ -131,15 +132,8 @@ struct SourceDetailBodyView: View {
                 
                 // 播放进度条
                 GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.appBorder)
-                            .frame(height: Spacing.atomic)
-                        Capsule()
-                            .fill(Color.appAccent)
-                            .frame(width: geo.size.width * CGFloat(playProgress), height: Spacing.atomic)
-                    }
-                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                    InsightProgressBar(progress: Double(playProgress))
+                        .position(x: geo.size.width / 2, y: geo.size.height / 2)
                 }
                 .frame(height: Spacing.atomic)
             }

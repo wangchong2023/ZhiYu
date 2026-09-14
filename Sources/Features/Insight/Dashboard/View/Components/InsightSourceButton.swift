@@ -31,16 +31,9 @@ struct InsightSourceButton: View {
             Button(action: {
                 onCopy?(sourceURL)
             }) {
-                HStack(spacing: DesignSystem.tiny) {
-                    Image(systemName: displaySourceIcon)
-                        .font(.caption2)
-                    Text(copiedURL == sourceURL
-                         ? L10n.Knowledge.Page.Source.copied
-                         : "\(displaySourceName) (\(L10n.Knowledge.Page.Source.copyPath))")
-                        .font(.caption)
-                        .lineLimit(1)
-                }
-                .foregroundStyle(Color.theme.blue)
+                sourceLabel(text: copiedURL == sourceURL
+                    ? L10n.Knowledge.Page.Source.copied
+                    : "\(displaySourceName) (\(L10n.Knowledge.Page.Source.copyPath))")
             }
             .buttonStyle(.plain)
         } else {
@@ -49,16 +42,22 @@ struct InsightSourceButton: View {
                     onOpen?(url)
                 }
             }) {
-                HStack(spacing: DesignSystem.tiny) {
-                    Image(systemName: displaySourceIcon)
-                        .font(.caption2)
-                    Text(displaySourceName)
-                        .font(.caption)
-                        .lineLimit(1)
-                }
-                .foregroundStyle(Color.theme.blue)
+                sourceLabel(text: displaySourceName)
             }
             .buttonStyle(.plain)
         }
+    }
+
+    /// 来源按钮统一标签：图标 + 文本 + 蓝色前景
+    @ViewBuilder
+    private func sourceLabel(text: String) -> some View {
+        HStack(spacing: DesignSystem.tiny) {
+            Image(systemName: displaySourceIcon)
+                .font(.caption2)
+            Text(text)
+                .font(.caption)
+                .lineLimit(1)
+        }
+        .foregroundStyle(Color.theme.blue)
     }
 }

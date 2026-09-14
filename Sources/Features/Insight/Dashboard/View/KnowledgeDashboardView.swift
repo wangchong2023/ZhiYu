@@ -107,11 +107,7 @@ struct KnowledgeDashboardView: View {
                         Text(L10n.Dashboard.graphShortcut)
                     }
                     .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
-                    .foregroundStyle(.appAccent)
-                    .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-                    .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                    .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
-                    .clipShape(Capsule())
+                    .insightGlassCapsule(color: .appAccent)
                 }
                 .buttonStyle(.plain)
             }
@@ -157,50 +153,21 @@ struct KnowledgeDashboardView: View {
                     HStack {
                         // 左侧图例（带高亮圆点，富有呼吸感和大厂精致度）
                         HStack(spacing: DesignSystem.small) {
-                            HStack(spacing: DesignSystem.atomic) {
-                                Circle()
-                                    .fill(Color.appAccent)
-                                    .frame(width: DesignSystem.IconSize.atomic, height: DesignSystem.IconSize.atomic)
-                                Text(L10n.Dashboard.densityOutbound)
-                                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.appSecondary)
-                            }
-                            
-                            HStack(spacing: DesignSystem.atomic) {
-                                Circle()
-                                    .fill(Color.theme.purple)
-                                    .frame(width: DesignSystem.IconSize.atomic, height: DesignSystem.IconSize.atomic)
-                                Text(L10n.Dashboard.densityInbound)
-                                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.appSecondary)
-                            }
+                            legendDot(color: Color.appAccent, text: L10n.Dashboard.densityOutbound)
+                            legendDot(color: Color.theme.purple, text: L10n.Dashboard.densityInbound)
                         }
                         
                         Spacer()
                         
                         // 右侧双轴物理含义释义 (箭头+含义，通过 | 分隔，完美揭示空间物理轴方向)
                         HStack(spacing: DesignSystem.tiny) {
-                            HStack(spacing: DesignSystem.atomic) {
-                                Image(systemName: DesignSystem.Icons.arrowUp)
-                                    .font(.system(size: SystemFontSize.micro, weight: .bold))
-                                    .foregroundColor(.appAccent)
-                                Text(L10n.Dashboard.axisPages)
-                                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.appSecondary)
-                            }
+                            axisLegend(icon: DesignSystem.Icons.arrowUp, text: L10n.Dashboard.axisPages)
                             
                             Text("")
                                 .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
                                 .foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.disabled))
                             
-                            HStack(spacing: DesignSystem.atomic) {
-                                Image(systemName: DesignSystem.Icons.arrowRight)
-                                    .font(.system(size: SystemFontSize.micro, weight: .bold))
-                                    .foregroundColor(.appAccent)
-                                Text(L10n.Dashboard.axisRelations)
-                                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.appSecondary)
-                            }
+                            axisLegend(icon: DesignSystem.Icons.arrowRight, text: L10n.Dashboard.axisRelations)
                         }
                     }
                     .padding(.top, -DesignSystem.tiny)
@@ -309,6 +276,32 @@ struct KnowledgeDashboardView: View {
                     }
                 }
             }
+        }
+    }
+
+    /// 密度图表图例圆点项（圆点 + 文本）
+    @ViewBuilder
+    private func legendDot(color: Color, text: String) -> some View {
+        HStack(spacing: DesignSystem.atomic) {
+            Circle()
+                .fill(color)
+                .frame(width: DesignSystem.IconSize.atomic, height: DesignSystem.IconSize.atomic)
+            Text(text)
+                .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
+                .foregroundStyle(.appSecondary)
+        }
+    }
+
+    /// 密度图表轴向图例项（箭头图标 + 文本）
+    @ViewBuilder
+    private func axisLegend(icon: String, text: String) -> some View {
+        HStack(spacing: DesignSystem.atomic) {
+            Image(systemName: icon)
+                .font(.system(size: SystemFontSize.micro, weight: .bold))
+                .foregroundColor(.appAccent)
+            Text(text)
+                .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
+                .foregroundStyle(.appSecondary)
         }
     }
 

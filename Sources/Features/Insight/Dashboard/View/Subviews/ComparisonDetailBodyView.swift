@@ -52,11 +52,12 @@ struct ComparisonDetailBodyView: View {
                 onLinkTap: onLinkTap
             )
         }
-        .onAppear {
-            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: ComparisonFrontmatter.self)
-            self.bodyText = result.bodyText
-            self.frontmatter = result.frontmatter
-        }
+        .detailBodyOnAppear(
+            content: page.content,
+            frontmatterType: ComparisonFrontmatter.self,
+            bodyText: $bodyText,
+            frontmatter: $frontmatter
+        )
     }
     
     // MARK: - 1. 结论板 (Recommendation Panel)
@@ -212,18 +213,11 @@ struct ComparisonDetailBodyView: View {
                 Text(L10n.Dashboard.stats.rawPageCountFormat(Int(minVal), "\(Int(maxVal))")) // 借用格式化展示区间
                     .font(.system(size: Self.rangeTextSize, weight: .bold))
                     .foregroundStyle(.appAccent)
-                
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.appBorder)
-                            .frame(height: Self.progressLineHeight)
-                        Capsule()
-                            .fill(Color.appAccent)
-                            .frame(width: geo.size.width * Self.mockProgressScale, height: Self.progressLineHeight) // 模拟一个长度占位
-                    }
-                }
-                .frame(height: Self.progressLineHeight)
+
+                InsightProgressBar(
+                    progress: Self.mockProgressScale,
+                    lineHeight: Self.progressLineHeight
+                )
             }
             .frame(width: Self.rangeBoxWidth)
             

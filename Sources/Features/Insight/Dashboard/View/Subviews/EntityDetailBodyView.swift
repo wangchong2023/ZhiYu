@@ -44,11 +44,12 @@ struct EntityDetailBodyView: View {
             
             DetailBodyEpilogue(page: page, bodyText: bodyText, onLinkTap: onLinkTap)
         }
-        .onAppear {
-            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: EntityFrontmatter.self)
-            self.bodyText = result.bodyText
-            self.frontmatter = result.frontmatter
-        }
+        .detailBodyOnAppear(
+            content: page.content,
+            frontmatterType: EntityFrontmatter.self,
+            bodyText: $bodyText,
+            frontmatter: $frontmatter
+        )
     }
     
     // MARK: - 1. 权威释义板 (Fact Summary) 与 别名芯片组

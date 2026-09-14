@@ -218,10 +218,6 @@ struct InsightMetricCard: View {
             Text(trend)
         }
         .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
-        .foregroundStyle(Color.theme.green)
-        .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-        .padding(.vertical, DesignSystem.Chip.verticalPadding)
-        .background(Color.theme.green.opacity(DesignSystem.glassOpacity))
-        .clipShape(Capsule())
+        .insightGlassCapsule(color: Color.theme.green)
     }
 }

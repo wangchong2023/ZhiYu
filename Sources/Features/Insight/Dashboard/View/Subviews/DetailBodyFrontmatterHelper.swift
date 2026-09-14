@@ -33,6 +33,42 @@ enum DetailBodyFrontmatterHelper {
     }
 }
 
+/// [L3] 表现层：详情页 onAppear Frontmatter 解析修饰符
+///
+/// 统一 4 个 DetailBodyView 中重复的 `onAppear { parse + assign bodyText + assign frontmatter }` 链，
+/// 通过 Binding 回写解析结果，消除各视图间的 onAppear 样板代码。
+struct DetailBodyOnAppearModifier<F: Decodable>: ViewModifier {
+    let content: String
+    let frontmatterType: F.Type
+    @Binding var bodyText: String
+    @Binding var frontmatter: F?
+
+    func body(content: Content) -> some View {
+        content.onAppear {
+            let result = DetailBodyFrontmatterHelper.parse(content: self.content, frontmatterType: frontmatterType)
+            bodyText = result.bodyText
+            frontmatter = result.frontmatter
+        }
+    }
+}
+
+extension View {
+    /// 在 onAppear 时解析页面 Frontmatter 并回写 bodyText / frontmatter
+    func detailBodyOnAppear<F: Decodable>(
+        content: String,
+        frontmatterType: F.Type,
+        bodyText: Binding<String>,
+        frontmatter: Binding<F?>
+    ) -> some View {
+        modifier(DetailBodyOnAppearModifier(
+            content: content,
+            frontmatterType: frontmatterType,
+            bodyText: bodyText,
+            frontmatter: frontmatter
+        ))
+    }
+}
+
 /// [L3] 表现层：详情页正文容器修饰符
 ///
 /// 统一 4 个 DetailBodyView 底部 `Divider + DetailBodyMarkdownSection` 的收尾布局，
