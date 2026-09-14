@@ -184,12 +184,7 @@ struct SourceDetailBodyView: View {
     /// 物理文档预览窗口
     private var documentPreviewWindow: some View {
         HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.docRichtext)
-                .font(.system(size: DesignSystem.large))
-                .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
-                .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            AccentIconBox(iconName: DesignSystem.Icons.docRichtext)
             
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                 Text(frontmatter?.fileName ?? page.displaySourceName)

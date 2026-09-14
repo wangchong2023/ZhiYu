@@ -161,14 +161,7 @@ struct KnowledgePageListContent: View {
                 // 如果正在执行混合检索，展示高精度骨架屏呼吸卡片
                 VStack(spacing: DesignSystem.standardPadding) {
                     ForEach(0..<FeatureConstants.KnowledgePageList.skeletonRowCount, id: \.self) { _ in
-                        HStack(spacing: DesignSystem.medium) {
-                            AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize)
-                            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                                AppSkeleton(width: 140, height: DesignSystem.standardFontSize)
-                                AppSkeleton(width: 240, height: DesignSystem.microFontSize)
-                            }
-                            Spacer()
-                        }
+                        SkeletonListRow()
                     }
                     .padding(.top, DesignSystem.wide)
                 }

@@ -128,12 +128,7 @@ struct RawPageRow: View {
 
     var body: some View {
         HStack(spacing: DesignSystem.medium) {
-            Image(systemName: page.displaySourceIcon)
-                .font(.title3)
-                .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
-                .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+            AccentIconBox(iconName: page.displaySourceIcon, fontSize: DesignSystem.title3, cornerRadius: SystemRadius.small)
             
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                 // 使用高亮文本显示匹配项
@@ -335,8 +330,7 @@ enum RawStorageFormat {
             
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
-                    Image(systemName: DesignSystem.Icons.errorCircle)
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                    ClearSearchButton()
                 }
                 .buttonStyle(.plain)
             }

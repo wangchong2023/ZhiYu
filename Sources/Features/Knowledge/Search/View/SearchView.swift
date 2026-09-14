@@ -137,24 +137,11 @@ struct SearchView: View {
                 // Filters
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.small) {
-                        FilterPill(title: L10n.Search.all, accessibilityIdentifier: FeatureConstants.AccessibilityID.filterAll, isSelected: filterType == nil) {
-                            HapticFeedback.shared.trigger(.selection)
-                            filterType = nil
-                        }
-
-                        // 遍历用户可见页面类型，屏蔽 raw 选项
-                        ForEach(PageType.allVisibleCases) { type in
-                            FilterPill(
-                                title: type.displayName,
-                                icon: type.icon,
-                                color: Color.fromModelColorName(type.colorName),
-                                accessibilityIdentifier: "filter-\(type.rawValue)",
-                                isSelected: filterType == type
-                            ) {
-                                HapticFeedback.shared.trigger(.selection)
-                                filterType = type
-                            }
-                        }
+                        PageTypeFilterPills(
+                            filterType: $filterType,
+                            triggersHaptic: true,
+                            includesAccessibilityID: true
+                        )
 
                         filterDivider()
 
@@ -209,16 +196,8 @@ struct SearchView: View {
                 if searchStore.isSearching {
                     VStack(spacing: DesignSystem.standardPadding) {
                         ForEach(0..<FeatureConstants.SearchView.skeletonRowCount, id: \.self) { _ in
-                            HStack(spacing: DesignSystem.medium) {
-                                AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize) // 44
-                                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                                    AppSkeleton(width: 140, height: DesignSystem.standardFontSize)
-                                    AppSkeleton(width: 240, height: DesignSystem.microFontSize)
-                                }
-
-                                Spacer()
-                            }
-                            .padding(.horizontal)
+                            SkeletonListRow()
+                                .padding(.horizontal)
                         }
                         Spacer()
                     }

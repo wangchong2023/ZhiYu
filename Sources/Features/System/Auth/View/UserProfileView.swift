@@ -191,10 +191,10 @@ public struct UserProfileView: View {
                 Text(L10n.Auth.avatar)
                     .font(.caption.bold())
                     .foregroundStyle(.appAccent)
-                    .padding(.horizontal, DesignSystem.medium)
-                    .padding(.vertical, DesignSystem.tiny)
-                    .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(Capsule())
+                    .accentSubtleCapsule(
+                        horizontalPadding: DesignSystem.medium,
+                        verticalPadding: DesignSystem.tiny
+                    )
             }
             .disabled(isUploading)
         }

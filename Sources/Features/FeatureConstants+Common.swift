@@ -49,6 +49,8 @@ extension FeatureConstants {
         static let gitHubMockUser = "GitHub Mock User"
         static let googleMockUser = "Google Mock User"
         static let bearer = "Bearer"
+        /// Mock 模式下 token 过期时间（秒）
+        static let mockExpiresInSeconds: Int = 3600
         static let workspaceBenchFileName: String = "workspace_bench.jpg"
         static let litePlanName: String = "Lite"
         static let github = "github"

@@ -22,9 +22,10 @@ public final class SettingsStore {
     // keyStore 已全部通过 resolveOptional() 手动解析，不再使用 @Inject 声明
 
     public init() {
-        AppEventBus.shared.subscribe()
-            .sink { [weak self] in if case .clearAllDataRequested = $0 { self?.reset() } }
-            .store(in: &cancellables)
+        AppEventBus.shared.subscribeClearAllData { [weak self] in
+            self?.reset()
+        }
+        .store(in: &cancellables)
     }
 
     // MARK: - KeyStore 访问辅助

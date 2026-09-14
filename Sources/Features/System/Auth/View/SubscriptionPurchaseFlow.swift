@@ -170,18 +170,11 @@ struct SubscriptionPurchaseFlow: View {
     private func updateSessionToPro() {
         if let user = authService.currentUser {
             let proQuota = User.DefaultQuotas.proQuota
-            let proUser = User(
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                avatarURL: user.avatarURL,
+            let proUser = user.withPlan(
                 planKey: PlanKey.pro,
                 maxVaults: proQuota.maxVaults,
                 maxPages: proQuota.maxPages,
-                maxPlugins: proQuota.maxPlugins,
-                gender: user.gender,
-                birthday: user.birthday
+                maxPlugins: proQuota.maxPlugins
             )
             AuthSession.shared.update(user: proUser)
         }

@@ -41,10 +41,10 @@ struct SourceRow: View {
                     Text("\(Int(source.score * 100))%")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.appSecondary)
-                        .padding(.horizontal, DesignSystem.tightPadding)
-                        .padding(.vertical, DesignSystem.atomic)
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                        .clipShape(Capsule())
+                        .accentSubtleCapsule(
+                            horizontalPadding: DesignSystem.tightPadding,
+                            verticalPadding: DesignSystem.atomic
+                        )
                 }
                 
                 Text(source.snippet)

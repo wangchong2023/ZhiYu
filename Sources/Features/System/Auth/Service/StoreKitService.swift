@@ -178,18 +178,11 @@ public final class StoreKitService {
         guard let user = AuthSession.shared.currentUser,
               user.isPro else { return }
         
-        let lite = User(
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            avatarURL: user.avatarURL,
+        let lite = user.withPlan(
             planKey: PlanKey.lite,
             maxVaults: User.DefaultQuotas.liteMaxVaults,
             maxPages: User.DefaultQuotas.liteMaxPages,
-            maxPlugins: User.DefaultQuotas.liteMaxPlugins,
-            gender: user.gender,
-            birthday: user.birthday
+            maxPlugins: User.DefaultQuotas.liteMaxPlugins
         )
         AuthSession.shared.update(user: lite)
         Logger.shared.info("[StoreKitService] 用户权益已降级为 Lite")

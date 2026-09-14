@@ -140,12 +140,7 @@ struct GraphContainerView: View {
                         .accessibilityLabel(L10n.Graph.accessibility.canvasLabel)
                         .accessibilityHint(L10n.Graph.accessibility.canvasHint)
                     }
-                    .background(DesignSystem.containerBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth)
-                    )
+                    .containerCardStyle()
                     .padding(.horizontal, DesignSystem.standardPadding)
                     .padding(.bottom, DesignSystem.standardPadding)
                 }

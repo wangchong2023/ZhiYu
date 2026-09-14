@@ -15,17 +15,16 @@ struct APIKeyInputField: View {
 
     var body: some View {
         HStack {
-            if isShown {
-                TextField(placeholder, text: $text)
-                    .textFieldStyle(.plain)
-                    .foregroundStyle(.appText)
-                    .font(.system(.body, design: .monospaced))
-            } else {
-                SecureField(placeholder, text: $text)
-                    .textFieldStyle(.plain)
-                    .foregroundStyle(.appText)
-                    .font(.system(.body, design: .monospaced))
+            Group {
+                if isShown {
+                    TextField(placeholder, text: $text)
+                } else {
+                    SecureField(placeholder, text: $text)
+                }
             }
+            .textFieldStyle(.plain)
+            .foregroundStyle(.appText)
+            .font(.system(.body, design: .monospaced))
             Button(action: { isShown.toggle() }) {
                 Image(systemName: isShown ? DesignSystem.Icons.eyeSlash : DesignSystem.Icons.eye)
                     .foregroundStyle(.appSecondary)

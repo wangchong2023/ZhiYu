@@ -99,30 +99,20 @@ struct SystemStatsView: View {
     private var performanceSection: some View {
         Group {
             // 1. API 请求卡片
-            StandardSection(title: L10n.Dashboard.apiRequests + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
-                VStack(alignment: .leading, spacing: Spacing.tiny) {
-                    HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
-                        statsCardHeader(value: "\(coordinator.dailyStats.reduce(0) { $0 + $1.requests })", label: L10n.Dashboard.stats.requestsUsage)
-                    }
-                    
-                    ChartView(stats: coordinator.dailyStats, type: .requests)
-                        .frame(height: ComponentSpacing.chartHeight)
-                }
-                .padding(Spacing.medium)
-            }
-            
+            statsChartSection(
+                title: L10n.Dashboard.apiRequests + " (\(L10n.Dashboard.stats.rangeThirtyDays))",
+                totalValue: coordinator.dailyStats.reduce(0) { $0 + $1.requests },
+                valueLabel: L10n.Dashboard.stats.requestsUsage,
+                chartType: .requests
+            )
+
             // 2. Token 消耗卡片
-            StandardSection(title: L10n.Dashboard.stats.tokensUsage + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
-                VStack(alignment: .leading, spacing: Spacing.tiny) {
-                    HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
-                        statsCardHeader(value: "\(coordinator.dailyStats.reduce(0) { $0 + $1.tokens })", label: L10n.Dashboard.tokens)
-                    }
-                    
-                    ChartView(stats: coordinator.dailyStats, type: .tokens)
-                        .frame(height: ComponentSpacing.chartHeight)
-                }
-                .padding(Spacing.medium)
-            }
+            statsChartSection(
+                title: L10n.Dashboard.stats.tokensUsage + " (\(L10n.Dashboard.stats.rangeThirtyDays))",
+                totalValue: coordinator.dailyStats.reduce(0) { $0 + $1.tokens },
+                valueLabel: L10n.Dashboard.tokens,
+                chartType: .tokens
+            )
             
             // 3. 响应时延卡片
             StandardSection(title: L10n.Dashboard.stats.latencyTitle + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
@@ -475,6 +465,26 @@ struct SystemStatsView: View {
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.appSecondary)
+        }
+    }
+
+    /// 统计图表卡片，消除 API 请求与 Token 消耗卡片的重复结构
+    private func statsChartSection(
+        title: String,
+        totalValue: Int,
+        valueLabel: String,
+        chartType: ChartView.ChartType
+    ) -> some View {
+        StandardSection(title: title) {
+            VStack(alignment: .leading, spacing: Spacing.tiny) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
+                    statsCardHeader(value: "\(totalValue)", label: valueLabel)
+                }
+
+                ChartView(stats: coordinator.dailyStats, type: chartType)
+                    .frame(height: ComponentSpacing.chartHeight)
+            }
+            .padding(Spacing.medium)
         }
     }
 }

@@ -57,20 +57,16 @@ struct OverseasLoginCardView: View {
         }
         .padding(Spacing.wide)
         .appContainer(cornerRadius: Spacing.largeRadius)
-        .sheet(isPresented: $showTermsSheet) {
-            PolicySheetContent(
-                title: L10n.Auth.termsOfServiceTitle,
-                content: L10n.Auth.termsOfServiceContent,
-                isPresented: $showTermsSheet
-            )
-        }
-        .sheet(isPresented: $showPrivacySheet) {
-            PolicySheetContent(
-                title: L10n.Auth.privacyPolicyTitle,
-                content: L10n.Auth.privacyPolicyContent,
-                isPresented: $showPrivacySheet
-            )
-        }
+        .policySheet(
+            isPresented: $showTermsSheet,
+            title: L10n.Auth.termsOfServiceTitle,
+            content: L10n.Auth.termsOfServiceContent
+        )
+        .policySheet(
+            isPresented: $showPrivacySheet,
+            title: L10n.Auth.privacyPolicyTitle,
+            content: L10n.Auth.privacyPolicyContent
+        )
     }
     
     // MARK: - 协议勾选

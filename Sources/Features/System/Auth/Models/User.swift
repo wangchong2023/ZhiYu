@@ -183,6 +183,37 @@ public struct User: Codable, Identifiable, Sendable {
         return features.contains(FeatureConstants.FeatureKey.privacySecurity) || isPro
     }
 
+    // MARK: - 套餐变更便捷方法
+
+    /// 返回切换到指定套餐后的新 User 实例（保留身份信息，更新配额）
+    /// - Parameters:
+    ///   - planKey: 目标套餐标识
+    ///   - maxVaults: 目标套餐最大笔记本数
+    ///   - maxPages: 目标套餐最大页面数
+    ///   - maxPlugins: 目标套餐最大插件数
+    /// - Returns: 切换套餐后的新 User 实例
+    public func withPlan(
+        planKey: String?,
+        maxVaults: Int,
+        maxPages: Int,
+        maxPlugins: Int
+    ) -> User {
+        User(
+            id: id,
+            name: name,
+            email: email,
+            phone: phone,
+            avatarURL: avatarURL,
+            planKey: planKey,
+            maxVaults: maxVaults,
+            maxPages: maxPages,
+            maxPlugins: maxPlugins,
+            features: features,
+            gender: gender,
+            birthday: birthday
+        )
+    }
+
     // MARK: - Codable 适配后端 UserProfileResp
     
     private enum CodingKeys: String, CodingKey {

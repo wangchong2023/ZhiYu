@@ -27,11 +27,7 @@ struct VaultInsightsPanel: View {
                     )
                     .font(.headline)
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: DesignSystem.Icons.errorCircle)
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
-                    }
+                    PanelCloseButton()
                 }
                 .padding(.bottom, DesignSystem.medium)
                 

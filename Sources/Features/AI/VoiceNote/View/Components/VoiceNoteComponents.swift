@@ -88,15 +88,7 @@ struct SaveVoiceNoteSheet: View {
     }
     
     private var saveButton: some View {
-        Button(action: saveNote) {
-            Text(L10n.Voice.Speech.saveToKnowledge)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.appAccent)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        }
+        AppFilledActionButton(title: L10n.Voice.Speech.saveToKnowledge, action: saveNote)
     }
     
     private func saveNote() {

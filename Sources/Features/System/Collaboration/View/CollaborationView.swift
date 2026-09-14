@@ -190,9 +190,7 @@ struct CollaborationViewContent: View {
             .padding()
             .background(Color.appAccent)
             .collabButtonContainer(accessibilityID: "collab-host-button")
-    }
-
-    private var joinButton: some View {
+    }    private var joinButton: some View {
         Button(action: {
             showBrowsing = true
             collabService.startBrowsing()

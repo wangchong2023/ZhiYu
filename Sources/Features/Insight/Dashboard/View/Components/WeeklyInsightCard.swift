@@ -226,15 +226,10 @@ struct WeeklyReportView: View {
 
 // MARK: - 周报洞察容器样式
 private extension View {
-    /// 周报洞察容器：padding + background(containerBackground) + clipShape + overlay(stroke containerBorder)
+    /// 周报洞察容器：padding + containerCardStyle
     func weeklyInsightContainerStyle() -> some View {
         self
             .padding(DesignSystem.loosePadding)
-            .background(DesignSystem.containerBackground)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                    .stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth)
-            )
+            .containerCardStyle()
     }
 }

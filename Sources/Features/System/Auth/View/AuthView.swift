@@ -76,20 +76,16 @@ struct AuthView: View {
                 .padding(.vertical, Spacing.wide)
             }
         }
-        .sheet(isPresented: $showPrivacySheet) {
-            PolicySheetContent(
-                title: L10n.Auth.privacyPolicyTitle,
-                content: L10n.Auth.privacyPolicyContent,
-                isPresented: $showPrivacySheet
-            )
-        }
-        .sheet(isPresented: $showTermsSheet) {
-            PolicySheetContent(
-                title: L10n.Auth.termsOfServiceTitle,
-                content: L10n.Auth.termsOfServiceContent,
-                isPresented: $showTermsSheet
-            )
-        }
+        .policySheet(
+            isPresented: $showPrivacySheet,
+            title: L10n.Auth.privacyPolicyTitle,
+            content: L10n.Auth.privacyPolicyContent
+        )
+        .policySheet(
+            isPresented: $showTermsSheet,
+            title: L10n.Auth.termsOfServiceTitle,
+            content: L10n.Auth.termsOfServiceContent
+        )
     }
 
     // MARK: - 子视图

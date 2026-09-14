@@ -49,10 +49,10 @@ struct PageDetailHeader: View {
                         .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
                 }
                 .foregroundStyle(.appAccent)
-                .padding(.horizontal, DesignSystem.tightPadding)
-                .padding(.vertical, DesignSystem.atomic)
-                .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                .clipShape(Capsule())
+                .accentSubtleCapsule(
+                    horizontalPadding: DesignSystem.tightPadding,
+                    verticalPadding: DesignSystem.atomic
+                )
                 .transition(.opacity.combined(with: .scale))
             }
 

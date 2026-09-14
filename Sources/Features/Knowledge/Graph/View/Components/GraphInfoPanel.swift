@@ -338,12 +338,7 @@ struct GraphConceptGuideSheet: View {
                         .font(.headline)
                         .foregroundStyle(.appAccent)
                     Spacer()
-                    Button { dismiss() } label: {
-                        Image(systemName: DesignSystem.Icons.errorCircle)
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
+                    PanelCloseButton()
                 }
                 .padding(.bottom, DesignSystem.medium)
                 

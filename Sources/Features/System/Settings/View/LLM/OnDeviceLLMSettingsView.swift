@@ -239,24 +239,14 @@ public struct OnDeviceLLMSettingsView: View {
                 .background(Color.appAccent.opacity(DesignSystem.Opacity.ghost))
                 .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
             } else {
-                Button(action: loadModel) {
-                    HStack(spacing: DesignSystem.small) {
-                        if onDeviceService.isGenerating {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Image(systemName: DesignSystem.Icons.onDeviceDownloaded)
-                        }
-                        Text(L10n.AI.OnDevice.loadModel)
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, DesignSystem.medium)
-                    .background(onDeviceService.selectedModelID.isEmpty ? Color.theme.gray : Color.appAccent)
-                    .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-                }
-                .disabled(onDeviceService.selectedModelID.isEmpty || onDeviceService.isGenerating)
+                OnDeviceActionButton(
+                    title: L10n.AI.OnDevice.loadModel,
+                    icon: DesignSystem.Icons.onDeviceDownloaded,
+                    isLoading: onDeviceService.isGenerating,
+                    background: onDeviceService.selectedModelID.isEmpty ? Color.theme.gray : Color.appAccent,
+                    isDisabled: onDeviceService.selectedModelID.isEmpty || onDeviceService.isGenerating,
+                    action: loadModel
+                )
             }
             
             // 物理模型本地导入入口
@@ -307,22 +297,16 @@ public struct OnDeviceLLMSettingsView: View {
     // MARK: - 测试 Playground 入口
     private var testSection: some View {
         VStack(alignment: .leading, spacing: SystemSpacing.element) {
-            Button(action: {
-                showTestSheet = true
-                feedbackGenerator.notificationOccurred(.success)
-            }) {
-                HStack(spacing: DesignSystem.small) {
-                    Image(systemName: DesignSystem.Icons.textBubble)
-                    Text(L10n.AI.OnDevice.testGeneration)
+            OnDeviceActionButton(
+                title: L10n.AI.OnDevice.testGeneration,
+                icon: DesignSystem.Icons.textBubble,
+                background: onDeviceService.isModelLoaded ? Color.theme.green : Color.theme.gray.opacity(DesignSystem.Opacity.dim),
+                isDisabled: !onDeviceService.isModelLoaded,
+                action: {
+                    showTestSheet = true
+                    feedbackGenerator.notificationOccurred(.success)
                 }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, DesignSystem.medium)
-                .background(onDeviceService.isModelLoaded ? Color.theme.green : Color.theme.gray.opacity(DesignSystem.Opacity.dim))
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            }
-            .disabled(!onDeviceService.isModelLoaded)
+            )
             
             if onDeviceService.inferenceSpeed > 0 {
                 HStack {

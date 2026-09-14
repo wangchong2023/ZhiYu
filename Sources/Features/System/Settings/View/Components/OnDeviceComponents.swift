@@ -143,10 +143,10 @@ public struct OnDeviceTestView: View {
                         Label(L10n.Common.copy, systemImage: DesignSystem.Icons.docOnDocFill)
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.appAccent)
-                            .padding(.horizontal, SystemSpacing.element)
-                            .padding(.vertical, DesignSystem.tiny)
-                            .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                            .clipShape(Capsule())
+                            .accentSubtleCapsule(
+                                horizontalPadding: SystemSpacing.element,
+                                verticalPadding: DesignSystem.tiny
+                            )
                     }
                 }
                 

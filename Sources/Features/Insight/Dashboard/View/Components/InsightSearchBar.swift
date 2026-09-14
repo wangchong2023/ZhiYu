@@ -46,8 +46,7 @@ struct InsightSearchBar: View {
                     text = ""
                     onSubmit?()
                 }) {
-                    Image(systemName: DesignSystem.Icons.errorCircle)
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                    ClearSearchButton()
                 }
                 .buttonStyle(.plain)
             }
