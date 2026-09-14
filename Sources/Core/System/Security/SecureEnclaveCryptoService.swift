@@ -76,21 +76,15 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
         
         // VULN-003 修复：使用相同的 HKDF 派生逻辑还原对称密钥
         let symmetricKey = try deriveSymmetricKey()
-        
+
         // 使用 AES-GCM 还原明文
-        guard let combinedData = Data(base64Encoded: cipherText) else {
-            throw SecurityError.decodingFailed
-        }
-        let sealedBox = try AES.GCM.SealedBox(combined: combinedData)
+        let sealedBox = try AESGCMCryptoHelper.sealedBox(from: cipherText)
 
         // 审查修复 HIGH-1: 迁移逻辑 — 新 HKDF 密钥解密失败时，尝试旧 ECDH 自协商密钥解密
         // 若旧逻辑解密成功，用新 HKDF 逻辑重新加密并写回 Keychain，完成透明迁移
         do {
             let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
-            guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
-                throw SecurityError.decodingFailed
-            }
-            return decryptedString
+            return try AESGCMCryptoHelper.utf8String(from: decryptedData)
         } catch {
             // 新密钥解密失败，尝试旧 ECDH 自协商逻辑（迁移路径）
             if let legacyKey = try? deriveLegacyECDHKey(),

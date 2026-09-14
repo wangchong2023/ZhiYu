@@ -25,9 +25,7 @@ enum LineIterationHelpers {
         skipPrefixes: [String] = [],
         body: (String) -> Void
     ) {
-        for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty { continue }
+        for (trimmed, _) in nonEmptyTrimmedLines(lines) {
             if skipPrefixes.contains(where: { trimmed.hasPrefix($0) }) { continue }
             body(trimmed)
         }
@@ -41,10 +39,16 @@ enum LineIterationHelpers {
         _ lines: [String],
         body: (String, String) -> Void
     ) {
-        for line in lines {
+        for (trimmed, original) in nonEmptyTrimmedLines(lines) {
+            body(trimmed, original)
+        }
+    }
+
+    /// 共享的非空行遍历核心：跳过空行，返回 (trimmed, original) 序列，消除两个遍历方法间的样板重复。
+    private static func nonEmptyTrimmedLines(_ lines: [String]) -> [(String, String)] {
+        lines.compactMap { line in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty { continue }
-            body(trimmed, line)
+            return trimmed.isEmpty ? nil : (trimmed, line)
         }
     }
 }

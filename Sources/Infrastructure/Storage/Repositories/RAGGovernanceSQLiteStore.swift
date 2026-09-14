@@ -48,15 +48,41 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
 
     /// 获取指定评估的 Top-K 检索快照（按 rank 升序）。
     /// - Parameters:
-    ///   - db: 当前数据库连接
-    ///   - evaluationID: 评估记录 ID
-    ///   - k: Top-K 截断深度；nil 表示不限制
-    /// - Returns: 检索快照数组
+    ///   - db: 数据库连接
+    ///   - evaluationID: 评估 ID
+    ///   - k: Top-K 截断深度，nil 表示不截断
+    /// - Returns: 检索快照列表
     private func fetchTopKSnapshots(db: Database, evaluationID: Int64, k: Int?) throws -> [RetrievalSnapshot] {
         var request = RetrievalSnapshot
             .filter(RetrievalSnapshot.Columns.evaluationID == evaluationID)
-        if let k { request = request.filter(RetrievalSnapshot.Columns.rank <= k) }
-        return try request.order(RetrievalSnapshot.Columns.rank).fetchAll(db)
+            .order(RetrievalSnapshot.Columns.rank)
+        if let k = k {
+            request = request.limit(k)
+        }
+        return try request.fetchAll(db)
+    }
+
+    /// 查询指定 sourceID 的相关性判定（relevanceLevel >= 1 视为相关），消除 Hit@K 与 MRR 中的重复查询样板。
+    /// - Parameters:
+    ///   - db: 数据库连接
+    ///   - sourceID: 检索来源 ID
+    /// - Returns: 相关性判定记录（nil 表示无判定或不相关）
+    private func fetchRelevantJudgment(db: Database, sourceID: String) throws -> RelevanceJudgment? {
+        try RelevanceJudgment
+            .filter(RelevanceJudgment.Columns.sourceID == sourceID && RelevanceJudgment.Columns.relevanceLevel >= 1)
+            .fetchOne(db)
+    }
+
+    /// 在数据库读事务中执行指定查询，统一 cutoff 日期计算与 dbWriter 解析样板。
+    /// - Parameters:
+    ///   - days: 统计时间窗口（天数）
+    ///   - body: 数据库读事务闭包，接收 db 和 cutoff 日期
+    /// - Returns: 闭包返回值
+    private func readWithCutoff<T>(days: Int, _ body: (Database, Date) throws -> T) async throws -> T {
+        let writer = try await dbWriter
+        return try await writer.read { db in
+            try body(db, cutoffDate(days: days))
+        }
     }
 
     /// 获取指定评估中相关性等级 ≥ 1 的所有标注（相关结果集）。
@@ -339,10 +365,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
             guard let evalID = eval.id else { return nil }
             let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
             let hasRelevant = try snapshots.contains { snap in
-                let judgment = try RelevanceJudgment
-                    .filter(RelevanceJudgment.Columns.sourceID == snap.sourceID && RelevanceJudgment.Columns.relevanceLevel >= 1)
-                    .fetchOne(db)
-                return judgment != nil
+                try fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil
             }
             return hasRelevant ? 1.0 : 0.0
         }
@@ -354,14 +377,9 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
             let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
-            for snap in snapshots {
-                let judgment = try RelevanceJudgment
-                    .filter(RelevanceJudgment.Columns.sourceID == snap.sourceID && RelevanceJudgment.Columns.relevanceLevel >= 1)
-                    .fetchOne(db)
-                if judgment != nil {
-                    // Bug #36 修复：MRR 应使用实际 rank 字段，而非数组位置 idx+1
-                    return 1.0 / Double(snap.rank)
-                }
+            // Bug #36 修复：MRR 应使用实际 rank 字段，而非数组位置 idx+1
+            for snap in snapshots where try fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil {
+                return 1.0 / Double(snap.rank)
             }
             return 0.0
         }
@@ -464,9 +482,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     // MARK: - 检索延迟百分位
 
     func calculateRetrievalLatency(days: Int) async throws -> LatencyPercentiles {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+        try await readWithCutoff(days: days) { db, cutoff in
             let logs = try LLMCallLog
                 .filter(LLMCallLog.Columns.createdAt >= cutoff)
                 .order(LLMCallLog.Columns.latencyMS).fetchAll(db)
@@ -485,9 +501,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     // MARK: - Token 效率与成本
 
     func calculateTokenEfficiency(days: Int) async throws -> TokenEfficiency {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+        try await readWithCutoff(days: days) { db, cutoff in
             let statsRequest = TokenUsage
                 .filter(TokenUsage.Columns.createdAt >= cutoff)
                 .select(sum(TokenUsage.Columns.totalTokens), sum(TokenUsage.Columns.promptTokens),

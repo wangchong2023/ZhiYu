@@ -70,3 +70,19 @@ class OOXMLParserBase: NSObject, XMLParserDelegate {
     /// 子类钩子：段落元素闭合时处理（如插入换行）
     func onParagraphClose(elementName: String) {}
 }
+
+// MARK: - XMLParser 启动辅助
+
+/// XMLParser 启动辅助：封装 `XMLParser(data:) + delegate + parse()` 样板，消除各 XMLParserDelegate 实现间的 parse() 重复。
+enum XMLParserLauncher {
+    /// 启动 XML 解析并返回是否成功
+    /// - Parameters:
+    ///   - xmlData: 待解析的 XML 数据
+    ///   - delegate: XMLParser 代理
+    /// - Returns: true 表示解析成功
+    static func parse(xmlData: Data, delegate: XMLParserDelegate) -> Bool {
+        let parser = XMLParser(data: xmlData)
+        parser.delegate = delegate
+        return parser.parse()
+    }
+}

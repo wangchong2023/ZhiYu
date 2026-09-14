@@ -299,16 +299,13 @@ public enum FrontmatterParser {
     }
     
     private static func processArrayItemLine(_ trimmed: String, currentObject: inout [String: Any], currentArray: inout [[String: Any]]) {
-        if !currentObject.isEmpty {
-            currentArray.append(currentObject)
-            currentObject = [:]
-        }
+        flushCurrentObject(into: &currentArray, currentObject: &currentObject)
         let content = String(trimmed.dropFirst()).trimmingCharacters(in: .whitespaces)
         if !content.isEmpty {
             parseKeyValue(content, into: &currentObject)
         }
     }
-    
+
     private static func processTopLevelLine(
         _ trimmed: String,
         dict: inout [String: Any],
@@ -316,10 +313,7 @@ public enum FrontmatterParser {
         currentArray: inout [[String: Any]],
         currentObject: inout [String: Any]
     ) {
-        if !currentObject.isEmpty {
-            currentArray.append(currentObject)
-            currentObject = [:]
-        }
+        flushCurrentObject(into: &currentArray, currentObject: &currentObject)
         
         if let arrayKey = currentArrayKey, !currentArray.isEmpty {
             dict[arrayKey] = currentArray
@@ -367,11 +361,27 @@ public enum FrontmatterParser {
         currentArray: inout [[String: Any]],
         currentObject: inout [String: Any]
     ) {
-        if !currentObject.isEmpty {
-            currentArray.append(currentObject)
-        }
+        flushCurrentObject(into: &currentArray, currentObject: &currentObject, resetObject: false)
         if let arrayKey = currentArrayKey, !currentArray.isEmpty {
             dict[arrayKey] = currentArray
+        }
+    }
+
+    /// 共享的 currentObject 刷新辅助：将非空 currentObject 追加到 currentArray，消除三处重复的 isEmpty 判断样板。
+    /// - Parameters:
+    ///   - currentArray: 当前数组输出目标
+    ///   - currentObject: 当前对象（追加后按 resetObject 决定是否清空）
+    ///   - resetObject: 是否在追加后清空 currentObject（finalizeConversion 不需要清空）
+    private static func flushCurrentObject(
+        into currentArray: inout [[String: Any]],
+        currentObject: inout [String: Any],
+        resetObject: Bool = true
+    ) {
+        if !currentObject.isEmpty {
+            currentArray.append(currentObject)
+            if resetObject {
+                currentObject = [:]
+            }
         }
     }
     

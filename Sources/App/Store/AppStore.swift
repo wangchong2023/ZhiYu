@@ -186,16 +186,10 @@ public final class AppStore {
         sourceType: String? = nil,
         forceDeepScan _: Bool = false
     ) async -> KnowledgePage {
-        await knowledgeStore.createPage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
+        await delegateCreatePage(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType
         )
     }
 

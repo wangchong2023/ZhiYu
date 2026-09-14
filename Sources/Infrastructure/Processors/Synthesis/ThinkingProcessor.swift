@@ -47,11 +47,9 @@ public enum ThinkingProcessor {
 
     private static func extractEnclosedThinking(_ text: String) -> Result? {
         for pattern in ProcessorConstants.Thinking.enclosedPatterns {
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators]) else { continue }
-            let range = NSRange(text.startIndex..<text.endIndex, in: text)
-            if let match = regex.firstMatch(in: text, options: [], range: range),
-               let thinkRange = Range(match.range(at: 1), in: text) {
-                let thinking = String(text[thinkRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if let (regex, match) = matchFirstCaptureGroup(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators], text: text, captureGroup: 1) {
+                let thinking = String(text[match]).trimmingCharacters(in: .whitespacesAndNewlines)
+                let range = NSRange(text.startIndex..<text.endIndex, in: text)
                 let remaining = regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 return Result(thinkingContent: thinking.isEmpty ? nil : thinking, mainContent: remaining)
@@ -62,15 +60,26 @@ public enum ThinkingProcessor {
 
     private static func extractUnclosedThinking(_ text: String) -> Result? {
         for pattern in ProcessorConstants.Thinking.unclosedPatterns {
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else { continue }
-            let range = NSRange(text.startIndex..<text.endIndex, in: text)
-            if let match = regex.firstMatch(in: text, options: [], range: range),
-               let contentRange = Range(match.range(at: 2), in: text) {
-                let content = String(text[contentRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if let (_, match) = matchFirstCaptureGroup(pattern: pattern, options: [.dotMatchesLineSeparators], text: text, captureGroup: 2) {
+                let content = String(text[match]).trimmingCharacters(in: .whitespacesAndNewlines)
                 return Result(thinkingContent: content.isEmpty ? nil : content, mainContent: "")
             }
         }
         return nil
+    }
+
+    /// 共享的正则匹配辅助：构建正则并返回首个匹配的指定捕获组 Range，消除 extractEnclosed/extractUnclosed 间的 regex 样板重复。
+    private static func matchFirstCaptureGroup(
+        pattern: String,
+        options: NSRegularExpression.Options,
+        text: String,
+        captureGroup: Int
+    ) -> (NSRegularExpression, Range<String.Index>)? {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { return nil }
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        guard let match = regex.firstMatch(in: text, options: [], range: range),
+              let captureRange = Range(match.range(at: captureGroup), in: text) else { return nil }
+        return (regex, captureRange)
     }
 
     private static func extractPrefixThinking(_ text: String) -> Result? {

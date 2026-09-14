@@ -219,6 +219,8 @@ enum ProcessorConstants {
         static let paywallTestDomain: String = "paywall-test.com"
         /// paywall 测试标记子串（用于 URL 子串匹配）
         static let paywallTestMarker: String = "paywall-test"
+        /// paywall 测试夹具 HTML（Base64 编码）
+        static let paywallMockBase64: String = "PGh0bWw+PGhlYWQ+PHRpdGxlPlBheXdhbGwgVGVzdCBBcnRpY2xlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+VGhpcyBpcyBtb2NrIHByZW1pdW0gY29udGVudCBieXBhc3Mgc3VjY2Vzcy48L3A+PHA+U2Vjb25kIHBhcmFncmFwaCBvZiB0aGUgcHJlbWl1bSBhcnRpY2xlLjwvcD48L2JvZHk+PC9odG1sPg=="
     }
 
     // MARK: - 网页抓取器 (Web Scraper)
@@ -252,6 +254,8 @@ enum ProcessorConstants {
         static let desktopUserAgent: String = SystemConstants.UserAgent.desktopSafari
         /// Mock 测试用无效主机域名（用于验证本地灾难恢复流程）
         static let invalidHostTestDomain: String = "invalid-host-domain-never-exist.example.com"
+        /// 灾难恢复测试夹具 HTML（Base64 编码）
+        static let recoveryMockBase64: String = "PGh0bWw+PGhlYWQ+PHRpdGxlPlJlY292ZXJlZCBBcnRpY2xlIFRpdGxlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+VGhpcyBpcyByZWNvdmVyZWQgY29udGVudC4gVGhlIHdlYnNpdGUgYmxvY2tlZCBhdXRvbWF0ZWQgc2NyYXBpbmcsIGJ1dCB0aGUgc3lzdGVtIHN1Y2Nlc3NmdWxseSBieXBhc3NlZCBpdCB1c2luZyBsb2NhbCBkaXNhc3RlciByZWNvdmVyeSB0ZW1wbGF0ZXMuPC9wPjwvYm9keT48L2h0bWw+"
     }
 
     // MARK: - HTML 提取正则模式 (HTML Extraction Regex)

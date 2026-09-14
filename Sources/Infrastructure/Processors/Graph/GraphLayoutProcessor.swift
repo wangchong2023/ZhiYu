@@ -203,13 +203,7 @@ struct GraphLayoutProcessor {
                         let collisionForce: CGFloat = dist < GraphConstants.Physics.collisionDistance ? GraphConstants.Physics.collisionForce : 0
                         let force = (config.repulsion / distSq) + collisionForce
 
-                        let fx = (dx / dist) * force
-                        let fy = (dy / dist) * force
-
-                        forces[i].x += fx
-                        forces[i].y += fy
-                        forces[j].x -= fx
-                        forces[j].y -= fy
+                        applySymmetricForce(dx: dx, dy: dy, dist: dist, force: force, i: i, j: j, forces: &forces)
                     }
                 }
             }
@@ -230,14 +224,18 @@ struct GraphLayoutProcessor {
             let dist = sqrt(distSq)
 
             let force = dist * config.attraction
-            let fx = (dx / dist) * force
-            let fy = (dy / dist) * force
-
-            forces[i].x += fx
-            forces[i].y += fy
-            forces[j].x -= fx
-            forces[j].y -= fy
+            applySymmetricForce(dx: dx, dy: dy, dist: dist, force: force, i: i, j: j, forces: &forces)
         }
+    }
+
+    /// 对节点 i 与 j 施加对称力（i 累加 +fx/+fy，j 累加 -fx/-fy），消除排斥力与吸引力计算间的样板重复。
+    private static func applySymmetricForce(dx: CGFloat, dy: CGFloat, dist: CGFloat, force: CGFloat, i: Int, j: Int, forces: inout [CGPoint]) {
+        let fx = (dx / dist) * force
+        let fy = (dy / dist) * force
+        forces[i].x += fx
+        forces[i].y += fy
+        forces[j].x -= fx
+        forces[j].y -= fy
     }
 
     /// 计算中心向心力与社区聚合力

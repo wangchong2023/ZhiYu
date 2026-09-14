@@ -21,17 +21,15 @@ public enum CJKSpacingFormatter {
         var result = text
 
         // CJK 字符与英文/数字之间插入空格
-        let cjkAnsRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.cjkAnsBoundary)
-        let ansCjkRegex = try? NSRegularExpression(pattern: ProcessorConstants.RegexPattern.ansCjkBoundary)
-
-        if let regex = cjkAnsRegex {
-            result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: ProcessorConstants.RegexPattern.captureGroup12)
-        }
-        if let regex = ansCjkRegex {
-            result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: ProcessorConstants.RegexPattern.captureGroup12)
-        }
+        result = applyBoundarySpacing(pattern: ProcessorConstants.RegexPattern.cjkAnsBoundary, to: result)
+        result = applyBoundarySpacing(pattern: ProcessorConstants.RegexPattern.ansCjkBoundary, to: result)
 
         return result
+    }
+
+    /// 共享的 CJK/ANSI 边界空格注入辅助，委托 applyCaptureGroupReplacement 消除正则替换样板。
+    private static func applyBoundarySpacing(pattern: String, to text: String) -> String {
+        applyCaptureGroupReplacement(text, pattern: pattern)
     }
 }
 

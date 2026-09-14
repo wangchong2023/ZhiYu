@@ -40,6 +40,18 @@ extension WebScraperHandler {
             module: ProcessorConstants.Module.webScraper
         )
     }
+
+    /// 统一的抓取成功处理：记录成功日志并从 HTML 提取 Markdown，消除各 Handler 间的重复样板。
+    /// - Parameters:
+    ///   - url: 抓取目标 URL
+    ///   - htmlContent: 抓取到的 HTML 原文
+    ///   - successLog: 成功日志消息
+    ///   - startTime: 抓取开始时间
+    /// - Returns: 提取后的 (markdown, title) 元组
+    func handleScraperSuccess(url: URL, htmlContent: String, successLog: String, startTime: Date) -> (markdown: String, title: String) {
+        logScraper(url: url, msg: successLog, length: htmlContent.count, startTime: startTime)
+        return DumbExtractorHandler.extractFromHTML(htmlContent)
+    }
 }
 
 /// 网页内容提取处理器：负责从 URL 提取 Markdown 内容
@@ -100,23 +112,30 @@ struct MockScraperHandler: WebScraperHandler {
     /// /// - Returns: 返回值
     func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
         if url.host == ProcessorConstants.Module.paywallTestDomain || url.absoluteString.contains(ProcessorConstants.Module.paywallTestMarker) {
-// swiftlint:disable:next force_unwrapping
-            let mockData = Data(base64Encoded: "PGh0bWw+PGhlYWQ+PHRpdGxlPlBheXdhbGwgVGVzdCBBcnRpY2xlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+VGhpcyBpcyBtb2NrIHByZW1pdW0gY29udGVudCBieXBhc3Mgc3VjY2Vzcy48L3A+PHA+U2Vjb25kIHBhcmFncmFwaCBvZiB0aGUgcHJlbWl1bSBhcnRpY2xlLjwvcD48L2JvZHk+PC9odG1sPg==")!
-// swiftlint:disable:next force_unwrapping
-            let mockPaywallHTML = String(data: mockData, encoding: .utf8)!
+            let mockPaywallHTML = MockScraperFixtures.decodeHTML(ProcessorConstants.Module.paywallMockBase64)
             return DumbExtractorHandler.extractFromHTML(mockPaywallHTML)
         }
-        
+
         if url.host == ProcessorConstants.WebScraper.invalidHostTestDomain {
-// swiftlint:disable:next force_unwrapping
-            let mockData = Data(base64Encoded: "PGh0bWw+PGhlYWQ+PHRpdGxlPlJlY292ZXJlZCBBcnRpY2xlIFRpdGxlPC90aXRsZT48L2hlYWQ+PGJvZHk+PHA+VGhpcyBpcyByZWNvdmVyZWQgY29udGVudC4gVGhlIHdlYnNpdGUgYmxvY2tlZCBhdXRvbWF0ZWQgc2NyYXBpbmcsIGJ1dCB0aGUgc3lzdGVtIHN1Y2Nlc3NmdWxseSBieXBhc3NlZCBpdCB1c2luZyBsb2NhbCBkaXNhc3RlciByZWNvdmVyeSB0ZW1wbGF0ZXMuPC9wPjwvYm9keT48L2h0bWw+")!
-// swiftlint:disable:next force_unwrapping
-            let recoveryHTML = String(data: mockData, encoding: .utf8)!
+            let recoveryHTML = MockScraperFixtures.decodeHTML(ProcessorConstants.WebScraper.recoveryMockBase64)
             return DumbExtractorHandler.extractFromHTML(recoveryHTML)
         }
-        
+
         guard let next = next else { throw WebScraperProcessor.ScraperError.chainExhausted }
         return try await next.handle(url: url, startTime: startTime)
+    }
+}
+
+/// Mock 抓取测试夹具：封装 Base64 解码与 UTF-8 还原的共享辅助，消除 MockScraperHandler 中的重复解码样板。
+private enum MockScraperFixtures {
+    /// 将 Base64 编码的 HTML 字符串解码为 UTF-8 字符串
+    /// - Parameter base64String: Base64 编码的 HTML
+    /// - Returns: 解码后的 HTML 字符串
+    static func decodeHTML(_ base64String: String) -> String {
+        // swiftlint:disable:next force_unwrapping
+        let data = Data(base64Encoded: base64String)!
+        // swiftlint:disable:next force_unwrapping
+        return String(data: data, encoding: .utf8)!
     }
 }
 
@@ -172,8 +191,7 @@ struct GooglebotScraperHandler: WebScraperHandler {
 
             let htmlContent = try await fetchUTF8Content(for: request, requireStatusCodeOk: false)
 
-            logScraper(url: url, msg: L10n.Ingest.Status.webscraperLevel2Success, length: htmlContent.count, startTime: startTime)
-            return DumbExtractorHandler.extractFromHTML(htmlContent)
+            return handleScraperSuccess(url: url, htmlContent: htmlContent, successLog: L10n.Ingest.Status.webscraperLevel2Success, startTime: startTime)
 
         } catch {
             return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: L10n.Ingest.Status.webscraperLevel2Failed)
@@ -203,8 +221,7 @@ struct ArchiveScraperHandler: WebScraperHandler {
 
             let htmlContent = try await fetchUTF8Content(for: archiveReq)
 
-            logScraper(url: url, msg: L10n.Ingest.Status.webscraperLevel3Success, length: htmlContent.count, startTime: startTime)
-            return DumbExtractorHandler.extractFromHTML(htmlContent)
+            return handleScraperSuccess(url: url, htmlContent: htmlContent, successLog: L10n.Ingest.Status.webscraperLevel3Success, startTime: startTime)
 
         } catch {
             return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: L10n.Ingest.Status.webscraperLevel3Failed)

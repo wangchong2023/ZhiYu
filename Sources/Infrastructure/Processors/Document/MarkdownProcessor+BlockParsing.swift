@@ -15,15 +15,24 @@ extension MarkdownProcessor {
 
     // MARK: - 私有解析辅助方法
 
+    /// 共享的块起始校验辅助：检查指定行去除空白后是否以给定前缀开头，消除各 parseXxxBlock 间的重复 trimming + hasPrefix 样板。
+    /// - Parameters:
+    ///   - lines: 原始全文按行拆分后的数组
+    ///   - startIndex: 当前扫描的起始行索引
+    ///   - prefix: 期望的行首前缀
+    /// - Returns: 去除空白后的行内容（匹配成功），nil 表示不匹配
+    private func validateBlockStart(lines: [String], startIndex: Int, prefix: String) -> String? {
+        let trimmed = lines[startIndex].trimmingCharacters(in: .whitespaces)
+        return trimmed.hasPrefix(prefix) ? trimmed : nil
+    }
+
     /// 尝试解析 HTML 折叠块 `<details>`。
     /// - Parameters:
     ///   - lines: 原始全文按行拆分后的数组。
     ///   - startIndex: 当前扫描的起始行索引。
     /// - Returns: 若匹配成功，返回折叠块实体与下一行待扫描的偏移索引；否则返回 `nil`。
     func parseDetailsBlock(lines: [String], startIndex: Int) -> (block: BlockType, nextIndex: Int)? {
-        let trimmed = lines[startIndex].trimmingCharacters(in: .whitespaces)
-        // 检查折叠标签的开端
-        guard trimmed.hasPrefix(ProcessorConstants.HTMLTag.detailsOpen) else { return nil }
+        guard let trimmed = validateBlockStart(lines: lines, startIndex: startIndex, prefix: ProcessorConstants.HTMLTag.detailsOpen) else { return nil }
 
         var summary = ""
         var contentLines: [String] = []
@@ -65,9 +74,7 @@ extension MarkdownProcessor {
     ///   - startIndex: 当前扫描的起始行索引。
     /// - Returns: 若匹配成功，返回代码块实体与下一行待扫描的偏移索引；否则返回 `nil`。
     func parseCodeBlock(lines: [String], startIndex: Int) -> (block: BlockType, nextIndex: Int)? {
-        let trimmed = lines[startIndex].trimmingCharacters(in: .whitespaces)
-        // 代码块必须以三反引号引导
-        guard trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) else { return nil }
+        guard let trimmed = validateBlockStart(lines: lines, startIndex: startIndex, prefix: ProcessorConstants.MarkdownSyntax.codeFence) else { return nil }
 
         // 提取语法高亮语言标识 (e.g. ```swift -> swift)
         let language = String(trimmed.dropFirst(ProcessorConstants.MarkdownSyntax.codeFence.count)).trimmingCharacters(in: .whitespaces)
