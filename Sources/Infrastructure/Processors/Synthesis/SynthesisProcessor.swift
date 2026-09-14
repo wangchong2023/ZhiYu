@@ -72,7 +72,7 @@ enum SynthesisProcessor {
         guard !trimmed.isEmpty else { return false }
 
         let validPrefixes = ProcessorConstants.MermaidSyntax.validPrefixes
-        let lines = trimmed.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces) }
+        let lines = splitAndTrimLines(trimmed)
         guard let firstLine = lines.first(where: { !$0.isEmpty }) else { return false }
 
         let hasPrefix = validPrefixes.contains { prefix in
@@ -89,8 +89,7 @@ enum SynthesisProcessor {
 
     /// 柔性自愈：将普通文本或 Markdown 节点转换为层次丰富的 Mermaid Mindmap 代码
     static func convertMarkdownToListMindmap(_ text: String, title: String) -> String {
-        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let rootName = cleanTitle.isEmpty ? L10n.AI.Synthesis.Mindmap.title : cleanTitle
+        let rootName = resolveFallbackTitle(title, fallback: L10n.AI.Synthesis.Mindmap.title)
         let lines = sanitizeSourceLines(text)
         var mermaidLines = [
             "\(ProcessorConstants.MarkdownSyntax.h1Prefix)\(rootName)",
@@ -111,7 +110,7 @@ enum SynthesisProcessor {
                     validNodeCount += 1
                 }
             } else if line.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletDash) || line.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletAsterisk) || line.hasPrefix(ProcessorConstants.MarkdownSyntax.bulletPlus) || (line.first?.isNumber == true && line.contains(ProcessorConstants.MarkdownSyntax.dot)) {
-                let bulletText = line.replacingOccurrences(of: ProcessorConstants.RegexPattern.markdownBulletStrip, with: "", options: .regularExpression).trimmingCharacters(in: .whitespaces)
+                let bulletText = stripBulletPrefix(line)
                 if !bulletText.isEmpty && bulletText != rootName {
                     let indent = currentSection.isEmpty ? ProcessorConstants.Synthesis.mermaidIndentLevel1 : ProcessorConstants.Synthesis.mermaidIndentLevel2
                     mermaidLines.append("\(indent)\(bulletText)")
@@ -241,8 +240,7 @@ enum SynthesisProcessor {
 
     /// 从文本内容中提取第一个 H1 级别的合法标题（过滤 Prompt 指令标头）
     static func extractTitle(from content: String) -> String? {
-        let lines = content.components(separatedBy: .newlines)
-            .map { $0.trimmingCharacters(in: .whitespaces) }
+        let lines = splitAndTrimLines(content)
 
         for line in lines where !line.isEmpty {
             if line.hasPrefix(ProcessorConstants.MarkdownSyntax.h1Prefix) {
@@ -287,16 +285,16 @@ enum SynthesisProcessor {
         if rootName.hasPrefix(ProcessorConstants.MarkdownSyntax.cjkOpenBracket) || rootName.contains(L10n.AI.Synthesis.Control.depth) || rootName.contains(L10n.AI.Synthesis.Control.audience) {
             rootName = ""
         }
-        if rootName.isEmpty || rootName == L10n.AI.Prompt.Expert.Slides.title {
-            if let firstValidLine = lines.first(where: {
-                $0.count > ProcessorConstants.Synthesis.minValidTitleLength &&
-                !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.cjkOpenBracket) &&
-                !$0.contains(L10n.AI.Synthesis.Control.depth) &&
-                !$0.contains(L10n.AI.Synthesis.Control.audience)
-            }) {
-                rootName = firstValidLine.replacingOccurrences(of: ProcessorConstants.RegexPattern.markdownBulletStrip, with: "", options: .regularExpression)
+            if rootName.isEmpty || rootName == L10n.AI.Prompt.Expert.Slides.title {
+                if let firstValidLine = lines.first(where: {
+                    $0.count > ProcessorConstants.Synthesis.minValidTitleLength &&
+                    !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.cjkOpenBracket) &&
+                    !$0.contains(L10n.AI.Synthesis.Control.depth) &&
+                    !$0.contains(L10n.AI.Synthesis.Control.audience)
+                }) {
+                    rootName = stripBulletPrefix(firstValidLine)
+                }
             }
-        }
         return rootName.isEmpty ? L10n.AI.Prompt.Expert.Slides.title : rootName
     }
 
@@ -306,8 +304,7 @@ enum SynthesisProcessor {
         var currentBullets: [String] = []
 
         for line in lines {
-            let bullet = line.replacingOccurrences(of: ProcessorConstants.RegexPattern.markdownBulletStrip, with: "", options: .regularExpression)
-                             .trimmingCharacters(in: .whitespaces)
+            let bullet = stripBulletPrefix(line)
             guard bullet.count > ProcessorConstants.Synthesis.minValidTitleLength else { continue }
 
             if line.hasPrefix(ProcessorConstants.MarkdownSyntax.hash) {
@@ -378,17 +375,14 @@ enum SynthesisProcessor {
 
     /// 柔性自愈：生成标准 Mermaid 可视化信息图 (Flowchart)
     static func generateFallbackInfographic(from text: String, title: String) -> String {
-        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let rootName = cleanTitle.isEmpty ? L10n.Knowledge.Page.AI.infographic : cleanTitle
+        let rootName = resolveFallbackTitle(title, fallback: L10n.Knowledge.Page.AI.infographic)
         let lines = sanitizeSourceLines(text)
 
         var code = ["\(ProcessorConstants.MarkdownSyntax.h1Prefix)\(rootName)", ProcessorConstants.Whitespace.empty, ProcessorConstants.MermaidSyntax.graphTD, "\(ProcessorConstants.MermaidSyntax.indent)\(ProcessorConstants.MermaidSyntax.rootLabel)\(rootName)\(ProcessorConstants.MermaidSyntax.labelSuffix)"]
         var nodeCount = 0
 
         for line in lines {
-            let bullet = line.replacingOccurrences(of: ProcessorConstants.RegexPattern.markdownBulletStrip, with: "", options: .regularExpression)
-                             .replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.doubleQuote, with: ProcessorConstants.MarkdownSyntax.singleQuote)
-                             .trimmingCharacters(in: .whitespaces)
+            let bullet = stripBulletAndEscapeQuotes(line)
             if bullet.count > ProcessorConstants.Synthesis.infographicMinLength && bullet.count < ProcessorConstants.Synthesis.infographicMaxLength {
                 nodeCount += 1
                 code.append("\(ProcessorConstants.MermaidSyntax.indent)\(ProcessorConstants.MermaidSyntax.root)\(ProcessorConstants.MermaidSyntax.arrow)\(ProcessorConstants.MermaidSyntax.nodeLabel)\(nodeCount)[\"\(bullet)\"]")
@@ -404,8 +398,7 @@ enum SynthesisProcessor {
 
     /// 柔性自愈：生成结构化深度报告 (Report)
     static func generateFallbackReport(from text: String, title: String) -> String {
-        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let rootName = cleanTitle.isEmpty ? L10n.AI.Prompt.Expert.Report.title : cleanTitle
+        let rootName = resolveFallbackTitle(title, fallback: L10n.AI.Prompt.Expert.Report.title)
         let lines = sanitizeSourceLines(text)
 
         var report = [
@@ -419,7 +412,7 @@ enum SynthesisProcessor {
 
         var count = 0
         for line in lines {
-            let item = line.replacingOccurrences(of: ProcessorConstants.RegexPattern.markdownBulletStrip, with: "", options: .regularExpression)
+            let item = stripBulletPrefix(line)
             if item.count > ProcessorConstants.Synthesis.reportPointMinLength {
                 count += 1
                 report.append(L10n.AI.Synthesis.Fallback.reportPointItem(count, item))
@@ -434,8 +427,7 @@ enum SynthesisProcessor {
 
     /// 柔性自愈：生成知识深度扩充 (Expansion)，消除泛化“细节维度”，使用主题小节
     static func generateFallbackExpansion(from text: String, title: String) -> String {
-        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let rootName = cleanTitle.isEmpty ? L10n.Knowledge.Page.AI.expansion : cleanTitle
+        let rootName = resolveFallbackTitle(title, fallback: L10n.Knowledge.Page.AI.expansion)
         let lines = sanitizeSourceLines(text)
 
         let sectionTitles = [
@@ -475,8 +467,7 @@ enum SynthesisProcessor {
     /// 柔性自愈：生成知识测验 (Quiz JSON)。
     /// 当 AI 生成失败时，返回通用占位提示，不硬编码任何领域知识。
     static func generateFallbackQuiz(from _: String, title: String) -> String {
-        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let rootName = cleanTitle.isEmpty ? L10n.AI.Prompt.Quiz.defaultTitle : cleanTitle
+        let rootName = resolveFallbackTitle(title, fallback: L10n.AI.Prompt.Quiz.defaultTitle)
 
         let placeholderDict: [String: Any] = [
             ProcessorConstants.Synthesis.quizTitleKey: L10n.AI.Synthesis.Fallback.quizInsufficientTitle(rootName),

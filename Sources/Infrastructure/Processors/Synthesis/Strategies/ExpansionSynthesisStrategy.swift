@@ -16,12 +16,12 @@ public struct ExpansionSynthesisStrategy: SynthesisStrategyProtocol {
     public init() {}
 
     public func process(rawContent: String, sourceContent: String) -> String {
-        let cleaned = SynthesisProcessor.cleanMarkdown(rawContent)
-        if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            return cleaned
-        }
-        Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InsufficientExpansionContent")
-        return generateFallback(from: sourceContent, title: L10n.AI.Prompt.Expert.Expansion.title)
+        processWithByteValidation(
+            rawContent: rawContent,
+            sourceContent: sourceContent,
+            selfHealReason: ProcessorConstants.Synthesis.selfHealReasonInsufficientExpansion,
+            fallbackTitle: L10n.AI.Prompt.Expert.Expansion.title
+        )
     }
 
     public func generateFallback(from sourceContent: String, title: String) -> String {

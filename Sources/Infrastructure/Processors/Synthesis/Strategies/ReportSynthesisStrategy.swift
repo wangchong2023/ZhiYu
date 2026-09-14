@@ -16,12 +16,13 @@ public struct ReportSynthesisStrategy: SynthesisStrategyProtocol {
     public init() {}
 
     public func process(rawContent: String, sourceContent: String) -> String {
-        let cleaned = SynthesisProcessor.cleanMarkdown(rawContent)
-        if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes, cleaned.contains("#") {
-            return cleaned
-        }
-        Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InsufficientReportContent")
-        return generateFallback(from: sourceContent, title: L10n.AI.Prompt.Expert.Report.title)
+        processWithByteValidation(
+            rawContent: rawContent,
+            sourceContent: sourceContent,
+            selfHealReason: ProcessorConstants.Synthesis.selfHealReasonInsufficientReport,
+            fallbackTitle: L10n.AI.Prompt.Expert.Report.title,
+            extraValidation: { $0.contains(ProcessorConstants.MarkdownSyntax.hash) }
+        )
     }
 
     public func generateFallback(from sourceContent: String, title: String) -> String {

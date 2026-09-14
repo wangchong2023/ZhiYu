@@ -78,9 +78,8 @@ public enum ThinkingProcessor {
         for prefix in ProcessorConstants.Thinking.prefixes where lowerText.hasPrefix(prefix.lowercased()) {
             let afterPrefix = String(text.dropFirst(prefix.count)).trimmingCharacters(in: .whitespacesAndNewlines)
             if let dividerRange = findAnswerDivider(in: afterPrefix) {
-                let thinking = String(afterPrefix[..<dividerRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-                let main = String(afterPrefix[dividerRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-                return Result(thinkingContent: thinking.isEmpty ? nil : thinking, mainContent: main)
+                let (thinking, main) = splitAtDivider(afterPrefix, dividerRange: dividerRange)
+                return makeResult(thinking: thinking, main: main)
             }
             return Result(thinkingContent: afterPrefix, mainContent: "")
         }
@@ -90,8 +89,7 @@ public enum ThinkingProcessor {
     private static func extractImplicitCoT(_ text: String) -> Result? {
         for prefix in ProcessorConstants.Thinking.implicitCoTPrefixes where text.hasPrefix(prefix) {
             if let dividerRange = findAnswerDivider(in: text) {
-                let thinking = String(text[..<dividerRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-                let main = String(text[dividerRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                let (thinking, main) = splitAtDivider(text, dividerRange: dividerRange)
                 if !main.isEmpty {
                     return Result(thinkingContent: thinking, mainContent: main)
                 }

@@ -18,7 +18,7 @@ public struct MindmapSynthesisStrategy: SynthesisStrategyProtocol {
     public func process(rawContent: String, sourceContent: String) -> String {
         let formatted = SynthesisProcessor.formatMermaid(rawContent, fallbackPrefix: ProcessorConstants.MermaidSyntax.mindmap)
         if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InvalidMermaid")
+            Logger.shared.addLog(action: .ingest, target: type.title, details: ProcessorConstants.Synthesis.selfHealReasonInvalidMermaid)
             return generateFallback(from: sourceContent, title: L10n.AI.Prompt.Expert.Mindmap.title)
         }
         return formatted

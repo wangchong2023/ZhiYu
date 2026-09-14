@@ -18,7 +18,7 @@ public struct InfographicSynthesisStrategy: SynthesisStrategyProtocol {
     public func process(rawContent: String, sourceContent: String) -> String {
         let formatted = SynthesisProcessor.formatMermaid(rawContent, fallbackPrefix: ProcessorConstants.MermaidSyntax.graphTD)
         if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InvalidInfographicMermaid")
+            Logger.shared.addLog(action: .ingest, target: type.title, details: ProcessorConstants.Synthesis.selfHealReasonInvalidInfographic)
             return generateFallback(from: sourceContent, title: L10n.Knowledge.Page.AI.infographic)
         }
         return formatted

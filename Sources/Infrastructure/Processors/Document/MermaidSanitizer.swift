@@ -20,14 +20,11 @@ public enum MermaidSanitizer {
         let lines = code.components(separatedBy: .newlines)
         var sanitizedLines: [String] = []
 
-        for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty { continue }
-
+        LineIterationHelpers.iterateTrimmedLines(lines) { trimmed, line in
             // 保留标题、关键字、结构声明
             if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.hash) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) || trimmed == ProcessorConstants.MermaidSyntax.mindmap || trimmed.hasPrefix(ProcessorConstants.MermaidSyntax.graph) || trimmed.hasPrefix(ProcessorConstants.MermaidSyntax.flowchart) {
                 sanitizedLines.append(line)
-                continue
+                return
             }
 
             // 对带 [内容] 或 (内容) 的节点文本进行安全转义处理

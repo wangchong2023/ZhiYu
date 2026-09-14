@@ -13,7 +13,6 @@ import Foundation
 final class ExcelProcessor: NSObject, XMLParserDelegate {
     private let xmlData: Data
     private(set) var values: [String] = []
-    private var inCellElement = false
     private var inValueElement = false
     private var currentText = ""
     private var currentCellType: String?
@@ -34,7 +33,6 @@ final class ExcelProcessor: NSObject, XMLParserDelegate {
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
         if elementName == ProcessorConstants.OOXML.cellElement {
             currentCellType = attributeDict[ProcessorConstants.OOXML.cellTypeAttribute]
-            inCellElement = true
             currentText = ""
         } else if elementName == ProcessorConstants.OOXML.valueElement {
             inValueElement = true
@@ -59,7 +57,6 @@ final class ExcelProcessor: NSObject, XMLParserDelegate {
                     values.append("\(ProcessorConstants.OOXML.sharedStringIndexOpen)\(value)\(ProcessorConstants.OOXML.sharedStringIndexClose)")
                 }
             }
-            inCellElement = false
             currentCellType = nil
             currentText = ""
         }

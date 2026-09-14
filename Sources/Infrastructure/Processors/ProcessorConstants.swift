@@ -493,6 +493,18 @@ enum ProcessorConstants {
         static let mindmapNodeMinLength: Int = 2
         /// 思维导图节点最大长度
         static let mindmapNodeMaxLength: Int = 30
+        /// 自愈日志原因：Expansion 内容不足
+        static let selfHealReasonInsufficientExpansion: String = "[SynthesisStatus: SelfHealed] Reason: InsufficientExpansionContent"
+        /// 自愈日志原因：Report 内容不足
+        static let selfHealReasonInsufficientReport: String = "[SynthesisStatus: SelfHealed] Reason: InsufficientReportContent"
+        /// 自愈日志原因：字节数不足
+        static let selfHealReasonInsufficientBytes: String = "[SynthesisStatus: SelfHealed] Reason: InsufficientBytes"
+        /// 自愈日志原因：无效 Mermaid
+        static let selfHealReasonInvalidMermaid: String = "[SynthesisStatus: SelfHealed] Reason: InvalidMermaid"
+        /// 自愈日志原因：无效信息图 Mermaid
+        static let selfHealReasonInvalidInfographic: String = "[SynthesisStatus: SelfHealed] Reason: InvalidInfographicMermaid"
+        /// 自愈日志原因：无效 Quiz JSON
+        static let selfHealReasonInvalidQuizJSON: String = "[SynthesisStatus: SelfHealed] Reason: InvalidQuizJSON"
     }
 
     // MARK: - 思考过程提取 (Thinking Processor)

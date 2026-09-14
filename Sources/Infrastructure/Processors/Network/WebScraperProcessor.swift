@@ -139,11 +139,7 @@ struct JinaScraperHandler: WebScraperHandler {
             var request = URLRequest(url: jinaURL)
             request.timeoutInterval = ProcessorConstants.WebScraper.jinaTimeoutInterval
 
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
-                  let content = String(data: data, encoding: .utf8) else {
-                throw WebScraperProcessor.ScraperError.parsingFailed
-            }
+            let content = try await fetchUTF8Content(for: request)
 
             let lines = content.components(separatedBy: .newlines)
             let title = lines.first(where: { $0.hasPrefix(ProcessorConstants.MarkdownSyntax.h1Prefix) })?.replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.h1Prefix, with: "")
@@ -151,11 +147,9 @@ struct JinaScraperHandler: WebScraperHandler {
 
             logScraper(url: url, msg: L10n.Ingest.Status.webscraperLevel1Success, length: content.count, startTime: startTime)
             return (content, title)
-            
+
         } catch {
-            Logger.shared.error(L10n.Ingest.Status.webscraperLevel1Failed, error: error)
-            guard let next = next else { throw error }
-            return try await next.handle(url: url, startTime: startTime)
+            return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: L10n.Ingest.Status.webscraperLevel1Failed)
         }
     }
 }
@@ -175,29 +169,14 @@ struct GooglebotScraperHandler: WebScraperHandler {
             let ua = ["Mozilla/\(ProcessorConstants.WebScraper.mozillaVersion)", "(compatible;", "Googlebot/\(ProcessorConstants.WebScraper.googlebotVersion);", "+http://www.google.com/bot.html)"].joined(separator: ProcessorConstants.Whitespace.space)
             request.setValue(ua, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
             request.setValue("text/html,application/xhtml+xml,application/xml;q=\(ProcessorConstants.WebScraper.acceptQValueHigh),*/*;q=\(ProcessorConstants.WebScraper.acceptQValueLow)", forHTTPHeaderField: SystemConstants.HTTPHeader.accept)
-            
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw WebScraperProcessor.ScraperError.parsingFailed
-            }
-            
-            let restrictedCodes = ProcessorConstants.WebScraper.restrictedStatusCodes
-            if restrictedCodes.contains(httpResponse.statusCode) {
-                Logger.shared.warning(L10n.Ingest.Status.webscraperPaywallDetected(httpResponse.statusCode))
-                throw WebScraperProcessor.ScraperError.networkError(NSError(domain: ProcessorConstants.Module.webScraper, code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: ProcessorConstants.Module.paywallBlocked]))
-            }
-            
-            guard let htmlContent = String(data: data, encoding: .utf8) else {
-                throw WebScraperProcessor.ScraperError.parsingFailed
-            }
-            
+
+            let htmlContent = try await fetchUTF8Content(for: request, requireStatusCodeOk: false)
+
             logScraper(url: url, msg: L10n.Ingest.Status.webscraperLevel2Success, length: htmlContent.count, startTime: startTime)
             return DumbExtractorHandler.extractFromHTML(htmlContent)
-            
+
         } catch {
-            Logger.shared.error(L10n.Ingest.Status.webscraperLevel2Failed, error: error)
-            guard let next = next else { throw error }
-            return try await next.handle(url: url, startTime: startTime)
+            return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: L10n.Ingest.Status.webscraperLevel2Failed)
         }
     }
 }
@@ -216,25 +195,19 @@ struct ArchiveScraperHandler: WebScraperHandler {
             guard let archiveURL = URL(string: archiveURLString) else {
                 throw WebScraperProcessor.ScraperError.invalidURL
             }
-            
+
             var archiveReq = URLRequest(url: archiveURL)
             archiveReq.timeoutInterval = ProcessorConstants.WebScraper.archiveTimeoutInterval
             let archiveUA = ProcessorConstants.WebScraper.desktopUserAgent
             archiveReq.setValue(archiveUA, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
 
-            let (data, response) = try await URLSession.shared.data(for: archiveReq)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
-                  let htmlContent = String(data: data, encoding: .utf8) else {
-                throw WebScraperProcessor.ScraperError.parsingFailed
-            }
-            
+            let htmlContent = try await fetchUTF8Content(for: archiveReq)
+
             logScraper(url: url, msg: L10n.Ingest.Status.webscraperLevel3Success, length: htmlContent.count, startTime: startTime)
             return DumbExtractorHandler.extractFromHTML(htmlContent)
-            
+
         } catch {
-            Logger.shared.error(L10n.Ingest.Status.webscraperLevel3Failed, error: error)
-            guard let next = next else { throw error }
-            return try await next.handle(url: url, startTime: startTime)
+            return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: L10n.Ingest.Status.webscraperLevel3Failed)
         }
     }
 }
