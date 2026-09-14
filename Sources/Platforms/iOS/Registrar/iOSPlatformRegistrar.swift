@@ -35,10 +35,8 @@ struct iOSPlatformRegistrar {
         container.register(iOSSecurityScopedStorage(), for: SecurityScopedStorageProtocol.self)
         
         // 3. AI 与生物识别
-        container.register(CoreMLModelCompiler(), for: MLModelCompilerProtocol.self)
+        PlatformStubRegistrar.registerSharedAIServices(in: container)
         container.register(iOSBiometricAuthProvider(), for: BiometricAuthProviderProtocol.self)
-        container.register(iOSOCRService(), for: (any OCRServiceProtocol).self)
-        container.register(iOSSpeechService(), for: (any SpeechServiceProtocol).self)
         
         // 4. 实时活动与系统集成
         #if !targetEnvironment(macCatalyst)

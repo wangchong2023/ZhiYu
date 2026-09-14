@@ -56,10 +56,8 @@ struct ContentView: View {
             
             // 主内容层
             mainContainer(tintColor: tintColor)
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name.toggleSidebar)) { _ in
-                    withAnimation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping)) {
-                        showSidebar.toggle()
-                    }
+                .onToggleSidebar {
+                    showSidebar.toggle()
                 }
             
             // 数据库损坏或降级警告横幅
@@ -385,9 +383,8 @@ struct DatabaseCorruptedBanner: View {
         isRetrying = true
         Task {
             do {
-                guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { throw NSError(domain: CoreConstants.ErrorDomain.insight, code: SystemConstants.ErrorCode.default) }
-                let dbURL = appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
-                
+                let dbURL = try DatabaseManager.defaultSandboxDatabaseURL()
+
                 // 重新执行 setup 挂载物理沙盒
                 try DatabaseManager.shared.setup(at: dbURL)
                 Logger.shared.info("[DatabaseCorruptedBanner] Reverification succeeded! Remounted physical database.")

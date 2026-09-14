@@ -163,11 +163,9 @@ final class AppEnvironment {
             let appGroupIdentifier = AppConstants.Storage.appGroupIdentifier
 
             // 旧的沙盒独立路径
-            guard let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-                throw NSError(domain: CoreConstants.ErrorDomain.insight, code: SystemConstants.ErrorCode.default)
-            }
-            let oldDbURL = appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
-            
+            let oldDbURL = try DatabaseManager.defaultSandboxDatabaseURL()
+            let appSupport = oldDbURL.deletingLastPathComponent()
+
             // 新的 App Group 共享路径（若不可用，回退到沙盒路径）
             let dbURL: URL
             let baseGlobalURL: URL

@@ -49,6 +49,8 @@ public enum PlatformConstants {
 
     /// EventKit 错误码
     public enum Reminder {
+        /// 提醒服务错误域标识
+        public static let errorDomain: String = "ZhiYu.ReminderService"
         /// "未找到" 错误码（对应 EKErrorCode notFound）
         public static let notFoundErrorCode: Int = 404
     }

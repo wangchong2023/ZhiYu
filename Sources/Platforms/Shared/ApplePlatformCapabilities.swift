@@ -16,23 +16,12 @@ import CoreML
 #if canImport(LocalAuthentication) && !os(watchOS)
 /// Apple 平台通用生物识别提供者 (iOS / macOS / iPadOS) (DRY)
 /// watchOS 不支持生物识别，需排除编译
+/// `canEvaluatePolicy` / `evaluatePolicy` 复用 BiometricAuthProviderProtocol 默认实现，
+/// 仅声明 `authenticationPolicy` 差异。
 @MainActor
 public struct AppleBiometricAuthProvider: BiometricAuthProviderProtocol {
     public var authenticationPolicy: LAPolicy { .deviceOwnerAuthenticationWithBiometrics }
 
     public init() {}
-
-    public func canEvaluatePolicy(context: LAContext) -> Bool {
-        var error: NSError?
-        return context.canEvaluatePolicy(authenticationPolicy, error: &error)
-    }
-
-    public func evaluatePolicy(context: LAContext, reason: String) async -> Bool {
-        return await withCheckedContinuation { continuation in
-            context.evaluatePolicy(authenticationPolicy, localizedReason: reason) { success, _ in
-                continuation.resume(returning: success)
-            }
-        }
-    }
 }
 #endif

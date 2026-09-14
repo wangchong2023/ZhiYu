@@ -145,15 +145,6 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
         }
     }
     
-    /// 处理接收到的 new_page 内容：更新 lastReceivedText 并广播通知。
-    /// 消除 iOS/Watch 两端 `didReceiveUserInfo` 中重复的
-    /// `lastReceivedText = content; NotificationCenter.post(.didReceiveWatchContent)` 模式。
-    @MainActor
-    func handleReceivedPageContent(_ content: String) {
-        lastReceivedText = content
-        NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
-    }
-
     // MARK: - WCSessionDelegate
     
     /// session回调

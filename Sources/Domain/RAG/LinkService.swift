@@ -135,7 +135,7 @@ actor LinkService {
         accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: semanticWeight, ftsRank: { _ in -1 }, vecRank: { $0 + 1 })
 
         // Step 6: 按融合分数降序排列并去重
-        let sortedIDs = scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }
+        let sortedIDs = sortedIDsByScore(scores)
         let results = sortedIDs.compactMap { id in pages.first { $0.id == id } }
 
         // Step 7: 构建诊断信息（Top-10 结果的详细排名）
@@ -201,7 +201,7 @@ actor LinkService {
         accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: 1.0, ftsRank: { _ in -1 }, vecRank: { $0 + 1 })
 
         // Step 3: 按 RRF 总分降序排列，从并集中去重映射回 KnowledgePage
-        let sortedIDs = scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }
+        let sortedIDs = sortedIDsByScore(scores)
 
         let allCandidates = Set(keywordResults + semanticResults)
         return sortedIDs.compactMap { id in allCandidates.first { $0.id == id } }
@@ -239,6 +239,12 @@ actor LinkService {
      * @param {[KnowledgePage]} pages 页面全集
      * @return {[(tag: String, count: Int)]} 标签元组数组
      */
+
+    /// 按 RRF 总分降序排列 UUID，消除 `hybridSearchWithDiagnostics` 与 `rrf` 中重复的
+    /// `scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }` 模式。
+    private func sortedIDsByScore(_ scores: [UUID: Double]) -> [UUID] {
+        scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }
+    }
 
     /// allTags
     /// - Returns: 列表

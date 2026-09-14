@@ -107,7 +107,33 @@ struct WidgetMainStatItem: View {
     }
 }
 
+/// Widget 知识库统计对（vaultName + links），消除 mediumView 与 largeView 中重复的
+/// `WidgetMainStatItem(vaultName, pageCount, purple) + WidgetMainStatItem(links, linkCount, blue)` 模式。
+struct WidgetVaultStatPair: View {
+    let pageCount: Int
+    let linkCount: Int
+
+    var body: some View {
+        WidgetMainStatItem(label: WidgetL10n.vaultName, value: "\(pageCount)", color: WidgetSharedConstants.Color.purple)
+        WidgetMainStatItem(label: WidgetL10n.links, value: "\(linkCount)", color: WidgetSharedConstants.Color.blue)
+    }
+}
+
 // MARK: - 操作按钮（Deep Link）
+
+/// Widget Deep Link 按钮内部标签：`HStack { Image + Text }`，
+/// 消除 WidgetActionButton 与 WidgetLargeAIButton 中重复的 `HStack(spacing:) { Image + Text }` 构造。
+struct WidgetLinkLabel: View {
+    let icon: String
+    let label: String
+
+    var body: some View {
+        HStack(spacing: WidgetVisualConstants.spacingCompact) {
+            Image(systemName: icon)
+            Text(label)
+        }
+    }
+}
 
 /// Widget Deep Link 操作按钮：图标 + 标签 + 描边背景，用于 KnowledgeStatsWidget mediumView。
 struct WidgetActionButton: View {
@@ -118,12 +144,8 @@ struct WidgetActionButton: View {
 
     var body: some View {
         Link(destination: WidgetDeepLinkURL.resolve(url)) {
-            HStack(spacing: WidgetVisualConstants.spacingCompact) {
-                Image(systemName: icon)
-                    .font(.system(size: WidgetVisualConstants.smallFontSize))
-                Text(label)
-                    .font(.system(size: WidgetVisualConstants.smallFontSize, weight: .bold))
-            }
+            WidgetLinkLabel(icon: icon, label: label)
+                .font(.system(size: WidgetVisualConstants.smallFontSize, weight: .bold))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, WidgetVisualConstants.verticalPadding)

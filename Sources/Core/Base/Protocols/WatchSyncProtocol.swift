@@ -15,23 +15,23 @@ import Combine
 @MainActor
 public protocol WatchSyncProtocol: ObservableObject, Sendable {
     /// 最近接收到的文本
-    var lastReceivedText: String { get }
-    
+    var lastReceivedText: String { get set }
+
     /// 最近接收到的语音简报文本
     var latestBriefing: String? { get set }
-    
+
     /// 简报加载状态
     var isBriefingLoading: Bool { get set }
-    
+
     /// 向配对设备发送内容
     func sendContent(_ text: String)
-    
+
     /// 发送音频数据，支持分片传输与断点续传 (TC-WAT-03)
     func sendAudioData(_ data: Data, filename: String)
-    
+
     /// [Watch 端] 请求 iOS 端合成每日语音简报
     func requestDailyBriefing()
-    
+
     /// 内部调用：处理接收到的简报数据
     func handleBriefingResponse(_ text: String)
 }
@@ -42,6 +42,14 @@ extension WatchSyncProtocol {
     /// /// - Parameter data: data
     /// /// - Parameter filename: filename
     public func sendAudioData(_ data: Data, filename: String) {}
+
+    /// 处理接收到的 new_page 内容：更新 lastReceivedText 并广播通知。
+    /// 消除 iOS/Watch 两端 `didReceiveUserInfo` 中重复的
+    /// `lastReceivedText = content; NotificationCenter.post(.didReceiveWatchContent)` 模式。
+    public func handleReceivedPageContent(_ content: String) {
+        lastReceivedText = content
+        NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+    }
 }
 
 extension Notification.Name {

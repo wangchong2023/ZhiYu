@@ -186,11 +186,11 @@ public final class AppStore {
         sourceType: String? = nil,
         forceDeepScan _: Bool = false
     ) async -> KnowledgePage {
-        await delegateCreatePage(
+        await delegateCreatePage(CreatePageInput(
             title: title, pageType: pageType, customIcon: customIcon, content: content,
             tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
             fileSize: fileSize, sourceType: sourceType
-        )
+        ))
     }
 
     /// 获取Backlinks

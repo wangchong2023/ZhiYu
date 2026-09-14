@@ -179,7 +179,7 @@ extension ContentView {
     }
     
     // MARK: - TabViews
-    
+
     @available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *)
     @ViewBuilder
 
@@ -217,13 +217,7 @@ extension ContentView {
             }
             .accessibilityIdentifier("Graph")
         }
-        .tint(tintColor)
-        .onOpenURL { url in
-            if deepLinkService.handleURL(url) {
-                consumeDeepLink()
-            }
-        }
-        .commandPaletteSheet(isPresented: $showCommandPalette)
+        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $showCommandPalette, consumeDeepLink: consumeDeepLink)
         #endif
     }
     
@@ -273,13 +267,7 @@ extension ContentView {
                 }
                 .tag(AppTab.graph)
         }
-        .tint(tintColor)
-        .onOpenURL { url in
-            if deepLinkService.handleURL(url) {
-                consumeDeepLink()
-            }
-        }
-        .commandPaletteSheet(isPresented: $showCommandPalette)
+        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $showCommandPalette, consumeDeepLink: consumeDeepLink)
         #endif
     }
     

@@ -43,10 +43,8 @@ struct NavigationView: View {
             router.path = NavigationPath()
             renderNonce = UUID()
         }
-        .onReceive(NotificationCenter.default.publisher(for: Notification.Name.toggleSidebar)) { _ in
-            withAnimation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping)) {
-                columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-            }
+        .onToggleSidebar {
+            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
         }
     }
 }

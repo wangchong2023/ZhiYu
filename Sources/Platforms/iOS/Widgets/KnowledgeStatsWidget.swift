@@ -181,8 +181,7 @@ struct KnowledgeStatsWidgetEntryView: View {
                 vaultHeader(iconFont: .caption, titleFont: .caption.bold())
 
                 HStack(spacing: WidgetVisualConstants.spacingLarge) {
-                    WidgetMainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
-                    WidgetMainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
+                    WidgetVaultStatPair(pageCount: entry.pageCount, linkCount: entry.linkCount)
                 }
 
                 HStack(spacing: WidgetVisualConstants.spacingLarge) {
@@ -216,8 +215,7 @@ struct KnowledgeStatsWidgetEntryView: View {
                     vaultHeader(iconFont: .caption, titleFont: .caption.bold())
 
                     HStack(spacing: KnowledgeStatsMetrics.spacingXLarge) {
-                        WidgetMainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
-                        WidgetMainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
+                        WidgetVaultStatPair(pageCount: entry.pageCount, linkCount: entry.linkCount)
                         WidgetMainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
                     }
                 }
@@ -273,11 +271,8 @@ struct WidgetLargeAIButton: View {
 
     var body: some View {
         Link(destination: WidgetDeepLinkURL.resolve(url)) {
-            HStack(spacing: WidgetVisualConstants.spacingCompact) {
-                Image(systemName: "sparkles")
-                Text(label)
-            }
-            .font(.caption.bold())
+            WidgetLinkLabel(icon: "sparkles", label: label)
+                .font(.caption.bold())
             .foregroundStyle(.white)
             .padding(.horizontal, WidgetVisualConstants.edgePadding)
             .padding(.vertical, WidgetVisualConstants.verticalPadding)

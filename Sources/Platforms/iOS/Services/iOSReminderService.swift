@@ -24,6 +24,16 @@ private final class UnsafeBox<T>: @unchecked Sendable {
 
 /// iOS/macOS 提醒事项服务实现
 final class iOSReminderService: ReminderServiceProtocol, @unchecked Sendable {
+    /// 统一构造"无可用提醒日历"错误，消除 createReminder 中两处重复的
+    /// `NSError(domain:code:userInfo:)` 构造模式。
+    private static func makeNoCalendarError() -> NSError {
+        NSError(
+            domain: PlatformConstants.Reminder.errorDomain,
+            code: PlatformConstants.Reminder.notFoundErrorCode,
+            userInfo: [NSLocalizedDescriptionKey: L10n.Reminder.noListAvailableMessage]
+        )
+    }
+
     private let eventStore: EKEventStore
 
     // MARK: - 可注入的 EventKit 调用闭包（测试替换点）
@@ -94,11 +104,7 @@ final class iOSReminderService: ReminderServiceProtocol, @unchecked Sendable {
         // Bug #49 修复：创建前检查权限，未授权时抛错
         let granted = try await requestAccessHandler()
         guard granted else {
-            throw NSError(
-                domain: "ZhiYu.ReminderService",
-                code: PlatformConstants.Reminder.notFoundErrorCode,
-                userInfo: [NSLocalizedDescriptionKey: L10n.Reminder.noListAvailableMessage]
-            )
+            throw Self.makeNoCalendarError()
         }
 
         let reminder = EKReminder(eventStore: eventStore)
@@ -111,11 +117,7 @@ final class iOSReminderService: ReminderServiceProtocol, @unchecked Sendable {
             let calendars = calendarsHandler(.reminder)
             guard let firstCalendar = calendars.first else {
                 // Bug #50 修复：魔鬼数字 404 抽取为常量
-                throw NSError(
-                    domain: "ZhiYu.ReminderService",
-                    code: PlatformConstants.Reminder.notFoundErrorCode,
-                    userInfo: [NSLocalizedDescriptionKey: L10n.Reminder.noListAvailableMessage]
-                )
+                throw Self.makeNoCalendarError()
             }
             reminder.calendar = firstCalendar
         }

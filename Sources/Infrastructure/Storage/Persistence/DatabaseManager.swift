@@ -26,6 +26,24 @@ final class DatabaseManager: TestStateResettable {
     
     /// 全局唯一的线程安全单例实例。
     static let shared = DatabaseManager()
+
+    /// 解析 Application Support 目录下的默认数据库 URL。
+    /// 消除 `AppEnvironment.prepareDatabase` 与 `ContentView.triggerReverification` 中重复的
+    /// `urls(for: .applicationSupportDirectory, in: .userDomainMask).first` + `appendingPathComponent(databaseName)` 模式。
+    /// - Returns: 默认沙盒数据库文件 URL。
+    /// - Throws: 当 Application Support 目录不可用时抛出 `NSError`。
+    static func defaultSandboxDatabaseURL() throws -> URL {
+        guard let appSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first else {
+            throw NSError(
+                domain: CoreConstants.ErrorDomain.insight,
+                code: SystemConstants.ErrorCode.default
+            )
+        }
+        return appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
+    }
     
     /// 数据库中枢当前的运行状态。
     private(set) var state: DatabaseState = .uninitialized {

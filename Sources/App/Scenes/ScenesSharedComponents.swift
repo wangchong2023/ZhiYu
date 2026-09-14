@@ -171,3 +171,72 @@ extension View {
         modifier(GlobalSheetThemeModifier())
     }
 }
+
+// MARK: - 侧栏切换修饰符
+
+/// 侧栏切换修饰符
+/// 统一封装 `onReceive(toggleSidebar) + withAnimation(spring)` 模式，
+/// 消除 ContentView 与 NavigationView 中重复的侧栏切换动画代码。
+struct ToggleSidebarModifier: ViewModifier {
+    /// 侧栏切换动作（由调用方提供具体的状态变更逻辑）
+    let action: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name.toggleSidebar)) { _ in
+                withAnimation(.spring(
+                    response: DesignSystem.Animation.springResponse,
+                    dampingFraction: DesignSystem.Animation.springDamping
+                )) {
+                    action()
+                }
+            }
+    }
+}
+
+extension View {
+    /// 监听 `toggleSidebar` 通知并执行侧栏切换动画
+    func onToggleSidebar(perform action: @escaping () -> Void) -> some View {
+        modifier(ToggleSidebarModifier(action: action))
+    }
+}
+
+// MARK: - TabView 通用修饰符
+
+/// TabView 通用修饰符
+/// 统一封装 `tint + onOpenURL(deepLink) + commandPaletteSheet` 三件套，
+/// 消除 modernTabView 与 legacyTabView 末尾重复的修饰器链。
+struct TabViewCommonModifiers: ViewModifier {
+    let tintColor: Color
+    let deepLinkService: DeepLinkService
+    @Binding var showCommandPalette: Bool
+    let consumeDeepLink: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .tint(tintColor)
+            .onOpenURL { url in
+                if deepLinkService.handleURL(url) {
+                    consumeDeepLink()
+                }
+            }
+            .commandPaletteSheet(isPresented: $showCommandPalette)
+    }
+}
+
+extension View {
+    /// 应用 TabView 通用修饰符（tint + deepLink + commandPalette）
+    func applyTabViewCommonModifiers(
+        tintColor: Color,
+        deepLinkService: DeepLinkService,
+        showCommandPalette: Binding<Bool>,
+        consumeDeepLink: @escaping () -> Void
+    ) -> some View {
+        modifier(TabViewCommonModifiers(
+            tintColor: tintColor,
+            deepLinkService: deepLinkService,
+            showCommandPalette: showCommandPalette,
+            consumeDeepLink: consumeDeepLink
+        ))
+    }
+}
