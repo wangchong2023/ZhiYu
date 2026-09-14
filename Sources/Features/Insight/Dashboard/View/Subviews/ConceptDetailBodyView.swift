@@ -49,36 +49,19 @@ struct ConceptDetailBodyView: View {
             // 3. 知识脉络树 (Outlines Tree)
             outlinesTreeSection
             
-            Divider()
-                .opacity(DesignSystem.softOpacity)
-            
-            // 4. 正文详情展示
-            DetailBodyMarkdownSection(
-                content: bodyText.isEmpty ? page.content : bodyText,
-                isPrivate: page.isPrivate,
-                onLinkTap: onLinkTap
-            )
+            DetailBodyEpilogue(page: page, bodyText: bodyText, onLinkTap: onLinkTap)
         }
         .onAppear {
-            parseMarkdownData()
-        }
-    }
-    
-    /// 解析 Markdown 及头部元数据
-    private func parseMarkdownData() {
-        let (fmStr, bodyPart) = FrontmatterParser.split(content: page.content)
-        self.bodyText = bodyPart
-        if let fm = fmStr, let decoded = FrontmatterParser.parse(ConceptFrontmatter.self, from: fm) {
-            self.frontmatter = decoded
+            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: ConceptFrontmatter.self)
+            self.bodyText = result.bodyText
+            self.frontmatter = result.frontmatter
         }
     }
     
     // MARK: - 1. 局部关系脑图 (Local Relation Graph)
     private var localRelationGraphSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Graph.title, systemImage: "point.3.connected.trianglepath.dotted")
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Graph.title, icon: "point.3.connected.trianglepath.dotted")
             
             ZStack {
                 // 脑图背景卡片
@@ -182,9 +165,7 @@ struct ConceptDetailBodyView: View {
     // MARK: - 2. 认知碰撞卡 (Surprising Insights)
     private func insightsSection(_ insights: [ConceptFrontmatter.SurprisingInsight]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Dashboard.stats.citationAccuracy, systemImage: DesignSystem.Icons.sparkles)
-                .font(.subheadline.bold())
-                .foregroundStyle(Color.theme.orange)
+            InsightSectionHeader(title: L10n.Dashboard.stats.citationAccuracy, icon: DesignSystem.Icons.sparkles, color: Color.theme.orange)
             
             ForEach(insights, id: \.insightTitle) { insight in
                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -226,9 +207,7 @@ struct ConceptDetailBodyView: View {
     // MARK: - 3. 知识脉络树 (Outlines Tree)
     private var outlinesTreeSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Editor.toc, systemImage: DesignSystem.Icons.listBulletIndent)
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Editor.toc, icon: DesignSystem.Icons.listBulletIndent)
             
             if let outlines = frontmatter?.outlines, !outlines.isEmpty {
                 // 如果 Frontmatter 解析出了层级大纲
@@ -259,12 +238,7 @@ struct ConceptDetailBodyView: View {
                         }
                     }
                 }
-                .cardStyle(
-                    horizontalPadding: DesignSystem.standardPadding,
-                    verticalPadding: DesignSystem.standardPadding,
-                    backgroundOpacity: DesignSystem.Opacity.subtle,
-                    cornerRadius: DesignSystem.standardRadius
-                )
+                .insightOutlineCardStyle()
             } else {
                 // 降级兜底：扫描 Markdown 的 Header 来生成动态大纲
                 let derivedOutlines = deriveOutlinesFromMarkdown()
@@ -289,12 +263,7 @@ struct ConceptDetailBodyView: View {
                             }
                         }
                     }
-                    .cardStyle(
-                        horizontalPadding: DesignSystem.standardPadding,
-                        verticalPadding: DesignSystem.standardPadding,
-                        backgroundOpacity: DesignSystem.Opacity.subtle,
-                        cornerRadius: DesignSystem.standardRadius
-                    )
+                    .insightOutlineCardStyle()
                 }
             }
         }

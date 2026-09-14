@@ -124,13 +124,7 @@ struct PageDetailMetadataSection: View {
                         }
                     }
                 }
-                .accentGradientCardStyle(
-                    cornerRadius: DesignSystem.largeRadius,
-                    backgroundOpacity: DesignSystem.Opacity.atomic,
-                    borderWidth: SystemStroke.divider,
-                    borderOpacity: DesignSystem.Opacity.medium
-                )
-                .padding()
+                .aiRecommendationCardStyle(verticalPadding: DesignSystem.standardPadding)
             }
         }
     }
@@ -191,11 +185,7 @@ struct PageDetailMetadataSection: View {
     /// 页面类型图标：displayIcon + 颜色背景 + 圆角裁剪
     @ViewBuilder
     private func pageTypeIcon(page: KnowledgePage) -> some View {
-        Image(systemName: page.displayIcon)
-            .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
-            .frame(width: DesignSystem.IconSize.medium, height: DesignSystem.IconSize.medium)
-            .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignSystem.Opacity.glass))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+        InsightPageTypeIcon(page: page, size: DesignSystem.IconSize.medium)
     }
 
     /// 前进箭头：Spacer + forward 图标

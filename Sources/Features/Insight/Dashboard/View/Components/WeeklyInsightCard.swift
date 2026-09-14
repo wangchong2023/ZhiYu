@@ -68,21 +68,26 @@ struct WeeklyInsightCard: View {
                     // 核心指标 (奖牌化设计)
                     VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
                         HStack(spacing: DesignSystem.Metrics.sectionSpacing) { // 24
-                            InsightStat(label: L10n.Common.Stats.newPages, value: "\(insight.totalNewPages)", icon: DesignSystem.Icons.docBadgePlus, color: .blue)
+                            InsightMetricCard(title: L10n.Common.Stats.newPages, value: "\(insight.totalNewPages)", icon: DesignSystem.Icons.docBadgePlus, color: .blue, layout: .weekly)
                             Divider().frame(height: WeeklyCardConstants.dividerHeight) // 36
-                            InsightStat(label: L10n.Common.Stats.growth, value: insight.growthTraction, icon: DesignSystem.Icons.chartLine, color: .green)
+                            InsightMetricCard(title: L10n.Common.Stats.growth, value: insight.growthTraction, icon: DesignSystem.Icons.chartLine, color: .green, layout: .weekly)
                         }
                         
                         if !insight.topKeywords.isEmpty {
                             FlowLayout(spacing: DesignSystem.small) {
                                 ForEach(Array(Set(insight.topKeywords)).sorted(), id: \.self) { tag in
-                                    Text("#\(tag)")
-                                        .font(DesignSystem.caption2Font) // 11
-                                        .padding(.horizontal, SystemSpacing.elementLarge) // 10
-                                        .padding(.vertical, SystemSpacing.small) // 6
-                                        .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
-                                        .foregroundStyle(.appAccent)
-                                        .clipShape(Capsule())
+                                    InsightTagChip(
+                                        text: tag,
+                                        hashPrefix: true,
+                                        foregroundColor: .appAccent,
+                                        font: DesignSystem.caption2Font,
+                                        style: InsightTagChipStyle(
+                                            backgroundColor: .appAccent,
+                                            backgroundOpacity: DesignSystem.glassOpacity,
+                                            borderColor: .clear,
+                                            borderOpacity: 0
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -182,36 +187,6 @@ struct WeeklyInsightCard: View {
 }
 
 /// 周报指标项小组件
-struct InsightStat: View {
-    let label: String
-    let value: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: icon)
-                .font(.system(size: DesignSystem.Metrics.iconBoxSize / 2, weight: .semibold)) // 20
-                .foregroundStyle(color)
-                .frame(width: ComponentSpacing.buttonHeight, height: ComponentSpacing.buttonHeight) // 44
-                .background(
-                    Circle()
-                        .fill(color.opacity(SystemOpacity.glass))
-                        .overlay(Circle().stroke(color.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth))
-                )
-            
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                Text(value)
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.appText)
-                Text(label)
-                    .font(.caption)
-                    .foregroundStyle(.appSecondary)
-            }
-        }
-    }
-}
-
 /// 知识周报详情全屏视图
 struct WeeklyReportView: View {
     @Environment(AppStore.self) var store

@@ -341,48 +341,30 @@ struct PageDetailView: View {
     }
 
     private func sourceCitationLinkButton(url: String, coordinator: PageDetailCoordinator) -> some View {
-        Group {
-            if coordinator.page.isLocalFileSource {
-                Button(action: {
-                    pasteboard.string = url
+        InsightSourceButton(
+            sourceURL: url,
+            displaySourceIcon: coordinator.page.displaySourceIcon,
+            displaySourceName: coordinator.page.displaySourceName,
+            isLocalFile: coordinator.page.isLocalFileSource,
+            copiedURL: copiedUrl,
+            onCopy: { _ in
+                pasteboard.string = url
+                withAnimation(.spring()) {
+                    self.copiedUrl = url
+                }
+                Task {
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
                     withAnimation(.spring()) {
-                        copiedUrl = url
-                    }
-                    Task {
-                        try? await Task.sleep(nanoseconds: 2_000_000_000)
-                        withAnimation(.spring()) {
-                            if copiedUrl == url {
-                                copiedUrl = nil
-                            }
+                        if self.copiedUrl == url {
+                            self.copiedUrl = nil
                         }
                     }
-                }) {
-                    HStack(spacing: DesignSystem.tiny) {
-                        Image(systemName: coordinator.page.displaySourceIcon)
-                            .font(.caption2)
-                        Text(copiedUrl == url ? L10n.Knowledge.Page.Source.copied : "\(coordinator.page.displaySourceName) (\(L10n.Knowledge.Page.Source.copyPath))")
-                            .font(.caption)
-                            .lineLimit(1)
-                    }
-                    .foregroundStyle(Color.theme.blue)
                 }
-                .buttonStyle(.plain)
-            } else {
-                Button(action: {
-                    guard let urlObject = URL(string: url) else { return }
-                    Task { await urlOpener.open(urlObject) }
-                }) {
-                    HStack(spacing: DesignSystem.tiny) {
-                        Image(systemName: coordinator.page.displaySourceIcon)
-                            .font(.caption2)
-                        Text(coordinator.page.displaySourceName)
-                            .font(.caption)
-                            .lineLimit(1)
-                    }
-                    .foregroundStyle(Color.theme.blue)
-                }
+            },
+            onOpen: { urlObject in
+                Task { await urlOpener.open(urlObject) }
             }
-        }
+        )
     }
 
     private func navigateToPage(_ title: String) {
@@ -425,13 +407,7 @@ struct PageDetailView: View {
                         }
                     }
                 }
-                .accentGradientCardStyle(
-                    cornerRadius: DesignSystem.largeRadius,
-                    backgroundOpacity: DesignSystem.Opacity.atomic,
-                    borderWidth: SystemStroke.divider,
-                    borderOpacity: DesignSystem.Opacity.medium
-                )
-                .padding(.vertical, DesignSystem.small)
+                .aiRecommendationCardStyle()
             } else if coordinator.hasScannedForLinks {
                 VStack(alignment: .leading, spacing: DesignSystem.medium) {
                     HStack(spacing: DesignSystem.small) {

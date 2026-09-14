@@ -68,21 +68,23 @@ struct KnowledgeDashboardView: View {
     private var metricSection: some View {
         // 1. 核心指标概览
         HStack(spacing: DesignSystem.Grid.standardSpacing) {
-            MetricBox(
-                title: L10n.Dashboard.totalPages, 
-                value: "\(store.pages.count)", 
-                unit: L10n.Dashboard.pageListPages, 
-                icon: DesignSystem.Icons.documentFill, 
+            InsightMetricCard(
+                title: L10n.Dashboard.totalPages,
+                value: "\(store.pages.count)",
+                icon: DesignSystem.Icons.documentFill,
                 color: .appAccent,
-                trend: nil
+                unit: L10n.Dashboard.pageListPages,
+                trend: nil,
+                layout: .dashboard
             )
-            MetricBox(
-                title: L10n.Dashboard.totalLinks, 
-                value: "\(coordinator.totalLinks)", 
-                unit: L10n.Dashboard.pageListLinks, 
-                icon: DesignSystem.Icons.network, 
+            InsightMetricCard(
+                title: L10n.Dashboard.totalLinks,
+                value: "\(coordinator.totalLinks)",
+                icon: DesignSystem.Icons.network,
                 color: .appConcept,
-                trend: nil
+                unit: L10n.Dashboard.pageListLinks,
+                trend: nil,
+                layout: .dashboard
             )
         }
     }
@@ -91,15 +93,7 @@ struct KnowledgeDashboardView: View {
         // 2. 连接密度图表 (语义分块质量)
         VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
             // 标题 (边框外左上角)
-            HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.network)
-                    .font(.caption)
-                    .foregroundStyle(.appAccent)
-                Text(L10n.Dashboard.density)
-                    .font(.headline)
-                Button(action: { showDensityInfo.toggle() }) {
-                    infoButtonIcon(DesignSystem.Icons.info)
-                }
+            InsightDashboardSectionTitle(icon: DesignSystem.Icons.network, title: L10n.Dashboard.density, infoAction: { showDensityInfo.toggle() })
                 .buttonStyle(.plain)
                 
                 Spacer()
@@ -298,13 +292,7 @@ struct KnowledgeDashboardView: View {
     private var hotTopicsSection: some View {
         // 4. 热门领域 (PageType 分布)
         VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-            HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.grid)
-                    .font(.caption)
-                    .foregroundStyle(.appAccent)
-                Text(L10n.Dashboard.hotTopics)
-                    .font(.headline)
-            }
+            InsightDashboardSectionTitle(icon: DesignSystem.Icons.grid, title: L10n.Dashboard.hotTopics)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.Grid.standardSpacing) {
                 // 遍历用户可见页面类型，屏蔽 raw 选项的统计
@@ -341,90 +329,6 @@ struct KnowledgeDashboardView: View {
 }
 
 // MARK: - 辅助组件
-
-/// 指标卡片
-struct MetricBox: View {
-    let title: String
-    let value: String
-    let unit: String?
-    let icon: String
-    let color: Color
-    var trend: String?
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.contentMedium) { // 14pt
-            HStack {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(DesignSystem.glassOpacity))
-                        .frame(width: DesignSystem.Timeline.indicatorSize, height: DesignSystem.Timeline.indicatorSize) // 36pt
-                    Image(systemName: icon)
-                        .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
-                        .foregroundColor(color)
-                }
-                
-                Spacer()
-                
-                if let trend = trend {
-                    HStack(spacing: DesignSystem.atomic) {
-                        Image(systemName: DesignSystem.Icons.arrowUpRightSimple)
-                        Text(trend)
-                    }
-                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.theme.green)
-                    .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-                    .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                    .background(Color.theme.green.opacity(DesignSystem.glassOpacity))
-                    .clipShape(Capsule())
-                }
-            }
-            
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                Text(title)
-                    .font(.system(size: DesignSystem.captionFontSize, weight: .medium))
-                    .foregroundColor(.appSecondary)
-                
-                HStack(alignment: .firstTextBaseline, spacing: DesignSystem.tiny) {
-                    Text(value)
-                        .font(.system(size: DesignSystem.Metrics.heroValueSize, weight: .bold, design: .rounded))
-                        .foregroundColor(.appText)
-                    
-                    if let unit = unit {
-                        Text(unit)
-                            .font(.caption2)
-                            .foregroundColor(.appSecondary)
-                    }
-                }
-            }
-        }
-        .padding(DesignSystem.standardPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial.opacity(DesignSystem.Opacity.prominent))
-        .background(
-            ZStack {
-                Color.appCard.opacity(DesignSystem.Opacity.disabled)
-                LinearGradient(
-                    colors: [color.opacity(DesignSystem.Opacity.subtle), .clear],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            }
-        )
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Metrics.dashboardRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.Metrics.dashboardRadius)
-                .stroke(
-                    LinearGradient(
-                        colors: [.appBorder.opacity(DesignSystem.Opacity.dim), .appBorder.opacity(DesignSystem.Opacity.subtle)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: DesignSystem.borderWidth
-                )
-        )
-        .appStandardShadow()
-    }
-}
 
 /// 热门领域勋章 (横向卡片)
 struct HotTopicMedal: View {

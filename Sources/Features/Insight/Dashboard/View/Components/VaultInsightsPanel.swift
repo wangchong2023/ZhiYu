@@ -37,9 +37,9 @@ struct VaultInsightsPanel: View {
                 
                 // 2. 核心统计指标
                 HStack(spacing: DesignSystem.standardPadding) {
-                    StatBox(label: L10n.Dashboard.stats.short.pages, value: "\(store.totalPages)", color: .appAccent)
-                    StatBox(label: L10n.Dashboard.stats.short.new, value: FeatureConstants.StatDisplayValue.newPagesDelta, color: Color.theme.green)
-                    StatBox(label: L10n.Dashboard.stats.short.ref, value: FeatureConstants.StatDisplayValue.refPercent, color: Color.theme.orange)
+                    InsightMetricCard(title: L10n.Dashboard.stats.short.pages, value: "\(store.totalPages)", icon: DesignSystem.Icons.documentFill, color: .appAccent, layout: .vault)
+                    InsightMetricCard(title: L10n.Dashboard.stats.short.new, value: FeatureConstants.StatDisplayValue.newPagesDelta, icon: DesignSystem.Icons.plus, color: Color.theme.green, layout: .vault)
+                    InsightMetricCard(title: L10n.Dashboard.stats.short.ref, value: FeatureConstants.StatDisplayValue.refPercent, icon: DesignSystem.Icons.link, color: Color.theme.orange, layout: .vault)
                 }
                 
                 // 3. 模拟图表：分类分布
@@ -80,26 +80,6 @@ struct VaultInsightsPanel: View {
 }
 
 // MARK: - Subviews
-private struct StatBox: View {
-    let label: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: DesignSystem.tiny) {
-            Text(label)
-                .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(size: DesignSystem.title2FontSize, weight: .bold, design: .monospaced))
-                .foregroundStyle(color)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, DesignSystem.medium)
-        .appContainer(background: Color.appCard.opacity(DesignSystem.surfaceOpacity), padding: false)
-    }
-}
-
 private struct BarItem: View {
     let label: String
     let value: CGFloat

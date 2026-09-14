@@ -39,32 +39,16 @@ struct SourceDetailBodyView: View {
             // 2. 提取关系溯源链 (Extraction Lineage)
             extractionLineageSection
             
-            Divider()
-                .opacity(DesignSystem.softOpacity)
-            
-            // 3. 正文转录详细内容区
-            DetailBodyMarkdownSection(
-                title: L10n.Ingest.PDF.contentPreview,
-                content: bodyText.isEmpty ? page.content : bodyText,
-                isPrivate: page.isPrivate,
-                onLinkTap: onLinkTap
-            )
+            DetailBodyEpilogue(page: page, bodyText: bodyText, onLinkTap: onLinkTap, sectionTitle: L10n.Ingest.PDF.contentPreview)
         }
         .onAppear {
-            parseMarkdownData()
+            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: SourceFrontmatter.self)
+            self.bodyText = result.bodyText
+            self.frontmatter = result.frontmatter
         }
         .onDisappear {
             timer?.invalidate()
             timer = nil
-        }
-    }
-    
-    /// 解析 Markdown 及头部 Frontmatter
-    private func parseMarkdownData() {
-        let (fmStr, bodyPart) = FrontmatterParser.split(content: page.content)
-        self.bodyText = bodyPart
-        if let fm = fmStr, let decoded = FrontmatterParser.parse(SourceFrontmatter.self, from: fm) {
-            self.frontmatter = decoded
         }
     }
     
@@ -166,9 +150,7 @@ struct SourceDetailBodyView: View {
     /// OCR 扫描图片文字窗口
     private var ocrCanvasWindow: some View {
         VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            Label(L10n.Ingest.OCR.previewTitle, systemImage: DesignSystem.Icons.viewfinder)
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Ingest.OCR.previewTitle, icon: DesignSystem.Icons.viewfinder)
             
             ZStack {
                 // 毛玻璃渐变大卡底板，模拟照片画板
@@ -248,9 +230,7 @@ struct SourceDetailBodyView: View {
         return Group {
             if !refs.isEmpty {
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    Label(L10n.Ingest.resultTitle, systemImage: DesignSystem.Icons.sparkles)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.appAccent)
+                    InsightSectionHeader(title: L10n.Ingest.resultTitle, icon: DesignSystem.Icons.sparkles, color: .appAccent)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: Spacing.small) {
@@ -260,19 +240,18 @@ struct SourceDetailBodyView: View {
                                 }) {
                                     HStack(spacing: Spacing.atomic) {
                                         Image(systemName: ref.type == FeatureConstants.SourceType.concept ? DesignSystem.Icons.library : DesignSystem.Icons.entity)
-                                            .font(.system(size: SystemFontSize.nano)) // Dynamic Type
+                                            .font(.system(size: SystemFontSize.nano))
                                         Text(ref.name)
                                             .font(.caption2.bold())
                                     }
                                     .foregroundStyle(ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal : Color.theme.yellow)
-                                    .padding(.horizontal, Spacing.Chip.horizontalPadding)
-                                    .padding(.vertical, Spacing.atomic)
-                                    .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                                    .clipShape(Capsule())
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal.opacity(DesignSystem.Opacity.disabled) : Color.theme.yellow.opacity(DesignSystem.Opacity.disabled), lineWidth: SystemStroke.divider)
-                                    )
+                                    .insightTagChipStyle(InsightTagChipStyle(
+                                        backgroundColor: .appCard,
+                                        backgroundOpacity: DesignSystem.Opacity.subtle,
+                                        borderColor: ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal : Color.theme.yellow,
+                                        borderOpacity: DesignSystem.Opacity.disabled,
+                                        borderWidth: SystemStroke.divider
+                                    ))
                                 }
                                 .buttonStyle(.plain)
                             }

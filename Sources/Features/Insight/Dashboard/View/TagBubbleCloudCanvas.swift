@@ -170,12 +170,9 @@ struct TagBubbleCloudCanvas: View {
         )
     }
 
-    /// 归一化气泡比例：基于计数列表计算 (count - min) / (max - min)
+    /// 归一化气泡比例：委托至 TagBubbleRatioCalculator 统一实现
     static func normalizedBubbleRatio(for count: Int, counts: [Int], zeroDiffFallback: Double) -> Double {
-        guard let maxVal = counts.max(), let minVal = counts.min() else { return 0.0 }
-        let diff = maxVal - minVal
-        guard diff > 0 else { return zeroDiffFallback }
-        return Double(count - minVal) / Double(diff)
+        TagBubbleRatioCalculator.calculate(for: count, from: counts, defaultRatio: zeroDiffFallback)
     }
 }
 

@@ -53,16 +53,9 @@ struct ComparisonDetailBodyView: View {
             )
         }
         .onAppear {
-            parseMarkdownData()
-        }
-    }
-    
-    /// 解析 Markdown 及头部 Frontmatter
-    private func parseMarkdownData() {
-        let (fmStr, bodyPart) = FrontmatterParser.split(content: page.content)
-        self.bodyText = bodyPart
-        if let fm = fmStr, let decoded = FrontmatterParser.parse(ComparisonFrontmatter.self, from: fm) {
-            self.frontmatter = decoded
+            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: ComparisonFrontmatter.self)
+            self.bodyText = result.bodyText
+            self.frontmatter = result.frontmatter
         }
     }
     
@@ -117,9 +110,7 @@ struct ComparisonDetailBodyView: View {
         dimensions: [ComparisonFrontmatter.ComparisonDimension]
     ) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Dashboard.stats.title, systemImage: DesignSystem.Icons.grid) // 对比指标网格标签
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Dashboard.stats.title, icon: DesignSystem.Icons.grid)
             
             // 只取前 3 个 Subjects 进行网格排列，防止横向溢出
             let displaySubjects = subjects.prefix(Self.maxSubjectsCount)

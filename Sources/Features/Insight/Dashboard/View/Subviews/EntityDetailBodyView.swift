@@ -42,27 +42,12 @@ struct EntityDetailBodyView: View {
                 overviewSection(overview)
             }
             
-            Divider()
-                .opacity(DesignSystem.softOpacity)
-            
-            // 4. 详细内容渲染
-            DetailBodyMarkdownSection(
-                content: bodyText.isEmpty ? page.content : bodyText,
-                isPrivate: page.isPrivate,
-                onLinkTap: onLinkTap
-            )
+            DetailBodyEpilogue(page: page, bodyText: bodyText, onLinkTap: onLinkTap)
         }
         .onAppear {
-            parseMarkdownData()
-        }
-    }
-    
-    /// 解析 Markdown 数据及头部 Frontmatter
-    private func parseMarkdownData() {
-        let (fmStr, bodyPart) = FrontmatterParser.split(content: page.content)
-        self.bodyText = bodyPart
-        if let fm = fmStr, let decoded = FrontmatterParser.parse(EntityFrontmatter.self, from: fm) {
-            self.frontmatter = decoded
+            let result = DetailBodyFrontmatterHelper.parse(content: page.content, frontmatterType: EntityFrontmatter.self)
+            self.bodyText = result.bodyText
+            self.frontmatter = result.frontmatter
         }
     }
     
@@ -106,20 +91,14 @@ struct EntityDetailBodyView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.small) {
                         ForEach(aliasList, id: \.self) { alias in
-                            HStack(spacing: Spacing.atomic) {
-                                Image(systemName: DesignSystem.Icons.pencilClipboard)
-                                    .font(.system(size: SystemFontSize.nano)) // Dynamic Type
-                                Text(alias)
-                                    .font(.caption2.bold())
-                            }
-                            .foregroundStyle(.appSecondary)
-                            .padding(.horizontal, Spacing.Chip.horizontalPadding)
-                            .padding(.vertical, Spacing.atomic)
-                            .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                            InsightTagChip(
+                                text: alias,
+                                icon: DesignSystem.Icons.pencilClipboard,
+                                foregroundColor: .appSecondary,
+                                style: InsightTagChipStyle(
+                                    backgroundColor: .appCard,
+                                    backgroundOpacity: DesignSystem.Opacity.subtle
+                                )
                             )
                         }
                     }
@@ -131,9 +110,7 @@ struct EntityDetailBodyView: View {
     // MARK: - 2. 百科属性网格面板 (Wiki InfoBox)
     private func wikiInfoBoxSection(_ items: [EntityFrontmatter.InfoBoxItem]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Onboarding.featureTitle, systemImage: DesignSystem.Icons.macwindowBadgePlus) // 百科特征标签
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Onboarding.featureTitle, icon: DesignSystem.Icons.macwindowBadgePlus)
             
             LazyVGrid(columns: Self.columns, spacing: Spacing.medium) {
                 ForEach(items, id: \.key) { item in
@@ -156,9 +133,7 @@ struct EntityDetailBodyView: View {
     // MARK: - 3. 内容概述大纲 (Overview)
     private func overviewSection(_ items: [String]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Editor.outline, systemImage: DesignSystem.Icons.docTextBelowEcg)
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Editor.outline, icon: DesignSystem.Icons.docTextBelowEcg)
             
             VStack(alignment: .leading, spacing: Spacing.small) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, overviewItem in

@@ -46,18 +46,11 @@ extension TagCloudViewContent {
     }
 
     var emptyTagsView: some View {
-        VStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.tag)
-                .font(.system(size: DesignSystem.iconHuge))
-                .foregroundStyle(.appSecondary)
-            Text(L10n.Tag.Action.noTags)
-                .font(.subheadline)
-                .foregroundStyle(.appSecondary)
-            Text(L10n.Tag.Action.noTagsHint)
-                .font(.caption)
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.subtleOpacity))
-                .multilineTextAlignment(.center)
-        }
+        InsightEmptyState(
+            icon: DesignSystem.Icons.tag,
+            title: L10n.Tag.Action.noTags,
+            hint: L10n.Tag.Action.noTagsHint
+        )
         .frame(maxHeight: .infinity)
     }
 

@@ -154,39 +154,13 @@ struct TagCapsuleView: View {
     @ViewBuilder
     private func buttonContent(isSelected: Bool) -> some View {
         Button(action: {
-            withAnimation(DesignSystem.Animation.prominent) {
-                if coordinator.isEditMode {
-                    if coordinator.selectedTagsForBulk.contains(item.tag) {
-                        coordinator.selectedTagsForBulk.remove(item.tag)
-                    } else {
-                        coordinator.selectedTagsForBulk.insert(item.tag)
-                    }
-                } else {
-                    coordinator.selectedTag = coordinator.selectedTag == item.tag ? nil : item.tag
-                }
-            }
-            HapticFeedback.shared.trigger(.selection)
+            InsightTagInteractions.toggleSelection(tag: item.tag, coordinator: coordinator)
         }) {
             labelContent(isSelected: isSelected)
         }
         .buttonStyle(.plain)
         .foregroundStyle(isSelected ? .appAccent : .appText)
-        .contextMenu {
-            if !coordinator.isEditMode {
-                Button(action: {
-                    coordinator.tagToRename = item.tag
-                    coordinator.newTagName = item.tag
-                }) {
-                    Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
-                }
-                Button(role: .destructive, action: {
-                    coordinator.tagToDelete = item.tag
-                    coordinator.showDeleteConfirm = true
-                }) {
-                    Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
-                }
-            }
-        }
+        .tagManagementContextMenu(tag: item.tag, coordinator: coordinator)
     }
 
     // ── 共享 Label 内部渲染 ──
@@ -221,12 +195,13 @@ struct TagCapsuleView: View {
             HStack(spacing: DesignSystem.Layout.listRowSpacing) {
                 tagTitleText(isSelected: isSelected)
 
-                Text("\(item.count)")
-                    .font(.system(size: DesignSystem.microFontSize, weight: .bold, design: .monospaced))
-                    .padding(.horizontal, SystemSpacing.tiny)
-                    .padding(.vertical, SystemSpacing.divider)
-                    .background(isSelected ? Color.appAccent.opacity(SystemOpacity.glass) : Color.appSecondary.opacity(SystemOpacity.ghost))
-                    .clipShape(Capsule())
+                InsightTagCountBadge(
+                    count: item.count,
+                    fontSize: DesignSystem.microFontSize,
+                    isSelected: isSelected,
+                    selectedColor: Color.appAccent.opacity(SystemOpacity.glass),
+                    unselectedColor: Color.appSecondary.opacity(SystemOpacity.ghost)
+                )
             }
             .padding(.horizontal, paddingH)
             .padding(.vertical, paddingV)

@@ -95,11 +95,7 @@ struct BacklinksView: View {
                 .font(.caption)
                 .foregroundStyle(arrowColor)
 
-            Image(systemName: page.displayIcon)
-                .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
-                .frame(width: DesignSystem.IconSize.medium, height: DesignSystem.IconSize.medium)
-                .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignSystem.Opacity.glass))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+            InsightPageTypeIcon(page: page, size: DesignSystem.IconSize.medium)
 
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                 Text(page.title)

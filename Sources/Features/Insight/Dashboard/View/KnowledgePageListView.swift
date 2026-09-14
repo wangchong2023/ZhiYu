@@ -287,45 +287,14 @@ struct KnowledgePageListContent: View {
     
     @ViewBuilder
     private var searchBarSection: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.search)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(.appAccent)
-            
-            TextField(L10n.SearchPlaceholder, text: $searchText)
-                .textFieldStyle(.plain)
-                .font(.subheadline)
-                .foregroundStyle(.appText)
-                .accessibilityIdentifier("searchPlaceholder")
-                .submitLabel(.search)
-                .onSubmit {
-                    if !searchText.isEmpty {
-                        triggerSearch(query: searchText)
-                    }
-                }
-
-            if !searchText.isEmpty {
-                Button(action: { 
-                    searchText = ""
-                    triggerSearch(query: "")
-                }) {
-                    Image(systemName: DesignSystem.Icons.errorCircle)
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .borderedCardStyle(
-            horizontalPadding: DesignSystem.standardPadding,
-            verticalPadding: SystemSpacing.elementLarge,
-            backgroundOpacity: DesignSystem.Opacity.dim,
-            cornerRadius: DesignSystem.mediumRadius,
-            borderWidth: DesignSystem.borderWidth,
-            borderColor: .appAccent,
-            borderOpacity: DesignSystem.Opacity.medium
+        InsightSearchBar(
+            placeholder: L10n.SearchPlaceholder,
+            text: $searchText,
+            onSubmit: { triggerSearch(query: searchText) },
+            accessibilityIdentifier: "searchPlaceholder",
+            horizontalPadding: DesignSystem.tiny,
+            bottomPadding: DesignSystem.tiny
         )
-        .padding(.horizontal, DesignSystem.tiny)
-        .padding(.bottom, DesignSystem.tiny)
     }
 }
 
