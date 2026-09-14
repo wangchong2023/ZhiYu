@@ -57,16 +57,10 @@ extension AppStore: AnyPageStore {
         fileSize: Int64?,
         sourceType: String?
     ) async throws -> KnowledgePage {
-        await knowledgeStore.createPage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
+        await delegateCreatePage(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType
         )
     }
 
@@ -83,6 +77,25 @@ extension AppStore: AnyPageStore {
         sourceType: String?,
         forceDeepScan: Bool
     ) async -> KnowledgePage? {
+        await delegateCreatePage(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType
+        )
+    }
+
+    /// 统一委托 knowledgeStore.createPage 的参数转发，消除 createPage 与 anyCreatePage 间的重复调用链。
+    private func delegateCreatePage(
+        title: String,
+        pageType: PageType,
+        customIcon: String?,
+        content: String,
+        tags: [String],
+        sourceURL: String?,
+        rawSnippet: String?,
+        fileSize: Int64?,
+        sourceType: String?
+    ) async -> KnowledgePage {
         await knowledgeStore.createPage(
             title: title,
             pageType: pageType,

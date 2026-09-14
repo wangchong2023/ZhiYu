@@ -133,6 +133,37 @@ class Graph3DCoordinatorBase: NSObject {
     func cameraNode(in scnView: SCNView) -> SCNNode? {
         scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true)
     }
+
+    /// 统一执行 Tap 命中检测，消除 iOS/macOS handleTap 的重复 guard + hitTest 调用。
+    func performTap(in scnView: SCNView, location: CGPoint) {
+        performTapHitTest(location: location, in: scnView, onNodeTap: onNodeTap)
+    }
+
+    /// 统一执行 Pan 旋转，消除 iOS/macOS handlePan 的重复 guard + translation 提取。
+    func performPan(in scnView: SCNView, translationX: CGFloat, translationY: CGFloat, isChanged: Bool, isEnded: Bool) {
+        guard let cameraNode = cameraNode(in: scnView) else { return }
+        applyPanRotation(
+            translationX: translationX,
+            translationY: translationY,
+            isChanged: isChanged,
+            isEnded: isEnded,
+            cameraNode: cameraNode,
+            currentAngleX: &currentAngleX,
+            currentAngleY: &currentAngleY
+        )
+    }
+
+    /// 统一执行 Zoom 缩放，消除 iOS handlePinch / macOS handleMagnify 的重复 guard + scale 提取。
+    func performZoom(in scnView: SCNView, factor: Float, isChanged: Bool, isEnded: Bool) {
+        guard let cameraNode = cameraNode(in: scnView) else { return }
+        applyZoomScale(
+            factor: factor,
+            isChanged: isChanged,
+            isEnded: isEnded,
+            cameraNode: cameraNode,
+            cameraZ: &cameraZ
+        )
+    }
 }
 
 // MARK: - iOS Coordinator

@@ -69,20 +69,25 @@ enum QuizProcessor {
             case string(String)
 
             init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let i = try? container.decode(Int.self) {
-                    self = .int(i)
-                } else if let s = try? container.decode(String.self) {
-                    self = .string(s)
-                } else {
-                    self = .int(0)
-                }
+                self = try Self.decodeFlexibleIntString(from: decoder)
             }
 
             var intValue: Int {
                 switch self {
                 case .int(let i): return i
                 case .string(let s): return Int(s) ?? 0
+                }
+            }
+
+            /// 共享的 Int/String 自愈解码逻辑，消除 FlexibleID 与 FlexibleAnswer 间的重复 init(from:)。
+            private static func decodeFlexibleIntString(from decoder: Decoder) throws -> FlexibleID {
+                let container = try decoder.singleValueContainer()
+                if let i = try? container.decode(Int.self) {
+                    return .int(i)
+                } else if let s = try? container.decode(String.self) {
+                    return .string(s)
+                } else {
+                    return .int(0)
                 }
             }
         }
@@ -92,14 +97,7 @@ enum QuizProcessor {
             case string(String)
 
             init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let i = try? container.decode(Int.self) {
-                    self = .int(i)
-                } else if let s = try? container.decode(String.self) {
-                    self = .string(s)
-                } else {
-                    self = .int(0)
-                }
+                self = try Self.decodeFlexibleIntString(from: decoder)
             }
 
             func asIndex(optionCount: Int) -> Int {
@@ -117,6 +115,18 @@ enum QuizProcessor {
                     if trimmed.hasPrefix("C") { return min(2, optionCount - 1) }
                     if trimmed.hasPrefix("D") { return min(3, optionCount - 1) }
                     return 0
+                }
+            }
+
+            /// 共享的 Int/String 自愈解码逻辑，消除 FlexibleID 与 FlexibleAnswer 间的重复 init(from:)。
+            private static func decodeFlexibleIntString(from decoder: Decoder) throws -> FlexibleAnswer {
+                let container = try decoder.singleValueContainer()
+                if let i = try? container.decode(Int.self) {
+                    return .int(i)
+                } else if let s = try? container.decode(String.self) {
+                    return .string(s)
+                } else {
+                    return .int(0)
                 }
             }
         }

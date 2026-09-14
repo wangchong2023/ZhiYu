@@ -265,18 +265,18 @@ public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, Sendable
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
     ) async throws -> KnowledgePage {
-        Self.makePage(title: title, pageType: pageType, customIcon: customIcon, content: content,
-                      tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
-                      fileSize: fileSize, sourceType: sourceType)
+        Self.makePage(input: .init(title: title, pageType: pageType, customIcon: customIcon, content: content,
+                                   tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+                                   fileSize: fileSize, sourceType: sourceType))
     }
     public func anyCreatePage(
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?,
         forceDeepScan: Bool
     ) async -> KnowledgePage? {
-        Self.makePage(title: title, pageType: pageType, customIcon: customIcon, content: content,
-                      tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
-                      fileSize: fileSize, sourceType: sourceType)
+        Self.makePage(input: .init(title: title, pageType: pageType, customIcon: customIcon, content: content,
+                                   tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+                                   fileSize: fileSize, sourceType: sourceType))
     }
     public func updatePage(_ page: KnowledgePage) async throws {}
     public func anyUpdatePage(_ page: KnowledgePage, forceDeepScan: Bool) async {}
@@ -293,15 +293,24 @@ public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, Sendable
         StorageStats(databaseSize: 0, logsSize: 0, exportsSize: 0)
     }
 
+    /// 创建页面输入参数封装，消除 createPage 与 anyCreatePage 间的重复参数列表。
+    private struct CreatePageInput {
+        let title: String
+        let pageType: PageType
+        let customIcon: String?
+        let content: String
+        let tags: [String]
+        let sourceURL: String?
+        let rawSnippet: String?
+        let fileSize: Int64?
+        let sourceType: String?
+    }
+
     /// 统一构造 KnowledgePage 的辅助方法，消除 createPage 与 anyCreatePage 间的重复构造逻辑。
-    private static func makePage(
-        title: String, pageType: PageType, customIcon: String?, content: String,
-        tags: [String], sourceURL: String?, rawSnippet: String?,
-        fileSize: Int64?, sourceType: String?
-    ) -> KnowledgePage {
-        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content,
-                      tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet,
-                      fileSize: fileSize, sourceType: sourceType)
+    private static func makePage(input: CreatePageInput) -> KnowledgePage {
+        KnowledgePage(title: input.title, pageType: input.pageType, customIcon: input.customIcon, content: input.content,
+                      tags: input.tags, sourceURL: input.sourceURL, rawTextSnippet: input.rawSnippet,
+                      fileSize: input.fileSize, sourceType: input.sourceType)
     }
 }
 
