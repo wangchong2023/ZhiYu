@@ -70,7 +70,7 @@ struct SuggestionGroupView: View {
             Button(action: {
                 HapticFeedback.shared.trigger(.link)
                 let query = L10n.Chat.deepExplorePrompt(title)
-                Task { await coordinator.sendMessage(query: query, pages: store.pages) }
+                sendQuery(query)
             }) {
                 HStack(spacing: SystemSpacing.small) {
                     Image(systemName: icon).font(.caption2)
@@ -90,7 +90,7 @@ struct SuggestionGroupView: View {
                 Button(action: { 
                     HapticFeedback.shared.trigger(.link)
                     coordinator.showPrompts = false
-                    Task { await coordinator.sendMessage(query: query, pages: store.pages) }
+                    sendQuery(query)
                 }) {
                     HStack {
                         Text(query).font(.subheadline).foregroundStyle(.appText).multilineTextAlignment(.leading)
@@ -105,5 +105,10 @@ struct SuggestionGroupView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    /// 发送追问查询（消除重复的 Task + coordinator.sendMessage 链）
+    private func sendQuery(_ query: String) {
+        Task { await coordinator.sendMessage(query: query, pages: store.pages) }
     }
 }

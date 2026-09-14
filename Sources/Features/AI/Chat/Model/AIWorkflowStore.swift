@@ -213,32 +213,26 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
     /// 生成页面 AI 摘要
     public func runPageAISummary(content: String) async throws -> String {
-        isProcessingPageAI = true
-        defer { isProcessingPageAI = false }
-        
-        let summary = try await AISynthesisService.shared.summarize(content: content)
-        activePageAIResult = summary
-        return summary
+        try await runPageAI { try await AISynthesisService.shared.summarize(content: content) }
     }
 
     /// 提取页面行动项
     public func runPageAIExtractActions(content: String) async throws -> String {
-        isProcessingPageAI = true
-        defer { isProcessingPageAI = false }
-        
-        let actions = try await AISynthesisService.shared.extractActions(content: content)
-        activePageAIResult = actions
-        return actions
+        try await runPageAI { try await AISynthesisService.shared.extractActions(content: content) }
     }
 
     /// 扩展页面存根内容
     public func runPageAIExpansion(content: String) async throws -> String {
+        try await runPageAI { try await AISynthesisService.shared.expandKnowledge(content: content) }
+    }
+
+    /// 执行页面 AI 任务（消除重复的 isProcessingPageAI 状态管理 + activePageAIResult 赋值链）
+    private func runPageAI(action: () async throws -> String) async throws -> String {
         isProcessingPageAI = true
         defer { isProcessingPageAI = false }
-        
-        let expanded = try await AISynthesisService.shared.expandKnowledge(content: content)
-        activePageAIResult = expanded
-        return expanded
+        let result = try await action()
+        activePageAIResult = result
+        return result
     }
 
     private var synthesisStore: SynthesisStore {

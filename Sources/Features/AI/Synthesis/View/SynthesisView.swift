@@ -186,7 +186,7 @@ struct SynthesisView: View {
             .padding(.vertical, DesignSystem.Metrics.emptyStateVerticalPadding)
             .appContainer(background: DesignSystem.containerMaterial)
             .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: 0, trailing: DesignSystem.standardPadding))
+            .compactListRowInsets()
         } else {
             ForEach(docs, id: \.1.id) { type, doc in
                 SynthesisDocRow(
@@ -216,7 +216,7 @@ struct SynthesisView: View {
                         showDeleteDocConfirm = true
                     }
                 )
-                .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: 0, trailing: DesignSystem.standardPadding))
+                .compactListRowInsets()
                 .listRowBackground(
                     ZStack {
                         DesignSystem.containerMaterial
@@ -408,12 +408,8 @@ struct SynthesisView: View {
         .sheet(isPresented: $showPromptWorkshop) {
             NavigationStack {
                 PromptWorkshopView()
-                    .navigationTitle(L10n.AI.Prompt.Factory.title)
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button(L10n.Common.done) { showPromptWorkshop = false }
-                        }
+                    .inlineNavBarWithCancel(title: L10n.AI.Prompt.Factory.title, cancelTitle: L10n.Common.done) {
+                        showPromptWorkshop = false
                     }
             }
         }
@@ -451,37 +447,6 @@ extension View {
                 Text(identifiable.url.lastPathComponent)
                 #endif
             }
-            .synthesisAlerts(
-                showNoPagesAlert: showNoPagesAlert,
-                showLimitAlert: showLimitAlert,
-                showRenameDialog: showRenameDialog,
-                showLLMAlert: showLLMAlert,
-                showBatchDeleteConfirm: showBatchDeleteConfirm,
-                showDeleteDocConfirm: showDeleteDocConfirm,
-                newDocName: newDocName,
-                docToRename: docToRename,
-                docToDelete: docToDelete,
-                batchDelete: batchDelete,
-                onConfigureAI: onConfigureAI,
-                synthesisStore: synthesisStore
-            )
-    }
-
-    private func synthesisAlerts(
-        showNoPagesAlert: Binding<Bool>,
-        showLimitAlert: Binding<Bool>,
-        showRenameDialog: Binding<Bool>,
-        showLLMAlert: Binding<Bool>,
-        showBatchDeleteConfirm: Binding<Bool>,
-        showDeleteDocConfirm: Binding<Bool>,
-        newDocName: Binding<String>,
-        docToRename: SynthesisStore.SynthesisDocument?,
-        docToDelete: SynthesisStore.SynthesisDocument?,
-        batchDelete: @escaping () -> Void,
-        onConfigureAI: @escaping () -> Void,
-        synthesisStore: SynthesisStore
-    ) -> some View {
-        self
             .alertNoPages(isPresented: showNoPagesAlert)
             .alertLimitReached(isPresented: showLimitAlert)
             .alertRenameDoc(isPresented: showRenameDialog, name: newDocName, doc: docToRename)
@@ -575,5 +540,22 @@ private extension View {
     func standardListRowInsets() -> some View {
         self.listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: DesignSystem.loosePadding, trailing: DesignSystem.standardPadding))
             .listRowBackground(Color.clear)
+    }
+
+    /// 紧凑列表行内边距（bottom=0，用于空状态与条目行）
+    func compactListRowInsets() -> some View {
+        self.listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: 0, trailing: DesignSystem.standardPadding))
+    }
+
+    /// 内联导航栏 + 取消按钮工具栏（消除重复的 navigationTitle + navigationBarTitleDisplayMode + toolbar 链）
+    func inlineNavBarWithCancel(title: String, cancelTitle: String, onCancel: @escaping () -> Void) -> some View {
+        self
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(cancelTitle) { onCancel() }
+                }
+            }
     }
 }

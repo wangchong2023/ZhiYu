@@ -337,18 +337,23 @@ struct TaskCenterView: View {
 /// 负责单个异步任务的进度条展示、状态文本反馈及关联页面的快捷跳转交互
 private struct TaskRow: View {
     let task: GlobalTask
-    
+
+    /// 任务类型对应的主色（AI 任务紫色，其他为 appAccent）
+    private var typeColor: Color {
+        task.type == .ai ? Color.theme.purple : Color.appAccent
+    }
+
     var body: some View {
         HStack(spacing: DesignSystem.Task.rowSpacing) {
             // 类型图标与状态
             ZStack(alignment: .bottomTrailing) {
                 Circle()
-                    .fill(task.type == .ai ? Color.theme.purple.opacity(SystemOpacity.ghost) : Color.appAccent.opacity(SystemOpacity.ghost))
+                    .fill(typeColor.opacity(SystemOpacity.ghost))
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 Image(systemName: task.type.icon)
                     .font(.system(size: UIConstants.taskRowIconSize))
-                    .foregroundStyle(task.type == .ai ? Color.theme.purple : Color.appAccent)
+                    .foregroundStyle(typeColor)
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 if !task.isRead && (task.status == .completed || isFailed) {

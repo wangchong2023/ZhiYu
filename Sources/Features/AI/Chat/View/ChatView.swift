@@ -79,8 +79,7 @@ struct ChatViewContent: View {
             Button(L10n.Common.cancel, role: .cancel) { }
         } message: {
             Text(L10n.Chat.clearHistoryConfirmMessage)
-        }
-        .task {
+        }        .task {
             await coordinator.loadInsightfulQuestions(pages: store.pages)
             
             // MARK: - [Cold Start Aha Moment] 自动识别并投递向导提问 Prompt
@@ -206,9 +205,7 @@ struct ChatViewContent: View {
             } : nil,
             predictedQuestions: isLastAssistant ? coordinator.predictedQuestions : [],
             onSelectQuestion: { question in
-                Task {
-                    await coordinator.sendMessage(query: question, pages: store.pages)
-                }
+                sendQuestion(question)
             }
         )
         .id(message.id)
@@ -337,10 +334,7 @@ struct ChatViewContent: View {
                                 Button(action: {
                                     // 触发系统的轻微选择触感反馈
                                     HapticFeedback.shared.trigger(.selection)
-                                    Task {
-                                        // 一键直接追问
-                                        await coordinator.sendMessage(query: question, pages: store.pages)
-                                    }
+                                    sendQuestion(question)
                                 }) {
                                     HStack(spacing: DesignSystem.tiny) {
                                         Image(systemName: DesignSystem.Icons.arrowUpRightBubble)
@@ -365,6 +359,13 @@ struct ChatViewContent: View {
                 }
                 .padding(.vertical, DesignSystem.tiny)
             }
+        }
+    }
+
+    /// 发送追问问题（消除重复的 Task + coordinator.sendMessage 链）
+    private func sendQuestion(_ question: String) {
+        Task {
+            await coordinator.sendMessage(query: question, pages: store.pages)
         }
     }
 }

@@ -147,26 +147,16 @@ struct ChatBubbleView: View {
             // 操作按钮栏：点赞、贬低、复制、重新生成
             HStack(spacing: DesignSystem.medium) {
                 // 点赞按钮
-                Button(action: {
-                    HapticFeedback.shared.trigger(.selection)
-                    messageRating = messageRating == 1 ? nil : 1
-                }) {
-                    Image(systemName: messageRating == 1 ? "hand.thumbsup.fill" : "hand.thumbsup")
-                        .font(.caption)
-                        .foregroundStyle(messageRating == 1 ? Color.theme.blue : .appSecondary)
-                }
-                .buttonStyle(.plain)
+                ratingButton(ratingValue: 1,
+                             activeIcon: "hand.thumbsup.fill",
+                             inactiveIcon: "hand.thumbsup",
+                             activeColor: Color.theme.blue)
                 
                 // 贬低按钮
-                Button(action: {
-                    HapticFeedback.shared.trigger(.selection)
-                    messageRating = messageRating == 2 ? nil : 2
-                }) {
-                    Image(systemName: messageRating == 2 ? "hand.thumbsdown.fill" : "hand.thumbsdown")
-                        .font(.caption)
-                        .foregroundStyle(messageRating == 2 ? Color.theme.red : .appSecondary)
-                }
-                .buttonStyle(.plain)
+                ratingButton(ratingValue: 2,
+                             activeIcon: "hand.thumbsdown.fill",
+                             inactiveIcon: "hand.thumbsdown",
+                             activeColor: Color.theme.red)
                 
                 // 复制按钮
                 Button(action: {
@@ -207,6 +197,19 @@ struct ChatBubbleView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, Spacing.standardPadding)
         .padding(.trailing, DesignSystem.Domain.AI.Chat.bubbleTrailingPadding)
+    }
+
+    /// 评分按钮（点赞/贬低共用，消除重复的 Button+Image+foregroundStyle 链）
+    private func ratingButton(ratingValue: Int, activeIcon: String, inactiveIcon: String, activeColor: Color) -> some View {
+        Button(action: {
+            HapticFeedback.shared.trigger(.selection)
+            messageRating = messageRating == ratingValue ? nil : ratingValue
+        }) {
+            Image(systemName: messageRating == ratingValue ? activeIcon : inactiveIcon)
+                .font(.caption)
+                .foregroundStyle(messageRating == ratingValue ? activeColor : .appSecondary)
+        }
+        .buttonStyle(.plain)
     }
     
     /// Collapsible references panel showing cited knowledge pages grouped by type
@@ -273,12 +276,7 @@ struct ChatBubbleView: View {
             }
         }
         .padding(DesignSystem.medium)
-        .background(Color.appCard.opacity(DesignSystem.surfaceOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-        .overlayStroke(
-            cornerRadius: DesignSystem.smallRadius,
-            borderColor: Color.appBorder.opacity(DesignSystem.softOpacity)
-        )
+        .chatSmallCardStyle(backgroundOpacity: DesignSystem.surfaceOpacity)
     }
     
     private var systemBubble: some View {
@@ -417,9 +415,7 @@ struct SuggestedFollowUpCardView: View {
                         }
                         .padding(.horizontal, DesignSystem.medium)
                         .padding(.vertical, DesignSystem.small)
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                        .overlayStroke(cornerRadius: DesignSystem.smallRadius)
+                        .chatSmallCardStyle(backgroundOpacity: DesignSystem.Opacity.subtle)
                     }
                     .buttonStyle(.plain)
                 }
@@ -432,5 +428,16 @@ struct SuggestedFollowUpCardView: View {
         )
         .overlayStroke()
         .shadow(color: Color.appBackground.opacity(DesignSystem.shadowOpacity), radius: 6, x: 0, y: 2)
+    }
+}
+
+// MARK: - Chat 组件卡片样式辅助
+private extension View {
+    /// 小圆角卡片样式：background(appCard) + clipShape(smallRadius) + overlayStroke
+    func chatSmallCardStyle(backgroundOpacity: Double) -> some View {
+        self
+            .background(Color.appCard.opacity(backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .overlayStroke(cornerRadius: DesignSystem.smallRadius)
     }
 }

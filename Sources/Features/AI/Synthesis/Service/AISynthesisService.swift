@@ -59,31 +59,23 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Parameter content: content
     /// - Returns: 字符串
     func summarize(content: String) async throws -> String {
-        let prompt = promptService.summaryPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = L10n.AI.Prompt.System.summarize
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: buildPrompt(promptService.summaryPrompt, content: content), systemPrompt: L10n.AI.Prompt.System.summarize)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
     /// 生成思维导图 (Mermaid)
     func generateMindMap(content: String) async throws -> String {
-        let prompt = promptService.mindmapPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = L10n.AI.Prompt.System.mindmap
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
-        let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: ProcessorConstants.MermaidSyntax.mindmap)
-        if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            return SynthesisProcessor.convertMarkdownToListMindmap(result, title: L10n.AI.Synthesis.Mindmap.title)
+        let result = try await currentLLM.generate(prompt: buildPrompt(promptService.mindmapPrompt, content: content), systemPrompt: L10n.AI.Prompt.System.mindmap)
+        return formatMermaidOrFallback(result: result, fallbackPrefix: ProcessorConstants.MermaidSyntax.mindmap) {
+            SynthesisProcessor.convertMarkdownToListMindmap(result, title: L10n.AI.Synthesis.Mindmap.title)
         }
-        return formatted
     }
 
     /// 提取Actions
     /// - Parameter content: content
     /// - Returns: 字符串
     func extractActions(content: String) async throws -> String {
-        let prompt = promptService.actionPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = L10n.AI.Prompt.System.actions
-        let result = try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
+        let result = try await currentLLM.generate(prompt: buildPrompt(promptService.actionPrompt, content: content), systemPrompt: L10n.AI.Prompt.System.actions)
         return SynthesisProcessor.cleanMarkdown(result)
     }
 
@@ -94,11 +86,11 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// - Parameter content: content
     /// - Returns: 字符串
     func generatePresentation(content: String) async throws -> String {
-        let prompt = promptService.slidesPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        return await executeSynthesisPipeline(
-            prompt: prompt,
+        try await runSynthesisPipeline(
+            content: content,
+            basePrompt: promptService.slidesPrompt,
             systemPrompt: L10n.AI.Prompt.System.slides,
-            fallback: { _ in SynthesisProcessor.generateFallbackPresentation(from: content, title: L10n.AI.Prompt.Expert.Slides.title) }
+            fallback: SynthesisProcessor.generateFallbackPresentation(from: content, title: L10n.AI.Prompt.Expert.Slides.title)
         )
     }
 
@@ -129,36 +121,61 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     /// 生成信息图表 (Mermaid)
     func generateInfographic(content: String) async throws -> String {
-        let prompt = promptService.infographicPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        let systemPrompt = L10n.AI.Prompt.System.infographic
-        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
-        let formatted = SynthesisProcessor.formatMermaid(rawResult, fallbackPrefix: ProcessorConstants.MermaidSyntax.graphTD)
-        if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            return SynthesisProcessor.generateFallbackInfographic(from: content, title: L10n.Knowledge.Page.AI.infographic)
-        }
-        return formatted
+        let rawResult = try? await currentLLM.generate(prompt: buildPrompt(promptService.infographicPrompt, content: content), systemPrompt: L10n.AI.Prompt.System.infographic)
+        return await formatOrFallbackInfographic(rawResult: rawResult ?? "", content: content)
     }
 
     /// 生成Report
     /// - Parameter content: content
     /// - Returns: 字符串
     func generateReport(content: String) async throws -> String {
-        let prompt = promptService.reportPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
-        return await executeSynthesisPipeline(
-            prompt: prompt,
+        try await runSynthesisPipeline(
+            content: content,
+            basePrompt: promptService.reportPrompt,
             systemPrompt: L10n.AI.Prompt.System.report,
-            fallback: { _ in SynthesisProcessor.generateFallbackReport(from: content, title: L10n.AI.Prompt.Expert.Report.title) }
+            fallback: SynthesisProcessor.generateFallbackReport(from: content, title: L10n.AI.Prompt.Expert.Report.title)
         )
     }
 
     /// 知识深度扩充：对现有内容进行多维度深挖与背景补充
     func expandKnowledge(content: String) async throws -> String {
-        let prompt = promptService.expansionPrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
+        try await runSynthesisPipeline(
+            content: content,
+            basePrompt: promptService.expansionPrompt,
+            systemPrompt: L10n.AI.Prompt.System.expansion,
+            fallback: SynthesisProcessor.generateFallbackExpansion(from: content, title: L10n.Knowledge.Page.AI.expansion)
+        )
+    }
+
+    /// 统一执行合成管道（消除 generatePresentation/generateReport/expandKnowledge 重复的 buildPrompt + executeSynthesisPipeline 链）
+    private func runSynthesisPipeline(content: String, basePrompt: String, systemPrompt: String, fallback: String) async throws -> String {
+        let prompt = buildPrompt(basePrompt, content: content)
         return await executeSynthesisPipeline(
             prompt: prompt,
-            systemPrompt: L10n.AI.Prompt.System.expansion,
-            fallback: { _ in SynthesisProcessor.generateFallbackExpansion(from: content, title: L10n.Knowledge.Page.AI.expansion) }
+            systemPrompt: systemPrompt,
+            fallback: { _ in fallback }
         )
+    }
+
+    /// 统一构建合成 Prompt：基础 Prompt + 语言指令 + 截断内容
+    private func buildPrompt(_ basePrompt: String, content: String) -> String {
+        basePrompt + promptService.languageInstruction + "\n\n\n\(truncated(content))"
+    }
+
+    /// 信息图表格式化或降级回退
+    private func formatOrFallbackInfographic(rawResult: String, content: String) async -> String {
+        formatMermaidOrFallback(result: rawResult, fallbackPrefix: ProcessorConstants.MermaidSyntax.graphTD) {
+            SynthesisProcessor.generateFallbackInfographic(from: content, title: L10n.Knowledge.Page.AI.infographic)
+        }
+    }
+
+    /// Mermaid 格式化或降级回退（消除 generateMindMap 与 formatOrFallbackInfographic 重复的 formatMermaid + 空值检查 + 降级链）
+    private func formatMermaidOrFallback(result: String, fallbackPrefix: String, fallback: () -> String) -> String {
+        let formatted = SynthesisProcessor.formatMermaid(result, fallbackPrefix: fallbackPrefix)
+        if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return fallback()
+        }
+        return formatted
     }
 
     private func executeSynthesisPipeline(

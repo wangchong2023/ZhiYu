@@ -29,7 +29,14 @@ struct PromptWorkshopView: View {
     @State private var isSlidesExpanded = false
     @State private var isReportExpanded = false
     @State private var showResetAlert = false
-    
+
+    /// 功能简介描述文本（消除 watch/非 watch 分支重复）
+    private var introDescriptionText: some View {
+        Text(L10n.AI.Prompt.Workshop.Intro.desc)
+            .font(.subheadline)
+            .foregroundStyle(.appSecondary)
+    }
+
     var body: some View {
         @Bindable var bindablePromptService = promptService
         if idiom == .watch {
@@ -44,16 +51,12 @@ struct PromptWorkshopView: View {
                             Label(L10n.AI.Prompt.Workshop.Intro.title, systemImage: DesignSystem.Icons.promptWorkshop)
                                 .font(.headline)
                                 .foregroundStyle(.appAccent)
-                            Text(L10n.AI.Prompt.Workshop.Intro.desc)
-                                .font(.subheadline)
-                                .foregroundStyle(.appSecondary)
+                            introDescriptionText
                         }
                     } else {
                         DisclosureGroup(isExpanded: $isIntroExpanded) {
                             VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                                Text(L10n.AI.Prompt.Workshop.Intro.desc)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.appSecondary)
+                                introDescriptionText
                                     .lineSpacing(4)
                                     .padding(.top, DesignSystem.tiny)
                             }
@@ -130,7 +133,6 @@ struct PromptWorkshopView: View {
                 Button(L10n.Common.cancel, role: .cancel) {}
             } message: {
                 Text(L10n.AI.Prompt.resetWarning)
-            }
-        }
+            }        }
     }
 }
