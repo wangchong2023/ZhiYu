@@ -91,27 +91,39 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
             if isExporting { throw ExportError.systemBusy }
         }
     }
-    
-    /// 导出ToPDF
-    /// - Parameter markdown: markdown
-    /// - Parameter fileName: fileName
-    /// - Returns: 链接
-    func exportToPDF(markdown: String, fileName: String) async throws -> URL {
+
+    /// 转义 JS 模板字面量特殊字符（反斜杠/反引号/美元符号）
+    private func escapeJSTemplateLiteral(_ raw: String) -> String {
+        raw.replacingOccurrences(of: JSTemplateEscape.backslash, with: JSTemplateEscape.doubleBackslash)
+            .replacingOccurrences(of: JSTemplateEscape.backtick, with: JSTemplateEscape.escapedBacktick)
+            .replacingOccurrences(of: JSTemplateEscape.dollar, with: JSTemplateEscape.escapedDollar)
+    }
+
+    /// 占用导出槽位并执行闭包，结束后清理 WebView 内容。
+    /// 统一 `exportToPDF` / `exportMindmapToPDF` 中重复的
+    /// `waitForExportSlot + isExporting = true + defer + guard webView` 模式。
+    private func withExportSlot<T: Sendable>(
+        _ body: @MainActor @Sendable (WKWebView) async throws -> T
+    ) async throws -> T {
         try await waitForExportSlot()
-        
         isExporting = true
-        defer { 
+        defer {
             isExporting = false
             Task { @MainActor in
                 _ = try? await webView?.evaluateJavaScript("document.body.innerHTML = '';")
             }
         }
-
         guard let webView = webView else { throw ExportError.engineNotReady }
-        
-        let escapedMarkdown = markdown.replacingOccurrences(of: JSTemplateEscape.backslash, with: JSTemplateEscape.doubleBackslash)
-                                      .replacingOccurrences(of: JSTemplateEscape.backtick, with: JSTemplateEscape.escapedBacktick)
-                                      .replacingOccurrences(of: JSTemplateEscape.dollar, with: JSTemplateEscape.escapedDollar)
+        return try await body(webView)
+    }
+
+    /// 导出ToPDF
+    /// - Parameter markdown: markdown
+    /// - Parameter fileName: fileName
+    /// - Returns: 链接
+    func exportToPDF(markdown: String, fileName: String) async throws -> URL {
+        let escapedMarkdown = escapeJSTemplateLiteral(markdown)
+        return try await withExportSlot { webView in
         
         let js = """
         (async () => {
@@ -131,6 +143,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
         _ = try await webView.evaluateJavaScript(js)
         
         return try await createPDF(fileName: fileName)
+        }
     }
 
     /// 导出MindmapToPDF
@@ -138,22 +151,8 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
     /// - Parameter fileName: fileName
     /// - Returns: 链接
     func exportMindmapToPDF(mermaidCode: String, fileName: String) async throws -> URL {
-        try await waitForExportSlot()
-        
-        isExporting = true
-        defer { 
-            isExporting = false 
-            Task { @MainActor in
-                _ = try? await webView?.evaluateJavaScript("document.body.innerHTML = '';")
-            }
-        }
-
-        guard let webView = webView else { throw ExportError.engineNotReady }
-        
-        let escapedCode = mermaidCode.replacingOccurrences(of: JSTemplateEscape.backslash, with: JSTemplateEscape.doubleBackslash)
-                                     .replacingOccurrences(of: JSTemplateEscape.backtick, with: JSTemplateEscape.escapedBacktick)
-                                     .replacingOccurrences(of: JSTemplateEscape.dollar, with: JSTemplateEscape.escapedDollar)
-        
+        let escapedCode = escapeJSTemplateLiteral(mermaidCode)
+        return try await withExportSlot { webView in
         let js = """
         (async () => {
             const content = document.getElementById('content');
@@ -175,6 +174,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
         _ = try await webView.evaluateJavaScript(js)
         
         return try await createPDF(fileName: fileName)
+        }
     }
 
     private func createPDF(fileName: String) async throws -> URL {

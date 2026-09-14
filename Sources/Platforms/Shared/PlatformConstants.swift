@@ -41,6 +41,8 @@ public enum PlatformConstants {
     public enum Multipeer {
         /// 加入房间超时秒数
         public static let joinTimeoutSeconds: TimeInterval = 30
+        /// PeerID 唯一后缀长度（UUID 前 N 位）
+        public static let peerIDSuffixLength: Int = 8
     }
 
     // MARK: - Reminder 服务

@@ -14,31 +14,10 @@ import CoreML
 
 // MARK: - 生物识别
 
-/// iOS 平台的生物识别提供者
+/// iOS 平台的生物识别提供者：复用 Apple 全平台通用实现（DRY）。
+/// 详见 `ApplePlatformCapabilities.swift` 中的 `AppleBiometricAuthProvider`。
 @MainActor
-struct iOSBiometricAuthProvider: BiometricAuthProviderProtocol {
-    var authenticationPolicy: LAPolicy { .deviceOwnerAuthenticationWithBiometrics }
-    
-    /// can评估Policy
-    /// - Parameter context: context
-    /// - Returns: 是否成功
-    func canEvaluatePolicy(context: LAContext) -> Bool {
-        var error: NSError?
-        return context.canEvaluatePolicy(authenticationPolicy, error: &error)
-    }
-    
-    /// 评估Policy
-    /// - Parameter context: context
-    /// - Parameter reason: reason
-    /// - Returns: 是否成功
-    func evaluatePolicy(context: LAContext, reason: String) async -> Bool {
-        return await withCheckedContinuation { continuation in
-            context.evaluatePolicy(authenticationPolicy, localizedReason: reason) { success, _ in
-                continuation.resume(returning: success)
-            }
-        }
-    }
-}
+typealias iOSBiometricAuthProvider = AppleBiometricAuthProvider
 
 // MARK: - 模型编译
 

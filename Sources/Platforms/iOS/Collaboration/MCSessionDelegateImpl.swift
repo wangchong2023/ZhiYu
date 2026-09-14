@@ -12,6 +12,15 @@
 import Foundation
 @preconcurrency import MultipeerConnectivity
 
+// MARK: - 主线程错误派发辅助
+
+/// 将错误回调派发到主线程，消除 MCAdvertiserDelegateImpl / MCBrowserDelegateImpl
+/// 中重复的 `DispatchQueue.main.async { [weak self] in self?.onError(error) }` 模式。
+@MainActor
+private func dispatchErrorOnMain(_ error: Error, _ onError: @escaping (Error) -> Void) {
+    onError(error)
+}
+
 // MARK: - MCSession Delegate Implementation
 /// Extracted from CollaborationService to reduce class size and improve testability.
 final class MCSessionDelegateImpl: NSObject, MCSessionDelegate {
@@ -94,8 +103,8 @@ final class MCAdvertiserDelegateImpl: NSObject, MCNearbyServiceAdvertiserDelegat
     /// advertiser
     /// - Parameter advertiser: advertiser
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.onError(error)
+        DispatchQueue.main.async {
+            dispatchErrorOnMain(error, self.onError)
         }
     }
 }
@@ -135,8 +144,8 @@ final class MCBrowserDelegateImpl: NSObject, MCNearbyServiceBrowserDelegate {
     /// browser
     /// - Parameter browser: browser
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.onError(error)
+        DispatchQueue.main.async {
+            dispatchErrorOnMain(error, self.onError)
         }
     }
 }

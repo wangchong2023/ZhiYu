@@ -1475,6 +1475,7 @@
 		81CE125CEC8120F596E2B22C /* DesignSystem+Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E495EE85C40C1E8E0BB597 /* DesignSystem+Domain.swift */; };
 		81DB14A625E78470DAC81A37 /* testTaskRoutingRulesViewDefaultEmpty.1.png in Resources */ = {isa = PBXBuildFile; fileRef = EFB4F1DC0F4A7A180D9FC3C6 /* testTaskRoutingRulesViewDefaultEmpty.1.png */; };
 		82041B16AB1758FA8A0FAE5D /* testAppEmptyStateWithPrimaryAction.1.png in Resources */ = {isa = PBXBuildFile; fileRef = B7F102D626B3ACC0B9118F95 /* testAppEmptyStateWithPrimaryAction.1.png */; };
+		8243309889C351F2D45BFA37 /* WidgetSharedViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3234051168D545358AAAD96 /* WidgetSharedViews.swift */; };
 		8243DAEEF8CB59787FDF4226 /* WorkflowService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC9430B092E48D23956BDD5 /* WorkflowService.swift */; };
 		82486A338B89B21A3DFA14BE /* VoiceAudioPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498AF94A2F9F50E3CBDF0091 /* VoiceAudioPlayerView.swift */; };
 		824BC72E48A985BFD3C368BC /* WeChatAuthStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE732DB2FC21219974658761 /* WeChatAuthStrategy.swift */; };
@@ -2602,6 +2603,7 @@
 		E40FA276826AA1630846AA0D /* PageHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9402E17F9360F24F175187D4 /* PageHistoryView.swift */; };
 		E41CF44B91A893006EF299FB /* IngestCoordinatorDeepMutationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D84468B3C94D902BCE9279D0 /* IngestCoordinatorDeepMutationTests.swift */; };
 		E4415F2D2F7B4CD685405AAD /* WatchURLOpenerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FDE60BF8712A69B15F40AEB /* WatchURLOpenerService.swift */; };
+		E4487AB21624F8BE6FD0DE9A /* WidgetVisualConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8082BDB6EEBB21937319CC4F /* WidgetVisualConstants.swift */; };
 		E458EBCD4263D835D13F7363 /* iOSReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35E21BE89F05B8C8E54C583 /* iOSReminderService.swift */; };
 		E479AADF788AF9AF9139915F /* UFPStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 09A8B883B9ED723861EE7247 /* UFPStorage */; };
 		E495AB88FAA75A83216B7E36 /* SQLitePluginRepositoryEdgeCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C1FE513204AE36AD6DF00F /* SQLitePluginRepositoryEdgeCaseTests.swift */; };
@@ -3996,6 +3998,7 @@
 		7FB762BEFA90442257735BC3 /* PluginLoaderDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginLoaderDeepTests.swift; sourceTree = "<group>"; };
 		7FEB56983CA6DE7A167442CC /* SubscriptionQuotaCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionQuotaCalculator.swift; sourceTree = "<group>"; };
 		800A07A53BD8A6A8220B8A40 /* SwiftMarkdownASTCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftMarkdownASTCleaner.swift; sourceTree = "<group>"; };
+		8082BDB6EEBB21937319CC4F /* WidgetVisualConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetVisualConstants.swift; sourceTree = "<group>"; };
 		8086291BAD3776ACDE151205 /* AppEventBus+ClearDataSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppEventBus+ClearDataSubscription.swift"; sourceTree = "<group>"; };
 		808A73C3729300FB710B223B /* SettingsDemoInjectHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDemoInjectHelper.swift; sourceTree = "<group>"; };
 		80AEBBBA72AB5016D77156ED /* testGraphFilterPillsView_EntitySelected.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testGraphFilterPillsView_EntitySelected.1.png; sourceTree = "<group>"; };
@@ -4226,6 +4229,7 @@
 		A2A922A3B920D7EA892109B2 /* testCommandPaletteView_Default.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testCommandPaletteView_Default.1.png; sourceTree = "<group>"; };
 		A2B5521348EB76F883353DA3 /* URLDocumentImportDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLDocumentImportDeepTests.swift; sourceTree = "<group>"; };
 		A2F501AD34FEA8067A2DF78D /* WatchOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchOCRService.swift; sourceTree = "<group>"; };
+		A3234051168D545358AAAD96 /* WidgetSharedViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSharedViews.swift; sourceTree = "<group>"; };
 		A325AECF57F1BB17FEED7E90 /* testKnowledgeDashboardView_MainMetrics_RendersCharts.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testKnowledgeDashboardView_MainMetrics_RendersCharts.1.png; sourceTree = "<group>"; };
 		A36160A8242353A462288B19 /* PluginCenterViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginCenterViewTests.swift; sourceTree = "<group>"; };
 		A3C60743F9A940A352D5C5F2 /* AppStoreGlobalStateMutationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreGlobalStateMutationTests.swift; sourceTree = "<group>"; };
@@ -8874,6 +8878,8 @@
 				F8349889C5529E47A5FD8120 /* WidgetModels.swift */,
 				449002182A2C805347B6BA2E /* WidgetRepository.swift */,
 				56BFD09C2CE934A41F83FFC0 /* WidgetSharedConstants.swift */,
+				A3234051168D545358AAAD96 /* WidgetSharedViews.swift */,
+				8082BDB6EEBB21937319CC4F /* WidgetVisualConstants.swift */,
 				2FBA2AD001B81B2540679AA6 /* ZhiYuWidgetBundle.swift */,
 			);
 			path = Widgets;
@@ -11697,6 +11703,8 @@
 				B37D26DC3D162548A4FF557E /* WidgetModels.swift in Sources */,
 				A7DEC69B434571CF98E22A38 /* WidgetRepository.swift in Sources */,
 				735CA56E901DAB14FAA683AC /* WidgetSharedConstants.swift in Sources */,
+				8243309889C351F2D45BFA37 /* WidgetSharedViews.swift in Sources */,
+				E4487AB21624F8BE6FD0DE9A /* WidgetVisualConstants.swift in Sources */,
 				818BE8A7E076DC3BF30823F9 /* ZhiYuWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -15,32 +15,10 @@ import LocalAuthentication
 
 // MARK: - 生物识别
 
-/// macOS 平台的生物识别提供者
+/// macOS 平台的生物识别提供者：复用 Apple 全平台通用实现（DRY）。
+/// 详见 `ApplePlatformCapabilities.swift` 中的 `AppleBiometricAuthProvider`。
 @MainActor
-struct MacOSBiometricAuthProvider: BiometricAuthProviderProtocol {
-    var authenticationPolicy: LAPolicy { .deviceOwnerAuthenticationWithBiometrics }
-    
-    /// 检查当前系统是否支持指定的生物识别安全策略。
-    /// - Parameter context: 用于验证的本地安全上下文。
-    /// - Returns: 如果设备支持并配置了该验证策略，则返回 true，否则返回 false。
-    func canEvaluatePolicy(context: LAContext) -> Bool {
-        var error: NSError?
-        return context.canEvaluatePolicy(authenticationPolicy, error: &error)
-    }
-    
-    /// 异步执行生物识别策略，验证设备所有者身份。
-    /// - Parameters:
-    ///   - context: 验证的本地安全上下文。
-    ///   - reason: 呈献给用户的安全验证理由文案。
-    ///   - Returns: 验证成功返回 true，失败或被用户取消返回 false。
-    func evaluatePolicy(context: LAContext, reason: String) async -> Bool {
-        return await withCheckedContinuation { continuation in
-            context.evaluatePolicy(authenticationPolicy, localizedReason: reason) { success, _ in
-                continuation.resume(returning: success)
-            }
-        }
-    }
-}
+typealias MacOSBiometricAuthProvider = AppleBiometricAuthProvider
 
 // MARK: - 安全存储
 

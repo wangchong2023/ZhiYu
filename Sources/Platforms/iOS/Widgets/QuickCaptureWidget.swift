@@ -12,15 +12,6 @@
 import SwiftUI
 @preconcurrency import WidgetKit
 
-private enum WidgetMetrics {
-    static let darkBgTop = Color(red: 0.1, green: 0.11, blue: 0.18)
-    static let darkBgBottom = Color(red: 0.06, green: 0.07, blue: 0.12)
-    static let circleSize: CGFloat = 44
-    static let opacityGhost: Double = 0.05
-    static let opacityGlow: Double = 0.2
-    static let buttonCornerRadius: CGFloat = 12
-}
-
 // MARK: - Timeline Entry
 struct QuickCaptureEntry: TimelineEntry {
     let date: Date
@@ -51,11 +42,7 @@ struct QuickCaptureWidgetEntryView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [WidgetMetrics.darkBgTop, WidgetMetrics.darkBgBottom],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            WidgetVisualConstants.gradientBackground
 
             switch family {
             case .systemMedium:
@@ -71,38 +58,40 @@ struct QuickCaptureWidgetEntryView: View {
 
     private var mediumView: some View {
         HStack(spacing: 3) {
-            captureButton(title: WidgetL10n.voice, icon: "mic.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.voice)
-            captureButton(title: WidgetL10n.ocr, icon: "doc.text.viewfinder", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.ocr)
-            captureButton(title: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
-            captureButton(title: WidgetL10n.qa, icon: "sparkles", color: WidgetSharedConstants.Color.teal, url: WidgetSharedConstants.DeepLink.chat)
+            WidgetCaptureButton(title: WidgetL10n.voice, icon: "mic.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.voice)
+            WidgetCaptureButton(title: WidgetL10n.ocr, icon: "doc.text.viewfinder", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.ocr)
+            WidgetCaptureButton(title: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
+            WidgetCaptureButton(title: WidgetL10n.qa, icon: "sparkles", color: WidgetSharedConstants.Color.teal, url: WidgetSharedConstants.DeepLink.chat)
         }
-        .padding(12)
+        .padding(WidgetVisualConstants.spacingWide)
     }
 
     private var accessoryView: some View {
-        HStack(spacing: 8) {
-            Link(destination: URL(string: WidgetSharedConstants.DeepLink.voice) ?? URL(string: "about:blank")!) {
-                Image(systemName: "mic.fill")
-                    .font(.title3)
-            }
-            Link(destination: URL(string: WidgetSharedConstants.DeepLink.ocr) ?? URL(string: "about:blank")!) {
-                Image(systemName: "doc.text.viewfinder")
-                    .font(.title3)
-            }
-            Link(destination: URL(string: WidgetSharedConstants.DeepLink.chat) ?? URL(string: "about:blank")!) {
-                Image(systemName: "sparkles")
-                    .font(.title3)
-            }
+        HStack(spacing: WidgetVisualConstants.spacingStandard) {
+            WidgetAccessoryIconLink(icon: "mic.fill", url: WidgetSharedConstants.DeepLink.voice)
+            WidgetAccessoryIconLink(icon: "doc.text.viewfinder", url: WidgetSharedConstants.DeepLink.ocr)
+            WidgetAccessoryIconLink(icon: "sparkles", url: WidgetSharedConstants.DeepLink.chat)
         }
     }
+}
 
-    private func captureButton(title: String, icon: String, color: Color, url: String) -> some View {
+// MARK: - 捕获按钮（中尺寸）
+
+/// Widget 中尺寸捕获按钮：圆形光晕 + 图标 + 标签，消除 QuickCaptureWidget 中
+/// 4 次重复的 `captureButton` 构造模式。
+struct WidgetCaptureButton: View {
+    let title: String
+    let icon: String
+    let color: Color
+    let url: String
+
+    var body: some View {
         Link(destination: URL(string: url) ?? URL(string: "about:blank")!) {
-            VStack(spacing: 6) {
+            VStack(spacing: WidgetVisualConstants.spacingStandard) {
                 ZStack {
                     Circle()
-                        .fill(color.opacity(WidgetMetrics.opacityGlow))
-                        .frame(width: WidgetMetrics.circleSize, height: WidgetMetrics.circleSize)
+                        .fill(color.opacity(WidgetVisualConstants.opacityGlow))
+                        .frame(width: WidgetVisualConstants.circleSize, height: WidgetVisualConstants.circleSize)
                     Image(systemName: icon)
                         .font(.headline)
                         .foregroundStyle(color)
@@ -113,8 +102,24 @@ struct QuickCaptureWidgetEntryView: View {
                     .foregroundStyle(.white)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.white.opacity(WidgetMetrics.opacityGhost))
-            .clipShape(RoundedRectangle(cornerRadius: WidgetMetrics.buttonCornerRadius))
+            .background(Color.white.opacity(WidgetVisualConstants.opacityGhost))
+            .clipShape(RoundedRectangle(cornerRadius: WidgetVisualConstants.buttonCornerRadius))
+        }
+    }
+}
+
+// MARK: - 辅助尺寸图标链接
+
+/// Widget 辅助尺寸（accessoryRectangular）图标链接，消除 QuickCaptureWidget
+/// accessoryView 中 3 次重复的 `Link + Image + font(.title3)` 模式。
+struct WidgetAccessoryIconLink: View {
+    let icon: String
+    let url: String
+
+    var body: some View {
+        Link(destination: URL(string: url) ?? URL(string: "about:blank")!) {
+            Image(systemName: icon)
+                .font(.title3)
         }
     }
 }

@@ -145,6 +145,15 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
         }
     }
     
+    /// 处理接收到的 new_page 内容：更新 lastReceivedText 并广播通知。
+    /// 消除 iOS/Watch 两端 `didReceiveUserInfo` 中重复的
+    /// `lastReceivedText = content; NotificationCenter.post(.didReceiveWatchContent)` 模式。
+    @MainActor
+    func handleReceivedPageContent(_ content: String) {
+        lastReceivedText = content
+        NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+    }
+
     // MARK: - WCSessionDelegate
     
     /// session回调
@@ -176,8 +185,7 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
                 }
             } else if type == "new_page", let content = userInfo["content"] as? String {
                 Task { @MainActor in
-                    self.lastReceivedText = content
-                    NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+                    self.handleReceivedPageContent(content)
                 }
             } else if type == "audio_chunk",
                       let transferId = userInfo["transferId"] as? String,
@@ -191,8 +199,7 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
             }
         } else if let content = userInfo["content"] as? String {
             Task { @MainActor in
-                self.lastReceivedText = content
-                NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+                self.handleReceivedPageContent(content)
             }
         }
     }

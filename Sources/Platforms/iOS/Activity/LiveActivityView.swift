@@ -14,6 +14,18 @@ import SwiftUI
 import ActivityKit
 import WidgetKit
 
+// MARK: - 活动类型图标映射
+
+/// 根据 ActivityKind 返回对应的 SF Symbol 图标名，消除 LiveActivityView 与
+/// LockScreenLiveActivityView 中重复的 `iconName(for:)` 方法定义。
+func liveActivityIconName(for kind: ActivityKind) -> String {
+    switch kind {
+    case .synthesis: return DesignSystem.Icons.mindmap
+    case .ingestOCR: return DesignSystem.Icons.scan
+    case .voiceNote: return DesignSystem.Icons.voiceNote
+    }
+}
+
 public struct LiveActivityView: Widget {
     public init() {}
 
@@ -28,7 +40,7 @@ public struct LiveActivityView: Widget {
                 // 展开状态 (Expanded Layout)
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: DesignSystem.small) {
-                        Image(systemName: iconName(for: context.state.kind))
+                        Image(systemName: liveActivityIconName(for: context.state.kind))
                             .foregroundStyle(Color.appAccent)
                             .font(.title3)
                         
@@ -83,7 +95,7 @@ public struct LiveActivityView: Widget {
                     .padding(.top, DesignSystem.tiny)
                 }
             } compactLeading: {
-                Image(systemName: iconName(for: context.state.kind))
+                Image(systemName: liveActivityIconName(for: context.state.kind))
                     .foregroundStyle(Color.appAccent)
                     .font(.caption.weight(.bold))
             } compactTrailing: {
@@ -91,18 +103,10 @@ public struct LiveActivityView: Widget {
                     .font(.system(.caption2, design: .monospaced).weight(.bold))
                     .foregroundStyle(Color.appAccent)
             } minimal: {
-                Image(systemName: iconName(for: context.state.kind))
+                Image(systemName: liveActivityIconName(for: context.state.kind))
                     .foregroundStyle(Color.appAccent)
                     .font(.caption2)
             }
-        }
-    }
-
-    private func iconName(for kind: ActivityKind) -> String {
-        switch kind {
-        case .synthesis: return DesignSystem.Icons.mindmap
-        case .ingestOCR: return DesignSystem.Icons.scan
-        case .voiceNote: return DesignSystem.Icons.voiceNote
         }
     }
 }
@@ -118,7 +122,7 @@ private struct LockScreenLiveActivityView: View {
                     .fill(Color.appAccent.opacity(DesignSystem.Opacity.soft))
                     .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
                 
-                Image(systemName: iconName(for: context.state.kind))
+                Image(systemName: liveActivityIconName(for: context.state.kind))
                     .foregroundStyle(Color.appAccent)
                     .font(.title3)
             }
@@ -144,14 +148,6 @@ private struct LockScreenLiveActivityView: View {
             }
         }
         .padding(DesignSystem.standardPadding)
-    }
-
-    private func iconName(for kind: ActivityKind) -> String {
-        switch kind {
-        case .synthesis: return DesignSystem.Icons.mindmap
-        case .ingestOCR: return DesignSystem.Icons.scan
-        case .voiceNote: return DesignSystem.Icons.voiceNote
-        }
     }
 }
 #endif
