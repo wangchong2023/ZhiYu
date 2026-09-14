@@ -265,14 +265,18 @@ public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, Sendable
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
     ) async throws -> KnowledgePage {
-        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+        Self.makePage(title: title, pageType: pageType, customIcon: customIcon, content: content,
+                      tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+                      fileSize: fileSize, sourceType: sourceType)
     }
     public func anyCreatePage(
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?,
         forceDeepScan: Bool
     ) async -> KnowledgePage? {
-        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+        Self.makePage(title: title, pageType: pageType, customIcon: customIcon, content: content,
+                      tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+                      fileSize: fileSize, sourceType: sourceType)
     }
     public func updatePage(_ page: KnowledgePage) async throws {}
     public func anyUpdatePage(_ page: KnowledgePage, forceDeepScan: Bool) async {}
@@ -287,6 +291,17 @@ public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, Sendable
     public func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?, startTime: Date?, endTime: Date?, module: String?) {}
     public func getStorageStats() async -> StorageStats {
         StorageStats(databaseSize: 0, logsSize: 0, exportsSize: 0)
+    }
+
+    /// 统一构造 KnowledgePage 的辅助方法，消除 createPage 与 anyCreatePage 间的重复构造逻辑。
+    private static func makePage(
+        title: String, pageType: PageType, customIcon: String?, content: String,
+        tags: [String], sourceURL: String?, rawSnippet: String?,
+        fileSize: Int64?, sourceType: String?
+    ) -> KnowledgePage {
+        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content,
+                      tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet,
+                      fileSize: fileSize, sourceType: sourceType)
     }
 }
 

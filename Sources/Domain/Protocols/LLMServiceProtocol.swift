@@ -299,6 +299,10 @@ public final class NoOpLLMRetrievalService: LLMRetrievalServiceProtocol {
 }
 
 /// 无操作 LLM 综合服务（ObservableObject 占位）
+/// 实现复用：通过组合 NoOpLLMChatService / NoOpLLMKnowledgeService / NoOpLLMRetrievalService 三个子服务，
+/// 避免重复实现 9 个方法体（chat / chatStream / generate / smartIngest / discoverPotentialLinks /
+/// foldContent / analyzeForRefactoring / rewriteQuery / expandQuery / rerank / rerankChunks /
+/// generateHypotheticalDocument）。
 @MainActor
 public final class NoOpLLMService: LLMServiceProtocol {
     public var provider: LLMProvider = .custom
@@ -308,24 +312,45 @@ public final class NoOpLLMService: LLMServiceProtocol {
     public var autoScan: Bool = false
     public var autoRefactor: Bool = false
     public var isEnabled: Bool { false }
+    private let chatService = NoOpLLMChatService()
+    private let knowledgeService = NoOpLLMKnowledgeService()
+    private let retrievalService = NoOpLLMRetrievalService()
     public init() {}
     public func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
-        ChatMessageDTO(role: .assistant, content: "")
+        try await chatService.chat(query: query, history: history, pages: pages)
     }
     public func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
-        AsyncThrowingStream { continuation in continuation.finish() }
+        chatService.chatStream(query: query, history: history, pages: pages)
     }
-    public func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String { "" }
+    public func generate(prompt: String, systemPrompt: String, maxTokens: Int) async throws -> String {
+        try await chatService.generate(prompt: prompt, systemPrompt: systemPrompt, maxTokens: maxTokens)
+    }
     public func smartIngest(title: String, rawContent: String, pages: [any KnowledgePageRepresentable]) async throws -> SmartIngestResultDTO {
-        SmartIngestResultDTO(title: title, compiledContent: "", suggestedTags: [], suggestedType: PageType.concept.rawValue, relatedTitles: [], summary: "")
+        try await knowledgeService.smartIngest(title: title, rawContent: rawContent, pages: pages)
     }
-    public func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] { [] }
-    public func foldContent(existingContent: String, newContent: String, title: String) async throws -> String { existingContent }
-    public func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] { [] }
-    public func rewriteQuery(_ query: String) async -> String { query }
-    public func expandQuery(_ query: String) async -> [String] { [] }
+    public func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] {
+        try await knowledgeService.discoverPotentialLinks(content: content, existingTitles: existingTitles)
+    }
+    public func foldContent(existingContent: String, newContent: String, title: String) async throws -> String {
+        try await knowledgeService.foldContent(existingContent: existingContent, newContent: newContent, title: title)
+    }
+    public func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] {
+        try await knowledgeService.analyzeForRefactoring(pages: pages)
+    }
+    public func rewriteQuery(_ query: String) async -> String {
+        await retrievalService.rewriteQuery(query)
+    }
+    public func expandQuery(_ query: String) async -> [String] {
+        await retrievalService.expandQuery(query)
+    }
     /// NoOp 占位实现：直接返回原候选列表，永不抛错（`throws` 仅为满足协议契约）
-    public func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] { candidates }
-    public func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] { chunks }
-    public func generateHypotheticalDocument(query: String) async -> String { "" }
+    public func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] {
+        try await retrievalService.rerank(query: query, candidates: candidates)
+    }
+    public func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] {
+        await retrievalService.rerankChunks(query: query, chunks: chunks)
+    }
+    public func generateHypotheticalDocument(query: String) async -> String {
+        await retrievalService.generateHypotheticalDocument(query: query)
+    }
 }
