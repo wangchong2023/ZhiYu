@@ -1116,6 +1116,7 @@
 		63841617944A22F7F11ADDBB /* testLogViewEmptyState.1.png in Resources */ = {isa = PBXBuildFile; fileRef = F2181680976F19D682E2CC3B /* testLogViewEmptyState.1.png */; };
 		63D7E3D75C8984FCAACB0DE3 /* VaultDataCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C4FB97484AC2EA70782B41 /* VaultDataCoordinator.swift */; };
 		63E079CD10480DEE39608DF7 /* Platform.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0E5C25A712C75E3F68DCC284 /* Platform.xcstrings */; };
+		63EDDE63A3D7371C47C5EDB3 /* ScenesSharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780883407FD1CB84B7968645 /* ScenesSharedComponents.swift */; };
 		63F6A8DC63E149C37605FF2C /* KnowledgeDashboardDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C63028408EBB27392ED2F0 /* KnowledgeDashboardDeepTests.swift */; };
 		64156BFC0C8C91FBD07B58B0 /* OOXMLParserBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAC0A4278B964BE1F4887FFC /* OOXMLParserBase.swift */; };
 		6416FB2EBAD045647426001A /* IOSBackgroundTaskProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC3AA0801EA46EA222E2F01 /* IOSBackgroundTaskProviderTests.swift */; };
@@ -2391,6 +2392,7 @@
 		D157F370B5889A3CE79D2BC0 /* PromptSecuritySanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7041CA60E9931C47A7965FF7 /* PromptSecuritySanitizer.swift */; };
 		D1612DE299139B0F7CA0AC92 /* PluginDetailAndPageDetailDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671CC783B66457E617D0BD36 /* PluginDetailAndPageDetailDeepTests.swift */; };
 		D163C2E32C429B6CD36077D7 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203B4EBD884996C5E6A88E4A /* Typography.swift */; };
+		D1737F2788BA38E3A5D83C0D /* ScenesSharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780883407FD1CB84B7968645 /* ScenesSharedComponents.swift */; };
 		D18F675C944143FD3F8467A2 /* L10nPluginTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CBE58920F1A3786E681A9A /* L10nPluginTableTests.swift */; };
 		D1BAA023212D62B6B56FDCBF /* TaskCenterInteractiveSnapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF152D7D769500336F2C93D0 /* TaskCenterInteractiveSnapshots.swift */; };
 		D1C087CE3D9D9BB0E771CF72 /* testSynthesisErrorStateView_WithBothActions.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C4CA5373086FFD50FD74835 /* testSynthesisErrorStateView_WithBothActions.1.png */; };
@@ -3937,6 +3939,7 @@
 		775C125A0357BC5DA020F771 /* InferenceParameterConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InferenceParameterConfigurationTests.swift; sourceTree = "<group>"; };
 		778FBA3840BA63BA5D3FA6D2 /* LogActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogActionTests.swift; sourceTree = "<group>"; };
 		77CB5AC501CEF6919B76CD3B /* OverlaysAndLiveActivityFullDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlaysAndLiveActivityFullDeepTests.swift; sourceTree = "<group>"; };
+		780883407FD1CB84B7968645 /* ScenesSharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScenesSharedComponents.swift; sourceTree = "<group>"; };
 		781C7A56D7B72CC75FF1ADD4 /* TaskCenterDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCenterDeepTests.swift; sourceTree = "<group>"; };
 		7820E00F7CCA2A5E4BF6FC25 /* testPDFDocumentRowNoHighlights.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testPDFDocumentRowNoHighlights.1.png; sourceTree = "<group>"; };
 		783350EF5AFE6259B68D28D5 /* AISynthesisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISynthesisService.swift; sourceTree = "<group>"; };
@@ -6795,6 +6798,7 @@
 			children = (
 				8D5E0CDBA62F45E8BE9BD2B7 /* AboutView.swift */,
 				9EAE1990A7BFB7208B3F6E9E /* ContentView.swift */,
+				780883407FD1CB84B7968645 /* ScenesSharedComponents.swift */,
 				7910C651F6DAC19BB01BFE3D /* SplashView.swift */,
 				9514F0E0D07C94132CE19784 /* Layout */,
 			);
@@ -11494,6 +11498,7 @@
 				FE58C9493436D9D07A1E40AD /* SQLitePluginRepository.swift in Sources */,
 				18B1660BABB1FE0A042751DD /* SQLiteStore.swift in Sources */,
 				A5A3042278DD069758511AE8 /* SQLiteVaultRepository.swift in Sources */,
+				63EDDE63A3D7371C47C5EDB3 /* ScenesSharedComponents.swift in Sources */,
 				79C24F313B1B5B1ABB039A60 /* SchemaService.swift in Sources */,
 				A825925F4D3A3F95A9F1DF84 /* SearchConstants.swift in Sources */,
 				2F96D5FE4998398380648020 /* SearchDiagnosticInfo.swift in Sources */,
@@ -12285,6 +12290,7 @@
 				536EDB71F361F7E7B8438913 /* SQLitePluginRepository.swift in Sources */,
 				AFB89B4FF4F1C9B1A9AA6A72 /* SQLiteStore.swift in Sources */,
 				3C240EEF6C908FDEE6C5434D /* SQLiteVaultRepository.swift in Sources */,
+				D1737F2788BA38E3A5D83C0D /* ScenesSharedComponents.swift in Sources */,
 				6205C38772A57058ECE9E695 /* SchemaService.swift in Sources */,
 				2B2BA6B2EF2350CC8C139A41 /* SearchConstants.swift in Sources */,
 				062F5F288B2AF097148E5F73 /* SearchDiagnosticInfo.swift in Sources */,

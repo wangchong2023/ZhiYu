@@ -132,24 +132,26 @@ struct SplashView: View {
         }
 
         // 名言淡入
-        DispatchQueue.main.asyncAfter(deadline: .now() + DesignSystem.Animation.Splash.quoteDelay) {
-            withAnimation(.easeOut(duration: 1.2)) {
-                quoteOpacity = 1
-            }
+        SplashAnimationScheduler.scheduleFadeIn(
+            after: DesignSystem.Animation.Splash.quoteDelay,
+            duration: DesignSystem.Animation.Splash.quoteFadeDuration
+        ) {
+            quoteOpacity = 1
         }
         
         // 署名淡入
-        DispatchQueue.main.asyncAfter(deadline: .now() + DesignSystem.Animation.Splash.authorDelay) {
-            withAnimation(.easeOut(duration: DesignSystem.Animation.slowDuration)) {
-                authorOpacity = 1
-            }
+        SplashAnimationScheduler.scheduleFadeIn(
+            after: DesignSystem.Animation.Splash.authorDelay,
+            duration: DesignSystem.Animation.slowDuration
+        ) {
+            authorOpacity = 1
         }
         
-        // 5 秒后自动进入（仅在用户未手动点击时）
-        DispatchQueue.main.asyncAfter(deadline: .now() + DesignSystem.Animation.Splash.autoDismissDelay) {
-            withAnimation(.easeInOut(duration: DesignSystem.Animation.standardDuration)) {
-                onDismiss()
-            }
+        // 自动进入（仅在用户未手动点击时）
+        SplashAnimationScheduler.scheduleStandardTransition(
+            after: DesignSystem.Animation.Splash.autoDismissDelay
+        ) {
+            onDismiss()
         }
     }
 }

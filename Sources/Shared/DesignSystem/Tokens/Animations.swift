@@ -81,6 +81,8 @@ public enum Animations {
     public enum Splash {
         /// 名言淡入延迟 (standardDuration * 3)
         public static let quoteDelay: Double = standardDuration * 3
+        /// 名言淡入时长 (1.2s)
+        public static let quoteFadeDuration: Double = 1.2
         /// 署名与按钮淡入延迟 (slowDuration + standardDuration * 4.5)
         public static let authorDelay: Double = slowDuration + standardDuration * 4.5
         /// 闪光扫过延迟 (slowDuration + standardDuration * 6.5)

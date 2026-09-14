@@ -43,27 +43,11 @@ struct SidebarView: View {
             // 强行覆写为 .compact，因此无法用系统的 sizeClass 区分设备屏幕。采用全局设备 screenClass 进行高信度分支判定。
             if appEnv.screenClass == .compact {
                 List {
-                    CapabilitiesSection()
-                    SourcesSection()
-                    UniverseSection()
-                    PinnedSection(
-                        heroNamespace: heroNamespace,
-                        pageToDelete: $pageToDelete,
-                        showDeleteConfirmation: $showDeleteConfirmation
-                    )
-                    ToolsSection()
+                    sidebarListContent
                 }
             } else {
                 List(selection: $router.sidebarSelection) {
-                    CapabilitiesSection()
-                    SourcesSection()
-                    UniverseSection()
-                    PinnedSection(
-                        heroNamespace: heroNamespace,
-                        pageToDelete: $pageToDelete,
-                        showDeleteConfirmation: $showDeleteConfirmation
-                    )
-                    ToolsSection()
+                    sidebarListContent
                 }
             }
         }
@@ -89,6 +73,23 @@ struct SidebarView: View {
         }
         .sidebarToolbar(title: L10n.Common.Sidebar.title, appEnv: appEnv)
         .id(router.languageForceUpdate)
+    }
+
+    // MARK: - 侧边栏列表内容
+
+    /// 侧边栏 List 的统一内容构建器
+    /// 抽取 compact 与 regular 两种布局下完全相同的 Section 组合，避免重复书写。
+    @ViewBuilder
+    private var sidebarListContent: some View {
+        CapabilitiesSection()
+        SourcesSection()
+        UniverseSection()
+        PinnedSection(
+            heroNamespace: heroNamespace,
+            pageToDelete: $pageToDelete,
+            showDeleteConfirmation: $showDeleteConfirmation
+        )
+        ToolsSection()
     }
 }
 
