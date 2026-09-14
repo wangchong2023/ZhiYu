@@ -57,6 +57,19 @@ public protocol AppEnvironmentProtocol: Sendable {
     var isCloudSyncSupported: Bool { get }
 }
 
+// MARK: - appVersion 默认实现
+
+extension AppEnvironmentProtocol {
+
+    /// 从 Bundle.main 读取版本号与构建号，格式 "x.y.z (build)"。
+    /// 消除 iOS/macOS/watchOS 三端 AppEnvironment 中重复的 Bundle 读取逻辑。
+    public var appVersion: String {
+        let version = Bundle.main.infoDictionary?[AppConstants.Bundle.versionKey] as? String ?? AppConstants.Bundle.defaultVersion
+        let build = Bundle.main.infoDictionary?[AppConstants.Bundle.buildKey] as? String ?? AppConstants.Bundle.defaultBuild
+        return "\(version) (\(build))"
+    }
+}
+
 // MARK: - DependencyKey 注册
 
 /// AppEnvironmentProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）

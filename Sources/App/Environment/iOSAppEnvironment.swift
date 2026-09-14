@@ -52,12 +52,6 @@ final class iOSAppEnvironment: AppEnvironmentProtocol {
         return "iOS"
     }
     
-    var appVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "\(version) (\(build))"
-    }
-    
     var isCloudSyncSupported: Bool {
         #if targetEnvironment(simulator)
         return false

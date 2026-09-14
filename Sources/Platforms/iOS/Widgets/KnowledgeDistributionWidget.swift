@@ -56,12 +56,9 @@ struct KnowledgeDistributionProvider: TimelineProvider {
 // MARK: - Widget View
 struct KnowledgeDistributionWidgetEntryView: View {
     var entry: KnowledgeDistributionProvider.Entry
-    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        ZStack {
-            WidgetVisualConstants.gradientBackground
-
+        WidgetContainerBackground { family in
             switch family {
             case .systemMedium:
                 mediumView
@@ -71,7 +68,6 @@ struct KnowledgeDistributionWidgetEntryView: View {
                 mediumView
             }
         }
-        .containerBackground(for: .widget) { Color.clear }
     }
 
     private var mediumView: some View {

@@ -11,6 +11,35 @@
 //
 
 import SwiftUI
+import WidgetKit
+
+// MARK: - Deep Link URL 辅助
+
+/// Widget Deep Link URL 解析辅助，消除多个 Widget 中重复的
+/// `URL(string: url) ?? URL(string: "about:blank")!` 模式。
+enum WidgetDeepLinkURL {
+    /// 将字符串 URL 安全转换为 URL，无效时回退到 about:blank 占位。
+    static func resolve(_ urlString: String) -> URL {
+        URL(string: urlString) ?? URL(string: "about:blank")!
+    }
+}
+
+// MARK: - Widget 容器背景
+
+/// Widget 统一容器背景修饰器，消除多个 Widget EntryView 中重复的
+/// `ZStack { gradientBackground; switch family }; .containerBackground { Color.clear }` 模式。
+struct WidgetContainerBackground<Content: View>: View {
+    @Environment(\.widgetFamily) private var family
+    @ViewBuilder let content: (WidgetFamily) -> Content
+
+    var body: some View {
+        ZStack {
+            WidgetVisualConstants.gradientBackground
+            content(family)
+        }
+        .containerBackground(for: .widget) { Color.clear }
+    }
+}
 
 // MARK: - 引文卡片行
 
@@ -88,7 +117,7 @@ struct WidgetActionButton: View {
     let url: String
 
     var body: some View {
-        Link(destination: URL(string: url) ?? URL(string: "about:blank")!) {
+        Link(destination: WidgetDeepLinkURL.resolve(url)) {
             HStack(spacing: WidgetVisualConstants.spacingCompact) {
                 Image(systemName: icon)
                     .font(.system(size: WidgetVisualConstants.smallFontSize))

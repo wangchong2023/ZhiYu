@@ -24,12 +24,6 @@ final class WatchAppEnvironment: AppEnvironmentProtocol {
     var isMobile: Bool { return true }
     
     var platformName: String { return "watchOS" }
-
-    var appVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "\(version) (\(build))"
-    }
     
     var deviceName: String {
         return WKInterfaceDevice.current().name

@@ -54,12 +54,9 @@ struct DailyInsightProvider: TimelineProvider {
 // MARK: - Widget View
 struct DailyInsightWidgetEntryView: View {
     var entry: DailyInsightProvider.Entry
-    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        ZStack {
-            WidgetVisualConstants.gradientBackground
-
+        WidgetContainerBackground { family in
             switch family {
             case .systemSmall:
                 smallView
@@ -73,7 +70,6 @@ struct DailyInsightWidgetEntryView: View {
                 mediumView
             }
         }
-        .containerBackground(for: .widget) { Color.clear }
     }
 
     private var smallView: some View {

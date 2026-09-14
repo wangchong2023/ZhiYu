@@ -38,12 +38,9 @@ struct QuickCaptureProvider: TimelineProvider {
 // MARK: - Widget View
 struct QuickCaptureWidgetEntryView: View {
     var entry: QuickCaptureProvider.Entry
-    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        ZStack {
-            WidgetVisualConstants.gradientBackground
-
+        WidgetContainerBackground { family in
             switch family {
             case .systemMedium:
                 mediumView
@@ -53,7 +50,6 @@ struct QuickCaptureWidgetEntryView: View {
                 mediumView
             }
         }
-        .containerBackground(for: .widget) { Color.clear }
     }
 
     private var mediumView: some View {
@@ -86,7 +82,7 @@ struct WidgetCaptureButton: View {
     let url: String
 
     var body: some View {
-        Link(destination: URL(string: url) ?? URL(string: "about:blank")!) {
+        Link(destination: WidgetDeepLinkURL.resolve(url)) {
             VStack(spacing: WidgetVisualConstants.spacingStandard) {
                 ZStack {
                     Circle()
@@ -117,7 +113,7 @@ struct WidgetAccessoryIconLink: View {
     let url: String
 
     var body: some View {
-        Link(destination: URL(string: url) ?? URL(string: "about:blank")!) {
+        Link(destination: WidgetDeepLinkURL.resolve(url)) {
             Image(systemName: icon)
                 .font(.title3)
         }

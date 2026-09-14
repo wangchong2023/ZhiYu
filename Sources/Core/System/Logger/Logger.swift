@@ -180,7 +180,13 @@ public actor Logger: LoggerProtocol {
     }
 
     // MARK: - Standard Logging (nonisolated entry points)
-    
+
+    /// 统一格式化日志文件名与行号，消除 info/warning/error 重复的 `(file as NSString).lastPathComponent` 模式。
+    private nonisolated static func formatLocation(file: String, line: Int, function: String) -> String {
+        let fileName = (file as NSString).lastPathComponent
+        return " [\(fileName):\(line)] \(function) -> "
+    }
+
     /// 调试
     /// - Parameter message: message
     /// - Parameter file: file
@@ -188,34 +194,31 @@ public actor Logger: LoggerProtocol {
     /// - Parameter line: line
     public nonisolated func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         #if DEBUG
-        let fileName = (file as NSString).lastPathComponent
         // 审查修复 MED-7: 日志输出前脱敏，防止 API key 明文泄露
-        print(" [DEBUG] [\(fileName):\(line)] \(function) -> \(LogMasker.mask(message))")
+        print(" [DEBUG]" + Self.formatLocation(file: file, line: line, function: function) + "\(LogMasker.mask(message))")
         #endif
     }
-    
+
     /// info
     /// - Parameter message: message
     /// - Parameter file: file
     /// - Parameter function: function
     /// - Parameter line: line
     public nonisolated func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        let fileName = (file as NSString).lastPathComponent
         // 审查修复 MED-7: 日志输出前脱敏
-        print(" [INFO] [\(fileName):\(line)] \(function) -> \(LogMasker.mask(message))")
+        print(" [INFO]" + Self.formatLocation(file: file, line: line, function: function) + "\(LogMasker.mask(message))")
     }
-    
+
     /// warning
     /// - Parameter message: message
     /// - Parameter file: file
     /// - Parameter function: function
     /// - Parameter line: line
     public nonisolated func warning(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        let fileName = (file as NSString).lastPathComponent
         // 审查修复 MED-7: 日志输出前脱敏
-        print(" [WARNING] [\(fileName):\(line)] \(function) -> \(LogMasker.mask(message))")
+        print(" [WARNING]" + Self.formatLocation(file: file, line: line, function: function) + "\(LogMasker.mask(message))")
     }
-    
+
     /// error
     /// - Parameter message: message
     /// - Parameter error: error
@@ -223,16 +226,28 @@ public actor Logger: LoggerProtocol {
     /// - Parameter function: function
     /// - Parameter line: line
     public nonisolated func error(_ message: String, error: Error? = nil, file: String = #file, function: String = #function, line: Int = #line) {
-        let fileName = (file as NSString).lastPathComponent
         let errDesc = error.map { " (Error: \($0.localizedDescription))" } ?? ""
         // 审查修复 MED-7: 日志输出前脱敏
-        print(" [ERROR]" + " [\(fileName):\(line)]" + " \(function)" + " -> \(LogMasker.mask(message))\(errDesc)")
-        
+        print(" [ERROR]" + Self.formatLocation(file: file, line: line, function: function) + "\(LogMasker.mask(message))\(errDesc)")
+
         addLog(action: .error, target: message, details: errDesc, module: CoreConstants.LogModule.system, status: .failure, failureReason: error?.localizedDescription)
     }
 
     // MARK: - Structured Logging
-    
+
+    /// addLog 调用参数封装，消除 addLog 与 _addLog 间重复的 9 参数列表。
+    private struct AddLogInput {
+        let action: LogAction
+        let target: String
+        let details: String
+        let duration: TimeInterval?
+        let startTime: Date?
+        let endTime: Date?
+        let module: String?
+        let status: LogStatus?
+        let failureReason: String?
+    }
+
     /// 添加记录日志
     public nonisolated func addLog(
         action: LogAction,
@@ -245,45 +260,28 @@ public actor Logger: LoggerProtocol {
         status: LogStatus? = nil,
         failureReason: String? = nil
     ) {
-        Task {
-            await _addLog(
-                action: action,
-                target: target,
-                details: details,
-                duration: duration,
-                startTime: startTime,
-                endTime: endTime,
-                module: module,
-                status: status,
-                failureReason: failureReason
-            )
-        }
+        let input = AddLogInput(
+            action: action, target: target, details: details, duration: duration,
+            startTime: startTime, endTime: endTime, module: module,
+            status: status, failureReason: failureReason
+        )
+        Task { await _addLog(input) }
     }
 
-    private func _addLog(
-        action: LogAction,
-        target: String,
-        details: String = "",
-        duration: TimeInterval? = nil,
-        startTime: Date? = nil,
-        endTime: Date? = nil,
-        module: String? = nil,
-        status: LogStatus? = nil,
-        failureReason: String? = nil
-    ) async {
+    private func _addLog(_ input: AddLogInput) async {
         // 审查修复 MED-7: 持久化前对 target/details 脱敏，防止 API key 明文写入日志文件
-        let maskedTarget = LogMasker.mask(target)
-        let maskedDetails = LogMasker.mask(details)
+        let maskedTarget = LogMasker.mask(input.target)
+        let maskedDetails = LogMasker.mask(input.details)
         let entry = LogEntry(
-            action: action,
+            action: input.action,
             target: maskedTarget,
             details: maskedDetails,
-            duration: duration,
-            startTime: startTime,
-            endTime: endTime,
-            module: module,
-            status: status,
-            failureReason: failureReason
+            duration: input.duration,
+            startTime: input.startTime,
+            endTime: input.endTime,
+            module: input.module,
+            status: input.status,
+            failureReason: input.failureReason
         )
         
         logToConsole(entry)

@@ -117,13 +117,9 @@ struct KnowledgeStatsProvider: TimelineProvider {
 /// 桌面静态小组件的主体渲染视图
 struct KnowledgeStatsWidgetEntryView: View {
     var entry: KnowledgeStatsProvider.Entry
-    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        ZStack {
-            // 背景：采用智宇标志性的沉浸式暗色渐变
-            WidgetVisualConstants.gradientBackground
-
+        WidgetContainerBackground { family in
             // 霓虹光环点缀 (Platinum UI Design)
             RadialGradient(
                 colors: [Color.purple.opacity(WidgetVisualConstants.opacityMedium), Color.clear],
@@ -149,24 +145,12 @@ struct KnowledgeStatsWidgetEntryView: View {
                 smallView
             }
         }
-        // 应用 WidgetKit 最新的内容边距安全策略
-        .containerBackground(for: .widget) {
-            Color.clear
-        }
     }
 
     // MARK: - Small 尺寸布局
     private var smallView: some View {
         VStack(alignment: .leading, spacing: KnowledgeStatsMetrics.spacingRegular) {
-            HStack(spacing: WidgetVisualConstants.spacingCompact) {
-                Image(systemName: "books.vertical.fill")
-                    .font(.footnote)
-                    .foregroundStyle(WidgetSharedConstants.Color.purple)
-                Text(entry.vaultName)
-                    .font(.caption2.bold())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
+            vaultHeader(iconFont: .footnote, titleFont: .caption2.bold())
 
             Spacer()
 
@@ -194,15 +178,7 @@ struct KnowledgeStatsWidgetEntryView: View {
         HStack(spacing: WidgetVisualConstants.spacingLarge) {
             // 左侧：数据面板
             VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingWide) {
-                HStack(spacing: WidgetVisualConstants.spacingCompact) {
-                    Image(systemName: "books.vertical.fill")
-                        .foregroundStyle(WidgetSharedConstants.Color.purple)
-                        .font(.caption)
-                    Text(entry.vaultName)
-                        .font(.caption.bold())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                vaultHeader(iconFont: .caption, titleFont: .caption.bold())
 
                 HStack(spacing: WidgetVisualConstants.spacingLarge) {
                     WidgetMainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
@@ -237,14 +213,7 @@ struct KnowledgeStatsWidgetEntryView: View {
             // 顶半部复用 Medium 的统计信息
             HStack(spacing: WidgetVisualConstants.spacingLarge) {
                 VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingStandard) {
-                    HStack(spacing: WidgetVisualConstants.spacingCompact) {
-                        Image(systemName: "books.vertical.fill")
-                            .foregroundStyle(WidgetSharedConstants.Color.purple)
-                            .font(.caption)
-                        Text(entry.vaultName)
-                            .font(.caption.bold())
-                            .foregroundStyle(.secondary)
-                    }
+                    vaultHeader(iconFont: .caption, titleFont: .caption.bold())
 
                     HStack(spacing: KnowledgeStatsMetrics.spacingXLarge) {
                         WidgetMainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
@@ -275,6 +244,23 @@ struct KnowledgeStatsWidgetEntryView: View {
         }
         .padding(KnowledgeStatsMetrics.footerPadding)
     }
+
+    // MARK: - 共享子视图
+
+    /// 知识库标题头部：图标 + 仓库名，消除 smallView/mediumView/largeView 间重复的
+    /// `HStack { Image("books.vertical.fill"); Text(vaultName) }` 模式。
+    @ViewBuilder
+    private func vaultHeader(iconFont: Font, titleFont: Font) -> some View {
+        HStack(spacing: WidgetVisualConstants.spacingCompact) {
+            Image(systemName: "books.vertical.fill")
+                .font(iconFont)
+                .foregroundStyle(WidgetSharedConstants.Color.purple)
+            Text(entry.vaultName)
+                .font(titleFont)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+    }
 }
 
 // MARK: - 大尺寸 AI 按钮
@@ -286,7 +272,7 @@ struct WidgetLargeAIButton: View {
     let url: String
 
     var body: some View {
-        Link(destination: URL(string: url) ?? URL(string: "about:blank")!) {
+        Link(destination: WidgetDeepLinkURL.resolve(url)) {
             HStack(spacing: WidgetVisualConstants.spacingCompact) {
                 Image(systemName: "sparkles")
                 Text(label)
