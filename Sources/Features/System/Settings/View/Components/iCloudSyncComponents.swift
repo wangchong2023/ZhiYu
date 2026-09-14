@@ -152,16 +152,15 @@ struct SyncInfoRow: View {
     let text: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: SystemSpacing.element) {
-            Image(systemName: icon)
-                .font(.caption)
-                .foregroundStyle(.appText)
-                .frame(width: DesignSystem.IconSize.small)
-
-            Text(text)
-                .font(.caption)
-                .foregroundStyle(.appSecondary)
-        }
+        InfoIconRow(
+            icon: icon,
+            text: text,
+            alignment: .top,
+            spacing: SystemSpacing.element,
+            iconColor: .appText,
+            textColor: .appSecondary,
+            iconWidth: DesignSystem.IconSize.small
+        )
     }
 }
 #endif // ICLOUD_ENABLED

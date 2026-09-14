@@ -25,26 +25,18 @@ extension PluginDetailView {
                     .pluginLocalIconBase()
                     .iconClipShadow(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)
             } else if let iconURL = URL(string: plugin.icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
-                CachedAsyncImage(url: iconURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable().scaledToFit()
-                    case .empty:
+                PluginRemoteIconLoader(
+                    iconURL: iconURL,
+                    size: DesignSystem.Gallery.itemSize,
+                    cornerRadius: SystemRadius.chip,
+                    strokeOpacity: SystemOpacity.glass,
+                    strokeColor: Color.appBorder,
+                    emptyContent: {
                         AppSkeleton(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize, cornerRadius: SystemRadius.chip)
-                            .overlay(
-                                ProgressView()
-                                    .controlSize(.small)
-                            )
-                    case .failure:
-                        // 远程图标拉取失败时，fallback 到带渐变底的拼图块默认图标
-                        fallbackPluginIcon
-                    @unknown default:
-                        // 未知状态时，fallback 到带渐变底的拼图块默认图标
-                        fallbackPluginIcon
-                    }
-                }
-                .iconContainerStyle(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)
+                            .overlay(ProgressView().controlSize(.small))
+                    },
+                    fallback: { fallbackPluginIcon }
+                )
             } else {
                 fallbackPluginIcon
                     .iconContainerStyle(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)

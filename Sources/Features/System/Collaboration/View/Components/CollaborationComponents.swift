@@ -19,15 +19,7 @@ struct CollabInfoRow: View {
     let text: String
     
     var body: some View {
-        HStack(spacing: DesignSystem.CompositeRow.spacing) { // 10
-            Image(systemName: icon)
-                .font(.caption)
-                .foregroundStyle(.appAccent)
-                .frame(width: ComponentSpacing.section) // 20
-            Text(text)
-                .font(.caption)
-                .foregroundStyle(.appText)
-        }
+        InfoIconRow(icon: icon, text: text)
     }
 }
 

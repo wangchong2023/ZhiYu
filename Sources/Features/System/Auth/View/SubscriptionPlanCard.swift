@@ -28,29 +28,39 @@ struct SubscriptionPlanCard: View {
 
     private var cycleTabSelector: some View {
         HStack(spacing: DesignSystem.medium) {
-            Button(action: {
-                HapticFeedback.shared.trigger(.selection)
-                onCycleChange(.monthly)
-            }) {
-                VStack(spacing: SystemSpacing.atomic) {
-                    Text(L10n.Auth.monthly)
-                        .font(.subheadline.bold())
-                    Text(L10n.Auth.priceMonthlyPro)
-                        .font(.system(size: SystemFontSize.micro)) // Dynamic Type
-                }
-                .cycleButtonContent(isSelected: selectedCycle == .monthly)
-            }
-            .cycleButtonStyle(isSelected: selectedCycle == .monthly)
+            cycleButton(
+                cycle: .monthly,
+                title: L10n.Auth.monthly,
+                price: L10n.Auth.priceMonthlyPro,
+                badge: nil
+            )
+            cycleButton(
+                cycle: .yearly,
+                title: L10n.Auth.yearly,
+                price: L10n.Auth.priceYearlyPro,
+                badge: L10n.Auth.save20Percent
+            )
+        }
+    }
 
-            Button(action: {
-                HapticFeedback.shared.trigger(.selection)
-                onCycleChange(.yearly)
-            }) {
-                VStack(spacing: SystemSpacing.atomic) {
+    /// 通用周期按钮，消除月付/年付按钮的 Button+VStack+cycleButtonContent+cycleButtonStyle 重复
+    @ViewBuilder
+    private func cycleButton(
+        cycle: BillingCycle,
+        title: String,
+        price: String,
+        badge: String?
+    ) -> some View {
+        Button(action: {
+            HapticFeedback.shared.trigger(.selection)
+            onCycleChange(cycle)
+        }) {
+            VStack(spacing: SystemSpacing.atomic) {
+                if let badge {
                     HStack(spacing: SystemSpacing.tiny) {
-                        Text(L10n.Auth.yearly)
+                        Text(title)
                             .font(.subheadline.bold())
-                        Text(L10n.Auth.save20Percent)
+                        Text(badge)
                             .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
                             .foregroundStyle(.white)
                             .padding(.horizontal, SystemSpacing.tiny)
@@ -58,13 +68,16 @@ struct SubscriptionPlanCard: View {
                             .background(Color.theme.blue)
                             .clipShape(Capsule())
                     }
-                    Text(L10n.Auth.priceYearlyPro)
-                        .font(.system(size: SystemFontSize.micro)) // Dynamic Type
+                } else {
+                    Text(title)
+                        .font(.subheadline.bold())
                 }
-                .cycleButtonContent(isSelected: selectedCycle == .yearly)
+                Text(price)
+                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
             }
-            .cycleButtonStyle(isSelected: selectedCycle == .yearly)
+            .cycleButtonContent(isSelected: selectedCycle == cycle)
         }
+        .cycleButtonStyle(isSelected: selectedCycle == cycle)
     }
 
     /// 周期按钮内容容器样式，消除月付/年付按钮的 frame+padding+foregroundStyle 重复

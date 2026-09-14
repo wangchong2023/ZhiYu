@@ -111,54 +111,19 @@ public struct InferenceParametersView: View {
 
     /// 预设模板选择器（预设锁定 + 自定义按钮）
     private var presetSelector: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Text(L10n.ModelManager.Parameters.presetTemplate)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.appText)
-
-            HStack(spacing: DesignSystem.small) {
-                ForEach(ParameterPreset.allCases, id: \.self) { preset in
-                    presetButton(for: preset)
+        PresetSelectorContainer(
+            matchedPreset: matchedPreset,
+            selectedBackground: Color.appAccent,
+            unselectedBackground: Color.appBackground,
+            unselectedForeground: .appText,
+            customNudgeAction: {
+                if let preset = matchedPreset {
+                    // 从已锁定预设进入自定义：微调后 matchedPreset 自动变 nil
+                    temperature = preset.parameters.temperature + FeatureConstants.InferenceParam.customNudgeDelta
                 }
-                // "自定义"按钮 — 解锁参数编辑
-                customButton
-            }
-        }
-        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
-    }
-
-    /// 自定义模式按钮
-    private var customButton: some View {
-        let isCustom = matchedPreset == nil
-        return Button(action: {
-            if let preset = matchedPreset {
-                // 从已锁定预设进入自定义：微调后 matchedPreset 自动变 nil
-                temperature = preset.parameters.temperature + FeatureConstants.InferenceParam.customNudgeDelta
-            }
-        }) {
-            VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.sliderHorizontal)
-                    .font(.title3)
-                Text(L10n.ModelManager.Parameters.custom)
-                    .font(.caption.weight(.medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.small)
-            .background(isCustom ? Color.appAccent : Color.appBackground)
-            .foregroundStyle(isCustom ? .white : .appText)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-        }
-        .buttonStyle(.plain)
-        .disabled(isCustom) // 已在自定义模式时禁用
-    }
-
-    /// 预设按钮
-    private func presetButton(for preset: ParameterPreset) -> some View {
-        Button(action: { applyPreset(preset) }) {
-            PresetButtonContent(preset: preset)
-                .presetButtonStyle(isSelected: matchedPreset == preset)
-        }
-        .buttonStyle(.plain)
+            },
+            applyAction: { applyPreset($0) }
+        )
     }
 
     /// 是否可编辑参数（仅自定义模式）

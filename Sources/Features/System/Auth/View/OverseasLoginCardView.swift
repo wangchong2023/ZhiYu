@@ -90,25 +90,7 @@ struct OverseasLoginCardView: View {
         content: String,
         isPresented: Binding<Bool>
     ) -> some View {
-        NavigationStack {
-            ZStack {
-                themeManager.pageBackground()
-                    .ignoresSafeArea()
-                ScrollView {
-                    Text(LocalizedStringKey(content))
-                        .font(.subheadline)
-                        .foregroundStyle(.appText)
-                        .padding()
-                }
-            }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.done) { isPresented.wrappedValue = false }
-                }
-            }
-        }
+        PolicySheetContent(title: title, content: content, isPresented: isPresented)
     }
     
     @Environment(ThemeManager.self) var themeManager

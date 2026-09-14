@@ -388,27 +388,22 @@ struct PluginCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
             } else if let iconURL = URL(string: icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
-                CachedAsyncImage(url: iconURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable().scaledToFit()
-                    case .empty:
+                PluginRemoteIconLoader(
+                    iconURL: iconURL,
+                    size: DesignSystem.Action.minTouchTarget,
+                    cornerRadius: SystemRadius.card,
+                    strokeOpacity: SystemOpacity.glass,
+                    strokeColor: Color.appBorder,
+                    emptyContent: {
                         // 网络图标加载中时，展示静止淡雅的拼图占位符，去除凌乱的局部菊花与闪烁
                         Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
                             .font(.title3)
                             .foregroundStyle(.appSecondary.opacity(DesignSystem.disabledOpacity))
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
                             .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                    case .failure:
-                        // 远程图标拉取失败时，fallback 到带渐变底的拼图块默认图标
-                        pluginCardFallbackIcon
-                    @unknown default:
-                        // 未知状态时，fallback 到带渐变底的拼图块默认图标
-                        pluginCardFallbackIcon
-                    }
-                }
-                .pluginIconContainerStyle(cornerRadius: SystemRadius.card, strokeOpacity: SystemOpacity.glass)
+                    },
+                    fallback: { pluginCardFallbackIcon }
+                )
             } else {
                 Image(systemName: icon)
                     .font(.title3)

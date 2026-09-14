@@ -207,13 +207,7 @@ public struct UserProfileView: View {
             VStack(alignment: .leading, spacing: DesignSystem.large) {
                 // 账号 ID (不可修改)
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: DesignSystem.Icons.entity)
-                            .foregroundStyle(Color.theme.gray)
-                        Text(L10n.Auth.accountId)
-                            .font(.caption.bold())
-                            .foregroundStyle(.appSecondary)
-                    }
+                    FormLabelRow(icon: DesignSystem.Icons.entity, title: L10n.Auth.accountId, iconColor: Color.theme.gray)
                     Text(authService.currentUser?.id.uuidString ?? "-")
                         .font(.subheadline)
                         .foregroundStyle(.appText)
@@ -223,13 +217,7 @@ public struct UserProfileView: View {
                 // 手机号（如果通过短信登录则展示，不可修改）
                 if let phone = authService.currentUser?.phone, !phone.isEmpty {
                     VStack(alignment: .leading, spacing: DesignSystem.small) {
-                        HStack(spacing: SystemSpacing.element) {
-                            Image(systemName: DesignSystem.Icons.phoneFill)
-                                .foregroundStyle(Color.theme.gray)
-                            Text(L10n.Auth.phoneLabel)
-                                .font(.caption.bold())
-                                .foregroundStyle(.appSecondary)
-                        }
+                        FormLabelRow(icon: DesignSystem.Icons.phoneFill, title: L10n.Auth.phoneLabel, iconColor: Color.theme.gray)
                         Text(phone)
                             .font(.subheadline)
                             .foregroundStyle(.appText)
@@ -238,13 +226,7 @@ public struct UserProfileView: View {
 
                 // 昵称修改
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: DesignSystem.Icons.person)
-                            .foregroundStyle(Color.theme.accent)
-                        Text(L10n.Auth.nickname)
-                            .font(.caption.bold())
-                            .foregroundStyle(.appSecondary)
-                    }
+                    FormLabelRow(icon: DesignSystem.Icons.person, title: L10n.Auth.nickname, iconColor: Color.theme.accent)
 
                     // AppTextField 正确参数顺序：placeholder: 在前，text: 在后
                     AppTextField(
@@ -256,13 +238,7 @@ public struct UserProfileView: View {
                 
                 // 性别选择
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: DesignSystem.Icons.persons)
-                            .foregroundStyle(Color.theme.accent)
-                        Text(L10n.Auth.gender)
-                            .font(.caption.bold())
-                            .foregroundStyle(.appSecondary)
-                    }
+                    FormLabelRow(icon: DesignSystem.Icons.persons, title: L10n.Auth.gender, iconColor: Color.theme.accent)
                     
                     Picker("", selection: $gender) {
                         Text(L10n.Auth.genderSecret).tag(0)
@@ -274,13 +250,7 @@ public struct UserProfileView: View {
                 
                 // 生日选择
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    HStack(spacing: SystemSpacing.element) {
-                        Image(systemName: DesignSystem.Icons.calendar)
-                            .foregroundStyle(Color.theme.accent)
-                        Text(L10n.Auth.birthday)
-                            .font(.caption.bold())
-                            .foregroundStyle(.appSecondary)
-                    }
+                    FormLabelRow(icon: DesignSystem.Icons.calendar, title: L10n.Auth.birthday, iconColor: Color.theme.accent)
                     
                     DatePicker("", selection: $birthday, displayedComponents: .date)
                         .labelsHidden()
@@ -307,55 +277,38 @@ public struct UserProfileView: View {
                 
                 // 2x2 网格，清晰统计用户的知识库状况
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.medium) {
-                    metricItem(
+                    MetricTile(
                         title: L10n.Auth.statsNotebooks,
                         value: "\(vaultService.vaults.count)",
                         icon: DesignSystem.Icons.booksVerticalFill,
-                        color: Color.theme.blue
+                        iconColor: Color.theme.blue,
+                        valueColor: .primary
                     )
-                    metricItem(
+                    MetricTile(
                         title: L10n.Auth.statsPages,
                         value: "\(knowledgeStore.totalPages)",
                         icon: DesignSystem.Icons.docTextFill,
-                        color: Color.theme.green
+                        iconColor: Color.theme.green,
+                        valueColor: .primary
                     )
-                    metricItem(
+                    MetricTile(
                         title: L10n.Auth.statsSynthesis,
                         value: "\(synthesisStore.allSortedDocuments.count)",
                         icon: DesignSystem.Icons.sparkles,
-                        color: Color.theme.purple
+                        iconColor: Color.theme.purple,
+                        valueColor: .primary
                     )
-                    metricItem(
+                    MetricTile(
                         title: L10n.Auth.statsActiveDays,
                         value: "\(activeDays)",
                         icon: DesignSystem.Icons.calendarDayTimeline,
-                        color: Color.theme.orange
+                        iconColor: Color.theme.orange,
+                        valueColor: .primary
                     )
                 }
             }
             .padding(DesignSystem.medium)
         }
-    }
-
-    /// 单个资产数据指标组件
-    private func metricItem(title: String, value: String, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-            HStack(spacing: SystemSpacing.small) {
-                Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundStyle(color)
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Text(value)
-                .font(.title3.bold())
-                .foregroundStyle(.primary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(DesignSystem.small)
-        .background(Color.appCard.opacity(DesignSystem.softOpacity))
-        .cornerRadius(SystemRadius.card)
     }
 
     /// 活跃天数逻辑：初次启动时在本地存储中打点，自动计算距今的累积使用天数

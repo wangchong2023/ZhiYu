@@ -214,29 +214,11 @@ struct LLMSettingsView: View {
                             .foregroundStyle(Color.appAlert)
                     }
                 }
-                HStack {
-                    if showAPIKey {
-                        TextField(config.provider.apiKeyPlaceholder, text: $config.apiKey)
-                            .textFieldStyle(.plain)
-                            .foregroundStyle(.appText)
-                            .font(.system(.body, design: .monospaced))
-                    } else {
-                        SecureField(config.provider.apiKeyPlaceholder, text: $config.apiKey)
-                            .textFieldStyle(.plain)
-                            .foregroundStyle(.appText)
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    Button(action: { showAPIKey.toggle() }) {
-                        Image(systemName: showAPIKey ? "eye.slash" : "eye")
-                            .foregroundStyle(.appSecondary)
-                    }
-                }
-                .padding()
-                .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                .overlay(
-                    RoundedRectangle(cornerRadius: SystemRadius.small)
-                        .stroke(validation.isValid || config.apiKey.isEmpty ? Color.appBorder.opacity(DesignSystem.Opacity.prominent) : Color.appAlert.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
+                APIKeyInputField(
+                    placeholder: config.provider.apiKeyPlaceholder,
+                    text: $config.apiKey,
+                    isShown: $showAPIKey,
+                    isValid: validation.isValid
                 )
             }
             
@@ -245,12 +227,7 @@ struct LLMSettingsView: View {
                 Text(L10n.AI.LLM.apiAddress)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appSecondary)
-                TextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL)
-                    .textFieldStyle(.plain)
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundStyle(.appText)
-                    .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
-                    .skipOnWatch { $0.autocapitalization(.none).keyboardType(.URL) }
+                monospacedTextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL, keyboardType: .URL)
             }
             
             // Model (非自定义模式呈现 Picker 下拉菜单，自定义模式或手动模式呈现 TextField)
@@ -276,12 +253,7 @@ struct LLMSettingsView: View {
                 
                 if config.provider == .custom || isCustomModelInput || config.provider.suggestedModels.isEmpty {
                     // 自定义输入框
-                    TextField(FeatureConstants.Placeholder.modelName, text: $config.model)
-                        .textFieldStyle(.plain)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(.appText)
-                        .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
-                        .skipOnWatch { $0.autocapitalization(.none) }
+                    monospacedTextField(FeatureConstants.Placeholder.modelName, text: $config.model, keyboardType: nil)
                 } else {
                     // 官方提供商 Dropdown 下拉选择菜单
                     Menu {
@@ -307,7 +279,21 @@ struct LLMSettingsView: View {
         }
         .padding(.vertical, DesignSystem.small)
     }
-    
+
+    /// 等宽字体 TextField + borderedCardStyle，消除 baseURL 与 model 输入框的重复
+    @ViewBuilder
+    private func monospacedTextField(_ placeholder: String, text: Binding<String>, keyboardType: UIKeyboardType?) -> some View {
+        TextField(placeholder, text: text)
+            .textFieldStyle(.plain)
+            .font(.system(.body, design: .monospaced))
+            .foregroundStyle(.appText)
+            .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
+            .skipOnWatch {
+                $0.autocapitalization(.none)
+                if let keyboardType { $0.keyboardType(keyboardType) }
+            }
+    }
+
     func testConnection() {
         testing = true
         testResult = nil

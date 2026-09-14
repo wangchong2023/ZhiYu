@@ -193,34 +193,7 @@ struct AuthView: View {
         content: String,
         isPresented: Binding<Bool>
     ) -> some View {
-        NavigationStack {
-            ZStack {
-                themeManager.pageBackground()
-                    .ignoresSafeArea()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.medium) {
-                        Text(content)
-                            .font(.body)
-                            .foregroundStyle(.appText)
-                            .lineSpacing(Spacing.tiny)
-                        Spacer()
-                    }
-                    .padding()
-                    .appListRowBackground()
-                    .padding()
-                }
-            }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .environment(\.locale, Localized.currentLocale)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.confirm) {
-                        isPresented.wrappedValue = false
-                    }
-                }
-            }
-        }
+        PolicySheetContent(title: title, content: content, isPresented: isPresented)
     }
 
     // MARK: - 逻辑
