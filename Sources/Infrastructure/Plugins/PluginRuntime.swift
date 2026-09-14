@@ -132,14 +132,7 @@ final class PluginRuntime: @unchecked Sendable {
             registry.plugins[index].onUnload()
             registry.plugins.remove(at: index)
         }
-        registry.intercepters.removeAll(where: { $0.manifest.id == id })
-
-        // 清理该插件注册的所有扩展点
-        registry.commands.removeAll(where: { $0.pluginID == id })
-        registry.ribbonItems.removeAll(where: { $0.pluginID == id })
-        registry.settingTabs.removeAll(where: { $0.pluginID == id })
-        registry.customViews.removeAll(where: { $0.pluginID == id })
-        registry.eventListeners.removeAll(where: { $0.pluginID == id })
+        removeAllRegistrations(for: id)
 
         // 安全注销页面处理器
         if let store = knowledgeStore as KnowledgeStore? {
@@ -165,12 +158,7 @@ final class PluginRuntime: @unchecked Sendable {
             plugin.onUnload()
             registry.plugins.remove(at: index)
         }
-        registry.intercepters.removeAll(where: { $0.manifest.id == id })
-        registry.commands.removeAll(where: { $0.pluginID == id })
-        registry.ribbonItems.removeAll(where: { $0.pluginID == id })
-        registry.settingTabs.removeAll(where: { $0.pluginID == id })
-        registry.customViews.removeAll(where: { $0.pluginID == id })
-        registry.eventListeners.removeAll(where: { $0.pluginID == id })
+        removeAllRegistrations(for: id)
 
         // 更新资源状态
         var usage = pluginResourceUsage[id] ?? ResourceUsage()
@@ -178,6 +166,17 @@ final class PluginRuntime: @unchecked Sendable {
         pluginResourceUsage[id] = usage
 
         Logger.shared.error(" [Watchdog 2.0]  \(id) ")
+    }
+
+    /// 清理指定插件在注册中心的所有扩展点注册项（commands / ribbonItems / settingTabs / customViews / eventListeners / intercepters）
+    /// - Parameter id: 插件 ID
+    private func removeAllRegistrations(for id: String) {
+        registry.intercepters.removeAll(where: { $0.manifest.id == id })
+        registry.commands.removeAll(where: { $0.pluginID == id })
+        registry.ribbonItems.removeAll(where: { $0.pluginID == id })
+        registry.settingTabs.removeAll(where: { $0.pluginID == id })
+        registry.customViews.removeAll(where: { $0.pluginID == id })
+        registry.eventListeners.removeAll(where: { $0.pluginID == id })
     }
 
     /// 分发事件给插件监听器
@@ -278,8 +277,8 @@ final class PluginRuntime: @unchecked Sendable {
     /// 删除插件在磁盘上的 .zyplugin 和 .js 文件
     private func removePluginFilesFromDisk(pluginID: String) {
         let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-        let pluginsDir = documentsURL.appendingPathComponent("Plugins")
+        guard let pluginsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("Plugins") else { return }
 
         // 匹配策略：pluginID 或 ID 的部分匹配文件名
         let patterns = [

@@ -152,17 +152,7 @@ public actor EmbeddingManager: EmbeddingProvider {
     /// 多路召回搜索 (Multi-Query + RRF 融合)
     public func multiQuerySearch(query: String, topK: Int) async -> [(chunk: PageChunk, score: Float)] {
         // 此处为简化版实现：直接对分块缓存进行余弦搜索
-        let queryVector = getVector(for: query)
-        var results: [(chunk: PageChunk, score: Float)] = []
-        
-        for (idString, vector) in chunkVectorCache {
-            let score = EmbeddingManager.cosineSimilarity(queryVector, vector)
-            if score > SearchDefaults.similarityThreshold, let metadata = chunkMetadata[idString] {
-                results.append((metadata, score))
-            }
-        }
-        
-        return results.sorted { $0.score > $1.score }.prefix(topK).map { $0 }
+        return searchChunkCache(query: query, topK: topK, threshold: SearchDefaults.similarityThreshold)
     }
 
     /// HyDE (Hypothetical Document Embeddings) 搜索
@@ -180,6 +170,30 @@ public actor EmbeddingManager: EmbeddingProvider {
     /// 综合高级检索策略 (Advanced Retrieval)
     public func advancedSearch(query: String, topK: Int) async -> [(chunk: PageChunk, score: Float)] {
         return await multiQuerySearch(query: query, topK: topK)
+    }
+
+    /// 在分块向量缓存中执行余弦相似度搜索，返回 TopK 结果
+    /// - Parameters:
+    ///   - query: 查询文本
+    ///   - topK: 返回的最大候选数量
+    ///   - threshold: 相似度阈值，低于此值的结果被过滤
+    /// - Returns: 命中的分块元数据与相似度得分列表
+    private func searchChunkCache(
+        query: String,
+        topK: Int,
+        threshold: Float
+    ) -> [(chunk: PageChunk, score: Float)] {
+        let queryVector = getVector(for: query)
+        var results: [(chunk: PageChunk, score: Float)] = []
+
+        for (idString, vector) in chunkVectorCache {
+            let score = EmbeddingManager.cosineSimilarity(queryVector, vector)
+            if score > threshold, let metadata = chunkMetadata[idString] {
+                results.append((metadata, score))
+            }
+        }
+
+        return results.sorted { $0.score > $1.score }.prefix(topK).map { $0 }
     }
 
     /// 物理清空内存向量缓存并重载

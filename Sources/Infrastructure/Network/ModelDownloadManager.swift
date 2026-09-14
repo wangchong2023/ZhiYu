@@ -23,6 +23,10 @@ private enum DownloadErrorMessage {
     static let temporaryCopyFailedPrefix = "Temporary copy"
     /// 生成失败连接符
     static let generationFailedConnector = " generation failed:"
+    /// resumeData 持久化失败前缀
+    static let persistResumeDataFailedPrefix = "Persist resume data failed: "
+    /// 网络错误 resumeData 持久化失败前缀
+    static let networkErrorResumeDataFailedPrefix = "Persist network error resume data failed: "
 }
 
 /// 大模型权重文件后台静默下载与状态管理器
@@ -110,6 +114,28 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         return resumeFolder.appendingPathComponent("\(modelId).resume")
     }
 
+    /// 获取模型权重文件在 Documents 目录下的目标存储 URL
+    /// - Parameter modelId: 模型唯一标识 ID
+    /// - Returns: Documents/{modelId}.bin 的目标 URL
+    private func modelDestinationURL(for modelId: String) -> URL {
+        let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documentDirectory.appendingPathComponent("\(modelId).bin")
+    }
+
+    /// 原子性持久化 resumeData 并更新状态；失败时更新为 failed 状态
+    /// - Parameters:
+    ///   - data: 断点续传二进制数据
+    ///   - modelId: 模型 ID
+    ///   - errorPrefix: 失败日志前缀（区分 pause / network error 场景）
+    private func persistResumeData(_ data: Data, for modelId: String, errorPrefix: String) {
+        do {
+            try data.write(to: resumeDataURL(for: modelId), options: .atomic)
+            updateState(for: modelId, to: .paused)
+        } catch {
+            updateState(for: modelId, to: .failed(error: errorPrefix + error.localizedDescription))
+        }
+    }
+
     // MARK: - Capabilities 契约接口实现
     
     /// 开始下载大模型权重文件
@@ -151,13 +177,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         }
         
         if let data = resumeData {
-            do {
-                // 原子性写入物理文件系统，确保数据写入完整
-                try data.write(to: resumeDataURL(for: modelId), options: .atomic)
-                updateState(for: modelId, to: .paused)
-            } catch {
-                updateState(for: modelId, to: .failed(error: "Persist resume data failed: \(error.localizedDescription)"))
-            }
+            persistResumeData(data, for: modelId, errorPrefix: DownloadErrorMessage.persistResumeDataFailedPrefix)
         } else {
             updateState(for: modelId, to: .failed(error: "Failed to generate resume data for pausing."))
         }
@@ -280,8 +300,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
             }
             
             // 2. 校验成功，安全移入沙盒 Document 目录
-            let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let destinationURL = documentDirectory.appendingPathComponent("\(modelId).bin")
+            let destinationURL = await manager.modelDestinationURL(for: modelId)
             
             do {
                 if FileManager.default.fileExists(atPath: destinationURL.path) {
@@ -304,12 +323,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         
         // 🟢 如果是断网等原因引起的异常中断，iOS 会在错误包里贴心地附带 resumeData！
         if let resumeData = nsError.userInfo[NSURLSessionDownloadTaskResumeData] as? Data {
-            do {
-                try resumeData.write(to: resumeDataURL(for: modelId), options: .atomic)
-                updateState(for: modelId, to: .paused)
-            } catch {
-                updateState(for: modelId, to: .failed(error: "Persist network error resume data failed: \(error.localizedDescription)"))
-            }
+            persistResumeData(resumeData, for: modelId, errorPrefix: DownloadErrorMessage.networkErrorResumeDataFailedPrefix)
         } else {
             updateState(for: modelId, to: .failed(error: error.localizedDescription))
         }
@@ -344,8 +358,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     }
     
     private func cleanPreviousFiles(for modelId: String) {
-        let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let destinationURL = documentDirectory.appendingPathComponent("\(modelId).bin")
+        let destinationURL = modelDestinationURL(for: modelId)
         try? FileManager.default.removeItem(at: destinationURL)
     }
     
