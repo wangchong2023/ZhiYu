@@ -33,18 +33,26 @@ final class LocalAnalyticsService: AnalyticsServiceProtocol {
     /// - Parameter properties: properties
     func trackEvent(_ name: String, properties: [String: Any]? = nil) {
         let timestamp = Date().formatted(date: .omitted, time: .standard)
-        
+
         // 1. 控制台实时反馈
         Logger.shared.info(" [Analytics] \(timestamp) | \(name) | \(properties?.description ?? "")")
-        
+
         let event: [String: Any] = [
             "name": name,
             "properties": properties ?? [:],
             "timestamp": Date().timeIntervalSince1970
         ]
-        
+
         // 2. 持久化至沙盒 (异步追加)
         saveEventToFile(event)
+    }
+
+    /// 追踪Error
+    /// - Parameter error: error
+    /// - Parameter details: details
+    func trackError(_ error: Error, details: String? = nil) {
+        let timestamp = Date().formatted(date: .omitted, time: .standard)
+        Logger.shared.error(" [Analytics] \(timestamp) | Error: \(error.localizedDescription) | Details: \(details ?? "")", error: error)
     }
     
     private func saveEventToFile(_ event: [String: Any]) {

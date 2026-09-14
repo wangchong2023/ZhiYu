@@ -56,31 +56,41 @@ public final class ContentModerationEngine: Sendable {
 
         // 1. 拦截级别 3 重度违规 (政治、黄色、暴恐、赌博毒品)
         let activePolitical = DynamicComplianceManager.shared.getPatterns(for: .politicalReactionary, fallback: politicalPatterns)
-        if matchesAny(sanitizedText, rawText: text, patterns: activePolitical) {
-            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: CoreConstants.SecurityLogDetails.blockedPolitical, module: CoreConstants.Security.logModule)
-            throw PromptComplianceError.contentViolatesPolicy(.politicalReactionary)
-        }
+        try enforceBlock(sanitizedText, rawText: text, patterns: activePolitical, category: .politicalReactionary, logDetails: CoreConstants.SecurityLogDetails.blockedPolitical)
 
         let activeNSFW = DynamicComplianceManager.shared.getPatterns(for: .adultNSFW, fallback: nsfwPatterns)
-        if matchesAny(sanitizedText, rawText: text, patterns: activeNSFW) {
-            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: CoreConstants.SecurityLogDetails.blockedNSFW, module: CoreConstants.Security.logModule)
-            throw PromptComplianceError.contentViolatesPolicy(.adultNSFW)
-        }
+        try enforceBlock(sanitizedText, rawText: text, patterns: activeNSFW, category: .adultNSFW, logDetails: CoreConstants.SecurityLogDetails.blockedNSFW)
 
         let activeViolence = DynamicComplianceManager.shared.getPatterns(for: .violenceTerrorism, fallback: violencePatterns)
-        if matchesAny(sanitizedText, rawText: text, patterns: activeViolence) {
-            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: CoreConstants.SecurityLogDetails.blockedViolence, module: CoreConstants.Security.logModule)
-            throw PromptComplianceError.contentViolatesPolicy(.violenceTerrorism)
-        }
+        try enforceBlock(sanitizedText, rawText: text, patterns: activeViolence, category: .violenceTerrorism, logDetails: CoreConstants.SecurityLogDetails.blockedViolence)
 
         let activeGamblingNarcotics = DynamicComplianceManager.shared.getPatterns(for: .gamblingNarcotics, fallback: gamblingNarcoticsPatterns)
-        if matchesAny(sanitizedText, rawText: text, patterns: activeGamblingNarcotics) {
-            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.contentModerationEngine, details: "Blocked gambling/narcotics content", module: CoreConstants.Security.logModule)
-            throw PromptComplianceError.contentViolatesPolicy(.gamblingNarcotics)
-        }
+        try enforceBlock(sanitizedText, rawText: text, patterns: activeGamblingNarcotics, category: .gamblingNarcotics, logDetails: "Blocked gambling/narcotics content")
 
         // 2. 处理级别 1 (PII 脱敏) 与级别 2 (注入脱敏)
         return PromptSecurityGuard.shared.sanitize(text)
+    }
+
+    /// 重度违规拦截公共逻辑：匹配检测 → 记录日志 → 抛出合规错误
+    /// - Parameters:
+    ///   - sanitizedText: 洗词后的文本
+    ///   - rawText: 原始文本
+    ///   - patterns: 违规模式列表
+    ///   - category: 违规分类
+    ///   - logDetails: 日志详情
+    private func enforceBlock(
+        _ sanitizedText: String,
+        rawText: String,
+        patterns: [String],
+        category: ComplianceCategory,
+        logDetails: String
+    ) throws {
+        guard matchesAny(sanitizedText, rawText: rawText, patterns: patterns) else { return }
+        SecurityLogHelper.logError(
+            target: CoreConstants.SecurityLogTarget.contentModerationEngine,
+            details: logDetails
+        )
+        throw PromptComplianceError.contentViolatesPolicy(category)
     }
 
     private func matchesAny(_ sanitizedText: String, rawText: String, patterns: [String]) -> Bool {
@@ -95,18 +105,7 @@ public final class ContentModerationEngine: Sendable {
         }
 
         // 正则兜底校验
-        for pattern in patterns {
-            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
-                let range1 = NSRange(location: 0, length: sanitizedText.utf16.count)
-                if regex.firstMatch(in: sanitizedText, options: [], range: range1) != nil {
-                    return true
-                }
-                let range2 = NSRange(location: 0, length: rawText.utf16.count)
-                if regex.firstMatch(in: rawText, options: [], range: range2) != nil {
-                    return true
-                }
-            }
-        }
-        return false
+        return RegexReplacementHelper.matchesAny(sanitizedText, patterns: patterns)
+            || RegexReplacementHelper.matchesAny(rawText, patterns: patterns)
     }
 }

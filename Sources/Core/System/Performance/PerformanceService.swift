@@ -72,8 +72,7 @@ final class PerformanceService: ObservableObject {
     func measure<T>(_ label: String, operation: () -> T) -> T {
         let start = CFAbsoluteTimeGetCurrent()
         let result = operation()
-        let duration = CFAbsoluteTimeGetCurrent() - start
-        updateMetric(label, duration: duration)
+        recordDuration(label, start: start)
         return result
     }
 
@@ -82,14 +81,19 @@ final class PerformanceService: ObservableObject {
         let start = CFAbsoluteTimeGetCurrent()
         do {
             let result = try await operation()
-            let duration = CFAbsoluteTimeGetCurrent() - start
-            updateMetric(label, duration: duration)
+            recordDuration(label, start: start)
             return result
         } catch {
             // 记录失败率
             metrics.aiSuccessRate = (metrics.aiSuccessRate * Double(metrics.llmCallCount) + 0.0) / Double(metrics.llmCallCount + 1)
             throw error
         }
+    }
+
+    /// 记录耗时到指标（measure/measureAsync 公共逻辑）
+    private func recordDuration(_ label: String, start: CFAbsoluteTime) {
+        let duration = CFAbsoluteTimeGetCurrent() - start
+        updateMetric(label, duration: duration)
     }
 
     private func updateMetric(_ label: String, duration: TimeInterval) {
@@ -175,11 +179,9 @@ enum PerformanceServiceKey: DependencyKey {
     }
 
     @MainActor
-    static var testValue: PerformanceService {
-        ServiceContainer.shared.resolveOptional(PerformanceService.self) ?? PerformanceService()
-    }
+    static var testValue: PerformanceService { liveValue }
     @MainActor
-    static var previewValue: PerformanceService { testValue }
+    static var previewValue: PerformanceService { liveValue }
 }
 
 extension DependencyValues {
