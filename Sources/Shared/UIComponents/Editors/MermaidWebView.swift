@@ -114,12 +114,10 @@ struct MermaidWebView: View {
         ZStack(alignment: .bottomTrailing) {
             #if os(macOS)
             MermaidWKWebViewMac(mermaidCode: mermaidCode, webView: $webView)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                .appCardClip()
             #else
             MermaidWKWebView(mermaidCode: mermaidCode, webView: $webView)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                .appCardClip()
             #endif
             
             // Zoom Controls (统一图谱风格：合拢式排列)
@@ -157,8 +155,7 @@ struct MermaidWebView: View {
                 .font(.caption)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .appCardClip()
         #endif
     }
 

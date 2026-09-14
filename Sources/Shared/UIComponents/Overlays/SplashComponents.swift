@@ -70,85 +70,79 @@ struct SplashBackgroundView: View {
             )
 
             // 星星层
-            GeometryReader { geo in
-                if geo.size.width > 1 && geo.size.height > 1 {
-                    ForEach(Array(stars.enumerated()), id: \.offset) { _, star in
-                        Circle()
-                            .fill(.appGloss)
-                            .frame(width: star.size, height: star.size)
-                            .position(x: geo.size.width * star.x, y: geo.size.height * star.y)
-                            .opacity(starTwinkle ? SystemOpacity.glassStrong : SystemOpacity.disabled)
-                            .animation(
-                                .easeInOut(duration: DesignSystem.Animation.looseDuration + star.delay)
-                                .repeatForever(autoreverses: true)
-                                .delay(star.delay),
-                                value: starTwinkle
-                            )
-                    }
+            SafeGeometryReader { geo in
+                ForEach(Array(stars.enumerated()), id: \.offset) { _, star in
+                    Circle()
+                        .fill(.appGloss)
+                        .frame(width: star.size, height: star.size)
+                        .position(x: geo.size.width * star.x, y: geo.size.height * star.y)
+                        .opacity(starTwinkle ? SystemOpacity.glassStrong : SystemOpacity.disabled)
+                        .animation(
+                            .easeInOut(duration: DesignSystem.Animation.looseDuration + star.delay)
+                            .repeatForever(autoreverses: true)
+                            .delay(star.delay),
+                            value: starTwinkle
+                        )
                 }
             }
 
             // 神经网络连接线
-            GeometryReader { geo in
-                if geo.size.width > 1 && geo.size.height > 1 {
-                    let indexed: [(offset: Int, element: (from: Int, to: Int))] = Array(connections.enumerated())
-                    ForEach(indexed, id: \.offset) { _, conn in
-                        let fromNode = networkNodes[conn.from]
-                        let toNode = networkNodes[conn.to]
-                        let lineColor1 = fromNode.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
-                        let lineColor2 = toNode.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
-                        
-                        Path { path in
-                            path.move(to: CGPoint(
-                                x: geo.size.width * fromNode.x,
-                                y: geo.size.height * fromNode.y
-                            ))
-                            path.addLine(to: CGPoint(
-                                x: geo.size.width * toNode.x,
-                                y: geo.size.height * toNode.y
-                            ))
-                        }
-                        .stroke(
-                            LinearGradient(
-                                colors: [lineColor1, lineColor2],
-                                startPoint: .init(x: fromNode.x, y: fromNode.y),
-                                endPoint: .init(x: toNode.x, y: toNode.y)
-                            ),
-                            lineWidth: SystemStroke.border
-                        )
+            SafeGeometryReader { geo in
+                let indexed: [(offset: Int, element: (from: Int, to: Int))] = Array(connections.enumerated())
+                ForEach(indexed, id: \.offset) { _, conn in
+                    let fromNode = networkNodes[conn.from]
+                    let toNode = networkNodes[conn.to]
+                    let lineColor1 = Self.networkLineColor(isAccent: fromNode.isAccent)
+                    let lineColor2 = Self.networkLineColor(isAccent: toNode.isAccent)
+                    
+                    Path { path in
+                        path.move(to: CGPoint(
+                            x: geo.size.width * fromNode.x,
+                            y: geo.size.height * fromNode.y
+                        ))
+                        path.addLine(to: CGPoint(
+                            x: geo.size.width * toNode.x,
+                            y: geo.size.height * toNode.y
+                        ))
                     }
+                    .stroke(
+                        LinearGradient(
+                            colors: [lineColor1, lineColor2],
+                            startPoint: .init(x: fromNode.x, y: fromNode.y),
+                            endPoint: .init(x: toNode.x, y: toNode.y)
+                        ),
+                        lineWidth: SystemStroke.border
+                    )
                 }
             }
 
             // 神经网络节点
-            GeometryReader { geo in
-                if geo.size.width > 1 && geo.size.height > 1 {
-                    ForEach(Array(networkNodes.enumerated()), id: \.offset) { index, node in
-                        let nodeColor1 = node.isAccent ? Color.appAccent.opacity(SystemOpacity.active) : Color.appGloss.opacity(SystemOpacity.textSecondary)
-                        let nodeColor2 = node.isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
-                        
-                        let nodeScale = nodeGlow ? SystemOpacity.active : SystemOpacity.overlay
-                        let nodeOpacity = nodeGlow ? SystemOpacity.active : SystemOpacity.disabled
-                        let animDuration = DesignSystem.Animation.slowDuration + Double(index) * 0.1
-                        let nodeAnim = SwiftUI.Animation.easeInOut(duration: animDuration)
-                            .repeatForever(autoreverses: true)
-                            .delay(Double(index) * 0.08)
-                        
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [nodeColor1, nodeColor2, .clear],
-                                    center: .center,
-                                    startRadius: 0,
-                                    endRadius: node.size * 2
-                                )
+            SafeGeometryReader { geo in
+                ForEach(Array(networkNodes.enumerated()), id: \.offset) { index, node in
+                    let nodeColor1 = Self.networkNodeColor(isAccent: node.isAccent, isPrimary: true)
+                    let nodeColor2 = Self.networkNodeColor(isAccent: node.isAccent, isPrimary: false)
+                    
+                    let nodeScale = nodeGlow ? SystemOpacity.active : SystemOpacity.overlay
+                    let nodeOpacity = nodeGlow ? SystemOpacity.active : SystemOpacity.disabled
+                    let animDuration = DesignSystem.Animation.slowDuration + Double(index) * 0.1
+                    let nodeAnim = SwiftUI.Animation.easeInOut(duration: animDuration)
+                        .repeatForever(autoreverses: true)
+                        .delay(Double(index) * 0.08)
+                    
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [nodeColor1, nodeColor2, .clear],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: node.size * 2
                             )
-                            .frame(width: node.size * 4, height: node.size * 4)
-                            .position(x: geo.size.width * node.x, y: geo.size.height * node.y)
-                            .scaleEffect(nodeScale)
-                            .opacity(nodeOpacity)
-                            .animation(nodeAnim, value: nodeGlow)
-                    }
+                        )
+                        .frame(width: node.size * 4, height: node.size * 4)
+                        .position(x: geo.size.width * node.x, y: geo.size.height * node.y)
+                        .scaleEffect(nodeScale)
+                        .opacity(nodeOpacity)
+                        .animation(nodeAnim, value: nodeGlow)
                 }
             }
 
@@ -219,5 +213,20 @@ struct SplashBackgroundView: View {
     private enum UIConstants {
         static let glowHeight: CGFloat = 368
         static let glowOffset: CGFloat = 96
+    }
+
+    // MARK: - 颜色辅助
+    /// 神经网络连接线颜色（消除重复的三元表达式）
+    private static func networkLineColor(isAccent: Bool) -> Color {
+        isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
+    }
+
+    /// 神经网络节点颜色（消除重复的三元表达式）
+    private static func networkNodeColor(isAccent: Bool, isPrimary: Bool) -> Color {
+        if isAccent {
+            return isPrimary ? Color.appAccent.opacity(SystemOpacity.active) : Color.appAccent.opacity(SystemOpacity.disabled)
+        } else {
+            return isPrimary ? Color.appGloss.opacity(SystemOpacity.textSecondary) : Color.appGloss.opacity(SystemOpacity.glassStrong)
+        }
     }
 }

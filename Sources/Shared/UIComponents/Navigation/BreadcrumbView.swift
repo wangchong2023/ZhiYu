@@ -41,9 +41,7 @@ struct BreadcrumbView: View {
                 .accessibilityIdentifier("BreadcrumbHome")
                 
                 if !history.isEmpty {
-                    Image(systemName: DesignSystem.Icons.forward)
-                        .font(.caption2)
-                        .foregroundStyle(.appSecondary)
+                    BreadcrumbSeparator()
                 }
 
                 ForEach(Array(history.enumerated()), id: \.offset) { index, page in

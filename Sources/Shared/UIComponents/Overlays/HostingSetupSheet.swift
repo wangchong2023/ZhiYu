@@ -73,8 +73,7 @@ struct HostingSetupSheet: View {
             CollabInfoRow(icon: DesignSystem.Icons.persons, text: L10n.Collaboration.info.maxPeers)
         }
         .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .appCardClip()
     }
     
     private var startButton: some View {
