@@ -48,8 +48,7 @@ public struct PageDetailMetaSectionView: View {
         }
         .padding(.horizontal, DesignSystem.medium)
         .padding(.vertical, DesignSystem.small)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+        .appCardClip(cornerRadius: Spacing.smallRadius, backgroundOpacity: DesignSystem.Opacity.disabled)
     }
     #endif
 
@@ -75,8 +74,7 @@ public struct PageDetailMetaSectionView: View {
         .tint(.appSecondary)
         .padding(.horizontal, DesignSystem.medium)
         .padding(.vertical, DesignSystem.small)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+        .appCardClip(cornerRadius: Spacing.smallRadius, backgroundOpacity: DesignSystem.Opacity.disabled)
     }
     #endif
 

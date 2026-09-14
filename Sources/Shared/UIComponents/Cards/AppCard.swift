@@ -61,14 +61,8 @@ public struct AppCard<Content: View>: View {
                                  cornerRadius == Spacing.largeRadius ? .large :
                                  cornerRadius == Spacing.chipRadius ? .chip : .card
         
-        self.paddingToken = padding == Spacing.atomic ? .atomic :
-                            padding == Spacing.tiny ? .tiny :
-                            padding == Spacing.small ? .small :
-                            padding == Spacing.medium ? .medium :
-                            padding == Spacing.Layout.cardContentPadding ? .standardPadding :
-                            padding == Spacing.giant ? .giant :
-                            padding == Spacing.huge ? .huge : .standardPadding
-        
+        self.paddingToken = Self.spacingToken(for: padding)
+
         self.content = content()
     }
 
@@ -104,8 +98,7 @@ public struct AppBorderedCard<Content: View>: View {
             .padding(.vertical, Spacing.standardPadding)
             .padding(.horizontal, Spacing.medium)
             .frame(maxWidth: .infinity)
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .appCardClip(cornerRadius: cornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(borderColor, lineWidth: Spacing.borderWidth)
@@ -199,14 +192,23 @@ public extension View {
                                                     cornerRadius == Spacing.largeRadius ? .large :
                                                     cornerRadius == Spacing.chipRadius ? .chip : .card
         
-        let padToken: DesignSystem.SpacingToken = padding == Spacing.atomic ? .atomic :
-                                                  padding == Spacing.tiny ? .tiny :
-                                                  padding == Spacing.small ? .small :
-                                                  padding == Spacing.medium ? .medium :
-                                                  padding == Spacing.Layout.cardContentPadding ? .standardPadding :
-                                                  padding == Spacing.giant ? .giant :
-                                                  padding == Spacing.huge ? .huge : .standardPadding
-        
+        let padToken = Self.spacingToken(for: padding)
+
         return modifier(AppCardModifier(cornerRadiusToken: cornerToken, paddingToken: padToken))
+    }
+}
+
+// MARK: - SpacingToken 映射辅助
+private extension AppCard {
+    /// CGFloat padding → SpacingToken（消除两处重复的三元表达式链）
+    static func spacingToken(for padding: CGFloat) -> DesignSystem.SpacingToken {
+        if padding == Spacing.atomic { return .atomic }
+        if padding == Spacing.tiny { return .tiny }
+        if padding == Spacing.small { return .small }
+        if padding == Spacing.medium { return .medium }
+        if padding == Spacing.Layout.cardContentPadding { return .standardPadding }
+        if padding == Spacing.giant { return .giant }
+        if padding == Spacing.huge { return .huge }
+        return .standardPadding
     }
 }

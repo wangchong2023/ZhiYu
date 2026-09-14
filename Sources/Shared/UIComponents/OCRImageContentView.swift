@@ -36,16 +36,7 @@ public struct OCRImageContentView: View {
     private func imageContent(uiImage: AppImage?) -> some View {
         Group {
             if let img = uiImage {
-                Image(uiImage: img)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxHeight: Spacing.Grid.emptyStateHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                    .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.small)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(Color.appBorder, lineWidth: SystemStroke.border)
-                    )
+                styledImage(Image(uiImage: img))
             }
         }
     }
@@ -55,18 +46,24 @@ public struct OCRImageContentView: View {
     private func imageContent(nsImage: AppImage?) -> some View {
         Group {
             if let img = nsImage {
-                Image(nsImage: img)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxHeight: Spacing.Grid.emptyStateHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                    .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.small)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(Color.appBorder, lineWidth: SystemStroke.border)
-                    )
+                styledImage(Image(nsImage: img))
             }
         }
     }
     #endif
+
+    /// 统一图片样式（消除 UIKit/macOS 平台条件下的重复修饰符链）
+    @ViewBuilder
+    private func styledImage(_ image: Image) -> some View {
+        image
+            .resizable()
+            .scaledToFit()
+            .frame(maxHeight: Spacing.Grid.emptyStateHeight)
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.small)
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                    .stroke(Color.appBorder, lineWidth: SystemStroke.border)
+            )
+    }
 }

@@ -29,6 +29,12 @@ struct SynthesisActionButton: View {
     
     @State private var showControlSheet = false
 
+    /// 标准 spring 动画（消除重复的 .spring(response:dampingFraction:) 链）
+    private static let standardSpring = Animation.spring(
+        response: DesignSystem.Animation.springResponse,
+        dampingFraction: DesignSystem.Animation.springDamping
+    )
+
     var body: some View {
         let state = synthesisStore.synthesisStates[type] ?? .idle
         let currentCount = synthesisStore.synthesisResults[type]?.count ?? 0
@@ -96,8 +102,8 @@ struct SynthesisActionButton: View {
                     Label(L10n.AI.Synthesis.Control.title, systemImage: DesignSystem.Icons.sliderHorizontal)
                 }
             }
-            .animation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping), value: state)
-            .animation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping), value: isLimitReached)
+            .animation(Self.standardSpring, value: state)
+            .animation(Self.standardSpring, value: isLimitReached)
             .sheet(isPresented: $showControlSheet) {
                 SynthesisControlSheet(type: type) { options in
                     performSynthesis(options: options)

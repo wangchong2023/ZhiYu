@@ -30,8 +30,7 @@ public struct AppTextField: View {
         TextField(placeholder, text: $text)
             .textFieldStyle(.plain)
             .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+            .appCardClip(cornerRadius: Spacing.standardRadius)
             .foregroundStyle(.appText)
     }
 }
@@ -95,8 +94,7 @@ public struct AppTagField: View {
             }
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, Spacing.small)
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+            .appCardClip(cornerRadius: Spacing.standardRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: Spacing.standardRadius)
                     .stroke(Color.appBorder.opacity(Colors.disabledOpacity), lineWidth: Spacing.borderWidth)
@@ -136,8 +134,7 @@ public struct AppMonospacedEditor: View {
             .font(.system(.body, design: .monospaced))
             .foregroundStyle(.appText)
             .padding(Spacing.medium)
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+            .appCardClip(cornerRadius: Spacing.standardRadius)
         #else
         TextEditor(text: $text)
             .font(.system(.body, design: .monospaced))
@@ -145,8 +142,7 @@ public struct AppMonospacedEditor: View {
             .foregroundStyle(.appText)
             .frame(minHeight: minHeight)
             .padding(Spacing.medium)
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+            .appCardClip(cornerRadius: Spacing.standardRadius)
         #endif
     }
 }

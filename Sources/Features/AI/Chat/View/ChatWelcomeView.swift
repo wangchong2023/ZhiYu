@@ -98,8 +98,7 @@ struct SuggestionGroupView: View {
                         Image(systemName: DesignSystem.Icons.arrowUpRight).font(.caption2).foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.overlay))
                     }
                     .padding()
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                    .appCardClip(cornerRadius: DesignSystem.standardRadius)
                     .overlayStroke(borderColor: Color.appBorder.opacity(DesignSystem.disabledOpacity))
                 }
                 .buttonStyle(.plain)

@@ -63,8 +63,7 @@ public struct AppAILoadingSkeleton: View {
             }
         }
         .padding(DesignSystem.medium)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+        .appCardClip(cornerRadius: DesignSystem.mediumRadius)
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                 .stroke(stageColor.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)

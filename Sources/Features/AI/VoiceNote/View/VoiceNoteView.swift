@@ -189,8 +189,7 @@ struct VoiceNoteView: View {
                 .foregroundStyle(.appSecondary)
                 .padding(.horizontal, DesignSystem.Domain.Voice.statusLabelHorizontalPadding)
                 .padding(.vertical, DesignSystem.Domain.Voice.statusLabelVerticalPadding)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+                .appCardClip(cornerRadius: Spacing.smallRadius)
         }
     }
     

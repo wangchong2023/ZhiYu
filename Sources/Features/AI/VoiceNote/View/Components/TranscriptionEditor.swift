@@ -29,8 +29,7 @@ struct TranscriptionEditor: View {
                 .foregroundStyle(.appText)
                 .frame(minHeight: minHeight, maxHeight: maxHeight)
                 .padding(padding)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .appCardClip(cornerRadius: cornerRadius)
                 .overlay(
                     Group {
                         if showBorder {
@@ -44,8 +43,7 @@ struct TranscriptionEditor: View {
                 .font(.body)
                 .foregroundStyle(.appText)
                 .padding(padding)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .appCardClip(cornerRadius: cornerRadius)
         }
     }
 }

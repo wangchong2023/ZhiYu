@@ -18,18 +18,24 @@ import SwiftUI
 /// 消除重复的 `.background(Color.appCard).clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))` 链
 struct AppCardClipModifier: ViewModifier {
     let cornerRadius: CGFloat
+    let backgroundOpacity: Double
 
     func body(content: Content) -> some View {
         content
-            .background(Color.appCard)
+            .background(Color.appCard.opacity(backgroundOpacity))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
 
 extension View {
-    /// 应用卡片背景 + 圆角裁切（默认 cardRadius）
+    /// 应用卡片背景 + 圆角裁切（默认 cardRadius，不透明背景）
     func appCardClip(cornerRadius: CGFloat = DesignSystem.cardRadius) -> some View {
-        modifier(AppCardClipModifier(cornerRadius: cornerRadius))
+        modifier(AppCardClipModifier(cornerRadius: cornerRadius, backgroundOpacity: DesignSystem.fullOpacity))
+    }
+
+    /// 应用卡片背景 + 圆角裁切（自定义背景透明度）
+    func appCardClip(cornerRadius: CGFloat, backgroundOpacity: Double) -> some View {
+        modifier(AppCardClipModifier(cornerRadius: cornerRadius, backgroundOpacity: backgroundOpacity))
     }
 }
 

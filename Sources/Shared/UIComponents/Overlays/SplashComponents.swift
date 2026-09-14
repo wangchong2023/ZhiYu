@@ -169,17 +169,8 @@ struct SplashBackgroundView: View {
                 Spacer()
                 ZStack {
                     // 书本主体
-                    RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border) // 0.3, 0.8
-                        .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay) // 60, 44
-                        .rotationEffect(.degrees(-8))
-                        .offset(x: -DesignSystem.atomic) // -2
-
-                    RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                        .stroke(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border) // 0.3, 0.8
-                        .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay) // 60, 44
-                        .rotationEffect(.degrees(8))
-                        .offset(x: DesignSystem.atomic) // 2
+                    bookCover(rotationDegrees: -8, offsetX: -DesignSystem.atomic)
+                    bookCover(rotationDegrees: 8, offsetX: DesignSystem.atomic)
 
                     // 书脊
                     Capsule()
@@ -228,5 +219,14 @@ struct SplashBackgroundView: View {
         } else {
             return isPrimary ? Color.appGloss.opacity(SystemOpacity.textSecondary) : Color.appGloss.opacity(SystemOpacity.glassStrong)
         }
+    }
+
+    /// 书本封面轮廓（消除左右两页重复的 RoundedRectangle+stroke+frame+rotation+offset 链）
+    private func bookCover(rotationDegrees: Double, offsetX: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: DesignSystem.tiny)
+            .stroke(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border)
+            .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay)
+            .rotationEffect(.degrees(rotationDegrees))
+            .offset(x: offsetX)
     }
 }

@@ -239,8 +239,7 @@ struct ChatViewContent: View {
                 } else {
                     MarkdownRendererView(content: coordinator.streamingContent, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
                         .padding(DesignSystem.medium)
-                        .background(Color.appCard)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+                        .appCardClip(cornerRadius: DesignSystem.mediumRadius)
                 }
                 
                 // 一键中断(Stop)生成按钮
@@ -346,8 +345,7 @@ struct ChatViewContent: View {
                                     }
                                     .padding(.horizontal, DesignSystem.standardPadding)
                                     .padding(.vertical, Spacing.Chip.horizontalPadding)
-                                    .background(Color.appCard.opacity(DesignSystem.Opacity.glass))
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                                    .appCardClip(cornerRadius: DesignSystem.standardRadius, backgroundOpacity: DesignSystem.Opacity.glass)
                                     .overlayStroke()
                                 }
                                 .buttonStyle(.plain)

@@ -154,8 +154,7 @@ struct VoiceRecordingRow: View {
         }
         .padding(.horizontal, DesignSystem.medium)
         .padding(.vertical, SystemSpacing.elementLarge) // 10
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+        .appCardClip(cornerRadius: DesignSystem.standardRadius)
         .frame(maxWidth: .infinity)
     }
 }

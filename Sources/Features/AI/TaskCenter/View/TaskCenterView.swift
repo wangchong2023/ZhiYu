@@ -135,14 +135,13 @@ struct TaskCenterView: View {
     // MARK: - 分类段头（消除 watchOS/watchOS非重复）
     private func sectionHeader(type: TaskType, metrics: TaskCenter.TaskMetrics) -> some View {
         HStack(spacing: DesignSystem.medium) {
-            ZStack {
-                Circle()
-                    .fill(taskColor(for: type).opacity(SystemOpacity.ghost))
-                    .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
-                Image(systemName: type.icon)
-                    .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
-                    .foregroundStyle(taskColor(for: type))
-            }
+            taskIconBadge(
+                color: taskColor(for: type),
+                size: DesignSystem.Task.badgeSize,
+                icon: type.icon,
+                iconFont: .system(size: DesignSystem.Action.smallIconSize, weight: .bold),
+                iconColor: taskColor(for: type)
+            )
 
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                 Text(type.localizedName)
@@ -457,4 +456,24 @@ private enum UIConstants {
     static let filterTotalOpacity: Double = SystemOpacity.overlay
     static let emptyStateSparkleOffset: CGFloat = SystemSpacing.sectionCompact
     static let taskRowIconSize: CGFloat = ComponentSpacing.iconCompact
+}
+
+// MARK: - 任务图标徽章辅助
+/// 任务图标徽章：Circle 背景 + Image 前景（消除 4 处重复的 Circle+fill+frame+Image 链）
+@ViewBuilder
+private func taskIconBadge(
+    color: Color,
+    size: CGFloat,
+    icon: String,
+    iconFont: Font,
+    iconColor: Color
+) -> some View {
+    ZStack {
+        Circle()
+            .fill(color.opacity(SystemOpacity.ghost))
+            .frame(width: size, height: size)
+        Image(systemName: icon)
+            .font(iconFont)
+            .foregroundStyle(iconColor)
+    }
 }
