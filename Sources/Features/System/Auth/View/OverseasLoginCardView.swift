@@ -58,14 +58,14 @@ struct OverseasLoginCardView: View {
         .padding(Spacing.wide)
         .appContainer(cornerRadius: Spacing.largeRadius)
         .sheet(isPresented: $showTermsSheet) {
-            policySheetContent(
+            PolicySheetContent(
                 title: L10n.Auth.termsOfServiceTitle,
                 content: L10n.Auth.termsOfServiceContent,
                 isPresented: $showTermsSheet
             )
         }
         .sheet(isPresented: $showPrivacySheet) {
-            policySheetContent(
+            PolicySheetContent(
                 title: L10n.Auth.privacyPolicyTitle,
                 content: L10n.Auth.privacyPolicyContent,
                 isPresented: $showPrivacySheet
@@ -81,16 +81,6 @@ struct OverseasLoginCardView: View {
             showTermsSheet: $showTermsSheet,
             showPrivacySheet: $showPrivacySheet
         )
-    }
-    
-    // MARK: - 协议 Sheet
-    
-    private func policySheetContent(
-        title: String,
-        content: String,
-        isPresented: Binding<Bool>
-    ) -> some View {
-        PolicySheetContent(title: title, content: content, isPresented: isPresented)
     }
     
     @Environment(ThemeManager.self) var themeManager

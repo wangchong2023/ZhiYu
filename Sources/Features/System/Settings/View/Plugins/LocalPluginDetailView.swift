@@ -82,8 +82,7 @@ struct LocalPluginDetailView: View {
                 Divider()
 
                 // MARK: - 元数据
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                    Text(L10n.Plugin.Detail.metadataTitle).font(.headline).foregroundStyle(.appText)
+                PluginDetailSectionContainer(title: L10n.Plugin.Detail.metadataTitle) {
                     VStack(spacing: 0) {
                         detailRow(icon: "number", label: L10n.Plugin.Detail.version, value: manifest.version)
                         Divider().padding(.leading, DesignSystem.medium)
@@ -98,8 +97,7 @@ struct LocalPluginDetailView: View {
                 Divider()
 
                 // MARK: - 权限
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                    Text(L10n.Plugin.section.permissions).font(.headline).foregroundStyle(.appText)
+                PluginDetailSectionContainer(title: L10n.Plugin.section.permissions) {
                     ForEach(manifest.permissions, id: \.self) { perm in
                         HStack(spacing: DesignSystem.medium) {
                             Image(systemName: PluginDetailView.permIcon(for: perm)).foregroundStyle(.appAccent)
@@ -110,8 +108,7 @@ struct LocalPluginDetailView: View {
                 }
 
                 // MARK: - 描述
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                    Text(L10n.Plugin.section.about).font(.headline).foregroundStyle(.appText)
+                PluginDetailSectionContainer(title: L10n.Plugin.section.about) {
                     MarkdownRendererView(content: localReadme ?? manifest.description, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
                 }
             }

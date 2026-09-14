@@ -323,7 +323,7 @@ struct ConflictDiffView: View {
         for localPage in conflictInfo.localPages {
             if let remotePage = conflictInfo.remotePages.first(where: { $0.id == localPage.id }) {
                 if localPage.content != remotePage.content {
-                    items.append(ConflictingPage(id: localPage.id, title: localPage.title, localPage: localPage, remotePage: remotePage))
+                    appendConflict(&items, localPage: localPage, remotePage: remotePage)
                 }
             }
         }
@@ -332,7 +332,7 @@ struct ConflictDiffView: View {
         for localPage in conflictInfo.localPages {
             if let remotePage = conflictInfo.remotePages.first(where: { $0.title == localPage.title && $0.id != localPage.id }) {
                 if !items.contains(where: { $0.title == localPage.title }) {
-                    items.append(ConflictingPage(id: localPage.id, title: localPage.title, localPage: localPage, remotePage: remotePage))
+                    appendConflict(&items, localPage: localPage, remotePage: remotePage)
                 }
             }
         }
@@ -383,6 +383,11 @@ struct ConflictDiffView: View {
     }
     
     // MARK: - 辅助方法
+    
+    /// 构建并追加冲突页面项，消除 loadConflicts 中两处重复的 ConflictingPage 构造
+    private func appendConflict(_ items: inout [ConflictingPage], localPage: KnowledgePage, remotePage: KnowledgePage) {
+        items.append(ConflictingPage(id: localPage.id, title: localPage.title, localPage: localPage, remotePage: remotePage))
+    }
     
     /// 格式化修改时间显示
     /// - Parameter date: 目标日期

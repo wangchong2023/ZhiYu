@@ -17,11 +17,7 @@ import SwiftUI
 extension PluginDetailView {
 
     var metadataSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            Text(L10n.Plugin.Detail.metadataTitle)
-                .font(.headline)
-                .foregroundStyle(.appText)
-
+        PluginDetailSectionContainer(title: L10n.Plugin.Detail.metadataTitle) {
             VStack(spacing: 0) {
                 // 版本
                 metadataRow(

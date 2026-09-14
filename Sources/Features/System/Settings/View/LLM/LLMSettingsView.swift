@@ -160,9 +160,7 @@ struct LLMSettingsView: View {
                                   .font(.subheadline.bold())
                                   .foregroundStyle(Color.theme.green)
                               Spacer()
-                              Text(L10n.AI.LLM.latency("\(latency) \(L10n.Dashboard.unitMs)"))
-                                  .font(.caption.monospaced())
-                                  .foregroundStyle(.appSecondary)
+                              latencyText(latency)
                           }
                         case .failure(let code, let message, let latency, _):
                           HStack(alignment: .top) {
@@ -177,9 +175,7 @@ struct LLMSettingsView: View {
                               }
                               Spacer()
                               if let latency = latency {
-                                  Text(L10n.AI.LLM.latency("\(latency) \(L10n.Dashboard.unitMs)"))
-                                      .font(.caption.monospaced())
-                                      .foregroundStyle(.appSecondary)
+                                  latencyText(latency)
                               }
                           }
                         }
@@ -316,5 +312,12 @@ struct LLMSettingsView: View {
                 }
             }
         }
+    }
+
+    /// 延迟文本展示，消除 success 与 failure 分支的重复
+    private func latencyText(_ latency: Int) -> some View {
+        Text(L10n.AI.LLM.latency("\(latency) \(L10n.Dashboard.unitMs)"))
+            .font(.caption.monospaced())
+            .foregroundStyle(.appSecondary)
     }
 }

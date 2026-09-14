@@ -144,7 +144,7 @@ struct CollaborationViewContent: View {
                     .foregroundStyle(.appAccent)
             }
         }
-        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
+        .collabCardStyle()
     }
 
     // MARK: - Actions
@@ -174,7 +174,7 @@ struct CollaborationViewContent: View {
                         collabService.setUserName(newValue)
                     }
             }
-            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: DesignSystem.standardRadius)
+            .collabCardStyle()
         }
     }
 
@@ -235,10 +235,7 @@ struct CollaborationViewContent: View {
                         .font(.subheadline)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                .collabCardStyle()
             } else {
                 ForEach(collabService.discoveredRooms) { room in
                     DiscoveredRoomRow(room: room) {
@@ -262,7 +259,7 @@ struct CollaborationViewContent: View {
                 CollabRoleBadge(role: collabService.role)
                     .accessibilityIdentifier("collab-role-badge")
             }
-            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
+            .collabCardStyle()
             .accessibilityIdentifier("collab-session-info")
 
             leaveButton
@@ -327,10 +324,7 @@ struct CollaborationViewContent: View {
                 Text(L10n.Collaboration.noEdits)
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                    .collabCardStyle()
                     .accessibilityIdentifier("collab-no-edits")
             } else {
                 ForEach(recentEditsSnapshot) { edit in

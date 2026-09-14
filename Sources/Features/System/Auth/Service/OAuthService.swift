@@ -115,9 +115,6 @@ extension AuthService {
         if let googleReq = reqBody as? OAuthGoogleRequest {
             return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: googleReq, requiresAuth: false)
         }
-        if let githubReq = reqBody as? OAuthGitHubRequest {
-            return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: githubReq, requiresAuth: false)
-        }
         if let carrierReq = reqBody as? CarrierAuthRequest {
             return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: carrierReq, requiresAuth: false)
         }

@@ -14,7 +14,6 @@ import Dependencies
 
 struct FeedbackView: View {
     @Dependency(\.toastService) private var toastManager
-    @Environment(\.dismiss) private var dismiss
     @Environment(ThemeManager.self) var themeManager
     @State private var selectedTab = 0
     @State private var titleText = ""
@@ -52,12 +51,7 @@ struct FeedbackView: View {
                 }
             }
             .navigationTitle(L10n.Settings.Feedback.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.done) { dismiss() }
-                }
-            }
+            .doneDismissToolbar()
             }
         }
         .task { await loadHistory() }

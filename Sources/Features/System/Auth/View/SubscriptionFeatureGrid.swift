@@ -63,18 +63,12 @@ struct SubscriptionFeatureGrid: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             // Lite 值
-            Text(lite.value)
-                .font(.caption.bold())
-                .frame(maxWidth: .infinity, alignment: .center)
-                .foregroundStyle(.appSecondary)
+            planValueText(lite.value, color: .appSecondary)
 
             verticalDivider(maxHeight: DesignSystem.medium)
 
             // Pro 值
-            Text(pro.value)
-                .font(.caption.bold())
-                .frame(maxWidth: .infinity, alignment: .center)
-                .foregroundStyle(.appAccent)
+            planValueText(pro.value, color: .appAccent)
         }
         .cellPadding()
     }
@@ -86,6 +80,14 @@ struct SubscriptionFeatureGrid: View {
             .frame(width: DesignSystem.Metrics.dividerThickness)
             .padding(.horizontal, SystemSpacing.tiny)
             .frame(maxHeight: maxHeight)
+    }
+
+    /// 套餐值文本，消除 Lite/Pro 数据行的 Text 样式重复
+    private func planValueText(_ value: String, color: Color) -> some View {
+        Text(value)
+            .font(.caption.bold())
+            .frame(maxWidth: .infinity, alignment: .center)
+            .foregroundStyle(color)
     }
 
     /// 单元格内边距，消除表头与数据行的 padding 重复

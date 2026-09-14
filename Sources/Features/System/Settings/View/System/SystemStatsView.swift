@@ -21,7 +21,6 @@ private enum SystemStatsConstants {
 /// [L3] 表现层：资源监控视图 (原资源监控)
 /// 提供 AI 资源消耗、存储空间分布及数据溯源的多维度监控。
 struct SystemStatsView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(ThemeManager.self) var themeManager
     
     // 使用协调器管理状态与交互
@@ -89,15 +88,7 @@ struct SystemStatsView: View {
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .navigationTitle(L10n.Dashboard.stats.navigationTitleMonitor)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(L10n.Common.done) {
-                    dismiss()
-                }
-                .bold()
-            }
-        }
+        .doneDismissToolbar()
         .task {
             await coordinator.loadStats()
         }

@@ -17,6 +17,9 @@ struct SubscriptionPlanCard: View {
     let selectedCycle: BillingCycle
     let onCycleChange: (BillingCycle) -> Void
 
+    /// Pro 套餐统一的紫蓝渐变，消除多处 LinearGradient 重复
+    private static let proGradient = LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing)
+
     var body: some View {
         VStack(spacing: DesignSystem.medium) {
             cycleTabSelector
@@ -98,7 +101,7 @@ struct SubscriptionPlanCard: View {
                 RoundedRectangle(cornerRadius: SystemRadius.card)
                     .stroke(
                         isSelected
-                            ? AnyShapeStyle(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            ? AnyShapeStyle(Self.proGradient)
                             : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
                         lineWidth: isSelected ? 2 : 1
                     )
@@ -167,7 +170,7 @@ struct SubscriptionPlanCard: View {
                         .font(.title3)
                         .foregroundStyle(.white)
                         .frame(width: DesignSystem.Timeline.iconCircleSize, height: DesignSystem.Timeline.iconCircleSize)
-                        .background(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .background(Self.proGradient)
                         .clipShape(Circle())
 
                     Spacer()
@@ -195,7 +198,7 @@ struct SubscriptionPlanCard: View {
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
                     .stroke(
-                        LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        Self.proGradient,
                         lineWidth: SystemStroke.heavy
                     )
             )

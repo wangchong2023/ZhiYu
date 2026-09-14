@@ -142,15 +142,7 @@ struct DeveloperSettingsView: View {
             .scrollContentBackground(.hidden)
             .background(PageBackgroundView(accentColor: Color.theme.blue))
             .navigationTitle(L10n.Settings.Section.developer)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.done) {
-                        dismiss()
-                    }
-                    .bold()
-                }
-            }
+            .doneDismissToolbar()
             .appToast() // 确保在二级导航页面也能正确渲染 Toast，解决被遮挡问题
             .confirmationDialog(L10n.Settings.developer.stressTest.confirmTitle, isPresented: $showStressTestConfirmation, titleVisibility: .visible) {
                 Button(L10n.Settings.developer.stressTest.confirmAction(stressTestTargetCount), role: .destructive) {

@@ -35,8 +35,7 @@ public struct SmartRoutingView: View {
 
     private var modelStrategySection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Text(L10n.ModelManager.Routing.modelStrategy)
-                .font(.subheadline.weight(.semibold)).foregroundStyle(.appText).padding(.horizontal, DesignSystem.small)
+            sectionHeader(L10n.ModelManager.Routing.modelStrategy)
 
             // 端侧与在线混合开关
             VStack(alignment: .leading, spacing: DesignSystem.small) {
@@ -80,8 +79,7 @@ public struct SmartRoutingView: View {
 
     private var runtimeStatusSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Text(L10n.ModelManager.Routing.runtimeStatus)
-                .font(.subheadline.weight(.semibold)).foregroundStyle(.appText).padding(.horizontal, DesignSystem.small)
+            sectionHeader(L10n.ModelManager.Routing.runtimeStatus)
 
             VStack(spacing: DesignSystem.small) {
                 statusRow(label: L10n.ModelManager.Routing.localModelReady,
@@ -112,6 +110,12 @@ public struct SmartRoutingView: View {
             }
             .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
         }
+    }
+
+    /// 区块标题头样式，消除 modelStrategySection 与 runtimeStatusSection 的重复
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold)).foregroundStyle(.appText).padding(.horizontal, DesignSystem.small)
     }
 
     private func statusRow(label: String, value: String, status: HealthStatus) -> some View {

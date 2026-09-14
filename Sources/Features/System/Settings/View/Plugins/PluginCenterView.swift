@@ -405,11 +405,7 @@ struct PluginCard: View {
                     fallback: { pluginCardFallbackIcon }
                 )
             } else {
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundStyle(.white)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                pluginGradientIcon(icon)
                     .pluginIconContainerStyle(cornerRadius: SystemRadius.card, strokeOpacity: SystemOpacity.glass)
             }
             
@@ -546,7 +542,12 @@ struct PluginCard: View {
 
     /// 远程图标加载失败时的 fallback 拼图块默认图标（带渐变底）
     private var pluginCardFallbackIcon: some View {
-        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
+        pluginGradientIcon(DesignSystem.Icons.puzzlepieceExtensionFill)
+    }
+
+    /// 构建带渐变背景的插件图标，消除 Image+LinearGradient 重复
+    private func pluginGradientIcon(_ systemName: String) -> some View {
+        Image(systemName: systemName)
             .font(.title3)
             .foregroundStyle(.white)
             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)

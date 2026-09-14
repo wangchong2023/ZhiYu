@@ -51,7 +51,7 @@ struct DiscoveredRoomRow: View {
                 Image(systemName: DesignSystem.Icons.forwardCircle)
                     .foregroundStyle(.appAccent)
             }
-            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: DesignSystem.standardRadius)
+            .collabCardStyle()
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("collab-discovered-room-\(room.id)")
@@ -85,7 +85,7 @@ struct ConnectedPeerRow: View {
                     .foregroundStyle(.appSecondary)
             }
         }
-        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: DesignSystem.standardRadius)
+        .collabCardStyle()
         .accessibilityIdentifier("collab-connected-peer-\(peer.id)")
     }
 }

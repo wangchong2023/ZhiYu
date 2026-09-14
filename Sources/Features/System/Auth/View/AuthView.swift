@@ -77,14 +77,14 @@ struct AuthView: View {
             }
         }
         .sheet(isPresented: $showPrivacySheet) {
-            policySheetContent(
+            PolicySheetContent(
                 title: L10n.Auth.privacyPolicyTitle,
                 content: L10n.Auth.privacyPolicyContent,
                 isPresented: $showPrivacySheet
             )
         }
         .sheet(isPresented: $showTermsSheet) {
-            policySheetContent(
+            PolicySheetContent(
                 title: L10n.Auth.termsOfServiceTitle,
                 content: L10n.Auth.termsOfServiceContent,
                 isPresented: $showTermsSheet
@@ -183,17 +183,6 @@ struct AuthView: View {
             }
         }
         .padding(.top, Spacing.wide)
-    }
-
-    // MARK: - 公共 Sheet 组件
-
-    /// 隐私政策 / 服务条款 通用弹窗
-    private func policySheetContent(
-        title: String,
-        content: String,
-        isPresented: Binding<Bool>
-    ) -> some View {
-        PolicySheetContent(title: title, content: content, isPresented: isPresented)
     }
 
     // MARK: - 逻辑

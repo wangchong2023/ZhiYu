@@ -17,11 +17,7 @@ import SwiftUI
 extension PluginDetailView {
 
     var descriptionSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            Text(L10n.Plugin.section.about)
-                .font(.headline)
-                .foregroundStyle(.appText)
-
+        PluginDetailSectionContainer(title: L10n.Plugin.section.about) {
             // 如果本地没有 README 缓存，且远端 README 正在加载，则呈现骨架屏
             if localReadme == nil && isReadmeLoading {
                 VStack(alignment: .leading, spacing: DesignSystem.small) {
