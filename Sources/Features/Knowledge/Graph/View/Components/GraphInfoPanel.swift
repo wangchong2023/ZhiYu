@@ -396,16 +396,8 @@ struct GraphConceptGuideSheet: View {
                     .foregroundStyle(.white)
             }
             
-            VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
-                Text(title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.appText)
-                Text(desc)
-                    .font(.caption)
-                    .foregroundStyle(.appSecondary)
-                    .lineSpacing(DesignSystem.atomic)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            titleDescPair(title: title, desc: desc)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

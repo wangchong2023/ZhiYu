@@ -44,6 +44,13 @@ private enum VoiceTimestampDelimiter {
     static let closeBracket: String = SystemConstants.Character.closeBracket
 }
 
+/// 跨实例共享的 AVAudioSession 播放模式配置，消除 VoiceAudioPlayerView 与 VoiceSpeechState 的重复
+private func configureVoicePlaybackSession(idiom: InterfaceIdiom) {
+    guard idiom == .iPhone || idiom == .iPad else { return }
+    try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+    try? AVAudioSession.sharedInstance().setActive(true)
+}
+
 struct VoiceAudioPlayerView: View {
     let title: String
     let audioPath: String?
@@ -209,10 +216,7 @@ struct VoiceAudioPlayerView: View {
 
     /// 激活 AVAudioSession（仅 iPhone/iPad），消除 setupAudioPlayer 与 togglePlayPause 的重复
     private func activateAudioSessionIfNeeded() {
-        if idiom == .iPhone || idiom == .iPad {
-            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-            try? AVAudioSession.sharedInstance().setActive(true)
-        }
+        configureVoicePlaybackSession(idiom: idiom)
     }
     
     private func stopAudioPlayer() {
@@ -320,10 +324,7 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
     /// 在 iOS 平台配置 AVAudioSession 为播放模式
     /// - Note: macOS / watchOS 无 AVAudioSession 概念，运行时跳过。
     private func configurePlaybackSessionIfNeeded() {
-        let idiom = InterfaceIdiomKey.defaultValue
-        guard idiom == .iPhone || idiom == .iPad else { return }
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
+        configureVoicePlaybackSession(idiom: InterfaceIdiomKey.defaultValue)
     }
     
     func stop() {

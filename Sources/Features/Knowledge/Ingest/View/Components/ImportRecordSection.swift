@@ -233,10 +233,11 @@ struct ImportRecordSection: View {
     @ViewBuilder
     private var previewSourceBadge: some View {
         let cat = previewRecord?.category ?? FeatureConstants.SourceType.file
+        let badge = badgeAttributes(for: cat)
         sourceBadge(
-            label: badgeLabel(for: cat),
-            icon: badgeIcon(for: cat),
-            color: badgeColor(for: cat)
+            label: badge.label,
+            icon: badge.icon,
+            color: badge.color
         )
     }
 
@@ -246,33 +247,21 @@ struct ImportRecordSection: View {
         SourceBadge(label: label, icon: icon, color: color)
     }
 
-    private func badgeLabel(for category: String) -> String {
-        switch category {
-        case FeatureConstants.SourceType.ocr: return L10n.Ingest.ocrScan
-        case FeatureConstants.SourceType.voice: return L10n.Ingest.voiceNote
-        case FeatureConstants.SourceType.link: return L10n.Ingest.urlImport
-        case FeatureConstants.SourceType.manual: return L10n.Ingest.manualEntry
-        default: return L10n.Ingest.fileImport
-        }
+    /// Badge 属性结构体，承载 category 对应的 label/icon/color
+    private struct BadgeAttributes {
+        let label: String
+        let icon: String
+        let color: Color
     }
 
-    private func badgeIcon(for category: String) -> String {
+    /// 一次性返回 category 对应的 label/icon/color，消除三个独立 switch 的重复 case 分支
+    private func badgeAttributes(for category: String) -> BadgeAttributes {
         switch category {
-        case FeatureConstants.SourceType.ocr: return "camera.viewfinder"
-        case FeatureConstants.SourceType.voice: return "waveform"
-        case FeatureConstants.SourceType.link: return "link"
-        case FeatureConstants.SourceType.manual: return "square.and.pencil"
-        default: return "doc.text"
-        }
-    }
-
-    private func badgeColor(for category: String) -> Color {
-        switch category {
-        case FeatureConstants.SourceType.ocr: return Color.theme.purple
-        case FeatureConstants.SourceType.voice: return Color.theme.pink
-        case FeatureConstants.SourceType.link: return Color.theme.blue
-        case FeatureConstants.SourceType.manual: return Color.theme.orange
-        default: return .appAccent
+        case FeatureConstants.SourceType.ocr: return BadgeAttributes(label: L10n.Ingest.ocrScan, icon: "camera.viewfinder", color: Color.theme.purple)
+        case FeatureConstants.SourceType.voice: return BadgeAttributes(label: L10n.Ingest.voiceNote, icon: "waveform", color: Color.theme.pink)
+        case FeatureConstants.SourceType.link: return BadgeAttributes(label: L10n.Ingest.urlImport, icon: "link", color: Color.theme.blue)
+        case FeatureConstants.SourceType.manual: return BadgeAttributes(label: L10n.Ingest.manualEntry, icon: "square.and.pencil", color: Color.theme.orange)
+        default: return BadgeAttributes(label: L10n.Ingest.fileImport, icon: "doc.text", color: .appAccent)
         }
     }
 

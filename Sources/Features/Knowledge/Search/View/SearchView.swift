@@ -156,7 +156,7 @@ struct SearchView: View {
                             }
                         }
 
-                        Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
+                        filterDivider()
 
                         // Status Filters
                         if idiom != .watch {
@@ -166,22 +166,17 @@ struct SearchView: View {
                                     Button(status.displayName) { filterStatus = status }
                                 }
                             } label: {
-                                HStack(spacing: DesignSystem.tiny) {
-                                    Image(systemName: DesignSystem.Icons.flag)
-                                        .font(.caption)
-                                    Text(filterStatus?.displayName ?? L10n.Knowledge.Page.status)
-                                        .font(.caption)
-                                }
-                                .padding(.horizontal, SystemSpacing.elementLarge) // 10
-                                .padding(.vertical, SystemSpacing.small) // 6
-                                .background(filterStatusBackgroundColor)
-                                .clipShape(Capsule())
-                                .foregroundStyle(filterStatusLabelColor)
+                                filterMenuLabel(
+                                    icon: DesignSystem.Icons.flag,
+                                    title: filterStatus?.displayName ?? L10n.Knowledge.Page.status,
+                                    background: filterStatusBackgroundColor,
+                                    foreground: filterStatusLabelColor
+                                )
                             }
                             .buttonStyle(.plain)
                         }
 
-                        Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
+                        filterDivider()
 
                         // Sort options
                         if idiom != .watch {
@@ -192,17 +187,12 @@ struct SearchView: View {
                                     }
                                 }
                             } label: {
-                                HStack(spacing: DesignSystem.tiny) {
-                                    Image(systemName: DesignSystem.Icons.sortUpDown)
-                                        .font(.caption)
-                                    Text(L10n.Common.tr(sortBy.rawValue))
-                                        .font(.caption)
-                                }
-                                .padding(.horizontal, SystemSpacing.elementLarge) // 10
-                                .padding(.vertical, SystemSpacing.small) // 6
-                                .background(Color.appCard.opacity(SystemOpacity.active))
-                                .clipShape(Capsule())
-                                .foregroundStyle(.appSecondary)
+                                filterMenuLabel(
+                                    icon: DesignSystem.Icons.sortUpDown,
+                                    title: L10n.Common.tr(sortBy.rawValue),
+                                    background: Color.appCard.opacity(SystemOpacity.active),
+                                    foreground: .appSecondary
+                                )
                             }
                             .buttonStyle(.plain)
                         }
@@ -353,6 +343,28 @@ struct SearchView: View {
     
     private var filterStatusBackgroundColor: Color {
         filterStatus == nil ? Color.appCard.opacity(SystemOpacity.active) : Color.appAccent.opacity(SystemOpacity.faint)
+    }
+
+    /// 筛选区竖向分隔线，消除 2 处重复的 Divider().frame().background() 链
+    @ViewBuilder
+    private func filterDivider() -> some View {
+        Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
+    }
+
+    /// 筛选 Menu 的胶囊标签，消除 Status/Sort 两处重复的 HStack+padding+background+Capsule 链
+    @ViewBuilder
+    private func filterMenuLabel(icon: String, title: String, background: Color, foreground: Color) -> some View {
+        HStack(spacing: DesignSystem.tiny) {
+            Image(systemName: icon)
+                .font(.caption)
+            Text(title)
+                .font(.caption)
+        }
+        .padding(.horizontal, SystemSpacing.elementLarge)
+        .padding(.vertical, SystemSpacing.small)
+        .background(background)
+        .clipShape(Capsule())
+        .foregroundStyle(foreground)
     }
 }
 

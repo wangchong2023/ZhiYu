@@ -37,6 +37,11 @@ private enum Graph3DSceneConfig {
 }
 
 // MARK: - SCNView 配置共享逻辑
+/// 从场景中查找主相机节点，消除 configureSceneView 与 syncSceneViewPointOfView 的重复 childNode 查询
+private func mainCameraNode(in scene: SCNScene?) -> SCNNode? {
+    scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true)
+}
+
 /// 消除 iOS makeUIView 与 macOS makeNSView 的重复 SCNView 配置
 private func configureSceneView<C: AnyObject>(_ scnView: SCNView, scene: SCNScene?, coordinator: C, syncCamera: (C, SCNNode) -> Void) {
     scnView.scene = scene
@@ -46,7 +51,7 @@ private func configureSceneView<C: AnyObject>(_ scnView: SCNView, scene: SCNScen
     scnView.backgroundColor = .clear
 
     // 关键：如果场景中有指定的相机节点，则将其设为观察点
-    if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
+    if let cameraNode = mainCameraNode(in: scene) {
         scnView.pointOfView = cameraNode
         syncCamera(coordinator, cameraNode)
     }
@@ -177,40 +182,32 @@ final class Graph3DiOSCoordinator: Graph3DCoordinatorBase {
     @objc func handleTap(_ gesture: UITapGestureRecognizer) {
         guard let scnView = gesture.view as? SCNView,
               scnView.scene != nil else { return }
-        let location = gesture.location(in: scnView)
-        performTapHitTest(location: location, in: scnView, onNodeTap: onNodeTap)
+        performTap(in: scnView, location: gesture.location(in: scnView))
     }
 
     /// 处理Pan
     /// - Parameter gesture: gesture
     @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
-        guard let scnView = gesture.view as? SCNView,
-              let cameraNode = cameraNode(in: scnView) else { return }
-
+        guard let scnView = gesture.view as? SCNView else { return }
         let translation = gesture.translation(in: scnView)
-        applyPanRotation(
+        performPan(
+            in: scnView,
             translationX: translation.x,
             translationY: translation.y,
             isChanged: gesture.state == .changed,
-            isEnded: gesture.state == .ended,
-            cameraNode: cameraNode,
-            currentAngleX: &currentAngleX,
-            currentAngleY: &currentAngleY
+            isEnded: gesture.state == .ended
         )
     }
 
     /// 处理Pinch
     /// - Parameter gesture: gesture
     @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
-        guard let scnView = gesture.view as? SCNView,
-              let cameraNode = cameraNode(in: scnView) else { return }
-
-        applyZoomScale(
+        guard let scnView = gesture.view as? SCNView else { return }
+        performZoom(
+            in: scnView,
             factor: Float(gesture.scale),
             isChanged: gesture.state == .changed,
-            isEnded: gesture.state == .ended,
-            cameraNode: cameraNode,
-            cameraZ: &cameraZ
+            isEnded: gesture.state == .ended
         )
     }
 }
@@ -226,40 +223,32 @@ final class Graph3DmacOSCoordinator: Graph3DCoordinatorBase {
     @objc func handleTap(_ gesture: NSClickGestureRecognizer) {
         guard let scnView = gesture.view as? SCNView,
               scnView.scene != nil else { return }
-        let location = gesture.location(in: scnView)
-        performTapHitTest(location: location, in: scnView, onNodeTap: onNodeTap)
+        performTap(in: scnView, location: gesture.location(in: scnView))
     }
 
     /// 处理Pan
     /// - Parameter gesture: gesture
     @objc func handlePan(_ gesture: NSPanGestureRecognizer) {
-        guard let scnView = gesture.view as? SCNView,
-              let cameraNode = cameraNode(in: scnView) else { return }
-
+        guard let scnView = gesture.view as? SCNView else { return }
         let translation = gesture.translation(in: scnView)
-        applyPanRotation(
+        performPan(
+            in: scnView,
             translationX: translation.x,
             translationY: translation.y,
             isChanged: gesture.state == .changed,
-            isEnded: gesture.state == .ended,
-            cameraNode: cameraNode,
-            currentAngleX: &currentAngleX,
-            currentAngleY: &currentAngleY
+            isEnded: gesture.state == .ended
         )
     }
 
     /// 处理Magnify
     /// - Parameter gesture: gesture
     @objc func handleMagnify(_ gesture: NSMagnificationGestureRecognizer) {
-        guard let scnView = gesture.view as? SCNView,
-              let cameraNode = cameraNode(in: scnView) else { return }
-
-        applyZoomScale(
+        guard let scnView = gesture.view as? SCNView else { return }
+        performZoom(
+            in: scnView,
             factor: Float(1.0 + gesture.magnification),
             isChanged: gesture.state == .changed,
-            isEnded: gesture.state == .ended,
-            cameraNode: cameraNode,
-            cameraZ: &cameraZ
+            isEnded: gesture.state == .ended
         )
     }
 }
@@ -269,7 +258,7 @@ final class Graph3DmacOSCoordinator: Graph3DCoordinatorBase {
 /// 持续同步观察点，确保外部控制（缩放/重置）能生效
 private func syncSceneViewPointOfView(_ scnView: SCNView, scene: SCNScene?, coordinator: Graph3DCoordinatorBase) {
     scnView.scene = scene
-    if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
+    if let cameraNode = mainCameraNode(in: scene) {
         if scnView.pointOfView != cameraNode {
             scnView.pointOfView = cameraNode
         }

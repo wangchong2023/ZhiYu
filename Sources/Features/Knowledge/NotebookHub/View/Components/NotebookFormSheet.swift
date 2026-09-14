@@ -126,12 +126,7 @@ struct NotebookFormSheet: View {
 
                                 TextField(L10n.Vault.descriptionPlaceholder, text: $description, axis: .vertical)
                                     .lineLimit(3...5)
-                                    .cardStyle(
-                                        horizontalPadding: DesignSystem.standardPadding,
-                                        verticalPadding: DesignSystem.standardPadding,
-                                        backgroundOpacity: DesignSystem.Opacity.dim,
-                                        cornerRadius: DesignSystem.cardRadius
-                                    )
+                                    .notebookFormFieldStyle()
                             }
                         }
                         .padding(.horizontal)
@@ -174,13 +169,21 @@ struct NotebookFormSheet: View {
 
             TextField(placeholder, text: text)
                 .font(.title3.bold())
-                .cardStyle(
-                    horizontalPadding: DesignSystem.standardPadding,
-                    verticalPadding: DesignSystem.standardPadding,
-                    backgroundOpacity: DesignSystem.Opacity.dim,
-                    cornerRadius: DesignSystem.cardRadius
-                )
+                .notebookFormFieldStyle()
                 .accessibilityIdentifier(accessibilityID)
         }
+    }
+}
+
+/// 笔记本表单字段统一卡片样式，消除 description TextField 与 formField 的重复 cardStyle 链
+private extension View {
+    @ViewBuilder
+    func notebookFormFieldStyle() -> some View {
+        self.cardStyle(
+            horizontalPadding: DesignSystem.standardPadding,
+            verticalPadding: DesignSystem.standardPadding,
+            backgroundOpacity: DesignSystem.Opacity.dim,
+            cornerRadius: DesignSystem.cardRadius
+        )
     }
 }

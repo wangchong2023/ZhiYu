@@ -188,14 +188,7 @@ struct PagePreviewSheet: View {
             }
             .background(themeManager.pageBackground())
             .navigationTitle(L10n.Search.base)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.done) {
-                        dismiss()
-                    }
-                }
-            }
+            .doneDismissToolbar()
         }
     }
 }
@@ -378,14 +371,7 @@ struct SearchDiagnosticSheet: View {
             }
             .background(themeManager.pageBackground())
             .navigationTitle(L10n.Search.Diag.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.done) {
-                        dismiss()
-                    }
-                }
-            }
+            .doneDismissToolbar()
         }
     }
 }

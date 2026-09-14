@@ -242,8 +242,7 @@ struct Graph3DView: View {
         camera.camera = SCNCamera()
         camera.camera?.zNear = GraphConstants.ThreeD.cameraZNear
         camera.camera?.zFar = GraphConstants.ThreeD.cameraZFar 
-        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
-        camera.look(at: SCNVector3(0, 0, 0))
+        positionCameraAtOrigin(camera)
         camera.name = "mainCamera"
         scene.rootNode.addChildNode(camera)
         cameraNode = camera
@@ -489,8 +488,7 @@ struct Graph3DView: View {
         SCNTransaction.begin()
         SCNTransaction.animationDuration = GraphConstants.ThreeD.cameraAnimationDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
-        camera.look(at: SCNVector3(0, 0, 0))
+        positionCameraAtOrigin(camera)
         SCNTransaction.commit()
     }
 
@@ -502,6 +500,12 @@ struct Graph3DView: View {
         SCNTransaction.animationDuration = GraphConstants.ThreeD.zoomAnimationDuration
         camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
         SCNTransaction.commit()
+    }
+
+    /// 将相机定位至原点上方标准偏移位置，消除 setupCamera 与 resetCamera 的重复 position+look 调用
+    private func positionCameraAtOrigin(_ camera: SCNNode) {
+        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
+        camera.look(at: SCNVector3(0, 0, 0))
     }
     
     private func handleNodeTap(_ uuid: UUID?) {

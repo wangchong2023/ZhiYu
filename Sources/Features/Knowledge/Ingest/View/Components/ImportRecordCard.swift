@@ -198,14 +198,18 @@ struct ImportRecordCard: View {
 
     private var timeLine: some View {
         HStack(spacing: DesignSystem.small) {
-            Label(record.createdAt.formatted(date: .numeric, time: .shortened), systemImage: DesignSystem.Icons.clock)
-                .font(.caption2)
+            timestampLabel(record.createdAt, icon: DesignSystem.Icons.clock)
             if record.status == ImportRecordStatus.done, let done = record.completedAt {
-                Label(done.formatted(date: .numeric, time: .shortened), systemImage: DesignSystem.Icons.flagCheckered)
-                    .font(.caption2)
+                timestampLabel(done, icon: DesignSystem.Icons.flagCheckered)
             }
         }
         .foregroundStyle(.tertiary)
+    }
+
+    /// 时间戳 Label，消除 timeLine 中 createdAt/completedAt 两处重复的 formatted+font 链
+    private func timestampLabel(_ date: Date, icon: String) -> some View {
+        Label(date.formatted(date: .numeric, time: .shortened), systemImage: icon)
+            .font(.caption2)
     }
 
     // MARK: - 状态

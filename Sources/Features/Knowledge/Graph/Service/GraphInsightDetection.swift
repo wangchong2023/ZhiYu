@@ -51,6 +51,11 @@ extension GraphLayoutProcessor {
 
     // MARK: - 私有检测组件
 
+    /// 提取边的源/目标社区 ID，消除 detectBridgeNodes 内两处重复的 nodeMap 查询
+    private static func communityPair(of edge: GraphEdge, nodeMap: [UUID: GraphNode]) -> (src: Int?, tgt: Int?) {
+        (nodeMap[edge.source]?.communityID, nodeMap[edge.target]?.communityID)
+    }
+
     /// 检测桥接节点：连接 >= 3 个不同社区的节点
     private static func detectBridgeNodes(
         nodes _: [GraphNode],
@@ -62,8 +67,7 @@ extension GraphLayoutProcessor {
         // Bug #131 修复：预构建 nodeID → Set<communityID> 邻接索引，O(E) 一次遍历
         var nodeCommunities: [UUID: Set<Int>] = [:]
         for edge in edges {
-            let srcComm = nodeMap[edge.source]?.communityID
-            let tgtComm = nodeMap[edge.target]?.communityID
+            let (srcComm, tgtComm) = communityPair(of: edge, nodeMap: nodeMap)
             if let sc = srcComm {
                 nodeCommunities[edge.source, default: []].insert(sc)
             }
@@ -80,8 +84,7 @@ extension GraphLayoutProcessor {
         }
 
         for edge in edges {
-            let srcComm = nodeMap[edge.source]?.communityID
-            let tgtComm = nodeMap[edge.target]?.communityID
+            let (srcComm, tgtComm) = communityPair(of: edge, nodeMap: nodeMap)
 
             if let sc = srcComm, let tc = tgtComm, sc != tc {
                 let srcConnectedCommunities = nodeCommunities[edge.source]?.count ?? 0
