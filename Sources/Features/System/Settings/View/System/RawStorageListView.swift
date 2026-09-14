@@ -449,14 +449,7 @@ struct RawPageDetailView: View {
             Text(page.content)
                 .font(.system(.footnote, design: .monospaced))
                 .foregroundStyle(.appText)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                        .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                )
+                .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.disabled, useBorder: true)
         }
     }
 }

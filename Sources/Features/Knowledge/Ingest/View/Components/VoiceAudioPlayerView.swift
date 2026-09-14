@@ -165,9 +165,7 @@ struct VoiceAudioPlayerView: View {
     }
     
     private var cleanText: String {
-        transcribedText
-            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "「")
-            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "」")
+        WikiLinkTextSanitizer.convertToQuoted(transcribedText)
     }
     
     private func setupAudioPlayer() {

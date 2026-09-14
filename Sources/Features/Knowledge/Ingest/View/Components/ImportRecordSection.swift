@@ -135,8 +135,7 @@ struct ImportRecordSection: View {
     }
     
     private func cleanPreviewText(_ text: String) -> String {
-        text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "「")
-            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "」")
+        WikiLinkTextSanitizer.convertToQuoted(text)
     }
 
     // MARK: - 预览分发

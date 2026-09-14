@@ -38,10 +38,7 @@ struct PluginDetailView: View {
 
     /// 校验该插件是否已经成功下载并安装落地于沙盒中
     var isInstalled: Bool {
-        // 检查 PluginRegistry 中是否存在完全匹配或后缀点拼接匹配（.id）的插件实例
-        registry.plugins.contains(where: {
-            $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
-        })
+        findLocalPlugin() != nil
     }
 
     var body: some View {

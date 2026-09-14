@@ -369,9 +369,7 @@ struct PluginCard: View {
 
     /// 自适应计算插件的展示版本号，已安装则优先显示真实本地版本号
     private var displayVersion: String {
-        if let id = pluginID, let localPlugin = registry.plugins.first(where: { 
-            $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id) 
-        }) {
+        if let id = pluginID, let localPlugin = findLocalPlugin(for: id) {
             return localPlugin.manifest.version
         }
         return version
@@ -554,11 +552,16 @@ struct PluginCard: View {
             .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
     }
 
-    /// 解析插件真实 ID，兼容物理包名 ID 与市场简短 ID 的匹配
-    private func resolveTargetID(for id: String) -> String {
+    /// 查找本地已安装插件实体，消除 displayVersion 与 resolveTargetID 的重复查询
+    private func findLocalPlugin(for id: String) -> (any PluginProtocol)? {
         registry.plugins.first(where: {
             $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id)
-        })?.manifest.id ?? id
+        })
+    }
+
+    /// 解析插件真实 ID，兼容物理包名 ID 与市场简短 ID 的匹配
+    private func resolveTargetID(for id: String) -> String {
+        findLocalPlugin(for: id)?.manifest.id ?? id
     }
 }
 
