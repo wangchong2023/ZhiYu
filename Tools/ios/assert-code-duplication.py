@@ -19,10 +19,16 @@ import hashlib
 import shutil
 import subprocess
 
-# 阈值与配置常量
-# 判定为重复代码块所需的最小连续雷同代码行数（低于此行数忽略不计，防止误报）
+# PMD-CPD 扫描阈值与阻断配置
+# 最小重复 token 数（低于此值忽略，聚焦中等及以上重复块）
+PMD_MIN_TOKENS = 30
+# 允许的重复块上限（超过此数阻断流水线）
+# 当前基线：238（2026-09-15 第五轮去重后剩余结构性必然重复）
+# 目标：随去重进展逐步降低，最终趋近 0
+MAX_DUPLICATE_BLOCKS = 238
+# Fallback 滑动窗口算法：判定为重复代码块所需的最小连续雷同代码行数
 MIN_DUPLICATE_LINES = 10
-# 判定为重复代码块中包含的最小不同 Token 种类数量（防止全是括号或空 return 导致误报）
+# Fallback 滑动窗口算法：判定为重复代码块中包含的最小不同 Token 种类数量
 MIN_UNIQUE_TOKENS = 3
 # 审计报告中展示的重复代码片段的最大展示行数
 SAMPLE_SNIPPET_LINES = 3
@@ -156,12 +162,12 @@ def try_jscpd():
 
 def try_pmd_cpd():
     """
-    降级检测并运行 PMD-CPD。
+    降级检测并运行 PMD-CPD，解析重复块计数并按阈值阻断。
     """
     pmd_bin = shutil.which("pmd")
     if not pmd_bin:
         return False
-        
+
     print("\n[Code Duplication] Detected 'PMD' in system. Running PMD-CPD scan...")
     import tempfile
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
@@ -169,7 +175,7 @@ def try_pmd_cpd():
         file_list_path = f.name
     res = subprocess.run([
         pmd_bin, "cpd",
-        "--minimum-tokens", "50",
+        "--minimum-tokens", str(PMD_MIN_TOKENS),
         "--language", "swift",
         "--file-list", file_list_path,
         "--format", "text"
@@ -178,6 +184,15 @@ def try_pmd_cpd():
     print(res.stdout)
     if res.stderr:
         print(res.stderr, file=sys.stderr)
+
+    duplicate_count = len(re.findall(r'^Found a \d+ line', res.stdout, re.MULTILINE))
+    print(f"\n[Code Duplication] PMD-CPD 检测到 {duplicate_count} 处重复代码块（阈值 ≥{PMD_MIN_TOKENS} tokens，上限 {MAX_DUPLICATE_BLOCKS}）")
+
+    if duplicate_count > MAX_DUPLICATE_BLOCKS:
+        print(f"❌ [Code Duplication] 重复块 {duplicate_count} 超过上限 {MAX_DUPLICATE_BLOCKS}，阻断流水线。")
+        sys.exit(1)
+
+    print(f"✅ [Code Duplication] 重复块 {duplicate_count} 未超过上限 {MAX_DUPLICATE_BLOCKS}，准予通过。")
     return True
 
 
