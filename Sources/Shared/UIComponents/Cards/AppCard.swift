@@ -55,11 +55,7 @@ public struct AppCard<Content: View>: View {
         padding: CGFloat,
         @ViewBuilder content: () -> Content
     ) {
-        self.cornerRadiusToken = cornerRadius == Spacing.microRadius ? .micro :
-                                 cornerRadius == Spacing.smallRadius ? .small :
-                                 cornerRadius == Spacing.mediumRadius ? .medium :
-                                 cornerRadius == Spacing.largeRadius ? .large :
-                                 cornerRadius == Spacing.chipRadius ? .chip : .card
+        self.cornerRadiusToken = Self.radiusToken(for: cornerRadius)
         
         self.paddingToken = Self.spacingToken(for: padding)
 
@@ -186,13 +182,8 @@ public extension View {
         cornerRadius: CGFloat, 
         padding: CGFloat = Spacing.Layout.cardContentPadding
     ) -> some View {
-        let cornerToken: DesignSystem.RadiusToken = cornerRadius == Spacing.microRadius ? .micro :
-                                                    cornerRadius == Spacing.smallRadius ? .small :
-                                                    cornerRadius == Spacing.mediumRadius ? .medium :
-                                                    cornerRadius == Spacing.largeRadius ? .large :
-                                                    cornerRadius == Spacing.chipRadius ? .chip : .card
-        
-        let padToken = Self.spacingToken(for: padding)
+        let cornerToken = AppCard.radiusToken(for: cornerRadius)
+        let padToken = AppCard.spacingToken(for: padding)
 
         return modifier(AppCardModifier(cornerRadiusToken: cornerToken, paddingToken: padToken))
     }
@@ -210,5 +201,15 @@ private extension AppCard {
         if padding == Spacing.giant { return .giant }
         if padding == Spacing.huge { return .huge }
         return .standardPadding
+    }
+
+    /// CGFloat cornerRadius → RadiusToken（消除两处重复的三元表达式链）
+    static func radiusToken(for cornerRadius: CGFloat) -> DesignSystem.RadiusToken {
+        if cornerRadius == Spacing.microRadius { return .micro }
+        if cornerRadius == Spacing.smallRadius { return .small }
+        if cornerRadius == Spacing.mediumRadius { return .medium }
+        if cornerRadius == Spacing.largeRadius { return .large }
+        if cornerRadius == Spacing.chipRadius { return .chip }
+        return .card
     }
 }

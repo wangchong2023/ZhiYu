@@ -62,7 +62,7 @@ public struct AppIconChip: View {
 
     /// 根据屏幕尺寸类自动适配字号
     private var chipFont: Font {
-        horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont
+        AdaptiveTypography.adaptiveSecondaryFont(horizontalSizeClass: horizontalSizeClass)
     }
 
     public var body: some View {

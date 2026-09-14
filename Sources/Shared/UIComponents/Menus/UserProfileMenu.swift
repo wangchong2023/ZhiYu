@@ -187,6 +187,17 @@ struct UserProfileMenu: View {
 
     enum MenuAction {
         case settings, profile, plan, plugins, aiSettings
+
+        /// 在 Router 上派发对应 sheet 开关，消除 UserProfileMenu / UserProfileMenuSheetContent 两处 switch 重复。
+        func apply(to router: Router) {
+            switch self {
+            case .settings: router.isShowingSettingsSheet = true
+            case .profile: router.isShowingProfileSheet = true
+            case .plan: router.isShowingPlanSheet = true
+            case .plugins: router.isShowingPluginsSheet = true
+            case .aiSettings: router.isShowingAISettingsSheet = true
+            }
+        }
     }
     
     var body: some View {
@@ -300,13 +311,7 @@ struct UserProfileMenu: View {
     }
 
     private func executeMenuAction(_ action: MenuAction) {
-        switch action {
-        case .settings: router.isShowingSettingsSheet = true
-        case .profile: router.isShowingProfileSheet = true
-        case .plan: router.isShowingPlanSheet = true
-        case .plugins: router.isShowingPluginsSheet = true
-        case .aiSettings: router.isShowingAISettingsSheet = true
-        }
+        action.apply(to: router)
     }
     
     private var profileLabel: some View {
@@ -384,13 +389,7 @@ struct UserProfileMenuSheetContent: View {
     }
     
     private func executeMenuAction(_ action: UserProfileMenu.MenuAction) {
-        switch action {
-        case .settings: router.isShowingSettingsSheet = true
-        case .profile: router.isShowingProfileSheet = true
-        case .plan: router.isShowingPlanSheet = true
-        case .plugins: router.isShowingPluginsSheet = true
-        case .aiSettings: router.isShowingAISettingsSheet = true
-        }
+        action.apply(to: router)
     }
 }
 

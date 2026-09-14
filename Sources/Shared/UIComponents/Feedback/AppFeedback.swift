@@ -145,7 +145,7 @@ public struct AppSuccessBanner: View {
     }
 
     private var bannerFont: Font {
-        horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont
+        AdaptiveTypography.adaptiveSecondaryFont(horizontalSizeClass: horizontalSizeClass)
     }
 
     public var body: some View {
@@ -205,5 +205,14 @@ public extension View {
     /// 应用流光加载动画
     func shimmerApp() -> some View {
         modifier(ShimmerModifier())
+    }
+}
+
+// MARK: - 自适应排版辅助
+
+/// 根据水平尺寸类选择字号，消除 AppChips / AppFeedback 中重复的 `horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont` 三元表达式。
+enum AdaptiveTypography {
+    static func adaptiveSecondaryFont(horizontalSizeClass: UserInterfaceSizeClass?) -> Font {
+        horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont
     }
 }

@@ -77,18 +77,10 @@ struct HostingSetupSheet: View {
     }
     
     private var startButton: some View {
-        Button(action: {
+        AppFilledActionButton(title: L10n.Collaboration.startHosting) {
             let name = roomName.isEmpty ? L10n.Collaboration.room : roomName
             collabService.startHosting(roomName: name)
             dismiss()
-        }) {
-            Text(L10n.Collaboration.startHosting)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.appAccent)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
         }
         .accessibilityIdentifier("hosting-start-button")
     }

@@ -85,11 +85,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     /// 拉取All
     /// - Returns: 列表
     func fetchAll() async throws -> [KnowledgePage] {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
-            return decryptPages(rawPages)
-        }
+        try await fetchPagesOrdered { $0.order(KnowledgePage.Columns.updatedAt.desc) }
     }
 
     /// 拉取
@@ -118,11 +114,18 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     /// - Parameter limit: limit
     /// - Returns: 列表
     func fetchRecentlyUpdated(limit: Int) async throws -> [KnowledgePage] {
+        try await fetchPagesOrdered { request in
+            request.order(KnowledgePage.Columns.updatedAt.desc).limit(limit)
+        }
+    }
+
+    /// 共享的多条查询辅助：按指定排序/限制请求查询并解密，消除 fetchAll / fetchRecentlyUpdated 间的 writer.read + decryptPages 样板。
+    private func fetchPagesOrdered(
+        _ requestBuilder: (QueryInterfaceRequest<KnowledgePage>) -> QueryInterfaceRequest<KnowledgePage>
+    ) async throws -> [KnowledgePage] {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc)
-                .limit(limit)
-                .fetchAll(db)
+            let rawPages = try requestBuilder(KnowledgePage.all()).fetchAll(db)
             return decryptPages(rawPages)
         }
     }

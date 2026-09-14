@@ -59,4 +59,28 @@ public extension SynthesisStrategyProtocol {
         Logger.shared.addLog(action: .ingest, target: type.title, details: selfHealReason)
         return generateFallback(from: sourceContent, title: fallbackTitle)
     }
+
+    /// Mermaid 专用 process 流程：格式化 Mermaid → 校验非空与字节数 → 不足则降级。
+    /// 消除 InfographicSynthesisStrategy / MindmapSynthesisStrategy 两处重复的 formatMermaid + isEmpty + utf8.count + Logger + fallback 链。
+    /// - Parameters:
+    ///   - rawContent: LLM 返回的原始响应文本
+    ///   - sourceContent: 上下文知识库源页面内容
+    ///   - fallbackPrefix: Mermaid 语法前缀（如 graphTD / mindmap）
+    ///   - selfHealReason: 自愈日志原因描述
+    ///   - fallbackTitle: 兜底标题
+    /// - Returns: 处理完成的 Mermaid 文本
+    func processMermaidWithValidation(
+        rawContent: String,
+        sourceContent: String,
+        fallbackPrefix: String,
+        selfHealReason: String,
+        fallbackTitle: String
+    ) -> String {
+        let formatted = SynthesisProcessor.formatMermaid(rawContent, fallbackPrefix: fallbackPrefix)
+        if !formatted.isEmpty, formatted.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
+            return formatted
+        }
+        Logger.shared.addLog(action: .ingest, target: type.title, details: selfHealReason)
+        return generateFallback(from: sourceContent, title: fallbackTitle)
+    }
 }

@@ -40,24 +40,15 @@ public struct AppPrimaryButton: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.small) {
-                if isLoading {
-                    ProgressView()
-                        .tint(.white)
-                } else if let icon = icon {
-                    Image(systemName: icon)
-                }
-                Text(title)
-                    .fontWeight(.semibold)
-            }
-            .frame(maxWidth: maxWidth)
-            .padding(.vertical, Spacing.medium)
-            .padding(.horizontal, Spacing.large)
-            .background(
-                LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            .foregroundStyle(.white)
+            AppButtonLabel(title: title, icon: icon, isLoading: isLoading, fontWeight: .semibold)
+                .frame(maxWidth: maxWidth)
+                .padding(.vertical, Spacing.medium)
+                .padding(.horizontal, Spacing.large)
+                .background(
+                    LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .foregroundStyle(.white)
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -90,25 +81,42 @@ public struct AppBorderedButton: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.small) {
-                if let icon = icon {
-                    Image(systemName: icon)
-                }
-                Text(title)
-                    .fontWeight(.medium)
-            }
-            .frame(maxWidth: maxWidth)
-            .padding(.vertical, Spacing.medium)
-            .padding(.horizontal, Spacing.large)
-            .background(color.opacity(SystemOpacity.ghost))
-            .overlay(
-                RoundedRectangle(cornerRadius: Spacing.cardRadius)
-                    .stroke(color.opacity(DesignSystem.softOpacity), lineWidth: Spacing.borderWidth)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            .foregroundStyle(color)
+            AppButtonLabel(title: title, icon: icon, isLoading: false, fontWeight: .medium)
+                .frame(maxWidth: maxWidth)
+                .padding(.vertical, Spacing.medium)
+                .padding(.horizontal, Spacing.large)
+                .background(color.opacity(SystemOpacity.ghost))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Spacing.cardRadius)
+                        .stroke(color.opacity(DesignSystem.softOpacity), lineWidth: Spacing.borderWidth)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .foregroundStyle(color)
         }
         .buttonStyle(ScaleButtonStyle())
+    }
+}
+
+// MARK: - 共享按钮标签
+
+/// 按钮内部标签（图标 + 标题 + 可选加载指示器），消除 AppPrimaryButton / AppBorderedButton 间重复的 HStack + Image/ProgressView + Text 组合。
+private struct AppButtonLabel: View {
+    let title: String
+    let icon: String?
+    let isLoading: Bool
+    let fontWeight: Font.Weight
+
+    var body: some View {
+        HStack(spacing: Spacing.small) {
+            if isLoading {
+                ProgressView()
+                    .tint(.white)
+            } else if let icon {
+                Image(systemName: icon)
+            }
+            Text(title)
+                .fontWeight(fontWeight)
+        }
     }
 }
 

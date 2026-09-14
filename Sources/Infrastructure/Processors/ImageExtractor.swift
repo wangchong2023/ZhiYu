@@ -41,8 +41,7 @@ final class ImageExtractor: Sendable {
             results.append(String(format: ProcessorConstants.OCRAnnotation.htmlImageTemplate, okCount, text))
         }
 
-        guard !results.isEmpty else { return "" }
-        return "\n\n> \(L10n.Ingest.imageOCRLabel)\n\(results.joined(separator: "\n"))"
+        return Self.formatOCRResults(results)
     }
 
     // MARK: - PDF
@@ -87,6 +86,13 @@ final class ImageExtractor: Sendable {
             okCount += 1
             results.append(String(format: ProcessorConstants.OCRAnnotation.prefixedImageTemplate, prefix, okCount, text))
         }
+        return Self.formatOCRResults(results)
+    }
+
+    // MARK: - 共享辅助
+
+    /// 格式化 OCR 结果为 Markdown 引用块，消除 extractImagesFromHTML / ocrImageBatch 两处重复的 `guard !results.isEmpty` + 拼接样板。
+    static func formatOCRResults(_ results: [String]) -> String {
         guard !results.isEmpty else { return "" }
         return "\n\n> \(L10n.Ingest.imageOCRLabel)\n\(results.joined(separator: "\n"))"
     }

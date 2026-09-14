@@ -121,10 +121,7 @@ struct MarkdownRendererView: View {
             MarkdownRendererView(content: content, isPrivate: isPrivate, onLinkTap: onLinkTap, isCompact: true)
                 .padding(.top, DesignSystem.tiny)
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appAccent.opacity(SystemOpacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        .padding(.vertical, DesignSystem.tiny)
+        .detailsBlockStyle()
         #else
         DisclosureGroup {
             MarkdownRendererView(content: content, isPrivate: isPrivate, onLinkTap: onLinkTap, isCompact: true)
@@ -134,10 +131,7 @@ struct MarkdownRendererView: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appAccent)
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appAccent.opacity(SystemOpacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        .padding(.vertical, DesignSystem.tiny)
+        .detailsBlockStyle()
         #endif
     }
 
@@ -267,9 +261,7 @@ struct MarkdownRendererView: View {
                             renderInlineContent(cell)
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(.appAccent)
-                                .padding(.horizontal, DesignSystem.small)
-                                .padding(.vertical, DesignSystem.tightPadding)
-                                .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
+                                .tableCellFrame()
                         }
                         .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                         // 列间分割线（最后一列不加）
@@ -287,9 +279,7 @@ struct MarkdownRendererView: View {
                                 renderInlineContent(cell)
                                     .font(.footnote)
                                     .foregroundStyle(.appText)
-                                    .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, DesignSystem.tightPadding)
-                                    .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
+                                    .tableCellFrame()
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .background(rowIndex % 2 != 0 ? Color.appCard.opacity(DesignSystem.Opacity.shadow) : Color.clear)
@@ -501,5 +491,25 @@ struct MarkdownRendererView: View {
         }
         .padding(.vertical, DesignSystem.tightPadding)
         .opacity(SystemOpacity.glassStrong)
+    }
+}
+
+// MARK: - Details Block 共享样式
+private extension View {
+    /// 折叠块统一样式：padding + accent 背景 + cardRadius 圆角 + 垂直间距，消除 watchOS / iOS 两处重复。
+    func detailsBlockStyle() -> some View {
+        self
+            .padding(DesignSystem.medium)
+            .background(Color.appAccent.opacity(SystemOpacity.ghost))
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .padding(.vertical, DesignSystem.tiny)
+    }
+
+    /// 表格单元格统一 frame + padding，消除表头与数据行两处重复。
+    func tableCellFrame() -> some View {
+        self
+            .padding(.horizontal, DesignSystem.small)
+            .padding(.vertical, DesignSystem.tightPadding)
+            .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
     }
 }
