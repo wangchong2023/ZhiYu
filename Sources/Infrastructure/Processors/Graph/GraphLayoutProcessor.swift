@@ -177,9 +177,7 @@ struct GraphLayoutProcessor {
         var grid: [Int: [Int]] = [:]
 
         for i in nodes.indices {
-            let gx = Int(nodes[i].position.x / gridSize)
-            let gy = Int(nodes[i].position.y / gridSize)
-            let key = (gx << GraphConstants.Layout.gridHashShift) | (gy & GraphConstants.Layout.gridHashMask)
+            let key = gridKey(for: nodes[i].position, gridSize: gridSize)
             grid[key, default: []].append(i)
         }
 
@@ -245,6 +243,13 @@ struct GraphLayoutProcessor {
         let dy = nodes[j].position.y - nodes[i].position.y
         let distSq = dx * dx + dy * dy
         return NodeDelta(dx: dx, dy: dy, distSq: distSq, dist: sqrt(distSq))
+    }
+
+    /// 根据节点坐标计算空间网格哈希键，消除 buildGrid / 遍历两处重复的 gx/gy/gridHashShift 样板。
+    private static func gridKey(for position: CGPoint, gridSize: CGFloat) -> Int {
+        let gx = Int(position.x / gridSize)
+        let gy = Int(position.y / gridSize)
+        return (gx << GraphConstants.Layout.gridHashShift) | (gy & GraphConstants.Layout.gridHashMask)
     }
 
     /// 计算中心向心力与社区聚合力

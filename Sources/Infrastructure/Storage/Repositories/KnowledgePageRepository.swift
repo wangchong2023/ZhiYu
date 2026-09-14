@@ -193,12 +193,9 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     func renameTag(old oldTag: String, to newTag: String) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
-            let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(oldTag)\"%")).fetchAll(db)
-            for p in pagesToUpdate {
-                guard let idx = p.tags.firstIndex(of: oldTag) else { continue }
-                var updatedPage = p
+            try updatePagesWithTag(oldTag, in: db) { idx, updatedPage in
                 updatedPage.tags[idx] = newTag
-                try updatedPage.update(db)
+                return updatedPage
             }
         }
     }
@@ -208,13 +205,25 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     func deleteTag(_ tag: String) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
-            let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(tag)\"%")).fetchAll(db)
-            for p in pagesToUpdate {
-                guard let idx = p.tags.firstIndex(of: tag) else { continue }
-                var updatedPage = p
+            try updatePagesWithTag(tag, in: db) { idx, updatedPage in
                 updatedPage.tags.remove(at: idx)
-                try updatedPage.update(db)
+                return updatedPage
             }
+        }
+    }
+
+    /// 统一的标签批量更新辅助：查询包含指定标签的页面，对每个页面执行变换闭包后写回数据库。
+    /// 消除 renameTag / deleteTag 两处重复的 filter + fetchAll + firstIndex + update 样板。
+    /// - Parameters:
+    ///   - tag: 目标标签
+    ///   - db: 数据库连接
+    ///   - transform: 对 (标签索引, 页面副本) 执行变换并返回更新后的页面
+    private func updatePagesWithTag(_ tag: String, in db: Database, transform: (Int, KnowledgePage) -> KnowledgePage) throws {
+        let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(tag)\"%")).fetchAll(db)
+        for p in pagesToUpdate {
+            guard let idx = p.tags.firstIndex(of: tag) else { continue }
+            let updatedPage = transform(idx, p)
+            try updatedPage.update(db)
         }
     }
 

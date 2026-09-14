@@ -36,9 +36,7 @@ final class ImageExtractor: Sendable {
         for url in urls {
             guard let data = await downloadImage(url) else { continue }
             if data.count > maxImageSize { continue }
-            guard let text = await ocrImage(data), !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
-            okCount += 1
-            results.append(String(format: ProcessorConstants.OCRAnnotation.htmlImageTemplate, okCount, text))
+            await ocrAndAppend(data: data, okCount: &okCount, results: &results, template: ProcessorConstants.OCRAnnotation.htmlImageTemplate)
         }
 
         return Self.formatOCRResults(results)
@@ -81,15 +79,32 @@ final class ImageExtractor: Sendable {
         var okCount = 0
 
         for data in dataList {
-            guard data.count <= maxImageSize, let text = await ocrImage(data),
-                  !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
-            okCount += 1
-            results.append(String(format: ProcessorConstants.OCRAnnotation.prefixedImageTemplate, prefix, okCount, text))
+            await ocrAndAppend(data: data, okCount: &okCount, results: &results, template: ProcessorConstants.OCRAnnotation.prefixedImageTemplate, prefixArgs: prefix)
         }
         return Self.formatOCRResults(results)
     }
 
     // MARK: - 共享辅助
+
+    /// 统一的 OCR 单图处理 + 计数 + 结果追加辅助，消除 extractImagesFromHTML / ocrImageBatch 两处重复的 guard + okCount + append 样板。
+    /// - Parameters:
+    ///   - data: 待 OCR 的图像数据
+    ///   - okCount: 当前成功计数（传入 inout，成功时自增）
+    ///   - results: 结果数组（传入 inout，成功时追加格式化字符串）
+    ///   - template: 格式化模板（含 okCount 与 text 占位符）
+    ///   - templateArgs: 模板前缀参数（HTML 模板无前缀，Office 模板含 prefix）
+    /// - Returns: 无（通过 inout 参数输出）
+    private func ocrAndAppend(data: Data, okCount: inout Int, results: inout [String], template: String, prefixArgs: CVarArg...) async {
+        guard data.count <= maxImageSize,
+              let text = await ocrImage(data),
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        okCount += 1
+        if prefixArgs.isEmpty {
+            results.append(String(format: template, okCount, text))
+        } else {
+            results.append(String(format: template, prefixArgs[0], okCount, text))
+        }
+    }
 
     /// 格式化 OCR 结果为 Markdown 引用块，消除 extractImagesFromHTML / ocrImageBatch 两处重复的 `guard !results.isEmpty` + 拼接样板。
     static func formatOCRResults(_ results: [String]) -> String {

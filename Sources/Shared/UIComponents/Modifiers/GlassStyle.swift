@@ -39,12 +39,13 @@ public struct GlassCardModifier: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .background(.ultraThinMaterial.opacity(opacity))
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.disabled), lineWidth: 0.5)
+            .glassOverlay(
+                borderColor: .appBorder,
+                cornerRadius: cornerRadius,
+                shadowOpacity: DesignSystem.Opacity.ghost,
+                shadowRadius: 10,
+                shadowY: 5
             )
-            .shadow(color: Color.theme.black.opacity(DesignSystem.Opacity.ghost), radius: 10, x: 0, y: 5)
     }
 }
 

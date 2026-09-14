@@ -41,9 +41,7 @@ public struct AppPrimaryButton: View {
     public var body: some View {
         Button(action: action) {
             AppButtonLabel(title: title, icon: icon, isLoading: isLoading, fontWeight: .semibold)
-                .frame(maxWidth: maxWidth)
-                .padding(.vertical, Spacing.medium)
-                .padding(.horizontal, Spacing.large)
+                .appButtonLabelLayout(maxWidth: maxWidth)
                 .background(
                     LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
                 )
@@ -82,9 +80,7 @@ public struct AppBorderedButton: View {
     public var body: some View {
         Button(action: action) {
             AppButtonLabel(title: title, icon: icon, isLoading: false, fontWeight: .medium)
-                .frame(maxWidth: maxWidth)
-                .padding(.vertical, Spacing.medium)
-                .padding(.horizontal, Spacing.large)
+                .appButtonLabelLayout(maxWidth: maxWidth)
                 .background(color.opacity(SystemOpacity.ghost))
                 .overlay(
                     RoundedRectangle(cornerRadius: Spacing.cardRadius)
@@ -94,6 +90,18 @@ public struct AppBorderedButton: View {
                 .foregroundStyle(color)
         }
         .buttonStyle(ScaleButtonStyle())
+    }
+}
+
+// MARK: - 共享按钮标签布局
+
+/// 统一的按钮标签尺寸布局（frame + padding），消除 AppPrimaryButton / AppBorderedButton 两处重复的修饰符链。
+private extension View {
+    func appButtonLabelLayout(maxWidth: CGFloat?) -> some View {
+        self
+            .frame(maxWidth: maxWidth)
+            .padding(.vertical, Spacing.medium)
+            .padding(.horizontal, Spacing.large)
     }
 }
 

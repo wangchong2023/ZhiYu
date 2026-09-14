@@ -68,4 +68,29 @@ extension WebScraperHandler {
         guard let next = next else { throw error }
         return try await next.handle(url: url, startTime: startTime)
     }
+
+    /// 统一的 HTTP 抓取 + HTML 提取 + 责任链兜底流程，消除 GooglebotScraperHandler / ArchiveScraperHandler 两处重复的 do-catch 样板。
+    /// - Parameters:
+    ///   - url: 抓取目标 URL（用于日志与兜底）
+    ///   - request: 已配置好的 URLRequest
+    ///   - successLog: 成功日志消息
+    ///   - failureLog: 失败日志消息
+    ///   - startTime: 抓取开始时间
+    ///   - requireStatusCodeOk: 是否要求 HTTP 200
+    /// - Returns: 提取后的 (markdown, title) 元组
+    func fetchHTMLAndExtract(
+        url: URL,
+        request: URLRequest,
+        successLog: String,
+        failureLog: String,
+        startTime: Date,
+        requireStatusCodeOk: Bool = true
+    ) async throws -> (markdown: String, title: String) {
+        do {
+            let htmlContent = try await fetchUTF8Content(for: request, requireStatusCodeOk: requireStatusCodeOk)
+            return handleScraperSuccess(url: url, htmlContent: htmlContent, successLog: successLog, startTime: startTime)
+        } catch {
+            return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: failureLog)
+        }
+    }
 }

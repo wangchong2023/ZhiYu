@@ -33,8 +33,7 @@ public extension SynthesisStrategyProtocol {
         if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
             return cleaned
         }
-        Logger.shared.addLog(action: .ingest, target: type.title, details: selfHealReason)
-        return generateFallback(from: sourceContent, title: fallbackTitle)
+        return logAndFallback(selfHealReason: selfHealReason, sourceContent: sourceContent, fallbackTitle: fallbackTitle)
     }
 
     /// 标准 process 流程（含额外内容校验）：清洗 Markdown → 校验字节数与额外条件 → 不足则降级。
@@ -56,8 +55,7 @@ public extension SynthesisStrategyProtocol {
         if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes, extraValidation(cleaned) {
             return cleaned
         }
-        Logger.shared.addLog(action: .ingest, target: type.title, details: selfHealReason)
-        return generateFallback(from: sourceContent, title: fallbackTitle)
+        return logAndFallback(selfHealReason: selfHealReason, sourceContent: sourceContent, fallbackTitle: fallbackTitle)
     }
 
     /// Mermaid 专用 process 流程：格式化 Mermaid → 校验非空与字节数 → 不足则降级。
@@ -80,6 +78,16 @@ public extension SynthesisStrategyProtocol {
         if !formatted.isEmpty, formatted.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
             return formatted
         }
+        return logAndFallback(selfHealReason: selfHealReason, sourceContent: sourceContent, fallbackTitle: fallbackTitle)
+    }
+
+    /// 统一的自愈日志 + 兜底降级辅助，消除三处 process 方法尾部重复的 Logger + generateFallback 链。
+    /// - Parameters:
+    ///   - selfHealReason: 自愈日志原因描述
+    ///   - sourceContent: 上下文知识库源页面内容
+    ///   - fallbackTitle: 兜底标题
+    /// - Returns: 兜底生成的结构化文本
+    private func logAndFallback(selfHealReason: String, sourceContent: String, fallbackTitle: String) -> String {
         Logger.shared.addLog(action: .ingest, target: type.title, details: selfHealReason)
         return generateFallback(from: sourceContent, title: fallbackTitle)
     }

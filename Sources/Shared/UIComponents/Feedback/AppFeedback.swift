@@ -66,10 +66,7 @@ public struct AppShimmer: View {
         )
         .offset(x: phase)
         .onAppear {
-            // MARK: @PR-03: 使用高性能线性动画减少主线程压力
-            withAnimation(.linear(duration: Animations.Decorator.shimmerDuration).repeatForever(autoreverses: false)) {
-                phase = Animations.Decorator.shimmerPhaseShift
-            }
+            ShimmerAnimation.startLinear { phase = Animations.Decorator.shimmerPhaseShift }
         }
     }
 }
@@ -101,9 +98,7 @@ public struct ShimmerModifier: ViewModifier {
                     .frame(width: geometry.size.width * Animations.Decorator.shimmerWidthRatio)
                     .offset(x: phase)
                     .onAppear {
-                        withAnimation(.linear(duration: Animations.Decorator.shimmerDuration).repeatForever(autoreverses: false)) {
-                            phase = geometry.size.width * Animations.Decorator.shimmerEndRatio
-                        }
+                        ShimmerAnimation.startLinear { phase = geometry.size.width * Animations.Decorator.shimmerEndRatio }
                     }
                 }
             )
@@ -214,5 +209,16 @@ public extension View {
 enum AdaptiveTypography {
     static func adaptiveSecondaryFont(horizontalSizeClass: UserInterfaceSizeClass?) -> Font {
         horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont
+    }
+}
+
+// MARK: - 流光动画共享辅助
+
+/// 统一的线性流光动画启动器，消除 AppShimmer / ShimmerModifier 两处重复的 withAnimation + shimmerDuration + repeatForever 链。
+/// - Parameter body: 动画驱动相位变化的闭包
+enum ShimmerAnimation {
+    /// @PR-03: 使用高性能线性动画减少主线程压力
+    static func startLinear(body: @escaping () -> Void) {
+        withAnimation(.linear(duration: Animations.Decorator.shimmerDuration).repeatForever(autoreverses: false), body: body)
     }
 }

@@ -50,10 +50,7 @@ struct VaultBadge: View {
             } label: {
                 badgeLabel(currentVault: currentVault)
             }
-            .buttonStyle(.plain)
-            .tint(.primary)
-            .accessibilityLabel("\(L10n.Vault.label): \(currentVault.name)")
-            .accessibilityIdentifier("vaultBadgeButton")
+            .vaultBadgeStyling(name: currentVault.name)
         } else {
             Menu {
                 Button(action: {
@@ -67,12 +64,18 @@ struct VaultBadge: View {
             } label: {
                 badgeLabel(currentVault: currentVault)
             }
-            .buttonStyle(.plain)
-            .tint(.primary)
-            .accessibilityLabel("\(L10n.Vault.label): \(currentVault.name)")
-            .accessibilityIdentifier("vaultBadgeButton")
+            .vaultBadgeStyling(name: currentVault.name)
         }
         #endif
+    }
+
+    /// 统一的 VaultBadge 按钮样式修饰符，消除 passthroughButton / Menu 两处重复的 buttonStyle + tint + accessibilityLabel + accessibilityIdentifier 链。
+    private func vaultBadgeStyling(name: String) -> some View {
+        self
+            .buttonStyle(.plain)
+            .tint(.primary)
+            .accessibilityLabel("\(L10n.Vault.label): \(name)")
+            .accessibilityIdentifier("vaultBadgeButton")
     }
     
     @ViewBuilder

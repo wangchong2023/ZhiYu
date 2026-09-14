@@ -182,20 +182,20 @@ struct GooglebotScraperHandler: WebScraperHandler {
     /// /// - Parameter startTime: 启动Time
     /// /// - Returns: 返回值
     func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
-        do {
-            var request = URLRequest(url: url)
-            request.timeoutInterval = ProcessorConstants.WebScraper.directTimeoutInterval
-            let ua = ["Mozilla/\(ProcessorConstants.WebScraper.mozillaVersion)", "(compatible;", "Googlebot/\(ProcessorConstants.WebScraper.googlebotVersion);", "+http://www.google.com/bot.html)"].joined(separator: ProcessorConstants.Whitespace.space)
-            request.setValue(ua, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
-            request.setValue("text/html,application/xhtml+xml,application/xml;q=\(ProcessorConstants.WebScraper.acceptQValueHigh),*/*;q=\(ProcessorConstants.WebScraper.acceptQValueLow)", forHTTPHeaderField: SystemConstants.HTTPHeader.accept)
+        var request = URLRequest(url: url)
+        request.timeoutInterval = ProcessorConstants.WebScraper.directTimeoutInterval
+        let ua = ["Mozilla/\(ProcessorConstants.WebScraper.mozillaVersion)", "(compatible;", "Googlebot/\(ProcessorConstants.WebScraper.googlebotVersion);", "+http://www.google.com/bot.html)"].joined(separator: ProcessorConstants.Whitespace.space)
+        request.setValue(ua, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
+        request.setValue("text/html,application/xhtml+xml,application/xml;q=\(ProcessorConstants.WebScraper.acceptQValueHigh),*/*;q=\(ProcessorConstants.WebScraper.acceptQValueLow)", forHTTPHeaderField: SystemConstants.HTTPHeader.accept)
 
-            let htmlContent = try await fetchUTF8Content(for: request, requireStatusCodeOk: false)
-
-            return handleScraperSuccess(url: url, htmlContent: htmlContent, successLog: L10n.Ingest.Status.webscraperLevel2Success, startTime: startTime)
-
-        } catch {
-            return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: L10n.Ingest.Status.webscraperLevel2Failed)
-        }
+        return try await fetchHTMLAndExtract(
+            url: url,
+            request: request,
+            successLog: L10n.Ingest.Status.webscraperLevel2Success,
+            failureLog: L10n.Ingest.Status.webscraperLevel2Failed,
+            startTime: startTime,
+            requireStatusCodeOk: false
+        )
     }
 }
 
@@ -208,24 +208,23 @@ struct ArchiveScraperHandler: WebScraperHandler {
     /// /// - Parameter startTime: 启动Time
     /// /// - Returns: 返回值
     func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
-        do {
-            let archiveURLString = "\(APIPaths.webArchivePrefix)\(url.absoluteString)"
-            guard let archiveURL = URL(string: archiveURLString) else {
-                throw WebScraperProcessor.ScraperError.invalidURL
-            }
-
-            var archiveReq = URLRequest(url: archiveURL)
-            archiveReq.timeoutInterval = ProcessorConstants.WebScraper.archiveTimeoutInterval
-            let archiveUA = ProcessorConstants.WebScraper.desktopUserAgent
-            archiveReq.setValue(archiveUA, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
-
-            let htmlContent = try await fetchUTF8Content(for: archiveReq)
-
-            return handleScraperSuccess(url: url, htmlContent: htmlContent, successLog: L10n.Ingest.Status.webscraperLevel3Success, startTime: startTime)
-
-        } catch {
-            return try await forwardToNext(error: error, url: url, startTime: startTime, failureLog: L10n.Ingest.Status.webscraperLevel3Failed)
+        let archiveURLString = "\(APIPaths.webArchivePrefix)\(url.absoluteString)"
+        guard let archiveURL = URL(string: archiveURLString) else {
+            throw WebScraperProcessor.ScraperError.invalidURL
         }
+
+        var archiveReq = URLRequest(url: archiveURL)
+        archiveReq.timeoutInterval = ProcessorConstants.WebScraper.archiveTimeoutInterval
+        let archiveUA = ProcessorConstants.WebScraper.desktopUserAgent
+        archiveReq.setValue(archiveUA, forHTTPHeaderField: SystemConstants.HTTPHeader.userAgent)
+
+        return try await fetchHTMLAndExtract(
+            url: url,
+            request: archiveReq,
+            successLog: L10n.Ingest.Status.webscraperLevel3Success,
+            failureLog: L10n.Ingest.Status.webscraperLevel3Failed,
+            startTime: startTime
+        )
     }
 }
 
