@@ -30,8 +30,13 @@ public final class AIAnalyticsService: @unchecked Sendable {
 
         let governance = self.governance
         Task.detached(priority: .background) {
-            _ = try? await governance.logCall(model: model, promptTokens: prompt, completionTokens: completion, latencyMS: latency, status: AppConstants.Storage.defaultCallStatus)
-            _ = try? await governance.logTokenUsage(model: model, promptTokens: prompt, completionTokens: completion)
+            await AIAnalyticsService.logCallAndTokenUsage(
+                governance: governance,
+                model: model,
+                promptTokens: prompt,
+                completionTokens: completion,
+                latency: latency
+            )
         }
     }
 
@@ -56,10 +61,33 @@ public final class AIAnalyticsService: @unchecked Sendable {
             let promptTokens = (systemPrompt.count + query.count) / charsPerToken
             let completionTokens = response.count / charsPerToken
 
-            _ = try? await governance.logCall(model: modelName, promptTokens: promptTokens, completionTokens: completionTokens, latencyMS: latency, status: AppConstants.Storage.defaultCallStatus)
-            _ = try? await governance.logTokenUsage(model: modelName, promptTokens: promptTokens, completionTokens: completionTokens)
+            await AIAnalyticsService.logCallAndTokenUsage(
+                governance: governance,
+                model: modelName,
+                promptTokens: promptTokens,
+                completionTokens: completionTokens,
+                latency: latency
+            )
             _ = await evalService.evaluate(query: query, answer: response, context: context, sources: sources)
         }
+    }
+
+    /// 异步记录 LLM 调用与 Token 用量至治理仓储（容错吞错）
+    /// - Parameters:
+    ///   - governance: 治理仓储
+    ///   - model: 模型名
+    ///   - promptTokens: 输入 token 数
+    ///   - completionTokens: 输出 token 数
+    ///   - latency: 调用延迟（毫秒）
+    private static func logCallAndTokenUsage(
+        governance: any RAGGovernanceRepository,
+        model: String,
+        promptTokens: Int,
+        completionTokens: Int,
+        latency: Int
+    ) async {
+        _ = try? await governance.logCall(model: model, promptTokens: promptTokens, completionTokens: completionTokens, latencyMS: latency, status: AppConstants.Storage.defaultCallStatus)
+        _ = try? await governance.logTokenUsage(model: model, promptTokens: promptTokens, completionTokens: completionTokens)
     }
 }
 

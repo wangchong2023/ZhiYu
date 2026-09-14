@@ -41,15 +41,9 @@ public final class LLMRefactorService: Sendable {
         \"\"\"
         """
 
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
-            LLMConstants.APIKey.temperature: 0.1,
-            LLMConstants.APIKey.maxTokens: 500
-        ]
+        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.1, maxTokens: 500)
 
-        let response = try await client.sendRequest(body: body)
-        let responseContent = LLMUtils.extractContent(from: response) ?? ""
+        let responseContent = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
         return LLMUtils.parseJSONArray(responseContent)
     }
 
@@ -67,15 +61,9 @@ public final class LLMRefactorService: Sendable {
         \(newContent)
         """
 
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
-            LLMConstants.APIKey.temperature: 0.2,
-            LLMConstants.APIKey.maxTokens: 2000
-        ]
+        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.2, maxTokens: 2000)
 
-        let response = try await client.sendRequest(body: body)
-        let folded = LLMUtils.extractContent(from: response) ?? ""
+        let folded = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
         return folded.isEmpty ? (existingContent + "\n\n" + newContent) : folded
     }
 
@@ -92,15 +80,14 @@ public final class LLMRefactorService: Sendable {
         \(pageData)
         """
 
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
-            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature,
-            LLMConstants.APIKey.maxTokens: 1000
-        ]
+        let body = LLMRequestBuilder.userOnlyBody(
+            model: model,
+            userPrompt: prompt,
+            temperature: AppConfig.AI.defaultTemperature,
+            maxTokens: 1000
+        )
 
-        let response = try await client.sendRequest(body: body)
-        let responseContent = LLMUtils.extractContent(from: response) ?? ""
+        let responseContent = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
         return LLMUtils.parseRefactorSuggestions(responseContent)
     }
 }

@@ -48,12 +48,13 @@ final class LLMChatService: Sendable {
 
     /// 构造非流式请求体
     func makeChatRequestBody(systemPrompt: String, query: String, history: [ChatMessageDTO]) -> [String: Any] {
-        [
+        var body: [String: Any] = [
             LLMConstants.APIKey.model: model,
             LLMConstants.APIKey.messages: buildChatMessages(systemPrompt: systemPrompt, query: query, history: history),
-            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature,
-            LLMConstants.APIKey.maxTokens: PromptConstants.TokenLimits.defaultMaxOutputTokens
+            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature
         ]
+        body[LLMConstants.APIKey.maxTokens] = PromptConstants.TokenLimits.defaultMaxOutputTokens
+        return body
     }
 
     /// 构造流式请求体

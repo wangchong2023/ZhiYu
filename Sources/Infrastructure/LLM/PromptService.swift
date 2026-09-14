@@ -82,14 +82,17 @@ public final class PromptService: @unchecked Sendable {
 
     public var userShortcuts: [ShortcutItem] = []
 
+    /// 默认快捷项列表（用于初始化与重置场景）
+    private static let defaultShortcuts: [ShortcutItem] = [
+        ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: L10n.AI.Prompt.Shortcut.Key.deepReview),
+        ShortcutItem(text: L10n.AI.Prompt.Shortcut.findGaps, localizationKey: L10n.AI.Prompt.Shortcut.Key.findGaps),
+        ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: L10n.AI.Prompt.Shortcut.Key.studyPath)
+    ]
+
     /// 更新Localizables
     public func updateLocalizables() {
         if userShortcuts.isEmpty {
-            userShortcuts = [
-                ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: L10n.AI.Prompt.Shortcut.Key.deepReview),
-                ShortcutItem(text: L10n.AI.Prompt.Shortcut.findGaps, localizationKey: L10n.AI.Prompt.Shortcut.Key.findGaps),
-                ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: L10n.AI.Prompt.Shortcut.Key.studyPath)
-            ]
+            userShortcuts = Self.defaultShortcuts
         }
         queryRewritePrompt = L10n.AI.Prompt.queryRewrite
         rerankPrompt = L10n.AI.Prompt.rerank
@@ -141,12 +144,8 @@ public final class PromptService: @unchecked Sendable {
         self.reportPrompt = L10n.AI.Prompt.Default.report
         self.expansionPrompt = L10n.AI.Prompt.Default.expansion
         
-        self.userShortcuts = [
-            ShortcutItem(text: L10n.AI.Prompt.Shortcut.deepReview, localizationKey: L10n.AI.Prompt.Shortcut.Key.deepReview),
-            ShortcutItem(text: L10n.AI.Prompt.Shortcut.findGaps, localizationKey: L10n.AI.Prompt.Shortcut.Key.findGaps),
-            ShortcutItem(text: L10n.AI.Prompt.Shortcut.studyPath, localizationKey: L10n.AI.Prompt.Shortcut.Key.studyPath)
-        ]
-        
+        self.userShortcuts = Self.defaultShortcuts
+
         Logger.shared.info("Prompt configurations reset to default.")
     }
 

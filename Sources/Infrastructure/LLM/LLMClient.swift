@@ -77,26 +77,7 @@ final class LLMClient: LLMClientProtocol, Sendable {
     }
 
     private func performRequest(bodyData: Data) async throws -> [String: Any] {
-        // VULN-013 修复 + 审查修复 MED-1: 强制 HTTPS，但对 loopback 地址豁免
-        // 本地回环不经过网络，无明文泄露风险，支持本地 LLM 开发（如 Ollama/llama.cpp）
-        let lowerURL = normalizedBaseURL.lowercased()
-        let isHTTPS = lowerURL.hasPrefix(SystemConstants.URLScheme.https)
-        let isLoopback = isLoopbackURL(lowerURL)
-        guard isHTTPS || isLoopback else {
-            throw LLMError.invalidURL
-        }
-        guard let url = URL(string: "\(normalizedBaseURL)/chat/completions") else {
-            throw LLMError.invalidURL
-        }
-
-        let cleanAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(SystemConstants.ContentType.applicationJSON, forHTTPHeaderField: SystemConstants.HTTPHeader.contentType)
-        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: SystemConstants.HTTPHeader.authorization)
-        request.timeoutInterval = Self.defaultTimeout
-
-        request.httpBody = bodyData
+        let request = try makeLLMRequest(bodyData: bodyData, timeout: Self.defaultTimeout)
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
@@ -151,6 +132,28 @@ final class LLMClient: LLMClientProtocol, Sendable {
     /// - Returns: 异步字节流
     /// - Throws: 网络或 API 错误
     func sendStreamingRequest(body: [String: Any]) async throws -> URLSession.AsyncBytes {
+        let httpBody = try JSONSerialization.data(withJSONObject: body)
+        let request = try makeLLMRequest(bodyData: httpBody, timeout: Self.streamingTimeout)
+
+        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok else {
+            throw LLMError.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)
+        }
+
+        return bytes
+    }
+
+    // MARK: - 辅助方法
+
+    /// 构造 LLM API 请求 URLRequest（含 HTTPS 强制校验与 loopback 豁免）
+    /// - Parameters:
+    ///   - bodyData: 请求体数据
+    ///   - timeout: 超时时间
+    /// - Returns: 配置完成的 URLRequest
+    /// - Throws: `LLMError.invalidURL` 当 URL 非法或非 HTTPS（且非 loopback）
+    private func makeLLMRequest(bodyData: Data, timeout: TimeInterval) throws -> URLRequest {
         // VULN-013 修复 + 审查修复 MED-1: 强制 HTTPS，但对 loopback 地址豁免
         // 本地回环不经过网络，无明文泄露风险，支持本地 LLM 开发（如 Ollama/llama.cpp）
         let lowerURL = normalizedBaseURL.lowercased()
@@ -168,22 +171,10 @@ final class LLMClient: LLMClientProtocol, Sendable {
         request.httpMethod = "POST"
         request.setValue(SystemConstants.ContentType.applicationJSON, forHTTPHeaderField: SystemConstants.HTTPHeader.contentType)
         request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: SystemConstants.HTTPHeader.authorization)
-        request.timeoutInterval = Self.streamingTimeout
-
-        let httpBody = try JSONSerialization.data(withJSONObject: body)
-        request.httpBody = httpBody
-
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok else {
-            throw LLMError.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)
-        }
-
-        return bytes
+        request.timeoutInterval = timeout
+        request.httpBody = bodyData
+        return request
     }
-
-    // MARK: - 辅助方法
 
     /// 审查修复 MED-1: 判断 URL 是否为 loopback 地址（本地回环）
     /// loopback 不经过网络，无明文泄露风险，豁免 HTTPS 强制校验
