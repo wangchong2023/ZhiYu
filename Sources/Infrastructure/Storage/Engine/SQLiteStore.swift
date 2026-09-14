@@ -100,17 +100,10 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         fileSize: Int64? = nil,
         sourceType: String? = nil
     ) async throws -> KnowledgePage {
-        let page = KnowledgePage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawTextSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
-        )
+        let page = KnowledgePage(input: CreatePageInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType))
         try await knowledgeRepository.save(page)
         await reloadFromDisk()
         return page

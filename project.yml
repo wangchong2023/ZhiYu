@@ -233,6 +233,7 @@ targets:
       - path: Sources/Core/System/TestModeDetector.swift
       # L1.5 领域层：模型、协议、RAG
       - path: Sources/Domain/Models/KnowledgePage.swift
+      - path: Sources/Domain/Models/CreatePageInput.swift
       - path: Sources/Domain/Models/PageType.swift
       - path: Sources/Domain/Models/LintIssue.swift
       - path: Sources/Domain/Models/SearchConstants.swift

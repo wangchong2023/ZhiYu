@@ -96,6 +96,19 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
             .fetchAll(db)
     }
 
+    /// 一次性获取指定评估的相关标注数组与 sourceID 集合，消除 Recall/F1/MAP 中
+    /// 重复的 `fetchRelevantJudgments + Set(map(\.sourceID))` 双查询样板。
+    /// - Parameters:
+    ///   - db: 当前数据库连接
+    ///   - evaluationID: 评估记录 ID
+    /// - Returns: (相关标注数组, sourceID 集合)
+    private func fetchRelevantJudgmentsAndSourceIDs(
+        db: Database, evaluationID: Int64
+    ) throws -> (judgments: [RelevanceJudgment], sourceIDs: Set<String>) {
+        let judgments = try fetchRelevantJudgments(db: db, evaluationID: evaluationID)
+        return (judgments, Set(judgments.map(\.sourceID)))
+    }
+
     /// 计算所有评估的指标均值；无有效查询时返回 0.0。
     /// - Parameters:
     ///   - evals: 评估记录数组
@@ -432,26 +445,24 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateRecall(days: Int, k: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let allRelevant = try fetchRelevantJudgments(db: db, evaluationID: evalID)
-            guard !allRelevant.isEmpty else { return nil }
-            let relevantSourceIDs = Set(allRelevant.map(\.sourceID))
+            let relevant = try fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            guard !relevant.judgments.isEmpty else { return nil }
             let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
-            let retrievedRelevant = snapshots.filter { relevantSourceIDs.contains($0.sourceID) }.count
-            return Double(retrievedRelevant) / Double(allRelevant.count)
+            let retrievedRelevant = snapshots.filter { relevant.sourceIDs.contains($0.sourceID) }.count
+            return Double(retrievedRelevant) / Double(relevant.judgments.count)
         }
     }
 
     func calculateF1Score(days: Int, k: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let allRelevant = try fetchRelevantJudgments(db: db, evaluationID: evalID)
-            guard !allRelevant.isEmpty else { return nil }
-            let relevantSourceIDs = Set(allRelevant.map(\.sourceID))
+            let relevant = try fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            guard !relevant.judgments.isEmpty else { return nil }
             let topK = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
             guard !topK.isEmpty else { return nil }
-            let retrievedRelevant = topK.filter { relevantSourceIDs.contains($0.sourceID) }.count
+            let retrievedRelevant = topK.filter { relevant.sourceIDs.contains($0.sourceID) }.count
             let precision = Double(retrievedRelevant) / Double(topK.count)
-            let recall = Double(retrievedRelevant) / Double(allRelevant.count)
+            let recall = Double(retrievedRelevant) / Double(relevant.judgments.count)
             let denominator = precision + recall
             guard denominator > 0 else { return nil }
             return RAGGovernanceFormula.f1HarmonicCoefficient * precision * recall / denominator
@@ -463,15 +474,14 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateMAP(days: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let allRelevant = try fetchRelevantJudgments(db: db, evaluationID: evalID)
-            guard !allRelevant.isEmpty else { return nil }
-            let relevantSet = Set(allRelevant.map(\.sourceID))
-            let totalRelevant = allRelevant.count
+            let relevant = try fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            guard !relevant.judgments.isEmpty else { return nil }
+            let totalRelevant = relevant.judgments.count
             let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
             guard !snapshots.isEmpty else { return nil }
             var relevantHitCount = 0
             var sumPrecision: Double = 0
-            for (idx, snap) in snapshots.enumerated() where relevantSet.contains(snap.sourceID) {
+            for (idx, snap) in snapshots.enumerated() where relevant.sourceIDs.contains(snap.sourceID) {
                 relevantHitCount += 1
                 sumPrecision += Double(relevantHitCount) / Double(idx + 1)
             }

@@ -118,17 +118,10 @@ public final class KnowledgePageManager {
         undoService?.pushSnapshot(currentPages)
 
         // 构造初始页面并执行处理器
-        let initialPage = KnowledgePage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawTextSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
-        )
+        let initialPage = KnowledgePage(input: CreatePageInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType))
         let processedPage = await applyProcessors(to: initialPage)
 
         let page = try await pageStore.createPage(

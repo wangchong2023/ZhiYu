@@ -782,6 +782,7 @@
 		421FB6459E6FC80DB6B86ECE /* FileSignatureRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5796C4944A120A20F9CEF9 /* FileSignatureRepository.swift */; };
 		422BEB8BC6769981207FAFBD /* WikiLinkExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752A49D88453F76587407A2F /* WikiLinkExtractor.swift */; };
 		4235983653B31ABF79190843 /* TextChunkerProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD611728AE29F7A6EE9C485E /* TextChunkerProcessor.swift */; };
+		4255F8EB15022CD5CD9F0FB3 /* CreatePageInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBEF7D0487FEC1082338879C /* CreatePageInput.swift */; };
 		425BF77D969CD0C50870DA0F /* ImportRecordRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1920ECA24AAAC4A387BD4B4 /* ImportRecordRepository.swift */; };
 		426E23DFF00F4551B32BFEF0 /* CollaborationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA66A036B9775F16B55A4A0 /* CollaborationService.swift */; };
 		426EA9B2F7033E5FA8B9483F /* ChatCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E9B84576565B6084281F85 /* ChatCoordinator.swift */; };
@@ -1870,6 +1871,7 @@
 		9EF25D17F9337AC7A693EDC1 /* PageDetailMetadataSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 195462C18FE2B1E55A3A40F3 /* PageDetailMetadataSection.swift */; };
 		9EF6FE940C76B419EE4D8E7F /* DoneDismissToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14C24BD463386B57A94B1E0 /* DoneDismissToolbarModifier.swift */; };
 		9F05560C274DFF9137B089FF /* iOSShareSheetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C9998A20F42C77FFDC3800 /* iOSShareSheetService.swift */; };
+		9F156F43874C69FF20C48CC2 /* CreatePageInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBEF7D0487FEC1082338879C /* CreatePageInput.swift */; };
 		9F294B3E3E79EBC07F0ECFA7 /* KeychainQueryHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 867D714D76F4944FF13942AB /* KeychainQueryHelper.swift */; };
 		9F558D5C09226D8F90541BE1 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB204F4389493E70C9FFD48 /* SettingsComponents.swift */; };
 		9F5B18D7D5028665DC150ABD /* PluginRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F28C33E807B54FEC462FC5 /* PluginRuntime.swift */; };
@@ -2586,6 +2588,7 @@
 		DD615AD75646469C18D6B955 /* UnsupportedFileArchiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8558231F0EF84557967A10 /* UnsupportedFileArchiver.swift */; };
 		DD7B04CCF5D655BEEFBE54F4 /* LLMProviderValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5D91264F50B554E6D700BF /* LLMProviderValidationTests.swift */; };
 		DD81A822DB8C420BFB9352A3 /* AppLayoutComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A536E224D4E199BF9F85012 /* AppLayoutComponents.swift */; };
+		DD86141930AC61731CA34939 /* CreatePageInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBEF7D0487FEC1082338879C /* CreatePageInput.swift */; };
 		DDA8A124F953853A0F08A4CF /* VaultWidgetSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326D9FF3FE0E26333E0C1917 /* VaultWidgetSyncManager.swift */; };
 		DDC4FD7C51CAAE0C06725727 /* AuthLoginDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1029A0BE05A04E521F47759C /* AuthLoginDeepTests.swift */; };
 		DDF9BCC12D68EBA5D21CAFDA /* L10n+Watch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A3601AAFE0A2DBA65D07A4 /* L10n+Watch.swift */; };
@@ -5015,6 +5018,7 @@
 		FB6960B3BA4EE62191C99D3D /* lottie-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "lottie-ios"; path = "../../opensrc/swift/lottie-ios"; sourceTree = SOURCE_ROOT; };
 		FB7949B41C34B95E87C8189D /* KnowledgeStoreStressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeStoreStressTests.swift; sourceTree = "<group>"; };
 		FBDA5808AF30D650393E0B75 /* testAppCapsuleButtonSecondaryDisplay.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testAppCapsuleButtonSecondaryDisplay.1.png; sourceTree = "<group>"; };
+		FBEF7D0487FEC1082338879C /* CreatePageInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePageInput.swift; sourceTree = "<group>"; };
 		FBEFD89403E34AF813FB963E /* SearchViewInteractiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewInteractiveTests.swift; sourceTree = "<group>"; };
 		FBF2590EE0EB9FB9F25270DE /* mermaid.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = mermaid.min.js; sourceTree = "<group>"; };
 		FBF99B4E2D692B9FB81EAD64 /* ContainerCardStyleModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerCardStyleModifier.swift; sourceTree = "<group>"; };
@@ -7003,6 +7007,7 @@
 				94589743C22E4B620F5E914B /* AppTab.swift */,
 				2A64FFCFBB2B095EBDDF5C66 /* AsyncStatus.swift */,
 				7AB442FBD10FAA985B03AE24 /* ChunkType.swift */,
+				FBEF7D0487FEC1082338879C /* CreatePageInput.swift */,
 				FE4746D6106D094CEE034331 /* DomainThresholds.swift */,
 				119E06B638D57549C0C86513 /* GraphConstants.swift */,
 				4A20125A434B445982AC52DB /* IngestPipelineConstants.swift */,
@@ -11215,6 +11220,7 @@
 				8D68F93B503AAA6471789117 /* CoreMLModerationClassifier.swift in Sources */,
 				1CC82D8C12E42ECC9A465AD5 /* CreateNotebookButton.swift in Sources */,
 				662F1C8987887378DCAE0645 /* CreatePageContentBuilder.swift in Sources */,
+				4255F8EB15022CD5CD9F0FB3 /* CreatePageInput.swift in Sources */,
 				591ED03AA07014D515298B28 /* CreatePageView.swift in Sources */,
 				7E64BC905E072D39F37888D8 /* CrossPlatform.swift in Sources */,
 				D7363B16452D454B45BA0562 /* DIResolver.swift in Sources */,
@@ -12051,6 +12057,7 @@
 				8EA564850093F2F1F88CDAF8 /* CoreMLModerationClassifier.swift in Sources */,
 				9C28D5245AE4CA0DAF2F12AA /* CreateNotebookButton.swift in Sources */,
 				3BA013AF6FA66E47DCD258C5 /* CreatePageContentBuilder.swift in Sources */,
+				DD86141930AC61731CA34939 /* CreatePageInput.swift in Sources */,
 				70E88B79CA49E78A81F74EC3 /* CreatePageView.swift in Sources */,
 				ABE65BB4F868A089030DDBB2 /* CrossPlatform.swift in Sources */,
 				55AB9F140541A33E514D1B6C /* DIResolver.swift in Sources */,
@@ -12719,6 +12726,7 @@
 				49870BD26505EFADF5125A2E /* Colors.swift in Sources */,
 				5228CF6FEF756EDFC6FA07B3 /* Component.swift in Sources */,
 				BEBAF435F28CF72A3466EE0B /* CoreConstants.swift in Sources */,
+				9F156F43874C69FF20C48CC2 /* CreatePageInput.swift in Sources */,
 				90DD9D73E12CAF153F5AA629 /* CrossPlatform.swift in Sources */,
 				DEC29870F6BEB63012C1F2B5 /* DIResolver.swift in Sources */,
 				41BD81F7BFCC1A18EB77115F /* DTOs.swift in Sources */,
