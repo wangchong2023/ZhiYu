@@ -238,8 +238,8 @@ struct SourceDetailBodyView: View {
                                         backgroundColor: .appCard,
                                         backgroundOpacity: DesignSystem.Opacity.subtle,
                                         borderColor: ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal : Color.theme.yellow,
-                                        borderOpacity: DesignSystem.Opacity.disabled,
-                                        borderWidth: SystemStroke.divider
+                                        borderWidth: SystemStroke.divider,
+                                        borderOpacity: DesignSystem.Opacity.disabled
                                     ))
                                 }
                                 .buttonStyle(.plain)

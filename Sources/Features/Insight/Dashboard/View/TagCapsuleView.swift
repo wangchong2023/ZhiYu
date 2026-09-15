@@ -190,7 +190,7 @@ struct TagCapsuleView: View {
                 Circle()
                     .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + clampedBubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignSystem.borderWidth)
             }
-            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, coordinator: coordinator)
+            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, isEditMode: coordinator.isEditMode, editBadge: { AnyView(editBadgeView(isSelected: isSelected)) })
         } else {
             HStack(spacing: DesignSystem.Layout.listRowSpacing) {
                 tagTitleText(isSelected: isSelected)
@@ -213,7 +213,7 @@ struct TagCapsuleView: View {
                 Capsule()
                     .stroke(isSelected ? Color.appAccent.opacity(SystemOpacity.textSecondary) : Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.divider)
             }
-            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, coordinator: coordinator)
+            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, isEditMode: coordinator.isEditMode, editBadge: { AnyView(editBadgeView(isSelected: isSelected)) })
         }
     }
 
@@ -248,14 +248,36 @@ struct TagCapsuleView: View {
             .font(.system(size: fontSize, design: .rounded).weight(isSelected ? .semibold : .regular))
     }
 
+    /// 应用编辑角标覆盖层：缩放 + 阴影 + 编辑角标（实现见 extension View）
+}
+
+// MARK: - 编辑角标覆盖层扩展
+extension View {
     /// 应用编辑角标覆盖层：缩放 + 阴影 + 编辑角标
-    private func applyEditOverlay(isSelected: Bool, clampedBubbleRatio: CGFloat, coordinator: TagCloudCoordinator) -> some View {
-        self
+    func applyEditOverlay(isSelected: Bool, clampedBubbleRatio: CGFloat, isEditMode: Bool, editBadge: @escaping () -> AnyView) -> some View {
+        modifier(EditOverlayModifier(
+            isSelected: isSelected,
+            clampedBubbleRatio: clampedBubbleRatio,
+            isEditMode: isEditMode,
+            editBadge: editBadge
+        ))
+    }
+}
+
+/// 编辑角标覆盖层修饰符：缩放 + 阴影 + 编辑角标
+private struct EditOverlayModifier: ViewModifier {
+    let isSelected: Bool
+    let clampedBubbleRatio: CGFloat
+    let isEditMode: Bool
+    let editBadge: () -> AnyView
+
+    func body(content: Content) -> some View {
+        content
             .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
             .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
             .overlay(alignment: .topTrailing) {
-                if coordinator.isEditMode {
-                    editBadgeView(isSelected: isSelected)
+                if isEditMode {
+                    editBadge()
                 }
             }
     }

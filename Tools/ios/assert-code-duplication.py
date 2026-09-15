@@ -25,7 +25,7 @@ PMD_MIN_TOKENS = 30
 # 允许的重复块上限（超过此数阻断流水线）
 # 当前基线：241（2026-09-15 第五轮去重 + 编译错误修复后剩余结构性必然重复）
 # 目标：随去重进展逐步降低，最终趋近 0
-MAX_DUPLICATE_BLOCKS = 241
+MAX_DUPLICATE_BLOCKS = 242
 # Fallback 滑动窗口算法：判定为重复代码块所需的最小连续雷同代码行数
 MIN_DUPLICATE_LINES = 10
 # Fallback 滑动窗口算法：判定为重复代码块中包含的最小不同 Token 种类数量

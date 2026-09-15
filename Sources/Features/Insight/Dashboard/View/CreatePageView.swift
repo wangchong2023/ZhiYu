@@ -345,6 +345,7 @@ struct CreatePageView: View {
     }
 
     /// 关联链接分区：Divider + relatedLinks 字段
+    @ViewBuilder
     private var relatedLinksSection: some View {
         Divider()
         labeledField(
