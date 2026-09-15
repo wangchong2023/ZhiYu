@@ -91,75 +91,9 @@ struct PagePreviewSheet: View {
                             FlowLayout(spacing: DesignSystem.tiny) {
                                 ForEach(page.tags, id: \.self) { tag in
                                     statusPill(text: "#\(tag)", color: .secondary, backgroundOpacity: DesignSystem.Opacity.subtle)
-                }
-        }
-    }
-
-    /// 状态/标签胶囊，消除 status/confidence/tag pill 的重复修饰符链
-    @ViewBuilder
-    private func statusPill(text: String, color: Color, backgroundOpacity: Double = DesignSystem.Opacity.glass) -> some View {
-        Text(text)
-            .font(.caption2)
-            .bold()
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, SystemSpacing.tiny)
-            .background(color.opacity(backgroundOpacity))
-            .foregroundStyle(color)
-            .clipShape(Capsule())
-    }
-
-    /// 召回指标卡，消除 FTS/向量召回卡的重复修饰符链
-    @ViewBuilder
-    private func recallMetricCard(
-        rankLabel: String,
-        count: Int,
-        engineLabel: String,
-        countColor: Color,
-        engineColor: Color,
-        gradientColors: [Color],
-        borderColor: Color
-    ) -> some View {
-        VStack(spacing: DesignSystem.tiny) {
-            Text(rankLabel)
-                .font(.caption2)
-                .bold()
-                .foregroundStyle(.secondary)
-
-            Text("\(count)")
-                .font(.system(size: SearchDiagConstants.metricFontSize, weight: .bold, design: .rounded))
-                .foregroundStyle(countColor)
-
-            Text(engineLabel)
-                .font(.system(size: SearchDiagConstants.labelFontSize, weight: .bold))
-                .foregroundStyle(engineColor)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(
-            LinearGradient(
-                colors: gradientColors,
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .cornerRadius(DesignSystem.cardRadius)
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                .stroke(borderColor, lineWidth: DesignSystem.borderWidth)
-        )
-    }
-
-    /// 排位 Badge，消除 FTS/向量排位的重复修饰符链
-    @ViewBuilder
-    private func rankBadge(prefix: String, rank: Int, activeColor: Color) -> some View {
-        HStack(spacing: SystemSpacing.atomic) {
-            Text(prefix)
-            Text(rank > 0 ? "#\(rank)" : L10n.Search.Diag.miss)
-        }
-        .font(.system(size: SearchDiagConstants.labelFontSize))
-        .foregroundStyle(rank > 0 ? activeColor : Color.secondary)
-    }
-}
+                                }
+                            }
+                        }
                         .padding(.horizontal)
                     }
                     
@@ -190,6 +124,19 @@ struct PagePreviewSheet: View {
             .navigationTitle(L10n.Search.base)
             .doneDismissToolbar()
         }
+    }
+
+    /// 状态/标签胶囊，消除 status/confidence/tag pill 的重复修饰符链
+    @ViewBuilder
+    private func statusPill(text: String, color: Color, backgroundOpacity: Double = DesignSystem.Opacity.glass) -> some View {
+        Text(text)
+            .font(.caption2)
+            .bold()
+            .padding(.horizontal, DesignSystem.small)
+            .padding(.vertical, SystemSpacing.tiny)
+            .background(color.opacity(backgroundOpacity))
+            .foregroundStyle(color)
+            .clipShape(Capsule())
     }
 }
 
@@ -373,5 +320,57 @@ struct SearchDiagnosticSheet: View {
             .navigationTitle(L10n.Search.Diag.title)
             .doneDismissToolbar()
         }
+    }
+
+    /// 召回指标卡，消除 FTS/向量召回卡的重复修饰符链
+    @ViewBuilder
+    private func recallMetricCard(
+        rankLabel: String,
+        count: Int,
+        engineLabel: String,
+        countColor: Color,
+        engineColor: Color,
+        gradientColors: [Color],
+        borderColor: Color
+    ) -> some View {
+        VStack(spacing: DesignSystem.tiny) {
+            Text(rankLabel)
+                .font(.caption2)
+                .bold()
+                .foregroundStyle(.secondary)
+
+            Text("\(count)")
+                .font(.system(size: SearchDiagConstants.metricFontSize, weight: .bold, design: .rounded))
+                .foregroundStyle(countColor)
+
+            Text(engineLabel)
+                .font(.system(size: SearchDiagConstants.labelFontSize, weight: .bold))
+                .foregroundStyle(engineColor)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(
+            LinearGradient(
+                colors: gradientColors,
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(DesignSystem.cardRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                .stroke(borderColor, lineWidth: DesignSystem.borderWidth)
+        )
+    }
+
+    /// 排位 Badge，消除 FTS/向量排位的重复修饰符链
+    @ViewBuilder
+    private func rankBadge(prefix: String, rank: Int, activeColor: Color) -> some View {
+        HStack(spacing: SystemSpacing.atomic) {
+            Text(prefix)
+            Text(rank > 0 ? "#\(rank)" : L10n.Search.Diag.miss)
+        }
+        .font(.system(size: SearchDiagConstants.labelFontSize))
+        .foregroundStyle(rank > 0 ? activeColor : Color.secondary)
     }
 }

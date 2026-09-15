@@ -306,7 +306,6 @@ struct ModelCardView: View {
         .background(color.opacity(DesignSystem.Opacity.subtle))
         .clipShape(RoundedRectangle(cornerRadius: Spacing.Chip.cornerRadius))
     }
-    }
 
     // MARK: - 辅助计算
 

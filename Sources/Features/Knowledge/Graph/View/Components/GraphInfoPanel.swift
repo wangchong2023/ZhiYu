@@ -141,6 +141,7 @@ struct GraphInsightsPanel: View {
                             .stroke(Color.appAccent.opacity(SystemOpacity.faint), lineWidth: SystemStroke.hairline)
                     )
                     .shadow(color: Color.theme.black.opacity(SystemOpacity.ghost), radius: DesignSystem.shadowRadius, x: 0, y: SystemShadow.offsetSmall)
+                }
                 .buttonStyle(.plain)
                 .padding(.bottom, DesignSystem.small)
                 .sheet(isPresented: $showGuide) {

@@ -93,8 +93,9 @@ struct KnowledgeDashboardView: View {
         // 2. 连接密度图表 (语义分块质量)
         VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
             // 标题 (边框外左上角)
-            InsightDashboardSectionTitle(icon: DesignSystem.Icons.network, title: L10n.Dashboard.density, infoAction: { showDensityInfo.toggle() })
-                .buttonStyle(.plain)
+            HStack {
+                InsightDashboardSectionTitle(icon: DesignSystem.Icons.network, title: L10n.Dashboard.density, infoAction: { showDensityInfo.toggle() })
+                    .buttonStyle(.plain)
                 
                 Spacer()
                 
