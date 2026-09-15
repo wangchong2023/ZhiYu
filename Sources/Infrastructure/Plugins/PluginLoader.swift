@@ -342,12 +342,12 @@ final class PluginLoader {
                 script: script,
                 manifestData: manifestData,
                 extractedDir: directoryURL,
-                failureContext: "明文目录插件",
-                successLog: { manifest in "[PluginRegistry] 从明文目录成功加载: \(manifest.name)" },
-                initFailureLog: { manifest in "[PluginRegistry] 实例化 JS 插件失败: \(manifest.name)" }
+                failureContext: "plaintext-dir-plugin",
+                successLog: { manifest in "[PluginRegistry] Loaded from plaintext dir: \(manifest.name)" },
+                initFailureLog: { manifest in "[PluginRegistry] JS plugin instantiation failed: \(manifest.name)" }
             )
         } catch {
-            Logger.shared.error("[PluginRegistry] 明文目录加载错误: \(directoryURL.lastPathComponent)", error: error)
+            Logger.shared.error("[PluginRegistry] Plaintext dir load error: \(directoryURL.lastPathComponent)", error: error)
         }
     }
 

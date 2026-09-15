@@ -53,9 +53,9 @@ extension AuthService {
 
         do {
             // 2. 发起 GET 请求拉取服务器上用户的最新 Profile 资料
-            return try await fetchAndUpdateUserProfile(errorTag: "自动静默登录拉取 Profile 失败: ")
+            return try await fetchAndUpdateUserProfile(errorTag: "Silent login profile fetch failed")
         } catch {
-            Logger.shared.error("[AuthService] 自动静默登录拉取 Profile 失败: ", error: error)
+            Logger.shared.error("[AuthService] Silent login profile fetch failed", error: error)
             return false
         }
     }
@@ -104,9 +104,9 @@ extension AuthService {
         #endif
 
         do {
-            return try await fetchAndUpdateUserProfile(errorTag: "拉取用户配置失败: ")
+            return try await fetchAndUpdateUserProfile(errorTag: "User profile fetch failed")
         } catch {
-            Logger.shared.error("[AuthService] 拉取用户配置失败: ", error: error)
+            Logger.shared.error("[AuthService] User profile fetch failed", error: error)
             return false
         }
     }

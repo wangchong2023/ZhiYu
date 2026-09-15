@@ -145,7 +145,7 @@ struct PagePreviewSheet: View {
         .cornerRadius(DesignSystem.cardRadius)
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                .stroke(borderColor, lineWidth: 1)
+                .stroke(borderColor, lineWidth: DesignSystem.borderWidth)
         )
     }
 

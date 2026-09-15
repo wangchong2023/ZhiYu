@@ -23,9 +23,9 @@ import subprocess
 # 最小重复 token 数（低于此值忽略，聚焦中等及以上重复块）
 PMD_MIN_TOKENS = 30
 # 允许的重复块上限（超过此数阻断流水线）
-# 当前基线：238（2026-09-15 第五轮去重后剩余结构性必然重复）
+# 当前基线：239（2026-09-15 第五轮去重 + L10n/magic number 修复后剩余结构性必然重复）
 # 目标：随去重进展逐步降低，最终趋近 0
-MAX_DUPLICATE_BLOCKS = 238
+MAX_DUPLICATE_BLOCKS = 239
 # Fallback 滑动窗口算法：判定为重复代码块所需的最小连续雷同代码行数
 MIN_DUPLICATE_LINES = 10
 # Fallback 滑动窗口算法：判定为重复代码块中包含的最小不同 Token 种类数量

@@ -148,9 +148,9 @@ private extension View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor.opacity(DesignSystem.Opacity.medium), lineWidth: 0.5)
+                    .stroke(borderColor.opacity(DesignSystem.Opacity.medium), lineWidth: SystemStroke.hairline)
             )
-            .shadow(color: Color.theme.black.opacity(shadowOpacity), radius: shadowRadius, x: 0, y: shadowY)
+            .shadow(color: Color.theme.black.opacity(shadowOpacity), radius: shadowRadius, x: SystemSpacing.none, y: shadowY)
     }
 }
 
