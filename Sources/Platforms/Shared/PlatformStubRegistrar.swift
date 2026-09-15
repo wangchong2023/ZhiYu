@@ -33,13 +33,4 @@ enum PlatformStubRegistrar {
         // 搜索索引占位
         container.register(UnsupportedSearchIndexer(), for: (any SearchIndexerProtocol).self)
     }
-
-    /// 注册 iOS / macOS 共享的 AI 服务（CoreML + OCR + Speech），
-    /// 消除 iOSPlatformRegistrar 与 MacPlatformRegistrar 中重复的 3 行注册。
-    /// - Parameter container: DI 容器
-    static func registerSharedAIServices(in container: ServiceContainer) {
-        container.register(CoreMLModelCompiler(), for: MLModelCompilerProtocol.self)
-        container.register(iOSOCRService(), for: (any OCRServiceProtocol).self)
-        container.register(iOSSpeechService(), for: (any SpeechServiceProtocol).self)
-    }
 }

@@ -755,6 +755,7 @@
 		3FB5AFD834D39AF6B4ED6EA5 /* AIWorkflowStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4FFCDA2A7C6AB9464DDEAA /* AIWorkflowStore.swift */; };
 		3FCE31F8D38EFD6579B83C65 /* IngestSanitationPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF8B53519DD7B2434F96FB86 /* IngestSanitationPipelineTests.swift */; };
 		404108B089B4D24A641F1BD9 /* testChatWelcomeView_Default.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 33FD2FB264CD9E5A68C944B3 /* testChatWelcomeView_Default.1.png */; };
+		4045C0DA1F655A7629972ACC /* RegexReplacementHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F433A4C30C010457E1DA764 /* RegexReplacementHelper.swift */; };
 		40516011017B6E44A9B9D022 /* testActivityRowFailedNoPageID.1.png in Resources */ = {isa = PBXBuildFile; fileRef = A4D3929DA4934EE0E432ECBF /* testActivityRowFailedNoPageID.1.png */; };
 		40601D8CC622058D8C65A348 /* IngestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A14ECF17C7DE8EA2C6306AC /* IngestView.swift */; };
 		4070311A255501A7EE8E6979 /* AppStoreDeveloperDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D1D620BC7DA3EAEDCD8EB /* AppStoreDeveloperDataTests.swift */; };
@@ -12835,6 +12836,7 @@
 				508360D430B249BF14249B99 /* PromptConstants.swift in Sources */,
 				8D8A17A51A1C4128D51FE002 /* RAGModels.swift in Sources */,
 				2F91CAEE03016C70230E33A2 /* Reference.swift in Sources */,
+				4045C0DA1F655A7629972ACC /* RegexReplacementHelper.swift in Sources */,
 				F7F3B1BDD49A898BEB5563C7 /* ReminderServiceProtocol.swift in Sources */,
 				F35657706DB05022B7C873C9 /* SearchConstants.swift in Sources */,
 				B667E1C638F1B092B5C99CBA /* SearchDiagnosticInfo.swift in Sources */,
