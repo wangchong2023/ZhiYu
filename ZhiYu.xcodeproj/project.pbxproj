@@ -984,6 +984,7 @@
 		545ECEB94D2D61CF99546005 /* ModelLabChatPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFC33541D35D6704D22245D /* ModelLabChatPanel.swift */; };
 		546095C3EFA8ECEA33EC1CE1 /* L10n+Ingest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E2DDFDA6D16DAC4F9C54B /* L10n+Ingest.swift */; };
 		54884A7588FBE53C5CE093D2 /* testGuideStepRowDefault.1.png in Resources */ = {isa = PBXBuildFile; fileRef = C08EE33B9E3021A27802AADE /* testGuideStepRowDefault.1.png */; };
+		548DB5715F8B792389186D72 /* WidgetVisualConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8082BDB6EEBB21937319CC4F /* WidgetVisualConstants.swift */; };
 		549491D9E9EB2B8C746A93A1 /* L10n+Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB5D0C26BAFBCF248AB65993 /* L10n+Network.swift */; };
 		54AC4DAD925EA3E5E318DB54 /* CoachMarkOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 760D0FE06A2F40BCFFEF4838 /* CoachMarkOverlay.swift */; };
 		54B7E4F0DD53252C829DE147 /* testPluginStatsSectionEmpty.1.png in Resources */ = {isa = PBXBuildFile; fileRef = F48949A8B908781ED3F478C7 /* testPluginStatsSectionEmpty.1.png */; };
@@ -2885,6 +2886,7 @@
 		F584F5893E9658CE42EC68EE /* Graph3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9D22D2826B36FA2EB5547D /* Graph3DView.swift */; };
 		F5941861D4B5FC98B48150A6 /* AppStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739AA88212168C8C6969DCEE /* AppStoreTests.swift */; };
 		F59D4F105FE0289CD14D4BE9 /* testSynthesisSourcePagesBarEmptySources.1.png in Resources */ = {isa = PBXBuildFile; fileRef = AFA674916D5E8B733F035DDE /* testSynthesisSourcePagesBarEmptySources.1.png */; };
+		F5C2002E97CDD5CAA55E2B37 /* WidgetSharedViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3234051168D545358AAAD96 /* WidgetSharedViews.swift */; };
 		F5D599593F8A55B776BDFC76 /* UserProfileViewInteractiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17FEA1A9223B752A13754701 /* UserProfileViewInteractiveTests.swift */; };
 		F60F4F5DDF875804CB3CE492 /* APIPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CC6E8E389C70F6EA047FA /* APIPaths.swift */; };
 		F622B925453751875D6281A7 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203B4EBD884996C5E6A88E4A /* Typography.swift */; };
@@ -11053,7 +11055,9 @@
 				0B9D804AEF1DFAAC88089E54 /* WidgetRepository.swift in Sources */,
 				3C20644E08A449D546F9E43D /* WidgetRepositoryTests.swift in Sources */,
 				02E4F3A7A2F0881030D26FC6 /* WidgetSharedConstants.swift in Sources */,
+				F5C2002E97CDD5CAA55E2B37 /* WidgetSharedViews.swift in Sources */,
 				0F7C61E429A97EC4E7CB2F8C /* WidgetSyncSnapshotTests.swift in Sources */,
+				548DB5715F8B792389186D72 /* WidgetVisualConstants.swift in Sources */,
 				A8972F0CF7D587663F23E735 /* WidgetWatchNumberFormattingTests.swift in Sources */,
 				5FDC794BE47064F1E0C61D6E /* WidgetsAndWatchViewsTests.swift in Sources */,
 				62E4B776FB3A70350B27981D /* WikiLinkExtractorEdgeTests.swift in Sources */,

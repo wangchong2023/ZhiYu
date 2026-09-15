@@ -329,6 +329,8 @@ targets:
           - "Platforms/iOS/Widgets/WidgetRepository.swift"
           - "Platforms/iOS/Widgets/WidgetModels.swift"
           - "Platforms/iOS/Widgets/WidgetSharedConstants.swift"
+          - "Platforms/iOS/Widgets/WidgetVisualConstants.swift"
+          - "Platforms/iOS/Widgets/WidgetSharedViews.swift"
           - "Core/Base/Constants/AppConstants.swift"
     settings:
       base:

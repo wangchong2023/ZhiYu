@@ -145,9 +145,9 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let boxWithTrend = MetricBox(
             title: "核心指标",
             value: TestConstants.largeMetricValue,
-            unit: "篇",
             icon: DesignSystem.Icons.documentFill,
             color: .appAccent,
+            unit: "篇",
             trend: TestConstants.sampleTrend
         )
         XCTAssertEqual(boxWithTrend.title, "核心指标")
@@ -158,9 +158,9 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let boxWithoutTrend = MetricBox(
             title: "总关联",
             value: "0",
-            unit: nil,
             icon: DesignSystem.Icons.network,
             color: .purple,
+            unit: nil,
             trend: nil
         )
         XCTAssertEqual(boxWithoutTrend.value, "0")
@@ -424,9 +424,9 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let rawBoxWithTrend = MetricBox(
             title: "核心指标",
             value: "128",
-            unit: "篇",
             icon: DesignSystem.Icons.documentFill,
             color: .appAccent,
+            unit: "篇",
             trend: "+12%"
         )
         XCTAssertEqual(rawBoxWithTrend.title, "核心指标")
@@ -438,9 +438,9 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let rawBoxWithoutTrend = MetricBox(
             title: "基础指标",
             value: "50",
-            unit: nil,
             icon: DesignSystem.Icons.network,
             color: .purple,
+            unit: nil,
             trend: nil
         )
         XCTAssertEqual(rawBoxWithoutTrend.value, "50")
@@ -524,7 +524,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
 
     func testInsightStatRendering() {
         let rawStat = InsightStat(
-            label: "本周新增",
+            title: "本周新增",
             value: "25",
             icon: DesignSystem.Icons.docBadgePlus,
             color: .blue

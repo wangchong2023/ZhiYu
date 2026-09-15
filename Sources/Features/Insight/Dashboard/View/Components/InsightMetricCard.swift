@@ -12,6 +12,10 @@
 
 import SwiftUI
 
+/// 旧类型名兼容（去重后统一为 InsightMetricCard）
+typealias MetricBox = InsightMetricCard
+typealias InsightStat = InsightMetricCard
+
 /// [L3] 表现层：Insight 模块通用指标卡片
 ///
 /// 统一封装圆形图标背景、数值排版、标签文案与卡片容器样式，
