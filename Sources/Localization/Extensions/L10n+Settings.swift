@@ -31,6 +31,11 @@ extension L10n {
         /// - Returns: 本地化格式化文案
         public static func iCloudLastSyncFormat(_ date: String) -> String { Settings.trf("icloud.lastSyncFormat", date) }
 
+        /// 获取端侧模型错误格式化文案
+        /// - Parameter code: 错误码
+        /// - Returns: 本地化格式化文案
+        public static func onDeviceErrorFormat(_ code: String) -> String { L10n.Common.trf("ondevice.errorFormat", code) }
+
             public static var title: String { Localized.tr("settings.resetOnboarding.title", table: t) }
         public static var systemTheme: String { tr("settings.systemTheme") }
         public static var languageEnglish: String { tr("language.english") }

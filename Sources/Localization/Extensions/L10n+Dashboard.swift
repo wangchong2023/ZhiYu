@@ -153,6 +153,10 @@ extension L10n {
         // swiftlint:disable:next type_name
         public struct stats {
             public static var title: String { Localized.tr("dashboard.stats.title", table: t) }
+            public static var overview: String { Localized.tr("dashboard.stats.overview", table: t) }
+            public static var chartDate: String { Dashboard.chartDate }
+            public static var chartSelected: String { Dashboard.chartSelected }
+            public static var chartValue: String { Dashboard.chartValue }
             public static var audioFormat: String { Localized.tr("dashboard.stats.audioFormat", table: t) }
             public static var imageFormat: String { Localized.tr("dashboard.stats.imageFormat", table: t) }
             public static var documentFormat: String { Localized.tr("dashboard.stats.documentFormat", table: t) }

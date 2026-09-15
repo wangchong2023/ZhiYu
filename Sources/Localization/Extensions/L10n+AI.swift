@@ -133,6 +133,8 @@ extension L10n {
                 public static var issueType: String { AI.tr("llm.prompt.issueType") }
                 public static var pageContentSnippet: String { AI.tr("llm.prompt.pageContentSnippet") }
                 public static var otherPageTitles: String { AI.tr("llm.prompt.otherPageTitles") }
+                public static var relevanceScore: String { L10n.AI.Prompt.relevanceScore }
+                public static var chunkType: String { L10n.AI.Prompt.chunkType }
             }
 
             public typealias ingest = Ingest

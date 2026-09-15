@@ -56,6 +56,12 @@ extension L10n {
         public static var create: String { Localized.tr("logAction.create", table: t) }
         public static var close: String { Localized.tr("misc.close", table: t) }
         public static var reset: String { Localized.tr("misc.reset", table: t) }
+        public static var deleteAll: String { Misc.deleteAll }
+        public static var bulkDelete: String { Misc.bulkDelete }
+        public static var correct: String { Misc.correct }
+        public static var incorrect: String { Misc.incorrect }
+        public static var nextQuestion: String { Misc.nextQuestion }
+        public static var viewResults: String { Misc.viewResults }
 
         // MARK: - Generic States
         public static var loading: String { tr("loading") }
@@ -101,6 +107,13 @@ extension L10n {
             public static var newPages: String { Common.tr("stats.newPages") }
             public static var growth: String { Common.tr("stats.growth") }
             public static var title: String { Common.tr("stats.title") }
+        }
+
+        public enum Stat {
+            public static var newPages: String { Stats.newPages }
+            public static var growth: String { Stats.growth }
+            public static var title: String { Stats.title }
+            public static var totalWords: String { Common.tr("stats.totalWords") }
         }
 
         public enum Sidebar {
