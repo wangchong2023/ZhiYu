@@ -189,6 +189,7 @@ struct UserProfileMenu: View {
         case settings, profile, plan, plugins, aiSettings
 
         /// 在 Router 上派发对应 sheet 开关，消除 UserProfileMenu / UserProfileMenuSheetContent 两处 switch 重复。
+        @MainActor
         func apply(to router: Router) {
             switch self {
             case .settings: router.isShowingSettingsSheet = true

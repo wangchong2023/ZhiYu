@@ -276,16 +276,16 @@ public final class AuthService: AuthServiceProtocol {
     private func updatedUser(
         from user: User,
         name: String,
-        email: String,
-        phone: String,
+        email: String?,
+        phone: String?,
         avatarURL: URL?,
-        gender: String?,
+        gender: Int?,
         birthday: String?
     ) -> User {
         User(
             id: user.id,
             name: name,
-            email: email,
+            email: email ?? user.email,
             phone: phone,
             avatarURL: avatarURL ?? user.avatarURL,
             planKey: user.planKey,

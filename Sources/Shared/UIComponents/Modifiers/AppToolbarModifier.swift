@@ -46,7 +46,7 @@ struct AppTabToolbarModifier<Trailing: View>: ViewModifier {
                 #endif
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Self.trailingToolbarContent(trailingItems)
+                    trailingToolbarContent(trailingItems)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -96,23 +96,21 @@ struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
                 #endif
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Self.trailingToolbarContent(trailingItems)
+                    trailingToolbarContent(trailingItems)
                 }
             }
     }
 }
 
 // MARK: - 共享 trailing toolbar 内容
-private extension ViewModifier where Trailing: View {
-    /// 构建 trailing 区域：非空时显示 trailingItems + UserProfileMenu，消除两处重复的 HStack + EmptyView 判断。
-    @ViewBuilder
-    static func trailingToolbarContent(_ trailingItems: Trailing) -> some View {
-        HStack(spacing: Spacing.atomic) {
-            if Trailing.self != EmptyView.self {
-                trailingItems
-            }
-            UserProfileMenu()
+/// 构建 trailing 区域：非空时显示 trailingItems + UserProfileMenu，消除两处重复的 HStack + EmptyView 判断。
+@ViewBuilder
+private func trailingToolbarContent<Trailing: View>(_ trailingItems: Trailing) -> some View {
+    HStack(spacing: Spacing.atomic) {
+        if Trailing.self != EmptyView.self {
+            trailingItems
         }
+        UserProfileMenu()
     }
 }
 
