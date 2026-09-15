@@ -189,7 +189,10 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent)
-            .collabButtonContainer(accessibilityID: "collab-host-button")
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .disabled(collabService.isSimulator)
+            .opacity(collabService.isSimulator ? DesignSystem.Opacity.soft : DesignSystem.Opacity.solid)
+            .accessibilityIdentifier("collab-host-button")
         }
     }
 
@@ -207,7 +210,10 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-            .collabButtonContainer(accessibilityID: "collab-join-button")
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .disabled(collabService.isSimulator)
+            .opacity(collabService.isSimulator ? DesignSystem.Opacity.soft : DesignSystem.Opacity.solid)
+            .accessibilityIdentifier("collab-join-button")
         }
     }
 
@@ -335,14 +341,5 @@ struct CollaborationViewContent: View {
                 }
             }
         }
-    }
-
-    /// 协作按钮容器样式，消除 hostButton 与 joinButton 的 disabled+opacity+clipShape 重复
-    private func collabButtonContainer(accessibilityID: String) -> some View {
-        self
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
-            .disabled(collabService.isSimulator)
-            .opacity(collabService.isSimulator ? 0.5 : 1.0)
-            .accessibilityIdentifier(accessibilityID)
     }
 }

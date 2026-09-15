@@ -263,13 +263,13 @@ final class IngestCoordinator {
     }
 
     /// 标记导入记录为完成状态并关联页面 ID，消除多处重复的 updateStatus + updatePageID 调用
-    func markImportRecordDone(recordID: UUID, pageID: UUID) async {
+    func markImportRecordDone(recordID: String, pageID: UUID) async {
         try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
         try? await importRecordRepo.updatePageID(id: recordID, pageID: pageID.uuidString)
     }
 
     /// 标记导入记录为失败状态，消除多处重复的 updateStatus(.failed) 调用
-    func markImportRecordFailed(recordID: UUID) async {
+    func markImportRecordFailed(recordID: String) async {
         try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
     }
 }

@@ -218,7 +218,7 @@ final class PluginLoader {
             copyPluginAsset(
                 from: extractedDir.appendingPathComponent(iconFile),
                 to: assetsDir.appendingPathComponent("\(manifest.id)_icon.png"),
-                successLog: "[PluginRegistry] \(manifest.id): icon saved"
+                successLog: "[PluginRegistry] \(manifest.id): icon_saved"
             )
         }
 

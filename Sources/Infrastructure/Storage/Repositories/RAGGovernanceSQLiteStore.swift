@@ -78,7 +78,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     ///   - days: 统计时间窗口（天数）
     ///   - body: 数据库读事务闭包，接收 db 和 cutoff 日期
     /// - Returns: 闭包返回值
-    private func readWithCutoff<T>(days: Int, _ body: (Database, Date) throws -> T) async throws -> T {
+    private func readWithCutoff<T>(days: Int, _ body: @escaping (Database, Date) throws -> T) async throws -> T {
         let writer = try await dbWriter
         return try await writer.read { db in
             try body(db, self.cutoffDate(days: days))
@@ -133,7 +133,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// 在数据库读事务中按时间窗口计算指标均值（消除 calculateMRR/NDCG/Recall/F1/MAP 的前段样板重复）。
     private func computeMetricAverage(
         days: Int,
-        metric: (RAGEvaluation, Database) throws -> Double?
+        metric: @escaping (RAGEvaluation, Database) throws -> Double?
     ) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
@@ -376,9 +376,9 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateHitRate(days: Int, k: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
             let hasRelevant = try snapshots.contains { snap in
-                try fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil
+                try self.fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil
             }
             return hasRelevant ? 1.0 : 0.0
         }
@@ -389,9 +389,9 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateMRR(days: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
             // Bug #36 修复：MRR 应使用实际 rank 字段，而非数组位置 idx+1
-            for snap in snapshots where try fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil {
+            for snap in snapshots where try self.fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil {
                 return 1.0 / Double(snap.rank)
             }
             return 0.0
@@ -407,7 +407,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateNDCG(days: Int, k: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
             guard !snapshots.isEmpty else { return nil }
 
             // 收集每个快照对应的相关性等级
@@ -445,9 +445,9 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateRecall(days: Int, k: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let relevant = try fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            let relevant = try self.fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
             guard !relevant.judgments.isEmpty else { return nil }
-            let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
             let retrievedRelevant = snapshots.filter { relevant.sourceIDs.contains($0.sourceID) }.count
             return Double(retrievedRelevant) / Double(relevant.judgments.count)
         }
@@ -456,9 +456,9 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateF1Score(days: Int, k: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let relevant = try fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            let relevant = try self.fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
             guard !relevant.judgments.isEmpty else { return nil }
-            let topK = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            let topK = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
             guard !topK.isEmpty else { return nil }
             let retrievedRelevant = topK.filter { relevant.sourceIDs.contains($0.sourceID) }.count
             let precision = Double(retrievedRelevant) / Double(topK.count)
@@ -474,10 +474,10 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func calculateMAP(days: Int) async throws -> Double {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
-            let relevant = try fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            let relevant = try self.fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
             guard !relevant.judgments.isEmpty else { return nil }
             let totalRelevant = relevant.judgments.count
-            let snapshots = try fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
             guard !snapshots.isEmpty else { return nil }
             var relevantHitCount = 0
             var sumPrecision: Double = 0

@@ -65,7 +65,7 @@ public final class ContentModerationEngine: Sendable {
         try enforceBlock(sanitizedText, rawText: text, patterns: activeViolence, category: .violenceTerrorism, logDetails: CoreConstants.SecurityLogDetails.blockedViolence)
 
         let activeGamblingNarcotics = DynamicComplianceManager.shared.getPatterns(for: .gamblingNarcotics, fallback: gamblingNarcoticsPatterns)
-        try enforceBlock(sanitizedText, rawText: text, patterns: activeGamblingNarcotics, category: .gamblingNarcotics, logDetails: "Blocked gambling/narcotics content")
+        try enforceBlock(sanitizedText, rawText: text, patterns: activeGamblingNarcotics, category: .gamblingNarcotics, logDetails: CoreConstants.SecurityLogDetails.blockedGamblingNarcotics)
 
         // 2. 处理级别 1 (PII 脱敏) 与级别 2 (注入脱敏)
         return PromptSecurityGuard.shared.sanitize(text)

@@ -106,7 +106,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     private func fetchOneFiltered(_ request: QueryInterfaceRequest<KnowledgePage>) async throws -> KnowledgePage? {
         let writer = try await dbWriter
         return try await writer.read { db in
-            try request.fetchOne(db).map { decryptIfPrivate($0) }
+            try request.fetchOne(db).map { self.decryptIfPrivate($0) }
         }
     }
 
@@ -126,7 +126,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
         let writer = try await dbWriter
         return try await writer.read { db in
             let rawPages = try requestBuilder(KnowledgePage.all()).fetchAll(db)
-            return decryptPages(rawPages)
+            return self.decryptPages(rawPages)
         }
     }
 
@@ -149,7 +149,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
                     .order(sql: StorageConstants.SQL.rank)
                     .fetchAll(db)
                 if !ftsResults.isEmpty {
-                    return decryptPages(ftsResults)
+                    return self.decryptPages(ftsResults)
                 }
             }
 
@@ -161,7 +161,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
                 KnowledgePage.Columns.title.like(likePattern) ||
                 KnowledgePage.Columns.content.like(likePattern)
             ).order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
-            return decryptPages(rawPages)
+            return self.decryptPages(rawPages)
         }
     }
 
@@ -193,9 +193,10 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     func renameTag(old oldTag: String, to newTag: String) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
-            try updatePagesWithTag(oldTag, in: db) { idx, updatedPage in
-                updatedPage.tags[idx] = newTag
-                return updatedPage
+            try self.updatePagesWithTag(oldTag, in: db) { idx, updatedPage in
+                var page = updatedPage
+                page.tags[idx] = newTag
+                return page
             }
         }
     }
@@ -205,9 +206,10 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     func deleteTag(_ tag: String) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
-            try updatePagesWithTag(tag, in: db) { idx, updatedPage in
-                updatedPage.tags.remove(at: idx)
-                return updatedPage
+            try self.updatePagesWithTag(tag, in: db) { idx, updatedPage in
+                var page = updatedPage
+                page.tags.remove(at: idx)
+                return page
             }
         }
     }

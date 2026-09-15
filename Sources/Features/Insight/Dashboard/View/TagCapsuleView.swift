@@ -249,7 +249,6 @@ struct TagCapsuleView: View {
     }
 
     /// 应用编辑角标覆盖层：缩放 + 阴影 + 编辑角标
-    @ViewBuilder
     private func applyEditOverlay(isSelected: Bool, clampedBubbleRatio: CGFloat, coordinator: TagCloudCoordinator) -> some View {
         self
             .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)

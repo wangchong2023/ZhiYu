@@ -307,8 +307,8 @@ struct KnowledgeDashboardView: View {
     }
 
     /// 密度图表柱状条
-    @ViewBuilder
-    private func densityBarMark(value: Int, label: String, pageName: String, color: Color) -> some View {
+    @ChartContentBuilder
+    private func densityBarMark(value: Double, label: String, pageName: String, color: Color) -> some ChartContent {
         BarMark(
             x: .value(label, value),
             y: .value("Page", pageName)

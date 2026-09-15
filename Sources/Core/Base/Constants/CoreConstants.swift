@@ -60,6 +60,7 @@ public enum CoreConstants {
         public static let blockedPolitical = "Blocked political content"
         public static let blockedNSFW = "Blocked NSFW content"
         public static let blockedViolence = "Blocked violence content"
+        public static let blockedGamblingNarcotics = "blocked_gambling_narcotics"
         public static let blockedSensitive = "Blocked sensitive content"
         public static let criticalFailed = "Critical: Failed"
         /// 引用 CoreConstants.LogDetails.failedTo，避免重复定义

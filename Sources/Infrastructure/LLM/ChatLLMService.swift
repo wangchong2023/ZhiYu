@@ -99,7 +99,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
         // 1. 对 query 进行消毒过滤并构建脱敏上下文
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
         let contextBuilder = contextBuilderFactory()
-        let anonResult = buildAnonymizedContext(
+        let anonResult = await buildAnonymizedContext(
             sanitizedQuery: sanitizedQuery,
             history: history,
             pages: pages,
@@ -150,7 +150,7 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
         Task {
             do {
                 let contextBuilder = contextBuilderFactory()
-                let anonResult = buildAnonymizedContext(
+                let anonResult = await buildAnonymizedContext(
                     sanitizedQuery: sanitizedQuery,
                     history: history,
                     pages: pages,
