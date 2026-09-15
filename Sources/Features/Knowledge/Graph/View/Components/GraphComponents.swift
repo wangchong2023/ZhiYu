@@ -250,7 +250,7 @@ struct GraphZoomControls: View {
         HStack(spacing: 0) {
             zoomButton(
                 icon: DesignSystem.Icons.minusMagnifyingglass,
-                accessibilityID: "zoom-out",
+                accessibilityID: FeatureConstants.GraphAccessibilityID.zoomOut,
                 accessibilityLabel: L10n.Graph.accessibility.zoomOutLabel,
                 accessibilityHint: L10n.Graph.accessibility.zoomOutHint
             ) {
@@ -260,7 +260,7 @@ struct GraphZoomControls: View {
 
             zoomButton(
                 icon: DesignSystem.Icons.plusMagnifyingglass,
-                accessibilityID: "zoom-in",
+                accessibilityID: FeatureConstants.GraphAccessibilityID.zoomIn,
                 accessibilityLabel: L10n.Graph.accessibility.zoomInLabel,
                 accessibilityHint: L10n.Graph.accessibility.zoomInHint
             ) {
@@ -272,7 +272,7 @@ struct GraphZoomControls: View {
 
             zoomButton(
                 icon: DesignSystem.Icons.scope,
-                accessibilityID: "reset",
+                accessibilityID: FeatureConstants.GraphAccessibilityID.reset,
                 accessibilityLabel: L10n.Graph.accessibility.resetLabel,
                 accessibilityHint: L10n.Graph.accessibility.resetHint
             ) {
@@ -288,7 +288,7 @@ struct GraphZoomControls: View {
 
             zoomButton(
                 icon: DesignSystem.Icons.viewfinder,
-                accessibilityID: "fit-to-screen",
+                accessibilityID: FeatureConstants.GraphAccessibilityID.fitToScreen,
                 accessibilityLabel: L10n.Graph.accessibility.fitToScreenLabel,
                 accessibilityHint: L10n.Graph.accessibility.fitToScreenHint
             ) {
@@ -299,7 +299,7 @@ struct GraphZoomControls: View {
 
             zoomButton(
                 icon: DesignSystem.Icons.refresh,
-                accessibilityID: "relayout",
+                accessibilityID: FeatureConstants.GraphAccessibilityID.relayout,
                 accessibilityLabel: L10n.Graph.accessibility.relayoutLabel,
                 accessibilityHint: L10n.Graph.accessibility.relayoutHint
             ) {
@@ -310,7 +310,7 @@ struct GraphZoomControls: View {
 
             zoomButton(
                 icon: DesignSystem.Icons.view3d,
-                accessibilityID: "graph-3d",
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3d,
                 accessibilityLabel: L10n.Graph.accessibility.threeDLabel,
                 accessibilityHint: L10n.Graph.accessibility.threeDHint
             ) {

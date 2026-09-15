@@ -313,6 +313,12 @@ public enum CoreConstants {
         public static let deepseekV4Pro = "deepseek-v4-pro"
     }
 
+    // MARK: - 版本号默认值 (Version Default)
+    /// Info.plist 缺失版本号时的回退占位值（语义为"未知版本"，区别于 SystemConstants.Version.defaultSemVer 的 "1.0.0"）
+    public enum VersionDefault {
+        public static let missingSemVer = "0.0.0"
+    }
+
     // MARK: - 远程配置 (Remote Config)
     public enum RemoteConfig {
         /// 模型白名单资源名（默认/英文）

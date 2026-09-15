@@ -20,7 +20,7 @@ enum VersionInfoFormatter {
     /// 干净版本号（SemVer）
     /// - Returns: 如 `"1.0.0"`，缺失时 `"0.0.0"`
     static func semVerString(from info: [String: Any]?) -> String {
-        string(from: info, key: "CFBundleShortVersionString", default: "0.0.0")
+        string(from: info, key: "CFBundleShortVersionString", default: CoreConstants.VersionDefault.missingSemVer)
     }
 
     // MARK: - 构建详情

@@ -391,7 +391,7 @@ struct Graph3DControlsOverlay: View {
             controlButton(
                 icon: isFullScreen ? DesignSystem.Icons.fullscreenExit : DesignSystem.Icons.fullscreenEnter,
                 iconColor: iconColor,
-                accessibilityID: "graph3d-fullscreen"
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dFullscreen
             ) {
                 withAnimation(.spring()) {
                     isFullScreen.toggle()
@@ -405,7 +405,7 @@ struct Graph3DControlsOverlay: View {
                 controlButton(
                     icon: DesignSystem.Icons.eyeSlashOutline,
                     iconColor: iconColor,
-                    accessibilityID: "graph3d-hide-controls"
+                    accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dHideControls
                 ) {
                     withAnimation(.spring()) {
                         hideControls = true
@@ -418,7 +418,7 @@ struct Graph3DControlsOverlay: View {
                 controlButton(
                     icon: autoRotate ? DesignSystem.Icons.refreshCircleFill : DesignSystem.Icons.refreshCircle,
                     iconColor: autoRotate ? Color.appAccent : iconColor,
-                    accessibilityID: "graph3d-auto-rotate"
+                    accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dAutoRotate
                 ) {
                     onAutoRotateToggle()
                 }
@@ -428,7 +428,7 @@ struct Graph3DControlsOverlay: View {
             controlButton(
                 icon: DesignSystem.Icons.scope,
                 iconColor: iconColor,
-                accessibilityID: "graph3d-reset-camera"
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dResetCamera
             ) {
                 onResetCamera()
             }
@@ -437,7 +437,7 @@ struct Graph3DControlsOverlay: View {
             controlButton(
                 icon: DesignSystem.Icons.plusMagnifyingglass,
                 iconColor: iconColor,
-                accessibilityID: "graph3d-zoom-in"
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dZoomIn
             ) {
                 onZoomIn()
             }
@@ -446,7 +446,7 @@ struct Graph3DControlsOverlay: View {
             controlButton(
                 icon: DesignSystem.Icons.minusMagnifyingglass,
                 iconColor: iconColor,
-                accessibilityID: "graph3d-zoom-out"
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dZoomOut
             ) {
                 onZoomOut()
             }

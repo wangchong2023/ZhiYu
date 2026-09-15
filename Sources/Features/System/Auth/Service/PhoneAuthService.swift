@@ -36,7 +36,7 @@ extension AuthService {
             return await handleSuccessfulLogin(response: response, identity: identity)
         }
         #endif
-        return await performPhoneLogin(request: LoginRequest.password(username: identity, password: password), identity: identity, errorTag: "Password login failed")
+        return await performPhoneLogin(request: LoginRequest.password(username: identity, password: password), identity: identity, errorTag: FeatureConstants.AuthErrorTag.passwordLoginFailed)
     }
 
     /// 执行手机登录网络请求，消除密码登录与短信登录的重复
@@ -90,6 +90,6 @@ extension AuthService {
     /// - Returns: 是否成功
     @MainActor
     public func register(phone: String, code: String, password: String) async -> Bool {
-        return await performPhoneLogin(request: LoginRequest.sms(phone: phone, code: code), identity: phone, errorTag: "SMS login/register failed")
+        return await performPhoneLogin(request: LoginRequest.sms(phone: phone, code: code), identity: phone, errorTag: FeatureConstants.AuthErrorTag.smsLoginRegisterFailed)
     }
 }

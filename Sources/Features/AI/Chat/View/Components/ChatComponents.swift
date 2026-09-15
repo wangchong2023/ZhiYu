@@ -148,14 +148,14 @@ struct ChatBubbleView: View {
             HStack(spacing: DesignSystem.medium) {
                 // 点赞按钮
                 ratingButton(ratingValue: 1,
-                             activeIcon: "hand.thumbsup.fill",
-                             inactiveIcon: "hand.thumbsup",
+                             activeIcon: FeatureConstants.ChatRatingIcon.thumbsupFill,
+                             inactiveIcon: FeatureConstants.ChatRatingIcon.thumbsup,
                              activeColor: Color.theme.blue)
                 
                 // 贬低按钮
                 ratingButton(ratingValue: 2,
-                             activeIcon: "hand.thumbsdown.fill",
-                             inactiveIcon: "hand.thumbsdown",
+                             activeIcon: FeatureConstants.ChatRatingIcon.thumbsdownFill,
+                             inactiveIcon: FeatureConstants.ChatRatingIcon.thumbsdown,
                              activeColor: Color.theme.red)
                 
                 // 复制按钮

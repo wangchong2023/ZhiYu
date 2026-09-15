@@ -284,7 +284,7 @@ struct KnowledgePageListContent: View {
             placeholder: L10n.SearchPlaceholder,
             text: $searchText,
             onSubmit: { triggerSearch(query: searchText) },
-            accessibilityIdentifier: "searchPlaceholder",
+            accessibilityIdentifier: FeatureConstants.AccessibilityID.searchPlaceholder,
             horizontalPadding: DesignSystem.tiny,
             bottomPadding: DesignSystem.tiny
         )

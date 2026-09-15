@@ -307,7 +307,7 @@ final class PluginLoader {
                 script: script,
                 manifestData: manifestData,
                 extractedDir: tempDir,
-                failureContext: ".zyplugin",
+                failureContext: PluginConstants.LoadFailureContext.zypluginArchive,
                 successLog: { manifest in "[PluginRegistry] Loaded: \(manifest.name)" },
                 initFailureLog: { manifest in "[PluginRegistry] Init failed: \(manifest.name)" }
             )
@@ -342,7 +342,7 @@ final class PluginLoader {
                 script: script,
                 manifestData: manifestData,
                 extractedDir: directoryURL,
-                failureContext: "plaintext-dir-plugin",
+                failureContext: PluginConstants.LoadFailureContext.plaintextDirPlugin,
                 successLog: { manifest in "[PluginRegistry] Loaded from plaintext dir: \(manifest.name)" },
                 initFailureLog: { manifest in "[PluginRegistry] JS plugin instantiation failed: \(manifest.name)" }
             )

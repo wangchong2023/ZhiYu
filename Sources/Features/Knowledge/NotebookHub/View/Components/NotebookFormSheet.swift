@@ -116,7 +116,7 @@ struct NotebookFormSheet: View {
                                 label: L10n.Vault.nameLabel,
                                 placeholder: L10n.Vault.namePlaceholder,
                                 text: $name,
-                                accessibilityID: "notebook_name_textfield"
+                                accessibilityID: FeatureConstants.AccessibilityID.notebookNameTextfield
                             )
 
                             VStack(alignment: .leading, spacing: DesignSystem.tiny) {

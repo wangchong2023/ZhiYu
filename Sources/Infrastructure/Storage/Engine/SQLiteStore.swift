@@ -252,11 +252,11 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
     }
 
     private func calculateLocalModelsStorageSize(appSupport: URL) -> Int64 {
-        calculateDualDirStorageSize(subdir: "Models", appSupport: appSupport)
+        calculateDualDirStorageSize(subdir: StorageConstants.Subdirectory.models, appSupport: appSupport)
     }
 
     private func calculatePluginsStorageSize(appSupport: URL) -> Int64 {
-        calculateDualDirStorageSize(subdir: "Plugins", appSupport: appSupport)
+        calculateDualDirStorageSize(subdir: StorageConstants.Subdirectory.plugins, appSupport: appSupport)
     }
 
     /// 计算 documentDirectory 与 applicationSupportDirectory 下指定子目录的总大小。

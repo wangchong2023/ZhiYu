@@ -224,9 +224,49 @@ extension FeatureConstants {
     }
 
     // MARK: - 辅助功能标识 (Accessibility Identifier)
-    /// accessibilityIdentifier 前缀
+    /// accessibilityIdentifier / accessibilityID 前缀
     enum AccessibilityID {
         static let filterAll = "filter-all"
+        /// 知识页面列表搜索框占位标识
+        static let searchPlaceholder = "searchPlaceholder"
+        /// 笔记本表单名称输入框标识
+        static let notebookNameTextfield = "notebook_name_textfield"
+    }
+
+    // MARK: - 图谱辅助功能标识 (Graph Accessibility ID)
+    /// Graph3DComponents / GraphComponents 控件 accessibilityID 常量集
+    enum GraphAccessibilityID {
+        // 3D 图谱控件
+        static let graph3dFullscreen = "graph3d-fullscreen"
+        static let graph3dHideControls = "graph3d-hide-controls"
+        static let graph3dAutoRotate = "graph3d-auto-rotate"
+        static let graph3dResetCamera = "graph3d-reset-camera"
+        static let graph3dZoomIn = "graph3d-zoom-in"
+        static let graph3dZoomOut = "graph3d-zoom-out"
+        // 2D 图谱控件
+        static let zoomOut = "zoom-out"
+        static let zoomIn = "zoom-in"
+        static let reset = "reset"
+        static let fitToScreen = "fit-to-screen"
+        static let relayout = "relayout"
+        static let graph3d = "graph-3d"
+    }
+
+    // MARK: - 聊天评分图标 (Chat Rating Icon)
+    /// ChatComponents 点赞/贬低按钮 SF Symbol 图标名常量集
+    enum ChatRatingIcon {
+        static let thumbsupFill = "hand.thumbsup.fill"
+        static let thumbsup = "hand.thumbsup"
+        static let thumbsdownFill = "hand.thumbsdown.fill"
+        static let thumbsdown = "hand.thumbsdown"
+    }
+
+    // MARK: - 认证错误标签 (Auth Error Tag)
+    /// PhoneAuthService / TokenManager 日志 errorTag 常量集
+    enum AuthErrorTag {
+        static let passwordLoginFailed = "Password login failed"
+        static let smsLoginRegisterFailed = "SMS login/register failed"
+        static let userProfileFetchFailed = "User profile fetch failed"
     }
 
     // MARK: - Markdown 缩进 (Markdown Indent)

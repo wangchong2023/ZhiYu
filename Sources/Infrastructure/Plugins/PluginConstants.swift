@@ -227,4 +227,13 @@ enum PluginConstants {
         /// 路径分隔符（/）
         static let pathSeparator: String = "/"
     }
+
+    // MARK: - 插件加载失败上下文 (Plugin Load Failure Context)
+    /// PluginLoader 签名校验失败时的日志上下文描述常量集
+    enum LoadFailureContext {
+        /// .zyplugin 归档加载失败上下文
+        static let zypluginArchive: String = ".zyplugin"
+        /// 明文目录插件加载失败上下文
+        static let plaintextDirPlugin: String = "plaintext-dir-plugin"
+    }
 }

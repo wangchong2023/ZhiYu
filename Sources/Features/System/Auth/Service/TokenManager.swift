@@ -104,7 +104,7 @@ extension AuthService {
         #endif
 
         do {
-            return try await fetchAndUpdateUserProfile(errorTag: "User profile fetch failed")
+            return try await fetchAndUpdateUserProfile(errorTag: FeatureConstants.AuthErrorTag.userProfileFetchFailed)
         } catch {
             Logger.shared.error("[AuthService] User profile fetch failed", error: error)
             return false
