@@ -79,7 +79,7 @@ public final class GoogleAuthStrategy: AuthStrategy {
     }
 
     /// 测试模式下的 Mock Google 凭证，消除 #if DEBUG 块内的重复
-    private func mockGoogleCredential(identityType: IdentityType) -> AuthCredential {
+    private func mockGoogleCredential(identityType: String) -> AuthCredential {
         let mockIDToken = "mock_google_id_token_\(UUID().uuidString)"
         return AuthCredential(
             identityType: identityType,
@@ -94,7 +94,7 @@ public final class GoogleAuthStrategy: AuthStrategy {
     }
 
     /// 测试模式下降级返回 Mock 凭证，消除 #if DEBUG 块的重复
-    private func testModeMockCredential(identityType: IdentityType) -> AuthCredential? {
+    private func testModeMockCredential(identityType: String) -> AuthCredential? {
         #if DEBUG
         if TestModeDetector.isAnyTesting {
             return mockGoogleCredential(identityType: identityType)

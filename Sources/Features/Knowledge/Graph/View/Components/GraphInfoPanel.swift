@@ -52,7 +52,7 @@ private func titleDescPair(title: String, desc: String) -> some View {
 /// 玻璃态卡片修饰符，消除 insightSection 与 guideRow 的重复 background+overlay+shadow 链
 @ViewBuilder
 private func glassmorphicCardStroke(cornerRadius: CGFloat, strokeColor: Color) -> some View {
-    overlay(
+    EmptyView().overlay(
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .stroke(strokeColor, lineWidth: SystemStroke.hairline)
     )

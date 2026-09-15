@@ -22,6 +22,7 @@ enum InsightTagInteractions {
     /// - Parameters:
     ///   - tag: 标签名称
     ///   - coordinator: 标签云协调器
+    @MainActor
     static func toggleSelection(tag: String, coordinator: TagCloudCoordinator) {
         withAnimation(DesignSystem.Animation.prominent) {
             if coordinator.isEditMode {

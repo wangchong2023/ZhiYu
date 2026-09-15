@@ -256,6 +256,7 @@ final class Graph3DmacOSCoordinator: Graph3DCoordinatorBase {
 
 // MARK: - 共享 updateView 逻辑（消除 iOS updateUIView / macOS updateNSView 重复）
 /// 持续同步观察点，确保外部控制（缩放/重置）能生效
+@MainActor
 private func syncSceneViewPointOfView(_ scnView: SCNView, scene: SCNScene?, coordinator: Graph3DCoordinatorBase) {
     scnView.scene = scene
     if let cameraNode = mainCameraNode(in: scene) {

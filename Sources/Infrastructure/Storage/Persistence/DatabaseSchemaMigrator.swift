@@ -42,12 +42,6 @@ extension DatabaseManager {
         }
     }
 
-    /// 构建 KnowledgePage 主键外键引用参数（级联删除）。
-    /// 消除多处 `.references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade)` 重复。
-    private var knowledgePageReference: Database.ForeignKeyReference {
-        .references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade)
-    }
-
     // MARK: - 专属笔记本库迁移方案 (DatabaseMigrator)
     
     /// 专属笔记本数据库对应的渐进式架构迁移器。
@@ -85,8 +79,8 @@ extension DatabaseManager {
 
             // 2. 知识图谱双向链接映射表 (物理 ID 级强关联)
             try db.create(table: PageLink.databaseTableName) { t in
-                t.column(PageLink.Columns.sourceID.name, .blob).notNull().references(knowledgePageReference)
-                t.column(PageLink.Columns.targetID.name, .blob).notNull().references(knowledgePageReference).indexed()
+                t.column(PageLink.Columns.sourceID.name, .blob).notNull().references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade)
+                t.column(PageLink.Columns.targetID.name, .blob).notNull().references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade).indexed()
                 t.column(PageLink.Columns.context.name, .text)
                 t.column(PageLink.Columns.createdAt.name, .datetime).notNull().defaults(to: Date())
                 t.primaryKey([PageLink.Columns.sourceID.name, PageLink.Columns.targetID.name])
@@ -95,7 +89,7 @@ extension DatabaseManager {
             // 3. 语义块切片表 (RAG 核心承载)
             try db.create(table: PageChunk.databaseTableName) { t in
                 t.column(PageChunk.Columns.id.name, .text).primaryKey()
-                t.column(PageChunk.Columns.pageID.name, .blob).notNull().references(knowledgePageReference)
+                t.column(PageChunk.Columns.pageID.name, .blob).notNull().references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade)
                 t.column(PageChunk.Columns.parentID.name, .text).references(PageChunk.databaseTableName, column: PageChunk.Columns.id.name, onDelete: .cascade)
                 t.column(PageChunk.Columns.chunkType.name, .text).notNull()
                 t.column(PageChunk.Columns.content.name, .text).notNull()
@@ -109,7 +103,7 @@ extension DatabaseManager {
 
             // 4. 页面层级高维稠密向量映射表
             try db.create(table: PageEmbedding.databaseTableName) { t in
-                t.column(PageEmbedding.Columns.id.name, .blob).primaryKey().references(knowledgePageReference)
+                t.column(PageEmbedding.Columns.id.name, .blob).primaryKey().references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade)
                 t.column(PageEmbedding.Columns.vector.name, .blob).notNull()
                 t.column(PageEmbedding.Columns.modelName.name, .text).notNull()
                 t.column(PageEmbedding.Columns.createdAt.name, .datetime).notNull().defaults(to: Date())
@@ -198,7 +192,7 @@ extension DatabaseManager {
 
             // 2. 创建页面-标签多对多关联关联表
             try db.create(table: PageTagRecord.databaseTableName) { t in
-                t.column(PageTagRecord.CodingKeys.pageID.rawValue, .blob).notNull().references(knowledgePageReference)
+                t.column(PageTagRecord.CodingKeys.pageID.rawValue, .blob).notNull().references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade)
                 t.column(PageTagRecord.CodingKeys.tagID.rawValue, .text).notNull().references(TagRecord.databaseTableName, column: TagRecord.CodingKeys.id.rawValue, onDelete: .cascade)
                 t.primaryKey([PageTagRecord.CodingKeys.pageID.rawValue, PageTagRecord.CodingKeys.tagID.rawValue])
             }
@@ -210,7 +204,7 @@ extension DatabaseManager {
         // V4: 增加 SRS 间隔重复算法元数据表 (@P1: 促进卡片知识内化吸收)
         migrator.registerMigration("v4_srs_metadata") { db in
             try db.create(table: SRSMetadataRecord.databaseTableName) { t in
-                t.column(SRSMetadataRecord.CodingKeys.pageID.rawValue, .blob).primaryKey().references(knowledgePageReference)
+                t.column(SRSMetadataRecord.CodingKeys.pageID.rawValue, .blob).primaryKey().references(KnowledgePage.databaseTableName, column: KnowledgePage.Columns.id.rawValue, onDelete: .cascade)
                 t.column(SRSMetadataRecord.CodingKeys.easeFactor.rawValue, .double).notNull().defaults(to: AppConstants.Storage.defaultEaseFactor)
                 t.column(SRSMetadataRecord.CodingKeys.repetitions.rawValue, .integer).notNull().defaults(to: 0)
                 t.column(SRSMetadataRecord.CodingKeys.reviewInterval.rawValue, .integer).notNull().defaults(to: 0)
@@ -222,15 +216,15 @@ extension DatabaseManager {
 
         // V5: RAG 评估维度扩展 — 新增幻觉率与引用准确度指标 (@P2: 生成质量细粒度量化)
         migrator.registerMigration("v5_rag_hallucination_citation") { db in
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: RAGEvaluation.databaseTableName,
                 columnName: RAGEvaluation.Columns.hallucinationRate.name,
-                columnType: .double, isNotNull: true, defaultValue: 0.0
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
             )
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: RAGEvaluation.databaseTableName,
                 columnName: RAGEvaluation.Columns.citationAccuracy.name,
-                columnType: .double, isNotNull: true, defaultValue: 0.0
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
             )
         }
 
@@ -286,7 +280,7 @@ extension DatabaseManager {
 
         // V8: 导入记录 AI 分类标签（幂等：V7 创建表时可能已含此列）
         migrator.registerMigration("v8_import_record_tags") { db in
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: ImportRecord.databaseTableName,
                 columnName: ImportRecord.CodingKeys.tags.name,
                 columnType: .text
@@ -310,35 +304,35 @@ extension DatabaseManager {
 
         // V10: RAG 评估新增答案正确性维度（幂等：检查列是否存在）
         migrator.registerMigration("v10_rag_answer_correctness") { db in
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: RAGEvaluation.databaseTableName,
                 columnName: RAGEvaluation.Columns.answerCorrectness.name,
-                columnType: .double, isNotNull: true, defaultValue: 0.0
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
             )
         }
 
         // V11: RAG 评估新增上下文充分性维度（幂等）
         migrator.registerMigration("v11_rag_context_sufficiency") { db in
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: RAGEvaluation.databaseTableName,
                 columnName: RAGEvaluation.Columns.contextSufficiency.name,
-                columnType: .double, isNotNull: true, defaultValue: 0.0
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
             )
         }
 
         // V13: 反馈条目新增处理状态列
         migrator.registerMigration("v13_feedback_status") { db in
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: FeedbackEntry.databaseTableName,
                 columnName: FeedbackEntry.CodingKeys.status.name,
                 columnType: .text, isNotNull: true,
-                defaultValue: FeedbackStatus.pending.rawValue
+                defaultValue: FeedbackStatus.pending.rawValue.databaseValue
             )
         }
 
         // V12: RAG 评估新增用户满意度评分（幂等）
         migrator.registerMigration("v12_rag_user_rating") { db in
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: RAGEvaluation.databaseTableName,
                 columnName: RAGEvaluation.Columns.userRating.name,
                 columnType: .integer
@@ -422,10 +416,10 @@ extension DatabaseManager {
         
         // V2: global_vaults 增加 page_count 列 (@P4: 列表页数展示)
         migrator.registerMigration("v2_global_page_count") { db in
-            try addColumnIfNotExists(
+            try self.addColumnIfNotExists(
                 db: db, tableName: VaultRecord.databaseTableName,
                 columnName: VaultRecord.CodingKeys.pageCount.rawValue,
-                columnType: .integer, isNotNull: true, defaultValue: 0
+                columnType: .integer, isNotNull: true, defaultValue: 0.databaseValue
             )
         }
 

@@ -121,7 +121,7 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
 
     /// 共享的多条查询辅助：按指定排序/限制请求查询并解密，消除 fetchAll / fetchRecentlyUpdated 间的 writer.read + decryptPages 样板。
     private func fetchPagesOrdered(
-        _ requestBuilder: (QueryInterfaceRequest<KnowledgePage>) -> QueryInterfaceRequest<KnowledgePage>
+        _ requestBuilder: @escaping (QueryInterfaceRequest<KnowledgePage>) -> QueryInterfaceRequest<KnowledgePage>
     ) async throws -> [KnowledgePage] {
         let writer = try await dbWriter
         return try await writer.read { db in
