@@ -55,9 +55,9 @@ public struct AppCard<Content: View>: View {
         padding: CGFloat,
         @ViewBuilder content: () -> Content
     ) {
-        self.cornerRadiusToken = Self.radiusToken(for: cornerRadius)
+        self.cornerRadiusToken = AppCardTokenMapper.radiusToken(for: cornerRadius)
         
-        self.paddingToken = Self.spacingToken(for: padding)
+        self.paddingToken = AppCardTokenMapper.spacingToken(for: padding)
 
         self.content = content()
     }
@@ -182,15 +182,15 @@ public extension View {
         cornerRadius: CGFloat, 
         padding: CGFloat = Spacing.Layout.cardContentPadding
     ) -> some View {
-        let cornerToken = AppCard.radiusToken(for: cornerRadius)
-        let padToken = AppCard.spacingToken(for: padding)
+        let cornerToken = AppCardTokenMapper.radiusToken(for: cornerRadius)
+        let padToken = AppCardTokenMapper.spacingToken(for: padding)
 
         return modifier(AppCardModifier(cornerRadiusToken: cornerToken, paddingToken: padToken))
     }
 }
 
 // MARK: - SpacingToken 映射辅助
-private extension AppCard {
+private enum AppCardTokenMapper {
     /// CGFloat padding → SpacingToken（消除两处重复的三元表达式链）
     static func spacingToken(for padding: CGFloat) -> DesignSystem.SpacingToken {
         if padding == Spacing.atomic { return .atomic }

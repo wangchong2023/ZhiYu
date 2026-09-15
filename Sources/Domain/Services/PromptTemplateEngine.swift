@@ -177,4 +177,12 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
             .components(separatedBy: invalidCharacters)
             .joined(separator: SystemConstants.Character.underscore)
     }
+
+    /// 计算字符串的 SHA256 十六进制哈希值，用于远程 Prompt 完整性校验
+    /// - Parameter string: 待校验的字符串
+    /// - Returns: 小写十六进制哈希字符串
+    private static func sha256Hex(of string: String) -> String {
+        let hash = SHA256.hash(data: Data(string.utf8))
+        return hash.compactMap { String(format: "%02x", $0) }.joined()
+    }
 }

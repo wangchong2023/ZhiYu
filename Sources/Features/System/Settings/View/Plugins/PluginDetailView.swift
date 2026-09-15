@@ -102,7 +102,7 @@ struct PluginDetailView: View {
     }
 
     /// 查找本地已安装插件实体，消除 displayVersion 与 resolveTargetID 的重复
-    private func findLocalPlugin() -> (any PluginProtocol)? {
+    private func findLocalPlugin() -> KnowledgePlugin? {
         registry.plugins.first(where: {
             $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
         })

@@ -90,13 +90,6 @@ struct SubscriptionFeatureGrid: View {
             .foregroundStyle(color)
     }
 
-    /// 单元格内边距，消除表头与数据行的 padding 重复
-    private func cellPadding() -> some View {
-        self
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, DesignSystem.small)
-    }
-
     /// 表头标题文本，消除 Lite/Pro 表头的 Text 样式重复
     private func headerTitle(_ text: String, color: Color) -> some View {
         Text(text)
@@ -104,5 +97,15 @@ struct SubscriptionFeatureGrid: View {
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity, alignment: .center)
             .foregroundStyle(color)
+    }
+}
+
+// MARK: - 单元格内边距修饰符
+private extension View {
+    /// 单元格内边距，消除表头与数据行的 padding 重复
+    func cellPadding() -> some View {
+        self
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, DesignSystem.small)
     }
 }

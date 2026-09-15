@@ -128,7 +128,7 @@ struct RawPageRow: View {
 
     var body: some View {
         HStack(spacing: DesignSystem.medium) {
-            AccentIconBox(iconName: page.displaySourceIcon, fontSize: DesignSystem.title3, cornerRadius: SystemRadius.small)
+            AccentIconBox(iconName: page.displaySourceIcon, fontSize: SystemFontSize.title3, cornerRadius: SystemRadius.small)
             
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                 // 使用高亮文本显示匹配项
@@ -281,19 +281,8 @@ struct RawStorageListView: View {
                                     .padding(.vertical, Spacing.tiny)
                                 }
                                 .listRowBackground(Color.clear)
-    }
-}
-
-/// 原始存储格式化工具，消除跨文件的 formatBytes 重复
-enum RawStorageFormat {
-    /// 字节大小格式化为人类可读字符串
-    static func bytes(_ bytes: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useAll]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: bytes)
-    }
-}
+                            }
+                        }
                     }
                     .listStyle(.sidebar)
                     .scrollContentBackground(.hidden)
@@ -451,5 +440,16 @@ struct RawPageDetailView: View {
                 .foregroundStyle(.appText)
                 .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.disabled, useBorder: true)
         }
+    }
+}
+
+/// 原始存储格式化工具，消除跨文件的 formatBytes 重复
+enum RawStorageFormat {
+    /// 字节大小格式化为人类可读字符串
+    static func bytes(_ bytes: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useAll]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: bytes)
     }
 }

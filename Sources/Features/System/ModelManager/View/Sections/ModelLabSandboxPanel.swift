@@ -73,7 +73,7 @@ extension ModelLabView {
                     }
                     return getActiveModel()?.modelId ?? activeId
                 },
-                set: { newId in
+                set: { (newId: String) in
                     HapticFeedback.shared.trigger(.selection)
                     modelManager.activeModelId = newId
                     loadParametersForModel(newId)
@@ -272,9 +272,12 @@ extension ModelLabView {
             setupDefaultPrompt(for: useCase)
         }
     }
+}
 
+// MARK: - 胶囊 pill 样式修饰符
+private extension View {
     /// 胶囊 pill 样式修饰符，消除重复的 padding+background+clipShape(Capsule) 链
-    private func pillStyle() -> some View {
+    func pillStyle() -> some View {
         self
             .padding(.horizontal, SystemSpacing.medium)
             .padding(.vertical, SystemSpacing.small)

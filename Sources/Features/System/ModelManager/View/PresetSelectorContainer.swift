@@ -9,7 +9,7 @@ import SwiftUI
 /// `presetSelector` / `customButton` / `presetButton` 三段视图，仅通过参数注入
 /// 选中态颜色、未选中态背景与回调动作即可复用。
 @MainActor
-struct PresetSelectorContainer<ApplyAction>: View where ApplyAction: (ParameterPreset) -> Void {
+struct PresetSelectorContainer: View {
     /// 当前匹配的预设（nil 表示自定义模式）
     let matchedPreset: ParameterPreset?
     /// 选中态背景色
@@ -21,7 +21,7 @@ struct PresetSelectorContainer<ApplyAction>: View where ApplyAction: (ParameterP
     /// 自定义按钮点击时的微调动作（从已锁定预设进入自定义）
     let customNudgeAction: () -> Void
     /// 选中某个预设时的应用动作
-    let applyAction: ApplyAction
+    let applyAction: (ParameterPreset) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {

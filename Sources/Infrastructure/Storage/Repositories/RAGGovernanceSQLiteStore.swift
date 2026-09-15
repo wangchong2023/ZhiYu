@@ -81,7 +81,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     private func readWithCutoff<T>(days: Int, _ body: (Database, Date) throws -> T) async throws -> T {
         let writer = try await dbWriter
         return try await writer.read { db in
-            try body(db, cutoffDate(days: days))
+            try body(db, self.cutoffDate(days: days))
         }
     }
 
@@ -137,8 +137,8 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     ) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in
-            guard let evals = try fetchEvaluations(db: db, days: days) else { return 0.0 }
-            return try averageMetric(eval: evals, db: db, metric: metric)
+            guard let evals = try self.fetchEvaluations(db: db, days: days) else { return 0.0 }
+            return try self.averageMetric(evals: evals, db: db, metric: metric)
         }
     }
 
@@ -162,7 +162,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func fetchTokenStats(days: Int) async throws -> TokenStats {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let dateThreshold = tokenStatsDateThreshold(days: days)
+            let dateThreshold = self.tokenStatsDateThreshold(days: days)
 
             let request = TokenUsage
                 .filter(TokenUsage.Columns.createdAt >= dateThreshold)
@@ -189,7 +189,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func fetchDailyAIStats(days: Int) async throws -> [DailyAIStat] {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let dateThreshold = tokenStatsDateThreshold(days: days)
+            let dateThreshold = self.tokenStatsDateThreshold(days: days)
             
             let dayExpr = SQL("strftime('%Y-%m-%d', \(TokenUsage.Columns.createdAt))")
             let request = TokenUsage

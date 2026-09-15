@@ -311,14 +311,6 @@ struct RAGRetrievalPanel: View {
         .metricCardContainer(color: color)
     }
 
-    /// 指标卡片容器样式，消除 scoreCardCore 与 latencyCard 的重复
-    private func metricCardContainer(color: Color) -> some View {
-        self
-            .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
-            .background(color.opacity(CardVisual.metricBgOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-    }
-
     // MARK: - 评分与颜色
 
     func scoreColor(_ s: Double) -> Color {
@@ -375,5 +367,16 @@ struct RAGGenerationPanel: View {
             }
         }
         .appCardStyle()
+    }
+}
+
+// MARK: - 指标卡片容器修饰符
+private extension View {
+    /// 指标卡片容器样式，消除 scoreCardCore 与 latencyCard 的重复
+    func metricCardContainer(color: Color) -> some View {
+        self
+            .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
+            .background(color.opacity(CardVisual.metricBgOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 }

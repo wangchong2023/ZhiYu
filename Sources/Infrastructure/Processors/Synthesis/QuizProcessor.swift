@@ -81,7 +81,7 @@ enum QuizProcessor {
 
             /// 共享的 Int/String 自愈解码逻辑，消除 FlexibleID 与 FlexibleAnswer 间的重复 init(from:)。
             private static func decodeFlexibleIntString(from decoder: Decoder) throws -> FlexibleID {
-                try FlexibleIntStringDecoder.decode(from: decoder, intCase: .int, stringCase: .string)
+                try FlexibleIntStringDecoder.decode(from: decoder, intCase: FlexibleID.int, stringCase: FlexibleID.string)
             }
         }
 
@@ -113,7 +113,7 @@ enum QuizProcessor {
 
             /// 共享的 Int/String 自愈解码逻辑，消除 FlexibleID 与 FlexibleAnswer 间的重复 init(from:)。
             private static func decodeFlexibleIntString(from decoder: Decoder) throws -> FlexibleAnswer {
-                try FlexibleIntStringDecoder.decode(from: decoder, intCase: .int, stringCase: .string)
+                try FlexibleIntStringDecoder.decode(from: decoder, intCase: FlexibleAnswer.int, stringCase: FlexibleAnswer.string)
             }
         }
     }

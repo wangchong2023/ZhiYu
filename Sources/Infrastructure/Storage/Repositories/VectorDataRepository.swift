@@ -73,7 +73,7 @@ final class VectorDataRepository: VectorRepository, DatabaseWriterProvider, Send
         let writer = try await dbWriter
         _ = try await writer.write { db in
             // 物理删除旧分块，确保索引最新
-            try deleteChunksByPageID(db: db, pageID: pageID)
+            try self.deleteChunksByPageID(db: db, pageID: pageID)
 
             for var chunk in chunks {
                 chunk.pageID = pageID
@@ -88,7 +88,7 @@ final class VectorDataRepository: VectorRepository, DatabaseWriterProvider, Send
     func deleteChunks(for pageID: UUID) async throws {
         let writer = try await dbWriter
         _ = try await writer.write { db in
-            try deleteChunksByPageID(db: db, pageID: pageID)
+            try self.deleteChunksByPageID(db: db, pageID: pageID)
         }
     }
 

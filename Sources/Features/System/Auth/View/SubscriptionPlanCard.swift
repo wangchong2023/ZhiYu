@@ -80,47 +80,7 @@ struct SubscriptionPlanCard: View {
             }
             .cycleButtonContent(isSelected: selectedCycle == cycle)
         }
-        .cycleButtonStyle(isSelected: selectedCycle == cycle)
-    }
-
-    /// 周期按钮内容容器样式，消除月付/年付按钮的 frame+padding+foregroundStyle 重复
-    private func cycleButtonContent(isSelected: Bool) -> some View {
-        self
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, SystemSpacing.element)
-            .foregroundStyle(isSelected ? .appAccent : .appSecondary)
-    }
-
-    /// 周期按钮样式，消除月付/年付按钮的重复修饰符链
-    private func cycleButtonStyle(isSelected: Bool) -> some View {
-        self
-            .buttonStyle(.plain)
-            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: SystemRadius.card)
-                    .stroke(
-                        isSelected
-                            ? AnyShapeStyle(Self.proGradient)
-                            : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            )
-    }
-
-    /// 套餐描述文本样式，消除 Lite/Pro Card 的重复
-    private func planDescStyle() -> some View {
-        self
-            .font(.system(size: SystemFontSize.micro))
-            .foregroundStyle(.appSecondary)
-            .lineLimit(2)
-    }
-
-    /// 套餐卡片容器基础布局，消除 Lite/Pro Card 的 padding+frame 重复
-    private func planCardContainerBase() -> some View {
-        self
-            .padding(DesignSystem.medium)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .cycleButtonStyle(isSelected: selectedCycle == cycle, gradient: Self.proGradient)
     }
 
     // MARK: - 套餐卡片对比
@@ -205,5 +165,48 @@ struct SubscriptionPlanCard: View {
             .shadow(color: .purple.opacity(DesignSystem.Opacity.shadow), radius: SystemShadow.radiusMedium, x: 0, y: 0)
         }
         .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+// MARK: - 订阅套餐卡片修饰符
+private extension View {
+    /// 周期按钮内容容器样式，消除月付/年付按钮的 frame+padding+foregroundStyle 重复
+    func cycleButtonContent(isSelected: Bool) -> some View {
+        self
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, SystemSpacing.element)
+            .foregroundStyle(isSelected ? .appAccent : .appSecondary)
+    }
+
+    /// 周期按钮样式，消除月付/年付按钮的重复修饰符链
+    func cycleButtonStyle(isSelected: Bool, gradient: LinearGradient) -> some View {
+        self
+            .buttonStyle(.plain)
+            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .overlay(
+                RoundedRectangle(cornerRadius: SystemRadius.card)
+                    .stroke(
+                        isSelected
+                            ? AnyShapeStyle(gradient)
+                            : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
+                        lineWidth: isSelected ? 2 : 1
+                    )
+            )
+    }
+
+    /// 套餐描述文本样式，消除 Lite/Pro Card 的重复
+    func planDescStyle() -> some View {
+        self
+            .font(.system(size: SystemFontSize.micro))
+            .foregroundStyle(.appSecondary)
+            .lineLimit(2)
+    }
+
+    /// 套餐卡片容器基础布局，消除 Lite/Pro Card 的 padding+frame 重复
+    func planCardContainerBase() -> some View {
+        self
+            .padding(DesignSystem.medium)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }

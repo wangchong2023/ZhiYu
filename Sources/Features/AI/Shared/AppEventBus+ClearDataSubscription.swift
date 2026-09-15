@@ -24,6 +24,5 @@ extension AppEventBus {
                     action()
                 }
             }
-            .eraseToAnyCancellable()
     }
 }

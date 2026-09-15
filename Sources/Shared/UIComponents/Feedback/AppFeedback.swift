@@ -219,6 +219,6 @@ enum AdaptiveTypography {
 enum ShimmerAnimation {
     /// @PR-03: 使用高性能线性动画减少主线程压力
     static func startLinear(body: @escaping () -> Void) {
-        withAnimation(.linear(duration: Animations.Decorator.shimmerDuration).repeatForever(autoreverses: false), body: body)
+        withAnimation(.linear(duration: Animations.Decorator.shimmerDuration).repeatForever(autoreverses: false), body)
     }
 }

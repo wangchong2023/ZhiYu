@@ -553,7 +553,7 @@ struct PluginCard: View {
     }
 
     /// 查找本地已安装插件实体，消除 displayVersion 与 resolveTargetID 的重复查询
-    private func findLocalPlugin(for id: String) -> (any PluginProtocol)? {
+    private func findLocalPlugin(for id: String) -> KnowledgePlugin? {
         registry.plugins.first(where: {
             $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id)
         })

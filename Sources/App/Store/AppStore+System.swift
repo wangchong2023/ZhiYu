@@ -95,7 +95,7 @@ extension AppStore: AnyPageStore {
     }
 
     /// 统一委托 knowledgeStore.createPage 的参数转发，消除 createPage 与 anyCreatePage 间的重复调用链。
-    private func delegateCreatePage(_ input: CreatePageInput) async -> KnowledgePage {
+    func delegateCreatePage(_ input: CreatePageInput) async -> KnowledgePage {
         await knowledgeStore.createPage(
             title: input.title,
             pageType: input.pageType,

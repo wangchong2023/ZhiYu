@@ -307,7 +307,7 @@ private extension View {
 // MARK: - TranscriptionEditor 构造辅助
 /// 消除 VoiceNoteView 与 VoiceNoteComponents 重复的 TranscriptionEditor Binding 构造
 func makeTranscriptionEditor(
-    speechService: SpeechRecognitionService,
+    speechService: any SpeechServiceProtocol,
     idiom: InterfaceIdiom,
     minHeight: CGFloat,
     maxHeight: CGFloat,

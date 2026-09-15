@@ -261,7 +261,7 @@ struct MarkdownRendererView: View {
                             renderInlineContent(cell)
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(.appAccent)
-                                .tableCellFrame()
+                                .tableCellFrame(minColWidth: Layout.minColWidth, maxColWidth: Layout.maxColWidth)
                         }
                         .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                         // 列间分割线（最后一列不加）
@@ -279,7 +279,7 @@ struct MarkdownRendererView: View {
                                 renderInlineContent(cell)
                                     .font(.footnote)
                                     .foregroundStyle(.appText)
-                                    .tableCellFrame()
+                                    .tableCellFrame(minColWidth: Layout.minColWidth, maxColWidth: Layout.maxColWidth)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .background(rowIndex % 2 != 0 ? Color.appCard.opacity(DesignSystem.Opacity.shadow) : Color.clear)
@@ -506,10 +506,10 @@ private extension View {
     }
 
     /// 表格单元格统一 frame + padding，消除表头与数据行两处重复。
-    func tableCellFrame() -> some View {
+    func tableCellFrame(minColWidth: CGFloat, maxColWidth: CGFloat) -> some View {
         self
             .padding(.horizontal, DesignSystem.small)
             .padding(.vertical, DesignSystem.tightPadding)
-            .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
+            .frame(minWidth: minColWidth, maxWidth: maxColWidth, alignment: .leading)
     }
 }

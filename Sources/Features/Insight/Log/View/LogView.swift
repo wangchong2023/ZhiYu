@@ -161,10 +161,10 @@ private struct LogEntryRow: View {
         return status == .success ? Color.theme.green : Color.theme.red
     }
     private var startFormattedString: String {
-        formatTime(entry.startTime, timeFormat: .shortened)
+        entry.startTime?.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: Localized.currentLocale)) ?? ""
     }
     private var endFormattedString: String {
-        formatTime(entry.endTime, timeFormat: .shortened)
+        entry.endTime?.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: Localized.currentLocale)) ?? ""
     }
     private var timeRangeString: String {
         if entry.startTime != nil && entry.endTime != nil {
@@ -174,15 +174,10 @@ private struct LogEntryRow: View {
         }
     }
     private var detailStartString: String {
-        formatTime(entry.startTime, timeFormat: .standard)
+        entry.startTime?.formatted(Date.FormatStyle(date: .omitted, time: .standard, locale: Localized.currentLocale)) ?? ""
     }
     private var detailEndString: String {
-        formatTime(entry.endTime, timeFormat: .standard)
-    }
-
-    /// 格式化时间字符串辅助方法
-    private func formatTime(_ date: Date?, timeFormat: Date.FormatStyle.TimeFormat) -> String {
-        date?.formatted(Date.FormatStyle(date: .omitted, time: timeFormat, locale: Localized.currentLocale)) ?? ""
+        entry.endTime?.formatted(Date.FormatStyle(date: .omitted, time: .standard, locale: Localized.currentLocale)) ?? ""
     }
 
     var body: some View {

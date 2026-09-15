@@ -15,15 +15,15 @@ import SwiftUI
 ///
 /// 消除 `KnowledgePageListView` 与 `SearchView` 中重复的
 /// `HStack(spacing: DesignSystem.medium) { AppSkeleton(iconBoxSize); VStack { AppSkeleton(titleWidth); AppSkeleton(subtitleWidth) }; Spacer() }` 模式。
-public struct SkeletonListRow: View {
-    public var iconBoxSize: CGFloat
-    public var titleWidth: CGFloat
-    public var subtitleWidth: CGFloat
-    public var titleHeight: CGFloat
-    public var subtitleHeight: CGFloat
-    public var spacing: CGFloat
+struct SkeletonListRow: View {
+    var iconBoxSize: CGFloat
+    var titleWidth: CGFloat
+    var subtitleWidth: CGFloat
+    var titleHeight: CGFloat
+    var subtitleHeight: CGFloat
+    var spacing: CGFloat
 
-    public init(
+    init(
         iconBoxSize: CGFloat = DesignSystem.Sidebar.iconBoxSize,
         titleWidth: CGFloat = FeatureConstants.SkeletonRow.titleWidth,
         subtitleWidth: CGFloat = FeatureConstants.SkeletonRow.subtitleWidth,
@@ -39,7 +39,7 @@ public struct SkeletonListRow: View {
         self.spacing = spacing
     }
 
-    public var body: some View {
+    var body: some View {
         HStack(spacing: spacing) {
             AppSkeleton(width: iconBoxSize, height: iconBoxSize)
             VStack(alignment: .leading, spacing: DesignSystem.tiny) {

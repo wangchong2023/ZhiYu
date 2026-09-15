@@ -93,7 +93,11 @@ struct ChartView: View {
                 }
             }
         }
-        .chartCommonModifiers(domain: domain)
+        .chartXSelection(value: $selectedDate)
+        .chartXAxis { xAxisMarks }
+        .chartYAxis { yAxisMarks }
+        .chartXScale(domain: domain.x)
+        .chartYScale(domain: domain.y)
     }
 
     @ViewBuilder
@@ -115,7 +119,11 @@ struct ChartView: View {
                 selectionRuleMark(for: selectedDate)
             }
         }
-        .chartCommonModifiers(domain: domain)
+        .chartXSelection(value: $selectedDate)
+        .chartXAxis { xAxisMarks }
+        .chartYAxis { yAxisMarks }
+        .chartXScale(domain: domain.x)
+        .chartYScale(domain: domain.y)
     }
 
     @AxisContentBuilder
@@ -210,15 +218,5 @@ struct ChartView: View {
         let domainX = start...end
         let domainY = 0.0...(max(FeatureConstants.ChartDomain.baseValue, maxValue() * FeatureConstants.ChartDomain.maxValueScale))
         return (domainX, domainY)
-    }
-
-    /// 应用 chart 通用修饰符链，消除 requestsChart 与 tokensChart 的重复
-    private func chartCommonModifiers(domain: (ClosedRange<Date>, ClosedRange<Double>)) -> some View {
-        self
-            .chartXSelection(value: $selectedDate)
-            .chartXAxis { xAxisMarks }
-            .chartYAxis { yAxisMarks }
-            .chartXScale(domain: domain.x)
-            .chartYScale(domain: domain.y)
     }
 }

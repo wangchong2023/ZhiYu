@@ -28,13 +28,15 @@ public struct AppFilledActionButton: View {
 
     public var body: some View {
         Button(action: action) {
-            if let icon {
-                HStack {
-                    Image(systemName: icon)
+            Group {
+                if let icon {
+                    HStack {
+                        Image(systemName: icon)
+                        Text(title)
+                    }
+                } else {
                     Text(title)
                 }
-            } else {
-                Text(title)
             }
             .font(.headline)
             .foregroundStyle(.white)

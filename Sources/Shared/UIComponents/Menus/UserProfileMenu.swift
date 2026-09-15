@@ -417,7 +417,7 @@ struct CustomProfilePopover: View {
     @State private var showSignOutAlert = false
 
     @Binding var showMenuPopover: Bool
-    fileprivate var onAction: ((UserProfileMenu.MenuAction) -> Void)?
+    var onAction: ((UserProfileMenu.MenuAction) -> Void)?
 
     var body: some View {
         VStack(spacing: 0) {

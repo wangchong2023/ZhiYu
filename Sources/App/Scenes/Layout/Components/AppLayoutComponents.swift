@@ -298,28 +298,32 @@ extension ContentView {
     
     @ViewBuilder
     var chatTabContent: some View {
-        standardTabContent {
+        @Bindable var router = router
+        return standardTabContent {
             ChatView(selectedTab: $router.selectedTab)
         }
     }
     
     @ViewBuilder
     var graphTabContent: some View {
-        standardTabContent {
+        @Bindable var router = router
+        return standardTabContent {
             GraphContainerView(heroNamespace: heroNamespace, selectedTab: $router.selectedTab)
         }
     }
     
     @ViewBuilder
     var synthesisTabContent: some View {
-        standardTabContent {
+        @Bindable var router = router
+        return standardTabContent {
             SynthesisView(selection: $router.sidebarSelection, selectedTab: $router.selectedTab)
         }
     }
 
     @ViewBuilder
     var ingestTabContent: some View {
-        standardTabContent {
+        @Bindable var router = router
+        return standardTabContent {
             IngestView(selectedTab: $router.selectedTab)
         }
     }

@@ -72,21 +72,15 @@ extension View {
     }
 }
 
-/// 插件本地图标基础样式修饰符，消除 LocalPluginDetailView 与 PluginDetailHeaderSection 的 Image 基础配置重复
-struct PluginLocalIconBaseStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
+/// 插件本地图标基础样式，消除 LocalPluginDetailView 与 PluginDetailHeaderSection 的 Image 基础配置重复
+extension Image {
+    /// 应用插件本地图标基础样式
+    func pluginLocalIconBase() -> some View {
+        self
             .renderingMode(.original)
             .resizable()
             .scaledToFit()
             .frame(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize)
-    }
-}
-
-extension Image {
-    /// 应用插件本地图标基础样式
-    func pluginLocalIconBase() -> some View {
-        modifier(PluginLocalIconBaseStyle())
     }
 }
 
