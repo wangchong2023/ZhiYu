@@ -758,6 +758,60 @@ swiftui_uikit_supplement:
   expiry_check: true
   category:
   - doc-drift
+- symbol: Button
+  reason: SwiftUI Button 视图
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Menu
+  reason: SwiftUI Menu 视图
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NavigationPath
+  reason: SwiftUI NavigationPath 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NavigationStack
+  reason: SwiftUI NavigationStack 视图
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TabView
+  reason: SwiftUI TabView 视图
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: CommandGroup
+  reason: SwiftUI CommandGroup 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NSColor
+  reason: AppKit NSColor 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NSPasteboard
+  reason: AppKit NSPasteboard 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NSView
+  reason: AppKit NSView 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
 foundation_c_symbols:
 - symbol: CFAbsoluteTime
   reason: CoreFoundation 时间类型
@@ -994,6 +1048,96 @@ swift_stdlib:
   reason: SwiftUI Text 视图
   added: 2026-08-04
   expiry_check: true
+  category:
+  - doc-drift
+- symbol: AnyObject
+  reason: Swift 标准库 AnyObject 协议
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ArraySlice
+  reason: Swift 标准库 ArraySlice 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Bool
+  reason: Swift 标准库 Bool 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Dictionary
+  reason: Swift 标准库 Dictionary 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Double
+  reason: Swift 标准库 Double 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Equatable
+  reason: Swift 标准库 Equatable 协议
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Hasher
+  reason: Swift 标准库 Hasher 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Identifiable
+  reason: Swift 标准库 Identifiable 协议
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Int
+  reason: Swift 标准库 Int 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Int64
+  reason: Swift 标准库 Int64 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Range
+  reason: Swift 标准库 Range 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Sendable
+  reason: Swift 标准库 Sendable 协议
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Set
+  reason: Swift 标准库 Set 类型
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Codable
+  reason: Swift 标准库 Codable 协议（Encodable+Decodable）
+  added: 2026-09-16
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: App
+  reason: SwiftUI App 协议
+  added: 2026-09-16
+  expiry_check: false
   category:
   - doc-drift
 project_modules:
@@ -1249,6 +1393,12 @@ planned_types:
 - symbol: GraphView
   reason: 规划中图谱视图（实际为 GraphContainerView）
   added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: PlatformRegistrar
+  reason: 已重命名的平台注册器协议，文档中仍有历史引用
+  added: 2026-09-16
   expiry_check: false
   category:
   - doc-drift
