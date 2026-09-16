@@ -24,12 +24,6 @@ final class MacAppEnvironment: AppEnvironmentProtocol {
     var isMobile: Bool { return false }
     
     var platformName: String { return "macOS" }
-
-    var appVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "\(version) (\(build))"
-    }
     
     var deviceName: String {
         return Host.current().localizedName ?? "Mac"

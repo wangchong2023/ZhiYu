@@ -174,21 +174,12 @@ extension ContentView {
             }
         }
         .tint(tintColor)
-        .sheet(isPresented: $showCommandPalette) {
-            CommandPaletteView()
-                .presentationDetents([.height(DesignSystem.Metrics.commandPaletteHeight)])
-                .presentationBackground(.clear)
-        }
-        .background {
-            Button(L10n.Common.Tab.search) { showCommandPalette.toggle() }
-                .keyboardShortcut("k", modifiers: .command)
-                .opacity(0)
-        }
+        .commandPaletteSheet(isPresented: $showCommandPalette)
         #endif
     }
     
     // MARK: - TabViews
-    
+
     @available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *)
     @ViewBuilder
 
@@ -226,24 +217,7 @@ extension ContentView {
             }
             .accessibilityIdentifier("Graph")
         }
-        .tint(tintColor)
-        .onOpenURL { url in
-            if deepLinkService.handleURL(url) {
-                consumeDeepLink()
-            }
-        }
-        .sheet(isPresented: $showCommandPalette) {
-            CommandPaletteView()
-                .presentationDetents([.height(DesignSystem.Metrics.commandPaletteHeight)])
-                .presentationBackground(.clear)
-        }
-        .background {
-            Button(L10n.Common.action) {
-                showCommandPalette.toggle()
-            }
-            .keyboardShortcut("k", modifiers: .command)
-            .opacity(0)
-        }
+        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $showCommandPalette, consumeDeepLink: consumeDeepLink)
         #endif
     }
     
@@ -293,24 +267,7 @@ extension ContentView {
                 }
                 .tag(AppTab.graph)
         }
-        .tint(tintColor)
-        .onOpenURL { url in
-            if deepLinkService.handleURL(url) {
-                consumeDeepLink()
-            }
-        }
-        .sheet(isPresented: $showCommandPalette) {
-            CommandPaletteView()
-                .presentationDetents([.height(DesignSystem.Metrics.commandPaletteHeight)])
-                .presentationBackground(.clear)
-        }
-        .background {
-            Button(L10n.Common.action) {
-                showCommandPalette.toggle()
-            }
-            .keyboardShortcut("k", modifiers: .command)
-            .opacity(0)
-        }
+        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $showCommandPalette, consumeDeepLink: consumeDeepLink)
         #endif
     }
     
@@ -342,48 +299,32 @@ extension ContentView {
     @ViewBuilder
     var chatTabContent: some View {
         @Bindable var router = router
-        NavigationStack(path: $router.path) {
+        standardTabContent {
             ChatView(selectedTab: $router.selectedTab)
-                .id(router.languageForceUpdate)
-                .navigationDestination(for: AppRoute.self) { route in
-                    ViewFactory.makeView(for: route)
-                }
         }
     }
     
     @ViewBuilder
     var graphTabContent: some View {
         @Bindable var router = router
-        NavigationStack(path: $router.path) {
+        standardTabContent {
             GraphContainerView(heroNamespace: heroNamespace, selectedTab: $router.selectedTab)
-                .id(router.languageForceUpdate)
-                .navigationDestination(for: AppRoute.self) { route in
-                    ViewFactory.makeView(for: route)
-                }
         }
     }
     
     @ViewBuilder
     var synthesisTabContent: some View {
         @Bindable var router = router
-        NavigationStack(path: $router.path) {
+        standardTabContent {
             SynthesisView(selection: $router.sidebarSelection, selectedTab: $router.selectedTab)
-                .id(router.languageForceUpdate)
-                .navigationDestination(for: AppRoute.self) { route in
-                    ViewFactory.makeView(for: route)
-                }
         }
     }
 
     @ViewBuilder
     var ingestTabContent: some View {
         @Bindable var router = router
-        NavigationStack(path: $router.path) {
+        standardTabContent {
             IngestView(selectedTab: $router.selectedTab)
-                .id(router.languageForceUpdate)
-                .navigationDestination(for: AppRoute.self) { route in
-                ViewFactory.makeView(for: route)
-            }
         }
     }
 

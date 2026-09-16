@@ -14,11 +14,7 @@ extension L10n {
     public struct Creation: L10nTableEntry {
         public static let tableName = "Knowledge"
         public static var t: String { tableName }
-        
-        public static func tr(_ key: String) -> String {
-            Localized.tr(key, table: tableName)
-        }
-        
+
         /// 本地化翻译
         /// - Parameter key: key
         /// - Returns: 返回值

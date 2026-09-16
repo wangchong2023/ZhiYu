@@ -270,23 +270,17 @@ struct RAGRetrievalPanel: View {
 
     /// 无环形图的中型评分卡片（用于检索保真区）
     func scoreCardMedium(id: String, title: String, score: Double, tip: String) -> some View {
-        let color = scoreColor(score)
-        return VStack(spacing: DesignSystem.tightPadding) {
-            HStack(spacing: SystemSpacing.atomic) {
-                Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                infoIcon(id: id, tip: tip)
-            }
-            Text(String(format: FormatPattern.score2, score))
-                .font(.system(size: FontSize.metricValue, weight: .bold, design: .rounded)).foregroundStyle(color)
-        }
-        .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
-        .background(color.opacity(CardVisual.metricBgOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+        scoreCardCore(id: id, title: title, score: score, tip: tip, detail: nil)
     }
 
     // MARK: - 检索指标卡片
 
     private func retrievalMetricCard(id: String, title: String, score: Double, detail: String, tip: String) -> some View {
+        scoreCardCore(id: id, title: title, score: score, tip: tip, detail: detail)
+    }
+
+    /// 评分卡片核心实现，消除 scoreCardMedium 与 retrievalMetricCard 的重复
+    private func scoreCardCore(id: String, title: String, score: Double, tip: String, detail: String?) -> some View {
         let color = scoreColor(score)
         return VStack(spacing: DesignSystem.tightPadding) {
             HStack(spacing: SystemSpacing.atomic) {
@@ -295,11 +289,11 @@ struct RAGRetrievalPanel: View {
             }
             Text(String(format: FormatPattern.score2, score))
                 .font(.system(size: FontSize.metricValue, weight: .bold, design: .rounded)).foregroundStyle(color)
-            Text(detail).font(.system(size: FontSize.detail)).foregroundStyle(.tertiary).multilineTextAlignment(.center)
+            if let detail {
+                Text(detail).font(.system(size: FontSize.detail)).foregroundStyle(.tertiary).multilineTextAlignment(.center)
+            }
         }
-        .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
-        .background(color.opacity(CardVisual.metricBgOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+        .metricCardContainer(color: color)
     }
 
     private func latencyCard(id: String, label: String, value: Int) -> some View {
@@ -314,22 +308,17 @@ struct RAGRetrievalPanel: View {
                 Text(L10n.Dashboard.stats.latencyUnitMS).font(.system(size: FontSize.tag, weight: .medium)).foregroundStyle(.tertiary)
             }
         }
-        .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
-        .background(color.opacity(CardVisual.metricBgOpacity)).clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+        .metricCardContainer(color: color)
     }
 
     // MARK: - 评分与颜色
 
     func scoreColor(_ s: Double) -> Color {
-        if s >= ScoreThreshold.excellent { return Color.theme.green }
-        if s >= ScoreThreshold.fair { return Color.theme.orange }
-        return Color.theme.red
+        RAGScoreColor.score(s)
     }
 
     func invertedScoreColor(_ s: Double) -> Color {
-        if s <= ScoreThreshold.invertedExcellent { return Color.theme.green }
-        if s <= ScoreThreshold.invertedFair { return Color.theme.orange }
-        return Color.theme.red
+        RAGScoreColor.inverted(s)
     }
 
     func latencyColor(_ ms: Int) -> Color {
@@ -378,5 +367,16 @@ struct RAGGenerationPanel: View {
             }
         }
         .appCardStyle()
+    }
+}
+
+// MARK: - 指标卡片容器修饰符
+private extension View {
+    /// 指标卡片容器样式，消除 scoreCardCore 与 latencyCard 的重复
+    func metricCardContainer(color: Color) -> some View {
+        self
+            .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
+            .background(color.opacity(CardVisual.metricBgOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
     }
 }

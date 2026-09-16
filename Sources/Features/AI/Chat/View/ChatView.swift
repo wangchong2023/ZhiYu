@@ -65,14 +65,8 @@ struct ChatViewContent: View {
         } message: {
             Text(coordinator.errorMessage ?? "")
         }
-        .alert(L10n.Common.configureAI, isPresented: $coordinator.showLLMAlert) {
-            Button(L10n.ModelManager.Lab.configurations) {
-                HapticFeedback.shared.trigger(.selection)
-                router.isShowingAISettingsSheet = true
-            }
-            Button(L10n.Common.cancel, role: .cancel) {}
-        } message: {
-            Text(L10n.Common.configureAI)
+        .alertLLMNotConfigured(isPresented: $coordinator.showLLMAlert) {
+            router.isShowingAISettingsSheet = true
         }
         .confirmationDialog(
             L10n.Chat.clearHistoryConfirmTitle,
@@ -85,8 +79,7 @@ struct ChatViewContent: View {
             Button(L10n.Common.cancel, role: .cancel) { }
         } message: {
             Text(L10n.Chat.clearHistoryConfirmMessage)
-        }
-        .task {
+        }        .task {
             await coordinator.loadInsightfulQuestions(pages: store.pages)
             
             // MARK: - [Cold Start Aha Moment] 自动识别并投递向导提问 Prompt
@@ -212,9 +205,7 @@ struct ChatViewContent: View {
             } : nil,
             predictedQuestions: isLastAssistant ? coordinator.predictedQuestions : [],
             onSelectQuestion: { question in
-                Task {
-                    await coordinator.sendMessage(query: question, pages: store.pages)
-                }
+                sendQuestion(question)
             }
         )
         .id(message.id)
@@ -241,22 +232,14 @@ struct ChatViewContent: View {
             VStack(alignment: .leading, spacing: SystemSpacing.small) {
                 if coordinator.streamingContent.isEmpty {
                     // 获取当前活跃任务的阶段
-                    let stage: TaskStage = {
-                        if let runningTask = taskCenter.tasks.first(where: { if case .running = $0.status { return true }; return false }) {
-                            if case .running(_, let stage) = runningTask.status {
-                                return stage
-                            }
-                        }
-                        return .general
-                    }()
+                    let stage = taskCenter.currentRunningStage
                     
                     AppAILoadingSkeleton(stage: stage)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     MarkdownRendererView(content: coordinator.streamingContent, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
                         .padding(DesignSystem.medium)
-                        .background(Color.appCard)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+                        .appCardClip(cornerRadius: DesignSystem.mediumRadius)
                 }
                 
                 // 一键中断(Stop)生成按钮
@@ -350,10 +333,7 @@ struct ChatViewContent: View {
                                 Button(action: {
                                     // 触发系统的轻微选择触感反馈
                                     HapticFeedback.shared.trigger(.selection)
-                                    Task {
-                                        // 一键直接追问
-                                        await coordinator.sendMessage(query: question, pages: store.pages)
-                                    }
+                                    sendQuestion(question)
                                 }) {
                                     HStack(spacing: DesignSystem.tiny) {
                                         Image(systemName: DesignSystem.Icons.arrowUpRightBubble)
@@ -365,12 +345,8 @@ struct ChatViewContent: View {
                                     }
                                     .padding(.horizontal, DesignSystem.standardPadding)
                                     .padding(.vertical, Spacing.Chip.horizontalPadding)
-                                    .background(Color.appCard.opacity(DesignSystem.Opacity.glass))
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                                            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: DesignSystem.borderWidth)
-                                    )
+                                    .appCardClip(cornerRadius: DesignSystem.standardRadius, backgroundOpacity: DesignSystem.Opacity.glass)
+                                    .overlayStroke()
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -381,6 +357,13 @@ struct ChatViewContent: View {
                 }
                 .padding(.vertical, DesignSystem.tiny)
             }
+        }
+    }
+
+    /// 发送追问问题（消除重复的 Task + coordinator.sendMessage 链）
+    private func sendQuestion(_ question: String) {
+        Task {
+            await coordinator.sendMessage(query: question, pages: store.pages)
         }
     }
 }

@@ -26,15 +26,15 @@ extension L10n {
         /// - Returns: 本地化格式化文案
         public static func pluginPermissionMessage(_ name: String) -> String { Settings.trf("plugin.permission.message", name) }
 
-        /// 获取端侧模型加载失败错误文案
-        /// - Parameter code: 错误代码
-        /// - Returns: 本地化格式化文案
-        public static func onDeviceErrorFormat(_ code: String) -> String { L10n.Common.trf("ondevice.errorFormat", code) }
-
         /// 获取iCloud最后同步时间文案
         /// - Parameter date: 同步时间字符串
         /// - Returns: 本地化格式化文案
         public static func iCloudLastSyncFormat(_ date: String) -> String { Settings.trf("icloud.lastSyncFormat", date) }
+
+        /// 获取端侧模型错误格式化文案
+        /// - Parameter code: 错误码
+        /// - Returns: 本地化格式化文案
+        public static func onDeviceErrorFormat(_ code: String) -> String { L10n.Common.trf("ondevice.errorFormat", code) }
 
             public static var title: String { Localized.tr("settings.resetOnboarding.title", table: t) }
         public static var systemTheme: String { tr("settings.systemTheme") }

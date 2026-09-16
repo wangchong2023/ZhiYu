@@ -164,7 +164,7 @@ final class L10nCommonDeepTests: XCTestCase {
         let values = [
             L10n.Common.Perf.title, L10n.Common.Perf.lastUpdated,
             L10n.Common.Perf.memory, L10n.Common.Perf.timing,
-            L10n.Common.Perf.pages, L10n.Common.Perf.words,
+            L10n.Common.Perf.pages, L10n.Common.Perf.summary.words,
             L10n.Common.Perf.nodes, L10n.Common.Perf.load,
             L10n.Common.Perf.lint, L10n.Common.Perf.graphLayout,
             L10n.Common.Perf.search, L10n.Common.Perf.edges,

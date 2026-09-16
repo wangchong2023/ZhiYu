@@ -149,7 +149,7 @@ Tests/
 
 ### 4.1 功能域对齐原则
 
-`Tests/Unit/` 子目录必须与架构层级（`App`、`Core`、`Domain`、`Infrastructure`、`Localization`、`Platforms`）或 `FeatureDomain` 枚举（`knowledge`、`ai`、`insight`、`system`）对齐。`Tests/Unit/Features/` 下的子目录必须匹配 `FeatureDomain` 枚举值。
+`Tests/Unit/` 子目录必须与架构层级（`App`、`Core`、`Domain`、`Infrastructure`、`Localization`、Platforms）或 `FeatureDomain` 枚举（`knowledge`、`ai`、`insight`、`system`）对齐。`Tests/Unit/Features/` 下的子目录必须匹配 `FeatureDomain` 枚举值。
 
 ### 4.2 测试结构度量指标（CI 门禁）
 

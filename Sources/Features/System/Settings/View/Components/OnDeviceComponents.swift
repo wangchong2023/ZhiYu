@@ -43,7 +43,7 @@ public struct OnDeviceTestView: View {
                 resultSection
                 Spacer()
             }
-            .padding()
+            .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
             .background(PageBackgroundView(accentColor: .appAccent))
             .navigationTitle(L10n.AI.OnDevice.test)
 .appNavigationBarTitleDisplayMode(.inline)
@@ -70,12 +70,7 @@ public struct OnDeviceTestView: View {
             .frame(height: DesignSystem.Metrics.largeIconBoxSize)
             .padding(SystemSpacing.element) /* 10pt = 2+8 */
             .scrollContentBackground(.hidden)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: Spacing.standardRadius)
-                    .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: SystemStroke.emphasis)
-            )
+            .onDeviceContainerStyle(backgroundOpacity: DesignSystem.Opacity.disabled, strokeColor: Color.appAccent.opacity(DesignSystem.Opacity.medium), strokeWidth: SystemStroke.emphasis)
         }
     }
     
@@ -148,10 +143,10 @@ public struct OnDeviceTestView: View {
                         Label(L10n.Common.copy, systemImage: DesignSystem.Icons.docOnDocFill)
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.appAccent)
-                            .padding(.horizontal, SystemSpacing.element)
-                            .padding(.vertical, DesignSystem.tiny)
-                            .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                            .clipShape(Capsule())
+                            .accentSubtleCapsule(
+                                horizontalPadding: SystemSpacing.element,
+                                verticalPadding: DesignSystem.tiny
+                            )
                     }
                 }
                 
@@ -164,12 +159,7 @@ public struct OnDeviceTestView: View {
                         .padding()
                 }
                 .frame(maxHeight: Spacing.Grid.emptyStateHeight)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.shadow))
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Spacing.standardRadius)
-                        .strokeBorder(Color.appText.opacity(DesignSystem.Opacity.ghost), lineWidth: SystemStroke.divider)
-                )
+                .onDeviceContainerStyle(backgroundOpacity: DesignSystem.Opacity.shadow, strokeColor: Color.appText.opacity(DesignSystem.Opacity.ghost), strokeWidth: SystemStroke.divider)
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
@@ -322,5 +312,18 @@ struct OnDeviceInfoRow: View {
             
             Spacer()
         }
+    }
+}
+
+/// 端侧组件容器样式，消除 promptEditor 与 emptyState 的 background+clipShape+overlay 重复
+private extension View {
+    func onDeviceContainerStyle(backgroundOpacity: Double, strokeColor: Color, strokeWidth: CGFloat) -> some View {
+        self
+            .background(Color.appCard.opacity(backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: Spacing.standardRadius)
+                    .strokeBorder(strokeColor, lineWidth: strokeWidth)
+            )
     }
 }

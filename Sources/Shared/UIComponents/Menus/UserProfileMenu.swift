@@ -45,9 +45,7 @@ final class CatalystFloatingMenuManager: NSObject {
 
         // 捕获 app 主窗口 frame（屏幕坐标系），用于将 popover 对齐 app 窗口右上角
         // 必须在创建 overlay window 之前获取，否则 keyWindow 可能指向 overlay 自身
-        let appWindow = windowScene.windows.first(where: {
-            !$0.isHidden && $0.windowLevel == .normal
-        })
+        let appWindow = Self.normalWindow(in: windowScene)
         let appWindowFrame = appWindow?.frame ?? windowScene.screen.bounds
         let screenBounds = windowScene.screen.bounds
 
@@ -89,14 +87,18 @@ final class CatalystFloatingMenuManager: NSObject {
         windowFrameTimer = Timer.scheduledTimer(withTimeInterval: CatalystFloatingConstants.framePollingInterval, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             runOnMainSync {
-                let currentFrame = UIApplication.shared.connectedScenes
-                    .compactMap({ $0 as? UIWindowScene }).first?
-                    .windows.first(where: { !$0.isHidden && $0.windowLevel == .normal })?.frame ?? .zero
+                let currentFrame = Self.normalWindow(in: UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene }).first)?.frame ?? .zero
                 if currentFrame != capturedFrame {
                     self.dismiss {}
                 }
             }
         }
+    }
+
+    /// 查找场景中的正常窗口（消除重复的 windows.first(where:) 链）
+    private static func normalWindow(in scene: UIWindowScene?) -> UIWindow? {
+        scene?.windows.first(where: { !$0.isHidden && $0.windowLevel == .normal })
     }
 
     func dismiss(_ completion: @escaping () -> Void = {}) {
@@ -185,6 +187,18 @@ struct UserProfileMenu: View {
 
     enum MenuAction {
         case settings, profile, plan, plugins, aiSettings
+
+        /// 在 Router 上派发对应 sheet 开关，消除 UserProfileMenu / UserProfileMenuSheetContent 两处 switch 重复。
+        @MainActor
+        func apply(to router: Router) {
+            switch self {
+            case .settings: router.isShowingSettingsSheet = true
+            case .profile: router.isShowingProfileSheet = true
+            case .plan: router.isShowingPlanSheet = true
+            case .plugins: router.isShowingPluginsSheet = true
+            case .aiSettings: router.isShowingAISettingsSheet = true
+            }
+        }
     }
     
     var body: some View {
@@ -298,13 +312,7 @@ struct UserProfileMenu: View {
     }
 
     private func executeMenuAction(_ action: MenuAction) {
-        switch action {
-        case .settings: router.isShowingSettingsSheet = true
-        case .profile: router.isShowingProfileSheet = true
-        case .plan: router.isShowingPlanSheet = true
-        case .plugins: router.isShowingPluginsSheet = true
-        case .aiSettings: router.isShowingAISettingsSheet = true
-        }
+        action.apply(to: router)
     }
     
     private var profileLabel: some View {
@@ -320,12 +328,7 @@ struct UserProfileMenu: View {
             }
         }
         .foregroundStyle(.appAccent)
-        // 1. 限制头像视觉大小为 medium 尺寸
-        .frame(width: DesignSystem.IconSize.medium, height: DesignSystem.IconSize.medium)
-        // 2. 使用 xlarge 框架扩展其透明外包，使其达到 HIG 推荐的 44x44 物理像素点击热区
-        .frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)
-        // 3. 将点击热区设为完整的正方形矩形，大幅提升边缘点击灵敏度
-        .contentShape(Rectangle())
+        .higTouchTarget()
     }
     
     private var aboutStack: some View {
@@ -387,13 +390,7 @@ struct UserProfileMenuSheetContent: View {
     }
     
     private func executeMenuAction(_ action: UserProfileMenu.MenuAction) {
-        switch action {
-        case .settings: router.isShowingSettingsSheet = true
-        case .profile: router.isShowingProfileSheet = true
-        case .plan: router.isShowingPlanSheet = true
-        case .plugins: router.isShowingPluginsSheet = true
-        case .aiSettings: router.isShowingAISettingsSheet = true
-        }
+        action.apply(to: router)
     }
 }
 
@@ -420,7 +417,7 @@ struct CustomProfilePopover: View {
     @State private var showSignOutAlert = false
 
     @Binding var showMenuPopover: Bool
-    fileprivate var onAction: ((UserProfileMenu.MenuAction) -> Void)?
+    var onAction: ((UserProfileMenu.MenuAction) -> Void)?
 
     var body: some View {
         VStack(spacing: 0) {

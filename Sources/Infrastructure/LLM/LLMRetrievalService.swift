@@ -32,36 +32,22 @@ final class LLMRetrievalService: Sendable {
     /// 将原始自然语言问题改写为更适合检索的格式
     func rewriteQuery(_ query: String) async -> String {
         let prompt = contextBuilder.buildRewritePrompt(query: query)
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
-            LLMConstants.APIKey.temperature: 0.3
-        ]
-        
-        do {
-            let response = try await client.sendRequest(body: body)
-            let content = LLMUtils.extractContent(from: response)
-            return (content.flatMap { $0.isEmpty ? nil : $0 }) ?? query
-        } catch {
-            return query
-        }
+        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.3)
+        return await sendOptionalRequest(body: body, fallback: query)
     }
 
     /// 对查询进行意图扩展，生成多个变体以提升召回率
     func expandQuery(_ query: String) async -> [String] {
         let prompt = "\(promptService.queryExpansionPrompt)\n\nOriginal Query: \(query)"
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [
-                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: "Return JSON array of strings only."],
-                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]
-            ],
-            LLMConstants.APIKey.temperature: 0.5
-        ]
-        
+        let body = LLMRequestBuilder.systemUserBody(
+            model: model,
+            systemPrompt: "Return JSON array of strings only.",
+            userPrompt: prompt,
+            temperature: 0.5
+        )
+
         do {
-            let response = try await client.sendRequest(body: body)
-            let content = LLMUtils.extractContent(from: response) ?? ""
+            let content = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
             let variations = LLMUtils.parseJSONArray(content)
             return variations.isEmpty ? [query] : variations
         } catch {
@@ -78,14 +64,9 @@ final class LLMRetrievalService: Sendable {
         let titles = candidates.map { "\($0.title) (ID: \($0.id))" }.joined(separator: "\n")
         let prompt = promptService.rerankPrompt + "\n\nQuery: \(query)\n\nCandidates:\n\(titles)"
         
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]],
-            LLMConstants.APIKey.temperature: 0.2
-        ]
+        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.2)
 
-        let response = try await client.sendRequest(body: body)
-        let content = LLMUtils.extractContent(from: response) ?? ""
+        let content = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
         let rankedIDs = LLMUtils.parseJSONArray(content)
 
         // 根据 LLM 返回的优先级顺序重新排序
@@ -107,18 +88,15 @@ final class LLMRetrievalService: Sendable {
 
         let prompt = L10n.AI.Prompt.rerankUserPrompt(query: query, context: context)
 
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [
-                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: L10n.AI.Prompt.rerankSystem],
-                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]
-            ],
-            LLMConstants.APIKey.temperature: 0.1
-        ]
+        let body = LLMRequestBuilder.systemUserBody(
+            model: model,
+            systemPrompt: L10n.AI.Prompt.rerankSystem,
+            userPrompt: prompt,
+            temperature: 0.1
+        )
 
         do {
-            let response = try await client.sendRequest(body: body)
-            let content = LLMUtils.extractContent(from: response) ?? ""
+            let content = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
             let rankedIndices = LLMUtils.parseJSONArray(content).compactMap { Int($0) }
 
             var result: [PageChunk] = []
@@ -145,21 +123,28 @@ final class LLMRetrievalService: Sendable {
     /// - Returns: AI 生成的假设性答案，若失败则退化返回原始查询
     func generateHypotheticalDocument(query: String) async -> String {
         let prompt = L10n.AI.Prompt.hydeUserPrompt(query: query)
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: model,
-            LLMConstants.APIKey.messages: [
-                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: L10n.AI.Prompt.hydeSystem],
-                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: prompt]
-            ],
-            LLMConstants.APIKey.temperature: 0.7
-        ]
-        
+        let body = LLMRequestBuilder.systemUserBody(
+            model: model,
+            systemPrompt: L10n.AI.Prompt.hydeSystem,
+            userPrompt: prompt,
+            temperature: 0.7
+        )
+        return await sendOptionalRequest(body: body, fallback: query)
+    }
+
+    // MARK: - 辅助方法
+
+    /// 发送可选请求，失败或空响应时返回 fallback 值
+    /// - Parameters:
+    ///   - body: 请求体字典
+    ///   - fallback: 失败时的回退值
+    /// - Returns: LLM 响应内容或 fallback
+    private func sendOptionalRequest(body: [String: Any], fallback: String) async -> String {
         do {
-            let response = try await client.sendRequest(body: body)
-            let content = LLMUtils.extractContent(from: response)
-            return (content.flatMap { $0.isEmpty ? nil : $0 }) ?? query
+            let content = try await LLMResponseHandler.sendAndExtractOptional(client: client, body: body)
+            return (content.flatMap { $0.isEmpty ? nil : $0 }) ?? fallback
         } catch {
-            return query
+            return fallback
         }
     }
 }

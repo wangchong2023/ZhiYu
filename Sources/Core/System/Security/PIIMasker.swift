@@ -34,15 +34,7 @@ public final class PIIMasker: Sendable {
     /// - Returns: 脱敏处理后的安全文本
     public func mask(_ text: String) -> String {
         guard !text.isEmpty else { return text }
-        var masked = text
-
-        for pattern in piiPatterns {
-            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
-                let range = NSRange(location: 0, length: masked.utf16.count)
-                masked = regex.stringByReplacingMatches(in: masked, options: [], range: range, withTemplate: CoreConstants.PIIMasking.redactedPII)
-            }
-        }
-
-        return masked
+        let rules = piiPatterns.map { (pattern: $0, template: CoreConstants.PIIMasking.redactedPII) }
+        return RegexReplacementHelper.applyReplacements(text, rules: rules)
     }
 }

@@ -115,7 +115,7 @@ struct ConflictDiffView: View {
             .buttonStyle(.borderedProminent)
             .tint(.appAccent)
         }
-        .padding()
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
     }
     
     /// 包含左侧列表与右侧分栏 Diff 的核心交互板式
@@ -194,7 +194,7 @@ struct ConflictDiffView: View {
                     // 合并编辑编辑区
                     conflictMergedEditor(for: item)
                 }
-                .padding()
+                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
             }
         }
         .background(Color.clear)
@@ -226,7 +226,7 @@ struct ConflictDiffView: View {
             .font(.subheadline)
             .buttonStyle(.bordered)
         }
-        .padding()
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
         .background(Color.appCard)
     }
 
@@ -239,16 +239,20 @@ struct ConflictDiffView: View {
         Group {
             if isWide {
                 HStack(alignment: .top, spacing: DesignSystem.medium) {
-                    diffContentColumn(title: L10n.ICloud.Conflict.localVersionHeader, content: item.localPage?.content ?? "")
-                    diffContentColumn(title: L10n.ICloud.Conflict.remoteVersionHeader, content: item.remotePage?.content ?? "")
+                    diffColumnsContent(for: item)
                 }
             } else {
                 VStack(spacing: DesignSystem.medium) {
-                    diffContentColumn(title: L10n.ICloud.Conflict.localVersionHeader, content: item.localPage?.content ?? "")
-                    diffContentColumn(title: L10n.ICloud.Conflict.remoteVersionHeader, content: item.remotePage?.content ?? "")
+                    diffColumnsContent(for: item)
                 }
             }
         }
+    }
+
+    /// Diff 列内容（本地版本 + 远程版本），消除 HStack/VStack 分支的重复
+    private func diffColumnsContent(for item: ConflictingPage) -> some View {
+        diffContentColumn(title: L10n.ICloud.Conflict.localVersionHeader, content: item.localPage?.content ?? "")
+        diffContentColumn(title: L10n.ICloud.Conflict.remoteVersionHeader, content: item.remotePage?.content ?? "")
     }
 
     /// 冲突文档的手动合并编辑器视图，允许精细修改并支持快捷载入指定版本内容
@@ -319,7 +323,7 @@ struct ConflictDiffView: View {
         for localPage in conflictInfo.localPages {
             if let remotePage = conflictInfo.remotePages.first(where: { $0.id == localPage.id }) {
                 if localPage.content != remotePage.content {
-                    items.append(ConflictingPage(id: localPage.id, title: localPage.title, localPage: localPage, remotePage: remotePage))
+                    appendConflict(&items, localPage: localPage, remotePage: remotePage)
                 }
             }
         }
@@ -328,7 +332,7 @@ struct ConflictDiffView: View {
         for localPage in conflictInfo.localPages {
             if let remotePage = conflictInfo.remotePages.first(where: { $0.title == localPage.title && $0.id != localPage.id }) {
                 if !items.contains(where: { $0.title == localPage.title }) {
-                    items.append(ConflictingPage(id: localPage.id, title: localPage.title, localPage: localPage, remotePage: remotePage))
+                    appendConflict(&items, localPage: localPage, remotePage: remotePage)
                 }
             }
         }
@@ -379,6 +383,11 @@ struct ConflictDiffView: View {
     }
     
     // MARK: - 辅助方法
+    
+    /// 构建并追加冲突页面项，消除 loadConflicts 中两处重复的 ConflictingPage 构造
+    private func appendConflict(_ items: inout [ConflictingPage], localPage: KnowledgePage, remotePage: KnowledgePage) {
+        items.append(ConflictingPage(id: localPage.id, title: localPage.title, localPage: localPage, remotePage: remotePage))
+    }
     
     /// 格式化修改时间显示
     /// - Parameter date: 目标日期

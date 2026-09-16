@@ -265,14 +265,30 @@ public final class NoOpPageStoreCapabilities: AnyPageStoreCapabilities, Sendable
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
     ) async throws -> KnowledgePage {
-        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+        makePageFromInput(title: title, pageType: pageType, customIcon: customIcon, content: content,
+                          tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+                          fileSize: fileSize, sourceType: sourceType)
     }
     public func anyCreatePage(
         title: String, pageType: PageType, customIcon: String?, content: String,
         tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?,
         forceDeepScan: Bool
     ) async -> KnowledgePage? {
-        KnowledgePage(title: title, pageType: pageType, customIcon: customIcon, content: content, tags: tags, sourceURL: sourceURL, rawTextSnippet: rawSnippet, fileSize: fileSize, sourceType: sourceType)
+        makePageFromInput(title: title, pageType: pageType, customIcon: customIcon, content: content,
+                          tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+                          fileSize: fileSize, sourceType: sourceType)
+    }
+
+    /// 统一构造 KnowledgePage，消除 createPage 与 anyCreatePage 间重复的
+    /// `KnowledgePage(input: CreatePageInput(...))` 构造模式。
+    private func makePageFromInput(
+        title: String, pageType: PageType, customIcon: String?, content: String,
+        tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
+    ) -> KnowledgePage {
+        KnowledgePage(input: CreatePageInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType))
     }
     public func updatePage(_ page: KnowledgePage) async throws {}
     public func anyUpdatePage(_ page: KnowledgePage, forceDeepScan: Bool) async {}

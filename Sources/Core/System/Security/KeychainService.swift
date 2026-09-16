@@ -43,14 +43,11 @@ class KeychainService: @unchecked Sendable {
         // 先删除旧项
         try? delete(key: key)
 
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: key,
+        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key).merging([
             kSecValueData as String: data,
             // VULN-012 修复：改用 WhenUnlockedThisDeviceOnly，禁止 iCloud/itunes 备份提取
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-        ]
+        ]) { _, new in new }
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
             if status == errSecMissingEntitlement {
@@ -68,13 +65,10 @@ class KeychainService: @unchecked Sendable {
     /// - Parameter key: 键名
     /// - Returns: 存储的字符串，不存在则返回 nil
     func retrieve(key: String) throws -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: key,
+        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key).merging([
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
-        ]
+        ]) { _, new in new }
 
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
@@ -104,11 +98,7 @@ class KeychainService: @unchecked Sendable {
     /// 删除敏感数据
     /// - Parameter key: 键名
     func delete(key: String) throws {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: key
-        ]
+        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
         let status = SecItemDelete(query as CFDictionary)
         #if DEBUG && !os(watchOS)
         // 在 DEBUG 模式下，无论 Keychain 删除结果如何，都同步清理 KeyStore 回退缓存

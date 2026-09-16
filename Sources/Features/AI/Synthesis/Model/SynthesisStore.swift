@@ -130,14 +130,9 @@ public final class SynthesisStore {
     public init() {
         loadSynthesisResults()
 
-        AppEventBus.shared.subscribe()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] event in
-                if case .clearAllDataRequested = event {
-                    self?.clearAll()
-                }
-            }
-            .store(in: &cancellables)
+        AppEventBus.shared.subscribeClearAllData { [weak self] in
+            self?.clearAll()
+        }.store(in: &cancellables)
     }
 
     /// 加载SynthesisResults
@@ -290,11 +285,7 @@ public final class SynthesisStore {
     public func deleteSynthesisDoc(type: SynthesisType, docID: UUID) {
         guard var docs = _synthesisResults[type] else { return }
         docs.removeAll { $0.id == docID }
-        synthesisResults[type] = docs
-        if docs.isEmpty {
-            synthesisStates[type] = .idle
-        }
-        persistResults(for: type)
+        applyResultsUpdate(type: type, docs: docs)
     }
 
     /// batch删除SynthesisDocs
@@ -305,13 +296,18 @@ public final class SynthesisStore {
             let originalCount = docs.count
             docs.removeAll { ids.contains($0.id) }
             if docs.count != originalCount {
-                synthesisResults[type] = docs
-                if docs.isEmpty {
-                    synthesisStates[type] = .idle
-                }
-                persistResults(for: type)
+                applyResultsUpdate(type: type, docs: docs)
             }
         }
+    }
+
+    /// 统一应用合成结果更新：写入 results、空则置 idle、持久化
+    private func applyResultsUpdate(type: SynthesisType, docs: [SynthesisDocument]) {
+        synthesisResults[type] = docs
+        if docs.isEmpty {
+            synthesisStates[type] = .idle
+        }
+        persistResults(for: type)
     }
 
     /// 导出SynthesisDocument
@@ -351,11 +347,8 @@ public final class SynthesisStore {
             }
         }
         
-        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
         for type in SynthesisType.allCases {
-            let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
-            keyStore?.removeObject(forKey: key)
-            UserDefaults.standard.removeObject(forKey: key)
+            removePersistedKey(for: type)
         }
     }
 
@@ -372,8 +365,7 @@ public final class SynthesisStore {
             let range = NSRange(location: 0, length: cleaned.utf16.count)
             cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: FeatureConstants.RegexTemplate.captureGroup1)
         }
-        cleaned = cleaned.replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkOpen, with: SystemConstants.MarkdownSyntax.wikiLinkOpen)
-                        .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkClose, with: SystemConstants.MarkdownSyntax.wikiLinkClose)
+        cleaned = ChatContentSanitizer.restoreWikiLinkSyntax(in: cleaned)
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
@@ -404,16 +396,28 @@ public final class SynthesisStore {
     }
     
     private func persistResults(for type: SynthesisType) {
-        let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
+        let key = storageKey(for: type)
         @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
         if let docs = _synthesisResults[type], !docs.isEmpty,
            let data = try? JSONEncoder().encode(docs) {
             keyStore?.set(data, forKey: key)
             UserDefaults.standard.set(data, forKey: key)
         } else {
-            keyStore?.removeObject(forKey: key)
-            UserDefaults.standard.removeObject(forKey: key)
+            removePersistedKey(for: type)
         }
+    }
+
+    /// 统一移除指定类型的持久化键（Keychain + UserDefaults 双写清除）
+    private func removePersistedKey(for type: SynthesisType) {
+        let key = storageKey(for: type)
+        @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
+        keyStore?.removeObject(forKey: key)
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+
+    /// 构造合成文档的持久化存储键
+    private func storageKey(for type: SynthesisType) -> String {
+        AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
     }
 }
 
@@ -426,11 +430,9 @@ public enum SynthesisStoreKey: DependencyKey {
         ServiceContainer.shared.resolveOptional(SynthesisStore.self) ?? SynthesisStore()
     }
     @MainActor
-    public static var testValue: SynthesisStore {
-        ServiceContainer.shared.resolveOptional(SynthesisStore.self) ?? SynthesisStore()
-    }
+    public static var testValue: SynthesisStore { liveValue }
     @MainActor
-    public static var previewValue: SynthesisStore { testValue }
+    public static var previewValue: SynthesisStore { liveValue }
 }
 
 extension DependencyValues {

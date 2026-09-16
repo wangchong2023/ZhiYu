@@ -140,12 +140,7 @@ struct GraphContainerView: View {
                         .accessibilityLabel(L10n.Graph.accessibility.canvasLabel)
                         .accessibilityHint(L10n.Graph.accessibility.canvasHint)
                     }
-                    .background(DesignSystem.containerBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth)
-                    )
+                    .containerCardStyle()
                     .padding(.horizontal, DesignSystem.standardPadding)
                     .padding(.bottom, DesignSystem.standardPadding)
                 }
@@ -270,10 +265,8 @@ struct GraphContainerView: View {
             viewModel.showInsights = true
         }) {
             HStack(spacing: SystemSpacing.small) {
-                Image(systemName: DesignSystem.Icons.sparkles)
-                    .font(.system(size: DesignSystem.microFontSize, weight: .bold))
-                    .foregroundStyle(.appAccent)
-                
+                chipIcon(DesignSystem.Icons.sparkles, color: .appAccent)
+
                 Text(L10n.Graph.nodesConnections(viewModel.getFilteredNodes().count, currentFilteredEdges.count))
                     .font(.system(size: DesignSystem.microFontSize, weight: .bold))
                     .foregroundStyle(.appSecondary)
@@ -283,10 +276,8 @@ struct GraphContainerView: View {
                         .font(.system(size: DesignSystem.microFontSize, weight: .regular))
                         .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
                 }
-                
-                Image(systemName: DesignSystem.Icons.forward)
-                    .font(.system(size: DesignSystem.microFontSize, weight: .bold))
-                    .foregroundStyle(.appAccent.opacity(DesignSystem.softOpacity))
+
+                chipIcon(DesignSystem.Icons.forward, color: .appAccent.opacity(DesignSystem.softOpacity))
             }
             .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
             .padding(.vertical, DesignSystem.Chip.verticalPadding)
@@ -309,8 +300,16 @@ struct GraphContainerView: View {
         .accessibilityHint(L10n.Graph.accessibility.statsBarHint)
     }
 
+    /// 统计栏芯片图标，消除 3 处重复的 Image+font+foregroundStyle 链
+    @ViewBuilder
+    private func chipIcon(_ name: String, color: Color) -> some View {
+        Image(systemName: name)
+            .font(.system(size: DesignSystem.microFontSize, weight: .bold))
+            .foregroundStyle(color)
+    }
+
     /**
-     * @description: 调用 GraphLayoutProcessor 计算知识图谱的发现与洞察信息
+     * @description: 执行洞察分析计算
      * @return {*}
      */
     private func computeInsights() {

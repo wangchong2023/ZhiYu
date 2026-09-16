@@ -110,9 +110,9 @@ final class DashboardDeepTests: XCTestCase {
         let box = MetricBox(
             title: "Total Pages",
             value: "42",
-            unit: "pages",
             icon: "doc.fill",
             color: .blue,
+            unit: "pages",
             trend: "+12%"
         )
         let hostBox = UIHostingController(rootView: box)

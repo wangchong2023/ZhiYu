@@ -12,16 +12,6 @@
 import SwiftUI
 @preconcurrency import WidgetKit
 
-private enum WidgetMetrics {
-    static let opacitySoft: Double = 0.9
-    static let opacityLight: Double = 0.1
-    static let opacitySubtle: Double = 0.05
-    static let cardCornerRadius: CGFloat = 8
-    static let darkBgTop = Color(red: 0.1, green: 0.11, blue: 0.18)
-    static let darkBgBottom = Color(red: 0.06, green: 0.07, blue: 0.12)
-    static let refreshIntervalSeconds: TimeInterval = 1800
-}
-
 // MARK: - Timeline Entry
 struct DailyInsightEntry: TimelineEntry {
     let date: Date
@@ -55,11 +45,8 @@ struct DailyInsightProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<DailyInsightEntry>) -> Void) {
         Task.detached {
             let insight = await WidgetRepository.fetchDailyInsight()
-            await MainActor.run {
-                let nextUpdate = Date().addingTimeInterval(WidgetMetrics.refreshIntervalSeconds)
-                let timeline = Timeline(entries: [DailyInsightEntry(date: Date(), insight: insight)], policy: .after(nextUpdate))
-                completion(timeline)
-            }
+            let entry = DailyInsightEntry(date: Date(), insight: insight)
+            WidgetTimelineBuilder.buildSingleTimeline(entry: entry, completion: completion)
         }
     }
 }
@@ -67,16 +54,9 @@ struct DailyInsightProvider: TimelineProvider {
 // MARK: - Widget View
 struct DailyInsightWidgetEntryView: View {
     var entry: DailyInsightProvider.Entry
-    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [WidgetMetrics.darkBgTop, WidgetMetrics.darkBgBottom],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
+        WidgetContainerBackground { family in
             switch family {
             case .systemSmall:
                 smallView
@@ -90,12 +70,11 @@ struct DailyInsightWidgetEntryView: View {
                 mediumView
             }
         }
-        .containerBackground(for: .widget) { Color.clear }
     }
 
     private var smallView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingStandard) {
+            HStack(spacing: WidgetVisualConstants.spacingCompact) {
                 Image(systemName: "sparkles")
                     .font(.caption2)
                     .foregroundStyle(WidgetSharedConstants.Color.purple)
@@ -116,7 +95,7 @@ struct DailyInsightWidgetEntryView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
         }
-        .padding(12)
+        .padding(WidgetVisualConstants.spacingWide)
     }
 
     private var mediumView: some View {
@@ -151,7 +130,7 @@ struct DailyInsightWidgetEntryView: View {
                     .foregroundStyle(WidgetSharedConstants.Color.blue)
                 Text(entry.insight.flashThoughtSummary)
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.white.opacity(WidgetMetrics.opacitySoft))
+                    .foregroundStyle(.white.opacity(WidgetVisualConstants.opacitySoft))
                     .lineLimit(1)
             }
         }
@@ -159,37 +138,26 @@ struct DailyInsightWidgetEntryView: View {
     }
 
     private var largeView: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingLarge) {
             mediumView
 
-            Divider().background(Color.white.opacity(WidgetMetrics.opacityLight))
+            Divider().background(Color.white.opacity(WidgetVisualConstants.opacityLight))
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingStandard) {
                 Text(WidgetL10n.recentUpdates)
                     .font(.caption.weight(.bold))
                     .foregroundStyle(WidgetSharedConstants.Color.purple)
 
-                HStack(spacing: 8) {
-                    Image(systemName: "brain.head.profile")
-                        .foregroundStyle(WidgetSharedConstants.Color.blue)
-                    Text(WidgetL10n.insightQuote1)
-                        .font(.caption2)
-                        .foregroundStyle(.white)
-                }
-                .padding(8)
-                .background(Color.white.opacity(WidgetMetrics.opacitySubtle))
-                .clipShape(RoundedRectangle(cornerRadius: WidgetMetrics.cardCornerRadius))
-
-                HStack(spacing: 8) {
-                    Image(systemName: "bolt.horizontal.fill")
-                        .foregroundStyle(WidgetSharedConstants.Color.orange)
-                    Text(WidgetL10n.insightQuote2)
-                        .font(.caption2)
-                        .foregroundStyle(.white)
-                }
-                .padding(8)
-                .background(Color.white.opacity(WidgetMetrics.opacitySubtle))
-                .clipShape(RoundedRectangle(cornerRadius: WidgetMetrics.cardCornerRadius))
+                WidgetInsightQuoteRow(
+                    icon: "brain.head.profile",
+                    color: WidgetSharedConstants.Color.blue,
+                    text: WidgetL10n.insightQuote1
+                )
+                WidgetInsightQuoteRow(
+                    icon: "bolt.horizontal.fill",
+                    color: WidgetSharedConstants.Color.orange,
+                    text: WidgetL10n.insightQuote2
+                )
             }
         }
         .padding(14)

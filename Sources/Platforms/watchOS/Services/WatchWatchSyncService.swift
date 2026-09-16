@@ -29,6 +29,16 @@ final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegat
     /// Factory 风格：可选依赖，DI 未就绪时为 nil
     @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
+    /// 统一封装 `#if DEBUG / mockActivationState ?? session.activationState` 模式，
+    /// 消除 sendContent / triggerPendingTransfers / requestDailyBriefing 三处重复的激活状态检查。
+    private var currentActivationState: WCSessionActivationState {
+        #if DEBUG
+        return mockActivationState ?? WCSession.default.activationState
+        #else
+        return WCSession.default.activationState
+        #endif
+    }
+    
     override init() {
         super.init()
         if WCSession.isSupported() {
@@ -41,15 +51,9 @@ final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegat
     /// 将文字笔记数据发送给配对的 iPhone 宿主
     /// - Parameter text: 待同步的文本内容
     func sendContent(_ text: String) {
-        let session = WCSession.default
-        #if DEBUG
-        let activationState = mockActivationState ?? session.activationState
-        #else
-        let activationState = session.activationState
-        #endif
-        guard activationState == .activated else { return }
+        guard currentActivationState == .activated else { return }
         let userInfo = ["type": "new_page", "content": text, "date": Date()] as [String: Any]
-        session.transferUserInfo(userInfo)
+        WCSession.default.transferUserInfo(userInfo)
     }
     
     /// 分片传输大音频数据，支持断点续传自愈 (TC-WAT-03)
@@ -85,13 +89,8 @@ final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegat
     
     /// 触发并尝试发送所有挂起的音频分片自愈任务
     func triggerPendingTransfers() {
+        guard currentActivationState == .activated else { return }
         let session = WCSession.default
-        #if DEBUG
-        let activationState = mockActivationState ?? session.activationState
-        #else
-        let activationState = session.activationState
-        #endif
-        guard activationState == .activated else { return }
         
         guard var pendingTransfers = keyStore?.object(forKey: AppConstants.Keys.Storage.watchPendingAudioTransfers) as? [String: [String: Any]] else { return }
         
@@ -138,20 +137,12 @@ final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegat
     /// 向 iOS 端请求生成语音简报
     func requestDailyBriefing() {
         isBriefingLoading = true
-        let session = WCSession.default
-        #if DEBUG
-        let activationState = mockActivationState ?? session.activationState
-        #else
-        let activationState = session.activationState
-        #endif
-        
-        guard activationState == .activated else {
+        guard currentActivationState == .activated else {
             isBriefingLoading = false
             return
         }
-        
         let userInfo = ["type": "request_briefing"] as [String: Any]
-        session.transferUserInfo(userInfo)
+        WCSession.default.transferUserInfo(userInfo)
     }
     
     /// 处理BriefingResponse
@@ -188,11 +179,9 @@ final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegat
             if type == "briefing_response", let content = contentStr {
                 self.handleBriefingResponse(content)
             } else if type == "new_page", let content = contentStr {
-                self.lastReceivedText = content
-                NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+                self.handleReceivedPageContent(content)
             } else if let content = contentStr {
-                self.lastReceivedText = content
-                NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+                self.handleReceivedPageContent(content)
             }
         }
     }

@@ -17,11 +17,7 @@ import SwiftUI
 extension PluginDetailView {
 
     var metadataSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            Text(L10n.Plugin.Detail.metadataTitle)
-                .font(.headline)
-                .foregroundStyle(.appText)
-
+        PluginDetailSectionContainer(title: L10n.Plugin.Detail.metadataTitle) {
             VStack(spacing: 0) {
                 // 版本
                 metadataRow(
@@ -74,27 +70,7 @@ extension PluginDetailView {
 
     /// 单行元数据
     func metadataRow(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.IconSize.small, alignment: .center)
-
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(.appSecondary)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-
-            Spacer()
-
-            Text(value)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.appText)
-                .multilineTextAlignment(.trailing)
-        }
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, SystemSpacing.small)
+        PluginDetailRow(icon: icon, label: label, value: value, lineLimit: 1, valueTrailing: true)
     }
 
     // MARK: - 辅助计算属性

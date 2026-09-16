@@ -288,31 +288,22 @@ struct SidebarIconRow: View {
     var body: some View {
         HStack(spacing: DesignSystem.medium) {
             // 彩色圆角图标框（与知识宇宙风格统一）
-            Image(systemName: icon)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(color)
-                .frame(width: DesignSystem.largeIconSize, height: DesignSystem.largeIconSize)
-                .background(color.opacity(DesignSystem.Opacity.subtle))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius, style: .continuous))
+            SidebarIconBox(icon: icon, color: color)
             
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.appText)
-            
-            Spacer()
+            SidebarRowTitle(title: title)
             
             // 角标：badgeFilled = true 时使用填充橙色（任务中心未读提醒）
             if badge > 0 {
-                Text("\(badge)")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(badgeFilled ? .white : color)
-                    .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-                    .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                    .background(
-                        Capsule().fill(
-                            badgeFilled ? Color.theme.orange : color.opacity(DesignSystem.subtleFillOpacity)
-                        )
-                    )
+                if badgeFilled {
+                    Text("\(badge)")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
+                        .padding(.vertical, DesignSystem.Chip.verticalPadding)
+                        .background(Capsule().fill(Color.theme.orange))
+                } else {
+                    SidebarCountBadge(count: badge, color: color)
+                }
             }
         }
         .padding(.vertical, DesignSystem.small)
@@ -327,35 +318,20 @@ struct UniverseNavRow: View {
     let count: Int
     
     var iconColor: Color {
-        colorName == "accent" ? .appAccent : Color.fromModelColorName(colorName)
+        SidebarNavigationHelper.resolveIconColor(colorName: colorName)
     }
     
     var body: some View {
         HStack(spacing: DesignSystem.medium) {
             // 彩色图标区域
-            Image(systemName: icon)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(iconColor)
-                .frame(width: DesignSystem.largeIconSize, height: DesignSystem.largeIconSize)
-                .background(iconColor.opacity(DesignSystem.Opacity.subtle))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius, style: .continuous))
+            SidebarIconBox(icon: icon, color: iconColor)
             
             // 标题
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.appText)
-            
-            Spacer()
+            SidebarRowTitle(title: title)
             
             // 数量角标
             if count > 0 {
-                Text("\(count)")
-                    .font(.caption2.weight(.bold))
-                    .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-                    .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                    .background(Color.appAccent.opacity(DesignSystem.subtleFillOpacity))
-                    .foregroundStyle(.appAccent)
-                    .clipShape(Capsule())
+                SidebarCountBadge(count: count, color: .appAccent)
             }
         }
         .padding(.vertical, DesignSystem.small)
@@ -368,29 +344,21 @@ struct SidebarTypeRow: View {
     let count: Int
     
     var body: some View {
+        let typeColor = Color.fromModelColorName(type.colorName)
         HStack(spacing: DesignSystem.medium) {
             // 彩色图标区域（匹配类型主色）
-            Image(systemName: type.icon)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.fromModelColorName(type.colorName))
-                .frame(width: DesignSystem.largeIconSize, height: DesignSystem.largeIconSize)
-                .background(Color.fromModelColorName(type.colorName).opacity(Reference.Opacity.ten)) // 0.12
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius, style: .continuous))
+            SidebarIconBox(icon: type.icon, color: typeColor, backgroundOpacity: Reference.Opacity.ten) // 0.12
             
             // 分类名称
-            Text(type.displayName)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.appText)
-            
-            Spacer()
+            SidebarRowTitle(title: type.displayName)
             
             // 数量角标（使用类型主色）
             Text("\(count)")
                 .font(.caption2.weight(.bold))
                 .padding(.horizontal, count > 9 ? DesignSystem.Chip.horizontalPadding : DesignSystem.Chip.verticalPadding)
                 .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                .background(Color.fromModelColorName(type.colorName).opacity(Reference.Opacity.fifteen)) // 0.15
-                .foregroundStyle(Color.fromModelColorName(type.colorName))
+                .background(typeColor.opacity(Reference.Opacity.fifteen)) // 0.15
+                .foregroundStyle(typeColor)
                 .clipShape(Capsule())
         }
         .padding(.vertical, DesignSystem.small)

@@ -99,8 +99,7 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         }
         // 审查修复 MED-3: 缓存读取路径同样校验 SHA256，防止缓存被篡改
         if let expectedHash = skill.remotePromptSHA256 {
-            let computedHex = SHA256.hash(data: Data(cachedContent.utf8))
-                .map { String(format: "%02x", $0) }.joined()
+            let computedHex = Self.sha256Hex(of: cachedContent)
             if computedHex != expectedHash.lowercased() {
                 // 缓存哈希不匹配，删除缓存并降级到本地模板
                 Logger.shared.error("[PromptTemplateEngine] \(skill.skillId): 缓存哈希不匹配，删除缓存并降级到本地模板")
@@ -130,8 +129,7 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
             
             // VULN-009 修复：远程 Prompt 完整性校验
             if let expectedHash = skill.remotePromptSHA256 {
-                let computedHex = SHA256.hash(data: Data(fetchedContent.utf8))
-                    .map { String(format: "%02x", $0) }.joined()
+                let computedHex = Self.sha256Hex(of: fetchedContent)
                 guard computedHex == expectedHash.lowercased() else {
                     Logger.shared.error("[PromptTemplateEngine] \(skill.skillId): 远程 Prompt 哈希不匹配，降级到本地模板 (expected: \(expectedHash.prefix(PromptConstants.PromptTemplate.hashLogPrefixLength))..., got: \(computedHex.prefix(PromptConstants.PromptTemplate.hashLogPrefixLength))...)")
                     return nil
@@ -178,5 +176,13 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         return filename
             .components(separatedBy: invalidCharacters)
             .joined(separator: SystemConstants.Character.underscore)
+    }
+
+    /// 计算字符串的 SHA256 十六进制哈希值，用于远程 Prompt 完整性校验
+    /// - Parameter string: 待校验的字符串
+    /// - Returns: 小写十六进制哈希字符串
+    private static func sha256Hex(of string: String) -> String {
+        let hash = SHA256.hash(data: Data(string.utf8))
+        return hash.compactMap { String(format: "%02x", $0) }.joined()
     }
 }

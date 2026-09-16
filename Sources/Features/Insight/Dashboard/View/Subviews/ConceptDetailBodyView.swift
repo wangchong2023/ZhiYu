@@ -49,36 +49,20 @@ struct ConceptDetailBodyView: View {
             // 3. 知识脉络树 (Outlines Tree)
             outlinesTreeSection
             
-            Divider()
-                .opacity(DesignSystem.softOpacity)
-            
-            // 4. 正文详情展示
-            DetailBodyMarkdownSection(
-                content: bodyText.isEmpty ? page.content : bodyText,
-                isPrivate: page.isPrivate,
-                onLinkTap: onLinkTap
-            )
+            DetailBodyEpilogue(page: page, bodyText: bodyText, onLinkTap: onLinkTap)
         }
-        .onAppear {
-            parseMarkdownData()
-        }
-    }
-    
-    /// 解析 Markdown 及头部元数据
-    private func parseMarkdownData() {
-        let (fmStr, bodyPart) = FrontmatterParser.split(content: page.content)
-        self.bodyText = bodyPart
-        if let fm = fmStr, let decoded = FrontmatterParser.parse(ConceptFrontmatter.self, from: fm) {
-            self.frontmatter = decoded
-        }
+        .detailBodyOnAppear(
+            content: page.content,
+            frontmatterType: ConceptFrontmatter.self,
+            bodyText: $bodyText,
+            frontmatter: $frontmatter
+        )
     }
     
     // MARK: - 1. 局部关系脑图 (Local Relation Graph)
     private var localRelationGraphSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Graph.title, systemImage: "point.3.connected.trianglepath.dotted")
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Graph.title, icon: "point.3.connected.trianglepath.dotted")
             
             ZStack {
                 // 脑图背景卡片
@@ -106,11 +90,9 @@ struct ConceptDetailBodyView: View {
                         // 1. 绘制连接线
                         Path { path in
                             for index in 0..<outgoing.count {
-                                let angle = Double(index) * (2 * Double.pi / Double(outgoing.count)) - (Double.pi / 2)
-                                let x = center.x + CGFloat(cos(angle)) * radius
-                                let y = center.y + CGFloat(sin(angle)) * radius
+                                let point = neighborNodePoint(index: index, total: outgoing.count, center: center, radius: radius)
                                 path.move(to: center)
-                                path.addLine(to: CGPoint(x: x, y: y))
+                                path.addLine(to: point)
                             }
                         }
                         .stroke(
@@ -124,10 +106,8 @@ struct ConceptDetailBodyView: View {
                         
                         // 2. 绘制周边关联词条节点 (按极坐标角度分布)
                         ForEach(Array(outgoing.enumerated()), id: \.offset) { index, link in
-                            let angle = Double(index) * (2 * Double.pi / Double(outgoing.count)) - (Double.pi / 2)
-                            let x = center.x + CGFloat(cos(angle)) * radius
-                            let y = center.y + CGFloat(sin(angle)) * radius
-                            
+                            let nodePoint = neighborNodePoint(index: index, total: outgoing.count, center: center, radius: radius)
+
                             Button(action: {
                                 onLinkTap(link)
                             }) {
@@ -149,7 +129,7 @@ struct ConceptDetailBodyView: View {
                                 )
                                 .shadow(color: Color.appText.opacity(DesignSystem.Opacity.shadow), radius: 3)
                             }
-                            .position(x: x, y: y)
+                            .position(nodePoint)
                         }
 
                         // 3. 绘制中心主题节点 (自适应长宽胶囊，防截断)
@@ -164,17 +144,11 @@ struct ConceptDetailBodyView: View {
                                     .font(.caption.weight(.bold))
                                     .lineLimit(1)
                             }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, DesignSystem.standardPadding)
-                            .padding(.vertical, DesignSystem.tightPadding)
-                            .background(
-                                LinearGradient(
-                                    colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.prominent)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                            .accentCapsuleStyle(
+                                horizontalPadding: DesignSystem.standardPadding,
+                                verticalPadding: DesignSystem.tightPadding,
+                                gradientEndOpacity: DesignSystem.Opacity.prominent
                             )
-                            .clipShape(Capsule())
                             .overlay(
                                 Capsule()
                                     .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: Self.neighborNodeBorderWidth)
@@ -192,9 +166,7 @@ struct ConceptDetailBodyView: View {
     // MARK: - 2. 认知碰撞卡 (Surprising Insights)
     private func insightsSection(_ insights: [ConceptFrontmatter.SurprisingInsight]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Dashboard.stats.citationAccuracy, systemImage: DesignSystem.Icons.sparkles)
-                .font(.subheadline.bold())
-                .foregroundStyle(Color.theme.orange)
+            InsightSectionHeader(title: L10n.Dashboard.stats.citationAccuracy, icon: DesignSystem.Icons.sparkles, color: Color.theme.orange)
             
             ForEach(insights, id: \.insightTitle) { insight in
                 VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -220,12 +192,14 @@ struct ConceptDetailBodyView: View {
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding(DesignSystem.medium)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.soft))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                        .stroke(Color.theme.orange.opacity(DesignSystem.Opacity.disabled), lineWidth: Self.neighborNodeBorderWidth)
+                .borderedCardStyle(
+                    horizontalPadding: DesignSystem.medium,
+                    verticalPadding: DesignSystem.medium,
+                    backgroundOpacity: DesignSystem.Opacity.soft,
+                    cornerRadius: DesignSystem.standardRadius,
+                    borderWidth: Self.neighborNodeBorderWidth,
+                    borderColor: Color.theme.orange,
+                    borderOpacity: DesignSystem.Opacity.disabled
                 )
             }
         }
@@ -234,9 +208,7 @@ struct ConceptDetailBodyView: View {
     // MARK: - 3. 知识脉络树 (Outlines Tree)
     private var outlinesTreeSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Editor.toc, systemImage: DesignSystem.Icons.listBulletIndent)
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Editor.toc, icon: DesignSystem.Icons.listBulletIndent)
             
             if let outlines = frontmatter?.outlines, !outlines.isEmpty {
                 // 如果 Frontmatter 解析出了层级大纲
@@ -267,9 +239,7 @@ struct ConceptDetailBodyView: View {
                         }
                     }
                 }
-                .padding()
-                .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                .insightOutlineCardStyle()
             } else {
                 // 降级兜底：扫描 Markdown 的 Header 来生成动态大纲
                 let derivedOutlines = deriveOutlinesFromMarkdown()
@@ -294,9 +264,7 @@ struct ConceptDetailBodyView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                    .insightOutlineCardStyle()
                 }
             }
         }
@@ -323,5 +291,13 @@ struct ConceptDetailBodyView: View {
             }
         }
         return list
+    }
+
+    /// 计算周边节点的极坐标位置
+    private func neighborNodePoint(index: Int, total: Int, center: CGPoint, radius: CGFloat) -> CGPoint {
+        let angle = Double(index) * (2 * Double.pi / Double(total)) - (Double.pi / 2)
+        let x = center.x + CGFloat(cos(angle)) * radius
+        let y = center.y + CGFloat(sin(angle)) * radius
+        return CGPoint(x: x, y: y)
     }
 }

@@ -16,8 +16,7 @@ import SwiftUI
 struct AISettingsView: View {
     @Environment(AppStore.self) var store
     @Environment(ThemeManager.self) var themeManager
-    @Environment(\.dismiss) var dismiss
-    
+
     @State private var selectedTab = 0
 
     var body: some View {
@@ -52,15 +51,7 @@ struct AISettingsView: View {
             }
         }
         .navigationTitle(L10n.Settings.Section.ai)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(L10n.Common.done) {
-                    dismiss()
-                }
-                .bold()
-            }
-        }
+        .doneDismissToolbar()
     }
     
     /// 获取当前设置界面的选项卡标签文本数组

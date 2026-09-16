@@ -9,6 +9,8 @@
 //  核心职责：定义 DocumentExtractionService 模块的抽象契约接口。
 //
 import Foundation
+import Dependencies
+import UFPCore
 
 /// 物理文档文本提取服务契约 (DocumentExtractionServiceProtocol)
 /// 实现此协议的底层基础设施能够读取各种后缀文件并将其还原为纯文本内容。
@@ -37,15 +39,12 @@ public enum ProcessorError: Error, Sendable {
 
 // MARK: - DependencyKey
 
-import Dependencies
-import UFPCore
-
 public enum DocumentExtractionServiceKey: DependencyKey {
     public static var liveValue: any DocumentExtractionServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any DocumentExtractionServiceProtocol).self) ?? NoOpDocumentExtractionService()
+        DIResolver.resolve((any DocumentExtractionServiceProtocol).self, fallback: NoOpDocumentExtractionService())
     }
     public static var testValue: any DocumentExtractionServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any DocumentExtractionServiceProtocol).self) ?? NoOpDocumentExtractionService()
+        DIResolver.resolve((any DocumentExtractionServiceProtocol).self, fallback: NoOpDocumentExtractionService())
     }
     public static var previewValue: any DocumentExtractionServiceProtocol { NoOpDocumentExtractionService() }
 }

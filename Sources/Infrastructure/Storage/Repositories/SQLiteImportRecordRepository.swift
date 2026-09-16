@@ -42,21 +42,15 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func updateStatus(id: String, status: String, completedAt: Date?) async throws {
-        let writer = try await dbWriter
-        try await writer.write { db in
-            guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
+        try await mutateRecord(id: id) { record in
             record.status = status
             record.completedAt = completedAt
-            try record.update(db)
         }
     }
 
     func updatePageID(id: String, pageID: String) async throws {
-        let writer = try await dbWriter
-        try await writer.write { db in
-            guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
+        try await mutateRecord(id: id) { record in
             record.pageID = pageID
-            try record.update(db)
         }
     }
 
@@ -71,19 +65,23 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     func updateRawText(id: String, rawText: String) async throws {
-        let writer = try await dbWriter
-        try await writer.write { db in
-            guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
+        try await mutateRecord(id: id) { record in
             record.rawText = rawText
-            try record.update(db)
         }
     }
 
     func updateTags(id: String, tags: String) async throws {
+        try await mutateRecord(id: id) { record in
+            record.tags = tags
+        }
+    }
+
+    /// 按 id 加载记录并应用变更闭包后更新（消除四处 fetchOne + update 样板重复）。
+    private func mutateRecord(id: String, mutate: @escaping (inout ImportRecord) -> Void) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
             guard var record = try ImportRecord.fetchOne(db, key: id) else { return }
-            record.tags = tags
+            mutate(&record)
             try record.update(db)
         }
     }

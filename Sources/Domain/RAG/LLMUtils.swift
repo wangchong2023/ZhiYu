@@ -16,8 +16,7 @@ enum LLMUtils {
     /// 解析 LLM 输出中的 JSON 字符串数组，自动剥离 Markdown 代码块。
     /// 兼容字符串数组 `["1","0"]` 和数字数组 `[1,0]`（数字会转为字符串）。
     static func parseJSONArray(_ text: String) -> [String] {
-        let cleaned = stripMarkdown(text)
-        guard let data = cleaned.data(using: .utf8) else { return [] }
+        guard let data = cleanedData(from: text) else { return [] }
         if let array = try? JSONDecoder().decode([String].self, from: data) {
             return array
         }
@@ -29,15 +28,13 @@ enum LLMUtils {
 
     /// 解析 Smart Ingest 结果
     static func parseSmartIngest(_ text: String) -> SmartIngestResult? {
-        let cleaned = stripMarkdown(text)
-        guard let data = cleaned.data(using: .utf8) else { return nil }
+        guard let data = cleanedData(from: text) else { return nil }
         return try? JSONDecoder().decode(SmartIngestResult.self, from: data)
     }
 
     /// 解析重构建议
     static func parseRefactorSuggestions(_ text: String) -> [RefactorSuggestion] {
-        let cleaned = stripMarkdown(text)
-        guard let data = cleaned.data(using: .utf8) else { return [] }
+        guard let data = cleanedData(from: text) else { return [] }
         return (try? JSONDecoder().decode([RefactorSuggestion].self, from: data)) ?? []
     }
 
@@ -59,5 +56,15 @@ enum LLMUtils {
         text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "")
             .replacingOccurrences(of: SystemConstants.MarkdownSyntax.codeFence, with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// 统一的 LLM 响应预处理辅助方法：剥离 Markdown 代码块标记并转为 Data。
+    /// 消除 parseJSONArray / parseSmartIngest / parseRefactorSuggestions 三个方法中
+    /// 重复的 `stripMarkdown` + `data(using:)` 两行代码。
+    /// - Parameter text: LLM 原始输出文本
+    /// - Returns: 清理后的 Data；清理后为空或编码失败返回 nil
+    private static func cleanedData(from text: String) -> Data? {
+        let cleaned = stripMarkdown(text)
+        return cleaned.data(using: .utf8)
     }
 }

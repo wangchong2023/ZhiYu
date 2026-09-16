@@ -129,20 +129,13 @@ actor LinkService {
         let semanticWeight = 1.0
 
         // Step 4: RRF 分数累加 — 关键词结果
-        for (index, page) in keywordResults.enumerated() {
-            scores[page.id, default: 0.0] += (1.0 / Double(k + index + 1)) * keywordWeight
-            diagMap[page.id] = (index + 1, -1)
-        }
+        accumulateRRF(keywordResults, into: &scores, diagMap: &diagMap, k: k, weight: keywordWeight, ftsRank: { $0 + 1 })
 
         // Step 5: RRF 分数累加 — 语义结果
-        for (index, page) in semanticResults.enumerated() {
-            scores[page.id, default: 0.0] += (1.0 / Double(k + index + 1)) * semanticWeight
-            let existing = diagMap[page.id] ?? (-1, -1)
-            diagMap[page.id] = (existing.fts, index + 1)
-        }
+        accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: semanticWeight, ftsRank: { _ in -1 }, vecRank: { $0 + 1 })
 
         // Step 6: 按融合分数降序排列并去重
-        let sortedIDs = scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }
+        let sortedIDs = sortedIDsByScore(scores)
         let results = sortedIDs.compactMap { id in pages.first { $0.id == id } }
 
         // Step 7: 构建诊断信息（Top-10 结果的详细排名）
@@ -199,22 +192,46 @@ actor LinkService {
     /// 同一页面出现在两路结果中时分数累加，最终按 RRF 总分降序去重。
     func rrf(keywordResults: [KnowledgePage], semanticResults: [KnowledgePage], k: Int = SearchConstants.rrfK) -> [KnowledgePage] {
         var scores: [UUID: Double] = [:]
+        var diagMap: [UUID: (fts: Int, vec: Int)] = [:]
 
         // Step 1: 关键词结果 RRF 打分
-        for (index, page) in keywordResults.enumerated() {
-            scores[page.id, default: 0] += 1.0 / Double(k + index + 1)
-        }
+        accumulateRRF(keywordResults, into: &scores, diagMap: &diagMap, k: k, weight: 1.0, ftsRank: { $0 + 1 })
 
         // Step 2: 语义结果 RRF 打分（与关键词结果累加）
-        for (index, page) in semanticResults.enumerated() {
-            scores[page.id, default: 0] += 1.0 / Double(k + index + 1)
-        }
+        accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: 1.0, ftsRank: { _ in -1 }, vecRank: { $0 + 1 })
 
         // Step 3: 按 RRF 总分降序排列，从并集中去重映射回 KnowledgePage
-        let sortedIDs = scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }
+        let sortedIDs = sortedIDsByScore(scores)
 
         let allCandidates = Set(keywordResults + semanticResults)
         return sortedIDs.compactMap { id in allCandidates.first { $0.id == id } }
+    }
+
+    /// RRF 分数累加辅助方法 — 消除 hybridSearchWithDiagnostics 与 rrf 之间的重复打分循环。
+    /// - Parameters:
+    ///   - results: 当前路检索结果（关键词或语义）
+    ///   - scores: RRF 总分字典（in-out 累加）
+    ///   - diagMap: 诊断排名字典（in-out 更新）
+    ///   - k: RRF 平滑常数
+    ///   - weight: 当前路结果的权重系数
+    ///   - ftsRank: 由索引计算 FTS 排名的闭包（关键词路传 `{ $0 + 1 }`，语义路传 `{ _ in -1 }`）
+    ///   - vecRank: 由索引计算向量排名的闭包（语义路传 `{ $0 + 1 }`，关键词路默认 nil 不更新）
+    private func accumulateRRF(
+        _ results: [KnowledgePage],
+        into scores: inout [UUID: Double],
+        diagMap: inout [UUID: (fts: Int, vec: Int)],
+        k: Int,
+        weight: Double,
+        ftsRank: (Int) -> Int,
+        vecRank: ((Int) -> Int)? = nil
+    ) {
+        for (index, page) in results.enumerated() {
+            scores[page.id, default: 0.0] += (1.0 / Double(k + index + 1)) * weight
+            let existing = diagMap[page.id] ?? (-1, -1)
+            let newFts = ftsRank(index)
+            let newVec = vecRank?(index) ?? existing.vec
+            diagMap[page.id] = (newFts == -1 ? existing.fts : newFts, newVec)
+        }
     }
 
     /**
@@ -222,6 +239,12 @@ actor LinkService {
      * @param {[KnowledgePage]} pages 页面全集
      * @return {[(tag: String, count: Int)]} 标签元组数组
      */
+
+    /// 按 RRF 总分降序排列 UUID，消除 `hybridSearchWithDiagnostics` 与 `rrf` 中重复的
+    /// `scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }` 模式。
+    private func sortedIDsByScore(_ scores: [UUID: Double]) -> [UUID] {
+        scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }
+    }
 
     /// allTags
     /// - Returns: 列表

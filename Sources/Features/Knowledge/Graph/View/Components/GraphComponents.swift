@@ -248,98 +248,103 @@ struct GraphZoomControls: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            Button(action: {
+            zoomButton(
+                icon: DesignSystem.Icons.minusMagnifyingglass,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.zoomOut,
+                accessibilityLabel: L10n.Graph.accessibility.zoomOutLabel,
+                accessibilityHint: L10n.Graph.accessibility.zoomOutHint
+            ) {
                 withAnimation { scale = max(0.5, scale - 0.2) }
                 lastScale = scale
-            }) {
-                Image(systemName: DesignSystem.Icons.minusMagnifyingglass)
-                    .font(.body)
-                    .foregroundStyle(.appSecondary)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(Color.appCard)
             }
-            .accessibilityIdentifier("zoom-out")
-            .accessibilityLabel(L10n.Graph.accessibility.zoomOutLabel)
-            .accessibilityHint(L10n.Graph.accessibility.zoomOutHint)
 
-            Button(action: {
+            zoomButton(
+                icon: DesignSystem.Icons.plusMagnifyingglass,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.zoomIn,
+                accessibilityLabel: L10n.Graph.accessibility.zoomInLabel,
+                accessibilityHint: L10n.Graph.accessibility.zoomInHint
+            ) {
                 withAnimation { scale = min(3.0, scale + 0.2) }
                 lastScale = scale
-            }) {
-                Image(systemName: DesignSystem.Icons.plusMagnifyingglass)
-                    .font(.body)
-                    .foregroundStyle(.appSecondary)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(Color.appCard)
             }
-            .accessibilityIdentifier("zoom-in")
-            .accessibilityLabel(L10n.Graph.accessibility.zoomInLabel)
-            .accessibilityHint(L10n.Graph.accessibility.zoomInHint)
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
-            Button(action: {
+            zoomButton(
+                icon: DesignSystem.Icons.scope,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.reset,
+                accessibilityLabel: L10n.Graph.accessibility.resetLabel,
+                accessibilityHint: L10n.Graph.accessibility.resetHint
+            ) {
                 withAnimation {
                     scale = 1.0
                     lastScale = 1.0
                     offset = .zero
                     lastOffset = .zero
                 }
-            }) {
-                Image(systemName: DesignSystem.Icons.scope)
-                    .font(.body)
-                    .foregroundStyle(.appSecondary)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(Color.appCard)
             }
-            .accessibilityIdentifier("reset")
-            .accessibilityLabel(L10n.Graph.accessibility.resetLabel)
-            .accessibilityHint(L10n.Graph.accessibility.resetHint)
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
-            Button(action: {
+            zoomButton(
+                icon: DesignSystem.Icons.viewfinder,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.fitToScreen,
+                accessibilityLabel: L10n.Graph.accessibility.fitToScreenLabel,
+                accessibilityHint: L10n.Graph.accessibility.fitToScreenHint
+            ) {
                 withAnimation(.spring(response: 0.5)) { onFitToScreen() }
-            }) {
-                Image(systemName: DesignSystem.Icons.viewfinder)
-                    .font(.body)
-                    .foregroundStyle(.appSecondary)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(Color.appCard)
             }
-            .accessibilityIdentifier("fit-to-screen")
-            .accessibilityLabel(L10n.Graph.accessibility.fitToScreenLabel)
-            .accessibilityHint(L10n.Graph.accessibility.fitToScreenHint)
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
-            Button(action: {
+            zoomButton(
+                icon: DesignSystem.Icons.refresh,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.relayout,
+                accessibilityLabel: L10n.Graph.accessibility.relayoutLabel,
+                accessibilityHint: L10n.Graph.accessibility.relayoutHint
+            ) {
                 withAnimation(.spring(response: 0.6)) { onRelayout() }
-            }) {
-                Image(systemName: DesignSystem.Icons.refresh)
-                    .font(.body)
-                    .foregroundStyle(.appSecondary)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(Color.appCard)
             }
-            .accessibilityIdentifier("relayout")
-            .accessibilityLabel(L10n.Graph.accessibility.relayoutLabel)
-            .accessibilityHint(L10n.Graph.accessibility.relayoutHint)
 
-            Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+            zoomDivider()
 
-            Button(action: { show3D = true }) {
-                Image(systemName: DesignSystem.Icons.view3d)
-                    .font(.body)
-                    .foregroundStyle(.appSecondary)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(Color.appCard)
+            zoomButton(
+                icon: DesignSystem.Icons.view3d,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3d,
+                accessibilityLabel: L10n.Graph.accessibility.threeDLabel,
+                accessibilityHint: L10n.Graph.accessibility.threeDHint
+            ) {
+                show3D = true
             }
-            .accessibilityIdentifier("graph-3d")
-            .accessibilityLabel(L10n.Graph.accessibility.threeDLabel)
-            .accessibilityHint(L10n.Graph.accessibility.threeDHint)
         }
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
         .shadow(color: .black.opacity(DesignSystem.Opacity.ghost), radius: 5, y: 2)
+    }
+
+    /// 缩放控件分隔线，消除 4 处重复的 Divider().frame().background() 链
+    @ViewBuilder
+    private func zoomDivider() -> some View {
+        Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+    }
+
+    /// 缩放控制按钮，消除 6 处重复的 Image+frame+background 链
+    @ViewBuilder
+    private func zoomButton(
+        icon: String,
+        accessibilityID: String,
+        accessibilityLabel: String,
+        accessibilityHint: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(.appSecondary)
+                .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
+                .background(Color.appCard)
+        }
+        .accessibilityIdentifier(accessibilityID)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(accessibilityHint)
     }
 }

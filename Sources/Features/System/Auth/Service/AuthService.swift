@@ -135,19 +135,14 @@ public final class AuthService: AuthServiceProtocol {
         if isMockBackend {
             // Mock 模式：直接更新本地缓存，不调用网络
             if let user = AuthSession.shared.currentUser {
-                let updated = User(
-                    id: user.id,
+                let updated = updatedUser(
+                    from: user,
                     name: nickname,
                     email: user.email,
                     phone: user.phone,
-                    avatarURL: avatar.flatMap { URL(string: $0) } ?? user.avatarURL,
-                    planKey: user.planKey,
-                    maxVaults: user.maxVaults,
-                    maxPages: user.maxPages,
-                    maxPlugins: user.maxPlugins,
-                    features: user.features,
-                    gender: gender ?? user.gender,
-                    birthday: birthday ?? user.birthday
+                    avatarURL: avatar.flatMap { URL(string: $0) },
+                    gender: gender,
+                    birthday: birthday
                 )
                 AuthSession.shared.update(user: updated)
                 return true
@@ -175,18 +170,14 @@ public final class AuthService: AuthServiceProtocol {
             
             // 更新本地用户信息
             if let user = AuthSession.shared.currentUser {
-                let updated = User(
-                    id: user.id,
+                let updated = updatedUser(
+                    from: user,
                     name: response.nick,
                     email: response.email ?? user.email,
                     phone: response.mobile ?? user.phone,
-                    avatarURL: response.avatar.flatMap { URL(string: $0) } ?? user.avatarURL,
-                    planKey: user.planKey,
-                    maxVaults: user.maxVaults,
-                    maxPages: user.maxPages,
-                    maxPlugins: user.maxPlugins,
-                    gender: response.gender ?? user.gender,
-                    birthday: response.birthday ?? user.birthday
+                    avatarURL: response.avatar.flatMap { URL(string: $0) },
+                    gender: response.gender,
+                    birthday: response.birthday
                 )
                 AuthSession.shared.update(user: updated)
             }
@@ -279,6 +270,32 @@ public final class AuthService: AuthServiceProtocol {
             Logger.shared.error("[AuthService] 验证苹果支付凭证失败: ", error: error)
             return false
         }
+    }
+
+    /// 基于现有用户构造更新后的 User，保留 planKey/maxVaults/maxPages/maxPlugins/gender/birthday 等不变字段
+    private func updatedUser(
+        from user: User,
+        name: String,
+        email: String?,
+        phone: String?,
+        avatarURL: URL?,
+        gender: Int?,
+        birthday: String?
+    ) -> User {
+        User(
+            id: user.id,
+            name: name,
+            email: email ?? user.email,
+            phone: phone,
+            avatarURL: avatarURL ?? user.avatarURL,
+            planKey: user.planKey,
+            maxVaults: user.maxVaults,
+            maxPages: user.maxPages,
+            maxPlugins: user.maxPlugins,
+            features: user.features,
+            gender: gender ?? user.gender,
+            birthday: birthday ?? user.birthday
+        )
     }
 }
 

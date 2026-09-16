@@ -129,11 +129,9 @@ enum WorkflowServiceKey: DependencyKey {
         ServiceContainer.shared.resolveOptional(WorkflowService.self) ?? WorkflowService()
     }
     @MainActor
-    static var testValue: WorkflowService {
-        ServiceContainer.shared.resolveOptional(WorkflowService.self) ?? WorkflowService()
-    }
+    static var testValue: WorkflowService { liveValue }
     @MainActor
-    static var previewValue: WorkflowService { testValue }
+    static var previewValue: WorkflowService { liveValue }
 }
 
 extension DependencyValues {

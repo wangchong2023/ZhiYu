@@ -202,27 +202,21 @@ extension ModelLabView {
                         confidenceRow(name: item.name, score: item.score, color: parseColor(from: item.colorName))
                     }
                 }
-                .padding(DesignSystem.small)
-                .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
-                .cornerRadius(SystemRadius.small)
+                .traceContainerStyle()
             } else if useCase == .audioScribe {
                 VStack(alignment: .leading, spacing: SystemSpacing.element) {
                     ForEach(labManager.traceSteps) { item in
                         transcriptionSegment(time: item.title, text: item.desc, color: parseColor(from: item.colorName))
                     }
                 }
-                .padding(DesignSystem.small)
-                .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
-                .cornerRadius(SystemRadius.small)
+                .traceContainerStyle()
             } else {
                 VStack(alignment: .leading, spacing: SystemSpacing.element) {
                     ForEach(labManager.traceSteps) { item in
                         traceStepRow(title: item.title, desc: item.desc, icon: item.icon, color: parseColor(from: item.colorName))
                     }
                 }
-                .padding(DesignSystem.small)
-                .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
-                .cornerRadius(SystemRadius.small)
+                .traceContainerStyle()
             }
         }
     }
@@ -256,14 +250,18 @@ extension ModelLabView {
             .frame(height: ComponentSpacing.chartHeight)
             .padding(ComponentSpacing.section)
             .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .cornerRadius(SystemRadius.small)
-            .overlay(
-                RoundedRectangle(cornerRadius: SystemRadius.small)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
-            )
+            .smallCardBorder()
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .cornerRadius(DesignSystem.mediumRadius)
+        .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium)
+    }
+}
+
+/// 追踪容器样式修饰符，消除 askImage/audioScribe/default 分支的重复
+private extension View {
+    func traceContainerStyle() -> some View {
+        self
+            .padding(DesignSystem.small)
+            .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
+            .cornerRadius(SystemRadius.small)
     }
 }

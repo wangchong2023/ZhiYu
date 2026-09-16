@@ -20,7 +20,7 @@ public struct SlidesSynthesisStrategy: SynthesisStrategyProtocol {
         if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
             return SynthesisProcessor.formatSlidesIfNeeded(cleaned, fallbackTitle: L10n.AI.Prompt.Expert.Slides.title)
         }
-        Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InsufficientBytes")
+        Logger.shared.addLog(action: .ingest, target: type.title, details: ProcessorConstants.Synthesis.selfHealReasonInsufficientBytes)
         return generateFallback(from: sourceContent, title: L10n.AI.Prompt.Expert.Slides.title)
     }
 

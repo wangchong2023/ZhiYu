@@ -21,7 +21,6 @@ private enum SystemStatsConstants {
 /// [L3] 表现层：资源监控视图 (原资源监控)
 /// 提供 AI 资源消耗、存储空间分布及数据溯源的多维度监控。
 struct SystemStatsView: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(ThemeManager.self) var themeManager
     
     // 使用协调器管理状态与交互
@@ -89,15 +88,7 @@ struct SystemStatsView: View {
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .navigationTitle(L10n.Dashboard.stats.navigationTitleMonitor)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(L10n.Common.done) {
-                    dismiss()
-                }
-                .bold()
-            }
-        }
+        .doneDismissToolbar()
         .task {
             await coordinator.loadStats()
         }
@@ -108,40 +99,20 @@ struct SystemStatsView: View {
     private var performanceSection: some View {
         Group {
             // 1. API 请求卡片
-            StandardSection(title: L10n.Dashboard.apiRequests + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
-                VStack(alignment: .leading, spacing: Spacing.tiny) {
-                    HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
-                        Text("\(coordinator.dailyStats.reduce(0) { $0 + $1.requests })")
-                            .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
-                            .foregroundStyle(.appText)
-                        Text(L10n.Dashboard.stats.requestsUsage)
-                            .font(.caption)
-                            .foregroundStyle(.appSecondary)
-                    }
-                    
-                    ChartView(stats: coordinator.dailyStats, type: .requests)
-                        .frame(height: ComponentSpacing.chartHeight)
-                }
-                .padding(Spacing.medium)
-            }
-            
+            statsChartSection(
+                title: L10n.Dashboard.apiRequests + " (\(L10n.Dashboard.stats.rangeThirtyDays))",
+                totalValue: coordinator.dailyStats.reduce(0) { $0 + $1.requests },
+                valueLabel: L10n.Dashboard.stats.requestsUsage,
+                chartType: .requests
+            )
+
             // 2. Token 消耗卡片
-            StandardSection(title: L10n.Dashboard.stats.tokensUsage + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
-                VStack(alignment: .leading, spacing: Spacing.tiny) {
-                    HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
-                        Text("\(coordinator.dailyStats.reduce(0) { $0 + $1.tokens })")
-                            .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
-                            .foregroundStyle(.appText)
-                        Text(L10n.Dashboard.tokens)
-                            .font(.caption)
-                            .foregroundStyle(.appSecondary)
-                    }
-                    
-                    ChartView(stats: coordinator.dailyStats, type: .tokens)
-                        .frame(height: ComponentSpacing.chartHeight)
-                }
-                .padding(Spacing.medium)
-            }
+            statsChartSection(
+                title: L10n.Dashboard.stats.tokensUsage + " (\(L10n.Dashboard.stats.rangeThirtyDays))",
+                totalValue: coordinator.dailyStats.reduce(0) { $0 + $1.tokens },
+                valueLabel: L10n.Dashboard.tokens,
+                chartType: .tokens
+            )
             
             // 3. 响应时延卡片
             StandardSection(title: L10n.Dashboard.stats.latencyTitle + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
@@ -257,9 +228,7 @@ struct SystemStatsView: View {
                                 
                                 if coordinator.totalStorage > 0 {
                                     let percent = Int(Double(category.value) / Double(coordinator.totalStorage) * Double(FeatureConstants.PercentageBase.fullInt))
-                                    Text("\(percent)%")
-                                        .font(.system(size: DesignSystem.microFontSize, design: .rounded))
-                                        .foregroundStyle(.appSecondary)
+                                    percentText(percent)
                                 }
                             }
                         }
@@ -325,9 +294,7 @@ struct SystemStatsView: View {
                                 // 计算所占总数据库大小的百分比
                                 let dbTotal = coordinator.storageCategories.first { $0.label == L10n.Dashboard.System.database }?.value ?? 1
                                 let percent = Int(Double(item.size) / Double(max(1, dbTotal)) * Double(FeatureConstants.PercentageBase.fullInt))
-                                Text("\(percent)%")
-                                    .font(.system(size: DesignSystem.microFontSize, design: .rounded))
-                                    .foregroundStyle(.appSecondary)
+                                percentText(percent)
                             }
                         }
                         .appListRowStyle(showDivider: !isLast)
@@ -480,5 +447,44 @@ struct SystemStatsView: View {
             RoundedRectangle(cornerRadius: SystemRadius.small)
                 .stroke(color.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
         )
+    }
+
+    /// 百分比文本，消除存储分类与数据库条目的重复
+    private func percentText(_ percent: Int) -> some View {
+        Text("\(percent)%")
+            .font(.system(size: DesignSystem.microFontSize, design: .rounded))
+            .foregroundStyle(.appSecondary)
+    }
+
+    /// 统计卡片标题行，消除 API 请求与 Token 消耗卡片的重复
+    private func statsCardHeader(value: String, label: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
+            Text(value)
+                .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
+                .foregroundStyle(.appText)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.appSecondary)
+        }
+    }
+
+    /// 统计图表卡片，消除 API 请求与 Token 消耗卡片的重复结构
+    private func statsChartSection(
+        title: String,
+        totalValue: Int,
+        valueLabel: String,
+        chartType: ChartView.ChartType
+    ) -> some View {
+        StandardSection(title: title) {
+            VStack(alignment: .leading, spacing: Spacing.tiny) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
+                    statsCardHeader(value: "\(totalValue)", label: valueLabel)
+                }
+
+                ChartView(stats: coordinator.dailyStats, type: chartType)
+                    .frame(height: ComponentSpacing.chartHeight)
+            }
+            .padding(Spacing.medium)
+        }
     }
 }

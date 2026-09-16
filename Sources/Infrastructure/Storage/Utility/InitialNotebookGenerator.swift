@@ -86,25 +86,38 @@ struct InitialNotebookGenerator {
 
     // MARK: - 公开生成接口
 
+    /// 三类导入目录（file/ocr/voice）。
+    private struct ImportFolders {
+        let file: URL?
+        let ocr: URL?
+        let voice: URL?
+    }
+
+    /// 解析三类导入目录（file/ocr/voice），消除 generate 与 generateResearchNotebook 的重复调用。
+    private static func resolveImportFolders() async -> ImportFolders {
+        async let fileFolder = resolveImportsFolder(for: .file)
+        async let ocrFolder = resolveImportsFolder(for: .ocr)
+        async let voiceFolder = resolveImportsFolder(for: .voice)
+        return await ImportFolders(file: fileFolder, ocr: ocrFolder, voice: voiceFolder)
+    }
+
     /// 执行默认 PKM（个人知识管理）演示数据生成
     /// - Parameter store: 目标存储对象
     /// - Returns: 生成的页面数量
     static func generate(in store: any AnyPageStore) async throws -> Int {
         Logger.shared.info("InitialNotebook_Starting")
-        let fileFolder = await resolveImportsFolder(for: .file)
-        let ocrFolder = await resolveImportsFolder(for: .ocr)
-        let voiceFolder = await resolveImportsFolder(for: .voice)
-        
+        let folders = await resolveImportFolders()
+
         // 动态根据当前本地化语言，决定去 Bundle 寻找的物理文件名（中文版使用中文物理文件名，英文版使用英文物理文件名）
-        let methodologyURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.methodology, localName: L10n.InitialNotebook.FileNames.methodology, in: fileFolder,
+        let methodologyURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.methodology, localName: L10n.InitialNotebook.FileNames.methodology, in: folders.file,
             fallback: L10n.InitialNotebook.Fallback.methodology)
-        let workflowURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.workflow, localName: L10n.InitialNotebook.FileNames.workflow, in: fileFolder,
+        let workflowURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.workflow, localName: L10n.InitialNotebook.FileNames.workflow, in: folders.file,
             fallback: L10n.InitialNotebook.Fallback.workflow)
-        let ocrFolderURL = resolveFileURL(bundleName: StorageConstants.BundleResource.ocrFolderScan, localName: L10n.InitialNotebook.FileNames.ocrFolderScan, in: ocrFolder,
+        let ocrFolderURL = resolveFileURL(bundleName: StorageConstants.BundleResource.ocrFolderScan, localName: L10n.InitialNotebook.FileNames.ocrFolderScan, in: folders.ocr,
             fallback: "")
-        let voiceForgetURL = resolveFileURL(bundleName: "voice_note_forgetting_curve.mp3", localName: L10n.InitialNotebook.FileNames.voiceNoteForget, in: voiceFolder,
+        let voiceForgetURL = resolveFileURL(bundleName: "voice_note_forgetting_curve.mp3", localName: L10n.InitialNotebook.FileNames.voiceNoteForget, in: folders.voice,
             fallback: "")
-        
+
         let seeds = buildPKMPageSeeds(
             methodologyURL: methodologyURL,
             workflowURL: workflowURL,
@@ -123,20 +136,18 @@ struct InitialNotebookGenerator {
     /// - Returns: 生成的页面数量
     static func generateResearchNotebook(in store: any AnyPageStore) async throws -> Int {
         Logger.shared.info("ResearchInitialNotebook_Starting")
-        let fileFolder = await resolveImportsFolder(for: .file)
-        let ocrFolder = await resolveImportsFolder(for: .ocr)
-        let voiceFolder = await resolveImportsFolder(for: .voice)
-        
+        let folders = await resolveImportFolders()
+
         // 动态根据当前本地化语言，决定去 Bundle 寻找的物理文件名（中文版使用中文物理文件名，英文版使用英文物理文件名）
-        let luckinURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.luckin, localName: L10n.InitialNotebook.FileNames.luckin, in: fileFolder,
+        let luckinURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.luckin, localName: L10n.InitialNotebook.FileNames.luckin, in: folders.file,
             fallback: L10n.InitialNotebook.Fallback.luckin)
-        let surveyURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.survey, localName: L10n.InitialNotebook.FileNames.survey, in: fileFolder,
+        let surveyURL = resolveFileURL(bundleName: L10n.InitialNotebook.FileNames.survey, localName: L10n.InitialNotebook.FileNames.survey, in: folders.file,
             fallback: L10n.InitialNotebook.Fallback.survey)
-        let ocrStoreURL = resolveFileURL(bundleName: StorageConstants.BundleResource.ocrStoreManual, localName: L10n.InitialNotebook.FileNames.ocrStoreManual, in: ocrFolder,
+        let ocrStoreURL = resolveFileURL(bundleName: StorageConstants.BundleResource.ocrStoreManual, localName: L10n.InitialNotebook.FileNames.ocrStoreManual, in: folders.ocr,
             fallback: "")
-        let voiceProcureURL = resolveFileURL(bundleName: StorageConstants.BundleResource.voiceNoteProcurement, localName: L10n.InitialNotebook.FileNames.voiceNoteProcure, in: voiceFolder,
+        let voiceProcureURL = resolveFileURL(bundleName: StorageConstants.BundleResource.voiceNoteProcurement, localName: L10n.InitialNotebook.FileNames.voiceNoteProcure, in: folders.voice,
             fallback: "")
-        
+
         let seeds = buildResearchPageSeeds(
             luckinURL: luckinURL,
             surveyURL: surveyURL,
@@ -206,24 +217,13 @@ struct InitialNotebookGenerator {
 
     // MARK: - 私有辅助方法：文件路径解析
 
-    private static func getCategoryDirName(for category: ImportCategory) -> String {
-        switch category {
-        case .file: return "document"
-        case .voice: return "audio"
-        case .ocr: return "ocr"
-        case .link: return "web"
-        case .clipboard: return "clipboard"
-        case .manual: return "manual"
-        }
-    }
-
     /// 解析当前笔记本沙盒目录下的 raw/{笔记本英文名}/{Category} 文件夹路径
     /// 必须在 MainActor 上执行，以安全访问 DatabaseManager
     private static func resolveImportsFolder(for category: ImportCategory) async -> URL? {
         await MainActor.run {
             if let dbURL = DatabaseManager.shared.dbURL {
                 let fm = FileManager.default
-                let categoryDirName = getCategoryDirName(for: category)
+                let categoryDirName = category.directoryName
                 
                 // 从 UserDefaults 读取当前活跃笔记本英文名，作为 raw 隔离目录结构一部分
                 let englishName = UserDefaults.standard.string(forKey: "vaultSelectedEnglishName") ?? "fallback"
@@ -531,30 +531,27 @@ struct InitialNotebookGenerator {
 
     /// 注入 PKM 演示集的模拟 AI 调用日志（50 条，近 30天随机分布）
     private static func injectPKMMockLogs(db: Database) throws {
-        let calendar = Calendar.current
-        for _ in 0..<pkmLogCount {
-            let model = demoModelName
-            let prompt = Int.random(in: minPromptTokens...maxPromptTokens)
-            let completion = Int.random(in: minCompletionTokens...maxCompletionTokens)
-            let latency = Int.random(in: minLatencyMS...maxLatencyMS)
-            guard let date = calendar.date(byAdding: .hour, value: -Int.random(in: 1...pkmMaxHoursAgo), to: Date()) else { continue }
-            var log = LLMCallLog(model: model, promptTokens: prompt, completionTokens: completion,
-                                 latencyMS: latency, status: StorageConstants.OperationStatus.success, createdAt: date)
-            try log.insert(db)
-            var usage = TokenUsage(model: model, promptTokens: prompt, completionTokens: completion, createdAt: date)
-            try usage.insert(db)
-        }
+        try injectMockLogs(db: db, count: pkmLogCount, maxHoursAgo: pkmMaxHoursAgo)
     }
 
     /// 注入调研演示集的模拟 AI 调用日志（30 条，近 12 天随机分布）
     private static func injectResearchMockLogs(db: Database) throws {
+        try injectMockLogs(db: db, count: researchLogCount, maxHoursAgo: researchMaxHoursAgo)
+    }
+
+    /// 批量注入模拟 AI 调用日志与 Token 用量记录。
+    /// - Parameters:
+    ///   - db: 当前数据库连接
+    ///   - count: 注入条数
+    ///   - maxHoursAgo: 随机时间窗口上限（小时）
+    private static func injectMockLogs(db: Database, count: Int, maxHoursAgo: Int) throws {
         let calendar = Calendar.current
-        for _ in 0..<researchLogCount {
+        for _ in 0..<count {
             let model = demoModelName
             let prompt = Int.random(in: minPromptTokens...maxPromptTokens)
             let completion = Int.random(in: minCompletionTokens...maxCompletionTokens)
             let latency = Int.random(in: minLatencyMS...maxLatencyMS)
-            guard let date = calendar.date(byAdding: .hour, value: -Int.random(in: 1...researchMaxHoursAgo), to: Date()) else { continue }
+            guard let date = calendar.date(byAdding: .hour, value: -Int.random(in: 1...maxHoursAgo), to: Date()) else { continue }
             var log = LLMCallLog(model: model, promptTokens: prompt, completionTokens: completion,
                                  latencyMS: latency, status: StorageConstants.OperationStatus.success, createdAt: date)
             try log.insert(db)

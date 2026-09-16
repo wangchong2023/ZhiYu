@@ -28,6 +28,30 @@ public protocol BiometricAuthProviderProtocol: Sendable {
     func evaluatePolicy(context: LAContext, reason: String) async -> Bool
 }
 
+// MARK: - 生物识别默认实现
+
+extension BiometricAuthProviderProtocol {
+
+    /// 默认实现：基于 `authenticationPolicy` 检查生物识别可用性。
+    /// 消除 AppleBiometricAuthProvider / WatchBiometricAuthProvider / MacOSBiometricAuthProvider
+    /// 中重复的 `context.canEvaluatePolicy(authenticationPolicy, error: &error)` 模式。
+    public func canEvaluatePolicy(context: LAContext) -> Bool {
+        var error: NSError?
+        return context.canEvaluatePolicy(authenticationPolicy, error: &error)
+    }
+
+    /// 默认实现：基于 `authenticationPolicy` 执行生物识别鉴权。
+    /// 消除 AppleBiometricAuthProvider / WatchBiometricAuthProvider / MacOSBiometricAuthProvider
+    /// 中重复的 `withCheckedContinuation + context.evaluatePolicy` 模式。
+    public func evaluatePolicy(context: LAContext, reason: String) async -> Bool {
+        await withCheckedContinuation { continuation in
+            context.evaluatePolicy(authenticationPolicy, localizedReason: reason) { success, _ in
+                continuation.resume(returning: success)
+            }
+        }
+    }
+}
+
 // MARK: - 模型编译能力
 
 /// 机器学习模型编译器协议

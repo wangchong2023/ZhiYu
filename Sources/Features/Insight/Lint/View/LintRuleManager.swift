@@ -28,12 +28,10 @@ struct LintAISuggestionsPanel: View {
                             ForEach(aiStore.refactorSuggestions) { suggestion in
                                 RefactorSuggestionRow(suggestion: suggestion)
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button(role: .destructive) {
+                                        ignoreSwipeAction {
                                             withAnimation {
                                                 aiStore.removeRefactorSuggestion(id: suggestion.id)
                                             }
-                                        } label: {
-                                            Label(L10n.Common.ignore, systemImage: DesignSystem.Icons.privacyMode)
                                         }
                                     }
                             }
@@ -45,12 +43,10 @@ struct LintAISuggestionsPanel: View {
                             ForEach(aiStore.potentialLinks) { link in
                                 PotentialLinkRow(link: link)
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button(role: .destructive) {
+                                        ignoreSwipeAction {
                                             withAnimation {
                                                 aiStore.removePotentialLink(id: link.id)
                                             }
-                                        } label: {
-                                            Label(L10n.Common.ignore, systemImage: DesignSystem.Icons.privacyMode)
                                         }
                                     }
                             }
@@ -60,6 +56,14 @@ struct LintAISuggestionsPanel: View {
                 .adaptiveListStyle()
                 .scrollContentBackground(.hidden)
             }
+        }
+    }
+
+    /// 忽略建议的滑动操作按钮（destructive 样式 + ignore 标签）
+    @ViewBuilder
+    private func ignoreSwipeAction(perform action: @escaping () -> Void) -> some View {
+        Button(role: .destructive, action: action) {
+            Label(L10n.Common.ignore, systemImage: DesignSystem.Icons.privacyMode)
         }
     }
 

@@ -12,7 +12,9 @@ import Dependencies
 
 /// 第三方 OAuth 登录面板
 struct AuthOAuthPanel: View {
+    #if !DEBUG
     @Dependency(\.toastService) private var toastManager
+    #endif
     @Environment(AuthService.self) var authService
     @Binding var isLoading: Bool
     @Binding var isAgreementChecked: Bool

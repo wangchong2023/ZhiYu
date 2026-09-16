@@ -20,30 +20,14 @@ private enum WatchPlatformErrorSpec {
 
 // MARK: - 生物识别
 
-/// watchOS 平台的鉴权提供者（使用设备密码）
+/// watchOS 平台的鉴权提供者（使用设备密码）。
+/// `canEvaluatePolicy` / `evaluatePolicy` 复用 BiometricAuthProviderProtocol 默认实现，
+/// 仅 `authenticationPolicy` 不同（`.deviceOwnerAuthentication` 而非生物识别）。
 @MainActor
 struct WatchBiometricAuthProvider: BiometricAuthProviderProtocol {
     var authenticationPolicy: LAPolicy { .deviceOwnerAuthentication }
-    
-    /// can评估Policy
-    /// - Parameter context: context
-    /// - Returns: 是否成功
-    func canEvaluatePolicy(context: LAContext) -> Bool {
-        var error: NSError?
-        return context.canEvaluatePolicy(authenticationPolicy, error: &error)
-    }
-    
-    /// 评估Policy
-    /// - Parameter context: context
-    /// - Parameter reason: reason
-    /// - Returns: 是否成功
-    func evaluatePolicy(context: LAContext, reason: String) async -> Bool {
-        return await withCheckedContinuation { continuation in
-            context.evaluatePolicy(authenticationPolicy, localizedReason: reason) { success, _ in
-                continuation.resume(returning: success)
-            }
-        }
-    }
+
+    init() {}
 }
 
 // MARK: - 模型编译

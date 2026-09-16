@@ -75,21 +75,23 @@ struct PageDetailMetadataSection: View {
                     
                     VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
                         if page.isLocalFileSource {
-                            Text("\(L10n.Knowledge.Page.Source.localFile): \(page.displaySourceName)")
-                                .font(.caption2)
-                                .foregroundStyle(.appSecondary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
+                            sourceInfoText("\(L10n.Knowledge.Page.Source.localFile): \(page.displaySourceName)")
                         } else {
-                            Text(sourceURL)
-                                .font(.caption2)
-                                .foregroundStyle(.appSecondary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
+                            sourceInfoText(sourceURL)
                         }
                         
                         if let snippet = page.rawTextSnippet, !snippet.isEmpty {
-                            Text(snippet).font(.caption).foregroundStyle(.appSecondary).padding(DesignSystem.small).frame(maxWidth: .infinity, alignment: .leading).background(Color.appCard).clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius)).lineLimit(3)
+                            Text(snippet)
+                                .font(.caption)
+                                .foregroundStyle(.appSecondary)
+                                .cardStyle(
+                                    horizontalPadding: DesignSystem.small,
+                                    verticalPadding: DesignSystem.small,
+                                    backgroundOpacity: DesignSystem.Opacity.solid,
+                                    cornerRadius: DesignSystem.microRadius
+                                )
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .lineLimit(3)
                         }
                     }
                     .appContainer(padding: true)
@@ -122,10 +124,7 @@ struct PageDetailMetadataSection: View {
                         }
                     }
                 }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appAccent.opacity(DesignSystem.Opacity.atomic)))
-                .overlay(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: SystemStroke.divider))
-                .padding()
+                .aiRecommendationCardStyle(verticalPadding: DesignSystem.standardPadding)
             }
         }
     }
@@ -139,8 +138,7 @@ struct PageDetailMetadataSection: View {
                     let summaryText = String(recPage.content.prefix(FeatureConstants.PageDetailMetadata.summaryPrefixLength)) + "..."
                     Text(summaryText).font(.caption2).foregroundStyle(.appSecondary)
                 }
-                Spacer()
-                Image(systemName: DesignSystem.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)
+                forwardArrow
             }
             .padding(DesignSystem.medium)
             .background(Color.appCard)
@@ -164,12 +162,16 @@ struct PageDetailMetadataSection: View {
                 ForEach(backlinks) { linkedPage in
                     NavigationLink(value: AppRoute.pageDetail(id: linkedPage.id)) {
                         HStack(spacing: DesignSystem.medium) {
-                            Image(systemName: linkedPage.displayIcon).foregroundStyle(Color.fromModelColorName(linkedPage.pageType.colorName)).frame(width: DesignSystem.IconSize.medium, height: DesignSystem.IconSize.medium).background(Color.fromModelColorName(linkedPage.pageType.colorName).opacity(DesignSystem.Opacity.glass)).clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+                            pageTypeIcon(page: linkedPage)
                             Text(linkedPage.title).font(.subheadline).foregroundStyle(.appText)
-                            Spacer()
-                            Image(systemName: DesignSystem.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)
+                            forwardArrow
                         }
-                        .padding(.horizontal, DesignSystem.tightPadding).padding(.vertical, DesignSystem.small).background(Color.appCard).clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .cardStyle(
+                            horizontalPadding: DesignSystem.tightPadding,
+                            verticalPadding: DesignSystem.small,
+                            backgroundOpacity: DesignSystem.Opacity.solid,
+                            cornerRadius: DesignSystem.smallRadius
+                        )
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(L10n.Knowledge.Page.backlinkAccessibility(linkedPage.title, linkedPage.pageType.displayName))
@@ -178,5 +180,28 @@ struct PageDetailMetadataSection: View {
             }
         }
         .padding()
+    }
+
+    /// 页面类型图标：displayIcon + 颜色背景 + 圆角裁剪
+    @ViewBuilder
+    private func pageTypeIcon(page: KnowledgePage) -> some View {
+        InsightPageTypeIcon(page: page, size: DesignSystem.IconSize.medium)
+    }
+
+    /// 前进箭头：Spacer + forward 图标
+    @ViewBuilder
+    private var forwardArrow: some View {
+        Spacer()
+        Image(systemName: DesignSystem.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)
+    }
+
+    /// 来源信息文本：caption2 + appSecondary + lineLimit(1) + truncationMode(.middle)
+    @ViewBuilder
+    private func sourceInfoText(_ text: String) -> some View {
+        Text(text)
+            .font(.caption2)
+            .foregroundStyle(.appSecondary)
+            .lineLimit(1)
+            .truncationMode(.middle)
     }
 }

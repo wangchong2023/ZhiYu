@@ -56,10 +56,8 @@ struct ContentView: View {
             
             // 主内容层
             mainContainer(tintColor: tintColor)
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name.toggleSidebar)) { _ in
-                    withAnimation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping)) {
-                        showSidebar.toggle()
-                    }
+                .onToggleSidebar {
+                    showSidebar.toggle()
                 }
             
             // 数据库损坏或降级警告横幅
@@ -114,8 +112,7 @@ struct ContentView: View {
                 UserProfileView()
             }
             .environment(authService)
-            .environment(themeManager)
-            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .globalSheetTheme()
             .applyPresentationSizing()
         }
         .fullScreenCover(isPresented: $router.isShowingPlanSheet) {
@@ -123,8 +120,7 @@ struct ContentView: View {
                 SubscriptionPlanView()
             }
             .environment(authService)
-            .environment(themeManager)
-            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .globalSheetTheme()
             .applyPagePresentationSizing()
         }
         .fullScreenCover(isPresented: $router.isShowingPluginsSheet) {
@@ -133,7 +129,7 @@ struct ContentView: View {
             }
             // Bug #70 修复：PluginCenterView 依赖 Router，缺失注入会导致 fatalError。
             .environment(router)
-            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .globalSheetTheme()
             .applyPagePresentationSizing()
         }
         .fullScreenCover(isPresented: $router.isShowingAboutSheet) {
@@ -141,8 +137,7 @@ struct ContentView: View {
                 AboutView()
             }
             .environment(store)
-            .environment(themeManager)
-            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+            .globalSheetTheme()
             .applyPresentationSizing()
         }
         .animation(DesignSystem.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
@@ -241,9 +236,7 @@ extension View {
         #if os(iOS)
         if #available(iOS 18.0, *) {
             // iOS 18+ 使用 .page 撑满更大区域，比 .form 更宽更高
-            self
-                .presentationSizing(.page)
-                .presentationDetents([.large])
+            applyPageSizing()
         } else {
             // iOS 17 及以下：设定足够大的最小尺寸以近似 .page 效果
             self
@@ -275,9 +268,7 @@ extension View {
             // iPad 设备运行模式下：防止强设 minWidth 导致系统默认的 sheet 内容发生截断。
             if #available(iOS 18.0, *) {
                 // iOS 18+ 利用 .page 级别的大宽度撑开 sheet，使其直接展开为双栏，消除多一级菜单的体验
-                self
-                    .presentationSizing(.page)
-                    .presentationDetents([.large])
+                applyPageSizing()
             } else {
                 // iOS 17 及以下低版本：为了防止内容被截断，不设大宽度 minWidth，让 NavigationSplitView 在窄屏下优雅自适应为单栏折叠
                 self
@@ -286,6 +277,16 @@ extension View {
             }
             #endif
         }
+    }
+
+    /// iOS 18+ `.page` 级别弹窗尺寸适配（内部共享）
+    /// 统一封装 `.presentationSizing(.page) + .presentationDetents([.large])` 的重复模式。
+    @available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *)
+    @ViewBuilder
+    fileprivate func applyPageSizing() -> some View {
+        self
+            .presentationSizing(.page)
+            .presentationDetents([.large])
     }
 }
 
@@ -382,9 +383,8 @@ struct DatabaseCorruptedBanner: View {
         isRetrying = true
         Task {
             do {
-                guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { throw NSError(domain: CoreConstants.ErrorDomain.insight, code: SystemConstants.ErrorCode.default) }
-                let dbURL = appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
-                
+                let dbURL = try DatabaseManager.defaultSandboxDatabaseURL()
+
                 // 重新执行 setup 挂载物理沙盒
                 try DatabaseManager.shared.setup(at: dbURL)
                 Logger.shared.info("[DatabaseCorruptedBanner] Reverification succeeded! Remounted physical database.")

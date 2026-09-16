@@ -128,13 +128,13 @@ extension L10n {
                 public static var recentUpdates: String { AI.tr("llm.prompt.recentUpdates") }
                 public static var relevantPages: String { AI.tr("llm.prompt.relevantPages") }
                 public static var typeLabel: String { L10n.Common.tr("search.sort.type") }
-                public static var relevanceScore: String { AI.tr("llm.prompt.relevanceScore") }
-                public static var chunkType: String { AI.tr("llm.prompt.chunkType") }
                 public static var pageTitle: String { L10n.Common.tr("pageTitle") }
                 public static var issueDesc: String { AI.tr("llm.prompt.issueDesc") }
                 public static var issueType: String { AI.tr("llm.prompt.issueType") }
                 public static var pageContentSnippet: String { AI.tr("llm.prompt.pageContentSnippet") }
                 public static var otherPageTitles: String { AI.tr("llm.prompt.otherPageTitles") }
+                public static var relevanceScore: String { L10n.AI.Prompt.relevanceScore }
+                public static var chunkType: String { L10n.AI.Prompt.chunkType }
             }
 
             public typealias ingest = Ingest

@@ -43,11 +43,9 @@ extension DynamicComplianceManager {
         )
 
         guard isSignatureValid else {
-            Logger.shared.addLog(
-                action: .error,
+            SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.dynamicComplianceManager,
-                details: "DynamicComplianceManager_verify_signature_failed",
-                module: CoreConstants.Security.logModule
+                details: "DynamicComplianceManager_verify_signature_failed"
             )
             return false
         }
@@ -60,11 +58,9 @@ extension DynamicComplianceManager {
         }
 
         guard let payload = try? JSONDecoder().decode(CompliancePatchPayload.self, from: payloadData) else {
-            Logger.shared.addLog(
-                action: .error,
+            SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.dynamicComplianceManager,
-                details: "DynamicComplianceManager_json_decode_failed",
-                module: CoreConstants.Security.logModule
+                details: "DynamicComplianceManager_json_decode_failed"
             )
             return false
         }

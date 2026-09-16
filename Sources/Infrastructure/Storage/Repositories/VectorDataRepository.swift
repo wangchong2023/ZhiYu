@@ -12,18 +12,7 @@ import Foundation
 import UFPStorage
 
 /// [Infra] 向量存储实现
-final class VectorDataRepository: VectorRepository, Sendable {
-    private var dbWriter: any DatabaseWriter {
-        get async throws {
-            // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁
-            if let writer = await DatabaseManager.shared.dbWriter {
-                return writer
-            }
-            // Finding #17：dbWriter 为 nil 时抛错，不再静默降级创建空内存库
-            throw DatabaseError.notReady
-        }
-    }
-
+final class VectorDataRepository: VectorRepository, DatabaseWriterProvider, Sendable {
     init(dbWriter _: any DatabaseWriter) {
         // 保留原构造函数，但内部实际上不持有静态 dbWriter，使用动态计算属性以支持多笔记本笔记本无缝热切换并消除 closed 连接挂起隐慢
     }
@@ -61,22 +50,20 @@ final class VectorDataRepository: VectorRepository, Sendable {
     /// 拉取Chunks
     /// - Returns: 列表
     func fetchChunks(for pageID: UUID) async throws -> [PageChunk] {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            try PageChunk
-                .filter(PageChunk.Columns.pageID == pageID)
-                .fetchAll(db)
-        }
+        try await fetchChunksFiltered(PageChunk.filter(PageChunk.Columns.pageID == pageID))
     }
 
     /// 拉取AllChunksWithEmbeddings
     /// - Returns: 列表
     func fetchAllChunksWithEmbeddings() async throws -> [PageChunk] {
+        try await fetchChunksFiltered(PageChunk.filter(PageChunk.Columns.embedding != nil))
+    }
+
+    /// 共享的分块查询辅助：按指定过滤请求查询 PageChunk 列表，消除 fetchChunks 与 fetchAllChunksWithEmbeddings 间的样板重复。
+    private func fetchChunksFiltered(_ request: QueryInterfaceRequest<PageChunk>) async throws -> [PageChunk] {
         let writer = try await dbWriter
         return try await writer.read { db in
-            try PageChunk
-                .filter(PageChunk.Columns.embedding != nil)
-                .fetchAll(db)
+            try request.fetchAll(db)
         }
     }
 
@@ -86,10 +73,8 @@ final class VectorDataRepository: VectorRepository, Sendable {
         let writer = try await dbWriter
         _ = try await writer.write { db in
             // 物理删除旧分块，确保索引最新
-            try PageChunk
-                .filter(PageChunk.Columns.pageID == pageID)
-                .deleteAll(db)
-            
+            try self.deleteChunksByPageID(db: db, pageID: pageID)
+
             for var chunk in chunks {
                 chunk.pageID = pageID
                 chunk.createdAt = Date()
@@ -103,10 +88,15 @@ final class VectorDataRepository: VectorRepository, Sendable {
     func deleteChunks(for pageID: UUID) async throws {
         let writer = try await dbWriter
         _ = try await writer.write { db in
-            try PageChunk
-                .filter(PageChunk.Columns.pageID == pageID)
-                .deleteAll(db)
+            try self.deleteChunksByPageID(db: db, pageID: pageID)
         }
+    }
+
+    /// 按 pageID 删除分块（消除 saveChunks 与 deleteChunks 的删除样板重复）。
+    private func deleteChunksByPageID(db: Database, pageID: UUID) throws {
+        try PageChunk
+            .filter(PageChunk.Columns.pageID == pageID)
+            .deleteAll(db)
     }
 
     /// cleanupOrphanedChunks

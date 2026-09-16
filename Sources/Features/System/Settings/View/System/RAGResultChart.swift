@@ -208,14 +208,10 @@ struct RAGEvaluationHistoryPanel: View {
     }
 
     private func scoreColor(_ s: Double) -> Color {
-        if s >= ScoreThreshold.excellent { return Color.theme.green }
-        if s >= ScoreThreshold.fair { return Color.theme.orange }
-        return Color.theme.red
+        RAGScoreColor.score(s)
     }
 
     private func invertedScoreColor(_ s: Double) -> Color {
-        if s <= ScoreThreshold.invertedExcellent { return Color.theme.green }
-        if s <= ScoreThreshold.invertedFair { return Color.theme.orange }
-        return Color.theme.red
+        RAGScoreColor.inverted(s)
     }
 }

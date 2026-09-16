@@ -150,29 +150,25 @@ extension ModelLabView {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 0) {
-                Button(action: { useGPU = false }) {
-                    Text(L10n.ModelManager.Lab.cpu)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, SystemSpacing.content)
-                        .background(useGPU ? Color.clear : Color.theme.cyan)
-                        .foregroundStyle(useGPU ? Color.secondary : .white)
-                }
-                .buttonStyle(.plain)
-
-                Button(action: { useGPU = true }) {
-                    Text(L10n.ModelManager.Lab.gpu)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, SystemSpacing.content)
-                        .background(useGPU ? Color.theme.cyan : Color.clear)
-                        .foregroundStyle(useGPU ? .white : Color.secondary)
-                }
-                .buttonStyle(.plain)
+                acceleratorButton(title: L10n.ModelManager.Lab.cpu, isActive: !useGPU) { useGPU = false }
+                acceleratorButton(title: L10n.ModelManager.Lab.gpu, isActive: useGPU) { useGPU = true }
             }
             .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
             .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
         }
+    }
+
+    /// CPU/GPU 加速器按钮，消除两个按钮的 frame+padding+background+foregroundStyle 重复
+    private func acceleratorButton(title: String, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, SystemSpacing.content)
+                .background(isActive ? Color.theme.cyan : Color.clear)
+                .foregroundStyle(isActive ? .white : Color.secondary)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - System Prompt 分段内容
@@ -185,9 +181,7 @@ extension ModelLabView {
 
             TextEditor(text: $systemPromptText)
                 .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
-                .padding(DesignSystem.standardPadding)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                .cornerRadius(SystemRadius.small)
+                .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: SystemRadius.small)
                 .overlay(
                     RoundedRectangle(cornerRadius: SystemRadius.small)
                         .stroke(Color.appBorder.opacity(DesignSystem.Opacity.glass), lineWidth: SystemStroke.divider)
@@ -220,10 +214,7 @@ extension ModelLabView {
                     .font(.system(.body, design: .monospaced))
                     .lineLimit(1)
                     .frame(minWidth: Spacing.Sidebar.backButtonWidth, alignment: .trailing)
-                    .padding(.horizontal, DesignSystem.standardPadding)
-                    .padding(.vertical, SystemSpacing.small)
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardPadding))
+                    .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: SystemSpacing.small, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: DesignSystem.standardPadding)
             }
         }
     }
@@ -231,61 +222,17 @@ extension ModelLabView {
     // MARK: - 预设模板选择器
 
     var presetSelectorView: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Text(L10n.ModelManager.Parameters.presetTemplate)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.appText)
-
-            HStack(spacing: DesignSystem.small) {
-                ForEach(ParameterPreset.allCases, id: \.self) { preset in
-                    presetButton(for: preset)
+        PresetSelectorContainer(
+            matchedPreset: matchedPreset,
+            selectedBackground: Color.theme.cyan,
+            unselectedBackground: Color.appCard.opacity(DesignSystem.Opacity.subtle),
+            unselectedForeground: .secondary,
+            customNudgeAction: {
+                if let preset = matchedPreset {
+                    tempTemperature = preset.parameters.temperature + FeatureConstants.InferenceParam.customNudgeDelta
                 }
-                customButton
-            }
-        }
-        .padding()
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-    }
-
-    var customButton: some View {
-        let isCustom = matchedPreset == nil
-        return Button(action: {
-            if let preset = matchedPreset {
-                tempTemperature = preset.parameters.temperature + FeatureConstants.InferenceParam.customNudgeDelta
-            }
-        }) {
-            VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.sliderHorizontal)
-                    .font(.title3)
-                Text(L10n.ModelManager.Parameters.custom)
-                    .font(.caption.weight(.medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.small)
-            .background(isCustom ? Color.theme.cyan : Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .foregroundStyle(isCustom ? .white : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-        }
-        .buttonStyle(.plain)
-        .disabled(isCustom)
-    }
-
-    func presetButton(for preset: ParameterPreset) -> some View {
-        let isSelected = matchedPreset == preset
-        return Button(action: { applyPreset(preset) }) {
-            VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: preset.icon)
-                    .font(.title3)
-                Text(preset.displayName)
-                    .font(.caption.weight(.medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.small)
-            .background(isSelected ? Color.theme.cyan : Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .foregroundStyle(isSelected ? .white : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-        }
-        .buttonStyle(.plain)
+            },
+            applyAction: { applyPreset($0) }
+        )
     }
 }

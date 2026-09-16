@@ -95,10 +95,7 @@ actor AIContentEnricher {
             // 简单的表格识别：以 | 开头且包含分割线
             if line.trimmingCharacters(in: .whitespaces).hasPrefix("|") {
                 if !isInsideTable {
-                    if !currentText.isEmpty {
-                        blocks.append(.text(currentText.trimmingCharacters(in: .whitespacesAndNewlines)))
-                        currentText = ""
-                    }
+                    flushText(&currentText, into: &blocks)
                     isInsideTable = true
                 }
                 currentTable += line + "\n"
@@ -110,10 +107,7 @@ actor AIContentEnricher {
                 currentText += line + "\n"
             } else if line.contains(ContentEnrichmentMarker.imageStart) && line.contains(ContentEnrichmentMarker.imageURLStart) {
                 // 图片识别 (Markdown 格式: ![alt](url))
-                if !currentText.isEmpty {
-                    blocks.append(.text(currentText.trimmingCharacters(in: .whitespacesAndNewlines)))
-                    currentText = ""
-                }
+                flushText(&currentText, into: &blocks)
 
                 // 提取图片信息
                 if let block = parseImageBlock(from: line) {
@@ -129,11 +123,19 @@ actor AIContentEnricher {
         // 处理最后一段
         if isInsideTable {
             blocks.append(.table(currentTable.trimmingCharacters(in: .whitespacesAndNewlines)))
-        } else if !currentText.isEmpty {
-            blocks.append(.text(currentText.trimmingCharacters(in: .whitespacesAndNewlines)))
+        } else {
+            flushText(&currentText, into: &blocks)
         }
 
         return blocks
+    }
+
+    /// 将累积的文本块刷新到 blocks 数组中，非空时才追加，并清空缓冲区。
+    /// 消除 parseBlocks 中多处 `if !currentText.isEmpty { blocks.append(.text(...)); currentText = "" }` 重复。
+    private func flushText(_ currentText: inout String, into blocks: inout [ContentBlock]) {
+        guard !currentText.isEmpty else { return }
+        blocks.append(.text(currentText.trimmingCharacters(in: .whitespacesAndNewlines)))
+        currentText = ""
     }
 
     private func parseImageBlock(from line: String) -> ContentBlock? {

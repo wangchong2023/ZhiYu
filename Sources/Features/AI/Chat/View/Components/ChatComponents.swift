@@ -58,6 +58,13 @@ struct ChatBubbleView: View {
         message.timestamp.formatted(as: Date.AppFormatStyle.slashDetailed)
     }
     
+    /// 时间戳标签（消除 userBubble 与 assistantBubble 内重复的时间戳样式链）
+    private var timestampLabel: some View {
+        Text(timestampString)
+            .font(.system(size: DesignSystem.caption2FontSize))
+            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+    }
+    
     private var userBubble: some View {
         VStack(alignment: .trailing, spacing: Spacing.tiny) {
             HStack(alignment: .top, spacing: Spacing.tiny) {
@@ -82,9 +89,7 @@ struct ChatBubbleView: View {
                     .padding(.top, DesignSystem.tiny)
             }
             
-            Text(timestampString)
-                .font(.system(size: DesignSystem.caption2FontSize))
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+            timestampLabel
                 .padding(.trailing, SystemSpacing.content)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
@@ -110,9 +115,7 @@ struct ChatBubbleView: View {
                 
                 Spacer()
                 
-                Text(timestampString)
-                    .font(.system(size: DesignSystem.caption2FontSize))
-                    .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                timestampLabel
             }
             .padding(.horizontal, Spacing.tiny)
             .padding(.bottom, DesignSystem.atomic)
@@ -144,26 +147,16 @@ struct ChatBubbleView: View {
             // 操作按钮栏：点赞、贬低、复制、重新生成
             HStack(spacing: DesignSystem.medium) {
                 // 点赞按钮
-                Button(action: {
-                    HapticFeedback.shared.trigger(.selection)
-                    messageRating = messageRating == 1 ? nil : 1
-                }) {
-                    Image(systemName: messageRating == 1 ? "hand.thumbsup.fill" : "hand.thumbsup")
-                        .font(.caption)
-                        .foregroundStyle(messageRating == 1 ? Color.theme.blue : .appSecondary)
-                }
-                .buttonStyle(.plain)
+                ratingButton(ratingValue: 1,
+                             activeIcon: FeatureConstants.ChatRatingIcon.thumbsupFill,
+                             inactiveIcon: FeatureConstants.ChatRatingIcon.thumbsup,
+                             activeColor: Color.theme.blue)
                 
                 // 贬低按钮
-                Button(action: {
-                    HapticFeedback.shared.trigger(.selection)
-                    messageRating = messageRating == 2 ? nil : 2
-                }) {
-                    Image(systemName: messageRating == 2 ? "hand.thumbsdown.fill" : "hand.thumbsdown")
-                        .font(.caption)
-                        .foregroundStyle(messageRating == 2 ? Color.theme.red : .appSecondary)
-                }
-                .buttonStyle(.plain)
+                ratingButton(ratingValue: 2,
+                             activeIcon: FeatureConstants.ChatRatingIcon.thumbsdownFill,
+                             inactiveIcon: FeatureConstants.ChatRatingIcon.thumbsdown,
+                             activeColor: Color.theme.red)
                 
                 // 复制按钮
                 Button(action: {
@@ -190,8 +183,7 @@ struct ChatBubbleView: View {
                             Text(L10n.Chat.regenerate)
                                 .font(.system(size: DesignSystem.captionFontSize, weight: .medium))
                         }
-                        .padding(.horizontal, DesignSystem.small)
-                        .padding(.vertical, DesignSystem.tiny)
+                        .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
                         .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                         .foregroundStyle(.appAccent)
                         .clipShape(Capsule())
@@ -205,6 +197,19 @@ struct ChatBubbleView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, Spacing.standardPadding)
         .padding(.trailing, DesignSystem.Domain.AI.Chat.bubbleTrailingPadding)
+    }
+
+    /// 评分按钮（点赞/贬低共用，消除重复的 Button+Image+foregroundStyle 链）
+    private func ratingButton(ratingValue: Int, activeIcon: String, inactiveIcon: String, activeColor: Color) -> some View {
+        Button(action: {
+            HapticFeedback.shared.trigger(.selection)
+            messageRating = messageRating == ratingValue ? nil : ratingValue
+        }) {
+            Image(systemName: messageRating == ratingValue ? activeIcon : inactiveIcon)
+                .font(.caption)
+                .foregroundStyle(messageRating == ratingValue ? activeColor : .appSecondary)
+        }
+        .buttonStyle(.plain)
     }
     
     /// Collapsible references panel showing cited knowledge pages grouped by type
@@ -257,8 +262,7 @@ struct ChatBubbleView: View {
                                             Text(page.title)
                                                 .font(.caption)
                                         }
-                                        .padding(.horizontal, DesignSystem.small)
-                                        .padding(.vertical, DesignSystem.tiny)
+                                        .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
                                         .background(Color.fromModelColorName(type.colorName).opacity(DesignSystem.Opacity.glass))
                                         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Domain.AI.Chat.referencePanelCornerRadius))
                                         .foregroundStyle(Color.fromModelColorName(type.colorName))
@@ -272,12 +276,7 @@ struct ChatBubbleView: View {
             }
         }
         .padding(DesignSystem.medium)
-        .background(Color.appCard.opacity(DesignSystem.surfaceOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                .stroke(Color.appBorder.opacity(DesignSystem.softOpacity), lineWidth: DesignSystem.borderWidth)
-        )
+        .chatSmallCardStyle(backgroundOpacity: DesignSystem.surfaceOpacity)
     }
     
     private var systemBubble: some View {
@@ -359,11 +358,7 @@ struct ChatContentView: View {
             }
             
             // 清理常见的 LLM 转义符错误 (确保 Markdown 渲染正常)
-            let cleanedText = processed.mainContent.replacingOccurrences(of: FeatureConstants.RegexEscape.escapedBacktick, with: SystemConstants.Character.backtick)
-                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedAsterisk, with: SystemConstants.Character.asterisk)
-                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedUnderscore, with: SystemConstants.Character.underscore)
-                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkOpen, with: SystemConstants.MarkdownSyntax.wikiLinkOpen)
-                .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkClose, with: SystemConstants.MarkdownSyntax.wikiLinkClose)
+            let cleanedText = ChatContentSanitizer.sanitizeEscapes(processed.mainContent)
             
             MarkdownRendererView(content: cleanedText, isPrivate: false, onLinkTap: { title in
                 let targetTitle = title.trimmingCharacters(in: .whitespaces)
@@ -420,12 +415,7 @@ struct SuggestedFollowUpCardView: View {
                         }
                         .padding(.horizontal, DesignSystem.medium)
                         .padding(.vertical, DesignSystem.small)
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: DesignSystem.borderWidth)
-                        )
+                        .chatSmallCardStyle(backgroundOpacity: DesignSystem.Opacity.subtle)
                     }
                     .buttonStyle(.plain)
                 }
@@ -436,10 +426,18 @@ struct SuggestedFollowUpCardView: View {
             RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
                 .fill(Color.appCard.opacity(DesignSystem.Opacity.glass))
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: DesignSystem.borderWidth)
-        )
+        .overlayStroke()
         .shadow(color: Color.appBackground.opacity(DesignSystem.shadowOpacity), radius: 6, x: 0, y: 2)
+    }
+}
+
+// MARK: - Chat 组件卡片样式辅助
+private extension View {
+    /// 小圆角卡片样式：background(appCard) + clipShape(smallRadius) + overlayStroke
+    func chatSmallCardStyle(backgroundOpacity: Double) -> some View {
+        self
+            .background(Color.appCard.opacity(backgroundOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .overlayStroke(cornerRadius: DesignSystem.smallRadius)
     }
 }

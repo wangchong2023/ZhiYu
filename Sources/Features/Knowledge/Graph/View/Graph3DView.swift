@@ -242,8 +242,7 @@ struct Graph3DView: View {
         camera.camera = SCNCamera()
         camera.camera?.zNear = GraphConstants.ThreeD.cameraZNear
         camera.camera?.zFar = GraphConstants.ThreeD.cameraZFar 
-        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
-        camera.look(at: SCNVector3(0, 0, 0))
+        positionCameraAtOrigin(camera)
         camera.name = "mainCamera"
         scene.rootNode.addChildNode(camera)
         cameraNode = camera
@@ -370,25 +369,46 @@ struct Graph3DView: View {
                 if let linkedPage = pageTitleMap[linkTitle],
                    let sourceNode = nodeMap[page.id],
                    let targetNode = nodeMap[linkedPage.id] {
-                    let edgeKey = [page.id.uuidString, linkedPage.id.uuidString].sorted().joined(separator: "-")
-                    if !processedEdges.contains(edgeKey) && page.id != linkedPage.id {
-                        let edge = createEdgeNode(from: sourceNode.position, to: targetNode.position, sourceID: page.id, targetID: linkedPage.id)
-                        scene.rootNode.addChildNode(edge)
-                        processedEdges.insert(edgeKey)
-                    }
+                    addEdgeIfUnique(
+                        from: sourceNode.position,
+                        to: targetNode.position,
+                        sourceID: page.id,
+                        targetID: linkedPage.id,
+                        scene: scene,
+                        processedEdges: &processedEdges
+                    )
                 }
             }
             for relatedID in page.relatedPageIDs {
                 if let targetNode = nodeMap[relatedID],
                    let sourceNode = nodeMap[page.id] {
-                    let edgeKey = [page.id.uuidString, relatedID.uuidString].sorted().joined(separator: "-")
-                    if !processedEdges.contains(edgeKey) && page.id != relatedID {
-                        let edge = createEdgeNode(from: sourceNode.position, to: targetNode.position, sourceID: page.id, targetID: relatedID)
-                        scene.rootNode.addChildNode(edge)
-                        processedEdges.insert(edgeKey)
-                    }
+                    addEdgeIfUnique(
+                        from: sourceNode.position,
+                        to: targetNode.position,
+                        sourceID: page.id,
+                        targetID: relatedID,
+                        scene: scene,
+                        processedEdges: &processedEdges
+                    )
                 }
             }
+        }
+    }
+
+    /// 添加去重边节点，消除 outgoingLinks 与 relatedPageIDs 循环中的重复逻辑
+    private func addEdgeIfUnique(
+        from: SCNVector3,
+        to: SCNVector3,
+        sourceID: UUID,
+        targetID: UUID,
+        scene: SCNScene,
+        processedEdges: inout Set<String>
+    ) {
+        let edgeKey = [sourceID.uuidString, targetID.uuidString].sorted().joined(separator: "-")
+        if !processedEdges.contains(edgeKey) && sourceID != targetID {
+            let edge = createEdgeNode(from: from, to: to, sourceID: sourceID, targetID: targetID)
+            scene.rootNode.addChildNode(edge)
+            processedEdges.insert(edgeKey)
         }
     }
 
@@ -468,8 +488,7 @@ struct Graph3DView: View {
         SCNTransaction.begin()
         SCNTransaction.animationDuration = GraphConstants.ThreeD.cameraAnimationDuration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
-        camera.look(at: SCNVector3(0, 0, 0))
+        positionCameraAtOrigin(camera)
         SCNTransaction.commit()
     }
 
@@ -481,6 +500,12 @@ struct Graph3DView: View {
         SCNTransaction.animationDuration = GraphConstants.ThreeD.zoomAnimationDuration
         camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
         SCNTransaction.commit()
+    }
+
+    /// 将相机定位至原点上方标准偏移位置，消除 setupCamera 与 resetCamera 的重复 position+look 调用
+    private func positionCameraAtOrigin(_ camera: SCNNode) {
+        camera.position = SCNVector3(0, GraphConstants.ThreeD.cameraYOffset, Float(cameraDistance))
+        camera.look(at: SCNVector3(0, 0, 0))
     }
     
     private func handleNodeTap(_ uuid: UUID?) {

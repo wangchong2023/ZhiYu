@@ -206,12 +206,12 @@
 | D-34 | `AppEnvironment.platformEnv` getter 调用 `ServiceContainer.resolve`，测试环境中其他测试 `reset()` 清空注册后触发 `assertionFailure` 崩溃 | 高 | 改为 `resolveOptional ?? NoOpAppEnvironment()` 安全降级 | 是 |
 | D-35 | `IOSURLOpenerServiceTests` 调用真实 `UIApplication.shared.open`，在模拟器阻塞 Safari/系统进程 | 高 | `iOSURLOpenerService` 引入闭包注入模式（`openHandler`），测试用 `URLRecorder` 引用类型包装验证 | 是 |
 | D-36 | `ModelDownloadManagerDeepTests.testStartDownloadWithPausedStateProceeds` 用真实 URL `"https://example.com/model.bin"` 发起网络请求，测试环境挂起超时 | 高 | `ModelDownloadManager` 引入 `sessionFactory` 闭包注入模式，测试注入 ephemeral session + `MockDownloadURLProtocol`；`ModelDownloadDelegateHelper` 改为 `internal` | 是 |
-| D-37 | NLTagger 中文人名识别率 33%（3/9），tag 全是 `Other` 而非 `.personalName`，8 个匿名化测试失败 | 高 | `LLMContextBuilder` 引入 `entityRecognizer` 闭包注入点 + `init(entityRecognizer:)` 测试初始化器 + `defaultEntityRecognizer` 静态方法；`ChatLLMService`/`ChatRunner` 引入 `contextBuilderFactory` 闭包属性 + 测试初始化器；4 个测试文件注入 mock `entityRecognizer` | 是 |
+| D-37 | NLTagger 中文人名识别率 33%（3/9），tag 全是 Other 而非 `.personalName`，8 个匿名化测试失败 | 高 | LLMContextBuilder 引入 entityRecognizer 闭包注入点 + init(entityRecognizer:) 测试初始化器 + defaultEntityRecognizer 静态方法；ChatLLMService/ChatRunner 引入 contextBuilderFactory 闭包属性 + 测试初始化器；4 个测试文件注入 mock entityRecognizer | 是 |
 | D-38 | `EmbeddingManager.getVector(for:)` fallback 中 `Hasher.finalize()` 返回负值，负数取模产生负值导致向量分布异常（负值占比 0.998 > 0.9） | 高 | `abs(seed ^ i)` 确保非负取模 | 是 |
 | D-39 | `DatabaseManagerDegradationTests.testStateAfterDegradationToInMemory` 降级后 `state` 未设为 `.ready` | 中 | 测试已通过，`degradeToInMemory` 降级逻辑正常工作 — `/dev/null/cannot_create_db/vault.sqlite3` 路径触发降级，内存数据库成功初始化 | 是 |
 | D-40 | `ZIPFoundationArchiver.extractContents` 解压后文件在子目录（源目录名）下，而非直接在目标目录下 — ZIPFoundation `zipItem` 保留源目录名作为 ZIP 内根条目 | 中 | 测试改为遍历子目录查找文件（`findFile(named:in:)` 递归查找），符合 ZIP 保留目录结构的业界标准 | 是（测试层） |
 | D-41 | `CollaborationServiceDeepTests.test接收PageSync数据且远程时间等于本地时也更新` flaky — `Task {}` 异步竞态，100ms 等待在全量测试负载下不够 | 低 | 3 个正向断言测试改为轮询等待（`waitFor` 辅助方法），44 个测试全部通过 | 是 |
-| D-42 | 46 个中文测试方法名违反英文命名规范（8 个文件） | 中 | 全部改为英文命名（`CollaborationServiceDeepTests` 21 个 + `CarrierAuthStrategyDeepTests` 3 个 + `SynthesisStoreDeepTests` 2 个 + `ModelLabManagerDeepTests` 7 个 + `GitHubAuthStrategyDeepTests` 4 个 + `StoreKitServiceDeepTests` 2 个 + `GlobalModelManagerDeepTests` 5 个 + `L10nMediumFilesDeepTests` 2 个） | 是 |
+| D-42 | 46 个中文测试方法名违反英文命名规范（8 个文件） | 中 | 全部改为英文命名（CollaborationServiceDeepTests 21 个 + CarrierAuthStrategyDeepTests 3 个 + SynthesisStoreDeepTests 2 个 + ModelLabManagerDeepTests 7 个 + GitHubAuthStrategyDeepTests 4 个 + StoreKitServiceDeepTests 2 个 + GlobalModelManagerDeepTests 5 个 + L10nMediumFilesDeepTests 2 个） | 是 |
 
 ### 扣分项 #7/#14：SonarQube 覆盖率门禁达标验证
 

@@ -38,7 +38,7 @@ struct SynthesisReportView: View {
             .padding(.bottom, DesignSystem.huge)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground)
+        .appBackgroundFill()
     }
 
     private func handleLinkTap(_ target: String) {
@@ -157,11 +157,19 @@ struct SynthesisOutputContent: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground)
+        .appBackgroundFill()
         .onAppear {
             if doc.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Logger.shared.error("[SYNTH_ERR_CONTENT_EMPTY]" + " \(doc.type.rawValue)")
             }
         }
+    }
+}
+
+// MARK: - 全屏背景辅助
+private extension View {
+    /// 全屏背景填充（消除重复的 frame(maxWidth/maxHeight) + background 链）
+    func appBackgroundFill() -> some View {
+        self.background(Color.appBackground)
     }
 }

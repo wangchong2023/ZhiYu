@@ -48,27 +48,7 @@ struct BacklinksView: View {
                             .foregroundStyle(.appSecondary)
                     } else {
                         ForEach(outgoingPages) { linkedPage in
-                            HStack(spacing: SystemSpacing.element) {
-                                Image(systemName: DesignSystem.Icons.arrowRight)
-                                    .font(.caption)
-                                    .foregroundStyle(.appAccent)
-                                
-                                Image(systemName: linkedPage.displayIcon)
-                                    .foregroundStyle(Color.fromModelColorName(linkedPage.pageType.colorName))
-                                    .frame(width: DesignSystem.IconSize.medium, height: DesignSystem.IconSize.medium)
-                                    .background(Color.fromModelColorName(linkedPage.pageType.colorName).opacity(DesignSystem.Opacity.glass))
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
-                                
-                                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                                    Text(linkedPage.title)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.appText)
-                                    Text(linkedPage.pageType.displayName)
-                                        .font(.caption2)
-                                        .foregroundStyle(.appSecondary)
-                                }
-                            }
-                            .padding(.vertical, DesignSystem.tiny)
+                            linkRow(page: linkedPage, arrowIcon: DesignSystem.Icons.arrowRight, arrowColor: .appAccent)
                         }
                     }
                 } header: {
@@ -86,27 +66,7 @@ struct BacklinksView: View {
                             .foregroundStyle(.appSecondary)
                     } else {
                         ForEach(backlinks) { linkingPage in
-                            HStack(spacing: SystemSpacing.element) {
-                                Image(systemName: DesignSystem.Icons.arrowLeft)
-                                    .font(.caption)
-                                    .foregroundStyle(.appComparison)
-                                
-                                Image(systemName: linkingPage.displayIcon)
-                                    .foregroundStyle(Color.fromModelColorName(linkingPage.pageType.colorName))
-                                    .frame(width: DesignSystem.IconSize.medium, height: DesignSystem.IconSize.medium)
-                                    .background(Color.fromModelColorName(linkingPage.pageType.colorName).opacity(DesignSystem.Opacity.glass))
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
-                                
-                                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                                    Text(linkingPage.title)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.appText)
-                                    Text(linkingPage.pageType.displayName)
-                                        .font(.caption2)
-                                        .foregroundStyle(.appSecondary)
-                                }
-                            }
-                            .padding(.vertical, DesignSystem.tiny)
+                            linkRow(page: linkingPage, arrowIcon: DesignSystem.Icons.arrowLeft, arrowColor: .appComparison)
                         }
                     }
                 } header: {
@@ -125,5 +85,27 @@ struct BacklinksView: View {
                 await fetchData()
             }
         }
+    }
+
+    /// 链接行视图：箭头 + 页面图标 + 标题 + 类型
+    @ViewBuilder
+    private func linkRow(page: KnowledgePage, arrowIcon: String, arrowColor: Color) -> some View {
+        HStack(spacing: SystemSpacing.element) {
+            Image(systemName: arrowIcon)
+                .font(.caption)
+                .foregroundStyle(arrowColor)
+
+            InsightPageTypeIcon(page: page, size: DesignSystem.IconSize.medium)
+
+            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                Text(page.title)
+                    .font(.subheadline)
+                    .foregroundStyle(.appText)
+                Text(page.pageType.displayName)
+                    .font(.caption2)
+                    .foregroundStyle(.appSecondary)
+            }
+        }
+        .padding(.vertical, DesignSystem.tiny)
     }
 }

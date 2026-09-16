@@ -60,12 +60,7 @@ struct KnowledgePageListContent: View {
         if let filterType {
             return !filteredPages(for: filterType).isEmpty
         }
-        if searchText.isEmpty {
-            // 空搜索无过滤时，只要任意类型有页面即视为有结果
-            return PageType.allCases.contains { type in
-                !filteredPages(for: type).isEmpty
-            }
-        }
+        // 空搜索与有搜索均检查所有类型是否有页面
         return PageType.allCases.contains { type in
             !filteredPages(for: type).isEmpty
         }
@@ -101,6 +96,8 @@ struct KnowledgePageListContent: View {
     }
 
     var body: some View {
+        let showInsightsBinding = $showInsights
+        let showDeleteConfirmationBinding = $showDeleteConfirmation
         ZStack(alignment: .top) {
             // 1. 方案 D 沉浸式高级背景 (同步 Hub 设计语言)
             ZStack {
@@ -130,12 +127,12 @@ struct KnowledgePageListContent: View {
             // 响应全局模式切换（如果需要）
             HapticFeedback.shared.trigger(.selection)
         }
-        .sheet(isPresented: $showInsights) {
+        .sheet(isPresented: showInsightsBinding) {
             VaultInsightsPanel()
         }
         .confirmationDialog(
             pageToDelete.map { L10n.Vault.Page.deletePageTitle( $0.title) } ?? L10n.Knowledge.Page.deletePage,
-            isPresented: $showDeleteConfirmation,
+            isPresented: showDeleteConfirmationBinding,
             titleVisibility: .visible
         ) {
             Button(L10n.Knowledge.Page.deletePage, role: .destructive) {
@@ -166,14 +163,7 @@ struct KnowledgePageListContent: View {
                 // 如果正在执行混合检索，展示高精度骨架屏呼吸卡片
                 VStack(spacing: DesignSystem.standardPadding) {
                     ForEach(0..<FeatureConstants.KnowledgePageList.skeletonRowCount, id: \.self) { _ in
-                        HStack(spacing: DesignSystem.medium) {
-                            AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize)
-                            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                                AppSkeleton(width: 140, height: DesignSystem.standardFontSize)
-                                AppSkeleton(width: 240, height: DesignSystem.microFontSize)
-                            }
-                            Spacer()
-                        }
+                        SkeletonListRow()
                     }
                     .padding(.top, DesignSystem.wide)
                 }
@@ -244,107 +234,45 @@ struct KnowledgePageListContent: View {
 
     @ViewBuilder
     private var entitySection: some View {
-        let entities = filteredPages(for: .entity)
-        if !entities.isEmpty {
-            Section {
-                VStack(spacing: DesignSystem.medium) {
-                    ForEach(entities) { page in
-                        selectablePageRow(page)
-                    }
-                }
-            } header: {
-                HStack {
-                    Label(L10n.Dashboard.pageList.entityCount(entities.count), systemImage: DesignSystem.Icons.entity)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.appEntity)
-                    Spacer()
-                }
-                .padding(.vertical, DesignSystem.tiny)
-            }
-        }
+        pageTypeSection(for: .entity, label: L10n.Dashboard.pageList.entityCount(filteredPages(for: .entity).count), icon: DesignSystem.Icons.entity, color: .appEntity)
     }
-    
+
     @ViewBuilder
     private var conceptSection: some View {
-        let concepts = filteredPages(for: .concept)
-        if !concepts.isEmpty {
-            Section {
-                VStack(spacing: DesignSystem.medium) {
-                    ForEach(concepts) { page in
-                        selectablePageRow(page)
-                    }
-                }
-            } header: {
-                HStack {
-                    Label(L10n.Dashboard.pageList.conceptCount(concepts.count), systemImage: DesignSystem.Icons.concept)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.appConcept)
-                    Spacer()
-                }
-                .padding(.vertical, DesignSystem.tiny)
-            }
-        }
+        pageTypeSection(for: .concept, label: L10n.Dashboard.pageList.conceptCount(filteredPages(for: .concept).count), icon: DesignSystem.Icons.concept, color: .appConcept)
     }
-    
+
     @ViewBuilder
     private var sourceSection: some View {
-        let sources = filteredPages(for: .source)
-        if !sources.isEmpty {
-            Section {
-                VStack(spacing: DesignSystem.medium) {
-                    ForEach(sources) { page in
-                        selectablePageRow(page)
-                    }
-                }
-            } header: {
-                HStack {
-                    Label(L10n.Dashboard.pageList.sourceCount(sources.count), systemImage: DesignSystem.Icons.source)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.appSource)
-                    Spacer()
-                }
-                .padding(.vertical, DesignSystem.tiny)
-            }
-        }
+        pageTypeSection(for: .source, label: L10n.Dashboard.pageList.sourceCount(filteredPages(for: .source).count), icon: DesignSystem.Icons.source, color: .appSource)
     }
-    
+
     @ViewBuilder
     private var comparisonSection: some View {
-        let comparisons = filteredPages(for: .comparison)
-        if !comparisons.isEmpty {
-            Section {
-                VStack(spacing: DesignSystem.medium) {
-                    ForEach(comparisons) { page in
-                        selectablePageRow(page)
-                    }
-                }
-            } header: {
-                HStack {
-                    Label(L10n.Dashboard.pageList.comparisonCount(comparisons.count), systemImage: DesignSystem.Icons.comparison)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.appComparison)
-                    Spacer()
-                }
-                .padding(.vertical, DesignSystem.tiny)
-            }
-        }
+        pageTypeSection(for: .comparison, label: L10n.Dashboard.pageList.comparisonCount(filteredPages(for: .comparison).count), icon: DesignSystem.Icons.comparison, color: .appComparison)
     }
 
     @ViewBuilder
     private var rawSection: some View {
-        let raws = filteredPages(for: .raw)
-        if !raws.isEmpty {
+        pageTypeSection(for: .raw, label: L10n.Dashboard.pageList.rawCount(filteredPages(for: .raw).count), icon: DesignSystem.Icons.raw, color: Color.theme.gray)
+    }
+
+    /// 通用页面类型分区：ForEach + header(Label + count)
+    @ViewBuilder
+    private func pageTypeSection(for type: PageType, label: String, icon: String, color: Color) -> some View {
+        let pages = filteredPages(for: type)
+        if !pages.isEmpty {
             Section {
                 VStack(spacing: DesignSystem.medium) {
-                    ForEach(raws) { page in
+                    ForEach(pages) { page in
                         selectablePageRow(page)
                     }
                 }
             } header: {
                 HStack {
-                    Label(L10n.Dashboard.pageList.rawCount(raws.count), systemImage: DesignSystem.Icons.raw)
+                    Label(label, systemImage: icon)
                         .font(.subheadline.bold())
-                        .foregroundStyle(Color.theme.gray)
+                        .foregroundStyle(color)
                     Spacer()
                 }
                 .padding(.vertical, DesignSystem.tiny)
@@ -354,44 +282,14 @@ struct KnowledgePageListContent: View {
     
     @ViewBuilder
     private var searchBarSection: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.search)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(.appAccent)
-            
-            TextField(L10n.SearchPlaceholder, text: $searchText)
-                .textFieldStyle(.plain)
-                .font(.subheadline)
-                .foregroundStyle(.appText)
-                .accessibilityIdentifier("searchPlaceholder")
-                .submitLabel(.search)
-                .onSubmit {
-                    if !searchText.isEmpty {
-                        triggerSearch(query: searchText)
-                    }
-                }
-
-            if !searchText.isEmpty {
-                Button(action: { 
-                    searchText = ""
-                    triggerSearch(query: "")
-                }) {
-                    Image(systemName: DesignSystem.Icons.errorCircle)
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, SystemSpacing.elementLarge)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: DesignSystem.borderWidth)
+        InsightSearchBar(
+            placeholder: L10n.SearchPlaceholder,
+            text: $searchText,
+            onSubmit: { triggerSearch(query: searchText) },
+            accessibilityIdentifier: FeatureConstants.AccessibilityID.searchPlaceholder,
+            horizontalPadding: DesignSystem.tiny,
+            bottomPadding: DesignSystem.tiny
         )
-        .padding(.horizontal, DesignSystem.tiny)
-        .padding(.bottom, DesignSystem.tiny)
     }
 }
 

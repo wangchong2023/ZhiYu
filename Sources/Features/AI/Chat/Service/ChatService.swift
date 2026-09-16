@@ -24,14 +24,9 @@ final class ChatService: ChatServiceProtocol {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        AppEventBus.shared.subscribe()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] event in
-                if case .clearAllDataRequested = event {
-                    self?.clearHistory()
-                }
-            }
-            .store(in: &cancellables)
+        AppEventBus.shared.subscribeClearAllData { [weak self] in
+            self?.clearHistory()
+        }.store(in: &cancellables)
     }
     
     /// 加载History

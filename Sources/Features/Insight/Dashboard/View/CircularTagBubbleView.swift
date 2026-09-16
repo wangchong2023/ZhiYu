@@ -76,19 +76,7 @@ struct CircularTagBubbleView: View {
         let textFontSize: CGFloat = baseTextSize + CGFloat(bubbleRatio * textSizeRange)
         
         Button(action: {
-            // 点击气泡更新选中状态
-            withAnimation(DesignSystem.Animation.prominent) {
-                if coordinator.isEditMode {
-                    if coordinator.selectedTagsForBulk.contains(item.tag) {
-                        coordinator.selectedTagsForBulk.remove(item.tag)
-                    } else {
-                        coordinator.selectedTagsForBulk.insert(item.tag)
-                    }
-                } else {
-                    coordinator.selectedTag = coordinator.selectedTag == item.tag ? nil : item.tag
-                }
-            }
-            HapticFeedback.shared.trigger(.selection)
+            InsightTagInteractions.toggleSelection(tag: item.tag, coordinator: coordinator)
         }) {
             VStack(spacing: SystemSpacing.tight) {
                 // 标签文本：首要保证单行显示，支持字体自适应缩小(最高压缩至48%)，仍溢出时尾部截断
@@ -100,12 +88,13 @@ struct CircularTagBubbleView: View {
                     .padding(.horizontal, SystemSpacing.small)
                 
                 // 词频指示数字胶囊
-                Text("\(item.count)")
-                    .font(.system(size: textFontSize * FeatureConstants.TagBubbleCloud.countBadgeFontScale, weight: .bold, design: .monospaced))
-                    .padding(.horizontal, SystemSpacing.tiny)
-                    .padding(.vertical, SystemSpacing.divider)
-                    .background(isSelected ? Color.theme.white.opacity(countBadgeSelectedOpacity) : Color.appSecondary.opacity(countBadgeUnselectedOpacity))
-                    .clipShape(Capsule())
+                InsightTagCountBadge(
+                    count: item.count,
+                    fontSize: textFontSize * FeatureConstants.TagBubbleCloud.countBadgeFontScale,
+                    isSelected: isSelected,
+                    selectedColor: Color.theme.white.opacity(countBadgeSelectedOpacity),
+                    unselectedColor: Color.appSecondary.opacity(countBadgeUnselectedOpacity)
+                )
             }
             .frame(width: baseSize, height: baseSize)
             .foregroundStyle(isSelected ? .white : .appText)
@@ -145,22 +134,6 @@ struct CircularTagBubbleView: View {
             }
         }
         .buttonStyle(.plain)
-        .contextMenu {
-            // 提供与列表模式对齐的右键管理上下文菜单
-            if !coordinator.isEditMode {
-                Button(action: {
-                    coordinator.tagToRename = item.tag
-                    coordinator.newTagName = item.tag
-                }) {
-                    Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
-                }
-                Button(role: .destructive, action: {
-                    coordinator.tagToDelete = item.tag
-                    coordinator.showDeleteConfirm = true
-                }) {
-                    Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
-                }
-            }
-        }
+        .tagManagementContextMenu(tag: item.tag, coordinator: coordinator)
     }
 }

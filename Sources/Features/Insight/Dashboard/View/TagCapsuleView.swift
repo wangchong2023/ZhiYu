@@ -154,39 +154,13 @@ struct TagCapsuleView: View {
     @ViewBuilder
     private func buttonContent(isSelected: Bool) -> some View {
         Button(action: {
-            withAnimation(DesignSystem.Animation.prominent) {
-                if coordinator.isEditMode {
-                    if coordinator.selectedTagsForBulk.contains(item.tag) {
-                        coordinator.selectedTagsForBulk.remove(item.tag)
-                    } else {
-                        coordinator.selectedTagsForBulk.insert(item.tag)
-                    }
-                } else {
-                    coordinator.selectedTag = coordinator.selectedTag == item.tag ? nil : item.tag
-                }
-            }
-            HapticFeedback.shared.trigger(.selection)
+            InsightTagInteractions.toggleSelection(tag: item.tag, coordinator: coordinator)
         }) {
             labelContent(isSelected: isSelected)
         }
         .buttonStyle(.plain)
         .foregroundStyle(isSelected ? .appAccent : .appText)
-        .contextMenu {
-            if !coordinator.isEditMode {
-                Button(action: {
-                    coordinator.tagToRename = item.tag
-                    coordinator.newTagName = item.tag
-                }) {
-                    Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
-                }
-                Button(role: .destructive, action: {
-                    coordinator.tagToDelete = item.tag
-                    coordinator.showDeleteConfirm = true
-                }) {
-                    Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
-                }
-            }
-        }
+        .tagManagementContextMenu(tag: item.tag, coordinator: coordinator)
     }
 
     // ── 共享 Label 内部渲染 ──
@@ -194,8 +168,7 @@ struct TagCapsuleView: View {
     private func labelContent(isSelected: Bool) -> some View {
         if isBubbleMode {
             VStack(spacing: DesignSystem.tiny) {
-                Text(item.tag.replacingOccurrences(of: "#", with: ""))
-                    .font(.system(size: fontSize, design: .rounded).weight(isSelected ? .semibold : .regular))
+                tagTitleText(isSelected: isSelected)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                     .multilineTextAlignment(.center)
@@ -217,24 +190,18 @@ struct TagCapsuleView: View {
                 Circle()
                     .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + clampedBubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignSystem.borderWidth)
             }
-            .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
-            .overlay(alignment: .topTrailing) {
-                if coordinator.isEditMode {
-                    editBadgeView(isSelected: isSelected)
-                }
-            }
+            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, isEditMode: coordinator.isEditMode, editBadge: { AnyView(editBadgeView(isSelected: isSelected)) })
         } else {
             HStack(spacing: DesignSystem.Layout.listRowSpacing) {
-                Text(item.tag.replacingOccurrences(of: "#", with: ""))
-                    .font(.system(size: fontSize, design: .rounded).weight(isSelected ? .semibold : .regular))
+                tagTitleText(isSelected: isSelected)
 
-                Text("\(item.count)")
-                    .font(.system(size: DesignSystem.microFontSize, weight: .bold, design: .monospaced))
-                    .padding(.horizontal, SystemSpacing.tiny)
-                    .padding(.vertical, SystemSpacing.divider)
-                    .background(isSelected ? Color.appAccent.opacity(SystemOpacity.glass) : Color.appSecondary.opacity(SystemOpacity.ghost))
-                    .clipShape(Capsule())
+                InsightTagCountBadge(
+                    count: item.count,
+                    fontSize: DesignSystem.microFontSize,
+                    isSelected: isSelected,
+                    selectedColor: Color.appAccent.opacity(SystemOpacity.glass),
+                    unselectedColor: Color.appSecondary.opacity(SystemOpacity.ghost)
+                )
             }
             .padding(.horizontal, paddingH)
             .padding(.vertical, paddingV)
@@ -246,13 +213,7 @@ struct TagCapsuleView: View {
                 Capsule()
                     .stroke(isSelected ? Color.appAccent.opacity(SystemOpacity.textSecondary) : Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.divider)
             }
-            .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
-            .overlay(alignment: .topTrailing) {
-                if coordinator.isEditMode {
-                    editBadgeView(isSelected: isSelected)
-                }
-            }
+            .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, isEditMode: coordinator.isEditMode, editBadge: { AnyView(editBadgeView(isSelected: isSelected)) })
         }
     }
 
@@ -278,5 +239,46 @@ struct TagCapsuleView: View {
             x: isBubbleMode ? -DesignSystem.small : DesignSystem.small,
             y: isBubbleMode ? DesignSystem.small : -DesignSystem.small
         )
+    }
+
+    /// 标签标题文本：移除 # 前缀并应用统一字体样式
+    @ViewBuilder
+    private func tagTitleText(isSelected: Bool) -> some View {
+        Text(item.tag.replacingOccurrences(of: "#", with: ""))
+            .font(.system(size: fontSize, design: .rounded).weight(isSelected ? .semibold : .regular))
+    }
+
+    /// 应用编辑角标覆盖层：缩放 + 阴影 + 编辑角标（实现见 extension View）
+}
+
+// MARK: - 编辑角标覆盖层扩展
+extension View {
+    /// 应用编辑角标覆盖层：缩放 + 阴影 + 编辑角标
+    func applyEditOverlay(isSelected: Bool, clampedBubbleRatio: CGFloat, isEditMode: Bool, editBadge: @escaping () -> AnyView) -> some View {
+        modifier(EditOverlayModifier(
+            isSelected: isSelected,
+            clampedBubbleRatio: clampedBubbleRatio,
+            isEditMode: isEditMode,
+            editBadge: editBadge
+        ))
+    }
+}
+
+/// 编辑角标覆盖层修饰符：缩放 + 阴影 + 编辑角标
+private struct EditOverlayModifier: ViewModifier {
+    let isSelected: Bool
+    let clampedBubbleRatio: CGFloat
+    let isEditMode: Bool
+    let editBadge: () -> AnyView
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
+            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
+            .overlay(alignment: .topTrailing) {
+                if isEditMode {
+                    editBadge()
+                }
+            }
     }
 }

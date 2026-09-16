@@ -28,9 +28,7 @@ extension PluginDetailView {
             Button(action: {
                 if isInstalled {
                     // 解析出沙盒加载的真实 ID（例如 com.zhiyu.plugin.local.toc-generator）以便成功物理注销
-                    let targetID = registry.plugins.first(where: {
-                        $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
-                    })?.manifest.id ?? plugin.id
+                    let targetID = resolveTargetID()
                     registry.unloadPlugin(id: targetID)
                     HapticFeedback.shared.trigger(.success)
                 } else {

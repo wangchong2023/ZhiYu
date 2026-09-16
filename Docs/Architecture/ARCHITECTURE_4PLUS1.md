@@ -318,7 +318,7 @@ graph LR
 - **UI 优雅隔离**: 视图中的平台宏必须提炼为独立的子 View 或 `@ViewBuilder`，保持主视图逻辑纯净。
 
 #### 3. 依赖注入冷启动时序 (Dependency Injection Cold Boot)
-在应用冷启动时，`ModuleRegistrar` 识别当前编译目标系统类型，按需拉起具体的平台专属实现（例如 `iOSPlatformCapabilities` 适配器，其实现了 `PlatformCapabilities` 协议），并将其注入至容器，时序图如下：
+在应用冷启动时，ModuleRegistrar 识别当前编译目标系统类型，按需拉起具体的平台专属实现（例如 iOSPlatformCapabilities 适配器，其实现了 PlatformCapabilities 协议），并将其注入至容器，时序图如下：
 
 ```mermaid
 sequenceDiagram

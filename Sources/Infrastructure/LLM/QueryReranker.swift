@@ -46,34 +46,40 @@ final class QueryReranker: LLMRetrievalServiceProtocol {
     }
     
     // MARK: - LLMRetrievalServiceProtocol 契约方法
-    
+
+    /// 当服务已启用且 API 密钥非空时返回 retrievalService，否则返回 nil
+    private func configuredRetrievalService() -> LLMRetrievalService? {
+        guard configManager.isEnabled, !configManager.apiKey.isEmpty else { return nil }
+        return retrievalService
+    }
+
     /// 对原始查询进行语义重写，以便更契合向量空间检索
     func rewriteQuery(_ query: String) async -> String {
-        guard configManager.isEnabled, !configManager.apiKey.isEmpty, let retrievalService = self.retrievalService else { return query }
-        return await retrievalService.rewriteQuery(query)
+        guard let service = configuredRetrievalService() else { return query }
+        return await service.rewriteQuery(query)
     }
-    
+
     /// 对检索词进行多维度同义扩展，生成多个扩展查询语句提升召回率
     func expandQuery(_ query: String) async -> [String] {
-        guard configManager.isEnabled, !configManager.apiKey.isEmpty, let retrievalService = self.retrievalService else { return [query] }
-        return await retrievalService.expandQuery(query)
+        guard let service = configuredRetrievalService() else { return [query] }
+        return await service.expandQuery(query)
     }
-    
+
     /// 对初次召回的知识页面候选集进行二次精排重排列
     func rerank(query: String, candidates: [any KnowledgePageRepresentable]) async throws -> [any KnowledgePageRepresentable] {
-        guard configManager.isEnabled, !configManager.apiKey.isEmpty, let retrievalService = self.retrievalService else { return candidates }
-        return try await retrievalService.rerank(query: query, candidates: candidates)
+        guard let service = configuredRetrievalService() else { return candidates }
+        return try await service.rerank(query: query, candidates: candidates)
     }
-    
+
     /// 对颗粒度更细的 PageChunk 进行重排，筛选出最优质的前 N 个 Chunks
     func rerankChunks(query: String, chunks: [PageChunk]) async -> [PageChunk] {
-        guard configManager.isEnabled, !configManager.apiKey.isEmpty, let retrievalService = self.retrievalService else { return chunks }
-        return await retrievalService.rerankChunks(query: query, chunks: chunks)
+        guard let service = configuredRetrievalService() else { return chunks }
+        return await service.rerankChunks(query: query, chunks: chunks)
     }
-    
+
     /// 预生成当前提问的假想文档 (HyDE) 提高向量召回率
     func generateHypotheticalDocument(query: String) async -> String {
-        guard configManager.isEnabled, !configManager.apiKey.isEmpty, let retrievalService = self.retrievalService else { return query }
-        return await retrievalService.generateHypotheticalDocument(query: query)
+        guard let service = configuredRetrievalService() else { return query }
+        return await service.generateHypotheticalDocument(query: query)
     }
 }

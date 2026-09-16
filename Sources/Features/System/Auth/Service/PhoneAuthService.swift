@@ -36,18 +36,22 @@ extension AuthService {
             return await handleSuccessfulLogin(response: response, identity: identity)
         }
         #endif
-        let req = LoginRequest.password(username: identity, password: password)
+        return await performPhoneLogin(request: LoginRequest.password(username: identity, password: password), identity: identity, errorTag: FeatureConstants.AuthErrorTag.passwordLoginFailed)
+    }
+
+    /// 执行手机登录网络请求，消除密码登录与短信登录的重复
+    private func performPhoneLogin(request: LoginRequest, identity: String, errorTag: String) async -> Bool {
         do {
             let response: LoginResponse = try await NetworkClient.shared.request(
                 path: APIPaths.phoneLoginPath,
                 method: SystemConstants.HTTPMethod.post,
-                body: req,
+                body: request,
                 requiresAuth: false
             )
 
             return await handleSuccessfulLogin(response: response, identity: identity)
         } catch {
-            Logger.shared.error("[AuthService] Password login failed", error: error)
+            Logger.shared.error("[AuthService] \(errorTag)", error: error)
             return false
         }
     }
@@ -86,19 +90,6 @@ extension AuthService {
     /// - Returns: 是否成功
     @MainActor
     public func register(phone: String, code: String, password: String) async -> Bool {
-        let req = LoginRequest.sms(phone: phone, code: code)
-        do {
-            let response: LoginResponse = try await NetworkClient.shared.request(
-                path: APIPaths.phoneLoginPath,
-                method: SystemConstants.HTTPMethod.post,
-                body: req,
-                requiresAuth: false
-            )
-
-            return await handleSuccessfulLogin(response: response, identity: phone)
-        } catch {
-            Logger.shared.error("[AuthService] SMS login/register failed", error: error)
-            return false
-        }
+        return await performPhoneLogin(request: LoginRequest.sms(phone: phone, code: code), identity: phone, errorTag: FeatureConstants.AuthErrorTag.smsLoginRegisterFailed)
     }
 }

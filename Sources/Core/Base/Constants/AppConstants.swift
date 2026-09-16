@@ -18,6 +18,19 @@ public struct AppConstants {
     /// 应用显示名称
     public static let displayName: String = "ZhiYu"
 
+    // MARK: - Bundle 元数据键名
+    /// Bundle.infoDictionary 中版本号与构建号的键名及默认值，消除多平台 AppEnvironment 重复。
+    public struct Bundle {
+        /// CFBundleShortVersionString 键名
+        public static let versionKey: String = "CFBundleShortVersionString"
+        /// CFBundleVersion 键名
+        public static let buildKey: String = "CFBundleVersion"
+        /// 版本号缺失时的默认值
+        public static let defaultVersion: String = "1.0.0"
+        /// 构建号缺失时的默认值
+        public static let defaultBuild: String = "1"
+    }
+
     // MARK: - Network
     public struct Network {
         // MARK: - Token 与超时

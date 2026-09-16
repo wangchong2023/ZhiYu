@@ -276,31 +276,34 @@ struct ModelCardView: View {
 
     /// 强物理内存拦截红条
     private func restrictedBanner(for manifest: LLMManifest) -> some View {
-        HStack(spacing: SystemSpacing.element) {
-            Image(systemName: DesignSystem.Icons.warning)
-                .foregroundStyle(Color.theme.red)
-            Text(" \(String(format: "%.1f", manifest.minDeviceMemoryInGb)) GB  OOM")
-                .font(.system(size: SystemFontSize.micro)) // Dynamic Type
-                .foregroundStyle(Color.theme.red)
-            Spacer()
-        }
-        .padding(DesignSystem.tightPadding)
-        .background(Color.theme.red.opacity(DesignSystem.Opacity.subtle))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.Chip.cornerRadius))
+        memoryBanner(
+            icon: DesignSystem.Icons.warning,
+            text: " \(String(format: "%.1f", manifest.minDeviceMemoryInGb)) GB  OOM",
+            color: Color.theme.red
+        )
     }
 
     /// 临界运存警告黄条
     private var warningBanner: some View {
+        memoryBanner(
+            icon: DesignSystem.Icons.exclamationmarkCircleFill,
+            text: L10n.ModelManager.Card.warningLowMemory,
+            color: Color.theme.orange
+        )
+    }
+
+    /// 通用内存警告横幅，消除 restrictedBanner/warningBanner 的重复结构
+    private func memoryBanner(icon: String, text: String, color: Color) -> some View {
         HStack(spacing: SystemSpacing.element) {
-            Image(systemName: DesignSystem.Icons.exclamationmarkCircleFill)
-                .foregroundStyle(Color.theme.orange)
-            Text(L10n.ModelManager.Card.warningLowMemory)
+            Image(systemName: icon)
+                .foregroundStyle(color)
+            Text(text)
                 .font(.system(size: SystemFontSize.micro)) // Dynamic Type
-                .foregroundStyle(Color.theme.orange)
+                .foregroundStyle(color)
             Spacer()
         }
         .padding(DesignSystem.tightPadding)
-        .background(Color.theme.orange.opacity(DesignSystem.Opacity.subtle))
+        .background(color.opacity(DesignSystem.Opacity.subtle))
         .clipShape(RoundedRectangle(cornerRadius: Spacing.Chip.cornerRadius))
     }
 

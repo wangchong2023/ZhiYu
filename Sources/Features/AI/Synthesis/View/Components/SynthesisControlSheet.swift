@@ -28,25 +28,23 @@ struct SynthesisControlSheet: View {
                 }
 
                 Section(header: Text(L10n.AI.Synthesis.Control.depth)) {
-                    Picker(L10n.AI.Synthesis.Control.depth, selection: $options.depth) {
+                    segmentedPicker(header: L10n.AI.Synthesis.Control.depth, selection: $options.depth) {
                         Text(L10n.AI.Synthesis.Control.Depth.concise).tag(SynthesisControlOptions.Depth.concise)
                         Text(L10n.AI.Synthesis.Control.Depth.standard).tag(SynthesisControlOptions.Depth.standard)
                         Text(L10n.AI.Synthesis.Control.Depth.detailed).tag(SynthesisControlOptions.Depth.detailed)
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 Section(header: Text(L10n.AI.Synthesis.Control.audience)) {
-                    Picker(L10n.AI.Synthesis.Control.audience, selection: $options.audience) {
+                    segmentedPicker(header: L10n.AI.Synthesis.Control.audience, selection: $options.audience) {
                         Text(L10n.AI.Synthesis.Control.Audience.beginner).tag(SynthesisControlOptions.Audience.beginner)
                         Text(L10n.AI.Synthesis.Control.Audience.professional).tag(SynthesisControlOptions.Audience.professional)
                         Text(L10n.AI.Synthesis.Control.Audience.executive).tag(SynthesisControlOptions.Audience.executive)
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 Section(header: Text(L10n.AI.Synthesis.Control.tone)) {
-                    Picker(L10n.AI.Synthesis.Control.tone, selection: $options.tone) {
+                    segmentedPicker(header: L10n.AI.Synthesis.Control.tone, selection: $options.tone) {
                         Text(L10n.AI.Synthesis.Control.Tone.academic).tag(SynthesisControlOptions.Tone.academic)
                         Text(L10n.AI.Synthesis.Control.Tone.professional).tag(SynthesisControlOptions.Tone.professional)
                         Text(L10n.AI.Synthesis.Control.Tone.casual).tag(SynthesisControlOptions.Tone.casual)
@@ -59,12 +57,6 @@ struct SynthesisControlSheet: View {
             .navigationTitle(L10n.AI.Synthesis.Control.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.Common.cancel) {
-                        dismiss()
-                    }
-                    .foregroundStyle(Color.appSecondary)
-                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.AI.Synthesis.Control.startSynthesis) {
                         onConfirm(options)
@@ -73,8 +65,24 @@ struct SynthesisControlSheet: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(Color.appAccent)
                 }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L10n.Common.cancel) {
+                        dismiss()
+                    }
+                    .foregroundStyle(Color.appSecondary)
+                }
             }
         }
         .tint(Color.appAccent)
+    }
+
+    /// 分段选择器（消除重复的 Picker + .pickerStyle(.segmented) 链）
+    private func segmentedPicker<SelectionValue: Hashable, Content: View>(
+        header: String,
+        selection: Binding<SelectionValue>,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        Picker(header, selection: selection, content: content)
+            .pickerStyle(.segmented)
     }
 }

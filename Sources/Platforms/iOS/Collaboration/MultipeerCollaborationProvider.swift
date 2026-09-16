@@ -26,11 +26,18 @@ final class MultipeerCollaborationProvider: NSObject, CollaborationProviderProto
     private var advertiserDelegate: MCAdvertiserDelegateImpl?
     private var browserDelegate: MCBrowserDelegateImpl?
     
+    /// 构造带唯一后缀的 PeerID（`userName|uuid前8位`），消除 startHosting/startBrowsing
+    /// 中重复的 `MCPeerID(displayName: "\(userName)|\(UUID().uuidString.prefix(8))")` 模式。
+    private func makePeerID(userName: String) -> MCPeerID {
+        let suffix = String(UUID().uuidString.prefix(PlatformConstants.Multipeer.peerIDSuffixLength))
+        return MCPeerID(displayName: "\(userName)|\(suffix)")
+    }
+
     /// 启动Hosting
     /// - Parameter roomName: roomName
     /// - Parameter userName: userName
     func startHosting(roomName: String, userName: String) {
-        let peerID = MCPeerID(displayName: "\(userName)|\(UUID().uuidString.prefix(8))")
+        let peerID = makePeerID(userName: userName)
         self.myPeerID = peerID
         
         setupSession(peerID: peerID)
@@ -56,7 +63,7 @@ final class MultipeerCollaborationProvider: NSObject, CollaborationProviderProto
     /// 启动Browsing
     /// - Parameter userName: userName
     func startBrowsing(userName: String) {
-        let peerID = MCPeerID(displayName: "\(userName)|\(UUID().uuidString.prefix(8))")
+        let peerID = makePeerID(userName: userName)
         self.myPeerID = peerID
         
         setupSession(peerID: peerID)

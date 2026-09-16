@@ -28,8 +28,24 @@ struct PluginStatsSection: View {
                 VStack(spacing: DesignSystem.medium) {
                     // 顶部统计卡片，让画面更显饱满与专业
                     HStack(spacing: DesignSystem.medium) {
-                        statCard(title: L10n.Plugin.Stats.enabledCount, value: "\(registry.plugins.count)", icon: DesignSystem.Icons.puzzlepieceExtensionFill, color: Color.theme.blue)
-                        statCard(title: L10n.Plugin.Stats.activeCount, value: "\(registry.pluginResourceUsage.filter { $0.value.status == .active }.count)", icon: "play.circle.fill", color: Color.theme.green)
+                        MetricTile(
+                            title: L10n.Plugin.Stats.enabledCount,
+                            value: "\(registry.plugins.count)",
+                            icon: DesignSystem.Icons.puzzlepieceExtensionFill,
+                            iconColor: Color.theme.blue,
+                            valueColor: .appText,
+                            containerOpacity: DesignSystem.Opacity.dim,
+                            cornerRadius: DesignSystem.mediumRadius
+                        )
+                        MetricTile(
+                            title: L10n.Plugin.Stats.activeCount,
+                            value: "\(registry.pluginResourceUsage.filter { $0.value.status == .active }.count)",
+                            icon: "play.circle.fill",
+                            iconColor: Color.theme.green,
+                            valueColor: .appText,
+                            containerOpacity: DesignSystem.Opacity.dim,
+                            cornerRadius: DesignSystem.mediumRadius
+                        )
                     }
                     .padding(.horizontal, DesignSystem.small)
 
@@ -186,28 +202,4 @@ struct PluginStatsSection: View {
         }
     }
 
-    private func statCard(title: String, value: String, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-            HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundStyle(color)
-                Text(title)
-                    .font(.caption.bold())
-                    .foregroundStyle(.appSecondary)
-            }
-            Text(value)
-                .font(.title2)
-                .bold()
-                .foregroundStyle(.appText)
-        }
-        .padding(DesignSystem.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-        .cornerRadius(DesignSystem.mediumRadius)
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
-        )
-    }
 }

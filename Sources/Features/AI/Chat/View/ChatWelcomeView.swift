@@ -70,7 +70,7 @@ struct SuggestionGroupView: View {
             Button(action: {
                 HapticFeedback.shared.trigger(.link)
                 let query = L10n.Chat.deepExplorePrompt(title)
-                Task { await coordinator.sendMessage(query: query, pages: store.pages) }
+                sendQuery(query)
             }) {
                 HStack(spacing: SystemSpacing.small) {
                     Image(systemName: icon).font(.caption2)
@@ -90,7 +90,7 @@ struct SuggestionGroupView: View {
                 Button(action: { 
                     HapticFeedback.shared.trigger(.link)
                     coordinator.showPrompts = false
-                    Task { await coordinator.sendMessage(query: query, pages: store.pages) }
+                    sendQuery(query)
                 }) {
                     HStack {
                         Text(query).font(.subheadline).foregroundStyle(.appText).multilineTextAlignment(.leading)
@@ -98,15 +98,16 @@ struct SuggestionGroupView: View {
                         Image(systemName: DesignSystem.Icons.arrowUpRight).font(.caption2).foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.overlay))
                     }
                     .padding()
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                            .stroke(Color.appBorder.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth)
-                    )
+                    .appCardClip(cornerRadius: DesignSystem.standardRadius)
+                    .overlayStroke(borderColor: Color.appBorder.opacity(DesignSystem.disabledOpacity))
                 }
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    /// 发送追问查询（消除重复的 Task + coordinator.sendMessage 链）
+    private func sendQuery(_ query: String) {
+        Task { await coordinator.sendMessage(query: query, pages: store.pages) }
     }
 }

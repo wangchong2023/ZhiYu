@@ -14,17 +14,7 @@ extension L10n {
     public struct Shortcuts: L10nTableEntry {
         public static let tableName = "System"
         public static var t: String { tableName }
-        /// 本地化翻译
-        /// - Parameter key: key
-        /// - Returns: 返回值
-        /// 本地化格式化翻译
-        /// - Parameter key: key
-        /// - Parameter args: args
-        /// - Returns: 返回值
-        public static func trf(_ key: String, _ args: CVarArg...) -> String {
-            return Localized.trf(key, table: t, arguments: args)
-        }
-        
+
         public struct Capture {
             public static var title: String { tr("shortcuts.capture.title") }
             public static var titleResource: LocalizedStringResource { .init("shortcuts.capture.title", table: "System") }

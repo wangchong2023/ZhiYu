@@ -53,12 +53,7 @@ struct VisionProSpatialView: View {
             .padding()
         }
         .navigationTitle(L10n.Common.Spatial.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(L10n.Common.done) { dismiss() }
-            }
-        }
+        .doneDismissToolbar()
     }
     
     private func header(title: String, subtitle: String) -> some View {

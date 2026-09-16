@@ -13,6 +13,12 @@ import UFPCore
 import QuickLook
 import Dependencies
 
+/// 校验是否是纯文本文件后缀（消除 ImportRecordSection 与 ImportPreviewHandler 的重复定义）
+private func isTextFile(path: String) -> Bool {
+    let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
+    return SystemConstants.FileExtension.textFileExtensions.contains(ext)
+}
+
 struct ImportRecordSection: View {
     @State private var selectedCategory: String = FeatureConstants.CategoryFilter.all
     @State private var records: [ImportRecord] = []
@@ -129,17 +135,10 @@ struct ImportRecordSection: View {
     }
     
     private func cleanPreviewText(_ text: String) -> String {
-        text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "「")
-            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "」")
+        WikiLinkTextSanitizer.convertToQuoted(text)
     }
 
     // MARK: - 预览分发
-
-    /// 校验是否是纯文本文件后缀
-    private func isTextFile(path: String) -> Bool {
-        let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
-        return SystemConstants.FileExtension.textFileExtensions.contains(ext)
-    }
 
     private func previewContent(_ record: ImportRecord, forceRaw: Bool = false) {
         previewRecord = record
@@ -202,15 +201,14 @@ struct ImportRecordSection: View {
         if let record = previewRecord {
             VStack(alignment: .leading, spacing: DesignSystem.small) {
                 HStack {
-                    Label(L10n.Ingest.ocrScan, systemImage: DesignSystem.Icons.cameraViewfinder)
-                        .font(.caption.weight(.bold))
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.vertical, DesignSystem.tightPadding)
-                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
-                        .foregroundStyle(.appAccent)
-                    
+                    sourceBadge(
+                        label: L10n.Ingest.ocrScan,
+                        icon: DesignSystem.Icons.cameraViewfinder,
+                        color: .appAccent
+                    )
+
                     Spacer()
-                    
+
                     Text(L10n.Ingest.imageOCRLabel)
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(.secondary)
@@ -234,41 +232,35 @@ struct ImportRecordSection: View {
     @ViewBuilder
     private var previewSourceBadge: some View {
         let cat = previewRecord?.category ?? FeatureConstants.SourceType.file
-        Label(badgeLabel(for: cat), systemImage: badgeIcon(for: cat))
-            .font(.caption.weight(.bold))
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, DesignSystem.tightPadding)
-            .background(Capsule().fill(badgeColor(for: cat).opacity(DesignSystem.Opacity.subtle)))
-            .foregroundStyle(badgeColor(for: cat))
+        let badge = badgeAttributes(for: cat)
+        sourceBadge(
+            label: badge.label,
+            icon: badge.icon,
+            color: badge.color
+        )
     }
 
-    private func badgeLabel(for category: String) -> String {
-        switch category {
-        case FeatureConstants.SourceType.ocr: return L10n.Ingest.ocrScan
-        case FeatureConstants.SourceType.voice: return L10n.Ingest.voiceNote
-        case FeatureConstants.SourceType.link: return L10n.Ingest.urlImport
-        case FeatureConstants.SourceType.manual: return L10n.Ingest.manualEntry
-        default: return L10n.Ingest.fileImport
-        }
+    /// 来源 Badge 胶囊，消除 ocrPreviewHeader 与 previewSourceBadge 的重复修饰符链
+    @ViewBuilder
+    private func sourceBadge(label: String, icon: String, color: Color) -> some View {
+        SourceBadge(label: label, icon: icon, color: color)
     }
 
-    private func badgeIcon(for category: String) -> String {
-        switch category {
-        case FeatureConstants.SourceType.ocr: return "camera.viewfinder"
-        case FeatureConstants.SourceType.voice: return "waveform"
-        case FeatureConstants.SourceType.link: return "link"
-        case FeatureConstants.SourceType.manual: return "square.and.pencil"
-        default: return "doc.text"
-        }
+    /// Badge 属性结构体，承载 category 对应的 label/icon/color
+    private struct BadgeAttributes {
+        let label: String
+        let icon: String
+        let color: Color
     }
 
-    private func badgeColor(for category: String) -> Color {
+    /// 一次性返回 category 对应的 label/icon/color，消除三个独立 switch 的重复 case 分支
+    private func badgeAttributes(for category: String) -> BadgeAttributes {
         switch category {
-        case FeatureConstants.SourceType.ocr: return Color.theme.purple
-        case FeatureConstants.SourceType.voice: return Color.theme.pink
-        case FeatureConstants.SourceType.link: return Color.theme.blue
-        case FeatureConstants.SourceType.manual: return Color.theme.orange
-        default: return .appAccent
+        case FeatureConstants.SourceType.ocr: return BadgeAttributes(label: L10n.Ingest.ocrScan, icon: "camera.viewfinder", color: Color.theme.purple)
+        case FeatureConstants.SourceType.voice: return BadgeAttributes(label: L10n.Ingest.voiceNote, icon: "waveform", color: Color.theme.pink)
+        case FeatureConstants.SourceType.link: return BadgeAttributes(label: L10n.Ingest.urlImport, icon: "link", color: Color.theme.blue)
+        case FeatureConstants.SourceType.manual: return BadgeAttributes(label: L10n.Ingest.manualEntry, icon: "square.and.pencil", color: Color.theme.orange)
+        default: return BadgeAttributes(label: L10n.Ingest.fileImport, icon: "doc.text", color: .appAccent)
         }
     }
 
@@ -434,10 +426,5 @@ struct ImportPreviewHandler {
         }
         
         return nil
-    }
-
-    private func isTextFile(path: String) -> Bool {
-        let ext = URL(fileURLWithPath: path).pathExtension.lowercased()
-        return SystemConstants.FileExtension.textFileExtensions.contains(ext)
     }
 }

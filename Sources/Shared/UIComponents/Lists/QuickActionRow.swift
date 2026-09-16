@@ -71,8 +71,7 @@ public struct QuickActionRow: View {
                     .foregroundStyle(.appSecondary.opacity(Colors.dimmedOpacity))
             }
             .padding(Spacing.standardPadding)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.medium))
+            .appCardClip(cornerRadius: Spacing.medium, backgroundOpacity: DesignSystem.Opacity.prominent)
             .shadow(
                 color: .black.opacity(isPressed ? Spacing.shadowOpacity : Spacing.shadowOpacity * 2), 
                 radius: isPressed ? Spacing.shadowRadius / 2.5 : Spacing.shadowRadius / 1.25, 

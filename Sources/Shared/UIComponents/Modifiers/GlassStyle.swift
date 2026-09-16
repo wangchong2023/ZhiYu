@@ -39,12 +39,13 @@ public struct GlassCardModifier: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .background(.ultraThinMaterial.opacity(opacity))
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.disabled), lineWidth: 0.5)
+            .glassOverlay(
+                borderColor: .appBorder,
+                cornerRadius: cornerRadius,
+                shadowOpacity: DesignSystem.Opacity.ghost,
+                shadowRadius: 10,
+                shadowY: 5
             )
-            .shadow(color: Color.theme.black.opacity(DesignSystem.Opacity.ghost), radius: 10, x: 0, y: 5)
     }
 }
 
@@ -96,12 +97,13 @@ public extension View {
                     background.opacity(UIConstants.backgroundOpacity) // 优化通透度
                 }
             )
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor.opacity(DesignSystem.Opacity.medium), lineWidth: 0.5) // 稍微增强边框，匹配任务中心
+            .glassOverlay(
+                borderColor: borderColor,
+                cornerRadius: cornerRadius,
+                shadowOpacity: DesignSystem.Opacity.faint,
+                shadowRadius: 10,
+                shadowY: 5
             )
-            .shadow(color: Color.theme.black.opacity(DesignSystem.Opacity.faint), radius: 10, x: 0, y: 5)
     }
     
     /// 仪表盘指标卡片风格 (Metric Card Style)
@@ -122,12 +124,33 @@ public extension View {
                     )
                 }
             )
+            .glassOverlay(
+                borderColor: color,
+                cornerRadius: cornerRadius,
+                shadowOpacity: DesignSystem.Opacity.atomic,
+                shadowRadius: 8,
+                shadowY: 4
+            )
+    }
+}
+
+// MARK: - 玻璃风格共享修饰
+private extension View {
+    /// 统一的 clipShape + stroke overlay + shadow 组合，消除 appContainer / appMetricCardStyle 两处重复。
+    func glassOverlay(
+        borderColor: Color,
+        cornerRadius: CGFloat,
+        shadowOpacity: Double,
+        shadowRadius: CGFloat,
+        shadowY: CGFloat
+    ) -> some View {
+        self
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(color.opacity(DesignSystem.Opacity.medium), lineWidth: 0.5) // 使用强调色淡边框
+                    .stroke(borderColor.opacity(DesignSystem.Opacity.medium), lineWidth: SystemStroke.hairline)
             )
-            .shadow(color: Color.theme.black.opacity(DesignSystem.Opacity.atomic), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.theme.black.opacity(shadowOpacity), radius: shadowRadius, x: SystemSpacing.none, y: shadowY)
     }
 }
 

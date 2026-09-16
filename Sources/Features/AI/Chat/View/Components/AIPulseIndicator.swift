@@ -43,12 +43,7 @@ struct AIPulseIndicator: View {
     }
     
     private var currentStage: TaskStage {
-        if let runningTask = taskCenter.tasks.first(where: { if case .running = $0.status { return true }; return false }) {
-            if case .running(_, let stage) = runningTask.status {
-                return stage
-            }
-        }
-        return .general
+        taskCenter.currentRunningStage
     }
     
     private var pulseColor: Color {

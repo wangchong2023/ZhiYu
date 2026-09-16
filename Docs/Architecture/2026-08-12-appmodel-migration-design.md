@@ -778,7 +778,7 @@ private enum TaskCenterKey: DependencyKey {
 | # | 任务 | 文件 | 验证 |
 |---|------|------|------|
 | P7-1 | 删除 `@Inject` 属性包装器 | `Packages/UFPCore/Sources/UFPCore/Base/ServiceContainer.swift` | 全量替换为 `@Dependency` |
-| P7-2 | 删除 `ServiceContainer` 注册代码 | `Sources/App/ModuleRegistrar.swift` | `ModuleRegistrar` 改为 `DependencyRegistrar` |
+| P7-2 | 删除 `ServiceContainer` 注册代码 | `Sources/App/ModuleRegistrar.swift` | ModuleRegistrar 改为 DependencyRegistrar |
 | P7-3 | 删除 `setupFullMockEnvironment()` | `Tests/Shared/TestMocks.swift` | 替换为 `withDependencies { $0 = .mock }` |
 | P7-4 | 删除 3 个 `testOverride` | `KeychainService`/`SecurityManager`/`SecureEnclaveCryptoService` | 改为 `@Dependency` |
 | P7-5 | 迁移 `Localized` 静态缓存 | `Sources/Core/Base/Utils/Localized.swift` | `languageMode`/`cachedBundle`/`cachedLanguage` → `@Dependency` |

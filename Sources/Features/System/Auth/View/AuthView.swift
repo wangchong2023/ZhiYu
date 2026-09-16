@@ -30,6 +30,8 @@ struct AuthView: View {
     @State private var selectedLanguage: LanguageMode = Localized.languageMode
 
     var body: some View {
+        let showPrivacySheetBinding = $showPrivacySheet
+        let showTermsSheetBinding = $showTermsSheet
         ZStack {
             // 背景层
             themeManager.pageBackground()
@@ -49,8 +51,8 @@ struct AuthView: View {
                             AuthPhonePanel(
                                 isLoading: $isLoading,
                                 isAgreementChecked: $isAgreementChecked,
-                                showPrivacySheet: $showPrivacySheet,
-                                showTermsSheet: $showTermsSheet,
+                                showPrivacySheet: showPrivacySheetBinding,
+                                showTermsSheet: showTermsSheetBinding,
                                 handleAuth: handleAuth
                             )
                         } else {
@@ -76,20 +78,16 @@ struct AuthView: View {
                 .padding(.vertical, Spacing.wide)
             }
         }
-        .sheet(isPresented: $showPrivacySheet) {
-            policySheetContent(
-                title: L10n.Auth.privacyPolicyTitle,
-                content: L10n.Auth.privacyPolicyContent,
-                isPresented: $showPrivacySheet
-            )
-        }
-        .sheet(isPresented: $showTermsSheet) {
-            policySheetContent(
-                title: L10n.Auth.termsOfServiceTitle,
-                content: L10n.Auth.termsOfServiceContent,
-                isPresented: $showTermsSheet
-            )
-        }
+        .policySheet(
+            isPresented: showPrivacySheetBinding,
+            title: L10n.Auth.privacyPolicyTitle,
+            content: L10n.Auth.privacyPolicyContent
+        )
+        .policySheet(
+            isPresented: showTermsSheetBinding,
+            title: L10n.Auth.termsOfServiceTitle,
+            content: L10n.Auth.termsOfServiceContent
+        )
     }
 
     // MARK: - 子视图
@@ -183,44 +181,6 @@ struct AuthView: View {
             }
         }
         .padding(.top, Spacing.wide)
-    }
-
-    // MARK: - 公共 Sheet 组件
-
-    /// 隐私政策 / 服务条款 通用弹窗
-    private func policySheetContent(
-        title: String,
-        content: String,
-        isPresented: Binding<Bool>
-    ) -> some View {
-        NavigationStack {
-            ZStack {
-                themeManager.pageBackground()
-                    .ignoresSafeArea()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.medium) {
-                        Text(content)
-                            .font(.body)
-                            .foregroundStyle(.appText)
-                            .lineSpacing(Spacing.tiny)
-                        Spacer()
-                    }
-                    .padding()
-                    .appListRowBackground()
-                    .padding()
-                }
-            }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .environment(\.locale, Localized.currentLocale)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.Common.confirm) {
-                        isPresented.wrappedValue = false
-                    }
-                }
-            }
-        }
     }
 
     // MARK: - 逻辑

@@ -24,26 +24,14 @@ public final class AppStore {
 
     // MARK: - 辅助类型
 
-    /// 引导层类型定义
-    public enum CoachMarkType: String, Sendable {
-        case graphDiscovery = "graph_discovery"
-    }
+    /// 引导层类型定义（顶级声明位于 AppModels.swift，此处通过 typealias 消除重复定义）
+    public typealias CoachMarkType = AppModels.CoachMarkType
+
+    /// 知识增长点数据模型（顶级声明位于 AppModels.swift，此处通过 typealias 消除重复定义）
+    public typealias KnowledgeGrowthPoint = AppModels.KnowledgeGrowthPoint
 
     // ToolItem 已下移至 L1.5 Domain 层 (Sources/Domain/Models/ToolItem.swift)
     // 原 AppStore.ToolItem 引用可直接使用 ToolItem（同模块内顶级类型）
-
-    /// 知识增长点数据模型
-    public struct KnowledgeGrowthPoint: Identifiable {
-        public let id = UUID()
-        public let date: Date
-        public let count: Int
-
-        public init(date: Date, count: Int) {
-            self.date = date
-            self.count = count
-        }
-    }
-
     // ── UI 状态 ──
     public var pendingCoachMark: CoachMarkType?
 
@@ -198,17 +186,11 @@ public final class AppStore {
         sourceType: String? = nil,
         forceDeepScan _: Bool = false
     ) async -> KnowledgePage {
-        await knowledgeStore.createPage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
-        )
+        await delegateCreatePage(CreatePageInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType
+        ))
     }
 
     /// 获取Backlinks

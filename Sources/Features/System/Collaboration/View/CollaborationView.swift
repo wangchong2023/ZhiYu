@@ -49,6 +49,7 @@ struct CollaborationViewContent: View {
     }
 
     var body: some View {
+        let roomNameBinding = $roomName
         ScrollView {
             VStack(spacing: DesignSystem.giant) {
                 headerSection
@@ -69,7 +70,7 @@ struct CollaborationViewContent: View {
         .background(PageBackgroundView(accentColor: .appAccent))
         .appSubPageToolbar(title: L10n.Collaboration.title)
         .sheet(isPresented: $showHostingSheet) {
-            HostingSetupSheet(collabService: collabService, roomName: $roomName)
+            HostingSetupSheet(collabService: collabService, roomName: roomNameBinding)
         }
         .alert(L10n.Collaboration.Error.connectionTimeout, isPresented: $showConnectionError) {
             Button(L10n.Common.ok, role: .cancel) { }
@@ -144,11 +145,9 @@ struct CollaborationViewContent: View {
                     .foregroundStyle(.appAccent)
             }
         }
-        .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+        .collabCardStyle()
     }
-    
+
     // MARK: - Actions
     private var actionSection: some View {
         VStack(spacing: DesignSystem.medium) {
@@ -176,9 +175,7 @@ struct CollaborationViewContent: View {
                         collabService.setUserName(newValue)
                     }
             }
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+            .collabCardStyle()
         }
     }
 
@@ -194,10 +191,10 @@ struct CollaborationViewContent: View {
             .padding()
             .background(Color.appAccent)
             .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .disabled(collabService.isSimulator)
+            .opacity(collabService.isSimulator ? DesignSystem.Opacity.soft : DesignSystem.Opacity.solid)
+            .accessibilityIdentifier("collab-host-button")
         }
-        .disabled(collabService.isSimulator)
-        .opacity(collabService.isSimulator ? 0.5 : 1.0)
-        .accessibilityIdentifier("collab-host-button")
     }
 
     private var joinButton: some View {
@@ -215,10 +212,10 @@ struct CollaborationViewContent: View {
             .padding()
             .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
             .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .disabled(collabService.isSimulator)
+            .opacity(collabService.isSimulator ? DesignSystem.Opacity.soft : DesignSystem.Opacity.solid)
+            .accessibilityIdentifier("collab-join-button")
         }
-        .disabled(collabService.isSimulator)
-        .opacity(collabService.isSimulator ? 0.5 : 1.0)
-        .accessibilityIdentifier("collab-join-button")
     }
 
     private var stopSearchingButton: some View {
@@ -247,10 +244,7 @@ struct CollaborationViewContent: View {
                         .font(.subheadline)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                .collabCardStyle()
             } else {
                 ForEach(collabService.discoveredRooms) { room in
                     DiscoveredRoomRow(room: room) {
@@ -274,9 +268,7 @@ struct CollaborationViewContent: View {
                 CollabRoleBadge(role: collabService.role)
                     .accessibilityIdentifier("collab-role-badge")
             }
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .collabCardStyle()
             .accessibilityIdentifier("collab-session-info")
 
             leaveButton
@@ -319,9 +311,7 @@ struct CollaborationViewContent: View {
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
             }
-            .padding()
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+            .collabCardStyle()
             .accessibilityIdentifier("collab-self-peer")
 
             ForEach(collabService.connectedPeers) { peer in
@@ -343,10 +333,7 @@ struct CollaborationViewContent: View {
                 Text(L10n.Collaboration.noEdits)
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                    .collabCardStyle()
                     .accessibilityIdentifier("collab-no-edits")
             } else {
                 ForEach(recentEditsSnapshot) { edit in

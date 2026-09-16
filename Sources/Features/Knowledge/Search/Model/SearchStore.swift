@@ -32,9 +32,10 @@ public final class SearchStore {
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     init() {
-        AppEventBus.shared.subscribe()
-            .sink { [weak self] in if case .clearAllDataRequested = $0 { self?.clearAll() } }
-            .store(in: &cancellables)
+        AppEventBus.shared.subscribeClearAllData { [weak self] in
+            self?.clearAll()
+        }
+        .store(in: &cancellables)
     }
 
     /// 执行高级（混合）搜索

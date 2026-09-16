@@ -23,10 +23,10 @@ public protocol OCRServiceProtocol: Sendable {
 /// OCRServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum OCRServiceKey: DependencyKey {
     public static var liveValue: any OCRServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any OCRServiceProtocol).self) ?? NoOpOCRService()
+        DIResolver.resolve((any OCRServiceProtocol).self, fallback: NoOpOCRService())
     }
     public static var testValue: any OCRServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any OCRServiceProtocol).self) ?? NoOpOCRService()
+        DIResolver.resolve((any OCRServiceProtocol).self, fallback: NoOpOCRService())
     }
     public static var previewValue: any OCRServiceProtocol { NoOpOCRService() }
 }

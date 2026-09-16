@@ -99,14 +99,20 @@ final class JavaScriptPlugin: InterceptionPlugin {
         { msg in DispatchQueue.main.async { pluginCtx.log(msg) } }
     }
 
+    /// 在借出的 JSContext 中调用指定 JS 函数（吞掉异常）
+    /// - Parameter funcName: JS 函数名
+    private func callJSFunctionSafely(_ funcName: String) {
+        try? executeInContext { ctx in
+            self.callJSFunction(funcName, in: ctx)
+        }
+    }
+
     private func makeRegisterCommandBlock(pluginCtx: PluginContext) -> @convention(block) (String, String, String) -> Void {
         { [weak self] id, name, funcName in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 pluginCtx.registerCommand(id: id, name: name) {
-                    try? self.executeInContext { ctx in
-                        self.callJSFunction(funcName, in: ctx)
-                    }
+                    self.callJSFunctionSafely(funcName)
                 }
             }
         }
@@ -117,9 +123,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 pluginCtx.registerRibbonItem(icon: icon, title: title) {
-                    try? self.executeInContext { ctx in
-                        self.callJSFunction(funcName, in: ctx)
-                    }
+                    self.callJSFunctionSafely(funcName)
                 }
             }
         }
@@ -145,9 +149,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 pluginCtx.registerView(id: id, title: title, icon: icon) {
-                    try? self.executeInContext { ctx in
-                        self.callJSFunction(funcName, in: ctx)
-                    }
+                    self.callJSFunctionSafely(funcName)
                 }
             }
         }
@@ -158,9 +160,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 pluginCtx.addEventListener(event: event) { _ in
-                    try? self.executeInContext { ctx in
-                        self.callJSFunction(funcName, in: ctx)
-                    }
+                    self.callJSFunctionSafely(funcName)
                 }
             }
         }
@@ -212,7 +212,22 @@ final class JavaScriptPlugin: InterceptionPlugin {
             jsFunc.call(withArguments: arguments)
         }
     }
-    
+
+    /// 在 JSContext 执行时间限制下运行闭包，执行完毕后重置时间限制并触发垃圾回收
+    /// - Parameters:
+    ///   - ctx: 借出的 JSContext 实例
+    ///   - body: 待执行的业务闭包
+    /// - Returns: 闭包返回值
+    private func withExecutionTimeLimit<T>(in ctx: JSContext, body: () throws -> T) rethrows -> T {
+        let group = JSContextGetGroup(ctx.jsGlobalContextRef)
+        JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
+        defer {
+            JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
+            JSGarbageCollect(ctx.jsGlobalContextRef)
+        }
+        return try body()
+    }
+
     /// on加载
     /// - Parameter context: context
     func onLoad(context: PluginContext) {
@@ -221,13 +236,9 @@ final class JavaScriptPlugin: InterceptionPlugin {
         // 调用 JS onLoad (使用池化的 JSContext 并设置看门狗)
         try? executeInContext { ctx in
             if let onLoadFunc = ctx.objectForKeyedSubscript("onLoad"), !onLoadFunc.isUndefined {
-                let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
-                defer {
-                    JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
-                    JSGarbageCollect(ctx.jsGlobalContextRef)
+                _ = self.withExecutionTimeLimit(in: ctx) {
+                    onLoadFunc.call(withArguments: [])
                 }
-                onLoadFunc.call(withArguments: [])
             }
         }
     }
@@ -236,13 +247,9 @@ final class JavaScriptPlugin: InterceptionPlugin {
     func onUnload() {
         try? executeInContext { ctx in
             if let onUnloadFunc = ctx.objectForKeyedSubscript("onUnload"), !onUnloadFunc.isUndefined {
-                let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-                JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 0 }, nil)
-                defer {
-                    JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
-                    JSGarbageCollect(ctx.jsGlobalContextRef)
+                _ = self.withExecutionTimeLimit(in: ctx) {
+                    onUnloadFunc.call(withArguments: [])
                 }
-                onUnloadFunc.call(withArguments: [])
             }
         }
         self.pluginContext = nil
@@ -260,15 +267,9 @@ final class JavaScriptPlugin: InterceptionPlugin {
             guard let funcRef = ctx.objectForKeyedSubscript(functionName), !funcRef.isUndefined else {
                 return content
             }
-            let group = JSContextGetGroup(ctx.jsGlobalContextRef)
-            JSContextGroupSetExecutionTimeLimit(group, PluginConstants.Sandbox.jsExecutionTimeLimitSeconds, { _, _ in return 1 }, nil)
-            
-            defer {
-                JSContextGroupSetExecutionTimeLimit(group, 0, nil, nil)
-                JSGarbageCollect(ctx.jsGlobalContextRef)
+            let result = self.withExecutionTimeLimit(in: ctx) {
+                funcRef.call(withArguments: [content])
             }
-            
-            let result = funcRef.call(withArguments: [content])
             
             if let exception = ctx.exception {
                 ctx.exception = nil

@@ -32,24 +32,30 @@ public struct AIChatBubbleView: View {
                 Spacer()
                 Text(text)
                     .font(.subheadline)
-                    .padding(.horizontal, DesignSystem.medium)
-                    .padding(.vertical, ComponentSpacing.section)
-                    .background(Color.theme.cyan.opacity(DesignSystem.Opacity.soft))
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+                    .aiBubbleStyle(background: Color.theme.cyan.opacity(DesignSystem.Opacity.soft), foreground: .white)
                     .padding(.leading, DesignSystem.huge)
             } else {
                 Text(text)
                     .font(.subheadline)
-                    .padding(.horizontal, DesignSystem.medium)
-                    .padding(.vertical, ComponentSpacing.section)
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                    .foregroundStyle(.appText)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+                    .aiBubbleStyle(background: Color.appCard.opacity(DesignSystem.Opacity.dim), foreground: .appText)
                     .padding(.trailing, DesignSystem.huge)
                 Spacer()
             }
         }
+    }
+}
+
+// MARK: - 气泡样式共享修饰符
+
+/// 统一的 AI 气泡内边距 + 背景 + 圆角裁切样式，消除用户/AI/思考中三处重复的修饰符链。
+private extension View {
+    func aiBubbleStyle(background: Color, foreground: Color) -> some View {
+        self
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, ComponentSpacing.section)
+            .background(background)
+            .foregroundStyle(foreground)
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
     }
 }
 
@@ -69,10 +75,7 @@ public struct AIThinkingBubbleView: View {
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
             }
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, ComponentSpacing.section)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+            .aiBubbleStyle(background: Color.appCard.opacity(DesignSystem.Opacity.dim), foreground: .appText)
             .padding(.trailing, DesignSystem.huge)
 
             Spacer()

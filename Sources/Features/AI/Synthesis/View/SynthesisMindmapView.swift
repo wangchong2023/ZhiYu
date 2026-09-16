@@ -113,16 +113,8 @@ struct SynthesisMindmapView: View {
         
         // 自动自愈补充基础思维导图/架构图声明
         if doc.type == .mindmap {
-            let sanitizedTitle = (extractTitle(from: content) ?? L10n.AI.Synthesis.title)
-                .replacingOccurrences(of: MermaidConflictChar.openParen, with: "")
-                .replacingOccurrences(of: MermaidConflictChar.closeParen, with: "")
-                .replacingOccurrences(of: MermaidConflictChar.openBracket, with: "")
-                .replacingOccurrences(of: MermaidConflictChar.closeBracket, with: "")
-            let sanitizedBody = filtered
-                .replacingOccurrences(of: MermaidConflictChar.openParen, with: "")
-                .replacingOccurrences(of: MermaidConflictChar.closeParen, with: "")
-                .replacingOccurrences(of: MermaidConflictChar.openBracket, with: "")
-                .replacingOccurrences(of: MermaidConflictChar.closeBracket, with: "")
+            let sanitizedTitle = stripMermaidConflictChars(from: extractTitle(from: content) ?? L10n.AI.Synthesis.title)
+            let sanitizedBody = stripMermaidConflictChars(from: filtered)
                 .replacingOccurrences(of: "：", with: " ")
                 .replacingOccurrences(of: ":", with: " ")
                 .replacingOccurrences(of: SystemConstants.Character.newline, with: FeatureConstants.MarkdownIndent.newlineIndent)
@@ -131,5 +123,14 @@ struct SynthesisMindmapView: View {
             return "graph TD\n  A[\(extractTitle(from: content) ?? L10n.AI.Synthesis.title)] --> B[\(filtered.prefix(100))]"
         }
         return filtered
+    }
+
+    /// 清除 Mermaid 节点语法冲突字符（括号与方括号），避免破坏图表语法
+    private func stripMermaidConflictChars(from text: String) -> String {
+        text
+            .replacingOccurrences(of: MermaidConflictChar.openParen, with: "")
+            .replacingOccurrences(of: MermaidConflictChar.closeParen, with: "")
+            .replacingOccurrences(of: MermaidConflictChar.openBracket, with: "")
+            .replacingOccurrences(of: MermaidConflictChar.closeBracket, with: "")
     }
 }

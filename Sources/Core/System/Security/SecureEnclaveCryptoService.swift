@@ -57,21 +57,12 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
             // 物理降级方案：使用 SecurityManager 现有的 AES-GCM 软件保护逻辑
             return try SecurityManager.shared.encrypt(plainText)
         }
-        
+
         // VULN-003 修复：不再使用自协商（sharedSecretFromKeyAgreement with self.publicKey），
         // 改用硬件私钥 dataRepresentation 的 SHA-256 摘要作为 HKDF 输入密钥材料，
         // 配合持久化随机盐值和上下文绑定信息，派生设备唯一的对称密钥。
         let symmetricKey = try deriveSymmetricKey()
-        
-        // 校验原始文本并使用 AES-GCM 进行物理级高安全加密
-        guard let data = plainText.data(using: .utf8) else {
-            throw SecurityError.encodingFailed
-        }
-        let sealedBox = try AES.GCM.seal(data, using: symmetricKey)
-        guard let combined = sealedBox.combined else {
-            throw SecurityError.encodingFailed
-        }
-        return combined.base64EncodedString()
+        return try AESGCMCryptoHelper.encrypt(plainText, using: symmetricKey)
     }
     
     /// 使用 Secure Enclave 硬件芯片物理级加解密 API 密钥 (解密)
@@ -85,21 +76,15 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
         
         // VULN-003 修复：使用相同的 HKDF 派生逻辑还原对称密钥
         let symmetricKey = try deriveSymmetricKey()
-        
+
         // 使用 AES-GCM 还原明文
-        guard let combinedData = Data(base64Encoded: cipherText) else {
-            throw SecurityError.decodingFailed
-        }
-        let sealedBox = try AES.GCM.SealedBox(combined: combinedData)
-        
+        let sealedBox = try AESGCMCryptoHelper.sealedBox(from: cipherText)
+
         // 审查修复 HIGH-1: 迁移逻辑 — 新 HKDF 密钥解密失败时，尝试旧 ECDH 自协商密钥解密
         // 若旧逻辑解密成功，用新 HKDF 逻辑重新加密并写回 Keychain，完成透明迁移
         do {
             let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
-            guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
-                throw SecurityError.decodingFailed
-            }
-            return decryptedString
+            return try AESGCMCryptoHelper.utf8String(from: decryptedData)
         } catch {
             // 新密钥解密失败，尝试旧 ECDH 自协商逻辑（迁移路径）
             if let legacyKey = try? deriveLegacyECDHKey(),

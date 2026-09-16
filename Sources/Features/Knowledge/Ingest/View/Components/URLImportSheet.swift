@@ -33,8 +33,7 @@ struct URLImportSheet: View {
     private var validURLs: [URL] {
         var seen = Set<String>()
         return allLines.compactMap { line -> URL? in
-            guard let url = URL(string: line),
-                  url.scheme == SystemConstants.URLScheme.httpLiteral || url.scheme == SystemConstants.URLScheme.httpsLiteral else { return nil }
+            guard let url = validHTTPURL(from: line) else { return nil }
             let normalized = url.absoluteString.lowercased()
             guard !seen.contains(normalized) else { return nil }
             seen.insert(normalized)
@@ -46,13 +45,19 @@ struct URLImportSheet: View {
     private var firstInvalidLine: Int? {
         let validSet = Set(validURLs.map { $0.absoluteString.lowercased() })
         for (i, line) in allLines.enumerated() {
-            guard let url = URL(string: line),
-                  url.scheme == SystemConstants.URLScheme.httpLiteral || url.scheme == SystemConstants.URLScheme.httpsLiteral,
+            guard let url = validHTTPURL(from: line),
                   validSet.contains(url.absoluteString.lowercased()) else {
                 return i + 1
             }
         }
         return nil
+    }
+
+    /// 校验字符串是否为 http/https URL，消除 validURLs 与 firstInvalidLine 的重复 scheme 检查
+    private func validHTTPURL(from line: String) -> URL? {
+        guard let url = URL(string: line),
+              url.scheme == SystemConstants.URLScheme.httpLiteral || url.scheme == SystemConstants.URLScheme.httpsLiteral else { return nil }
+        return url
     }
 
     var body: some View {
@@ -66,9 +71,12 @@ struct URLImportSheet: View {
                     AdaptiveTextEditor(text: $urlText)
                     .font(Font.system(.body, design: Font.Design.monospaced))
                     .frame(maxWidth: CGFloat.infinity, maxHeight: CGFloat.infinity)
-                    .padding(DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                    .cardStyle(
+                        horizontalPadding: DesignSystem.small,
+                        verticalPadding: DesignSystem.small,
+                        backgroundOpacity: DesignSystem.Opacity.dim,
+                        cornerRadius: DesignSystem.smallRadius
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
                             .stroke(

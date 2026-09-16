@@ -30,9 +30,7 @@ struct PluginDetailView: View {
     /// 计算插件的当前展示版本 (如果已安装则展示本地已安装的真实版本号，否则展示市场版本)
     var displayVersion: String {
         // 兼容简短 ID 和物理包名规范 ID 的后缀匹配，寻找对应的本地已安装插件实体
-        if let localPlugin = registry.plugins.first(where: {
-            $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
-        }) {
+        if let localPlugin = findLocalPlugin() {
             return localPlugin.manifest.version
         }
         return plugin.version
@@ -40,10 +38,7 @@ struct PluginDetailView: View {
 
     /// 校验该插件是否已经成功下载并安装落地于沙盒中
     var isInstalled: Bool {
-        // 检查 PluginRegistry 中是否存在完全匹配或后缀点拼接匹配（.id）的插件实例
-        registry.plugins.contains(where: {
-            $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
-        })
+        findLocalPlugin() != nil
     }
 
     var body: some View {
@@ -83,14 +78,12 @@ struct PluginDetailView: View {
                 // MARK: - 3. 详细信息面板 (底栏信息)
                 metadataSection
             }
-            .padding()
+            .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .task {
             // 异步加载本地图标和 README，支持包名 ID（如 com.zhiyu.plugin...）与市场简短 ID 的模糊联通匹配，避免主线程 I/O 阻塞
-            let targetID = registry.plugins.first(where: {
-                $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
-            })?.manifest.id ?? plugin.id
+            let targetID = resolveTargetID()
 
             if let url = registry.iconURL(for: targetID) {
                 localIcon = UIImage(data: (try? Data(contentsOf: url)) ?? Data())
@@ -101,5 +94,17 @@ struct PluginDetailView: View {
             await fetchRemoteReadme()
         }
         .appNavigationBarTitleDisplayMode(.inline)
+    }
+
+    /// 解析沙盒加载的真实 ID（例如 com.zhiyu.plugin.local.toc-generator），支持包名 ID 与市场简短 ID 的模糊匹配
+    func resolveTargetID() -> String {
+        findLocalPlugin()?.manifest.id ?? plugin.id
+    }
+
+    /// 查找本地已安装插件实体，消除 displayVersion 与 resolveTargetID 的重复
+    private func findLocalPlugin() -> KnowledgePlugin? {
+        registry.plugins.first(where: {
+            $0.manifest.id == plugin.id || $0.manifest.id.hasSuffix("." + plugin.id)
+        })
     }
 }

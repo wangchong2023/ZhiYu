@@ -45,22 +45,14 @@ struct SaveVoiceNoteSheet: View {
     }
     
     private var titleField: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.small) { // 6
-            Text(L10n.Voice.Speech.noteTitle)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.appSecondary)
-            
+        formSection(label: L10n.Voice.Speech.noteTitle) {
             TextField(L10n.Voice.Speech.noteTitlePlaceholder, text: $title)
                 .roundedBorderTextFieldStyle()
         }
     }
     
     private var typePicker: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.small) { // 6
-            Text(L10n.Ingest.OCR.pageType)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.appSecondary)
-            
+        formSection(label: L10n.Ingest.OCR.pageType) {
             Picker("", selection: $selectedType) {
                 // 遍历用户可见的页面类型，过滤掉内部 raw 类型
                 ForEach(PageType.allVisibleCases) { type in
@@ -72,50 +64,31 @@ struct SaveVoiceNoteSheet: View {
     }
     
     private var previewSection: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.small) { // 6
-            Text(L10n.Ingest.PDF.contentPreview)
+        formSection(label: L10n.Ingest.PDF.contentPreview) {
+            makeTranscriptionEditor(
+                speechService: speechService,
+                idiom: idiom,
+                minHeight: UIConstants.previewMinHeight,
+                maxHeight: UIConstants.previewMaxHeight,
+                padding: DesignSystem.small,
+                cornerRadius: DesignSystem.standardRadius
+            )
+        }
+    }
+
+    /// 表单分区（消除重复的 VStack + Text 标签 + caption 字体链）
+    @ViewBuilder
+    private func formSection<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: SystemSpacing.small) {
+            Text(label)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
-            
-            if idiom != .watch {
-                TextEditor(text: Binding(
-                    get: { speechService.transcribedText },
-                    set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .frame(minHeight: UIConstants.previewMinHeight, maxHeight: UIConstants.previewMaxHeight) // 120, 300
-                    .padding(DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                    )
-            } else {
-                TextField("", text: Binding(
-                    get: { speechService.transcribedText },
-                    set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .padding(DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-            }
+            content()
         }
     }
     
     private var saveButton: some View {
-        Button(action: saveNote) {
-            Text(L10n.Voice.Speech.saveToKnowledge)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.appAccent)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        }
+        AppFilledActionButton(title: L10n.Voice.Speech.saveToKnowledge, action: saveNote)
     }
     
     private func saveNote() {
@@ -173,8 +146,7 @@ struct VoiceRecordingRow: View {
         }
         .padding(.horizontal, DesignSystem.medium)
         .padding(.vertical, SystemSpacing.elementLarge) // 10
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+        .appCardClip(cornerRadius: DesignSystem.standardRadius)
         .frame(maxWidth: .infinity)
     }
 }

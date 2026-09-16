@@ -37,19 +37,11 @@ public struct PageDetailMetaSectionView: View {
     #if os(watchOS)
     private var watchOSLayout: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Label(L10n.Knowledge.Page.metaInfo, systemImage: DesignSystem.Icons.info)
-                    .font(.caption2.bold())
-                    .foregroundStyle(.appSecondary)
-                Spacer()
-            }
+            metaHeaderLabel
             metaInfoContent
                 .padding(.top, DesignSystem.tiny)
         }
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, DesignSystem.small)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+        .metaSectionContainerStyle()
     }
     #endif
 
@@ -64,40 +56,34 @@ public struct PageDetailMetaSectionView: View {
                     .padding(.top, DesignSystem.tiny)
             },
             label: {
-                HStack {
-                    Label(L10n.Knowledge.Page.metaInfo, systemImage: DesignSystem.Icons.info)
-                        .font(.caption2.bold())
-                        .foregroundStyle(.appSecondary)
-                    Spacer()
-                }
+                metaHeaderLabel
             }
         )
         .tint(.appSecondary)
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, DesignSystem.small)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+        .metaSectionContainerStyle()
     }
     #endif
 
-    // MARK: - 共享元信息内容
+    // MARK: - 共享元信息组件
+
+    /// 元信息区头部标签（消除 watchOS / standard 两处重复的 Label + font + foregroundStyle 链）
+    private var metaHeaderLabel: some View {
+        HStack {
+            Label(L10n.Knowledge.Page.metaInfo, systemImage: DesignSystem.Icons.info)
+                .font(.caption2.bold())
+                .foregroundStyle(.appSecondary)
+            Spacer()
+        }
+    }
 
     private var metaInfoContent: some View {
         HStack(spacing: DesignSystem.standardPadding) {
             Label(
-                L10n.Knowledge.Page.createdAtFormat(
-                    page.createdAt.formatted(
-                        .dateTime.year().month().day().locale(Localized.currentLocale)
-                    )
-                ),
+                L10n.Knowledge.Page.createdAtFormat(page.shortFormattedCreatedDate),
                 systemImage: DesignSystem.Icons.sortDate
             )
             Label(
-                L10n.Knowledge.Page.updatedAtFormat(
-                    page.updatedAt.formatted(
-                        .dateTime.year().month().day().locale(Localized.currentLocale)
-                    )
-                ),
+                L10n.Knowledge.Page.updatedAtFormat(page.shortFormattedUpdatedDate),
                 systemImage: DesignSystem.Icons.clock
             )
             Label(
@@ -114,12 +100,33 @@ public struct PageDetailMetaSectionView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             L10n.Knowledge.Page.metaAccessibility(
-                page.createdAt.formatted(
-                    .dateTime.year().month().day().locale(Localized.currentLocale)
-                ),
+                page.shortFormattedCreatedDate,
                 page.wordCount,
                 page.outgoingLinks.count
             )
         )
+    }
+}
+
+// MARK: - KnowledgePage 日期格式化辅助
+private extension KnowledgePage {
+    /// 短日期格式（年月日），消除 metaInfoContent 中 3 处重复的 formatted 链
+    var shortFormattedCreatedDate: String {
+        createdAt.formatted(.dateTime.year().month().day().locale(Localized.currentLocale))
+    }
+
+    var shortFormattedUpdatedDate: String {
+        updatedAt.formatted(.dateTime.year().month().day().locale(Localized.currentLocale))
+    }
+}
+
+// MARK: - MetaSection 容器样式
+private extension View {
+    /// 统一应用 meta section 的内边距与卡片裁剪，消除 watchOSLayout / standardLayout 两处重复的 padding + appCardClip 链。
+    func metaSectionContainerStyle() -> some View {
+        self
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, DesignSystem.small)
+            .appCardClip(cornerRadius: Spacing.smallRadius, backgroundOpacity: DesignSystem.Opacity.disabled)
     }
 }

@@ -116,12 +116,21 @@ final class PluginLoader {
 
     // MARK: - 插件自动发现机制
 
+    /// 获取 Documents 目录 URL（失败返回 nil）
+    private func documentsURL() -> URL? {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+    }
+
+    /// 获取 Documents/Plugins 目录 URL（失败返回 nil）
+    private func pluginsDirectoryURL() -> URL? {
+        documentsURL()?.appendingPathComponent("Plugins")
+    }
+
     /// 从本地沙盒目录扫描并加载外部脚本插件 (规范化加载机制)
     /// - Note: 实际运行中，此方法应在 App 启动后异步调用，不阻塞主线程。
     func scanAndLoadLocalPlugins() {
         let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-        let pluginsDirectory = documentsURL.appendingPathComponent("Plugins")
+        guard let pluginsDirectory = pluginsDirectoryURL() else { return }
 
         if !fileManager.fileExists(atPath: pluginsDirectory.path) {
             try? fileManager.createDirectory(at: pluginsDirectory, withIntermediateDirectories: true, attributes: nil)
@@ -201,30 +210,41 @@ final class PluginLoader {
     /// 从解压目录复制 icon.png + README 到 Documents/Plugins/{id}_*
     private func persistPluginAssets(manifest: PluginManifest, extractedDir: URL) {
         let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-        let assetsDir = documentsURL.appendingPathComponent("Plugins")
+        guard let assetsDir = pluginsDirectoryURL() else { return }
         try? fileManager.createDirectory(at: assetsDir, withIntermediateDirectories: true)
 
         // 保存图标
         if let iconFile = manifest.iconFile {
-            let src = extractedDir.appendingPathComponent(iconFile)
-            let dst = assetsDir.appendingPathComponent("\(manifest.id)_icon.png")
-            try? fileManager.removeItem(at: dst)
-            if fileManager.fileExists(atPath: src.path) {
-                try? fileManager.copyItem(at: src, to: dst)
-                Logger.shared.info("[PluginRegistry] \(manifest.id): icon saved")
-            }
+            copyPluginAsset(
+                from: extractedDir.appendingPathComponent(iconFile),
+                to: assetsDir.appendingPathComponent("\(manifest.id)_icon.png"),
+                successLog: "[PluginRegistry] \(manifest.id): icon_saved"
+            )
         }
 
         // 保存多语言 README
         if let readmeMap = manifest.readmeFiles {
             for (locale, filename) in readmeMap {
-                let src = extractedDir.appendingPathComponent(filename)
-                let dst = assetsDir.appendingPathComponent("\(manifest.id)_\(locale).md")
-                try? fileManager.removeItem(at: dst)
-                if fileManager.fileExists(atPath: src.path) {
-                    try? fileManager.copyItem(at: src, to: dst)
-                }
+                copyPluginAsset(
+                    from: extractedDir.appendingPathComponent(filename),
+                    to: assetsDir.appendingPathComponent("\(manifest.id)_\(locale).md")
+                )
+            }
+        }
+    }
+
+    /// 原子性复制插件资源文件：先删除目标，源存在则复制，可选记录日志
+    /// - Parameters:
+    ///   - src: 源文件 URL
+    ///   - dst: 目标文件 URL
+    ///   - successLog: 复制成功时记录的日志消息（可选）
+    private func copyPluginAsset(from src: URL, to dst: URL, successLog: String? = nil) {
+        let fileManager = FileManager.default
+        try? fileManager.removeItem(at: dst)
+        if fileManager.fileExists(atPath: src.path) {
+            try? fileManager.copyItem(at: src, to: dst)
+            if let log = successLog {
+                Logger.shared.info(log)
             }
         }
     }
@@ -233,8 +253,7 @@ final class PluginLoader {
     func iconURL(for pluginID: String) -> URL? {
         guard isFileNameSafe(pluginID) else { return nil }
         let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
-        let url = documentsURL.appendingPathComponent("Plugins/\(pluginID)_icon.png")
+        guard let url = pluginsDirectoryURL()?.appendingPathComponent("\(pluginID)_icon.png") else { return nil }
         return fileManager.fileExists(atPath: url.path) ? url : nil
     }
 
@@ -243,7 +262,7 @@ final class PluginLoader {
         guard isFileNameSafe(pluginID) else { return nil }
         let lang = Locale.current.language.languageCode?.identifier ?? "en"
         let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        guard let documentsURL = documentsURL() else { return nil }
 
         // 尝试用户语言 → en fallback
         for locale in [lang, "en"] {
@@ -284,25 +303,14 @@ final class PluginLoader {
 
             Logger.shared.info("[PluginRegistry] JS preview: \(String(script.prefix(80)).replacingOccurrences(of: "\n", with: " "))")
 
-            let manifest = try JSONDecoder().decode(PluginManifest.self, from: manifestData)
-
-            // 🛡️ VULN-001 修复：强制代码签名校验，拒绝加载未签名或签名不匹配的插件
-            guard Self.verifyPluginSignature(script: script, manifest: manifest) else {
-                Logger.shared.error("[PluginRegistry] .zyplugin 签名校验失败，拒绝加载: \(manifest.name)")
-                return
-            }
-
-            validateReadmeFiles(manifest: manifest, extractedDir: tempDir)
-            persistPluginAssets(manifest: manifest, extractedDir: tempDir)
-
-            #if canImport(JavaScriptCore) && !os(watchOS)
-            if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
-                registry?.loadPlugin(jsPlugin)
-                Logger.shared.info("[PluginRegistry] Loaded: \(manifest.name)")
-            } else {
-                Logger.shared.error("[PluginRegistry] Init failed: \(manifest.name)")
-            }
-            #endif
+            try loadVerifiedPlugin(
+                script: script,
+                manifestData: manifestData,
+                extractedDir: tempDir,
+                failureContext: PluginConstants.LoadFailureContext.zypluginArchive,
+                successLog: { manifest in "[PluginRegistry] Loaded: \(manifest.name)" },
+                initFailureLog: { manifest in "[PluginRegistry] Init failed: \(manifest.name)" }
+            )
 
         } catch {
             Logger.shared.error("[PluginRegistry] Archive error: \(archiveURL.lastPathComponent)", error: error)
@@ -329,31 +337,55 @@ final class PluginLoader {
             Logger.shared.info("[PluginRegistry] 开始从明文目录加载插件: \(directoryURL.lastPathComponent)")
             let manifestData = try Data(contentsOf: manifestURL)
             let script = try String(contentsOf: scriptURL, encoding: .utf8)
-            let manifest = try JSONDecoder().decode(PluginManifest.self, from: manifestData)
 
-            // 🛡️ VULN-001 修复：强制代码签名校验
-            guard Self.verifyPluginSignature(script: script, manifest: manifest) else {
-                Logger.shared.error("[PluginRegistry] 明文目录插件签名校验失败，拒绝加载: \(manifest.name)")
-                return
-            }
-
-            // 校验多语言 README 完整性
-            validateReadmeFiles(manifest: manifest, extractedDir: directoryURL)
-
-            // 持久化图标和 README 到 Documents/Plugins/{id}_icon.png 等供 UI 侧边栏读取展示
-            persistPluginAssets(manifest: manifest, extractedDir: directoryURL)
-
-            #if canImport(JavaScriptCore) && !os(watchOS)
-            if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
-                registry?.loadPlugin(jsPlugin)
-                Logger.shared.info("[PluginRegistry] 从明文目录成功加载: \(manifest.name)")
-            } else {
-                Logger.shared.error("[PluginRegistry] 实例化 JS 插件失败: \(manifest.name)")
-            }
-            #endif
+            try loadVerifiedPlugin(
+                script: script,
+                manifestData: manifestData,
+                extractedDir: directoryURL,
+                failureContext: PluginConstants.LoadFailureContext.plaintextDirPlugin,
+                successLog: { manifest in "[PluginRegistry] Loaded from plaintext dir: \(manifest.name)" },
+                initFailureLog: { manifest in "[PluginRegistry] JS plugin instantiation failed: \(manifest.name)" }
+            )
         } catch {
-            Logger.shared.error("[PluginRegistry] 明文目录加载错误: \(directoryURL.lastPathComponent)", error: error)
+            Logger.shared.error("[PluginRegistry] Plaintext dir load error: \(directoryURL.lastPathComponent)", error: error)
         }
+    }
+
+    /// 统一的插件加载流程：解码 manifest → 签名校验 → README 校验 → 资源持久化 → JS 沙箱挂载
+    /// - Parameters:
+    ///   - script: 插件 JS 脚本内容
+    ///   - manifestData: manifest.json 二进制数据
+    ///   - extractedDir: 插件解压/明文目录
+    ///   - failureContext: 签名校验失败时的日志上下文描述
+    ///   - successLog: 加载成功日志生成闭包
+    ///   - initFailureLog: JS 插件实例化失败日志生成闭包
+    private func loadVerifiedPlugin(
+        script: String,
+        manifestData: Data,
+        extractedDir: URL,
+        failureContext: String,
+        successLog: (PluginManifest) -> String,
+        initFailureLog: (PluginManifest) -> String
+    ) throws {
+        let manifest = try JSONDecoder().decode(PluginManifest.self, from: manifestData)
+
+        // 🛡️ VULN-001 修复：强制代码签名校验，拒绝加载未签名或签名不匹配的插件
+        guard Self.verifyPluginSignature(script: script, manifest: manifest) else {
+            Logger.shared.error("[PluginRegistry] \(failureContext) 签名校验失败，拒绝加载: \(manifest.name)")
+            return
+        }
+
+        validateReadmeFiles(manifest: manifest, extractedDir: extractedDir)
+        persistPluginAssets(manifest: manifest, extractedDir: extractedDir)
+
+        #if canImport(JavaScriptCore) && !os(watchOS)
+        if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
+            registry?.loadPlugin(jsPlugin)
+            Logger.shared.info(successLog(manifest))
+        } else {
+            Logger.shared.error(initFailureLog(manifest))
+        }
+        #endif
     }
 
     // MARK: - 裸 .js 加载（兼容旧格式，仅 DEBUG 模式允许跳过签名）

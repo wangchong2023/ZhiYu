@@ -51,10 +51,7 @@ extension PluginDetailView {
                                     .foregroundStyle(.appSecondary)
                             }
                         }
-                        .padding(DesignSystem.medium)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+                        .permissionContainerStyle()
                     }
                 }
             } else {
@@ -65,10 +62,7 @@ extension PluginDetailView {
                         .font(.subheadline)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding(DesignSystem.medium)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+                .permissionContainerStyle()
             }
         }
     }
@@ -102,5 +96,16 @@ extension PluginDetailView {
         case FeatureConstants.PermissionName.log: return Color.theme.gray
         default: return .appSecondary
         }
+    }
+}
+
+/// 权限容器样式修饰符，消除重复的 padding+frame+background+clipShape 链
+extension View {
+    func permissionContainerStyle(cornerRadius: CGFloat = SystemRadius.small) -> some View {
+        self
+            .padding(DesignSystem.medium)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }

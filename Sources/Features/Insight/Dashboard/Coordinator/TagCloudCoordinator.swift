@@ -65,9 +65,10 @@ final class TagCloudCoordinator {
     func performRename() {
         guard let old = tagToRename, !newTagName.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         let trimmed = newTagName.trimmingCharacters(in: .whitespaces)
+        // Bug 修复：同步更新 selectedTag，避免异步 Task 延迟导致 UI 状态不一致
+        if selectedTag == old { selectedTag = trimmed }
         Task {
             await store.renameTag(old, to: trimmed)
-            if selectedTag == old { selectedTag = trimmed }
             await fetchData()
         }
         tagToRename = nil

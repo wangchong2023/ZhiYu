@@ -502,7 +502,7 @@ ZhiYu-Android/
 - `MacAppEnvironment` 已实现桌面环境（`screenClass/.expansive`、`interactionStyle/.pointer`）
 - `ZhiYuApp.swift:71` 的 `.commands` 菜单栏扩展已是 `#if os(macOS)`，原生 macOS 直接生效
 - 全仓 `targetEnvironment(macCatalyst)` 引用仅 ~20 处，集中在 `ContentView`/`AppWindowSceneDelegate`/`iOSPlatformRegistrar`
-- CI 门禁已禁止 Features/Domain 层用 `#if os()`，Shared 层 UIKit 用法已通过 `PlatformContext`/`DesignSystem` 抽象隔离
+- CI 门禁已禁止 Features/Domain 层用 `#if os()`，Shared 层 UIKit 用法已通过 PlatformContext/`DesignSystem` 抽象隔离
 
 **任务**：
 1. **target 配置改造**（0.5 天）：`project.yml` 中 `ZhiYuMac` 的 `platform: iOS` → `macOS`；删除 `SUPPORTS_MACCATALYST`/`SDKROOT: iphoneos`/`TARGETED_DEVICE_FAMILY: 2`；deploymentTarget 对齐 macOS 14

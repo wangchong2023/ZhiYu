@@ -41,12 +41,16 @@ public enum PlatformConstants {
     public enum Multipeer {
         /// 加入房间超时秒数
         public static let joinTimeoutSeconds: TimeInterval = 30
+        /// PeerID 唯一后缀长度（UUID 前 N 位）
+        public static let peerIDSuffixLength: Int = 8
     }
 
     // MARK: - Reminder 服务
 
     /// EventKit 错误码
     public enum Reminder {
+        /// 提醒服务错误域标识
+        public static let errorDomain: String = "ZhiYu.ReminderService"
         /// "未找到" 错误码（对应 EKErrorCode notFound）
         public static let notFoundErrorCode: Int = 404
     }

@@ -80,7 +80,7 @@ struct TextChunkerProcessor: Sendable {
 
         let trimmedLast = state.currentChunkText.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmedLast.isEmpty {
-            state.chunks.append(Chunk(text: trimmedLast, startIndex: state.currentStartIndex, anchorPath: state.currentAnchor, breadcrumbPath: state.currentBreadcrumb, isCode: state.currentChunkText.contains(ProcessorConstants.MarkdownSyntax.codeFence)))
+            state.appendChunk(text: trimmedLast)
         }
         return state.chunks
     }
@@ -94,6 +94,17 @@ struct TextChunkerProcessor: Sendable {
         var anchorStack: [String] = []
         var currentStartIndex = 0
         var isInCodeBlock = false
+
+        /// 统一的 Chunk 追加辅助，消除三处重复的 Chunk(text:startIndex:anchorPath:breadcrumbPath:isCode:) 构造链。
+        mutating func appendChunk(text: String) {
+            chunks.append(Chunk(
+                text: text,
+                startIndex: currentStartIndex,
+                anchorPath: currentAnchor,
+                breadcrumbPath: currentBreadcrumb,
+                isCode: currentChunkText.contains(ProcessorConstants.MarkdownSyntax.codeFence)
+            ))
+        }
     }
 
     /// 检测并更新代码块状态：遇到 ``` 时 toggle 进出代码块标记。
@@ -113,7 +124,7 @@ struct TextChunkerProcessor: Sendable {
     private func flushCurrentChunk(lines _: [String], state: inout ChunkingState, text _: String) {
         let trimmedPrev = state.currentChunkText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPrev.isEmpty else { return }
-        state.chunks.append(Chunk(text: trimmedPrev, startIndex: state.currentStartIndex, anchorPath: state.currentAnchor, breadcrumbPath: state.currentBreadcrumb, isCode: state.currentChunkText.contains(ProcessorConstants.MarkdownSyntax.codeFence)))
+        state.appendChunk(text: trimmedPrev)
         state.currentStartIndex += state.currentChunkText.count
         state.currentChunkText = ""
     }
@@ -150,7 +161,7 @@ struct TextChunkerProcessor: Sendable {
             return
         }
 
-        state.chunks.append(Chunk(text: trimmedText, startIndex: state.currentStartIndex, anchorPath: state.currentAnchor, breadcrumbPath: state.currentBreadcrumb, isCode: state.currentChunkText.contains(ProcessorConstants.MarkdownSyntax.codeFence)))
+        state.appendChunk(text: trimmedText)
 
         // Bug #134 修复：重叠窗口 clamp，避免短 chunk 时塌缩到 startIndex
         let oldChunkTextCount = state.currentChunkText.count

@@ -61,7 +61,7 @@
 
 ### 2. DI 路由 (Rule 2: DI Routing)
 `#if` 唯一合法的**非 UI 场所**是 `ModuleRegistrar.swift`。
-- 利用预编译宏在 `ModuleRegistrar` 中决定向 `ServiceContainer` 注入哪个平台的具体实现。
+- 利用预编译宏在 ModuleRegistrar 中决定向 `ServiceContainer` 注入哪个平台的具体实现。
 
 ### 3. UI 优雅隔离 (Rule 3: UI Isolation)
 在 SwiftUI 视图中，仅在无法通过原生修饰符抹平差异时才允许使用条件编译。

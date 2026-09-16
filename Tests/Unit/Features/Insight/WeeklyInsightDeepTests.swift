@@ -108,10 +108,10 @@ final class WeeklyInsightDeepTests: XCTestCase {
         XCTAssertEqual(aiStore.weeklyInsight?.growthTraction, "+38%")
         
         // 验证 InsightStat 独立视图
-        let stat = InsightStat(label: "新增页面", value: "15", icon: "doc.badge.plus", color: .blue)
+        let stat = InsightStat(title: "新增页面", value: "15", icon: "doc.badge.plus", color: .blue)
         let hostStat = UIHostingController(rootView: stat)
         XCTAssertNotNil(hostStat.view)
-        XCTAssertEqual(stat.label, "新增页面")
+        XCTAssertEqual(stat.title, "新增页面")
         XCTAssertEqual(stat.value, "15")
         
         // 验证 WeeklyReportView 全屏滚动视图

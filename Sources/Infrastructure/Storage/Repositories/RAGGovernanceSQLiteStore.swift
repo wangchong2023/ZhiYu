@@ -21,6 +21,129 @@ private enum RAGGovernanceFormula {
 
 /// [Infra] RAG 全链路质量治理 SQLite 存储
 final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterProvider, @unchecked Sendable {
+    // MARK: - 私有辅助
+
+    /// 计算截止日期：当前时间往前推 days 天
+    private func cutoffDate(days: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+    }
+
+    /// 计算 Token 统计的日期阈值：days ≤ 0 时取当天 0 点，否则取 days 天前。
+    private func tokenStatsDateThreshold(days: Int) -> Date {
+        let calendar = Calendar.current
+        if days <= 0 {
+            return calendar.startOfDay(for: Date())
+        }
+        return calendar.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+    }
+
+    /// 获取时间范围内的所有 RAG 评估记录，空范围返回 nil
+    private func fetchEvaluations(db: Database, days: Int) throws -> [RAGEvaluation]? {
+        let cutoff = cutoffDate(days: days)
+        let evals = try RAGEvaluation
+            .filter(RAGEvaluation.Columns.createdAt >= cutoff)
+            .fetchAll(db)
+        return evals.isEmpty ? nil : evals
+    }
+
+    /// 获取指定评估的 Top-K 检索快照（按 rank 升序）。
+    /// - Parameters:
+    ///   - db: 数据库连接
+    ///   - evaluationID: 评估 ID
+    ///   - k: Top-K 截断深度，nil 表示不截断
+    /// - Returns: 检索快照列表
+    private func fetchTopKSnapshots(db: Database, evaluationID: Int64, k: Int?) throws -> [RetrievalSnapshot] {
+        var request = RetrievalSnapshot
+            .filter(RetrievalSnapshot.Columns.evaluationID == evaluationID)
+            .order(RetrievalSnapshot.Columns.rank)
+        if let k = k {
+            // Bug 修复：Top-K 应过滤 rank <= k，而非 LIMIT k
+            // LIMIT k 在记录数不足时会返回所有记录（含 rank > k 的），导致 Hit@K 误判
+            request = request.filter(RetrievalSnapshot.Columns.rank <= k)
+        }
+        return try request.fetchAll(db)
+    }
+
+    /// 查询指定 sourceID 的相关性判定（relevanceLevel >= 1 视为相关），消除 Hit@K 与 MRR 中的重复查询样板。
+    /// - Parameters:
+    ///   - db: 数据库连接
+    ///   - sourceID: 检索来源 ID
+    /// - Returns: 相关性判定记录（nil 表示无判定或不相关）
+    private func fetchRelevantJudgment(db: Database, sourceID: String) throws -> RelevanceJudgment? {
+        try RelevanceJudgment
+            .filter(RelevanceJudgment.Columns.sourceID == sourceID && RelevanceJudgment.Columns.relevanceLevel >= 1)
+            .fetchOne(db)
+    }
+
+    /// 在数据库读事务中执行指定查询，统一 cutoff 日期计算与 dbWriter 解析样板。
+    /// - Parameters:
+    ///   - days: 统计时间窗口（天数）
+    ///   - body: 数据库读事务闭包，接收 db 和 cutoff 日期
+    /// - Returns: 闭包返回值
+    private func readWithCutoff<T>(days: Int, _ body: @escaping (Database, Date) throws -> T) async throws -> T {
+        let writer = try await dbWriter
+        return try await writer.read { db in
+            try body(db, self.cutoffDate(days: days))
+        }
+    }
+
+    /// 获取指定评估中相关性等级 ≥ 1 的所有标注（相关结果集）。
+    /// - Parameters:
+    ///   - db: 当前数据库连接
+    ///   - evaluationID: 评估记录 ID
+    /// - Returns: 相关性标注数组
+    private func fetchRelevantJudgments(db: Database, evaluationID: Int64) throws -> [RelevanceJudgment] {
+        try RelevanceJudgment
+            .filter(RelevanceJudgment.Columns.evaluationID == evaluationID && RelevanceJudgment.Columns.relevanceLevel >= 1)
+            .fetchAll(db)
+    }
+
+    /// 一次性获取指定评估的相关标注数组与 sourceID 集合，消除 Recall/F1/MAP 中
+    /// 重复的 `fetchRelevantJudgments + Set(map(\.sourceID))` 双查询样板。
+    /// - Parameters:
+    ///   - db: 当前数据库连接
+    ///   - evaluationID: 评估记录 ID
+    /// - Returns: (相关标注数组, sourceID 集合)
+    private func fetchRelevantJudgmentsAndSourceIDs(
+        db: Database, evaluationID: Int64
+    ) throws -> (judgments: [RelevanceJudgment], sourceIDs: Set<String>) {
+        let judgments = try fetchRelevantJudgments(db: db, evaluationID: evaluationID)
+        return (judgments, Set(judgments.map(\.sourceID)))
+    }
+
+    /// 计算所有评估的指标均值；无有效查询时返回 0.0。
+    /// - Parameters:
+    ///   - evals: 评估记录数组
+    ///   - db: 当前数据库连接
+    ///   - metric: 单次评估指标计算闭包（返回指标值或 nil 表示跳过）
+    /// - Returns: 指标均值
+    private func averageMetric(
+        evals: [RAGEvaluation],
+        db: Database,
+        metric: (RAGEvaluation, Database) throws -> Double?
+    ) rethrows -> Double {
+        var total: Double = 0
+        var queryCount = 0
+        for eval in evals {
+            guard let value = try metric(eval, db) else { continue }
+            total += value
+            queryCount += 1
+        }
+        return queryCount > 0 ? total / Double(queryCount) : 0.0
+    }
+
+    /// 在数据库读事务中按时间窗口计算指标均值（消除 calculateMRR/NDCG/Recall/F1/MAP 的前段样板重复）。
+    private func computeMetricAverage(
+        days: Int,
+        metric: @escaping (RAGEvaluation, Database) throws -> Double?
+    ) async throws -> Double {
+        let writer = try await dbWriter
+        return try await writer.read { db in
+            guard let evals = try self.fetchEvaluations(db: db, days: days) else { return 0.0 }
+            return try self.averageMetric(evals: evals, db: db, metric: metric)
+        }
+    }
+
     // MARK: - Token 计费 (Usage)
 
     /// 记录日志TokenUsage
@@ -41,13 +164,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func fetchTokenStats(days: Int) async throws -> TokenStats {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let calendar = Calendar.current
-            let dateThreshold: Date
-            if days <= 0 {
-                dateThreshold = calendar.startOfDay(for: Date())
-            } else {
-                dateThreshold = calendar.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            }
+            let dateThreshold = self.tokenStatsDateThreshold(days: days)
 
             let request = TokenUsage
                 .filter(TokenUsage.Columns.createdAt >= dateThreshold)
@@ -74,13 +191,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     func fetchDailyAIStats(days: Int) async throws -> [DailyAIStat] {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let calendar = Calendar.current
-            let dateThreshold: Date
-            if days <= 0 {
-                dateThreshold = calendar.startOfDay(for: Date())
-            } else {
-                dateThreshold = calendar.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            }
+            let dateThreshold = self.tokenStatsDateThreshold(days: days)
             
             let dayExpr = SQL("strftime('%Y-%m-%d', \(TokenUsage.Columns.createdAt))")
             let request = TokenUsage
@@ -265,73 +376,27 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// 计算 Hit@K — Top-K 检索结果中至少命中 1 条相关结果的比例。
     /// 算法：hit@K = (至少一条相关结果的查询数) / 总查询数。
     func calculateHitRate(days: Int, k: Int) async throws -> Double {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-
-            // 获取时间范围内的所有评估
-            let evals = try RAGEvaluation
-                .filter(RAGEvaluation.Columns.createdAt >= cutoff)
-                .fetchAll(db)
-
-            guard !evals.isEmpty else { return 0.0 }
-
-            var hitCount = 0
-            for eval in evals {
-                guard let evalID = eval.id else { continue }
-                // 获取该评估的 Top-K 快照
-                let snapshots = try RetrievalSnapshot
-                    .filter(RetrievalSnapshot.Columns.evaluationID == evalID && RetrievalSnapshot.Columns.rank <= k)
-                    .order(RetrievalSnapshot.Columns.rank)
-                    .fetchAll(db)
-
-                // 检查快照中是否有相关结果（被标注为 ≥1）
-                let hasRelevant = try snapshots.contains { snap in
-                    let judgment = try RelevanceJudgment
-                        .filter(RelevanceJudgment.Columns.sourceID == snap.sourceID && RelevanceJudgment.Columns.relevanceLevel >= 1)
-                        .fetchOne(db)
-                    return judgment != nil
-                }
-                if hasRelevant { hitCount += 1 }
+        try await computeMetricAverage(days: days) { eval, db in
+            guard let evalID = eval.id else { return nil }
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            let hasRelevant = try snapshots.contains { snap in
+                try self.fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil
             }
-            return Double(hitCount) / Double(evals.count)
+            return hasRelevant ? 1.0 : 0.0
         }
     }
 
     /// 计算 MRR (Mean Reciprocal Rank) — 首个相关结果的排名倒数均值。
     /// 算法：MRR = (1/n) * Σ(1 / rank_of_first_relevant)，值域 [0, 1]。
     func calculateMRR(days: Int) async throws -> Double {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation
-                .filter(RAGEvaluation.Columns.createdAt >= cutoff)
-                .fetchAll(db)
-
-            guard !evals.isEmpty else { return 0.0 }
-
-            var totalRR: Double = 0
-            var queryCount = 0
-            for eval in evals {
-                guard let evalID = eval.id else { continue }
-                let snapshots = try RetrievalSnapshot
-                    .filter(RetrievalSnapshot.Columns.evaluationID == evalID)
-                    .order(RetrievalSnapshot.Columns.rank)
-                    .fetchAll(db)
-
-                for snap in snapshots {
-                    let judgment = try RelevanceJudgment
-                        .filter(RelevanceJudgment.Columns.sourceID == snap.sourceID && RelevanceJudgment.Columns.relevanceLevel >= 1)
-                        .fetchOne(db)
-                    if judgment != nil {
-                        // Bug #36 修复：MRR 应使用实际 rank 字段，而非数组位置 idx+1
-                        totalRR += 1.0 / Double(snap.rank)
-                        break
-                    }
-                }
-                queryCount += 1
+        try await computeMetricAverage(days: days) { eval, db in
+            guard let evalID = eval.id else { return nil }
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
+            // Bug #36 修复：MRR 应使用实际 rank 字段，而非数组位置 idx+1
+            for snap in snapshots where try self.fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil {
+                return 1.0 / Double(snap.rank)
             }
-            return queryCount > 0 ? totalRR / Double(queryCount) : 0.0
+            return 0.0
         }
     }
 
@@ -342,161 +407,94 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// - Parameter k: Top-K 截断深度，只考虑前 K 个检索结果
     /// - Returns: 所有查询 NDCG@K 的均值；无数据时返回 0.0
     func calculateNDCG(days: Int, k: Int) async throws -> Double {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation
-                .filter(RAGEvaluation.Columns.createdAt >= cutoff)
-                .fetchAll(db)
+        try await computeMetricAverage(days: days) { eval, db in
+            guard let evalID = eval.id else { return nil }
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            guard !snapshots.isEmpty else { return nil }
 
-            guard !evals.isEmpty else { return 0.0 }
-
-            var totalNDCG: Double = 0
-            var queryCount = 0
-            for eval in evals {
-                guard let evalID = eval.id else { continue }
-                let snapshots = try RetrievalSnapshot
-                    .filter(RetrievalSnapshot.Columns.evaluationID == evalID && RetrievalSnapshot.Columns.rank <= k)
-                    .order(RetrievalSnapshot.Columns.rank)
-                    .fetchAll(db)
-
-                guard !snapshots.isEmpty else { continue }
-
-                // 收集每个快照对应的相关性等级
-                var relevanceLevels: [Int] = []
-                for snap in snapshots {
-                    let judgment = try RelevanceJudgment
-                        .filter(RelevanceJudgment.Columns.sourceID == snap.sourceID)
-                        .fetchOne(db)
-                    relevanceLevels.append(judgment?.relevanceLevel ?? 0)
-                }
-
-                // DCG@K = Σ (2^rel_i - 1) / log2(rank_i + 1)
-                var dcg: Double = 0
-                for (idx, snap) in snapshots.enumerated() {
-                    let rel = relevanceLevels[idx]  // 用数组索引取相关性
-                    let gain = pow(2.0, Double(rel)) - 1.0
-                    // Bug #37 修复：DCG discount 应使用实际 rank 字段，而非数组位置 idx+1
-                    let discount = log2(Double(snap.rank) + 1.0)
-                    dcg += gain / discount
-                }
-
-                // IDCG@K：理想排序（降序）
-                let idealLevels = relevanceLevels.sorted(by: >)
-                var idcg: Double = 0
-                for (idx, rel) in idealLevels.enumerated() {
-                    let gain = pow(2.0, Double(rel)) - 1.0
-                    let discount = log2(Double(idx + 1) + 1.0)
-                    idcg += gain / discount
-                }
-
-                if idcg > 0 {
-                    totalNDCG += dcg / idcg
-                    queryCount += 1
-                }
+            // 收集每个快照对应的相关性等级
+            var relevanceLevels: [Int] = []
+            for snap in snapshots {
+                let judgment = try RelevanceJudgment
+                    .filter(RelevanceJudgment.Columns.sourceID == snap.sourceID)
+                    .fetchOne(db)
+                relevanceLevels.append(judgment?.relevanceLevel ?? 0)
             }
-            return queryCount > 0 ? totalNDCG / Double(queryCount) : 0.0
+
+            // DCG@K = Σ (2^rel_i - 1) / log2(rank_i + 1)
+            var dcg: Double = 0
+            for (idx, snap) in snapshots.enumerated() {
+                let rel = relevanceLevels[idx]
+                let gain = pow(2.0, Double(rel)) - 1.0
+                // Bug #37 修复：DCG discount 应使用实际 rank 字段，而非数组位置 idx+1
+                let discount = log2(Double(snap.rank) + 1.0)
+                dcg += gain / discount
+            }
+
+            // IDCG@K：理想排序（降序）
+            let idealLevels = relevanceLevels.sorted(by: >)
+            var idcg: Double = 0
+            for (idx, rel) in idealLevels.enumerated() {
+                let gain = pow(2.0, Double(rel)) - 1.0
+                let discount = log2(Double(idx + 1) + 1.0)
+                idcg += gain / discount
+            }
+            guard idcg > 0 else { return nil }
+            return dcg / idcg
         }
     }
 
     func calculateRecall(days: Int, k: Int) async throws -> Double {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
-            guard !evals.isEmpty else { return 0.0 }
-            var totalRecall: Double = 0
-            var queryCount = 0
-            for eval in evals {
-                guard let evalID = eval.id else { continue }
-                let allRelevant = try RelevanceJudgment
-                    .filter(RelevanceJudgment.Columns.evaluationID == evalID && RelevanceJudgment.Columns.relevanceLevel >= 1)
-                    .fetchAll(db)
-                guard !allRelevant.isEmpty else { continue }
-                let relevantSourceIDs = Set(allRelevant.map(\.sourceID))
-                let snapshots = try RetrievalSnapshot
-                    .filter(RetrievalSnapshot.Columns.evaluationID == evalID && RetrievalSnapshot.Columns.rank <= k)
-                    .order(RetrievalSnapshot.Columns.rank).fetchAll(db)
-                let retrievedRelevant = snapshots.filter { relevantSourceIDs.contains($0.sourceID) }.count
-                totalRecall += Double(retrievedRelevant) / Double(allRelevant.count)
-                queryCount += 1
-            }
-            return queryCount > 0 ? totalRecall / Double(queryCount) : 0.0
+        try await computeMetricAverage(days: days) { eval, db in
+            guard let evalID = eval.id else { return nil }
+            let relevant = try self.fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            guard !relevant.judgments.isEmpty else { return nil }
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            let retrievedRelevant = snapshots.filter { relevant.sourceIDs.contains($0.sourceID) }.count
+            return Double(retrievedRelevant) / Double(relevant.judgments.count)
         }
     }
 
     func calculateF1Score(days: Int, k: Int) async throws -> Double {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
-            guard !evals.isEmpty else { return 0.0 }
-            var totalF1: Double = 0
-            var queryCount = 0
-            for eval in evals {
-                guard let evalID = eval.id else { continue }
-                let allRelevant = try RelevanceJudgment
-                    .filter(RelevanceJudgment.Columns.evaluationID == evalID && RelevanceJudgment.Columns.relevanceLevel >= 1)
-                    .fetchAll(db)
-                guard !allRelevant.isEmpty else { continue }
-                let relevantSourceIDs = Set(allRelevant.map(\.sourceID))
-                let topK = try RetrievalSnapshot
-                    .filter(RetrievalSnapshot.Columns.evaluationID == evalID && RetrievalSnapshot.Columns.rank <= k)
-                    .order(RetrievalSnapshot.Columns.rank).fetchAll(db)
-                guard !topK.isEmpty else { continue }
-                let retrievedRelevant = topK.filter { relevantSourceIDs.contains($0.sourceID) }.count
-                let precision = Double(retrievedRelevant) / Double(topK.count)
-                let recall = Double(retrievedRelevant) / Double(allRelevant.count)
-                let denominator = precision + recall
-                guard denominator > 0 else { continue }
-                totalF1 += RAGGovernanceFormula.f1HarmonicCoefficient * precision * recall / denominator
-                queryCount += 1
-            }
-            return queryCount > 0 ? totalF1 / Double(queryCount) : 0.0
+        try await computeMetricAverage(days: days) { eval, db in
+            guard let evalID = eval.id else { return nil }
+            let relevant = try self.fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            guard !relevant.judgments.isEmpty else { return nil }
+            let topK = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: k)
+            guard !topK.isEmpty else { return nil }
+            let retrievedRelevant = topK.filter { relevant.sourceIDs.contains($0.sourceID) }.count
+            let precision = Double(retrievedRelevant) / Double(topK.count)
+            let recall = Double(retrievedRelevant) / Double(relevant.judgments.count)
+            let denominator = precision + recall
+            guard denominator > 0 else { return nil }
+            return RAGGovernanceFormula.f1HarmonicCoefficient * precision * recall / denominator
         }
     }
 
     // MARK: - MAP (Mean Average Precision)
 
     func calculateMAP(days: Int) async throws -> Double {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let evals = try RAGEvaluation.filter(RAGEvaluation.Columns.createdAt >= cutoff).fetchAll(db)
-            guard !evals.isEmpty else { return 0.0 }
-            var totalAP: Double = 0
-            var queryCount = 0
-            for eval in evals {
-                guard let evalID = eval.id else { continue }
-                let allRelevant = try RelevanceJudgment
-                    .filter(RelevanceJudgment.Columns.evaluationID == evalID && RelevanceJudgment.Columns.relevanceLevel >= 1)
-                    .fetchAll(db)
-                guard !allRelevant.isEmpty else { continue }
-                let relevantSet = Set(allRelevant.map(\.sourceID))
-                let totalRelevant = allRelevant.count
-                let snapshots = try RetrievalSnapshot
-                    .filter(RetrievalSnapshot.Columns.evaluationID == evalID)
-                    .order(RetrievalSnapshot.Columns.rank).fetchAll(db)
-                guard !snapshots.isEmpty else { continue }
-                var relevantHitCount = 0
-                var sumPrecision: Double = 0
-                for (idx, snap) in snapshots.enumerated() where relevantSet.contains(snap.sourceID) {
-                    relevantHitCount += 1
-                    sumPrecision += Double(relevantHitCount) / Double(idx + 1)
-                }
-                totalAP += sumPrecision / Double(totalRelevant)
-                queryCount += 1
+        try await computeMetricAverage(days: days) { eval, db in
+            guard let evalID = eval.id else { return nil }
+            let relevant = try self.fetchRelevantJudgmentsAndSourceIDs(db: db, evaluationID: evalID)
+            guard !relevant.judgments.isEmpty else { return nil }
+            let totalRelevant = relevant.judgments.count
+            let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
+            guard !snapshots.isEmpty else { return nil }
+            var relevantHitCount = 0
+            var sumPrecision: Double = 0
+            for (idx, snap) in snapshots.enumerated() where relevant.sourceIDs.contains(snap.sourceID) {
+                relevantHitCount += 1
+                sumPrecision += Double(relevantHitCount) / Double(idx + 1)
             }
-            return queryCount > 0 ? totalAP / Double(queryCount) : 0.0
+            return sumPrecision / Double(totalRelevant)
         }
     }
 
     // MARK: - 检索延迟百分位
 
     func calculateRetrievalLatency(days: Int) async throws -> LatencyPercentiles {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+        try await readWithCutoff(days: days) { db, cutoff in
             let logs = try LLMCallLog
                 .filter(LLMCallLog.Columns.createdAt >= cutoff)
                 .order(LLMCallLog.Columns.latencyMS).fetchAll(db)
@@ -515,9 +513,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     // MARK: - Token 效率与成本
 
     func calculateTokenEfficiency(days: Int) async throws -> TokenEfficiency {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+        try await readWithCutoff(days: days) { db, cutoff in
             let statsRequest = TokenUsage
                 .filter(TokenUsage.Columns.createdAt >= cutoff)
                 .select(sum(TokenUsage.Columns.totalTokens), sum(TokenUsage.Columns.promptTokens),

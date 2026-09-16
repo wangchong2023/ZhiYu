@@ -35,6 +35,7 @@ extension DesignSystem {
         /// 启动页动画序列 (Splash)
         public enum Splash {
             public static let quoteDelay: Double = Animations.Splash.quoteDelay
+            public static let quoteFadeDuration: Double = Animations.Splash.quoteFadeDuration
             public static let authorDelay: Double = Animations.Splash.authorDelay
             public static let shimmerDelay: Double = Animations.Splash.shimmerDelay
             public static let welcomeDisplayDelay: Double = Animations.Splash.welcomeDisplayDelay

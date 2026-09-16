@@ -61,9 +61,9 @@ extension AuthService {
         guard isMockBackend else { return nil }
         let name = cred.extraInfo?["nickname"] ?? "ZhiYu User"
         let response = LoginResponse(
-            accessToken: "mock_jwt_access_token_\(UUID().uuidString)",
-            refreshToken: "mock_jwt_refresh_token_\(UUID().uuidString)",
-            expiresIn: 3600,
+            accessToken: "\(FeatureConstants.MockData.mockJwtAccess)_\(UUID().uuidString)",
+            refreshToken: "\(FeatureConstants.MockData.mockJwtRefresh)_\(UUID().uuidString)",
+            expiresIn: FeatureConstants.MockData.mockExpiresInSeconds,
             tokenType: FeatureConstants.MockData.bearer,
             isNewUser: false,
             totpRequired: false
@@ -114,9 +114,6 @@ extension AuthService {
         }
         if let googleReq = reqBody as? OAuthGoogleRequest {
             return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: googleReq, requiresAuth: false)
-        }
-        if let githubReq = reqBody as? OAuthGitHubRequest {
-            return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: githubReq, requiresAuth: false)
         }
         if let carrierReq = reqBody as? CarrierAuthRequest {
             return try await NetworkClient.shared.request(path: path, method: SystemConstants.HTTPMethod.post, body: carrierReq, requiresAuth: false)

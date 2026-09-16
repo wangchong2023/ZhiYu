@@ -100,40 +100,40 @@ struct SynthesisDocRow: View {
                     .foregroundStyle(.appSecondary.opacity(UIConstants.trailingIconOpacity)) // 0.5
             }
         }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.medium)
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.medium)
         .contentShape(Rectangle())
         .onTapGesture {
             onTap()
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button {
-                onDelete()
-            } label: {
-                Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
-            }
-            .tint(Color.theme.red)
-            
-            Button {
-                onRename()
-            } label: {
-                Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
-            }
-            .tint(Color.theme.orange)
+            docDeleteButton
+            docRenameButton
         }
         .contextMenu {
-            Button {
-                onRename()
-            } label: {
-                Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
-            }
-            
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
-            }
+            docRenameButton
+            docDeleteButton
         }
+    }
+
+    // MARK: - 重复操作按钮组件
+    /// 重命名按钮（swipeActions 与 contextMenu 共用）
+    private var docRenameButton: some View {
+        Button {
+            onRename()
+        } label: {
+            Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
+        }
+        .tint(Color.theme.orange)
+    }
+
+    /// 删除按钮（swipeActions 专用，带红色 tint）
+    private var docDeleteButton: some View {
+        Button {
+            onDelete()
+        } label: {
+            Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
+        }
+        .tint(Color.theme.red)
     }
     
     // MARK: - Helpers

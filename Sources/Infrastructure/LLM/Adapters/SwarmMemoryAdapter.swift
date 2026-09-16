@@ -15,39 +15,13 @@ import UFPCore
 import os
 
 /// 开源 Swarm / Wax 记忆框架挂载适配器
-public final class SwarmMemoryAdapter: MemoryEngineProtocol, @unchecked Sendable {
-    public let engineType: MemoryEngineType = .openSourceAdapter
+/// 继承 BaseMemoryEngine 复用通用历史切片提取与线程安全存储逻辑 (DRY)。
+public final class SwarmMemoryAdapter: BaseMemoryEngine, @unchecked Sendable {
+    public override var engineType: MemoryEngineType { .openSourceAdapter }
 
-    private var adapterSummaries: [String: String] = [:]
-    private let lock = OSAllocatedUnfairLock()
+    public override var summaryPrefix: String { "Swarm Agent Memory State" }
 
-    public init() {}
-
-    public func processMemory(
-        history: [ChatMessageDTO],
-        recentCount: Int = LLMConstants.Memory.recentCountDefault
-    ) async -> (summary: String?, recentMessages: [ChatMessageDTO]) {
-        guard !history.isEmpty else {
-            return (nil, [])
-        }
-
-        if history.count <= recentCount {
-            return (nil, history)
-        }
-
-        let older = history.dropLast(recentCount)
-        let recent = Array(history.suffix(recentCount))
-
-        // 模拟/封装开源 Swarm Agent 状态下的记忆切片提取
-        let summaryText = older.map { "\($0.role.rawValue): \($0.content)" }.joined(separator: " | ")
-        let summary = "[Swarm Agent Memory State: \(summaryText.prefix(LLMConstants.LogPreview.memorySummaryLength))]"
-
-        return (summary, recent)
-    }
-
-    public func recordSessionSummary(sessionID: String, summary: String) async throws {
-        lock.withLock {
-            adapterSummaries[sessionID] = summary
-        }
+    public override init() {
+        super.init()
     }
 }

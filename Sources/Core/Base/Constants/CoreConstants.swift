@@ -60,6 +60,7 @@ public enum CoreConstants {
         public static let blockedPolitical = "Blocked political content"
         public static let blockedNSFW = "Blocked NSFW content"
         public static let blockedViolence = "Blocked violence content"
+        public static let blockedGamblingNarcotics = "blocked_gambling_narcotics"
         public static let blockedSensitive = "Blocked sensitive content"
         public static let criticalFailed = "Critical: Failed"
         /// 引用 CoreConstants.LogDetails.failedTo，避免重复定义
@@ -310,6 +311,12 @@ public enum CoreConstants {
     // MARK: - 默认模型 (Default Model)
     public enum DefaultModel {
         public static let deepseekV4Pro = "deepseek-v4-pro"
+    }
+
+    // MARK: - 版本号默认值 (Version Default)
+    /// Info.plist 缺失版本号时的回退占位值（语义为"未知版本"，区别于 SystemConstants.Version.defaultSemVer 的 "1.0.0"）
+    public enum VersionDefault {
+        public static let missingSemVer = "0.0.0"
     }
 
     // MARK: - 远程配置 (Remote Config)

@@ -118,22 +118,19 @@ class SecurityManager: @unchecked Sendable {
     /// - Parameter text: text
     /// - Returns: 字符串
     func encrypt(_ text: String) throws -> String {
-        let key = SymmetricKey(data: SHA256.hash(data: Data(getDatabasePassphrase().utf8)))
-        guard let data = text.data(using: .utf8) else { throw SecurityError.encodingFailed }
-        let sealedBox = try AES.GCM.seal(data, using: key)
-        return sealedBox.combined?.base64EncodedString() ?? ""
+        return try AESGCMCryptoHelper.encrypt(text, using: contentEncryptionKey)
     }
 
     /// 解密
     /// - Parameter base64Combined: base64Combined
     /// - Returns: 字符串
     func decrypt(_ base64Combined: String) throws -> String {
-        let key = SymmetricKey(data: SHA256.hash(data: Data(getDatabasePassphrase().utf8)))
-        guard let combinedData = Data(base64Encoded: base64Combined) else { throw SecurityError.decodingFailed }
-        let sealedBox = try AES.GCM.SealedBox(combined: combinedData)
-        let decryptedData = try AES.GCM.open(sealedBox, using: key)
-        guard let text = String(data: decryptedData, encoding: .utf8) else { throw SecurityError.decodingFailed }
-        return text
+        return try AESGCMCryptoHelper.decrypt(base64Combined, using: contentEncryptionKey)
+    }
+
+    /// 内容级加密对称密钥（基于数据库口令派生）
+    private var contentEncryptionKey: SymmetricKey {
+        SymmetricKey(data: SHA256.hash(data: Data(getDatabasePassphrase().utf8)))
     }
 
     // MARK: - 完整性校验 (HMAC)
@@ -192,11 +189,9 @@ class SecurityManager: @unchecked Sendable {
             keyStore?.set(signature, forKey: signatureKeyPrefix + fileName)
             #else
             // 生产环境：签名持久化失败属于严重安全错误，不允许明文降级
-            Logger.shared.addLog(
-                action: .error,
+            SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.securityManager,
-                details: "\(CoreConstants.SecurityLogDetails.criticalFailed) to persist HMAC signature securely: \(error.localizedDescription)",
-                module: CoreConstants.Security.logModule
+                details: "\(CoreConstants.SecurityLogDetails.criticalFailed) to persist HMAC signature securely: \(error.localizedDescription)"
             )
             #endif
         }
@@ -231,11 +226,9 @@ class SecurityManager: @unchecked Sendable {
             Logger.shared.debug("[SecurityManager] 无签名记录，模拟器 DEBUG 模式下放行: \(fileURL.lastPathComponent)")
             return true
             #else
-            Logger.shared.addLog(
-                action: .error,
+            SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.securityManager,
-                details: "Integrity check failed: no signature on file: \(fileURL.lastPathComponent)",
-                module: CoreConstants.Security.logModule
+                details: "Integrity check failed: no signature on file: \(fileURL.lastPathComponent)"
             )
             return false
             #endif
@@ -255,7 +248,10 @@ class SecurityManager: @unchecked Sendable {
             let sig = try await calculateHMAC(for: fileURL)
             await saveSignature(sig, forFilePath: fileURL.path)
         } catch {
-            Logger.shared.addLog(action: .error, target: CoreConstants.SecurityLogTarget.securityManager, details: "\(CoreConstants.SecurityLogDetails.failedTo) update signature: \(error.localizedDescription)", module: CoreConstants.Security.logModule)
+            SecurityLogHelper.logError(
+                target: CoreConstants.SecurityLogTarget.securityManager,
+                details: "\(CoreConstants.SecurityLogDetails.failedTo) update signature: \(error.localizedDescription)"
+            )
         }
     }
 }

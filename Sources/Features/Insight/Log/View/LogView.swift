@@ -327,10 +327,13 @@ private struct LogEntryRow: View {
                 Text(entry.details)
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.appSecondary)
-                    .padding(DesignSystem.Timeline.detailHorizontalPadding)
+                    .cardStyle(
+                        horizontalPadding: DesignSystem.Timeline.detailHorizontalPadding,
+                        verticalPadding: DesignSystem.Timeline.detailHorizontalPadding,
+                        backgroundOpacity: DesignSystem.Opacity.solid,
+                        cornerRadius: DesignSystem.standardRadius
+                    )
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
             }
         }
         .padding(.leading, DesignSystem.Timeline.indentPadding)

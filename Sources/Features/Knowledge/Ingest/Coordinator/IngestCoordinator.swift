@@ -73,12 +73,20 @@ final class IngestCoordinator {
 
     // ── 业务动作 ──
 
-    /// 执行导入摄取
-    func performIngest() {
+    /// 导入冷却检查 — 消除 performIngest/handleFileImport/handleBatchURLImport 的重复 guard
+    /// - Returns: `true` 表示冷却中（已弹提示），调用方应直接 return；`false` 表示可继续
+    @discardableResult
+    func checkImportCooldown() -> Bool {
         guard !isImporting else {
             toastManager.show(type: .info, message: L10n.Ingest.importCooldown)
-            return
+            return true
         }
+        return false
+    }
+
+    /// 执行导入摄取
+    func performIngest() {
+        if checkImportCooldown() { return }
         isIngesting = true
         lastImportTime = Date()
         let recordID = UUID().uuidString
@@ -114,8 +122,7 @@ final class IngestCoordinator {
                     useSmart: smart,
                     useDeepScan: true
                 )
-                try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
-                try? await importRecordRepo.updatePageID(id: recordID, pageID: page.id.uuidString)
+                await markImportRecordDone(recordID: recordID, pageID: page.id)
 
                 if let icon = icon {
                     var updated = page
@@ -130,7 +137,7 @@ final class IngestCoordinator {
                     HapticFeedback.shared.trigger(.success)
                 }
             } catch {
-                try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
+                await markImportRecordFailed(recordID: recordID)
                 await MainActor.run {
                     self.isIngesting = false
                     self.errorMessage = L10n.Ingest.importFailed
@@ -253,5 +260,16 @@ final class IngestCoordinator {
         }
 
         self.showManualForm = true
+    }
+
+    /// 标记导入记录为完成状态并关联页面 ID，消除多处重复的 updateStatus + updatePageID 调用
+    func markImportRecordDone(recordID: String, pageID: UUID) async {
+        try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.done, completedAt: Date())
+        try? await importRecordRepo.updatePageID(id: recordID, pageID: pageID.uuidString)
+    }
+
+    /// 标记导入记录为失败状态，消除多处重复的 updateStatus(.failed) 调用
+    func markImportRecordFailed(recordID: String) async {
+        try? await importRecordRepo.updateStatus(id: recordID, status: ImportRecordStatus.failed, completedAt: Date())
     }
 }

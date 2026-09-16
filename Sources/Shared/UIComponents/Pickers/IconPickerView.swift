@@ -113,17 +113,14 @@ struct IconPickerView: View {
             }
         }
         .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .appCardClip()
     }
 
     // MARK: - Icon Category Section
     @ViewBuilder
     private func iconCategorySection(title: String, icons: [String]) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Text(title)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.appSecondary)
+            SectionCaptionLabel(title: title)
 
             LazyVGrid(columns: gridColumns, spacing: DesignSystem.medium) {
                 ForEach(icons, id: \.self) { icon in

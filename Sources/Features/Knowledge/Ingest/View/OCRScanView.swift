@@ -60,22 +60,15 @@ struct OCRScanView: View {
 
                         // Save to 知识库 (Now just finishes and returns data)
                         if !recognizedText.isEmpty {
-                            Button(action: {
-                                let imageData = selectedImage?.jpegData(compressionQuality: 0.9)
-                                onFinish?(targetTitle, recognizedText, imageData)
-                                dismiss()
-                            }) {
-                                HStack {
-                                    Image(systemName: DesignSystem.Icons.squareAndPencil)
-                                    Text(L10n.Ingest.OCR.confirmAndEdit)
+                            AppFilledActionButton(
+                                title: L10n.Ingest.OCR.confirmAndEdit,
+                                icon: DesignSystem.Icons.squareAndPencil,
+                                action: {
+                                    let imageData = selectedImage?.jpegData(compressionQuality: 0.9)
+                                    onFinish?(targetTitle, recognizedText, imageData)
+                                    dismiss()
                                 }
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.appAccent)
-                                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                            }
+                            )
                             .padding(.top, SystemSpacing.tight)
                         }
                     }

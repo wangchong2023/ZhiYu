@@ -342,26 +342,17 @@ final class LLMConfigStore: ObservableObject {
     /// 从安全的 Keychain 或硬件芯片解密加载特定 LLM 提供商的 API 密钥
     private func loadAPIKey(for provider: LLMProvider) -> String {
         let key = keychainKey(for: provider)
-        
+
         do {
             if let storedValue = try KeychainService.shared.retrieve(key: key), !storedValue.isEmpty {
                 let trimmed = storedValue.trimmingCharacters(in: .whitespacesAndNewlines)
-                // 1. 优先尝试 SecureEnclave 硬件解密
-                if let decrypted = try? SecureEnclaveCryptoService.shared.decrypt(trimmed), !decrypted.isEmpty {
-                    return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
-                }
-                // 2. 尝试 SecurityManager 软件 AES-GCM 解密
-                if let decrypted = try? SecurityManager.shared.decrypt(trimmed), !decrypted.isEmpty {
-                    return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
-                }
-                // 3. 解密失败时返回原始存储值（信任 Keychain 存储层，由调用方判断有效性）
-                //    避免因明文格式检查过严而静默丢弃合法存储的 API 密钥
-                return trimmed
+                // 优先尝试 SecureEnclave 硬件解密，其次 SecurityManager 软件解密；均失败时返回原始存储值
+                return Self.decryptAPIKey(trimmed)
             }
         } catch {
             Logger.shared.error("[LLMConfigStore] 从钥匙串读取 API 密钥失败", error: error)
         }
-        
+
         // 迁移逻辑：如果新版分提供商 Key 不存在，尝试读取旧版全局 Key
         if let legacyValue = try? KeychainService.shared.retrieve(key: legacyKeychainAPIKey), !legacyValue.isEmpty {
             let clean = legacyValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -385,16 +376,41 @@ final class LLMConfigStore: ObservableObject {
         }
 
         do {
-            if let encrypted = try? SecureEnclaveCryptoService.shared.encrypt(cleanKey) {
-                try KeychainService.shared.store(key: key, value: encrypted)
-            } else if let encrypted = try? SecurityManager.shared.encrypt(cleanKey) {
-                try KeychainService.shared.store(key: key, value: encrypted)
-            } else {
-                try KeychainService.shared.store(key: key, value: cleanKey)
-            }
+            let encrypted = Self.encryptAPIKey(cleanKey)
+            try KeychainService.shared.store(key: key, value: encrypted)
         } catch {
             Logger.shared.error("[LLMConfigStore] 写入加密的 API 密钥至钥匙串失败", error: error)
         }
+    }
+
+    /// 解密 API 密钥：优先 SecureEnclave 硬件解密，其次 SecurityManager 软件解密，均失败返回原文
+    /// - Parameter trimmed: 已修剪空白的密文
+    /// - Returns: 解密后的明文密钥
+    private static func decryptAPIKey(_ trimmed: String) -> String {
+        // 1. 优先尝试 SecureEnclave 硬件解密
+        if let decrypted = try? SecureEnclaveCryptoService.shared.decrypt(trimmed), !decrypted.isEmpty {
+            return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        // 2. 尝试 SecurityManager 软件 AES-GCM 解密
+        if let decrypted = try? SecurityManager.shared.decrypt(trimmed), !decrypted.isEmpty {
+            return decrypted.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        // 3. 解密失败时返回原始存储值（信任 Keychain 存储层，由调用方判断有效性）
+        //    避免因明文格式检查过严而静默丢弃合法存储的 API 密钥
+        return trimmed
+    }
+
+    /// 加密 API 密钥：优先 SecureEnclave 硬件加密，其次 SecurityManager 软件加密，均失败返回原文
+    /// - Parameter cleanKey: 已修剪空白的明文密钥
+    /// - Returns: 加密后的密文
+    private static func encryptAPIKey(_ cleanKey: String) -> String {
+        if let encrypted = try? SecureEnclaveCryptoService.shared.encrypt(cleanKey) {
+            return encrypted
+        }
+        if let encrypted = try? SecurityManager.shared.encrypt(cleanKey) {
+            return encrypted
+        }
+        return cleanKey
     }
 }
 #endif

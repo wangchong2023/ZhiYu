@@ -59,14 +59,14 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                     return
                 }
                 #endif
-                continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed))
+                resumeAuthError(continuation, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed)
                 return
             }
             
             let encodedScope = GitHubAuthConfig.oauthScope.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? GitHubAuthConfig.oauthScope
             let urlString = "\(APIPaths.gitHubOAuthAuthorize)?client_id=\(clientId)&state=\(state)&scope=\(encodedScope)"
             guard let url = URL(string: urlString) else {
-                continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.urlInvalidCode, description: FeatureConstants.ErrorDescription.githubURLError))
+                resumeAuthError(continuation, code: GitHubAuthConfig.urlInvalidCode, description: FeatureConstants.ErrorDescription.githubURLError)
                 return
             }
             
@@ -80,14 +80,14 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                       let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: true),
                       let queryItems = components.queryItems,
                       let code = queryItems.first(where: { $0.name == FeatureConstants.OAuthField.code })?.value else {
-                    continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubCallbackError))
+                    self.resumeAuthError(continuation, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubCallbackError)
                     return
                 }
 
                 // CSRF 防护：校验回调 URL 中的 state 与生成时 state 一致
                 let returnedState = queryItems.first(where: { $0.name == FeatureConstants.OAuthField.state })?.value
                 guard returnedState == state else {
-                    continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubStateMismatch))
+                    self.resumeAuthError(continuation, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubStateMismatch)
                     return
                 }
 
@@ -106,6 +106,11 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
             session.prefersEphemeralWebBrowserSession = false
             session.start()
         }
+    }
+
+    /// 统一抛出 GitHub 认证错误，消除 4 处重复的 continuation.resume(throwing: AppError.auth(...)) 调用
+    private func resumeAuthError(_ continuation: CheckedContinuation<AuthCredential, Error>, code: Int, description: String) {
+        continuation.resume(throwing: AppError.auth(domain: GitHubAuthConfig.domain, code: code, description: description))
     }
 }
 

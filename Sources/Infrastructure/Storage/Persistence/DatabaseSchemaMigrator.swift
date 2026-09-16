@@ -13,7 +13,35 @@ import Foundation
 import UFPStorage
 
 extension DatabaseManager {
-    
+
+    // MARK: - 迁移辅助方法 (Migration Helpers)
+
+    /// 幂等添加列：仅当目标列不存在时才执行 alter，避免重复迁移崩溃。
+    /// - Parameters:
+    ///   - db: 当前数据库连接
+    ///   - tableName: 目标表名
+    ///   - columnName: 新列名
+    ///   - columnType: 列类型
+    ///   - isNotNull: 是否 NOT NULL（默认 false）
+    ///   - defaultValue: 默认值（可选）
+    /// - Throws: 数据库错误
+    private func addColumnIfNotExists(
+        db: Database,
+        tableName: String,
+        columnName: String,
+        columnType: Database.ColumnType,
+        isNotNull: Bool = false,
+        defaultValue: DatabaseValue? = nil
+    ) throws {
+        let columns = try db.columns(in: tableName)
+        guard !columns.contains(where: { $0.name == columnName }) else { return }
+        try db.alter(table: tableName) { t in
+            let column = t.add(column: columnName, columnType)
+            if isNotNull { column.notNull() }
+            if let defaultValue { column.defaults(to: defaultValue) }
+        }
+    }
+
     // MARK: - 专属笔记本库迁移方案 (DatabaseMigrator)
     
     /// 专属笔记本数据库对应的渐进式架构迁移器。
@@ -170,20 +198,7 @@ extension DatabaseManager {
             }
 
             // 3. 历史存量数据平滑迁移：从 pages.tags JSON 字符串中解离出独立 Tag 实物
-            let rows = try Row.fetchAll(db, sql: "SELECT \(KnowledgePage.Columns.id.rawValue)," + " \(KnowledgePage.Columns.tags.rawValue)" + " FROM \(KnowledgePage.databaseTableName)")
-            for row in rows {
-                let pageID: Data = row[KnowledgePage.Columns.id.rawValue]
-                let tagsJSON: String? = row[KnowledgePage.Columns.tags.rawValue]
-                if let data = tagsJSON?.data(using: .utf8),
-                   let tags = try? JSONDecoder().decode([String].self, from: data) {
-                     for tagName in tags {
-                         // 建立基础标签记录 (如存在则忽略)
-                         try db.execute(sql: StorageConstants.SQL.insertOr + " IGNORE INTO" + " \(TagRecord.databaseTableName)" + " (\(TagRecord.CodingKeys.id.rawValue)," + " \(TagRecord.CodingKeys.name.rawValue)," + " \(TagRecord.CodingKeys.createdAt.rawValue))" + " VALUES (?," + " ?, ?)", arguments: [tagName, tagName, Date()])
-                         // 绑定多对多关联
-                         try db.execute(sql: StorageConstants.SQL.insertOr + " IGNORE INTO" + " \(PageTagRecord.databaseTableName)" + " (\(PageTagRecord.CodingKeys.pageID.rawValue)," + " \(PageTagRecord.CodingKeys.tagID.rawValue))" + " VALUES (?," + " ?)", arguments: [pageID, tagName])
-                     }
-                }
-            }
+            try TagRepository.migrateLegacyTags(in: db)
         }
 
         // V4: 增加 SRS 间隔重复算法元数据表 (@P1: 促进卡片知识内化吸收)
@@ -201,18 +216,16 @@ extension DatabaseManager {
 
         // V5: RAG 评估维度扩展 — 新增幻觉率与引用准确度指标 (@P2: 生成质量细粒度量化)
         migrator.registerMigration("v5_rag_hallucination_citation") { db in
-            // 检查列是否存在，避免重复迁移崩溃
-            let columns = try db.columns(in: RAGEvaluation.databaseTableName)
-            if !columns.contains(where: { $0.name == RAGEvaluation.Columns.hallucinationRate.name }) {
-                try db.alter(table: RAGEvaluation.databaseTableName) { t in
-                    t.add(column: RAGEvaluation.Columns.hallucinationRate.name, .double).notNull().defaults(to: 0.0)
-                }
-            }
-            if !columns.contains(where: { $0.name == RAGEvaluation.Columns.citationAccuracy.name }) {
-                try db.alter(table: RAGEvaluation.databaseTableName) { t in
-                    t.add(column: RAGEvaluation.Columns.citationAccuracy.name, .double).notNull().defaults(to: 0.0)
-                }
-            }
+            try self.addColumnIfNotExists(
+                db: db, tableName: RAGEvaluation.databaseTableName,
+                columnName: RAGEvaluation.Columns.hallucinationRate.name,
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
+            )
+            try self.addColumnIfNotExists(
+                db: db, tableName: RAGEvaluation.databaseTableName,
+                columnName: RAGEvaluation.Columns.citationAccuracy.name,
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
+            )
         }
 
         // V6: 检索质量标注体系 — 检索快照 + 相关性标注表 (@P3: Hit Rate/MRR/NDCG 数据基座)
@@ -267,11 +280,11 @@ extension DatabaseManager {
 
         // V8: 导入记录 AI 分类标签（幂等：V7 创建表时可能已含此列）
         migrator.registerMigration("v8_import_record_tags") { db in
-            let columns = try db.columns(in: ImportRecord.databaseTableName).map(\.name)
-            guard !columns.contains(ImportRecord.CodingKeys.tags.name) else { return }
-            try db.alter(table: ImportRecord.databaseTableName) { t in
-                t.add(column: ImportRecord.CodingKeys.tags.name, .text)
-            }
+            try self.addColumnIfNotExists(
+                db: db, tableName: ImportRecord.databaseTableName,
+                columnName: ImportRecord.CodingKeys.tags.name,
+                columnType: .text
+            )
         }
 
         // V9: 用户反馈表
@@ -291,42 +304,39 @@ extension DatabaseManager {
 
         // V10: RAG 评估新增答案正确性维度（幂等：检查列是否存在）
         migrator.registerMigration("v10_rag_answer_correctness") { db in
-            let columns = try db.columns(in: RAGEvaluation.databaseTableName)
-            if !columns.contains(where: { $0.name == RAGEvaluation.Columns.answerCorrectness.name }) {
-                try db.alter(table: RAGEvaluation.databaseTableName) { t in
-                    t.add(column: RAGEvaluation.Columns.answerCorrectness.name, .double).notNull().defaults(to: 0.0)
-                }
-            }
+            try self.addColumnIfNotExists(
+                db: db, tableName: RAGEvaluation.databaseTableName,
+                columnName: RAGEvaluation.Columns.answerCorrectness.name,
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
+            )
         }
 
         // V11: RAG 评估新增上下文充分性维度（幂等）
         migrator.registerMigration("v11_rag_context_sufficiency") { db in
-            let columns = try db.columns(in: RAGEvaluation.databaseTableName)
-            if !columns.contains(where: { $0.name == RAGEvaluation.Columns.contextSufficiency.name }) {
-                try db.alter(table: RAGEvaluation.databaseTableName) { t in
-                    t.add(column: RAGEvaluation.Columns.contextSufficiency.name, .double).notNull().defaults(to: 0.0)
-                }
-            }
+            try self.addColumnIfNotExists(
+                db: db, tableName: RAGEvaluation.databaseTableName,
+                columnName: RAGEvaluation.Columns.contextSufficiency.name,
+                columnType: .double, isNotNull: true, defaultValue: 0.0.databaseValue
+            )
         }
 
         // V13: 反馈条目新增处理状态列
         migrator.registerMigration("v13_feedback_status") { db in
-            let columns = try db.columns(in: FeedbackEntry.databaseTableName)
-            if !columns.contains(where: { $0.name == FeedbackEntry.CodingKeys.status.name }) {
-                try db.alter(table: FeedbackEntry.databaseTableName) { t in
-                    t.add(column: FeedbackEntry.CodingKeys.status.name, .text).notNull().defaults(to: FeedbackStatus.pending.rawValue)
-                }
-            }
+            try self.addColumnIfNotExists(
+                db: db, tableName: FeedbackEntry.databaseTableName,
+                columnName: FeedbackEntry.CodingKeys.status.name,
+                columnType: .text, isNotNull: true,
+                defaultValue: FeedbackStatus.pending.rawValue.databaseValue
+            )
         }
 
         // V12: RAG 评估新增用户满意度评分（幂等）
         migrator.registerMigration("v12_rag_user_rating") { db in
-            let columns = try db.columns(in: RAGEvaluation.databaseTableName)
-            if !columns.contains(where: { $0.name == RAGEvaluation.Columns.userRating.name }) {
-                try db.alter(table: RAGEvaluation.databaseTableName) { t in
-                    t.add(column: RAGEvaluation.Columns.userRating.name, .integer)
-                }
-            }
+            try self.addColumnIfNotExists(
+                db: db, tableName: RAGEvaluation.databaseTableName,
+                columnName: RAGEvaluation.Columns.userRating.name,
+                columnType: .integer
+            )
         }
 
         return migrator
@@ -406,12 +416,11 @@ extension DatabaseManager {
         
         // V2: global_vaults 增加 page_count 列 (@P4: 列表页数展示)
         migrator.registerMigration("v2_global_page_count") { db in
-            let columns = try db.columns(in: VaultRecord.databaseTableName)
-            if !columns.contains(where: { $0.name == VaultRecord.CodingKeys.pageCount.rawValue }) {
-                try db.alter(table: VaultRecord.databaseTableName) { t in
-                    t.add(column: VaultRecord.CodingKeys.pageCount.rawValue, .integer).notNull().defaults(to: 0)
-                }
-            }
+            try self.addColumnIfNotExists(
+                db: db, tableName: VaultRecord.databaseTableName,
+                columnName: VaultRecord.CodingKeys.pageCount.rawValue,
+                columnType: .integer, isNotNull: true, defaultValue: 0.databaseValue
+            )
         }
 
         return migrator

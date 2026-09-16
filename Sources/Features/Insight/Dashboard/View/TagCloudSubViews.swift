@@ -46,27 +46,16 @@ extension TagCloudViewContent {
     }
 
     var emptyTagsView: some View {
-        VStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.tag)
-                .font(.system(size: DesignSystem.iconHuge))
-                .foregroundStyle(.appSecondary)
-            Text(L10n.Tag.Action.noTags)
-                .font(.subheadline)
-                .foregroundStyle(.appSecondary)
-            Text(L10n.Tag.Action.noTagsHint)
-                .font(.caption)
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.subtleOpacity))
-                .multilineTextAlignment(.center)
-        }
+        InsightEmptyState(
+            icon: DesignSystem.Icons.tag,
+            title: L10n.Tag.Action.noTags,
+            hint: L10n.Tag.Action.noTagsHint
+        )
         .frame(maxHeight: .infinity)
     }
 
     func bubbleRatio(for count: Int) -> Double {
-        let counts = coordinator.filteredTags.map { $0.count }
-        guard let maxVal = counts.max(), let minVal = counts.min() else { return 0.0 }
-        let diff = maxVal - minVal
-        guard diff > 0 else { return 0.5 }
-        return Double(count - minVal) / Double(diff)
+        TagBubbleCloudCanvas.normalizedBubbleRatio(for: count, counts: coordinator.filteredTags.map { $0.count }, zeroDiffFallback: 0.5)
     }
 
     var tagScrollView: some View {
@@ -130,13 +119,7 @@ extension TagCloudViewContent {
                     }
                     .font(.caption.bold())
                     .foregroundStyle(.appAccent)
-                    .padding(.horizontal, DesignSystem.large)
-                    .padding(.vertical, DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(Capsule())
-                    .overlay(
-                        Capsule().stroke(Color.appAccent.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.divider)
-                    )
+                    .tagToggleCapsule(borderColor: .appAccent, borderOpacity: DesignSystem.Opacity.light)
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, DesignSystem.small)
@@ -152,13 +135,7 @@ extension TagCloudViewContent {
                     }
                     .font(.caption.bold())
                     .foregroundStyle(.appSecondary)
-                    .padding(.horizontal, DesignSystem.large)
-                    .padding(.vertical, DesignSystem.small)
-                    .background(Color.appCard)
-                    .clipShape(Capsule())
-                    .overlay(
-                        Capsule().stroke(Color.appBorder.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.divider)
-                    )
+                    .tagToggleCapsule(borderColor: .appBorder, borderOpacity: DesignSystem.Opacity.light)
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, DesignSystem.small)
@@ -182,8 +159,7 @@ extension TagCloudViewContent {
                             .listRowBackground(
                                 RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
                                     .fill(Color.appCard.opacity(DesignSystem.softOpacity))
-                                    .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, DesignSystem.tiny)
+                                    .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
                             )
                             .skipOnWatch { $0.listRowSeparator(.hidden) }
                         }
@@ -209,5 +185,20 @@ extension TagCloudViewContent {
                 }
             }
         }
+    }
+}
+
+// MARK: - 标签切换胶囊修饰符
+private extension View {
+    /// 标签切换胶囊：padding + background + clipShape(Capsule) + overlay(stroke)
+    func tagToggleCapsule(borderColor: Color, borderOpacity: Double) -> some View {
+        self
+            .padding(.horizontal, DesignSystem.large)
+            .padding(.vertical, DesignSystem.small)
+            .background(Color.appCard)
+            .clipShape(Capsule())
+            .overlay(
+                Capsule().stroke(borderColor.opacity(borderOpacity), lineWidth: SystemStroke.divider)
+            )
     }
 }

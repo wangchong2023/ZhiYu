@@ -15,9 +15,7 @@ extension VaultService {
 
     /// 异步选择并等待数据库切换完成（用于批量数据操作等需要确保切换完成的场景）
     public func selectVaultAndWait(_ vault: Vault) async throws {
-        self.selectedVaultID = vault.id
-        keyStore?.set(vault.id.uuidString, forKey: AppConstants.Keys.Storage.vaultsSelectedID)
-        keyStore?.set(vault.englishName, forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
+        persistVaultSelection(vault)
 
         guard let vaultRepository = vaultRepository,
               databaseSwitcher != nil else {
@@ -33,9 +31,7 @@ extension VaultService {
 
     /// 选择并激活目标笔记本，同时触发底层的专属物理数据库 WAL 切换。
     public func selectVault(_ vault: Vault) {
-        self.selectedVaultID = vault.id
-        keyStore?.set(vault.id.uuidString, forKey: AppConstants.Keys.Storage.vaultsSelectedID)
-        keyStore?.set(vault.englishName, forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
+        persistVaultSelection(vault)
         Task {
             guard let vaultRepository = vaultRepository else { return }
             try? await vaultRepository.saveSetting(key: AppConstants.Keys.Storage.vaultsSelectedID, value: vault.id.uuidString)
@@ -57,6 +53,30 @@ extension VaultService {
         }
     }
 
+    /// 持久化笔记本选择状态，消除 selectVaultAndWait 与 selectVault 的重复 keyStore 设置
+    private func persistVaultSelection(_ vault: Vault) {
+        self.selectedVaultID = vault.id
+        keyStore?.set(vault.id.uuidString, forKey: AppConstants.Keys.Storage.vaultsSelectedID)
+        keyStore?.set(vault.englishName, forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
+    }
+
+    /// 清空笔记本选择状态，消除 exitVault 与 deleteVault 的重复清理逻辑
+    private func clearVaultSelectionState() {
+        self.selectedVaultID = nil
+        keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultsSelectedID)
+        keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
+        databaseSwitcher?.releaseDatabaseConnection()
+    }
+
+    /// 按 ID 查找并更新笔记本字段，消除 updateVault 与 renameVault 的重复 firstIndex + saveVaultToDatabase 模式
+    private func updateVaultField(id: UUID, updater: (inout Vault) -> Void) {
+        if let index = vaults.firstIndex(where: { $0.id == id }) {
+            updater(&vaults[index])
+            vaults[index].updatedAt = Date()
+            saveVaultToDatabase(vaults[index])
+        }
+    }
+
     /// 统一执行保险库专属物理数据库切换与元数据更新
     private func performVaultDatabaseSwitch(for vaultID: UUID) async throws {
         guard let databaseSwitcher = databaseSwitcher else { return }
@@ -70,10 +90,7 @@ extension VaultService {
     public func exitVault() {
         NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
 
-        self.selectedVaultID = nil
-        keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultsSelectedID)
-        keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
-        databaseSwitcher?.releaseDatabaseConnection()
+        clearVaultSelectionState()
     }
 
     /// 创建全新的笔记本笔记本。
@@ -95,23 +112,17 @@ extension VaultService {
 
     /// 更新已存在笔记本的配置元数据。
     public func updateVault(id: UUID, name: String, icon: String?, description: String?) {
-        if let index = vaults.firstIndex(where: { $0.id == id }) {
-            vaults[index].name = name
-            vaults[index].icon = icon
-            vaults[index].description = description
-            vaults[index].updatedAt = Date()
-
-            saveVaultToDatabase(vaults[index])
+        updateVaultField(id: id) { vault in
+            vault.name = name
+            vault.icon = icon
+            vault.description = description
         }
     }
 
     /// 重命名特定的笔记本。
     public func renameVault(id: UUID, newName: String) {
-        if let index = vaults.firstIndex(where: { $0.id == id }) {
-            vaults[index].name = newName
-            vaults[index].updatedAt = Date()
-
-            saveVaultToDatabase(vaults[index])
+        updateVaultField(id: id) { vault in
+            vault.name = newName
         }
     }
 
@@ -120,10 +131,7 @@ extension VaultService {
         vaults.removeAll { $0.id == id }
         if selectedVaultID == id {
             NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
-            selectedVaultID = nil
-            keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultsSelectedID)
-            keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
-            databaseSwitcher?.releaseDatabaseConnection()
+            clearVaultSelectionState()
         }
 
         Task {

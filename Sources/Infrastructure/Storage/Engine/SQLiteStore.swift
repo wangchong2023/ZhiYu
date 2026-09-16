@@ -71,6 +71,11 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
     /// reloadFromDisk
     public func reloadFromDisk() async {
         _pages = (try? await knowledgeRepository.fetchAll()) ?? []
+        await refreshDatabaseSignature()
+    }
+
+    /// 更新数据库文件签名（消除多处 if let url = dbURL 重复）。
+    private func refreshDatabaseSignature() async {
         if let url = await DatabaseManager.shared.dbURL {
             await SecurityManager.shared.updateSignature(for: url)
         }
@@ -95,17 +100,10 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         fileSize: Int64? = nil,
         sourceType: String? = nil
     ) async throws -> KnowledgePage {
-        let page = KnowledgePage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawTextSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
-        )
+        let page = KnowledgePage(input: CreatePageInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType))
         try await knowledgeRepository.save(page)
         await reloadFromDisk()
         return page
@@ -142,10 +140,8 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         // 🚨 极其重要：因为 erase() 会把全部表及 grdb_migrations 抹除，
         // 必须立刻重新运行数据库迁移器来建立空表、触发器与 FTS 索引，从而保全数据库重置后的后续读写可用性
         try await DatabaseManager.shared.migrate(writer)
-        
-        if let url = await DatabaseManager.shared.dbURL {
-            await SecurityManager.shared.updateSignature(for: url)
-        }
+
+        await refreshDatabaseSignature()
     }
 
     // MARK: - 搜索与关联
@@ -256,21 +252,22 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
     }
 
     private func calculateLocalModelsStorageSize(appSupport: URL) -> Int64 {
-        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let modelDirs = [
-            docDir?.appendingPathComponent("Models"),
-            appSupport.appendingPathComponent("Models")
-        ].compactMap { $0 }
-        return modelDirs.reduce(0) { $0 + folderSize(at: $1) }
+        calculateDualDirStorageSize(subdir: StorageConstants.Subdirectory.models, appSupport: appSupport)
     }
 
     private func calculatePluginsStorageSize(appSupport: URL) -> Int64 {
+        calculateDualDirStorageSize(subdir: StorageConstants.Subdirectory.plugins, appSupport: appSupport)
+    }
+
+    /// 计算 documentDirectory 与 applicationSupportDirectory 下指定子目录的总大小。
+    /// 消除 calculateLocalModelsStorageSize 与 calculatePluginsStorageSize 的结构重复。
+    private func calculateDualDirStorageSize(subdir: String, appSupport: URL) -> Int64 {
         let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let pluginDirs = [
-            docDir?.appendingPathComponent("Plugins"),
-            appSupport.appendingPathComponent("Plugins")
+        let dirs = [
+            docDir?.appendingPathComponent(subdir),
+            appSupport.appendingPathComponent(subdir)
         ].compactMap { $0 }
-        return pluginDirs.reduce(0) { $0 + folderSize(at: $1) }
+        return dirs.reduce(0) { $0 + folderSize(at: $1) }
     }
 
     private func calculateCachesStorageSize() -> Int64 {

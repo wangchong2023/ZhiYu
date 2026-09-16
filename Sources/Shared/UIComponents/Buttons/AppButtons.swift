@@ -40,24 +40,13 @@ public struct AppPrimaryButton: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.small) {
-                if isLoading {
-                    ProgressView()
-                        .tint(.white)
-                } else if let icon = icon {
-                    Image(systemName: icon)
-                }
-                Text(title)
-                    .fontWeight(.semibold)
-            }
-            .frame(maxWidth: maxWidth)
-            .padding(.vertical, Spacing.medium)
-            .padding(.horizontal, Spacing.large)
-            .background(
-                LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            .foregroundStyle(.white)
+            AppButtonLabel(title: title, icon: icon, isLoading: isLoading, fontWeight: .semibold)
+                .appButtonLabelLayout(maxWidth: maxWidth)
+                .background(
+                    LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .foregroundStyle(.white)
         }
         .buttonStyle(ScaleButtonStyle())
     }
@@ -90,25 +79,52 @@ public struct AppBorderedButton: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.small) {
-                if let icon = icon {
-                    Image(systemName: icon)
-                }
-                Text(title)
-                    .fontWeight(.medium)
-            }
+            AppButtonLabel(title: title, icon: icon, isLoading: false, fontWeight: .medium)
+                .appButtonLabelLayout(maxWidth: maxWidth)
+                .background(color.opacity(SystemOpacity.ghost))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Spacing.cardRadius)
+                        .stroke(color.opacity(DesignSystem.softOpacity), lineWidth: Spacing.borderWidth)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .foregroundStyle(color)
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+}
+
+// MARK: - 共享按钮标签布局
+
+/// 统一的按钮标签尺寸布局（frame + padding），消除 AppPrimaryButton / AppBorderedButton 两处重复的修饰符链。
+private extension View {
+    func appButtonLabelLayout(maxWidth: CGFloat?) -> some View {
+        self
             .frame(maxWidth: maxWidth)
             .padding(.vertical, Spacing.medium)
             .padding(.horizontal, Spacing.large)
-            .background(color.opacity(SystemOpacity.ghost))
-            .overlay(
-                RoundedRectangle(cornerRadius: Spacing.cardRadius)
-                    .stroke(color.opacity(DesignSystem.softOpacity), lineWidth: Spacing.borderWidth)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            .foregroundStyle(color)
+    }
+}
+
+// MARK: - 共享按钮标签
+
+/// 按钮内部标签（图标 + 标题 + 可选加载指示器），消除 AppPrimaryButton / AppBorderedButton 间重复的 HStack + Image/ProgressView + Text 组合。
+private struct AppButtonLabel: View {
+    let title: String
+    let icon: String?
+    let isLoading: Bool
+    let fontWeight: Font.Weight
+
+    var body: some View {
+        HStack(spacing: Spacing.small) {
+            if isLoading {
+                ProgressView()
+                    .tint(.white)
+            } else if let icon {
+                Image(systemName: icon)
+            }
+            Text(title)
+                .fontWeight(fontWeight)
         }
-        .buttonStyle(ScaleButtonStyle())
     }
 }
 
@@ -176,12 +192,48 @@ public struct AppCapsuleButton: View {
 /// 为按钮提供物理反馈效果。
 public struct ScaleButtonStyle: ButtonStyle {
     public init() {}
-    
+
     /// 创建Body
     /// - Parameter configuration: configuration
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? Animations.Interaction.pressScale : 1.0)
             .animation(.easeOut(duration: Spacing.Action.animationDuration), value: configuration.isPressed)
+    }
+}
+
+// MARK: - 清除按钮
+
+/// 搜索框清除按钮，消除多处重复的 Image + foregroundStyle 修饰符链
+public struct ClearSearchButton: View {
+    public init() {}
+
+    public var body: some View {
+        Image(systemName: DesignSystem.Icons.errorCircle)
+            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+    }
+}
+
+// MARK: - 来源 Badge 胶囊
+
+/// 来源 Badge 胶囊组件，消除多处重复的 Label + font + padding + Capsule 修饰符链
+public struct SourceBadge: View {
+    let label: String
+    let icon: String
+    let color: Color
+
+    public init(label: String, icon: String, color: Color) {
+        self.label = label
+        self.icon = icon
+        self.color = color
+    }
+
+    public var body: some View {
+        Label(label, systemImage: icon)
+            .font(.caption.weight(.bold))
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, DesignSystem.tightPadding)
+            .background(Capsule().fill(color.opacity(DesignSystem.Opacity.subtle)))
+            .foregroundStyle(color)
     }
 }

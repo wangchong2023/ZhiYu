@@ -61,11 +61,7 @@ struct TagBubbleCloudCanvas: View {
     ///   - tags: 经过过滤的全部标签集合
     /// - Returns: 归一化比例值 (0.0 到 1.0)
     private func bubbleRatio(for count: Int, tags: [(tag: String, count: Int)]) -> Double {
-        let counts = tags.map { $0.count }
-        guard let maxVal = counts.max(), let minVal = counts.min() else { return 0.0 }
-        let diff = maxVal - minVal
-        guard diff > 0 else { return defaultBubbleRatio }
-        return Double(count - minVal) / Double(diff)
+        Self.normalizedBubbleRatio(for: count, counts: tags.map { $0.count }, zeroDiffFallback: defaultBubbleRatio)
     }
     
     var body: some View {
@@ -114,7 +110,7 @@ struct TagBubbleCloudCanvas: View {
                                 interactiveScale: minFisheyeScale,
                                 interactiveOpacity: minFisheyeOpacity
                             )
-                            .position(x: itemGeo.size.width / FeatureConstants.TagBubbleCloud.canvasHalfDivisor, y: itemGeo.size.height / FeatureConstants.TagBubbleCloud.canvasHalfDivisor)
+                            .position(bubbleCenterPosition(itemGeo: itemGeo))
                         } else {
                             // 3. 鱼眼引擎三维余弦过渡缩放计算
                             let normDist = min(distance / maxFisheyeDistance, 1.0)
@@ -130,7 +126,7 @@ struct TagBubbleCloudCanvas: View {
                                 interactiveScale: scale,
                                 interactiveOpacity: opacity
                               )
-                              .position(x: itemGeo.size.width / FeatureConstants.TagBubbleCloud.canvasHalfDivisor, y: itemGeo.size.height / FeatureConstants.TagBubbleCloud.canvasHalfDivisor)
+                              .position(bubbleCenterPosition(itemGeo: itemGeo))
                         }
                     }
                     .frame(width: bubbleFrameDiameter, height: bubbleFrameDiameter)
@@ -164,6 +160,19 @@ struct TagBubbleCloudCanvas: View {
                     }
             )
         }
+    }
+
+    /// 气泡居中定位：基于几何视图尺寸计算中心点
+    private func bubbleCenterPosition(itemGeo: GeometryProxy) -> CGPoint {
+        CGPoint(
+            x: itemGeo.size.width / FeatureConstants.TagBubbleCloud.canvasHalfDivisor,
+            y: itemGeo.size.height / FeatureConstants.TagBubbleCloud.canvasHalfDivisor
+        )
+    }
+
+    /// 归一化气泡比例：委托至 TagBubbleRatioCalculator 统一实现
+    static func normalizedBubbleRatio(for count: Int, counts: [Int], zeroDiffFallback: Double) -> Double {
+        TagBubbleRatioCalculator.calculate(for: count, from: counts, defaultRatio: zeroDiffFallback)
     }
 }
 

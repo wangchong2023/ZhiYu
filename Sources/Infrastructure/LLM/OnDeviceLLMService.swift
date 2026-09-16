@@ -58,6 +58,13 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     /// 注入的模型编译器，用于处理平台差异化编译与沙盒物理转换
     @ObservationIgnored @Dependency(\.modelCompiler) var compiler: any MLModelCompilerProtocol
 
+    /// 用户沙盒 Documents/MLModels 目录 URL，回退至临时目录
+    private var mlModelsDirectory: URL {
+        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        return docsDir.appendingPathComponent("MLModels")
+    }
+
     // MARK: - 常量参数定义
     nonisolated public enum Config {
         public static let defaultMaxTokens: Int = 256
@@ -105,9 +112,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         }
 
         // 2. 扫描沙盒 Documents 目录中用户自主下载或导入的模型目录
-        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
-        let modelsDir = docsDir.appendingPathComponent("MLModels")
+        let modelsDir = mlModelsDirectory
 
         if let enumerator = FileManager.default.enumerator(at: modelsDir, includingPropertiesForKeys: [.fileSizeKey]) {
             for case let fileURL as URL in enumerator where fileURL.pathExtension == SystemConstants.FileExtension.mlmodelC {
@@ -427,9 +432,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     // MARK: - 动态模型导入
     /// 将用户在外部文件沙盒选中的 `.mlmodel` 或 `.mlmodelc` 模型无缝拷贝并挂接至内部存储器中
     public func importModel(from url: URL) async throws {
-        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
-        let modelsDir = docsDir.appendingPathComponent("MLModels")
+        let modelsDir = mlModelsDirectory
         try FileManager.default.createDirectory(at: modelsDir, withIntermediateDirectories: true)
 
         let destURL = modelsDir.appendingPathComponent(url.lastPathComponent)

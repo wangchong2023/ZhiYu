@@ -35,9 +35,7 @@ public struct TaskRoutingRulesView: View {
                         routingRuleRow(icon: "arrow.triangle.branch", iconColor: Color.theme.blue, task: L10n.ModelManager.Routing.taskChat, rule: L10n.ModelManager.Routing.strategySmartRouting)
                         routingRuleRow(icon: "arrow.triangle.branch", iconColor: Color.theme.blue, task: L10n.ModelManager.Routing.taskTagGeneration, rule: L10n.ModelManager.Routing.strategySmartRouting)
                     }
-                    .padding()
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+                    .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
                 }
             }
             .padding(DesignSystem.medium)

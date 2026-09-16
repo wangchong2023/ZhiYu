@@ -90,33 +90,29 @@ public struct OAuthAppleRequest: Encodable, Sendable {
     }
 }
 
-public struct OAuthWeChatRequest: Encodable, Sendable {
+public struct OAuthCodeStateRequest: Encodable, Sendable {
     public let code: String
     public let state: String?
-    
+
     public init(code: String, state: String? = nil) {
         self.code = code
         self.state = state
     }
 }
+
+/// 微信 OAuth 请求（与 GitHub 共用 code+state 结构）
+public typealias OAuthWeChatRequest = OAuthCodeStateRequest
+
+/// GitHub OAuth 请求（与微信共用 code+state 结构）
+public typealias OAuthGitHubRequest = OAuthCodeStateRequest
 
 public struct OAuthGoogleRequest: Encodable, Sendable {
     public let code: String
     public let idToken: String
-    
+
     public init(code: String, idToken: String) {
         self.code = code
         self.idToken = idToken
-    }
-}
-
-public struct OAuthGitHubRequest: Encodable, Sendable {
-    public let code: String
-    public let state: String?
-    
-    public init(code: String, state: String? = nil) {
-        self.code = code
-        self.state = state
     }
 }
 

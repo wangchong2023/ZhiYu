@@ -43,11 +43,7 @@ extension ModelLabView {
                 }
                 .frame(width: DesignSystem.Metrics.sourceCardWidth + DesignSystem.tiny, height: DesignSystem.Metrics.boxHeight)
                 .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                .cornerRadius(SystemRadius.small)
-                .overlay(
-                    RoundedRectangle(cornerRadius: SystemRadius.small)
-                        .stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
-                )
+                .smallCardBorder()
             }
             .buttonStyle(.plain)
 

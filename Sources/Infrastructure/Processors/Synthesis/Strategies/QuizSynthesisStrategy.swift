@@ -28,7 +28,7 @@ public struct QuizSynthesisStrategy: SynthesisStrategyProtocol {
             return rawContent
         }
 
-        Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InvalidQuizJSON")
+        Logger.shared.addLog(action: .ingest, target: type.title, details: ProcessorConstants.Synthesis.selfHealReasonInvalidQuizJSON)
         return generateFallback(from: sourceContent, title: L10n.AI.Prompt.Quiz.defaultTitle)
     }
 

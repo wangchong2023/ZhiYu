@@ -31,6 +31,7 @@ struct LLMSettingsView: View {
     
     var body: some View {
         @Bindable var config = config
+        let isProvidersExpandedBinding = $isProvidersExpanded
         Form {
             // 1. 服务开关
             Section {
@@ -66,7 +67,7 @@ struct LLMSettingsView: View {
             
             // 2. 提供商选择与详细参数配置
             Section {
-                DisclosureGroup(isExpanded: $isProvidersExpanded) {
+                DisclosureGroup(isExpanded: isProvidersExpandedBinding) {
                     VStack(alignment: .leading, spacing: DesignSystem.medium) {
                         ForEach(LLMProvider.allCases) { provider in
                             Button(action: {
@@ -160,9 +161,7 @@ struct LLMSettingsView: View {
                                   .font(.subheadline.bold())
                                   .foregroundStyle(Color.theme.green)
                               Spacer()
-                              Text(L10n.AI.LLM.latency("\(latency) \(L10n.Dashboard.unitMs)"))
-                                  .font(.caption.monospaced())
-                                  .foregroundStyle(.appSecondary)
+                              latencyText(latency)
                           }
                         case .failure(let code, let message, let latency, _):
                           HStack(alignment: .top) {
@@ -177,9 +176,7 @@ struct LLMSettingsView: View {
                               }
                               Spacer()
                               if let latency = latency {
-                                  Text(L10n.AI.LLM.latency("\(latency) \(L10n.Dashboard.unitMs)"))
-                                      .font(.caption.monospaced())
-                                      .foregroundStyle(.appSecondary)
+                                  latencyText(latency)
                               }
                           }
                         }
@@ -198,6 +195,7 @@ struct LLMSettingsView: View {
     /// 配置内容视图（API Key / Base URL / Model 选择与编辑）
     private var configurationContent: some View {
         @Bindable var config = config
+        let showAPIKeyBinding = $showAPIKey
         let validation = config.provider.validateAPIKeyFormat(config.apiKey)
         
         return VStack(spacing: DesignSystem.wide) {
@@ -214,29 +212,11 @@ struct LLMSettingsView: View {
                             .foregroundStyle(Color.appAlert)
                     }
                 }
-                HStack {
-                    if showAPIKey {
-                        TextField(config.provider.apiKeyPlaceholder, text: $config.apiKey)
-                            .textFieldStyle(.plain)
-                            .foregroundStyle(.appText)
-                            .font(.system(.body, design: .monospaced))
-                    } else {
-                        SecureField(config.provider.apiKeyPlaceholder, text: $config.apiKey)
-                            .textFieldStyle(.plain)
-                            .foregroundStyle(.appText)
-                            .font(.system(.body, design: .monospaced))
-                    }
-                    Button(action: { showAPIKey.toggle() }) {
-                        Image(systemName: showAPIKey ? "eye.slash" : "eye")
-                            .foregroundStyle(.appSecondary)
-                    }
-                }
-                .padding()
-                .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                .overlay(
-                    RoundedRectangle(cornerRadius: SystemRadius.small)
-                        .stroke(validation.isValid || config.apiKey.isEmpty ? Color.appBorder.opacity(DesignSystem.Opacity.prominent) : Color.appAlert.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
+                APIKeyInputField(
+                    placeholder: config.provider.apiKeyPlaceholder,
+                    text: $config.apiKey,
+                    isShown: showAPIKeyBinding,
+                    isValid: validation.isValid
                 )
             }
             
@@ -245,18 +225,7 @@ struct LLMSettingsView: View {
                 Text(L10n.AI.LLM.apiAddress)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appSecondary)
-                TextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL)
-                    .textFieldStyle(.plain)
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundStyle(.appText)
-                    .padding()
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: SystemRadius.small)
-                            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
-                    )
-                    .skipOnWatch { $0.autocapitalization(.none).keyboardType(.URL) }
+                monospacedTextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL, keyboardType: .URL)
             }
             
             // Model (非自定义模式呈现 Picker 下拉菜单，自定义模式或手动模式呈现 TextField)
@@ -282,18 +251,7 @@ struct LLMSettingsView: View {
                 
                 if config.provider == .custom || isCustomModelInput || config.provider.suggestedModels.isEmpty {
                     // 自定义输入框
-                    TextField(FeatureConstants.Placeholder.modelName, text: $config.model)
-                        .textFieldStyle(.plain)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(.appText)
-                        .padding()
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: SystemRadius.small)
-                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
-                        )
-                        .skipOnWatch { $0.autocapitalization(.none) }
+                    monospacedTextField(FeatureConstants.Placeholder.modelName, text: $config.model, keyboardType: nil)
                 } else {
                     // 官方提供商 Dropdown 下拉选择菜单
                     Menu {
@@ -312,20 +270,28 @@ struct LLMSettingsView: View {
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                         }
-                        .padding()
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: SystemRadius.small)
-                                .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.divider)
-                        )
+                        .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
                     }
                 }
             }
         }
         .padding(.vertical, DesignSystem.small)
     }
-    
+
+    /// 等宽字体 TextField + borderedCardStyle，消除 baseURL 与 model 输入框的重复
+    @ViewBuilder
+    private func monospacedTextField(_ placeholder: String, text: Binding<String>, keyboardType: UIKeyboardType?) -> some View {
+        TextField(placeholder, text: text)
+            .textFieldStyle(.plain)
+            .font(.system(.body, design: .monospaced))
+            .foregroundStyle(.appText)
+            .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
+            .skipOnWatch {
+                $0.autocapitalization(.none)
+                if let keyboardType { $0.keyboardType(keyboardType) }
+            }
+    }
+
     func testConnection() {
         testing = true
         testResult = nil
@@ -348,5 +314,12 @@ struct LLMSettingsView: View {
                 }
             }
         }
+    }
+
+    /// 延迟文本展示，消除 success 与 failure 分支的重复
+    private func latencyText(_ latency: Int) -> some View {
+        Text(L10n.AI.LLM.latency("\(latency) \(L10n.Dashboard.unitMs)"))
+            .font(.caption.monospaced())
+            .foregroundStyle(.appSecondary)
     }
 }

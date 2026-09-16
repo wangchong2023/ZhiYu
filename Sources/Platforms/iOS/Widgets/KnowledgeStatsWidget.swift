@@ -11,53 +11,30 @@
 import SwiftUI
 @preconcurrency import WidgetKit
 
-// MARK: - Widget 设计常量（独立于 DesignSystem，Widget Extension 无法引入主 App 模块）
+// MARK: - Widget 设计常量（KnowledgeStats 专属，未纳入共享集）
 
-private enum WidgetMetrics {
-    // MARK: - Original Constants
+/// KnowledgeStatsWidget 专属常量（未在其他 Widget 中复用，保留私有定义）
+private enum KnowledgeStatsMetrics {
+    // MARK: - Padding
     static let cardPadding: CGFloat = 16
     static let contentPadding: CGFloat = 12
     static let footerPadding: CGFloat = 18
+
+    // MARK: - Size
     static let iconSize: CGFloat = 20
-    static let bulletSize: CGFloat = 4
     static let progressBarWidth: CGFloat = 80
-    static let widgetCornerRadius: CGFloat = 6
-    static let microCornerRadius: CGFloat = 4
 
     // MARK: - Spacing
     static let spacingTiny: CGFloat = 2
     static let spacingSmall: CGFloat = 3
-    static let spacingCompact: CGFloat = 4
-    static let spacingStandard: CGFloat = 8
     static let spacingRegular: CGFloat = 10
-    static let spacingWide: CGFloat = 12
-    static let spacingLarge: CGFloat = 16
     static let spacingXLarge: CGFloat = 24
-
-    // MARK: - Padding
-    static let horizontalPadding: CGFloat = 8
-    static let verticalPadding: CGFloat = 6
-    static let verticalPaddingSmall: CGFloat = 4
-    static let verticalPaddingStandard: CGFloat = 8
-    static let edgePadding: CGFloat = 12
 
     // MARK: - Font Sizes
     static let captionSize: CGFloat = 8
-    static let microFontSize: CGFloat = 9
-    static let smallFontSize: CGFloat = 10
-    static let captionFontSize: CGFloat = 11
 
     // MARK: - Opacity
-    static let opacityGhost: Double = 0.03
-    static let opacitySubtle: Double = 0.06
-    static let opacityLight: Double = 0.1
-    static let opacityGlow: Double = 0.15
-    static let opacityMedium: Double = 0.3
     static let opacityHalf: Double = 0.5
-
-    // MARK: - Colors
-    static let darkBgTop: Color = Color(red: 0.1, green: 0.11, blue: 0.18)
-    static let darkBgBottom: Color = Color(red: 0.06, green: 0.07, blue: 0.12)
 
     // MARK: - Refresh
     /// 小组件刷新间隔（分钟）
@@ -111,7 +88,7 @@ struct KnowledgeStatsProvider: TimelineProvider {
         Task.detached {
             let entry = await buildEntry(for: Date())
             await MainActor.run {
-                let nextUpdate = Date().addingTimeInterval(WidgetMetrics.widgetRefreshIntervalMinutes * 60)
+                let nextUpdate = Date().addingTimeInterval(KnowledgeStatsMetrics.widgetRefreshIntervalMinutes * 60)
                 let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
                 completion(timeline)
             }
@@ -140,23 +117,15 @@ struct KnowledgeStatsProvider: TimelineProvider {
 /// 桌面静态小组件的主体渲染视图
 struct KnowledgeStatsWidgetEntryView: View {
     var entry: KnowledgeStatsProvider.Entry
-    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        ZStack {
-            // 背景：采用智宇标志性的沉浸式暗色渐变
-            LinearGradient(
-                colors: [WidgetMetrics.darkBgTop, WidgetMetrics.darkBgBottom],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            
+        WidgetContainerBackground { family in
             // 霓虹光环点缀 (Platinum UI Design)
             RadialGradient(
-                colors: [Color.purple.opacity(WidgetMetrics.opacityGlow), Color.clear],
+                colors: [Color.purple.opacity(WidgetVisualConstants.opacityMedium), Color.clear],
                 center: .topTrailing,
-                startRadius: WidgetMetrics.gradientStartRadius,
-                endRadius: WidgetMetrics.gradientEndRadius
+                startRadius: KnowledgeStatsMetrics.gradientStartRadius,
+                endRadius: KnowledgeStatsMetrics.gradientEndRadius
             )
 
             switch family {
@@ -176,210 +145,173 @@ struct KnowledgeStatsWidgetEntryView: View {
                 smallView
             }
         }
-        // 应用 WidgetKit 最新的内容边距安全策略
-        .containerBackground(for: .widget) {
-            Color.clear
-        }
     }
 
     // MARK: - Small 尺寸布局
     private var smallView: some View {
-        VStack(alignment: .leading, spacing: WidgetMetrics.spacingRegular) {
-            HStack(spacing: WidgetMetrics.spacingCompact) {
-                Image(systemName: "books.vertical.fill")
-                    .font(.footnote)
-                    .foregroundStyle(WidgetSharedConstants.Color.purple)
-                Text(entry.vaultName)
-                    .font(.caption2.bold())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            
+        VStack(alignment: .leading, spacing: KnowledgeStatsMetrics.spacingRegular) {
+            vaultHeader(iconFont: .footnote, titleFont: .caption2.bold())
+
             Spacer()
-            
-            VStack(alignment: .leading, spacing: WidgetMetrics.spacingTiny) {
+
+            VStack(alignment: .leading, spacing: KnowledgeStatsMetrics.spacingTiny) {
                 Text("\(entry.pageCount)")
                     .font(.system(.title, design: .rounded))
                     .fontWeight(.black)
                     .foregroundStyle(.white)
-                
+
                 Text(WidgetL10n.vaultName)
-                    .font(.system(size: WidgetMetrics.smallFontSize, weight: .bold))
+                    .font(.system(size: WidgetVisualConstants.smallFontSize, weight: .bold))
                     .foregroundStyle(.secondary)
             }
-            
-            HStack(spacing: WidgetMetrics.spacingWide) {
-                statItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
-                statItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
+
+            HStack(spacing: WidgetVisualConstants.spacingWide) {
+                WidgetStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
+                WidgetStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
             }
         }
-        .padding(WidgetMetrics.contentPadding)
+        .padding(KnowledgeStatsMetrics.contentPadding)
     }
 
     // MARK: - Medium 尺寸布局
     private var mediumView: some View {
-        HStack(spacing: WidgetMetrics.spacingLarge) {
+        HStack(spacing: WidgetVisualConstants.spacingLarge) {
             // 左侧：数据面板
-            VStack(alignment: .leading, spacing: WidgetMetrics.spacingWide) {
-                HStack(spacing: WidgetMetrics.spacingCompact) {
-                    Image(systemName: "books.vertical.fill")
-                        .foregroundStyle(WidgetSharedConstants.Color.purple)
-                        .font(.caption)
-                    Text(entry.vaultName)
-                        .font(.caption.bold())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+            VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingWide) {
+                vaultHeader(iconFont: .caption, titleFont: .caption.bold())
+
+                HStack(spacing: WidgetVisualConstants.spacingLarge) {
+                    WidgetVaultStatPair(pageCount: entry.pageCount, linkCount: entry.linkCount)
                 }
-                
-                HStack(spacing: WidgetMetrics.spacingLarge) {
-                    mainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
-                    mainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
-                }
-                
-                HStack(spacing: WidgetMetrics.spacingLarge) {
-                    mainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
+
+                HStack(spacing: WidgetVisualConstants.spacingLarge) {
+                    WidgetMainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
                     Spacer()
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
+
             Divider()
-                .background(Color.white.opacity(WidgetMetrics.opacityLight))
-                .padding(.vertical, WidgetMetrics.verticalPaddingStandard)
+                .background(Color.white.opacity(WidgetVisualConstants.opacityLight))
+                .padding(.vertical, WidgetVisualConstants.spacingStandard)
 
             // 右侧：Deep Link 快捷操作区
-            VStack(spacing: WidgetMetrics.spacingStandard) {
-                actionButton(label: WidgetL10n.create, icon: "plus.circle.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.create)
-                actionButton(label: WidgetL10n.aiChat, icon: "sparkles", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.chat)
-                actionButton(label: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
+            VStack(spacing: WidgetVisualConstants.spacingStandard) {
+                WidgetActionButton(label: WidgetL10n.create, icon: "plus.circle.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.create)
+                WidgetActionButton(label: WidgetL10n.aiChat, icon: "sparkles", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.chat)
+                WidgetActionButton(label: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
             }
-            .frame(width: WidgetMetrics.progressBarWidth)
+            .frame(width: KnowledgeStatsMetrics.progressBarWidth)
         }
-        .padding(WidgetMetrics.cardPadding)
+        .padding(KnowledgeStatsMetrics.cardPadding)
     }
 
     // MARK: - Large 尺寸布局
     private var largeView: some View {
-        VStack(alignment: .leading, spacing: WidgetMetrics.spacingLarge) {
+        VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingLarge) {
             // 顶半部复用 Medium 的统计信息
-            HStack(spacing: WidgetMetrics.spacingLarge) {
-                VStack(alignment: .leading, spacing: WidgetMetrics.spacingStandard) {
-                    HStack(spacing: WidgetMetrics.spacingCompact) {
-                        Image(systemName: "books.vertical.fill")
-                            .foregroundStyle(WidgetSharedConstants.Color.purple)
-                            .font(.caption)
-                        Text(entry.vaultName)
-                            .font(.caption.bold())
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    HStack(spacing: WidgetMetrics.spacingXLarge) {
-                        mainStatItem(label: WidgetL10n.vaultName, value: "\(entry.pageCount)", color: WidgetSharedConstants.Color.purple)
-                        mainStatItem(label: WidgetL10n.links, value: "\(entry.linkCount)", color: WidgetSharedConstants.Color.blue)
-                    mainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
+            HStack(spacing: WidgetVisualConstants.spacingLarge) {
+                VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingStandard) {
+                    vaultHeader(iconFont: .caption, titleFont: .caption.bold())
+
+                    HStack(spacing: KnowledgeStatsMetrics.spacingXLarge) {
+                        WidgetVaultStatPair(pageCount: entry.pageCount, linkCount: entry.linkCount)
+                        WidgetMainStatItem(label: WidgetL10n.tags, value: "\(entry.tagCount)", color: WidgetSharedConstants.Color.orange)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 // 快捷大按钮
-                Link(destination: URL(string: WidgetSharedConstants.DeepLink.chat) ?? URL(string: "about:blank")!) {
-                    HStack(spacing: WidgetMetrics.spacingCompact) {
-                        Image(systemName: "sparkles")
-                        Text(WidgetL10n.ai)
-                    }
-                    .font(.caption.bold())
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, WidgetMetrics.edgePadding)
-                    .padding(.vertical, WidgetMetrics.verticalPadding)
-                    .background(Capsule().fill(Color.purple))
-                }
+                WidgetLargeAIButton(label: WidgetL10n.ai, url: WidgetSharedConstants.DeepLink.chat)
             }
-            
-            Divider().background(Color.white.opacity(WidgetMetrics.opacityLight))
-            
+
+            Divider().background(Color.white.opacity(WidgetVisualConstants.opacityLight))
+
             // 下半部：最近更新的知识页卡片列表
-            VStack(alignment: .leading, spacing: WidgetMetrics.spacingRegular) {
+            VStack(alignment: .leading, spacing: KnowledgeStatsMetrics.spacingRegular) {
                 Text(WidgetL10n.recentUpdates)
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
-                    .padding(.bottom, WidgetMetrics.spacingTiny)
-                
+                    .padding(.bottom, KnowledgeStatsMetrics.spacingTiny)
+
                 ForEach(entry.lastUpdatedPages) { page in
-                    HStack(spacing: WidgetMetrics.spacingStandard) {
-                        Image(systemName: page.typeName == "concept" ? "lightbulb.fill" : "person.text.rectangle.fill")
-                            .font(.system(size: WidgetMetrics.captionFontSize))
-                            .foregroundStyle(page.colorName == "accent" ? WidgetSharedConstants.Color.blue : WidgetSharedConstants.Color.purple)
-                            .frame(width: WidgetMetrics.iconSize, height: WidgetMetrics.iconSize)
-                            .background(Color.white.opacity(WidgetMetrics.opacitySubtle))
-                            .clipShape(RoundedRectangle(cornerRadius: WidgetMetrics.microCornerRadius))
-                        
-                        Text(page.title)
-                            .font(.footnote.bold())
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: WidgetMetrics.captionSize, weight: .bold))
-                            .foregroundStyle(.secondary.opacity(WidgetMetrics.opacityHalf))
-                    }
-                    .padding(.vertical, WidgetMetrics.verticalPadding)
-                    .padding(.horizontal, WidgetMetrics.horizontalPadding)
-                    .background(Color.white.opacity(WidgetMetrics.opacityGhost))
-                    .clipShape(RoundedRectangle(cornerRadius: WidgetMetrics.widgetCornerRadius))
+                    WidgetRecentPageRow(page: page)
                 }
             }
         }
-        .padding(WidgetMetrics.footerPadding)
+        .padding(KnowledgeStatsMetrics.footerPadding)
     }
 
-    // MARK: - 辅助子视图构建
-    
-    private func statItem(label: String, value: String, color: Color) -> some View {
-        HStack(spacing: WidgetMetrics.spacingSmall) {
-            Circle()
-                .fill(color)
-                .frame(width: WidgetMetrics.bulletSize, height: WidgetMetrics.bulletSize)
-            Text("\(label):")
-                .font(.system(size: WidgetMetrics.microFontSize))
+    // MARK: - 共享子视图
+
+    /// 知识库标题头部：图标 + 仓库名，消除 smallView/mediumView/largeView 间重复的
+    /// `HStack { Image("books.vertical.fill"); Text(vaultName) }` 模式。
+    @ViewBuilder
+    private func vaultHeader(iconFont: Font, titleFont: Font) -> some View {
+        HStack(spacing: WidgetVisualConstants.spacingCompact) {
+            Image(systemName: "books.vertical.fill")
+                .font(iconFont)
+                .foregroundStyle(WidgetSharedConstants.Color.purple)
+            Text(entry.vaultName)
+                .font(titleFont)
                 .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(size: WidgetMetrics.microFontSize, weight: .bold))
-                .foregroundStyle(.white)
+                .lineLimit(1)
         }
     }
-    
-    private func mainStatItem(label: String, value: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: WidgetMetrics.spacingTiny) {
-            Text(value)
-                .font(.title3.bold())
-                .foregroundStyle(color)
-            Text(label)
-                .font(.system(size: WidgetMetrics.microFontSize, weight: .bold))
-                .foregroundStyle(.secondary)
-        }
-    }
-    
-    private func actionButton(label: String, icon: String, color: Color, url: String) -> some View {
-        Link(destination: URL(string: url) ?? URL(string: "about:blank")!) {
-            HStack(spacing: WidgetMetrics.spacingCompact) {
-                Image(systemName: icon)
-                    .font(.system(size: WidgetMetrics.smallFontSize))
-                Text(label)
-                    .font(.system(size: WidgetMetrics.smallFontSize, weight: .bold))
-            }
+}
+
+// MARK: - 大尺寸 AI 按钮
+
+/// KnowledgeStatsWidget largeView 中的大号 AI 胶囊按钮，消除重复的
+/// `Link + HStack + Capsule` 构造模式。
+struct WidgetLargeAIButton: View {
+    let label: String
+    let url: String
+
+    var body: some View {
+        Link(destination: WidgetDeepLinkURL.resolve(url)) {
+            WidgetLinkLabel(icon: "sparkles", label: label)
+                .font(.caption.bold())
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, WidgetMetrics.verticalPadding)
-            .background(Color.white.opacity(WidgetMetrics.opacitySubtle))
-            .overlay(
-                RoundedRectangle(cornerRadius: WidgetMetrics.widgetCornerRadius)
-                    .stroke(color.opacity(WidgetMetrics.opacityMedium), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: WidgetMetrics.widgetCornerRadius))
+            .padding(.horizontal, WidgetVisualConstants.edgePadding)
+            .padding(.vertical, WidgetVisualConstants.verticalPadding)
+            .background(Capsule().fill(Color.purple))
         }
+    }
+}
+
+// MARK: - 最近更新页行
+
+/// KnowledgeStatsWidget largeView 中的最近更新页卡片行，消除重复的
+/// `HStack + Image + Text + chevron` 构造模式。
+struct WidgetRecentPageRow: View {
+    let page: WidgetRecentPage
+
+    var body: some View {
+        HStack(spacing: WidgetVisualConstants.spacingStandard) {
+            Image(systemName: page.typeName == "concept" ? "lightbulb.fill" : "person.text.rectangle.fill")
+                .font(.system(size: WidgetVisualConstants.captionFontSize))
+                .foregroundStyle(page.colorName == "accent" ? WidgetSharedConstants.Color.blue : WidgetSharedConstants.Color.purple)
+                .frame(width: WidgetVisualConstants.rowIconSize, height: WidgetVisualConstants.rowIconSize)
+                .background(Color.white.opacity(WidgetVisualConstants.opacitySubtle))
+                .clipShape(RoundedRectangle(cornerRadius: WidgetVisualConstants.microCornerRadius))
+
+            Text(page.title)
+                .font(.footnote.bold())
+                .foregroundStyle(.white)
+                .lineLimit(1)
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: WidgetVisualConstants.chevronFontSize, weight: .bold))
+                .foregroundStyle(.secondary.opacity(WidgetVisualConstants.opacityHalf))
+        }
+        .padding(.vertical, WidgetVisualConstants.verticalPadding)
+        .padding(.horizontal, WidgetVisualConstants.horizontalPadding)
+        .background(Color.white.opacity(WidgetVisualConstants.opacityFaint))
+        .clipShape(RoundedRectangle(cornerRadius: WidgetVisualConstants.widgetCornerRadius))
     }
 }
 

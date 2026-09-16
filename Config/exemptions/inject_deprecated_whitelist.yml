@@ -276,3 +276,27 @@ inject_deprecated_whitelist:
   reason: synthesisStore 局部解析，避免循环依赖
   added: '2026-09-13'
   expiry_check: P11
+- file: Sources/Core/Base/Utils/DIResolver.swift
+  line: 29
+  type: ServiceContainer.shared
+  reason: DIResolver 核心解析方法，从 ServiceContainer 解析服务
+  added: '2026-09-15'
+  expiry_check: P11
+- file: Sources/Core/Base/Utils/DIResolver.swift
+  line: 39
+  type: ServiceContainer.shared
+  reason: DIResolver 核心解析方法，从 ServiceContainer 解析服务
+  added: '2026-09-15'
+  expiry_check: P11
+- file: Sources/App/Core/AppEnvironment.swift
+  line: 230
+  type: ServiceContainer.shared
+  reason: DI 核心初始化代码，registerStoresToContainer
+  added: '2026-09-15'
+  expiry_check: P11
+- file: Sources/Features/AI/Chat/Model/AIWorkflowStore.swift
+  line: 240
+  type: ServiceContainer.shared
+  reason: synthesisStore 局部解析，避免循环依赖
+  added: '2026-09-15'
+  expiry_check: P11

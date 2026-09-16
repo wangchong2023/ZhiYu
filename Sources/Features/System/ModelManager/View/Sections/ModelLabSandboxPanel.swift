@@ -73,7 +73,7 @@ extension ModelLabView {
                     }
                     return getActiveModel()?.modelId ?? activeId
                 },
-                set: { newId in
+                set: { (newId: String) in
                     HapticFeedback.shared.trigger(.selection)
                     modelManager.activeModelId = newId
                     loadParametersForModel(newId)
@@ -92,10 +92,7 @@ extension ModelLabView {
                     .font(.caption)
                     .foregroundStyle(Color.theme.cyan)
             }
-            .padding(.horizontal, SystemSpacing.medium)
-            .padding(.vertical, SystemSpacing.small)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .clipShape(Capsule())
+            .pillStyle()
         }
     }
 
@@ -119,8 +116,6 @@ extension ModelLabView {
             testPrompt = L10n.ModelManager.Lab.Prompt.mobileActions
         case .audioScribe:
             // 音频速记用例不使用文本 prompt，保持空字符串
-            testPrompt = ""
-        default:
             testPrompt = ""
         }
     }
@@ -224,10 +219,7 @@ extension ModelLabView {
                         .font(.caption)
                 }
                 .foregroundStyle(Color.theme.cyan)
-                .padding(.horizontal, SystemSpacing.medium)
-                .padding(.vertical, SystemSpacing.small)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-                .clipShape(Capsule())
+                .pillStyle()
             }
             .buttonStyle(.plain)
         }
@@ -268,9 +260,7 @@ extension ModelLabView {
                     controlButton(for: useCase)
                 }
             }
-            .padding(DesignSystem.medium)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .cornerRadius(DesignSystem.mediumRadius)
+            .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium)
 
             // 推理流输出展示板
             outputScribeBoard
@@ -279,5 +269,17 @@ extension ModelLabView {
         .onAppear {
             setupDefaultPrompt(for: useCase)
         }
+    }
+}
+
+// MARK: - 胶囊 pill 样式修饰符
+private extension View {
+    /// 胶囊 pill 样式修饰符，消除重复的 padding+background+clipShape(Capsule) 链
+    func pillStyle() -> some View {
+        self
+            .padding(.horizontal, SystemSpacing.medium)
+            .padding(.vertical, SystemSpacing.small)
+            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
+            .clipShape(Capsule())
     }
 }

@@ -25,6 +25,7 @@ struct TaskCenterView: View {
     @State private var selectedFilterType: TaskType?
     
     var body: some View {
+        let showClearConfirmBinding = $showClearConfirm
         if idiom == .watch {
             WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.taskCenterPlaceholder)
         } else {
@@ -89,7 +90,7 @@ struct TaskCenterView: View {
             }
             .confirmationDialog(
                 L10n.AI.Task.clearConfirmTitle,
-                isPresented: $showClearConfirm,
+                isPresented: showClearConfirmBinding,
                 titleVisibility: .visible
             ) {
                 Button(L10n.Common.Misc.clearAll, role: .destructive) {
@@ -135,14 +136,13 @@ struct TaskCenterView: View {
     // MARK: - 分类段头（消除 watchOS/watchOS非重复）
     private func sectionHeader(type: TaskType, metrics: TaskCenter.TaskMetrics) -> some View {
         HStack(spacing: DesignSystem.medium) {
-            ZStack {
-                Circle()
-                    .fill(taskColor(for: type).opacity(SystemOpacity.ghost))
-                    .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
-                Image(systemName: type.icon)
-                    .font(.system(size: DesignSystem.Action.smallIconSize, weight: .bold))
-                    .foregroundStyle(taskColor(for: type))
-            }
+            taskIconBadge(
+                color: taskColor(for: type),
+                size: DesignSystem.Task.badgeSize,
+                icon: type.icon,
+                iconFont: .system(size: DesignSystem.Action.smallIconSize, weight: .bold),
+                iconColor: taskColor(for: type)
+            )
 
             VStack(alignment: .leading, spacing: DesignSystem.atomic) {
                 Text(type.localizedName)
@@ -337,18 +337,23 @@ struct TaskCenterView: View {
 /// 负责单个异步任务的进度条展示、状态文本反馈及关联页面的快捷跳转交互
 private struct TaskRow: View {
     let task: GlobalTask
-    
+
+    /// 任务类型对应的主色（AI 任务紫色，其他为 appAccent）
+    private var typeColor: Color {
+        task.type == .ai ? Color.theme.purple : Color.appAccent
+    }
+
     var body: some View {
         HStack(spacing: DesignSystem.Task.rowSpacing) {
             // 类型图标与状态
             ZStack(alignment: .bottomTrailing) {
                 Circle()
-                    .fill(task.type == .ai ? Color.theme.purple.opacity(SystemOpacity.ghost) : Color.appAccent.opacity(SystemOpacity.ghost))
+                    .fill(typeColor.opacity(SystemOpacity.ghost))
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 Image(systemName: task.type.icon)
                     .font(.system(size: UIConstants.taskRowIconSize))
-                    .foregroundStyle(task.type == .ai ? Color.theme.purple : Color.appAccent)
+                    .foregroundStyle(typeColor)
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 if !task.isRead && (task.status == .completed || isFailed) {
@@ -452,4 +457,24 @@ private enum UIConstants {
     static let filterTotalOpacity: Double = SystemOpacity.overlay
     static let emptyStateSparkleOffset: CGFloat = SystemSpacing.sectionCompact
     static let taskRowIconSize: CGFloat = ComponentSpacing.iconCompact
+}
+
+// MARK: - 任务图标徽章辅助
+/// 任务图标徽章：Circle 背景 + Image 前景（消除 4 处重复的 Circle+fill+frame+Image 链）
+@ViewBuilder
+private func taskIconBadge(
+    color: Color,
+    size: CGFloat,
+    icon: String,
+    iconFont: Font,
+    iconColor: Color
+) -> some View {
+    ZStack {
+        Circle()
+            .fill(color.opacity(SystemOpacity.ghost))
+            .frame(width: size, height: size)
+        Image(systemName: icon)
+            .font(iconFont)
+            .foregroundStyle(iconColor)
+    }
 }

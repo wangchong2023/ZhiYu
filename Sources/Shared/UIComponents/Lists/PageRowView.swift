@@ -81,8 +81,7 @@ struct PageRowView: View {
         }
         .padding(.horizontal, DesignSystem.small)
         .padding(.vertical, DesignSystem.small)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+        .appCardClip(cornerRadius: Spacing.smallRadius, backgroundOpacity: DesignSystem.Opacity.prominent)
         .contentShape(Rectangle()) // 确保整行可点击
     }
 }

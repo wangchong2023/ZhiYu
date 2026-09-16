@@ -121,10 +121,7 @@ struct MarkdownRendererView: View {
             MarkdownRendererView(content: content, isPrivate: isPrivate, onLinkTap: onLinkTap, isCompact: true)
                 .padding(.top, DesignSystem.tiny)
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appAccent.opacity(SystemOpacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        .padding(.vertical, DesignSystem.tiny)
+        .detailsBlockStyle()
         #else
         DisclosureGroup {
             MarkdownRendererView(content: content, isPrivate: isPrivate, onLinkTap: onLinkTap, isCompact: true)
@@ -134,10 +131,7 @@ struct MarkdownRendererView: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appAccent)
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appAccent.opacity(SystemOpacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        .padding(.vertical, DesignSystem.tiny)
+        .detailsBlockStyle()
         #endif
     }
 
@@ -267,16 +261,12 @@ struct MarkdownRendererView: View {
                             renderInlineContent(cell)
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(.appAccent)
-                                .padding(.horizontal, DesignSystem.small)
-                                .padding(.vertical, DesignSystem.tightPadding)
-                                .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
+                                .tableCellFrame(minColWidth: Layout.minColWidth, maxColWidth: Layout.maxColWidth)
                         }
                         .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
                         // 列间分割线（最后一列不加）
                         if index < headers.count - 1 {
-                            Divider()
-                                .frame(maxHeight: Layout.cellHeight)
-                                .background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
+                            tableDivider(opacity: DesignSystem.Opacity.shadow)
                         }
                     }
                 }
@@ -289,20 +279,17 @@ struct MarkdownRendererView: View {
                                 renderInlineContent(cell)
                                     .font(.footnote)
                                     .foregroundStyle(.appText)
-                                    .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, DesignSystem.tightPadding)
-                                    .frame(minWidth: Layout.minColWidth, maxWidth: Layout.maxColWidth, alignment: .leading)
+                                    .tableCellFrame(minColWidth: Layout.minColWidth, maxColWidth: Layout.maxColWidth)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .background(rowIndex % 2 != 0 ? Color.appCard.opacity(DesignSystem.Opacity.shadow) : Color.clear)
                             if colIndex < row.count - 1 {
-                                Divider()
-                                    .background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
+                                tableDivider(opacity: DesignSystem.Opacity.shadow)
                             }
                         }
                     }
                     if rowIndex < rows.count - 1 {
-                        Divider().background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
+                        tableDivider(opacity: DesignSystem.Opacity.shadow)
                     }
                 }
             }
@@ -313,6 +300,14 @@ struct MarkdownRendererView: View {
             )
         }
         .padding(.vertical, DesignSystem.tiny)
+    }
+
+    /// 表格分割线（消除重复的 Divider + background 链）
+    @ViewBuilder
+    private func tableDivider(opacity: Double) -> some View {
+        Divider()
+            .frame(maxHeight: Layout.cellHeight)
+            .background(Color.appBorder.opacity(opacity))
     }
 
     // MARK: - Render Horizontal Rule
@@ -392,28 +387,37 @@ struct MarkdownRendererView: View {
     }
 
     private func textSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
-        var container = AttributedString(segment.content)
-        container.swiftUI.font = isCompact ? Font.footnote : Font.body
-        return container
+        makeBaseSegment(segment)
     }
 
     private func boldSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
-        var container = AttributedString(segment.content)
-        container.swiftUI.font = (isCompact ? Font.footnote : Font.body).weight(.bold)
+        var container = makeBaseSegment(segment)
+        container.swiftUI.font = baseFont.weight(.bold)
         return container
     }
 
     private func italicSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
-        var container = AttributedString(segment.content)
-        container.swiftUI.font = (isCompact ? Font.footnote : Font.body).italic()
+        var container = makeBaseSegment(segment)
+        container.swiftUI.font = baseFont.italic()
         return container
     }
 
     private func strikethroughSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
-        var container = AttributedString(segment.content)
-        container.swiftUI.font = isCompact ? Font.footnote : Font.body
+        var container = makeBaseSegment(segment)
         container.swiftUI.strikethroughStyle = .single
         return container
+    }
+
+    /// 构建基础段落（消除重复的 AttributedString 初始化 + baseFont 赋值链）
+    private func makeBaseSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
+        var container = AttributedString(segment.content)
+        container.swiftUI.font = baseFont
+        return container
+    }
+
+    /// 紧凑/正文基础字体（消除重复的 isCompact ? Font.footnote : Font.body 表达式）
+    private var baseFont: Font {
+        isCompact ? Font.footnote : Font.body
     }
 
     private func codeSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
@@ -425,26 +429,23 @@ struct MarkdownRendererView: View {
     }
 
     private func applinkSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
+        let label: String
+        let linkTarget: String
         if segment.content.contains("|") {
             let parts = segment.content.split(separator: "|")
-            let label = String(parts.first ?? "")
-            let title = String(parts.last ?? "")
-            var container = AttributedString(label)
-            container.swiftUI.font = (isCompact ? Font.footnote : Font.body).weight(.medium)
-            container.swiftUI.foregroundColor = Color.appAccent
-            if let encoded = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-                container.foundation.link = URL(string: "applink://\(encoded)")
-            }
-            return container
+            label = String(parts.first ?? "")
+            linkTarget = String(parts.last ?? "")
         } else {
-            var container = AttributedString(segment.content)
-            container.swiftUI.font = (isCompact ? Font.footnote : Font.body).weight(.medium)
-            container.swiftUI.foregroundColor = Color.appAccent
-            if let encoded = segment.content.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-                container.foundation.link = URL(string: "applink://\(encoded)")
-            }
-            return container
+            label = segment.content
+            linkTarget = segment.content
         }
+        var container = AttributedString(label)
+        container.swiftUI.font = baseFont.weight(.medium)
+        container.swiftUI.foregroundColor = Color.appAccent
+        if let encoded = linkTarget.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            container.foundation.link = URL(string: "applink://\(encoded)")
+        }
+        return container
     }
 
     private func linkSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
@@ -452,7 +453,7 @@ struct MarkdownRendererView: View {
         let label = String(parts.first ?? "")
         let urlString = String(parts.last ?? "")
         var container = AttributedString(label)
-        container.swiftUI.font = isCompact ? Font.footnote : Font.body
+        container.swiftUI.font = baseFont
         container.swiftUI.foregroundColor = Color.appAccent
         container.swiftUI.underlineStyle = .single
         if let url = URL(string: urlString) {
@@ -490,5 +491,25 @@ struct MarkdownRendererView: View {
         }
         .padding(.vertical, DesignSystem.tightPadding)
         .opacity(SystemOpacity.glassStrong)
+    }
+}
+
+// MARK: - Details Block 共享样式
+private extension View {
+    /// 折叠块统一样式：padding + accent 背景 + cardRadius 圆角 + 垂直间距，消除 watchOS / iOS 两处重复。
+    func detailsBlockStyle() -> some View {
+        self
+            .padding(DesignSystem.medium)
+            .background(Color.appAccent.opacity(SystemOpacity.ghost))
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .padding(.vertical, DesignSystem.tiny)
+    }
+
+    /// 表格单元格统一 frame + padding，消除表头与数据行两处重复。
+    func tableCellFrame(minColWidth: CGFloat, maxColWidth: CGFloat) -> some View {
+        self
+            .padding(.horizontal, DesignSystem.small)
+            .padding(.vertical, DesignSystem.tightPadding)
+            .frame(minWidth: minColWidth, maxWidth: maxColWidth, alignment: .leading)
     }
 }

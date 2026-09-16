@@ -11,6 +11,73 @@
 import SwiftUI
 import UFPCore
 
+// MARK: - 文件类型分类器（消除 categoryDisplayName/fileIcon/categoryColor 的重复 case 块）
+/// 根据文件扩展名统一推断显示名、图标与颜色
+private enum FileTypeClassifier {
+    enum FileKind {
+        case pdf, markdown, word, excel, ppt, image, audio, text, archive, other
+    }
+
+    /// 根据扩展名推断文件类型
+    static func kind(for ext: String) -> FileKind {
+        switch ext {
+        case FeatureConstants.FileExtension.pdf: return .pdf
+        case FeatureConstants.FileExtension.md, FeatureConstants.FileExtension.markdown: return .markdown
+        case FeatureConstants.FileExtension.doc, FeatureConstants.FileExtension.docx: return .word
+        case FeatureConstants.FileExtension.xls, FeatureConstants.FileExtension.xlsx, FeatureConstants.FileExtension.csv: return .excel
+        case FeatureConstants.FileExtension.ppt, FeatureConstants.FileExtension.pptx: return .ppt
+        case FeatureConstants.FileExtension.png, FeatureConstants.FileExtension.jpg, FeatureConstants.FileExtension.jpeg, FeatureConstants.FileExtension.heic, FeatureConstants.FileExtension.webp: return .image
+        case FeatureConstants.FileExtension.mp3, FeatureConstants.FileExtension.m4a, FeatureConstants.FileExtension.wav: return .audio
+        case FeatureConstants.FileExtension.txt, FeatureConstants.FileExtension.json, FeatureConstants.FileExtension.swift, FeatureConstants.FileExtension.py: return .text
+        case FeatureConstants.FileExtension.zip, FeatureConstants.FileExtension.tar, FeatureConstants.FileExtension.gz: return .archive
+        default: return .other
+        }
+    }
+
+    /// 文件类型显示名
+    static func displayName(for ext: String) -> String {
+        switch kind(for: ext) {
+        case .pdf: return FeatureConstants.FileTypeName.pdf
+        case .markdown: return FeatureConstants.FileTypeName.markdown
+        case .word: return FeatureConstants.FileTypeName.word
+        case .excel: return FeatureConstants.FileTypeName.excel
+        case .ppt: return FeatureConstants.FileTypeName.ppt
+        case .text: return FeatureConstants.FileTypeName.txt
+        case .image, .audio, .archive, .other: return L10n.Ingest.fileImport
+        }
+    }
+
+    /// 文件类型 SF Symbol 图标
+    static func icon(for ext: String) -> String {
+        switch kind(for: ext) {
+        case .pdf: return "doc.richtext.fill"
+        case .markdown: return "m.square.fill"
+        case .word: return "w.square.fill"
+        case .excel: return "x.square.fill"
+        case .ppt: return "p.square.fill"
+        case .image: return "photo.fill"
+        case .audio: return "waveform.circle.fill"
+        case .text: return "doc.plaintext.fill"
+        case .archive: return "doc.zipper.fill"
+        case .other: return "doc.text.fill"
+        }
+    }
+
+    /// 文件类型主题色
+    static func color(for ext: String) -> Color {
+        switch kind(for: ext) {
+        case .pdf: return Color.theme.red
+        case .markdown: return Color.theme.blue
+        case .word: return Color.theme.blue
+        case .excel: return Color.theme.green
+        case .ppt: return Color.theme.orange
+        case .image: return Color.theme.purple
+        case .text: return Color.theme.teal
+        case .audio, .archive, .other: return Color.theme.orange
+        }
+    }
+}
+
 struct ImportRecordCard: View {
     let record: ImportRecord
     var onTap: (() -> Void)?
@@ -41,23 +108,18 @@ struct ImportRecordCard: View {
                 // 来源类型与 AI 标签行
                 HStack(spacing: DesignSystem.atomic) {
                     // 来源类型胶囊标签 (使用高对比度的精致色彩背景)
-                    Text(categoryDisplayName)
-                        .font(.caption2.weight(.bold))
-                        .padding(.horizontal, DesignSystem.tightPadding)
-                        .padding(.vertical, SystemSpacing.atomic)
-                        .background(Capsule().fill(categoryColor))
-                        .foregroundStyle(.white)
-                    
+                    categoryPill(text: categoryDisplayName, color: categoryColor, textColor: .white)
+
                     if !tagList.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: DesignSystem.atomic) {
                                 ForEach(tagList, id: \.self) { tag in
-                                    Text(tag)
-                                        .font(.caption2.weight(.medium))
-                                        .padding(.horizontal, DesignSystem.tightPadding)
-                                        .padding(.vertical, SystemSpacing.atomic)
-                                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
-                                        .foregroundStyle(.appAccent)
+                                    categoryPill(
+                                        text: tag,
+                                        color: Color.appAccent.opacity(DesignSystem.Opacity.subtle),
+                                        textColor: .appAccent,
+                                        weight: .medium
+                                    )
                                 }
                             }
                         }
@@ -69,9 +131,12 @@ struct ImportRecordCard: View {
             Spacer()
             statusBadge
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .cardStyle(
+            horizontalPadding: DesignSystem.medium,
+            verticalPadding: DesignSystem.medium,
+            backgroundOpacity: DesignSystem.Opacity.dim,
+            cornerRadius: DesignSystem.cardRadius
+        )
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
         .contextMenu {
@@ -133,14 +198,18 @@ struct ImportRecordCard: View {
 
     private var timeLine: some View {
         HStack(spacing: DesignSystem.small) {
-            Label(record.createdAt.formatted(date: .numeric, time: .shortened), systemImage: DesignSystem.Icons.clock)
-                .font(.caption2)
+            timestampLabel(record.createdAt, icon: DesignSystem.Icons.clock)
             if record.status == ImportRecordStatus.done, let done = record.completedAt {
-                Label(done.formatted(date: .numeric, time: .shortened), systemImage: DesignSystem.Icons.flagCheckered)
-                    .font(.caption2)
+                timestampLabel(done, icon: DesignSystem.Icons.flagCheckered)
             }
         }
         .foregroundStyle(.tertiary)
+    }
+
+    /// 时间戳 Label，消除 timeLine 中 createdAt/completedAt 两处重复的 formatted+font 链
+    private func timestampLabel(_ date: Date, icon: String) -> some View {
+        Label(date.formatted(date: .numeric, time: .shortened), systemImage: icon)
+            .font(.caption2)
     }
 
     // MARK: - 状态
@@ -180,15 +249,7 @@ struct ImportRecordCard: View {
     private var categoryDisplayName: String {
         switch categoryValue {
         case .file:
-            switch detectedExtension {
-            case FeatureConstants.FileExtension.pdf: return FeatureConstants.FileTypeName.pdf
-            case FeatureConstants.FileExtension.md, FeatureConstants.FileExtension.markdown: return FeatureConstants.FileTypeName.markdown
-            case FeatureConstants.FileExtension.doc, FeatureConstants.FileExtension.docx: return FeatureConstants.FileTypeName.word
-            case FeatureConstants.FileExtension.xls, FeatureConstants.FileExtension.xlsx, FeatureConstants.FileExtension.csv: return FeatureConstants.FileTypeName.excel
-            case FeatureConstants.FileExtension.ppt, FeatureConstants.FileExtension.pptx: return FeatureConstants.FileTypeName.ppt
-            case FeatureConstants.FileExtension.txt, FeatureConstants.FileExtension.json, FeatureConstants.FileExtension.swift, FeatureConstants.FileExtension.py: return FeatureConstants.FileTypeName.txt
-            default: return L10n.Ingest.fileImport
-            }
+            return FileTypeClassifier.displayName(for: detectedExtension)
         case .link: return L10n.Ingest.urlImport
         case .manual: return L10n.Ingest.manualEntry
         case .ocr: return L10n.Ingest.ocrScan
@@ -198,18 +259,7 @@ struct ImportRecordCard: View {
     }
 
     private var fileIcon: String {
-        switch detectedExtension {
-        case FeatureConstants.FileExtension.pdf: return "doc.richtext.fill"
-        case FeatureConstants.FileExtension.md, FeatureConstants.FileExtension.markdown: return "m.square.fill"
-        case FeatureConstants.FileExtension.doc, FeatureConstants.FileExtension.docx: return "w.square.fill"
-        case FeatureConstants.FileExtension.xls, FeatureConstants.FileExtension.xlsx, FeatureConstants.FileExtension.csv: return "x.square.fill"
-        case FeatureConstants.FileExtension.ppt, FeatureConstants.FileExtension.pptx: return "p.square.fill"
-        case FeatureConstants.FileExtension.png, FeatureConstants.FileExtension.jpg, FeatureConstants.FileExtension.jpeg, FeatureConstants.FileExtension.heic, FeatureConstants.FileExtension.webp: return "photo.fill"
-        case FeatureConstants.FileExtension.mp3, FeatureConstants.FileExtension.m4a, FeatureConstants.FileExtension.wav: return "waveform.circle.fill"
-        case FeatureConstants.FileExtension.txt, FeatureConstants.FileExtension.json, FeatureConstants.FileExtension.swift, FeatureConstants.FileExtension.py: return "doc.plaintext.fill"
-        case FeatureConstants.FileExtension.zip, FeatureConstants.FileExtension.tar, FeatureConstants.FileExtension.gz: return "doc.zipper.fill"
-        default: return "doc.text.fill"
-        }
+        FileTypeClassifier.icon(for: detectedExtension)
     }
 
     private var categoryIcon: String {
@@ -227,16 +277,7 @@ struct ImportRecordCard: View {
     private var categoryColor: Color {
         switch categoryValue {
         case .file:
-            switch detectedExtension {
-            case FeatureConstants.FileExtension.pdf: return Color.theme.red
-            case FeatureConstants.FileExtension.md, FeatureConstants.FileExtension.markdown: return Color.theme.blue
-            case FeatureConstants.FileExtension.doc, FeatureConstants.FileExtension.docx: return Color.theme.blue
-            case FeatureConstants.FileExtension.xls, FeatureConstants.FileExtension.xlsx, FeatureConstants.FileExtension.csv: return Color.theme.green
-            case FeatureConstants.FileExtension.ppt, FeatureConstants.FileExtension.pptx: return Color.theme.orange
-            case FeatureConstants.FileExtension.png, FeatureConstants.FileExtension.jpg, FeatureConstants.FileExtension.jpeg, FeatureConstants.FileExtension.heic, FeatureConstants.FileExtension.webp: return Color.theme.purple
-            case FeatureConstants.FileExtension.txt, FeatureConstants.FileExtension.json, FeatureConstants.FileExtension.swift, FeatureConstants.FileExtension.py: return Color.theme.teal
-            default: return Color.theme.orange
-            }
+            return FileTypeClassifier.color(for: detectedExtension)
         case .link: return Color.theme.cyan
         case .manual: return Color.theme.green
         case .ocr: return Color.theme.purple
@@ -244,5 +285,16 @@ struct ImportRecordCard: View {
         case .voice: return Color.theme.pink
         case nil: return .secondary
         }
+    }
+
+    /// 分类胶囊标签，消除来源类型与 AI 标签的重复修饰符链
+    @ViewBuilder
+    private func categoryPill(text: String, color: Color, textColor: Color, weight: Font.Weight = .bold) -> some View {
+        Text(text)
+            .font(.caption2.weight(weight))
+            .padding(.horizontal, DesignSystem.tightPadding)
+            .padding(.vertical, SystemSpacing.atomic)
+            .background(Capsule().fill(color))
+            .foregroundStyle(textColor)
     }
 }

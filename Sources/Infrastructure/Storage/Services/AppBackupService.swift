@@ -28,6 +28,36 @@ final class BackupService: ObservableObject {
 
     let baseDirectory: URL
 
+    /// 记录备份操作日志（成功/失败统一格式），消除多处 addLog 样板重复。
+    private func logBackupOperation(
+        action: LogAction,
+        target: String,
+        details: String,
+        startTime: Date
+    ) {
+        let endTime = Date()
+        Logger.shared.addLog(
+            action: action,
+            target: target,
+            details: details,
+            duration: endTime.timeIntervalSince(startTime),
+            startTime: startTime,
+            endTime: endTime,
+            module: StorageConstants.LogModule.backupService
+        )
+    }
+
+    /// 构造备份条目（消除 createBackup 与 scanBackupDirectory 的重复构造）。
+    private func makeBackupEntry(timestamp: Date, pages: [KnowledgePage], fileName: String) -> BackupEntry {
+        BackupEntry(
+            id: UUID(),
+            timestamp: timestamp,
+            pageCount: pages.count,
+            totalWords: pages.reduce(0) { $0 + $1.wordCount },
+            fileName: fileName
+        )
+    }
+
     struct BackupEntry: Identifiable, Codable {
         let id: UUID
         let timestamp: Date
@@ -118,13 +148,7 @@ final class BackupService: ObservableObject {
             let url = backupDirectory.appendingPathComponent(fileName)
             try data.write(to: url, options: .atomicWrite)
 
-            let entry = BackupEntry(
-                id: UUID(),
-                timestamp: timestamp,
-                pageCount: pages.count,
-                totalWords: pages.reduce(0) { $0 + $1.wordCount },
-                fileName: fileName
-            )
+            let entry = makeBackupEntry(timestamp: timestamp, pages: pages, fileName: fileName)
             backupEntries.append(entry)
             lastBackupDate = timestamp
 
@@ -134,26 +158,18 @@ final class BackupService: ObservableObject {
             // Clean old backups
             cleanOldBackups()
 
-            let endTime = Date()
-            Logger.shared.addLog(
+            logBackupOperation(
                 action: .ingest,
                 target: fileName,
                 details: StorageConstants.LogDetails.appBackupSuccess1,
-                duration: endTime.timeIntervalSince(startTime),
-                startTime: startTime,
-                endTime: endTime,
-                module: StorageConstants.LogModule.backupService
+                startTime: startTime
             )
         } catch {
-            let endTime = Date()
-            Logger.shared.addLog(
+            logBackupOperation(
                 action: .error,
                 target: fileName,
                 details: String(format: L10n.Backup.log.createFailed, error.localizedDescription),
-                duration: endTime.timeIntervalSince(startTime),
-                startTime: startTime,
-                endTime: endTime,
-                module: StorageConstants.LogModule.backupService
+                startTime: startTime
             )
         }
     }
@@ -171,27 +187,19 @@ final class BackupService: ObservableObject {
         do {
             let data = try Data(contentsOf: url)
             let pages = try decoder.decode([KnowledgePage].self, from: data)
-            let endTime = Date()
-            Logger.shared.addLog(
+            logBackupOperation(
                 action: .ingest,
                 target: entry.fileName,
                 details: StorageConstants.LogDetails.appBackupSuccess2,
-                duration: endTime.timeIntervalSince(startTime),
-                startTime: startTime,
-                endTime: endTime,
-                module: StorageConstants.LogModule.backupService
+                startTime: startTime
             )
             return pages
         } catch {
-            let endTime = Date()
-            Logger.shared.addLog(
+            logBackupOperation(
                 action: .error,
                 target: entry.fileName,
                 details: String(format: L10n.Backup.log.restoreFailed, error.localizedDescription),
-                duration: endTime.timeIntervalSince(startTime),
-                startTime: startTime,
-                endTime: endTime,
-                module: StorageConstants.LogModule.backupService
+                startTime: startTime
             )
             return nil
         }
@@ -302,11 +310,9 @@ final class BackupService: ObservableObject {
             decoder.dateDecodingStrategy = .iso8601
             if let data = try? Data(contentsOf: file),
                let pages = try? decoder.decode([KnowledgePage].self, from: data) {
-                let entry = BackupEntry(
-                    id: UUID(),
+                let entry = makeBackupEntry(
                     timestamp: (try? file.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? Date(),
-                    pageCount: pages.count,
-                    totalWords: pages.reduce(0) { $0 + $1.wordCount },
+                    pages: pages,
                     fileName: file.lastPathComponent
                 )
                 entries.append(entry)

@@ -35,6 +35,8 @@ struct VoiceNoteView: View {
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
+        let showSaveSheetBinding = $showSaveSheet
+        let noteTitleBinding = $noteTitle
         ScrollView {
             VStack(spacing: Spacing.standardPadding) {
                 headerSection
@@ -62,8 +64,8 @@ struct VoiceNoteView: View {
         .navigationTitle(L10n.Voice.Speech.title)
         .inlineNavigationBarTitleIfAvailable()
         .hideNavigationBarIfIOS(true)
-        .sheet(isPresented: $showSaveSheet) {
-            SaveVoiceNoteSheet(speechService: speechService, title: $noteTitle)
+        .sheet(isPresented: showSaveSheetBinding) {
+            SaveVoiceNoteSheet(speechService: speechService, title: noteTitleBinding)
         }
         .onReceive(timer) { _ in
             guard speechService.isRecording, let start = recordingStartTime else { return }
@@ -142,10 +144,7 @@ struct VoiceNoteView: View {
             Button(action: { speechService.checkPermission() }) {
                 Text(L10n.Voice.Speech.requestPermission)
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, Spacing.wide)
-                    .background(Color.appAccent)
-                    .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+                    .voiceAccentButton(horizontalPadding: Spacing.wide, cornerRadius: Spacing.standardRadius)
             }
         }
         .appContainer(cornerRadius: DesignSystem.cardRadius, padding: true)
@@ -192,8 +191,7 @@ struct VoiceNoteView: View {
                 .foregroundStyle(.appSecondary)
                 .padding(.horizontal, DesignSystem.Domain.Voice.statusLabelHorizontalPadding)
                 .padding(.vertical, DesignSystem.Domain.Voice.statusLabelVerticalPadding)
-                .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+                .appCardClip(cornerRadius: Spacing.smallRadius)
         }
     }
     
@@ -239,32 +237,16 @@ struct VoiceNoteView: View {
                 }
             }
             
-            if idiom != .watch {
-                TextEditor(text: Binding(
-                    get: { speechService.transcribedText },
-                    set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .frame(minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight, maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight)
-                    .padding(Spacing.medium)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                    )
-            } else {
-                TextField("", text: Binding(
-                    get: { speechService.transcribedText },
-                    set: { speechService.transcribedText = $0 }
-                ))
-                    .font(.body)
-                    .foregroundStyle(.appText)
-                    .padding(Spacing.medium)
-                    .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                
+            makeTranscriptionEditor(
+                speechService: speechService,
+                idiom: idiom,
+                minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight,
+                maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight,
+                padding: Spacing.medium,
+                cornerRadius: DesignSystem.smallRadius
+            )
+            
+            if idiom == .watch {
                 HStack {
                     Text("\(speechService.transcribedText.count) \(L10n.Voice.Speech.characters)")
                         .font(.caption)
@@ -281,10 +263,7 @@ struct VoiceNoteView: View {
                             Text(L10n.Voice.Speech.confirmAndEdit)
                         }
                         .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, Spacing.standardPadding)
-                        .background(Color.appAccent)
-                        .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+                        .voiceAccentButton(horizontalPadding: Spacing.standardPadding, cornerRadius: Spacing.standardRadius)
                     }
                 }
             }
@@ -302,10 +281,7 @@ struct VoiceNoteView: View {
                 
                 Text("\(speechService.recordings.count)")
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, Spacing.small)
-                    .background(Color.appAccent)
-                    .clipShape(RoundedRectangle(cornerRadius: Spacing.microRadius))
+                    .voiceAccentButton(horizontalPadding: Spacing.small, cornerRadius: Spacing.microRadius)
             }
             
             VStack(spacing: Spacing.small) {
@@ -316,4 +292,39 @@ struct VoiceNoteView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
+
+// MARK: - VoiceNote Accent 按钮样式辅助
+private extension View {
+    /// VoiceNote 专用 Accent 按钮：白字 + 水平内边距 + appAccent 背景 + 圆角
+    func voiceAccentButton(horizontalPadding: CGFloat, cornerRadius: CGFloat) -> some View {
+        self
+            .foregroundStyle(.white)
+            .padding(.horizontal, horizontalPadding)
+            .background(Color.appAccent)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}
+
+// MARK: - TranscriptionEditor 构造辅助
+/// 消除 VoiceNoteView 与 VoiceNoteComponents 重复的 TranscriptionEditor Binding 构造
+func makeTranscriptionEditor(
+    speechService: any SpeechServiceProtocol,
+    idiom: InterfaceIdiom,
+    minHeight: CGFloat,
+    maxHeight: CGFloat,
+    padding: CGFloat,
+    cornerRadius: CGFloat
+) -> TranscriptionEditor {
+    TranscriptionEditor(
+        text: Binding(
+            get: { speechService.transcribedText },
+            set: { speechService.transcribedText = $0 }
+        ),
+        idiom: idiom,
+        minHeight: minHeight,
+        maxHeight: maxHeight,
+        padding: padding,
+        cornerRadius: cornerRadius
+    )
 }

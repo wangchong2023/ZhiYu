@@ -20,10 +20,18 @@ public enum ChatContentSanitizer {
     /// - Returns: 清洗修复后的 Markdown 文本
     public static func sanitizeEscapes(_ text: String) -> String {
         guard !text.isEmpty else { return "" }
-        return text
+        let cleaned = text
             .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedBacktick, with: SystemConstants.Character.backtick)
             .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedAsterisk, with: SystemConstants.Character.asterisk)
             .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedUnderscore, with: SystemConstants.Character.underscore)
+        return restoreWikiLinkSyntax(in: cleaned)
+    }
+
+    /// 还原双链语法：将转义的 `[[` 和 `]]` 还原为原始 Wiki Link 标记
+    /// - Parameter text: 待处理的文本
+    /// - Returns: 还原后的文本
+    public static func restoreWikiLinkSyntax(in text: String) -> String {
+        text
             .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkOpen, with: SystemConstants.MarkdownSyntax.wikiLinkOpen)
             .replacingOccurrences(of: FeatureConstants.RegexEscape.escapedWikiLinkClose, with: SystemConstants.MarkdownSyntax.wikiLinkClose)
     }

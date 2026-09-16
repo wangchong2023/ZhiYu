@@ -52,18 +52,12 @@ struct ComparisonDetailBodyView: View {
                 onLinkTap: onLinkTap
             )
         }
-        .onAppear {
-            parseMarkdownData()
-        }
-    }
-    
-    /// 解析 Markdown 及头部 Frontmatter
-    private func parseMarkdownData() {
-        let (fmStr, bodyPart) = FrontmatterParser.split(content: page.content)
-        self.bodyText = bodyPart
-        if let fm = fmStr, let decoded = FrontmatterParser.parse(ComparisonFrontmatter.self, from: fm) {
-            self.frontmatter = decoded
-        }
+        .detailBodyOnAppear(
+            content: page.content,
+            frontmatterType: ComparisonFrontmatter.self,
+            bodyText: $bodyText,
+            frontmatter: $frontmatter
+        )
     }
     
     // MARK: - 1. 结论板 (Recommendation Panel)
@@ -86,19 +80,13 @@ struct ComparisonDetailBodyView: View {
                 .foregroundStyle(.appSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(DesignSystem.standardPadding)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.ghost))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.theme.purple.opacity(DesignSystem.Opacity.disabled), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: Self.borderGradientWidth
-                )
+        .gradientBorderCardStyle(
+            padding: DesignSystem.standardPadding,
+            cornerRadius: DesignSystem.standardRadius,
+            backgroundOpacity: DesignSystem.Opacity.ghost,
+            gradientStartColor: Color.theme.purple,
+            gradientStartOpacity: DesignSystem.Opacity.disabled,
+            borderWidth: Self.borderGradientWidth
         )
     }
     
@@ -123,9 +111,7 @@ struct ComparisonDetailBodyView: View {
         dimensions: [ComparisonFrontmatter.ComparisonDimension]
     ) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Label(L10n.Dashboard.stats.title, systemImage: DesignSystem.Icons.grid) // 对比指标网格标签
-                .font(.subheadline.bold())
-                .foregroundStyle(.appSecondary)
+            InsightSectionHeader(title: L10n.Dashboard.stats.title, icon: DesignSystem.Icons.grid)
             
             // 只取前 3 个 Subjects 进行网格排列，防止横向溢出
             let displaySubjects = subjects.prefix(Self.maxSubjectsCount)
@@ -179,12 +165,14 @@ struct ComparisonDetailBodyView: View {
                         .opacity(DesignSystem.softOpacity)
                 }
             }
-            .padding()
-            .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                    .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+            .borderedCardStyle(
+                horizontalPadding: DesignSystem.standardPadding,
+                verticalPadding: DesignSystem.standardPadding,
+                backgroundOpacity: DesignSystem.Opacity.subtle,
+                cornerRadius: DesignSystem.standardRadius,
+                borderWidth: DesignSystem.borderWidth,
+                borderColor: .appBorder,
+                borderOpacity: DesignSystem.Opacity.prominent
             )
         }
     }
@@ -225,18 +213,11 @@ struct ComparisonDetailBodyView: View {
                 Text(L10n.Dashboard.stats.rawPageCountFormat(Int(minVal), "\(Int(maxVal))")) // 借用格式化展示区间
                     .font(.system(size: Self.rangeTextSize, weight: .bold))
                     .foregroundStyle(.appAccent)
-                
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.appBorder)
-                            .frame(height: Self.progressLineHeight)
-                        Capsule()
-                            .fill(Color.appAccent)
-                            .frame(width: geo.size.width * Self.mockProgressScale, height: Self.progressLineHeight) // 模拟一个长度占位
-                    }
-                }
-                .frame(height: Self.progressLineHeight)
+
+                InsightProgressBar(
+                    progress: Self.mockProgressScale,
+                    lineHeight: Self.progressLineHeight
+                )
             }
             .frame(width: Self.rangeBoxWidth)
             

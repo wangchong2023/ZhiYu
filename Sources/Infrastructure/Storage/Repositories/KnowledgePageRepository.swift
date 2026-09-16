@@ -14,18 +14,7 @@ import UFPStorage
 // MARK: - 核心存储 (KnowledgePageRepository)
 
 /// 知识库 页面存储：封装基于 GRDB 的高性能 CRUD 操作。
-final class KnowledgePageRepository: KnowledgeRepository, Sendable {
-    private var dbWriter: any DatabaseWriter {
-        get async throws {
-            // 直接 await @MainActor 属性，避免 MainActor.run 在 XCTest 并行 worker 中死锁
-            if let writer = await DatabaseManager.shared.dbWriter {
-                return writer
-            }
-            // Finding #17：dbWriter 为 nil 时抛错，不再静默降级创建空内存库
-            throw DatabaseError.notReady
-        }
-    }
-
+final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider, Sendable {
     init(dbWriter _: any DatabaseWriter) {
         // 保留原构造函数，但内部实际上不持有静态 dbWriter，使用动态计算属性以支持多笔记本笔记本无缝热切换并消除 closed 连接挂起隐慢
     }
@@ -96,32 +85,28 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
     /// 拉取All
     /// - Returns: 列表
     func fetchAll() async throws -> [KnowledgePage] {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
-            return rawPages.map { self.decryptIfPrivate($0) }
-        }
+        try await fetchPagesOrdered { $0.order(KnowledgePage.Columns.updatedAt.desc) }
     }
 
     /// 拉取
     /// - Parameter id: id
     /// - Returns: 可选值
     func fetch(id: UUID) async throws -> KnowledgePage? {
-        let writer = try await dbWriter
-        return try await writer.read { db in
-            let page = try KnowledgePage.filter(KnowledgePage.Columns.id == id).fetchOne(db)
-            return page.map { self.decryptIfPrivate($0) }
-        }
+        try await fetchOneFiltered(KnowledgePage.filter(KnowledgePage.Columns.id == id))
     }
 
     /// 拉取
     /// - Parameter title: title
     /// - Returns: 可选值
     func fetch(title: String) async throws -> KnowledgePage? {
+        try await fetchOneFiltered(KnowledgePage.filter(KnowledgePage.Columns.title == title))
+    }
+
+    /// 共享的单条查询辅助：按指定过滤请求查询单条 KnowledgePage 并解密，消除 fetch(id:) 与 fetch(title:) 间的样板重复。
+    private func fetchOneFiltered(_ request: QueryInterfaceRequest<KnowledgePage>) async throws -> KnowledgePage? {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let page = try KnowledgePage.filter(KnowledgePage.Columns.title == title).fetchOne(db)
-            return page.map { self.decryptIfPrivate($0) }
+            try request.fetchOne(db).map { self.decryptIfPrivate($0) }
         }
     }
 
@@ -129,12 +114,19 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
     /// - Parameter limit: limit
     /// - Returns: 列表
     func fetchRecentlyUpdated(limit: Int) async throws -> [KnowledgePage] {
+        try await fetchPagesOrdered { request in
+            request.order(KnowledgePage.Columns.updatedAt.desc).limit(limit)
+        }
+    }
+
+    /// 共享的多条查询辅助：按指定排序/限制请求查询并解密，消除 fetchAll / fetchRecentlyUpdated 间的 writer.read + decryptPages 样板。
+    private func fetchPagesOrdered(
+        _ requestBuilder: @escaping (QueryInterfaceRequest<KnowledgePage>) -> QueryInterfaceRequest<KnowledgePage>
+    ) async throws -> [KnowledgePage] {
         let writer = try await dbWriter
         return try await writer.read { db in
-            let rawPages = try KnowledgePage.order(KnowledgePage.Columns.updatedAt.desc)
-                .limit(limit)
-                .fetchAll(db)
-            return rawPages.map { self.decryptIfPrivate($0) }
+            let rawPages = try requestBuilder(KnowledgePage.all()).fetchAll(db)
+            return self.decryptPages(rawPages)
         }
     }
 
@@ -157,10 +149,10 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
                     .order(sql: StorageConstants.SQL.rank)
                     .fetchAll(db)
                 if !ftsResults.isEmpty {
-                    return ftsResults.map { self.decryptIfPrivate($0) }
+                    return self.decryptPages(ftsResults)
                 }
             }
-            
+
             // 阶段二：CJK LIKE 后备检索
             // 当 FTS5 分词器无法切分连续 CJK 字符流时（如「神经网络」嵌入长句中），
             // 自动降级到 LIKE 模糊匹配，保证中文内容的可检索性
@@ -169,7 +161,7 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
                 KnowledgePage.Columns.title.like(likePattern) ||
                 KnowledgePage.Columns.content.like(likePattern)
             ).order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
-            return rawPages.map { self.decryptIfPrivate($0) }
+            return self.decryptPages(rawPages)
         }
     }
 
@@ -201,15 +193,10 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
     func renameTag(old oldTag: String, to newTag: String) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
-            let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(oldTag)\"%")).fetchAll(db)
-            for p in pagesToUpdate {
-                var updatedTags = p.tags
-                if let idx = updatedTags.firstIndex(of: oldTag) {
-                    updatedTags[idx] = newTag
-                    var updatedPage = p
-                    updatedPage.tags = updatedTags
-                    try updatedPage.update(db)
-                }
+            try self.updatePagesWithTag(oldTag, in: db) { idx, updatedPage in
+                var page = updatedPage
+                page.tags[idx] = newTag
+                return page
             }
         }
     }
@@ -219,16 +206,26 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
     func deleteTag(_ tag: String) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
-            let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(tag)\"%")).fetchAll(db)
-            for p in pagesToUpdate {
-                var updatedTags = p.tags
-                if let idx = updatedTags.firstIndex(of: tag) {
-                    updatedTags.remove(at: idx)
-                    var updatedPage = p
-                    updatedPage.tags = updatedTags
-                    try updatedPage.update(db)
-                }
+            try self.updatePagesWithTag(tag, in: db) { idx, updatedPage in
+                var page = updatedPage
+                page.tags.remove(at: idx)
+                return page
             }
+        }
+    }
+
+    /// 统一的标签批量更新辅助：查询包含指定标签的页面，对每个页面执行变换闭包后写回数据库。
+    /// 消除 renameTag / deleteTag 两处重复的 filter + fetchAll + firstIndex + update 样板。
+    /// - Parameters:
+    ///   - tag: 目标标签
+    ///   - db: 数据库连接
+    ///   - transform: 对 (标签索引, 页面副本) 执行变换并返回更新后的页面
+    private func updatePagesWithTag(_ tag: String, in db: Database, transform: (Int, KnowledgePage) -> KnowledgePage) throws {
+        let pagesToUpdate = try KnowledgePage.filter(KnowledgePage.Columns.tags.like("%\"\(tag)\"%")).fetchAll(db)
+        for p in pagesToUpdate {
+            guard let idx = p.tags.firstIndex(of: tag) else { continue }
+            let updatedPage = transform(idx, p)
+            try updatedPage.update(db)
         }
     }
 
@@ -253,7 +250,12 @@ final class KnowledgePageRepository: KnowledgeRepository, Sendable {
     }
 
     // MARK: - 辅助解密逻辑
-    
+
+    /// 批量解密私有页面（消除多处 `rawPages.map { self.decryptIfPrivate($0) }` 重复）。
+    private func decryptPages(_ pages: [KnowledgePage]) -> [KnowledgePage] {
+        pages.map { decryptIfPrivate($0) }
+    }
+
     private func decryptIfPrivate(_ page: KnowledgePage) -> KnowledgePage {
         guard page.isPrivate else { return page }
         var p = page

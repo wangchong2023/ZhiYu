@@ -77,28 +77,18 @@ struct SynthesisSlidesView: View {
 
             // 底部翻页控制器
             HStack(spacing: DesignSystem.loosePadding) {
-                Button(action: {
-                    if currentSlideIndex > 0 {
-                        withAnimation { currentSlideIndex -= 1 }
-                        HapticFeedback.shared.trigger(.selection)
-                    }
-                }) {
-                    Image(systemName: DesignSystem.Icons.chevronLeftCircleFill)
-                        .font(.title2)
-                        .foregroundStyle(currentSlideIndex > 0 ? Color.appAccent : Color.appSecondary.opacity(DesignSystem.Opacity.soft))
-                }
+                slideNavigationButton(
+                    icon: DesignSystem.Icons.chevronLeftCircleFill,
+                    isEnabled: currentSlideIndex > 0,
+                    action: { withAnimation { currentSlideIndex -= 1 } }
+                )
                 .disabled(currentSlideIndex == 0)
 
-                Button(action: {
-                    if currentSlideIndex < slides.count - 1 {
-                        withAnimation { currentSlideIndex += 1 }
-                        HapticFeedback.shared.trigger(.selection)
-                    }
-                }) {
-                    Image(systemName: DesignSystem.Icons.chevronRightCircleFill)
-                        .font(.title2)
-                        .foregroundStyle(currentSlideIndex < slides.count - 1 ? Color.appAccent : Color.appSecondary.opacity(DesignSystem.Opacity.soft))
-                }
+                slideNavigationButton(
+                    icon: DesignSystem.Icons.chevronRightCircleFill,
+                    isEnabled: currentSlideIndex < slides.count - 1,
+                    action: { withAnimation { currentSlideIndex += 1 } }
+                )
                 .disabled(currentSlideIndex >= slides.count - 1)
             }
             .padding(.bottom, DesignSystem.medium)
@@ -108,6 +98,20 @@ struct SynthesisSlidesView: View {
             if slides.count <= 1 && !doc.content.contains(SystemConstants.MarkdownDelimiter.horizontalRule) && !doc.content.contains(SystemConstants.Character.hash) {
                 Logger.shared.error("[SYNTH_ERR_SLIDES]" + " \(doc.content.prefix(50))")
             }
+        }
+    }
+
+    /// 幻灯片翻页按钮（消除上一页/下一页重复的 Button+Image+foregroundStyle 链）
+    private func slideNavigationButton(icon: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: {
+            if isEnabled {
+                action()
+                HapticFeedback.shared.trigger(.selection)
+            }
+        }) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(isEnabled ? Color.appAccent : Color.appSecondary.opacity(DesignSystem.Opacity.soft))
         }
     }
 

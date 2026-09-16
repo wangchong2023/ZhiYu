@@ -117,16 +117,7 @@ struct SnapshotDetailView: View {
                 }
                 
                 VStack(spacing: DesignSystem.medium) {
-                    Button(action: onRollback) {
-                        Text(L10n.Knowledge.Page.History.rollback)
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.appAccent)
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-                    }
-                    .buttonStyle(.plain)
+                    AppFilledActionButton(title: L10n.Knowledge.Page.History.rollback, action: onRollback)
                     
                     Button(L10n.Common.cancel) {
                         dismiss()

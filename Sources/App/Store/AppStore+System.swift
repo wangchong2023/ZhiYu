@@ -57,17 +57,10 @@ extension AppStore: AnyPageStore {
         fileSize: Int64?,
         sourceType: String?
     ) async throws -> KnowledgePage {
-        await knowledgeStore.createPage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
-        )
+        await delegateCreatePage(makeCreateInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType))
     }
 
     /// any创建Page
@@ -83,16 +76,36 @@ extension AppStore: AnyPageStore {
         sourceType: String?,
         forceDeepScan: Bool
     ) async -> KnowledgePage? {
+        await delegateCreatePage(makeCreateInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType))
+    }
+
+    /// 统一构造 CreatePageInput，消除 createPage 与 anyCreatePage 间重复的
+    /// `CreatePageInput(title:..., pageType:..., ...)` 参数转发模式。
+    private func makeCreateInput(
+        title: String, pageType: PageType, customIcon: String?, content: String,
+        tags: [String], sourceURL: String?, rawSnippet: String?, fileSize: Int64?, sourceType: String?
+    ) -> CreatePageInput {
+        CreatePageInput(
+            title: title, pageType: pageType, customIcon: customIcon, content: content,
+            tags: tags, sourceURL: sourceURL, rawSnippet: rawSnippet,
+            fileSize: fileSize, sourceType: sourceType)
+    }
+
+    /// 统一委托 knowledgeStore.createPage 的参数转发，消除 createPage 与 anyCreatePage 间的重复调用链。
+    func delegateCreatePage(_ input: CreatePageInput) async -> KnowledgePage {
         await knowledgeStore.createPage(
-            title: title,
-            pageType: pageType,
-            customIcon: customIcon,
-            content: content,
-            tags: tags,
-            sourceURL: sourceURL,
-            rawSnippet: rawSnippet,
-            fileSize: fileSize,
-            sourceType: sourceType
+            title: input.title,
+            pageType: input.pageType,
+            customIcon: input.customIcon,
+            content: input.content,
+            tags: input.tags,
+            sourceURL: input.sourceURL,
+            rawSnippet: input.rawSnippet,
+            fileSize: input.fileSize,
+            sourceType: input.sourceType
         )
     }
 

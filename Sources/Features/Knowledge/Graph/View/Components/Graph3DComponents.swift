@@ -36,6 +36,237 @@ private enum Graph3DSceneConfig {
     static let cameraZMax: Float = 300
 }
 
+// MARK: - SCNView 配置共享逻辑
+/// 从场景中查找主相机节点，消除 configureSceneView 与 syncSceneViewPointOfView 的重复 childNode 查询
+private func mainCameraNode(in scene: SCNScene?) -> SCNNode? {
+    scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true)
+}
+
+/// 消除 iOS makeUIView 与 macOS makeNSView 的重复 SCNView 配置
+private func configureSceneView<C: AnyObject>(_ scnView: SCNView, scene: SCNScene?, coordinator: C, syncCamera: (C, SCNNode) -> Void) {
+    scnView.scene = scene
+    // 关键：关闭系统默认的自带相机操作，以接管高清晰阻尼平滑计算
+    scnView.allowsCameraControl = false
+    scnView.autoenablesDefaultLighting = true
+    scnView.backgroundColor = .clear
+
+    // 关键：如果场景中有指定的相机节点，则将其设为观察点
+    if let cameraNode = mainCameraNode(in: scene) {
+        scnView.pointOfView = cameraNode
+        syncCamera(coordinator, cameraNode)
+    }
+}
+/// 消除 iOS/macOS handleTap 的重复逻辑，接收点击位置并执行命中检测
+private func performTapHitTest(location: CGPoint, in scnView: SCNView, onNodeTap: (UUID?) -> Void) {
+    let hitResults = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
+    for result in hitResults {
+        if let name = result.node.name, let uuid = UUID(uuidString: name) {
+            onNodeTap(uuid); return
+        }
+        if let parentName = result.node.parent?.name, let uuid = UUID(uuidString: parentName) {
+            onNodeTap(uuid); return
+        }
+    }
+    onNodeTap(nil)
+}
+
+// MARK: - Pinch/Magnify 手势共享逻辑
+/// 消除 iOS handlePinch 与 macOS handleMagnify 的重复缩放逻辑
+private func applyZoomScale(
+    factor: Float,
+    isChanged: Bool,
+    isEnded: Bool,
+    cameraNode: SCNNode,
+    cameraZ: inout Float
+) {
+    if isChanged {
+        let newZ = cameraZ / factor
+        // 约束限制防极端穿透飞出
+        cameraNode.position.z = max(Graph3DUIConstants.cameraZMin, min(newZ, Graph3DSceneConfig.cameraZMax))
+    } else if isEnded {
+        cameraZ = cameraNode.position.z
+    }
+}
+/// 消除 iOS/macOS handlePan 的重复逻辑，接收原始 translation 与状态标志
+private func applyPanRotation(
+    translationX: CGFloat,
+    translationY: CGFloat,
+    isChanged: Bool,
+    isEnded: Bool,
+    cameraNode: SCNNode,
+    currentAngleX: inout Float,
+    currentAngleY: inout Float
+) {
+    let dampening: Float = Graph3DSceneConfig.panDampening
+
+    if isChanged {
+        let deltaY = Float(translationX) * dampening
+        let deltaX = Float(translationY) * dampening
+
+        // 将位移积分转换为相机的 Euler 空间旋转
+        cameraNode.eulerAngles.y = currentAngleY - deltaY
+        cameraNode.eulerAngles.x = currentAngleX - deltaX
+    } else if isEnded {
+        currentAngleY = cameraNode.eulerAngles.y
+        currentAngleX = cameraNode.eulerAngles.x
+    }
+}
+
+// MARK: - 共享 Coordinator（消除 iOS/macOS 手势处理重复）
+/// 跨平台 Coordinator 基类，封装相机状态同步与 Tap/Pan/Zoom 手势处理
+@MainActor
+class Graph3DCoordinatorBase: NSObject {
+    let onNodeTap: (UUID?) -> Void
+
+    // ── 临时手势积分状态 ──
+    var currentAngleX: Float = 0
+    var currentAngleY: Float = 0
+    var cameraZ: Float = Graph3DSceneConfig.cameraZDefault
+
+    init(onNodeTap: @escaping (UUID?) -> Void) {
+        self.onNodeTap = onNodeTap
+    }
+
+    /// 同步当前物理相机的几何空间参数
+    func syncCameraState(from cameraNode: SCNNode) {
+        currentAngleX = cameraNode.eulerAngles.x
+        currentAngleY = cameraNode.eulerAngles.y
+        cameraZ = cameraNode.position.z
+    }
+
+    /// 提取相机节点，消除 handlePan/handlePinch/handleMagnify 的重复 guard
+    func cameraNode(in scnView: SCNView) -> SCNNode? {
+        scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true)
+    }
+
+    /// 统一执行 Tap 命中检测，消除 iOS/macOS handleTap 的重复 guard + hitTest 调用。
+    func performTap(in scnView: SCNView, location: CGPoint) {
+        performTapHitTest(location: location, in: scnView, onNodeTap: onNodeTap)
+    }
+
+    /// 统一执行 Pan 旋转，消除 iOS/macOS handlePan 的重复 guard + translation 提取。
+    func performPan(in scnView: SCNView, translationX: CGFloat, translationY: CGFloat, isChanged: Bool, isEnded: Bool) {
+        guard let cameraNode = cameraNode(in: scnView) else { return }
+        applyPanRotation(
+            translationX: translationX,
+            translationY: translationY,
+            isChanged: isChanged,
+            isEnded: isEnded,
+            cameraNode: cameraNode,
+            currentAngleX: &currentAngleX,
+            currentAngleY: &currentAngleY
+        )
+    }
+
+    /// 统一执行 Zoom 缩放，消除 iOS handlePinch / macOS handleMagnify 的重复 guard + scale 提取。
+    func performZoom(in scnView: SCNView, factor: Float, isChanged: Bool, isEnded: Bool) {
+        guard let cameraNode = cameraNode(in: scnView) else { return }
+        applyZoomScale(
+            factor: factor,
+            isChanged: isChanged,
+            isEnded: isEnded,
+            cameraNode: cameraNode,
+            cameraZ: &cameraZ
+        )
+    }
+}
+
+// MARK: - iOS Coordinator
+#if canImport(UIKit)
+@MainActor
+/// iOS 平台 Coordinator，基于 Graph3DCoordinatorBase 处理 UIKit 手势
+final class Graph3DiOSCoordinator: Graph3DCoordinatorBase {
+
+    /// 处理Tap
+    /// - Parameter gesture: gesture
+    @objc func handleTap(_ gesture: UITapGestureRecognizer) {
+        guard let scnView = gesture.view as? SCNView,
+              scnView.scene != nil else { return }
+        performTap(in: scnView, location: gesture.location(in: scnView))
+    }
+
+    /// 处理Pan
+    /// - Parameter gesture: gesture
+    @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+        guard let scnView = gesture.view as? SCNView else { return }
+        let translation = gesture.translation(in: scnView)
+        performPan(
+            in: scnView,
+            translationX: translation.x,
+            translationY: translation.y,
+            isChanged: gesture.state == .changed,
+            isEnded: gesture.state == .ended
+        )
+    }
+
+    /// 处理Pinch
+    /// - Parameter gesture: gesture
+    @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
+        guard let scnView = gesture.view as? SCNView else { return }
+        performZoom(
+            in: scnView,
+            factor: Float(gesture.scale),
+            isChanged: gesture.state == .changed,
+            isEnded: gesture.state == .ended
+        )
+    }
+}
+#endif
+
+// MARK: - macOS Coordinator
+#if os(macOS) && !targetEnvironment(macCatalyst)
+/// macOS 平台 Coordinator，基于 Graph3DCoordinatorBase 处理 AppKit 手势
+final class Graph3DmacOSCoordinator: Graph3DCoordinatorBase {
+
+    /// 处理Tap
+    /// - Parameter gesture: gesture
+    @objc func handleTap(_ gesture: NSClickGestureRecognizer) {
+        guard let scnView = gesture.view as? SCNView,
+              scnView.scene != nil else { return }
+        performTap(in: scnView, location: gesture.location(in: scnView))
+    }
+
+    /// 处理Pan
+    /// - Parameter gesture: gesture
+    @objc func handlePan(_ gesture: NSPanGestureRecognizer) {
+        guard let scnView = gesture.view as? SCNView else { return }
+        let translation = gesture.translation(in: scnView)
+        performPan(
+            in: scnView,
+            translationX: translation.x,
+            translationY: translation.y,
+            isChanged: gesture.state == .changed,
+            isEnded: gesture.state == .ended
+        )
+    }
+
+    /// 处理Magnify
+    /// - Parameter gesture: gesture
+    @objc func handleMagnify(_ gesture: NSMagnificationGestureRecognizer) {
+        guard let scnView = gesture.view as? SCNView else { return }
+        performZoom(
+            in: scnView,
+            factor: Float(1.0 + gesture.magnification),
+            isChanged: gesture.state == .changed,
+            isEnded: gesture.state == .ended
+        )
+    }
+}
+#endif
+
+// MARK: - 共享 updateView 逻辑（消除 iOS updateUIView / macOS updateNSView 重复）
+/// 持续同步观察点，确保外部控制（缩放/重置）能生效
+@MainActor
+private func syncSceneViewPointOfView(_ scnView: SCNView, scene: SCNScene?, coordinator: Graph3DCoordinatorBase) {
+    scnView.scene = scene
+    if let cameraNode = mainCameraNode(in: scene) {
+        if scnView.pointOfView != cameraNode {
+            scnView.pointOfView = cameraNode
+        }
+        coordinator.syncCameraState(from: cameraNode)
+    }
+}
+
 // MARK: - Tappable Scene View Representable
 /// SceneKit 视图的可点击封装，支持节点点击检测
 /// - Note: watchOS 不编译此文件（Features 层不在 watchOS target sources），
@@ -53,30 +284,22 @@ struct TappableSceneView: UIViewRepresentable {
     /// - Returns: 返回值
     func makeUIView(context: Context) -> SCNView {
         let scnView = SCNView()
-        scnView.scene = scene
-        // 关键：关闭系统默认的自带相机操作，以接管高清晰阻尼平滑计算
-        scnView.allowsCameraControl = false
-        scnView.autoenablesDefaultLighting = true
-        scnView.backgroundColor = .clear
-        
-        // 关键：如果场景中有指定的相机节点，则将其设为观察点
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
-            scnView.pointOfView = cameraNode
-            context.coordinator.syncCameraState(from: cameraNode)
+        configureSceneView(scnView, scene: scene, coordinator: context.coordinator) { coordinator, cameraNode in
+            coordinator.syncCameraState(from: cameraNode)
         }
-        
+
         // 1. 点击手势检测节点命中
-        let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
+        let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Graph3DiOSCoordinator.handleTap(_:)))
         scnView.addGestureRecognizer(tapGesture)
-        
+
         // 2. 拖拽手势：绕 Y 轴/X 轴进行平滑旋转
-        let panGesture = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePan(_:)))
+        let panGesture = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Graph3DiOSCoordinator.handlePan(_:)))
         scnView.addGestureRecognizer(panGesture)
-        
+
         // 3. 捏合手势：调整 position.z 实现变焦
-        let pinchGesture = UIPinchGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePinch(_:)))
+        let pinchGesture = UIPinchGestureRecognizer(target: context.coordinator, action: #selector(Graph3DiOSCoordinator.handlePinch(_:)))
         scnView.addGestureRecognizer(pinchGesture)
-        
+
         return scnView
     }
 
@@ -84,98 +307,14 @@ struct TappableSceneView: UIViewRepresentable {
     /// - Parameter uiView: uiView
     /// - Parameter context: context
     func updateUIView(_ uiView: SCNView, context: Context) {
-        uiView.scene = scene
-        // 持续同步观察点，确保外部控制（缩放/重置）能生效
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
-            if uiView.pointOfView != cameraNode {
-                uiView.pointOfView = cameraNode
-            }
-            // 每次同步同步内部坐标系
-            context.coordinator.syncCameraState(from: cameraNode)
-        }
+        syncSceneViewPointOfView(uiView, scene: scene, coordinator: context.coordinator)
     }
 
     /// 创建Coordinator
     /// - Returns: 返回值
-    func makeCoordinator() -> Coordinator { Coordinator(onNodeTap: onNodeTap) }
-
-    @MainActor class Coordinator: NSObject {
-        let onNodeTap: (UUID?) -> Void
-        
-        // ── 临时手势积分状态 ──
-        var currentAngleX: Float = 0
-        var currentAngleY: Float = 0
-        var cameraZ: Float = Graph3DSceneConfig.cameraZDefault
-
-        init(onNodeTap: @escaping (UUID?) -> Void) {
-            self.onNodeTap = onNodeTap
-        }
-
-        /// 同步当前物理相机的几何空间参数
-        func syncCameraState(from cameraNode: SCNNode) {
-            currentAngleX = cameraNode.eulerAngles.x
-            currentAngleY = cameraNode.eulerAngles.y
-            cameraZ = cameraNode.position.z
-        }
-
-        /// 处理Tap
-        /// - Parameter gesture: gesture
-        @objc func handleTap(_ gesture: UITapGestureRecognizer) {
-            guard let scnView = gesture.view as? SCNView,
-                  scnView.scene != nil else { return }
-            let location = gesture.location(in: scnView)
-            let hitResults = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
-            for result in hitResults {
-                if let name = result.node.name, let uuid = UUID(uuidString: name) {
-                    onNodeTap(uuid); return
-                }
-                if let parentName = result.node.parent?.name, let uuid = UUID(uuidString: parentName) {
-                    onNodeTap(uuid); return
-                }
-            }
-            onNodeTap(nil)
-        }
-
-        /// 处理Pan
-        /// - Parameter gesture: gesture
-        @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
-            guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
-
-            let translation = gesture.translation(in: scnView)
-            let dampening: Float = Graph3DSceneConfig.panDampening
-
-            if gesture.state == .changed {
-                let deltaY = Float(translation.x) * dampening
-                let deltaX = Float(translation.y) * dampening
-
-                // 将位移积分转换为相机的 Euler 空间旋转
-                cameraNode.eulerAngles.y = currentAngleY - deltaY
-                cameraNode.eulerAngles.x = currentAngleX - deltaX
-            } else if gesture.state == .ended {
-                currentAngleY = cameraNode.eulerAngles.y
-                currentAngleX = cameraNode.eulerAngles.x
-            }
-        }
-
-        /// 处理Pinch
-        /// - Parameter gesture: gesture
-        @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
-            guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
-
-            if gesture.state == .changed {
-                let factor = Float(gesture.scale)
-                let newZ = cameraZ / factor
-                // 约束限制防极端穿透飞出
-                cameraNode.position.z = max(Graph3DUIConstants.cameraZMin, min(newZ, Graph3DSceneConfig.cameraZMax))
-            } else if gesture.state == .ended {
-                cameraZ = cameraNode.position.z
-            }
-        }
-    }
+    func makeCoordinator() -> Graph3DiOSCoordinator { Graph3DiOSCoordinator(onNodeTap: onNodeTap) }
 }
-#elseif canImport(AppKit)
+#elseif os(macOS) && !targetEnvironment(macCatalyst)
 /// SceneKit 场景包装器组件 (macOS)
 /// 负责在 macOS SwiftUI 中嵌入 3D 渲染引擎，实现节点命中测试，以及附加 0.005 阻尼的自定义相机拖拽/缩放手势。
 struct TappableSceneView: NSViewRepresentable {
@@ -187,30 +326,22 @@ struct TappableSceneView: NSViewRepresentable {
     /// - Returns: 返回值
     func makeNSView(context: Context) -> SCNView {
         let scnView = SCNView()
-        scnView.scene = scene
-        // 关键：关闭系统默认的相机操作，以接管高清晰阻尼平滑计算
-        scnView.allowsCameraControl = false
-        scnView.autoenablesDefaultLighting = true
-        scnView.backgroundColor = .clear
-        
-        // 关键：如果场景中有指定的相机节点，则将其设为观察点
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
-            scnView.pointOfView = cameraNode
-            context.coordinator.syncCameraState(from: cameraNode)
+        configureSceneView(scnView, scene: scene, coordinator: context.coordinator) { coordinator, cameraNode in
+            coordinator.syncCameraState(from: cameraNode)
         }
-        
+
         // 1. 点击手势检测节点命中
-        let tapGesture = NSClickGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
+        let tapGesture = NSClickGestureRecognizer(target: context.coordinator, action: #selector(Graph3DmacOSCoordinator.handleTap(_:)))
         scnView.addGestureRecognizer(tapGesture)
-        
+
         // 2. 拖拽手势 (旋转相机)
-        let panGesture = NSPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePan(_:)))
+        let panGesture = NSPanGestureRecognizer(target: context.coordinator, action: #selector(Graph3DmacOSCoordinator.handlePan(_:)))
         scnView.addGestureRecognizer(panGesture)
-        
+
         // 3. 捏合/缩放手势 (变焦)
-        let magnifyGesture = NSMagnificationGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleMagnify(_:)))
+        let magnifyGesture = NSMagnificationGestureRecognizer(target: context.coordinator, action: #selector(Graph3DmacOSCoordinator.handleMagnify(_:)))
         scnView.addGestureRecognizer(magnifyGesture)
-        
+
         return scnView
     }
 
@@ -218,96 +349,12 @@ struct TappableSceneView: NSViewRepresentable {
     /// - Parameter nsView: nsView
     /// - Parameter context: context
     func updateNSView(_ nsView: SCNView, context: Context) {
-        nsView.scene = scene
-        // 持续同步观察点，确保外部控制（缩放/重置）能生效
-        if let scene = scene, let cameraNode = scene.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) {
-            if nsView.pointOfView != cameraNode {
-                nsView.pointOfView = cameraNode
-            }
-            // 同步内部参数与实际相机参数一致
-            context.coordinator.syncCameraState(from: cameraNode)
-        }
+        syncSceneViewPointOfView(nsView, scene: scene, coordinator: context.coordinator)
     }
 
     /// 创建Coordinator
     /// - Returns: 返回值
-    func makeCoordinator() -> Coordinator { Coordinator(onNodeTap: onNodeTap) }
-
-    class Coordinator: NSObject {
-        let onNodeTap: (UUID?) -> Void
-
-        // ── 临时手势积分状态 ──
-        var currentAngleX: Float = 0
-        var currentAngleY: Float = 0
-        var cameraZ: Float = Graph3DSceneConfig.cameraZDefault
-
-        init(onNodeTap: @escaping (UUID?) -> Void) {
-            self.onNodeTap = onNodeTap
-        }
-
-        /// 同步当前物理相机的几何空间参数
-        func syncCameraState(from cameraNode: SCNNode) {
-            currentAngleX = cameraNode.eulerAngles.x
-            currentAngleY = cameraNode.eulerAngles.y
-            cameraZ = cameraNode.position.z
-        }
-
-        /// 处理Tap
-        /// - Parameter gesture: gesture
-        @objc func handleTap(_ gesture: NSClickGestureRecognizer) {
-            guard let scnView = gesture.view as? SCNView,
-                  scnView.scene != nil else { return }
-            let location = gesture.location(in: scnView)
-            let hitResults = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
-            for result in hitResults {
-                if let name = result.node.name, let uuid = UUID(uuidString: name) {
-                    onNodeTap(uuid); return
-                }
-                if let parentName = result.node.parent?.name, let uuid = UUID(uuidString: parentName) {
-                    onNodeTap(uuid); return
-                }
-            }
-            onNodeTap(nil)
-        }
-
-        /// 处理Pan
-        /// - Parameter gesture: gesture
-        @objc func handlePan(_ gesture: NSPanGestureRecognizer) {
-            guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
-
-            let translation = gesture.translation(in: scnView)
-            let dampening: Float = Graph3DSceneConfig.panDampening
-
-            if gesture.state == .changed {
-                let deltaY = Float(translation.x) * dampening
-                let deltaX = Float(translation.y) * dampening
-
-                // 将位移积分转换为相机的 Euler 空间旋转
-                cameraNode.eulerAngles.y = currentAngleY - deltaY
-                cameraNode.eulerAngles.x = currentAngleX - deltaX
-            } else if gesture.state == .ended {
-                currentAngleY = cameraNode.eulerAngles.y
-                currentAngleX = cameraNode.eulerAngles.x
-            }
-        }
-
-        /// 处理Magnify
-        /// - Parameter gesture: gesture
-        @objc func handleMagnify(_ gesture: NSMagnificationGestureRecognizer) {
-            guard let scnView = gesture.view as? SCNView,
-                  let cameraNode = scnView.scene?.rootNode.childNode(withName: FeatureConstants.SceneNode.mainCamera, recursively: true) else { return }
-
-            if gesture.state == .changed {
-                let factor = Float(1.0 + gesture.magnification)
-                let newZ = cameraZ / factor
-                // 约束限制防极端穿透飞出
-                cameraNode.position.z = max(Graph3DUIConstants.cameraZMin, min(newZ, Graph3DSceneConfig.cameraZMax))
-            } else if gesture.state == .ended {
-                cameraZ = cameraNode.position.z
-            }
-        }
-    }
+    func makeCoordinator() -> Graph3DmacOSCoordinator { Graph3DmacOSCoordinator(onNodeTap: onNodeTap) }
 }
 #endif
 
@@ -341,84 +388,68 @@ struct Graph3DControlsOverlay: View {
 
         VStack(spacing: DesignSystem.small) {
             // Fullscreen toggle
-            Button(action: {
+            controlButton(
+                icon: isFullScreen ? DesignSystem.Icons.fullscreenExit : DesignSystem.Icons.fullscreenEnter,
+                iconColor: iconColor,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dFullscreen
+            ) {
                 withAnimation(.spring()) {
                     isFullScreen.toggle()
                     showFilterPopup = false // 切换模式时自动折叠菜单
                     if !isFullScreen { hideControls = false } // 退出全屏时强制显示
                 }
-            }) {
-                Image(systemName: isFullScreen ? DesignSystem.Icons.fullscreenExit : DesignSystem.Icons.fullscreenEnter)
-                    .font(.title3)
-                    .foregroundStyle(iconColor)
-                    .padding(Graph3DUIConstants.controlPadding)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
             }
-            .accessibilityIdentifier("graph3d-fullscreen")
 
             // Hide controls toggle - 仅在全屏模式下显示
             if isFullScreen {
-                Button(action: {
+                controlButton(
+                    icon: DesignSystem.Icons.eyeSlashOutline,
+                    iconColor: iconColor,
+                    accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dHideControls
+                ) {
                     withAnimation(.spring()) {
                         hideControls = true
                     }
-                }) {
-                    Image(systemName: DesignSystem.Icons.eyeSlashOutline)
-                        .font(.title3)
-                        .foregroundStyle(iconColor)
-                        .padding(Graph3DUIConstants.controlPadding)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Circle())
                 }
-                .accessibilityIdentifier("graph3d-hide-controls")
             }
 
             // Auto-rotate toggle - 仅在全屏模式下显示
             if isFullScreen {
-                Button(action: onAutoRotateToggle) {
-                    Image(systemName: autoRotate ? DesignSystem.Icons.refreshCircleFill : DesignSystem.Icons.refreshCircle)
-                        .font(.title3)
-                        .foregroundStyle(autoRotate ? Color.appAccent : iconColor)
-                        .padding(Graph3DUIConstants.controlPadding)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Circle())
+                controlButton(
+                    icon: autoRotate ? DesignSystem.Icons.refreshCircleFill : DesignSystem.Icons.refreshCircle,
+                    iconColor: autoRotate ? Color.appAccent : iconColor,
+                    accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dAutoRotate
+                ) {
+                    onAutoRotateToggle()
                 }
-                .accessibilityIdentifier("graph3d-auto-rotate")
             }
 
             // Reset camera
-            Button(action: onResetCamera) {
-                Image(systemName: DesignSystem.Icons.scope)
-                    .font(.title3)
-                    .foregroundStyle(iconColor)
-                    .padding(Graph3DUIConstants.controlPadding)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
+            controlButton(
+                icon: DesignSystem.Icons.scope,
+                iconColor: iconColor,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dResetCamera
+            ) {
+                onResetCamera()
             }
-            .accessibilityIdentifier("graph3d-reset-camera")
 
             // Zoom In
-            Button(action: onZoomIn) {
-                Image(systemName: DesignSystem.Icons.plusMagnifyingglass)
-                    .font(.title3)
-                    .foregroundStyle(iconColor)
-                    .padding(Graph3DUIConstants.controlPadding)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
+            controlButton(
+                icon: DesignSystem.Icons.plusMagnifyingglass,
+                iconColor: iconColor,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dZoomIn
+            ) {
+                onZoomIn()
             }
-            .accessibilityIdentifier("graph3d-zoom-in")
 
             // Zoom Out
-            Button(action: onZoomOut) {
-                Image(systemName: DesignSystem.Icons.minusMagnifyingglass)
-                    .font(.title3)
-                    .foregroundStyle(iconColor)
-                    .padding(Graph3DUIConstants.controlPadding)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
+            controlButton(
+                icon: DesignSystem.Icons.minusMagnifyingglass,
+                iconColor: iconColor,
+                accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dZoomOut
+            ) {
+                onZoomOut()
             }
-            .accessibilityIdentifier("graph3d-zoom-out")
 
             // Filter - 全屏模式下根据用户要求隐藏
             if !isFullScreen {
@@ -445,45 +476,25 @@ struct Graph3DControlsOverlay: View {
                             
                             ScrollView {
                                 VStack(alignment: .leading, spacing: 0) {
-                                    Button(action: { filterType = nil; showFilterPopup = false }) {
-                                        HStack {
-                                            Image(systemName: DesignSystem.Icons.gridOutline)
-                                                .font(.caption)
-                                            Text(L10n.Graph.all)
-                                                .font(.footnote)
-                                            Spacer()
-                                            if filterType == nil {
-                                                Image(systemName: DesignSystem.Icons.check)
-                                                    .font(.caption2.weight(.bold))
-                                            }
-                                        }
-                                        .padding(.horizontal, DesignSystem.medium)
-                                        .padding(.vertical, SystemSpacing.tight)
-                                        .contentShape(Rectangle())
+                                    filterPillRow(
+                                        icon: DesignSystem.Icons.gridOutline,
+                                        title: L10n.Graph.all,
+                                        isSelected: filterType == nil
+                                    ) {
+                                        filterType = nil
+                                        showFilterPopup = false
                                     }
-                                    .buttonStyle(.plain)
-                                    .foregroundStyle(filterType == nil ? Color.appAccent : .appText)
-                                    
+
                                     // 遍历用户可见页面类型，屏蔽 raw 选项
                                     ForEach(PageType.allVisibleCases) { type in
-                                        Button(action: { filterType = type; showFilterPopup = false }) {
-                                            HStack {
-                                                Image(systemName: type.icon)
-                                                    .font(.caption)
-                                                Text(type.displayName)
-                                                    .font(.footnote)
-                                                Spacer()
-                                                if filterType == type {
-                                                    Image(systemName: DesignSystem.Icons.check)
-                                                        .font(.caption2.weight(.bold))
-                                                }
-                                            }
-                                            .padding(.horizontal, DesignSystem.medium)
-                                            .padding(.vertical, SystemSpacing.tight)
-                                            .contentShape(Rectangle())
+                                        filterPillRow(
+                                            icon: type.icon,
+                                            title: type.displayName,
+                                            isSelected: filterType == type
+                                        ) {
+                                            filterType = type
+                                            showFilterPopup = false
                                         }
-                                        .buttonStyle(.plain)
-                                        .foregroundStyle(filterType == type ? Color.appAccent : .appText)
                                     }
                                 }
                                 .fixedSize(horizontal: false, vertical: true)
@@ -512,6 +523,53 @@ struct Graph3DControlsOverlay: View {
     }
     
     @State private var showFilterPopup = false
+
+    /// 3D 控制按钮，消除 5 处重复的 Image+padding+ultraThinMaterial+Circle 链
+    @ViewBuilder
+    private func controlButton(
+        icon: String,
+        iconColor: Color,
+        accessibilityID: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .padding(Graph3DUIConstants.controlPadding)
+                .background(.ultraThinMaterial)
+                .clipShape(Circle())
+        }
+        .accessibilityIdentifier(accessibilityID)
+    }
+
+    /// 筛选 Pill 行，消除"全部"与各类型 Pill 的重复修饰符链
+    @ViewBuilder
+    private func filterPillRow(
+        icon: String,
+        title: String,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.caption)
+                Text(title)
+                    .font(.footnote)
+                Spacer()
+                if isSelected {
+                    Image(systemName: DesignSystem.Icons.check)
+                        .font(.caption2.weight(.bold))
+                }
+            }
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, SystemSpacing.tight)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(isSelected ? Color.appAccent : .appText)
+    }
 }
 
 // MARK: - Graph3D Node Info Bar

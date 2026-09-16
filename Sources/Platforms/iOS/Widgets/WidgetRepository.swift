@@ -8,6 +8,7 @@
 //  系统层级：[Shared] 平台适配层
 //  核心职责：Widget Extension 专用 Repository，从 App Group JSON 快照读取数据。
 //           遵循 Model (WidgetModels) + Repository 模式。
+//
 
 import Foundation
 
@@ -26,30 +27,41 @@ enum WidgetRepository {
         groupURL?.appendingPathComponent(AppConstants.Storage.widgetStatsFileName)
     }
 
-    // MARK: - 查询 API（从 App Group JSON 快照读取，由主 App 写入）
+    // MARK: - 快照解码辅助
 
-    static func fetchStats() async -> WidgetStats {
-        guard let url = widgetStatsURL,
-              let data = try? Data(contentsOf: url),
-              let stats = try? JSONDecoder().decode(WidgetStats.self, from: data) else {
-            return WidgetStats(pageCount: 0, linkCount: 0, tagCount: 0)
-        }
-        return stats
-    }
-
-    static func fetchRecentPages(limit: Int = 3) async -> [WidgetRecentPage] {
+    /// 从 App Group 共享存储读取并解码 WidgetStatsSnapshot
+    /// - Returns: 解码成功返回快照，失败返回 nil
+    private static func decodeSnapshot() -> WidgetStatsSnapshot? {
         guard let url = widgetStatsURL,
               let data = try? Data(contentsOf: url),
               let snapshot = try? JSONDecoder().decode(WidgetStatsSnapshot.self, from: data) else {
+            return nil
+        }
+        return snapshot
+    }
+
+    // MARK: - 查询 API（从 App Group JSON 快照读取，由主 App 写入）
+
+    static func fetchStats() async -> WidgetStats {
+        guard let snapshot = decodeSnapshot() else {
+            return WidgetStats(pageCount: 0, linkCount: 0, tagCount: 0)
+        }
+        return WidgetStats(
+            pageCount: snapshot.pageCount,
+            linkCount: snapshot.linkCount,
+            tagCount: snapshot.tagCount
+        )
+    }
+
+    static func fetchRecentPages(limit: Int = 3) async -> [WidgetRecentPage] {
+        guard let snapshot = decodeSnapshot() else {
             return []
         }
         return Array(snapshot.recentPages.prefix(limit))
     }
 
     static func fetchDailyInsight() async -> WidgetDailyInsight {
-        guard let url = widgetStatsURL,
-              let data = try? Data(contentsOf: url),
-              let snapshot = try? JSONDecoder().decode(WidgetStatsSnapshot.self, from: data) else {
+        guard let snapshot = decodeSnapshot() else {
             return WidgetDailyInsight(
                 title: WidgetL10n.llmWikiChunking,
                 content: WidgetL10n.llmWikiDescription,
@@ -64,9 +76,7 @@ enum WidgetRepository {
     }
 
     static func fetchDistribution() async -> WidgetDistributionStats {
-        guard let url = widgetStatsURL,
-              let data = try? Data(contentsOf: url),
-              let snapshot = try? JSONDecoder().decode(WidgetStatsSnapshot.self, from: data),
+        guard let snapshot = decodeSnapshot(),
               let dist = snapshot.distribution else {
             return WidgetDistributionStats(
                 sourceRatio: 0.4,

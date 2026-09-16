@@ -66,7 +66,6 @@ public struct AppMetricCard: View {
                 .foregroundStyle(.appSecondary)
         }
         .padding(DesignSystem.medium)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+        .appCardClip(cornerRadius: DesignSystem.mediumRadius)
     }
 }

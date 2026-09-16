@@ -176,8 +176,7 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
                 }
             } else if type == "new_page", let content = userInfo["content"] as? String {
                 Task { @MainActor in
-                    self.lastReceivedText = content
-                    NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+                    self.handleReceivedPageContent(content)
                 }
             } else if type == "audio_chunk",
                       let transferId = userInfo["transferId"] as? String,
@@ -191,8 +190,7 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
             }
         } else if let content = userInfo["content"] as? String {
             Task { @MainActor in
-                self.lastReceivedText = content
-                NotificationCenter.default.post(name: .didReceiveWatchContent, object: content)
+                self.handleReceivedPageContent(content)
             }
         }
     }

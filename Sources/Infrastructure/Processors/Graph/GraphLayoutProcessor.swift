@@ -177,9 +177,7 @@ struct GraphLayoutProcessor {
         var grid: [Int: [Int]] = [:]
 
         for i in nodes.indices {
-            let gx = Int(nodes[i].position.x / gridSize)
-            let gy = Int(nodes[i].position.y / gridSize)
-            let key = (gx << GraphConstants.Layout.gridHashShift) | (gy & GraphConstants.Layout.gridHashMask)
+            let key = gridKey(for: nodes[i].position, gridSize: gridSize)
             grid[key, default: []].append(i)
         }
 
@@ -193,23 +191,13 @@ struct GraphLayoutProcessor {
                     guard let neighbors = grid[key] else { continue }
 
                     for j in neighbors where i < j {
-                        let dx = nodes[i].position.x - nodes[j].position.x
-                        let dy = nodes[i].position.y - nodes[j].position.y
-                        let distSq = dx * dx + dy * dy
+                        let delta = nodeDelta(nodes, i, j)
+                        if delta.distSq > GraphConstants.Physics.maxRepulsionDistanceSq || delta.distSq < GraphConstants.Physics.minDistanceSq { continue }
 
-                        if distSq > GraphConstants.Physics.maxRepulsionDistanceSq || distSq < GraphConstants.Physics.minDistanceSq { continue }
+                        let collisionForce: CGFloat = delta.dist < GraphConstants.Physics.collisionDistance ? GraphConstants.Physics.collisionForce : 0
+                        let force = (config.repulsion / delta.distSq) + collisionForce
 
-                        let dist = sqrt(distSq)
-                        let collisionForce: CGFloat = dist < GraphConstants.Physics.collisionDistance ? GraphConstants.Physics.collisionForce : 0
-                        let force = (config.repulsion / distSq) + collisionForce
-
-                        let fx = (dx / dist) * force
-                        let fy = (dy / dist) * force
-
-                        forces[i].x += fx
-                        forces[i].y += fy
-                        forces[j].x -= fx
-                        forces[j].y -= fy
+                        applySymmetricForce(dx: delta.dx, dy: delta.dy, dist: delta.dist, force: force, i: i, j: j, forces: &forces)
                     }
                 }
             }
@@ -222,22 +210,46 @@ struct GraphLayoutProcessor {
 
         for edge in edges {
             guard let i = nodeIndexMap[edge.source], let j = nodeIndexMap[edge.target] else { continue }
-            let dx = nodes[j].position.x - nodes[i].position.x
-            let dy = nodes[j].position.y - nodes[i].position.y
+            let delta = nodeDelta(nodes, j, i)
 
-            let distSq = dx * dx + dy * dy
-            if distSq < 1 { continue }
-            let dist = sqrt(distSq)
+            if delta.distSq < 1 { continue }
 
-            let force = dist * config.attraction
-            let fx = (dx / dist) * force
-            let fy = (dy / dist) * force
-
-            forces[i].x += fx
-            forces[i].y += fy
-            forces[j].x -= fx
-            forces[j].y -= fy
+            let force = delta.dist * config.attraction
+            applySymmetricForce(dx: delta.dx, dy: delta.dy, dist: delta.dist, force: force, i: i, j: j, forces: &forces)
         }
+    }
+
+    /// 对节点 i 与 j 施加对称力（i 累加 +fx/+fy，j 累加 -fx/-fy），消除排斥力与吸引力计算间的样板重复。
+    private static func applySymmetricForce(dx: CGFloat, dy: CGFloat, dist: CGFloat, force: CGFloat, i: Int, j: Int, forces: inout [CGPoint]) {
+        let fx = (dx / dist) * force
+        let fy = (dy / dist) * force
+        forces[i].x += fx
+        forces[i].y += fy
+        forces[j].x -= fx
+        forces[j].y -= fy
+    }
+
+    /// 节点间距元组：dx/dy/distSq/dist，消除排斥力与吸引力两处重复的坐标差 + 距离平方 + sqrt 计算。
+    private struct NodeDelta {
+        let dx: CGFloat
+        let dy: CGFloat
+        let distSq: CGFloat
+        let dist: CGFloat
+    }
+
+    /// 计算 nodes[j] - nodes[i] 的坐标差与距离，消除排斥力 / 吸引力两处重复的 dx/dy/distSq/dist 样板。
+    private static func nodeDelta(_ nodes: [GraphNode], _ j: Int, _ i: Int) -> NodeDelta {
+        let dx = nodes[j].position.x - nodes[i].position.x
+        let dy = nodes[j].position.y - nodes[i].position.y
+        let distSq = dx * dx + dy * dy
+        return NodeDelta(dx: dx, dy: dy, distSq: distSq, dist: sqrt(distSq))
+    }
+
+    /// 根据节点坐标计算空间网格哈希键，消除 buildGrid / 遍历两处重复的 gx/gy/gridHashShift 样板。
+    private static func gridKey(for position: CGPoint, gridSize: CGFloat) -> Int {
+        let gx = Int(position.x / gridSize)
+        let gy = Int(position.y / gridSize)
+        return (gx << GraphConstants.Layout.gridHashShift) | (gy & GraphConstants.Layout.gridHashMask)
     }
 
     /// 计算中心向心力与社区聚合力

@@ -58,31 +58,29 @@ final class PromptSanitizer: Sendable {
 
         // 依次用正则匹配并拦截/替换有毒指令，确保安全
         for pattern in injectionPatterns {
-            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
-                // 在归一化文本上匹配，定位恶意片段
-                let normalizedRange = NSRange(location: 0, length: normalizedPrompt.utf16.count)
-                guard regex.firstMatch(in: normalizedPrompt, options: [], range: normalizedRange) != nil else {
-                    continue
-                }
-
-                // 记录安全警报日志
-                Logger.shared.addLog(
-                    action: .error,
-                    target: CoreConstants.SecurityLogTarget.promptSanitizer,
-                    details: L10n.Security.promptInjectionLog(pattern),
-                    module: CoreConstants.Security.logModule
-                )
-
-                // 将恶意指令替换为无害的安全警告占位符
-                // 在原始 prompt 上替换匹配到的范围
-                let originalRange = NSRange(location: 0, length: sanitized.utf16.count)
-                sanitized = regex.stringByReplacingMatches(
-                    in: sanitized,
-                    options: [],
-                    range: originalRange,
-                    withTemplate: L10n.Security.promptInjectionPlaceholder
-                )
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+                continue
             }
+            // 在归一化文本上匹配，定位恶意片段
+            let normalizedRange = NSRange(location: 0, length: normalizedPrompt.utf16.count)
+            guard regex.firstMatch(in: normalizedPrompt, options: [], range: normalizedRange) != nil else {
+                continue
+            }
+
+            // 记录安全警报日志
+            Logger.shared.addLog(
+                action: .error,
+                target: CoreConstants.SecurityLogTarget.promptSanitizer,
+                details: L10n.Security.promptInjectionLog(pattern),
+                module: CoreConstants.Security.logModule
+            )
+
+            // 将恶意指令替换为无害的安全警告占位符
+            // 在原始 prompt 上替换匹配到的范围
+            sanitized = RegexReplacementHelper.applyReplacements(
+                sanitized,
+                rules: [(pattern: pattern, template: L10n.Security.promptInjectionPlaceholder)]
+            )
         }
 
         return sanitized
@@ -93,24 +91,14 @@ final class PromptSanitizer: Sendable {
     /// - Parameter context: 召回的原始上下文内容
     /// - Returns: DLP 净化后的安全上下文
     func sanitizeContext(_ context: String) -> String {
-        var sanitized = context
-        
         // 匹配 Markdown 图片语法正则，特别关注包含网络主机的动态图片外链
         let markdownImagePattern = #"!\[([^\]]*)\]\((https?://[^)]+)\)"#
-        
-        if let regex = try? NSRegularExpression(pattern: markdownImagePattern, options: []) {
-            let range = NSRange(location: 0, length: sanitized.utf16.count)
-            
-            // 将所有检测到的动态网络图像替换为本地安全卡片提示，物理隔绝 HTTP 外发请求
-            sanitized = regex.stringByReplacingMatches(
-                in: sanitized,
-                options: [],
-                range: range,
-                withTemplate: L10n.Security.dlpImagePlaceholder
-            )
-        }
-        
-        return sanitized
+
+        // 将所有检测到的动态网络图像替换为本地安全卡片提示，物理隔绝 HTTP 外发请求
+        return RegexReplacementHelper.applyReplacements(
+            context,
+            rules: [(pattern: markdownImagePattern, template: L10n.Security.dlpImagePlaceholder)]
+        )
     }
     
     /// 将召回的上下文安全包裹至 XML 金沙箱（Sandboxing）

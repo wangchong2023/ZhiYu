@@ -163,57 +163,31 @@ struct LintHealthCheckSection: View {
 
     private var metricsGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: DesignSystem.standardPadding), GridItem(.flexible(), spacing: DesignSystem.standardPadding)], spacing: DesignSystem.standardPadding) {
-            metricCard(title: L10n.Lint.metricPages,
-                       value: "\(store.pages.count)",
-                       icon: DesignSystem.Icons.documentFill,
-                       color: Color.theme.blue)
+            InsightMetricCard(title: L10n.Lint.metricPages,
+                              value: "\(store.pages.count)",
+                              icon: DesignSystem.Icons.documentFill,
+                              color: Color.theme.blue,
+                              layout: .lint)
 
-            metricCard(title: L10n.Lint.metricBroken,
-                       value: "\(store.brokenLinkCount)",
-                       icon: DesignSystem.Icons.link,
-                       color: Color.theme.red)
+            InsightMetricCard(title: L10n.Lint.metricBroken,
+                              value: "\(store.brokenLinkCount)",
+                              icon: DesignSystem.Icons.link,
+                              color: Color.theme.red,
+                              layout: .lint)
 
-            metricCard(title: L10n.Lint.metricOrphans,
-                       value: "\(store.orphanPageCount)",
-                       icon: DesignSystem.Icons.orphanPage,
-                       color: Color.theme.orange)
+            InsightMetricCard(title: L10n.Lint.metricOrphans,
+                              value: "\(store.orphanPageCount)",
+                              icon: DesignSystem.Icons.orphanPage,
+                              color: Color.theme.orange,
+                              layout: .lint)
 
-            metricCard(title: L10n.Lint.metricLinks,
-                       value: "\(store.totalConnectionCount)",
-                       icon: DesignSystem.Icons.network,
-                       color: .appAccent)
+            InsightMetricCard(title: L10n.Lint.metricLinks,
+                              value: "\(store.totalConnectionCount)",
+                              icon: DesignSystem.Icons.network,
+                              color: .appAccent,
+                              layout: .lint)
         }
         .padding(.horizontal, DesignSystem.huge)
-    }
-
-    private func metricCard(title: String, value: String, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(DesignSystem.Opacity.glass))
-                        .frame(width: ComponentSpacing.huge, height: ComponentSpacing.huge)
-                    Image(systemName: icon)
-                        .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
-                        .foregroundColor(color)
-                }
-                Spacer()
-            }
-
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                Text(title)
-                    .font(.system(size: DesignSystem.captionFontSize, weight: .medium))
-                    .foregroundColor(.appSecondary)
-
-                Text(value)
-                    .font(.system(size: DesignSystem.displayFontSize, weight: .bold, design: .rounded))
-                    .foregroundColor(.appText)
-            }
-        }
-        .padding(DesignSystem.standardPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .appContainer(background: Color.appCard, cornerRadius: DesignSystem.Metrics.dashboardRadius, padding: false)
-        .shadow(color: .primary.opacity(DesignSystem.Opacity.faint), radius: SystemSpacing.medium, x: 0, y: SystemSpacing.small)
     }
 
     // MARK: - 问题分组
@@ -223,9 +197,7 @@ struct LintHealthCheckSection: View {
             if !issues.isEmpty {
                 VStack(alignment: .leading, spacing: DesignSystem.medium) {
                     HStack {
-                        Label(title, systemImage: icon)
-                            .font(.subheadline.bold())
-                            .foregroundStyle(color)
+                        InsightSectionHeader(title: title, icon: icon, color: color)
                         Spacer()
                     }
                     .padding(.horizontal, DesignSystem.tiny)

@@ -199,6 +199,15 @@ extension FeatureConstants {
         static let skeletonRowCount: Int = 4
     }
 
+    // MARK: - 骨架行 (Skeleton Row)
+    /// SkeletonListRow 标题与副标题占位宽度
+    enum SkeletonRow {
+        /// 标题骨架占位宽度
+        static let titleWidth: CGFloat = 140
+        /// 副标题骨架占位宽度
+        static let subtitleWidth: CGFloat = 240
+    }
+
     // MARK: - 知识库引导 (Knowledge Coach Mark)
     /// KnowledgeStore 图谱引导触发最小页面数
     enum KnowledgeCoachMark {

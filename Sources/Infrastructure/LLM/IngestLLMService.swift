@@ -26,16 +26,20 @@ public final class IngestLLMService: NSObject, LLMKnowledgeServiceProtocol {
     
     /// 创建底层的 LLMIngestService 实例
     private func getIngestService() -> LLMIngestService? {
-        guard configManager.isEnabled, !configManager.apiKey.isEmpty else { return nil }
-        let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
+        guard let client = makeClientIfConfigured() else { return nil }
         return LLMIngestService(client: client, model: configManager.model, contextBuilder: LLMContextBuilder())
     }
-    
+
     /// 创建底层的 LLMRefactorService 实例
     private func getRefactorService() -> LLMRefactorService? {
-        guard configManager.isEnabled, !configManager.apiKey.isEmpty else { return nil }
-        let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
+        guard let client = makeClientIfConfigured() else { return nil }
         return LLMRefactorService(client: client, model: configManager.model)
+    }
+
+    /// 当服务已启用且 API 密钥非空时构造 LLMClient，否则返回 nil
+    private func makeClientIfConfigured() -> LLMClient? {
+        guard configManager.isEnabled, !configManager.apiKey.isEmpty else { return nil }
+        return LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
     }
     
     /// 智能数据提炼与分块导入

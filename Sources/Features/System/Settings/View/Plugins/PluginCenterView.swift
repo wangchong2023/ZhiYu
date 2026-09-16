@@ -104,9 +104,7 @@ struct PluginCenterView: View {
                 TextField(L10n.Plugin.searchPlaceholder, text: $searchText)
                     .textFieldStyle(.plain)
             }
-            .padding(DesignSystem.medium)
-            .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
             .overlay(RoundedRectangle(cornerRadius: SystemRadius.card).stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline))
             
             // 安全模式与加载按钮
@@ -151,7 +149,7 @@ struct PluginCenterView: View {
             }
             .padding(.top, DesignSystem.tiny)
         }
-        .padding()
+        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
         .background(Color.clear)
     }
     
@@ -270,25 +268,7 @@ struct PluginCenterView: View {
 
     /// 根据本地已安装插件 ID 的特征动态匹配合适的功能性 SF Symbol 图标，保证各示意插件图标各具特色
     private func localIconName(for id: String) -> String {
-        if id.contains(PluginConstants.LocalIconKeyword.tocGenerator) {
-            return "list.bullet.rectangle.portrait"
-        } else if id.contains(PluginConstants.LocalIconKeyword.wordCounter) {
-            return "character.textbox"
-        } else if id.contains(PluginConstants.LocalIconKeyword.smartCleaner) {
-            return "wand.and.stars"
-        } else if id.contains(PluginConstants.LocalIconKeyword.aiSummary) {
-            return "brain.head.profile"
-        } else if id.contains(PluginConstants.LocalIconKeyword.codeHighlighter) {
-            return "curlybraces"
-        } else if id.contains(PluginConstants.LocalIconKeyword.linkPreview) {
-            return "link"
-        } else if id.contains(PluginConstants.LocalIconKeyword.aiTranslator) {
-            return "translate"
-        } else if id.contains(PluginConstants.LocalIconKeyword.markdownBeautifier) {
-            return "doc.text.magnifyingglass"
-        } else {
-            return "puzzlepiece.fill"
-        }
+        PluginIconResolver.localIconName(for: id)
     }
 
     /// 动态研判已安装插件的真实来源属性。
@@ -389,9 +369,7 @@ struct PluginCard: View {
 
     /// 自适应计算插件的展示版本号，已安装则优先显示真实本地版本号
     private var displayVersion: String {
-        if let id = pluginID, let localPlugin = registry.plugins.first(where: { 
-            $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id) 
-        }) {
+        if let id = pluginID, let localPlugin = findLocalPlugin(for: id) {
             return localPlugin.manifest.version
         }
         return version
@@ -408,44 +386,25 @@ struct PluginCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
             } else if let iconURL = URL(string: icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
-                CachedAsyncImage(url: iconURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable().scaledToFit()
-                    case .empty:
+                PluginRemoteIconLoader(
+                    iconURL: iconURL,
+                    size: DesignSystem.Action.minTouchTarget,
+                    cornerRadius: SystemRadius.card,
+                    strokeOpacity: SystemOpacity.glass,
+                    strokeColor: Color.appBorder,
+                    emptyContent: {
                         // 网络图标加载中时，展示静止淡雅的拼图占位符，去除凌乱的局部菊花与闪烁
                         Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
                             .font(.title3)
                             .foregroundStyle(.appSecondary.opacity(DesignSystem.disabledOpacity))
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
                             .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-                    case .failure:
-                        // 远程图标拉取失败时，fallback 到带渐变底的拼图块默认图标
-                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
-                            .font(.title3)
-                            .foregroundStyle(.white)
-                            .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    @unknown default:
-                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
-                            .font(.title3)
-                            .foregroundStyle(.white)
-                            .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    }
-                }
-                .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.theme.white.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
+                    },
+                    fallback: { pluginCardFallbackIcon }
+                )
             } else {
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundStyle(.white)
-                    .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.theme.white.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
+                pluginGradientIcon(icon)
+                    .pluginIconContainerStyle(cornerRadius: SystemRadius.card, strokeOpacity: SystemOpacity.glass)
             }
             
             VStack(alignment: .leading, spacing: DesignSystem.tiny) {
@@ -507,9 +466,7 @@ struct PluginCard: View {
         .task {
             if let id = pluginID {
                 // 兼容支持物理包名 ID 与市场简短 ID 的匹配
-                let targetID = registry.plugins.first(where: { 
-                    $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id) 
-                })?.manifest.id ?? id
+                let targetID = resolveTargetID(for: id)
                 
                 if let url = registry.iconURL(for: targetID) {
                     // 使用后台异步线程在非 UI 线程中读取物理图片数据，避免直接读取 I/O 导致 UI 卡顿
@@ -550,18 +507,11 @@ struct PluginCard: View {
                 Text(L10n.Plugin.Action.uninstall)
                     .font(.caption.bold())
             }
-            .padding(.horizontal, SystemSpacing.small)
-            .padding(.vertical, SystemSpacing.tiny)
-            .background(Color.theme.red)
-            .clipShape(Capsule())
-            .foregroundStyle(.white)
-            .contentShape(Capsule()) // 提升手势判定区域
+            .actionPillStyle(background: Color.theme.red)
             .onTapGesture {
                 guard let id = pluginID else { return }
                 HapticFeedback.shared.trigger(.success)
-                let targetID = registry.plugins.first(where: {
-                    $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id)
-                })?.manifest.id ?? id
+                let targetID = resolveTargetID(for: id)
                 registry.unloadPlugin(id: targetID)
             }
         } else if let marketPlugin = marketPlugin, let service = marketService {
@@ -577,12 +527,7 @@ struct PluginCard: View {
                 Text(L10n.Plugin.Action.install)
                     .font(.caption.bold())
             }
-            .padding(.horizontal, SystemSpacing.small)
-            .padding(.vertical, SystemSpacing.tiny)
-            .background(Color.appAccent)
-            .clipShape(Capsule())
-            .foregroundStyle(.white)
-            .contentShape(Capsule()) // 提升手势判定区域
+            .actionPillStyle(background: Color.appAccent)
             .onTapGesture {
                 guard !isDownloading else { return }
                 HapticFeedback.shared.trigger(.selection)
@@ -591,5 +536,52 @@ struct PluginCard: View {
                 }
             }
         }
+    }
+
+    /// 远程图标加载失败时的 fallback 拼图块默认图标（带渐变底）
+    private var pluginCardFallbackIcon: some View {
+        pluginGradientIcon(DesignSystem.Icons.puzzlepieceExtensionFill)
+    }
+
+    /// 构建带渐变背景的插件图标，消除 Image+LinearGradient 重复
+    private func pluginGradientIcon(_ systemName: String) -> some View {
+        Image(systemName: systemName)
+            .font(.title3)
+            .foregroundStyle(.white)
+            .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
+            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
+    }
+
+    /// 查找本地已安装插件实体，消除 displayVersion 与 resolveTargetID 的重复查询
+    private func findLocalPlugin(for id: String) -> KnowledgePlugin? {
+        registry.plugins.first(where: {
+            $0.manifest.id == id || $0.manifest.id.hasSuffix("." + id)
+        })
+    }
+
+    /// 解析插件真实 ID，兼容物理包名 ID 与市场简短 ID 的匹配
+    private func resolveTargetID(for id: String) -> String {
+        findLocalPlugin(for: id)?.manifest.id ?? id
+    }
+}
+
+/// 插件卡片图标容器样式修饰符，消除重复的 frame+clipShape+overlay 链
+private extension View {
+    func pluginIconContainerStyle(cornerRadius: CGFloat, strokeOpacity: Double) -> some View {
+        self
+            .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Color.theme.white.opacity(strokeOpacity), lineWidth: SystemStroke.hairline))
+    }
+
+    /// 操作按钮胶囊样式，消除重复的 padding+background+clipShape+foregroundStyle+contentShape 链
+    func actionPillStyle(background: Color) -> some View {
+        self
+            .padding(.horizontal, SystemSpacing.small)
+            .padding(.vertical, SystemSpacing.tiny)
+            .background(background)
+            .clipShape(Capsule())
+            .foregroundStyle(.white)
+            .contentShape(Capsule())
     }
 }

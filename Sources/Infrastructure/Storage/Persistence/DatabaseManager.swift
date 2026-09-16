@@ -26,6 +26,24 @@ final class DatabaseManager: TestStateResettable {
     
     /// 全局唯一的线程安全单例实例。
     static let shared = DatabaseManager()
+
+    /// 解析 Application Support 目录下的默认数据库 URL。
+    /// 消除 `AppEnvironment.prepareDatabase` 与 `ContentView.triggerReverification` 中重复的
+    /// `urls(for: .applicationSupportDirectory, in: .userDomainMask).first` + `appendingPathComponent(databaseName)` 模式。
+    /// - Returns: 默认沙盒数据库文件 URL。
+    /// - Throws: 当 Application Support 目录不可用时抛出 `NSError`。
+    static func defaultSandboxDatabaseURL() throws -> URL {
+        guard let appSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first else {
+            throw NSError(
+                domain: CoreConstants.ErrorDomain.insight,
+                code: SystemConstants.ErrorCode.default
+            )
+        }
+        return appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
+    }
     
     /// 数据库中枢当前的运行状态。
     private(set) var state: DatabaseState = .uninitialized {
@@ -94,12 +112,8 @@ final class DatabaseManager: TestStateResettable {
         self.globalWriter = globalQueue
         try globalMigrator.migrate(globalQueue)
         
-        let tables = try writer.read { db in
-            try String.fetchAll(db, sql: ["SELECT", "name", "FROM", "sqlite_master", "WHERE", "type='table'"].joined(separator: " "))
-        }
-        let globalTables = try globalQueue.read { db in
-            try String.fetchAll(db, sql: ["SELECT", "name", "FROM", "sqlite_master", "WHERE", "type='table'"].joined(separator: " "))
-        }
+        let tables = try fetchTableNames(from: writer)
+        let globalTables = try fetchTableNames(from: globalQueue)
         Logger.shared.info(" [DatabaseManager] setupForTesting completed.")
         Logger.shared.info(["-", "Vault", "Tables:", "\(tables)"].joined(separator: StorageConstants.LogConcat.separator))
         Logger.shared.info(["-", "Global", "Tables:", "\(globalTables)"].joined(separator: StorageConstants.LogConcat.separator))
@@ -110,23 +124,19 @@ final class DatabaseManager: TestStateResettable {
     /// - Throws: 目录创建失败或 GRDB 数据库连接池实例化异常。
     func setupGlobal(at url: URL) throws {
         self.globalDBURL = url
-        let path = url.path
-        
-        // 1. 确保护航目录存在
-        let folderURL = url.deletingLastPathComponent()
-        if !FileManager.default.fileExists(atPath: folderURL.path) {
-            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-        }
-        
-        // 2. 配置连接池并注入物理调优 PRAGMA 参数
-        let config = createDatabaseConfiguration()
-        
-        // 3. 建立连接并自动运行全局迁移
-        let globalPool = try DatabasePool(path: path, configuration: config)
+        let globalPool = try createAndMigrateDatabase(at: url, migrator: globalMigrator)
         self.globalWriter = globalPool
-        
-        try globalMigrator.migrate(globalPool)
         Logger.shared.info(" [DatabaseManager] Global main configuration database initialized successfully: \(url.lastPathComponent)")
+    }
+
+    /// 在指定 URL 建立数据库连接池并运行迁移（消除 setupGlobal/setup/switchDatabase 重复）。
+    private func createAndMigrateDatabase(at url: URL, migrator: DatabaseMigrator) throws -> any DatabaseWriter {
+        let path = url.path
+        try ensureDirectoryExists(at: url)
+        let config = createDatabaseConfiguration()
+        let pool = try DatabasePool(path: path, configuration: config)
+        try migrator.migrate(pool)
+        return pool
     }
     
     /// 初始化激活默认专属数据库（vault.sqlite3）连接。
@@ -148,18 +158,8 @@ final class DatabaseManager: TestStateResettable {
             
             // 3. 建立默认专属物理库连接
             self.dbURL = url
-            let path = url.path
-            let folderURL = url.deletingLastPathComponent()
-            if !FileManager.default.fileExists(atPath: folderURL.path) {
-                try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-            }
-            
-            let config = createDatabaseConfiguration()
-            let dbPool = try DatabasePool(path: path, configuration: config)
+            let dbPool = try createAndMigrateDatabase(at: url, migrator: migrator)
             self.dbWriter = dbPool
-            
-            // 4. 执行专属库架构迁移
-            try migrator.migrate(dbPool)
             
             // 5. 挂载成功后，异步刷新一次物理 HMAC 签名，对齐状态
             scheduleSignatureUpdate(for: url)
@@ -179,21 +179,26 @@ final class DatabaseManager: TestStateResettable {
     private func scheduleIntegrityVerification(for url: URL) {
         Task.detached { [weak self] in
             guard self != nil else { return }
-            let isVerified = await SecurityManager.shared.verifyIntegrity(for: url)
-            if !isVerified {
-                #if DEBUG
-                Logger.shared.debug(" [DatabaseManager] DEBUG: Signature_mismatch_during_async_check_realigning")
-                await SecurityManager.shared.updateSignature(for: url)
-                #else
-                await MainActor.run {
-                    NotificationCenter.default.post(
-                        name: .databaseIntegrityCheckFailed,
-                        object: nil,
-                        userInfo: [StorageConstants.JSONKey.url: url]
-                    )
-                }
-                #endif
+            await self?.verifyAndHandleFailure(for: url, debugLogPrefix: "Signature_mismatch_during_async_check_realigning")
+        }
+    }
+
+    /// 校验数据库完整性，失败时 DEBUG 模式重签、Release 模式广播通知（消除两处重复）。
+    private func verifyAndHandleFailure(for url: URL, debugLogPrefix: String) async {
+        let isVerified = await SecurityManager.shared.verifyIntegrity(for: url)
+        if !isVerified {
+            #if DEBUG
+            Logger.shared.debug(" [DatabaseManager] DEBUG: \(debugLogPrefix)")
+            await SecurityManager.shared.updateSignature(for: url)
+            #else
+            await MainActor.run {
+                NotificationCenter.default.post(
+                    name: .databaseIntegrityCheckFailed,
+                    object: nil,
+                    userInfo: [StorageConstants.JSONKey.url: url]
+                )
             }
+            #endif
         }
     }
     
@@ -246,7 +251,7 @@ final class DatabaseManager: TestStateResettable {
         // 0. 切换前对目标专属库进行完整性哈希签名防篡改校验
         if FileManager.default.fileExists(atPath: url.path) {
             let isVerified = await SecurityManager.shared.verifyIntegrity(for: url)
-            
+
             if !isVerified {
                 #if DEBUG
                 Logger.shared.debug(" [DatabaseManager] DEBUG: Target_hash_verification_failed_during_hot_swap_realigning")
@@ -277,20 +282,11 @@ final class DatabaseManager: TestStateResettable {
         }
         
         self.dbURL = url
-        
-        // 2. 确保目标文件夹在沙盒中物理存在
-        let folderURL = url.deletingLastPathComponent()
-        if !FileManager.default.fileExists(atPath: folderURL.path) {
-            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-        }
-        
-        // 3. 重新配置并开辟新库的并发池连接
-        let config = createDatabaseConfiguration()
-        let dbPool = try DatabasePool(path: url.path, configuration: config)
+
+        // 2. 重新配置并开辟新库的并发池连接，并自动运行 Schema 迁移
+        let dbPool = try createAndMigrateDatabase(at: url, migrator: migrator)
         self.dbWriter = dbPool
-        
-        // 4. 对新专属库自动运行 Schema 迁移
-        try migrator.migrate(dbPool)
+
         Logger.shared.info(" [DatabaseManager] Exclusive physical database successfully switched and remounted => \(url.lastPathComponent)")
         
         // 5. 切换成功，异步刷新物理完整性指纹
@@ -305,9 +301,23 @@ final class DatabaseManager: TestStateResettable {
     }
     
     // MARK: - 数据库高性能配置
+
+    /// 查询指定数据库连接中所有用户表名（消除 setupForTesting 中 sqlite_master 查询重复）。
+    private func fetchTableNames(from writer: any DatabaseWriter) throws -> [String] {
+        try writer.read { db in
+            try String.fetchAll(db, sql: ["SELECT", "name", "FROM", "sqlite_master", "WHERE", "type='table'"].joined(separator: " "))
+        }
+    }
+
+    /// 确保数据库文件所在目录在沙盒中物理存在
+    private func ensureDirectoryExists(at url: URL) throws {
+        let folderURL = url.deletingLastPathComponent()
+        if !FileManager.default.fileExists(atPath: folderURL.path) {
+            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        }
+    }
     
     /// 构建极尽压榨物理 I/O 并发吞吐的 SQLite 高性能配置
-    /// 包含：WAL 读写分离最大并发度、NORMAL 同步级别、内存 temp_store、10MB 连接页缓存、256MB mmap 内存映射与 5秒锁延迟。
     private func createDatabaseConfiguration() -> Configuration {
         var config = Configuration()
         

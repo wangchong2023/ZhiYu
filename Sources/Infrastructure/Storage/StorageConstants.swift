@@ -181,4 +181,13 @@ enum StorageConstants {
         /// 插件 FTS 搜索默认返回上限
         static let pluginSearchResults: Int = 50
     }
+
+    // MARK: - 存储子目录名 (Storage Subdirectory)
+    /// Application Support / Documents 下的业务子目录名常量
+    enum Subdirectory {
+        /// 本地模型文件子目录
+        static let models = "Models"
+        /// 插件文件子目录
+        static let plugins = "Plugins"
+    }
 }

@@ -111,20 +111,22 @@ struct SearchView: View {
                     }
 
                 if !searchText.isEmpty {
-                    Button(action: { 
+                    Button(action: {
                         searchText = ""
                         useAdvancedSearch = false
                         advancedResults = []
                     }) {
-                        Image(systemName: DesignSystem.Icons.errorCircle)
-                            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                        ClearSearchButton()
                     }
                 }
             }
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.vertical, SystemSpacing.elementLarge)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
+            .commonContentPadding()
+            .borderedCardStyle(
+                horizontalPadding: DesignSystem.standardPadding,
+                verticalPadding: SystemSpacing.elementLarge,
+                backgroundOpacity: DesignSystem.Opacity.dim,
+                cornerRadius: DesignSystem.mediumRadius
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
                     .strokeBorder(.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
@@ -135,26 +137,13 @@ struct SearchView: View {
                 // Filters
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DesignSystem.small) {
-                        FilterPill(title: L10n.Search.all, accessibilityIdentifier: FeatureConstants.AccessibilityID.filterAll, isSelected: filterType == nil) {
-                            HapticFeedback.shared.trigger(.selection)
-                            filterType = nil
-                        }
+                        PageTypeFilterPills(
+                            filterType: $filterType,
+                            triggersHaptic: true,
+                            includesAccessibilityID: true
+                        )
 
-                        // 遍历用户可见页面类型，屏蔽 raw 选项
-                        ForEach(PageType.allVisibleCases) { type in
-                            FilterPill(
-                                title: type.displayName,
-                                icon: type.icon,
-                                color: Color.fromModelColorName(type.colorName),
-                                accessibilityIdentifier: "filter-\(type.rawValue)",
-                                isSelected: filterType == type
-                            ) {
-                                HapticFeedback.shared.trigger(.selection)
-                                filterType = type
-                            }
-                        }
-
-                        Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
+                        filterDivider()
 
                         // Status Filters
                         if idiom != .watch {
@@ -164,22 +153,17 @@ struct SearchView: View {
                                     Button(status.displayName) { filterStatus = status }
                                 }
                             } label: {
-                                HStack(spacing: DesignSystem.tiny) {
-                                    Image(systemName: DesignSystem.Icons.flag)
-                                        .font(.caption)
-                                    Text(filterStatus?.displayName ?? L10n.Knowledge.Page.status)
-                                        .font(.caption)
-                                }
-                                .padding(.horizontal, SystemSpacing.elementLarge) // 10
-                                .padding(.vertical, SystemSpacing.small) // 6
-                                .background(filterStatusBackgroundColor)
-                                .clipShape(Capsule())
-                                .foregroundStyle(filterStatusLabelColor)
+                                filterMenuLabel(
+                                    icon: DesignSystem.Icons.flag,
+                                    title: filterStatus?.displayName ?? L10n.Knowledge.Page.status,
+                                    background: filterStatusBackgroundColor,
+                                    foreground: filterStatusLabelColor
+                                )
                             }
                             .buttonStyle(.plain)
                         }
 
-                        Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
+                        filterDivider()
 
                         // Sort options
                         if idiom != .watch {
@@ -190,17 +174,12 @@ struct SearchView: View {
                                     }
                                 }
                             } label: {
-                                HStack(spacing: DesignSystem.tiny) {
-                                    Image(systemName: DesignSystem.Icons.sortUpDown)
-                                        .font(.caption)
-                                    Text(L10n.Common.tr(sortBy.rawValue))
-                                        .font(.caption)
-                                }
-                                .padding(.horizontal, SystemSpacing.elementLarge) // 10
-                                .padding(.vertical, SystemSpacing.small) // 6
-                                .background(Color.appCard.opacity(SystemOpacity.active))
-                                .clipShape(Capsule())
-                                .foregroundStyle(.appSecondary)
+                                filterMenuLabel(
+                                    icon: DesignSystem.Icons.sortUpDown,
+                                    title: L10n.Common.tr(sortBy.rawValue),
+                                    background: Color.appCard.opacity(SystemOpacity.active),
+                                    foreground: .appSecondary
+                                )
                             }
                             .buttonStyle(.plain)
                         }
@@ -217,16 +196,8 @@ struct SearchView: View {
                 if searchStore.isSearching {
                     VStack(spacing: DesignSystem.standardPadding) {
                         ForEach(0..<FeatureConstants.SearchView.skeletonRowCount, id: \.self) { _ in
-                            HStack(spacing: DesignSystem.medium) {
-                                AppSkeleton(width: DesignSystem.Sidebar.iconBoxSize, height: DesignSystem.Sidebar.iconBoxSize) // 44
-                                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                                    AppSkeleton(width: 140, height: DesignSystem.standardFontSize)
-                                    AppSkeleton(width: 240, height: DesignSystem.microFontSize)
-                                }
-
-                                Spacer()
-                            }
-                            .padding(.horizontal)
+                            SkeletonListRow()
+                                .padding(.horizontal)
                         }
                         Spacer()
                     }
@@ -351,6 +322,28 @@ struct SearchView: View {
     
     private var filterStatusBackgroundColor: Color {
         filterStatus == nil ? Color.appCard.opacity(SystemOpacity.active) : Color.appAccent.opacity(SystemOpacity.faint)
+    }
+
+    /// 筛选区竖向分隔线，消除 2 处重复的 Divider().frame().background() 链
+    @ViewBuilder
+    private func filterDivider() -> some View {
+        Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
+    }
+
+    /// 筛选 Menu 的胶囊标签，消除 Status/Sort 两处重复的 HStack+padding+background+Capsule 链
+    @ViewBuilder
+    private func filterMenuLabel(icon: String, title: String, background: Color, foreground: Color) -> some View {
+        HStack(spacing: DesignSystem.tiny) {
+            Image(systemName: icon)
+                .font(.caption)
+            Text(title)
+                .font(.caption)
+        }
+        .padding(.horizontal, SystemSpacing.elementLarge)
+        .padding(.vertical, SystemSpacing.small)
+        .background(background)
+        .clipShape(Capsule())
+        .foregroundStyle(foreground)
     }
 }
 

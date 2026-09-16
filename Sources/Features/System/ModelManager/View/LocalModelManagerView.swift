@@ -32,16 +32,7 @@ public struct LocalModelManagerView: View {
                 VStack(spacing: DesignSystem.giant) {
                     // Section 1: 模型市场
                     VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: DesignSystem.small) {
-                            Image(systemName: DesignSystem.Icons.stackFill)
-                                .foregroundStyle(Color.theme.cyan)
-                                .font(.title3)
-                            Text(L10n.ModelManager.storeTitle)
-                                .font(.title3.bold())
-                                .foregroundStyle(Color.theme.text)
-                        }
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.top, DesignSystem.medium)
+                        modelSectionHeader(icon: DesignSystem.Icons.stackFill, iconColor: Color.theme.cyan, title: L10n.ModelManager.storeTitle)
                         
                         ModelStoreView(embedInScrollView: false) {
                             withAnimation(.easeInOut) {
@@ -56,16 +47,7 @@ public struct LocalModelManagerView: View {
                     
                     // Section 2: 测试实验室
                     VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: DesignSystem.small) {
-                            Image(systemName: DesignSystem.Icons.flaskFill)
-                                .foregroundStyle(Color.theme.purple)
-                                .font(.title3)
-                            Text(L10n.ModelManager.laboratoryTitle)
-                                .font(.title3.bold())
-                                .foregroundStyle(Color.theme.text)
-                        }
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.top, DesignSystem.medium)
+                        modelSectionHeader(icon: DesignSystem.Icons.flaskFill, iconColor: Color.theme.purple, title: L10n.ModelManager.laboratoryTitle)
                         
                         ModelLabView(embedInScrollView: false) {
                             withAnimation(.easeInOut) {
@@ -91,6 +73,20 @@ private struct ModelSectionCardModifier: ViewModifier {
             .cornerRadius(DesignSystem.mediumRadius)
             .padding(.horizontal)
     }
+}
+
+/// 模型区块标题，消除 Store/Lab 区块的 HStack+padding 重复
+private func modelSectionHeader(icon: String, iconColor: Color, title: String) -> some View {
+    HStack(spacing: DesignSystem.small) {
+        Image(systemName: icon)
+            .foregroundStyle(iconColor)
+            .font(.title3)
+        Text(title)
+            .font(.title3.bold())
+            .foregroundStyle(Color.theme.text)
+    }
+    .padding(.horizontal, DesignSystem.medium)
+    .padding(.top, DesignSystem.medium)
 }
 
 // MARK: - 预览

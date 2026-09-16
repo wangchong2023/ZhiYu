@@ -132,15 +132,17 @@ public struct NotebookHubView: View {
             
             if !bindableViewModel.searchText.wrappedValue.isEmpty {
                 Button { bindableViewModel.searchText.wrappedValue = "" } label: {
-                    Image(systemName: DesignSystem.Icons.errorCircle)
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                    ClearSearchButton()
                 }
             }
         }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, SystemSpacing.elementLarge)
-        .background(Color.appCard.opacity(SystemOpacity.glassStrong))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
+        .commonContentPadding()
+        .borderedCardStyle(
+            horizontalPadding: DesignSystem.standardPadding,
+            verticalPadding: SystemSpacing.elementLarge,
+            backgroundOpacity: SystemOpacity.glassStrong,
+            cornerRadius: DesignSystem.cardRadius
+        )
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
                 .strokeBorder(.appAccent.opacity(DesignSystem.Opacity.glass), lineWidth: 1)

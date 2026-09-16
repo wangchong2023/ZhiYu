@@ -125,9 +125,7 @@ public actor NetworkClient {
         guard !fileName.contains("\r") && !fileName.contains("\n") else {
             throw NetworkError.invalidFileName
         }
-        guard let url = URL(string: AppConfig.backendBaseURL + path) else {
-            throw NetworkError.invalidURL
-        }
+        let url = try makeBackendURL(path: path)
 
         // 生成唯一 boundary 分隔符
         let boundary = AppConstants.Network.multipartBoundaryPrefix + UUID().uuidString
@@ -139,12 +137,7 @@ public actor NetworkClient {
             AppConstants.Network.contentTypeMultipartPrefix + boundary,
             forHTTPHeaderField: AppConstants.Network.headerContentType
         )
-        if requiresAuth, let token = try? KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey) {
-            request.addValue(
-                AppConstants.Network.bearerPrefix + token,
-                forHTTPHeaderField: AppConstants.Network.headerAuthorization
-            )
-        }
+        applyBearerToken(to: &request, requiresAuth: requiresAuth)
 
         // 构造 multipart body
         var body = Data()
@@ -160,9 +153,7 @@ public actor NetworkClient {
         request.httpBody = body
 
         let (data, response) = try await activeSession.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, SystemConstants.HTTPStatusCode.isSuccess(httpResponse.statusCode) else {
-            throw NetworkError.invalidHTTPResponse
-        }
+        try validateHTTPSuccessResponse(response)
         let apiResponse: ApiResponse<String> = try decodeResponse(data)
         if apiResponse.isSuccess {
             return try extractPayload(apiResponse)
@@ -207,16 +198,40 @@ public actor NetworkClient {
         }
     }
 
-    private func buildURLRequest<Body: Encodable>(path: String, method: String, body: Body?, requiresAuth: Bool) throws -> URLRequest {
+    /// 构造后端基础 URL：拼接 `AppConfig.backendBaseURL + path`，失败抛 `NetworkError.invalidURL`
+    private func makeBackendURL(path: String) throws -> URL {
         guard let url = URL(string: AppConfig.backendBaseURL + path) else {
             throw NetworkError.invalidURL
         }
+        return url
+    }
+
+    /// 为 URLRequest 注入 Bearer Token（仅在 requiresAuth=true 且 Keychain 存在 token 时注入）
+    private func applyBearerToken(to request: inout URLRequest, requiresAuth: Bool) {
+        guard requiresAuth,
+              let token = try? KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey) else {
+            return
+        }
+        request.addValue(
+            AppConstants.Network.bearerPrefix + token,
+            forHTTPHeaderField: AppConstants.Network.headerAuthorization
+        )
+    }
+
+    /// 校验 HTTP 响应为 2xx 成功状态码，否则抛 `NetworkError.invalidHTTPResponse`
+    private func validateHTTPSuccessResponse(_ response: URLResponse) throws {
+        guard let httpResponse = response as? HTTPURLResponse,
+              SystemConstants.HTTPStatusCode.isSuccess(httpResponse.statusCode) else {
+            throw NetworkError.invalidHTTPResponse
+        }
+    }
+
+    private func buildURLRequest<Body: Encodable>(path: String, method: String, body: Body?, requiresAuth: Bool) throws -> URLRequest {
+        let url = try makeBackendURL(path: path)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.addValue(AppConstants.Network.contentTypeJSON, forHTTPHeaderField: AppConstants.Network.headerContentType)
-        if requiresAuth, let token = try? KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey) {
-            request.addValue(AppConstants.Network.bearerPrefix + token, forHTTPHeaderField: AppConstants.Network.headerAuthorization)
-        }
+        applyBearerToken(to: &request, requiresAuth: requiresAuth)
         if let body = body {
             request.httpBody = try encoder.encode(body)
         }
@@ -249,12 +264,7 @@ public actor NetworkClient {
         // 防止多个并发请求同时触发刷新
         if isRefreshing, let existingTask = refreshTask {
             let result = await existingTask.value
-            switch result {
-            case .success:
-                return try await performRequest(path: path, method: method, body: body, requiresAuth: true, isRetry: true)
-            case .failure(let error):
-                throw error
-            }
+            return try await retryRequestAfterRefresh(result: result, path: path, method: method, body: body)
         }
         
         isRefreshing = true
@@ -310,6 +320,16 @@ public actor NetworkClient {
         // 等待刷新完成并重试原请求
 // swiftlint:disable:next force_unwrapping
         let result = await refreshTask!.value
+        return try await retryRequestAfterRefresh(result: result, path: path, method: method, body: body)
+    }
+
+    /// 根据 Token 刷新结果重试原请求：成功则重试，失败则抛错
+    private func retryRequestAfterRefresh<T: Codable, Body: Encodable>(
+        result: Result<String, Error>,
+        path: String,
+        method: String,
+        body: Body?
+    ) async throws -> T {
         switch result {
         case .success:
             return try await performRequest(path: path, method: method, body: body, requiresAuth: true, isRetry: true)

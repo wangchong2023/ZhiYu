@@ -266,10 +266,7 @@ final class SystemStatsCoordinator {
 
     /// 字节格式化助手
     func formatBytes(_ bytes: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useAll]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: bytes)
+        RawStorageFormat.bytes(bytes)
     }
 
     /// 标签图标选择器

@@ -116,24 +116,34 @@ public struct DemoPDFBuilder {
 
     private static func renderH1(_ text: String, currentY: CGFloat, contentWidth: CGFloat) -> CGFloat {
         let h1Text = sanitizeMarkdownText(text.replacingOccurrences(of: StorageConstants.MarkdownSyntax.hashSpace, with: ""))
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: 17),
-            .foregroundColor: PDFTheme.h1Text
-        ]
-        let rect = CGRect(x: 36, y: currentY + 8, width: contentWidth, height: 26)
-        h1Text.draw(in: rect, withAttributes: attrs)
-        return currentY + 36
+        return renderHeadingLine(h1Text, font: UIFont.boldSystemFont(ofSize: 17), textColor: PDFTheme.h1Text,
+                                 currentY: currentY, contentWidth: contentWidth, topPadding: 8, rectHeight: 26, advance: 36)
     }
 
     private static func renderH2(_ text: String, currentY: CGFloat, contentWidth: CGFloat) -> CGFloat {
         let h2Text = sanitizeMarkdownText(text.replacingOccurrences(of: StorageConstants.MarkdownSyntax.hashHashSpace, with: ""))
+        return renderHeadingLine(h2Text, font: UIFont.boldSystemFont(ofSize: 14), textColor: PDFTheme.h2Text,
+                                 currentY: currentY, contentWidth: contentWidth, topPadding: 6, rectHeight: 22, advance: 30)
+    }
+
+    /// 渲染标题行（H1/H2 共用结构），消除 attrs 字典与 draw 样板重复。
+    private static func renderHeadingLine(
+        _ text: String, font: UIFont, textColor: UIColor,
+        currentY: CGFloat, contentWidth: CGFloat,
+        topPadding: CGFloat, rectHeight: CGFloat, advance: CGFloat
+    ) -> CGFloat {
         let attrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.boldSystemFont(ofSize: 14),
-            .foregroundColor: PDFTheme.h2Text
+            .font: font,
+            .foregroundColor: textColor
         ]
-        let rect = CGRect(x: 36, y: currentY + 6, width: contentWidth, height: 22)
-        h2Text.draw(in: rect, withAttributes: attrs)
-        return currentY + 30
+        let rect = CGRect(x: 36, y: currentY + topPadding, width: contentWidth, height: rectHeight)
+        text.draw(in: rect, withAttributes: attrs)
+        return currentY + advance
+    }
+
+    /// 构建仅含 font + foregroundColor 的文本属性字典（消除多处重复字面量）。
+    private static func simpleTextAttrs(font: UIFont, textColor: UIColor) -> [NSAttributedString.Key: Any] {
+        [.font: font, .foregroundColor: textColor]
     }
 
     private static func renderQuoteBlock(_ text: String, currentY: CGFloat, contentWidth: CGFloat, context: UIGraphicsPDFRendererContext) -> CGFloat {
@@ -141,21 +151,21 @@ public struct DemoPDFBuilder {
         let font = UIFont.systemFont(ofSize: 11) // Dynamic Type
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineSpacing = DemoMediaConstants.paragraphLineSpacing
-        
+
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
             .foregroundColor: PDFTheme.quoteText,
             .paragraphStyle: paragraph
         ]
-        
+
         let bgRect = CGRect(x: 36, y: currentY, width: contentWidth, height: 32)
         PDFTheme.quoteBg.setFill()
         context.fill(bgRect)
-        
+
         let lineRect = CGRect(x: 36, y: currentY, width: 4, height: 32)
         PDFTheme.quoteLine.setFill()
         context.fill(lineRect)
-        
+
         let textRect = CGRect(x: 48, y: currentY + 6, width: contentWidth - 20, height: 22)
         quoteText.draw(in: textRect, withAttributes: attrs)
         return currentY + 38
@@ -164,26 +174,23 @@ public struct DemoPDFBuilder {
     private static func renderTableRow(_ text: String, currentY: CGFloat, contentWidth: CGFloat, context: UIGraphicsPDFRendererContext) -> CGFloat {
         let cols = text.split(separator: "|").map { sanitizeMarkdownText(String($0)) }
         let colWidth = contentWidth / CGFloat(max(1, cols.count))
-        
+
         let isHeader = currentY < DemoMediaConstants.headerYThreshold
         let cellBgColor = isHeader ? PDFTheme.tableHeaderBg : PDFTheme.tableCellBg
         let textColor = isHeader ? PDFTheme.tableHeaderText : PDFTheme.tableCellText
         let font = isHeader ? UIFont.boldSystemFont(ofSize: 10) : UIFont.systemFont(ofSize: 10) // Dynamic Type
-        
+
         let cellBg = CGRect(x: 36, y: currentY, width: contentWidth, height: 22)
         cellBgColor.setFill()
         context.fill(cellBg)
-        
+
         // 绘制表框细线
         context.cgContext.setLineWidth(0.5)
         context.cgContext.setStrokeColor(PDFTheme.tableBorder.cgColor)
         context.cgContext.stroke(cellBg)
-        
+
         for (idx, col) in cols.enumerated() {
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: font,
-                .foregroundColor: textColor
-            ]
+            let attrs = simpleTextAttrs(font: font, textColor: textColor)
             let cellRect = CGRect(x: 36 + CGFloat(idx) * colWidth + 6, y: currentY + 4, width: colWidth - 12, height: 16)
             col.draw(in: cellRect, withAttributes: attrs)
         }

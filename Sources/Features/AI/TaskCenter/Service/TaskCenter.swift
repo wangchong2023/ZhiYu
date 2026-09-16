@@ -117,14 +117,9 @@ public final class TaskCenter: @unchecked Sendable {
     }
 
     private func setupSubscriptions() {
-        AppEventBus.shared.subscribe()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] event in
-                if case .clearAllDataRequested = event {
-                    self?.reset()
-                }
-            }
-            .store(in: &cancellables)
+        AppEventBus.shared.subscribeClearAllData { [weak self] in
+            self?.reset()
+        }.store(in: &cancellables)
     }
 
     /// 更新LatestStatus
@@ -197,7 +192,7 @@ public final class TaskCenter: @unchecked Sendable {
     /// - Parameter status: status
     /// - Parameter associatedPageID: associatedPageID
     public func updateTask(_ id: UUID, status: TaskStatus, associatedPageID: UUID? = nil) {
-        if let index = self.tasks.firstIndex(where: { $0.id == id }) {
+        if let index = taskIndex(id) {
             self.tasks[index].status = status
             if let pageID = associatedPageID {
                 self.tasks[index].associatedPageID = pageID
@@ -211,17 +206,9 @@ public final class TaskCenter: @unchecked Sendable {
                     await activityService?.updateProgress(id: task.id, progress: progress, message: self.latestStatus)
                 }
             case .completed:
-                self.latestStatus = L10n.AI.Task.completed( task.name)
-                NotificationCenter.default.post(name: .taskCompleted, object: task)
-                Task {
-                    await activityService?.endActivity(id: task.id)
-                }
+                finishTask(task: task, statusText: L10n.AI.Task.completed( task.name))
             case .failed:
-                self.latestStatus = L10n.AI.Task.failed( task.name)
-                NotificationCenter.default.post(name: .taskCompleted, object: task)
-                Task {
-                    await activityService?.endActivity(id: task.id)
-                }
+                finishTask(task: task, statusText: L10n.AI.Task.failed( task.name))
             case .pending:
                 break
             }
@@ -229,6 +216,15 @@ public final class TaskCenter: @unchecked Sendable {
             if case .completed = status {
                 trimExcessTasks()
             }
+        }
+    }
+
+    /// 完成任务（更新状态文本、发送通知、结束实时活动）
+    private func finishTask(task: GlobalTask, statusText: String) {
+        self.latestStatus = statusText
+        NotificationCenter.default.post(name: .taskCompleted, object: task)
+        Task {
+            await activityService?.endActivity(id: task.id)
         }
     }
 
@@ -251,6 +247,11 @@ public final class TaskCenter: @unchecked Sendable {
         return false
     }
 
+    /// 按任务 ID 查找索引（消除多处重复的 firstIndex 查找）
+    private func taskIndex(_ id: UUID) -> Int? {
+        self.tasks.firstIndex(where: { $0.id == id })
+    }
+
     /// completeTask
     /// - Parameter id: id
     /// - Parameter associatedPageID: associatedPageID
@@ -269,7 +270,7 @@ public final class TaskCenter: @unchecked Sendable {
     /// - Parameter id: 任务ID
     /// - Parameter log: 详细状态描述文本
     public func addSubLog(id: UUID, log: String) {
-        if let index = self.tasks.firstIndex(where: { $0.id == id }) {
+        if let index = taskIndex(id) {
             self.tasks[index].subLogs.append(log)
             if self.tasks[index].subLogs.count > Self.maxSubLogCount {
                 self.tasks[index].subLogs.removeFirst()
@@ -289,7 +290,7 @@ public final class TaskCenter: @unchecked Sendable {
     /// markAsRead
     /// - Parameter id: id
     public func markAsRead(_ id: UUID) {
-        if let index = self.tasks.firstIndex(where: { $0.id == id }) {
+        if let index = taskIndex(id) {
             self.tasks[index].isRead = true
         }
     }

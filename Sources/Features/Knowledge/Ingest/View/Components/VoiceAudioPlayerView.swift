@@ -44,6 +44,13 @@ private enum VoiceTimestampDelimiter {
     static let closeBracket: String = SystemConstants.Character.closeBracket
 }
 
+/// 跨实例共享的 AVAudioSession 播放模式配置，消除 VoiceAudioPlayerView 与 VoiceSpeechState 的重复
+private func configureVoicePlaybackSession(idiom: InterfaceIdiom) {
+    guard idiom == .iPhone || idiom == .iPad else { return }
+    try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+    try? AVAudioSession.sharedInstance().setActive(true)
+}
+
 struct VoiceAudioPlayerView: View {
     let title: String
     let audioPath: String?
@@ -63,13 +70,8 @@ struct VoiceAudioPlayerView: View {
             // 1. 音频播放器主卡片
             VStack(alignment: .leading, spacing: DesignSystem.medium) {
                 HStack {
-                    Label(L10n.Ingest.voiceNote, systemImage: DesignSystem.Icons.waveform)
-                        .font(.caption.weight(.bold))
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.vertical, DesignSystem.tightPadding)
-                        .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
-                        .foregroundStyle(.appAccent)
-                    
+                    SourceBadge(label: L10n.Ingest.voiceNote, icon: DesignSystem.Icons.waveform, color: .appAccent)
+
                     Spacer()
                     
                     Text(L10n.Ingest.voiceAudioFormat)
@@ -163,17 +165,12 @@ struct VoiceAudioPlayerView: View {
     }
     
     private var cleanText: String {
-        transcribedText
-            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkOpen, with: "「")
-            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.wikiLinkClose, with: "」")
+        WikiLinkTextSanitizer.convertToQuoted(transcribedText)
     }
     
     private func setupAudioPlayer() {
-        if idiom == .iPhone || idiom == .iPad {
-            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-            try? AVAudioSession.sharedInstance().setActive(true)
-        }
-        
+        activateAudioSessionIfNeeded()
+
         if let path = audioPath, FileManager.default.fileExists(atPath: path) {
             let url = URL(fileURLWithPath: path)
             do {
@@ -189,11 +186,8 @@ struct VoiceAudioPlayerView: View {
     }
     
     private func togglePlayPause() {
-        if idiom == .iPhone || idiom == .iPad {
-            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-            try? AVAudioSession.sharedInstance().setActive(true)
-        }
-        
+        activateAudioSessionIfNeeded()
+
         if isPlaying {
             if let player = audioPlayer {
                 player.pause()
@@ -216,6 +210,11 @@ struct VoiceAudioPlayerView: View {
         let target = max(0, min(duration, currentTime + seconds))
         currentTime = target
         audioPlayer?.currentTime = target
+    }
+
+    /// 激活 AVAudioSession（仅 iPhone/iPad），消除 setupAudioPlayer 与 togglePlayPause 的重复
+    private func activateAudioSessionIfNeeded() {
+        configureVoicePlaybackSession(idiom: idiom)
     }
     
     private func stopAudioPlayer() {
@@ -323,10 +322,7 @@ final class VoiceSpeechState: NSObject, AVSpeechSynthesizerDelegate {
     /// 在 iOS 平台配置 AVAudioSession 为播放模式
     /// - Note: macOS / watchOS 无 AVAudioSession 概念，运行时跳过。
     private func configurePlaybackSessionIfNeeded() {
-        let idiom = InterfaceIdiomKey.defaultValue
-        guard idiom == .iPhone || idiom == .iPad else { return }
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
+        configureVoicePlaybackSession(idiom: InterfaceIdiomKey.defaultValue)
     }
     
     func stop() {

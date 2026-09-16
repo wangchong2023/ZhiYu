@@ -234,7 +234,7 @@
 - [ ] 覆盖率报告确认提升
 
 **执行步骤**:
-1. ✅ 分析 `ModuleRegistrar`/`ZhiYuApp`/`AppEnvironment` 未覆盖路径
+1. ✅ 分析 ModuleRegistrar/`ZhiYuApp`/`AppEnvironment` 未覆盖路径
 2. ✅ 编写单元测试覆盖启动顺序、DI 注册、环境初始化
 3. ✅ 运行测试验证（26 个测试全部通过）
 4. ⏳ 生成覆盖率报告确认（任务 7 统一执行）
@@ -1094,7 +1094,7 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 | # | 任务 | 文件 | 验证 |
 |---|------|------|------|
 | P7-1 | 删除 `@Inject` 属性包装器 | `Packages/UFPCore/Sources/UFPCore/Base/ServiceContainer.swift` | 全量替换为 `@Dependency` |
-| P7-2 | 删除 `ServiceContainer` 注册代码 | `Sources/App/ModuleRegistrar.swift` | `ModuleRegistrar` 改为 `DependencyRegistrar` |
+| P7-2 | 删除 `ServiceContainer` 注册代码 | `Sources/App/ModuleRegistrar.swift` | ModuleRegistrar 改为 DependencyRegistrar |
 | P7-3 | 删除 `setupFullMockEnvironment()` | `Tests/Shared/TestMocks.swift` | 替换为 `withDependencies { $0 = .mock }` |
 | P7-4 | 删除 3 个 `testOverride` | `KeychainService`/`SecurityManager`/`SecureEnclaveCryptoService` | 改为 `@Dependency` |
 | P7-5 | 迁移 `Localized` 静态缓存 | `Sources/Core/Base/Utils/Localized.swift` | `languageMode`/`cachedBundle`/`cachedLanguage` → `@Dependency` |
@@ -1191,7 +1191,7 @@ CI 集成 SonarQube 覆盖率报告推送，实现覆盖率门禁自动化。
 |---|------|----------|
 | 1 | 关键模式 → 启动顺序与依赖注入 | 删除 `ServiceContainer` 注册链条，改为 `DependencyContainer` + `DependencyValues` 注册；初始化顺序更新 |
 | 2 | 关键模式 → `@Inject` 属性包装器 | 删除整节，替换为 `@Dependency` 属性包装器说明 + `withDependencies` 测试覆盖用法 |
-| 3 | 关键模式 → 模块化注册 | `ModuleRegistrar` 改为 `DependencyRegistrar`；四个注册器按序执行说明更新 |
+| 3 | 关键模式 → 模块化注册 | ModuleRegistrar 改为 DependencyRegistrar；四个注册器按序执行说明更新 |
 | 4 | 关键模式 → 跨层协议定义位置 | DI 双注册规则更新：`DependencyKey` 注册（live/test/preview 三态） |
 | 5 | 四大强制质量红线 | 红线 3（架构分层）新增："禁止 `static let shared` 可变单例（白名单仅 `DatabaseManager` 基础设施层例外）" |
 | 6 | 项目结构 → 关键路径 | 新增 `Sources/App/AppModel.swift`、`Sources/Core/DependencyContainer.swift`、`Sources/Core/Dependencies/Register.swift` |

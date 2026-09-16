@@ -120,17 +120,11 @@ struct PageDetailView: View {
                         .font(.caption)
                         .fontWeight(.bold)
                 }
-                .foregroundStyle(.white)
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, DesignSystem.small)
-                .background(
-                    LinearGradient(
-                        colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.prominent)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                .accentCapsuleStyle(
+                    horizontalPadding: DesignSystem.medium,
+                    verticalPadding: DesignSystem.small,
+                    gradientEndOpacity: DesignSystem.Opacity.prominent
                 )
-                .clipShape(Capsule())
                 .shadow(color: .appAccent.opacity(DesignSystem.Opacity.shadow), radius: 5, x: 0, y: 3)
             }
             .buttonStyle(ScaleButtonStyle())
@@ -347,48 +341,30 @@ struct PageDetailView: View {
     }
 
     private func sourceCitationLinkButton(url: String, coordinator: PageDetailCoordinator) -> some View {
-        Group {
-            if coordinator.page.isLocalFileSource {
-                Button(action: {
-                    pasteboard.string = url
+        InsightSourceButton(
+            sourceURL: url,
+            displaySourceIcon: coordinator.page.displaySourceIcon,
+            displaySourceName: coordinator.page.displaySourceName,
+            isLocalFile: coordinator.page.isLocalFileSource,
+            copiedURL: copiedUrl,
+            onCopy: { _ in
+                pasteboard.string = url
+                withAnimation(.spring()) {
+                    self.copiedUrl = url
+                }
+                Task {
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
                     withAnimation(.spring()) {
-                        copiedUrl = url
-                    }
-                    Task {
-                        try? await Task.sleep(nanoseconds: 2_000_000_000)
-                        withAnimation(.spring()) {
-                            if copiedUrl == url {
-                                copiedUrl = nil
-                            }
+                        if self.copiedUrl == url {
+                            self.copiedUrl = nil
                         }
                     }
-                }) {
-                    HStack(spacing: DesignSystem.tiny) {
-                        Image(systemName: coordinator.page.displaySourceIcon)
-                            .font(.caption2)
-                        Text(copiedUrl == url ? L10n.Knowledge.Page.Source.copied : "\(coordinator.page.displaySourceName) (\(L10n.Knowledge.Page.Source.copyPath))")
-                            .font(.caption)
-                            .lineLimit(1)
-                    }
-                    .foregroundStyle(Color.theme.blue)
                 }
-                .buttonStyle(.plain)
-            } else {
-                Button(action: {
-                    guard let urlObject = URL(string: url) else { return }
-                    Task { await urlOpener.open(urlObject) }
-                }) {
-                    HStack(spacing: DesignSystem.tiny) {
-                        Image(systemName: coordinator.page.displaySourceIcon)
-                            .font(.caption2)
-                        Text(coordinator.page.displaySourceName)
-                            .font(.caption)
-                            .lineLimit(1)
-                    }
-                    .foregroundStyle(Color.theme.blue)
-                }
+            },
+            onOpen: { urlObject in
+                Task { await urlOpener.open(urlObject) }
             }
-        }
+        )
     }
 
     private func navigateToPage(_ title: String) {
@@ -411,9 +387,7 @@ struct PageDetailView: View {
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appAccent.opacity(DesignSystem.Opacity.atomic)))
+                    .scanStatusBackground(backgroundOpacity: DesignSystem.Opacity.atomic, useAccent: true)
                     .padding(.vertical, DesignSystem.small)
                 }
             } else if !relevantLinks.isEmpty {
@@ -433,13 +407,7 @@ struct PageDetailView: View {
                         }
                     }
                 }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appAccent.opacity(DesignSystem.Opacity.atomic)))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                        .stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: SystemStroke.divider)
-                )
-                .padding(.vertical, DesignSystem.small)
+                .aiRecommendationCardStyle()
             } else if coordinator.hasScannedForLinks {
                 VStack(alignment: .leading, spacing: DesignSystem.medium) {
                     HStack(spacing: DesignSystem.small) {
@@ -449,9 +417,7 @@ struct PageDetailView: View {
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: DesignSystem.largeRadius).fill(Color.appCard.opacity(DesignSystem.Opacity.dim)))
+                    .scanStatusBackground(backgroundOpacity: DesignSystem.Opacity.dim, useAccent: false)
                     .padding(.vertical, DesignSystem.small)
                 }
             }
@@ -494,12 +460,28 @@ struct PageDetailView: View {
             }
             .buttonStyle(ScaleButtonStyle())
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.tightPadding))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.tightPadding)
-                .stroke(Color.appBorder.opacity(DesignSystem.glassOpacity), lineWidth: SystemStroke.divider)
+        .borderedCardStyle(
+            horizontalPadding: DesignSystem.medium,
+            verticalPadding: DesignSystem.medium,
+            backgroundOpacity: DesignSystem.Opacity.solid,
+            cornerRadius: DesignSystem.tightPadding,
+            borderWidth: SystemStroke.divider,
+            borderColor: .appBorder,
+            borderOpacity: DesignSystem.glassOpacity
         )
+    }
+}
+
+// MARK: - 扫描状态背景修饰符
+private extension View {
+    /// 扫描状态卡片背景：padding + frame(maxWidth) + background(RoundedRectangle.fill)
+    func scanStatusBackground(backgroundOpacity: Double, useAccent: Bool) -> some View {
+        self
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                    .fill(useAccent ? Color.appAccent.opacity(backgroundOpacity) : Color.appCard.opacity(backgroundOpacity))
+            )
     }
 }

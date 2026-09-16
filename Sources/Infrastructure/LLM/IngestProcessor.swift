@@ -64,22 +64,30 @@ final class IngestProcessor: LLMKnowledgeServiceProtocol {
 
     /// 根据当前正文分析并发现可能存在双向关联的已有页面标题
     func discoverPotentialLinks(content: String, existingTitles: [String]) async throws -> [String] {
-        guard configManager.isReady else { return [] }
-        guard let refactorService = self.refactorService else { return [] }
+        guard let refactorService = readyRefactorService(fallback: []) else { return [] }
         return try await refactorService.discoverPotentialLinks(content: content, existingTitles: existingTitles)
     }
 
     /// 将重叠的或新旧内容进行语义合并，保留最大化有效信息
     func foldContent(existingContent: String, newContent: String, title: String) async throws -> String {
-        guard configManager.isReady else { return existingContent + "\n\n" + newContent }
-        guard let refactorService = self.refactorService else { return existingContent + "\n\n" + newContent }
+        let fallback = existingContent + "\n\n" + newContent
+        guard let refactorService = readyRefactorService(fallback: fallback) else { return fallback }
         return try await refactorService.foldContent(existingContent: existingContent, newContent: newContent, title: title)
     }
 
     /// 对整个知识库的实体分布与内容进行体检，提供合理的归纳、重构与合并建议
     func analyzeForRefactoring(pages: [any KnowledgePageRepresentable]) async throws -> [RefactorSuggestionDTO] {
-        guard configManager.isReady else { return [] }
-        guard let refactorService = self.refactorService else { return [] }
+        guard let refactorService = readyRefactorService(fallback: []) else { return [] }
         return try await refactorService.analyzeForRefactoring(pages: pages)
+    }
+
+    // MARK: - 共享辅助
+
+    /// 统一的 configManager.isReady + refactorService 解包守卫，消除三处重复的 `guard configManager.isReady` + `guard let refactorService` 样板。
+    /// - Parameter fallback: 未就绪时返回的默认值（泛型 T）
+    /// - Returns: 就绪返回 refactorService，否则 nil
+    private func readyRefactorService<T>(fallback _: T) -> LLMRefactorService? {
+        guard configManager.isReady else { return nil }
+        return refactorService
     }
 }

@@ -99,26 +99,22 @@ struct FloatingContextCapsule: View {
             }
             .accessibilityIdentifier("vaultBackToHubButton")
         } label: {
-            HStack(spacing: DesignSystem.small) {
-                Text(vault.name)
-                    .font(.title3.weight(.bold))
-                    .lineLimit(1)
-                
-                Image(systemName: DesignSystem.Icons.down)
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.white.opacity(DesignSystem.Opacity.dim))
-            }
-            .padding(.trailing, DesignSystem.medium)
-            .frame(minHeight: Spacing.Action.buttonHeight)
+            capsuleLabel(text: vault.name)
         }
         #endif
     }
     
     private var hubIndicator: some View {
+        capsuleLabel(text: L10n.Common.unknown) // 完美对齐图 1
+    }
+
+    /// 胶囊标签：Text + 下拉箭头（消除 vaultIndicator 与 hubIndicator 的重复 HStack 链）
+    private func capsuleLabel(text: String) -> some View {
         HStack(spacing: DesignSystem.small) {
-            Text(L10n.Common.unknown) // 完美对齐图 1
+            Text(text)
                 .font(.title3.weight(.bold))
-            
+                .lineLimit(1)
+
             Image(systemName: DesignSystem.Icons.down)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.white.opacity(DesignSystem.Opacity.dim))

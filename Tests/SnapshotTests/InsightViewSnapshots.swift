@@ -105,7 +105,7 @@ final class InsightViewSnapshots: XCTestCase {
         setupMockEnvironment()
 
         let view = InsightStat(
-            label: L10n.Common.Stats.newPages,
+            title: L10n.Common.Stats.newPages,
             value: "12",
             icon: DesignSystem.Icons.docBadgePlus,
             color: .blue

@@ -23,9 +23,7 @@ struct AuthPhonePanel: View {
         VStack(spacing: Spacing.large) {
             // 手机号掩码显示
             Text(authService.currentUser?.phone?.maskedPhoneNumber ?? "180****6625")
-                .font(.system(size: SystemFontSize.hero, weight: .bold, design: .rounded))
-                .foregroundStyle(.appText)
-                .padding(.top, Spacing.medium)
+                .authHeroTextStyle()
 
             // 登录动作按钮
             actionButton
@@ -51,11 +49,7 @@ struct AuthPhonePanel: View {
                         .foregroundStyle(.white)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.Domain.Auth.actionButtonVerticalPadding)
-            .background(Color.appAccent)
-            .clipShape(Capsule())
-            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: Spacing.shadowRadius, y: Spacing.shadowY)
+            .authActionButtonStyle()
         }
         .disabled(isLoading)
         .accessibilityIdentifier("oneClickLoginButton")

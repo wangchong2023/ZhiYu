@@ -115,9 +115,7 @@ public struct ServerConfigView: View {
 
     /// 状态指示器
     private func statusIndicator(for server: MockServerConfig) -> some View {
-        Circle()
-            .fill(server.isHealthy ? Color.theme.green : Color.theme.red)
-            .frame(width: DesignSystem.medium, height: DesignSystem.medium)
+        serverStatusIndicator(isHealthy: server.isHealthy)
     }
 
     /// 添加按钮
@@ -475,9 +473,7 @@ private struct ServerCardView: View {
                 }
             }
         }
-        .padding()
-        .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid)
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
                 .stroke(server.isDefault ? Color.appAccent : Color.appBorder.opacity(DesignSystem.Opacity.shadow), lineWidth: server.isDefault ? 2 : 1)
@@ -485,9 +481,7 @@ private struct ServerCardView: View {
     }
 
     private func statusIndicator(for server: MockServerConfig) -> some View {
-        Circle()
-            .fill(server.isHealthy ? Color.theme.green : Color.theme.red)
-            .frame(width: DesignSystem.medium, height: DesignSystem.medium)
+        serverStatusIndicator(isHealthy: server.isHealthy)
     }
 
     private func formatDate(_ date: Date) -> String {
@@ -495,4 +489,11 @@ private struct ServerCardView: View {
         formatter.unitsStyle = .full
         return formatter.localizedString(for: date, relativeTo: Date())
     }
+}
+
+/// 服务器健康状态指示器，消除 ServerConfigView 与 ServerCardView 的重复
+private func serverStatusIndicator(isHealthy: Bool) -> some View {
+    Circle()
+        .fill(isHealthy ? Color.theme.green : Color.theme.red)
+        .frame(width: DesignSystem.medium, height: DesignSystem.medium)
 }

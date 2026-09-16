@@ -91,20 +91,7 @@ public final class AhoCorasickEngine: Sendable {
         var current = root
 
         for (idx, char) in characters.enumerated() {
-            while current.children[char] == nil && current !== root {
-                if let fail = current.failLink {
-                    current = fail
-                } else {
-                    current = root
-                    break
-                }
-            }
-
-            if let next = current.children[char] {
-                current = next
-            } else {
-                current = root
-            }
+            current = advance(current, with: char)
 
             for pattern in current.outputPatterns {
                 let patternLen = pattern.count
@@ -126,25 +113,35 @@ public final class AhoCorasickEngine: Sendable {
         var current = root
 
         for char in characters {
-            while current.children[char] == nil && current !== root {
-                if let fail = current.failLink {
-                    current = fail
-                } else {
-                    current = root
-                    break
-                }
-            }
-
-            if let next = current.children[char] {
-                current = next
-            } else {
-                current = root
-            }
+            current = advance(current, with: char)
 
             if !current.outputPatterns.isEmpty {
                 return true
             }
         }
         return false
+    }
+
+    /// AC 自动机状态转移核心：沿 fail link 回溯直到找到匹配子节点或回到 root
+    /// - Parameters:
+    ///   - current: 当前节点
+    ///   - char: 待匹配字符
+    /// - Returns: 转移后的下一个节点
+    private func advance(_ current: AhoNode, with char: Character) -> AhoNode {
+        var node = current
+        while node.children[char] == nil && node !== root {
+            if let fail = node.failLink {
+                node = fail
+            } else {
+                node = root
+                break
+            }
+        }
+
+        if let next = node.children[char] {
+            return next
+        } else {
+            return root
+        }
     }
 }

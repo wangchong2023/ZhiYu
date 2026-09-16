@@ -69,14 +69,7 @@ enum QuizProcessor {
             case string(String)
 
             init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let i = try? container.decode(Int.self) {
-                    self = .int(i)
-                } else if let s = try? container.decode(String.self) {
-                    self = .string(s)
-                } else {
-                    self = .int(0)
-                }
+                self = try Self.decodeFlexibleIntString(from: decoder)
             }
 
             var intValue: Int {
@@ -85,6 +78,11 @@ enum QuizProcessor {
                 case .string(let s): return Int(s) ?? 0
                 }
             }
+
+            /// 共享的 Int/String 自愈解码逻辑，消除 FlexibleID 与 FlexibleAnswer 间的重复 init(from:)。
+            private static func decodeFlexibleIntString(from decoder: Decoder) throws -> FlexibleID {
+                try FlexibleIntStringDecoder.decode(from: decoder, intCase: FlexibleID.int, stringCase: FlexibleID.string)
+            }
         }
 
         enum FlexibleAnswer: Codable {
@@ -92,14 +90,7 @@ enum QuizProcessor {
             case string(String)
 
             init(from decoder: Decoder) throws {
-                let container = try decoder.singleValueContainer()
-                if let i = try? container.decode(Int.self) {
-                    self = .int(i)
-                } else if let s = try? container.decode(String.self) {
-                    self = .string(s)
-                } else {
-                    self = .int(0)
-                }
+                self = try Self.decodeFlexibleIntString(from: decoder)
             }
 
             func asIndex(optionCount: Int) -> Int {
@@ -118,6 +109,29 @@ enum QuizProcessor {
                     if trimmed.hasPrefix("D") { return min(3, optionCount - 1) }
                     return 0
                 }
+            }
+
+            /// 共享的 Int/String 自愈解码逻辑，消除 FlexibleID 与 FlexibleAnswer 间的重复 init(from:)。
+            private static func decodeFlexibleIntString(from decoder: Decoder) throws -> FlexibleAnswer {
+                try FlexibleIntStringDecoder.decode(from: decoder, intCase: FlexibleAnswer.int, stringCase: FlexibleAnswer.string)
+            }
+        }
+    }
+
+    /// Int/String 自愈解码的泛型辅助器，消除 FlexibleID 与 FlexibleAnswer 间的解码样板重复。
+    private enum FlexibleIntStringDecoder {
+        static func decode<T>(
+            from decoder: Decoder,
+            intCase: (Int) -> T,
+            stringCase: (String) -> T
+        ) throws -> T {
+            let container = try decoder.singleValueContainer()
+            if let i = try? container.decode(Int.self) {
+                return intCase(i)
+            } else if let s = try? container.decode(String.self) {
+                return stringCase(s)
+            } else {
+                return intCase(0)
             }
         }
     }

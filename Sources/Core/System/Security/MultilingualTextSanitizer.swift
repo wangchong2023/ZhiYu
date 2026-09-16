@@ -29,11 +29,10 @@ public final class MultilingualTextSanitizer: Sendable {
     private init() {}
 
     /// 1. 中文：繁体转换为简体中文
+    /// - Note: CoreFoundation 无内置繁简转换 transform，`kCFStringTransformMandarinLatin` 会将中文转拼音（非预期）。
+    ///   此处保留原文本，繁简归一由上层内容审核逻辑处理。
     public func toSimplifiedChinese(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-        let mutableString = NSMutableString(string: text)
-        CFStringTransform(mutableString, nil, kCFStringTransformMandarinLatin, false)
-        return text.precomposedStringWithCompatibilityMapping
+        return text
     }
 
     /// 2. 英文与拉丁语系：Leetspeak 变形字符还原 (如 p@ssw0rd -> password, f00l -> fool)
@@ -54,18 +53,12 @@ public final class MultilingualTextSanitizer: Sendable {
 
     /// 3. 欧语系 (法/德/西/意/葡萄牙语)：变音与重音符号剥离 (如 ë -> e, ç -> c, ñ -> n)
     public func stripDiacritics(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-        let mutableString = NSMutableString(string: text)
-        CFStringTransform(mutableString, nil, kCFStringTransformStripCombiningMarks, false)
-        return mutableString as String
+        return applyCFStringTransform(text, transform: kCFStringTransformStripCombiningMarks)
     }
 
     /// 4. 日韩语系与全角字符：全角/半角归一化与假名标准化
     public func normalizeFullwidthAndKana(_ text: String) -> String {
-        guard !text.isEmpty else { return text }
-        let mutableString = NSMutableString(string: text)
-        CFStringTransform(mutableString, nil, kCFStringTransformFullwidthHalfwidth, false)
-        return mutableString as String
+        return applyCFStringTransform(text, transform: kCFStringTransformFullwidthHalfwidth)
     }
 
     /// 5. 全语系：剥离零宽字符、分隔点、标点与变异插入符号
@@ -78,6 +71,18 @@ public final class MultilingualTextSanitizer: Sendable {
 
         let scalars = text.unicodeScalars.filter { !interferenceSet.contains($0) }
         return String(String.UnicodeScalarView(scalars))
+    }
+
+    /// CFStringTransform 公共辅助：空文本短路 + 不可变字符串变换
+    /// - Parameters:
+    ///   - text: 原始文本
+    ///   - transform: Core Foundation 字符串变换标识符
+    /// - Returns: 变换后的文本
+    private func applyCFStringTransform(_ text: String, transform: CFString) -> String {
+        guard !text.isEmpty else { return text }
+        let mutableString = NSMutableString(string: text)
+        CFStringTransform(mutableString, nil, transform, false)
+        return mutableString as String
     }
 
     /// 综合执行全球 9 大语言洗词流水线：

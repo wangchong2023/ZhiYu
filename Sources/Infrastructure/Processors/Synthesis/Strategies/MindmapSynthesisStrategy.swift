@@ -16,12 +16,13 @@ public struct MindmapSynthesisStrategy: SynthesisStrategyProtocol {
     public init() {}
 
     public func process(rawContent: String, sourceContent: String) -> String {
-        let formatted = SynthesisProcessor.formatMermaid(rawContent, fallbackPrefix: ProcessorConstants.MermaidSyntax.mindmap)
-        if formatted.isEmpty || formatted.utf8.count < AppConstants.ExportLimits.minValidSynthesisTextBytes {
-            Logger.shared.addLog(action: .ingest, target: type.title, details: "[SynthesisStatus: SelfHealed] Reason: InvalidMermaid")
-            return generateFallback(from: sourceContent, title: L10n.AI.Prompt.Expert.Mindmap.title)
-        }
-        return formatted
+        processMermaidWithValidation(
+            rawContent: rawContent,
+            sourceContent: sourceContent,
+            fallbackPrefix: ProcessorConstants.MermaidSyntax.mindmap,
+            selfHealReason: ProcessorConstants.Synthesis.selfHealReasonInvalidMermaid,
+            fallbackTitle: L10n.AI.Prompt.Expert.Mindmap.title
+        )
     }
 
     public func generateFallback(from sourceContent: String, title: String) -> String {

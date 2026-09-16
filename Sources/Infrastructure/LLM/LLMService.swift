@@ -256,7 +256,7 @@ class LLMService: ObservableObject, LLMServiceProtocol {
                     break
             }
 
-            let latency = Int(Date().timeIntervalSince(start) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
+            let latency = LLMLatencyCalculator.milliseconds(since: start)
             return ValidationResult(
                 isSuccess: true,
                 latencyMS: latency,
@@ -266,7 +266,7 @@ class LLMService: ObservableObject, LLMServiceProtocol {
                 errorMessage: nil
             )
         } catch {
-            let latency = Int(Date().timeIntervalSince(start) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
+            let latency = LLMLatencyCalculator.milliseconds(since: start)
             var code = "ERR"
             if let llmErr = error as? LLMError {
                 switch llmErr {

@@ -53,25 +53,9 @@ extension AuthService {
 
         do {
             // 2. 发起 GET 请求拉取服务器上用户的最新 Profile 资料
-            let response: UserProfileResponse = try await NetworkClient.shared.request(
-                path: APIPaths.userProfilePath,
-                method: AppConstants.Network.methodGET,
-                requiresAuth: true
-            )
-
-            // 3. 构造本地 User 模型并更新状态树
-            let user = User(
-                id: Self.normalizedUUID(from: response.userId),
-                name: response.nick,
-                email: response.email ?? "",
-                phone: response.mobile,
-                avatarURL: response.avatar.flatMap { URL(string: $0) }
-            )
-            AuthSession.shared.update(user: user)
-            saveState()
-            return true
+            return try await fetchAndUpdateUserProfile(errorTag: "Silent login profile fetch failed")
         } catch {
-            Logger.shared.error("[AuthService] 自动静默登录拉取 Profile 失败: ", error: error)
+            Logger.shared.error("[AuthService] Silent login profile fetch failed", error: error)
             return false
         }
     }
@@ -120,26 +104,31 @@ extension AuthService {
         #endif
 
         do {
-            let profileResponse: UserProfileResponse = try await NetworkClient.shared.request(
-                path: APIPaths.userProfilePath,
-                method: AppConstants.Network.methodGET,
-                requiresAuth: true
-            )
-
-            let user = User(
-                id: Self.normalizedUUID(from: profileResponse.userId),
-                name: profileResponse.nick,
-                email: profileResponse.email ?? "",
-                phone: profileResponse.mobile,
-                avatarURL: profileResponse.avatar.flatMap { URL(string: $0) }
-            )
-            AuthSession.shared.update(user: user)
-            saveState()
-            return true
+            return try await fetchAndUpdateUserProfile(errorTag: FeatureConstants.AuthErrorTag.userProfileFetchFailed)
         } catch {
-            Logger.shared.error("[AuthService] 拉取用户配置失败: ", error: error)
+            Logger.shared.error("[AuthService] User profile fetch failed", error: error)
             return false
         }
+    }
+
+    /// 拉取用户 Profile 并更新本地状态，消除静默登录与登录成功处理的重复
+    private func fetchAndUpdateUserProfile(errorTag _: String) async throws -> Bool {
+        let response: UserProfileResponse = try await NetworkClient.shared.request(
+            path: APIPaths.userProfilePath,
+            method: AppConstants.Network.methodGET,
+            requiresAuth: true
+        )
+
+        let user = User(
+            id: Self.normalizedUUID(from: response.userId),
+            name: response.nick,
+            email: response.email ?? "",
+            phone: response.mobile,
+            avatarURL: response.avatar.flatMap { URL(string: $0) }
+        )
+        AuthSession.shared.update(user: user)
+        saveState()
+        return true
     }
 
     // MARK: - KeyStore

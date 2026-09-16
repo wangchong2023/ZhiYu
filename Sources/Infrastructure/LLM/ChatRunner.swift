@@ -74,11 +74,10 @@ final class ChatRunner: LLMChatServiceProtocol {
     /// 通用单次一问一答文本推理生成接口
     func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
         // UI 自动化测试模式下的自愈：在测试环境下拦截并返回本地 Mock 生成数据以保证 100% 绿通，规避真实 API 可达性限制
-        if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
-            try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockNonStreamDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
-            return LLMConstants.UITesting.mockNonStreamReply
+        if LLMMockResponder.isUITesting {
+            return try await LLMMockResponder.mockNonStreamReply()
         }
-        
+
         guard configManager.isEnabled, !configManager.apiKey.isEmpty else { throw LLMError.notConfigured }
         let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
         let sanitizedPrompt = PromptSanitizer.shared.sanitize(prompt)
@@ -87,28 +86,22 @@ final class ChatRunner: LLMChatServiceProtocol {
         let contextBuilder = contextBuilderFactory()
         let (anonSystemPrompt, mapping1) = contextBuilder.anonymize(systemPrompt)
         let (anonPrompt, mapping) = contextBuilder.anonymize(sanitizedPrompt, existingMapping: mapping1)
-        
-        let body: [String: Any] = [
-            LLMConstants.APIKey.model: configManager.model,
-            LLMConstants.APIKey.messages: [
-                [LLMConstants.APIKey.role: LLMConstants.Role.system, LLMConstants.APIKey.content: anonSystemPrompt],
-                [LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: anonPrompt]
-            ],
-            LLMConstants.APIKey.temperature: AppConfig.AI.defaultTemperature,
-            LLMConstants.APIKey.maxTokens: maxTokens
-        ]
- 
-        let startTime = Date()
-        let response = try await client.sendRequest(body: body)
-        let latency = Int(Date().timeIntervalSince(startTime) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
 
-        // 审计调用时长与 Token 开销
-        analytics.recordUsage(model: configManager.model, response: response, latency: latency)
- 
-        guard let content = LLMUtils.extractContent(from: response) else {
-            throw LLMError.invalidResponse
-        }
-        
+        let body = LLMRequestBuilder.systemUserBody(
+            model: configManager.model,
+            systemPrompt: anonSystemPrompt,
+            userPrompt: anonPrompt,
+            temperature: AppConfig.AI.defaultTemperature,
+            maxTokens: maxTokens
+        )
+
+        let content = try await LLMResponseHandler.sendRecordAndExtract(
+            client: client,
+            body: body,
+            model: configManager.model,
+            analytics: analytics
+        )
+
         // 🔓 端侧还原 (SR-12)
         return contextBuilder.deanonymize(content, mapping: mapping)
     }
@@ -116,17 +109,10 @@ final class ChatRunner: LLMChatServiceProtocol {
     /// 执行核心 RAG (检索增强生成) 问答
     func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
         // UI 自动化测试模式下的自愈：拦截真实 RAG 调用并返回本地 Mock 数据以保证 100% 绿通，规避真实 API 密钥缺失与网关问题
-        if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
-            try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockNonStreamDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
-            return ChatMessageDTO(
-                id: UUID(),
-                role: .assistant,
-                content: LLMConstants.UITesting.mockRAGReply,
-                timestamp: Date(),
-                relatedPageIDs: pages.map { $0.id }
-            )
+        if LLMMockResponder.isUITesting {
+            return try await LLMMockResponder.mockRAGReply(pages: pages)
         }
-        
+
         guard configManager.isEnabled, let chatService = self.chatService else { throw LLMError.notConfigured }
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
 
@@ -134,45 +120,28 @@ final class ChatRunner: LLMChatServiceProtocol {
         let taskID = taskCenter.addTask(type: .ai, name: LLMConstants.TaskName.aiChat, target: sanitizedQuery)
         taskCenter.updateTask(taskID, status: .running(progress: 0.2, stage: .embedding))
 
-        // 2. 检索向量库及 FTS5 混合语义，构建保护双链的语义上下文
+        // 2. 构建混合上下文并执行端侧 NER 脱敏匿名化
         let contextBuilder = contextBuilderFactory()
-        let (context, sources) = await contextBuilder.buildRelevantContext(query: sanitizedQuery)
-        SourceStore.shared.updateSources(sources)
-        let capturedSources = sources  // 捕获用于异步评估
-        
-        // 3. 执行语义重排，精简检索召回的冗余分块
         taskCenter.updateTask(taskID, status: .running(progress: 0.5, stage: .retrieval))
-        
-        // 获取 Reranker 服务以进行语义重排
-        let rankedPages = (try? await reranker.rerank(query: sanitizedQuery, candidates: pages)) ?? pages
-        
-        // 🛡️ 安全加固：对召回上下文执行 DLP 图像过滤，并注入金沙箱隔离包装
-        let sandboxedContext = PromptSanitizer.shared.wrapInSandbox(context)
-        let systemPrompt = contextBuilder.buildSystemPrompt(pages: rankedPages) + "\n\n" + sandboxedContext
-  
-        // 🔒 端侧 NER 脱敏 (SR-12)
-        let (anonSystemPrompt, mapping1) = contextBuilder.anonymize(systemPrompt)
-        let (anonQuery, mapping2) = contextBuilder.anonymize(sanitizedQuery, existingMapping: mapping1)
-        
-        var anonHistory: [ChatMessageDTO] = []
-        var currentMapping = mapping2
-        for msg in history {
-            let (anonContent, nextMapping) = contextBuilder.anonymize(msg.content, existingMapping: currentMapping)
-            currentMapping = nextMapping
-            anonHistory.append(ChatMessageDTO(role: msg.role, content: anonContent))
-        }
-        
-        // 4. 调用大模型，记录耗时指标并触发 RAG 自评估
+        let prep = try await prepareChatContextAndAnonymize(
+            sanitizedQuery: sanitizedQuery,
+            history: history,
+            pages: pages,
+            contextBuilder: contextBuilder
+        )
+        let capturedSources = prep.streamCapturedSources
+
+        // 3. 调用大模型，记录耗时指标并触发 RAG 自评估
         taskCenter.updateTask(taskID, status: .running(progress: 0.8, stage: .synthesis))
         let startTime = Date()
-        let response = try await chatService.chat(systemPrompt: anonSystemPrompt, query: anonQuery, history: anonHistory)
-        let latency = Int(Date().timeIntervalSince(startTime) * Double(UFPCore.SystemConstants.millisecondsPerSecond))
- 
+        let response = try await chatService.chat(systemPrompt: prep.anonSystemPrompt, query: prep.anonQuery, history: prep.anonHistory)
+        let latency = LLMLatencyCalculator.milliseconds(since: startTime)
+
         // 🔓 端侧还原 (SR-12)
-        let deanonymizedResponse = contextBuilder.deanonymize(response, mapping: currentMapping)
-        
-        analytics.recordRAGMetrics(query: sanitizedQuery, response: deanonymizedResponse, context: context, sources: capturedSources, systemPrompt: systemPrompt, modelName: configManager.model, latency: latency)
-        
+        let deanonymizedResponse = contextBuilder.deanonymize(response, mapping: prep.currentMapping)
+
+        analytics.recordRAGMetrics(query: sanitizedQuery, response: deanonymizedResponse, context: prep.context, sources: capturedSources, systemPrompt: prep.systemPrompt, modelName: configManager.model, latency: latency)
+
         taskCenter.completeTask(id: taskID)
         return ChatMessageDTO(role: .assistant, content: deanonymizedResponse)
     }
@@ -185,8 +154,8 @@ final class ChatRunner: LLMChatServiceProtocol {
     /// - Returns: 异步打字机字符串流
     func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
         // UI 自动化测试模式下的自愈：模拟流式打字机延迟吐字，验证骨架屏 (Skeleton) 与流中止 (Stop-flow) 机制，规避 API 预检不通导致的测试失败
-        if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
-            return runMockChatStream()
+        if LLMMockResponder.isUITesting {
+            return LLMMockResponder.mockStream()
         }
         
         return AsyncThrowingStream { continuation in
@@ -247,38 +216,16 @@ final class ChatRunner: LLMChatServiceProtocol {
         }
     }
  
-    /// 在 UI 自动化测试模式下生成 Mock 流式打字机回复数据
-    /// - Returns: 模拟的 AsyncThrowingStream 字符串流
-    private func runMockChatStream() -> AsyncThrowingStream<String, Error> {
-        AsyncThrowingStream { continuation in
-            Task {
-                // 模拟在发送大语言模型请求之前的 RAG 检索/思考状态，以留出时间给 UI 测试捕获骨架屏
-                try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockStreamInitialDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
-
-                let mockChunks = LLMConstants.UITesting.mockStreamChunks
-                for chunk in mockChunks {
-                    if Task.isCancelled {
-                        break
-                    }
-                    continuation.yield(chunk)
-                    // 模拟字间吐字延迟
-                    try? await Task.sleep(nanoseconds: UInt64(LLMConstants.UITesting.mockStreamChunkDelaySeconds * LLMConstants.UITesting.nanosecondsPerSecond))
-                }
-                continuation.finish()
-            }
-        }
-    }
- 
     /// 执行连通性预检，发送极短请求验证 API 可达性
     /// - Throws: `LLMError.apiError` 或预检失败错误
     private func performPreflightCheck() async throws {
         let preflightClient = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
-        let preflightBody: [String: Any] = [
-            LLMConstants.APIKey.model: configManager.model,
-            LLMConstants.APIKey.messages: [[LLMConstants.APIKey.role: LLMConstants.Role.user, LLMConstants.APIKey.content: LLMConstants.HealthCheck.prompt]],
-            LLMConstants.APIKey.maxTokens: 1,
-            LLMConstants.APIKey.temperature: 0
-        ]
+        let preflightBody = LLMRequestBuilder.userOnlyBody(
+            model: configManager.model,
+            userPrompt: LLMConstants.HealthCheck.prompt,
+            temperature: 0,
+            maxTokens: 1
+        )
         do {
             _ = try await preflightClient.sendRequest(body: preflightBody)
         } catch {
@@ -317,28 +264,24 @@ final class ChatRunner: LLMChatServiceProtocol {
         
         // 2. 排序候选文档
         let rankedPages = (try? await reranker.rerank(query: sanitizedQuery, candidates: pages)) ?? pages
-        
+
         // 🛡️ 安全加固：对召回上下文执行 DLP 图像过滤，并注入金沙箱隔离包装
         let sandboxedContext = PromptSanitizer.shared.wrapInSandbox(context)
         let systemPrompt = contextBuilder.buildSystemPrompt(pages: rankedPages) + "\n\n" + sandboxedContext
- 
+
         // 🔒 端侧 NER 脱敏 (SR-12)
-        let (anonSystemPrompt, mapping1) = contextBuilder.anonymize(systemPrompt)
-        let (anonQuery, mapping2) = contextBuilder.anonymize(sanitizedQuery, existingMapping: mapping1)
-        
-        var anonHistory: [ChatMessageDTO] = []
-        var currentMapping = mapping2
-        for msg in history {
-            let (anonContent, nextMapping) = contextBuilder.anonymize(msg.content, existingMapping: currentMapping)
-            currentMapping = nextMapping
-            anonHistory.append(ChatMessageDTO(role: msg.role, content: anonContent))
-        }
-        
+        let anonResult = LLMAnonymizationHelper.anonymize(
+            systemPrompt: systemPrompt,
+            query: sanitizedQuery,
+            history: history,
+            contextBuilder: contextBuilder
+        )
+
         return ChatPreparationResult(
-            anonSystemPrompt: anonSystemPrompt,
-            anonQuery: anonQuery,
-            anonHistory: anonHistory,
-            currentMapping: currentMapping,
+            anonSystemPrompt: anonResult.anonSystemPrompt,
+            anonQuery: anonResult.anonQuery,
+            anonHistory: anonResult.anonHistory,
+            currentMapping: anonResult.currentMapping,
             context: context,
             systemPrompt: systemPrompt,
             streamCapturedSources: streamCapturedSources

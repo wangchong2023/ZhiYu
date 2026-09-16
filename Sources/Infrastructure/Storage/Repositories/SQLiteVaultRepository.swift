@@ -40,7 +40,7 @@ struct VaultRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRec
 /// [Infra] SQLite 笔记本仓储实现类
 final class SQLiteVaultRepository: VaultRepository, @unchecked Sendable {
     
-    private let dbWriter: any DatabaseWriter
+    let dbWriter: any DatabaseWriter
     
     /// 初始化笔记本仓储
     /// - Parameter dbWriter: GRDB 数据库连接池写入接口
