@@ -18,6 +18,17 @@ import UFPCore
 @MainActor
 final class SearchAndIngestInteractiveSnapshots: XCTestCase {
 
+    /// 依据环境变量判断快照录制策略，用于支持 CI/CD 脚本自动更新基准图片
+    private static var recordMode: SnapshotTestingConfiguration.Record {
+        ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
+    }
+
+    override func invokeTest() {
+        withSnapshotTesting(record: Self.recordMode) {
+            super.invokeTest()
+        }
+    }
+
     override func setUp() async throws {
         try await super.setUp()
         resetPersistentTestState()

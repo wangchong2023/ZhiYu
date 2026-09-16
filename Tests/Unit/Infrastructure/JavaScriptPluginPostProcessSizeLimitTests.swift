@@ -139,9 +139,9 @@ final class JSPluginPostProcessSizeTests: XCTestCase {
         }
 
         // 验证 preProcess 和 postProcess 均调用 processContent
-        let hasPreProcess = source.contains("processContent(content: content, functionName: PluginConstants.FunctionNames.preProcess") ||
+        let hasPreProcess = source.contains("processContent(content: content, functionName: PluginConstants.JSFunctionName.preProcess") ||
                             source.contains("processContent(content: content, functionName: \"preProcess\"")
-        let hasPostProcess = source.contains("processContent(content: content, functionName: PluginConstants.FunctionNames.postProcess") ||
+        let hasPostProcess = source.contains("processContent(content: content, functionName: PluginConstants.JSFunctionName.postProcess") ||
                              source.contains("processContent(content: content, functionName: \"postProcess\"")
         XCTAssertTrue(hasPreProcess, "preProcess 应调用 processContent")
         XCTAssertTrue(hasPostProcess, "postProcess 应调用 processContent")

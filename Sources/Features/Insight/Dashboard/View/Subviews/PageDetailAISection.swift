@@ -54,7 +54,7 @@ struct PageDetailAISection: View {
 
                         if let result = aiStore.activePageAIResult, result.contains(SystemConstants.MarkdownSyntax.bulletDash) {
                             Button(action: {
-                                Task {
+                                _ = Task {
                                     @Dependency(\.workflowService) var workflowService
                                     try await workflowService.syncToReminders(text: result, title: page.title)
                                 }

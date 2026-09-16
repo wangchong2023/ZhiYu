@@ -29,8 +29,10 @@ public final class MultilingualTextSanitizer: Sendable {
     private init() {}
 
     /// 1. 中文：繁体转换为简体中文
+    /// - Note: CoreFoundation 无内置繁简转换 transform，`kCFStringTransformMandarinLatin` 会将中文转拼音（非预期）。
+    ///   此处保留原文本，繁简归一由上层内容审核逻辑处理。
     public func toSimplifiedChinese(_ text: String) -> String {
-        return applyCFStringTransform(text, transform: kCFStringTransformMandarinLatin)
+        return text
     }
 
     /// 2. 英文与拉丁语系：Leetspeak 变形字符还原 (如 p@ssw0rd -> password, f00l -> fool)

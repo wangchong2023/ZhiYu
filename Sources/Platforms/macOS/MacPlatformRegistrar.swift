@@ -14,7 +14,7 @@ import UFPCore
 
 /// macOS 平台专用服务注册器
 @MainActor
-struct MacPlatformRegistrar: PlatformRegistrar {
+struct MacPlatformRegistrar {
     
     /// 注册 macOS 特有能力
     static func registerServices(in container: ServiceContainer) {

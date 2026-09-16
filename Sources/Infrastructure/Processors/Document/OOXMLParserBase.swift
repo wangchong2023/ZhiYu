@@ -62,13 +62,13 @@ class OOXMLParserBase: NSObject, XMLParserDelegate {
     }
 
     /// 子类钩子：元素开始时额外处理（如记录属性）
-    func onDidStartElement(elementName: String, attributes: [String: String]) {}
+    func onDidStartElement(elementName _: String, attributes _: [String: String]) {}
 
     /// 子类钩子：文本元素闭合时处理累积文本
-    func onTextElementClose(elementName: String, currentText: String) {}
+    func onTextElementClose(elementName _: String, currentText: String) {}
 
     /// 子类钩子：段落元素闭合时处理（如插入换行）
-    func onParagraphClose(elementName: String) {}
+    func onParagraphClose(elementName _: String) {}
 }
 
 // MARK: - XMLParser 启动辅助

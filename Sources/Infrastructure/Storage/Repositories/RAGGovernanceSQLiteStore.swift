@@ -57,7 +57,9 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
             .filter(RetrievalSnapshot.Columns.evaluationID == evaluationID)
             .order(RetrievalSnapshot.Columns.rank)
         if let k = k {
-            request = request.limit(k)
+            // Bug 修复：Top-K 应过滤 rank <= k，而非 LIMIT k
+            // LIMIT k 在记录数不足时会返回所有记录（含 rank > k 的），导致 Hit@K 误判
+            request = request.filter(RetrievalSnapshot.Columns.rank <= k)
         }
         return try request.fetchAll(db)
     }

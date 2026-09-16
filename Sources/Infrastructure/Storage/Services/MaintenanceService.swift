@@ -26,7 +26,7 @@ public final class MaintenanceService {
     @ObservationIgnored @Dependency(\.undoService) private var undoService: UndoService?
 
     private var activeLogger: any LoggerProtocol {
-        logger ?? Logger.shared
+        logger
     }
 
     public init() {}
@@ -103,17 +103,17 @@ public final class MaintenanceService {
         do {
             if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn || (isTesting && (vaultName == nil || vaultName?.contains(StorageConstants.TestName.vaultMarker) == true)) {
                 // 默认知识管理笔记本 — 注入 AI 概念与 API 日志演示数据
-                try await seedNotebook(generator: { try await InitialNotebookGenerator.generate(in: pageStore) },
+                try await seedNotebook(generator: { _ = try await InitialNotebookGenerator.generate(in: pageStore) },
                                       logTarget: L10n.InitialNotebook.Log.defaultDemoData,
                                       logDetails: StorageConstants.LogDetails.seededDefaultContent)
             } else if resolvedName == L10n.Vault.researchName || resolvedName == L10n.Vault.researchNameZh || resolvedName == L10n.Vault.researchNameEn || resolvedName == L10n.InitialNotebook.Log.projectResearch || (isTesting && vaultName?.contains(StorageConstants.TestName.researchMarker) == true) {
                 // 项目调研笔记本 — 注入行业分析演示数据
-                try await seedNotebook(generator: { try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore) },
+                try await seedNotebook(generator: { _ = try await InitialNotebookGenerator.generateResearchNotebook(in: pageStore) },
                                       logTarget: L10n.InitialNotebook.Log.researchDemoData,
                                       logDetails: StorageConstants.LogDetails.seededResearchContent)
             } else if isTesting || resolvedName != nil {
                 // 兜底：不为空的笔记本都尝试注入默认数据
-                try await seedNotebook(generator: { try await InitialNotebookGenerator.generate(in: pageStore) },
+                try await seedNotebook(generator: { _ = try await InitialNotebookGenerator.generate(in: pageStore) },
                                       logTarget: L10n.InitialNotebook.Log.fallbackDemoData,
                                       logDetails: StorageConstants.LogDetails.seededFallbackContent)
             }

@@ -23,6 +23,7 @@ struct PageDetailHeader: View {
     @Dependency(\.taskCenter) private var taskCenter
     
     var body: some View {
+        let isMetaExpandedBinding = $isMetaExpanded
         VStack(alignment: .leading, spacing: DesignSystem.small) {
             breadcrumb
             typeStatusConfidenceRow
@@ -30,7 +31,7 @@ struct PageDetailHeader: View {
             tagsAndAliasesView
             
             // Metadata section with industrial-grade collapsible control
-            PageDetailMetaSectionView(page: page, isExpanded: $isMetaExpanded)
+            PageDetailMetaSectionView(page: page, isExpanded: isMetaExpandedBinding)
         }
         .padding()
     }

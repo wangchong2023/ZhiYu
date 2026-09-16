@@ -17,7 +17,7 @@ final class DocxProcessor: OOXMLParserBase {
     override var textElementName: String { ProcessorConstants.OOXML.wordText }
     override var paragraphElementName: String { ProcessorConstants.OOXML.wordParagraph }
 
-    override func onTextElementClose(elementName: String, currentText: String) {
+    override func onTextElementClose(elementName _: String, currentText: String) {
         if !currentText.isEmpty {
             if lastWasText {
                 extractedText += ProcessorConstants.Whitespace.space
@@ -27,7 +27,7 @@ final class DocxProcessor: OOXMLParserBase {
         }
     }
 
-    override func onParagraphClose(elementName: String) {
+    override func onParagraphClose(elementName _: String) {
         if lastWasText {
             extractedText += ProcessorConstants.Whitespace.newline
             lastWasText = false

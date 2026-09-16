@@ -12,7 +12,7 @@ import Foundation
 import UFPStorage
 
 /// 基于 GRDB 的插件持久化仓储实现，操作全局共享数据库（global.sqlite3）。
-final class SQLitePluginRepository: PluginRepository, RepositoryBootstrap, @unchecked Sendable {
+final class SQLitePluginRepository: PluginRepository, @unchecked Sendable {
     let dbWriter: any DatabaseWriter
 
     init(dbWriter: any DatabaseWriter) {

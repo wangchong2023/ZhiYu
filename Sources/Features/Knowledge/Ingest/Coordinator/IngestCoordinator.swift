@@ -122,7 +122,7 @@ final class IngestCoordinator {
                     useSmart: smart,
                     useDeepScan: true
                 )
-                try? await markImportRecordDone(recordID: recordID, pageID: page.id)
+                await markImportRecordDone(recordID: recordID, pageID: page.id)
 
                 if let icon = icon {
                     var updated = page
@@ -137,7 +137,7 @@ final class IngestCoordinator {
                     HapticFeedback.shared.trigger(.success)
                 }
             } catch {
-                try? await markImportRecordFailed(recordID: recordID)
+                await markImportRecordFailed(recordID: recordID)
                 await MainActor.run {
                     self.isIngesting = false
                     self.errorMessage = L10n.Ingest.importFailed

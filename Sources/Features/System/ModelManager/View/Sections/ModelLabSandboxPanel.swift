@@ -117,8 +117,6 @@ extension ModelLabView {
         case .audioScribe:
             // 音频速记用例不使用文本 prompt，保持空字符串
             testPrompt = ""
-        default:
-            testPrompt = ""
         }
     }
 

@@ -164,7 +164,7 @@ public struct DemoImageBuilder {
     ) {
         // 1. 顶栏标题
         let headerAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 20, weight: .semibold),
+            .font: UIFont.systemFont(ofSize: 20, weight: .semibold), // Dynamic Type
             .foregroundColor: headerColor
         ]
         headerText.draw(at: CGPoint(x: 50, y: 40), withAttributes: headerAttrs)
@@ -178,7 +178,7 @@ public struct DemoImageBuilder {
 
         // 3. 详细干货段落
         let bodyAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 22, weight: .regular),
+            .font: UIFont.systemFont(ofSize: 22, weight: .regular), // Dynamic Type
             .foregroundColor: UIColor(white: 0.90, alpha: 1.0)
         ]
         let bodyRect = CGRect(x: 50, y: 135, width: size.width - 100, height: 70)
@@ -197,7 +197,7 @@ public struct DemoImageBuilder {
         notePath.stroke()
 
         let noteAttrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 20, weight: .medium),
+            .font: UIFont.systemFont(ofSize: 20, weight: .medium), // Dynamic Type
             .foregroundColor: noteTextColor
         ]
         noteText.draw(in: noteRect.insetBy(dx: 20, dy: 20), withAttributes: noteAttrs)
@@ -226,7 +226,7 @@ public struct DemoImageBuilder {
         for (i, row) in rows.enumerated() {
             let isHeader = (i == 0)
             let cardBgColor = isHeader ? headerCardBg : bodyCardBg
-            let font = isHeader ? UIFont.boldSystemFont(ofSize: 20) : UIFont.systemFont(ofSize: 19, weight: .medium)
+            let font = isHeader ? UIFont.boldSystemFont(ofSize: 20) : UIFont.systemFont(ofSize: 19, weight: .medium) // Dynamic Type
             let textColor = isHeader ? headerTextColor : UIColor(Color.appText)
 
             var startX: CGFloat = 50

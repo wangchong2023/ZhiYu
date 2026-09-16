@@ -236,7 +236,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
         // 调用 JS onLoad (使用池化的 JSContext 并设置看门狗)
         try? executeInContext { ctx in
             if let onLoadFunc = ctx.objectForKeyedSubscript("onLoad"), !onLoadFunc.isUndefined {
-                self.withExecutionTimeLimit(in: ctx) {
+                _ = self.withExecutionTimeLimit(in: ctx) {
                     onLoadFunc.call(withArguments: [])
                 }
             }
@@ -247,7 +247,7 @@ final class JavaScriptPlugin: InterceptionPlugin {
     func onUnload() {
         try? executeInContext { ctx in
             if let onUnloadFunc = ctx.objectForKeyedSubscript("onUnload"), !onUnloadFunc.isUndefined {
-                self.withExecutionTimeLimit(in: ctx) {
+                _ = self.withExecutionTimeLimit(in: ctx) {
                     onUnloadFunc.call(withArguments: [])
                 }
             }

@@ -96,6 +96,8 @@ struct KnowledgePageListContent: View {
     }
 
     var body: some View {
+        let showInsightsBinding = $showInsights
+        let showDeleteConfirmationBinding = $showDeleteConfirmation
         ZStack(alignment: .top) {
             // 1. 方案 D 沉浸式高级背景 (同步 Hub 设计语言)
             ZStack {
@@ -125,12 +127,12 @@ struct KnowledgePageListContent: View {
             // 响应全局模式切换（如果需要）
             HapticFeedback.shared.trigger(.selection)
         }
-        .sheet(isPresented: $showInsights) {
+        .sheet(isPresented: showInsightsBinding) {
             VaultInsightsPanel()
         }
         .confirmationDialog(
             pageToDelete.map { L10n.Vault.Page.deletePageTitle( $0.title) } ?? L10n.Knowledge.Page.deletePage,
-            isPresented: $showDeleteConfirmation,
+            isPresented: showDeleteConfirmationBinding,
             titleVisibility: .visible
         ) {
             Button(L10n.Knowledge.Page.deletePage, role: .destructive) {

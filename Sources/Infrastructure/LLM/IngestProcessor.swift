@@ -86,7 +86,7 @@ final class IngestProcessor: LLMKnowledgeServiceProtocol {
     /// 统一的 configManager.isReady + refactorService 解包守卫，消除三处重复的 `guard configManager.isReady` + `guard let refactorService` 样板。
     /// - Parameter fallback: 未就绪时返回的默认值（泛型 T）
     /// - Returns: 就绪返回 refactorService，否则 nil
-    private func readyRefactorService<T>(fallback: T) -> LLMRefactorService? {
+    private func readyRefactorService<T>(fallback _: T) -> LLMRefactorService? {
         guard configManager.isReady else { return nil }
         return refactorService
     }

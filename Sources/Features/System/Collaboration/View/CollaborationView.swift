@@ -49,6 +49,7 @@ struct CollaborationViewContent: View {
     }
 
     var body: some View {
+        let roomNameBinding = $roomName
         ScrollView {
             VStack(spacing: DesignSystem.giant) {
                 headerSection
@@ -69,7 +70,7 @@ struct CollaborationViewContent: View {
         .background(PageBackgroundView(accentColor: .appAccent))
         .appSubPageToolbar(title: L10n.Collaboration.title)
         .sheet(isPresented: $showHostingSheet) {
-            HostingSetupSheet(collabService: collabService, roomName: $roomName)
+            HostingSetupSheet(collabService: collabService, roomName: roomNameBinding)
         }
         .alert(L10n.Collaboration.Error.connectionTimeout, isPresented: $showConnectionError) {
             Button(L10n.Common.ok, role: .cancel) { }

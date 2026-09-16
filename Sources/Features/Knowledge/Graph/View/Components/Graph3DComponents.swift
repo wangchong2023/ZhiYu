@@ -214,7 +214,7 @@ final class Graph3DiOSCoordinator: Graph3DCoordinatorBase {
 #endif
 
 // MARK: - macOS Coordinator
-#if canImport(AppKit)
+#if os(macOS) && !targetEnvironment(macCatalyst)
 /// macOS 平台 Coordinator，基于 Graph3DCoordinatorBase 处理 AppKit 手势
 final class Graph3DmacOSCoordinator: Graph3DCoordinatorBase {
 
@@ -314,7 +314,7 @@ struct TappableSceneView: UIViewRepresentable {
     /// - Returns: 返回值
     func makeCoordinator() -> Graph3DiOSCoordinator { Graph3DiOSCoordinator(onNodeTap: onNodeTap) }
 }
-#elseif canImport(AppKit)
+#elseif os(macOS) && !targetEnvironment(macCatalyst)
 /// SceneKit 场景包装器组件 (macOS)
 /// 负责在 macOS SwiftUI 中嵌入 3D 渲染引擎，实现节点命中测试，以及附加 0.005 阻尼的自定义相机拖拽/缩放手势。
 struct TappableSceneView: NSViewRepresentable {

@@ -27,6 +27,8 @@ struct OverseasLoginCardView: View {
     @State private var showPrivacySheet = false
     
     var body: some View {
+        let showTermsSheetBinding = $showTermsSheet
+        let showPrivacySheetBinding = $showPrivacySheet
         VStack(spacing: Spacing.large) {
             // 1. 顶部占位文案（与大陆版手机号掩码 `authService.currentUser?.phone?.maskedPhoneNumber` 等高对齐）
             //    使用 L10n 国际化文案，避免在 View 中硬编码任何字符串字面量；
@@ -58,12 +60,12 @@ struct OverseasLoginCardView: View {
         .padding(Spacing.wide)
         .appContainer(cornerRadius: Spacing.largeRadius)
         .policySheet(
-            isPresented: $showTermsSheet,
+            isPresented: showTermsSheetBinding,
             title: L10n.Auth.termsOfServiceTitle,
             content: L10n.Auth.termsOfServiceContent
         )
         .policySheet(
-            isPresented: $showPrivacySheet,
+            isPresented: showPrivacySheetBinding,
             title: L10n.Auth.privacyPolicyTitle,
             content: L10n.Auth.privacyPolicyContent
         )
@@ -72,10 +74,12 @@ struct OverseasLoginCardView: View {
     // MARK: - 协议勾选
     
     private var agreementSection: some View {
-        AgreementCheckboxView(
+        let showTermsSheetBinding = $showTermsSheet
+        let showPrivacySheetBinding = $showPrivacySheet
+        return AgreementCheckboxView(
             isAgreementChecked: $isAgreementChecked,
-            showTermsSheet: $showTermsSheet,
-            showPrivacySheet: $showPrivacySheet
+            showTermsSheet: showTermsSheetBinding,
+            showPrivacySheet: showPrivacySheetBinding
         )
     }
     

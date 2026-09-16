@@ -30,6 +30,8 @@ struct AuthView: View {
     @State private var selectedLanguage: LanguageMode = Localized.languageMode
 
     var body: some View {
+        let showPrivacySheetBinding = $showPrivacySheet
+        let showTermsSheetBinding = $showTermsSheet
         ZStack {
             // 背景层
             themeManager.pageBackground()
@@ -49,8 +51,8 @@ struct AuthView: View {
                             AuthPhonePanel(
                                 isLoading: $isLoading,
                                 isAgreementChecked: $isAgreementChecked,
-                                showPrivacySheet: $showPrivacySheet,
-                                showTermsSheet: $showTermsSheet,
+                                showPrivacySheet: showPrivacySheetBinding,
+                                showTermsSheet: showTermsSheetBinding,
                                 handleAuth: handleAuth
                             )
                         } else {
@@ -77,12 +79,12 @@ struct AuthView: View {
             }
         }
         .policySheet(
-            isPresented: $showPrivacySheet,
+            isPresented: showPrivacySheetBinding,
             title: L10n.Auth.privacyPolicyTitle,
             content: L10n.Auth.privacyPolicyContent
         )
         .policySheet(
-            isPresented: $showTermsSheet,
+            isPresented: showTermsSheetBinding,
             title: L10n.Auth.termsOfServiceTitle,
             content: L10n.Auth.termsOfServiceContent
         )

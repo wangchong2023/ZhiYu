@@ -70,56 +70,6 @@ struct BreadcrumbSeparator: View {
     }
 }
 
-// MARK: - 日期格式化辅助
-
-/// 页面元信息日期格式化辅助
-/// 消除重复的 `date.formatted(.dateTime.year().month().day().locale(Localized.currentLocale))` 调用
-enum PageDateFormatting {
-    /// 格式化日期为本地化的年月日字符串
-    static func formattedYearMonthDay(_ date: Date) -> String {
-        date.formatted(
-            .dateTime.year().month().day().locale(Localized.currentLocale)
-        )
-    }
-}
-
-// MARK: - 图标圆形容器
-
-/// 图标圆形容器修饰符
-/// 消除重复的 `Circle().fill(color.opacity(...)).frame(width: size, height: size)` + 图标组合
-struct AppIconCircle: View {
-    let icon: String
-    let color: Color
-    let size: CGFloat
-    var iconFont: Font = .system(size: DesignSystem.subheadlineFontSize, weight: .bold)
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(color.opacity(DesignSystem.Opacity.glass))
-                .frame(width: size, height: size)
-            Image(systemName: icon)
-                .font(iconFont)
-                .foregroundColor(color)
-        }
-    }
-}
-
-// MARK: - 行尾导航箭头
-
-/// 行尾导航箭头视图
-/// 消除重复的 `Image(systemName: DesignSystem.Icons.forward).font(.caption.weight(...)).foregroundStyle(.appSecondary.opacity(...))` 链
-struct NavigationChevron: View {
-    var weight: Font.Weight = .semibold
-    var opacity: Double = DesignSystem.Opacity.disabled
-
-    var body: some View {
-        Image(systemName: DesignSystem.Icons.forward)
-            .font(.caption.weight(weight))
-            .foregroundStyle(.appSecondary.opacity(opacity))
-    }
-}
-
 // MARK: - 小节标题标签
 
 /// 小节标题标签视图

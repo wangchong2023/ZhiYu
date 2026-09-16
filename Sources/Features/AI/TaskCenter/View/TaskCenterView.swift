@@ -25,6 +25,7 @@ struct TaskCenterView: View {
     @State private var selectedFilterType: TaskType?
     
     var body: some View {
+        let showClearConfirmBinding = $showClearConfirm
         if idiom == .watch {
             WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.taskCenterPlaceholder)
         } else {
@@ -89,7 +90,7 @@ struct TaskCenterView: View {
             }
             .confirmationDialog(
                 L10n.AI.Task.clearConfirmTitle,
-                isPresented: $showClearConfirm,
+                isPresented: showClearConfirmBinding,
                 titleVisibility: .visible
             ) {
                 Button(L10n.Common.Misc.clearAll, role: .destructive) {

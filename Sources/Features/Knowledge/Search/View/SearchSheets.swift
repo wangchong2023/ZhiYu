@@ -23,7 +23,6 @@ private enum SearchDiagConstants {
 // MARK: - 页面预览弹出页
 /// 知识库页面的快速预览表单
 struct PagePreviewSheet: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(ThemeManager.self) private var themeManager
     
     /// 待预览的知识卡片页面数据模型
@@ -143,7 +142,6 @@ struct PagePreviewSheet: View {
 // MARK: - 搜索检索诊断面板
 /// 集中式多维度混合检索与 AI 重写查询的诊断卡片弹出页
 struct SearchDiagnosticSheet: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(ThemeManager.self) private var themeManager
     
     /// 诊断数据包结构体

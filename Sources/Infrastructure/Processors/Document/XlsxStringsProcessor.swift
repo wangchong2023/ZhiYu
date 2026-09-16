@@ -15,7 +15,7 @@ final class XlsxSharedStringsParser: OOXMLParserBase {
 
     override var textElementName: String { "t" }
 
-    override func onTextElementClose(elementName: String, currentText: String) {
+    override func onTextElementClose(elementName _: String, currentText: String) {
         strings.append(currentText)
     }
 }

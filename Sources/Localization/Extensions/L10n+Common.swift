@@ -177,7 +177,6 @@ extension L10n {
             public static var memory: String { Common.tr("tags.memory") }
             public static var timing: String { Common.tr("perf.timing") }
                 public static var pages: String { Common.tr("perf.summary.pages") }
-            public static var words: String { Common.tr("perf.words") }
             public static var nodes: String { Common.tr("perf.nodes") }
             public static var load: String { Common.tr("perf.load") }
             public static var lint: String { Common.tr("action.healthCheck") }

@@ -31,6 +31,7 @@ struct LLMSettingsView: View {
     
     var body: some View {
         @Bindable var config = config
+        let isProvidersExpandedBinding = $isProvidersExpanded
         Form {
             // 1. 服务开关
             Section {
@@ -66,7 +67,7 @@ struct LLMSettingsView: View {
             
             // 2. 提供商选择与详细参数配置
             Section {
-                DisclosureGroup(isExpanded: $isProvidersExpanded) {
+                DisclosureGroup(isExpanded: isProvidersExpandedBinding) {
                     VStack(alignment: .leading, spacing: DesignSystem.medium) {
                         ForEach(LLMProvider.allCases) { provider in
                             Button(action: {
@@ -194,6 +195,7 @@ struct LLMSettingsView: View {
     /// 配置内容视图（API Key / Base URL / Model 选择与编辑）
     private var configurationContent: some View {
         @Bindable var config = config
+        let showAPIKeyBinding = $showAPIKey
         let validation = config.provider.validateAPIKeyFormat(config.apiKey)
         
         return VStack(spacing: DesignSystem.wide) {
@@ -213,7 +215,7 @@ struct LLMSettingsView: View {
                 APIKeyInputField(
                     placeholder: config.provider.apiKeyPlaceholder,
                     text: $config.apiKey,
-                    isShown: $showAPIKey,
+                    isShown: showAPIKeyBinding,
                     isValid: validation.isValid
                 )
             }

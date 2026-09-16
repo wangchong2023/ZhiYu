@@ -206,7 +206,7 @@ extension IngestCoordinator {
             }
             return true
         } else {
-            try? await self.markImportRecordFailed(recordID: recordID)
+            await self.markImportRecordFailed(recordID: recordID)
             await MainActor.run {
                 taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): \(title)")
             }

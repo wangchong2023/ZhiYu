@@ -14,7 +14,7 @@ import UFPCore
 
 /// watchOS 平台专用服务注册器
 @MainActor
-struct WatchPlatformRegistrar: PlatformRegistrar {
+struct WatchPlatformRegistrar {
     
     /// 注册 watchOS 特有能力
     static func registerServices(in container: ServiceContainer) {

@@ -44,7 +44,7 @@ struct PerformanceDashboardView: View {
                             color: Color.theme.green
                         )
                         MetricCardView(
-                            title: L10n.Common.Perf.words,
+                            title: L10n.Common.Stat.totalWords,
                             value: "\(service.metrics.totalWords)",
                             color: Color.theme.purple
                         )

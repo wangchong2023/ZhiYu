@@ -158,7 +158,6 @@ final class BackupService: ObservableObject {
             // Clean old backups
             cleanOldBackups()
 
-            let endTime = Date()
             logBackupOperation(
                 action: .ingest,
                 target: fileName,

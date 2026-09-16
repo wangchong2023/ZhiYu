@@ -299,7 +299,7 @@ extension ContentView {
     @ViewBuilder
     var chatTabContent: some View {
         @Bindable var router = router
-        return standardTabContent {
+        standardTabContent {
             ChatView(selectedTab: $router.selectedTab)
         }
     }
@@ -307,7 +307,7 @@ extension ContentView {
     @ViewBuilder
     var graphTabContent: some View {
         @Bindable var router = router
-        return standardTabContent {
+        standardTabContent {
             GraphContainerView(heroNamespace: heroNamespace, selectedTab: $router.selectedTab)
         }
     }
@@ -315,7 +315,7 @@ extension ContentView {
     @ViewBuilder
     var synthesisTabContent: some View {
         @Bindable var router = router
-        return standardTabContent {
+        standardTabContent {
             SynthesisView(selection: $router.sidebarSelection, selectedTab: $router.selectedTab)
         }
     }
@@ -323,7 +323,7 @@ extension ContentView {
     @ViewBuilder
     var ingestTabContent: some View {
         @Bindable var router = router
-        return standardTabContent {
+        standardTabContent {
             IngestView(selectedTab: $router.selectedTab)
         }
     }

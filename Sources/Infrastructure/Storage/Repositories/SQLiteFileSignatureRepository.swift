@@ -41,7 +41,7 @@ extension FileSignatureRecord {
 }
 
 /// [Infra] SQLite 文件防篡改指纹仓储实现类
-final class SQLiteFileSignatureRepository: FileSignatureRepository, RepositoryBootstrap, @unchecked Sendable {
+final class SQLiteFileSignatureRepository: FileSignatureRepository, @unchecked Sendable {
     
     let dbWriter: any DatabaseWriter
     

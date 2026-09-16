@@ -32,7 +32,7 @@ extension MarkdownProcessor {
     ///   - startIndex: 当前扫描的起始行索引。
     /// - Returns: 若匹配成功，返回折叠块实体与下一行待扫描的偏移索引；否则返回 `nil`。
     func parseDetailsBlock(lines: [String], startIndex: Int) -> (block: BlockType, nextIndex: Int)? {
-        guard let trimmed = validateBlockStart(lines: lines, startIndex: startIndex, prefix: ProcessorConstants.HTMLTag.detailsOpen) else { return nil }
+        guard validateBlockStart(lines: lines, startIndex: startIndex, prefix: ProcessorConstants.HTMLTag.detailsOpen) != nil else { return nil }
 
         var summary = ""
         var contentLines: [String] = []

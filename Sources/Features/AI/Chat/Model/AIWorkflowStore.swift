@@ -20,7 +20,7 @@ import Dependencies
 public final class AIWorkflowStore: AIWorkflowCapabilities {
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
-    public static let defaultSimilarPageLimit: Int = FeatureConstants.AIWorkflow.defaultSimilarPageLimit
+    public nonisolated static let defaultSimilarPageLimit: Int = FeatureConstants.AIWorkflow.defaultSimilarPageLimit
 
     // ── 子 Store 聚合 ──
     public var insightStore: AIInsightStore = AIInsightStore()

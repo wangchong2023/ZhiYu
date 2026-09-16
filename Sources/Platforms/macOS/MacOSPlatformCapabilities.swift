@@ -17,7 +17,6 @@ import LocalAuthentication
 
 /// macOS 平台的生物识别提供者：复用 Apple 全平台通用实现（DRY）。
 /// 详见 `ApplePlatformCapabilities.swift` 中的 `AppleBiometricAuthProvider`。
-@MainActor
 typealias MacOSBiometricAuthProvider = AppleBiometricAuthProvider
 
 // MARK: - 安全存储

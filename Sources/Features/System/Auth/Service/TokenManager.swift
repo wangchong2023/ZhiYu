@@ -112,7 +112,7 @@ extension AuthService {
     }
 
     /// 拉取用户 Profile 并更新本地状态，消除静默登录与登录成功处理的重复
-    private func fetchAndUpdateUserProfile(errorTag: String) async throws -> Bool {
+    private func fetchAndUpdateUserProfile(errorTag _: String) async throws -> Bool {
         let response: UserProfileResponse = try await NetworkClient.shared.request(
             path: APIPaths.userProfilePath,
             method: AppConstants.Network.methodGET,

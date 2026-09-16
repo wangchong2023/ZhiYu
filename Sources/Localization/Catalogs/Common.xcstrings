@@ -14513,71 +14513,6 @@
         }
       }
     },
-    "perf.words": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "pt": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total Words"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "总字数"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "總字數"
-          }
-        }
-      }
-    },
     "pinned": {
       "extractionState": "manual",
       "localizations": {
@@ -18286,16 +18221,66 @@
     "sidebar.capabilities": {
       "extractionState": "manual",
       "localizations": {
-        "ar": { "stringUnit": { "state": "translated", "value": "Capabilities" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Capabilities" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Capacidades" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Capacités" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "機能" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "기능" } },
-        "pt": { "stringUnit": { "state": "translated", "value": "Capacidades" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Возможности" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "能力" } },
-        "zh-Hant": { "stringUnit": { "state": "translated", "value": "能力" } }
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capabilities"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capabilities"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capacidades"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capacités"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "機能"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기능"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capacidades"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Возможности"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "能力"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "能力"
+          }
+        }
       }
     },
     "sidebar.system": {
