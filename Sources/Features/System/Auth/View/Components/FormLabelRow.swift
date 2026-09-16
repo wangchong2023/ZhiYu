@@ -1,4 +1,4 @@
-// 系统层级: L3 表现层
+// 系统层级：[L3] 表现层
 // 核心职责: 表单标签行共享组件，消除 UserProfileView 中重复的 HStack { Image + Text } 表单行模式
 
 import SwiftUI

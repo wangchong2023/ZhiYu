@@ -1,4 +1,4 @@
-// 系统层级: L3 表现层
+// 系统层级：[L3] 表现层
 // 核心职责: 隐私政策/服务条款通用弹窗组件，消除 AuthView 与 OverseasLoginCardView 的 policySheetContent 重复
 
 import SwiftUI

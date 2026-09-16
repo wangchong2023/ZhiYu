@@ -46,6 +46,7 @@ build-prepare:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - make gen
+    - xcodebuild -project ZhiYu.xcodeproj -scheme ZhiYu -resolvePackageDependencies -clonedSourcePackagesDirPath /tmp/zhiyu-spm-cache || true
     - bash Tools/CI/build-pipeline-version-inject.sh Sources/Info.plist
   artifacts:
     paths:

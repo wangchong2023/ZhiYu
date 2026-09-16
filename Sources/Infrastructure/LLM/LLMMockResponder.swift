@@ -15,8 +15,8 @@ import Foundation
 /// 集中管理 `--uitesting` 自愈分支的非流式、RAG 与流式 Mock 响应构造。
 enum LLMMockResponder {
     /// 判断当前是否处于 UI 自动化测试模式
-    static var isUITesting: Bool {
-        ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg)
+    static var isUITesting: Bool { // test_coupling_exempt: 委托 TestModeDetector，消除 launch argument 散布
+        TestModeDetector.isUITesting
     }
 
     /// 生成非流式 Mock 延迟与回复

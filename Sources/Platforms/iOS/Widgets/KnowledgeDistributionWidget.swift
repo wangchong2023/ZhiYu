@@ -92,22 +92,22 @@ struct KnowledgeDistributionWidgetEntryView: View {
             GeometryReader { proxy in
                 HStack(spacing: 2) {
                     WidgetDistributionSegment(
-                        color: .purple,
+                        color: WidgetSharedConstants.Color.purple,
                         ratio: entry.distribution.sourceRatio,
                         proxyWidth: proxy.size.width
                     )
                     WidgetDistributionSegment(
-                        color: .blue,
+                        color: WidgetSharedConstants.Color.blue,
                         ratio: entry.distribution.conceptRatio,
                         proxyWidth: proxy.size.width
                     )
                     WidgetDistributionSegment(
-                        color: .teal,
+                        color: WidgetSharedConstants.Color.teal,
                         ratio: entry.distribution.entityRatio,
                         proxyWidth: proxy.size.width
                     )
                     WidgetDistributionSegment(
-                        color: .orange,
+                        color: WidgetSharedConstants.Color.orange,
                         ratio: entry.distribution.mapRatio,
                         proxyWidth: proxy.size.width
                     )

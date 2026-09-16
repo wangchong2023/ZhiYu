@@ -8,7 +8,7 @@ MostRecentCompletionIndex
 *.xccheckout
 *.xcworkspace/contents.xcworkspacedata
 *.xcworkspace/xcuserdata/
-*.xcodeproj/project.xcworkspace/
+*.xcodeproj/project.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 DerivedData/
 *.moved-aside

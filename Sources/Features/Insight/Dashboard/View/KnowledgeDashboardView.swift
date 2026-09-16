@@ -130,7 +130,7 @@ struct KnowledgeDashboardView: View {
                     // 💡 密度图表重塑：双物理指示直角 Canvas 双箭头坐标轴系统 (去除了所有冗余 layout，彻底对齐 Y 轴与图间距，拉开底轴空气留白)
                     Chart(coordinator.densityData) { item in
                         densityBarMark(value: item.outbound, label: "Outbound", pageName: item.name, color: .appAccent)
-                        densityBarMark(value: item.inbound, label: "Inbound", pageName: item.name, color: .purple)
+                        densityBarMark(value: item.inbound, label: "Inbound", pageName: item.name, color: Color.theme.purple)
                     }
                     .frame(height: DesignSystem.Metrics.chartHeight + DesignSystem.medium)
                     .chartXAxis(.hidden) // 彻底删除冗余“0个关联”等繁杂文案，回归极其大气的物理大厂留白

@@ -1,4 +1,4 @@
-// 系统层级: L2 功能层
+// 系统层级：[L3] 表现层
 // 核心职责: 预设按钮共享样式修饰符，消除 InferenceParametersView 与 ModelLabConfigSheet 的重复
 
 import SwiftUI

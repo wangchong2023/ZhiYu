@@ -1,4 +1,4 @@
-// 系统层级: L2 功能层
+// 系统层级：[L3] 表现层
 // 核心职责: 认证模块共享按钮样式修饰符，消除跨文件的 frame+padding+background+clipShape+shadow 链
 
 import SwiftUI
