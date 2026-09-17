@@ -70,6 +70,11 @@ export BUILD_DIR="build"
 # 
 find_simulator() {
     local sim
+    # 调试输出：CI 环境中可用模拟器列表
+    if [ "${CI:-}" = "true" ]; then
+        echo "🔍 [find_simulator] 可用 iOS 模拟器列表:" >&2
+        xcrun simctl list devices available 2>/dev/null | grep -i "iphone" >&2 || true
+    fi
     # 优先精确匹配 iPhone 17 Pro
     sim=$(xcrun simctl list devices available -j 2>/dev/null \
         | python3 -c "
