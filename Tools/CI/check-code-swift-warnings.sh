@@ -65,11 +65,13 @@ EXIT_CODE=$?
 set -e
 
 # ── 5. 结果汇总 ───────────────────────────────────────────
-# 提取本项目源码的告警/错误（Sources/ 和 Packages/ 路径），
-# 排除第三方依赖（opensrc/ 路径）、Python 脚本输出、note: 行
+# 提取本项目源码的告警/错误，排除第三方依赖（opensrc/ 路径）
+# 本项目源码路径特征：/ZhiYu/Sources/ 或 /ZhiYu/Packages/
+# 第三方依赖路径特征：/opensrc/swift/<lib>/Sources/
 PROJECT_WARNINGS=$(grep -E "^[^ ]+:[0-9]+:[0-9]+: (warning|error):" "${LOG_FILE}" \
     | grep -v "App Store Readiness" \
-    | grep -E "/(Sources|Packages)/" \
+    | grep -v "/opensrc/" \
+    | grep -E "/ZhiYu/(Sources|Packages)/" \
     || true)
 
 if [ -n "$PROJECT_WARNINGS" ]; then
@@ -84,7 +86,7 @@ else
     # 检查是否有第三方依赖告警（仅提示，不阻断）
     THIRD_PARTY_WARNINGS=$(grep -E "^[^ ]+:[0-9]+:[0-9]+: (warning|error):" "${LOG_FILE}" \
         | grep -v "App Store Readiness" \
-        | grep -v "/(Sources|Packages)/" \
+        | grep "/opensrc/" \
         || true)
     if [ -n "$THIRD_PARTY_WARNINGS" ]; then
         echo "  ✅ [PASSED] Swift Compiler Warnings Check (本项目零告警，第三方依赖告警已忽略)"
