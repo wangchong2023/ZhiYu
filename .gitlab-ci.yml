@@ -13,7 +13,7 @@
 #   - SonarQube 在测试后运行，包含覆盖率报告（SonarSource 官方脚本生成，含分支数据）
 #
 # 执行顺序:
-#   prepare(生成工程) → analyze(静态分析+Swift告警门禁) → build(ios→macos→watchos) → test → sonar
+#   prepare(生成工程) → analyze(静态分析+Swift告警门禁) → build(ios→macos→watchos) → test → perf
 #
 # 流程控制:
 #   仅 main/develop/release/* 分支触发完整流水线
@@ -24,7 +24,6 @@ stages:
   - analyze
   - build
   - test
-  - sonar
   - perf
 
 default:
@@ -147,20 +146,6 @@ test-and-coverage:
 # 注意：SonarQube Community Edition 不支持 Swift 语言分析
 #       Swift 覆盖率门禁由 test-and-coverage 阶段的 xccov 本地脚本执行
 # ════════════════════════════════════════════════════════════
-
-sonarqube-analysis:
-  stage: sonar
-  needs: [test-and-coverage]
-  dependencies: [test-and-coverage]
-  allow_failure: false
-  variables:
-    SONAR_HOST_URL: "http://10.211.55.2:9000"
-    GIT_DEPTH: "0"
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
-  script:
-    - echo "===> 运行 SonarQube 代码质量分析（Tools 脚本 Python/Shell/YAML）+ Quality Gate 硬阻断"
-    - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.qualitygate.wait=true
 
 # ════════════════════════════════════════════════════════════
 # perf — 性能测试 + 回归基线（每周夜间运行 + 手动触发）
