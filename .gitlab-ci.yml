@@ -35,6 +35,8 @@ default:
     - arm64
   before_script:
     - echo "export OPENSRC_ROOT=${OPENSRC_ROOT:-/Users/constantine/Documents/work/code/opensrc/swift}" > Config/.env.local
+    # 创建 OPENSRC_ROOT 符号链接到 CI 构建目录，让 Package.swift 中的相对路径（../../../../opensrc/swift/）能正确解析
+    - mkdir -p opensrc && ln -sfn "${OPENSRC_ROOT:-/Users/constantine/Documents/work/code/opensrc/swift}" "$(pwd)/opensrc/swift"
 
 # ════════════════════════════════════════════════════════════
 # prepare — 生成 Xcode 工程（artifacts 传递给后续 Job）
