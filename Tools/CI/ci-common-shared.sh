@@ -70,10 +70,20 @@ export BUILD_DIR="build"
 # 
 find_simulator() {
     local sim
-    # 调试输出：CI 环境中可用模拟器列表
+    # 调试输出：CI 环境中可用模拟器列表（含 runtime 信息）
     if [ "${CI:-}" = "true" ]; then
-        echo "🔍 [find_simulator] 可用 iOS 模拟器列表:" >&2
-        xcrun simctl list devices available 2>/dev/null | grep -i "iphone" >&2 || true
+        echo "🔍 [find_simulator] 可用 iOS 模拟器列表（含 runtime）:" >&2
+        xcrun simctl list devices available -j 2>/dev/null \
+            | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for runtime, devices in data.get('devices', {}).items():
+    ios_devs = [d for d in devices if 'iPhone' in d.get('name','') and d.get('isAvailable', False)]
+    if ios_devs:
+        print(f'  [{runtime}]', file=sys.stderr)
+        for d in ios_devs:
+            print(f'    {d[\"name\"]} (OS: {d.get(\"deviceTypeIdentifier\",\"?\")})', file=sys.stderr)
+" >&2 || true
     fi
     # 优先精确匹配 iPhone 17 Pro
     sim=$(xcrun simctl list devices available -j 2>/dev/null \
