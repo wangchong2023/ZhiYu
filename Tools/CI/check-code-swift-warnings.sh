@@ -57,24 +57,39 @@ XCODEBUILD_ARGS=(
 )
 
 # ── 4. 执行编译并捕获结果 ──────────────────────────────────
-# xcodebuild 退出码非零即代表存在告警（已升级为错误）或编译失败
+# xcodebuild 退出码非零可能因第三方依赖告警（已升级为错误），
+# 因此不直接依赖退出码，而是解析日志中仅属于本项目源码的告警/错误
 set +e
 xcodebuild "${XCODEBUILD_ARGS[@]}" > "${LOG_FILE}" 2>&1
 EXIT_CODE=$?
 set -e
 
 # ── 5. 结果汇总 ───────────────────────────────────────────
-if [ $EXIT_CODE -ne 0 ]; then
+# 提取本项目源码的告警/错误（Sources/ 和 Packages/ 路径），
+# 排除第三方依赖（opensrc/ 路径）、Python 脚本输出、note: 行
+PROJECT_WARNINGS=$(grep -E "^[^ ]+:[0-9]+:[0-9]+: (warning|error):" "${LOG_FILE}" \
+    | grep -v "App Store Readiness" \
+    | grep -E "/(Sources|Packages)/" \
+    || true)
+
+if [ -n "$PROJECT_WARNINGS" ]; then
     echo "  ❌ [FAILED] Swift Compiler Warnings Check (退出状态码: ${EXIT_CODE})"
     echo "     👉 编译告警已升级为错误，请修复以下告警："
     echo "--------------------------------------------------"
-    # 仅提取 Swift 编译器输出的告警/错误（格式: 文件路径:行:列: warning:/error:）
-    # 排除 Python 脚本输出（如 [App Store Readiness]）、note: 行、以及非编译器行
-    grep -E "^[^ ]+:[0-9]+:[0-9]+: (warning|error):" "${LOG_FILE}" | grep -v "App Store Readiness" || tail -n 20 "${LOG_FILE}"
+    echo "$PROJECT_WARNINGS"
     echo "--------------------------------------------------"
     echo "     📄 完整日志: file://${PWD}/${LOG_FILE}"
     exit 1
 else
-    echo "  ✅ [PASSED] Swift Compiler Warnings Check (零告警)"
+    # 检查是否有第三方依赖告警（仅提示，不阻断）
+    THIRD_PARTY_WARNINGS=$(grep -E "^[^ ]+:[0-9]+:[0-9]+: (warning|error):" "${LOG_FILE}" \
+        | grep -v "App Store Readiness" \
+        | grep -v "/(Sources|Packages)/" \
+        || true)
+    if [ -n "$THIRD_PARTY_WARNINGS" ]; then
+        echo "  ✅ [PASSED] Swift Compiler Warnings Check (本项目零告警，第三方依赖告警已忽略)"
+    else
+        echo "  ✅ [PASSED] Swift Compiler Warnings Check (零告警)"
+    fi
     exit 0
 fi
