@@ -181,7 +181,6 @@ def try_pmd_cpd():
         "--format", "text"
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     os.unlink(file_list_path)
-    print(res.stdout)
     if res.stderr:
         print(res.stderr, file=sys.stderr)
 
@@ -189,6 +188,8 @@ def try_pmd_cpd():
     print(f"\n[Code Duplication] PMD-CPD 检测到 {duplicate_count} 处重复代码块（阈值 ≥{PMD_MIN_TOKENS} tokens，上限 {MAX_DUPLICATE_BLOCKS}）")
 
     if duplicate_count > MAX_DUPLICATE_BLOCKS:
+        # 超限时才打印重复块详情，便于定位和修复
+        print(res.stdout)
         print(f"❌ [Code Duplication] 重复块 {duplicate_count} 超过上限 {MAX_DUPLICATE_BLOCKS}，阻断流水线。")
         sys.exit(1)
 
