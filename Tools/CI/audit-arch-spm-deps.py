@@ -18,7 +18,7 @@ ci-audit-spm-dependencies.py
 import os
 import sys
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 # ==============================================================================
 # 1. 配置区域：已知漏洞库规则 (Vulnerability Database Rules)
@@ -42,6 +42,13 @@ VULNERABILITY_RULES: Dict[str, List[Tuple[str, str, str]]] = {
 # ==============================================================================
 
 DIVIDER = "======================================================="
+
+# 本地路径依赖模式下的 SSOT 回退文件
+OPENSRC_DEPS_YML = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "Config",
+    "opensource_dependencies.yml",
+)
 
 def parse_version(version_str: str) -> Tuple[int, ...]:
     """
@@ -110,6 +117,38 @@ def _parse_resolved_file(path: str) -> dict:
         print(f"❌ 错误: 无法解析 Package.resolved JSON 内容: {e}")
         sys.exit(1)
 
+def _load_pins_from_yaml() -> Optional[list]:
+    """
+    本地路径依赖模式回退：从 Config/opensource_dependencies.yml（SSOT）加载依赖列表。
+
+    xcodebuild 在纯本地路径依赖模式下不生成 Package.resolved，
+    此时以 opensource_dependencies.yml 作为依赖清单 SSOT 进行安全审计。
+
+    :return: pins 列表（兼容 Package.resolved 的 pins 结构）或 None
+    """
+    if not os.path.exists(OPENSRC_DEPS_YML):
+        return None
+    try:
+        import yaml
+    except ImportError:
+        print("⚠️ PyYAML 未安装，无法解析 opensource_dependencies.yml", file=sys.stderr)
+        return None
+    with open(OPENSRC_DEPS_YML, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    deps = data.get("dependencies", []) if data else []
+    # 转换为兼容 Package.resolved pins 结构的列表
+    pins = []
+    for dep in deps:
+        name = dep.get("name", "unknown")
+        version = dep.get("version", "unknown")
+        # version 可能是 tag（如 v6.29.0）或 branch（如 main），统一处理
+        pins.append({
+            "identity": name,
+            "state": {"version": version},
+            "location": dep.get("upstream", ""),
+        })
+    return pins
+
 def _audit_pins(pins: list) -> Tuple[int, List[Tuple[str, str, str]]]:
     """
     逐个审计第三方依赖包的版本是否安全。
@@ -156,7 +195,8 @@ def _report_results(vulnerabilities: list, audited_count: int):
 
 def main():
     """
-    主控执行流程入口，读取 Package.resolved 并与漏洞指纹库比对。
+    主控执行流程入口，优先读取 Package.resolved，若不存在则回退到
+    Config/opensource_dependencies.yml（SSOT）进行依赖安全审计。
     """
     print(DIVIDER)
     print("🛡️  智宇 (ZhiYu) SPM 依赖安全指纹审计门禁启动中...")
@@ -165,19 +205,23 @@ def main():
     workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     resolved_path = _find_resolved_path(workspace_root)
     
-    if not os.path.exists(resolved_path):
-        print(f"❌ 警告: 未在物理路径找到 Package.resolved: {resolved_path}")
-        print("💡 提示: 请先运行 xcodegen generate 并打开 Xcode 进行依赖拉取和编译。")
-        sys.exit(0)
-        
-    print(f"ℹ️  正在物理读取并解析: {resolved_path}")
-    data = _parse_resolved_file(resolved_path)
+    if os.path.exists(resolved_path):
+        print(f"ℹ️  正在物理读取并解析: {resolved_path}")
+        data = _parse_resolved_file(resolved_path)
+        pins = data.get("pins", [])
+        version = data.get("version", 1)
+        print(f"✅ 成功加载 Package.resolved (规范版本: {version})，共检测到 {len(pins)} 个第三方直接/间接依赖。")
+    else:
+        # 本地路径依赖模式回退：Package.resolved 不存在时，以 opensource_dependencies.yml 为 SSOT
+        print(f"⚠️ Package.resolved 未找到（本地路径依赖模式），回退到 Config/opensource_dependencies.yml")
+        pins = _load_pins_from_yaml()
+        if not pins:
+            print(f"❌ 错误: Package.resolved 与 opensource_dependencies.yml 均不可用，无法执行审计。")
+            print("💡 提示: 请先运行 xcodegen generate 并打开 Xcode 进行依赖拉取和编译。")
+            sys.exit(1)
+        print(f"✅ 从 opensource_dependencies.yml 加载 {len(pins)} 个依赖（SSOT 模式）。")
     
-    pins = data.get("pins", [])
-    version = data.get("version", 1)
-    print(f"✅ 成功加载 Package.resolved (规范版本: {version})，共检测到 {len(pins)} 个第三方直接/间接依赖。")
     print("-------------------------------------------------------")
-    
     audited_count, vulnerabilities_found = _audit_pins(pins)
     _report_results(vulnerabilities_found, audited_count)
 
