@@ -27,12 +27,10 @@ final class AIRainbowDeepTests: XCTestCase {
         let badge = AIRainbowGlowBadge()
             .snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
-        let host = UIHostingController(rootView: badge)
-        window.rootViewController = host
-        window.makeKeyAndVisible()
-        host.view.layoutIfNeeded()
-        XCTAssertNotNil(host.view)
+        // 使用 ImageRenderer 替代 UIWindow 渲染，避免 CI 模拟器中动画卡死
+        let renderer = ImageRenderer(content: badge)
+        renderer.scale = 1.0
+        XCTAssertNotNil(renderer.uiImage, "AIRainbowGlowBadge 应能正常渲染为图片")
         XCTAssertNotNil(modelManager, "全局模型管理器应单例就绪")
     }
 
