@@ -78,9 +78,19 @@ if $HAS_FLAKY; then
     done
 fi
 
-# 如果是 CI 模式，指定共享的 SPM 缓存目录以提速构建
+# CI 模式下跳过快照测试和性能测试
+# 快照测试：依赖特定 iOS 版本的像素级渲染，CI 环境与本地录制环境不同导致不匹配
+# 性能测试：依赖硬件性能，CI 环境性能波动较大导致阈值不稳定
 if [ "${CI_MODE}" = "true" ]; then
     XCODEBUILD_ARGS+=("-clonedSourcePackagesDirPath" "${SPM_CACHE_DIR}")
+    # 跳过所有 SnapshotTests 目录下的快照测试
+    while IFS= read -r snapshot_class; do
+        [ -n "$snapshot_class" ] && XCODEBUILD_ARGS+=("-skip-testing:ZhiYuTests/${snapshot_class}")
+    done < <(find Tests/SnapshotTests -name "*Snapshots*.swift" -o -name "*SnapshotTests*.swift" 2>/dev/null | sed 's|.*/||;s|\.swift$||' | sort -u || true)
+    # 跳过性能测试
+    while IFS= read -r perf_class; do
+        [ -n "$perf_class" ] && XCODEBUILD_ARGS+=("-skip-testing:ZhiYuTests/${perf_class}")
+    done < <(find Tests/Performance -name "*PerformanceTests*.swift" 2>/dev/null | sed 's|.*/||;s|\.swift$||' | sort -u || true)
 fi
 
 # 确保 build 目录存在

@@ -61,17 +61,20 @@ TIMEOUT ?= 600
 # 测试类过滤，可通过 make test-ui TEST_CLASS=ZhiYuMonkeyTests 仅运行指定测试类
 TEST_CLASS ?=
 
+# 动态查找可用 iOS 模拟器（优先最新 runtime 下的 iPhone 17 Pro，回退到任意最新 iPhone）
+SIM_NAME := $(shell bash -c 'source Tools/CI/ci-common-shared.sh && find_simulator')
+
 test: gen
 	@echo "🧪 运行主 App 全量测试（单元 + UI，实时进度监控 + 超时保护 $(TIMEOUT)s）..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS) -only-testing:ZhiYuUITests/$(TEST_CLASS),) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS) -only-testing:ZhiYuUITests/$(TEST_CLASS),) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-unit: gen
 	@echo "🧪 仅运行单元测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS),-only-testing:ZhiYuTests) -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS),-only-testing:ZhiYuTests) -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-ui: gen
 	@echo "🧪 仅运行 UI 测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' $(if $(TEST_CLASS),-only-testing:ZhiYuUITests/$(TEST_CLASS),-only-testing:ZhiYuUITests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuUITests/$(TEST_CLASS),-only-testing:ZhiYuUITests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-spm:
 	@if [ -z "$(PKG)" ]; then \
