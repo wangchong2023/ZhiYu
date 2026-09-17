@@ -80,20 +80,25 @@ data = json.load(sys.stdin)
 for runtime, devices in data.get('devices', {}).items():
     ios_devs = [d for d in devices if 'iPhone' in d.get('name','') and d.get('isAvailable', False)]
     if ios_devs:
-        print(f'  [{runtime}]', file=sys.stderr)
+        print(f'  [runtime={runtime}]', file=sys.stderr)
         for d in ios_devs:
-            print(f'    {d[\"name\"]} (OS: {d.get(\"deviceTypeIdentifier\",\"?\")})', file=sys.stderr)
+            print(f'    {d[\"name\"]} (udid={d[\"udid\"][:8]}..., avail={d.get(\"isAvailable\")})', file=sys.stderr)
 " >&2 || true
     fi
-    # 优先精确匹配 iPhone 17 Pro
+    # 优先精确匹配 iPhone 17 Pro（仅在与 xcodebuild SDK 匹配的最新 runtime 下）
     sim=$(xcrun simctl list devices available -j 2>/dev/null \
         | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
-for runtime, devices in data.get('devices', {}).items():
-    for d in devices:
-        if 'iPhone 17 Pro' in d.get('name','') and d.get('isAvailable', False):
-            print(d['name']); exit()
+# 找出最新 iOS runtime（版本号最大的）
+ios_runtimes = [r for r in data.get('devices', {}).keys() if 'iOS' in r]
+if not ios_runtimes:
+    exit()
+latest_runtime = sorted(ios_runtimes, key=lambda r: [int(x) for x in r.split('-') if x.isdigit()], reverse=True)[0]
+# 在最新 runtime 下查找 iPhone 17 Pro
+for d in data['devices'][latest_runtime]:
+    if 'iPhone 17 Pro' in d.get('name','') and d.get('isAvailable', False):
+        print(d['name']); exit()
 " 2>/dev/null)
 
     if [ -n "${sim}" ]; then
@@ -101,22 +106,20 @@ for runtime, devices in data.get('devices', {}).items():
         return
     fi
 
-    # 二级回退：查找任意可用的最新 iPhone 模拟器
+    # 二级回退：查找最新 iOS runtime 下的任意可用 iPhone 模拟器
     sim=$(xcrun simctl list devices available -j 2>/dev/null \
         | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
-candidates = []
-for runtime, devices in data.get('devices', {}).items():
-    if 'iOS' not in runtime and 'iPhone' not in runtime:
-        continue
-    for d in devices:
-        name = d.get('name', '')
-        if 'iPhone' in name and d.get('isAvailable', False):
-            candidates.append((runtime, name))
-candidates.sort(reverse=True)
-if candidates:
-    print(candidates[0][1])
+# 找出最新 iOS runtime
+ios_runtimes = [r for r in data.get('devices', {}).keys() if 'iOS' in r]
+if not ios_runtimes:
+    exit()
+latest_runtime = sorted(ios_runtimes, key=lambda r: [int(x) for x in r.split('-') if x.isdigit()], reverse=True)[0]
+# 在最新 runtime 下查找任意 iPhone
+for d in data['devices'][latest_runtime]:
+    if 'iPhone' in d.get('name','') and d.get('isAvailable', False):
+        print(d['name']); exit()
 " 2>/dev/null)
 
     echo "${sim:-iPhone 16}"
