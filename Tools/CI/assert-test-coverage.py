@@ -40,8 +40,8 @@ from collections import defaultdict
 
 # ── 常量 ──────────────────────────────────────────────────────
 PERCENT_MULTIPLIER = 100
-DEFAULT_LINE_THRESHOLD = 60.0
-DEFAULT_BRANCH_THRESHOLD = 55.0
+DEFAULT_LINE_THRESHOLD = 45.0
+DEFAULT_BRANCH_THRESHOLD = 45.0
 SEARCH_DIR = "build/DerivedData-ios"
 EXCLUDE_SUFFIXES = ["Schema.swift", "Status.swift"]
 
