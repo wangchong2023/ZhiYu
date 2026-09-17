@@ -160,9 +160,7 @@ sonarqube-analysis:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - echo "===> 运行 SonarQube 代码质量分析（Tools 脚本 Python/Shell/YAML）+ Quality Gate 硬阻断"
-    - sonar-scanner \
-        -Dsonar.host.url=${SONAR_HOST_URL} \
-        -Dsonar.qualitygate.wait=true
+    - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.qualitygate.wait=true
 
 # ════════════════════════════════════════════════════════════
 # perf — 性能测试 + 回归基线（每周夜间运行 + 手动触发）
