@@ -116,6 +116,12 @@ print_version_info
 echo "===> 开始运行单元测试..."
 echo "模式: $([ "${CI_MODE}" = "true" ] && echo "CI 自动化模式" || echo "本地开发模式")"
 
+# 测试前重置模拟器，避免残留状态导致启动失败
+echo "📱 重置模拟器 ${SIM_NAME}..."
+xcrun simctl shutdown all 2>/dev/null || true
+xcrun simctl erase all 2>/dev/null || true
+echo "📱 模拟器已重置"
+
 set +e
 if [ "${CI_MODE}" = "true" ]; then
     # CI 模式下，使用管道流进行进度统计并用 xcbeautify 生成 JUnit 报告
