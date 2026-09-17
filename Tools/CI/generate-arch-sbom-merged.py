@@ -10,7 +10,7 @@
 """合并 ci-generate-spm-sbom-single.py 输出与 Syft 扫描结果，补齐 License 信息."""
 import json, os, sys
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 def find_license_in_syft(syft_path: str, package_name: str) -> str:
     """

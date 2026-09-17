@@ -1,5 +1,5 @@
-// 系统层级: L2 功能层
-// 核心职责: RAG 评分颜色映射工具，消除 RAGBenchmarkPanel 与 RAGResultChart 的重复
+// 系统层级：[L3] 表现层
+// 核心职责：RAG 评分颜色映射工具，消除 RAGBenchmarkPanel 与 RAGResultChart 的重复
 
 import SwiftUI
 

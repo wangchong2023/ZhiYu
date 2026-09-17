@@ -1,5 +1,5 @@
-// 系统层级: L3 表现层
-// 核心职责: 指标瓦片组件，消除 PluginStatsSection.statCard 与 UserProfileView.metricItem 的重复
+// 系统层级：[L3] 表现层
+// 核心职责：指标瓦片组件，消除 PluginStatsSection.statCard 与 UserProfileView.metricItem 的重复
 
 import SwiftUI
 

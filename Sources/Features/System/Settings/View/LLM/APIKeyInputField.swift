@@ -1,5 +1,5 @@
-// 系统层级: L3 表现层
-// 核心职责: API Key 输入组件，消除 LLMSettingsView 中 TextField/SecureField + eye toggle 的重复
+// 系统层级：[L3] 表现层
+// 核心职责：API Key 输入组件，消除 LLMSettingsView 中 TextField/SecureField + eye toggle 的重复
 
 import SwiftUI
 

@@ -54,19 +54,19 @@ struct QuickCaptureWidgetEntryView: View {
 
     private var mediumView: some View {
         HStack(spacing: 3) {
-            WidgetCaptureButton(title: WidgetL10n.voice, icon: "mic.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.voice)
-            WidgetCaptureButton(title: WidgetL10n.ocr, icon: "doc.text.viewfinder", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.ocr)
-            WidgetCaptureButton(title: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
-            WidgetCaptureButton(title: WidgetL10n.qa, icon: "sparkles", color: WidgetSharedConstants.Color.teal, url: WidgetSharedConstants.DeepLink.chat)
+            WidgetCaptureButton(title: WidgetL10n.voice, icon: WidgetSharedConstants.Icon.micFill, color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.voice)
+            WidgetCaptureButton(title: WidgetL10n.ocr, icon: WidgetSharedConstants.Icon.docTextViewfinder, color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.ocr)
+            WidgetCaptureButton(title: WidgetL10n.search, icon: WidgetSharedConstants.Icon.magnifyingglass, color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
+            WidgetCaptureButton(title: WidgetL10n.qa, icon: WidgetSharedConstants.Icon.sparkles, color: WidgetSharedConstants.Color.teal, url: WidgetSharedConstants.DeepLink.chat)
         }
         .padding(WidgetVisualConstants.spacingWide)
     }
 
     private var accessoryView: some View {
         HStack(spacing: WidgetVisualConstants.spacingStandard) {
-            WidgetAccessoryIconLink(icon: "mic.fill", url: WidgetSharedConstants.DeepLink.voice)
-            WidgetAccessoryIconLink(icon: "doc.text.viewfinder", url: WidgetSharedConstants.DeepLink.ocr)
-            WidgetAccessoryIconLink(icon: "sparkles", url: WidgetSharedConstants.DeepLink.chat)
+            WidgetAccessoryIconLink(icon: WidgetSharedConstants.Icon.micFill, url: WidgetSharedConstants.DeepLink.voice)
+            WidgetAccessoryIconLink(icon: WidgetSharedConstants.Icon.docTextViewfinder, url: WidgetSharedConstants.DeepLink.ocr)
+            WidgetAccessoryIconLink(icon: WidgetSharedConstants.Icon.sparkles, url: WidgetSharedConstants.DeepLink.chat)
         }
     }
 }

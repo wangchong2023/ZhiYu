@@ -1,5 +1,5 @@
-// 系统层级: L3 表现层
-// 核心职责: 信息图标行组件，消除 CollabInfoRow 与 SyncInfoRow 的重复
+// 系统层级：[L3] 表现层
+// 核心职责：信息图标行组件，消除 CollabInfoRow 与 SyncInfoRow 的重复
 
 import SwiftUI
 

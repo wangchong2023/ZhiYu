@@ -43,4 +43,16 @@ enum WidgetSharedConstants {
         static let pink: SwiftUI.Color = .pink
         static let brown: SwiftUI.Color = .brown
     }
+
+    // MARK: - SF Symbol 图标令牌 (Icon Tokens)
+    /// Widget Extension 专用 SF Symbol 名称常量（独立 target 无法访问主 App 的 DesignSystem.Icons）
+    enum Icon {
+        static let brainProfile = "brain.head.profile"
+        static let boltHorizontalFill = "bolt.horizontal.fill"
+        static let sparkles = "sparkles"
+        static let micFill = "mic.fill"
+        static let docTextViewfinder = "doc.text.viewfinder"
+        static let plusCircleFill = "plus.circle.fill"
+        static let magnifyingglass = "magnifyingglass"
+    }
 }

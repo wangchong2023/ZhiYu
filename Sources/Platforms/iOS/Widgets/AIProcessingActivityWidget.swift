@@ -27,7 +27,7 @@ struct AIProcessingActivityWidget: Widget {
             // 锁定屏幕/横幅通知下的展示布局
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Image(systemName: "sparkles")
+                    Image(systemName: WidgetSharedConstants.Icon.sparkles)
                         .foregroundColor(WidgetSharedConstants.Color.purple)
                         .font(.title2)
                     
@@ -58,7 +58,7 @@ struct AIProcessingActivityWidget: Widget {
             DynamicIsland {
                 // 展开模式 (Expanded) - 左侧：图标增强
                 DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: "sparkles")
+                    Image(systemName: WidgetSharedConstants.Icon.sparkles)
                         .symbolRenderingMode(.multicolor)
                         .font(.title2)
                         .padding(.leading, 8)
@@ -113,7 +113,7 @@ struct AIProcessingActivityWidget: Widget {
             } compactLeading: {
                 // 紧凑模式 - 左侧：尝试在图标旁显示极简任务标识
                 HStack(spacing: 4) {
-                    Image(systemName: "sparkles")
+                    Image(systemName: WidgetSharedConstants.Icon.sparkles)
                         .symbolRenderingMode(.multicolor)
                         .font(.system(size: 14, weight: .bold)) // Dynamic Type
                     
@@ -129,7 +129,7 @@ struct AIProcessingActivityWidget: Widget {
                     .foregroundColor(WidgetSharedConstants.Color.purple)
             } minimal: {
                 // 最小模式
-                Image(systemName: "sparkles")
+                Image(systemName: WidgetSharedConstants.Icon.sparkles)
                     .symbolRenderingMode(.multicolor)
             }
             // swiftlint:disable:next magic_numbers_opacity

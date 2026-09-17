@@ -1,5 +1,5 @@
-// 系统层级: L3 表现层
-// 核心职责: 插件远程图标加载器，消除 PluginCenterView 与 PluginDetailHeaderSection 的 CachedAsyncImage phase switch 重复
+// 系统层级：[L3] 表现层
+// 核心职责：插件远程图标加载器，消除 PluginCenterView 与 PluginDetailHeaderSection 的 CachedAsyncImage phase switch 重复
 
 import SwiftUI
 

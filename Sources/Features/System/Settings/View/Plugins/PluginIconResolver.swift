@@ -1,5 +1,5 @@
-// 系统层级: L2 功能层
-// 核心职责: 插件图标名称映射工具与 fallback 图标样式，根据插件 ID 特征返回对应的 SF Symbol 名称
+// 系统层级：[L3] 表现层
+// 核心职责：插件图标名称映射工具与 fallback 图标样式，根据插件 ID 特征返回对应的 SF Symbol 名称
 
 import SwiftUI
 

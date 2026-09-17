@@ -40,7 +40,7 @@ struct PluginStatsSection: View {
                         MetricTile(
                             title: L10n.Plugin.Stats.activeCount,
                             value: "\(registry.pluginResourceUsage.filter { $0.value.status == .active }.count)",
-                            icon: "play.circle.fill",
+                            icon: DesignSystem.Icons.playCircleFill,
                             iconColor: Color.theme.green,
                             valueColor: .appText,
                             containerOpacity: DesignSystem.Opacity.dim,

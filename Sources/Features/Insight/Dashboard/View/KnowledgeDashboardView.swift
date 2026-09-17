@@ -16,6 +16,12 @@ import Dependencies
 private enum InsightBusinessConstants {
     /// 图表轴标签名称前缀最大长度
     static let axisNamePrefixLength = 12
+
+    /// 密度图表柱状条语义标签
+    enum DensityLabel {
+        static let outbound = "Outbound"
+        static let inbound = "Inbound"
+    }
 }
 
 struct KnowledgeDashboardView: View {
@@ -129,8 +135,8 @@ struct KnowledgeDashboardView: View {
                 } else {
                     // 💡 密度图表重塑：双物理指示直角 Canvas 双箭头坐标轴系统 (去除了所有冗余 layout，彻底对齐 Y 轴与图间距，拉开底轴空气留白)
                     Chart(coordinator.densityData) { item in
-                        densityBarMark(value: item.outbound, label: "Outbound", pageName: item.name, color: .appAccent)
-                        densityBarMark(value: item.inbound, label: "Inbound", pageName: item.name, color: Color.theme.purple)
+                        densityBarMark(value: item.outbound, label: InsightBusinessConstants.DensityLabel.outbound, pageName: item.name, color: .appAccent)
+                        densityBarMark(value: item.inbound, label: InsightBusinessConstants.DensityLabel.inbound, pageName: item.name, color: Color.theme.purple)
                     }
                     .frame(height: DesignSystem.Metrics.chartHeight + DesignSystem.medium)
                     .chartXAxis(.hidden) // 彻底删除冗余“0个关联”等繁杂文案，回归极其大气的物理大厂留白

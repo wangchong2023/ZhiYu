@@ -515,5 +515,7 @@ extension DesignSystem {
         public static let trayArrowDownFill = "tray.and.arrow.down.fill"
         /// 魔法星星（合成）
         public static let wandAndStars = "wand.and.stars"
+        /// 播放圆形（运行/活跃状态）
+        public static let playCircleFill = "play.circle.fill"
     }
 }

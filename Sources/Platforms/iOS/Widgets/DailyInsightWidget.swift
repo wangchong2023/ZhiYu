@@ -75,7 +75,7 @@ struct DailyInsightWidgetEntryView: View {
     private var smallView: some View {
         VStack(alignment: .leading, spacing: WidgetVisualConstants.spacingStandard) {
             HStack(spacing: WidgetVisualConstants.spacingCompact) {
-                Image(systemName: "sparkles")
+                Image(systemName: WidgetSharedConstants.Icon.sparkles)
                     .font(.caption2)
                     .foregroundStyle(WidgetSharedConstants.Color.purple)
                 Text(WidgetL10n.dailyInsight)
@@ -101,7 +101,7 @@ struct DailyInsightWidgetEntryView: View {
     private var mediumView: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
-                Label(WidgetL10n.dailyInsight, systemImage: "sparkles")
+                Label(WidgetL10n.dailyInsight, systemImage: WidgetSharedConstants.Icon.sparkles)
                     .font(.caption.weight(.bold))
                     .foregroundStyle(WidgetSharedConstants.Color.purple)
 
@@ -149,12 +149,12 @@ struct DailyInsightWidgetEntryView: View {
                     .foregroundStyle(WidgetSharedConstants.Color.purple)
 
                 WidgetInsightQuoteRow(
-                    icon: "brain.head.profile",
+                    icon: WidgetSharedConstants.Icon.brainProfile,
                     color: WidgetSharedConstants.Color.blue,
                     text: WidgetL10n.insightQuote1
                 )
                 WidgetInsightQuoteRow(
-                    icon: "bolt.horizontal.fill",
+                    icon: WidgetSharedConstants.Icon.boltHorizontalFill,
                     color: WidgetSharedConstants.Color.orange,
                     text: WidgetL10n.insightQuote2
                 )
@@ -165,7 +165,7 @@ struct DailyInsightWidgetEntryView: View {
 
     private var accessoryView: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Label(WidgetL10n.dailyInsight, systemImage: "sparkles")
+            Label(WidgetL10n.dailyInsight, systemImage: WidgetSharedConstants.Icon.sparkles)
                 .font(.caption2.weight(.bold))
             Text(entry.insight.title)
                 .font(.caption2)

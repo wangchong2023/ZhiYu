@@ -197,9 +197,9 @@ struct KnowledgeStatsWidgetEntryView: View {
 
             // 右侧：Deep Link 快捷操作区
             VStack(spacing: WidgetVisualConstants.spacingStandard) {
-                WidgetActionButton(label: WidgetL10n.create, icon: "plus.circle.fill", color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.create)
-                WidgetActionButton(label: WidgetL10n.aiChat, icon: "sparkles", color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.chat)
-                WidgetActionButton(label: WidgetL10n.search, icon: "magnifyingglass", color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
+                WidgetActionButton(label: WidgetL10n.create, icon: WidgetSharedConstants.Icon.plusCircleFill, color: WidgetSharedConstants.Color.purple, url: WidgetSharedConstants.DeepLink.create)
+                WidgetActionButton(label: WidgetL10n.aiChat, icon: WidgetSharedConstants.Icon.sparkles, color: WidgetSharedConstants.Color.blue, url: WidgetSharedConstants.DeepLink.chat)
+                WidgetActionButton(label: WidgetL10n.search, icon: WidgetSharedConstants.Icon.magnifyingglass, color: WidgetSharedConstants.Color.orange, url: WidgetSharedConstants.DeepLink.search)
             }
             .frame(width: KnowledgeStatsMetrics.progressBarWidth)
         }
@@ -271,7 +271,7 @@ struct WidgetLargeAIButton: View {
 
     var body: some View {
         Link(destination: WidgetDeepLinkURL.resolve(url)) {
-            WidgetLinkLabel(icon: "sparkles", label: label)
+            WidgetLinkLabel(icon: WidgetSharedConstants.Icon.sparkles, label: label)
                 .font(.caption.bold())
             .foregroundStyle(.white)
             .padding(.horizontal, WidgetVisualConstants.edgePadding)

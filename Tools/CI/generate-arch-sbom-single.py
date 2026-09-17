@@ -7,11 +7,17 @@
 # 该文件用于记录项目的第三方 SPM 依赖信息，以供合规性和安全审计使用。
 #
 
-"""从 Package.resolved 生成 SPDX 2.3 JSON SBOM."""
+"""从 Package.resolved 或 opensource_dependencies.yml 生成 SPDX 2.3 JSON SBOM.
+
+本项目所有 SPM 依赖均为本地路径引用（project.yml 的 path:），
+xcodebuild 不会生成 Package.resolved。因此优先解析 Package.resolved，
+若不存在则回退到 Config/opensource_dependencies.yml（SSOT）生成 SBOM。
+"""
 import json, os, sys
 from datetime import datetime, timezone
 
-PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+OPENSRC_DEPS_YML = os.path.join(PROJECT_DIR, "Config", "opensource_dependencies.yml")
 
 def find_resolved():
     paths = [
@@ -23,8 +29,33 @@ def find_resolved():
     for root, dirs, files in os.walk(PROJECT_DIR):
         if "Package.resolved" in files and ".build" not in root:
             return os.path.join(root, "Package.resolved")
-    print("❌ Package.resolved not found", file=sys.stderr)
-    sys.exit(1)
+    return None
+
+def load_packages_from_yaml():
+    """从 Config/opensource_dependencies.yml 解析依赖列表（本地路径依赖回退方案）。
+
+    :return: 依赖列表 [{"name", "version", "repository_url", "license"}] 或 None
+    """
+    if not os.path.exists(OPENSRC_DEPS_YML):
+        return None
+    try:
+        import yaml
+    except ImportError:
+        print("⚠️ PyYAML 未安装，无法解析 opensource_dependencies.yml", file=sys.stderr)
+        return None
+    with open(OPENSRC_DEPS_YML, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    deps = data.get("dependencies", []) if data else []
+    packages = []
+    for dep in deps:
+        packages.append({
+            "name": dep.get("name", "unknown"),
+            "version": dep.get("version", "unknown"),
+            "revision": "",
+            "repository_url": dep.get("upstream", ""),
+            "license": dep.get("license", "NOASSERTION"),
+        })
+    return packages
 
 def make_spdx(packages: list[dict]) -> dict:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -76,22 +107,31 @@ REVISION_SHORT_LEN = 12
 
 def main():
     """
-    主入口函数。查找项目的 Package.resolved 文件，解析其 pins 依赖项，
-    生成符合 SPDX 2.3 标准的 SBOM 字典，并输出保存为 JSON 文件。
+    主入口函数。优先解析 Package.resolved，若不存在则回退到
+    Config/opensource_dependencies.yml（SSOT）生成 SPDX 2.3 SBOM。
     """
     resolved_path = find_resolved()
-    print(f"📦 解析 Package.resolved: {resolved_path}", file=sys.stderr)
-    with open(resolved_path) as f:
-        data = json.load(f)
     packages = []
-    for pin in data.get("pins", []):
-        packages.append({
-            "name": pin.get("identity", "unknown"),
-            "version": pin.get("state", {}).get("version", "unknown"),
-            "revision": pin.get("state", {}).get("revision", "")[:REVISION_SHORT_LEN],
-            "repository_url": pin.get("location", ""),
-            "license": "NOASSERTION"
-        })
+    if resolved_path:
+        print(f"📦 解析 Package.resolved: {resolved_path}", file=sys.stderr)
+        with open(resolved_path) as f:
+            data = json.load(f)
+        for pin in data.get("pins", []):
+            packages.append({
+                "name": pin.get("identity", "unknown"),
+                "version": pin.get("state", {}).get("version", "unknown"),
+                "revision": pin.get("state", {}).get("revision", "")[:REVISION_SHORT_LEN],
+                "repository_url": pin.get("location", ""),
+                "license": "NOASSERTION"
+            })
+    else:
+        print("⚠️ Package.resolved 未找到（本地路径依赖模式），回退到 Config/opensource_dependencies.yml", file=sys.stderr)
+        packages = load_packages_from_yaml()
+        if not packages:
+            print("❌ 无法生成 SBOM：Package.resolved 与 opensource_dependencies.yml 均不可用", file=sys.stderr)
+            sys.exit(1)
+        print(f"📦 从 opensource_dependencies.yml 加载 {len(packages)} 个依赖", file=sys.stderr)
+
     spdx = make_spdx(packages)
     output_path = os.path.join(PROJECT_DIR, "build", "sbom.spdx.json")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
