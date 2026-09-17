@@ -59,7 +59,7 @@ final class DocxProcessorTests: XCTestCase {
         """
         let processor = DocxProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
+        _ = processor.parse()
 
         XCTAssertTrue(processor.extractedText.hasPrefix("第一段"), "应提取第一段")
         XCTAssertTrue(processor.extractedText.contains("第二段"), "应提取第二段")
@@ -82,7 +82,7 @@ final class DocxProcessorTests: XCTestCase {
         """
         let processor = DocxProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
+        _ = processor.parse()
 
         XCTAssertTrue(processor.extractedText.hasPrefix("Hello"), "应包含 Hello")
         XCTAssertTrue(processor.extractedText.contains("World"), "应包含 World")
@@ -104,7 +104,7 @@ final class DocxProcessorTests: XCTestCase {
         """
         let processor = DocxProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
+        _ = processor.parse()
 
         XCTAssertTrue(processor.extractedText.contains("实际内容"), "应包含实际内容")
         XCTAssertFalse(processor.extractedText.hasPrefix(" "), "不应以空格开头（空 w:t 不触发空格拼接）")
@@ -124,7 +124,7 @@ final class DocxProcessorTests: XCTestCase {
         """
         let processor = DocxProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
+        _ = processor.parse()
 
         XCTAssertTrue(processor.extractedText.contains("内容"), "应包含内容")
         XCTAssertFalse(processor.extractedText.hasPrefix("\n"), "无文本的空段落不应在开头产生换行")
@@ -154,7 +154,7 @@ final class DocxProcessorTests: XCTestCase {
         """
         let processor = DocxProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
+        _ = processor.parse()
 
         XCTAssertTrue(processor.extractedText.contains("ABC"), "字符应被完整累积")
     }
@@ -182,7 +182,7 @@ final class DocxProcessorTests: XCTestCase {
         """
         let processor = DocxProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
+        _ = processor.parse()
 
         XCTAssertTrue(processor.extractedText.contains("标题"), "应包含标题")
         XCTAssertTrue(processor.extractedText.contains("续"), "应包含续")
