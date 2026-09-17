@@ -50,8 +50,10 @@ XCODEBUILD_ARGS=(
     # 告警阻断核心：将所有 Swift/GCC 告警视为编译错误
     SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
     GCC_TREAT_WARNINGS_AS_ERRORS=YES
-    # 抑制第三方依赖的告警（仅检查本项目源码）
+    # 仅检查本项目源码，不抑制本项目告警
     SWIFT_SUPPRESS_WARNINGS=NO
+    # 抑制第三方 SPM 依赖的告警（Xcode 15+ 原生支持）
+    SUPPRESS_WARNINGS_FROM_PACKAGE_DEPENDENCIES=YES
 )
 
 # ── 4. 执行编译并捕获结果 ──────────────────────────────────
