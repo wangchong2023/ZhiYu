@@ -38,6 +38,9 @@ if [[ -f "$CACHE_FILE" ]]; then
     total=$(cat "$CACHE_FILE" 2>/dev/null) || total=0
 fi
 
+# 记录预计算的总数（来自 build/.test_count），用于判断是否信任 Suite 汇总行
+declare -i initial_total=$total
+
 if ((total <= 0)); then
     estimated=$(grep -rc "^[[:space:]]*func test" Tests/ --include="*.swift" 2>/dev/null \
         | awk -F: '{sum += $2} END {print sum}')
@@ -118,12 +121,14 @@ while IFS= read -r line; do
         fi
     fi
 
-    # 捕获汇总行更新精确总数
+    # 捕获汇总行更新精确总数（仅当缓存总数不可用时，累加各 Suite 的用例数）
     if [[ "$line" =~ Executed\ [0-9]+\ tests ]]; then
         new_total=$(echo "$line" | grep -oE '[0-9]+' | head -1)
         if [[ -n "$new_total" && "$new_total" -gt 0 ]]; then
-            total=$new_total
-            echo "$new_total" > "$CACHE_FILE" 2>/dev/null || true
+            if ((initial_total <= 0)); then
+                total=$((total + new_total))
+                echo "$total" > "$CACHE_FILE" 2>/dev/null || true
+            fi
         fi
     fi
 

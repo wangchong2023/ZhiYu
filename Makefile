@@ -66,14 +66,17 @@ SIM_NAME := $(shell bash -c 'source Tools/CI/ci-common-shared.sh && find_simulat
 
 test: gen
 	@echo "🧪 运行主 App 全量测试（单元 + UI，实时进度监控 + 超时保护 $(TIMEOUT)s）..."
+	@mkdir -p build && grep -rc "^[[:space:]]*func test" Tests/ --include="*.swift" 2>/dev/null | awk -F: "{sum += \$$2} END {print sum}" > build/.test_count
 	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS) -only-testing:ZhiYuUITests/$(TEST_CLASS),) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-unit: gen
 	@echo "🧪 仅运行单元测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
+	@mkdir -p build && grep -rc "^[[:space:]]*func test" Tests/ --include="*.swift" 2>/dev/null | awk -F: "{sum += \$$2} END {print sum}" > build/.test_count
 	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS),-only-testing:ZhiYuTests) -enableCodeCoverage YES -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-ui: gen
 	@echo "🧪 仅运行 UI 测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
+	@mkdir -p build && grep -rc "^[[:space:]]*func test" Tests/ --include="*.swift" 2>/dev/null | awk -F: "{sum += \$$2} END {print sum}" > build/.test_count
 	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuUITests/$(TEST_CLASS),-only-testing:ZhiYuUITests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-spm:
