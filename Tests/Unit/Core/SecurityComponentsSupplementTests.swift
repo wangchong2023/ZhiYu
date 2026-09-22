@@ -27,16 +27,20 @@ final class SecurityComponentsSupplementTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        setupFullMockEnvironment()
-        resetPersistentTestState()
-        // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
-        originalSecurityManagerOverride = SecurityManager.testOverride
-        SecurityManager.testOverride = nil
+        MainActor.assumeIsolated {
+            setupFullMockEnvironment()
+            resetPersistentTestState()
+            // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
+            originalSecurityManagerOverride = SecurityManager.testOverride
+            SecurityManager.testOverride = nil
+        }
     }
 
     override func tearDown() {
-        SecurityManager.testOverride = originalSecurityManagerOverride
-        resetPersistentTestState()
+        MainActor.assumeIsolated {
+            SecurityManager.testOverride = originalSecurityManagerOverride
+            resetPersistentTestState()
+        }
         super.tearDown()
     }
 

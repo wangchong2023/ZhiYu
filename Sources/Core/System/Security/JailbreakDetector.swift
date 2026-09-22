@@ -77,10 +77,18 @@ public final class JailbreakDetector: Sendable {
     /// 检验是否能打开 Cydia 协议 URL
     @MainActor
     private func checkCydiaScheme() -> Bool {
-        // VULN-010 修复：恢复 Cydia scheme 检测，使用 canOpenURL 判断
+        // VULN-010 修复：恢复 Cydia scheme 检测
+        // iOS 27.0 废弃 canOpenURL，改为尝试 open 并捕获失败（completionHandler 不触发即表示无法打开）
         #if os(iOS)
         if let url = URL(string: "cydia://package/com.example.test") {
-            return UIApplication.shared.canOpenURL(url)
+            var canOpen = false
+            let semaphore = DispatchSemaphore(value: 0)
+            UIApplication.shared.open(url, options: [:]) { success in
+                canOpen = success
+                semaphore.signal()
+            }
+            _ = semaphore.wait(timeout: .now() + 0.1)
+            return canOpen
         }
         #endif
         return false

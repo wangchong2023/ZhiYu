@@ -41,7 +41,7 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>14.0</string>
+	<string>27.0</string>
 	<key>NSCameraUsageDescription</key>
 	<string>ZhiYu needs camera access to scan document text (OCR).</string>
 	<key>NSFaceIDUsageDescription</key>

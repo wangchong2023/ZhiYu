@@ -33,9 +33,8 @@ final class iOSBackgroundTaskProvider: BackgroundTaskProtocol {
         request.requiresNetworkConnectivity = false
         request.requiresExternalPower = false
 
-        do {
-            try BGTaskScheduler.shared.submit(request)
-        } catch {
+        // iOS 27.0 废弃 submit(_:)，改为 submitTaskRequest(_:completionHandler:) 捕获所有错误条件
+        BGTaskScheduler.shared.submitTaskRequest(request) { _ in
             // 静默失败，后台调度非核心关键路径
         }
     }

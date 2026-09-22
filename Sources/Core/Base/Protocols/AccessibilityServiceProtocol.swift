@@ -25,19 +25,16 @@ public protocol AccessibilityServiceProtocol: Sendable {
 // MARK: - DependencyKey 注册
 
 /// AccessibilityServiceProtocol 的 DependencyKey（P11 迁移：从 ServiceContainer 解析）
-@MainActor
 public enum AccessibilityServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any AccessibilityServiceProtocol {
+    nonisolated public static var liveValue: any AccessibilityServiceProtocol {
         ServiceContainer.shared.resolve((any AccessibilityServiceProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any AccessibilityServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any AccessibilityServiceProtocol).self) ?? NoOpAccessibilityService()
+    nonisolated public static var testValue: any AccessibilityServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any AccessibilityServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpAccessibilityService() }
     }
-    @MainActor
-    public static var previewValue: any AccessibilityServiceProtocol { testValue }
+    nonisolated public static var previewValue: any AccessibilityServiceProtocol { testValue }
 }
 
 /// 无操作辅助功能服务（测试/预览占位，DI 未就绪时降级）
@@ -49,7 +46,7 @@ public final class NoOpAccessibilityService: AccessibilityServiceProtocol {
 
 extension DependencyValues {
     /// 辅助功能服务依赖
-    public var accessibility: any AccessibilityServiceProtocol {
+    nonisolated public var accessibility: any AccessibilityServiceProtocol {
         get { self[AccessibilityServiceKey.self] }
         set { self[AccessibilityServiceKey.self] = newValue }
     }

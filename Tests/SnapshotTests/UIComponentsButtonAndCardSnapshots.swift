@@ -19,7 +19,7 @@ import Dependencies
 @MainActor
 final class UIComponentsButtonAndCardSnapshots: XCTestCase {
 
-    private static var recordMode: SnapshotTestingConfiguration.Record {
+    private nonisolated static var recordMode: SnapshotTestingConfiguration.Record {
         ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
     }
 

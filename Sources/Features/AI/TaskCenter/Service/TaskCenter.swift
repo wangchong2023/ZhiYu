@@ -317,28 +317,28 @@ public final class TaskCenter: @unchecked Sendable {
 
 // MARK: - 测试隔离注册
 extension TaskCenter: TestStateResettable {
-    public func resetStateForTesting() {
-        reset()
+    nonisolated public func resetStateForTesting() {
+        MainActor.assumeIsolated {
+            reset()
+        }
     }
 }
 
 // MARK: - TaskCenter DependencyKey
 
 private enum TaskCenterKey: DependencyKey {
-    @MainActor
-    static var liveValue: TaskCenter {
-        TaskCenter(activityService: ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)) // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
+    nonisolated static var liveValue: TaskCenter {
+        MainActor.assumeIsolated {
+            TaskCenter(activityService: ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)) // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
+        }
     }
-    @MainActor
-    static let testValue: TaskCenter = TaskCenter(activityService: nil)
-    @MainActor
-    static let previewValue: TaskCenter = TaskCenter(activityService: nil)
+    nonisolated static let testValue: TaskCenter = MainActor.assumeIsolated { TaskCenter(activityService: nil) }
+    nonisolated static let previewValue: TaskCenter = MainActor.assumeIsolated { TaskCenter(activityService: nil) }
 }
 
 extension DependencyValues {
     /// 任务中心依赖（原 TaskCenter.shared）
-    @MainActor
-    public var taskCenter: TaskCenter {
+    nonisolated public var taskCenter: TaskCenter {
         get { self[TaskCenterKey.self] }
         set { self[TaskCenterKey.self] = newValue }
     }

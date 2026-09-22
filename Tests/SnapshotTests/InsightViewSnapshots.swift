@@ -27,7 +27,7 @@ final class InsightViewSnapshots: XCTestCase {
     private var originalLanguageMode: LanguageMode?
 
     /// 依据环境变量判断快照录制策略，用于支持 CI/CD 脚本自动更新基准图片
-    private static var recordMode: SnapshotTestingConfiguration.Record {
+    private nonisolated static var recordMode: SnapshotTestingConfiguration.Record {
         ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
     }
 

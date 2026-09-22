@@ -49,6 +49,22 @@ public struct UserProfileView: View {
 
     public init() {}
 
+    // MARK: - 头像选择标签
+
+    /// 打开相册的胶囊按钮标签
+    /// - Note: `nonisolated` 使属性可在 `@Sendable` 闭包（PhotosPicker label）中引用。
+    ///   内部仅使用 `nonisolated` 的 `Text`/`font`/`foregroundStyle`/`padding`/`background`/`clipShape`，
+    ///   不调用 `@MainActor` 方法。
+    private nonisolated var avatarPickerLabel: some View {
+        Text(L10n.Auth.avatar)
+            .font(.caption.bold())
+            .foregroundStyle(.appAccent)
+            .padding(.horizontal, DesignSystem.medium)
+            .padding(.vertical, DesignSystem.tiny)
+            .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
+            .clipShape(Capsule())
+    }
+
     // MARK: - 视图主体
 
     public var body: some View {
@@ -188,13 +204,7 @@ public struct UserProfileView: View {
                 matching: .images,
                 photoLibrary: .shared()
             ) {
-                Text(L10n.Auth.avatar)
-                    .font(.caption.bold())
-                    .foregroundStyle(.appAccent)
-                    .accentSubtleCapsule(
-                        horizontalPadding: DesignSystem.medium,
-                        verticalPadding: DesignSystem.tiny
-                    )
+                avatarPickerLabel
             }
             .disabled(isUploading)
         }

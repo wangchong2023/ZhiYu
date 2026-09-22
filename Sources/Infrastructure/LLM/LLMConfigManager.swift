@@ -89,22 +89,20 @@ public final class LLMConfigManager {
 
 /// LLMConfigManager 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum LLMConfigManagerKey: DependencyKey {
-    @MainActor
-    public static var liveValue: LLMConfigManager {
+    nonisolated public static var liveValue: LLMConfigManager {
         ServiceContainer.shared.resolve(LLMConfigManager.self)
     }
 
-    @MainActor
-    public static var testValue: LLMConfigManager {
-        ServiceContainer.shared.resolveOptional(LLMConfigManager.self) ?? LLMConfigManager()
+    nonisolated public static var testValue: LLMConfigManager {
+        ServiceContainer.shared.resolveOptional(LLMConfigManager.self)
+            ?? MainActor.assumeIsolated { LLMConfigManager() }
     }
-    @MainActor
-    public static var previewValue: LLMConfigManager { testValue }
+    nonisolated public static var previewValue: LLMConfigManager { testValue }
 }
 
 extension DependencyValues {
     /// LLM 配置管理器依赖
-    public var llmConfigManager: LLMConfigManager {
+    nonisolated public var llmConfigManager: LLMConfigManager {
         get { self[LLMConfigManagerKey.self] }
         set { self[LLMConfigManagerKey.self] = newValue }
     }

@@ -14,7 +14,7 @@ import Dependencies
 
 /// 知识版本快照服务 (Snapshot Service)
 /// 用于在页面发生重大变更（如智能折叠、重构）前后记录物理快照，提供“后悔药”机制。
-final class SnapshotService {
+final class SnapshotService: @unchecked Sendable {
     private let fileManager = FileManager.default
     private let snapshotsURL: URL
 

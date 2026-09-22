@@ -14,7 +14,7 @@ import Observation
 
 /// 提供语音录制与实时/离线语音转文字（ASR）的抽象服务接口协议。
 @MainActor
-public protocol SpeechServiceProtocol: AnyObject, Observable {
+public protocol SpeechServiceProtocol: AnyObject, Observable, Sendable {
     /// 指示当前是否正在录制音频。
     var isRecording: Bool { get }
     
@@ -84,19 +84,16 @@ import Dependencies
 import UFPCore
 
 /// SpeechServiceProtocol 的 DependencyKey
-@MainActor
 public enum SpeechServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any SpeechServiceProtocol {
+    nonisolated public static var liveValue: any SpeechServiceProtocol {
         ServiceContainer.shared.resolve((any SpeechServiceProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any SpeechServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any SpeechServiceProtocol).self) ?? NoOpSpeechService()
+    nonisolated public static var testValue: any SpeechServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any SpeechServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpSpeechService() }
     }
-    @MainActor
-    public static var previewValue: any SpeechServiceProtocol { testValue }
+    nonisolated public static var previewValue: any SpeechServiceProtocol { testValue }
 }
 
 /// 无操作语音服务（测试/预览占位，DI 未就绪时降级）
@@ -130,8 +127,7 @@ public final class NoOpSpeechService: SpeechServiceProtocol {
 }
 
 extension DependencyValues {
-    @MainActor
-    public var speechService: any SpeechServiceProtocol {
+    nonisolated public var speechService: any SpeechServiceProtocol {
         get { self[SpeechServiceKey.self] }
         set { self[SpeechServiceKey.self] = newValue }
     }

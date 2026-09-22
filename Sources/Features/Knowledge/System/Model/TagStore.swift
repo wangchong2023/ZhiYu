@@ -77,22 +77,18 @@ public final class TagStore {
 import Dependencies
 
 /// TagStore 依赖注入键
-@MainActor
 public enum TagStoreKey: DependencyKey {
-    @MainActor
-    public static var liveValue: TagStore { ServiceContainer.shared.resolve(TagStore.self) }
+    nonisolated public static var liveValue: TagStore { ServiceContainer.shared.resolve(TagStore.self) }
 
-    @MainActor
-    public static var testValue: TagStore {
-        ServiceContainer.shared.resolveOptional(TagStore.self) ?? TagStore()
+    nonisolated public static var testValue: TagStore {
+        ServiceContainer.shared.resolveOptional(TagStore.self)
+            ?? MainActor.assumeIsolated { TagStore() }
     }
-    @MainActor
-    public static var previewValue: TagStore { testValue }
+    nonisolated public static var previewValue: TagStore { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    public var tagStore: TagStore {
+    nonisolated public var tagStore: TagStore {
         get { self[TagStoreKey.self] }
         set { self[TagStoreKey.self] = newValue }
     }

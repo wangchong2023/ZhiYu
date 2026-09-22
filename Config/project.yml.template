@@ -70,16 +70,16 @@ options:
     - ar
     - ru
   deploymentTarget:
-    iOS: "17.0"
-    macOS: "14.0"
-    watchOS: "10.0"
-  xcodeVersion: "16.0"
+    iOS: "27.0"
+    macOS: "27.0"
+    watchOS: "27.0"
+  xcodeVersion: "27.0"
   createIntermediateGroups: true
   generateEmptyDirectories: true
 
 settings:
   base:
-    SWIFT_VERSION: "5.9"
+    SWIFT_VERSION: "6.4"
     MARKETING_VERSION: "0.0.0-dev"       # CI 会在构建前通过 inject_version.sh 覆盖
     CURRENT_PROJECT_VERSION: "0"          # CI 会在构建前通过 inject_version.sh 覆盖
     TARGETED_DEVICE_FAMILY: "1,2,4"
@@ -167,7 +167,7 @@ targets:
       - BaseAppTemplate
     type: application
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: "27.0"
     sources:
       - path: Sources
         excludes:
@@ -363,7 +363,7 @@ targets:
   ZhiYuMacTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "27.0"
     sources:
       - path: Tests
         includes:

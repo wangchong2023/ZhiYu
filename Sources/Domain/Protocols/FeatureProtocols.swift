@@ -52,7 +52,7 @@ public protocol AuthServiceProtocol {
 
 /// 笔记本/库管理服务协议
 @MainActor
-public protocol VaultServiceProtocol {
+public protocol VaultServiceProtocol: Sendable {
     /// 所有可用的笔记本列表
     var vaults: [Vault] { get }
     
@@ -133,17 +133,15 @@ protocol ChatServiceProtocol: Sendable {
 
 /// VaultServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum VaultServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any VaultServiceProtocol {
+    nonisolated public static var liveValue: any VaultServiceProtocol {
         ServiceContainer.shared.resolve((any VaultServiceProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any VaultServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any VaultServiceProtocol).self) ?? NoOpVaultService()
+    nonisolated public static var testValue: any VaultServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any VaultServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpVaultService() }
     }
-    @MainActor
-    public static var previewValue: any VaultServiceProtocol { testValue }
+    nonisolated public static var previewValue: any VaultServiceProtocol { testValue }
 }
 
 /// 无操作笔记本服务（测试/预览占位，DI 未就绪时降级）
@@ -165,7 +163,7 @@ public final class NoOpVaultService: VaultServiceProtocol {
 
 extension DependencyValues {
     /// Vault 服务依赖
-    public var vaultService: any VaultServiceProtocol {
+    nonisolated public var vaultService: any VaultServiceProtocol {
         get { self[VaultServiceKey.self] }
         set { self[VaultServiceKey.self] = newValue }
     }
@@ -173,13 +171,13 @@ extension DependencyValues {
 
 /// AISynthesisServiceProtocol 的 DependencyKey
 public enum AISynthesisServiceKey: DependencyKey {
-    public static var liveValue: any AISynthesisServiceProtocol {
+    nonisolated public static var liveValue: any AISynthesisServiceProtocol {
         ServiceContainer.shared.resolve((any AISynthesisServiceProtocol).self)
     }
-    public static var testValue: any AISynthesisServiceProtocol {
+    nonisolated public static var testValue: any AISynthesisServiceProtocol {
         ServiceContainer.shared.resolveOptional((any AISynthesisServiceProtocol).self) ?? NoOpAISynthesisService()
     }
-    public static var previewValue: any AISynthesisServiceProtocol { NoOpAISynthesisService() }
+    nonisolated public static var previewValue: any AISynthesisServiceProtocol { NoOpAISynthesisService() }
 }
 
 /// 无操作 AI 知识综合服务（测试/预览占位，DI 未就绪时降级）
@@ -192,26 +190,23 @@ public final class NoOpAISynthesisService: AISynthesisServiceProtocol, @unchecke
 }
 
 extension DependencyValues {
-    public var aiSynthesisService: any AISynthesisServiceProtocol {
+    nonisolated public var aiSynthesisService: any AISynthesisServiceProtocol {
         get { self[AISynthesisServiceKey.self] }
         set { self[AISynthesisServiceKey.self] = newValue }
     }
 }
 
 /// ChatServiceProtocol 的 DependencyKey
-@MainActor
 enum ChatServiceKey: DependencyKey {
-    @MainActor
-    static var liveValue: any ChatServiceProtocol {
+    nonisolated static var liveValue: any ChatServiceProtocol {
         ServiceContainer.shared.resolve((any ChatServiceProtocol).self)
     }
 
-    @MainActor
-    static var testValue: any ChatServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any ChatServiceProtocol).self) ?? NoOpChatService()
+    nonisolated static var testValue: any ChatServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any ChatServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpChatService() }
     }
-    @MainActor
-    static var previewValue: any ChatServiceProtocol { testValue }
+    nonisolated static var previewValue: any ChatServiceProtocol { testValue }
 }
 
 /// 无操作聊天服务（测试/预览占位，DI 未就绪时降级）
@@ -228,8 +223,7 @@ public final class NoOpChatService: ChatServiceProtocol {
 }
 
 extension DependencyValues {
-    @MainActor
-    var chatService: any ChatServiceProtocol {
+    nonisolated var chatService: any ChatServiceProtocol {
         get { self[ChatServiceKey.self] }
         set { self[ChatServiceKey.self] = newValue }
     }

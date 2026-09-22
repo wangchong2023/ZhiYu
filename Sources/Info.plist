@@ -49,7 +49,7 @@
 		<string>cydia</string>
 	</array>
 	<key>LSMinimumSystemVersion</key>
-	<string>14.0</string>
+	<string>27.0</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

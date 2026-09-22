@@ -327,22 +327,20 @@ final class BackupService: ObservableObject {
 
 /// BackupService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 enum BackupServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: BackupService {
+    nonisolated public static var liveValue: BackupService {
         ServiceContainer.shared.resolve(BackupService.self)
     }
 
-    @MainActor
-    public static var testValue: BackupService {
-        ServiceContainer.shared.resolveOptional(BackupService.self) ?? BackupService()
+    nonisolated public static var testValue: BackupService {
+        ServiceContainer.shared.resolveOptional(BackupService.self)
+            ?? MainActor.assumeIsolated { BackupService() }
     }
-    @MainActor
-    static var previewValue: BackupService { testValue }
+    nonisolated static var previewValue: BackupService { testValue }
 }
 
 extension DependencyValues {
     /// 备份服务依赖
-    var backupService: BackupService {
+    nonisolated var backupService: BackupService {
         get { self[BackupServiceKey.self] }
         set { self[BackupServiceKey.self] = newValue }
     }

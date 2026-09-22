@@ -6,31 +6,34 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[Shared] 平台适配层
-//  核心职责：iOS 平台实现：后台任务、Widget、文件归档、Spotlight 索引。
+//  核心职责：iOS 平台协作服务实现，基于 Network Framework (NWBrowser/NWListener/NWConnection)。
 //
-#if canImport(MultipeerConnectivity)
+
 import Foundation
-import MultipeerConnectivity
+import Network
 
 @MainActor
-final class MultipeerCollaborationProvider: NSObject, CollaborationProviderProtocol {
+final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
     weak var delegate: CollaborationProviderDelegate?
-    
-    private let serviceType = "km-collab"
-    private var myPeerID: MCPeerID?
-    private var session: MCSession?
-    private var advertiser: MCNearbyServiceAdvertiser?
-    private var browser: MCNearbyServiceBrowser?
-    
-    private var sessionDelegate: MCSessionDelegateImpl?
-    private var advertiserDelegate: MCAdvertiserDelegateImpl?
-    private var browserDelegate: MCBrowserDelegateImpl?
-    
-    /// 构造带唯一后缀的 PeerID（`userName|uuid前8位`），消除 startHosting/startBrowsing
-    /// 中重复的 `MCPeerID(displayName: "\(userName)|\(UUID().uuidString.prefix(8))")` 模式。
-    private func makePeerID(userName: String) -> MCPeerID {
-        let suffix = String(UUID().uuidString.prefix(PlatformConstants.Multipeer.peerIDSuffixLength))
-        return MCPeerID(displayName: "\(userName)|\(suffix)")
+
+    private let serviceType = PlatformConstants.NetworkCollaboration.serviceType
+    private var myPeerID: String?
+    private var listener: NWListener?
+    private var browser: NWBrowser?
+    private var connections: [NWConnection] = []
+    private var pendingJoinConnection: NWConnection?
+
+    /// 构造带唯一后缀的 PeerID（`userName|uuid前8位`）
+    private func makePeerID(userName: String) -> String {
+        let suffix = String(UUID().uuidString.prefix(PlatformConstants.NetworkCollaboration.peerIDSuffixLength))
+        return "\(userName)|\(suffix)"
+    }
+
+    /// 构造 P2P TCP 参数（消除 startHosting / startBrowsing 重复的 NWParameters 配置）
+    private func makePeerToPeerParameters() -> NWParameters {
+        let parameters = NWParameters.tcp
+        parameters.includePeerToPeer = true
+        return parameters
     }
 
     /// 启动Hosting
@@ -39,114 +42,227 @@ final class MultipeerCollaborationProvider: NSObject, CollaborationProviderProto
     func startHosting(roomName: String, userName: String) {
         let peerID = makePeerID(userName: userName)
         self.myPeerID = peerID
-        
-        setupSession(peerID: peerID)
-        
-        advertiserDelegate = MCAdvertiserDelegateImpl(
-            onInvitation: { [weak self] _, _, handler in
-                handler(true, self?.session)
-            },
-            onError: { [weak self] error in
-                self?.delegate?.providerDidEncounterError(error.localizedDescription)
+
+        let parameters = makePeerToPeerParameters()
+
+        do {
+            let listener = try NWListener(using: parameters, on: .any)
+            listener.service = NWListener.Service(
+                name: peerID,
+                type: "_\(serviceType)._tcp",
+                domain: nil,
+                txtRecord: NWTXTRecord([
+                    "room": roomName,
+                    "owner": userName
+                ])
+            )
+            listener.newConnectionHandler = { [weak self] connection in
+                MainActor.assumeIsolated {
+                    self?.handleNewConnection(connection)
+                }
             }
-        )
-        advertiser = MCNearbyServiceAdvertiser(peer: peerID, discoveryInfo: [
-            "room": roomName,
-            "owner": userName
-        ], serviceType: serviceType)
-        advertiser?.delegate = advertiserDelegate
-        advertiser?.startAdvertisingPeer()
-        
+            listener.start(queue: .main)
+            self.listener = listener
+        } catch {
+            delegate?.providerDidEncounterError(error.localizedDescription)
+            return
+        }
+
         delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.hosting)
     }
-    
+
     /// 启动Browsing
     /// - Parameter userName: userName
     func startBrowsing(userName: String) {
         let peerID = makePeerID(userName: userName)
         self.myPeerID = peerID
-        
-        setupSession(peerID: peerID)
-        
-        browserDelegate = MCBrowserDelegateImpl(
-            onRoomFound: { [weak self] peerID, info in
-                let room = DiscoveredRoom(
-                    id: peerID.displayName,
-                    platformPeer: peerID,
-                    roomName: info?["room"] ?? L10n.Collaboration.defaultRoom,
-                    owner: info?["owner"] ?? peerID.displayName
-                )
-                self?.delegate?.providerDidDiscoverRoom(room)
-            },
-            onRoomLost: { [weak self] peerID in
-                self?.delegate?.providerDidLoseRoom(id: peerID.displayName)
-            },
-            onError: { [weak self] error in
-                self?.delegate?.providerDidEncounterError(error.localizedDescription)
-            }
+
+        let parameters = makePeerToPeerParameters()
+
+        let descriptor = NWBrowser.Descriptor.bonjourWithTXTRecord(
+            type: "_\(serviceType)._tcp",
+            domain: nil
         )
-        browser = MCNearbyServiceBrowser(peer: peerID, serviceType: serviceType)
-        browser?.delegate = browserDelegate
-        browser?.startBrowsingForPeers()
-        
+        let browser = NWBrowser(for: descriptor, using: parameters)
+        browser.browseResultsChangedHandler = { [weak self] results, _ in
+            MainActor.assumeIsolated {
+                self?.handleBrowseResults(results)
+            }
+        }
+        browser.stateUpdateHandler = { [weak self] state in
+            MainActor.assumeIsolated {
+                self?.handleBrowserStateChange(state)
+            }
+        }
+        browser.start(queue: .main)
+        self.browser = browser
+
         delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.searching)
     }
-    
+
     /// 加入Room
     /// - Parameter room: room
     func joinRoom(_ room: DiscoveredRoom) {
-        guard let session = session, let browser = browser, let targetPeer = room.platformPeer as? MCPeerID else { return }
-        // Bug #53 修复：魔鬼数字 30 抽取为常量
-        browser.invitePeer(targetPeer, to: session, withContext: nil, timeout: PlatformConstants.Multipeer.joinTimeoutSeconds)
+        guard let endpoint = room.platformPeer as? NWEndpoint else { return }
+        let roomID = room.id
+
+        let parameters = makePeerToPeerParameters()
+
+        let connection = NWConnection(to: endpoint, using: parameters)
+        connection.stateUpdateHandler = { [weak self] state in
+            MainActor.assumeIsolated {
+                self?.handleConnectionStateChange(connection, state: state, roomID: roomID)
+            }
+        }
+        connection.start(queue: .main)
+        self.pendingJoinConnection = connection
+
         delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.joining)
     }
-    
+
     /// 停止
     func stop() {
-        advertiser?.stopAdvertisingPeer()
-        advertiser = nil
-        browser?.stopBrowsingForPeers()
+        listener?.cancel()
+        listener = nil
+        browser?.cancel()
         browser = nil
-        session?.disconnect()
-        session = nil
+        connections.forEach { $0.cancel() }
+        connections.removeAll()
+        pendingJoinConnection?.cancel()
+        pendingJoinConnection = nil
         delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.disconnected)
     }
-    
+
     /// broadcast
     /// - Parameter data: data
     func broadcast(data: Data) {
-        // Bug #54 修复：无连接 peer 时记录日志，避免静默返回
-        guard let session = session, !session.connectedPeers.isEmpty else {
+        guard !connections.isEmpty else {
             Logger.shared.warning("Collaboration_Broadcast_NoConnectedPeers")
             return
         }
-        try? session.send(data, toPeers: session.connectedPeers, with: .reliable)
+        for connection in connections {
+            connection.send(content: data, completion: .contentProcessed { error in
+                if let error {
+                    MainActor.assumeIsolated {
+                        self.delegate?.providerDidEncounterError(error.localizedDescription)
+                    }
+                }
+            })
+        }
     }
-    
-    private func setupSession(peerID: MCPeerID) {
-        let session = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
-        sessionDelegate = MCSessionDelegateImpl(
-            onPeerConnected: { [weak self] peerID in
-                // Bug #55 修复：用 split(maxSplits: 1) 替代 components(separatedBy:).first
-                // 避免 displayName 含多个 "|" 时丢失信息
-                let displayName = peerID.displayName.split(separator: "|", maxSplits: 1).first.map(String.init) ?? peerID.displayName
-                let user = CollabUser(id: peerID.displayName, displayName: displayName, deviceName: "", joinedAt: Date())
-                self?.delegate?.providerDidConnectPeer(user)
-            },
-            onPeerDisconnected: { [weak self] peerID in
-                self?.delegate?.providerDidDisconnectPeer(id: peerID.displayName)
-            },
-            onDataReceived: { [weak self] data, peerID in
-                self?.delegate?.providerDidReceiveData(data, from: peerID.displayName)
-            },
-            onStatusChange: { [weak self] state, _ in
-                if state == .connecting {
-                    self?.delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.connecting)
+
+    // MARK: - Private Handlers
+
+    private func handleNewConnection(_ connection: NWConnection) {
+        connection.stateUpdateHandler = { [weak self] state in
+            MainActor.assumeIsolated {
+                self?.handleIncomingConnectionState(connection, state: state)
+            }
+        }
+        connection.start(queue: .main)
+        connections.append(connection)
+    }
+
+    private func handleIncomingConnectionState(_ connection: NWConnection, state: NWConnection.State) {
+        switch state {
+        case .ready:
+            let peerID = extractPeerID(from: connection.endpoint) ?? UUID().uuidString
+            notifyPeerConnected(peerID: peerID, connection: connection)
+        case .failed, .cancelled:
+            if let index = connections.firstIndex(where: { $0 === connection }) {
+                connections.remove(at: index)
+            }
+            let peerID = extractPeerID(from: connection.endpoint) ?? ""
+            if !peerID.isEmpty {
+                delegate?.providerDidDisconnectPeer(id: peerID)
+            }
+        default:
+            break
+        }
+    }
+
+    private func handleConnectionStateChange(_ connection: NWConnection, state: NWConnection.State, roomID: String) {
+        switch state {
+        case .ready:
+            if !connections.contains(where: { $0 === connection }) {
+                connections.append(connection)
+            }
+            pendingJoinConnection = nil
+            notifyPeerConnected(peerID: roomID, connection: connection)
+        case .failed:
+            pendingJoinConnection = nil
+            delegate?.providerDidEncounterError(L10n.Collaboration.Status.disconnected)
+        case .cancelled:
+            pendingJoinConnection = nil
+        default:
+            if state == .preparing {
+                delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.connecting)
+            }
+        }
+    }
+
+    private func handleBrowseResults(_ results: Set<NWBrowser.Result>) {
+        for result in results {
+            switch result.metadata {
+            case .bonjour(let record):
+                let roomName = record["room"] ?? L10n.Collaboration.defaultRoom
+                let owner = record["owner"] ?? "Unknown"
+                let endpoint = result.endpoint
+                let id = extractPeerID(from: endpoint) ?? UUID().uuidString
+                let room = DiscoveredRoom(
+                    id: id,
+                    platformPeer: endpoint,
+                    roomName: roomName,
+                    owner: owner
+                )
+                delegate?.providerDidDiscoverRoom(room)
+            default:
+                break
+            }
+        }
+    }
+
+    private func handleBrowserStateChange(_ state: NWBrowser.State) {
+        switch state {
+        case .failed(let error):
+            delegate?.providerDidEncounterError(error.localizedDescription)
+        default:
+            break
+        }
+    }
+
+    private func receiveData(from connection: NWConnection) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
+            MainActor.assumeIsolated {
+                if let data, !data.isEmpty {
+                    let peerID = self?.extractPeerID(from: connection.endpoint) ?? ""
+                    self?.delegate?.providerDidReceiveData(data, from: peerID)
+                }
+                if let error {
+                    self?.delegate?.providerDidEncounterError(error.localizedDescription)
+                }
+                if !isComplete && error == nil {
+                    self?.receiveData(from: connection)
                 }
             }
-        )
-        session.delegate = sessionDelegate
-        self.session = session
+        }
+    }
+
+    /// 从 NWEndpoint 提取 PeerID（Bonjour 服务名格式）
+    private func extractPeerID(from endpoint: NWEndpoint) -> String? {
+        switch endpoint {
+        case .service(let name, _, _, _):
+            return name
+        default:
+            return nil
+        }
+    }
+
+    /// 通知 delegate 新 peer 已连接，并开始接收数据（消除 handleIncomingConnectionState / handleConnectionStateChange 重复）
+    private func notifyPeerConnected(peerID: String, connection: NWConnection) {
+        let displayName = peerID.split(separator: "|", maxSplits: 1).first.map(String.init) ?? peerID
+        let user = CollabUser(id: peerID, displayName: displayName, deviceName: "", joinedAt: Date())
+        delegate?.providerDidConnectPeer(user)
+        receiveData(from: connection)
     }
 }
-#endif

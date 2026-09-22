@@ -21,7 +21,7 @@ import Dependencies
 public final class GlobalModelManager: TestStateResettable {
     
     /// 全局共享实例
-    public static let shared = GlobalModelManager()
+    public static let shared = MainActor.assumeIsolated { GlobalModelManager() }
     
     // MARK: - 依赖注入
     
@@ -340,8 +340,10 @@ public final class GlobalModelManager: TestStateResettable {
     // MARK: - TestStateResettable
 
     /// 重置单例状态用于测试隔离
-    public func resetStateForTesting() {
-        resetForTesting()
+    nonisolated public func resetStateForTesting() {
+        MainActor.assumeIsolated {
+            resetForTesting()
+        }
     }
     
     /// 判定目标模型对当前物理硬件的运存支持度 (.supported / .warning / .restricted)

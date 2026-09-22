@@ -27,7 +27,7 @@ struct EvaluationReport: Identifiable {
 }
 
 /// [L2] 领域服务：RAG 质量评估中心
-final class RAGEvaluationService {
+final class RAGEvaluationService: @unchecked Sendable {
     private let llmService: any LLMServiceProtocol
     private let governanceStore: any RAGGovernanceRepository
 
@@ -226,21 +226,21 @@ final class RAGEvaluationService {
 
 /// RAGEvaluationService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 enum RAGEvaluationServiceKey: DependencyKey {
-    static var liveValue: RAGEvaluationService {
+    nonisolated static var liveValue: RAGEvaluationService {
         ServiceContainer.shared.resolve(RAGEvaluationService.self)
     }
-    @MainActor
-    static var testValue: RAGEvaluationService {
+    nonisolated static var testValue: RAGEvaluationService {
         ServiceContainer.shared.resolveOptional(RAGEvaluationService.self)
-            ?? RAGEvaluationService(llmService: NoOpLLMService(), governanceStore: NoOpRAGGovernanceRepository())
+            ?? MainActor.assumeIsolated {
+                RAGEvaluationService(llmService: NoOpLLMService(), governanceStore: NoOpRAGGovernanceRepository())
+            }
     }
-    @MainActor
-    static var previewValue: RAGEvaluationService { testValue }
+    nonisolated static var previewValue: RAGEvaluationService { testValue }
 }
 
 extension DependencyValues {
     /// RAG 评估服务依赖
-    var ragEvaluationService: RAGEvaluationService {
+    nonisolated var ragEvaluationService: RAGEvaluationService {
         get { self[RAGEvaluationServiceKey.self] }
         set { self[RAGEvaluationServiceKey.self] = newValue }
     }

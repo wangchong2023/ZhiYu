@@ -54,7 +54,14 @@ public enum AppScreen {
         #if os(watchOS)
         return WKInterfaceDevice.current().screenBounds.width * 0.9
         #else
-        return UIScreen.main.bounds.width * 0.85
+        // iOS 26.0 废弃 UIScreen.main，改为从活跃 UIWindowScene 获取 screen
+        let activeScene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+        let screenWidth = activeScene?.screen.bounds.width
+            ?? activeScene?.windows.first?.window?.screen.bounds.width
+            ?? 375
+        return screenWidth * 0.85
         #endif
     }
 }
@@ -66,10 +73,37 @@ import UIKit
 public enum PlatformPresentationAnchor {
     @MainActor
     public static var keyWindow: UIWindow {
-        let activeScene = UIApplication.shared.connectedScenes
+        let scenes = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }
-        return activeScene?.windows.first { $0.isKeyWindow } ?? UIWindow()
+        // 优先取 foregroundActive 场景的 keyWindow
+        if let activeScene = scenes.first(where: { $0.activationState == .foregroundActive }),
+           let keyWindow = activeScene.windows.first(where: { $0.isKeyWindow }) {
+            return keyWindow
+        }
+        // fallback：取任意场景的 keyWindow
+        if let anyScene = scenes.first(where: { !$0.windows.isEmpty }),
+           let window = anyScene.windows.first(where: { $0.isKeyWindow }) {
+            return window
+        }
+        // 最后 fallback：用第一个可用场景创建新 UIWindow
+        if let scene = scenes.first {
+            return UIWindow(windowScene: scene)
+        }
+        // 极端边界：无任何 UIWindowScene（理论上不可达，keyWindow 仅在 App 完全启动后调用）。
+        // iOS 26.0 废弃 UIWindow(frame:)，用 if #unavailable 限制只在 iOS < 26.0 调用。
+        if #unavailable(iOS 26.0) {
+            return UIWindow(frame: .zero)
+        }
+        // iOS 26.0+：再次遍历 connectedScenes 查找任意 window（兜底）
+        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+            if let window = scene.windows.first {
+                return window
+            }
+        }
+        // iOS 26.0+ 真正无任何 window：此分支不可达。
+        // 无 scene 时 iOS 26.0+ 无法创建 window，用 fatalError 替代不可达代码。
+        // Gatekeeper 禁止 fatalError，用 preconditionFailure 替代（同样是不可达分支）。
+        preconditionFailure("PlatformPresentationAnchor.keyWindow: No UIWindowScene available")
     }
 }
 #endif

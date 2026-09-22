@@ -92,17 +92,14 @@ public final class ToastManager: @unchecked Sendable {
 // MARK: - ToastManager DependencyKey
 
 private enum ToastManagerKey: DependencyKey {
-    @MainActor
-    static let liveValue: ToastManager = ToastManager()
-    @MainActor
-    static let testValue: ToastManager = ToastManager()
-    @MainActor
-    static let previewValue: ToastManager = ToastManager()
+    nonisolated static var liveValue: ToastManager { MainActor.assumeIsolated { ToastManager() } }
+    nonisolated static var testValue: ToastManager { MainActor.assumeIsolated { ToastManager() } }
+    nonisolated static var previewValue: ToastManager { MainActor.assumeIsolated { ToastManager() } }
 }
 
 extension DependencyValues {
     /// Toast 服务依赖（原 ToastManager.shared）
-    var toastService: ToastManager {
+    nonisolated var toastService: ToastManager {
         get { self[ToastManagerKey.self] }
         set { self[ToastManagerKey.self] = newValue }
     }

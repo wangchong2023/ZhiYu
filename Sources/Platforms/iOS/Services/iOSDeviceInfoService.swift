@@ -27,7 +27,15 @@ final class iOSDeviceInfoService: DeviceInfoProtocol, Sendable {
     }
 
     var screenHeight: CGFloat {
-        runOnMainSync { UIScreen.main.bounds.height }
+        // iOS 26.0 废弃 UIScreen.main，改为从活跃 UIWindowScene 获取 screen
+        runOnMainSync {
+            let activeScene = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first { $0.activationState == .foregroundActive }
+            return activeScene?.screen.bounds.height
+                ?? activeScene?.windows.first?.window?.screen.bounds.height
+                ?? 0
+        }
     }
 }
 

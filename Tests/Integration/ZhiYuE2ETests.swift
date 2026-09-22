@@ -10,7 +10,7 @@
 //
 import XCTest
 import UFPCore
-import MultipeerConnectivity
+import Network
 import UFPStorage
 @testable import ZhiYu
 
@@ -351,10 +351,10 @@ final class CollaborationWorkflowTests: XCTestCase {
         XCTAssertEqual(edit.newValue, "New Title")
     }
     func testDiscoveredRoomStructure() {
-        let peer = MCPeerID(displayName: "peer123")
+        let endpoint = NWEndpoint.service(name: "peer123", type: "_km-collab._tcp", domain: nil, interface: nil)
         let room = DiscoveredRoom(
             id: "room-1",
-            platformPeer: peer,
+            platformPeer: endpoint,
             roomName: "Test Room",
             owner: "HostUser"
         )

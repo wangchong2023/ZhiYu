@@ -142,7 +142,8 @@ def _compute_dependency_key_ranges(content):
     ranges = []
     lines = content.split("\n")
     # 匹配 static var liveValue / testValue / previewValue 的起始行
-    pattern = re.compile(r'^\s*(?:public\s+)?static\s+var\s+(liveValue|testValue|previewValue)\b')
+    # 支持 nonisolated / public / nonisolated public / public nonisolated 等前缀组合
+    pattern = re.compile(r'^\s*(?:(?:nonisolated\s+|public\s+){1,2})?static\s+var\s+(liveValue|testValue|previewValue)\b')
     for i, line in enumerate(lines):
         if pattern.match(line):
             # 找到属性体的结束（简单的括号匹配或下一个属性/方法）

@@ -43,6 +43,7 @@ private func mainCameraNode(in scene: SCNScene?) -> SCNNode? {
 }
 
 /// 消除 iOS makeUIView 与 macOS makeNSView 的重复 SCNView 配置
+@MainActor
 private func configureSceneView<C: AnyObject>(_ scnView: SCNView, scene: SCNScene?, coordinator: C, syncCamera: (C, SCNNode) -> Void) {
     scnView.scene = scene
     // 关键：关闭系统默认的自带相机操作，以接管高清晰阻尼平滑计算
@@ -57,6 +58,7 @@ private func configureSceneView<C: AnyObject>(_ scnView: SCNView, scene: SCNScen
     }
 }
 /// 消除 iOS/macOS handleTap 的重复逻辑，接收点击位置并执行命中检测
+@MainActor
 private func performTapHitTest(location: CGPoint, in scnView: SCNView, onNodeTap: (UUID?) -> Void) {
     let hitResults = scnView.hitTest(location, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
     for result in hitResults {

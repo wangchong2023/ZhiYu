@@ -56,10 +56,14 @@ public final class ServiceContainer: @unchecked Sendable {
     /// - Parameters:
     ///   - service: 服务实例
     ///   - type: 服务的协议或类类型
+    /// - Note: T 无 Sendable 约束（DI 容器需接受 ObservableObject 等非 Sendable 类型），
+    ///   通过 unsafeAnySendable 包装绕过 @Sendable 闭包捕获检查，
+    ///   写入在 lock 内原子完成，实际线程安全
     public func register<T>(_ service: T, for type: T.Type) {
         let key = makeKey(for: type)
+        let unsafeService = UnsafeAnySendable(service)
         lock.withLock {
-            services[key] = service
+            services[key] = unsafeService
             registerCallCount += 1
         }
         #if DEBUG
@@ -149,7 +153,9 @@ public final class ServiceContainer: @unchecked Sendable {
     }
 
     /// resolve 诊断快照（避免 large_tuple 违规，元组成员不超过 2）
-    internal struct ResolveSnapshot {
+    /// - Note: 标记 @unchecked Sendable 因为 instance 为 Any（类型擦除），
+    ///   快照仅在 lock 内构造，构造后不可变，跨 actor 传递安全
+    internal struct ResolveSnapshot: @unchecked Sendable {
         let instance: Any?
         let registeredKeys: [String]
         let callCount: Int
@@ -162,7 +168,7 @@ public final class ServiceContainer: @unchecked Sendable {
 
         // 单次加锁：同时读取实例和诊断信息，消除两次加锁间的竞态窗口
         let snapshot = lock.withLock { () -> ResolveSnapshot in
-            let instance = services[key]
+            let instance = services[key] as? UnsafeAnySendable
             let registeredKeys = Array(services.keys)
             let callCount = resolveCallCount
             resolveCallCount += 1
@@ -175,7 +181,8 @@ public final class ServiceContainer: @unchecked Sendable {
             )
         }
 
-        if let service = snapshot.instance as? T {
+        if let unsafeService = snapshot.instance as? UnsafeAnySendable,
+           let service = unsafeService.value as? T {
             return service
         }
 
@@ -271,16 +278,23 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 此处先检查 instance 是否为 nil，避免未注册服务被误判为「已注册但值为 nil」。
     public func resolveOptional<T>(_ type: T.Type) -> T? {
         let key = makeKey(for: type)
-        let instance = lock.withLock { services[key] }
-        guard let nonNilInstance = instance else { return nil }
-        return nonNilInstance as? T
+        let unsafeInstance = lock.withLock { () -> UnsafeAnySendable? in
+            guard let raw = services[key] else { return nil }
+            return raw as? UnsafeAnySendable
+        }
+        guard let unsafeService = unsafeInstance else { return nil }
+        return unsafeService.value as? T
     }
 
     /// 类型擦除的服务解析（供 `@Inject` 可选检测使用）
     public func typeErasedResolve(_ type: Any.Type) -> Any? {
         let key = makeKey(forAny: type)
-        let instance = lock.withLock { services[key] }
-        return instance
+        let unsafeInstance = lock.withLock { () -> UnsafeAnySendable? in
+            guard let raw = services[key] else { return nil }
+            return raw as? UnsafeAnySendable
+        }
+        guard let unsafeService = unsafeInstance else { return nil }
+        return unsafeService.value
     }
 
     /// 生成类型唯一的 Key。
@@ -384,6 +398,14 @@ extension Optional: OptionalDetectableProtocol {
         }
         return (nil as Wrapped?) as Any
     }
+}
+
+/// 类型擦除的 Sendable 包装器，用于在 @Sendable 闭包中传递非 Sendable 服务实例。
+/// - Note: DI 容器需接受 ObservableObject 等非 Sendable 类型，
+///   此包装器仅绕过编译器检查，实际线程安全由 ServiceContainer 的 lock 保证。
+internal struct UnsafeAnySendable: @unchecked Sendable {
+    let value: Any
+    init(_ value: Any) { self.value = value }
 }
 
 /// 依赖注入属性包装器（Factory 风格）。

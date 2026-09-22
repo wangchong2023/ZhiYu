@@ -358,8 +358,10 @@ final class DatabaseManager: TestStateResettable {
     // MARK: - TestStateResettable
 
     /// 重置单例状态用于测试隔离
-    func resetStateForTesting() {
-        reset()
+    nonisolated func resetStateForTesting() {
+        MainActor.assumeIsolated {
+            reset()
+        }
     }
     
     /// 强制对指定的数据库连接执行 Schema 架构迁移以重新构建物理表。
@@ -468,20 +470,17 @@ extension Notification.Name {
 
 import Dependencies
 
-@MainActor
 enum DatabaseManagerKey: DependencyKey {
-    @MainActor
-    static var liveValue: DatabaseManager { ServiceContainer.shared.resolve(DatabaseManager.self) }
+    nonisolated static var liveValue: DatabaseManager {
+        MainActor.assumeIsolated { ServiceContainer.shared.resolve(DatabaseManager.self) }
+    }
 
-    @MainActor
-    static var testValue: DatabaseManager { DatabaseManager.shared }
-    @MainActor
-    static var previewValue: DatabaseManager { testValue }
+    nonisolated static var testValue: DatabaseManager { MainActor.assumeIsolated { DatabaseManager.shared } }
+    nonisolated static var previewValue: DatabaseManager { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    var databaseManager: DatabaseManager {
+    nonisolated var databaseManager: DatabaseManager {
         get { self[DatabaseManagerKey.self] }
         set { self[DatabaseManagerKey.self] = newValue }
     }

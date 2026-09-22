@@ -22,11 +22,11 @@ final class WeChatAuthStrategyTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        strategy = WeChatAuthStrategy()
+        MainActor.assumeIsolated { strategy = WeChatAuthStrategy() }
     }
 
     override func tearDown() {
-        strategy = nil
+        MainActor.assumeIsolated { strategy = nil }
         super.tearDown()
     }
 

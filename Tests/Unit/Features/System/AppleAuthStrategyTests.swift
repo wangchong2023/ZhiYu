@@ -18,11 +18,11 @@ final class AppleAuthStrategyTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        strategy = AppleAuthStrategy()
+        MainActor.assumeIsolated { strategy = AppleAuthStrategy() }
     }
 
     override func tearDown() {
-        strategy = nil
+        MainActor.assumeIsolated { strategy = nil }
         super.tearDown()
     }
 

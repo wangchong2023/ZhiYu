@@ -47,7 +47,7 @@ final class MockSpeechService: SpeechServiceProtocol {
 final class VoiceNoteViewSnapshots: XCTestCase {
 
     /// 依据环境变量判断快照录制策略
-    private static var recordMode: SnapshotTestingConfiguration.Record {
+    private nonisolated static var recordMode: SnapshotTestingConfiguration.Record {
         ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
     }
 

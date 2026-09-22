@@ -122,21 +122,17 @@ final class WorkflowService: ObservableObject {
 
 // MARK: - DependencyKey
 
-@MainActor
 enum WorkflowServiceKey: DependencyKey {
-    @MainActor
-    static var liveValue: WorkflowService {
-        ServiceContainer.shared.resolveOptional(WorkflowService.self) ?? WorkflowService()
+    nonisolated static var liveValue: WorkflowService {
+        ServiceContainer.shared.resolveOptional(WorkflowService.self)
+            ?? MainActor.assumeIsolated { WorkflowService() }
     }
-    @MainActor
-    static var testValue: WorkflowService { liveValue }
-    @MainActor
-    static var previewValue: WorkflowService { liveValue }
+    nonisolated static var testValue: WorkflowService { liveValue }
+    nonisolated static var previewValue: WorkflowService { liveValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    var workflowService: WorkflowService {
+    nonisolated var workflowService: WorkflowService {
         get { self[WorkflowServiceKey.self] }
         set { self[WorkflowServiceKey.self] = newValue }
     }

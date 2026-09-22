@@ -10,18 +10,21 @@
 //
 
 import Foundation
+import os
 
 /// 排空等待者包装器，确保 continuation 只 resume 一次。
-private final class DrainWaiter {
-    private var continuation: CheckedContinuation<Void, Never>?
+private final class DrainWaiter: @unchecked Sendable {
+    private let continuation: OSAllocatedUnfairLock<CheckedContinuation<Void, Never>?>
     init(continuation: CheckedContinuation<Void, Never>) {
-        self.continuation = continuation
+        self.continuation = OSAllocatedUnfairLock(initialState: continuation)
     }
     func resume() {
-        if let cont = continuation {
-            continuation = nil
-            cont.resume()
+        let cont = continuation.withLock { lock -> CheckedContinuation<Void, Never>? in
+            let value = lock
+            lock = nil
+            return value
         }
+        cont?.resume()
     }
 }
 

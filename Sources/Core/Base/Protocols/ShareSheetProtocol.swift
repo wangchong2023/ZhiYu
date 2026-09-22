@@ -33,21 +33,19 @@ public final class NoOpShareSheet: ShareSheetProtocol, @unchecked Sendable {
 
 /// ShareSheetProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum ShareSheetKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any ShareSheetProtocol {
+    nonisolated public static var liveValue: any ShareSheetProtocol {
         ServiceContainer.shared.resolve((any ShareSheetProtocol).self)
     }
-    @MainActor
-    public static var testValue: any ShareSheetProtocol {
-        ServiceContainer.shared.resolveOptional((any ShareSheetProtocol).self) ?? NoOpShareSheet()
+    nonisolated public static var testValue: any ShareSheetProtocol {
+        ServiceContainer.shared.resolveOptional((any ShareSheetProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpShareSheet() }
     }
-    @MainActor
-    public static var previewValue: any ShareSheetProtocol { NoOpShareSheet() }
+    nonisolated public static var previewValue: any ShareSheetProtocol { MainActor.assumeIsolated { NoOpShareSheet() } }
 }
 
 extension DependencyValues {
     /// 系统分享面板依赖
-    public var shareSheet: any ShareSheetProtocol {
+    nonisolated public var shareSheet: any ShareSheetProtocol {
         get { self[ShareSheetKey.self] }
         set { self[ShareSheetKey.self] = newValue }
     }

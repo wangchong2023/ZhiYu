@@ -36,17 +36,15 @@ public protocol HapticFeedbackProtocol: Sendable {
 
 /// HapticFeedbackProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum HapticFeedbackKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any HapticFeedbackProtocol {
+    nonisolated public static var liveValue: any HapticFeedbackProtocol {
         ServiceContainer.shared.resolve((any HapticFeedbackProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any HapticFeedbackProtocol {
-        ServiceContainer.shared.resolveOptional((any HapticFeedbackProtocol).self) ?? NoOpHapticFeedback()
+    nonisolated public static var testValue: any HapticFeedbackProtocol {
+        ServiceContainer.shared.resolveOptional((any HapticFeedbackProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpHapticFeedback() }
     }
-    @MainActor
-    public static var previewValue: any HapticFeedbackProtocol { testValue }
+    nonisolated public static var previewValue: any HapticFeedbackProtocol { testValue }
 }
 
 /// 无操作触感反馈服务（测试/预览占位，DI 未就绪时降级）
@@ -58,7 +56,7 @@ public final class NoOpHapticFeedback: HapticFeedbackProtocol {
 
 extension DependencyValues {
     /// 触感反馈服务依赖
-    public var haptic: any HapticFeedbackProtocol {
+    nonisolated public var haptic: any HapticFeedbackProtocol {
         get { self[HapticFeedbackKey.self] }
         set { self[HapticFeedbackKey.self] = newValue }
     }

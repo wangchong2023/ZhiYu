@@ -112,18 +112,15 @@ final class VaultStorageSecurityService {
 // MARK: - DependencyKey 注册
 
 /// VaultStorageSecurityService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
-@MainActor
 enum VaultStorageSecurityServiceKey: DependencyKey {
-    @MainActor
-    static var liveValue: VaultStorageSecurityService {
+    nonisolated static var liveValue: VaultStorageSecurityService {
         ServiceContainer.shared.resolve(VaultStorageSecurityService.self)
     }
-    @MainActor
-    static var testValue: VaultStorageSecurityService {
-        ServiceContainer.shared.resolveOptional(VaultStorageSecurityService.self) ?? VaultStorageSecurityService()
+    nonisolated static var testValue: VaultStorageSecurityService {
+        ServiceContainer.shared.resolveOptional(VaultStorageSecurityService.self)
+            ?? MainActor.assumeIsolated { VaultStorageSecurityService() }
     }
-    @MainActor
-    static var previewValue: VaultStorageSecurityService { testValue }
+    nonisolated static var previewValue: VaultStorageSecurityService { testValue }
 }
 
 extension DependencyValues {

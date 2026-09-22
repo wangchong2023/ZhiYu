@@ -304,19 +304,21 @@ final class Router: TestStateResettable {
     // MARK: - TestStateResettable
 
     /// 重置路由状态用于测试隔离
-    func resetStateForTesting() {
-        clearHistory()
-        path = NavigationPath()
-        selectedTab = .knowledge
-        sidebarSelection = nil
-        pendingInitialChatPrompt = nil
-        isShowingSettingsSheet = false
-        isShowingProfileMenu = false
-        isShowingProfileSheet = false
-        isShowingPlanSheet = false
-        isShowingPluginsSheet = false
-        isShowingAboutSheet = false
-        isShowingAISettingsSheet = false
+    nonisolated func resetStateForTesting() {
+        MainActor.assumeIsolated {
+            clearHistory()
+            path = NavigationPath()
+            selectedTab = .knowledge
+            sidebarSelection = nil
+            pendingInitialChatPrompt = nil
+            isShowingSettingsSheet = false
+            isShowingProfileMenu = false
+            isShowingProfileSheet = false
+            isShowingPlanSheet = false
+            isShowingPluginsSheet = false
+            isShowingAboutSheet = false
+            isShowingAISettingsSheet = false
+        }
     }
     
     /// 跳转到指定目标
@@ -373,23 +375,22 @@ final class Router: TestStateResettable {
 
 // MARK: - DependencyKey
 
-@MainActor
 enum RouterKey: DependencyKey {
-    @MainActor
-    static var liveValue: Router {
-        ServiceContainer.shared.resolveOptional(Router.self) ?? Router.shared
+    nonisolated static var liveValue: Router {
+        MainActor.assumeIsolated {
+            ServiceContainer.shared.resolveOptional(Router.self) ?? Router.shared
+        }
     }
-    @MainActor
-    static var testValue: Router {
-        ServiceContainer.shared.resolveOptional(Router.self) ?? Router()
+    nonisolated static var testValue: Router {
+        MainActor.assumeIsolated {
+            ServiceContainer.shared.resolveOptional(Router.self) ?? Router()
+        }
     }
-    @MainActor
-    static var previewValue: Router { testValue }
+    nonisolated static var previewValue: Router { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    var router: Router {
+    nonisolated var router: Router {
         get { self[RouterKey.self] }
         set { self[RouterKey.self] = newValue }
     }

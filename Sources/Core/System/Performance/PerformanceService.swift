@@ -171,22 +171,19 @@ final class PerformanceService: ObservableObject {
 import Dependencies
 
 /// PerformanceService 依赖注入键
-@MainActor
 enum PerformanceServiceKey: DependencyKey {
-    @MainActor
-    static var liveValue: PerformanceService {
-        ServiceContainer.shared.resolveOptional(PerformanceService.self) ?? PerformanceService()
+    nonisolated static var liveValue: PerformanceService {
+        MainActor.assumeIsolated {
+            ServiceContainer.shared.resolveOptional(PerformanceService.self) ?? PerformanceService()
+        }
     }
 
-    @MainActor
-    static var testValue: PerformanceService { liveValue }
-    @MainActor
-    static var previewValue: PerformanceService { liveValue }
+    nonisolated static var testValue: PerformanceService { liveValue }
+    nonisolated static var previewValue: PerformanceService { liveValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    var performanceService: PerformanceService {
+    nonisolated var performanceService: PerformanceService {
         get { self[PerformanceServiceKey.self] }
         set { self[PerformanceServiceKey.self] = newValue }
     }

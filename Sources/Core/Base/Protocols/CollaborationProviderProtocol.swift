@@ -54,7 +54,7 @@ protocol CollaborationProviderDelegate: AnyObject {
 
 /// 跨平台局域网协作网络通信服务提供商抽象协议。
 @MainActor
-protocol CollaborationProviderProtocol: AnyObject {
+protocol CollaborationProviderProtocol: AnyObject, Sendable {
     /// 获取或设置反向通知事件的代理实例。
     var delegate: CollaborationProviderDelegate? { get set }
     
@@ -91,16 +91,15 @@ import UFPCore
 
 /// CollaborationProviderProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 enum CollaborationProviderKey: DependencyKey {
-    static var liveValue: any CollaborationProviderProtocol {
+    nonisolated static var liveValue: any CollaborationProviderProtocol {
         ServiceContainer.shared.resolve((any CollaborationProviderProtocol).self)
     }
 
-    @MainActor
-    static var testValue: any CollaborationProviderProtocol {
-        ServiceContainer.shared.resolveOptional((any CollaborationProviderProtocol).self) ?? NoOpCollaborationProvider()
+    nonisolated static var testValue: any CollaborationProviderProtocol {
+        ServiceContainer.shared.resolveOptional((any CollaborationProviderProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpCollaborationProvider() }
     }
-    @MainActor
-    static var previewValue: any CollaborationProviderProtocol { testValue }
+    nonisolated static var previewValue: any CollaborationProviderProtocol { testValue }
 }
 
 /// 无操作协作服务（测试/预览占位，DI 未就绪时降级）

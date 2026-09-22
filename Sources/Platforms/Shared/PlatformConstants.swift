@@ -35,14 +35,18 @@ public enum PlatformConstants {
         public static let domainIdentifier: String = "com.zhiyu.app.pages"
     }
 
-    // MARK: - Multipeer 协作
+    // MARK: - Network 协作
 
-    /// MultipeerConnectivity 超时与广播约束
-    public enum Multipeer {
+    /// Network Framework 协作超时与协议约束
+    public enum NetworkCollaboration {
         /// 加入房间超时秒数
         public static let joinTimeoutSeconds: TimeInterval = 30
         /// PeerID 唯一后缀长度（UUID 前 N 位）
         public static let peerIDSuffixLength: Int = 8
+        /// Bonjour 服务类型标识
+        public static let serviceType: String = "km-collab"
+        /// 连接建立超时秒数
+        public static let connectionTimeoutSeconds: TimeInterval = 10
     }
 
     // MARK: - Reminder 服务

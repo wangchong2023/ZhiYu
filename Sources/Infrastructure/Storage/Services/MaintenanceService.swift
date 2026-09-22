@@ -159,29 +159,24 @@ public final class MaintenanceService {
 
 // MARK: - DependencyKey
 
-@MainActor
 public enum MaintenanceServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: MaintenanceService { ServiceContainer.shared.resolve(MaintenanceService.self) }
+    nonisolated public static var liveValue: MaintenanceService { ServiceContainer.shared.resolve(MaintenanceService.self) }
 
-    @MainActor
-    public static var testValue: MaintenanceService {
-        ServiceContainer.shared.resolveOptional(MaintenanceService.self) ?? MaintenanceService()
+    nonisolated public static var testValue: MaintenanceService {
+        ServiceContainer.shared.resolveOptional(MaintenanceService.self)
+            ?? MainActor.assumeIsolated { MaintenanceService() }
     }
-    @MainActor
-    public static var previewValue: MaintenanceService { testValue }
+    nonisolated public static var previewValue: MaintenanceService { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    public var maintenanceService: MaintenanceService {
+    nonisolated public var maintenanceService: MaintenanceService {
         get { self[MaintenanceServiceKey.self] }
         set { self[MaintenanceServiceKey.self] = newValue }
     }
 
     /// 可选 MaintenanceService 依赖（DI 未就绪时返回 nil）
-    @MainActor
-    public var maintenanceServiceOptional: MaintenanceService? {
+    nonisolated public var maintenanceServiceOptional: MaintenanceService? {
         get { ServiceContainer.shared.resolveOptional(MaintenanceService.self) } // inject_exempt: DependencyValues getter
         set { /* 只读，setter 保留以符合 DependencyValues 协议 */ }
     }

@@ -16,7 +16,7 @@ import Dependencies
 // MARK: - Undo Service
 /// Manages undo/redo for AppStore operations using snapshot-based approach.
 /// Each mutation saves a snapshot of pages before the change, enabling full rollback.
-final class UndoService: ObservableObject {
+final class UndoService: ObservableObject, @unchecked Sendable {
     @Published var canUndo: Bool = false
     @Published var canRedo: Bool = false
 
@@ -78,22 +78,19 @@ final class UndoService: ObservableObject {
 
 /// UndoService 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析，可选）
 enum UndoServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: UndoService? {
+    nonisolated public static var liveValue: UndoService? {
         ServiceContainer.shared.resolveOptional(UndoService.self)
     }
 
-    @MainActor
-    public static var testValue: UndoService? {
+    nonisolated public static var testValue: UndoService? {
         ServiceContainer.shared.resolveOptional(UndoService.self)
     }
-    @MainActor
-    static var previewValue: UndoService? { testValue }
+    nonisolated static var previewValue: UndoService? { testValue }
 }
 
 extension DependencyValues {
     /// 撤销服务依赖（可选）
-    var undoService: UndoService? {
+    nonisolated var undoService: UndoService? {
         get { self[UndoServiceKey.self] }
         set { self[UndoServiceKey.self] = newValue }
     }

@@ -13,8 +13,15 @@
 
 #if !os(watchOS)
 import XCTest
-import EventKit
+@preconcurrency import EventKit
 @testable import ZhiYu
+
+/// 测试专用：包装非 Sendable 的 EKCalendar，使其可在 @Sendable 闭包中安全捕获。
+/// EKCalendar 在测试中为 mock 对象，不会真正跨线程共享，`@unchecked Sendable` 安全。
+private final class CalendarBox: @unchecked Sendable {
+    let value: EKCalendar
+    init(_ value: EKCalendar) { self.value = value }
+}
 
 @MainActor
 final class IOSReminderServiceTests: XCTestCase {
@@ -38,10 +45,12 @@ final class IOSReminderServiceTests: XCTestCase {
         calendars: [EKCalendar] = [],
         saveThrows: Bool = false
     ) -> iOSReminderService {
-        iOSReminderService(
+        let defaultCalendarBox = defaultCalendar.map { CalendarBox($0) }
+        let calendarsBox = calendars.map { CalendarBox($0) }
+        return iOSReminderService(
             requestAccess: { accessGranted },
-            defaultCalendar: { defaultCalendar },
-            calendars: { _ in calendars },
+            defaultCalendar: { defaultCalendarBox?.value },
+            calendars: { _ in calendarsBox.map { $0.value } },
             save: { _, _ in
                 if saveThrows {
                     throw NSError(
@@ -113,10 +122,11 @@ final class IOSReminderServiceTests: XCTestCase {
     func testCreateReminderFallbackToCalendarsListSucceeds() async throws {
         var saveCalled = false
         let fallbackCalendar = EKCalendar(for: .reminder, eventStore: EKEventStore())
+        let fallbackCalendarBox = CalendarBox(fallbackCalendar)
         let service = iOSReminderService(
             requestAccess: { true },
             defaultCalendar: { nil },
-            calendars: { _ in [fallbackCalendar] },
+            calendars: { _ in [fallbackCalendarBox.value] },
             save: { _, _ in saveCalled = true }
         )
         try await service.createReminder(
@@ -177,9 +187,10 @@ final class IOSReminderServiceTests: XCTestCase {
     func testCreateReminderWithEmptyTitleDoesNotCrash() async throws {
         var saveCalled = false
         let calendar = EKCalendar(for: .reminder, eventStore: EKEventStore())
+        let calendarBox = CalendarBox(calendar)
         let service = iOSReminderService(
             requestAccess: { true },
-            defaultCalendar: { calendar },
+            defaultCalendar: { calendarBox.value },
             calendars: { _ in [] },
             save: { _, _ in saveCalled = true }
         )

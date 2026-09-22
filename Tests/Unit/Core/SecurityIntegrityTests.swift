@@ -21,17 +21,22 @@ final class SecurityIntegrityTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        setupFullMockEnvironment()
-        securityManager = SecurityManager.shared
-        let tempDir = FileManager.default.temporaryDirectory
-        testFileURL = tempDir.appendingPathComponent(testFileName)
-        try "Test Data".write(to: testFileURL, atomically: true, encoding: .utf8)
+        MainActor.assumeIsolated {
+            setupFullMockEnvironment()
+            securityManager = SecurityManager.shared
+            let tempDir = FileManager.default.temporaryDirectory
+            testFileURL = tempDir.appendingPathComponent(testFileName)
+        }
+        try "Test Data".write(to: MainActor.assumeIsolated { testFileURL }, atomically: true, encoding: .utf8)
     }
 
     override func tearDownWithError() throws {
-        try? FileManager.default.removeItem(at: testFileURL)
-        securityManager = nil
-        ServiceContainer.shared.reset()
+        MainActor.assumeIsolated {
+            try? FileManager.default.removeItem(at: testFileURL)
+            testFileURL = nil
+            securityManager = nil
+            ServiceContainer.shared.reset()
+        }
         try super.tearDownWithError()
     }
 

@@ -36,7 +36,12 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
 
 #if canImport(Speech)
     internal var speechRecognizer: SFSpeechRecognizer?
-    internal var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    // iOS 27.0 installAudioTap 的 tapProvider 是 @Sendable 闭包，在后台音频线程执行。
+    // SFSpeechAudioBufferRecognitionRequest.append 本身线程安全（Apple 文档）。
+    // @Observable 的可变属性不能用 nonisolated，用 @ObservationIgnored + nonisolated(unsafe)。
+    // @ObservationIgnored 排除观察追踪，nonisolated(unsafe) 允许跨 actor 访问。
+    @ObservationIgnored
+    nonisolated(unsafe) internal var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     internal var recognitionTask: SFSpeechRecognitionTask?
 #endif
     internal var audioEngine: AVAudioEngine?
@@ -75,7 +80,9 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
         audioRecorder?.record()
     }
 
-    func calculateAudioLevel(from buffer: AVAudioPCMBuffer) {
+    // iOS 27.0 installAudioTap 的 tapProvider 是 @Sendable 闭包，需 nonisolated 访问。
+    // 内部已用 DispatchQueue.main.async 包裹 @MainActor 属性访问。
+    nonisolated func calculateAudioLevel(from buffer: AVAudioPCMBuffer) {
         let channelData = buffer.floatChannelData?[0]
         let channelDataArray = Array(UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
         let rms = sqrt(channelDataArray.map { $0 * $0 }.reduce(0, +) / Float(channelDataArray.count))

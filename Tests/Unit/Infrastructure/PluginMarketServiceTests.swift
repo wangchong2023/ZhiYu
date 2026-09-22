@@ -51,16 +51,20 @@ final class PluginMarketServiceTests: XCTestCase {
     override func setUp() {
         super.setUp()
         URLProtocol.registerClass(MockURLProtocol.self)
-        registry = PluginRegistry()
-        ServiceContainer.shared.register(registry, for: PluginRegistry.self)
-        service = PluginMarketService(registry: registry)
+        MainActor.assumeIsolated {
+            registry = PluginRegistry()
+            ServiceContainer.shared.register(registry, for: PluginRegistry.self)
+            service = PluginMarketService(registry: registry)
+        }
     }
 
     override func tearDown() {
         URLProtocol.unregisterClass(MockURLProtocol.self)
         MockURLProtocol.requestHandler = nil
-        service = nil
-        registry = nil
+        MainActor.assumeIsolated {
+            service = nil
+            registry = nil
+        }
         super.tearDown()
     }
     

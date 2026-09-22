@@ -25,7 +25,7 @@ public struct SendSmsRequest: Encodable {
 
 // MARK: - 统一登录 (密码 & 短信)
 
-public struct LoginRequest: Encodable {
+public struct LoginRequest: Encodable, Sendable {
     public let grantType: String
     public let username: String?
     public let password: String?

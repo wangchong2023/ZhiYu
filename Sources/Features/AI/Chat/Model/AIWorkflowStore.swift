@@ -305,22 +305,18 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
 
 // MARK: - DependencyKey
 
-@MainActor
 public enum AIWorkflowStoreKey: DependencyKey {
-    @MainActor
-    public static var liveValue: AIWorkflowStore { ServiceContainer.shared.resolve(AIWorkflowStore.self) }
+    nonisolated public static var liveValue: AIWorkflowStore { ServiceContainer.shared.resolve(AIWorkflowStore.self) }
 
-    @MainActor
-    public static var testValue: AIWorkflowStore {
-        ServiceContainer.shared.resolveOptional(AIWorkflowStore.self) ?? AIWorkflowStore()
+    nonisolated public static var testValue: AIWorkflowStore {
+        ServiceContainer.shared.resolveOptional(AIWorkflowStore.self)
+            ?? MainActor.assumeIsolated { AIWorkflowStore() }
     }
-    @MainActor
-    public static var previewValue: AIWorkflowStore { testValue }
+    nonisolated public static var previewValue: AIWorkflowStore { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    public var aiWorkflowStore: AIWorkflowStore {
+    nonisolated public var aiWorkflowStore: AIWorkflowStore {
         get { self[AIWorkflowStoreKey.self] }
         set { self[AIWorkflowStoreKey.self] = newValue }
     }

@@ -32,16 +32,14 @@ public final class NoOpURLOpener: URLOpenerProtocol, @unchecked Sendable {
 
 /// URLOpenerProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum URLOpenerKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any URLOpenerProtocol {
+    nonisolated public static var liveValue: any URLOpenerProtocol {
         ServiceContainer.shared.resolve((any URLOpenerProtocol).self)
     }
-    @MainActor
-    public static var testValue: any URLOpenerProtocol {
-        ServiceContainer.shared.resolveOptional((any URLOpenerProtocol).self) ?? NoOpURLOpener()
+    nonisolated public static var testValue: any URLOpenerProtocol {
+        ServiceContainer.shared.resolveOptional((any URLOpenerProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpURLOpener() }
     }
-    @MainActor
-    public static var previewValue: any URLOpenerProtocol { NoOpURLOpener() }
+    nonisolated public static var previewValue: any URLOpenerProtocol { MainActor.assumeIsolated { NoOpURLOpener() } }
 }
 
 extension DependencyValues {

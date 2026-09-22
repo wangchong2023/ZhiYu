@@ -332,17 +332,15 @@ public final class KnowledgeStore {
 
 /// KnowledgeStore 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum KnowledgeStoreKey: DependencyKey {
-    @MainActor
-    public static var liveValue: KnowledgeStore {
+    nonisolated public static var liveValue: KnowledgeStore {
         ServiceContainer.shared.resolve(KnowledgeStore.self)
     }
 
-    @MainActor
-    public static var testValue: KnowledgeStore {
-        ServiceContainer.shared.resolveOptional(KnowledgeStore.self) ?? KnowledgeStore()
+    nonisolated public static var testValue: KnowledgeStore {
+        ServiceContainer.shared.resolveOptional(KnowledgeStore.self)
+            ?? MainActor.assumeIsolated { KnowledgeStore() }
     }
-    @MainActor
-    public static var previewValue: KnowledgeStore { testValue }
+    nonisolated public static var previewValue: KnowledgeStore { testValue }
 }
 
 extension DependencyValues {

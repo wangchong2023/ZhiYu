@@ -74,21 +74,19 @@ extension AppEnvironmentProtocol {
 
 /// AppEnvironmentProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum AppEnvironmentKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any AppEnvironmentProtocol {
+    nonisolated public static var liveValue: any AppEnvironmentProtocol {
         ServiceContainer.shared.resolve((any AppEnvironmentProtocol).self)
     }
-    @MainActor
-    public static var testValue: any AppEnvironmentProtocol {
-        ServiceContainer.shared.resolveOptional((any AppEnvironmentProtocol).self) ?? NoOpAppEnvironment()
+    nonisolated public static var testValue: any AppEnvironmentProtocol {
+        ServiceContainer.shared.resolveOptional((any AppEnvironmentProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpAppEnvironment() }
     }
-    @MainActor
-    public static var previewValue: any AppEnvironmentProtocol { NoOpAppEnvironment() }
+    nonisolated public static var previewValue: any AppEnvironmentProtocol { MainActor.assumeIsolated { NoOpAppEnvironment() } }
 }
 
 extension DependencyValues {
     /// 平台环境依赖
-    public var appEnvironment: any AppEnvironmentProtocol {
+    nonisolated public var appEnvironment: any AppEnvironmentProtocol {
         get { self[AppEnvironmentKey.self] }
         set { self[AppEnvironmentKey.self] = newValue }
     }

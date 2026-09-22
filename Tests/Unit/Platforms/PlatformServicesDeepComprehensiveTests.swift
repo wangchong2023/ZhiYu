@@ -12,7 +12,7 @@
 import XCTest
 import PDFKit
 import Vision
-import MultipeerConnectivity
+import Network
 @testable import ZhiYu
 import UFPCore
 
@@ -113,7 +113,6 @@ final class PlatformServicesDeepComprehensiveTests: XCTestCase {
 
     // MARK: - 2. MultipeerCollaborationProvider 深度测试
 
-    #if canImport(MultipeerConnectivity)
     final class MockCollaborationDelegate: CollaborationProviderDelegate {
         var discoveredRooms: [DiscoveredRoom] = []
         var lostRoomIds: [String] = []
@@ -170,8 +169,8 @@ final class PlatformServicesDeepComprehensiveTests: XCTestCase {
         XCTAssertTrue(delegate.statuses.contains(L10n.Collaboration.Status.searching), "启动 Browsing 后应上报 searching 状态")
 
         // 4. 模拟加入房间
-        let mockPeer = MCPeerID(displayName: "测试远端主机|12345678")
-        let room = DiscoveredRoom(id: "room_1", platformPeer: mockPeer, roomName: "智宇知识攻坚室", owner: "测试远端主机")
+        let endpoint = NWEndpoint.service(name: "测试远端主机|12345678", type: "_km-collab._tcp", domain: nil, interface: nil)
+        let room = DiscoveredRoom(id: "room_1", platformPeer: endpoint, roomName: "智宇知识攻坚室", owner: "测试远端主机")
         provider.joinRoom(room)
         XCTAssertTrue(delegate.statuses.contains(L10n.Collaboration.Status.joining), "加入房间后应更新 joining 状态")
 
@@ -179,7 +178,6 @@ final class PlatformServicesDeepComprehensiveTests: XCTestCase {
         provider.stop()
         XCTAssertTrue(delegate.statuses.contains(L10n.Collaboration.Status.disconnected), "停止后状态应变为 disconnected")
     }
-    #endif
 
     // MARK: - 3. iOSOCRService 深度测试
 

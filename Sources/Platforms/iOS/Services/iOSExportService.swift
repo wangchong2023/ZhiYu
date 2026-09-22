@@ -78,7 +78,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
 
     private func loadLocalJS(named name: String) -> String {
         if let url = Bundle.main.url(forResource: name, withExtension: "js"),
-           let content = try? String(contentsOf: url) {
+           let content = try? String(contentsOf: url, encoding: .utf8) {
             return content
         }
         return "// JS Library \(name) not found in Bundle"

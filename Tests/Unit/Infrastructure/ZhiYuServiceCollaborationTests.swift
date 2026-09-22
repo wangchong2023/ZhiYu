@@ -9,7 +9,7 @@
 //  核心职责：针对 CollaborationService 开展角色、用户名、对等节点与房间相等性的自动化单元测试验证。
 //
 import XCTest
-import MultipeerConnectivity
+import Network
 @preconcurrency @testable import ZhiYu
 @testable import UFPCore
 
@@ -88,9 +88,9 @@ final class ZhiYuServiceCollaborationTests: XCTestCase {
 
     @MainActor
     func testDiscoveredRoomEquality() {
-        let peer = MCPeerID(displayName: "p1")
-        let room1 = DiscoveredRoom(id: "r1", platformPeer: peer, roomName: "Room", owner: "Host1")
-        let room2 = DiscoveredRoom(id: "r1", platformPeer: peer, roomName: "Room", owner: "Host1")
+        let endpoint = NWEndpoint.service(name: "p1", type: "_km-collab._tcp", domain: nil, interface: nil)
+        let room1 = DiscoveredRoom(id: "r1", platformPeer: endpoint, roomName: "Room", owner: "Host1")
+        let room2 = DiscoveredRoom(id: "r1", platformPeer: endpoint, roomName: "Room", owner: "Host1")
         XCTAssertEqual(room1, room2)
     }
 }

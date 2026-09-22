@@ -86,7 +86,7 @@ public actor NetworkClient {
     }
     
     /// 发起带有数据载荷的请求 (POST, PUT 等)
-    public func request<T: Codable, Body: Encodable>(
+    public func request<T: Codable & Sendable, Body: Encodable>(
         path: String,
         method: String = "POST",
         body: Body? = nil,
@@ -96,7 +96,7 @@ public actor NetworkClient {
     }
     
     /// 发起无数据载荷的请求 (GET 等)
-    public func request<T: Codable>(
+    public func request<T: Codable & Sendable>(
         path: String,
         method: String = "GET",
         requiresAuth: Bool = true
@@ -163,7 +163,7 @@ public actor NetworkClient {
 
     // MARK: - 内部请求与拦截逻辑
     
-    private func performRequest<T: Codable, Body: Encodable>(
+    private func performRequest<T: Codable & Sendable, Body: Encodable>(
         path: String,
         method: String,
         body: Body?,
@@ -256,7 +256,7 @@ public actor NetworkClient {
     
     // MARK: - 无感刷新逻辑 (Refresh Token)
     
-    private func handleTokenRefreshAndRetry<T: Codable, Body: Encodable>(
+    private func handleTokenRefreshAndRetry<T: Codable & Sendable, Body: Encodable>(
         path: String,
         method: String,
         body: Body?
@@ -324,7 +324,7 @@ public actor NetworkClient {
     }
 
     /// 根据 Token 刷新结果重试原请求：成功则重试，失败则抛错
-    private func retryRequestAfterRefresh<T: Codable, Body: Encodable>(
+    private func retryRequestAfterRefresh<T: Codable & Sendable, Body: Encodable>(
         result: Result<String, Error>,
         path: String,
         method: String,

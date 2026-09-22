@@ -29,19 +29,16 @@ import Dependencies
 import UFPCore
 
 /// AIWorkflowCapabilities 依赖注入键
-@MainActor
 public enum AIWorkflowCapabilitiesKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any AIWorkflowCapabilities {
+    nonisolated public static var liveValue: any AIWorkflowCapabilities {
         ServiceContainer.shared.resolve((any AIWorkflowCapabilities).self)
     }
 
-    @MainActor
-    public static var testValue: any AIWorkflowCapabilities {
-        ServiceContainer.shared.resolveOptional((any AIWorkflowCapabilities).self) ?? NoOpAIWorkflowCapabilities()
+    nonisolated public static var testValue: any AIWorkflowCapabilities {
+        ServiceContainer.shared.resolveOptional((any AIWorkflowCapabilities).self)
+            ?? MainActor.assumeIsolated { NoOpAIWorkflowCapabilities() }
     }
-    @MainActor
-    public static var previewValue: any AIWorkflowCapabilities { testValue }
+    nonisolated public static var previewValue: any AIWorkflowCapabilities { testValue }
 }
 
 /// 无操作 AIWorkflowCapabilities 服务（测试/预览占位，DI 未就绪时降级）
@@ -52,8 +49,7 @@ public final class NoOpAIWorkflowCapabilities: AIWorkflowCapabilities {
 }
 
 extension DependencyValues {
-    @MainActor
-    public var aiWorkflowCapabilities: any AIWorkflowCapabilities {
+    nonisolated public var aiWorkflowCapabilities: any AIWorkflowCapabilities {
         get { self[AIWorkflowCapabilitiesKey.self] }
         set { self[AIWorkflowCapabilitiesKey.self] = newValue }
     }

@@ -53,6 +53,7 @@ IGNORE_PATTERNS = [
     r"cannot form key path to main actor-isolated property",  # MainActor 属性 KeyPath
     r"non-Sendable type '.*' of property '.*' cannot exit main actor-isolated context",  # MainActor 非 Sendable 退出
     r"non-final class '.*' cannot conform to the 'Sendable' protocol",  # 非最终类 Sendable
+    r"was deprecated in iOS \d+\.\d+",  # iOS SDK API 废弃警告（非死代码）
 ]
 
 # ── 物理迁移残留检测规则 ──

@@ -127,7 +127,7 @@ enum WidgetTimelineBuilder {
     /// - Parameters:
     ///   - entry: Timeline 条目
     ///   - completion: Timeline 回调
-    static func buildSingleTimeline<Entry: TimelineEntry>(
+    static func buildSingleTimeline<Entry: TimelineEntry & Sendable>(
         entry: Entry,
         completion: @escaping @Sendable (Timeline<Entry>) -> Void
     ) {

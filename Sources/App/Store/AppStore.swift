@@ -20,7 +20,7 @@ import UFPStorage
 /// 负责全局状态同步、跨服务协调及业务流程封装。
 @Observable
 @MainActor
-public final class AppStore {
+public final class AppStore: @unchecked Sendable {
 
     // MARK: - 辅助类型
 
@@ -270,24 +270,21 @@ extension ToolItem {
 
 // MARK: - DependencyKey
 
-@MainActor
 public enum AppStoreKey: DependencyKey {
-    @MainActor
-    public static var liveValue: AppStore {
-        ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+    nonisolated public static var liveValue: AppStore {
+        ServiceContainer.shared.resolveOptional(AppStore.self)
+            ?? MainActor.assumeIsolated { AppStore() }
     }
 
-    @MainActor
-    public static var testValue: AppStore {
-        ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+    nonisolated public static var testValue: AppStore {
+        ServiceContainer.shared.resolveOptional(AppStore.self)
+            ?? MainActor.assumeIsolated { AppStore() }
     }
-    @MainActor
-    public static var previewValue: AppStore { testValue }
+    nonisolated public static var previewValue: AppStore { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    public var appStore: AppStore {
+    nonisolated public var appStore: AppStore {
         get { self[AppStoreKey.self] }
         set { self[AppStoreKey.self] = newValue }
     }

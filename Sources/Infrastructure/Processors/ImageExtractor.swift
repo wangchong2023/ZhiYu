@@ -16,7 +16,7 @@ import UIKit
 #endif
 
 /// 网页/PDF/Office 图片提取 + OCR 处理器
-final class ImageExtractor: Sendable {
+final class ImageExtractor: @unchecked Sendable {
 
     private let maxImageSize = AppConstants.Keys.ImportLimits.maxImageSizeBytes
     private let maxImages = AppConstants.Keys.ImportLimits.maxImagesPerPage

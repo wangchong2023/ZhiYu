@@ -77,7 +77,7 @@ final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriter
     }
 
     /// 按 id 加载记录并应用变更闭包后更新（消除四处 fetchOne + update 样板重复）。
-    private func mutateRecord(id: String, mutate: @escaping (inout ImportRecord) -> Void) async throws {
+    private func mutateRecord(id: String, mutate: @escaping @Sendable (inout ImportRecord) -> Void) async throws {
         let writer = try await dbWriter
         try await writer.write { db in
             guard var record = try ImportRecord.fetchOne(db, key: id) else { return }

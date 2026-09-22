@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.4
 //
 //  Package.swift
 //  ZhiYuDomain
@@ -16,9 +16,9 @@ import PackageDescription
 let package = Package(
     name: "ZhiYuDomain",
     platforms: [
-        .iOS(.v17),
-        .macOS(.v14),
-        .watchOS(.v10)
+        .iOS(.v27),
+        .macOS(.v27),
+        .watchOS(.v27)
     ],
     products: [
         .library(

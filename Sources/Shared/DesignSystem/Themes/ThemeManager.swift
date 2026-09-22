@@ -110,25 +110,28 @@ public final class ThemeManager: @unchecked Sendable {
 // MARK: - ThemeManager DependencyKey
 
 private enum ThemeManagerKey: DependencyKey {
-    @MainActor
-    static var liveValue: ThemeManager {
-        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
-        return ThemeManager(keyStore: keyStore)
-    }
-    @MainActor
-    static let testValue: ThemeManager = {
-        guard let defaults = UserDefaults(suiteName: "test") else {
-            return ThemeManager(keyStore: nil)
+    nonisolated static var liveValue: ThemeManager {
+        MainActor.assumeIsolated {
+            let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+            return ThemeManager(keyStore: keyStore)
         }
-        return ThemeManager(keyStore: UserDefaultsKeyStore(defaults: defaults))
-    }()
-    @MainActor
-    static let previewValue: ThemeManager = ThemeManager(keyStore: nil)
+    }
+    nonisolated static var testValue: ThemeManager {
+        MainActor.assumeIsolated {
+            guard let defaults = UserDefaults(suiteName: "test") else {
+                return ThemeManager(keyStore: nil)
+            }
+            return ThemeManager(keyStore: UserDefaultsKeyStore(defaults: defaults))
+        }
+    }
+    nonisolated static var previewValue: ThemeManager {
+        MainActor.assumeIsolated { ThemeManager(keyStore: nil) }
+    }
 }
 
 extension DependencyValues {
     /// 主题服务依赖（原 ThemeManager.shared）
-    var themeService: ThemeManager {
+    nonisolated var themeService: ThemeManager {
         get { self[ThemeManagerKey.self] }
         set { self[ThemeManagerKey.self] = newValue }
     }

@@ -36,21 +36,21 @@ public final class NoOpPasteboard: PasteboardProtocol, @unchecked Sendable {
 
 /// PasteboardProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum PasteboardKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any PasteboardProtocol {
+    nonisolated public static var liveValue: any PasteboardProtocol {
         ServiceContainer.shared.resolve((any PasteboardProtocol).self)
     }
-    @MainActor
-    public static var testValue: any PasteboardProtocol {
-        ServiceContainer.shared.resolveOptional((any PasteboardProtocol).self) ?? NoOpPasteboard()
+    nonisolated public static var testValue: any PasteboardProtocol {
+        ServiceContainer.shared.resolveOptional((any PasteboardProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpPasteboard() }
     }
-    @MainActor
-    public static var previewValue: any PasteboardProtocol { NoOpPasteboard() }
+    nonisolated public static var previewValue: any PasteboardProtocol {
+        MainActor.assumeIsolated { NoOpPasteboard() }
+    }
 }
 
 extension DependencyValues {
     /// 剪贴板服务依赖
-    public var pasteboard: any PasteboardProtocol {
+    nonisolated public var pasteboard: any PasteboardProtocol {
         get { self[PasteboardKey.self] }
         set { self[PasteboardKey.self] = newValue }
     }

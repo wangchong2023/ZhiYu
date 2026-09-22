@@ -11,11 +11,11 @@
   - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
     line: 415
   - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
-    line: 319
+    line: 329
   - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
-    line: 331
+    line: 341
   - file: "Sources/Features/System/Auth/View/UserProfileView.swift"
-    line: 332
+    line: 342
   - file: "Sources/Features/System/ModelManager/GlobalModelManager.swift"
     line: 135
   - file: "Sources/Features/System/ModelManager/GlobalModelManager.swift"

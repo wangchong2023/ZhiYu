@@ -127,24 +127,26 @@ enum SplashAnimationScheduler {
     /// - Parameters:
     ///   - delay: 延迟时间（秒）
     ///   - duration: 动画时长（秒）
-    ///   - action: 状态变更闭包
-    static func scheduleFadeIn(after delay: Double, duration: Double, action: @escaping () -> Void) {
+    ///   - action: 状态变更闭包（在 MainActor 上执行）
+    static func scheduleFadeIn(after delay: Double, duration: Double, action: @escaping @MainActor () -> Void) {
         scheduleAnimatedTransition(after: delay, animation: .easeOut(duration: duration), action: action)
     }
 
     /// 在指定延迟后以标准缓动动画执行闭包（用于自动消失等场景）
     /// - Parameters:
     ///   - delay: 延迟时间（秒）
-    ///   - action: 状态变更闭包
-    static func scheduleStandardTransition(after delay: Double, action: @escaping () -> Void) {
+    ///   - action: 状态变更闭包（在 MainActor 上执行）
+    static func scheduleStandardTransition(after delay: Double, action: @escaping @MainActor () -> Void) {
         scheduleAnimatedTransition(after: delay, animation: .easeInOut(duration: DesignSystem.Animation.standardDuration), action: action)
     }
 
     /// 共享的延迟动画核心：在指定延迟后以指定动画执行闭包，消除 scheduleFadeIn 与 scheduleStandardTransition 间的样板重复。
-    private static func scheduleAnimatedTransition(after delay: Double, animation: Animation, action: @escaping () -> Void) {
+    private static func scheduleAnimatedTransition(after delay: Double, animation: Animation, action: @escaping @MainActor () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            withAnimation(animation) {
-                action()
+            MainActor.assumeIsolated {
+                withAnimation(animation) {
+                    action()
+                }
             }
         }
     }

@@ -183,7 +183,7 @@ extension DependencyValues {
     }
 }
 
-public struct ShortcutItem: Identifiable, Equatable, Codable {
+public struct ShortcutItem: Identifiable, Equatable, Codable, Sendable {
     public var id = UUID()
     public var rawText: String
     public var localizationKey: String?

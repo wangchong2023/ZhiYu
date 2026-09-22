@@ -423,21 +423,18 @@ public final class SynthesisStore {
 
 // MARK: - DependencyKey
 
-@MainActor
 public enum SynthesisStoreKey: DependencyKey {
-    @MainActor
-    public static var liveValue: SynthesisStore {
-        ServiceContainer.shared.resolveOptional(SynthesisStore.self) ?? SynthesisStore()
+    nonisolated public static var liveValue: SynthesisStore {
+        MainActor.assumeIsolated {
+            ServiceContainer.shared.resolveOptional(SynthesisStore.self) ?? SynthesisStore()
+        }
     }
-    @MainActor
-    public static var testValue: SynthesisStore { liveValue }
-    @MainActor
-    public static var previewValue: SynthesisStore { liveValue }
+    nonisolated public static var testValue: SynthesisStore { liveValue }
+    nonisolated public static var previewValue: SynthesisStore { liveValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    public var synthesisStore: SynthesisStore {
+    nonisolated public var synthesisStore: SynthesisStore {
         get { self[SynthesisStoreKey.self] }
         set { self[SynthesisStoreKey.self] = newValue }
     }

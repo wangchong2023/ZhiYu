@@ -6,12 +6,10 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L2] 业务功能层
-//  核心职责：多人协作：Multipeer 连接、实时同步。
+//  核心职责：多人协作：Network Framework 连接、实时同步。
 //
+
 import Foundation
-#if canImport(MultipeerConnectivity)
-import MultipeerConnectivity
-#endif
 
 // MARK: - Collaboration Models
 struct CollabUser: Identifiable, Codable, Hashable {
@@ -58,7 +56,7 @@ enum CollabRole: String, Codable {
 // MARK: - Discovered Room Model
 struct DiscoveredRoom: Identifiable, Hashable {
     let id: String
-    let platformPeer: AnyHashable // 平台相关的 Peer 对象 (如 MCPeerID)
+    let platformPeer: AnyHashable // 平台相关的 Peer 对象 (如 NWEndpoint)
     let roomName: String
     let owner: String
 

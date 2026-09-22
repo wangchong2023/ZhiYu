@@ -36,16 +36,13 @@ public protocol KeyStoreProtocol: AnyObject, Sendable {
 
 /// KeyStoreProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析，可选）
 public enum KeyStoreKey: DependencyKey {
-    @MainActor
-    public static var liveValue: (any KeyStoreProtocol)? {
+    nonisolated public static var liveValue: (any KeyStoreProtocol)? {
         ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
     }
-    @MainActor
-    public static var testValue: (any KeyStoreProtocol)? {
+    nonisolated public static var testValue: (any KeyStoreProtocol)? {
         ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
     }
-    @MainActor
-    public static var previewValue: (any KeyStoreProtocol)? { nil }
+    nonisolated public static var previewValue: (any KeyStoreProtocol)? { nil }
 }
 
 extension DependencyValues {

@@ -39,7 +39,9 @@ internal struct InterfaceIdiomKey: EnvironmentKey {
         #if targetEnvironment(macCatalyst)
         return .macCatalyst
         #else
-        return UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone
+        return MainActor.assumeIsolated {
+            UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone
+        }
         #endif
         #endif
     }()

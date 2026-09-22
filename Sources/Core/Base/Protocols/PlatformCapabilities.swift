@@ -80,17 +80,15 @@ public protocol SecurityScopedStorageProtocol: Sendable {
 
 /// BiometricAuthProviderProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum BiometricAuthProviderKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any BiometricAuthProviderProtocol {
+    nonisolated public static var liveValue: any BiometricAuthProviderProtocol {
         ServiceContainer.shared.resolve((any BiometricAuthProviderProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any BiometricAuthProviderProtocol {
-        ServiceContainer.shared.resolveOptional((any BiometricAuthProviderProtocol).self) ?? NoOpBiometricAuthProvider()
+    nonisolated public static var testValue: any BiometricAuthProviderProtocol {
+        ServiceContainer.shared.resolveOptional((any BiometricAuthProviderProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpBiometricAuthProvider() }
     }
-    @MainActor
-    public static var previewValue: any BiometricAuthProviderProtocol { testValue }
+    nonisolated public static var previewValue: any BiometricAuthProviderProtocol { testValue }
 }
 
 /// 无操作生物识别服务（测试/预览占位，DI 未就绪时降级）
@@ -117,24 +115,24 @@ public final class NoOpMLModelCompiler: MLModelCompilerProtocol, @unchecked Send
 
 /// MLModelCompilerProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum MLModelCompilerKey: DependencyKey {
-    public static var liveValue: any MLModelCompilerProtocol {
+    nonisolated public static var liveValue: any MLModelCompilerProtocol {
         ServiceContainer.shared.resolve((any MLModelCompilerProtocol).self)
     }
-    public static var testValue: any MLModelCompilerProtocol {
+    nonisolated public static var testValue: any MLModelCompilerProtocol {
         ServiceContainer.shared.resolveOptional((any MLModelCompilerProtocol).self) ?? NoOpMLModelCompiler()
     }
-    public static var previewValue: any MLModelCompilerProtocol { NoOpMLModelCompiler() }
+    nonisolated public static var previewValue: any MLModelCompilerProtocol { NoOpMLModelCompiler() }
 }
 
 extension DependencyValues {
     /// 生物识别服务依赖
-    public var biometricAuthProvider: any BiometricAuthProviderProtocol {
+    nonisolated public var biometricAuthProvider: any BiometricAuthProviderProtocol {
         get { self[BiometricAuthProviderKey.self] }
         set { self[BiometricAuthProviderKey.self] = newValue }
     }
 
     /// 模型编译服务依赖
-    public var modelCompiler: any MLModelCompilerProtocol {
+    nonisolated public var modelCompiler: any MLModelCompilerProtocol {
         get { self[MLModelCompilerKey.self] }
         set { self[MLModelCompilerKey.self] = newValue }
     }

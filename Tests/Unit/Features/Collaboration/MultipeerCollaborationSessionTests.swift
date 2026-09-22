@@ -8,10 +8,8 @@
 
 import XCTest
 import Foundation
+import Network
 @testable import ZhiYu
-
-#if canImport(MultipeerConnectivity)
-import MultipeerConnectivity
 
 @MainActor
 final class MultipeerCollaborationSessionTests: XCTestCase {
@@ -19,14 +17,16 @@ final class MultipeerCollaborationSessionTests: XCTestCase {
     /// 验证加入未启动广播的房间时安全返回
     func testJoinRoom_unbrowsedRoom_returnsSafely() {
         let provider = MultipeerCollaborationProvider()
+        let endpoint = NWEndpoint.service(name: "test|12345678", type: "_km-collab._tcp", domain: nil, interface: nil)
         let room = DiscoveredRoom(
             id: "test",
-            platformPeer: MCPeerID(displayName: "test|12345678"),
+            platformPeer: endpoint,
             roomName: "TestRoom",
             owner: "TestUser"
         )
         provider.joinRoom(room)
         XCTAssertNotNil(provider)
+        provider.stop()
     }
 
     /// 验证无已连接 Peer 时广播安全返回
@@ -58,4 +58,3 @@ final class MultipeerCollaborationSessionTests: XCTestCase {
         XCTAssertEqual(parsed2, "JustAName")
     }
 }
-#endif

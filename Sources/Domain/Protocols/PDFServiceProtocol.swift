@@ -47,21 +47,19 @@ public protocol PDFServiceProtocol: Sendable {
 
 /// PDFServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum PDFServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any PDFServiceProtocol {
+    nonisolated public static var liveValue: any PDFServiceProtocol {
         ServiceContainer.shared.resolve((any PDFServiceProtocol).self)
     }
-    @MainActor
-    public static var testValue: any PDFServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any PDFServiceProtocol).self) ?? NoOpPDFService()
+    nonisolated public static var testValue: any PDFServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any PDFServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpPDFService() }
     }
-    @MainActor
-    public static var previewValue: any PDFServiceProtocol { NoOpPDFService() }
+    nonisolated public static var previewValue: any PDFServiceProtocol { MainActor.assumeIsolated { NoOpPDFService() } }
 }
 
 extension DependencyValues {
     /// PDF 服务依赖
-    public var pdfService: any PDFServiceProtocol {
+    nonisolated public var pdfService: any PDFServiceProtocol {
         get { self[PDFServiceKey.self] }
         set { self[PDFServiceKey.self] = newValue }
     }

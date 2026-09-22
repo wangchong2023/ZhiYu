@@ -282,12 +282,14 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
         let lock = NSLock()
         var results: [String: String] = [:]
         var errors: [Error] = []
+        // 提取 service 为局部变量，避免在 @Sendable 闭包中捕获非 Sendable 的 self
+        let service = self.service
 
         for plaintext in plaintexts {
             group.enter()
             queue.async {
                 do {
-                    let encrypted = try self.service.encrypt(plaintext)
+                    let encrypted = try service.encrypt(plaintext)
                     lock.lock()
                     results[plaintext] = encrypted
                     lock.unlock()
@@ -322,13 +324,15 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
         let lock = NSLock()
         var successCount = 0
         var errorCount = 0
+        // 提取 service 为局部变量，避免在 @Sendable 闭包中捕获非 Sendable 的 self
+        let service = self.service
 
         // 一半线程加密，一半线程解密
         for plaintext in plaintexts {
             group.enter()
             queue.async {
                 do {
-                    _ = try self.service.encrypt(plaintext)
+                    _ = try service.encrypt(plaintext)
                     lock.lock(); successCount += 1; lock.unlock()
                 } catch {
                     lock.lock(); errorCount += 1; lock.unlock()
@@ -340,7 +344,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
             group.enter()
             queue.async {
                 do {
-                    _ = try self.service.decrypt(encrypted)
+                    _ = try service.decrypt(encrypted)
                     lock.lock(); successCount += 1; lock.unlock()
                 } catch {
                     lock.lock(); errorCount += 1; lock.unlock()

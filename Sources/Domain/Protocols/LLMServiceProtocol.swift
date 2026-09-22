@@ -174,70 +174,64 @@ extension LLMChatServiceProtocol {
 
 /// LLMChatServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 enum LLMChatServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any LLMChatServiceProtocol {
+    nonisolated public static var liveValue: any LLMChatServiceProtocol {
         ServiceContainer.shared.resolve((any LLMChatServiceProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any LLMChatServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self) ?? NoOpLLMChatService()
+    nonisolated public static var testValue: any LLMChatServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpLLMChatService() }
     }
-    @MainActor
-    static var previewValue: any LLMChatServiceProtocol { testValue }
+    nonisolated static var previewValue: any LLMChatServiceProtocol { testValue }
 }
 
 /// LLMKnowledgeServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 enum LLMKnowledgeServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any LLMKnowledgeServiceProtocol {
+    nonisolated public static var liveValue: any LLMKnowledgeServiceProtocol {
         ServiceContainer.shared.resolve((any LLMKnowledgeServiceProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any LLMKnowledgeServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self) ?? NoOpLLMKnowledgeService()
+    nonisolated public static var testValue: any LLMKnowledgeServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpLLMKnowledgeService() }
     }
-    @MainActor
-    static var previewValue: any LLMKnowledgeServiceProtocol { testValue }
+    nonisolated static var previewValue: any LLMKnowledgeServiceProtocol { testValue }
 }
 
 /// LLMRetrievalServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 enum LLMRetrievalServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any LLMRetrievalServiceProtocol {
+    nonisolated public static var liveValue: any LLMRetrievalServiceProtocol {
         ServiceContainer.shared.resolve((any LLMRetrievalServiceProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any LLMRetrievalServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self) ?? NoOpLLMRetrievalService()
+    nonisolated public static var testValue: any LLMRetrievalServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpLLMRetrievalService() }
     }
-    @MainActor
-    static var previewValue: any LLMRetrievalServiceProtocol { testValue }
+    nonisolated static var previewValue: any LLMRetrievalServiceProtocol { testValue }
 }
 
 extension DependencyValues {
     /// LLM 对话服务依赖
-    var llmChatService: any LLMChatServiceProtocol {
+    nonisolated var llmChatService: any LLMChatServiceProtocol {
         get { self[LLMChatServiceKey.self] }
         set { self[LLMChatServiceKey.self] = newValue }
     }
 
     /// LLM 知识处理服务依赖
-    var llmKnowledgeService: any LLMKnowledgeServiceProtocol {
+    nonisolated var llmKnowledgeService: any LLMKnowledgeServiceProtocol {
         get { self[LLMKnowledgeServiceKey.self] }
         set { self[LLMKnowledgeServiceKey.self] = newValue }
     }
 
     /// LLM 检索增强服务依赖
-    var llmRetrievalService: any LLMRetrievalServiceProtocol {
+    nonisolated var llmRetrievalService: any LLMRetrievalServiceProtocol {
         get { self[LLMRetrievalServiceKey.self] }
         set { self[LLMRetrievalServiceKey.self] = newValue }
     }
 
     /// LLM 综合服务依赖
-    var llmService: any LLMServiceProtocol {
+    nonisolated var llmService: any LLMServiceProtocol {
         get { self[LLMServiceKey.self] }
         set { self[LLMServiceKey.self] = newValue }
     }
@@ -245,17 +239,15 @@ extension DependencyValues {
 
 /// LLMServiceProtocol 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 enum LLMServiceKey: DependencyKey {
-    @MainActor
-    public static var liveValue: any LLMServiceProtocol {
+    nonisolated public static var liveValue: any LLMServiceProtocol {
         ServiceContainer.shared.resolve((any LLMServiceProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: any LLMServiceProtocol {
-        ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) ?? NoOpLLMService()
+    nonisolated public static var testValue: any LLMServiceProtocol {
+        ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self)
+            ?? MainActor.assumeIsolated { NoOpLLMService() }
     }
-    @MainActor
-    static var previewValue: any LLMServiceProtocol { testValue }
+    nonisolated static var previewValue: any LLMServiceProtocol { testValue }
 }
 
 // MARK: - NoOp LLM 服务实现（测试/预览占位，DI 未就绪时降级）

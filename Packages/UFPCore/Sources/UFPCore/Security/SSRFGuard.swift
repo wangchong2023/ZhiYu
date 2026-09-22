@@ -175,7 +175,7 @@ public struct SSRFGuard: Sendable {
         var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
         let result = inet_ntop(AF_INET, &address, &buffer, socklen_t(INET_ADDRSTRLEN))
         guard result != nil else { return nil }
-        return String(cString: buffer)
+        return String(decoding: buffer.map { UInt8(bitPattern: $0) }, as: UTF8.self)
     }
 
     // MARK: - 私有地址段校验

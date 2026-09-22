@@ -9,6 +9,7 @@
 //  核心职责：构建 VoiceNote 界面的 UI 视图层组件。
 //
 import SwiftUI
+import Combine
 import UFPCore
 import Dependencies
 
@@ -308,6 +309,7 @@ private extension View {
 
 // MARK: - TranscriptionEditor 构造辅助
 /// 消除 VoiceNoteView 与 VoiceNoteComponents 重复的 TranscriptionEditor Binding 构造
+@MainActor
 func makeTranscriptionEditor(
     speechService: any SpeechServiceProtocol,
     idiom: InterfaceIdiom,

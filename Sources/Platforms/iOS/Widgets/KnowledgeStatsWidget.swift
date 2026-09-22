@@ -135,10 +135,10 @@ struct KnowledgeStatsWidgetEntryView: View {
                 mediumView
             case .systemLarge:
                 largeView
-            case .systemExtraLarge:
+            case .systemExtraLarge, .systemExtraLargePortrait:
                 // iPad 超大尺寸：复用 Large 布局
                 largeView
-            case .accessoryCircular, .accessoryRectangular, .accessoryInline:
+            case .accessoryCircular, .accessoryRectangular, .accessoryInline, .accessoryCorner:
                 // 锁屏/StandBy 辅助小组件：降级展示紧凑摘要
                 smallView
             @unknown default:

@@ -127,22 +127,18 @@ public final class AIInsightStore {
 
 // MARK: - DependencyKey
 
-@MainActor
 public enum AIInsightStoreKey: DependencyKey {
-    @MainActor
-    public static var liveValue: AIInsightStore { ServiceContainer.shared.resolve(AIInsightStore.self) }
+    nonisolated public static var liveValue: AIInsightStore { ServiceContainer.shared.resolve(AIInsightStore.self) }
 
-    @MainActor
-    public static var testValue: AIInsightStore {
-        ServiceContainer.shared.resolveOptional(AIInsightStore.self) ?? AIInsightStore()
+    nonisolated public static var testValue: AIInsightStore {
+        ServiceContainer.shared.resolveOptional(AIInsightStore.self)
+            ?? MainActor.assumeIsolated { AIInsightStore() }
     }
-    @MainActor
-    public static var previewValue: AIInsightStore { testValue }
+    nonisolated public static var previewValue: AIInsightStore { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    public var aiInsightStore: AIInsightStore {
+    nonisolated public var aiInsightStore: AIInsightStore {
         get { self[AIInsightStoreKey.self] }
         set { self[AIInsightStoreKey.self] = newValue }
     }

@@ -9,7 +9,7 @@
 //  核心职责：RAG 全链路质量治理 SQLite 存储实现。
 //
 import Foundation
-import UFPStorage
+@preconcurrency import UFPStorage
 
 /// RAG 治理统计公式常量
 private enum RAGGovernanceFormula {
@@ -80,10 +80,11 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     ///   - days: 统计时间窗口（天数）
     ///   - body: 数据库读事务闭包，接收 db 和 cutoff 日期
     /// - Returns: 闭包返回值
-    private func readWithCutoff<T>(days: Int, _ body: @escaping (Database, Date) throws -> T) async throws -> T {
+    private func readWithCutoff<T: Sendable>(days: Int, _ body: @escaping @Sendable (Database, Date) throws -> T) async throws -> T {
         let writer = try await dbWriter
+        let cutoff = self.cutoffDate(days: days)
         return try await writer.read { db in
-            try body(db, self.cutoffDate(days: days))
+            try body(db, cutoff)
         }
     }
 
@@ -135,7 +136,7 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
     /// 在数据库读事务中按时间窗口计算指标均值（消除 calculateMRR/NDCG/Recall/F1/MAP 的前段样板重复）。
     private func computeMetricAverage(
         days: Int,
-        metric: @escaping (RAGEvaluation, Database) throws -> Double?
+        metric: @escaping @Sendable (RAGEvaluation, Database) throws -> Double?
     ) async throws -> Double {
         let writer = try await dbWriter
         return try await writer.read { db in

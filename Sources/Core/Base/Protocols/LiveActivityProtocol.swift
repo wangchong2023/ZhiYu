@@ -66,24 +66,20 @@ public protocol LiveActivityProtocol: Sendable {
 // MARK: - DependencyKey
 
 /// LiveActivityProtocol 的 DependencyKey（可选，返回 nil 时降级为无实时活动）
-@MainActor
+/// - Note: nonisolated 标注避免 @MainActor 与 DependencyKey 协议的 ConformanceIsolation 冲突
 public enum LiveActivityKey: DependencyKey {
-    @MainActor
-    public static var liveValue: (any LiveActivityProtocol)? {
+    nonisolated public static var liveValue: (any LiveActivityProtocol)? {
         ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
     }
 
-    @MainActor
-    public static var testValue: (any LiveActivityProtocol)? {
+    nonisolated public static var testValue: (any LiveActivityProtocol)? {
         ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)
     }
-    @MainActor
-    public static var previewValue: (any LiveActivityProtocol)? { testValue }
+    nonisolated public static var previewValue: (any LiveActivityProtocol)? { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    public var liveActivity: (any LiveActivityProtocol)? {
+    nonisolated public var liveActivity: (any LiveActivityProtocol)? {
         get { self[LiveActivityKey.self] }
         set { self[LiveActivityKey.self] = newValue }
     }

@@ -211,21 +211,17 @@ final class IngestStore {
 
 // MARK: - DependencyKey
 
-@MainActor
 enum IngestStoreKey: DependencyKey {
-    @MainActor
-    static var liveValue: IngestStore { ServiceContainer.shared.resolve(IngestStore.self) }
-    @MainActor
-    static var testValue: IngestStore {
-        ServiceContainer.shared.resolveOptional(IngestStore.self) ?? IngestStore()
+    nonisolated static var liveValue: IngestStore { ServiceContainer.shared.resolve(IngestStore.self) }
+    nonisolated static var testValue: IngestStore {
+        ServiceContainer.shared.resolveOptional(IngestStore.self)
+            ?? MainActor.assumeIsolated { IngestStore() }
     }
-    @MainActor
-    static var previewValue: IngestStore { testValue }
+    nonisolated static var previewValue: IngestStore { testValue }
 }
 
 extension DependencyValues {
-    @MainActor
-    var ingestStore: IngestStore {
+    nonisolated var ingestStore: IngestStore {
         get { self[IngestStoreKey.self] }
         set { self[IngestStoreKey.self] = newValue }
     }

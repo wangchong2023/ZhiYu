@@ -139,17 +139,19 @@ public final class SettingsStore {
 // MARK: - DependencyKey
 
 extension SettingsStore: DependencyKey {
-    public static var liveValue: SettingsStore {
-        ServiceContainer.shared.resolveOptional(SettingsStore.self) ?? SettingsStore()
+    nonisolated public static var liveValue: SettingsStore {
+        ServiceContainer.shared.resolveOptional(SettingsStore.self)
+            ?? MainActor.assumeIsolated { SettingsStore() }
     }
-    public static var testValue: SettingsStore {
-        ServiceContainer.shared.resolveOptional(SettingsStore.self) ?? SettingsStore()
+    nonisolated public static var testValue: SettingsStore {
+        ServiceContainer.shared.resolveOptional(SettingsStore.self)
+            ?? MainActor.assumeIsolated { SettingsStore() }
     }
 }
 
 extension DependencyValues {
     /// 系统设置存储依赖
-    public var settingsStore: SettingsStore {
+    nonisolated public var settingsStore: SettingsStore {
         get { self[SettingsStore.self] }
         set { self[SettingsStore.self] = newValue }
     }

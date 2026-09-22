@@ -81,8 +81,10 @@ import Dependencies
     // MARK: - TestStateResettable
 
     /// 重置单例状态用于测试隔离
-    func resetStateForTesting() {
-        reset()
+    nonisolated func resetStateForTesting() {
+        MainActor.assumeIsolated {
+            reset()
+        }
     }
     
     /// nextStep

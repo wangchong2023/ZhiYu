@@ -6400,7 +6400,6 @@
 				5F9954C0450D2B7F9D54A718 /* CommandPaletteView.swift */,
 				AB8E8530083486115D6CCAFA /* SearchSheets.swift */,
 				59E0FEE3ED21BED7BA781DAB /* SearchView.swift */,
-				6DA05A882BD1CCA48A3816AA /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -6972,13 +6971,6 @@
 				93F3B34C92D87B39F1B19919 /* Pickers */,
 			);
 			path = UIComponents;
-			sourceTree = "<group>";
-		};
-		6DA05A882BD1CCA48A3816AA /* Components */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Components;
 			sourceTree = "<group>";
 		};
 		6DD77593C31F1E3F7246C05E /* Utility */ = {
@@ -9675,7 +9667,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					04319D1FBBBBB01ADC3796BD = {
 						DevelopmentTeam = XSC749SK6J;
@@ -12991,7 +12983,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuMacTests;
 				SDKROOT = macosx;
 			};
@@ -13046,7 +13038,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuMacTests;
 				SDKROOT = macosx;
 			};
@@ -13078,7 +13070,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_IDENTITY = "-";
 				INFOPLIST_FILE = Sources/MacInfo.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -13150,8 +13142,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(inherited) /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/src/include /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/extensions/include /Users/constantine/Documents/work/code/opensrc/swift/swift-markdown/Sources/CAtomic/include";
 				INFOPLIST_FILE = Sources/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = "0.0.0-dev";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -13161,9 +13153,9 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 6.4;
 				TARGETED_DEVICE_FAMILY = "1,2,4";
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 27.0;
 			};
 			name = Debug;
 		};
@@ -13234,7 +13226,7 @@
 				CODE_SIGN_ENTITLEMENTS = Sources/ZhiYu.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Sources/MacInfo.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -13362,8 +13354,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(inherited) /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/src/include /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/extensions/include /Users/constantine/Documents/work/code/opensrc/swift/swift-markdown/Sources/CAtomic/include";
 				INFOPLIST_FILE = Sources/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = "0.0.0-dev";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -13372,9 +13364,9 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 6.4;
 				TARGETED_DEVICE_FAMILY = "1,2,4";
-				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+				WATCHOS_DEPLOYMENT_TARGET = 27.0;
 			};
 			name = Release;
 		};
