@@ -155,7 +155,7 @@ targets:
       - package: SwiftMarkdownUI
         product: MarkdownUI
       - package: SwiftJSONSanitizer
-        product: SwiftJSONSanitizerDynamic
+        product: SwiftJSONSanitizer
       - package: PartialJSON
         product: PartialJSON
       - target: ZhiYuWidgets
@@ -198,7 +198,7 @@ targets:
       - package: SwiftMarkdownUI
         product: MarkdownUI
       - package: SwiftJSONSanitizer
-        product: SwiftJSONSanitizerDynamic
+        product: SwiftJSONSanitizer
       - package: PartialJSON
         product: PartialJSON
 

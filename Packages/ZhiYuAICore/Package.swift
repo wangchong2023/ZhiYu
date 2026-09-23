@@ -70,7 +70,7 @@ let package = Package(
                 .product(name: "UFPCore", package: "UFPCore"),
                 .product(name: "UFPStorage", package: "UFPStorage"),
                 .product(name: "ZhiYuDomain", package: "ZhiYuDomain"),
-                .product(name: "SwiftJSONSanitizerDynamic", package: "SwiftJSONSanitizer"),
+                .product(name: "SwiftJSONSanitizer", package: "SwiftJSONSanitizer"),
                 .product(name: "PartialJSON", package: "PartialJSON")
             ]
         ),

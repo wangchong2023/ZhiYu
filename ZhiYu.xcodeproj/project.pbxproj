@@ -2244,7 +2244,7 @@
 		BEB5028BBA1B5202E8832620 /* pkm_methodology.md in Resources */ = {isa = PBXBuildFile; fileRef = AB57FA79A989F2B01487426B /* pkm_methodology.md */; };
 		BEBAF435F28CF72A3466EE0B /* CoreConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526A6BD8E59AD3939C841264 /* CoreConstants.swift */; };
 		BEC7FC4F645C6630CD48812D /* AppEmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA77275F3ACC64E00CAE8993 /* AppEmptyState.swift */; };
-		BF03D58486FF3416C8D5D8AA /* SwiftJSONSanitizerDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 190362FD93678CD8EF27A7B0 /* SwiftJSONSanitizerDynamic */; };
+		BF03D58486FF3416C8D5D8AA /* SwiftJSONSanitizer in Frameworks */ = {isa = PBXBuildFile; productRef = D4676AFB282494CB649DBDC7 /* SwiftJSONSanitizer */; };
 		BF0C953AE9975691AAC12E1B /* MacDeviceInfoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C0BDF0EA4CB781835CFE270 /* MacDeviceInfoService.swift */; };
 		BF1349CA33132B39D7B997D8 /* HapticFeedbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6236CC4AD6DAAF4597BE63FE /* HapticFeedbackTests.swift */; };
 		BF42763FF245A9BC21A6D320 /* testLLMSettingsViewDefaultDisabled.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 5DAB2749374AD6852ABE4AAE /* testLLMSettingsViewDefaultDisabled.1.png */; };
@@ -2408,7 +2408,7 @@
 		CD9E08064737851AC9AAD675 /* ZhiYuStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D29521ABEF52C12F2319078 /* ZhiYuStoreTests.swift */; };
 		CDC8B845103B7C219DD2AFBF /* ImportRecordSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2134DB4E72EABD9610480808 /* ImportRecordSection.swift */; };
 		CE1AA6D19C1D61DD9BBB05A7 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751F592B285200694823E27F /* AppConstants.swift */; };
-		CE3A6ABAC151B928A81D736B /* SwiftJSONSanitizerDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 2DFB378F0BE4C121B30C62F2 /* SwiftJSONSanitizerDynamic */; };
+		CE3A6ABAC151B928A81D736B /* SwiftJSONSanitizer in Frameworks */ = {isa = PBXBuildFile; productRef = B9667D54E01C7A06BDD4838C /* SwiftJSONSanitizer */; };
 		CE3E69639925473800613116 /* L10nPlatformTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8770DFCAA2A23A8AA21CB538 /* L10nPlatformTableTests.swift */; };
 		CE3EDBFA88022444C2EEAA35 /* testAppTagFieldWithTags.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 89DBBE4029CE66CE017CF36C /* testAppTagFieldWithTags.1.png */; };
 		CE4DC32E1C6819FC3EEC998A /* AppRows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E88AE55C7718F630303B4D /* AppRows.swift */; };
@@ -5065,7 +5065,7 @@
 				7E2A1E17C9968D16AAA42597 /* ZIPFoundation in Frameworks */,
 				378ADFDA5CA06DBA4B734ABC /* Markdown in Frameworks */,
 				FCA927C6BB99F4816F28E9EF /* MarkdownUI in Frameworks */,
-				CE3A6ABAC151B928A81D736B /* SwiftJSONSanitizerDynamic in Frameworks */,
+				CE3A6ABAC151B928A81D736B /* SwiftJSONSanitizer in Frameworks */,
 				FF1DC637C892846743BB7FE5 /* PartialJSON in Frameworks */,
 				2B2A8FB5E7683B237136EF23 /* WechatOpenSDK.xcframework in Frameworks */,
 				09EF3AC06244F9E18C14B0FB /* ATAuthSDK_D.xcframework in Frameworks */,
@@ -5127,7 +5127,7 @@
 				00BEB06568A91D0340A01DF1 /* ZIPFoundation in Frameworks */,
 				93A600313B280F364B3D7158 /* Markdown in Frameworks */,
 				9633D0D2419B1801B2AA91E6 /* MarkdownUI in Frameworks */,
-				BF03D58486FF3416C8D5D8AA /* SwiftJSONSanitizerDynamic in Frameworks */,
+				BF03D58486FF3416C8D5D8AA /* SwiftJSONSanitizer in Frameworks */,
 				99D75D23EB605E2D219B0336 /* PartialJSON in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9578,7 +9578,7 @@
 				E07EA93BDAB667833737A3D5 /* ZIPFoundation */,
 				3C509CDE54F9FADA12715AA5 /* Markdown */,
 				ECF2CD474C3D88A5CC4BD795 /* MarkdownUI */,
-				2DFB378F0BE4C121B30C62F2 /* SwiftJSONSanitizerDynamic */,
+				B9667D54E01C7A06BDD4838C /* SwiftJSONSanitizer */,
 				2A3A17FA3595B9E9147A37CF /* PartialJSON */,
 			);
 			productName = ZhiYu;
@@ -9610,7 +9610,7 @@
 				24CB394839B073E4BF4BE767 /* ZIPFoundation */,
 				C13F2DF2F43DB257AE289945 /* Markdown */,
 				888AA75A28EB00908A26B344 /* MarkdownUI */,
-				190362FD93678CD8EF27A7B0 /* SwiftJSONSanitizerDynamic */,
+				D4676AFB282494CB649DBDC7 /* SwiftJSONSanitizer */,
 				F20FA72DF87AFDF297AD7CAF /* PartialJSON */,
 			);
 			productName = ZhiYuMac;
@@ -13574,10 +13574,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = UFPStorage;
 		};
-		190362FD93678CD8EF27A7B0 /* SwiftJSONSanitizerDynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftJSONSanitizerDynamic;
-		};
 		24CB394839B073E4BF4BE767 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ZIPFoundation;
@@ -13597,10 +13593,6 @@
 		2A3A17FA3595B9E9147A37CF /* PartialJSON */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PartialJSON;
-		};
-		2DFB378F0BE4C121B30C62F2 /* SwiftJSONSanitizerDynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftJSONSanitizerDynamic;
 		};
 		38BC5BEF2B997B5786EA472D /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -13678,6 +13670,10 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ZhiYuAICore;
 		};
+		B9667D54E01C7A06BDD4838C /* SwiftJSONSanitizer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftJSONSanitizer;
+		};
 		C13F2DF2F43DB257AE289945 /* Markdown */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Markdown;
@@ -13685,6 +13681,10 @@
 		CD14EBC61C54AA00738CD58C /* UFPCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UFPCore;
+		};
+		D4676AFB282494CB649DBDC7 /* SwiftJSONSanitizer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftJSONSanitizer;
 		};
 		DDB12E0501C0083FE73E085B /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
