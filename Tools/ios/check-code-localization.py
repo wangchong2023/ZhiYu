@@ -539,7 +539,10 @@ EXEMPT_STRINGS = {
     "Failed to",
     # PluginLoader 日志闭包（传入 Logger.shared.error/info，仅用于开发者日志）
     "[PluginRegistry] Init failed: \\(manifest.name)",
-    "[PluginRegistry] JS plugin instantiation failed: \\(manifest.name)"
+    "[PluginRegistry] JS plugin instantiation failed: \\(manifest.name)",
+    # Logger 调用内的英文调试日志（A-19 决策：保持英文调试描述，仅用于开发者日志）
+    "[DatabaseCorruptedBanner] Reverification succeeded! Remounted physical database.",
+    "[RAG] Evaluation load failed"
 }
 
 class SourceCodeAuditor:
@@ -1368,17 +1371,21 @@ def _print_obsolete_issues(unused_key_issues):
 
 
 def _exit_audit(has_critical, has_any_issues):
-    """根据审计结果决定以什么状态码退出系统。"""
+    """根据审计结果决定以什么状态码退出系统。
+
+    阻断策略：有任何缺陷（含 WARNING）即 exit 1 阻断流水线，
+    确保本地化质量门禁零容忍。
+    """
     if not has_any_issues:
         print("\n✅ [L10n Audit] Localization quality standards met.")
         sys.exit(0)
-    
+
     if has_critical:
         print("\n[L10n Audit] CRITICAL VIOLATIONS. Build blocked.")
         sys.exit(1)
     else:
-        print("\n[L10n Audit] Suggestions for cleanup found. Build permitted.")
-        sys.exit(0)
+        print("\n[L10n Audit] Violations found (warnings). Build blocked.")
+        sys.exit(1)
 
 
 # ==============================================================================
