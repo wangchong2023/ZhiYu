@@ -22,9 +22,8 @@ final class SettingsViewTests: XCTestCase {
     @Dependency(\.themeService) var themeManager
 
     /// 在每次测试执行前重置 Mock 环境
-    @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         setupFullMockEnvironment()
     }
     

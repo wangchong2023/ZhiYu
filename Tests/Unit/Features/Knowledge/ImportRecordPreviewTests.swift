@@ -12,6 +12,7 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class ImportRecordPreviewTests: XCTestCase {
 
     private var mockURLOpener: MockURLOpener!
@@ -19,9 +20,8 @@ final class ImportRecordPreviewTests: XCTestCase {
     private var router: Router!
     private var handler: ImportPreviewHandler!
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         mockURLOpener = MockURLOpener()
         mockShareSheet = MockShareSheet()
         router = Router()
@@ -32,12 +32,12 @@ final class ImportRecordPreviewTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         mockURLOpener = nil
         mockShareSheet = nil
         router = nil
         handler = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     // MARK: - 1. 手工记录跳转编辑测试（最高优先级）

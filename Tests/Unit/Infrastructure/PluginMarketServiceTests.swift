@@ -14,7 +14,7 @@ import CryptoKit
 @testable import UFPCore
 
 final class MockURLProtocol: URLProtocol {
-    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
     
     override class func canInit(with request: URLRequest) -> Bool {
         return true
@@ -48,24 +48,20 @@ final class PluginMarketServiceTests: XCTestCase {
     var service: PluginMarketService!
     private var registry: PluginRegistry!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         URLProtocol.registerClass(MockURLProtocol.self)
-        MainActor.assumeIsolated {
-            registry = PluginRegistry()
-            ServiceContainer.shared.register(registry, for: PluginRegistry.self)
-            service = PluginMarketService(registry: registry)
-        }
+        registry = PluginRegistry()
+        ServiceContainer.shared.register(registry, for: PluginRegistry.self)
+        service = PluginMarketService(registry: registry)
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         URLProtocol.unregisterClass(MockURLProtocol.self)
         MockURLProtocol.requestHandler = nil
-        MainActor.assumeIsolated {
-            service = nil
-            registry = nil
-        }
-        super.tearDown()
+        service = nil
+        registry = nil
+        try await super.tearDown()
     }
     
     func testFetchPluginsSuccess() async throws {

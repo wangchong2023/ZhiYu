@@ -15,11 +15,11 @@ import UFPCore
 import SwiftUI
 @testable import ZhiYu
 
+@MainActor
 final class HapticFeedbackTests: XCTestCase {
     
-    @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         setupFullMockEnvironment()
     }
     

@@ -12,16 +12,17 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class ContentModerationEngineTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-        MainActor.assumeIsolated { resetPersistentTestState() }
+    override func setUp() async throws {
+        try await super.setUp()
+        resetPersistentTestState()
     }
 
-    override func tearDown() {
-        MainActor.assumeIsolated { resetPersistentTestState() }
-        super.tearDown()
+    override func tearDown() async throws {
+        resetPersistentTestState()
+        try await super.tearDown()
     }
 
     /// 1. 测试“防误杀”正向放行：学术、历史、医学与法律科普文本不应被误杀拦截

@@ -292,7 +292,7 @@ final class NetworkClientEdgeMockURLProtocol: URLProtocol {
     nonisolated(unsafe) static var statusCode: Int = 200
     nonisolated(unsafe) static var lastRequest: URLRequest?
     nonisolated(unsafe) static var responseSequence: [(Data, Int)] = []
-    private static var sequenceIndex = 0
+    nonisolated(unsafe) private static var sequenceIndex = 0
 
     static func reset() {
         responseBody = Data()

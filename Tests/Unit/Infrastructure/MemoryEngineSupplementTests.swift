@@ -16,15 +16,16 @@ import Combine
 
 // MARK: - NativeMemoryEngine / SwarmMemoryAdapter 补盲测试
 
+@MainActor
 final class MemoryEngineSupplementTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        await MainActor.run { resetPersistentTestState() }
+        resetPersistentTestState()
     }
 
     override func tearDown() async throws {
-        await MainActor.run { resetPersistentTestState() }
+        resetPersistentTestState()
         try await super.tearDown()
     }
 

@@ -186,9 +186,10 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
             XCTFail("strategy 不应为 nil")
             return
         }
+        let callCount = self.concurrentCallCount
         let results = try await withThrowingTaskGroup(of: AuthCredential.self) { group in
-            for _ in 0..<self.concurrentCallCount {
-                group.addTask { @MainActor in
+            for _ in 0..<callCount {
+                group.addTask {
                     try await strategy.acquireCredentials()
                 }
             }

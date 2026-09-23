@@ -351,7 +351,7 @@ final class CollaborationWorkflowTests: XCTestCase {
         XCTAssertEqual(edit.newValue, "New Title")
     }
     func testDiscoveredRoomStructure() {
-        let endpoint = NWEndpoint.service(name: "peer123", type: "_km-collab._tcp", domain: nil, interface: nil)
+        let endpoint = NWEndpoint.service(name: "peer123", type: "_km-collab._tcp", domain: "", interface: nil)
         let room = DiscoveredRoom(
             id: "room-1",
             platformPeer: endpoint,
@@ -634,13 +634,14 @@ final class GraphLayoutRealisticTests: XCTestCase {
 }
 
 // MARK: - E2E: Markdown Rendering
+@MainActor
 final class MarkdownRenderingTests: XCTestCase {
 
     var parser: MarkdownProcessor!
 
     override func setUp() async throws {
         try await super.setUp()
-        await resetPersistentTestState()
+        resetPersistentTestState()
         parser = MarkdownProcessor()
     }
 

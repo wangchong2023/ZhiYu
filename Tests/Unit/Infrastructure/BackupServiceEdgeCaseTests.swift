@@ -24,12 +24,11 @@ final class BackupServiceEdgeTests: XCTestCase {
         backupService = BackupService(baseDirectory: tempDir)
     }
 
-    override func tearDownWithError() throws {
-        MainActor.assumeIsolated {
-            backupService = nil
-            try? FileManager.default.removeItem(at: tempDir)
-            tempDir = nil
-        }
+    override func tearDown() async throws {
+        backupService = nil
+        try? FileManager.default.removeItem(at: tempDir)
+        tempDir = nil
+        try await super.tearDown()
     }
 
     // MARK: - 辅助方法

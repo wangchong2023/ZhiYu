@@ -29,7 +29,7 @@ final class IOSCollaborationAndWatchSyncDeepTests: XCTestCase {
 
     func testMultipeerCollaborationProvider_StartHosting() {
         let provider = MultipeerCollaborationProvider()
-        let delegate = MockCollaborationDelegate()
+        let delegate = MockCollaborationProviderDelegate()
         provider.delegate = delegate
 
         provider.startHosting(roomName: "测试房间", userName: "测试主机")
@@ -41,7 +41,7 @@ final class IOSCollaborationAndWatchSyncDeepTests: XCTestCase {
 
     func testMultipeerCollaborationProvider_StartBrowsing() {
         let provider = MultipeerCollaborationProvider()
-        let delegate = MockCollaborationDelegate()
+        let delegate = MockCollaborationProviderDelegate()
         provider.delegate = delegate
 
         provider.startBrowsing(userName: "测试客户端")

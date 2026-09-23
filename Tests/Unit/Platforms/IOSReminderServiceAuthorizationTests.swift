@@ -55,16 +55,16 @@ final class IOSReminderServiceAuthorizationTests: XCTestCase {
 
     /// 验证存在默认日历时保存闭包被调用
     func testCreateReminder_withDefaultCalendar_invokesSave() async throws {
-        var saveCalled = false
+        let saveCalled = MutableBox(false)
         let service = iOSReminderService(
             requestAccess: { true },
             defaultCalendar: { EKCalendar(for: .reminder, eventStore: EKEventStore()) },
             calendars: { _ in [] },
-            save: { _, _ in saveCalled = true }
+            save: { _, _ in saveCalled.value = true }
         )
 
         try await service.createReminder(title: "Test", notes: "Notes")
-        XCTAssertTrue(saveCalled, "save 应被调用")
+        XCTAssertTrue(saveCalled.value, "save 应被调用")
     }
 }
 #endif

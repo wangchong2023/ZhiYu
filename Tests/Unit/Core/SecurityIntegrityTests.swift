@@ -19,25 +19,21 @@ final class SecurityIntegrityTests: XCTestCase {
     let testFileName = "test_db.sqlite"
     var testFileURL: URL!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        MainActor.assumeIsolated {
-            setupFullMockEnvironment()
-            securityManager = SecurityManager.shared
-            let tempDir = FileManager.default.temporaryDirectory
-            testFileURL = tempDir.appendingPathComponent(testFileName)
-        }
-        try "Test Data".write(to: MainActor.assumeIsolated { testFileURL }, atomically: true, encoding: .utf8)
+    override func setUp() async throws {
+        try await super.setUp()
+        setupFullMockEnvironment()
+        securityManager = SecurityManager.shared
+        let tempDir = FileManager.default.temporaryDirectory
+        testFileURL = tempDir.appendingPathComponent(testFileName)
+        try "Test Data".write(to: testFileURL, atomically: true, encoding: .utf8)
     }
 
-    override func tearDownWithError() throws {
-        MainActor.assumeIsolated {
-            try? FileManager.default.removeItem(at: testFileURL)
-            testFileURL = nil
-            securityManager = nil
-            ServiceContainer.shared.reset()
-        }
-        try super.tearDownWithError()
+    override func tearDown() async throws {
+        try? FileManager.default.removeItem(at: testFileURL)
+        testFileURL = nil
+        securityManager = nil
+        ServiceContainer.shared.reset()
+        try await super.tearDown()
     }
 
     // MARK: - Passphrase Tests

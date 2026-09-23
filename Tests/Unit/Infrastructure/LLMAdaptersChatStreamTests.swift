@@ -206,10 +206,10 @@ final class LLMAdaptersChatStreamTests: XCTestCase {
 
     func testOllamaAdapterChatStreamCompletesImmediately() async throws {
         let adapter = OllamaAdapter(model: "llama3", baseURL: "http://localhost:11434")
-        var chunks: [String] = []
+        let chunks = MutableBox<[String]>([])
         let collectTask = Task {
             for try await chunk in adapter.chatStream(messages: []) {
-                chunks.append(chunk)
+                chunks.value.append(chunk)
             }
         }
         let timeoutTask = Task {
@@ -218,7 +218,7 @@ final class LLMAdaptersChatStreamTests: XCTestCase {
         }
         try await collectTask.value
         timeoutTask.cancel()
-        XCTAssertTrue(chunks.isEmpty)
+        XCTAssertTrue(chunks.value.isEmpty)
     }
 
     func testOllamaAdapterHasFixedId() {

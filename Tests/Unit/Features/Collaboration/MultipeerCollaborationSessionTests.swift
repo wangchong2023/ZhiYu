@@ -17,7 +17,7 @@ final class MultipeerCollaborationSessionTests: XCTestCase {
     /// 验证加入未启动广播的房间时安全返回
     func testJoinRoom_unbrowsedRoom_returnsSafely() {
         let provider = MultipeerCollaborationProvider()
-        let endpoint = NWEndpoint.service(name: "test|12345678", type: "_km-collab._tcp", domain: nil, interface: nil)
+        let endpoint = NWEndpoint.service(name: "test|12345678", type: "_km-collab._tcp", domain: "", interface: nil)
         let room = DiscoveredRoom(
             id: "test",
             platformPeer: endpoint,

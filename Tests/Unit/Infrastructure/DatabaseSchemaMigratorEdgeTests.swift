@@ -11,6 +11,7 @@ import XCTest
 import UFPStorage
 @testable import ZhiYu
 
+@MainActor
 final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
 
     var dbQueue: DatabaseQueue!
@@ -21,8 +22,9 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
         try await DatabaseManager.shared.setupForTesting(with: dbQueue)
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         dbQueue = nil
+        try await super.tearDown()
     }
 
     // MARK: - 专属笔记本库表完整性
@@ -129,18 +131,18 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
 
     /// 验证：重复运行 migrator 不崩溃（幂等性）。
     func testMigratorIsIdempotent() async throws {
-        let migrator = await DatabaseManager.shared.migrator
+        let migrator = DatabaseManager.shared.migrator
         XCTAssertNoThrow(try migrator.migrate(dbQueue), "重复运行 migrator 不应抛出异常")
     }
 
     /// 验证：重复运行 globalMigrator 不崩溃（幂等性）。
     func testGlobalMigratorIsIdempotent() async throws {
-        let writer = await DatabaseManager.shared.globalWriter
+        let writer = DatabaseManager.shared.globalWriter
         guard let unwrappedWriter = writer else {
             XCTFail("globalWriter 不应为 nil")
             return
         }
-        let migrator = await DatabaseManager.shared.globalMigrator
+        let migrator = DatabaseManager.shared.globalMigrator
         try migrator.migrate(unwrappedWriter)
         // 不应抛出异常
     }

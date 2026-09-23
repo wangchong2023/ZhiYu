@@ -141,9 +141,10 @@ final class FileSignatureRepoEdgeTests: XCTestCase {
 
     /// 验证：并发写入不同路径不丢失数据（GRDB 串行化）。
     func testConcurrentWritesToDifferentPaths() async throws {
+        guard let repo = self.repo else { XCTFail("repo 未初始化"); return }
         await withTaskGroup(of: Void.self) { group in
             for i in 0..<20 {
-                group.addTask { [self] in
+                group.addTask {
                     try? await repo.saveSignature("sig\(i)", forFilePath: "/path/\(i)", salt: "salt")
                 }
             }

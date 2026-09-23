@@ -11,16 +11,17 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class LocalizationTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-        MainActor.assumeIsolated { resetPersistentTestState() }
+    override func setUp() async throws {
+        try await super.setUp()
+        resetPersistentTestState()
     }
 
-    override func tearDown() {
-        MainActor.assumeIsolated { resetPersistentTestState() }
-        super.tearDown()
+    override func tearDown() async throws {
+        resetPersistentTestState()
+        try await super.tearDown()
     }
 
     /// 验证核心模块的 Key 是否能正确解析（而非原样返回 Key）

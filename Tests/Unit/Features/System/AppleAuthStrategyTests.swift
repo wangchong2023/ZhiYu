@@ -16,14 +16,14 @@ final class AppleAuthStrategyTests: XCTestCase {
 
     var strategy: AppleAuthStrategy!
 
-    override func setUp() {
-        super.setUp()
-        MainActor.assumeIsolated { strategy = AppleAuthStrategy() }
+    override func setUp() async throws {
+        try await super.setUp()
+        strategy = AppleAuthStrategy()
     }
 
-    override func tearDown() {
-        MainActor.assumeIsolated { strategy = nil }
-        super.tearDown()
+    override func tearDown() async throws {
+        strategy = nil
+        try await super.tearDown()
     }
 
     func testAppleAuthIdentityType() {

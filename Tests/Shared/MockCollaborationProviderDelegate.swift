@@ -14,6 +14,7 @@ final class MockCollaborationProviderDelegate: CollaborationProviderDelegate {
 
     // MARK: - 调用记录
 
+    var statuses: [String] = []
     var didUpdateStatusCallCount = 0
     var lastStatusMessage: String?
 
@@ -39,6 +40,7 @@ final class MockCollaborationProviderDelegate: CollaborationProviderDelegate {
     // MARK: - CollaborationProviderDelegate 实现
 
     func providerDidUpdateStatus(_ message: String) {
+        statuses.append(message)
         didUpdateStatusCallCount += 1
         lastStatusMessage = message
     }
@@ -77,6 +79,7 @@ final class MockCollaborationProviderDelegate: CollaborationProviderDelegate {
     // MARK: - 重置
 
     func reset() {
+        statuses = []
         didUpdateStatusCallCount = 0
         lastStatusMessage = nil
         didDiscoverRoomCallCount = 0

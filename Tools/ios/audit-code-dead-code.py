@@ -46,6 +46,10 @@ IGNORE_PATTERNS = [
     r"result of call to '.*' is unused",               # 未使用返回值
     r"\[L10n Audit\]",                                 # L10n 审计警告
     r"main actor-isolated class property .* can not be referenced",  # MainActor 隔离引用
+    r"main actor-isolated property .* can not be mutated",  # MainActor 隔离赋值
+    r"main actor-isolated property .* can not be referenced",  # MainActor 隔离引用（autoclosure）
+    r"call to main actor-isolated initializer .* in a synchronous nonisolated context",  # MainActor 初始化
+    r"main actor-isolated .* can not be referenced from a nonisolated autoclosure",  # MainActor autoclosure
     r"stored property .* of 'Sendable'-conforming class .* is mutable",  # Sendable 可变属性
     # ── swift-dependencies Swift 6 Sendable 警告（非死代码）──
     r"type 'KeyPath<DependencyValues, .*>' does not conform to the 'Sendable' protocol",  # DependencyKey KeyPath Sendable
@@ -54,6 +58,20 @@ IGNORE_PATTERNS = [
     r"non-Sendable type '.*' of property '.*' cannot exit main actor-isolated context",  # MainActor 非 Sendable 退出
     r"non-final class '.*' cannot conform to the 'Sendable' protocol",  # 非最终类 Sendable
     r"was deprecated in iOS \d+\.\d+",  # iOS SDK API 废弃警告（非死代码）
+    # ── Swift 6 并发/编译器警告（非 Periphery 死代码）──
+    r"value '.*' was defined but never used; consider replacing with boolean test",  # 未使用变量（布尔测试）
+    r"variable '.*' was never mutated; consider changing to 'let' constant",  # var 可改 let
+    r"extension declares a conformance of imported type .* to imported protocol .*; this will not behave correctly",  # 跨模块 Equatable 扩展
+    r"no 'async' operations occur within 'await'",  # 多余 await（重复，确保覆盖）
+    r"task group .* can not be awaited",  # TaskGroup 隔离
+    r"sending '.*' risks causing data races",  # Sendable 数据竞争
+    r"passing closure as a 'sending' parameter risks causing data races",  # Sendable 闭包
+    r"pattern that the region-based isolation checker does not understand",  # 区域隔离检查器
+    r"cannot form key path to main actor-isolated property",  # MainActor KeyPath（重复，确保覆盖）
+    r"non-Sendable type '.*' of property '.*' cannot exit main actor-isolated context",  # MainActor 非 Sendable 退出（重复，确保覆盖）
+    r"capture of 'self' with non-sendable type '.*' in a '@Sendable' local closure",  # @Sendable 闭包捕获 self
+    r"mutation of captured var .* in concurrently-executing",  # 并发捕获可变变量（重复，确保覆盖）
+    r"reference to captured var .* in concurrently-executing",  # 并发引用捕获变量（重复，确保覆盖）
 ]
 
 # ── 物理迁移残留检测规则 ──

@@ -20,14 +20,14 @@ final class WeChatAuthStrategyTests: XCTestCase {
 
     var strategy: WeChatAuthStrategy!
 
-    override func setUp() {
-        super.setUp()
-        MainActor.assumeIsolated { strategy = WeChatAuthStrategy() }
+    override func setUp() async throws {
+        try await super.setUp()
+        strategy = WeChatAuthStrategy()
     }
 
-    override func tearDown() {
-        MainActor.assumeIsolated { strategy = nil }
-        super.tearDown()
+    override func tearDown() async throws {
+        strategy = nil
+        try await super.tearDown()
     }
 
     // MARK: - identityType 基础校验

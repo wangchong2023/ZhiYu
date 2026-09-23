@@ -19,9 +19,9 @@ final class PromptTemplateEngineTests: XCTestCase {
     // MARK: - Mock 网络协议组件
     
     private class MockURLProtocol: URLProtocol {
-        static var mockData: Data?
-        static var mockResponse: URLResponse?
-        static var mockError: Error?
+        nonisolated(unsafe) static var mockData: Data?
+        nonisolated(unsafe) static var mockResponse: URLResponse?
+        nonisolated(unsafe) static var mockError: Error?
         
         override class func canInit(with request: URLRequest) -> Bool {
             return true

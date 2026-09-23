@@ -923,7 +923,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
 /// 闭包式 URLProtocol 拦截器，用于 mock 远程 Prompt 拉取响应
 final class SupplementMockURLProtocol: URLProtocol {
     /// 请求处理器闭包：接收 URLRequest，返回 (HTTPURLResponse, Data) 或抛出错误
-    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
     override class func canInit(with request: URLRequest) -> Bool {
         return true

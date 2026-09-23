@@ -283,7 +283,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
         var results: [String: String] = [:]
         var errors: [Error] = []
         // 提取 service 为局部变量，避免在 @Sendable 闭包中捕获非 Sendable 的 self
-        let service = self.service
+        guard let service = self.service else { XCTFail("service 未初始化"); return }
 
         for plaintext in plaintexts {
             group.enter()
@@ -325,7 +325,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
         var successCount = 0
         var errorCount = 0
         // 提取 service 为局部变量，避免在 @Sendable 闭包中捕获非 Sendable 的 self
-        let service = self.service
+        guard let service = self.service else { XCTFail("service 未初始化"); return }
 
         // 一半线程加密，一半线程解密
         for plaintext in plaintexts {

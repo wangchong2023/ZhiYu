@@ -97,7 +97,7 @@ final class VectorIndexerTests: XCTestCase {
 
 // MARK: - Mock EmbeddingProvider
 
-private final class MockEmbeddingProvider: EmbeddingProvider {
+private final class MockEmbeddingProvider: EmbeddingProvider, @unchecked Sendable {
     var indexChunksCallCount = 0
     var lastPageID: UUID?
     var lastChunks: [PageChunk]?

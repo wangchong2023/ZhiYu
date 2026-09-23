@@ -249,4 +249,4 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 }
 
 /// 测试用 DatabaseWriterProvider stub，用于验证 Finding #17 降级行为
-private final class TestWriterProvider: DatabaseWriterProvider {}
+private final class TestWriterProvider: DatabaseWriterProvider, @unchecked Sendable {}

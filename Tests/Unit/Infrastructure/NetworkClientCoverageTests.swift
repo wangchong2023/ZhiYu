@@ -342,7 +342,7 @@ final class NetworkClientMockURLProtocol: URLProtocol {
     nonisolated(unsafe) static var returnNonHTTPResponse = false
     /// 响应序列：按顺序返回不同的 (body, status)。用完后回退到 responseBody。
     nonisolated(unsafe) static var responseSequence: [(Data, Int)] = []
-    private static var sequenceIndex = 0
+    nonisolated(unsafe) private static var sequenceIndex = 0
 
     static func reset() {
         responseBody = Data()

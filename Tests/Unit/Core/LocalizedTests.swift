@@ -9,16 +9,17 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class LocalizedTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-        MainActor.assumeIsolated { resetPersistentTestState() }
+    override func setUp() async throws {
+        try await super.setUp()
+        resetPersistentTestState()
     }
 
-    override func tearDown() {
-        MainActor.assumeIsolated { resetPersistentTestState() }
-        super.tearDown()
+    override func tearDown() async throws {
+        resetPersistentTestState()
+        try await super.tearDown()
     }
 
     // MARK: - LanguageMode 枚举

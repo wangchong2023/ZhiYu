@@ -19,9 +19,8 @@ final class SecurityManagerTests: XCTestCase {
     private var securityManager: SecurityManager!
     private var originalSecurityManagerOverride: SecurityManager?
 
-    @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         setupFullMockEnvironment()
         // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
         originalSecurityManagerOverride = SecurityManager.testOverride
@@ -29,12 +28,11 @@ final class SecurityManagerTests: XCTestCase {
         securityManager = SecurityManager.shared
     }
 
-    @MainActor
-    override func tearDown() {
+    override func tearDown() async throws {
         securityManager = nil
         SecurityManager.testOverride = originalSecurityManagerOverride
         ServiceContainer.shared.reset()
-        super.tearDown()
+        try await super.tearDown()
     }
     
     // MARK: - AES-GCM 加解密测试

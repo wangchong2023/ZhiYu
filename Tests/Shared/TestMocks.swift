@@ -889,3 +889,14 @@ extension MockKeychainService {
         store.removeAll()
     }
 }
+
+// MARK: - MutableBox（@Sendable 闭包捕获辅助器）
+
+/// 线程安全的可变值包装器，用于在 `@Sendable` 闭包中捕获并修改可变状态。
+///
+/// Swift 6 严格并发模式下，`var` 被闭包捕获后在并发上下文中修改会触发编译错误。
+/// 使用引用类型包装器绕过该限制，因为捕获引用类型的是 `let` 指针，修改的是堆上的属性。
+final class MutableBox<T>: @unchecked Sendable {
+    var value: T
+    init(_ value: T) { self.value = value }
+}

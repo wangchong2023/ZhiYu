@@ -14,6 +14,7 @@ import Network
 @testable import UFPCore
 
 // MARK: - CollaborationService Tests
+@MainActor
 final class ZhiYuServiceCollaborationTests: XCTestCase {
 
     var collabService: CollaborationService!
@@ -22,25 +23,19 @@ final class ZhiYuServiceCollaborationTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         // 统一配置标准测试 Mock 环境，将协作提供商与环境适配等服务一并就绪，确保完全物理隔离且不崩溃
-        await MainActor.run {
-            setupFullMockEnvironment()
-            collabService = CollaborationService()
-            store = AppStore()
-        }
+        setupFullMockEnvironment()
+        collabService = CollaborationService()
+        store = AppStore()
     }
 
     override func tearDown() async throws {
-        await MainActor.run {
-            collabService.stop()
-            collabService = nil
-            store = nil
-        }
+        collabService.stop()
+        collabService = nil
+        store = nil
         // 允许当前主线程/协程事件循环排水，确保所有未完成的异步任务运行完毕，规避重置 DI 导致的 Race Condition (@SRS-7.1)
         try await Task.sleep(nanoseconds: 50_000_000)
-        await MainActor.run {
-            DatabaseManager.shared.reset()
-            ServiceContainer.shared.reset()
-        }
+        DatabaseManager.shared.reset()
+        ServiceContainer.shared.reset()
         try await super.tearDown()
     }
 
@@ -88,7 +83,7 @@ final class ZhiYuServiceCollaborationTests: XCTestCase {
 
     @MainActor
     func testDiscoveredRoomEquality() {
-        let endpoint = NWEndpoint.service(name: "p1", type: "_km-collab._tcp", domain: nil, interface: nil)
+        let endpoint = NWEndpoint.service(name: "p1", type: "_km-collab._tcp", domain: "", interface: nil)
         let room1 = DiscoveredRoom(id: "r1", platformPeer: endpoint, roomName: "Room", owner: "Host1")
         let room2 = DiscoveredRoom(id: "r1", platformPeer: endpoint, roomName: "Room", owner: "Host1")
         XCTAssertEqual(room1, room2)

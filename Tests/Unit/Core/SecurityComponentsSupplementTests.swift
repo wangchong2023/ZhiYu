@@ -25,23 +25,19 @@ final class SecurityComponentsSupplementTests: XCTestCase {
 
     private var originalSecurityManagerOverride: SecurityManager?
 
-    override func setUp() {
-        super.setUp()
-        MainActor.assumeIsolated {
-            setupFullMockEnvironment()
-            resetPersistentTestState()
-            // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
-            originalSecurityManagerOverride = SecurityManager.testOverride
-            SecurityManager.testOverride = nil
-        }
+    override func setUp() async throws {
+        try await super.setUp()
+        setupFullMockEnvironment()
+        resetPersistentTestState()
+        // 强制使用真实 SecurityManager（清除其他测试类可能遗留的 Mock 污染）
+        originalSecurityManagerOverride = SecurityManager.testOverride
+        SecurityManager.testOverride = nil
     }
 
-    override func tearDown() {
-        MainActor.assumeIsolated {
-            SecurityManager.testOverride = originalSecurityManagerOverride
-            resetPersistentTestState()
-        }
-        super.tearDown()
+    override func tearDown() async throws {
+        SecurityManager.testOverride = originalSecurityManagerOverride
+        resetPersistentTestState()
+        try await super.tearDown()
     }
 
     // MARK: - KeychainService 错误分支

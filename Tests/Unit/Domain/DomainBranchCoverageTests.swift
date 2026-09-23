@@ -206,9 +206,9 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
     private var mockSession: URLSession!
 
     private class MockURLProtocol: URLProtocol {
-        static var mockData: Data?
-        static var mockResponse: URLResponse?
-        static var mockError: Error?
+        nonisolated(unsafe) static var mockData: Data?
+        nonisolated(unsafe) static var mockResponse: URLResponse?
+        nonisolated(unsafe) static var mockError: Error?
         override class func canInit(with request: URLRequest) -> Bool { true }
         override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
         override func startLoading() {
@@ -599,11 +599,11 @@ final class DomainAIContentEnricherBranchTests: XCTestCase {
     // MARK: enrich 图片alt为空不触发LLM
 
     func testEnrich_图片alt为空不触发LLM() async {
-        var llmCalled = false
-        mockLLM.generateHandler = { _, _ in llmCalled = true; return "描述" }
+        let llmCalled = MutableBox(false)
+        mockLLM.generateHandler = { _, _ in llmCalled.value = true; return "描述" }
         let content = "![](https://example.com/image.png)"
         let result = await enricher.enrich(content, llm: mockLLM)
-        XCTAssertFalse(llmCalled, "alt 为空时不应调用 LLM")
+        XCTAssertFalse(llmCalled.value, "alt 为空时不应调用 LLM")
         XCTAssertTrue(result.contains("https://example.com/image.png"), "应保留原图片URL")
     }
 

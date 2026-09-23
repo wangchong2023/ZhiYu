@@ -151,14 +151,14 @@ final class DomainRAGSupplementTests: XCTestCase {
     func testAIContentEnricher_图片alt为空_不触发LLM() async {
         let content = "![](https://example.com/image.png)"
         let mockLLM = MockLLMService()
-        var llmCalled = false
+        let llmCalled = MutableBox(false)
         mockLLM.generateHandler = { _, _ in
-            llmCalled = true
+            llmCalled.value = true
             return "不应该被调用"
         }
         let enriched = await AIContentEnricher.shared.enrich(content, llm: mockLLM)
         XCTAssertTrue(enriched.contains("![](https://example.com/image.png)"), "应保留原图片 Markdown")
-        XCTAssertFalse(llmCalled, "alt 为空时不应触发 LLM")
+        XCTAssertFalse(llmCalled.value, "alt 为空时不应触发 LLM")
     }
 
     /// 验证表格 LLM 抛错时返回原表格

@@ -9,19 +9,20 @@
 import XCTest
 @testable import ZhiYu
 
+@MainActor
 final class PromptSecuritySanitizerTests: XCTestCase {
 
     private var sanitizer: PromptSecuritySanitizer!
 
     override func setUp() async throws {
         try await super.setUp()
-        await MainActor.run { resetPersistentTestState() }
+        resetPersistentTestState()
         sanitizer = PromptSecuritySanitizer()
     }
 
     override func tearDown() async throws {
         sanitizer = nil
-        await MainActor.run { resetPersistentTestState() }
+        resetPersistentTestState()
         try await super.tearDown()
     }
 

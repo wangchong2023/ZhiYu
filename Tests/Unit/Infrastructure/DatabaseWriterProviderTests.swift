@@ -115,4 +115,4 @@ final class DatabaseWriterProviderTests: XCTestCase {
 }
 
 /// 测试用 DatabaseWriterProvider stub
-private final class StubWriterProvider: DatabaseWriterProvider {}
+private final class StubWriterProvider: DatabaseWriterProvider, @unchecked Sendable {}

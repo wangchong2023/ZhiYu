@@ -120,20 +120,20 @@ final class IOSReminderServiceTests: XCTestCase {
 
     /// 无默认日历但 calendars 列表非空时，应使用第一个日历创建成功
     func testCreateReminderFallbackToCalendarsListSucceeds() async throws {
-        var saveCalled = false
+        let saveCalled = MutableBox(false)
         let fallbackCalendar = EKCalendar(for: .reminder, eventStore: EKEventStore())
         let fallbackCalendarBox = CalendarBox(fallbackCalendar)
         let service = iOSReminderService(
             requestAccess: { true },
             defaultCalendar: { nil },
             calendars: { _ in [fallbackCalendarBox.value] },
-            save: { _, _ in saveCalled = true }
+            save: { _, _ in saveCalled.value = true }
         )
         try await service.createReminder(
             title: TestConstants.reminderTitle,
             notes: TestConstants.reminderNotes
         )
-        XCTAssertTrue(saveCalled, "使用 fallback 日历应触发保存")
+        XCTAssertTrue(saveCalled.value, "使用 fallback 日历应触发保存")
     }
 
     /// 无默认日历且 calendars 列表为空时，应抛出 NSError(404)
@@ -185,20 +185,20 @@ final class IOSReminderServiceTests: XCTestCase {
 
     /// 空标题创建提醒不应导致服务崩溃
     func testCreateReminderWithEmptyTitleDoesNotCrash() async throws {
-        var saveCalled = false
+        let saveCalled = MutableBox(false)
         let calendar = EKCalendar(for: .reminder, eventStore: EKEventStore())
         let calendarBox = CalendarBox(calendar)
         let service = iOSReminderService(
             requestAccess: { true },
             defaultCalendar: { calendarBox.value },
             calendars: { _ in [] },
-            save: { _, _ in saveCalled = true }
+            save: { _, _ in saveCalled.value = true }
         )
         try await service.createReminder(
             title: TestConstants.emptyTitle,
             notes: TestConstants.reminderNotes
         )
-        XCTAssertTrue(saveCalled, "空标题创建应正常调用保存")
+        XCTAssertTrue(saveCalled.value, "空标题创建应正常调用保存")
     }
 
     // MARK: - 协议一致性

@@ -88,9 +88,8 @@ final class CollaborationServiceTests: XCTestCase {
     var mockDelegate: MockCollaborationDelegate!
     
     /// 设置测试套件，初始化协作提供商和协作服务，并配置模拟环境
-    @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         setupFullMockEnvironment()
         mockProvider = MockCollaborationProvider()
         
@@ -106,12 +105,11 @@ final class CollaborationServiceTests: XCTestCase {
     }
     
     /// 清理测试残留对象，释放内存
-    @MainActor
-    override func tearDown() {
+    override func tearDown() async throws {
         service = nil
         mockProvider = nil
         mockDelegate = nil
-        super.tearDown()
+        try await super.tearDown()
     }
     
     /// TC-COL-01: 验证开启协作托管服务的流程、状态转换及提供商接口触发

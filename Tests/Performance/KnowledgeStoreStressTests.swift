@@ -12,11 +12,11 @@ import XCTest
 import Combine
 @testable import ZhiYu
 
+@MainActor
 final class KnowledgeStoreStressTests: XCTestCase {
     
-    @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         setupFullMockEnvironment()
     }
 

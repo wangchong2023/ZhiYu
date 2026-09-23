@@ -22,6 +22,7 @@ import UFPCore
 import Combine
 @testable import ZhiYu
 
+@MainActor
 final class AISynthesisServicePureLogicTests: XCTestCase {
 
     // MARK: - 实例 Mock
@@ -35,16 +36,13 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
         try await super.setUp()
 
         // 在 @MainActor 上下文中创建 Mock（规避 @MainActor 协议 init 隔离限制）
-        let (llm, logger) = await MainActor.run {
-            let llm = MockFullLLMService()
-            let logger = MockLoggerProtocol()
+        let llm = MockFullLLMService()
+        let logger = MockLoggerProtocol()
 
-            // 注册到 ServiceContainer 供 @Inject logger 解析
-            ServiceContainer.shared.reset()
-            ServiceContainer.shared.register(llm as any LLMServiceProtocol, for: (any LLMServiceProtocol).self)
-            ServiceContainer.shared.register(logger as any LoggerProtocol, for: (any LoggerProtocol).self)
-            return (llm, logger)
-        }
+        // 注册到 ServiceContainer 供 @Inject logger 解析
+        ServiceContainer.shared.reset()
+        ServiceContainer.shared.register(llm as any LLMServiceProtocol, for: (any LLMServiceProtocol).self)
+        ServiceContainer.shared.register(logger as any LoggerProtocol, for: (any LoggerProtocol).self)
         self.mockLLM = llm
         self.mockLogger = logger
 
@@ -53,11 +51,9 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        await MainActor.run {
-            ServiceContainer.shared.reset()
-            mockLLM = nil
-            mockLogger = nil
-        }
+        ServiceContainer.shared.reset()
+        mockLLM = nil
+        mockLogger = nil
         try await super.tearDown()
     }
 
@@ -82,9 +78,7 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
     /// 验证当 LLM 正常返回标准的 JSON 数组时，能正确解析出推荐问题。
     func testPredictFollowUpQuestions_success() async throws {
         // 直接通过实例 Mock 设置响应
-        await MainActor.run {
-            mockLLM.generateResult = "[\"后续问题一\", \"后续问题二\", \"后续问题三\"]"
-        }
+        mockLLM.generateResult = "[\"后续问题一\", \"后续问题二\", \"后续问题三\"]"
 
         let history = [
             ChatMessage(role: .user, content: "你好"),
@@ -103,9 +97,7 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
 
     /// 验证当 LLM 切换后，所有 6 种合成操作（MindMap, Slides, Quiz, Infographic, Report, Expansion）均能动态解析最新 LLM 句柄并成功生成产出
     func testAllSynthesisTypes_useCurrentLLM() async throws {
-        await MainActor.run {
-            mockLLM.generateResult = "# 知识测试标题\n- 核心内容要点一\n- 核心内容要点二"
-        }
+        mockLLM.generateResult = "# 知识测试标题\n- 核心内容要点一\n- 核心内容要点二"
 
         let service = AISynthesisService.shared
 
@@ -137,9 +129,7 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
 
     /// 验证当 LLM 返回非规范的 JSON 或其他错误文本时，能优雅防护并返回空数组。
     func testPredictFollowUpQuestions_fallback() async throws {
-        await MainActor.run {
-            mockLLM.generateResult = "This is not a JSON array"
-        }
+        mockLLM.generateResult = "This is not a JSON array"
 
         let history = [
             ChatMessage(role: .user, content: "你好")

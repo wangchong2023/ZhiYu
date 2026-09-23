@@ -169,7 +169,7 @@ final class PlatformServicesDeepComprehensiveTests: XCTestCase {
         XCTAssertTrue(delegate.statuses.contains(L10n.Collaboration.Status.searching), "启动 Browsing 后应上报 searching 状态")
 
         // 4. 模拟加入房间
-        let endpoint = NWEndpoint.service(name: "测试远端主机|12345678", type: "_km-collab._tcp", domain: nil, interface: nil)
+        let endpoint = NWEndpoint.service(name: "测试远端主机|12345678", type: "_km-collab._tcp", domain: "", interface: nil)
         let room = DiscoveredRoom(id: "room_1", platformPeer: endpoint, roomName: "智宇知识攻坚室", owner: "测试远端主机")
         provider.joinRoom(room)
         XCTAssertTrue(delegate.statuses.contains(L10n.Collaboration.Status.joining), "加入房间后应更新 joining 状态")
