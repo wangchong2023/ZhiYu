@@ -95,4 +95,13 @@ final class L10nPluginTableTests: XCTestCase {
             XCTAssertFalse(value.isEmpty, "Collaboration 属性返回空字符串")
         }
     }
+
+    // MARK: - Plugin.Error 属性 key 存在性
+
+    func testPlugin_Error_documentsNotFound_返回非Missing值() {
+        let value = L10n.Plugin.Error.documentsNotFound
+        XCTAssertFalse(value.contains("[MISSING:"),
+                       "Plugin.Error.documentsNotFound 返回 Missing: \(value)")
+        XCTAssertFalse(value.isEmpty, "Plugin.Error.documentsNotFound 返回空字符串")
+    }
 }

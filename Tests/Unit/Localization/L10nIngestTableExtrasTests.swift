@@ -182,6 +182,13 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         XCTAssertFalse(result.isEmpty)
     }
 
+    func testIngest_diNotReady_返回非Missing且包含参数() {
+        let result = L10n.Ingest.diNotReady("https://example.com")
+        XCTAssertFalse(result.contains("[MISSING:"),
+                       "Ingest.diNotReady 返回 Missing: \(result)")
+        XCTAssertFalse(result.isEmpty)
+    }
+
     // MARK: - Backup 属性 key 存在性
 
     func testBackup_基础属性返回非Missing值() {

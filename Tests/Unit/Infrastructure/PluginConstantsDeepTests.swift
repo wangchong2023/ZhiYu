@@ -70,7 +70,7 @@ final class PluginConstantsDeepTests: XCTestCase {
     func testMarketErrorDomain() {
         XCTAssertEqual(PluginConstants.MarketError.domain, "PluginMarketService")
         XCTAssertEqual(PluginConstants.MarketError.httpPrefix, "HTTP ")
-        XCTAssertEqual(PluginConstants.MarketError.documentsNotFound, "Failed to locate documents directory")
+        XCTAssertEqual(PluginConstants.MarketError.documentsNotFound, L10n.Plugin.Error.documentsNotFound)
     }
 
     /// 验证 PluginID 前缀

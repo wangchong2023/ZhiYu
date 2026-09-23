@@ -339,7 +339,8 @@ final class L10nSystemTableExtrasTests: XCTestCase {
             L10n.Security.jailbreakDetected,
             L10n.Security.jailbreakFailureReason,
             L10n.Security.compliancePolicyViolation,
-            L10n.Security.accountTemporarilyThrottled
+            L10n.Security.accountTemporarilyThrottled,
+            L10n.Security.signatureRepositoryNotRegistered
         ]
         for value in values {
             XCTAssertFalse(value.contains("[MISSING:"),

@@ -364,7 +364,7 @@ final class PluginSandboxGatewayAuditDeepTests: XCTestCase {
     func testPluginConstantsMarketErrorValues() {
         XCTAssertEqual(PluginConstants.MarketError.domain, "PluginMarketService")
         XCTAssertEqual(PluginConstants.MarketError.httpPrefix, "HTTP ")
-        XCTAssertEqual(PluginConstants.MarketError.documentsNotFound, "Failed to locate documents directory")
+        XCTAssertEqual(PluginConstants.MarketError.documentsNotFound, L10n.Plugin.Error.documentsNotFound)
     }
 
     /// PluginID 常量值验证

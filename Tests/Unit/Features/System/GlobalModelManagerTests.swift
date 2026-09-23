@@ -146,4 +146,52 @@ final class GlobalModelManagerTests: XCTestCase {
         manager.refreshLocalModelFiles()
         XCTAssertNotNil(manager, "刷新本地模型文件后 manager 实例应保持有效")
     }
+
+    // MARK: - resubscribeActiveDownloads
+
+    /// 验证空下载状态时调用 resubscribeActiveDownloads 不崩溃
+    func testResubscribeActiveDownloads_空状态不崩溃() {
+        manager.resubscribeActiveDownloads()
+        XCTAssertTrue(manager.downloadStates.isEmpty)
+    }
+
+    /// 验证多次调用 resubscribeActiveDownloads 不崩溃（幂等性）
+    func testResubscribeActiveDownloads_多次调用不崩溃() {
+        manager.resubscribeActiveDownloads()
+        manager.resubscribeActiveDownloads()
+        manager.resubscribeActiveDownloads()
+        XCTAssertTrue(manager.downloadStates.isEmpty)
+    }
+
+    /// 验证 startDownload 后调用 resubscribeActiveDownloads 不崩溃
+    func testResubscribeActiveDownloads_下载中不崩溃() async {
+        manager.isChinaRegionOverride = false
+        let manifest = LLMManifest(
+            modelId: "test-resub",
+            displayName: "TestModel",
+            vendor: "TestVendor",
+            fileSizeInBytes: 1_000_000,
+            minDeviceMemoryInGb: 0.5,
+            remoteURLString: "https://example.com/model.bin",
+            sha256Checksum: "abc123",
+            parameterCount: "2B",
+            supportedTasks: ["chat"],
+            description: "测试模型",
+            defaultParameters: InferenceParameters(temperature: 0.7, topP: 0.9, topK: 40, maxTokens: 1024),
+            huggingfaceURLString: "https://huggingface.co/model.bin",
+            modelscopeURLString: "https://modelscope.cn/model.bin"
+        )
+        manager.startDownload(for: manifest)
+        // 等待异步 Task 有机会执行
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        manager.resubscribeActiveDownloads()
+        // 不崩溃即可
+    }
+
+    /// 验证 resetForTesting 后调用 resubscribeActiveDownloads 不崩溃
+    func testResubscribeActiveDownloads_重置后不崩溃() {
+        manager.resetForTesting()
+        manager.resubscribeActiveDownloads()
+        XCTAssertTrue(manager.downloadStates.isEmpty)
+    }
 }
