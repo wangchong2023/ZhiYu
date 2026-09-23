@@ -13,20 +13,20 @@ import Foundation
 import CommonCrypto
 import UFPCore
 
-/// 下载状态错误消息常量
+/// 下载状态错误消息常量（通过 L10n 强类型访问实现多语言本地化）
 private enum DownloadErrorMessage {
     /// 无续传数据文件
-    static let noResumeData = "No resume data file available."
+    static var noResumeData: String { L10n.ModelManager.Status.DownloadError.noResumeData }
     /// 空闲状态占位
-    static let idle = "Idle"
+    static var idle: String { L10n.ModelManager.Status.DownloadError.idle }
     /// 临时副本生成失败前缀
-    static let temporaryCopyFailedPrefix = "Temporary copy"
+    static var temporaryCopyFailedPrefix: String { L10n.ModelManager.Status.DownloadError.temporaryCopyFailedPrefix }
     /// 生成失败连接符
-    static let generationFailedConnector = " generation failed:"
+    static var generationFailedConnector: String { L10n.ModelManager.Status.DownloadError.generationFailedConnector }
     /// resumeData 持久化失败前缀
-    static let persistResumeDataFailedPrefix = "Persist resume data failed: "
+    static var persistResumeDataFailedPrefix: String { L10n.ModelManager.Status.DownloadError.persistResumeDataFailedPrefix }
     /// 网络错误 resumeData 持久化失败前缀
-    static let networkErrorResumeDataFailedPrefix = "Persist network error resume data failed: "
+    static var networkErrorResumeDataFailedPrefix: String { L10n.ModelManager.Status.DownloadError.networkErrorResumeDataFailedPrefix }
 }
 
 /// 大模型权重文件后台静默下载与状态管理器
@@ -179,7 +179,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         if let data = resumeData {
             persistResumeData(data, for: modelId, errorPrefix: DownloadErrorMessage.persistResumeDataFailedPrefix)
         } else {
-            updateState(for: modelId, to: .failed(error: "Failed to generate resume data for pausing."))
+            updateState(for: modelId, to: .failed(error: L10n.ModelManager.Status.DownloadError.resumeDataGenerationFailed))
         }
         
         activeTasks[modelId] = nil
@@ -287,6 +287,9 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     public func completeDownload(for modelId: String, tempFileURL: URL) {
         updateState(for: modelId, to: .verifying)
         
+        // 在 actor 上下文中预先获取本地化错误消息，避免 Task.detached 中跨线程访问
+        let verificationFailedMessage = L10n.ModelManager.Status.verificationFailed
+        
         // 利用后台并发 Task 异步进行 CPU 密集的哈希判定与文件移动，解耦主 Actor
         Task.detached(priority: .userInitiated) {
             let manager = ModelDownloadManager.shared
@@ -294,7 +297,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
             
             // 1. 进行完好性校验 (SHA256)
             if !manager.verifySHA256(of: tempFileURL, expectedHash: checksum) {
-                await manager.updateState(for: modelId, to: .failed(error: "File verification failed. SHA256 mismatch."))
+                await manager.updateState(for: modelId, to: .failed(error: verificationFailedMessage))
                 try? FileManager.default.removeItem(at: tempFileURL)
                 return
             }

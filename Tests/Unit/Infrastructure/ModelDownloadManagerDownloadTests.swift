@@ -121,7 +121,9 @@ final class ModelDownloadManagerDownloadTests: XCTestCase {
         let stream = await manager.observeDownloadState(for: modelId)
         let state = await stream.first { _ in true }
         if case .failed(let message) = state {
-            XCTAssertTrue(message.contains("verification failed") || message.contains("mismatch"), "SHA256 校验失败时错误信息应包含 verification failed 或 mismatch")
+            // 错误消息应来自 L10n 本地化词条，而非硬编码英文
+            let expectedMessage = L10n.ModelManager.Status.verificationFailed
+            XCTAssertEqual(message, expectedMessage, "SHA256 校验失败时错误信息应来自 L10n 本地化词条")
         } else {
             XCTFail("SHA256 校验失败时状态应为 .failed，实际: \(String(describing: state))")
         }

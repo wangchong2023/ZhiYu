@@ -50,6 +50,9 @@ public final class GlobalModelManager: TestStateResettable {
     /// 模型调用次数统计，按 modelId 索引
     public private(set) var modelCallCounts: [String: Int] = [:]
 
+    /// 已订阅下载状态流的模型 ID 集合，防止重复订阅产生僵尸 Task
+    private var subscribedModelIds: Set<String> = []
+
     /// 物理硬件运存防爆评估拦截服务
     @ObservationIgnored private let hardwareGuard: DeviceHardwareGuard
     
@@ -231,7 +234,7 @@ public final class GlobalModelManager: TestStateResettable {
                 let isDownloadingOrActive: Bool
                 if let state = currentState {
                     switch state {
-                    case .downloading, .paused, .pending:
+                    case .downloading, .paused, .pending, .verifying:
                         isDownloadingOrActive = true
                     default:
                         isDownloadingOrActive = false
@@ -311,6 +314,9 @@ public final class GlobalModelManager: TestStateResettable {
     
     /// 对指定模型启动异步下载状态流的消费订阅
     private func observeDownloadState(for modelId: String) {
+        // 防止重复订阅产生僵尸 Task，导致状态被旧流覆盖
+        guard !subscribedModelIds.contains(modelId) else { return }
+        subscribedModelIds.insert(modelId)
         Task {
             let stream = await downloadManager.observeDownloadState(for: modelId)
             for await state in stream {
@@ -321,6 +327,22 @@ public final class GlobalModelManager: TestStateResettable {
                         self.markModelAsDownloaded(modelId)
                     }
                 }
+            }
+            // 流结束后清理订阅标记，允许后续重新订阅
+            self.subscribedModelIds.remove(modelId)
+        }
+    }
+
+    /// 重新订阅所有处于活跃下载状态的模型，防止视图重建/Tab 切换后订阅丢失导致状态停滞
+    public func resubscribeActiveDownloads() {
+        for (modelId, state) in downloadStates {
+            switch state {
+            case .downloading, .pending, .verifying:
+                // 清除旧订阅标记以允许重新订阅
+                subscribedModelIds.remove(modelId)
+                observeDownloadState(for: modelId)
+            default:
+                break
             }
         }
     }
@@ -335,6 +357,7 @@ public final class GlobalModelManager: TestStateResettable {
         modelStorageUsage = [:]
         modelCallCounts = [:]
         isLoading = false
+        subscribedModelIds = []
     }
 
     // MARK: - TestStateResettable

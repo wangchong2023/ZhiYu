@@ -543,6 +543,8 @@ class SourceCodeAuditor:
             r'NSLog\(',
             r'os_log\(',
             r'fatalError\(',
+            r'preconditionFailure\(',
+            r'assertionFailure\(',
         ]
         self.logger_re = re.compile('|'.join(logger_patterns))
         self.exempt_strings = EXEMPT_STRINGS
@@ -559,6 +561,9 @@ class SourceCodeAuditor:
         s_lower = s.lower()
         
         # 2. 合并的技术、数据库、Mock及AI常用关键字集合（降低方法复杂度）
+        #    注意：使用词边界匹配（\b）避免子串误匹配，
+        #    例如 "fail" 不应豁免 "File verification failed."（failed 包含 fail 子串）
+        #    且自然语言句子即使包含技术关键词也不应被豁免（如 "Download failed."）
         TECHNICAL_KEYWORDS = {
             "select", "insert", "update", "delete", "from", "where", "join", "into", "values", 
             "create table", "drop table", "ignore into", "mock", "stub", "test", "dummy", "fake", 
@@ -569,8 +574,9 @@ class SourceCodeAuditor:
             "persist", "legacy", "resume", "metadata", "compile", "sandbox", "storage", "copy"
         }
 
-
-        if any(kw in s_lower for kw in TECHNICAL_KEYWORDS):
+        # 技术关键词使用词边界匹配，避免子串误匹配
+        # （如 "fail" 不应豁免 "failed"，"error" 不应豁免 "errored"）
+        if self._matches_technical_keyword(s_lower, TECHNICAL_KEYWORDS):
             return True
             
         # 3. 日期时间格式化及容量大小占位符（如 "yyyy-MM-dd HH:mm", "%.1f KB", "%.0f GB"）
@@ -581,6 +587,25 @@ class SourceCodeAuditor:
         if any(x in s for x in ["|", "\\d", "\\s", "\\w", "\\t", "\\n"]):
             return True
             
+        return False
+
+    @staticmethod
+    def _matches_technical_keyword(s_lower, keywords):
+        """
+        使用词边界匹配技术关键词，避免子串误匹配。
+
+        - 单词关键词（如 "fail"）使用 \\b 词边界，确保 "failed" 不被 "fail" 误豁免
+        - 多词短语（含空格，如 "create table"）使用前后词边界匹配
+        """
+        for kw in keywords:
+            if ' ' in kw:
+                # 多词短语：在首词前和尾词后加词边界
+                pattern = r'\b' + re.escape(kw) + r'\b'
+            else:
+                # 单词：严格词边界匹配
+                pattern = r'\b' + re.escape(kw) + r'\b'
+            if re.search(pattern, s_lower):
+                return True
         return False
 
 

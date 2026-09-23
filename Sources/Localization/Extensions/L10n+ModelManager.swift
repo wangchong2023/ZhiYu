@@ -499,6 +499,48 @@ extension L10n {
             public static var paused: String {
                 ModelManager.tr("model_manager.status.paused")
             }
+
+            public static var verificationFailed: String {
+                ModelManager.tr("model_manager.status.verification_failed")
+            }
+
+            /// 下载过程中产生的错误消息
+            public enum DownloadError {
+                /// 无续传数据文件
+                public static var noResumeData: String {
+                    ModelManager.tr("model_manager.status.download_error.no_resume_data")
+                }
+
+                /// 空闲状态占位
+                public static var idle: String {
+                    ModelManager.tr("model_manager.status.download_error.idle")
+                }
+
+                /// 临时副本生成失败前缀
+                public static var temporaryCopyFailedPrefix: String {
+                    ModelManager.tr("model_manager.status.download_error.temporary_copy_failed_prefix")
+                }
+
+                /// 生成失败连接符
+                public static var generationFailedConnector: String {
+                    ModelManager.tr("model_manager.status.download_error.generation_failed_connector")
+                }
+
+                /// resumeData 持久化失败前缀
+                public static var persistResumeDataFailedPrefix: String {
+                    ModelManager.tr("model_manager.status.download_error.persist_resume_data_failed_prefix")
+                }
+
+                /// 网络错误 resumeData 持久化失败前缀
+                public static var networkErrorResumeDataFailedPrefix: String {
+                    ModelManager.tr("model_manager.status.download_error.network_error_resume_data_failed_prefix")
+                }
+
+                /// 暂停时生成 resumeData 失败
+                public static var resumeDataGenerationFailed: String {
+                    ModelManager.tr("model_manager.status.download_error.resume_data_generation_failed")
+                }
+            }
         }
 
         // MARK: - 测试实验室

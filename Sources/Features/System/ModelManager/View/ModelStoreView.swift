@@ -51,6 +51,8 @@ public struct ModelStoreView: View {
                     }
                     .task {
                         await modelManager.reload()
+                        // 视图重现时恢复活跃下载的订阅，防止离开页面/切换 Tab 后状态停滞
+                        modelManager.resubscribeActiveDownloads()
                     }
                     .refreshable {
                         await modelManager.reload()
@@ -59,6 +61,7 @@ public struct ModelStoreView: View {
                     contentList
                         .task {
                             await modelManager.reload()
+                            modelManager.resubscribeActiveDownloads()
                         }
                 }
             }
