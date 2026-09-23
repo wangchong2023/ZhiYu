@@ -525,7 +525,21 @@ EXEMPT_STRINGS = {
     "Polling exhausted after \\(attempts) attempts",
     "GitHub State Mismatch",
     "Token expired.",
-    "Missing refresh token."
+    "Missing refresh token.",
+    # SecurityError.errorDescription 调试描述（A-19 决策：保持英文调试描述）
+    "Data encoding failed",
+    "Data decoding failed",
+    # NetworkError.errorDescription 调试描述（A-19 决策：保持英文调试描述）
+    "Decode failed: \\(err.localizedDescription)",
+    "Session invalidated.",
+    # RemoteConfigService NetworkError.serverError 调试描述（A-19 决策：保持英文调试描述）
+    "Fetch remote skills list failed.",
+    # 安全审计日志详情常量（CoreConstants.SecurityLogDetails/LogDetails，审计日志记录，保持英文以便跨语言一致性审计）
+    "Critical: Failed",
+    "Failed to",
+    # PluginLoader 日志闭包（传入 Logger.shared.error/info，仅用于开发者日志）
+    "[PluginRegistry] Init failed: \\(manifest.name)",
+    "[PluginRegistry] JS plugin instantiation failed: \\(manifest.name)"
 }
 
 class SourceCodeAuditor:
@@ -626,7 +640,10 @@ class SourceCodeAuditor:
                 severity = "WARNING" if is_logger else "ERROR"
                 issues.append((line_no, s, "Hardcoded English sentence in UI context.", severity))
             else:
-                issues.append((line_no, s, "Hardcoded English sentence detected in logic file.", "WARNING"))
+                # logic file 中的英文句子：Logger 调用内降为 WARNING（开发者日志），
+                # 非 Logger 的硬编码英文升为 ERROR（阻断提交，强制 L10n 化）
+                severity = "WARNING" if is_logger else "ERROR"
+                issues.append((line_no, s, "Hardcoded English sentence detected in logic file.", severity))
         # UI 语境标识符式字符串检测：如 "3D_Graph"/"Graph_Desc" 在 Text() 中使用
         # 模式：含下划线的标识符式字符串（字母数字+下划线），看起来像未注册的 L10n key 而非展示文本
         elif is_view and is_ui_trigger and re.match(r'^[A-Za-z0-9][A-Za-z0-9]*_[A-Za-z0-9_]+$', s) and len(s) >= MIN_NATURAL_LANG_LEN:

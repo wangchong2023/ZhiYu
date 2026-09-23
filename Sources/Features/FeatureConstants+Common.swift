@@ -267,6 +267,7 @@ extension FeatureConstants {
         static let passwordLoginFailed = "Password login failed"
         static let smsLoginRegisterFailed = "SMS login/register failed"
         static let userProfileFetchFailed = "User profile fetch failed"
+        static let silentLoginProfileFetchFailed = "Silent login profile fetch failed"
     }
 
     // MARK: - Markdown 缩进 (Markdown Indent)

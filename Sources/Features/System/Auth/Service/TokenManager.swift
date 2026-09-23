@@ -53,7 +53,7 @@ extension AuthService {
 
         do {
             // 2. 发起 GET 请求拉取服务器上用户的最新 Profile 资料
-            return try await fetchAndUpdateUserProfile(errorTag: "Silent login profile fetch failed")
+            return try await fetchAndUpdateUserProfile(errorTag: FeatureConstants.AuthErrorTag.silentLoginProfileFetchFailed)
         } catch {
             Logger.shared.error("[AuthService] Silent login profile fetch failed", error: error)
             return false

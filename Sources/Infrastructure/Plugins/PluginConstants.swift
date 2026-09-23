@@ -117,7 +117,7 @@ enum PluginConstants {
         /// HTTP 错误描述前缀
         static let httpPrefix: String = "HTTP "
         /// 文档目录定位失败描述
-        static let documentsNotFound: String = "Failed to locate documents directory"
+        static var documentsNotFound: String { L10n.Plugin.Error.documentsNotFound }
     }
 
     // MARK: - 插件 ID 前缀 (Plugin ID Prefix)

@@ -85,5 +85,10 @@ extension L10n {
         public static var accountTemporarilyThrottled: String {
             tr("security.compliance.account_throttled")
         }
+
+        /// 签名仓储未注册错误消息
+        public static var signatureRepositoryNotRegistered: String {
+            tr("security.signature.repositoryNotRegistered")
+        }
     }
 }

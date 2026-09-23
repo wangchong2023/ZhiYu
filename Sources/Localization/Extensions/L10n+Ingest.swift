@@ -69,6 +69,9 @@ extension L10n {
         public static var scrapeTimePrefix: String { Ingest.tr("ingest.scrapeTimePrefix") }
 
         public static var importFailed: String { Ingest.tr("ingest.importFailed") }
+
+        /// DI 未就绪错误日志（含 URL）
+        public static func diNotReady(_ url: String) -> String { Ingest.trf("ingest.diNotReady", url) }
         public static var importingFile: String { Ingest.tr("ingest.importingFile") }
         public static var invalidURL: String { Ingest.tr("ingest.invalidURL") }
         public static var fetchingURL: String { Ingest.tr("ingest.fetchingURL") }

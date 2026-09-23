@@ -240,6 +240,9 @@ extension L10n {
             /// - Parameter permission: permission
             /// - Returns: 字符串
             public static func permissionDenied(_ permission: String) -> String { Plugin.trf("plugin.error.permissionDenied", permission) }
+
+            /// 文档目录定位失败
+            public static var documentsNotFound: String { Plugin.tr("plugin.error.documentsNotFound") }
         }
     }
 }

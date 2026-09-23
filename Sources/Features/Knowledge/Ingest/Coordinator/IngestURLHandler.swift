@@ -154,7 +154,7 @@ extension IngestCoordinator {
             ServiceContainer.shared.typeErasedResolve((any ImportRecordRepository).self) != nil  // inject_exempt: DI 就绪性检查
         else {
             await MainActor.run {
-                taskCenter.addSubLog(id: taskID, log: "\(L10n.Ingest.importFailed): DI not ready [\(urlString)]")
+                taskCenter.addSubLog(id: taskID, log: L10n.Ingest.diNotReady(urlString))
             }
             return false
         }

@@ -25516,6 +25516,71 @@
           }
         }
       }
+    },
+    "security.signature.repositoryNotRegistered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File signature repository is not registered yet"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件签名仓储尚未注册"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檔案簽名倉儲尚未註冊"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El repositorio de firmas de archivos aún no está registrado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le référentiel de signatures de fichiers n'est pas encore enregistré"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم تسجيل مستودع توقيع الملفات بعد"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Репозиторий подписей файлов еще не зарегистрирован"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일 서명 저장소가 아직 등록되지 않았습니다"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイル署名リポジトリがまだ登録されていません"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O repositório de assinaturas de arquivos ainda não está registrado"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

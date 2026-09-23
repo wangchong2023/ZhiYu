@@ -178,7 +178,7 @@ class SecurityManager: @unchecked Sendable {
         let currentSalt = await getSalt()
         do {
             guard let repo = signatureRepository else {
-                throw AppError.security("FileSignatureRepository is not registered yet", code: 404)
+                throw AppError.security(L10n.Security.signatureRepositoryNotRegistered, code: 404)
             }
             try await repo.saveSignature(signature, forFilePath: filePath, salt: currentSalt)
         } catch {
