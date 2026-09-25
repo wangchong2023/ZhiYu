@@ -17,17 +17,17 @@ final class L10nKnowledgeTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Creation_为Knowledge() {
+    func testTableNameCreationIsKnowledge() {
         XCTAssertEqual(L10n.Creation.tableName, "Knowledge")
     }
 
-    func testTableName_Tag_为Knowledge() {
+    func testTableNameTagIsKnowledge() {
         XCTAssertEqual(L10n.Tag.tableName, "Knowledge")
     }
 
     // MARK: - Creation 属性 key 存在性
 
-    func testCreation_基础属性返回非Missing值() {
+    func testCreationBasicPropsReturnNonMissing() {
         let values = [
             L10n.Creation.entityTemplate,
             L10n.Creation.conceptTemplate,
@@ -53,7 +53,7 @@ final class L10nKnowledgeTableTests: XCTestCase {
         }
     }
 
-    func testCreation_template_entity_所有属性返回非Missing值() {
+    func testCreationTemplateEntityAllPropsReturnNonMissing() {
         let values = [
             L10n.Creation.template.entity.desc,
             L10n.Creation.template.entity.overview,
@@ -71,7 +71,7 @@ final class L10nKnowledgeTableTests: XCTestCase {
         }
     }
 
-    func testCreation_template_concept_所有属性返回非Missing值() {
+    func testCreationTemplateConceptAllPropsReturnNonMissing() {
         let values = [
             L10n.Creation.template.concept.desc,
             L10n.Creation.template.concept.definition,
@@ -89,7 +89,7 @@ final class L10nKnowledgeTableTests: XCTestCase {
         }
     }
 
-    func testCreation_template_comparison_所有属性返回非Missing值() {
+    func testCreationTemplateComparisonAllPropsReturnNonMissing() {
         let values = [
             L10n.Creation.template.comparison.desc,
             L10n.Creation.template.comparison.suffix,
@@ -109,7 +109,7 @@ final class L10nKnowledgeTableTests: XCTestCase {
 
     // MARK: - Tag 属性 key 存在性
 
-    func testTag_基础属性返回非Missing值() {
+    func testTagBasicPropsReturnNonMissing() {
         let values = [
             L10n.Tag.title,
             L10n.Tag.allTags,
@@ -126,7 +126,7 @@ final class L10nKnowledgeTableTests: XCTestCase {
         }
     }
 
-    func testTag_Action_所有属性返回非Missing值() {
+    func testTagActionAllPropsReturnNonMissing() {
         let values = [
             L10n.Tag.Action.rename,
             L10n.Tag.Action.delete,
@@ -143,7 +143,7 @@ final class L10nKnowledgeTableTests: XCTestCase {
         }
     }
 
-    func testTag_Management_所有属性返回非Missing值() {
+    func testTagManagementAllPropsReturnNonMissing() {
         let values = [
             L10n.Tag.Management.addNew,
             L10n.Tag.Management.inputName,
@@ -158,7 +158,7 @@ final class L10nKnowledgeTableTests: XCTestCase {
         }
     }
 
-    func testTag_Cloud_所有属性返回非Missing值() {
+    func testTagCloudAllPropsReturnNonMissing() {
         let value = L10n.Tag.Cloud.selectTag
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Tag.Cloud 属性返回 Missing: \(value)")
@@ -167,42 +167,42 @@ final class L10nKnowledgeTableTests: XCTestCase {
 
     // MARK: - Tag trf 参数化方法
 
-    func testTag_tagCount_返回非Missing() {
+    func testTagTagCountReturnsNonMissing() {
         let result = L10n.Tag.tagCount(5)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "tagCount 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testTag_Action_renameMessage_返回非Missing() {
+    func testTagActionRenameMessageReturnsNonMissing() {
         let result = L10n.Tag.Action.renameMessage("测试标签")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "renameMessage 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testTag_Action_deleteMessage_返回非Missing() {
+    func testTagActionDeleteMessageReturnsNonMissing() {
         let result = L10n.Tag.Action.deleteMessage("测试标签")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "deleteMessage 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testTag_Action_tagPages_返回非Missing() {
+    func testTagActionTagPagesReturnsNonMissing() {
         let result = L10n.Tag.Action.tagPages(3)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "tagPages 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testTag_Management_bulkDeleteWarning_返回非Missing() {
+    func testTagManagementBulkDeleteWarningReturnsNonMissing() {
         let result = L10n.Tag.Management.bulkDeleteWarning(10)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "bulkDeleteWarning 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testTag_Management_selectedCount_返回非Missing() {
+    func testTagManagementSelectedCountReturnsNonMissing() {
         let result = L10n.Tag.Management.selectedCount(2)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "selectedCount 返回 Missing: \(result)")

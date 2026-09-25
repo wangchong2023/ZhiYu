@@ -141,11 +141,11 @@ public final class SettingsStore {
 extension SettingsStore: DependencyKey {
     nonisolated public static var liveValue: SettingsStore {
         ServiceContainer.shared.resolveOptional(SettingsStore.self)
-            ?? MainActor.assumeIsolated { SettingsStore() }
+            ?? runOnMainSync { SettingsStore() }
     }
     nonisolated public static var testValue: SettingsStore {
         ServiceContainer.shared.resolveOptional(SettingsStore.self)
-            ?? MainActor.assumeIsolated { SettingsStore() }
+            ?? runOnMainSync { SettingsStore() }
     }
 }
 

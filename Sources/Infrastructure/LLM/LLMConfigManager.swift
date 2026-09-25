@@ -95,7 +95,7 @@ public enum LLMConfigManagerKey: DependencyKey {
 
     nonisolated public static var testValue: LLMConfigManager {
         ServiceContainer.shared.resolveOptional(LLMConfigManager.self)
-            ?? MainActor.assumeIsolated { LLMConfigManager() }
+            ?? runOnMainSync { LLMConfigManager() }
     }
     nonisolated public static var previewValue: LLMConfigManager { testValue }
 }

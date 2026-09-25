@@ -26,7 +26,7 @@ final class L10nSettingsDeepTests: XCTestCase {
 
     // MARK: - 全量属性批量验证
 
-    func testSettings_所有静态属性返回非Missing值() {
+    func testSettingsAllStaticPropsReturnNonMissing() {
         let values: [String] = [
             L10n.Settings.title,
             L10n.Settings.systemTheme,
@@ -143,7 +143,7 @@ final class L10nSettingsDeepTests: XCTestCase {
 
     // MARK: - 全量格式化方法验证
 
-    func testSettings_所有格式化方法返回非Missing值() {
+    func testSettingsAllFormatMethodsReturnNonMissing() {
         assertNonMissing(L10n.Settings.pluginPermissionMessage("x"), "L10n.Settings.pluginPermissionMessage")
         assertNonMissing(L10n.Settings.onDeviceErrorFormat("x"), "L10n.Settings.onDeviceErrorFormat")
         assertNonMissing(L10n.Settings.iCloudLastSyncFormat("x"), "L10n.Settings.iCloudLastSyncFormat")

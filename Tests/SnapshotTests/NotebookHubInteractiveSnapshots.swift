@@ -32,6 +32,7 @@ final class NotebookHubInteractiveSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
         VaultService.shared.vaults = []
         VaultService.shared.selectedVaultID = nil
     }

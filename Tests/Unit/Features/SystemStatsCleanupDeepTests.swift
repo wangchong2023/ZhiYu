@@ -86,14 +86,14 @@ final class SystemStatsCleanupDeepTests: XCTestCase {
     // MARK: - cleanupData 正常路径
 
     /// 验证 cleanupData 成功后 cleanedCount 被设置为返回的清理数量
-    func testCleanupData_成功_cleanedCount设置为返回数量() async throws {
+    func testCleanupDataSuccessCleanedCountSetToReturnValue() async throws {
         configurableVectorRepo.stubCleanupCount = 15
         await coordinator.cleanupData()
         XCTAssertEqual(coordinator.cleanedCount, 15, "cleanedCount 应等于 cleanupOrphanedChunks 返回值")
     }
 
     /// 验证 cleanupData 成功后调用 haptic.trigger(.success)
-    func testCleanupData_成功_调用HapticSuccess() async throws {
+    func testCleanupDataSuccessCallsHapticSuccess() async throws {
         configurableVectorRepo.stubCleanupCount = 5
         await coordinator.cleanupData()
         XCTAssertEqual(recordableHaptic.triggerCallCount, 1, "应调用一次 haptic.trigger")
@@ -101,14 +101,14 @@ final class SystemStatsCleanupDeepTests: XCTestCase {
     }
 
     /// 验证 cleanupData 成功后 isCleaning 恢复 false
-    func testCleanupData_成功_isCleaning恢复False() async throws {
+    func testCleanupDataSuccessIsCleaningRestoresFalse() async throws {
         configurableVectorRepo.stubCleanupCount = 3
         await coordinator.cleanupData()
         XCTAssertFalse(coordinator.isCleaning, "cleanupData 完成后 isCleaning 应恢复 false")
     }
 
     /// 验证 cleanupData 成功后调用 loadStats 刷新统计
-    func testCleanupData_成功_调用LoadStats刷新统计() async throws {
+    func testCleanupDataSuccessCallsLoadStatsToRefresh() async throws {
         configurableVectorRepo.stubCleanupCount = 3
         configurableKnowledgeRepo.stubCount = 99
         await coordinator.cleanupData()
@@ -117,7 +117,7 @@ final class SystemStatsCleanupDeepTests: XCTestCase {
     }
 
     /// 验证 cleanupData 执行前 isCleaning 为 false，执行中为 true，完成后为 false
-    func testCleanupData_isCleaning状态变化() async throws {
+    func testCleanupDataIsCleaningStateChanges() async throws {
         XCTAssertFalse(coordinator.isCleaning, "cleanupData 执行前 isCleaning 应为 false")
         configurableVectorRepo.stubCleanupCount = 1
         await coordinator.cleanupData()
@@ -127,28 +127,28 @@ final class SystemStatsCleanupDeepTests: XCTestCase {
     // MARK: - cleanupData 失败路径
 
     /// 验证 cleanupData 时 cleanupOrphanedChunks 抛错后 isCleaning 恢复 false
-    func testCleanupData_抛错_isCleaning恢复False() async throws {
+    func testCleanupDataThrowsIsCleaningRestoresFalse() async throws {
         configurableVectorRepo.shouldThrowCleanup = true
         await coordinator.cleanupData()
         XCTAssertFalse(coordinator.isCleaning, "cleanupData 抛错后 isCleaning 应恢复 false")
     }
 
     /// 验证 cleanupData 时 cleanupOrphanedChunks 抛错后调用 logger.error
-    func testCleanupData_抛错_调用LoggerError() async throws {
+    func testCleanupDataThrowsCallsLoggerError() async throws {
         configurableVectorRepo.shouldThrowCleanup = true
         await coordinator.cleanupData()
         XCTAssertEqual(recordableLogger.errorCallCount, 1, "cleanupData 抛错应调用一次 logger.error")
     }
 
     /// 验证 cleanupData 时 cleanupOrphanedChunks 抛错后不调用 haptic.trigger
-    func testCleanupData_抛错_不调用Haptic() async throws {
+    func testCleanupDataThrowsDoesNotCallHaptic() async throws {
         configurableVectorRepo.shouldThrowCleanup = true
         await coordinator.cleanupData()
         XCTAssertEqual(recordableHaptic.triggerCallCount, 0, "cleanupData 抛错不应调用 haptic.trigger")
     }
 
     /// 验证 cleanupData 时 cleanupOrphanedChunks 抛错后 cleanedCount 保持原值
-    func testCleanupData_抛错_cleanedCount保持原值() async throws {
+    func testCleanupDataThrowsCleanedCountKeepsOriginal() async throws {
         configurableVectorRepo.shouldThrowCleanup = true
         await coordinator.cleanupData()
         XCTAssertNil(coordinator.cleanedCount, "cleanupData 抛错后 cleanedCount 应保持 nil（未赋值）")
@@ -157,7 +157,7 @@ final class SystemStatsCleanupDeepTests: XCTestCase {
     // MARK: - cleanupData 多次调用
 
     /// 验证多次调用 cleanupData 后 cleanedCount 为最后一次的返回值
-    func testCleanupData_多次调用_cleanedCount为最后一次返回值() async throws {
+    func testCleanupDataMultipleCallsCleanedCountIsLastReturnValue() async throws {
         configurableVectorRepo.stubCleanupCount = 5
         await coordinator.cleanupData()
         XCTAssertEqual(coordinator.cleanedCount, 5, "第一次 cleanupData 后 cleanedCount 应为 5")
@@ -167,7 +167,7 @@ final class SystemStatsCleanupDeepTests: XCTestCase {
     }
 
     /// 验证 cleanupData 成功后再抛错 cleanedCount 保持上次成功值
-    func testCleanupData_成功后再抛错_cleanedCount保持上次成功值() async throws {
+    func testCleanupDataSuccessThenThrowsCleanedCountKeepsLastSuccess() async throws {
         configurableVectorRepo.stubCleanupCount = 7
         await coordinator.cleanupData()
         XCTAssertEqual(coordinator.cleanedCount, 7, "成功后 cleanedCount 应为 7")

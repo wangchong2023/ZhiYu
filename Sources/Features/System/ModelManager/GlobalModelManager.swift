@@ -21,7 +21,7 @@ import Dependencies
 public final class GlobalModelManager: TestStateResettable {
     
     /// 全局共享实例
-    public static let shared = MainActor.assumeIsolated { GlobalModelManager() }
+    public static let shared = runOnMainSync { GlobalModelManager() }
     
     // MARK: - 依赖注入
     
@@ -364,7 +364,7 @@ public final class GlobalModelManager: TestStateResettable {
 
     /// 重置单例状态用于测试隔离
     nonisolated public func resetStateForTesting() {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             resetForTesting()
         }
     }

@@ -18,10 +18,21 @@ import UFPCore
 @MainActor
 final class InsightAndMedalInteractiveSnapshots: XCTestCase {
 
+    private nonisolated static var recordMode: SnapshotTestingConfiguration.Record {
+        ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1" ? .all : .missing
+    }
+
+    override func invokeTest() {
+        withSnapshotTesting(record: Self.recordMode) {
+            super.invokeTest()
+        }
+    }
+
     override func setUp() async throws {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     override func tearDown() async throws {

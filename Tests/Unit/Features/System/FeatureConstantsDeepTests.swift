@@ -16,7 +16,7 @@ final class FeatureConstantsDeepTests: XCTestCase {
     // MARK: - AuthErrorTag 常量
 
     /// 验证 AuthErrorTag 全部 errorTag 常量非空（用于 TokenManager / PhoneAuthService 日志标记）
-    func testAuthErrorTag_全部常量非空() {
+    func testAuthErrorTagAllConstantsNonEmpty() {
         let tags = [
             FeatureConstants.AuthErrorTag.passwordLoginFailed,
             FeatureConstants.AuthErrorTag.smsLoginRegisterFailed,
@@ -29,7 +29,7 @@ final class FeatureConstantsDeepTests: XCTestCase {
     }
 
     /// 验证 silentLoginProfileFetchFailed 常量值正确（修复 A-19 中新增的常量替代硬编码字符串）
-    func testAuthErrorTag_silentLoginProfileFetchFailed_值正确() {
+    func testAuthErrorTagSilentLoginProfileFetchFailedValueCorrect() {
         XCTAssertEqual(
             FeatureConstants.AuthErrorTag.silentLoginProfileFetchFailed,
             "Silent login profile fetch failed"
@@ -37,7 +37,7 @@ final class FeatureConstantsDeepTests: XCTestCase {
     }
 
     /// 验证各 errorTag 互不相同，避免日志标记混淆
-    func testAuthErrorTag_各常量互不相同() {
+    func testAuthErrorTagAllConstantsMutuallyDistinct() {
         let tags: Set<String> = [
             FeatureConstants.AuthErrorTag.passwordLoginFailed,
             FeatureConstants.AuthErrorTag.smsLoginRegisterFailed,
@@ -50,12 +50,12 @@ final class FeatureConstantsDeepTests: XCTestCase {
     // MARK: - MockData 常量
 
     /// 验证 MockData.notDownloaded 常量值正确（修复中用于替代 DownloadProgressRing 硬编码字符串）
-    func testMockData_notDownloaded_值正确() {
+    func testMockDataNotDownloadedValueCorrect() {
         XCTAssertEqual(FeatureConstants.MockData.notDownloaded, "Not Downloaded")
     }
 
     /// 验证 MockData.notDownloaded 非空
-    func testMockData_notDownloaded_非空() {
+    func testMockDataNotDownloadedNonEmpty() {
         XCTAssertFalse(FeatureConstants.MockData.notDownloaded.isEmpty)
     }
 }

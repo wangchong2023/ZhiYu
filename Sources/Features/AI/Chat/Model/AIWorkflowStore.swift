@@ -310,7 +310,7 @@ public enum AIWorkflowStoreKey: DependencyKey {
 
     nonisolated public static var testValue: AIWorkflowStore {
         ServiceContainer.shared.resolveOptional(AIWorkflowStore.self)
-            ?? MainActor.assumeIsolated { AIWorkflowStore() }
+            ?? runOnMainSync { AIWorkflowStore() }
     }
     nonisolated public static var previewValue: AIWorkflowStore { testValue }
 }

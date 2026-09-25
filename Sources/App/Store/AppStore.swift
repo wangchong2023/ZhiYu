@@ -273,12 +273,12 @@ extension ToolItem {
 public enum AppStoreKey: DependencyKey {
     nonisolated public static var liveValue: AppStore {
         ServiceContainer.shared.resolveOptional(AppStore.self)
-            ?? MainActor.assumeIsolated { AppStore() }
+            ?? runOnMainSync { AppStore() }
     }
 
     nonisolated public static var testValue: AppStore {
         ServiceContainer.shared.resolveOptional(AppStore.self)
-            ?? MainActor.assumeIsolated { AppStore() }
+            ?? runOnMainSync { AppStore() }
     }
     nonisolated public static var previewValue: AppStore { testValue }
 }

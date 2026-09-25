@@ -34,7 +34,7 @@ final class ZipUtilityTests: XCTestCase {
 
     // MARK: - 错误处理：非 ZIP 文件
 
-    func testReadZipArchive_非ZIP文件_返回nil() throws {
+    func testReadZipArchiveNonZipFileReturnsNil() throws {
         let nonZipURL = tempDir.appendingPathComponent("notzip.txt")
         try "this is not a zip".write(
             to: nonZipURL,
@@ -47,7 +47,7 @@ final class ZipUtilityTests: XCTestCase {
 
     // MARK: - 错误处理：不存在的文件
 
-    func testReadZipArchive_文件不存在_返回nil() {
+    func testReadZipArchiveFileNotExistsReturnsNil() {
         let nonexistentURL = URL(fileURLWithPath: "/tmp/nonexistent-\(UUID().uuidString).zip")
         let result = ZipUtility.readZipArchive(at: nonexistentURL)
         XCTAssertNil(result)
@@ -55,7 +55,7 @@ final class ZipUtilityTests: XCTestCase {
 
     // MARK: - 错误处理：空文件
 
-    func testReadZipArchive_空文件_返回nil() throws {
+    func testReadZipArchiveEmptyFileReturnsNil() throws {
         let emptyURL = tempDir.appendingPathComponent("empty.zip")
         try Data().write(to: emptyURL)
         let result = ZipUtility.readZipArchive(at: emptyURL)
@@ -75,7 +75,7 @@ final class ZipUtilityTests: XCTestCase {
     // MARK: - 解析：单文件 ZIP（stored method 0）
 
     /// 解析含单文件的 stored ZIP 应返回正确文件名和数据
-    func testReadZipArchive_单文件storedZIP_正确解析() throws {
+    func testReadZipArchiveSingleFileStoredZipParsesCorrectly() throws {
         let fileName = "test.txt"
         let fileContent = "Hello, ZIP!"
         let contentData = Data(fileContent.utf8)
@@ -93,7 +93,7 @@ final class ZipUtilityTests: XCTestCase {
     // MARK: - 解析：多文件 ZIP（stored method 0）
 
     /// 解析含多文件的 stored ZIP 应返回所有文件
-    func testReadZipArchive_多文件storedZIP_正确解析() throws {
+    func testReadZipArchiveMultiFileStoredZipParsesCorrectly() throws {
         let file1Name = "file1.txt"
         let file1Content = Data("content1".utf8)
         let file2Name = "file2.txt"

@@ -26,7 +26,7 @@ final class L10nIngestDeepTests: XCTestCase {
 
     // MARK: - 全量属性批量验证
 
-    func testIngest_所有静态属性返回非Missing值() {
+    func testIngestAllStaticPropsReturnNonMissing() {
         let values: [String] = [
             L10n.Ingest.title,
             L10n.Ingest.manualEntry,
@@ -179,7 +179,7 @@ final class L10nIngestDeepTests: XCTestCase {
 
     // MARK: - 全量格式化方法验证
 
-    func testIngest_所有格式化方法返回非Missing值() {
+    func testIngestAllFormatMethodsReturnNonMissing() {
         assertNonMissing(L10n.Ingest.smartIngestDoneDesc("x"), "L10n.Ingest.smartIngestDoneDesc")
         assertNonMissing(L10n.Ingest.activeTasks(1), "L10n.Ingest.activeTasks")
         assertNonMissing(L10n.Ingest.pdfPageCountFormat(1), "L10n.Ingest.pdfPageCountFormat")

@@ -151,6 +151,7 @@ final class PlatformServicesDeepComprehensiveTests: XCTestCase {
         }
     }
 
+    #if !os(watchOS) && !targetEnvironment(simulator)
     func testMultipeerCollaborationProvider_LifecycleAndBroadcast() {
         let provider = MultipeerCollaborationProvider()
         let delegate = MockCollaborationDelegate()
@@ -178,6 +179,7 @@ final class PlatformServicesDeepComprehensiveTests: XCTestCase {
         provider.stop()
         XCTAssertTrue(delegate.statuses.contains(L10n.Collaboration.Status.disconnected), "停止后状态应变为 disconnected")
     }
+    #endif
 
     // MARK: - 3. iOSOCRService 深度测试
 

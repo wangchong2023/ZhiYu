@@ -52,9 +52,9 @@ public enum PDFServiceKey: DependencyKey {
     }
     nonisolated public static var testValue: any PDFServiceProtocol {
         ServiceContainer.shared.resolveOptional((any PDFServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpPDFService() }
+            ?? runOnMainSync { NoOpPDFService() }
     }
-    nonisolated public static var previewValue: any PDFServiceProtocol { MainActor.assumeIsolated { NoOpPDFService() } }
+    nonisolated public static var previewValue: any PDFServiceProtocol { runOnMainSync { NoOpPDFService() } }
 }
 
 extension DependencyValues {

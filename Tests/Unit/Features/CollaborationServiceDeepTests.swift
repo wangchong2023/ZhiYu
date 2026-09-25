@@ -197,7 +197,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - startHosting 状态转换
 
     /// 验证 startHosting 完整状态转换：roomName/role/connectionError/isConnecting/isHosting/isJoined
-    func testStartHosting完整状态转换() {
+    func testStartHostingCompleteStateTransition() {
         XCTAssertFalse(service.isHosting)
         XCTAssertFalse(service.isJoined)
         XCTAssertFalse(service.isConnecting)
@@ -217,7 +217,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 isAvailable 为 false 时 startHosting 静默不执行
-    func testIsAvailable为false时StartHosting静默不执行() {
+    func testStartHostingSilentNoOpWhenIsAvailableFalse() {
         service.isAvailable = false
         service.startHosting(roomName: testRoomName)
 
@@ -229,7 +229,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
     /// 验证 startHosting 后 isConnecting 在无 peer 连入时为 false
     /// - Note: C-8/Bug#4 已修复 — host 启动后自身已"连接"到房间，isConnecting 直接置 false。
-    func testStartHosting后isConnecting在无peer连入时为false() {
+    func testAfterStartHostingIsConnectingFalseWhenNoPeerConnected() {
         service.startHosting(roomName: testRoomName)
         // host 启动后，无 peer 连入，isConnecting 应为 false（已修复）
         XCTAssertFalse(service.isConnecting, "host 启动后 isConnecting 应为 false — host 自身已连接到房间")
@@ -238,7 +238,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - startBrowsing 状态转换
 
     /// 验证 startBrowsing 状态转换：connectionError/isConnecting + provider 调用
-    func testStartBrowsing状态转换() {
+    func testStartBrowsingStateTransition() {
         service.startBrowsing()
 
         XCTAssertNil(service.connectionError)
@@ -248,7 +248,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 isAvailable 为 false 时 startBrowsing 静默不执行
-    func testIsAvailable为false时StartBrowsing静默不执行() {
+    func testStartBrowsingSilentNoOpWhenIsAvailableFalse() {
         service.isAvailable = false
         service.startBrowsing()
 
@@ -259,7 +259,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - joinRoom 状态转换
 
     /// 验证 joinRoom 状态转换：role/isConnecting + provider 调用
-    func testJoinRoom状态转换() {
+    func testJoinRoomStateTransition() {
         let room = makeRoom(id: testRoomId)
         service.joinRoom(room)
 
@@ -269,7 +269,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 isAvailable 为 false 时 joinRoom 静默不执行
-    func testIsAvailable为false时JoinRoom静默不执行() {
+    func testJoinRoomSilentNoOpWhenIsAvailableFalse() {
         service.isAvailable = false
         let room = makeRoom(id: testRoomId)
         service.joinRoom(room)
@@ -282,7 +282,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - stop 状态清理
 
     /// 验证 stop 清理所有连接状态
-    func testStop清理所有连接状态() {
+    func testStopCleansAllConnectionState() {
         service.startHosting(roomName: testRoomName)
         mockProvider.simulatePeerConnect(makeUser(id: testUserId))
 
@@ -300,7 +300,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
 
     /// 验证 stop 后 roomName 和 role 被清理
     /// - Note: C-9/Bug#5 已修复 — stop() 现在清理 roomName="" 和 role=.viewer。
-    func testStop后roomName和role被清理() {
+    func testAfterStopRoomNameAndRoleCleared() {
         service.startHosting(roomName: testRoomName)
         XCTAssertEqual(service.roomName, testRoomName)
         XCTAssertEqual(service.role, .owner)
@@ -315,7 +315,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - peer 连接/断开
 
     /// 验证 peer 连接时 isConnecting 置 false 且 isJoined 置 true
-    func testPeer连接时isConnecting置false且isJoined置true() {
+    func testPeerConnectedSetsIsConnectingFalseAndIsJoinedTrue() {
         service.startBrowsing()
         XCTAssertTrue(service.isConnecting)
 
@@ -336,7 +336,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 peer 断开后 connectedPeers 移除
-    func testPeer断开后connectedPeers移除() {
+    func testPeerDisconnectedRemovedFromConnectedPeers() {
         mockProvider.simulatePeerConnect(makeUser(id: testUserId))
         mockProvider.simulatePeerConnect(makeUser(id: testUserId2))
         XCTAssertEqual(service.connectedPeers.count, 2)
@@ -358,7 +358,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 host 场景下所有 peer 断开后 isJoined 仍为 true（host 自身仍 joined）
-    func testHost场景所有peer断开后isJoined保持true() {
+    func testHostScenarioAllPeersDisconnectedIsJoinedStaysTrue() {
         service.startHosting(roomName: testRoomName)
         mockProvider.simulatePeerConnect(makeUser(id: testUserId))
         XCTAssertTrue(service.isJoined)
@@ -382,7 +382,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - room 发现/丢失
 
     /// 验证 room 发现时添加到 discoveredRooms
-    func testRoom发现时添加到DiscoveredRooms() {
+    func testRoomDiscoveredAddedToDiscoveredRooms() {
         let room = makeRoom(id: testRoomId)
         // 通过 provider delegate 回调模拟发现
         mockProvider.delegate?.providerDidDiscoverRoom(room)
@@ -401,7 +401,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 room 丢失时从 discoveredRooms 移除
-    func testRoom丢失时从DiscoveredRooms移除() {
+    func testRoomLostRemovedFromDiscoveredRooms() {
         let room = makeRoom(id: testRoomId)
         mockProvider.delegate?.providerDidDiscoverRoom(room)
         XCTAssertEqual(service.discoveredRooms.count, 1)
@@ -420,7 +420,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - 状态消息更新
 
     /// 验证 providerDidUpdateStatus 更新 statusMessage
-    func testProviderDidUpdateStatus更新StatusMessage() {
+    func testProviderDidUpdateStatusUpdatesStatusMessage() {
         mockProvider.delegate?.providerDidUpdateStatus(testStatusMessage)
         XCTAssertEqual(service.statusMessage, testStatusMessage)
     }
@@ -428,7 +428,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - 错误回调
 
     /// 验证 providerDidEncounterError 设置 connectionError 且 isConnecting 置 false
-    func testProviderDidEncounterError设置ConnectionError且isConnecting置false() {
+    func testProviderDidEncounterErrorSetsConnectionErrorAndIsConnectingFalse() {
         service.isConnecting = true
         mockProvider.delegate?.providerDidEncounterError(testErrorMessage)
 
@@ -479,7 +479,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 recentEdits 截断后保留最新的编辑（最后插入的）
-    func testRecentEdits截断后保留最新编辑() throws {
+    func testRecentEditsTruncatedKeepsLatestEdits() throws {
         let pageID = UUID()
         for _ in 0..<overflowEditCount {
             let data = try makeCollabEditData(pageID: pageID)
@@ -690,7 +690,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - setUserName 持久化
 
     /// 验证 setUserName 持久化到 keyStore
-    func testSetUserName持久化到KeyStore() {
+    func testSetUserNamePersistsToKeyStore() {
         service.setUserName(testUserNameValue)
 
         // 通过 ServiceContainer 解析 keyStore 验证
@@ -699,7 +699,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 setUserName 后 startHosting 传递新用户名给 provider
-    func testSetUserName后StartHosting传递新用户名给Provider() {
+    func testAfterSetUserNameStartHostingPassesNewUserNameToProvider() {
         service.setUserName(testUserNameValue)
         service.startHosting(roomName: testRoomName)
 
@@ -707,7 +707,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     }
 
     /// 验证 setUserName 后 startBrowsing 传递新用户名给 provider
-    func testSetUserName后StartBrowsing传递新用户名给Provider() {
+    func testAfterSetUserNameStartBrowsingPassesNewUserNameToProvider() {
         service.setUserName(testUserNameValue)
         service.startBrowsing()
 
@@ -717,7 +717,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - setDelegate
 
     /// 验证 setDelegate 正确设置 delegate
-    func testSetDelegate正确设置Delegate() throws {
+    func testSetDelegateCorrectlySetsDelegate() throws {
         let newDelegate = MockCollaborationDelegate()
         service.setDelegate(newDelegate)
 
@@ -755,7 +755,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - provider delegate 设置
 
     /// 验证 init 时 provider.delegate 被设置为 service
-    func testInit时ProviderDelegate被设置为Service() {
+    func testInitProviderDelegateSetToService() {
         // mockProvider.delegate 应为 service（setupProvider 中设置）
         // 通过触发回调验证 delegate 链路通畅
         mockProvider.delegate?.providerDidUpdateStatus(testStatusMessage)
@@ -765,7 +765,7 @@ final class CollaborationServiceDeepTests: XCTestCase {
     // MARK: - 连续操作状态机
 
     /// 验证 startHosting → stop → startBrowsing 状态正确转换
-    func testStartHosting到Stop到StartBrowsing状态正确转换() {
+    func testStartHostingToStopToStartBrowsingStateTransitionCorrect() {
         service.startHosting(roomName: testRoomName)
         XCTAssertTrue(service.isHosting)
         XCTAssertEqual(service.role, .owner)

@@ -18,7 +18,7 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     // MARK: - NoOpLLMChatService
 
     /// NoOpLLMChatService 应返回安全默认值
-    func testNoOpLLMChatService_返回安全默认值() async throws {
+    func testNoOpLLMChatServiceReturnsSafeDefaults() async throws {
         let service = NoOpLLMChatService()
         XCTAssertFalse(service.isEnabled, "NoOp isEnabled 应为 false")
         let chat = try await service.chat(query: "test", history: [], pages: [])
@@ -28,7 +28,7 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     }
 
     /// NoOpLLMChatService chatStream 应立即 finish
-    func testNoOpLLMChatService_chatStream_立即finish() async throws {
+    func testNoOpLLMChatServiceChatStreamFinishesImmediately() async throws {
         let service = NoOpLLMChatService()
         let stream = service.chatStream(query: "test", history: [], pages: [])
         var count = 0
@@ -41,7 +41,7 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     // MARK: - NoOpLLMKnowledgeService
 
     /// NoOpLLMKnowledgeService smartIngest 应保留 title 返回空内容
-    func testNoOpLLMKnowledgeService_smartIngest_保留title() async throws {
+    func testNoOpLLMKnowledgeServiceSmartIngestKeepsTitle() async throws {
         let service = await NoOpLLMKnowledgeService()
         let result = try await service.smartIngest(title: "test", rawContent: "content", pages: [])
         XCTAssertEqual(result.title, "test", "NoOp smartIngest 应保留 title")
@@ -50,21 +50,21 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     }
 
     /// NoOpLLMKnowledgeService discoverPotentialLinks 应返回空数组
-    func testNoOpLLMKnowledgeService_discoverPotentialLinks_返回空数组() async throws {
+    func testNoOpLLMKnowledgeServiceDiscoverPotentialLinksReturnsEmptyArray() async throws {
         let service = await NoOpLLMKnowledgeService()
         let links = try await service.discoverPotentialLinks(content: "test", existingTitles: [])
         XCTAssertTrue(links.isEmpty, "NoOp discoverPotentialLinks 应返回空数组")
     }
 
     /// NoOpLLMKnowledgeService foldContent 应返回 existingContent
-    func testNoOpLLMKnowledgeService_foldContent_返回existingContent() async throws {
+    func testNoOpLLMKnowledgeServiceFoldContentReturnsExistingContent() async throws {
         let service = await NoOpLLMKnowledgeService()
         let folded = try await service.foldContent(existingContent: "old", newContent: "new", title: "test")
         XCTAssertEqual(folded, "old", "NoOp foldContent 应返回 existingContent")
     }
 
     /// NoOpLLMKnowledgeService analyzeForRefactoring 应返回空数组
-    func testNoOpLLMKnowledgeService_analyzeForRefactoring_返回空数组() async throws {
+    func testNoOpLLMKnowledgeServiceAnalyzeForRefactoringReturnsEmptyArray() async throws {
         let service = await NoOpLLMKnowledgeService()
         let suggestions = try await service.analyzeForRefactoring(pages: [])
         XCTAssertTrue(suggestions.isEmpty, "NoOp analyzeForRefactoring 应返回空数组")
@@ -73,27 +73,27 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     // MARK: - NoOpLLMRetrievalService
 
     /// NoOpLLMRetrievalService rewriteQuery 应返回原 query
-    func testNoOpLLMRetrievalService_rewriteQuery_返回原query() async {
+    func testNoOpLLMRetrievalServiceRewriteQueryReturnsOriginalQuery() async {
         let service = await NoOpLLMRetrievalService()
         let rewritten = await service.rewriteQuery("test")
         XCTAssertEqual(rewritten, "test", "NoOp rewriteQuery 应返回原 query")
     }
 
     /// NoOpLLMRetrievalService expandQuery 应返回空数组
-    func testNoOpLLMRetrievalService_expandQuery_返回空数组() async {
+    func testNoOpLLMRetrievalServiceExpandQueryReturnsEmptyArray() async {
         let service = await NoOpLLMRetrievalService()
         let expanded = await service.expandQuery("test")
         XCTAssertTrue(expanded.isEmpty, "NoOp expandQuery 应返回空数组")
     }
 
     /// NoOpLLMRetrievalService rerank 应原样返回 candidates
-    func testNoOpLLMRetrievalService_rerank_原样返回candidates() async throws {
+    func testNoOpLLMRetrievalServiceRerankReturnsCandidatesAsIs() async throws {
         let service = await NoOpLLMRetrievalService()
         let reranked = try await service.rerank(query: "test", candidates: [])
         XCTAssertTrue(reranked.isEmpty, "NoOp rerank 空输入应返回空数组")
     }
     /// NoOpLLMRetrievalService generateHypotheticalDocument 应返回空字符串
-    func testNoOpLLMRetrievalService_generateHypotheticalDocument_返回空字符串() async {
+    func testNoOpLLMRetrievalServiceGenerateHypotheticalDocumentReturnsEmptyString() async {
         let service = await NoOpLLMRetrievalService()
         let hyde = await service.generateHypotheticalDocument(query: "test")
         XCTAssertEqual(hyde, "", "NoOp generateHypotheticalDocument 应返回空字符串")
@@ -102,7 +102,7 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     // MARK: - NoOpLLMService
 
     /// NoOpLLMService 应返回安全默认值
-    func testNoOpLLMService_返回安全默认值() async throws {
+    func testNoOpLLMServiceReturnsSafeDefaults() async throws {
         let service = await NoOpLLMService()
         XCTAssertFalse(service.isEnabled, "NoOp isEnabled 应为 false")
         XCTAssertEqual(service.apiKey, "", "NoOp apiKey 应为空")
@@ -113,14 +113,14 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     }
 
     /// NoOpLLMService chat 应返回空内容
-    func testNoOpLLMService_chat_返回空内容() async throws {
+    func testNoOpLLMServiceChatReturnsEmptyContent() async throws {
         let service = await NoOpLLMService()
         let chat = try await service.chat(query: "test", history: [], pages: [])
         XCTAssertEqual(chat.content, "", "NoOpLLMService chat 应返回空内容")
     }
 
     /// NoOpLLMService chatStream 应立即 finish
-    func testNoOpLLMService_chatStream_立即finish() async throws {
+    func testNoOpLLMServiceChatStreamFinishesImmediately() async throws {
         let service = await NoOpLLMService()
         let stream = service.chatStream(query: "test", history: [], pages: [])
         var count = 0
@@ -131,14 +131,14 @@ final class NoOpLLMServicesSupplementTests: XCTestCase {
     }
 
     /// NoOpLLMService smartIngest 应保留 title
-    func testNoOpLLMService_smartIngest_保留title() async throws {
+    func testNoOpLLMServiceSmartIngestKeepsTitle() async throws {
         let service = await NoOpLLMService()
         let result = try await service.smartIngest(title: "test", rawContent: "content", pages: [])
         XCTAssertEqual(result.title, "test")
     }
 
     /// NoOpLLMService rewriteQuery 应返回原 query
-    func testNoOpLLMService_rewriteQuery_返回原query() async {
+    func testNoOpLLMServiceRewriteQueryReturnsOriginalQuery() async {
         let service = await NoOpLLMService()
         let rewritten = await service.rewriteQuery("test")
         XCTAssertEqual(rewritten, "test")

@@ -188,13 +188,15 @@ public final class ServiceContainer: @unchecked Sendable {
 
         // ── 服务未注册：输出诊断信息并 fail-fast 崩溃 ──
         let summary = buildResolveFailureDiagnostics(key: key, type: type, snapshot: snapshot).0
-        emitResolveFailureDiagnostics(key: key, type: type, snapshot: snapshot)
         // 缺陷 #5 修复：可注入的失败处理器（与 assertRegistered 行为一致）
         // 测试时替换为非崩溃闭包，使 resolve 失败路径的诊断构建可被单元测试覆盖
         // 注意：resolve 必须返回 T，handler 模式下仍需 fatalError 兜底（无法返回有效值）
         // 但 handler 调用行可被覆盖率统计覆盖，解锁 resolve 失败路径的测试覆盖
         if let handler = ServiceContainer.fatalFailureHandler {
             handler(summary)
+        } else {
+            // 生产环境：打印完整诊断横幅
+            emitResolveFailureDiagnostics(key: key, type: type, snapshot: snapshot)
         }
         assertionFailure(summary)
         fatalError(summary)
@@ -347,6 +349,13 @@ public final class ServiceContainer: @unchecked Sendable {
             let registeredCount = lock.withLock { services.count }
             let summary = "[DI Startup Assertion] \(context): \(missing.count) required service(s) NOT registered: \(missing.joined(separator: ", ")). Total registered: \(registeredCount)"
             os_log(.fault, log: diLog, "%{public}@", summary)
+            // 缺陷 #5 修复：可注入的失败处理器
+            // 测试时替换为非崩溃闭包，使 assertRegistered 失败路径可被单元测试覆盖
+            if let handler = ServiceContainer.fatalFailureHandler {
+                handler(summary)
+                return
+            }
+            // 生产环境：打印诊断横幅并触发断言
             fputs("""
             ╔══════════════════════════════════════════════════════════════╗
             ║  DI STARTUP ASSERTION FAILURE                                ║
@@ -358,12 +367,6 @@ public final class ServiceContainer: @unchecked Sendable {
             ╚══════════════════════════════════════════════════════════════╝
 
             """, stderr)
-            // 缺陷 #5 修复：可注入的失败处理器
-            // 测试时替换为非崩溃闭包，使 assertRegistered 失败路径可被单元测试覆盖
-            if let handler = ServiceContainer.fatalFailureHandler {
-                handler(summary)
-                return
-            }
             assertionFailure(summary)
         }
     }

@@ -16,13 +16,13 @@ import XCTest
 final class L10nPluginTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
-    func testTableName_Collaboration_为Plugin() {
+    func testTableNameCollaborationIsPlugin() {
         XCTAssertEqual(L10n.Collaboration.tableName, "Plugin")
     }
 
     // MARK: - Plugin 属性 key 存在性
 
-    func testPlugin_基础属性返回非Missing值() {
+    func testPluginBasicPropsReturnNonMissing() {
         let values = [
             L10n.Plugin.title,
             L10n.Plugin.centerTitle,
@@ -47,14 +47,14 @@ final class L10nPluginTableTests: XCTestCase {
         }
     }
 
-    func testPlugin_permissionMessage_返回非Missing且包含参数() {
+    func testPluginPermissionMessageReturnsNonMissingWithParam() {
         let result = L10n.Plugin.permissionMessage("camera")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Plugin.permissionMessage 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testPlugin_permTitle_返回非Missing且包含参数() {
+    func testPluginPermTitleReturnsNonMissingWithParam() {
         let result = L10n.Plugin.permTitle("network")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Plugin.permTitle 返回 Missing: \(result)")
@@ -63,7 +63,7 @@ final class L10nPluginTableTests: XCTestCase {
 
     // MARK: - Collaboration 属性 key 存在性
 
-    func testCollaboration_基础属性返回非Missing值() {
+    func testCollaborationBasicPropsReturnNonMissing() {
         let values = [
             L10n.Collaboration.title,
             L10n.Collaboration.subtitle,
@@ -98,7 +98,7 @@ final class L10nPluginTableTests: XCTestCase {
 
     // MARK: - Plugin.Error 属性 key 存在性
 
-    func testPlugin_Error_documentsNotFound_返回非Missing值() {
+    func testPluginErrorDocumentsNotFoundReturnsNonMissing() {
         let value = L10n.Plugin.Error.documentsNotFound
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Plugin.Error.documentsNotFound 返回 Missing: \(value)")

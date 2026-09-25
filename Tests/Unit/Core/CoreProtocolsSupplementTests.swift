@@ -22,7 +22,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - AccessibilityServiceProtocol
 
     /// NoOpAccessibilityService postAnnouncement 应不崩溃
-    func testNoOpAccessibilityService_postAnnouncement_不崩溃() {
+    func testNoOpAccessibilityServicePostAnnouncementNoCrash() {
         let service = NoOpAccessibilityService()
         service.postAnnouncement("test")
         // 不崩溃即通过
@@ -31,7 +31,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - AIWorkflowCapabilities
 
     /// NoOpAIWorkflowCapabilities removeRefactorSuggestion 应不崩溃
-    func testNoOpAIWorkflowCapabilities_removeRefactorSuggestion_不崩溃() {
+    func testNoOpAIWorkflowCapabilitiesRemoveRefactorSuggestionNoCrash() {
         let caps = NoOpAIWorkflowCapabilities()
         caps.removeRefactorSuggestion(id: "test_page")
         // 不崩溃即通过
@@ -40,7 +40,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - AppEnvironmentProtocol
 
     /// NoOpAppEnvironment 应返回安全默认值
-    func testNoOpAppEnvironment_安全默认值() {
+    func testNoOpAppEnvironmentSafeDefaults() {
         let env = NoOpAppEnvironment()
         XCTAssertEqual(env.screenClass, .compact)
         XCTAssertEqual(env.interactionStyle, .touch)
@@ -56,7 +56,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - BackgroundTaskProtocol
 
     /// StubBackgroundTaskProvider register/schedule 应不崩溃
-    func testStubBackgroundTaskProvider_registerSchedule_不崩溃() {
+    func testStubBackgroundTaskProviderRegisterScheduleNoCrash() {
         let provider = StubBackgroundTaskProvider()
         provider.register(handler: {})
         provider.schedule()
@@ -66,7 +66,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - CollaborationProviderProtocol
 
     /// NoOpCollaborationProvider 所有方法应不崩溃
-    func testNoOpCollaborationProvider_所有方法_不崩溃() {
+    func testNoOpCollaborationProviderAllMethodsNoCrash() {
         let provider = NoOpCollaborationProvider()
         provider.startHosting(roomName: "room", userName: "user")
         provider.startBrowsing(userName: "user")
@@ -77,13 +77,13 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// NoOpCollaborationProvider delegate 应为 nil
-    func testNoOpCollaborationProvider_delegate为nil() {
+    func testNoOpCollaborationProviderDelegateIsNil() {
         let provider = NoOpCollaborationProvider()
         XCTAssertNil(provider.delegate, "NoOp delegate 应为 nil")
     }
 
     /// StubCollaborationProvider startHosting 应通过 delegate 回传 simulatorNotSupported
-    func testStubCollaborationProvider_startHosting_回传simulatorNotSupported() {
+    func testStubCollaborationProviderStartHostingReturnsSimulatorNotSupported() {
         let provider = StubCollaborationProvider()
         let delegate = CollaborationDelegateRecorder()
         provider.delegate = delegate
@@ -92,7 +92,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// StubCollaborationProvider startBrowsing 应通过 delegate 回传 simulatorNotSupported
-    func testStubCollaborationProvider_startBrowsing_回传simulatorNotSupported() {
+    func testStubCollaborationProviderStartBrowsingReturnsSimulatorNotSupported() {
         let provider = StubCollaborationProvider()
         let delegate = CollaborationDelegateRecorder()
         provider.delegate = delegate
@@ -101,7 +101,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// StubCollaborationProvider stop 应通过 delegate 回传 disconnected
-    func testStubCollaborationProvider_stop_回传disconnected() {
+    func testStubCollaborationProviderStopReturnsDisconnected() {
         let provider = StubCollaborationProvider()
         let delegate = CollaborationDelegateRecorder()
         provider.delegate = delegate
@@ -112,7 +112,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - DeviceInfoProtocol
 
     /// NoOpDeviceInfo 应返回安全默认值（空字符串/0）
-    func testNoOpDeviceInfo_安全默认值() {
+    func testNoOpDeviceInfoSafeDefaults() {
         let info = NoOpDeviceInfo()
         XCTAssertEqual(info.systemVersion, "")
         XCTAssertEqual(info.deviceModel, "")
@@ -123,7 +123,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - ExportServiceProtocol
 
     /// NoOpExportService exportToPDF 应抛出 engineNotReady
-    func testNoOpExportService_exportToPDF_抛出EngineNotReady() async {
+    func testNoOpExportServiceExportToPDFThrowsEngineNotReady() async {
         let service = NoOpExportService()
         do {
             _ = try await service.exportToPDF(markdown: "# test", fileName: "test.pdf")
@@ -134,7 +134,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// NoOpExportService exportMindmapToPDF 应抛出 engineNotReady
-    func testNoOpExportService_exportMindmapToPDF_抛出EngineNotReady() async {
+    func testNoOpExportServiceExportMindmapToPDFThrowsEngineNotReady() async {
         let service = NoOpExportService()
         do {
             _ = try await service.exportMindmapToPDF(mermaidCode: "graph TD", fileName: "test.pdf")
@@ -145,7 +145,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// NoOpExportService exportToPPTX 应抛出 engineNotReady
-    func testNoOpExportService_exportToPPTX_抛出EngineNotReady() async {
+    func testNoOpExportServiceExportToPPTXThrowsEngineNotReady() async {
         let service = NoOpExportService()
         do {
             _ = try await service.exportToPPTX(markdown: "# test", fileName: "test.pptx")
@@ -156,14 +156,14 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// ExportError 三个 case 的 errorDescription 应非空
-    func testExportError_所有case_描述非空() {
+    func testExportErrorAllCasesDescriptionNonEmpty() {
         XCTAssertFalse(ExportError.systemBusy.errorDescription?.isEmpty ?? true)
         XCTAssertFalse(ExportError.engineNotReady.errorDescription?.isEmpty ?? true)
         XCTAssertFalse(ExportError.internalError("test").errorDescription?.isEmpty ?? true)
     }
 
     /// UnsupportedExportService exportToPDF 应抛出 NSError
-    func testUnsupportedExportService_exportToPDF_抛出错误() async {
+    func testUnsupportedExportServiceExportToPDFThrowsError() async {
         let service = UnsupportedExportService()
         do {
             _ = try await service.exportToPDF(markdown: "# test", fileName: "test.pdf")
@@ -174,7 +174,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// UnsupportedExportService exportMindmapToPDF 应抛出 NSError
-    func testUnsupportedExportService_exportMindmapToPDF_抛出错误() async {
+    func testUnsupportedExportServiceExportMindmapToPDFThrowsError() async {
         let service = UnsupportedExportService()
         do {
             _ = try await service.exportMindmapToPDF(mermaidCode: "graph TD", fileName: "test.pdf")
@@ -185,7 +185,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// UnsupportedExportService exportToPPTX 应抛出 NSError
-    func testUnsupportedExportService_exportToPPTX_抛出错误() async {
+    func testUnsupportedExportServiceExportToPPTXThrowsError() async {
         let service = UnsupportedExportService()
         do {
             _ = try await service.exportToPPTX(markdown: "# test", fileName: "test.pptx")
@@ -198,7 +198,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - FileArchiverProtocol
 
     /// NoOpFileArchiver zip 应抛出 platformNotSupported
-    func testNoOpFileArchiver_zip_抛出PlatformNotSupported() async {
+    func testNoOpFileArchiverZipThrowsPlatformNotSupported() async {
         let archiver = NoOpFileArchiver()
         do {
             try await archiver.zip(directory: URL(fileURLWithPath: "/tmp/src"),
@@ -210,7 +210,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// NoOpFileArchiver extractContents 应抛出 extractionFailed
-    func testNoOpFileArchiver_extractContents_抛出ExtractionFailed() {
+    func testNoOpFileArchiverExtractContentsThrowsExtractionFailed() {
         let archiver = NoOpFileArchiver()
         do {
             try archiver.extractContents(from: URL(fileURLWithPath: "/tmp/test.zip"),
@@ -222,7 +222,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// UnsupportedFileArchiver zip 应抛出 platformNotSupported
-    func testUnsupportedFileArchiver_zip_抛出PlatformNotSupported() async {
+    func testUnsupportedFileArchiverZipThrowsPlatformNotSupported() async {
         let archiver = UnsupportedFileArchiver()
         do {
             try await archiver.zip(directory: URL(fileURLWithPath: "/tmp/src"),
@@ -234,7 +234,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// UnsupportedFileArchiver extractContents 应抛出 platformNotSupported
-    func testUnsupportedFileArchiver_extractContents_抛出PlatformNotSupported() {
+    func testUnsupportedFileArchiverExtractContentsThrowsPlatformNotSupported() {
         let archiver = UnsupportedFileArchiver()
         do {
             try archiver.extractContents(from: URL(fileURLWithPath: "/tmp/test.zip"),
@@ -248,7 +248,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - HapticFeedbackProtocol
 
     /// NoOpHapticFeedback trigger 应不崩溃（覆盖所有 HapticPattern）
-    func testNoOpHapticFeedback_trigger_所有模式_不崩溃() {
+    func testNoOpHapticFeedbackTriggerAllPatternsNoCrash() {
         let haptic = NoOpHapticFeedback()
         haptic.trigger(.success)
         haptic.trigger(.error)
@@ -265,14 +265,14 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - LiveActivityProtocol
 
     /// DummyActivityService startActivity 基础版应不崩溃
-    func testDummyActivityService_startActivity_基础版_不崩溃() {
+    func testDummyActivityServiceStartActivityBasicNoCrash() {
         let service = DummyActivityService()
         service.startActivity(id: UUID(), name: "test", target: "target")
         // 不崩溃即通过
     }
 
     /// DummyActivityService startActivity 扩展版应不崩溃
-    func testDummyActivityService_startActivity_扩展版_不崩溃() {
+    func testDummyActivityServiceStartActivityExtendedNoCrash() {
         let service = DummyActivityService()
         service.startActivity(
             id: UUID(), name: "test", target: "target",
@@ -283,7 +283,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// DummyActivityService updateProgress 基础版应不崩溃
-    func testDummyActivityService_updateProgress_基础版_不崩溃() async {
+    func testDummyActivityServiceUpdateProgressBasicNoCrash() async {
         let service = DummyActivityService()
         let id = UUID()
         service.startActivity(id: id, name: "test", target: "target")
@@ -292,7 +292,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// DummyActivityService updateProgress 扩展版应不崩溃
-    func testDummyActivityService_updateProgress_扩展版_不崩溃() async {
+    func testDummyActivityServiceUpdateProgressExtendedNoCrash() async {
         let service = DummyActivityService()
         let id = UUID()
         service.startActivity(id: id, name: "test", target: "target")
@@ -305,7 +305,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// DummyActivityService endActivity 应不崩溃
-    func testDummyActivityService_endActivity_不崩溃() async {
+    func testDummyActivityServiceEndActivityNoCrash() async {
         let service = DummyActivityService()
         let id = UUID()
         service.startActivity(id: id, name: "test", target: "target")
@@ -316,7 +316,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - OCRServiceProtocol
 
     /// NoOpOCRService recognizeText 应返回空字符串
-    func testNoOpOCRService_recognizeText_返回空字符串() async {
+    func testNoOpOCRServiceRecognizeTextReturnsEmptyString() async {
         let service = NoOpOCRService()
         let result = try? await service.recognizeText(from: AppImage())
         XCTAssertEqual(result, "", "NoOp OCR 应返回空字符串")
@@ -325,13 +325,13 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - PlatformCapabilities
 
     /// NoOpBiometricAuthProvider authenticationPolicy 应为 deviceOwnerAuthenticationWithBiometrics
-    func testNoOpBiometricAuthProvider_authenticationPolicy_正确值() {
+    func testNoOpBiometricAuthProviderAuthenticationPolicyCorrectValue() {
         let provider = NoOpBiometricAuthProvider()
         XCTAssertEqual(provider.authenticationPolicy, .deviceOwnerAuthenticationWithBiometrics)
     }
 
     /// NoOpBiometricAuthProvider canEvaluatePolicy 应返回 false
-    func testNoOpBiometricAuthProvider_canEvaluatePolicy_返回false() {
+    func testNoOpBiometricAuthProviderCanEvaluatePolicyReturnsFalse() {
         let provider = NoOpBiometricAuthProvider()
         let context = LAContext()
         XCTAssertFalse(provider.canEvaluatePolicy(context: context),
@@ -339,7 +339,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// NoOpBiometricAuthProvider evaluatePolicy 应返回 false
-    func testNoOpBiometricAuthProvider_evaluatePolicy_返回false() async {
+    func testNoOpBiometricAuthProviderEvaluatePolicyReturnsFalse() async {
         let provider = NoOpBiometricAuthProvider()
         let context = LAContext()
         let result = await provider.evaluatePolicy(context: context, reason: "test")
@@ -349,14 +349,14 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - ReminderServiceProtocol
 
     /// UnsupportedReminderService requestAccess 应返回 false
-    func testUnsupportedReminderService_requestAccess_返回false() async {
+    func testUnsupportedReminderServiceRequestAccessReturnsFalse() async {
         let service = UnsupportedReminderService()
         let result = await service.requestAccess()
         XCTAssertFalse(result, "Unsupported 提醒服务应返回 false")
     }
 
     /// UnsupportedReminderService createReminder 应不崩溃
-    func testUnsupportedReminderService_createReminder_不崩溃() async {
+    func testUnsupportedReminderServiceCreateReminderNoCrash() async {
         let service = UnsupportedReminderService()
         try? await service.createReminder(title: "test", notes: "body")
         // 不崩溃即通过
@@ -365,7 +365,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     // MARK: - WatchSyncProtocol
 
     /// StubWatchSyncService 初始状态应返回安全默认值
-    func testStubWatchSyncService_初始状态_安全默认值() {
+    func testStubWatchSyncServiceInitialStateSafeDefaults() {
         let service = StubWatchSyncService()
         XCTAssertEqual(service.lastReceivedText, "", "初始 lastReceivedText 应为空")
         XCTAssertNil(service.latestBriefing, "初始 latestBriefing 应为 nil")
@@ -373,35 +373,35 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// StubWatchSyncService sendContent 应不崩溃
-    func testStubWatchSyncService_sendContent_不崩溃() {
+    func testStubWatchSyncServiceSendContentNoCrash() {
         let service = StubWatchSyncService()
         service.sendContent("test")
         // 不崩溃即通过
     }
 
     /// StubWatchSyncService requestDailyBriefing 应不崩溃
-    func testStubWatchSyncService_requestDailyBriefing_不崩溃() {
+    func testStubWatchSyncServiceRequestDailyBriefingNoCrash() {
         let service = StubWatchSyncService()
         service.requestDailyBriefing()
         // 不崩溃即通过
     }
 
     /// StubWatchSyncService handleBriefingResponse 应不崩溃
-    func testStubWatchSyncService_handleBriefingResponse_不崩溃() {
+    func testStubWatchSyncServiceHandleBriefingResponseNoCrash() {
         let service = StubWatchSyncService()
         service.handleBriefingResponse("briefing text")
         // 不崩溃即通过
     }
 
     /// StubWatchSyncService sendAudioData 默认实现应不崩溃
-    func testStubWatchSyncService_sendAudioData_默认实现_不崩溃() async {
+    func testStubWatchSyncServiceSendAudioDataDefaultImplNoCrash() async {
         let service = StubWatchSyncService()
         await service.sendAudioData(Data(), filename: "test.m4a")
         // 不崩溃即通过（WatchSyncProtocol extension 默认实现）
     }
 
     /// StubWatchSyncService latestBriefing 可读写
-    func testStubWatchSyncService_latestBriefing_可读写() {
+    func testStubWatchSyncServiceLatestBriefingReadWrite() {
         let service = StubWatchSyncService()
         service.latestBriefing = "test briefing"
         XCTAssertEqual(service.latestBriefing, "test briefing")
@@ -410,7 +410,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     }
 
     /// StubWatchSyncService isBriefingLoading 可读写
-    func testStubWatchSyncService_isBriefingLoading_可读写() {
+    func testStubWatchSyncServiceIsBriefingLoadingReadWrite() {
         let service = StubWatchSyncService()
         service.isBriefingLoading = true
         XCTAssertTrue(service.isBriefingLoading)

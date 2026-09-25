@@ -65,18 +65,18 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
     // MARK: - 持久化属性 activeModelId
 
     /// 验证 activeModelId 默认值为 "gemma-4-e2b-it"。
-    func testActiveModelId_默认值为Gemma4e2b() {
+    func testActiveModelIdDefaultIsGemma4e2b() {
         XCTAssertEqual(manager.activeModelId, "gemma-4-e2b-it")
     }
 
     /// 验证 activeModelId setter 持久化。
-    func testActiveModelId_setter持久化() {
+    func testActiveModelIdSetterPersists() {
         manager.activeModelId = "new-model"
         XCTAssertEqual(manager.activeModelId, "new-model")
     }
 
     /// 验证 activeModelId 设置空字符串不崩溃。
-    func testActiveModelId_设置空字符串不崩溃() {
+    func testActiveModelIdEmptyStringNoCrash() {
         manager.activeModelId = ""
         XCTAssertEqual(manager.activeModelId, "")
     }
@@ -84,18 +84,18 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
     // MARK: - 持久化属性 isCloudEscalationEnabled
 
     /// 验证 isCloudEscalationEnabled 默认为 false。
-    func testIsCloudEscalationEnabled_默认为False() {
+    func testIsCloudEscalationEnabledDefaultFalse() {
         XCTAssertFalse(manager.isCloudEscalationEnabled)
     }
 
     /// 验证 isCloudEscalationEnabled setter 持久化。
-    func testIsCloudEscalationEnabled_setter持久化() {
+    func testIsCloudEscalationEnabledSetterPersists() {
         manager.isCloudEscalationEnabled = true
         XCTAssertTrue(manager.isCloudEscalationEnabled)
     }
 
     /// 验证 isCloudEscalationEnabled 可来回切换。
-    func testIsCloudEscalationEnabled_可来回切换() {
+    func testIsCloudEscalationEnabledToggleBackAndForth() {
         manager.isCloudEscalationEnabled = true
         XCTAssertTrue(manager.isCloudEscalationEnabled)
         manager.isCloudEscalationEnabled = false
@@ -105,12 +105,12 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
     // MARK: - 持久化属性 activeCloudModelId
 
     /// 验证 activeCloudModelId 默认值为 "gpt-4o"。
-    func testActiveCloudModelId_默认值为Gpt4o() {
+    func testActiveCloudModelIdDefaultIsGpt4o() {
         XCTAssertEqual(manager.activeCloudModelId, "gpt-4o")
     }
 
     /// 验证 activeCloudModelId setter 持久化。
-    func testActiveCloudModelId_setter持久化() {
+    func testActiveCloudModelIdSetterPersists() {
         manager.activeCloudModelId = "claude-3"
         XCTAssertEqual(manager.activeCloudModelId, "claude-3")
     }
@@ -118,38 +118,38 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
     // MARK: - downloadedModelIds 标记/移除
 
     /// 验证 downloadedModelIds 初始为空。
-    func testDownloadedModelIds_初始为空() {
+    func testDownloadedModelIdsInitiallyEmpty() {
         XCTAssertTrue(manager.downloadedModelIds.isEmpty)
     }
 
     /// 验证 markModelAsDownloaded 添加 ID。
-    func testMarkModelAsDownloaded_添加ID() {
+    func testMarkModelAsDownloadedAddsId() {
         manager.markModelAsDownloaded("model-1")
         XCTAssertTrue(manager.downloadedModelIds.contains("model-1"))
     }
 
     /// 验证 markModelAsDownloaded 幂等（重复添加不增加）。
-    func testMarkModelAsDownloaded_幂等() {
+    func testMarkModelAsDownloadedIdempotent() {
         manager.markModelAsDownloaded("model-1")
         manager.markModelAsDownloaded("model-1")
         XCTAssertEqual(manager.downloadedModelIds.count, 1)
     }
 
     /// 验证 markModelAsRemoved 移除 ID。
-    func testMarkModelAsRemoved_移除ID() {
+    func testMarkModelAsRemovedRemovesId() {
         manager.markModelAsDownloaded("model-1")
         manager.markModelAsRemoved("model-1")
         XCTAssertFalse(manager.downloadedModelIds.contains("model-1"))
     }
 
     /// 验证 markModelAsRemoved 对不存在的 ID 不崩溃。
-    func testMarkModelAsRemoved_不存在ID不崩溃() {
+    func testMarkModelAsRemovedNonexistentIdNoCrash() {
         manager.markModelAsRemoved("nonexistent")
         XCTAssertTrue(manager.downloadedModelIds.isEmpty)
     }
 
     /// 验证多个模型标记后集合正确。
-    func testMarkModelAsDownloaded_多个模型() {
+    func testMarkModelAsDownloadedMultipleModels() {
         manager.markModelAsDownloaded("model-1")
         manager.markModelAsDownloaded("model-2")
         manager.markModelAsDownloaded("model-3")
@@ -159,12 +159,12 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
     // MARK: - isModelLocalReady
 
     /// 验证 downloadStates 无记录时 isModelLocalReady 返回 false。
-    func testIsModelLocalReady_无记录返回False() {
+    func testIsModelLocalReadyNoRecordReturnsFalse() {
         XCTAssertFalse(manager.isModelLocalReady(for: "nonexistent"))
     }
 
     /// 验证 downloadStates 为 .completed 时 isModelLocalReady 返回 true。
-    func testIsModelLocalReady_completed状态返回True() {
+    func testIsModelLocalReadyCompletedReturnsTrue() {
         let url = URL(fileURLWithPath: "/tmp/test.bin")
         // 通过反射或直接设置 downloadStates（private(set) 需通过 refreshLocalModelFiles 间接设置）
         // 这里用 refreshLocalModelFiles 配合物理文件来设置 completed 状态
@@ -173,26 +173,26 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 downloadStates 为 .downloading 时 isModelLocalReady 返回 false。
-    func testIsModelLocalReady_downloading状态返回False() {
+    func testIsModelLocalReadyDownloadingReturnsFalse() {
         // downloadStates 为 private(set)，无法直接设置 downloading 状态
         // 验证默认无记录时返回 false
         XCTAssertFalse(manager.isModelLocalReady(for: "downloading-model"))
     }
 
     /// 验证 downloadStates 为 .failed 时 isModelLocalReady 返回 false。
-    func testIsModelLocalReady_failed状态返回False() {
+    func testIsModelLocalReadyFailedReturnsFalse() {
         XCTAssertFalse(manager.isModelLocalReady(for: "failed-model"))
     }
 
     // MARK: - getLocalModelURL
 
     /// 验证 downloadStates 无记录时 getLocalModelURL 返回 nil。
-    func testGetLocalModelURL_无记录返回Nil() {
+    func testGetLocalModelURLNoRecordReturnsNil() {
         XCTAssertNil(manager.getLocalModelURL(for: "nonexistent"))
     }
 
     /// 验证 downloadStates 非 completed 时 getLocalModelURL 返回 nil。
-    func testGetLocalModelURL_非completed返回Nil() {
+    func testGetLocalModelURLNonCompletedReturnsNil() {
         XCTAssertNil(manager.getLocalModelURL(for: "pending-model"))
     }
 
@@ -228,12 +228,12 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
     // MARK: - physicalMemory
 
     /// 验证 physicalMemory 大于 0。
-    func testPhysicalMemory_大于0() {
+    func testPhysicalMemoryGreaterThanZero() {
         XCTAssertGreaterThan(manager.physicalMemory, 0)
     }
 
     /// 验证 physicalMemory 与 ProcessInfo 一致。
-    func testPhysicalMemory_与ProcessInfo一致() {
+    func testPhysicalMemoryConsistentWithProcessInfo() {
         XCTAssertEqual(manager.physicalMemory, ProcessInfo.processInfo.physicalMemory)
     }
 }

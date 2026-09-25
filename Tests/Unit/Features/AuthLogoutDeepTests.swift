@@ -109,7 +109,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     // MARK: - logout 后台任务管理
 
     /// 验证 logout 后 testLogoutTask 被设置
-    func testLogout_设置testLogoutTask() async {
+    func testLogoutSetsTestLogoutTask() async {
         AuthSession.shared.update(user: makeTestUser())
 
         AuthService.shared.logout()
@@ -120,7 +120,7 @@ final class AuthLogoutDeepTests: XCTestCase {
 
     /// 验证 logout 后 testLogoutTasks 列表追加任务
     /// - Note: `awaitAllLogoutTasks` 会清空 testLogoutTasks 数组，因此需在 await 前检查 count。
-    func testLogout_testLogoutTasks列表追加任务() async {
+    func testLogoutTestLogoutTasksListAppendsTask() async {
         AuthSession.shared.update(user: makeTestUser())
 
         let initialCount = AuthService.shared.testLogoutTasks.count
@@ -132,7 +132,7 @@ final class AuthLogoutDeepTests: XCTestCase {
 
     /// 验证多次 logout 后 testLogoutTasks 列表持续增长
     /// - Note: `awaitAllLogoutTasks` 会清空 testLogoutTasks 数组，因此每次 logout 后立即检查。
-    func testLogout_多次调用_testLogoutTasks持续增长() async {
+    func testLogoutMultipleCallsTestLogoutTasksKeepGrowing() async {
         AuthSession.shared.update(user: makeTestUser())
 
         let initialCount = AuthService.shared.testLogoutTasks.count
@@ -146,7 +146,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     }
 
     /// 验证 logout 清空 isAuthenticated
-    func testLogout_清空isAuthenticated() async {
+    func testLogoutClearsIsAuthenticated() async {
         AuthSession.shared.update(user: makeTestUser())
         XCTAssertTrue(AuthService.shared.isAuthenticated, "前置条件: 应已登录")
 
@@ -157,7 +157,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     }
 
     /// 验证 logout 清空 currentUser
-    func testLogout_清空currentUser() async {
+    func testLogoutClearsCurrentUser() async {
         AuthSession.shared.update(user: makeTestUser())
         XCTAssertNotNil(AuthService.shared.currentUser, "前置条件: 应有当前用户")
 
@@ -168,7 +168,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     }
 
     /// 验证 logout 清空 isGuest
-    func testLogout_清空isGuest() async {
+    func testLogoutClearsIsGuest() async {
         AuthSession.shared.isGuest = true
         XCTAssertTrue(AuthService.shared.isGuest, "前置条件: 应为游客模式")
 
@@ -179,7 +179,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     }
 
     /// 验证 logout 无 refresh token 时不发送后端请求但仍清理本地
-    func testLogout_无refreshToken_仍清理本地状态() async throws {
+    func testLogoutNoRefreshTokenStillCleansLocalState() async throws {
         AuthSession.shared.update(user: makeTestUser())
         // 不存储任何 token
 
@@ -199,7 +199,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     }
 
     /// 验证 logout 有 refresh token 时发送后端注销请求
-    func testLogout_有refreshToken_发送后端注销请求() async throws {
+    func testLogoutWithRefreshTokenSendsBackendLogoutRequest() async throws {
         AuthSession.shared.update(user: makeTestUser())
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         try KeychainService.shared.store(key: refreshTokenKey, value: testRefreshToken)
@@ -221,7 +221,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     }
 
     /// 验证 logout 后 Keychain 中的 JWT Token 被清理
-    func testLogout_清理Keychain中的JWTToken() async throws {
+    func testLogoutCleansKeychainJWTToken() async throws {
         AuthSession.shared.update(user: makeTestUser())
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         try KeychainService.shared.store(key: refreshTokenKey, value: testRefreshToken)
@@ -240,7 +240,7 @@ final class AuthLogoutDeepTests: XCTestCase {
     }
 
     /// 验证 logout 后 Keychain 中的 Refresh Token 被清理
-    func testLogout_清理Keychain中的RefreshToken() async throws {
+    func testLogoutCleansKeychainRefreshToken() async throws {
         AuthSession.shared.update(user: makeTestUser())
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         try KeychainService.shared.store(key: refreshTokenKey, value: testRefreshToken)

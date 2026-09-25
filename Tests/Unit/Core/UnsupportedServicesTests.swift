@@ -15,7 +15,7 @@ final class UnsupportedServicesTests: XCTestCase {
     // MARK: - UnsupportedReminderService
 
     /// requestAccess 应返回 false（不支持平台）    /// createReminder 应不抛错（空实现，Do nothing）
-    func testUnsupportedReminderService_createReminder_不抛错() async {
+    func testUnsupportedReminderServiceCreateReminderNoThrow() async {
         let service = UnsupportedReminderService()
         do {
             try await service.createReminder(title: "test", notes: "notes")
@@ -28,7 +28,7 @@ final class UnsupportedServicesTests: XCTestCase {
     // MARK: - UnsupportedExportService
 
     /// exportToPDF 应抛出 NSError（domain=export, code=501）
-    func testUnsupportedExportService_exportToPDF_抛出NSError() async {
+    func testUnsupportedExportServiceExportToPDFThrowsNSError() async {
         let service = UnsupportedExportService()
         do {
             _ = try await service.exportToPDF(markdown: "# test", fileName: "test.pdf")
@@ -42,7 +42,7 @@ final class UnsupportedServicesTests: XCTestCase {
     }
 
     /// exportMindmapToPDF 应抛出 NSError
-    func testUnsupportedExportService_exportMindmapToPDF_抛出NSError() async {
+    func testUnsupportedExportServiceExportMindmapToPDFThrowsNSError() async {
         let service = UnsupportedExportService()
         do {
             _ = try await service.exportMindmapToPDF(mermaidCode: "graph TD", fileName: "test.pdf")
@@ -55,7 +55,7 @@ final class UnsupportedServicesTests: XCTestCase {
     }
 
     /// exportToPPTX 应抛出 NSError
-    func testUnsupportedExportService_exportToPPTX_抛出NSError() async {
+    func testUnsupportedExportServiceExportToPPTXThrowsNSError() async {
         let service = UnsupportedExportService()
         do {
             _ = try await service.exportToPPTX(markdown: "# test", fileName: "test.pptx")
@@ -70,7 +70,7 @@ final class UnsupportedServicesTests: XCTestCase {
     // MARK: - UnsupportedFileArchiver
 
     /// zip 应抛出 FileArchiverError.platformNotSupported
-    func testUnsupportedFileArchiver_zip_抛出platformNotSupported() async {
+    func testUnsupportedFileArchiverZipThrowsPlatformNotSupported() async {
         let archiver = UnsupportedFileArchiver()
         let sourceDir = URL(fileURLWithPath: "/tmp/test-source")
         let destURL = URL(fileURLWithPath: "/tmp/test.zip")
@@ -88,7 +88,7 @@ final class UnsupportedServicesTests: XCTestCase {
     }
 
     /// extractContents 应抛出 FileArchiverError.platformNotSupported
-    func testUnsupportedFileArchiver_extractContents_抛出platformNotSupported() {
+    func testUnsupportedFileArchiverExtractContentsThrowsPlatformNotSupported() {
         let archiver = UnsupportedFileArchiver()
         let archiveURL = URL(fileURLWithPath: "/tmp/test.zip")
         let destURL = URL(fileURLWithPath: "/tmp/test-dest")
@@ -111,17 +111,17 @@ final class UnsupportedServicesTests: XCTestCase {
     private func acceptSendable<T: Sendable>(_ value: T) {}
 
     /// UnsupportedReminderService 应遵循 Sendable
-    func testUnsupportedReminderService_遵循Sendable() {
+    func testUnsupportedReminderServiceConformsSendable() {
         acceptSendable(UnsupportedReminderService())
     }
 
     /// UnsupportedExportService 应遵循 Sendable
-    func testUnsupportedExportService_遵循Sendable() {
+    func testUnsupportedExportServiceConformsSendable() {
         acceptSendable(UnsupportedExportService())
     }
 
     /// UnsupportedFileArchiver 应遵循 Sendable
-    func testUnsupportedFileArchiver_遵循Sendable() {
+    func testUnsupportedFileArchiverConformsSendable() {
         acceptSendable(UnsupportedFileArchiver())
     }
 }

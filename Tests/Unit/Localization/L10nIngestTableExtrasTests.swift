@@ -18,21 +18,21 @@ final class L10nIngestTableExtrasTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Ingest_为Ingest() {
+    func testTableNameIngestIsIngest() {
         XCTAssertEqual(L10n.Ingest.tableName, "Ingest")
     }
 
-    func testTableName_Backup_为Ingest() {
+    func testTableNameBackupIsIngest() {
         XCTAssertEqual(L10n.Backup.tableName, "Ingest")
     }
 
-    func testTableName_ICloud_为Ingest() {
+    func testTableNameICloudIsIngest() {
         XCTAssertEqual(L10n.ICloud.tableName, "Ingest")
     }
 
     // MARK: - Ingest 属性 key 存在性
 
-    func testIngest_基础属性返回非Missing值() {
+    func testIngestBasicPropsReturnNonMissing() {
         let values = [
             L10n.Ingest.title,
             L10n.Ingest.manualEntry,
@@ -65,7 +65,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         }
     }
 
-    func testIngest_图片与语音属性返回非Missing值() {
+    func testIngestImageAndVoicePropsReturnNonMissing() {
         let values = [
             L10n.Ingest.imageTooLarge,
             L10n.Ingest.voiceTooLong,
@@ -82,7 +82,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         }
     }
 
-    func testIngest_批量URL属性返回非Missing值() {
+    func testIngestBatchURLPropsReturnNonMissing() {
         let values = [
             L10n.Ingest.batchURLTitle,
             L10n.Ingest.batchURLPlaceholder,
@@ -95,7 +95,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         }
     }
 
-    func testIngest_AITag属性返回非Missing值() {
+    func testIngestAITagPropsReturnNonMissing() {
         let values = [
             L10n.Ingest.aiTag,
             L10n.Ingest.aiTagging,
@@ -110,7 +110,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         }
     }
 
-    func testIngest_智能导入属性返回非Missing值() {
+    func testIngestSmartImportPropsReturnNonMissing() {
         let values = [
             L10n.Ingest.importAll,
             L10n.Ingest.noImportRecords,
@@ -134,7 +134,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         }
     }
 
-    func testIngest_预览与活动属性返回非Missing值() {
+    func testIngestPreviewAndActivityPropsReturnNonMissing() {
         let values = [
             L10n.Ingest.iconCustom,
             L10n.Ingest.iconDefault,
@@ -161,28 +161,28 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         }
     }
 
-    func testIngest_pdfPageCountFormat_返回非Missing且包含参数() {
+    func testIngestPdfPageCountFormatReturnsNonMissingWithParams() {
         let result = L10n.Ingest.pdfPageCountFormat(10)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Ingest.pdfPageCountFormat 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testIngest_batchResult_返回非Missing且包含参数() {
+    func testIngestBatchResultReturnsNonMissingWithParams() {
         let result = L10n.Ingest.batchResult(5, 2)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Ingest.batchResult 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testIngest_imageCount_返回非Missing且包含参数() {
+    func testIngestImageCountReturnsNonMissingWithParams() {
         let result = L10n.Ingest.imageCount(3)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Ingest.imageCount 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testIngest_diNotReady_返回非Missing且包含参数() {
+    func testIngestDiNotReadyReturnsNonMissingWithParams() {
         let result = L10n.Ingest.diNotReady("https://example.com")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Ingest.diNotReady 返回 Missing: \(result)")
@@ -191,7 +191,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
 
     // MARK: - Backup 属性 key 存在性
 
-    func testBackup_基础属性返回非Missing值() {
+    func testBackupBasicPropsReturnNonMissing() {
         let values = [
             L10n.Backup.title,
             L10n.Backup.autoBackup,
@@ -218,7 +218,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
         }
     }
 
-    func testBackup_log_属性返回非Missing值() {
+    func testBackupLogPropsReturnNonMissing() {
         let values = [
             L10n.Backup.log.createFailed,
             L10n.Backup.log.restoreFailed,
@@ -234,7 +234,7 @@ final class L10nIngestTableExtrasTests: XCTestCase {
 
     // MARK: - ICloud 属性 key 存在性
 
-    func testICloud_基础属性返回非Missing值() {
+    func testICloudBasicPropsReturnNonMissing() {
         let values = [
             L10n.ICloud.pushToCloud,
             L10n.ICloud.pullFromCloud,

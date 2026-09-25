@@ -82,7 +82,7 @@ public enum TagStoreKey: DependencyKey {
 
     nonisolated public static var testValue: TagStore {
         ServiceContainer.shared.resolveOptional(TagStore.self)
-            ?? MainActor.assumeIsolated { TagStore() }
+            ?? runOnMainSync { TagStore() }
     }
     nonisolated public static var previewValue: TagStore { testValue }
 }

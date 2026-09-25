@@ -231,7 +231,7 @@ enum RAGEvaluationServiceKey: DependencyKey {
     }
     nonisolated static var testValue: RAGEvaluationService {
         ServiceContainer.shared.resolveOptional(RAGEvaluationService.self)
-            ?? MainActor.assumeIsolated {
+            ?? runOnMainSync {
                 RAGEvaluationService(llmService: NoOpLLMService(), governanceStore: NoOpRAGGovernanceRepository())
             }
     }

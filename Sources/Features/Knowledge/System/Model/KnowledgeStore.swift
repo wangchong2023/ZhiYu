@@ -338,7 +338,7 @@ public enum KnowledgeStoreKey: DependencyKey {
 
     nonisolated public static var testValue: KnowledgeStore {
         ServiceContainer.shared.resolveOptional(KnowledgeStore.self)
-            ?? MainActor.assumeIsolated { KnowledgeStore() }
+            ?? runOnMainSync { KnowledgeStore() }
     }
     nonisolated public static var previewValue: KnowledgeStore { testValue }
 }

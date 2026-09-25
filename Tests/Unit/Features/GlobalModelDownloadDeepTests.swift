@@ -66,13 +66,13 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     // MARK: - refreshLocalModelFiles
 
     /// 验证无 remoteManifests 时 refreshLocalModelFiles 不崩溃。
-    func testRefreshLocalModelFiles_无manifests不崩溃() {
+    func testRefreshLocalModelFilesNoManifestsNoCrash() {
         manager.refreshLocalModelFiles()
         XCTAssertTrue(manager.downloadStates.isEmpty)
     }
 
     /// 验证 refreshLocalModelFiles 后无物理文件的 manifest 状态为 .failed。
-    func testRefreshLocalModelFiles_无物理文件状态为Failed() {
+    func testRefreshLocalModelFilesNoPhysicalFileStatusFailed() {
         // 需要先设置 remoteManifests，但 remoteManifests 是 private(set)
         // 通过 reload 间接加载（MockRemoteConfigService 返回空列表）
         // 这里验证默认空列表的行为
@@ -83,7 +83,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     // MARK: - cancelDownload
 
     /// 验证 cancelDownload 对不存在的 modelId 不崩溃。
-    func testCancelDownload_不存在modelId不崩溃() async {
+    func testCancelDownloadNonExistentModelIdNoCrash() async {
         await manager.cancelDownload(for: "nonexistent")
         // 异步 Task 内执行，状态可能未立即更新，但不崩溃即可
     }
@@ -91,26 +91,26 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     // MARK: - startDownload 区域路由
 
     /// 验证 isChinaRegionOverride 设为 true 不崩溃。
-    func testIsChinaRegionOverride_true不崩溃() {
+    func testIsChinaRegionOverrideTrueNoCrash() {
         manager.isChinaRegionOverride = true
         XCTAssertEqual(manager.isChinaRegionOverride, true)
     }
 
     /// 验证 isChinaRegionOverride 设为 false 不崩溃。
-    func testIsChinaRegionOverride_false不崩溃() {
+    func testIsChinaRegionOverrideFalseNoCrash() {
         manager.isChinaRegionOverride = false
         XCTAssertEqual(manager.isChinaRegionOverride, false)
     }
 
     /// 验证 isChinaRegionOverride 设为 nil 恢复默认行为。
-    func testIsChinaRegionOverride_nil恢复默认() {
+    func testIsChinaRegionOverrideNilRestoresDefault() {
         manager.isChinaRegionOverride = true
         manager.isChinaRegionOverride = nil
         XCTAssertNil(manager.isChinaRegionOverride)
     }
 
     /// 验证 startDownload 在 restricted 硬件下被拦截（不发起下载）。
-    func testStartDownload_restricted硬件被拦截() async {
+    func testStartDownloadRestrictedHardwareBlocked() async {
         manager.isChinaRegionOverride = false
         let physicalGb = Double(manager.physicalMemory) / 1_073_741_824.0
         let manifest = makeManifest(minDeviceMemoryInGb: physicalGb + 10.0)
@@ -120,7 +120,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     }
 
     /// 验证 startDownload 在 supported 硬件下不崩溃。
-    func testStartDownload_supported硬件不崩溃() async {
+    func testStartDownloadSupportedHardwareNoCrash() async {
         manager.isChinaRegionOverride = false
         let manifest = makeManifest(minDeviceMemoryInGb: 0.5)
         manager.startDownload(for: manifest)
@@ -130,24 +130,24 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     // MARK: - pauseDownload / resumeDownload
 
     /// 验证 pauseDownload 对不存在的 modelId 不崩溃。
-    func testPauseDownload_不存在modelId不崩溃() async {
+    func testPauseDownloadNonExistentModelIdNoCrash() async {
         await manager.pauseDownload(for: "nonexistent")
     }
 
     /// 验证 resumeDownload 对不存在的 modelId 不崩溃。
-    func testResumeDownload_不存在modelId不崩溃() async {
+    func testResumeDownloadNonExistentModelIdNoCrash() async {
         await manager.resumeDownload(for: "nonexistent")
     }
 
     // MARK: - reload
 
     /// 验证 reload 不崩溃。
-    func testReload_不崩溃() async {
+    func testReloadNoCrash() async {
         await manager.reload()
     }
 
     /// 验证 reload 后 isLoading 恢复为 false。
-    func testReload后_isLoading恢复False() async {
+    func testAfterReloadIsLoadingRestoresFalse() async {
         await manager.reload()
         XCTAssertFalse(manager.isLoading)
     }
@@ -155,7 +155,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     // MARK: - startDownload URL 路由
 
     /// 验证国内区域优先使用 modelscopeURLString（不崩溃）。
-    func testStartDownload_国内区域优先ModelScope不崩溃() async {
+    func testStartDownloadChinaRegionPrefersModelScopeNoCrash() async {
         manager.isChinaRegionOverride = true
         let manifest = makeManifest(
             huggingfaceURLString: "https://huggingface.co/test.bin",
@@ -166,7 +166,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     }
 
     /// 验证国外区域优先使用 huggingfaceURLString（不崩溃）。
-    func testStartDownload_国外区域优先HuggingFace不崩溃() async {
+    func testStartDownloadOverseasRegionPrefersHuggingFaceNoCrash() async {
         manager.isChinaRegionOverride = false
         let manifest = makeManifest(
             huggingfaceURLString: "https://huggingface.co/test.bin",
@@ -177,7 +177,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     }
 
     /// 验证国内区域无 modelscopeURLString 时降级到 remoteURLString（不崩溃）。
-    func testStartDownload_国内区域无ModelScope降级Remote不崩溃() async {
+    func testStartDownloadChinaRegionNoModelScopeDegradesRemoteNoCrash() async {
         manager.isChinaRegionOverride = true
         let manifest = makeManifest(
             huggingfaceURLString: "https://huggingface.co/test.bin",
@@ -188,7 +188,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     }
 
     /// 验证国外区域无 huggingfaceURLString 时降级到 remoteURLString（不崩溃）。
-    func testStartDownload_国外区域无HuggingFace降级Remote不崩溃() async {
+    func testStartDownloadOverseasRegionNoHuggingFaceDegradesRemoteNoCrash() async {
         manager.isChinaRegionOverride = false
         let manifest = makeManifest(
             huggingfaceURLString: nil,
@@ -199,7 +199,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     }
 
     /// 验证无效 URL 字符串时 startDownload 不崩溃（guard URL 失败直接 return）。
-    func testStartDownload_无效URL不崩溃() async {
+    func testStartDownloadInvalidURLNoCrash() async {
         manager.isChinaRegionOverride = false
         let manifest = makeManifest(remoteURLString: "not a valid url")
         manager.startDownload(for: manifest)
@@ -209,38 +209,38 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     // MARK: - DownloadState 枚举
 
     /// 验证 DownloadState.completed 相等比较。
-    func testDownloadState_completed相等比较() {
+    func testDownloadStateCompletedEqualityComparison() {
         let url = URL(fileURLWithPath: "/tmp/test.bin")
         XCTAssertEqual(DownloadState.completed(localURL: url), DownloadState.completed(localURL: url))
     }
 
     /// 验证 DownloadState.failed 相等比较。
-    func testDownloadState_failed相等比较() {
+    func testDownloadStateFailedEqualityComparison() {
         XCTAssertEqual(DownloadState.failed(error: "error1"), DownloadState.failed(error: "error1"))
     }
 
     /// 验证 DownloadState.downloading 相等比较。
-    func testDownloadState_downloading相等比较() {
+    func testDownloadStateDownloadingEqualityComparison() {
         XCTAssertEqual(DownloadState.downloading(progress: 0.5, bytesPerSecond: 100), DownloadState.downloading(progress: 0.5, bytesPerSecond: 100))
     }
 
     /// 验证 DownloadState.pending 相等比较。
-    func testDownloadState_pending相等比较() {
+    func testDownloadStatePendingEqualityComparison() {
         XCTAssertEqual(DownloadState.pending, DownloadState.pending)
     }
 
     /// 验证 DownloadState.cancelled 相等比较。
-    func testDownloadState_cancelled相等比较() {
+    func testDownloadStateCancelledEqualityComparison() {
         XCTAssertEqual(DownloadState.cancelled, DownloadState.cancelled)
     }
 
     /// 验证 DownloadState.paused 相等比较。
-    func testDownloadState_paused相等比较() {
+    func testDownloadStatePausedEqualityComparison() {
         XCTAssertEqual(DownloadState.paused, DownloadState.paused)
     }
 
     /// 验证 DownloadState.verifying 相等比较。
-    func testDownloadState_verifying相等比较() {
+    func testDownloadStateVerifyingEqualityComparison() {
         XCTAssertEqual(DownloadState.verifying, DownloadState.verifying)
     }
 }

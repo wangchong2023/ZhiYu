@@ -20,7 +20,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     // MARK: - DemoImageBuilder
 
     /// 首次生成应返回非 nil 图像并写入磁盘
-    func testEnsureImageExists_首次生成_返回非nil图像并写入磁盘() {
+    func testEnsureImageExistsFirstGenerationReturnsNonNilImageAndWritesToDisk() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "test.png"
         let image = DemoImageBuilder.ensureImageExists(at: path, title: "测试标题")
@@ -29,7 +29,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 已存在文件且宽度达标时应直接加载返回
-    func testEnsureImageExists_文件已存在且宽度达标_直接加载返回() {
+    func testEnsureImageExistsFileExistsWidthSufficientLoadsDirectly() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "test.png"
         // 首次生成（生成的是 1200 宽的高清图，超过 hdMinWidth=1000）
@@ -40,7 +40,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 包含"神经"关键词应走神经元绘制分支
-    func testEnsureImageExists_包含神经关键词_走神经元分支() {
+    func testEnsureImageExistsContainsNeuronKeywordGoesNeuronBranch() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "neuron.png"
         let image = DemoImageBuilder.ensureImageExists(at: path, title: "神经网络知识图谱")
@@ -49,7 +49,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 包含"PKM"关键词应走神经元绘制分支
-    func testEnsureImageExists_包含PKM关键词_走神经元分支() {
+    func testEnsureImageExistsContainsPKMKeywordGoesNeuronBranch() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "pkm.png"
         let image = DemoImageBuilder.ensureImageExists(at: path, title: "PKM 系统设计")
@@ -57,7 +57,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 包含"知识"关键词应走神经元绘制分支
-    func testEnsureImageExists_包含知识关键词_走神经元分支() {
+    func testEnsureImageExistsContainsKnowledgeKeywordGoesNeuronBranch() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "knowledge.png"
         let image = DemoImageBuilder.ensureImageExists(at: path, title: "知识管理方法论")
@@ -65,7 +65,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 不含关键词应走 SOP 绘制分支
-    func testEnsureImageExists_不含关键词_走SOP分支() {
+    func testEnsureImageExistsNoKeywordGoesSOPBranch() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "sop.png"
         let image = DemoImageBuilder.ensureImageExists(at: path, title: "咖啡制作流程")
@@ -74,7 +74,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 生成的图像尺寸应为 1200x900 高清规格
-    func testEnsureImageExists_生成图像_尺寸为1200x900高清规格() {
+    func testEnsureImageExistsGeneratedImageSize1200x900HD() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "size.png"
         let image = DemoImageBuilder.ensureImageExists(at: path, title: "尺寸测试")
@@ -87,7 +87,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 空标题应正常生成图像（不崩溃）
-    func testEnsureImageExists_空标题_应正常生成图像() {
+    func testEnsureImageExistsEmptyTitleGeneratesImageNormally() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "empty.png"
         let image = DemoImageBuilder.ensureImageExists(at: path, title: "")
@@ -96,7 +96,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 已存在但宽度不达标的文件应触发重新生成
-    func testEnsureImageExists_已存在窄图_应重新生成() {
+    func testEnsureImageExistsExistingNarrowImageShouldRegenerate() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         try? FileManager.default.createDirectory(atPath: tempDir, withIntermediateDirectories: true)
         let path = tempDir + "narrow.png"
@@ -127,7 +127,7 @@ final class DemoMediaBuilderTests: XCTestCase {
     }
 
     /// 多次调用同一路径应幂等（第二次走文件加载分支）
-    func testEnsureImageExists_多次调用_应幂等() {
+    func testEnsureImageExistsMultipleCallsIdempotent() {
         let tempDir = NSTemporaryDirectory() + "DemoImageTest-\(UUID().uuidString)/"
         let path = tempDir + "idempotent.png"
         let first = DemoImageBuilder.ensureImageExists(at: path, title: "幂等测试")
@@ -146,7 +146,7 @@ import AVFoundation
 extension DemoMediaBuilderTests {
 
     /// 音频首次生成应返回有效 URL 并写入磁盘
-    func testEnsureAudioExists_首次生成_返回有效URL并写入磁盘() {
+    func testEnsureAudioExistsFirstGenerationReturnsValidURLAndWritesToDisk() {
         let tempDir = NSTemporaryDirectory() + "DemoAudioTest-\(UUID().uuidString)/"
         let path = tempDir + "test.wav"
         let url = DemoAudioBuilder.ensureAudioExists(at: path)
@@ -155,7 +155,7 @@ extension DemoMediaBuilderTests {
     }
 
     /// 已存在文件应直接返回 URL 不重新合成
-    func testEnsureAudioExists_文件已存在_直接返回URL() {
+    func testEnsureAudioExistsFileExistsReturnsURLDirectly() {
         let tempDir = NSTemporaryDirectory() + "DemoAudioTest-\(UUID().uuidString)/"
         let path = tempDir + "test.wav"
         // 首次生成
@@ -173,7 +173,7 @@ extension DemoMediaBuilderTests {
     }
 
     /// 自定义时长应生成对应长度的音频
-    func testEnsureAudioExists_自定义时长_生成对应长度音频() {
+    func testEnsureAudioExistsCustomDurationGeneratesCorrespondingLengthAudio() {
         let tempDir = NSTemporaryDirectory() + "DemoAudioTest-\(UUID().uuidString)/"
         let path = tempDir + "short.wav"
         let url = DemoAudioBuilder.ensureAudioExists(at: path, duration: 1.0)
@@ -182,7 +182,7 @@ extension DemoMediaBuilderTests {
     }
 
     /// 零时长应生成空缓冲区音频（边界场景）
-    func testEnsureAudioExists_零时长_应处理边界不崩溃() {
+    func testEnsureAudioExistsZeroDurationHandlesBoundaryNoCrash() {
         let tempDir = NSTemporaryDirectory() + "DemoAudioTest-\(UUID().uuidString)/"
         let path = tempDir + "zero.wav"
         // duration=0 → numSamples=0，AVAudioPCMBuffer(frameCapacity: 0) 可能返回 nil
@@ -196,7 +196,7 @@ extension DemoMediaBuilderTests {
     }
 
     /// 已存在的空文件应直接返回 URL（不校验有效性，已知行为）
-    func testEnsureAudioExists_已存在空文件_直接返回URL不校验() {
+    func testEnsureAudioExistsExistingEmptyFileReturnsURLWithoutValidation() {
         let tempDir = NSTemporaryDirectory() + "DemoAudioTest-\(UUID().uuidString)/"
         try? FileManager.default.createDirectory(atPath: tempDir, withIntermediateDirectories: true)
         let path = tempDir + "empty.wav"
@@ -210,7 +210,7 @@ extension DemoMediaBuilderTests {
     }
 
     /// 生成的音频文件应可被 AVAudioFile 读取（有效性验证）
-    func testEnsureAudioExists_生成的音频_应可被AVAudioFile读取() throws {
+    func testEnsureAudioExistsGeneratedAudioReadableByAVAudioFile() throws {
         let tempDir = NSTemporaryDirectory() + "DemoAudioTest-\(UUID().uuidString)/"
         let path = tempDir + "valid.wav"
         guard let url = DemoAudioBuilder.ensureAudioExists(at: path, duration: 0.5) else {
@@ -304,7 +304,7 @@ extension DemoMediaBuilderTests {
 
     /// 压测入口应不崩溃并完成全量循环，且 createPage 被调用指定次数
     @MainActor
-    func testRunStressTest_小批量_不崩溃并完成循环() async {
+    func testRunStressTestSmallBatchNoCrashCompletesLoop() async {
         let benchmarker = PerformanceBenchmarker.shared
         let store = CountingPageStore()
         await benchmarker.runStressTest(count: 3, store: store)
@@ -314,7 +314,7 @@ extension DemoMediaBuilderTests {
 
     /// 压测入口默认 count 参数应可被显式覆盖
     @MainActor
-    func testRunStressTest_显式count参数_应被正确使用() async {
+    func testRunStressTestExplicitCountParamUsedCorrectly() async {
         let benchmarker = PerformanceBenchmarker.shared
         let store = CountingPageStore()
         // count=1 是最小有效值（1...count 闭区间）
@@ -324,7 +324,7 @@ extension DemoMediaBuilderTests {
 
     /// 压测创建的页面标题应包含压测前缀和序号
     @MainActor
-    func testRunStressTest_创建页面_标题应包含前缀和序号() async {
+    func testRunStressTestCreatedPagesTitleContainsPrefixAndIndex() async {
         let benchmarker = PerformanceBenchmarker.shared
         let store = CountingPageStore()
         await benchmarker.runStressTest(count: 2, store: store)
@@ -339,7 +339,7 @@ extension DemoMediaBuilderTests {
 
     /// count=0 应安全跳过不崩溃（P1 缺陷 A-1 修复验证）
     @MainActor
-    func testRunStressTest_count为零_应安全跳过不崩溃() async {
+    func testRunStressTestCountZeroSafelySkipsNoCrash() async {
         let benchmarker = PerformanceBenchmarker.shared
         let store = CountingPageStore()
         // 修复前：1...0 触发 fatalError；修复后：guard count > 0 提前返回
@@ -350,7 +350,7 @@ extension DemoMediaBuilderTests {
 
     /// 小批量压测应触发动态进度日志（A-4 死代码分支修复验证）
     @MainActor
-    func testRunStressTest_小批量_动态步长应触发进度分支() async {
+    func testRunStressTestSmallBatchDynamicStepTriggersProgressBranch() async {
         let benchmarker = PerformanceBenchmarker.shared
         let store = CountingPageStore()
         // 修复前：step=5000，count=5 时进度分支永不执行（死代码）

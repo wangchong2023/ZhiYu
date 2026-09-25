@@ -30,6 +30,7 @@ final class SubscriptionViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     // MARK: - SubscriptionPlanCard 快照测试

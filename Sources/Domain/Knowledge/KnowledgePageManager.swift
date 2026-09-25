@@ -325,11 +325,11 @@ public final class KnowledgePageManager {
 extension KnowledgePageManager: DependencyKey {
     nonisolated public static var liveValue: KnowledgePageManager {
         ServiceContainer.shared.resolveOptional(KnowledgePageManager.self)
-            ?? MainActor.assumeIsolated { KnowledgePageManager() }
+            ?? runOnMainSync { KnowledgePageManager() }
     }
     nonisolated public static var testValue: KnowledgePageManager {
         ServiceContainer.shared.resolveOptional(KnowledgePageManager.self)
-            ?? MainActor.assumeIsolated { KnowledgePageManager() }
+            ?? runOnMainSync { KnowledgePageManager() }
     }
 }
 

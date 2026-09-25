@@ -22,13 +22,13 @@ final class L10nDashboardDeepTests: XCTestCase {
 
     // MARK: - tableName
 
-    func testTableName_Dashboard_为Insight() {
+    func testTableNameDashboardIsInsight() {
         XCTAssertEqual(L10n.Dashboard.tableName, "Insight")
     }
 
     // MARK: - 顶层属性
 
-    func testDashboard_顶层属性() {
+    func testDashboardTopLevelProps() {
         let values = [
             L10n.Dashboard.pageListPages, L10n.Dashboard.pageListLinks,
             L10n.Dashboard.density, L10n.Dashboard.dailyInsights,
@@ -52,7 +52,7 @@ final class L10nDashboardDeepTests: XCTestCase {
 
     // MARK: - insight 子模块
 
-    func testDashboard_insight_基础属性() {
+    func testDashboardInsightBasicProps() {
         let values = [
             L10n.Dashboard.insight.weeklyTitle,
             L10n.Dashboard.insight.generateReport,
@@ -94,7 +94,7 @@ final class L10nDashboardDeepTests: XCTestCase {
 
     // MARK: - pageList 子模块
 
-    func testDashboard_pageList_基础属性() {
+    func testDashboardPageListBasicProps() {
         let values = [
             L10n.Dashboard.pageList.tags, L10n.Dashboard.pageList.sources,
             L10n.Dashboard.pageList.overview, L10n.Dashboard.pageList.concepts,
@@ -106,7 +106,7 @@ final class L10nDashboardDeepTests: XCTestCase {
         for value in values { assertNonMissing(value) }
     }
 
-    func testDashboard_pageList_格式化方法() {
+    func testDashboardPageListFormatMethods() {
         assertNonMissing(L10n.Dashboard.pageList.wordCount(100), "wordCount(100)")
         assertNonMissing(L10n.Dashboard.pageList.entityCount(50), "entityCount(50)")
         assertNonMissing(L10n.Dashboard.pageList.conceptCount(30), "conceptCount(30)")
@@ -117,7 +117,7 @@ final class L10nDashboardDeepTests: XCTestCase {
 
     // MARK: - stats 子模块
 
-    func testDashboard_stats_基础属性() {
+    func testDashboardStatsBasicProps() {
         let values = [
             L10n.Dashboard.stats.title, L10n.Dashboard.stats.audioFormat,
             L10n.Dashboard.stats.imageFormat, L10n.Dashboard.stats.documentFormat,
@@ -151,7 +151,7 @@ final class L10nDashboardDeepTests: XCTestCase {
         assertNonMissing(L10n.Dashboard.stats.itemsCount(42), "itemsCount(42)")
     }
 
-    func testDashboard_stats_tip属性() {
+    func testDashboardStatsTipProps() {
         let values = [
             L10n.Dashboard.stats.tipRetrievalPhase, L10n.Dashboard.stats.tipGenerationPhase,
             L10n.Dashboard.stats.tipCostPhase, L10n.Dashboard.stats.tipHitRate,
@@ -168,7 +168,7 @@ final class L10nDashboardDeepTests: XCTestCase {
         for value in values { assertNonMissing(value) }
     }
 
-    func testDashboard_stats_其余属性() {
+    func testDashboardStatsRemainingProps() {
         let values = [
             L10n.Dashboard.stats.contextSufficiency,
             L10n.Dashboard.stats.contextSufficiencyDesc,
@@ -211,7 +211,7 @@ final class L10nDashboardDeepTests: XCTestCase {
         assertNonMissing(L10n.Dashboard.stats.rawPageCountFormat(100, "50KB"), "rawPageCountFormat")
     }
 
-    func testDashboard_stats_short_所有属性() {
+    func testDashboardStatsShortAllProps() {
         let values = [
             L10n.Dashboard.stats.short.entity,
             L10n.Dashboard.stats.short.concept,
@@ -227,14 +227,14 @@ final class L10nDashboardDeepTests: XCTestCase {
 
     // MARK: - index 子模块
 
-    func testDashboard_index_所有属性() {
+    func testDashboardIndexAllProps() {
         assertNonMissing(L10n.Dashboard.index.title)
         assertNonMissing(L10n.Dashboard.index.overview)
     }
 
     // MARK: - System 子模块
 
-    func testDashboard_System_所有属性() {
+    func testDashboardSystemAllProps() {
         let values = [
             L10n.Dashboard.System.status, L10n.Dashboard.System.database,
             L10n.Dashboard.System.logs, L10n.Dashboard.System.models,
@@ -248,7 +248,7 @@ final class L10nDashboardDeepTests: XCTestCase {
     /// B-3: Dashboard.trf 方法中 `if localized == key` 分支重复调用相同方法
     /// `Localized.trf(key, table: t, arguments: args)` 返回 key 时再次调用相同方法
     /// 这是无效的死代码 — 第二次调用会返回同样的结果
-    func testDashboard_trf_格式化方法返回非Missing() {
+    func testDashboardTrfFormatMethodReturnsNonMissing() {
         let result = L10n.Dashboard.insight.daily.promptRecent("焦点", "标题", "片段")
         assertNonMissing(result, "trf 格式化方法")
         // 验证格式化参数被正确替换

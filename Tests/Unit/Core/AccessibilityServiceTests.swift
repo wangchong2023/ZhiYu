@@ -27,19 +27,19 @@ final class AccessibilityServiceTests: XCTestCase {
 
     // MARK: - 动画控制
 
-    func testShouldAnimate_reduceMotion关闭_返回true() {
+    func testShouldAnimateReduceMotionOffReturnsTrue() {
         service.isReduceMotionEnabled = false
         XCTAssertTrue(service.shouldAnimate)
     }
 
-    func testShouldAnimate_reduceMotion开启_返回false() {
+    func testShouldAnimateReduceMotionOnReturnsFalse() {
         service.isReduceMotionEnabled = true
         XCTAssertFalse(service.shouldAnimate)
     }
 
     // MARK: - pageAnnouncement
 
-    func testPageAnnouncement_包含标题() {
+    func testPageAnnouncementContainsTitle() {
         let announcement = AccessibilityService.pageAnnouncement(
             title: "我的笔记",
             pageTypeDisplay: "笔记",
@@ -50,7 +50,7 @@ final class AccessibilityServiceTests: XCTestCase {
         XCTAssertTrue(announcement.contains("我的笔记"))
     }
 
-    func testPageAnnouncement_包含页面类型() {
+    func testPageAnnouncementContainsPageType() {
         let announcement = AccessibilityService.pageAnnouncement(
             title: "标题",
             pageTypeDisplay: "文档",
@@ -61,7 +61,7 @@ final class AccessibilityServiceTests: XCTestCase {
         XCTAssertTrue(announcement.contains("文档"))
     }
 
-    func testPageAnnouncement_包含状态() {
+    func testPageAnnouncementContainsStatus() {
         let announcement = AccessibilityService.pageAnnouncement(
             title: "标题",
             pageTypeDisplay: "类型",
@@ -72,7 +72,7 @@ final class AccessibilityServiceTests: XCTestCase {
         XCTAssertTrue(announcement.contains("已归档"))
     }
 
-    func testPageAnnouncement_有标签_包含标签() {
+    func testPageAnnouncementWithTagsContainsTags() {
         let announcement = AccessibilityService.pageAnnouncement(
             title: "标题",
             pageTypeDisplay: "类型",
@@ -84,7 +84,7 @@ final class AccessibilityServiceTests: XCTestCase {
         XCTAssertTrue(announcement.contains("iOS"))
     }
 
-    func testPageAnnouncement_无标签_不包含标签前缀() {
+    func testPageAnnouncementNoTagsNoTagPrefix() {
         let announcement = AccessibilityService.pageAnnouncement(
             title: "标题",
             pageTypeDisplay: "类型",
@@ -95,7 +95,7 @@ final class AccessibilityServiceTests: XCTestCase {
         XCTAssertFalse(announcement.contains("tags") || announcement.contains("标签"))
     }
 
-    func testPageAnnouncement_包含字数() {
+    func testPageAnnouncementContainsWordCount() {
         let announcement = AccessibilityService.pageAnnouncement(
             title: "标题",
             pageTypeDisplay: "类型",
@@ -108,13 +108,13 @@ final class AccessibilityServiceTests: XCTestCase {
 
     // MARK: - graphNodeAnnouncement
 
-    func testGraphNodeAnnouncement_包含节点标题() {
+    func testGraphNodeAnnouncementContainsNodeTitle() {
         let node = GraphNode(id: UUID(), title: "图谱节点", pageType: .concept, position: .zero)
         let announcement = AccessibilityService.graphNodeAnnouncement(node, linkCount: 5)
         XCTAssertTrue(announcement.contains("图谱节点"))
     }
 
-    func testGraphNodeAnnouncement_包含链接数() {
+    func testGraphNodeAnnouncementContainsLinkCount() {
         let node = GraphNode(id: UUID(), title: "节点", pageType: .concept, position: .zero)
         let announcement = AccessibilityService.graphNodeAnnouncement(node, linkCount: 8)
         XCTAssertTrue(announcement.contains("8"))
@@ -122,11 +122,11 @@ final class AccessibilityServiceTests: XCTestCase {
 
     // MARK: - Published 属性
 
-    func testIsVoiceOverRunning_默认false() {
+    func testIsVoiceOverRunningDefaultFalse() {
         XCTAssertFalse(service.isVoiceOverRunning)
     }
 
-    func testIsHighContrastEnabled_默认false() {
+    func testIsHighContrastEnabledDefaultFalse() {
         XCTAssertFalse(service.isHighContrastEnabled)
     }
 }

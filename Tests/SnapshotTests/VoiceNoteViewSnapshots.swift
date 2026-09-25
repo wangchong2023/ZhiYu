@@ -63,6 +63,7 @@ final class VoiceNoteViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
         mockSpeech = MockSpeechService()
         ServiceContainer.shared.register(mockSpeech, for: (any SpeechServiceProtocol).self)
     }

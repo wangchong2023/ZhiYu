@@ -305,7 +305,7 @@ final class Router: TestStateResettable {
 
     /// 重置路由状态用于测试隔离
     nonisolated func resetStateForTesting() {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             clearHistory()
             path = NavigationPath()
             selectedTab = .knowledge
@@ -377,12 +377,12 @@ final class Router: TestStateResettable {
 
 enum RouterKey: DependencyKey {
     nonisolated static var liveValue: Router {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             ServiceContainer.shared.resolveOptional(Router.self) ?? Router.shared
         }
     }
     nonisolated static var testValue: Router {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             ServiceContainer.shared.resolveOptional(Router.self) ?? Router()
         }
     }

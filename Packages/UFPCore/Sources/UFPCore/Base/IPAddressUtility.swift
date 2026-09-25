@@ -108,7 +108,9 @@ public enum IPAddressUtility {
         var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
         let result = inet_ntop(AF_INET, &address, &buffer, socklen_t(INET_ADDRSTRLEN))
         guard result != nil else { return nil }
-        return String(decoding: buffer.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+        // 截断到 null 终止符，避免将 buffer 尾部的 \0 填充字节纳入字符串
+        let validLength = buffer.firstIndex(of: 0) ?? buffer.count
+        return String(decoding: buffer[0..<validLength].map { UInt8(bitPattern: $0) }, as: UTF8.self)
     }
 
     // MARK: - 私有地址段校验

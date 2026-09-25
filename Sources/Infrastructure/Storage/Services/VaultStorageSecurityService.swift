@@ -118,7 +118,7 @@ enum VaultStorageSecurityServiceKey: DependencyKey {
     }
     nonisolated static var testValue: VaultStorageSecurityService {
         ServiceContainer.shared.resolveOptional(VaultStorageSecurityService.self)
-            ?? MainActor.assumeIsolated { VaultStorageSecurityService() }
+            ?? runOnMainSync { VaultStorageSecurityService() }
     }
     nonisolated static var previewValue: VaultStorageSecurityService { testValue }
 }

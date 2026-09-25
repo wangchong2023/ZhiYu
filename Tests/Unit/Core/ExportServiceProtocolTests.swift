@@ -14,22 +14,22 @@ final class ExportServiceProtocolTests: XCTestCase {
 
     // MARK: - errorDescription 非空
 
-    func testErrorDescription_systemBusy_非空() {
+    func testErrorDescriptionSystemBusyNonEmpty() {
         XCTAssertFalse(ExportError.systemBusy.errorDescription?.isEmpty ?? true)
     }
 
-    func testErrorDescription_engineNotReady_非空() {
+    func testErrorDescriptionEngineNotReadyNonEmpty() {
         XCTAssertFalse(ExportError.engineNotReady.errorDescription?.isEmpty ?? true)
     }
 
-    func testErrorDescription_internalError_非空() {
+    func testErrorDescriptionInternalErrorNonEmpty() {
         XCTAssertFalse(ExportError.internalError("test").errorDescription?.isEmpty ?? true)
     }
 
     // MARK: - internalError 关联值
 
     /// internalError 的 errorDescription 已包含关联值消息（finding #2 已修复：xcstrings 添加 %@ 占位符）
-    func testErrorDescription_internalError_包含关联值() {
+    func testErrorDescriptionInternalErrorContainsAssociatedValue() {
         let message = "引擎崩溃详情"
         let desc = ExportError.internalError(message).errorDescription
         XCTAssertNotNil(desc)
@@ -37,7 +37,7 @@ final class ExportServiceProtocolTests: XCTestCase {
     }
 
     /// 不同关联值产生不同 errorDescription（finding #2 已修复）
-    func testErrorDescription_internalError_不同关联值_不同描述() {
+    func testErrorDescriptionInternalErrorDifferentAssociatedValuesDifferentDescriptions() {
         let desc1 = ExportError.internalError("错误A").errorDescription
         let desc2 = ExportError.internalError("错误B").errorDescription
         XCTAssertNotEqual(desc1, desc2, "不同关联值应返回不同描述")
@@ -46,7 +46,7 @@ final class ExportServiceProtocolTests: XCTestCase {
     // MARK: - Error 协议遵循
 
     /// ExportError 应遵循 Error 协议（可被 throw）
-    func testExportError_遵循Error协议() {
+    func testExportErrorConformsToErrorProtocol() {
         func throwError(_ error: ExportError) throws {
             throw error
         }
@@ -58,7 +58,7 @@ final class ExportServiceProtocolTests: XCTestCase {
     // MARK: - LocalizedError 协议遵循
 
     /// ExportError 应遵循 LocalizedError（有 errorDescription）
-    func testExportError_遵循LocalizedError协议() {
+    func testExportErrorConformsToLocalizedErrorProtocol() {
         let errors: [ExportError] = [.systemBusy, .engineNotReady, .internalError("msg")]
         for error in errors {
             XCTAssertNotNil(error.errorDescription, "\(error) 应有 errorDescription")
@@ -68,7 +68,7 @@ final class ExportServiceProtocolTests: XCTestCase {
     // MARK: - Sendable 遵循
 
     /// ExportError 应遵循 Sendable（可跨 actor 传递）
-    func testExportError_遵循Sendable协议() {
+    func testExportErrorConformsToSendableProtocol() {
         // 编译时检查：Sendable 协议遵循（通过函数参数类型约束验证）
         func acceptSendable<T: Sendable>(_: T) {}
         acceptSendable(ExportError.systemBusy)
@@ -79,7 +79,7 @@ final class ExportServiceProtocolTests: XCTestCase {
     // MARK: - ExportServiceProtocol 方法签名验证
 
     /// UnsupportedExportService 应实现 ExportServiceProtocol 的 3 个方法
-    func testUnsupportedExportService_实现ExportServiceProtocol() async {
+    func testUnsupportedExportServiceImplementsExportServiceProtocol() async {
         let service = UnsupportedExportService()
 
         // exportToPDF 应抛错

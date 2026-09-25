@@ -119,7 +119,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     // MARK: - performSynthesis LLM 失败路径
 
     /// 验证 performSynthesis 在 LLM 抛错时（mindmap 走 generateMindMap 无 try? 降级）应向上抛出。
-    func testPerformSynthesis_mindmapLLM抛错时向上传播() async throws {
+    func testPerformSynthesisMindmapLLMThrowsPropagatesUp() async throws {
         mockLLM.shouldThrow = true
         mockLLM.throwError = LLMError.notConfigured
 
@@ -137,7 +137,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.slides) 在 LLM 抛错时降级返回 fallback（generatePresentation 用 try?）。
-    func testPerformSynthesis_slidesLLM抛错时降级返回fallback() async throws {
+    func testPerformSynthesisSlidesLLMThrowsDegradesToFallback() async throws {
         mockLLM.shouldThrow = true
 
         // slides 走 generatePresentation，使用 try? 降级，应返回 fallback 文本而非抛错
@@ -148,7 +148,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.quiz) 在 LLM 抛错时降级返回 fallback。
-    func testPerformSynthesis_quizLLM抛错时降级返回fallback() async throws {
+    func testPerformSynthesisQuizLLMThrowsDegradesToFallback() async throws {
         mockLLM.shouldThrow = true
 
         let doc = try await store.performSynthesis(type: .quiz, combinedContent: "源内容")
@@ -158,7 +158,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.report) 在 LLM 抛错时降级返回 fallback。
-    func testPerformSynthesis_reportLLM抛错时降级返回fallback() async throws {
+    func testPerformSynthesisReportLLMThrowsDegradesToFallback() async throws {
         mockLLM.shouldThrow = true
 
         let doc = try await store.performSynthesis(type: .report, combinedContent: "源内容")
@@ -168,7 +168,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.infographic) 在 LLM 抛错时降级返回 fallback。
-    func testPerformSynthesis_infographicLLM抛错时降级返回fallback() async throws {
+    func testPerformSynthesisInfographicLLMThrowsDegradesToFallback() async throws {
         mockLLM.shouldThrow = true
 
         let doc = try await store.performSynthesis(type: .infographic, combinedContent: "源内容")
@@ -178,7 +178,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.expansion) 在 LLM 抛错时降级返回 fallback。
-    func testPerformSynthesis_expansionLLM抛错时降级返回fallback() async throws {
+    func testPerformSynthesisExpansionLLMThrowsDegradesToFallback() async throws {
         mockLLM.shouldThrow = true
 
         let doc = try await store.performSynthesis(type: .expansion, combinedContent: "源内容")
@@ -190,7 +190,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     // MARK: - performSynthesis 空内容路径
 
     /// 验证 performSynthesis 在 LLM 返回空字符串时（mindmap 走 fallback 自愈）应生成有效文档。
-    func testPerformSynthesis_mindmapLLM返回空触发Fallback() async throws {
+    func testPerformSynthesisMindmapLLMReturnsEmptyTriggersFallback() async throws {
         mockLLM.defaultResponse = ""
 
         let doc = try await store.performSynthesis(type: .mindmap, combinedContent: "# 标题\n- 要点1\n- 要点2")
@@ -200,7 +200,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.report) 在 LLM 返回空字符串时触发 fallback。
-    func testPerformSynthesis_reportLLM返回空触发Fallback() async throws {
+    func testPerformSynthesisReportLLMReturnsEmptyTriggersFallback() async throws {
         mockLLM.defaultResponse = ""
 
         let doc = try await store.performSynthesis(type: .report, combinedContent: "源内容")
@@ -214,7 +214,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     /// 验证 performSynthesis 在 LLM 返回过短内容（< minValidSynthesisTextBytes）且 fallback 也无效时抛错。
     /// - Note: mindmap 的 generateMindMap 在 formatted 过短时会走 convertMarkdownToListMindmap fallback，
     ///         通常能生成有效内容。此测试验证 fallback 后仍过短的极端场景。
-    func testPerformSynthesis_mindmapLLM返回过短内容() async throws {
+    func testPerformSynthesisMindmapLLMReturnsTooShortContent() async throws {
         // 返回过短内容（1 字节 < 10 字节），generateMindMap 会走 fallback
         mockLLM.defaultResponse = "短"
 
@@ -227,7 +227,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     // MARK: - performSynthesis 失败时 TaskCenter 任务状态推演
 
     /// 验证 performSynthesis 失败时 TaskCenter 任务标记为 failed。
-    func testPerformSynthesis失败时TaskCenter任务失败() async throws {
+    func testPerformSynthesisFailureTaskCenterTaskFails() async throws {
         mockLLM.shouldThrow = true
         mockLLM.throwError = LLMError.notConfigured
 
@@ -251,45 +251,45 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     // MARK: - saveSynthesisResult 防空门禁
 
     /// 验证 saveSynthesisResult 拒绝空内容返回 nil。
-    func testSaveSynthesisResult拒绝空内容返回nil() {
+    func testSaveSynthesisResultRejectsEmptyContentReturnsNil() {
         let result = store.saveSynthesisResult(type: .report, content: "")
         XCTAssertNil(result, "空内容应返回 nil")
         XCTAssertTrue(store.synthesisResults[.report]?.isEmpty ?? true)
     }
 
     /// 验证 saveSynthesisResult 拒绝纯空白内容返回 nil。
-    func testSaveSynthesisResult拒绝纯空白返回Nil() {
+    func testSaveSynthesisResultRejectsPureWhitespaceReturnsNil() {
         let result = store.saveSynthesisResult(type: .report, content: "  \n  \t  ")
         XCTAssertNil(result, "纯空白应返回 nil")
     }
 
     /// 验证 saveSynthesisResult 拒绝 "mindmap" 骨架关键字。
-    func testSaveSynthesisResult拒绝mindmap骨架() {
+    func testSaveSynthesisResultRejectsMindmapSkeleton() {
         let result = store.saveSynthesisResult(type: .mindmap, content: "mindmap")
         XCTAssertNil(result, "纯 'mindmap' 骨架应拒绝")
     }
 
     /// 验证 saveSynthesisResult 拒绝 "graph TD" 骨架关键字。
-    func testSaveSynthesisResult拒绝GraphTD骨架() {
+    func testSaveSynthesisResultRejectsGraphTDSkeleton() {
         let result = store.saveSynthesisResult(type: .infographic, content: "graph TD")
         XCTAssertNil(result, "纯 'graph TD' 骨架应拒绝")
     }
 
     /// 验证 saveSynthesisResult 拒绝 "graph" 骨架关键字。
-    func testSaveSynthesisResult拒绝Graph骨架() {
+    func testSaveSynthesisResultRejectsGraphSkeleton() {
         let result = store.saveSynthesisResult(type: .infographic, content: "graph")
         XCTAssertNil(result, "纯 'graph' 骨架应拒绝")
     }
 
     /// 验证 saveSynthesisResult 拒绝小于 minValidSynthesisTextBytes 的内容。
-    func testSaveSynthesisResult拒绝过短内容() {
+    func testSaveSynthesisResultRejectsTooShortContent() {
         // 9 字节 < 10 字节
         let result = store.saveSynthesisResult(type: .report, content: "123456789")
         XCTAssertNil(result, "9 字节内容应拒绝（< 10 字节阈值）")
     }
 
     /// 验证 saveSynthesisResult 接受恰好 10 字节的内容。
-    func testSaveSynthesisResult接受恰好10字节() {
+    func testSaveSynthesisResultAcceptsExactly10Bytes() {
         // 10 字节 ASCII
         let result = store.saveSynthesisResult(type: .report, content: "1234567890")
         XCTAssertNotNil(result, "10 字节内容应接受")
@@ -297,13 +297,13 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 saveSynthesisResult 成功后状态设为 .completed。
-    func testSaveSynthesisResult成功后状态为Completed() {
+    func testSaveSynthesisResultSuccessStateIsCompleted() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n这是有效正文内容。")
         XCTAssertEqual(store.synthesisStates[.report], .completed)
     }
 
     /// 验证 saveSynthesisResult 新文档插入到列表头部。
-    func testSaveSynthesisResult新文档插入头部() {
+    func testSaveSynthesisResultNewDocInsertedAtHead() {
         store.saveSynthesisResult(type: .report, content: "# 第一份\n正文内容一。")
         // 短暂延迟确保 createdAt 不同
         store.saveSynthesisResult(type: .report, content: "# 第二份\n正文内容二。")
@@ -314,7 +314,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 saveSynthesisResult 持久化到 UserDefaults。
-    func testSaveSynthesisResult持久化到UserDefaults() {
+    func testSaveSynthesisResultPersistsToUserDefaults() {
         let content = "# 持久化测试\n正文内容。"
         store.saveSynthesisResult(type: .report, content: content)
 
@@ -325,7 +325,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     // MARK: - extractTitle 私有方法（通过 saveSynthesisResult 间接验证）
 
     /// 验证 saveSynthesisResult 从 H1 标题提取文档名称。
-    func testSaveSynthesisResult从H1提取标题() {
+    func testSaveSynthesisResultExtractsTitleFromH1() {
         store.saveSynthesisResult(type: .report, content: "# 提取的标题\n正文内容。")
 
         let name = store.synthesisResults[.report]?.first?.name ?? ""
@@ -333,7 +333,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 saveSynthesisResult 在无 H1 标题时使用 SynthesisType.title 作为回退。
-    func testSaveSynthesisResult无H1时使用TypeTitle回退() {
+    func testSaveSynthesisResultNoH1UsesTypeTitleFallback() {
         store.saveSynthesisResult(type: .report, content: "无标题的正文内容足够长。")
 
         let name = store.synthesisResults[.report]?.first?.name ?? ""
@@ -341,7 +341,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     }
 
     /// 验证 saveSynthesisResult(.quiz) 从 JSON 提取 title 字段。
-    func testSaveSynthesisResult_quiz从JSON提取Title() {
+    func testSaveSynthesisResultQuizExtractsTitleFromJSON() {
         let quizJSON = "{\"title\":\"JSON测验标题\",\"questions\":[]}"
         store.saveSynthesisResult(type: .quiz, content: quizJSON)
 

@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 final class ModelDownloadManagerTests: XCTestCase {
@@ -226,6 +227,7 @@ final class ModelDownloadManagerTests: XCTestCase {
     // MARK: - observeDownloadState 初始状态
 
     func testObserveDownloadState_idleModel_returnsFailedIdle() async {
+        Localized.languageMode = .english
         let manager = ModelDownloadManager.shared
         let stream = await manager.observeDownloadState(for: "idle-model-xyz")
         let expectation = expectation(description: "收到初始 idle 状态")

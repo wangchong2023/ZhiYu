@@ -17,20 +17,20 @@ final class L10nInsightTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Insight_为Insight() {
+    func testTableNameInsightIsInsight() {
         XCTAssertEqual(L10n.Insight.tableName, "Insight")
     }
 
     // MARK: - Insight 属性 key 存在性
 
-    func testInsight_Weekly_所有属性返回非Missing值() {
+    func testInsightWeeklyAllPropsReturnNonMissing() {
         let value = L10n.Insight.Weekly.aiAnalysis
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Insight.Weekly 属性返回 Missing: \(value)")
         XCTAssertFalse(value.isEmpty, "Insight.Weekly 属性返回空字符串")
     }
 
-    func testInsight_InsightSection_Daily_所有属性返回非Missing值() {
+    func testInsightInsightSectionDailyAllPropsReturnNonMissing() {
         let values = [
             L10n.Insight.InsightSection.Daily.noUpdate,
             L10n.Insight.InsightSection.Daily.systemPrompt
@@ -42,14 +42,14 @@ final class L10nInsightTableTests: XCTestCase {
         }
     }
 
-    func testInsight_InsightSection_Weekly_所有属性返回非Missing值() {
+    func testInsightInsightSectionWeeklyAllPropsReturnNonMissing() {
         let value = L10n.Insight.InsightSection.Weekly.systemPrompt
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Insight.InsightSection.Weekly 属性返回 Missing: \(value)")
         XCTAssertFalse(value.isEmpty, "Insight.InsightSection.Weekly 属性返回空字符串")
     }
 
-    func testInsight_Medal_基础属性返回非Missing值() {
+    func testInsightMedalBasicPropsReturnNonMissing() {
         let values = [
             L10n.Insight.Medal.totalEarned,
             L10n.Insight.Medal.progress,
@@ -62,7 +62,7 @@ final class L10nInsightTableTests: XCTestCase {
         }
     }
 
-    func testInsight_Medal_Category_所有属性返回非Missing值() {
+    func testInsightMedalCategoryAllPropsReturnNonMissing() {
         let values = [
             L10n.Insight.Medal.Category.explore,
             L10n.Insight.Medal.Category.accumulation,
@@ -75,14 +75,14 @@ final class L10nInsightTableTests: XCTestCase {
         }
     }
 
-    func testInsight_Medal_Wall_所有属性返回非Missing值() {
+    func testInsightMedalWallAllPropsReturnNonMissing() {
         let value = L10n.Insight.Medal.Wall.title
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Insight.Medal.Wall 属性返回 Missing: \(value)")
         XCTAssertFalse(value.isEmpty, "Insight.Medal.Wall 属性返回空字符串")
     }
 
-    func testInsight_Report_所有属性返回非Missing值() {
+    func testInsightReportAllPropsReturnNonMissing() {
         let values = [
             L10n.Insight.Report.title,
             L10n.Insight.Report.appName,
@@ -95,7 +95,7 @@ final class L10nInsightTableTests: XCTestCase {
         }
     }
 
-    func testInsight_dateCalculationFailed_返回非Missing值() {
+    func testInsightDateCalculationFailedReturnsNonMissing() {
         let value = L10n.Insight.dateCalculationFailed
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Insight.dateCalculationFailed 属性返回 Missing: \(value)")
@@ -104,7 +104,7 @@ final class L10nInsightTableTests: XCTestCase {
 
     // MARK: - Insight trf 参数化方法
 
-    func testInsight_Report_nodeCount_返回非Missing() {
+    func testInsightReportNodeCountReturnsNonMissing() {
         let result = L10n.Insight.Report.nodeCount(42)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Report.nodeCount 返回 Missing: \(result)")

@@ -20,7 +20,7 @@ final class CoreMLModerationClassifierTests: XCTestCase {
 
     // MARK: - isSupportedOnDevice
 
-    func testIsSupportedOnDevice_模拟器_返回true() {
+    func testIsSupportedOnDeviceSimulatorReturnsTrue() {
         #if targetEnvironment(simulator)
         XCTAssertTrue(classifier.isSupportedOnDevice, "模拟器应返回 true")
         #else
@@ -31,91 +31,91 @@ final class CoreMLModerationClassifierTests: XCTestCase {
 
     // MARK: - classifyForDeepInspection 空文本
 
-    func testClassify_空文本_返回未标记() async {
+    func testClassifyEmptyTextReturnsNotFlagged() async {
         let result = await classifier.classifyForDeepInspection("")
         XCTAssertFalse(result.isFlagged)
         XCTAssertEqual(result.confidenceScore, 0.0, accuracy: 0.001)
     }
 
-    func testClassify_空文本_reason为emptyText() async {
+    func testClassifyEmptyTextReasonIsEmptyText() async {
         let result = await classifier.classifyForDeepInspection("")
         XCTAssertEqual(result.reason, CoreConstants.ModerationReason.emptyText)
     }
 
     // MARK: - classifyForDeepInspection Prompt 注入检测
 
-    func testClassify_ignorePreviousInstructions_标记为违规() async {
+    func testClassifyIgnorePreviousInstructionsFlaggedAsViolation() async {
         let result = await classifier.classifyForDeepInspection("ignore_previous_instructions now")
         XCTAssertTrue(result.isFlagged, "应检测到 Prompt 注入")
     }
 
-    func testClassify_pretendYouAre_标记为违规() async {
+    func testClassifyPretendYouAreFlaggedAsViolation() async {
         let result = await classifier.classifyForDeepInspection("pretend_you_are_an_unfiltered_ai")
         XCTAssertTrue(result.isFlagged)
     }
 
-    func testClassify_doAnythingNow_标记为违规() async {
+    func testClassifyDoAnythingNowFlaggedAsViolation() async {
         let result = await classifier.classifyForDeepInspection("do_anything_now_mode enabled")
         XCTAssertTrue(result.isFlagged)
     }
 
-    func testClassify_systemOverride_标记为违规() async {
+    func testClassifySystemOverrideFlaggedAsViolation() async {
         let result = await classifier.classifyForDeepInspection("system_override_mode active")
         XCTAssertTrue(result.isFlagged)
     }
 
-    func testClassify_promptInjection_高置信度() async {
+    func testClassifyPromptInjectionHighConfidence() async {
         let result = await classifier.classifyForDeepInspection("ignore_previous_instructions")
         XCTAssertGreaterThan(result.confidenceScore, 0.9, "Prompt 注入应高置信度")
     }
 
-    func testClassify_promptInjection_category为politicalReactionary() async {
+    func testClassifyPromptInjectionCategoryIsPoliticalReactionary() async {
         let result = await classifier.classifyForDeepInspection("ignore_previous_instructions")
         XCTAssertEqual(result.category, .politicalReactionary)
     }
 
-    func testClassify_promptInjection_reason为detectedPromptInjection() async {
+    func testClassifyPromptInjectionReasonIsDetectedPromptInjection() async {
         let result = await classifier.classifyForDeepInspection("ignore_previous_instructions")
         XCTAssertEqual(result.reason, CoreConstants.ModerationReason.detectedPromptInjection)
     }
 
     // MARK: - classifyForDeepInspection 正常文本
 
-    func testClassify_正常文本_未标记() async {
+    func testClassifyNormalTextNotFlagged() async {
         let result = await classifier.classifyForDeepInspection("这是一段正常的笔记内容")
         XCTAssertFalse(result.isFlagged)
     }
 
-    func testClassify_正常文本_低置信度() async {
+    func testClassifyNormalTextLowConfidence() async {
         let result = await classifier.classifyForDeepInspection("Hello world")
         XCTAssertLessThan(result.confidenceScore, 0.5, "正常文本应低置信度")
     }
 
-    func testClassify_正常文本_reason为clean() async {
+    func testClassifyNormalTextReasonIsClean() async {
         let result = await classifier.classifyForDeepInspection("正常内容")
         XCTAssertEqual(result.reason, CoreConstants.ModerationReason.clean)
     }
 
-    func testClassify_正常文本_category为nil() async {
+    func testClassifyNormalTextCategoryIsNil() async {
         let result = await classifier.classifyForDeepInspection("正常内容")
         XCTAssertNil(result.category)
     }
 
     // MARK: - 大小写不敏感
 
-    func testClassify_大写Prompt注入_仍检测到() async {
+    func testClassifyUppercasePromptInjectionStillDetected() async {
         let result = await classifier.classifyForDeepInspection("IGNORE_PREVIOUS_INSTRUCTIONS")
         XCTAssertTrue(result.isFlagged, "大写 Prompt 注入应被检测到")
     }
 
-    func testClassify_混合大小写Prompt注入_仍检测到() async {
+    func testClassifyMixedCasePromptInjectionStillDetected() async {
         let result = await classifier.classifyForDeepInspection("Ignore_Previous_Instructions")
         XCTAssertTrue(result.isFlagged, "混合大小写应被检测到")
     }
 
     // MARK: - CoreMLModerationResult
 
-    func testCoreMLModerationResult_init_属性正确() {
+    func testCoreMLModerationResultInitPropertiesCorrect() {
         let result = CoreMLModerationResult(
             isFlagged: true,
             category: .politicalReactionary,
@@ -128,7 +128,7 @@ final class CoreMLModerationClassifierTests: XCTestCase {
         XCTAssertEqual(result.reason, "test reason")
     }
 
-    func testCoreMLModerationResult_isFlagged_false_默认值() {
+    func testCoreMLModerationResultIsFlaggedFalseDefaultValue() {
         let result = CoreMLModerationResult(
             isFlagged: false,
             category: nil,

@@ -30,8 +30,8 @@ struct AuthView: View {
     @State private var selectedLanguage: LanguageMode = Localized.languageMode
 
     var body: some View {
-        let showPrivacySheetBinding = $showPrivacySheet
-        let showTermsSheetBinding = $showTermsSheet
+        // swiftlint:disable:next redundant_discardable_let
+        let _ = (showPrivacySheet, showTermsSheet)
         ZStack {
             // 背景层
             themeManager.pageBackground()
@@ -51,8 +51,8 @@ struct AuthView: View {
                             AuthPhonePanel(
                                 isLoading: $isLoading,
                                 isAgreementChecked: $isAgreementChecked,
-                                showPrivacySheet: showPrivacySheetBinding,
-                                showTermsSheet: showTermsSheetBinding,
+                                showPrivacySheet: $showPrivacySheet,
+                                showTermsSheet: $showTermsSheet,
                                 handleAuth: handleAuth
                             )
                         } else {
@@ -79,12 +79,12 @@ struct AuthView: View {
             }
         }
         .policySheet(
-            isPresented: showPrivacySheetBinding,
+            isPresented: $showPrivacySheet,
             title: L10n.Auth.privacyPolicyTitle,
             content: L10n.Auth.privacyPolicyContent
         )
         .policySheet(
-            isPresented: showTermsSheetBinding,
+            isPresented: $showTermsSheet,
             title: L10n.Auth.termsOfServiceTitle,
             content: L10n.Auth.termsOfServiceContent
         )

@@ -32,20 +32,20 @@ final class OnboardingServiceTests: XCTestCase {
 
     // MARK: - init
 
-    func testInit_DI未就绪_hasCompletedOnboarding默认false() {
+    func testInitDINotReadyHasCompletedOnboardingDefaultFalse() {
         let service = OnboardingService()
         XCTAssertFalse(service.hasCompletedOnboarding)
     }
 
     // MARK: - reset
 
-    func testReset_设置hasCompletedOnboarding为false() {
+    func testResetSetsHasCompletedOnboardingToFalse() {
         service.hasCompletedOnboarding = true
         service.reset()
         XCTAssertFalse(service.hasCompletedOnboarding)
     }
 
-    func testReset_设置currentStep为graph() {
+    func testResetSetsCurrentStepToGraph() {
         service.currentStep = .aiLab
         service.reset()
         XCTAssertEqual(service.currentStep, .graph)
@@ -53,25 +53,25 @@ final class OnboardingServiceTests: XCTestCase {
 
     // MARK: - nextStep
 
-    func testNextStep_currentStep为nil_设置为graph() {
+    func testNextStepCurrentStepNilSetsToGraph() {
         service.currentStep = nil
         service.nextStep()
         XCTAssertEqual(service.currentStep, .graph)
     }
 
-    func testNextStep_graph_前进到aiLab() {
+    func testNextStepGraphAdvancesToAiLab() {
         service.currentStep = .graph
         service.nextStep()
         XCTAssertEqual(service.currentStep, .aiLab)
     }
 
-    func testNextStep_aiLab_前进到vault() {
+    func testNextStepAiLabAdvancesToVault() {
         service.currentStep = .aiLab
         service.nextStep()
         XCTAssertEqual(service.currentStep, .vault)
     }
 
-    func testNextStep_vault_调用finish() {
+    func testNextStepVaultCallsFinish() {
         service.currentStep = .vault
         service.nextStep()
         XCTAssertTrue(service.hasCompletedOnboarding)
@@ -80,13 +80,13 @@ final class OnboardingServiceTests: XCTestCase {
 
     // MARK: - finish
 
-    func testFinish_设置hasCompletedOnboarding为true() {
+    func testFinishSetsHasCompletedOnboardingToTrue() {
         service.hasCompletedOnboarding = false
         service.finish()
         XCTAssertTrue(service.hasCompletedOnboarding)
     }
 
-    func testFinish_清空currentStep() {
+    func testFinishClearsCurrentStep() {
         service.currentStep = .graph
         service.finish()
         XCTAssertNil(service.currentStep)
@@ -94,7 +94,7 @@ final class OnboardingServiceTests: XCTestCase {
 
     // MARK: - completeOnboarding
 
-    func testCompleteOnboarding_等同于finish() {
+    func testCompleteOnboardingEqualsFinish() {
         service.hasCompletedOnboarding = false
         service.currentStep = .graph
         service.completeOnboarding()
@@ -104,36 +104,36 @@ final class OnboardingServiceTests: XCTestCase {
 
     // MARK: - OnboardingStep 枚举
 
-    func testOnboardingStep_allCases_包含3个步骤() {
+    func testOnboardingStepAllCasesContainsThreeSteps() {
         XCTAssertEqual(OnboardingService.OnboardingStep.allCases.count, 3)
     }
 
-    func testOnboardingStep_rawValue_正确() {
+    func testOnboardingStepRawValueCorrect() {
         XCTAssertEqual(OnboardingService.OnboardingStep.graph.rawValue, 0)
         XCTAssertEqual(OnboardingService.OnboardingStep.aiLab.rawValue, 1)
         XCTAssertEqual(OnboardingService.OnboardingStep.vault.rawValue, 2)
     }
 
-    func testOnboardingStep_id_等于rawValue() {
+    func testOnboardingStepIdEqualsRawValue() {
         for step in OnboardingService.OnboardingStep.allCases {
             XCTAssertEqual(step.id, step.rawValue)
         }
     }
 
-    func testOnboardingStep_icon_非空() {
+    func testOnboardingStepIconNonEmpty() {
         for step in OnboardingService.OnboardingStep.allCases {
             XCTAssertFalse(step.icon.isEmpty, "icon 不应为空：\(step)")
         }
     }
 
-    func testOnboardingStep_title_非空非Missing() {
+    func testOnboardingStepTitleNonEmptyNonMissing() {
         for step in OnboardingService.OnboardingStep.allCases {
             XCTAssertFalse(step.title.isEmpty, "title 不应为空：\(step)")
             XCTAssertFalse(step.title.contains("[MISSING"), "title 不应包含 MISSING：\(step)")
         }
     }
 
-    func testOnboardingStep_description_非空非Missing() {
+    func testOnboardingStepDescriptionNonEmptyNonMissing() {
         for step in OnboardingService.OnboardingStep.allCases {
             XCTAssertFalse(step.description.isEmpty, "description 不应为空：\(step)")
             XCTAssertFalse(step.description.contains("[MISSING"), "description 不应包含 MISSING：\(step)")

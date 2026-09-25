@@ -21,7 +21,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     // MARK: - DataCoordinator
 
     /// DataCoordinator.sync() 应不崩溃（依赖 DI 解析 pageStore/embeddingProvider/logger）
-    func testDataCoordinator_sync_不崩溃() async throws {
+    func testDataCoordinatorSyncNoCrash() async throws {
         let coordinator = DataCoordinator()
         coordinator.sync()
         // 给 Task 一点时间启动
@@ -29,7 +29,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// DataCoordinator 重复 sync 应取消前一个任务（syncTask?.cancel() 分支）
-    func testDataCoordinator_重复sync_取消前一个任务() async throws {
+    func testDataCoordinatorRepeatedSyncCancelsPreviousTask() async throws {
         let coordinator = DataCoordinator()
         coordinator.sync()
         coordinator.sync()
@@ -39,12 +39,12 @@ final class StorageServicesSupplementTests: XCTestCase {
     // MARK: - SpotlightService
 
     /// SpotlightService 索引空列表应不崩溃（indexPages 空数组分支）
-    func testSpotlightService_索引空列表_不崩溃() {
+    func testSpotlightServiceIndexEmptyListNoCrash() {
         SpotlightService.shared.indexPages([])
     }
 
     /// SpotlightService 索引非空列表应不崩溃
-    func testSpotlightService_索引非空列表_不崩溃() {
+    func testSpotlightServiceIndexNonEmptyListNoCrash() {
         let pages = [KnowledgePage(title: "Test", pageType: .concept, content: "content")]
         SpotlightService.shared.indexPages(pages)
     }
@@ -52,7 +52,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     // MARK: - TransactionGatekeeper
 
     /// TransactionGatekeeper acquire/release 配对应保持计数归零
-    func testTransactionGatekeeper_acquireRelease配对_计数归零() async throws {
+    func testTransactionGatekeeperAcquireReleasePairedCountToZero() async throws {
         let gatekeeper = TransactionGatekeeper()
         try await gatekeeper.acquire()
         try await gatekeeper.acquire()
@@ -65,7 +65,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// TransactionGatekeeper drain 无活跃事务时立即成功
-    func testTransactionGatekeeper_drain无活跃事务_立即成功() async {
+    func testTransactionGatekeeperDrainNoActiveTransactionsImmediateSuccess() async {
         let gatekeeper = TransactionGatekeeper()
         let drained = await gatekeeper.drain(maxWaitTime: .milliseconds(100))
         XCTAssertTrue(drained)
@@ -74,7 +74,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// TransactionGatekeeper drain 排空期间拒绝新事务（acquire 抛 draining）
-    func testTransactionGatekeeper_drain期间_拒绝新事务() async throws {
+    func testTransactionGatekeeperDuringDrainRejectsNewTransactions() async throws {
         let gatekeeper = TransactionGatekeeper()
         try await gatekeeper.acquire()
         let drainTask = Task {
@@ -97,7 +97,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// TransactionGatekeeper drain 超时返回 false
-    func testTransactionGatekeeper_drain超时_返回false() async throws {
+    func testTransactionGatekeeperDrainTimeoutReturnsFalse() async throws {
         let gatekeeper = TransactionGatekeeper()
         try await gatekeeper.acquire()
         let drained = await gatekeeper.drain(maxWaitTime: .milliseconds(100))
@@ -106,7 +106,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// TransactionGatekeeper release 计数为零时不变为负数
-    func testTransactionGatekeeper_release计数为零_不变为负() async {
+    func testTransactionGatekeeperReleaseCountZeroDoesNotGoNegative() async {
         let gatekeeper = TransactionGatekeeper()
         await gatekeeper.release()
         await gatekeeper.release()
@@ -115,7 +115,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// TransactionGatekeeper reset 清空所有状态
-    func testTransactionGatekeeper_reset_清空状态() async throws {
+    func testTransactionGatekeeperResetClearsState() async throws {
         let gatekeeper = TransactionGatekeeper()
         try await gatekeeper.acquire()
         try await gatekeeper.acquire()
@@ -129,7 +129,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     // MARK: - UndoService
 
     /// UndoService 空栈撤销应返回 nil
-    func testUndoService_空栈撤销_返回nil() {
+    func testUndoServiceEmptyStackUndoReturnsNil() {
         let service = UndoService()
         let result = service.undo(currentPages: [])
         XCTAssertNil(result)
@@ -138,14 +138,14 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// UndoService 空栈重做应返回 nil
-    func testUndoService_空栈重做_返回nil() {
+    func testUndoServiceEmptyStackRedoReturnsNil() {
         let service = UndoService()
         let result = service.redo(currentPages: [])
         XCTAssertNil(result)
     }
 
     /// UndoService clear 后 canUndo/canRedo 均为 false
-    func testUndoService_clear后_状态重置() {
+    func testUndoServiceAfterClearStateReset() {
         let service = UndoService()
         service.pushSnapshot([KnowledgePage(title: "A")])
         XCTAssertTrue(service.canUndo)
@@ -155,7 +155,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// UndoService 超过 maxStackSize 时移除最旧快照
-    func testUndoService_超过最大栈深_移除最旧快照() {
+    func testUndoServiceExceedsMaxStackSizeRemovesOldestSnapshot() {
         let service = UndoService()
         for i in 0..<55 {
             service.pushSnapshot([KnowledgePage(title: "V\(i)")])
@@ -164,7 +164,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// UndoService 新操作清空 redo 栈
-    func testUndoService_新操作_清空Redo栈() {
+    func testUndoServiceNewOperationClearsRedoStack() {
         let service = UndoService()
         service.pushSnapshot([KnowledgePage(title: "V1")])
         _ = service.undo(currentPages: [KnowledgePage(title: "Current")])
@@ -176,7 +176,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     // MARK: - FileImportFileStore
 
     /// FileImportFileStore saveContent 各 category 路径验证
-    func testFileImportFileStore_各category_保存成功() {
+    func testFileImportFileStoreAllCategoriesSaveSuccess() {
         let store = FileImportFileStore()
         for category in ImportCategory.allCases {
             let path = store.saveContent("test", category: category)
@@ -186,7 +186,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// FileImportFileStore saveData 二进制数据保存
-    func testFileImportFileStore_saveData_二进制保存() throws {
+    func testFileImportFileStoreSaveDataBinarySave() throws {
         let store = FileImportFileStore()
         let data = Data([0x00, 0x01, 0xFF])
         let path = try XCTUnwrap(store.saveData(data, category: .voice, ext: "bin"))
@@ -195,7 +195,7 @@ final class StorageServicesSupplementTests: XCTestCase {
     }
 
     /// FileImportFileStore copyFile 拷贝外部文件
-    func testFileImportFileStore_copyFile_拷贝成功() throws {
+    func testFileImportFileStoreCopyFileCopySuccess() throws {
         let store = FileImportFileStore()
         let sourceURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("source_\(UUID().uuidString).txt")

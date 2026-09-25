@@ -23,7 +23,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - 成功路径
 
     /// 首次执行即成功，不应重试
-    func testExecute_首次成功_不重试() async throws {
+    func testExecuteFirstSuccessNoRetry() async throws {
         let counter = TestCounter()
         let result = try await RetryTask.execute(
             maxRetries: 3,
@@ -40,7 +40,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - 重试后成功
 
     /// 前 N 次失败，第 N+1 次成功
-    func testExecute_重试后成功_返回成功值() async throws {
+    func testExecuteRetryThenSuccessReturnsSuccessValue() async throws {
         let counter = TestCounter()
         let result = try await RetryTask.execute(
             maxRetries: 3,
@@ -60,7 +60,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - 重试耗尽
 
     /// 始终失败，重试耗尽后抛出最后一次错误
-    func testExecute_重试耗尽_抛出错误() async throws {
+    func testExecuteRetryExhaustedThrowsError() async throws {
         let counter = TestCounter()
         do {
             _ = try await RetryTask.execute(
@@ -81,7 +81,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - 边界值：maxRetries
 
     /// maxRetries=0，首次失败即抛出，不重试
-    func testExecute_maxRetries为0_不重试() async throws {
+    func testExecuteMaxRetriesZeroNoRetry() async throws {
         let counter = TestCounter()
         do {
             _ = try await RetryTask.execute(
@@ -99,7 +99,7 @@ final class RetryTaskTests: XCTestCase {
     }
 
     /// maxRetries=1，最多调用 2 次（首次 + 1 次重试）
-    func testExecute_maxRetries为1_最多2次调用() async throws {
+    func testExecuteMaxRetriesOneMaxTwoCalls() async throws {
         let counter = TestCounter()
         do {
             _ = try await RetryTask.execute(
@@ -119,7 +119,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - 错误类型保持
 
     /// 抛出的错误应原样传递（自定义错误枚举）
-    func testExecute_错误类型保持_抛出原始错误() async throws {
+    func testExecuteErrorTypePreservedThrowsOriginalError() async throws {
         do {
             _ = try await RetryTask.execute(
                 maxRetries: 1,
@@ -139,7 +139,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - 返回值类型
 
     /// 泛型返回值应正确传递（Int 类型）
-    func testExecute_返回Int类型_值正确() async throws {
+    func testExecuteReturnsIntTypeValueCorrect() async throws {
         let result = try await RetryTask.execute(
             maxRetries: 0,
             initialDelay: 0.001,
@@ -149,7 +149,7 @@ final class RetryTaskTests: XCTestCase {
     }
 
     /// 泛型返回值应正确传递（可选类型）
-    func testExecute_返回可选类型_值正确() async throws {
+    func testExecuteReturnsOptionalTypeValueCorrect() async throws {
         let result: String? = try await RetryTask.execute(
             maxRetries: 0,
             initialDelay: 0.001,
@@ -161,7 +161,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - 退避参数验证
 
     /// multiplier=1.0，延迟不增长（仅验证不崩溃 + 最终成功）
-    func testExecute_multiplier为1_延迟不增长() async throws {
+    func testExecuteMultiplierOneDelayNoGrowth() async throws {
         let counter = TestCounter()
         let result = try await RetryTask.execute(
             maxRetries: 2,
@@ -178,7 +178,7 @@ final class RetryTaskTests: XCTestCase {
     }
 
     /// maxDelay 截断验证（initialDelay 极大 + maxDelay 极小，应被截断）
-    func testExecute_maxDelay截断_不超时() async throws {
+    func testExecuteMaxDelayTruncatedNoTimeout() async throws {
         let result = try await RetryTask.execute(
             maxRetries: 1,
             initialDelay: 100.0,
@@ -192,7 +192,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - shouldRetry 谓词
 
     /// shouldRetry 返回 false 时，不可重试错误直接抛出
-    func testExecute_shouldRetry过滤不可重试错误() async throws {
+    func testExecuteShouldRetryFiltersNonRetryableError() async throws {
         let counter = TestCounter()
         do {
             _ = try await RetryTask.execute(
@@ -211,7 +211,7 @@ final class RetryTaskTests: XCTestCase {
     }
 
     /// shouldRetry 返回 true 时，可重试错误按 maxRetries 重试
-    func testExecute_shouldRetry允许可重试错误() async throws {
+    func testExecuteShouldRetryAllowsRetryableError() async throws {
         let counter = TestCounter()
         do {
             _ = try await RetryTask.execute(
@@ -232,7 +232,7 @@ final class RetryTaskTests: XCTestCase {
     // MARK: - poll 轮询
 
     /// poll 条件满足时返回结果
-    func testPoll_条件满足_返回结果() async throws {
+    func testPollConditionMetReturnsResult() async throws {
         let counter = TestCounter()
         let result = try await RetryTask.poll(maxAttempts: 5, interval: 0.001) {
             let count = await counter.incrementAndGet()
@@ -243,7 +243,7 @@ final class RetryTaskTests: XCTestCase {
     }
 
     /// poll 条件始终不满足时抛出 pollingExhausted
-    func testPoll_条件不满足_抛出pollingExhausted() async throws {
+    func testPollConditionNotMetThrowsPollingExhausted() async throws {
         do {
             let _: String = try await RetryTask.poll(maxAttempts: 3, interval: 0.001) {
                 return nil
@@ -257,7 +257,7 @@ final class RetryTaskTests: XCTestCase {
     }
 
     /// poll 首次即满足条件
-    func testPoll_首次满足_立即返回() async throws {
+    func testPollFirstMetReturnsImmediately() async throws {
         let result = try await RetryTask.poll(maxAttempts: 5, interval: 0.001) {
             return "IMMEDIATE"
         }

@@ -18,25 +18,25 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Knowledge_为Knowledge() {
+    func testTableNameKnowledgeIsKnowledge() {
         XCTAssertEqual(L10n.Knowledge.tableName, "Knowledge")
     }
 
-    func testTableName_Editor_为Knowledge() {
+    func testTableNameEditorIsKnowledge() {
         XCTAssertEqual(L10n.Editor.tableName, "Knowledge")
     }
 
-    func testTableName_Quiz_为Knowledge() {
+    func testTableNameQuizIsKnowledge() {
         XCTAssertEqual(L10n.Quiz.tableName, "Knowledge")
     }
 
-    func testTableName_Vault_为Knowledge() {
+    func testTableNameVaultIsKnowledge() {
         XCTAssertEqual(L10n.Vault.tableName, "Knowledge")
     }
 
     // MARK: - Knowledge.Page 属性 key 存在性
 
-    func testKnowledge_Page_基础属性返回非Missing值() {
+    func testKnowledgePageBasicPropsReturnNonMissing() {
         let values = [
             L10n.Knowledge.Page.edit,
             L10n.Knowledge.Page.doneEditing,
@@ -70,7 +70,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
         }
     }
 
-    func testKnowledge_Page_Source_属性返回非Missing值() {
+    func testKnowledgePageSourcePropsReturnNonMissing() {
         let values = [
             L10n.Knowledge.Page.Source.title,
             L10n.Knowledge.Page.Source.open,
@@ -87,7 +87,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
         }
     }
 
-    func testKnowledge_Page_AI_属性返回非Missing值() {
+    func testKnowledgePageAIPropsReturnNonMissing() {
         let values = [
             L10n.Knowledge.Page.AI.insights,
             L10n.Knowledge.Page.AI.insightsDesc,
@@ -112,7 +112,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
         }
     }
 
-    func testKnowledge_Page_History_属性返回非Missing值() {
+    func testKnowledgePageHistoryPropsReturnNonMissing() {
         let values = [
             L10n.Knowledge.Page.History.title,
             L10n.Knowledge.Page.History.none,
@@ -128,7 +128,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
         }
     }
 
-    func testKnowledge_Page_Snapshot_属性返回非Missing值() {
+    func testKnowledgePageSnapshotPropsReturnNonMissing() {
         let value = L10n.Knowledge.Page.Snapshot.preview
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Knowledge.Page.Snapshot.preview 返回 Missing: \(value)")
@@ -137,7 +137,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
 
     // MARK: - Editor 属性 key 存在性
 
-    func testEditor_基础属性返回非Missing值() {
+    func testEditorBasicPropsReturnNonMissing() {
         let values = [
             L10n.Editor.insertPageLink,
             L10n.Editor.searchPages,
@@ -170,7 +170,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
         }
     }
 
-    func testEditor_iconPicker_属性返回非Missing值() {
+    func testEditorIconPickerPropsReturnNonMissing() {
         let values = [
             L10n.Editor.iconPicker.customSelected,
             L10n.Editor.iconPicker.useDefault,
@@ -185,7 +185,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
 
     // MARK: - Quiz 属性 key 存在性
 
-    func testQuiz_基础属性返回非Missing值() {
+    func testQuizBasicPropsReturnNonMissing() {
         let values = [
             L10n.Quiz.title,
             L10n.Quiz.completed,
@@ -202,14 +202,14 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
         }
     }
 
-    func testQuiz_questionFormat_返回非Missing且包含参数() {
+    func testQuizQuestionFormatReturnsNonMissingWithParams() {
         let result = L10n.Quiz.questionFormat(1, 10)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Quiz.questionFormat 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testQuiz_scoreFormat_返回非Missing且包含参数() {
+    func testQuizScoreFormatReturnsNonMissingWithParams() {
         let result = L10n.Quiz.scoreFormat(85)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Quiz.scoreFormat 返回 Missing: \(result)")
@@ -218,7 +218,7 @@ final class L10nKnowledgeTableExtrasTests: XCTestCase {
 
     // MARK: - Vault 属性 key 存在性
 
-    func testVault_基础属性返回非Missing值() {
+    func testVaultBasicPropsReturnNonMissing() {
         let values = [
             L10n.Vault.homeTitle,
             L10n.Vault.label,

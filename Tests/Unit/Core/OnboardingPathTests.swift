@@ -26,26 +26,26 @@ final class OnboardingPathTests: XCTestCase {
 
     // MARK: - OnboardingPath 枚举
 
-    func testOnboardingPath_allCases_包含3个路径() {
+    func testOnboardingPathAllCasesContainsThreePaths() {
         XCTAssertEqual(OnboardingPath.allCases.count, 3)
         XCTAssertTrue(OnboardingPath.allCases.contains(.quickStart))
         XCTAssertTrue(OnboardingPath.allCases.contains(.importData))
         XCTAssertTrue(OnboardingPath.allCases.contains(.explore))
     }
 
-    func testOnboardingPath_rawValue_正确() {
+    func testOnboardingPathRawValueCorrect() {
         XCTAssertEqual(OnboardingPath.quickStart.rawValue, "quickStart")
         XCTAssertEqual(OnboardingPath.importData.rawValue, "importData")
         XCTAssertEqual(OnboardingPath.explore.rawValue, "explore")
     }
 
-    func testOnboardingPath_icon_非空() {
+    func testOnboardingPathIconNonEmpty() {
         for path in OnboardingPath.allCases {
             XCTAssertFalse(path.icon.isEmpty, "icon 不应为空：\(path)")
         }
     }
 
-    func testOnboardingPath_color_各路径不同() {
+    func testOnboardingPathColorDifferentPerPath() {
         let colors = Set([
             OnboardingPath.quickStart.color,
             OnboardingPath.importData.color,
@@ -57,17 +57,17 @@ final class OnboardingPathTests: XCTestCase {
 
     // MARK: - OnboardingMilestone 枚举
 
-    func testOnboardingMilestone_allCases_包含7个里程碑() {
+    func testOnboardingMilestoneAllCasesContainsSevenMilestones() {
         XCTAssertEqual(OnboardingMilestone.allCases.count, 7)
     }
 
-    func testOnboardingMilestone_key_包含前缀() {
+    func testOnboardingMilestoneKeyContainsPrefix() {
         for milestone in OnboardingMilestone.allCases {
             XCTAssertTrue(milestone.key.hasPrefix("onboarding.milestone."), "key 应包含前缀：\(milestone)")
         }
     }
 
-    func testOnboardingMilestone_toastMessage_非空非Missing() {
+    func testOnboardingMilestoneToastMessageNonEmptyNonMissing() {
         for milestone in OnboardingMilestone.allCases {
             XCTAssertFalse(milestone.toastMessage.isEmpty, "toastMessage 不应为空：\(milestone)")
             XCTAssertFalse(milestone.toastMessage.contains("[MISSING"), "toastMessage 不应包含 MISSING：\(milestone)")
@@ -76,23 +76,23 @@ final class OnboardingPathTests: XCTestCase {
 
     // MARK: - checkPageCountMilestone
 
-    func testCheckPageCountMilestone_1_返回firstPageCreated() {
+    func testCheckPageCountMilestone1ReturnsFirstPageCreated() {
         XCTAssertEqual(OnboardingMilestone.checkPageCountMilestone(1), .firstPageCreated)
     }
 
-    func testCheckPageCountMilestone_10_返回pageCount10() {
+    func testCheckPageCountMilestone10ReturnsPageCount10() {
         XCTAssertEqual(OnboardingMilestone.checkPageCountMilestone(10), .pageCount10)
     }
 
-    func testCheckPageCountMilestone_50_返回pageCount50() {
+    func testCheckPageCountMilestone50ReturnsPageCount50() {
         XCTAssertEqual(OnboardingMilestone.checkPageCountMilestone(50), .pageCount50)
     }
 
-    func testCheckPageCountMilestone_100_返回pageCount100() {
+    func testCheckPageCountMilestone100ReturnsPageCount100() {
         XCTAssertEqual(OnboardingMilestone.checkPageCountMilestone(100), .pageCount100)
     }
 
-    func testCheckPageCountMilestone_非阈值_返回nil() {
+    func testCheckPageCountMilestoneNonThresholdReturnsNil() {
         XCTAssertNil(OnboardingMilestone.checkPageCountMilestone(0))
         XCTAssertNil(OnboardingMilestone.checkPageCountMilestone(2))
         XCTAssertNil(OnboardingMilestone.checkPageCountMilestone(11))
@@ -102,13 +102,13 @@ final class OnboardingPathTests: XCTestCase {
 
     // MARK: - hasBeenShown / markAsShown
 
-    func testHasBeenShown_DI未就绪_返回false() {
+    func testHasBeenShownDINotReadyReturnsFalse() {
         for milestone in OnboardingMilestone.allCases {
             XCTAssertFalse(milestone.hasBeenShown, "DI 未就绪时应返回 false：\(milestone)")
         }
     }
 
-    func testMarkAsShown_DI未就绪_不崩溃() {
+    func testMarkAsShownDINotReadyNoCrash() {
         for milestone in OnboardingMilestone.allCases {
             milestone.markAsShown()
         }

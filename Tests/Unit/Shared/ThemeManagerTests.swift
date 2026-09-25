@@ -17,56 +17,56 @@ final class ThemeManagerTests: XCTestCase {
 
     // MARK: - colorForName 静态映射
 
-    func testColorForName_blue返回Blue色() {
+    func testColorForNameBlueReturnsBlue() {
         XCTAssertEqual(ThemeManager.colorForName("blue"), .blue)
     }
 
-    func testColorForName_purple返回Purple色() {
+    func testColorForNamePurpleReturnsPurple() {
         XCTAssertEqual(ThemeManager.colorForName("purple"), .purple)
     }
 
-    func testColorForName_green返回Green色() {
+    func testColorForNameGreenReturnsGreen() {
         XCTAssertEqual(ThemeManager.colorForName("green"), .green)
     }
 
-    func testColorForName_orange返回Orange色() {
+    func testColorForNameOrangeReturnsOrange() {
         XCTAssertEqual(ThemeManager.colorForName("orange"), .orange)
     }
 
-    func testColorForName_pink返回Pink色() {
+    func testColorForNamePinkReturnsPink() {
         XCTAssertEqual(ThemeManager.colorForName("pink"), .pink)
     }
 
-    func testColorForName_red返回Red色() {
+    func testColorForNameRedReturnsRed() {
         XCTAssertEqual(ThemeManager.colorForName("red"), .red)
     }
 
-    func testColorForName_teal返回Teal色() {
+    func testColorForNameTealReturnsTeal() {
         XCTAssertEqual(ThemeManager.colorForName("teal"), .teal)
     }
 
-    func testColorForName_indigo返回Indigo色() {
+    func testColorForNameIndigoReturnsIndigo() {
         XCTAssertEqual(ThemeManager.colorForName("indigo"), .indigo)
     }
 
     // MARK: - colorForName 默认值
 
-    func testColorForName_未知名称默认返回Blue() {
+    func testColorForNameUnknownNameDefaultsToBlue() {
         XCTAssertEqual(ThemeManager.colorForName("unknown"), .blue)
     }
 
-    func testColorForName_空字符串默认返回Blue() {
+    func testColorForNameEmptyStringDefaultsToBlue() {
         XCTAssertEqual(ThemeManager.colorForName(""), .blue)
     }
 
-    func testColorForName_大小写敏感_大写返回默认() {
+    func testColorForNameCaseSensitiveUppercaseReturnsDefault() {
         XCTAssertEqual(ThemeManager.colorForName("Blue"), .blue, "大写 B 应返回默认 blue")
         XCTAssertEqual(ThemeManager.colorForName("BLUE"), .blue, "全大写应返回默认 blue")
     }
 
     // MARK: - 实例方法包装
 
-    func testColorForName_实例方法与静态方法一致() {
+    func testColorForNameInstanceMethodMatchesStaticMethod() {
         for name in ["blue", "purple", "green", "orange", "pink", "red", "teal", "indigo", "unknown"] {
             XCTAssertEqual(themeManager.colorForName(name), ThemeManager.colorForName(name),
                           "实例方法应与静态方法返回一致")
@@ -80,33 +80,33 @@ final class ColorSchemeModeTests: XCTestCase {
 
     // MARK: - CaseIterable 完整性
 
-    func testAllCases包含3个case() {
+    func testAllCasesContainsThreeCases() {
         XCTAssertEqual(ColorSchemeMode.allCases.count, 3)
         XCTAssertTrue(ColorSchemeMode.allCases.contains(.system))
         XCTAssertTrue(ColorSchemeMode.allCases.contains(.light))
         XCTAssertTrue(ColorSchemeMode.allCases.contains(.dark))
     }
 
-    func testRawValue正确() {
+    func testRawValueCorrect() {
         XCTAssertEqual(ColorSchemeMode.system.rawValue, "system")
         XCTAssertEqual(ColorSchemeMode.light.rawValue, "light")
         XCTAssertEqual(ColorSchemeMode.dark.rawValue, "dark")
     }
 
-    func testRawValue_无效值返回nil() {
+    func testRawValueInvalidValueReturnsNil() {
         XCTAssertNil(ColorSchemeMode(rawValue: "auto"))
         XCTAssertNil(ColorSchemeMode(rawValue: ""))
     }
 
     // MARK: - displayName 映射
 
-    func testDisplayName_所有case返回非空字符串() {
+    func testDisplayNameAllCasesReturnNonEmptyString() {
         for mode in ColorSchemeMode.allCases {
             XCTAssertFalse(mode.displayName.isEmpty, "displayName 不应为空")
         }
     }
 
-    func testDisplayName_各case返回不同值() {
+    func testDisplayNameEachCaseReturnsDifferentValue() {
         let names = ColorSchemeMode.allCases.map { $0.displayName }
         XCTAssertEqual(names.count, Set(names).count, "各 case 的 displayName 应唯一")
     }
@@ -114,15 +114,15 @@ final class ColorSchemeModeTests: XCTestCase {
     // MARK: - icon 映射
     // MARK: - preferredColorScheme 映射
 
-    func testPreferredColorScheme_system返回nil() {
+    func testPreferredColorSchemeSystemReturnsNil() {
         XCTAssertNil(ColorSchemeMode.system.preferredColorScheme)
     }
 
-    func testPreferredColorScheme_light返回Light() {
+    func testPreferredColorSchemeLightReturnsLight() {
         XCTAssertEqual(ColorSchemeMode.light.preferredColorScheme, .light)
     }
 
-    func testPreferredColorScheme_dark返回Dark() {
+    func testPreferredColorSchemeDarkReturnsDark() {
         XCTAssertEqual(ColorSchemeMode.dark.preferredColorScheme, .dark)
     }
 }

@@ -150,13 +150,13 @@ final class GlobalModelManagerTests: XCTestCase {
     // MARK: - resubscribeActiveDownloads
 
     /// 验证空下载状态时调用 resubscribeActiveDownloads 不崩溃
-    func testResubscribeActiveDownloads_空状态不崩溃() {
+    func testResubscribeActiveDownloadsEmptyStateNoCrash() {
         manager.resubscribeActiveDownloads()
         XCTAssertTrue(manager.downloadStates.isEmpty)
     }
 
     /// 验证多次调用 resubscribeActiveDownloads 不崩溃（幂等性）
-    func testResubscribeActiveDownloads_多次调用不崩溃() {
+    func testResubscribeActiveDownloadsMultipleCallsNoCrash() {
         manager.resubscribeActiveDownloads()
         manager.resubscribeActiveDownloads()
         manager.resubscribeActiveDownloads()
@@ -164,7 +164,7 @@ final class GlobalModelManagerTests: XCTestCase {
     }
 
     /// 验证 startDownload 后调用 resubscribeActiveDownloads 不崩溃
-    func testResubscribeActiveDownloads_下载中不崩溃() async {
+    func testResubscribeActiveDownloadsDuringDownloadNoCrash() async {
         manager.isChinaRegionOverride = false
         let manifest = LLMManifest(
             modelId: "test-resub",
@@ -189,7 +189,7 @@ final class GlobalModelManagerTests: XCTestCase {
     }
 
     /// 验证 resetForTesting 后调用 resubscribeActiveDownloads 不崩溃
-    func testResubscribeActiveDownloads_重置后不崩溃() {
+    func testResubscribeActiveDownloadsAfterResetNoCrash() {
         manager.resetForTesting()
         manager.resubscribeActiveDownloads()
         XCTAssertTrue(manager.downloadStates.isEmpty)

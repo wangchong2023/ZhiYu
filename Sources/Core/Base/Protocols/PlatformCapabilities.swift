@@ -86,7 +86,7 @@ public enum BiometricAuthProviderKey: DependencyKey {
 
     nonisolated public static var testValue: any BiometricAuthProviderProtocol {
         ServiceContainer.shared.resolveOptional((any BiometricAuthProviderProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpBiometricAuthProvider() }
+            ?? runOnMainSync { NoOpBiometricAuthProvider() }
     }
     nonisolated public static var previewValue: any BiometricAuthProviderProtocol { testValue }
 }

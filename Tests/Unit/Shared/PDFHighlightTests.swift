@@ -14,58 +14,58 @@ final class PDFHighlightTests: XCTestCase {
 
     // MARK: - highlightColor 颜色映射
 
-    func testHighlightColor_yellow返回Yellow() {
+    func testHighlightColorYellowReturnsYellow() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "yellow")
         XCTAssertEqual(highlight.highlightColor, .yellow)
     }
 
-    func testHighlightColor_green返回Green() {
+    func testHighlightColorGreenReturnsGreen() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "green")
         XCTAssertEqual(highlight.highlightColor, .green)
     }
 
-    func testHighlightColor_blue返回Blue() {
+    func testHighlightColorBlueReturnsBlue() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "blue")
         XCTAssertEqual(highlight.highlightColor, .blue)
     }
 
-    func testHighlightColor_pink返回Pink() {
+    func testHighlightColorPinkReturnsPink() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "pink")
         XCTAssertEqual(highlight.highlightColor, .pink)
     }
 
-    func testHighlightColor_purple返回Purple() {
+    func testHighlightColorPurpleReturnsPurple() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "purple")
         XCTAssertEqual(highlight.highlightColor, .purple)
     }
 
     // MARK: - 默认值
 
-    func testHighlightColor_未知颜色默认返回Yellow() {
+    func testHighlightColorUnknownColorDefaultsToYellow() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "orange")
         XCTAssertEqual(highlight.highlightColor, .yellow, "未知颜色应默认返回 yellow")
     }
 
-    func testHighlightColor_空字符串默认返回Yellow() {
+    func testHighlightColorEmptyStringDefaultsToYellow() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "")
         XCTAssertEqual(highlight.highlightColor, .yellow)
     }
 
     // MARK: - 大小写敏感
 
-    func testHighlightColor_大写Yellow返回默认() {
+    func testHighlightColorUppercaseYellowReturnsDefault() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "Yellow")
         XCTAssertEqual(highlight.highlightColor, .yellow, "大写 Y 应返回默认 yellow")
     }
 
-    func testHighlightColor_全大写返回默认() {
+    func testHighlightColorAllUppercaseReturnsDefault() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试", color: "GREEN")
         XCTAssertEqual(highlight.highlightColor, .yellow, "全大写应返回默认 yellow")
     }
 
     // MARK: - 默认初始化
 
-    func testInit_默认color为Yellow() {
+    func testInitDefaultColorIsYellow() {
         let highlight = PDFHighlight(pageIndex: 0, text: "测试")
         XCTAssertEqual(highlight.color, "yellow")
         XCTAssertEqual(highlight.highlightColor, .yellow)
@@ -73,7 +73,7 @@ final class PDFHighlightTests: XCTestCase {
 
     // MARK: - 所有支持的颜色
 
-    func testHighlightColor_所有支持颜色返回对应Color() {
+    func testHighlightColorAllSupportedColorsReturnCorrespondingColor() {
         let colorMap: [String: Color] = [
             "yellow": .yellow,
             "green": .green,

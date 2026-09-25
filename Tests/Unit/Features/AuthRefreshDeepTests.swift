@@ -110,7 +110,7 @@ final class AuthRefreshDeepTests: XCTestCase {
     // MARK: - refreshUserProfile 空字符串覆盖
 
     /// 验证 refreshUserProfile 后端返回空 avatar 时保留本地 avatar
-    func testRefreshUserProfile_空avatar_保留本地avatar() async throws {
+    func testRefreshUserProfileEmptyAvatarKeepsLocalAvatar() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -151,7 +151,7 @@ final class AuthRefreshDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 后端返回非空 avatar 时更新本地 avatar
-    func testRefreshUserProfile_非空avatar_更新本地avatar() async throws {
+    func testRefreshUserProfileNonEmptyAvatarUpdatesLocalAvatar() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -190,7 +190,7 @@ final class AuthRefreshDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 后端返回 Pro 套餐时更新配额
-    func testRefreshUserProfile_Pro套餐_更新配额() async throws {
+    func testRefreshUserProfileProPlanUpdatesQuota() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -233,7 +233,7 @@ final class AuthRefreshDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 无当前用户时不崩溃
-    func testRefreshUserProfile_无当前用户_不崩溃() async throws {
+    func testRefreshUserProfileNoCurrentUserNoCrash() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif

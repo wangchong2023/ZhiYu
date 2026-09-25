@@ -18,33 +18,33 @@ final class L10nSystemTableExtrasTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Auth_为System() {
+    func testTableNameAuthIsSystem() {
         XCTAssertEqual(L10n.Auth.tableName, "System")
     }
 
-    func testTableName_Settings_为System() {
+    func testTableNameSettingsIsSystem() {
         XCTAssertEqual(L10n.Settings.tableName, "System")
     }
 
-    func testTableName_Onboarding_为System() {
+    func testTableNameOnboardingIsSystem() {
         XCTAssertEqual(L10n.Onboarding.tableName, "System")
     }
 
-    func testTableName_Security_为System() {
+    func testTableNameSecurityIsSystem() {
         XCTAssertEqual(L10n.Security.tableName, "System")
     }
 
-    func testTableName_Network_为System() {
+    func testTableNameNetworkIsSystem() {
         XCTAssertEqual(L10n.Network.tableName, "System")
     }
 
-    func testTableName_Lint_为System() {
+    func testTableNameLintIsSystem() {
         XCTAssertEqual(L10n.Lint.tableName, "System")
     }
 
     // MARK: - Auth 属性 key 存在性
 
-    func testAuth_登录相关属性返回非Missing值() {
+    func testAuthLoginRelatedPropsReturnNonMissing() {
         let values = [
             L10n.Auth.login,
             L10n.Auth.register,
@@ -67,7 +67,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_运营商相关属性返回非Missing值() {
+    func testAuthCarrierRelatedPropsReturnNonMissing() {
         let values = [
             L10n.Auth.carrierSDKNotInitialized,
             L10n.Auth.carrierFailed,
@@ -83,7 +83,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_第三方登录相关属性返回非Missing值() {
+    func testAuthThirdPartyLoginRelatedPropsReturnNonMissing() {
         let values = [
             L10n.Auth.wechatDeveloping,
             L10n.Auth.googleDeveloping,
@@ -102,7 +102,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_协议与区域属性返回非Missing值() {
+    func testAuthAgreementAndRegionPropsReturnNonMissing() {
         let values = [
             L10n.Auth.agreementText,
             L10n.Auth.pleaseCheckAgreement,
@@ -128,7 +128,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_订阅相关属性返回非Missing值() {
+    func testAuthSubscriptionRelatedPropsReturnNonMissing() {
         let values = [
             L10n.Auth.profileAndQuota,
             L10n.Auth.currentSubscription,
@@ -156,7 +156,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_个人资料属性返回非Missing值() {
+    func testAuthProfilePropsReturnNonMissing() {
         let values = [
             L10n.Auth.nickname,
             L10n.Auth.birthday,
@@ -181,7 +181,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_统计与用量属性返回非Missing值() {
+    func testAuthStatsAndUsagePropsReturnNonMissing() {
         let values = [
             L10n.Auth.statsBoard,
             L10n.Auth.statsNotebooks,
@@ -199,7 +199,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_购买相关属性返回非Missing值() {
+    func testAuthPurchaseRelatedPropsReturnNonMissing() {
         let values = [
             L10n.Auth.purchasing,
             L10n.Auth.selectCycle,
@@ -230,7 +230,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testAuth_恢复购买属性返回非Missing值() {
+    func testAuthRestorePurchasePropsReturnNonMissing() {
         let values = [
             L10n.Auth.upgradeSuccessTitle,
             L10n.Auth.upgradeSuccessMessage,
@@ -250,7 +250,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
 
     // MARK: - Settings 属性 key 存在性
 
-    func testSettings_语言相关属性返回非Missing值() {
+    func testSettingsLanguageRelatedPropsReturnNonMissing() {
         let values = [
             L10n.Settings.systemTheme,
             L10n.Settings.languageEnglish,
@@ -273,7 +273,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testSettings_功能项属性返回非Missing值() {
+    func testSettingsFeaturePropsReturnNonMissing() {
         let values = [
             L10n.Settings.llmSettings,
             L10n.Settings.smartRouting,
@@ -301,7 +301,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testSettings_iCloudLastSyncFormat_返回非Missing且包含参数() {
+    func testSettingsICloudLastSyncFormatReturnsNonMissingWithParam() {
         let result = L10n.Settings.iCloudLastSyncFormat("2026-08-10")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Settings.iCloudLastSyncFormat 返回 Missing: \(result)")
@@ -310,7 +310,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
 
     // MARK: - Onboarding 属性 key 存在性
 
-    func testOnboarding_基础属性返回非Missing值() {
+    func testOnboardingBasicPropsReturnNonMissing() {
         let values = [
             L10n.Onboarding.subtitle,
             L10n.Onboarding.featureList,
@@ -326,7 +326,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
 
     // MARK: - Security 属性 key 存在性
 
-    func testSecurity_基础属性返回非Missing值() {
+    func testSecurityBasicPropsReturnNonMissing() {
         let values = [
             L10n.Security.promptInjectionPlaceholder,
             L10n.Security.dlpImagePlaceholder,
@@ -349,7 +349,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testSecurity_sandboxInstructions_返回非Missing且包含参数() {
+    func testSecuritySandboxInstructionsReturnsNonMissingWithParam() {
         let result = L10n.Security.sandboxInstructions("plugin-name")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Security.sandboxInstructions 返回 Missing: \(result)")
@@ -358,7 +358,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
 
     // MARK: - Network 属性 key 存在性
 
-    func testNetwork_基础属性返回非Missing值() {
+    func testNetworkBasicPropsReturnNonMissing() {
         let values = [
             L10n.Network.invalidHTTPResponse,
             L10n.Network.missingDataPayload,
@@ -374,14 +374,14 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testNetwork_errorServer_返回非Missing且包含参数() {
+    func testNetworkErrorServerReturnsNonMissingWithParam() {
         let result = L10n.Network.errorServer(500, "Internal Server Error")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Network.errorServer 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testNetwork_errorHTTP_返回非Missing且包含参数() {
+    func testNetworkErrorHTTPReturnsNonMissingWithParam() {
         let result = L10n.Network.errorHTTP(404)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Network.errorHTTP 返回 Missing: \(result)")
@@ -390,7 +390,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
 
     // MARK: - Lint 属性 key 存在性
 
-    func testLint_基础属性返回非Missing值() {
+    func testLintBasicPropsReturnNonMissing() {
         let values = [
             L10n.Lint.title,
             L10n.Lint.refactorSection,
@@ -407,7 +407,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testLint_问题类型属性返回非Missing值() {
+    func testLintIssueTypePropsReturnNonMissing() {
         let values = [
             L10n.Lint.orphanPage,
             L10n.Lint.orphanSuggestion,
@@ -428,7 +428,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testLint_指标与操作属性返回非Missing值() {
+    func testLintMetricsAndActionPropsReturnNonMissing() {
         let values = [
             L10n.Lint.metricPages,
             L10n.Lint.metricBroken,
@@ -455,7 +455,7 @@ final class L10nSystemTableExtrasTests: XCTestCase {
         }
     }
 
-    func testLint_errors_返回非Missing且包含参数() {
+    func testLintErrorsReturnsNonMissingWithParam() {
         let result = L10n.Lint.errors(3)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Lint.errors 返回 Missing: \(result)")

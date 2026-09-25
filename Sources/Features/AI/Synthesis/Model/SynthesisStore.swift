@@ -425,7 +425,7 @@ public final class SynthesisStore {
 
 public enum SynthesisStoreKey: DependencyKey {
     nonisolated public static var liveValue: SynthesisStore {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             ServiceContainer.shared.resolveOptional(SynthesisStore.self) ?? SynthesisStore()
         }
     }

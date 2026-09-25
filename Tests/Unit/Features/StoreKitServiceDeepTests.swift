@@ -46,17 +46,17 @@ final class StoreKitServiceDeepTests: XCTestCase {
     // MARK: - 初始状态
 
     /// 验证 isRestoring 初始为 false（setUp 已重置，模拟全新状态）
-    func testIsRestoring_初始状态_false() {
+    func testIsRestoringInitialStateFalse() {
         XCTAssertFalse(service.isRestoring, "isRestoring 初始应为 false")
     }
 
     /// 验证 restoreMessage 初始为 nil（setUp 已重置，模拟全新状态）
-    func testRestoreMessage_初始状态_nil() {
+    func testRestoreMessageInitialStateNil() {
         XCTAssertNil(service.restoreMessage, "restoreMessage 初始应为 nil")
     }
 
     /// 验证 isRestoring 可被外部读写（公开属性契约）
-    func testIsRestoring_可写属性_往返一致() {
+    func testIsRestoringWritablePropertyRoundTrip() {
         service.isRestoring = true
         XCTAssertTrue(service.isRestoring, "写入 true 后应读回 true")
         service.isRestoring = false
@@ -64,7 +64,7 @@ final class StoreKitServiceDeepTests: XCTestCase {
     }
 
     /// 验证 restoreMessage 可被外部读写（公开属性契约）
-    func testRestoreMessage_可写属性_往返一致() {
+    func testRestoreMessageWritablePropertyRoundTrip() {
         service.restoreMessage = L10n.Auth.restoreSuccess
         XCTAssertEqual(service.restoreMessage, L10n.Auth.restoreSuccess, "写入成功消息后应读回相同值")
         service.restoreMessage = nil
@@ -74,13 +74,13 @@ final class StoreKitServiceDeepTests: XCTestCase {
     // MARK: - startListening 幂等性
 
     /// 验证 startListening 单次调用不崩溃
-    func testStartListening_单次调用_不崩溃() {
+    func testStartListeningSingleCallNoCrash() {
         service.startListening()
         XCTAssertTrue(true, "单次 startListening 不应崩溃")
     }
 
     /// 验证 startListening 重复调用不崩溃（防重复注册：内部 cancel 上一个 Task）
-    func testStartListening_重复调用_不崩溃() {
+    func testStartListeningRepeatedCallNoCrash() {
         service.startListening()
         service.startListening()
         service.startListening()
@@ -88,7 +88,7 @@ final class StoreKitServiceDeepTests: XCTestCase {
     }
 
     /// 验证 startListening 后 stopListening 再 startListening 不崩溃（生命周期循环）
-    func testStartListening_停止后重启_不崩溃() {
+    func testStartListeningRestartAfterStopNoCrash() {
         service.startListening()
         service.stopListening()
         service.startListening()
@@ -98,13 +98,13 @@ final class StoreKitServiceDeepTests: XCTestCase {
     // MARK: - stopListening
 
     /// 验证未启动监听时 stopListening 不崩溃（防御性）
-    func testStopListening_未启动_不崩溃() {
+    func testStopListeningNotStartedNoCrash() {
         service.stopListening()
         XCTAssertTrue(true, "未启动监听时 stopListening 不应崩溃")
     }
 
     /// 验证 stopListening 可重复调用不崩溃
-    func testStopListening_重复调用_不崩溃() {
+    func testStopListeningRepeatedCallNoCrash() {
         service.startListening()
         service.stopListening()
         service.stopListening()
@@ -119,7 +119,7 @@ final class StoreKitServiceDeepTests: XCTestCase {
     // 此处同样跳过，仅保留非 async 的状态机测试。
 
     /// 验证 restorePurchases 入口前 isRestoring 可被预设（状态机前置条件）
-    func testRestorePurchases_前置状态_可预设isRestoring() {
+    func testRestorePurchasesPreStateCanPresetIsRestoring() {
         service.isRestoring = true
         XCTAssertTrue(service.isRestoring, "预设 isRestoring=true 后应读回 true")
         service.isRestoring = false
@@ -127,7 +127,7 @@ final class StoreKitServiceDeepTests: XCTestCase {
     }
 
     /// 验证 restorePurchases 入口前 restoreMessage 可被预设（状态机前置条件）
-    func testRestorePurchases_前置状态_可预设RestoreMessage() {
+    func testRestorePurchasesPreStateCanPresetRestoreMessage() {
         service.restoreMessage = L10n.Auth.restoreFailed
         XCTAssertEqual(service.restoreMessage, L10n.Auth.restoreFailed, "预设 restoreMessage 后应读回相同值")
         service.restoreMessage = nil
@@ -156,14 +156,14 @@ final class StoreKitServiceDeepTests: XCTestCase {
     // MARK: - 单例契约
 
     /// 验证 StoreKitService.shared 是单例（多次访问同一实例）
-    func testShared_单例_同一实例() {
+    func testSharedSingletonSameInstance() {
         let a = StoreKitService.shared
         let b = StoreKitService.shared
         XCTAssertTrue(a === b, "StoreKitService.shared 应返回同一实例")
     }
 
     /// 验证单例状态在用例内持久（写入后读回）
-    func testShared_单例状态持久_用例内() {
+    func testSharedSingletonStatePersistsWithinTestCase() {
         StoreKitService.shared.restoreMessage = L10n.Auth.restoring
         XCTAssertEqual(service.restoreMessage, L10n.Auth.restoring,
                        "通过 shared 写入后通过 service 读回应一致（同一实例）")

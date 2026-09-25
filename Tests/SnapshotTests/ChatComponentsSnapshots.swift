@@ -33,6 +33,7 @@ final class ChatComponentsSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
         // 清空 TaskCenter 单例，确保 AIPulseIndicator 空闲状态
         taskCenter.reset()
     }

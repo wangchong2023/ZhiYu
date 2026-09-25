@@ -29,49 +29,49 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - GlobalPromptRegistry: getPrompt 六大领域
 
     /// 验证 chat 领域 getPrompt 返回非空字符串
-    func test_getPrompt_chat领域返回非空字符串() {
+    func testGetPromptChatDomainReturnsNonEmptyString() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .chat, key: "default")
         XCTAssertFalse(prompt.isEmpty, "chat 领域 prompt 不应为空")
     }
 
     /// 验证 synthesis 领域 getPrompt 返回非空字符串
-    func test_getPrompt_synthesis领域返回非空字符串() {
+    func testGetPromptSynthesisDomainReturnsNonEmptyString() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .synthesis, key: "default")
         XCTAssertFalse(prompt.isEmpty, "synthesis 领域 prompt 不应为空")
     }
 
     /// 验证 ingest 领域 getPrompt 返回非空字符串
-    func test_getPrompt_ingest领域返回非空字符串() {
+    func testGetPromptIngestDomainReturnsNonEmptyString() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .ingest, key: "default")
         XCTAssertFalse(prompt.isEmpty, "ingest 领域 prompt 不应为空")
     }
 
     /// 验证 ragRetrieval 领域 getPrompt 返回非空字符串
-    func test_getPrompt_ragRetrieval领域返回非空字符串() {
+    func testGetPromptRagRetrievalDomainReturnsNonEmptyString() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .ragRetrieval, key: "default")
         XCTAssertFalse(prompt.isEmpty, "ragRetrieval 领域 prompt 不应为空")
     }
 
     /// 验证 knowledgeRefactor 领域 getPrompt 返回非空字符串
-    func test_getPrompt_knowledgeRefactor领域返回非空字符串() {
+    func testGetPromptKnowledgeRefactorDomainReturnsNonEmptyString() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .knowledgeRefactor, key: "default")
         XCTAssertFalse(prompt.isEmpty, "knowledgeRefactor 领域 prompt 不应为空")
     }
 
     /// 验证 voiceNote 领域 getPrompt 返回非空字符串
-    func test_getPrompt_voiceNote领域返回非空字符串() {
+    func testGetPromptVoiceNoteDomainReturnsNonEmptyString() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .voiceNote, key: "default")
         XCTAssertFalse(prompt.isEmpty, "voiceNote 领域 prompt 不应为空")
     }
 
     /// 遍历 PromptDomain.allCases 验证所有领域均返回非空 prompt
-    func test_getPrompt_allCases遍历均返回非空() {
+    func testGetPromptAllCasesIterateAllReturnNonEmpty() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         for domain in PromptDomain.allCases {
             let prompt = registry.getPrompt(domain: domain, key: "default")
@@ -82,7 +82,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - GlobalPromptRegistry: getPrompt key 参数被忽略
 
     /// 验证 getPrompt 的 key 参数被忽略（_ 标记），不同 key 返回相同结果
-    func test_getPrompt_key参数被忽略_不同key返回相同结果() {
+    func testGetPromptKeyParamIgnoredDifferentKeysReturnSameResult() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let promptA = registry.getPrompt(domain: .chat, key: "default")
         let promptB = registry.getPrompt(domain: .chat, key: "custom-scene")
@@ -94,7 +94,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - GlobalPromptRegistry: buildPrompt 无变量
 
     /// 验证 buildPrompt 无变量时返回原始 prompt（与 getPrompt 一致）
-    func test_buildPrompt无变量时返回原始prompt() {
+    func testBuildPromptNoVariablesReturnsOriginalPrompt() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let built = registry.buildPrompt(domain: .ingest, key: "default", variables: [:])
         let direct = registry.getPrompt(domain: .ingest, key: "default")
@@ -104,7 +104,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - GlobalPromptRegistry: buildPrompt 单变量插值
 
     /// 验证 buildPrompt 单变量正确插值 {{key}} → value
-    func test_buildPrompt单变量正确插值() {
+    func testBuildPromptSingleVariableCorrectInterpolation() {
         let promptService = PromptService(defaults: testDefaults)
         promptService.expansionSystemPrompt = "你好 {{name}}，请开始任务"
         let registry = GlobalPromptRegistry(promptService: promptService)
@@ -116,7 +116,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - GlobalPromptRegistry: buildPrompt 多变量同时插值
 
     /// 验证 buildPrompt 多变量同时插值（通过 chat 领域含占位符模板验证）
-    func test_buildPrompt多变量同时插值不崩溃且返回非空() {
+    func testBuildPromptMultipleVariablesInterpolateNoCrashAndNonEmpty() {
         let promptService = PromptService(defaults: testDefaults)
         promptService.expansionSystemPrompt = "角色: {{role}} 任务: {{task}} 输入: {{input}}"
         let registry = GlobalPromptRegistry(promptService: promptService)
@@ -131,7 +131,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - GlobalPromptRegistry: buildPrompt 安全转义（注入尝试被中和）
 
     /// 验证 buildPrompt 对变量值中的 Prompt 注入尝试进行中和（OWASP 拦截）
-    func test_buildPrompt变量值含注入尝试应被中和() {
+    func testBuildPromptVariableValueWithInjectionAttemptShouldBeNeutralized() {
         let promptService = PromptService(defaults: testDefaults)
         promptService.expansionSystemPrompt = "任务: {{payload}}"
         let registry = GlobalPromptRegistry(promptService: promptService)
@@ -149,7 +149,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     }
 
     /// 验证 buildPrompt 对变量值中的 ChatML 定界符进行转义
-    func test_buildPrompt变量值含ChatML定界符应被转义() {
+    func testBuildPromptVariableValueWithChatMLDelimiterShouldBeEscaped() {
         let promptService = PromptService(defaults: testDefaults)
         promptService.expansionSystemPrompt = "任务: {{payload}}"
         let registry = GlobalPromptRegistry(promptService: promptService)
@@ -171,7 +171,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     /// 问题驱动：验证 buildPrompt 变量值含 }} 时是否会破坏后续变量插值
     /// 这是一个潜在的顺序依赖 bug：replacingOccurrences 会先替换第一个变量，
     /// 如果其值含 }}，可能影响后续变量的占位符匹配
-    func test_问题驱动_buildPrompt变量值含右定界符不破坏后续插值() {
+    func testBuildPromptVariableValueWithRightDelimiterDoesNotBreakSubsequentInterpolation() {
         // 构造一个含两个占位符的模板场景
         // 由于 getPrompt 返回固定字符串，我们通过 PromptService 注入含占位符的 prompt
         // 但 PromptService 的 prompt 是 @Observable 属性，可通过设置修改
@@ -191,7 +191,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - 问题驱动: buildPrompt 未匹配占位符保留原样
 
     /// 问题驱动：验证 buildPrompt 模板中未匹配的 {{key}} 占位符保留原样
-    func test_问题驱动_buildPrompt未匹配占位符保留原样() {
+    func testBuildPromptUnmatchedPlaceholderKeptAsIs() {
         let promptService = PromptService(defaults: testDefaults)
         promptService.expansionSystemPrompt = "已匹配: {{matched}} 未匹配: {{unmatched}}"
         let registry = GlobalPromptRegistry(promptService: promptService)
@@ -204,7 +204,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - 问题驱动: getPrompt ingest/voiceNote L10n 修复验证
 
     /// 问题驱动：验证 getPrompt 的 ingest 领域已通过 L10n 本地化（A-20 修复验证）
-    func test_ingest领域已通过L10n本地化() {
+    func testIngestDomainLocalizedViaL10n() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .ingest, key: "default")
         // 修复后：ingest 领域应返回 L10n 本地化字符串，非硬编码英文
@@ -214,7 +214,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     }
 
     /// 问题驱动：验证 voiceNote 领域已通过 L10n 本地化（A-20 修复验证）
-    func test_voiceNote领域已通过L10n本地化() {
+    func testVoiceNoteDomainLocalizedViaL10n() {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         let prompt = registry.getPrompt(domain: .voiceNote, key: "default")
         // 修复后：voiceNote 领域应返回 L10n 本地化字符串，非硬编码英文
@@ -226,13 +226,13 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - GlobalPromptRegistry: Sendable 与 shared 单例
 
     /// 验证 GlobalPromptRegistry.shared 单例可正常工作
-    func test_shared单例返回非空prompt() {
+    func testSharedSingletonReturnsNonEmptyPrompt() {
         let prompt = GlobalPromptRegistry.shared.getPrompt(domain: .chat, key: "default")
         XCTAssertFalse(prompt.isEmpty, "shared 单例应返回非空 prompt")
     }
 
     /// 验证 GlobalPromptRegistry 是 Sendable（编译期保证，此处验证运行时并发调用不崩溃）
-    func test_并发调用buildPrompt不崩溃() async {
+    func testConcurrentBuildPromptNoCrash() async {
         let registry = GlobalPromptRegistry(promptService: PromptService(defaults: testDefaults))
         await withTaskGroup(of: Void.self) { group in
             for domain in PromptDomain.allCases {
@@ -247,7 +247,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: parse 无变量
 
     /// 验证 parse 无变量时返回原模板
-    func test_parse无变量时返回原模板() {
+    func testParseNoVariablesReturnsOriginalTemplate() {
         let engine = PromptTemplateEngine()
         let template = "这是一个没有占位符的模板"
         let result = engine.parse(template: template, with: [:])
@@ -255,7 +255,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     }
 
     /// 验证 parse 模板中无占位符时返回原模板
-    func test_parse模板无占位符时返回原模板() {
+    func testParseTemplateNoPlaceholderReturnsOriginalTemplate() {
         let engine = PromptTemplateEngine()
         let template = "纯文本内容无花括号"
         let result = engine.parse(template: template, with: ["key": "value"])
@@ -265,7 +265,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: parse 单变量插值
 
     /// 验证 parse 单变量正确插值
-    func test_parse单变量正确插值() {
+    func testParseSingleVariableCorrectInterpolation() {
         let engine = PromptTemplateEngine()
         let template = "你好，{{name}}！"
         let result = engine.parse(template: template, with: ["name": "世界"])
@@ -275,7 +275,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: parse 多变量插值
 
     /// 验证 parse 多变量同时插值
-    func test_parse多变量同时插值() {
+    func testParseMultipleVariablesInterpolateSimultaneously() {
         let engine = PromptTemplateEngine()
         let template = "角色: {{role}}，任务: {{task}}，输入: {{input}}"
         let variables = ["role": "架构师", "task": "设计", "input": "需求"]
@@ -286,7 +286,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: parse 占位符无匹配变量保留原样
 
     /// 验证 parse 占位符无匹配变量时保留原样
-    func test_parse占位符无匹配变量时保留原样() {
+    func testParsePlaceholderNoMatchVariableKeptAsIs() {
         let engine = PromptTemplateEngine()
         let template = "已匹配: {{matched}}，未匹配: {{unmatched}}"
         let result = engine.parse(template: template, with: ["matched": "值"])
@@ -297,7 +297,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: parse 变量值含特殊字符
 
     /// 验证 parse 变量值含 {{ 时不被二次解析
-    func test_parse变量值含左定界符不被二次解析() {
+    func testParseVariableValueWithLeftDelimiterNotDoubleParsed() {
         let engine = PromptTemplateEngine()
         let template = "前缀 {{key}} 后缀"
         let result = engine.parse(template: template, with: ["key": "{{injected}}"])
@@ -305,7 +305,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     }
 
     /// 验证 parse 变量值含 }} 时不破坏模板结构
-    func test_parse变量值含右定界符不破坏模板() {
+    func testParseVariableValueWithRightDelimiterDoesNotBreakTemplate() {
         let engine = PromptTemplateEngine()
         let template = "前缀 {{key}} 后缀"
         let result = engine.parse(template: template, with: ["key": "evil}}"])
@@ -313,7 +313,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     }
 
     /// 验证 parse 变量值含换行符时正确插入
-    func test_parse变量值含换行符正确插入() {
+    func testParseVariableValueWithNewlineCorrectlyInserted() {
         let engine = PromptTemplateEngine()
         let template = "输入: {{input}}"
         let result = engine.parse(template: template, with: ["input": "第一行\n第二行"])
@@ -323,7 +323,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 无远程 URL 使用本地模板
 
     /// 验证 renderPrompt 无远程 URL 时使用本地 systemPromptTemplate 并插值
-    func test_renderPrompt无远程URL时使用本地模板() async {
+    func testRenderPromptNoRemoteURLUsesLocalTemplate() async {
         let engine = PromptTemplateEngine()
         let skill = AgentSkill(
             skillId: "test-local-\(UUID().uuidString)",
@@ -340,7 +340,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 远程拉取成功 + SHA256 匹配
 
     /// 验证 renderPrompt 远程拉取成功且 SHA256 匹配时使用远程内容
-    func test_renderPrompt远程拉取成功且SHA256匹配时使用远程内容() async throws {
+    func testRenderPromptRemoteFetchSuccessAndSHA256MatchUsesRemoteContent() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -374,7 +374,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 远程 SHA256 不匹配降级
 
     /// 验证 renderPrompt 远程内容 SHA256 不匹配时降级到本地模板
-    func test_renderPrompt远程SHA256不匹配时降级到本地模板() async {
+    func testRenderPromptRemoteSHA256MismatchFallsBackToLocalTemplate() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -408,7 +408,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 远程 SHA256 大小写不敏感
 
     /// 验证 renderPrompt 远程 SHA256 大写 hex 也能匹配（源码 .lowercased() 处理）
-    func test_renderPrompt远程SHA256大写hex也能匹配() async throws {
+    func testRenderPromptRemoteSHA256UpperHexAlsoMatches() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -442,7 +442,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 网络失败降级
 
     /// 验证 renderPrompt 网络失败时降级到本地模板
-    func test_renderPrompt网络失败时降级到本地模板() async {
+    func testRenderPromptNetworkFailureFallsBackToLocalTemplate() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -473,7 +473,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 远程内容为空字符串降级
 
     /// 验证 renderPrompt 远程内容为空字符串（仅空白）时降级到本地模板
-    func test_renderPrompt远程内容为空白时降级到本地模板() async {
+    func testRenderPromptRemoteContentWhitespaceFallsBackToLocalTemplate() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -504,7 +504,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 缓存命中且 SHA256 匹配
 
     /// 验证 renderPrompt 缓存命中且 SHA256 匹配时使用缓存（不发起网络请求）
-    func test_renderPrompt缓存命中且SHA256匹配时使用缓存() async throws {
+    func testRenderPromptCacheHitAndSHA256MatchUsesCache() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -548,7 +548,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 缓存命中但 SHA256 不匹配删除缓存
 
     /// 验证 renderPrompt 缓存命中但 SHA256 不匹配时删除缓存并降级到本地模板
-    func test_renderPrompt缓存SHA256不匹配时删除缓存并降级() async throws {
+    func testRenderPromptCacheSHA256MismatchDeletesCacheAndFallsBack() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -593,7 +593,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 变量插值在本地模板上生效
 
     /// 验证 renderPrompt 降级到本地模板时变量插值仍生效
-    func test_renderPrompt降级到本地模板时变量插值生效() async {
+    func testRenderPromptFallsBackToLocalTemplateVariableInterpolationWorks() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -624,7 +624,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 无 SHA256 配置时使用远程内容
 
     /// 验证 renderPrompt 未配置 SHA256 时使用远程内容（兼容行为，但记录警告）
-    func test_renderPrompt无SHA256配置时使用远程内容() async {
+    func testRenderPromptNoSHA256ConfigUsesRemoteContent() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -657,7 +657,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt HTTP 非 200 降级
 
     /// 验证 renderPrompt 远程返回 HTTP 500 时降级到本地模板
-    func test_renderPromptHTTP非200时降级到本地模板() async {
+    func testRenderPromptHTTPNon200FallsBackToLocalTemplate() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -688,7 +688,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: renderPrompt 无效 URL 字符串降级
 
     /// 验证 renderPrompt remotePromptURLString 为无效 URL 字符串时使用本地模板
-    func test_renderPrompt无效URL字符串时使用本地模板() async {
+    func testRenderPromptInvalidURLStringUsesLocalTemplate() async {
         let engine = PromptTemplateEngine()
         let skillId = "test-invalid-url-\(UUID().uuidString)"
         let skill = AgentSkill(
@@ -707,7 +707,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: clearCache 清除缓存文件
 
     /// 验证 clearCache 清除缓存目录下所有文件
-    func test_clearCache清除缓存文件() async throws {
+    func testClearCacheClearsCacheFiles() async throws {
         let engine = PromptTemplateEngine()
         let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("AgentPrompts", isDirectory: true)
@@ -729,7 +729,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     }
 
     /// 验证 clearCache 在缓存目录为空时不崩溃
-    func test_clearCache缓存目录为空时不崩溃() async {
+    func testClearCacheEmptyCacheDirNoCrash() async {
         let engine = PromptTemplateEngine()
         // 先清空，再清空
         await engine.clearCache()
@@ -740,7 +740,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - PromptTemplateEngine: parse nonisolated 并发安全
 
     /// 验证 parse 是 nonisolated，可并发调用且不崩溃
-    func test_parse并发调用不崩溃() async {
+    func testParseConcurrentCallNoCrash() async {
         let engine = PromptTemplateEngine()
         let template = "变量: {{key}}"
         await withTaskGroup(of: String.self) { group in
@@ -762,7 +762,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
 
     /// 问题驱动：验证 renderPrompt 远程拉取超时时间为 PromptConstants.PromptTemplate.remoteFetchTimeout (5 秒)
     /// 此超时当前不可配置，硬编码在 PromptConstants 中
-    func test_问题驱动_renderPrompt超时时间为5秒且不可配置() {
+    func testRenderPromptTimeoutIs5SecondsAndNotConfigurable() {
         // 验证超时常量值为 5.0 秒
         XCTAssertEqual(
             PromptConstants.PromptTemplate.remoteFetchTimeout,
@@ -776,7 +776,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
 
     /// 问题驱动：验证缓存文件命名 \(skillId)_\(version).md，skillId 含 / 时已被 sanitizeFilename 过滤
     /// 修复后：skillId 中的 / 被替换为 _，不会创建子目录（A-22 路径遍历修复验证）
-    func test_skillId含路径分隔符已被sanitize过滤() async throws {
+    func testSkillIdWithPathSeparatorSanitized() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -824,7 +824,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     /// 问题驱动：验证缓存写入失败时调用方不知情（try? 静默吞错）
     /// 源码第 112/118 行：try? fetchedContent.write(to: cachedFileURL, ...)
     /// 磁盘满或权限错误时，调用方无法感知缓存写入失败，下次仍会发起网络请求
-    func test_问题驱动_缓存写入失败时静默吞错不抛异常() async {
+    func testCacheWriteFailureSilentlySwallowsErrorNoThrow() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)
@@ -860,7 +860,7 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
     // MARK: - 问题驱动: renderPrompt 缓存写入后第二次命中缓存
 
     /// 验证 renderPrompt 首次拉取写入缓存后，第二次调用命中缓存（不发起网络请求）
-    func test_renderPrompt首次拉取后第二次命中缓存() async throws {
+    func testRenderPromptFirstFetchThenSecondCacheHit() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [SupplementMockURLProtocol.self]
         let session = URLSession(configuration: config)

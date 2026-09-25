@@ -18,49 +18,49 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpKnowledgeRepository
 
     /// NoOpKnowledgeRepository fetchAll 应返回空数组
-    func testNoOpKnowledgeRepository_fetchAll_返回空数组() async throws {
+    func testNoOpKnowledgeRepositoryFetchAllReturnsEmptyArray() async throws {
         let repo = NoOpKnowledgeRepository()
         let pages = try await repo.fetchAll()
         XCTAssertTrue(pages.isEmpty)
     }
 
     /// NoOpKnowledgeRepository fetch 应返回 nil
-    func testNoOpKnowledgeRepository_fetch_返回nil() async throws {
+    func testNoOpKnowledgeRepositoryFetchReturnsNil() async throws {
         let repo = NoOpKnowledgeRepository()
         let page = try await repo.fetch(id: UUID())
         XCTAssertNil(page)
     }
 
     /// NoOpKnowledgeRepository save/delete 应不崩溃
-    func testNoOpKnowledgeRepository_saveDelete_不崩溃() async throws {
+    func testNoOpKnowledgeRepositorySaveDeleteNoCrash() async throws {
         let repo = NoOpKnowledgeRepository()
         try await repo.save(KnowledgePage(title: "test", pageType: .concept, content: ""))
         try await repo.delete(id: UUID())
     }
 
     /// NoOpKnowledgeRepository search 应返回空数组
-    func testNoOpKnowledgeRepository_search_返回空数组() async throws {
+    func testNoOpKnowledgeRepositorySearchReturnsEmptyArray() async throws {
         let repo = NoOpKnowledgeRepository()
         let results = try await repo.search(query: "test")
         XCTAssertTrue(results.isEmpty)
     }
 
     /// NoOpKnowledgeRepository fetchBacklinks 应返回空数组
-    func testNoOpKnowledgeRepository_fetchBacklinks_返回空数组() async throws {
+    func testNoOpKnowledgeRepositoryFetchBacklinksReturnsEmptyArray() async throws {
         let repo = NoOpKnowledgeRepository()
         let backlinks = try await repo.fetchBacklinks(for: UUID())
         XCTAssertTrue(backlinks.isEmpty)
     }
 
     /// NoOpKnowledgeRepository count 应返回 0
-    func testNoOpKnowledgeRepository_count_返回0() async throws {
+    func testNoOpKnowledgeRepositoryCountReturnsZero() async throws {
         let repo = NoOpKnowledgeRepository()
         let count = try await repo.count()
         XCTAssertEqual(count, 0)
     }
 
     /// NoOpKnowledgeRepository renameTag/deleteTag 应不崩溃
-    func testNoOpKnowledgeRepository_tagOperations_不崩溃() async throws {
+    func testNoOpKnowledgeRepositoryTagOperationsNoCrash() async throws {
         let repo = NoOpKnowledgeRepository()
         try await repo.renameTag(old: "old", to: "new")
         try await repo.deleteTag("tag")
@@ -69,49 +69,49 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpEmbeddingProvider
 
     /// NoOpEmbeddingProvider getAllEmbeddings 应返回空字典
-    func testNoOpEmbeddingProvider_getAllEmbeddings_返回空字典() async {
+    func testNoOpEmbeddingProviderGetAllEmbeddingsReturnsEmptyDictionary() async {
         let provider = NoOpEmbeddingProvider()
         let embeddings = await provider.getAllEmbeddings()
         XCTAssertTrue(embeddings.isEmpty)
     }
 
     /// NoOpEmbeddingProvider vectorizeChunks 应返回空数组
-    func testNoOpEmbeddingProvider_vectorizeChunks_返回空数组() async {
+    func testNoOpEmbeddingProviderVectorizeChunksReturnsEmptyArray() async {
         let provider = NoOpEmbeddingProvider()
         let vectors = await provider.vectorizeChunks(chunks: ["test"])
         XCTAssertTrue(vectors.isEmpty)
     }
 
     /// NoOpEmbeddingProvider search 应返回空数组
-    func testNoOpEmbeddingProvider_search_返回空数组() async {
+    func testNoOpEmbeddingProviderSearchReturnsEmptyArray() async {
         let provider = NoOpEmbeddingProvider()
         let results = await provider.search(query: "test", topK: 5)
         XCTAssertTrue(results.isEmpty)
     }
 
     /// NoOpEmbeddingProvider multiQuerySearch 应返回空数组
-    func testNoOpEmbeddingProvider_multiQuerySearch_返回空数组() async {
+    func testNoOpEmbeddingProviderMultiQuerySearchReturnsEmptyArray() async {
         let provider = NoOpEmbeddingProvider()
         let results = await provider.multiQuerySearch(query: "test", topK: 5)
         XCTAssertTrue(results.isEmpty)
     }
 
     /// NoOpEmbeddingProvider hydeSearch 应返回空数组
-    func testNoOpEmbeddingProvider_hydeSearch_返回空数组() async {
+    func testNoOpEmbeddingProviderHydeSearchReturnsEmptyArray() async {
         let provider = NoOpEmbeddingProvider()
         let results = await provider.hydeSearch(query: "test", topK: 5)
         XCTAssertTrue(results.isEmpty)
     }
 
     /// NoOpEmbeddingProvider advancedSearch 应返回空数组
-    func testNoOpEmbeddingProvider_advancedSearch_返回空数组() async {
+    func testNoOpEmbeddingProviderAdvancedSearchReturnsEmptyArray() async {
         let provider = NoOpEmbeddingProvider()
         let results = await provider.advancedSearch(query: "test", topK: 5)
         XCTAssertTrue(results.isEmpty)
     }
 
     /// NoOpEmbeddingProvider updateEmbedding/indexChunks/syncEmbeddings 应不崩溃
-    func testNoOpEmbeddingProvider_updateAndSync_不崩溃() async {
+    func testNoOpEmbeddingProviderUpdateAndSyncNoCrash() async {
         let provider = NoOpEmbeddingProvider()
         let page = KnowledgePage(title: "test", pageType: .concept, content: "content")
         await provider.updateEmbedding(for: page)
@@ -120,7 +120,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpEmbeddingProvider loadInitialCache/clearCacheAndReload 应不崩溃
-    func testNoOpEmbeddingProvider_cacheOperations_不崩溃() async {
+    func testNoOpEmbeddingProviderCacheOperationsNoCrash() async {
         let provider = NoOpEmbeddingProvider()
         await provider.loadInitialCache()
         await provider.clearCacheAndReload()
@@ -129,21 +129,21 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpImportFileStore
 
     /// NoOpImportFileStore saveContent 应返回 nil
-    func testNoOpImportFileStore_saveContent_返回nil() {
+    func testNoOpImportFileStoreSaveContentReturnsNil() {
         let store = NoOpImportFileStore()
         let result = store.saveContent("test", category: .file, ext: "pdf")
         XCTAssertNil(result)
     }
 
     /// NoOpImportFileStore saveData 应返回 nil
-    func testNoOpImportFileStore_saveData_返回nil() {
+    func testNoOpImportFileStoreSaveDataReturnsNil() {
         let store = NoOpImportFileStore()
         let result = store.saveData(Data(), category: .file, ext: "pdf")
         XCTAssertNil(result)
     }
 
     /// NoOpImportFileStore copyFile 应返回 nil
-    func testNoOpImportFileStore_copyFile_返回nil() {
+    func testNoOpImportFileStoreCopyFileReturnsNil() {
         let store = NoOpImportFileStore()
         let result = store.copyFile(at: URL(fileURLWithPath: "/tmp/test"), category: .file)
         XCTAssertNil(result)
@@ -152,35 +152,35 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpImportRecordRepository
 
     /// NoOpImportRecordRepository fetchAll 应返回空数组
-    func testNoOpImportRecordRepository_fetchAll_返回空数组() async throws {
+    func testNoOpImportRecordRepositoryFetchAllReturnsEmptyArray() async throws {
         let repo = NoOpImportRecordRepository()
         let records = try await repo.fetchAll(category: nil, limit: 10)
         XCTAssertTrue(records.isEmpty)
     }
 
     /// NoOpImportRecordRepository fetchByID 应返回 nil
-    func testNoOpImportRecordRepository_fetchByID_返回nil() async throws {
+    func testNoOpImportRecordRepositoryFetchByIDReturnsNil() async throws {
         let repo = NoOpImportRecordRepository()
         let record = try await repo.fetchByID("test")
         XCTAssertNil(record)
     }
 
     /// NoOpImportRecordRepository fetchInProgress 应返回空数组
-    func testNoOpImportRecordRepository_fetchInProgress_返回空数组() async throws {
+    func testNoOpImportRecordRepositoryFetchInProgressReturnsEmptyArray() async throws {
         let repo = NoOpImportRecordRepository()
         let records = try await repo.fetchInProgress()
         XCTAssertTrue(records.isEmpty)
     }
 
     /// NoOpImportRecordRepository totalStorageSize 应返回 0
-    func testNoOpImportRecordRepository_totalStorageSize_返回0() async throws {
+    func testNoOpImportRecordRepositoryTotalStorageSizeReturnsZero() async throws {
         let repo = NoOpImportRecordRepository()
         let size = try await repo.totalStorageSize()
         XCTAssertEqual(size, 0)
     }
 
     /// NoOpImportRecordRepository save/update 操作应不崩溃
-    func testNoOpImportRecordRepository_saveUpdate_不崩溃() async throws {
+    func testNoOpImportRecordRepositorySaveUpdateNoCrash() async throws {
         let repo = NoOpImportRecordRepository()
         let record = ImportRecord(
             id: "test", category: "file", title: "test.pdf",
@@ -196,13 +196,13 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpModelDownload
 
     /// NoOpModelDownload startDownload 应不崩溃
-    func testNoOpModelDownload_startDownload_不崩溃() async throws {
+    func testNoOpModelDownloadStartDownloadNoCrash() async throws {
         let download = NoOpModelDownload()
         try await download.startDownload(modelId: "test", remoteURL: URL(string: "https://example.com")!)
     }
 
     /// NoOpModelDownload pause/resume/cancel 应不崩溃
-    func testNoOpModelDownload_pauseResumeCancel_不崩溃() async throws {
+    func testNoOpModelDownloadPauseResumeCancelNoCrash() async throws {
         let download = NoOpModelDownload()
         try await download.pauseDownload(modelId: "test")
         try await download.resumeDownload(modelId: "test")
@@ -210,7 +210,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpModelDownload observeDownloadState 应返回空流
-    func testNoOpModelDownload_observeDownloadState_空流() async {
+    func testNoOpModelDownloadObserveDownloadStateEmptyStream() async {
         let download = NoOpModelDownload()
         let stream = await download.observeDownloadState(for: "test")
         var count = 0
@@ -223,7 +223,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpRAGGovernanceRepository
 
     /// NoOpRAGGovernanceRepository fetchTokenStats 应返回零统计
-    func testNoOpRAGGovernanceRepository_fetchTokenStats_零统计() async throws {
+    func testNoOpRAGGovernanceRepositoryFetchTokenStatsZeroStats() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let stats = try await repo.fetchTokenStats(days: 7)
         XCTAssertEqual(stats.total, 0)
@@ -232,28 +232,28 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpRAGGovernanceRepository fetchDailyAIStats 应返回空数组
-    func testNoOpRAGGovernanceRepository_fetchDailyAIStats_空数组() async throws {
+    func testNoOpRAGGovernanceRepositoryFetchDailyAIStatsEmptyArray() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let stats = try await repo.fetchDailyAIStats(days: 7)
         XCTAssertTrue(stats.isEmpty)
     }
 
     /// NoOpRAGGovernanceRepository fetchRecentLogs 应返回空数组
-    func testNoOpRAGGovernanceRepository_fetchRecentLogs_空数组() async throws {
+    func testNoOpRAGGovernanceRepositoryFetchRecentLogsEmptyArray() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let logs = try await repo.fetchRecentLogs(limit: 10)
         XCTAssertTrue(logs.isEmpty)
     }
 
     /// NoOpRAGGovernanceRepository fetchRAGEvaluations 应返回空数组
-    func testNoOpRAGGovernanceRepository_fetchRAGEvaluations_空数组() async throws {
+    func testNoOpRAGGovernanceRepositoryFetchRAGEvaluationsEmptyArray() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let evals = try await repo.fetchRAGEvaluations(limit: 10)
         XCTAssertTrue(evals.isEmpty)
     }
 
     /// NoOpRAGGovernanceRepository calculateAverageRAGScores 应返回全零评分
-    func testNoOpRAGGovernanceRepository_calculateAverageRAGScores_全零() async throws {
+    func testNoOpRAGGovernanceRepositoryCalculateAverageRAGScoresAllZero() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let scores = try await repo.calculateAverageRAGScores(days: 7)
         XCTAssertEqual(scores.faithfulness, 0)
@@ -264,7 +264,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpRAGGovernanceRepository 检索指标应返回 0
-    func testNoOpRAGGovernanceRepository_retrievalMetrics_返回0() async throws {
+    func testNoOpRAGGovernanceRepositoryRetrievalMetricsReturnsZero() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let hitRate = try await repo.calculateHitRate(days: 7, k: 5)
         let mrr = try await repo.calculateMRR(days: 7)
@@ -281,7 +281,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpRAGGovernanceRepository calculateRetrievalLatency 应返回全零
-    func testNoOpRAGGovernanceRepository_calculateRetrievalLatency_全零() async throws {
+    func testNoOpRAGGovernanceRepositoryCalculateRetrievalLatencyAllZero() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let latency = try await repo.calculateRetrievalLatency(days: 7)
         XCTAssertEqual(latency.p50, 0)
@@ -291,7 +291,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpRAGGovernanceRepository calculateTokenEfficiency 应返回全零
-    func testNoOpRAGGovernanceRepository_calculateTokenEfficiency_全零() async throws {
+    func testNoOpRAGGovernanceRepositoryCalculateTokenEfficiencyAllZero() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let efficiency = try await repo.calculateTokenEfficiency(days: 7)
         XCTAssertEqual(efficiency.totalTokens, 0)
@@ -301,7 +301,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpRAGGovernanceRepository logTokenUsage/logCall/saveRAGEvaluation 应不崩溃
-    func testNoOpRAGGovernanceRepository_logOperations_不崩溃() async throws {
+    func testNoOpRAGGovernanceRepositoryLogOperationsNoCrash() async throws {
         let repo = NoOpRAGGovernanceRepository()
         try await repo.logTokenUsage(model: "test", promptTokens: 100, completionTokens: 50)
         try await repo.logCall(model: "test", promptTokens: 100, completionTokens: 50, latencyMS: 200, status: "success")
@@ -314,21 +314,21 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpRAGGovernanceRepository fetchRetrievalSnapshots 应返回空数组
-    func testNoOpRAGGovernanceRepository_fetchRetrievalSnapshots_空数组() async throws {
+    func testNoOpRAGGovernanceRepositoryFetchRetrievalSnapshotsEmptyArray() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let snapshots = try await repo.fetchRetrievalSnapshots(evaluationID: 1)
         XCTAssertTrue(snapshots.isEmpty)
     }
 
     /// NoOpRAGGovernanceRepository fetchMonthlyTokenStats 应返回空数组
-    func testNoOpRAGGovernanceRepository_fetchMonthlyTokenStats_空数组() async throws {
+    func testNoOpRAGGovernanceRepositoryFetchMonthlyTokenStatsEmptyArray() async throws {
         let repo = NoOpRAGGovernanceRepository()
         let stats = try await repo.fetchMonthlyTokenStats()
         XCTAssertTrue(stats.isEmpty)
     }
 
     /// NoOpRAGGovernanceRepository saveRetrievalSnapshots/saveRelevanceJudgments/updateUserRating 应不崩溃
-    func testNoOpRAGGovernanceRepository_saveOperations_不崩溃() async throws {
+    func testNoOpRAGGovernanceRepositorySaveOperationsNoCrash() async throws {
         let repo = NoOpRAGGovernanceRepository()
         try await repo.saveRetrievalSnapshots([])
         try await repo.saveRelevanceJudgments([])
@@ -338,21 +338,21 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpPageStoreCapabilities
 
     /// NoOpPageStoreCapabilities pages 应返回空数组
-    func testNoOpPageStoreCapabilities_pages_返回空数组() async {
+    func testNoOpPageStoreCapabilitiesPagesReturnsEmptyArray() async {
         let store = NoOpPageStoreCapabilities()
         let pages = await store.pages
         XCTAssertTrue(pages.isEmpty)
     }
 
     /// NoOpPageStoreCapabilities fetchAllPages 应返回空数组
-    func testNoOpPageStoreCapabilities_fetchAllPages_返回空数组() async throws {
+    func testNoOpPageStoreCapabilitiesFetchAllPagesReturnsEmptyArray() async throws {
         let store = NoOpPageStoreCapabilities()
         let pages = try await store.fetchAllPages()
         XCTAssertTrue(pages.isEmpty)
     }
 
     /// NoOpPageStoreCapabilities getStorageStats 应返回全零
-    func testNoOpPageStoreCapabilities_getStorageStats_全零() async {
+    func testNoOpPageStoreCapabilitiesGetStorageStatsAllZero() async {
         let store = NoOpPageStoreCapabilities()
         let stats = await store.getStorageStats()
         XCTAssertEqual(stats.databaseSize, 0)
@@ -361,21 +361,21 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpPageStoreCapabilities searchPages 应返回空数组
-    func testNoOpPageStoreCapabilities_searchPages_返回空数组() async {
+    func testNoOpPageStoreCapabilitiesSearchPagesReturnsEmptyArray() async {
         let store = NoOpPageStoreCapabilities()
         let results = await store.searchPages(query: "test")
         XCTAssertTrue(results.isEmpty)
     }
 
     /// NoOpPageStoreCapabilities fetchBacklinksByID 应返回空数组
-    func testNoOpPageStoreCapabilities_fetchBacklinksByID_返回空数组() async {
+    func testNoOpPageStoreCapabilitiesFetchBacklinksByIDReturnsEmptyArray() async {
         let store = NoOpPageStoreCapabilities()
         let backlinks = await store.fetchBacklinksByID(for: UUID())
         XCTAssertTrue(backlinks.isEmpty)
     }
 
     /// NoOpPageStoreCapabilities createPage 应返回传入参数构造的页面
-    func testNoOpPageStoreCapabilities_createPage_保留参数() async throws {
+    func testNoOpPageStoreCapabilitiesCreatePageKeepsParameters() async throws {
         let store = NoOpPageStoreCapabilities()
         let page = try await store.createPage(title: "test", pageType: .concept, customIcon: nil, content: "content", tags: ["tag"], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil)
         XCTAssertEqual(page.title, "test")
@@ -383,7 +383,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpPageStoreCapabilities updatePage/deletePage/syncRemotePage 应不崩溃
-    func testNoOpPageStoreCapabilities_updateDelete_不崩溃() async throws {
+    func testNoOpPageStoreCapabilitiesUpdateDeleteNoCrash() async throws {
         let store = NoOpPageStoreCapabilities()
         let page = KnowledgePage(title: "test", pageType: .concept, content: "")
         try await store.updatePage(page)
@@ -392,13 +392,13 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpPageStoreCapabilities anyCreatePage 应不崩溃
-    func testNoOpPageStoreCapabilities_anyCreatePage_不崩溃() async {
+    func testNoOpPageStoreCapabilitiesAnyCreatePageNoCrash() async {
         let store = NoOpPageStoreCapabilities()
         _ = await store.anyCreatePage(title: "test", pageType: .concept, customIcon: nil, content: "content", tags: [], sourceURL: nil, rawSnippet: nil, fileSize: nil, sourceType: nil, forceDeepScan: false)
     }
 
     /// NoOpPageStoreCapabilities anyUpdatePage/anyDeletePage 应不崩溃
-    func testNoOpPageStoreCapabilities_anyUpdateDelete_不崩溃() async {
+    func testNoOpPageStoreCapabilitiesAnyUpdateDeleteNoCrash() async {
         let store = NoOpPageStoreCapabilities()
         let page = KnowledgePage(title: "test", pageType: .concept, content: "")
         await store.anyUpdatePage(page, forceDeepScan: false)
@@ -406,7 +406,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpPageStoreCapabilities reloadFromDisk/replaceAllPages/resetDatabase/performBatchWrite 应不崩溃
-    func testNoOpPageStoreCapabilities_batchOperations_不崩溃() async throws {
+    func testNoOpPageStoreCapabilitiesBatchOperationsNoCrash() async throws {
         let store = NoOpPageStoreCapabilities()
         await store.reloadFromDisk()
         await store.replaceAllPages([])
@@ -415,7 +415,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpPageStoreCapabilities renameTag/deleteTag/seedDefaultContent/addLog 应不崩溃
-    func testNoOpPageStoreCapabilities_tagAndLog_不崩溃() async {
+    func testNoOpPageStoreCapabilitiesTagAndLogNoCrash() async {
         let store = NoOpPageStoreCapabilities()
         await store.renameTag("old", to: "new")
         await store.deleteTag("tag")
@@ -424,7 +424,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpPageStoreCapabilities embeddingProvider 应返回 NoOpEmbeddingProvider
-    func testNoOpPageStoreCapabilities_embeddingProvider_返回NoOp() {
+    func testNoOpPageStoreCapabilitiesEmbeddingProviderReturnsNoOp() {
         let store = NoOpPageStoreCapabilities()
         let provider = store.embeddingProvider
         XCTAssertTrue(provider is NoOpEmbeddingProvider, "embeddingProvider 应为 NoOpEmbeddingProvider")
@@ -433,7 +433,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpIngestService
 
     /// NoOpIngestService ingestFolder 应返回空数组
-    func testNoOpIngestService_ingestFolder_返回空数组() async {
+    func testNoOpIngestServiceIngestFolderReturnsEmptyArray() async {
         let service = NoOpIngestService()
         let store = NoOpPageStoreCapabilities()
         let pages = await service.ingestFolder(at: URL(fileURLWithPath: "/tmp"), type: .concept, pageStore: store)
@@ -443,21 +443,21 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpFeedbackRepository
 
     /// NoOpFeedbackRepository fetchAll 应返回空数组
-    func testNoOpFeedbackRepository_fetchAll_返回空数组() async throws {
+    func testNoOpFeedbackRepositoryFetchAllReturnsEmptyArray() async throws {
         let repo = NoOpFeedbackRepository()
         let entries = try await repo.fetchAll(limit: 10)
         XCTAssertTrue(entries.isEmpty)
     }
 
     /// NoOpFeedbackRepository fetchByID 应返回 nil
-    func testNoOpFeedbackRepository_fetchByID_返回nil() async throws {
+    func testNoOpFeedbackRepositoryFetchByIDReturnsNil() async throws {
         let repo = NoOpFeedbackRepository()
         let entry = try await repo.fetchByID(id: "test")
         XCTAssertNil(entry)
     }
 
     /// NoOpFeedbackRepository save/updateStatus 应不崩溃
-    func testNoOpFeedbackRepository_saveUpdate_不崩溃() async throws {
+    func testNoOpFeedbackRepositorySaveUpdateNoCrash() async throws {
         let repo = NoOpFeedbackRepository()
         let entry = FeedbackEntry(id: "test", title: "test", category: "bug", rating: 5, content: "content", status: .pending, createdAt: Date())
         try await repo.save(entry)
@@ -467,7 +467,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpVaultService
 
     /// NoOpVaultService 初始状态应返回安全默认值
-    func testNoOpVaultService_初始状态_安全默认值() async {
+    func testNoOpVaultServiceInitialStateSafeDefaults() async {
         let service = await NoOpVaultService()
         XCTAssertTrue(service.vaults.isEmpty, "初始 vaults 应为空")
         XCTAssertNil(service.selectedVaultID, "初始 selectedVaultID 应为 nil")
@@ -475,7 +475,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpVaultService 所有操作应不崩溃
-    func testNoOpVaultService_allOperations_不崩溃() async throws {
+    func testNoOpVaultServiceAllOperationsNoCrash() async throws {
         let service = await NoOpVaultService()
         let vault = Vault(name: "test")
         try await service.selectVaultAndWait(vault)
@@ -491,14 +491,14 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpChatService
 
     /// NoOpChatService loadHistory 应返回空数组
-    func testNoOpChatService_loadHistory_返回空数组() async {
+    func testNoOpChatServiceLoadHistoryReturnsEmptyArray() async {
         let service = await NoOpChatService()
         let history = service.loadHistory()
         XCTAssertTrue(history.isEmpty)
     }
 
     /// NoOpChatService streamChat 应立即 finish
-    func testNoOpChatService_streamChat_立即finish() async throws {
+    func testNoOpChatServiceStreamChatFinishesImmediately() async throws {
         let service = await NoOpChatService()
         let stream = service.streamChat(query: "test", pages: [])
         var count = 0
@@ -509,7 +509,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpChatService clearHistory/saveMessages 应不崩溃
-    func testNoOpChatService_clearAndSave_不崩溃() async {
+    func testNoOpChatServiceClearAndSaveNoCrash() async {
         let service = await NoOpChatService()
         service.clearHistory()
         service.saveUserMessage("test")
@@ -519,7 +519,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpSpeechService
 
     /// NoOpSpeechService 初始状态应返回安全默认值
-    func testNoOpSpeechService_初始状态_安全默认值() async {
+    func testNoOpSpeechServiceInitialStateSafeDefaults() async {
         let service = await NoOpSpeechService()
         XCTAssertFalse(service.isRecording)
         XCTAssertFalse(service.isTranscribing)
@@ -535,7 +535,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpSpeechService checkPermission/startRecording/stopRecording 应不崩溃
-    func testNoOpSpeechService_recordingOperations_不崩溃() async {
+    func testNoOpSpeechServiceRecordingOperationsNoCrash() async {
         let service = await NoOpSpeechService()
         service.checkPermission()
         service.startRecording()
@@ -543,14 +543,14 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpSpeechService transcribeFile 应返回空字符串
-    func testNoOpSpeechService_transcribeFile_返回空字符串() async throws {
+    func testNoOpSpeechServiceTranscribeFileReturnsEmptyString() async throws {
         let service = await NoOpSpeechService()
         let result = try await service.transcribeFile(url: URL(fileURLWithPath: "/tmp/test.m4a"))
         XCTAssertEqual(result, "")
     }
 
     /// NoOpSpeechService saveRecording 应保留 title
-    func testNoOpSpeechService_saveRecording_保留title() async {
+    func testNoOpSpeechServiceSaveRecordingKeepsTitle() async {
         let service = await NoOpSpeechService()
         let recording = service.saveRecording(title: "test recording")
         XCTAssertEqual(recording.title, "test recording")
@@ -558,7 +558,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     }
 
     /// NoOpSpeechService deleteRecording/clearTranscription 应不崩溃
-    func testNoOpSpeechService_deleteAndClear_不崩溃() async {
+    func testNoOpSpeechServiceDeleteAndClearNoCrash() async {
         let service = await NoOpSpeechService()
         let recording = service.saveRecording(title: "test")
         service.deleteRecording(recording)
@@ -568,63 +568,63 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - NoOpPDFService
 
     /// NoOpPDFService savePDF 应返回 nil
-    func testNoOpPDFService_savePDF_返回nil() async {
+    func testNoOpPDFServiceSavePDFReturnsNil() async {
         let service = await NoOpPDFService()
         let url = await service.savePDF(data: Data(), fileName: "test.pdf")
         XCTAssertNil(url)
     }
 
     /// NoOpPDFService deletePDF 应返回 false
-    func testNoOpPDFService_deletePDF_返回false() async {
+    func testNoOpPDFServiceDeletePDFReturnsFalse() async {
         let service = await NoOpPDFService()
         let result = await service.deletePDF(fileName: "test.pdf")
         XCTAssertFalse(result)
     }
 
     /// NoOpPDFService allPDFFilenames 应返回空数组
-    func testNoOpPDFService_allPDFFilenames_返回空数组() async {
+    func testNoOpPDFServiceAllPDFFilenamesReturnsEmptyArray() async {
         let service = await NoOpPDFService()
         let filenames = await service.allPDFFilenames()
         XCTAssertTrue(filenames.isEmpty)
     }
 
     /// NoOpPDFService getPDFURL 应返回 nil
-    func testNoOpPDFService_getPDFURL_返回nil() async {
+    func testNoOpPDFServiceGetPDFURLReturnsNil() async {
         let service = await NoOpPDFService()
         let url = service.getPDFURL(fileName: "test.pdf")
         XCTAssertNil(url)
     }
 
     /// NoOpPDFService extractText 应返回 nil
-    func testNoOpPDFService_extractText_返回nil() async {
+    func testNoOpPDFServiceExtractTextReturnsNil() async {
         let service = await NoOpPDFService()
         let text = await service.extractText(from: URL(fileURLWithPath: "/tmp/test.pdf"))
         XCTAssertNil(text)
     }
 
     /// NoOpPDFService extractText pageRange 应返回 nil
-    func testNoOpPDFService_extractText_pageRange_返回nil() async {
+    func testNoOpPDFServiceExtractTextPageRangeReturnsNil() async {
         let service = await NoOpPDFService()
         let text = await service.extractText(from: URL(fileURLWithPath: "/tmp/test.pdf"), pageRange: 0..<5)
         XCTAssertNil(text)
     }
 
     /// NoOpPDFService extractImages 应返回空数组
-    func testNoOpPDFService_extractImages_返回空数组() async {
+    func testNoOpPDFServiceExtractImagesReturnsEmptyArray() async {
         let service = await NoOpPDFService()
         let images = await service.extractImages(from: URL(fileURLWithPath: "/tmp/test.pdf"))
         XCTAssertTrue(images.isEmpty)
     }
 
     /// NoOpPDFService loadDocumentsInfo 应返回空数组
-    func testNoOpPDFService_loadDocumentsInfo_返回空数组() async {
+    func testNoOpPDFServiceLoadDocumentsInfoReturnsEmptyArray() async {
         let service = await NoOpPDFService()
         let docs = await service.loadDocumentsInfo()
         XCTAssertTrue(docs.isEmpty)
     }
 
     /// NoOpPDFService saveDocumentsInfo 应不崩溃
-    func testNoOpPDFService_saveDocumentsInfo_不崩溃() async {
+    func testNoOpPDFServiceSaveDocumentsInfoNoCrash() async {
         let service = await NoOpPDFService()
         await service.saveDocumentsInfo([])
     }
@@ -632,7 +632,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
     // MARK: - UnsupportedSearchIndexer
 
     /// UnsupportedSearchIndexer 所有方法应不崩溃
-    func testUnsupportedSearchIndexer_allMethods_不崩溃() {
+    func testUnsupportedSearchIndexerAllMethodsNoCrash() {
         let indexer = UnsupportedSearchIndexer()
         let page = KnowledgePage(title: "test", pageType: .concept, content: "content")
         indexer.indexPage(page)

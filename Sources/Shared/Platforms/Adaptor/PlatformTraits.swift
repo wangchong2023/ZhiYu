@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import UFPCore
 
 // MARK: - InterfaceIdiom 枚举
 
@@ -39,7 +40,7 @@ internal struct InterfaceIdiomKey: EnvironmentKey {
         #if targetEnvironment(macCatalyst)
         return .macCatalyst
         #else
-        return MainActor.assumeIsolated {
+        return runOnMainSync {
             UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone
         }
         #endif

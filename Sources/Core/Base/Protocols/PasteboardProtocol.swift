@@ -41,10 +41,10 @@ public enum PasteboardKey: DependencyKey {
     }
     nonisolated public static var testValue: any PasteboardProtocol {
         ServiceContainer.shared.resolveOptional((any PasteboardProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpPasteboard() }
+            ?? runOnMainSync { NoOpPasteboard() }
     }
     nonisolated public static var previewValue: any PasteboardProtocol {
-        MainActor.assumeIsolated { NoOpPasteboard() }
+        runOnMainSync { NoOpPasteboard() }
     }
 }
 

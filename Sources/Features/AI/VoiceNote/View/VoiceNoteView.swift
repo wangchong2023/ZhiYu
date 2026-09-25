@@ -36,8 +36,8 @@ struct VoiceNoteView: View {
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        let showSaveSheetBinding = $showSaveSheet
-        let noteTitleBinding = $noteTitle
+        // swiftlint:disable:next redundant_discardable_let
+        let _ = (noteTitle, showSaveSheet)
         ScrollView {
             VStack(spacing: Spacing.standardPadding) {
                 headerSection
@@ -65,8 +65,8 @@ struct VoiceNoteView: View {
         .navigationTitle(L10n.Voice.Speech.title)
         .inlineNavigationBarTitleIfAvailable()
         .hideNavigationBarIfIOS(true)
-        .sheet(isPresented: showSaveSheetBinding) {
-            SaveVoiceNoteSheet(speechService: speechService, title: noteTitleBinding)
+        .sheet(isPresented: $showSaveSheet) {
+            SaveVoiceNoteSheet(speechService: speechService, title: $noteTitle)
         }
         .onReceive(timer) { _ in
             guard speechService.isRecording, let start = recordingStartTime else { return }

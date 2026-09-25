@@ -132,7 +132,7 @@ public enum AIInsightStoreKey: DependencyKey {
 
     nonisolated public static var testValue: AIInsightStore {
         ServiceContainer.shared.resolveOptional(AIInsightStore.self)
-            ?? MainActor.assumeIsolated { AIInsightStore() }
+            ?? runOnMainSync { AIInsightStore() }
     }
     nonisolated public static var previewValue: AIInsightStore { testValue }
 }

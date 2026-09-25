@@ -173,7 +173,7 @@ final class SynthesisStoreTypeDeepTests: XCTestCase {
     // MARK: - SynthesisType 属性验证
 
     /// 验证 SynthesisType 所有 case 的 title 属性非空且各不相同。
-    func testSynthesisType_title非空且唯一() {
+    func testSynthesisTypeTitleNonEmptyAndUnique() {
         let titles = SynthesisStore.SynthesisType.allCases.map { $0.title }
         XCTAssertEqual(titles.count, Set(titles).count, "所有 SynthesisType 的 title 必须唯一")
         for title in titles {
@@ -182,7 +182,7 @@ final class SynthesisStoreTypeDeepTests: XCTestCase {
     }
 
     /// 验证 SynthesisType 所有 case 的 icon 属性非空且各不相同。
-    func testSynthesisType_icon非空且唯一() {
+    func testSynthesisTypeIconNonEmptyAndUnique() {
         let icons = SynthesisStore.SynthesisType.allCases.map { $0.icon }
         XCTAssertEqual(icons.count, Set(icons).count, "所有 SynthesisType 的 icon 必须唯一")
         for icon in icons {
@@ -191,7 +191,7 @@ final class SynthesisStoreTypeDeepTests: XCTestCase {
     }
 
     /// 验证 SynthesisType 所有 case 的 formatIcon 属性非空且各不相同。
-    func testSynthesisType_formatIcon非空且唯一() {
+    func testSynthesisTypeFormatIconNonEmptyAndUnique() {
         let icons = SynthesisStore.SynthesisType.allCases.map { $0.formatIcon }
         XCTAssertEqual(icons.count, Set(icons).count, "所有 SynthesisType 的 formatIcon 必须唯一")
         for icon in icons {
@@ -200,21 +200,21 @@ final class SynthesisStoreTypeDeepTests: XCTestCase {
     }
 
     /// 验证 SynthesisType 的 rawValue 与 id 一致。
-    func testSynthesisType_rawValue与id一致() {
+    func testSynthesisTypeRawValueEqualsId() {
         for type in SynthesisStore.SynthesisType.allCases {
             XCTAssertEqual(type.id, type.rawValue, "id 必须等于 rawValue")
         }
     }
 
     /// 验证 SynthesisType.customPromptPlaceholder 所有 case 非空。
-    func testSynthesisType_customPromptPlaceholder非空() {
+    func testSynthesisTypeCustomPromptPlaceholderNonEmpty() {
         for type in SynthesisStore.SynthesisType.allCases {
             XCTAssertFalse(type.customPromptPlaceholder.isEmpty, "\(type.rawValue) 的 customPromptPlaceholder 不能为空")
         }
     }
 
     /// 验证 SynthesisType.allCases 包含全部 6 个 case 且顺序固定。
-    func testSynthesisType_allCases包含6个case() {
+    func testSynthesisTypeAllCasesContainsSixCases() {
         XCTAssertEqual(SynthesisStore.SynthesisType.allCases.count, 6, "应有 6 个 SynthesisType case")
         XCTAssertEqual(SynthesisStore.SynthesisType.allCases, [.mindmap, .slides, .quiz, .report, .infographic, .expansion], "case 顺序应固定")
     }
@@ -222,7 +222,7 @@ final class SynthesisStoreTypeDeepTests: XCTestCase {
     // MARK: - SynthesisStatus 验证
 
     /// 验证 SynthesisStatus.isError 在 .error 状态为 true，其他为 false。
-    func testSynthesisStatus_isError语义正确() {
+    func testSynthesisStatusIsErrorSemanticsCorrect() {
         XCTAssertTrue(SynthesisStore.SynthesisStatus.error("错误").isError, ".error 状态 isError 应为 true")
         XCTAssertFalse(SynthesisStore.SynthesisStatus.idle.isError, ".idle 状态 isError 应为 false")
         XCTAssertFalse(SynthesisStore.SynthesisStatus.generating.isError, ".generating 状态 isError 应为 false")
@@ -230,7 +230,7 @@ final class SynthesisStoreTypeDeepTests: XCTestCase {
     }
 
     /// 验证 SynthesisStatus.error 携带的错误消息可被读取。
-    func testSynthesisStatus_error携带消息() {
+    func testSynthesisStatusErrorCarriesMessage() {
         let status = SynthesisStore.SynthesisStatus.error("LLM 不可用")
         XCTAssertTrue(status.isError)
         if case .error(let msg) = status {

@@ -11,6 +11,7 @@
 import SwiftUI
 import Combine
 import Dependencies
+import UFPCore
 
 // MARK: - App Toast Type
 /// 轻提示类型枚举
@@ -92,9 +93,9 @@ public final class ToastManager: @unchecked Sendable {
 // MARK: - ToastManager DependencyKey
 
 private enum ToastManagerKey: DependencyKey {
-    nonisolated static var liveValue: ToastManager { MainActor.assumeIsolated { ToastManager() } }
-    nonisolated static var testValue: ToastManager { MainActor.assumeIsolated { ToastManager() } }
-    nonisolated static var previewValue: ToastManager { MainActor.assumeIsolated { ToastManager() } }
+    nonisolated static let liveValue: ToastManager = runOnMainSync { ToastManager() }
+    nonisolated static let testValue: ToastManager = runOnMainSync { ToastManager() }
+    nonisolated static let previewValue: ToastManager = runOnMainSync { ToastManager() }
 }
 
 extension DependencyValues {

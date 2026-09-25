@@ -37,9 +37,9 @@ public enum URLOpenerKey: DependencyKey {
     }
     nonisolated public static var testValue: any URLOpenerProtocol {
         ServiceContainer.shared.resolveOptional((any URLOpenerProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpURLOpener() }
+            ?? runOnMainSync { NoOpURLOpener() }
     }
-    nonisolated public static var previewValue: any URLOpenerProtocol { MainActor.assumeIsolated { NoOpURLOpener() } }
+    nonisolated public static var previewValue: any URLOpenerProtocol { runOnMainSync { NoOpURLOpener() } }
 }
 
 extension DependencyValues {

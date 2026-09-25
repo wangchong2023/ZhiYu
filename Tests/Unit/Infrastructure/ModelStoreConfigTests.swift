@@ -350,6 +350,7 @@ final class ModelStoreConfigTests: XCTestCase {
     /// 模拟大模型在等待、下载中等状态的改变，验证 observeDownloadState 的 AsyncStream 是否能正确且无延迟地捕获这些事件。
     @MainActor
     func testModelDownloadManagerObserveDownloadState() async {
+        Localized.languageMode = .english
         let manager = ModelDownloadManager.shared
         let modelId = "test-observe-model-id"
         

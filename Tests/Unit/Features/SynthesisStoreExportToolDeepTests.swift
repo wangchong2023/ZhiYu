@@ -77,7 +77,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     // MARK: - allSortedDocuments
 
     /// 验证 allSortedDocuments 按 createdAt 降序排序。
-    func testAllSortedDocuments按CreatedAt降序排序() async throws {
+    func testAllSortedDocumentsSortedByCreatedAtDescending() async throws {
         // 保存 3 份不同类型的文档，确保 createdAt 不同
         store.saveSynthesisResult(type: .report, content: "# 报告1\n正文。")
         try await Task.sleep(nanoseconds: 50_000_000)
@@ -94,12 +94,12 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 allSortedDocuments 在空存储时返回空数组。
-    func testAllSortedDocuments空存储返回空数组() {
+    func testAllSortedDocumentsEmptyStorageReturnsEmptyArray() {
         XCTAssertTrue(store.allSortedDocuments.isEmpty)
     }
 
     /// 验证 allSortedDocuments 包含所有类型的文档。
-    func testAllSortedDocuments包含所有类型文档() {
+    func testAllSortedDocumentsContainsAllTypeDocuments() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文。")
         store.saveSynthesisResult(type: .mindmap, content: "# 导图\nmindmap\n  root((主题))")
 
@@ -112,7 +112,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     // MARK: - exportSynthesisDocument
 
     /// 验证 exportSynthesisDocument(.mindmap) 调用 exportMindmapToPDF。
-    func testExportSynthesisDocument_mindmap调用ExportMindmapToPDF() async throws {
+    func testExportSynthesisDocumentMindmapCallsExportMindmapToPDF() async throws {
         let doc = SynthesisStore.SynthesisDocument(
             type: .mindmap,
             name: "测试导图",
@@ -125,7 +125,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 exportSynthesisDocument(.slides) 调用 exportToPPTX。
-    func testExportSynthesisDocument_slides调用ExportToPPTX() async throws {
+    func testExportSynthesisDocumentSlidesCallsExportToPPTX() async throws {
         let doc = SynthesisStore.SynthesisDocument(
             type: .slides,
             name: "测试幻灯片",
@@ -138,7 +138,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 exportSynthesisDocument(.report) 调用 exportToPDF。
-    func testExportSynthesisDocument_report调用ExportToPDF() async throws {
+    func testExportSynthesisDocumentReportCallsExportToPDF() async throws {
         let doc = SynthesisStore.SynthesisDocument(
             type: .report,
             name: "测试报告",
@@ -151,7 +151,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 exportSynthesisDocument(.quiz) 调用 exportToPDF。
-    func testExportSynthesisDocument_quiz调用ExportToPDF() async throws {
+    func testExportSynthesisDocumentQuizCallsExportToPDF() async throws {
         let doc = SynthesisStore.SynthesisDocument(
             type: .quiz,
             name: "测试测验",
@@ -164,7 +164,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 exportSynthesisDocument 文件名替换 "/" 和 ":"。
-    func testExportSynthesisDocument文件名替换特殊字符() async throws {
+    func testExportSynthesisDocumentFilenameReplacesSpecialChars() async throws {
         let doc = SynthesisStore.SynthesisDocument(
             type: .report,
             name: "测试/报告:2026",
@@ -179,7 +179,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     // MARK: - cleanMarkdown 静态工具
 
     /// 验证 cleanMarkdown 清理转义的 Markdown 特殊字符。
-    func testCleanMarkdown清理转义特殊字符() {
+    func testCleanMarkdownCleansEscapedSpecialChars() {
         let input = "\\# 标题 \\(括号\\) \\[方括号\\]"
         let cleaned = SynthesisStore.cleanMarkdown(input)
 
@@ -190,7 +190,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 cleanMarkdown 清理转义的 [[ ]] 双链。
-    func testCleanMarkdown清理转义双链() {
+    func testCleanMarkdownCleansEscapedDoubleLinks() {
         let input = "文本 \\[\\[双链\\]\\] 结尾"
         let cleaned = SynthesisStore.cleanMarkdown(input)
 
@@ -198,7 +198,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 cleanMarkdown 修剪首尾空白。
-    func testCleanMarkdown修剪首尾空白() {
+    func testCleanMarkdownTrimsWhitespace() {
         let input = "  \n  内容  \n  "
         let cleaned = SynthesisStore.cleanMarkdown(input)
 
@@ -206,7 +206,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 cleanMarkdown 处理空字符串不崩溃。
-    func testCleanMarkdown空字符串不崩溃() {
+    func testCleanMarkdownEmptyStringNoCrash() {
         let cleaned = SynthesisStore.cleanMarkdown("")
         XCTAssertTrue(cleaned.isEmpty)
     }
@@ -214,7 +214,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     // MARK: - SynthesisDocument 属性验证
 
     /// 验证 SynthesisDocument 默认 init 参数（id 自动生成、createdAt 当前时间、sourcePageIDs 为空）。
-    func testSynthesisDocument默认Init参数() {
+    func testSynthesisDocumentDefaultInitParams() {
         let doc = SynthesisStore.SynthesisDocument(
             type: .report,
             name: "测试",
@@ -231,7 +231,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 SynthesisDocument 自定义 init 参数。
-    func testSynthesisDocument自定义Init参数() {
+    func testSynthesisDocumentCustomInitParams() {
         let id = UUID()
         let createdAt = Date(timeIntervalSince1970: 1_000_000)
         let pageIDs = [UUID(), UUID()]
@@ -256,7 +256,7 @@ final class SynthesisStoreExportToolDeepTests: XCTestCase {
     }
 
     /// 验证 SynthesisDocument Codable 编解码一致性。
-    func testSynthesisDocumentCodable编解码一致() throws {
+    func testSynthesisDocumentCodableEncodeDecodeConsistent() throws {
         let doc = SynthesisStore.SynthesisDocument(
             type: .mindmap,
             name: "编解码测试",

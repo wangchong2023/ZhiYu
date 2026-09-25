@@ -8,6 +8,7 @@
 
 import XCTest
 import CommonCrypto
+import UFPCore
 @testable import ZhiYu
 
 // MARK: - ModelDownloadManager 状态机测试
@@ -82,6 +83,7 @@ final class ModelDownloadManagerStateTests: XCTestCase {
 
     /// 验证 observeDownloadState 对未初始化模型返回 .failed("Idle")
     func testObserveInitialStateIsIdleFailed() async {
+        Localized.languageMode = .english
         let modelId = "test-idle-\(UUID().uuidString)"
 
         let stream = await manager.observeDownloadState(for: modelId)
@@ -177,6 +179,7 @@ final class ModelDownloadManagerStateTests: XCTestCase {
 
     /// 验证 updateProgress 对 totalBytesExpectedToWrite = 0 的处理
     func testUpdateProgressWithZeroExpectedBytes() async {
+        Localized.languageMode = .english
         let modelId = "test-zero-expected-\(UUID().uuidString)"
 
         // 不应崩溃，应静默忽略

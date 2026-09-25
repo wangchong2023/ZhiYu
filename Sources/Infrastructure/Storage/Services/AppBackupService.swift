@@ -333,7 +333,7 @@ enum BackupServiceKey: DependencyKey {
 
     nonisolated public static var testValue: BackupService {
         ServiceContainer.shared.resolveOptional(BackupService.self)
-            ?? MainActor.assumeIsolated { BackupService() }
+            ?? runOnMainSync { BackupService() }
     }
     nonisolated static var previewValue: BackupService { testValue }
 }

@@ -25,7 +25,8 @@ struct TaskCenterView: View {
     @State private var selectedFilterType: TaskType?
     
     var body: some View {
-        let showClearConfirmBinding = $showClearConfirm
+        // swiftlint:disable:next redundant_discardable_let
+        let _ = showClearConfirm
         if idiom == .watch {
             WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.taskCenterPlaceholder)
         } else {
@@ -90,7 +91,7 @@ struct TaskCenterView: View {
             }
             .confirmationDialog(
                 L10n.AI.Task.clearConfirmTitle,
-                isPresented: showClearConfirmBinding,
+                isPresented: $showClearConfirm,
                 titleVisibility: .visible
             ) {
                 Button(L10n.Common.Misc.clearAll, role: .destructive) {

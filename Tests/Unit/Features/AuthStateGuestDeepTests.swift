@@ -119,7 +119,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     // MARK: - isMockBackend / isMockMode 状态
 
     /// 验证非 DEBUG Mock 模式下 isMockBackend 为 false
-    func testIsMockBackend_非Mock模式_返回false() {
+    func testIsMockBackendNonMockModeReturnsFalse() {
         #if DEBUG
         AuthService.forceMockBackend = false
         XCTAssertFalse(AuthService.shared.isMockBackend, "非 Mock 模式下 isMockBackend 应为 false")
@@ -128,7 +128,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     }
 
     /// 验证 forceMockBackend 启用时 isMockBackend 为 true
-    func testIsMockBackend_forceMockBackend启用_返回true() {
+    func testIsMockBackendForceMockBackendEnabledReturnsTrue() {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -140,7 +140,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     // MARK: - continueAsGuest
 
     /// 验证 continueAsGuest 设置 isGuest 为 true
-    func testContinueAsGuest_设置isGuest为true() {
+    func testContinueAsGuestSetsIsGuestTrue() {
         AuthSession.shared.logout()
 
         AuthService.shared.continueAsGuest()
@@ -149,7 +149,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     }
 
     /// 验证 continueAsGuest 清空 currentUser
-    func testContinueAsGuest_清空currentUser() {
+    func testContinueAsGuestClearsCurrentUser() {
         AuthSession.shared.update(user: makeTestUser())
 
         AuthService.shared.continueAsGuest()
@@ -158,7 +158,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     }
 
     /// 验证 continueAsGuest 后 isAuthenticated 为 false
-    func testContinueAsGuest后_isAuthenticated为false() {
+    func testAfterContinueAsGuestIsAuthenticatedFalse() {
         AuthSession.shared.update(user: makeTestUser())
 
         AuthService.shared.continueAsGuest()
@@ -167,7 +167,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     }
 
     /// 验证 continueAsGuest 重复调用保持 isGuest 为 true
-    func testContinueAsGuest_重复调用_保持isGuest为true() {
+    func testContinueAsGuestRepeatedCallsKeepsIsGuestTrue() {
         AuthService.shared.continueAsGuest()
         AuthService.shared.continueAsGuest()
 
@@ -177,7 +177,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     // MARK: - isAuthenticated / isGuest / currentUser 计算属性
 
     /// 验证 isAuthenticated 反映 AuthSession.isLoggedIn
-    func testIsAuthenticated_反映AuthSessionIsLoggedIn() {
+    func testIsAuthenticatedReflectsAuthSessionIsLoggedIn() {
         AuthSession.shared.logout()
         XCTAssertFalse(AuthService.shared.isAuthenticated, "无用户时应为 false")
 
@@ -186,7 +186,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     }
 
     /// 验证 isGuest 反映 AuthSession.isGuest
-    func testIsGuest_反映AuthSessionIsGuest() {
+    func testIsGuestReflectsAuthSessionIsGuest() {
         AuthSession.shared.isGuest = false
         XCTAssertFalse(AuthService.shared.isGuest, "isGuest=false 时应为 false")
 
@@ -197,7 +197,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     }
 
     /// 验证 currentUser 反映 AuthSession.currentUser
-    func testCurrentUser_反映AuthSessionCurrentUser() {
+    func testCurrentUserReflectsAuthSessionCurrentUser() {
         AuthSession.shared.logout()
         XCTAssertNil(AuthService.shared.currentUser, "无用户时应为 nil")
 
@@ -209,7 +209,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     // MARK: - tryAutoLogin Mock 模式
 
     /// 验证 Mock 模式下 tryAutoLogin 成功并注入 Mock 用户
-    func testTryAutoLogin_Mock模式_成功注入Mock用户() async {
+    func testTryAutoLoginMockModeSuccessInjectsMockUser() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -224,7 +224,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 tryAutoLogin 设置 isGuest 为 false
-    func testTryAutoLogin_Mock模式_设置isGuest为false() async {
+    func testTryAutoLoginMockModeSetsIsGuestFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -240,7 +240,7 @@ final class AuthStateGuestDeepTests: XCTestCase {
     // MARK: - tryAutoLogin 非 Mock 模式
 
     /// 验证非 Mock 模式下 tryAutoLogin 无 Token 时返回 false
-    func testTryAutoLogin_非Mock模式_无Token_返回false() async {
+    func testTryAutoLoginNonMockModeNoTokenReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif

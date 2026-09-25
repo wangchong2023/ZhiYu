@@ -31,7 +31,8 @@ struct LLMSettingsView: View {
     
     var body: some View {
         @Bindable var config = config
-        let isProvidersExpandedBinding = $isProvidersExpanded
+        // swiftlint:disable:next redundant_discardable_let
+        let _ = (showAPIKey, isProvidersExpanded)
         Form {
             // 1. 服务开关
             Section {
@@ -67,7 +68,7 @@ struct LLMSettingsView: View {
             
             // 2. 提供商选择与详细参数配置
             Section {
-                DisclosureGroup(isExpanded: isProvidersExpandedBinding) {
+                DisclosureGroup(isExpanded: $isProvidersExpanded) {
                     VStack(alignment: .leading, spacing: DesignSystem.medium) {
                         ForEach(LLMProvider.allCases) { provider in
                             Button(action: {
@@ -195,7 +196,6 @@ struct LLMSettingsView: View {
     /// 配置内容视图（API Key / Base URL / Model 选择与编辑）
     private var configurationContent: some View {
         @Bindable var config = config
-        let showAPIKeyBinding = $showAPIKey
         let validation = config.provider.validateAPIKeyFormat(config.apiKey)
         
         return VStack(spacing: DesignSystem.wide) {
@@ -215,7 +215,7 @@ struct LLMSettingsView: View {
                 APIKeyInputField(
                     placeholder: config.provider.apiKeyPlaceholder,
                     text: $config.apiKey,
-                    isShown: showAPIKeyBinding,
+                    isShown: $showAPIKey,
                     isValid: validation.isValid
                 )
             }

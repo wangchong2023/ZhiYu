@@ -104,7 +104,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - summarize 正常路径
 
     /// 验证 summarize 在 LLM 返回正常文本时，应返回 cleanMarkdown 处理后的结果。
-    func testSummarize_正常文本返回清理后的Markdown() async throws {
+    func testSummarizeNormalTextReturnsCleanedMarkdown() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "这是摘要内容\\# 标题"
         }
@@ -116,7 +116,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 summarize 在 LLM 抛错时应向上抛出（summarize 无 fallback）。
-    func testSummarize_LLM抛错时向上传播异常() async throws {
+    func testSummarizeLLMThrowsErrorPropagates() async throws {
         await MainActor.run {
             mockLLM.shouldThrow = true
             mockLLM.throwError = LLMError.notConfigured
@@ -131,7 +131,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 summarize 传入空字符串不崩溃，应正常调用 LLM。
-    func testSummarize_空内容不崩溃() async throws {
+    func testSummarizeEmptyContentNoCrash() async throws {
         await MainActor.run { mockLLM.defaultResponse = "空内容摘要" }
 
         let result = try await AISynthesisService.shared.summarize(content: "")
@@ -142,7 +142,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - summarize 截断保护
 
     /// 验证 summarize 对超长内容应截断至 maxSynthesisInputLength (8000) 后再传给 LLM。
-    func testSummarize_超长内容应截断至8000字符() async throws {
+    func testSummarizeOverlongContentTruncatedTo8000Chars() async throws {
         await MainActor.run { mockLLM.defaultResponse = "ok" }
 
         let longContent = String(repeating: "a", count: 20_000)
@@ -156,7 +156,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 summarize 对恰好 8000 字符的内容不截断。
-    func testSummarize_恰好8000字符不截断() async throws {
+    func testSummarizeExact8000CharsNotTruncated() async throws {
         await MainActor.run { mockLLM.defaultResponse = "ok" }
 
         let exactContent = String(repeating: "b", count: PromptConstants.TokenLimits.maxSynthesisInputLength)
@@ -169,7 +169,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - generateMindMap fallback 逻辑
 
     /// 验证 generateMindMap 在 LLM 返回有效 Mermaid 时直接返回格式化结果。
-    func testGenerateMindMap_有效Mermaid返回格式化结果() async throws {
+    func testGenerateMindMapValidMermaidReturnsFormatted() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = """
             ```mermaid
@@ -187,7 +187,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateMindMap 在 LLM 返回空字符串时触发 fallback 至 convertMarkdownToListMindmap。
-    func testGenerateMindMap_LLM返回空字符串触发Fallback() async throws {
+    func testGenerateMindMapLLMReturnsEmptyTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "" }
 
         let result = try await AISynthesisService.shared.generateMindMap(content: "# 标题\n- 要点1\n- 要点2")
@@ -196,7 +196,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateMindMap 在 LLM 返回过短内容（< 10 字节）时触发 fallback。
-    func testGenerateMindMap_LLM返回过短内容触发Fallback() async throws {
+    func testGenerateMindMapLLMReturnsTooShortTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "短" }
 
         let result = try await AISynthesisService.shared.generateMindMap(content: "内容")
@@ -205,7 +205,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateMindMap 在 LLM 抛错时向上传播（无 try? 降级）。
-    func testGenerateMindMap_LLM抛错时向上传播() async throws {
+    func testGenerateMindMapLLMThrowsErrorPropagates() async throws {
         await MainActor.run {
             mockLLM.shouldThrow = true
         }
@@ -221,7 +221,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - extractActions
 
     /// 验证 extractActions 正常返回 cleanMarkdown 处理后的结果。
-    func testExtractActions_正常返回清理后文本() async throws {
+    func testExtractActionsNormalReturnsCleanedText() async throws {
         await MainActor.run { mockLLM.defaultResponse = "1. 行动一\\n2. 行动二" }
 
         let result = try await AISynthesisService.shared.extractActions(content: "内容")
@@ -231,7 +231,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 extractActions 在 LLM 抛错时向上传播（无 fallback）。
-    func testExtractActions_LLM抛错时向上传播() async throws {
+    func testExtractActionsLLMThrowsErrorPropagates() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         do {
@@ -245,7 +245,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - generatePresentation fallback 逻辑
 
     /// 验证 generatePresentation 在 LLM 返回有效长文本时直接返回 cleaned。
-    func testGeneratePresentation_有效长文本返回cleaned() async throws {
+    func testGeneratePresentationValidLongTextReturnsCleaned() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "# 幻灯片1\n这是足够长的演示文稿内容用于通过最小字节校验"
         }
@@ -257,7 +257,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generatePresentation 在 LLM 返回空字符串时触发 fallback 生成。
-    func testGeneratePresentation_LLM返回空触发Fallback() async throws {
+    func testGeneratePresentationLLMReturnsEmptyTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "" }
 
         let result = try await AISynthesisService.shared.generatePresentation(content: "# 主题\n- 要点1\n- 要点2")
@@ -266,7 +266,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generatePresentation 在 LLM 返回过短内容时触发 fallback。
-    func testGeneratePresentation_LLM返回过短触发Fallback() async throws {
+    func testGeneratePresentationLLMReturnsTooShortTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "短" }
 
         let result = try await AISynthesisService.shared.generatePresentation(content: "内容")
@@ -280,7 +280,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     ///   （generateFallbackPresentation/generateFallbackQuiz 等），确保 LLM 不可用时仍有输出。
     ///   summarize/extractActions/generateMindMap 用 try 抛出是因为它们没有 fallback。
     ///   行为不一致但设计合理，不修复。
-    func testGeneratePresentation_LLM抛错时降级返回fallback() async throws {
+    func testGeneratePresentationLLMThrowsDegradesToFallback() async throws {
         await MainActor.run {
             mockLLM.shouldThrow = true
             mockLLM.throwError = LLMError.notConfigured
@@ -296,7 +296,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - generateQuiz fallback 链
 
     /// 验证 generateQuiz 在 LLM 返回可解析的 Quiz JSON 时直接返回原始 JSON。
-    func testGenerateQuiz_可解析JSON直接返回原文() async throws {
+    func testGenerateQuizParsableJSONReturnsRawText() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = """
             [
@@ -316,7 +316,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateQuiz 在 LLM 返回空字符串时触发 fallback 生成占位 Quiz。
-    func testGenerateQuiz_LLM返回空触发Fallback() async throws {
+    func testGenerateQuizLLMReturnsEmptyTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "" }
 
         let result = try await AISynthesisService.shared.generateQuiz(content: "内容")
@@ -325,7 +325,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateQuiz 在 LLM 返回非 JSON 乱码但长度 >= 10 字节时返回原文。
-    func testGenerateQuiz_非JSON乱码长度达标返回原文() async throws {
+    func testGenerateQuizNonJSONGarbageLengthMetReturnsRawText() async throws {
         let garbage = "这是非JSON的乱码文本内容长度超过十个字节"
         await MainActor.run { mockLLM.defaultResponse = garbage }
 
@@ -335,7 +335,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateQuiz 在 LLM 抛错时静默降级（try? 降级）。
-    func testGenerateQuiz_LLM抛错时静默降级() async throws {
+    func testGenerateQuizLLMThrowsSilentDegrade() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         let result = try await AISynthesisService.shared.generateQuiz(content: "内容")
@@ -346,7 +346,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - generateInfographic fallback
 
     /// 验证 generateInfographic 在 LLM 返回有效 Mermaid 时返回格式化结果。
-    func testGenerateInfographic_有效Mermaid返回格式化() async throws {
+    func testGenerateInfographicValidMermaidReturnsFormatted() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = """
             ```mermaid
@@ -362,7 +362,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateInfographic 在 LLM 返回空时触发 fallback。
-    func testGenerateInfographic_LLM返回空触发Fallback() async throws {
+    func testGenerateInfographicLLMReturnsEmptyTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "" }
 
         let result = try await AISynthesisService.shared.generateInfographic(content: "内容")
@@ -371,7 +371,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateInfographic 在 LLM 抛错时静默降级。
-    func testGenerateInfographic_LLM抛错时静默降级() async throws {
+    func testGenerateInfographicLLMThrowsSilentDegrade() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         let result = try await AISynthesisService.shared.generateInfographic(content: "内容")
@@ -382,7 +382,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - generateReport fallback
 
     /// 验证 generateReport 在 LLM 返回有效长文本时返回 cleaned。
-    func testGenerateReport_有效长文本返回cleaned() async throws {
+    func testGenerateReportValidLongTextReturnsCleaned() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "# 报告标题\n这是足够长的报告内容用于通过最小字节校验阈值"
         }
@@ -394,7 +394,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateReport 在 LLM 返回空时触发 fallback。
-    func testGenerateReport_LLM返回空触发Fallback() async throws {
+    func testGenerateReportLLMReturnsEmptyTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "" }
 
         let result = try await AISynthesisService.shared.generateReport(content: "内容")
@@ -403,7 +403,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateReport 在 LLM 抛错时静默降级。
-    func testGenerateReport_LLM抛错时静默降级() async throws {
+    func testGenerateReportLLMThrowsSilentDegrade() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         let result = try await AISynthesisService.shared.generateReport(content: "内容")
@@ -414,7 +414,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - expandKnowledge fallback
 
     /// 验证 expandKnowledge 在 LLM 返回有效长文本时返回 cleaned。
-    func testExpandKnowledge_有效长文本返回cleaned() async throws {
+    func testExpandKnowledgeValidLongTextReturnsCleaned() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "# 扩充标题\n这是足够长的知识扩充内容用于通过最小字节校验"
         }
@@ -425,7 +425,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 expandKnowledge 在 LLM 返回空时触发 fallback。
-    func testExpandKnowledge_LLM返回空触发Fallback() async throws {
+    func testExpandKnowledgeLLMReturnsEmptyTriggersFallback() async throws {
         await MainActor.run { mockLLM.defaultResponse = "" }
 
         let result = try await AISynthesisService.shared.expandKnowledge(content: "内容")
@@ -434,7 +434,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 expandKnowledge 在 LLM 抛错时静默降级。
-    func testExpandKnowledge_LLM抛错时静默降级() async throws {
+    func testExpandKnowledgeLLMThrowsSilentDegrade() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         let result = try await AISynthesisService.shared.expandKnowledge(content: "内容")
@@ -445,7 +445,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - suggestFix pageID 匹配
 
     /// 验证 suggestFix 在 issue.pageID 匹配到 pages 中的页面时使用该页面标题和内容。
-    func testSuggestFix_pageID匹配时使用对应页面() async throws {
+    func testSuggestFixPageIDMatchedUsesCorrespondingPage() async throws {
         await MainActor.run { mockLLM.defaultResponse = "修复建议文本" }
 
         let pageID = UUID()
@@ -461,7 +461,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 suggestFix 在 issue.pageID 不匹配时使用 L10n.Common.unknown 作为标题。
-    func testSuggestFix_pageID不匹配时使用未知标题() async throws {
+    func testSuggestFixPageIDNotMatchedUsesUnknownTitle() async throws {
         await MainActor.run { mockLLM.defaultResponse = "建议" }
 
         let page = KnowledgePage(title: "其他页面", content: "其他内容")
@@ -475,7 +475,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 suggestFix 在 pages 为空时不崩溃。
-    func testSuggestFix_空pages不崩溃() async throws {
+    func testSuggestFixEmptyPagesNoCrash() async throws {
         await MainActor.run { mockLLM.defaultResponse = "建议" }
 
         let issue = LintIssue(severity: .info, pageID: UUID(), message: "问题", suggestion: "建议")
@@ -486,7 +486,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 suggestFix 在 issue.pageID 为 nil 时使用 L10n.Common.unknown。
-    func testSuggestFix_pageID为nil时使用未知标题() async throws {
+    func testSuggestFixPageIDNilUsesUnknownTitle() async throws {
         await MainActor.run { mockLLM.defaultResponse = "建议" }
 
         let issue = LintIssue(severity: .info, pageID: nil, message: "问题", suggestion: "建议")
@@ -499,7 +499,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 suggestFix 在 LLM 抛错时向上传播（无 try? 降级）。
-    func testSuggestFix_LLM抛错时向上传播() async throws {
+    func testSuggestFixLLMThrowsErrorPropagates() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         let issue = LintIssue(severity: .info, message: "问题", suggestion: "建议")
@@ -514,7 +514,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
 
     /// 验证 suggestFix 使用 currentLLM 而非 llm
     /// - Note: C-12/Bug#2 已修复 — suggestFix 现在使用 currentLLM.generate，DI 动态更新 LLM 实例时生效。
-    func testSuggestFix_使用currentLLM调用() async throws {
+    func testSuggestFixUsesCurrentLLMCall() async throws {
         await MainActor.run { mockLLM.defaultResponse = "通过currentLLM调用" }
 
         let issue = LintIssue(severity: .info, message: "问题", suggestion: "建议")
@@ -527,14 +527,14 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - generateInsightfulQuestions
 
     /// 验证 generateInsightfulQuestions 在 pages 为空时返回空数组。
-    func testGenerateInsightfulQuestions_空pages返回空数组() async throws {
+    func testGenerateInsightfulQuestionsEmptyPagesReturnsEmptyArray() async throws {
         let result = try await AISynthesisService.shared.generateInsightfulQuestions(pages: [])
 
         XCTAssertTrue(result.isEmpty)
     }
 
     /// 验证 generateInsightfulQuestions 在 LLM 返回标准 JSON 数组时正确解析。
-    func testGenerateInsightfulQuestions_标准JSON数组正确解析() async throws {
+    func testGenerateInsightfulQuestionsStandardJSONArrayParsesCorrectly() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "[\"问题一\", \"问题二\", \"问题三\"]"
         }
@@ -551,7 +551,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateInsightfulQuestions 在 LLM 返回非 JSON 时返回空数组。
-    func testGenerateInsightfulQuestions_非JSON返回空数组() async throws {
+    func testGenerateInsightfulQuestionsNonJSONReturnsEmptyArray() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "这不是JSON数组"
         }
@@ -563,7 +563,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateInsightfulQuestions 在 LLM 返回数字数组时转为字符串数组。
-    func testGenerateInsightfulQuestions_数字数组转为字符串数组() async throws {
+    func testGenerateInsightfulQuestionsNumberArrayConvertedToStringArray() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "[1, 2, 3]"
         }
@@ -580,7 +580,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateInsightfulQuestions 在 LLM 抛错时向上传播。
-    func testGenerateInsightfulQuestions_LLM抛错时向上传播() async throws {
+    func testGenerateInsightfulQuestionsLLMThrowsErrorPropagates() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         let pages = [KnowledgePage(title: "页面", content: "内容")]
@@ -594,7 +594,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateInsightfulQuestions 只取最近更新的 15 个页面。
-    func testGenerateInsightfulQuestions_只取最近15个页面() async throws {
+    func testGenerateInsightfulQuestionsTakesLatest15Pages() async throws {
         await MainActor.run { mockLLM.defaultResponse = "[]" }
 
         // 构造 20 个页面，updatedAt 递增
@@ -613,7 +613,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
 
     /// 验证 generateInsightfulQuestions 使用 currentLLM 而非 llm
     /// - Note: C-13/Bug#3 已修复 — generateInsightfulQuestions 现在使用 currentLLM.generate。
-    func testGenerateInsightfulQuestions_使用currentLLM调用() async throws {
+    func testGenerateInsightfulQuestionsUsesCurrentLLMCall() async throws {
         await MainActor.run { mockLLM.defaultResponse = "[]" }
 
         let pages = [KnowledgePage(title: "页面", content: "内容")]
@@ -625,14 +625,14 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - predictFollowUpQuestions
 
     /// 验证 predictFollowUpQuestions 在 history 为空时返回空数组。
-    func testPredictFollowUpQuestions_空history返回空数组() async throws {
+    func testPredictFollowUpQuestionsEmptyHistoryReturnsEmptyArray() async throws {
         let result = try await AISynthesisService.shared.predictFollowUpQuestions(history: [], pages: [])
 
         XCTAssertTrue(result.isEmpty)
     }
 
     /// 验证 predictFollowUpQuestions 在 LLM 返回标准 JSON 数组时正确解析。
-    func testPredictFollowUpQuestions_标准JSON数组正确解析() async throws {
+    func testPredictFollowUpQuestionsStandardJSONArrayParsesCorrectly() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "[\"追问1\", \"追问2\", \"追问3\"]"
         }
@@ -644,7 +644,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 predictFollowUpQuestions 在 LLM 返回非 JSON 时返回空数组。
-    func testPredictFollowUpQuestions_非JSON返回空数组() async throws {
+    func testPredictFollowUpQuestionsNonJSONReturnsEmptyArray() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "非JSON文本"
         }
@@ -656,7 +656,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 predictFollowUpQuestions 在 LLM 抛错时向上传播。
-    func testPredictFollowUpQuestions_LLM抛错时向上传播() async throws {
+    func testPredictFollowUpQuestionsLLMThrowsErrorPropagates() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         let history = [ChatMessage(role: .user, content: "你好")]
@@ -670,7 +670,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 predictFollowUpQuestions 只取最近 10 条历史消息。
-    func testPredictFollowUpQuestions_只取最近10条历史() async throws {
+    func testPredictFollowUpQuestionsTakesLatest10History() async throws {
         await MainActor.run { mockLLM.defaultResponse = "[]" }
 
         // 构造 15 条历史
@@ -687,7 +687,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 predictFollowUpQuestions 对 user/assistant 角色正确标注。
-    func testPredictFollowUpQuestions_角色标注正确() async throws {
+    func testPredictFollowUpQuestionsRoleAnnotationCorrect() async throws {
         await MainActor.run { mockLLM.defaultResponse = "[]" }
 
         let history = [
@@ -705,7 +705,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - synthesize Facade
 
     /// 验证 synthesize(.mindmap) 正确分派到 generateMindMap。
-    func testSynthesize_mindmap分派正确() async throws {
+    func testSynthesizeMindmapDispatchCorrect() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = """
             ```mermaid
@@ -722,7 +722,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 synthesize(.quiz) 正确分派到 generateQuiz。
-    func testSynthesize_quiz分派正确() async throws {
+    func testSynthesizeQuizDispatchCorrect() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "[{\"question\":\"Q?\",\"options\":[\"A\"],\"answerIndex\":0}]"
         }
@@ -733,7 +733,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 synthesize(.slides) 正确分派到 generatePresentation。
-    func testSynthesize_slides分派正确() async throws {
+    func testSynthesizeSlidesDispatchCorrect() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "# 幻灯片1\n足够长的演示文稿内容用于通过最小字节校验阈值"
         }
@@ -744,7 +744,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 synthesize(.report) 正确分派到 generateReport。
-    func testSynthesize_report分派正确() async throws {
+    func testSynthesizeReportDispatchCorrect() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "# 报告\n足够长的报告内容用于通过最小字节校验阈值"
         }
@@ -755,7 +755,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 synthesize(.infographic) 正确分派到 generateInfographic。
-    func testSynthesize_infographic分派正确() async throws {
+    func testSynthesizeInfographicDispatchCorrect() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = """
             ```mermaid
@@ -771,7 +771,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 synthesize(.expansion) 正确分派到 expandKnowledge。
-    func testSynthesize_expansion分派正确() async throws {
+    func testSynthesizeExpansionDispatchCorrect() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = "# 扩充\n足够长的知识扩充内容用于通过最小字节校验阈值"
         }
@@ -782,7 +782,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 synthesize 在子方法抛错时向上传播（以 mindmap 为例，无 try? 降级的方法）。
-    func testSynthesize_mindmapLLM抛错时向上传播() async throws {
+    func testSynthesizeMindmapLLMThrowsErrorPropagates() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         do {
@@ -794,7 +794,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 synthesize(.slides) 在 LLM 抛错时静默降级（因 generatePresentation 用 try?）。
-    func testSynthesize_slidesLLM抛错时静默降级() async throws {
+    func testSynthesizeSlidesLLMThrowsSilentDegrade() async throws {
         await MainActor.run { mockLLM.shouldThrow = true }
 
         // slides 走 generatePresentation，使用 try? 降级
@@ -806,7 +806,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - currentLLM 动态解析
 
     /// 验证 summarize 使用 currentLLM（动态解析 ServiceContainer 中的最新实例）。
-    func testSummarize_使用currentLLM动态解析() async throws {
+    func testSummarizeUsesCurrentLLMDynamicResolution() async throws {
         // 注册一个新的 Mock 到 ServiceContainer
         let newMock = await MainActor.run { ControllableLLMService() }
         await MainActor.run {
@@ -823,7 +823,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateMindMap 使用 currentLLM 动态解析。
-    func testGenerateMindMap_使用currentLLM动态解析() async throws {
+    func testGenerateMindMapUsesCurrentLLMDynamicResolution() async throws {
         let newMock = await MainActor.run { ControllableLLMService() }
         await MainActor.run {
             newMock.defaultResponse = """
@@ -844,7 +844,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
 
     /// 验证 suggestFix 使用 currentLLM，DI 动态更新 LLM 实例时生效
     /// - Note: C-12/Bug#4 已修复 — suggestFix 现在使用 currentLLM.generate，DI 更新后使用新实例。
-    func testSuggestFix_DI更新后使用新LLM实例() async throws {
+    func testSuggestFixDIUpdatedUsesNewLLMInstance() async throws {
         let newMock = await MainActor.run { ControllableLLMService() }
         await MainActor.run {
             newMock.defaultResponse = "来自新DI的修复建议"
@@ -864,7 +864,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - 截断保护边界
 
     /// 验证 generateMindMap 超长内容截断至 8000。
-    func testGenerateMindMap_超长内容截断() async throws {
+    func testGenerateMindMapOverlongContentTruncated() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = """
             ```mermaid
@@ -883,7 +883,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generateQuiz 超长内容截断。
-    func testGenerateQuiz_超长内容截断() async throws {
+    func testGenerateQuizOverlongContentTruncated() async throws {
         await MainActor.run { mockLLM.defaultResponse = "[]" }
 
         let longContent = String(repeating: "y", count: 12_000)
@@ -895,7 +895,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 generatePresentation 超长内容截断。
-    func testGeneratePresentation_超长内容截断() async throws {
+    func testGeneratePresentationOverlongContentTruncated() async throws {
         await MainActor.run { mockLLM.defaultResponse = "足够长的响应内容用于通过校验" }
 
         let longContent = String(repeating: "z", count: 10_000)
@@ -908,7 +908,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - updateStatus 副作用
 
     /// 验证 synthesize 调用 updateStatus 不崩溃（通过 TaskCenter.updateLatestStatus）。
-    func testSynthesize_调用updateStatus不崩溃() async throws {
+    func testSynthesizeCallsUpdateStatusNoCrash() async throws {
         await MainActor.run {
             mockLLM.defaultResponse = """
             ```mermaid
@@ -927,7 +927,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     // MARK: - suggestFix 内容截断
 
     /// 验证 suggestFix 对 pageContent 截断至 500 字符。
-    func testSuggestFix_pageContent截断至500字符() async throws {
+    func testSuggestFixPageContentTruncatedTo500Chars() async throws {
         await MainActor.run { mockLLM.defaultResponse = "建议" }
 
         let longContent = String(repeating: "c", count: 1000)
@@ -942,7 +942,7 @@ final class AISynthesisServiceDeepTests: XCTestCase {
     }
 
     /// 验证 suggestFix 对 otherTitles 截断至前 50 个。
-    func testSuggestFix_otherTitles截断至前50个() async throws {
+    func testSuggestFixOtherTitlesTruncatedToFirst50() async throws {
         await MainActor.run { mockLLM.defaultResponse = "建议" }
 
         // 构造 60 个页面，issue 匹配第一个

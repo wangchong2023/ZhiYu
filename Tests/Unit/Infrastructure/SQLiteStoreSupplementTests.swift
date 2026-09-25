@@ -23,37 +23,37 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     // MARK: - DatabaseManager
 
     /// DatabaseManager reset 后 dbWriter 为 nil
-    func testDatabaseManager_reset后_dbWriter为Nil() {
+    func testDatabaseManagerResetAfterDbWriterIsNil() {
         DatabaseManager.shared.reset()
         XCTAssertNil(DatabaseManager.shared.dbWriter)
     }
 
     /// DatabaseManager reset 后 globalWriter 为 nil
-    func testDatabaseManager_reset后_globalWriter为Nil() {
+    func testDatabaseManagerResetAfterGlobalWriterIsNil() {
         DatabaseManager.shared.reset()
         XCTAssertNil(DatabaseManager.shared.globalWriter)
     }
 
     /// DatabaseManager reset 后 dbURL 为 nil
-    func testDatabaseManager_reset后_dbURL为Nil() {
+    func testDatabaseManagerResetAfterDbURLIsNil() {
         DatabaseManager.shared.reset()
         XCTAssertNil(DatabaseManager.shared.dbURL)
     }
 
     /// DatabaseManager reset 后 globalDBURL 为 nil
-    func testDatabaseManager_reset后_globalDBURL为Nil() {
+    func testDatabaseManagerResetAfterGlobalDBURLIsNil() {
         DatabaseManager.shared.reset()
         XCTAssertNil(DatabaseManager.shared.globalDBURL)
     }
 
     /// DatabaseManager state 初始为 uninitialized
-    func testDatabaseManager_初始状态_uninitialized() {
+    func testDatabaseManagerInitialStateUninitialized() {
         DatabaseManager.shared.reset()
         XCTAssertEqual(DatabaseManager.shared.state, .uninitialized)
     }
 
     /// DatabaseManager migrate 对内存库执行迁移
-    func testDatabaseManager_migrate_内存库_迁移成功() throws {
+    func testDatabaseManagerMigrateMemoryQueueMigrationSuccess() throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         let tables = try memoryQueue.read { db in
@@ -63,7 +63,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// DatabaseManager releaseDatabaseConnection 应将 dbWriter 置 nil
-    func testDatabaseManager_releaseDatabaseConnection_dbWriter为Nil() throws {
+    func testDatabaseManagerReleaseDatabaseConnectionDbWriterIsNil() throws {
         let memoryQueue = try DatabaseQueue()
         DatabaseManager.shared.dbWriter = memoryQueue
         DatabaseManager.shared.releaseDatabaseConnection()
@@ -71,7 +71,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// DatabaseManager countPagesInCurrentVault 无 writer 时返回 0
-    func testDatabaseManager_countPagesInCurrentVault_无writer_返回0() async throws {
+    func testDatabaseManagerCountPagesInCurrentVaultNoWriterReturnsZero() async throws {
         DatabaseManager.shared.reset()
         let count = try await DatabaseManager.shared.countPagesInCurrentVault()
         XCTAssertEqual(count, 0)
@@ -80,7 +80,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     // MARK: - SQLiteStore
 
     /// SQLiteStore pages 初始为空
-    func testSQLiteStore_pages_初始为空() async throws {
+    func testSQLiteStorePagesInitiallyEmpty() async throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         let store = SQLiteStore(dbWriter: memoryQueue)
@@ -90,7 +90,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// SQLiteStore createPage 应创建并返回页面
-    func testSQLiteStore_createPage_创建成功() async throws {
+    func testSQLiteStoreCreatePageCreationSuccess() async throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         DatabaseManager.shared.dbWriter = memoryQueue
@@ -105,7 +105,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// SQLiteStore searchPages 空查询应返回结果（不崩溃）
-    func testSQLiteStore_searchPages_空查询_不崩溃() async throws {
+    func testSQLiteStoreSearchPagesEmptyQueryNoCrash() async throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         let store = SQLiteStore(dbWriter: memoryQueue)
@@ -117,7 +117,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// SQLiteStore fetchBacklinksByID 无反向链接应返回空
-    func testSQLiteStore_fetchBacklinksByID_无链接_返回空() async throws {
+    func testSQLiteStoreFetchBacklinksByIDNoLinksReturnsEmpty() async throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         let store = SQLiteStore(dbWriter: memoryQueue)
@@ -128,7 +128,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// SQLiteStore getStorageStats 应返回有效统计
-    func testSQLiteStore_getStorageStats_返回有效统计() async throws {
+    func testSQLiteStoreGetStorageStatsReturnsValidStats() async throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         DatabaseManager.shared.dbWriter = memoryQueue
@@ -141,7 +141,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// SQLiteStore anyCreatePage 失败时返回 nil（Bug #136 修复验证）
-    func testSQLiteStore_anyCreatePage_失败_返回nil() async throws {
+    func testSQLiteStoreAnyCreatePageFailureReturnsNil() async throws {
         // 使用已 reset 的 DatabaseManager，dbWriter 为 nil
         DatabaseManager.shared.reset()
         let memoryQueue = try DatabaseQueue()
@@ -169,7 +169,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// SQLiteStore addLog 应不崩溃（存储引擎层不记录日志）
-    func testSQLiteStore_addLog_不崩溃() async throws {
+    func testSQLiteStoreAddLogNoCrash() async throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         let store = SQLiteStore(dbWriter: memoryQueue)
@@ -179,12 +179,12 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     // MARK: - GRDB Extensions
 
     /// PluginRecord databaseTableName 应返回正确表名
-    func testPluginRecordGRDB_databaseTableName_正确() {
+    func testPluginRecordGRDBDatabaseTableNameCorrect() {
         XCTAssertEqual(PluginRecord.databaseTableName, AppConstants.Storage.Tables.pluginRecords)
     }
 
     /// PluginRecord Columns 枚举应映射正确列名
-    func testPluginRecordGRDB_Columns_列名正确() {
+    func testPluginRecordGRDBColumnsColumnNameCorrect() {
         XCTAssertEqual(PluginRecord.Columns.id.rawValue, "id")
         XCTAssertEqual(PluginRecord.Columns.name.rawValue, "name")
         XCTAssertEqual(PluginRecord.Columns.permissionsJSON.rawValue, "permissions_json")
@@ -192,12 +192,12 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// KnowledgePage databaseTableName 应返回正确表名
-    func testKnowledgePageGRDB_databaseTableName_正确() {
+    func testKnowledgePageGRDBDatabaseTableNameCorrect() {
         XCTAssertEqual(KnowledgePage.databaseTableName, AppConstants.Storage.Tables.pages)
     }
 
     /// KnowledgePage Columns 枚举应映射正确列名
-    func testKnowledgePageGRDB_Columns_列名正确() {
+    func testKnowledgePageGRDBColumnsColumnNameCorrect() {
         XCTAssertEqual(KnowledgePage.Columns.id.rawValue, "id")
         XCTAssertEqual(KnowledgePage.Columns.title.rawValue, "title")
         XCTAssertEqual(KnowledgePage.Columns.pageType.rawValue, "page_type")
@@ -207,7 +207,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// Array GRDBJSONCodable 编码解码环回
-    func testArrayGRDBJSONCodable_编码解码_环回() {
+    func testArrayGRDBJSONCodableEncodeDecodeRoundTrip() {
         let strings: [String] = ["a", "b", "c"]
         let dbValue = strings.databaseValue
         let decoded = [String].fromDatabaseValue(dbValue)
@@ -215,7 +215,7 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// Array GRDBJSONCodable 空数组编码解码
-    func testArrayGRDBJSONCodable_空数组_环回() {
+    func testArrayGRDBJSONCodableEmptyArrayRoundTrip() {
         let empty: [String] = []
         let dbValue = empty.databaseValue
         let decoded = [String].fromDatabaseValue(dbValue)
@@ -223,13 +223,13 @@ final class SQLiteStoreSupplementTests: XCTestCase {
     }
 
     /// Array GRDBJSONCodable 从 null 解码返回 nil
-    func testArrayGRDBJSONCodable_null_返回nil() {
+    func testArrayGRDBJSONCodableNullReturnsNil() {
         let decoded = [String].fromDatabaseValue(.null)
         XCTAssertNil(decoded)
     }
 
     /// Array GRDBJSONCodable UUID 数组环回
-    func testArrayGRDBJSONCodable_UUID数组_环回() {
+    func testArrayGRDBJSONCodableUUIDArrayRoundTrip() {
         let uuids: [UUID] = [UUID(), UUID()]
         let dbValue = uuids.databaseValue
         let decoded = [UUID].fromDatabaseValue(dbValue)

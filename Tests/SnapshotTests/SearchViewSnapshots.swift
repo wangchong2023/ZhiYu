@@ -30,6 +30,7 @@ final class SearchViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     // MARK: - CommandPaletteView 快照测试

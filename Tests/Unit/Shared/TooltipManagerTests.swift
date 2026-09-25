@@ -36,31 +36,31 @@ final class TooltipManagerTests: XCTestCase {
 
     // MARK: - 初始状态
 
-    func testInitial_shownTooltips为空() {
+    func testInitialShownTooltipsEmpty() {
         XCTAssertTrue(manager.shownTooltips.isEmpty)
     }
 
-    func testInitial_activeTooltip为nil() {
+    func testInitialActiveTooltipIsNil() {
         XCTAssertNil(manager.activeTooltip)
     }
 
-    func testInitial_pendingTooltips包含全部6个() {
+    func testInitialPendingTooltipsContainsAllSix() {
         XCTAssertEqual(manager.pendingTooltips.count, 6)
     }
 
     // MARK: - markShown 状态机
 
-    func testMarkShown_添加到shownTooltips() {
+    func testMarkShownAddsToShownTooltips() {
         manager.markShown(.createPage)
         XCTAssertTrue(manager.shownTooltips.contains(TooltipManager.TooltipType.createPage.rawValue))
     }
 
-    func testMarkShown_从pendingTooltips移除() {
+    func testMarkShownRemovesFromPendingTooltips() {
         manager.markShown(.createPage)
         XCTAssertFalse(manager.pendingTooltips.contains(.createPage))
     }
 
-    func testMarkShown_多个Tooltip() {
+    func testMarkShownMultipleTooltips() {
         manager.markShown(.createPage)
         manager.markShown(.chat)
         manager.markShown(.tag)
@@ -68,13 +68,13 @@ final class TooltipManagerTests: XCTestCase {
         XCTAssertEqual(manager.pendingTooltips.count, 3)
     }
 
-    func testMarkShown_重复标记不增加() {
+    func testMarkShownDuplicateMarkNoIncrease() {
         manager.markShown(.createPage)
         manager.markShown(.createPage)
         XCTAssertEqual(manager.shownTooltips.count, 1, "重复标记不应增加计数")
     }
 
-    func testMarkShown_全部标记后pending为空() {
+    func testMarkShownAllMarkedPendingEmpty() {
         for tooltip in TooltipManager.TooltipType.allCases {
             manager.markShown(tooltip)
         }
@@ -83,16 +83,16 @@ final class TooltipManagerTests: XCTestCase {
 
     // MARK: - isShown 查询
 
-    func testIsShown_未标记返回false() {
+    func testIsShownNotMarkedReturnsFalse() {
         XCTAssertFalse(manager.isShown(.createPage))
     }
 
-    func testIsShown_标记后返回true() {
+    func testIsShownMarkedReturnsTrue() {
         manager.markShown(.createPage)
         XCTAssertTrue(manager.isShown(.createPage))
     }
 
-    func testIsShown_不影响其他Tooltip() {
+    func testIsShownDoesNotAffectOtherTooltip() {
         manager.markShown(.createPage)
         XCTAssertTrue(manager.isShown(.createPage))
         XCTAssertFalse(manager.isShown(.chat))
@@ -100,33 +100,33 @@ final class TooltipManagerTests: XCTestCase {
 
     // MARK: - resetAll 状态机
 
-    func testResetAll_清空shownTooltips() {
+    func testResetAllClearsShownTooltips() {
         manager.markShown(.createPage)
         manager.markShown(.chat)
         manager.resetAll()
         XCTAssertTrue(manager.shownTooltips.isEmpty)
     }
 
-    func testResetAll_恢复pendingTooltips() {
+    func testResetAllRestoresPendingTooltips() {
         manager.markShown(.createPage)
         manager.markShown(.chat)
         manager.resetAll()
         XCTAssertEqual(manager.pendingTooltips.count, 6)
     }
 
-    func testResetAll_无数据时不崩溃() {
+    func testResetAllNoDataNoCrash() {
         manager.resetAll()
         XCTAssertTrue(manager.shownTooltips.isEmpty)
     }
 
     // MARK: - pendingTooltips 计算
 
-    func testPendingTooltips_按allCases顺序() {
+    func testPendingTooltipsInAllCasesOrder() {
         let pending = manager.pendingTooltips
         XCTAssertEqual(pending, TooltipManager.TooltipType.allCases)
     }
 
-    func testPendingTooltips_标记后排除() {
+    func testPendingTooltipsExcludedAfterMarked() {
         manager.markShown(.ingest)
         let pending = manager.pendingTooltips
         XCTAssertFalse(pending.contains(.ingest))
@@ -135,21 +135,21 @@ final class TooltipManagerTests: XCTestCase {
 
     // MARK: - 持久化
 
-    func testMarkShown_持久化到UserDefaults() {
+    func testMarkShownPersistsToUserDefaults() {
         manager.markShown(.createPage)
         let saved = testDefaults.stringArray(forKey: "app_shown_tooltips")
         XCTAssertNotNil(saved)
         XCTAssertTrue(saved?.contains("create_page") ?? false)
     }
 
-    func testResetAll_从UserDefaults删除() {
+    func testResetAllDeletesFromUserDefaults() {
         manager.markShown(.createPage)
         manager.resetAll()
         let saved = testDefaults.stringArray(forKey: "app_shown_tooltips")
         XCTAssertNil(saved)
     }
 
-    func testInit_从UserDefaults恢复() {
+    func testInitRestoresFromUserDefaults() {
         testDefaults.set(["create_page", "chat"], forKey: "app_shown_tooltips")
         let newManager = TooltipManager(defaults: testDefaults)
         XCTAssertTrue(newManager.isShown(.createPage))
@@ -165,31 +165,31 @@ final class TooltipTypeTests: XCTestCase {
 
     // MARK: - CaseIterable 完整性
 
-    func testAllCases包含6个case() {
+    func testAllCasesContainsSixCases() {
         XCTAssertEqual(TooltipManager.TooltipType.allCases.count, 6)
     }
     // MARK: - titleKey 映射
 
-    func testTitleKey_所有case返回非空字符串() {
+    func testTitleKeyAllCasesReturnNonEmptyString() {
         for tooltip in TooltipManager.TooltipType.allCases {
             XCTAssertFalse(tooltip.titleKey.isEmpty, "titleKey 不应为空")
         }
     }
 
-    func testTitleKey_各case返回不同值() {
+    func testTitleKeyEachCaseReturnsDifferentValue() {
         let keys = TooltipManager.TooltipType.allCases.map { $0.titleKey }
         XCTAssertEqual(keys.count, Set(keys).count, "各 case 的 titleKey 应唯一")
     }
 
     // MARK: - descriptionKey 映射
 
-    func testDescriptionKey_所有case返回非空字符串() {
+    func testDescriptionKeyAllCasesReturnNonEmptyString() {
         for tooltip in TooltipManager.TooltipType.allCases {
             XCTAssertFalse(tooltip.descriptionKey.isEmpty, "descriptionKey 不应为空")
         }
     }
 
-    func testDescriptionKey_各case返回不同值() {
+    func testDescriptionKeyEachCaseReturnsDifferentValue() {
         let keys = TooltipManager.TooltipType.allCases.map { $0.descriptionKey }
         XCTAssertEqual(keys.count, Set(keys).count, "各 case 的 descriptionKey 应唯一")
     }

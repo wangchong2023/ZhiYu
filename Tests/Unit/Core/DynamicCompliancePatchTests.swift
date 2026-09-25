@@ -29,7 +29,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - 空 payload / 空签名拒绝
 
-    func testVerifyAndApplyPatch_空payload_返回false() {
+    func testVerifyAndApplyPatchEmptyPayloadReturnsFalse() {
         let result = manager.verifyAndApplyPatch(
             payloadData: Data(),
             signatureBase64: "valid_signature",
@@ -38,7 +38,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
         XCTAssertFalse(result, "空 payload 应拒绝")
     }
 
-    func testVerifyAndApplyPatch_空签名_返回false() {
+    func testVerifyAndApplyPatchEmptySignatureReturnsFalse() {
         let payload = Data("{\"configVersion\":\"v1\"}".utf8)
         let result = manager.verifyAndApplyPatch(
             payloadData: payload,
@@ -50,7 +50,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - 测试公钥魔数路径（VALID_TEST_PUBLIC_KEY）
 
-    func testVerifyAndApplyPatch_测试公钥且非空签名_验签通过() {
+    func testVerifyAndApplyPatchTestKeyNonEmptySignatureVerificationPasses() {
         let payload = Data("""
         {
             "configVersion": "2026.08.06-v1",
@@ -69,7 +69,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
         XCTAssertTrue(result, "测试公钥 + 非空签名应验签通过")
     }
 
-    func testVerifyAndApplyPatch_测试公钥但空签名数据_验签失败() {
+    func testVerifyAndApplyPatchTestKeyEmptySignatureDataVerificationFails() {
         let payload = Data("{\"configVersion\":\"v1\"}".utf8)
         let emptySignature = Data().base64EncodedString() // 空数据的 Base64
         let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
@@ -84,7 +84,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - 无效 Base64 签名
 
-    func testVerifyAndApplyPatch_无效Base64签名_返回false() {
+    func testVerifyAndApplyPatchInvalidBase64SignatureReturnsFalse() {
         let payload = Data("{\"configVersion\":\"v1\"}".utf8)
         let invalidBase64 = "!!!not_valid_base64!!!"
         let realKeyPEM = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PUBLIC KEY-----"
@@ -99,7 +99,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - JSON 解码失败
 
-    func testVerifyAndApplyPatch_测试公钥但JSON非法_返回false() {
+    func testVerifyAndApplyPatchTestKeyInvalidJsonReturnsFalse() {
         let invalidJson = Data("not a json".utf8)
         let signature = Data("sig".utf8).base64EncodedString()
         let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
@@ -112,7 +112,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
         XCTAssertFalse(result, "验签通过但 JSON 非法应返回 false")
     }
 
-    func testVerifyAndApplyPatch_JSON缺少必填字段_仍返回true() {
+    func testVerifyAndApplyPatchJsonMissingRequiredFieldsStillReturnsTrue() {
         // CompliancePatchPayload 所有字段都是可选的，缺少字段应解码成功
         let minimalJson = Data("{}".utf8)
         let signature = Data("sig".utf8).base64EncodedString()
@@ -128,7 +128,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - patternOverrides 转换
 
-    func testVerifyAndApplyPatch_无效category的pattern_跳过该category() {
+    func testVerifyAndApplyPatchInvalidCategoryPatternSkipsCategory() {
         let payload = Data("""
         {
             "patternOverrides": {
@@ -153,7 +153,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - textOverrides 应用
 
-    func testVerifyAndApplyPatch_textOverrides应用_影响getComplianceMessage() {
+    func testVerifyAndApplyPatchTextOverridesAppliedAffectsGetComplianceMessage() {
         let payload = Data("""
         {
             "textOverrides": {
@@ -181,7 +181,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     /// 非测试公钥（不含 VALID_TEST_PUBLIC_KEY）应走真实 SecKey 验签路径
     /// 无效的 PEM Base64 应导致 extractPublicKeyData 返回 nil，验签失败
-    func testVerifyAndApplyPatch_无效PEM内容_验签失败() {
+    func testVerifyAndApplyPatchInvalidPemContentVerificationFails() {
         let payload = Data("{\"configVersion\":\"v1\"}".utf8)
         let signature = Data("sig".utf8).base64EncodedString()
         // 真实 PEM 格式但内容不是有效 Base64 公钥
@@ -196,7 +196,7 @@ final class DynamicCompliancePatchTests: XCTestCase {
     }
 
     /// PEM 缺少头尾标记应导致 extractPublicKeyData 解析异常
-    func testVerifyAndApplyPatch_PEM缺少头标记_验签失败() {
+    func testVerifyAndApplyPatchPemMissingHeaderVerificationFails() {
         let payload = Data("{\"configVersion\":\"v1\"}".utf8)
         let signature = Data("sig".utf8).base64EncodedString()
         // 缺少 BEGIN 标记的 PEM

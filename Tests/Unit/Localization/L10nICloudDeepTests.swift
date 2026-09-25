@@ -26,7 +26,7 @@ final class L10nICloudDeepTests: XCTestCase {
 
     // MARK: - 全量属性批量验证
 
-    func testICloud_所有静态属性返回非Missing值() {
+    func testICloudAllStaticPropsReturnNonMissing() {
         let values: [String] = [
             L10n.ICloud.pushToCloud,
             L10n.ICloud.pullFromCloud,
@@ -70,7 +70,7 @@ final class L10nICloudDeepTests: XCTestCase {
 
     // MARK: - 全量格式化方法验证
 
-    func testICloud_所有格式化方法返回非Missing值() {
+    func testICloudAllFormatMethodsReturnNonMissing() {
         assertNonMissing(L10n.ICloud.Conflict.docListCount(1), "L10n.ICloud.Conflict.docListCount")
         assertNonMissing(L10n.ICloud.Conflict.localVersionTime("x"), "L10n.ICloud.Conflict.localVersionTime")
         assertNonMissing(L10n.ICloud.Conflict.remoteVersionTime("x"), "L10n.ICloud.Conflict.remoteVersionTime")

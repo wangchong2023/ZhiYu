@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="ZhiYu-Architecture">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ==================== L3 表现层 ==================== -->
+        <mxCell id="l3" parent="1" style="swimlane;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;html=1;fontStyle=1;fontSize=14;verticalAlign=top;swimlaneFillColor=#f5f0fa;" value="L3 表现层 (Presentation Layer) — SwiftUI Views / ViewModels / 路由" vertex="1">
+          <mxGeometry x="40" y="40" width="1120" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3_views" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="SwiftUI Views&#xa;跨平台视图" vertex="1">
+          <mxGeometry x="20" y="50" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3_vm" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="@Observable ViewModels&#xa;状态管理" vertex="1">
+          <mxGeometry x="240" y="50" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3_router" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="Router&#xa;NavigationPath 导航" vertex="1">
+          <mxGeometry x="460" y="50" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3_vf" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="ViewFactory&#xa;ViewProvider 注册" vertex="1">
+          <mxGeometry x="680" y="50" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3_platform" parent="l3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="平台 Targets&#xa;iOS / macOS / watchOS / Widgets" vertex="1">
+          <mxGeometry x="900" y="50" width="200" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== L2 功能层 ==================== -->
+        <mxCell id="l2" parent="1" style="swimlane;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;html=1;fontStyle=1;fontSize=14;verticalAlign=top;swimlaneFillColor=#f0f6ff;" value="L2 功能层 (Feature Layer) — 按功能域组织的业务逻辑与视图" vertex="1">
+          <mxGeometry x="40" y="240" width="1120" height="210" as="geometry"/>
+        </mxCell>
+        <!-- AI 域 -->
+        <mxCell id="l2_ai" parent="l2" style="swimlane;startSize=24;fillColor=#dae8fc;strokeColor=#6c8ebf;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#eaf2ff;" value="AI 功能域" vertex="1">
+          <mxGeometry x="20" y="40" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2_ai_mods" parent="l2_ai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• Chat 对话 (RAG)&#xa;• Synthesis 合成实验室&#xa;• Quiz 测验&#xa;• VoiceNote 语音笔记&#xa;• TaskCenter 任务中心" vertex="1">
+          <mxGeometry x="10" y="30" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <!-- Knowledge 域 -->
+        <mxCell id="l2_know" parent="l2" style="swimlane;startSize=24;fillColor=#dae8fc;strokeColor=#6c8ebf;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#eaf2ff;" value="Knowledge 功能域" vertex="1">
+          <mxGeometry x="300" y="40" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2_know_mods" parent="l2_know" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• Ingest 知识摄入&#xa;• Graph 知识图谱&#xa;• Search 混合搜索&#xa;• Vault 知识库&#xa;• NotebookHub 笔记本" vertex="1">
+          <mxGeometry x="10" y="30" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <!-- Insight 域 -->
+        <mxCell id="l2_ins" parent="l2" style="swimlane;startSize=24;fillColor=#dae8fc;strokeColor=#6c8ebf;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#eaf2ff;" value="Insight 功能域" vertex="1">
+          <mxGeometry x="580" y="40" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2_ins_mods" parent="l2_ins" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• Dashboard 仪表盘&#xa;• Lint 质量检查&#xa;• Log 日志&#xa;• MedalWall 勋章墙" vertex="1">
+          <mxGeometry x="10" y="30" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <!-- System 域 -->
+        <mxCell id="l2_sys" parent="l2" style="swimlane;startSize=24;fillColor=#dae8fc;strokeColor=#6c8ebf;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#eaf2ff;" value="System 功能域" vertex="1">
+          <mxGeometry x="860" y="40" width="240" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2_sys_mods" parent="l2_sys" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• Settings 设置&#xa;• Auth 认证&#xa;• Collaboration 协作" vertex="1">
+          <mxGeometry x="10" y="30" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== L1.5 领域层 ==================== -->
+        <mxCell id="l15" parent="1" style="swimlane;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;html=1;fontStyle=1;fontSize=14;verticalAlign=top;swimlaneFillColor=#f0faf0;" value="L1.5 领域层 (Domain Layer) — RAG 编排 / 业务规则 / 跨模块契约" vertex="1">
+          <mxGeometry x="40" y="510" width="1120" height="210" as="geometry"/>
+        </mxCell>
+        <!-- RAG 核心三件套（黄色高亮） -->
+        <mxCell id="l15_orch" parent="l15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="RAGOrchestrator&#xa;RAG 编排器&#xa;检索→重排→生成→指标" vertex="1">
+          <mxGeometry x="20" y="50" width="340" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="l15_ingest" parent="l15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="KnowledgeIngestPipeline&#xa;知识摄入管道&#xa;增强→摘要→父子块→Q&A→向量化" vertex="1">
+          <mxGeometry x="380" y="50" width="340" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="l15_eval" parent="l15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="RAGEvaluationService&#xa;RAG 质量评估&#xa;六维 LLM-as-Judge" vertex="1">
+          <mxGeometry x="740" y="50" width="360" height="60" as="geometry"/>
+        </mxCell>
+        <!-- 辅助模块 -->
+        <mxCell id="l15_enricher" parent="l15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="AIContentEnricher&#xa;表格/图片语义增强" vertex="1">
+          <mxGeometry x="20" y="130" width="250" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l15_prompt" parent="l15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="PromptRegistry&#xa;Prompt 资产注册表" vertex="1">
+          <mxGeometry x="290" y="130" width="250" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l15_link" parent="l15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="LinkService&#xa;语义链接发现" vertex="1">
+          <mxGeometry x="560" y="130" width="250" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l15_models" parent="l15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="Domain Models / Protocols&#xa;KnowledgePage / Repository 协议" vertex="1">
+          <mxGeometry x="830" y="130" width="270" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== L1 服务层 ==================== -->
+        <mxCell id="l1" parent="1" style="swimlane;startSize=30;fillColor=#ffe6cc;strokeColor=#d79b00;html=1;fontStyle=1;fontSize=14;verticalAlign=top;swimlaneFillColor=#fff7ed;" value="L1 服务层 (Service Layer) — 数据仓储 / AI 适配器 / 存储引擎 / 插件" vertex="1">
+          <mxGeometry x="40" y="770" width="1120" height="210" as="geometry"/>
+        </mxCell>
+        <!-- LLM 子域 -->
+        <mxCell id="l1_llm" parent="l1" style="swimlane;startSize=24;fillColor=#ffe6cc;strokeColor=#d79b00;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#fff0e0;" value="LLM 大模型适配" vertex="1">
+          <mxGeometry x="20" y="40" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1_llm_mods" parent="l1_llm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• LLMService / ChatLLMService&#xa;• OnDeviceLLMService (Core ML)&#xa;• RerankService / QueryReranker&#xa;• LLMContextBuilder&#xa;• PromptSecuritySanitizer&#xa;• LLMAdapters (OpenAI/Ollama)" vertex="1">
+          <mxGeometry x="10" y="30" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <!-- VectorDB 子域 -->
+        <mxCell id="l1_vec" parent="l1" style="swimlane;startSize=24;fillColor=#ffe6cc;strokeColor=#d79b00;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#fff0e0;" value="VectorDB 向量引擎" vertex="1">
+          <mxGeometry x="300" y="40" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1_vec_mods" parent="l1_vec" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• EmbeddingManager (NLEmbedding)&#xa;• VectorIndexer&#xa;• ContextReranker (二阶段重排)&#xa;• HyDE / Multi-Query&#xa;• RRF 融合 (rrfK=60)" vertex="1">
+          <mxGeometry x="10" y="30" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <!-- Storage 子域 -->
+        <mxCell id="l1_sto" parent="l1" style="swimlane;startSize=24;fillColor=#ffe6cc;strokeColor=#d79b00;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#fff0e0;" value="Storage 存储引擎" vertex="1">
+          <mxGeometry x="580" y="40" width="260" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1_sto_mods" parent="l1_sto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• SQLiteStore (GRDB)&#xa;• FTS5 全文检索&#xa;• Repository 实现&#xa;• 同步引擎 / 备份&#xa;• DatabaseSchemaMigrator" vertex="1">
+          <mxGeometry x="10" y="30" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <!-- Plugins 子域 -->
+        <mxCell id="l1_plug" parent="l1" style="swimlane;startSize=24;fillColor=#ffe6cc;strokeColor=#d79b00;html=1;fontSize=12;fontStyle=1;swimlaneFillColor=#fff0e0;" value="Plugins 插件系统" vertex="1">
+          <mxGeometry x="860" y="40" width="240" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1_plug_mods" parent="l1_plug" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=11;align=left;verticalAlign=top;" value="• PluginRegistry&#xa;• PluginProtocols&#xa;• 插件 FTS5 检索&#xa;• 沙箱隔离" vertex="1">
+          <mxGeometry x="10" y="30" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== L0 基础设施层 ==================== -->
+        <mxCell id="l0" parent="1" style="swimlane;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;html=1;fontStyle=1;fontSize=14;verticalAlign=top;swimlaneFillColor=#fafafa;" value="L0 基础设施层 (Infrastructure Layer) — DI 容器 / 日志 / 安全 / 数据库 / 网络" vertex="1">
+          <mxGeometry x="40" y="1030" width="1120" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="l0_di" parent="l0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" value="ServiceContainer (DI)&#xa;@Dependency 注入" vertex="1">
+          <mxGeometry x="20" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l0_logger" parent="l0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" value="Logger / Analytics&#xa;Haptic / Routing" vertex="1">
+          <mxGeometry x="210" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l0_sec" parent="l0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" value="Security / Keychain&#xa;加密 / 认证" vertex="1">
+          <mxGeometry x="400" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l0_sqlite" parent="l0" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" value="SQLite (GRDB)&#xa;物理数据库" vertex="1">
+          <mxGeometry x="590" y="45" width="180" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="l0_net" parent="l0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" value="Network / HTTP&#xa;LLM API 客户端" vertex="1">
+          <mxGeometry x="780" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="l0_plat" parent="l0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" value="Platform Adaptor&#xa;iOS/macOS/watchOS" vertex="1">
+          <mxGeometry x="970" y="50" width="130" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== SPM 本地包映射 ==================== -->
+        <mxCell id="spm" parent="1" style="swimlane;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;html=1;fontStyle=1;fontSize=14;verticalAlign=top;swimlaneFillColor=#fdf0f0;" value="SPM 本地包 (Packages/) — 物理隔离的模块化 Package" vertex="1">
+          <mxGeometry x="40" y="1230" width="1120" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="spm_core" parent="spm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="UFPCore&#xa;[L0] 通用底座&#xa;DI / 协议 / 工具" vertex="1">
+          <mxGeometry x="20" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="spm_storage" parent="spm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="UFPStorage&#xa;[L1] 存储引擎&#xa;SQLite / GRDB" vertex="1">
+          <mxGeometry x="210" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="spm_ds" parent="spm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="UFPDesignSystem&#xa;[Shared] UI Token&#xa;Bundle.module 资源" vertex="1">
+          <mxGeometry x="400" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="spm_domain" parent="spm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="ZhiYuDomain&#xa;[L1.5] 领域大脑&#xa;RAG / 契约" vertex="1">
+          <mxGeometry x="590" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="spm_aicore" parent="spm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="ZhiYuAICore&#xa;[L1] AI 中台&#xa;Prompt/Reranker/Memory" vertex="1">
+          <mxGeometry x="780" y="50" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="spm_features" parent="spm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="ZhiYuFeatures&#xa;[L2] 功能切片&#xa;AI/Knowledge/Insight" vertex="1">
+          <mxGeometry x="970" y="50" width="130" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== 层间依赖连接线 ==================== -->
+        <mxCell id="edge_l3_l2" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#9673a6;strokeWidth=2;fontSize=11;fontStyle=1;" edge="1" source="l3" target="l2" value="依赖 (单向向下)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_l2_l15" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#6c8ebf;strokeWidth=2;fontSize=11;fontStyle=1;" edge="1" source="l2" target="l15" value="依赖 (单向向下)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_l15_l1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#82b366;strokeWidth=2;fontSize=11;fontStyle=1;" edge="1" source="l15" target="l1" value="依赖 (单向向下)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_l1_l0" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d79b00;strokeWidth=2;fontSize=11;fontStyle=1;" edge="1" source="l1" target="l0" value="依赖 (单向向下)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_l0_spm" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#b85450;strokeWidth=2;fontSize=11;fontStyle=1;dashed=1;" edge="1" source="l0" target="spm" value="物理 Package 映射">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== RAG 闭环高亮路径（右侧） ==================== -->
+        <mxCell id="rag_flow" parent="1" style="swimlane;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;html=1;fontStyle=1;fontSize=13;verticalAlign=top;swimlaneFillColor=#fffbe6;dashed=1;" value="RAG 闭环数据流 (Advanced RAG Pipeline)" vertex="1">
+          <mxGeometry x="1200" y="40" width="280" height="1320" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_s1" parent="rag_flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="1. 摄入 Ingest&#xa;语义增强 + 父子块切分&#xa;+ 反向 Q&A + 摘要" vertex="1">
+          <mxGeometry x="20" y="50" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_s2" parent="rag_flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="2. 向量化 Embedding&#xa;NLEmbedding 512 维&#xa;批量索引 + 持久化" vertex="1">
+          <mxGeometry x="20" y="150" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_s3" parent="rag_flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="3. 混合检索 Retrieval&#xa;FTS5 全文 + 向量余弦&#xa;Multi-Query + HyDE" vertex="1">
+          <mxGeometry x="20" y="250" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_s4" parent="rag_flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="4. 重排 Rerank&#xa;二阶段重排 + RRF 融合&#xa;关键词覆盖密度加成" vertex="1">
+          <mxGeometry x="20" y="350" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_s5" parent="rag_flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="5. 生成 Generation&#xa;多提供商适配 + SSE 流式&#xa;端侧 Core ML 推理" vertex="1">
+          <mxGeometry x="20" y="450" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_s6" parent="rag_flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="6. 安全防护 Security&#xa;越狱检测 + XML 沙箱&#xa;NER 脱敏传输" vertex="1">
+          <mxGeometry x="20" y="550" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_s7" parent="rag_flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" value="7. 评估 Evaluation&#xa;六维 LLM-as-Judge&#xa;检索快照 + 相关性标注" vertex="1">
+          <mxGeometry x="20" y="650" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <!-- RAG 闭环内部连接线 -->
+        <mxCell id="rag_e1" parent="rag_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="rag_s1" target="rag_s2" value="">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_e2" parent="rag_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="rag_s2" target="rag_s3" value="">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_e3" parent="rag_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="rag_s3" target="rag_s4" value="">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_e4" parent="rag_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="rag_s4" target="rag_s5" value="">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_e5" parent="rag_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="rag_s5" target="rag_s6" value="">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag_e6" parent="rag_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="rag_s6" target="rag_s7" value="">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- RAG 闭环回环箭头 -->
+        <mxCell id="rag_loop" parent="rag_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#d6b656;strokeWidth=2;dashed=1;flowAnimation=1;fontSize=10;fontStyle=1;" edge="1" source="rag_s7" target="rag_s1" value="闭环反馈&#xa;评估优化检索">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-20" y="685" />
+              <mxPoint x="-20" y="85" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== 图例 ==================== -->
+        <mxCell id="legend" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=12;" value="图例说明" vertex="1">
+          <mxGeometry x="40" y="1400" width="700" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1" parent="legend" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry x="10" y="30" width="24" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1t" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" value="L3 表现层 (SwiftUI)" vertex="1">
+          <mxGeometry x="40" y="28" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2" parent="legend" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry x="200" y="30" width="24" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2t" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" value="L2 功能层 (业务域)" vertex="1">
+          <mxGeometry x="230" y="28" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3" parent="legend" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry x="390" y="30" width="24" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3t" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" value="L1.5 领域层 (RAG)" vertex="1">
+          <mxGeometry x="420" y="28" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg4" parent="legend" style="rounded=1;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="" vertex="1">
+          <mxGeometry x="10" y="60" width="24" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg4t" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" value="L1 服务层 (适配器)" vertex="1">
+          <mxGeometry x="40" y="58" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg5" parent="legend" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="" vertex="1">
+          <mxGeometry x="200" y="60" width="24" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg5t" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" value="L0 基础设施层" vertex="1">
+          <mxGeometry x="230" y="58" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg6" parent="legend" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="" vertex="1">
+          <mxGeometry x="390" y="60" width="24" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg6t" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" value="SPM 本地包" vertex="1">
+          <mxGeometry x="420" y="58" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg7" parent="legend" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="" vertex="1">
+          <mxGeometry x="10" y="90" width="24" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg7t" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;" value="RAG 闭环核心组件" vertex="1">
+          <mxGeometry x="40" y="88" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg8" parent="legend" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontStyle=1;" value="→ 依赖方向：严格自顶向下，禁止反向" vertex="1">
+          <mxGeometry x="200" y="88" width="340" height="20" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

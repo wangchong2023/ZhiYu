@@ -98,7 +98,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - 初始状态
 
     /// 验证 init 后所有状态属性为初始默认值
-    func testInit_所有状态属性为初始默认值() {
+    func testInitAllStatePropsAreInitialDefaults() {
         XCTAssertTrue(coordinator.isLoading, "init 后 isLoading 应为 true（默认加载中）")
         XCTAssertFalse(coordinator.isCleaning, "init 后 isCleaning 应为 false")
         XCTAssertNil(coordinator.cleanedCount, "init 后 cleanedCount 应为 nil")
@@ -119,13 +119,13 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - loadStats 正常路径
 
     /// 验证 loadStats 成功后 isLoading 恢复 false
-    func testLoadStats_成功_isLoading恢复False() async throws {
+    func testLoadStatsSuccessIsLoadingRestoresFalse() async throws {
         await coordinator.loadStats()
         XCTAssertFalse(coordinator.isLoading, "loadStats 完成后 isLoading 应恢复 false")
     }
 
     /// 验证 loadStats 成功后调用 logger.addLog 记录更新日志
-    func testLoadStats_成功_调用LoggerAddLog() async throws {
+    func testLoadStatsSuccessCallsLoggerAddLog() async throws {
         await coordinator.loadStats()
         XCTAssertEqual(recordableLogger.addLogCallCount, 1, "loadStats 应调用一次 addLog")
         XCTAssertEqual(recordableLogger.lastAction, .update, "addLog 的 action 应为 update")
@@ -133,7 +133,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 totalPages 来自 knowledgeRepo.count()
-    func testLoadStats_成功_totalPages来自KnowledgeRepoCount() async throws {
+    func testLoadStatsSuccessTotalPagesFromKnowledgeRepoCount() async throws {
         configurableKnowledgeRepo.stubCount = 42
         await coordinator.loadStats()
         XCTAssertEqual(coordinator.totalPages, 42, "totalPages 应等于 knowledgeRepo.count() 返回值")
@@ -141,13 +141,13 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 storageCategories 包含 7 个分类
-    func testLoadStats_成功_storageCategories包含7个分类() async throws {
+    func testLoadStatsSuccessStorageCategoriesContainsSevenCategories() async throws {
         await coordinator.loadStats()
         XCTAssertEqual(coordinator.storageCategories.count, 7, "storageCategories 应包含 7 个分类（数据库/模型/插件/日志/导入/导出/缓存）")
     }
 
     /// 验证 loadStats 成功后 totalStorage 等于各分类 value 之和
-    func testLoadStats_成功_totalStorage等于各分类Value之和() async throws {
+    func testLoadStatsSuccessTotalStorageEqualsSumOfCategoryValues() async throws {
         let stats = StorageStats(
             databaseSize: 1000, logsSize: 200, exportsSize: 300,
             modelsSize: 400, pluginsSize: 500, cachesSize: 600
@@ -159,7 +159,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 exportSize 来自 pageStore.getStorageStats().exportsSize
-    func testLoadStats_成功_exportSize来自StorageStats() async throws {
+    func testLoadStatsSuccessExportSizeFromStorageStats() async throws {
         configurablePageStore.stubStorageStats = StorageStats(
             databaseSize: 0, logsSize: 0, exportsSize: 9999
         )
@@ -168,7 +168,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 exportCount 来自 logger.getLogEntries() 中 action==.export 的数量
-    func testLoadStats_成功_exportCount来自LogEntries中ExportAction数量() async throws {
+    func testLoadStatsSuccessExportCountFromExportActionCountInLogEntries() async throws {
         let exportEntries = [
             LogEntry(action: .export, target: "导出1"),
             LogEntry(action: .export, target: "导出2"),
@@ -180,7 +180,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 monthlyStats 来自 governanceRepo.fetchMonthlyTokenStats()
-    func testLoadStats_成功_monthlyStats来自GovernanceRepo() async throws {
+    func testLoadStatsSuccessMonthlyStatsFromGovernanceRepo() async throws {
         configurableGovernanceRepo.stubMonthlyStats = [
             (month: "2026-01", total: 5000),
             (month: "2026-02", total: 8000)
@@ -194,7 +194,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 dailyStats 包含本月每一天的占位数据
-    func testLoadStats_成功_dailyStats包含本月每日占位() async throws {
+    func testLoadStatsSuccessDailyStatsContainsDailyPlaceholdersOfMonth() async throws {
         await coordinator.loadStats()
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -208,7 +208,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 dailyStats 中匹配日期的数据被实际值覆盖
-    func testLoadStats_成功_dailyStats匹配日期被实际值覆盖() async throws {
+    func testLoadStatsSuccessDailyStatsMatchedDateOverwrittenByActual() async throws {
         let todayStr = todayDateString()
         configurableGovernanceRepo.stubDailyStats = [
             DailyAIStat(date: todayStr, tokens: 1234, requests: 56)
@@ -221,7 +221,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 dailyStats 中未匹配日期保持占位零值
-    func testLoadStats_成功_dailyStats未匹配日期保持零值() async throws {
+    func testLoadStatsSuccessDailyStatsUnmatchedDateKeepsZero() async throws {
         configurableGovernanceRepo.stubDailyStats = [
             DailyAIStat(date: "2099-12-31", tokens: 9999, requests: 999)
         ]
@@ -230,7 +230,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 assetCategoryStats 按 ImportCategory 分类聚合
-    func testLoadStats_成功_assetCategoryStats按分类聚合() async throws {
+    func testLoadStatsSuccessAssetCategoryStatsAggregatedByCategory() async throws {
         let voiceRecord1 = makeRecord(category: .voice, size: 1000)
         let voiceRecord2 = makeRecord(category: .voice, size: 2000)
         let ocrRecord = makeRecord(category: .ocr, size: 5000)
@@ -255,7 +255,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 成功后 models 分类 value 取 stats.modelsSize 与 modelManagerSize 的较大值
-    func testLoadStats_成功_models分类Value取较大值() async throws {
+    func testLoadStatsSuccessModelsCategoryValueTakesLarger() async throws {
         configurablePageStore.stubStorageStats = StorageStats(
             databaseSize: 0, logsSize: 0, exportsSize: 0,
             modelsSize: 1000
@@ -269,7 +269,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - loadStats 空数据路径
 
     /// 验证 loadStats 所有依赖返回空数据时状态属性保持安全默认值
-    func testLoadStats_空数据_状态属性保持安全默认值() async throws {
+    func testLoadStatsEmptyDataStatePropsKeepSafeDefaults() async throws {
         await coordinator.loadStats()
         XCTAssertFalse(coordinator.isLoading, "空数据后 isLoading 应恢复 false")
         XCTAssertEqual(coordinator.totalStorage, 0, "空数据后 totalStorage 应为 0")
@@ -285,7 +285,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - loadStats 部分依赖失败路径
 
     /// 验证 loadStats 时 governanceRepo.fetchDailyAIStats 抛错 dailyStats 保持占位数据
-    func testLoadStats_fetchDailyAIStats抛错_dailyStats保持占位() async throws {
+    func testLoadStatsFetchDailyAIStatsThrowsDailyStatsKeepsPlaceholder() async throws {
         configurableGovernanceRepo.shouldThrowDailyStats = true
         await coordinator.loadStats()
         XCTAssertTrue(coordinator.dailyStats.isEmpty, "fetchDailyAIStats 抛错时 dailyStats 应保持初始空（guard 短路）")
@@ -293,14 +293,14 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 时 governanceRepo.fetchMonthlyTokenStats 抛错 monthlyStats 保持空
-    func testLoadStats_fetchMonthlyTokenStats抛错_monthlyStats保持空() async throws {
+    func testLoadStatsFetchMonthlyTokenStatsThrowsMonthlyStatsKeepsEmpty() async throws {
         configurableGovernanceRepo.shouldThrowMonthlyStats = true
         await coordinator.loadStats()
         XCTAssertTrue(coordinator.monthlyStats.isEmpty, "fetchMonthlyTokenStats 抛错时 monthlyStats 应保持空")
     }
 
     /// 验证 loadStats 时 knowledgeRepo.count() 抛错 totalPages 降级为 0
-    func testLoadStats_count抛错_totalPages降级为0() async throws {
+    func testLoadStatsCountThrowsTotalPagesDegradesToZero() async throws {
         configurableKnowledgeRepo.stubCount = 100
         configurableKnowledgeRepo.shouldThrowCount = true
         await coordinator.loadStats()
@@ -308,14 +308,14 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证 loadStats 时 knowledgeRepo.fetchAll() 抛错 rawStorageStats 保持 nil
-    func testLoadStats_fetchAll抛错_rawStorageStats保持Nil() async throws {
+    func testLoadStatsFetchAllThrowsRawStorageStatsKeepsNil() async throws {
         configurableKnowledgeRepo.shouldThrowFetchAll = true
         await coordinator.loadStats()
         XCTAssertNil(coordinator.rawStorageStats, "fetchAll() 抛错时 rawStorageStats 应保持 nil（guard 短路）")
     }
 
     /// 验证 loadStats 时 importRecordRepo.totalStorageSize() 抛错 导入分类 value 降级为 0
-    func testLoadStats_totalStorageSize抛错_导入分类Value降级为0() async throws {
+    func testLoadStatsTotalStorageSizeThrowsImportCategoryValueDegradesToZero() async throws {
         await coordinator.loadStats()
         let importCategory = coordinator.storageCategories.first { $0.label == L10n.Dashboard.stats.storageImport }
         XCTAssertNotNil(importCategory, "应存在导入分类")
@@ -325,7 +325,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - loadStats isLoading 状态变化
 
     /// 验证 loadStats 执行前 isLoading 为 true，完成后为 false
-    func testLoadStats_执行前isLoading为True_完成后为False() async throws {
+    func testLoadStatsBeforeIsLoadingTrueAfterFalse() async throws {
         XCTAssertTrue(coordinator.isLoading, "loadStats 执行前 isLoading 应为 true")
         await coordinator.loadStats()
         XCTAssertFalse(coordinator.isLoading, "loadStats 完成后 isLoading 应为 false")
@@ -334,7 +334,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - 多次 loadStats 幂等性
 
     /// 验证多次调用 loadStats 后状态一致（幂等性）
-    func testLoadStats_多次调用_状态一致() async throws {
+    func testLoadStatsMultipleCallsStateConsistent() async throws {
         configurableKnowledgeRepo.stubCount = 10
         configurableGovernanceRepo.stubMonthlyStats = [(month: "2026-01", total: 1000)]
         configurablePageStore.stubStorageStats = StorageStats(databaseSize: 500, logsSize: 100, exportsSize: 200)
@@ -355,7 +355,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证多次调用 loadStats 后 isLoading 始终恢复 false
-    func testLoadStats_多次调用_isLoading始终恢复False() async throws {
+    func testLoadStatsMultipleCallsIsLoadingAlwaysRestoresFalse() async throws {
         await coordinator.loadStats()
         XCTAssertFalse(coordinator.isLoading, "第一次 loadStats 后 isLoading 应为 false")
         await coordinator.loadStats()
@@ -363,7 +363,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     }
 
     /// 验证多次调用 loadStats 后 logger.addLog 调用次数递增
-    func testLoadStats_多次调用_addLog调用次数递增() async throws {
+    func testLoadStatsMultipleCallsAddLogCountIncrements() async throws {
         await coordinator.loadStats()
         let firstCount = recordableLogger.addLogCallCount
         XCTAssertEqual(firstCount, 1, "第一次 loadStats 后 addLog 应调用 1 次")
@@ -375,7 +375,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - provenance 属性
 
     /// 验证 loadStats 后 provenance 保持初始零值（当前实现未填充 provenance）
-    func testLoadStats_provenance保持初始零值() async throws {
+    func testLoadStatsProvenanceKeepsInitialZero() async throws {
         await coordinator.loadStats()
         XCTAssertEqual(coordinator.provenance.importedCount, 0, "provenance.importedCount 应保持初始零值（loadStats 未填充）")
         XCTAssertEqual(coordinator.provenance.importedSize, 0, "provenance.importedSize 应保持初始零值")
@@ -386,7 +386,7 @@ final class SystemStatsLoadDeepTests: XCTestCase {
     // MARK: - 延迟相关属性
 
     /// 验证 loadStats 后延迟相关属性保持初始零值（当前实现未填充）
-    func testLoadStats_延迟属性保持初始零值() async throws {
+    func testLoadStatsLatencyPropsKeepInitialZero() async throws {
         await coordinator.loadStats()
         XCTAssertEqual(coordinator.avgLatency, 0, "avgLatency 应保持初始零值")
         XCTAssertEqual(coordinator.maxLatency, 0, "maxLatency 应保持初始零值")

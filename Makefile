@@ -105,6 +105,7 @@ audit:
 	@python3 Tools/ios/check-code-absolute-paths.py
 	@python3 Tools/ios/check-code-snapshot-environment.py --strict
 	@python3 Tools/ios/audit-dependency-key-test-value.py
+	@python3 Tools/ios/audit-test-naming-chinese.py || (echo "❌ 测试函数存在中文命名，请运行 'python3 Tools/ios/audit-test-naming-chinese.py' 查看详情并重命名为英文" && exit 1)
 	@echo "📊 运行测试结构度量..."
 	@python3 Tools/CI/audit-test-structure.py --verbose || (echo "❌ 测试结构度量不达标，请运行 'python3 Tools/CI/audit-test-structure.py --json' 查看详情" && exit 1)
 

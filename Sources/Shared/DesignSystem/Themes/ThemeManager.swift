@@ -111,13 +111,13 @@ public final class ThemeManager: @unchecked Sendable {
 
 private enum ThemeManagerKey: DependencyKey {
     nonisolated static var liveValue: ThemeManager {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
             return ThemeManager(keyStore: keyStore)
         }
     }
     nonisolated static var testValue: ThemeManager {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             guard let defaults = UserDefaults(suiteName: "test") else {
                 return ThemeManager(keyStore: nil)
             }
@@ -125,7 +125,7 @@ private enum ThemeManagerKey: DependencyKey {
         }
     }
     nonisolated static var previewValue: ThemeManager {
-        MainActor.assumeIsolated { ThemeManager(keyStore: nil) }
+        runOnMainSync { ThemeManager(keyStore: nil) }
     }
 }
 

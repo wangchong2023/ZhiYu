@@ -30,6 +30,7 @@ final class SynthesisViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     // MARK: - SynthesisErrorStateView

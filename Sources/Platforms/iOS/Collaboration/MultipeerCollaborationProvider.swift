@@ -11,6 +11,7 @@
 
 import Foundation
 import Network
+import UFPCore
 
 @MainActor
 final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
@@ -57,7 +58,7 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
                 ])
             )
             listener.newConnectionHandler = { [weak self] connection in
-                MainActor.assumeIsolated {
+                runOnMainSync {
                     self?.handleNewConnection(connection)
                 }
             }
@@ -85,12 +86,12 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
         )
         let browser = NWBrowser(for: descriptor, using: parameters)
         browser.browseResultsChangedHandler = { [weak self] results, _ in
-            MainActor.assumeIsolated {
+            runOnMainSync {
                 self?.handleBrowseResults(results)
             }
         }
         browser.stateUpdateHandler = { [weak self] state in
-            MainActor.assumeIsolated {
+            runOnMainSync {
                 self?.handleBrowserStateChange(state)
             }
         }
@@ -110,7 +111,7 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
 
         let connection = NWConnection(to: endpoint, using: parameters)
         connection.stateUpdateHandler = { [weak self] state in
-            MainActor.assumeIsolated {
+            runOnMainSync {
                 self?.handleConnectionStateChange(connection, state: state, roomID: roomID)
             }
         }
@@ -143,7 +144,7 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
         for connection in connections {
             connection.send(content: data, completion: .contentProcessed { error in
                 if let error {
-                    MainActor.assumeIsolated {
+                    runOnMainSync {
                         self.delegate?.providerDidEncounterError(error.localizedDescription)
                     }
                 }
@@ -155,7 +156,7 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
 
     private func handleNewConnection(_ connection: NWConnection) {
         connection.stateUpdateHandler = { [weak self] state in
-            MainActor.assumeIsolated {
+            runOnMainSync {
                 self?.handleIncomingConnectionState(connection, state: state)
             }
         }
@@ -233,7 +234,7 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
 
     private func receiveData(from connection: NWConnection) {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
-            MainActor.assumeIsolated {
+            runOnMainSync {
                 if let data, !data.isEmpty {
                     let peerID = self?.extractPeerID(from: connection.endpoint) ?? ""
                     self?.delegate?.providerDidReceiveData(data, from: peerID)

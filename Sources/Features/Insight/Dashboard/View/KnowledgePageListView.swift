@@ -96,8 +96,8 @@ struct KnowledgePageListContent: View {
     }
 
     var body: some View {
-        let showInsightsBinding = $showInsights
-        let showDeleteConfirmationBinding = $showDeleteConfirmation
+        // swiftlint:disable:next redundant_discardable_let
+        let _ = (showDeleteConfirmation, showInsights)
         ZStack(alignment: .top) {
             // 1. 方案 D 沉浸式高级背景 (同步 Hub 设计语言)
             ZStack {
@@ -127,12 +127,12 @@ struct KnowledgePageListContent: View {
             // 响应全局模式切换（如果需要）
             HapticFeedback.shared.trigger(.selection)
         }
-        .sheet(isPresented: showInsightsBinding) {
+        .sheet(isPresented: $showInsights) {
             VaultInsightsPanel()
         }
         .confirmationDialog(
             pageToDelete.map { L10n.Vault.Page.deletePageTitle( $0.title) } ?? L10n.Knowledge.Page.deletePage,
-            isPresented: showDeleteConfirmationBinding,
+            isPresented: $showDeleteConfirmation,
             titleVisibility: .visible
         ) {
             Button(L10n.Knowledge.Page.deletePage, role: .destructive) {

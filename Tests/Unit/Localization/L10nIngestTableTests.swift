@@ -17,13 +17,13 @@ final class L10nIngestTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Transfer_为Ingest() {
+    func testTableNameTransferIsIngest() {
         XCTAssertEqual(L10n.Transfer.tableName, "Ingest")
     }
 
     // MARK: - Transfer.Export 属性 key 存在性
 
-    func testTransfer_Export_基础属性返回非Missing值() {
+    func testTransferExportBasicPropsReturnNonMissing() {
         let values = [
             L10n.Transfer.Export.errorSystemBusy,
             L10n.Transfer.Export.errorEngineNotReady
@@ -37,7 +37,7 @@ final class L10nIngestTableTests: XCTestCase {
 
     // MARK: - Transfer.Export trf 参数化方法
 
-    func testTransfer_Export_errorInternal_返回非Missing() {
+    func testTransferExportErrorInternalReturnsNonMissing() {
         let result = L10n.Transfer.Export.errorInternal("测试错误信息")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "errorInternal 返回 Missing: \(result)")

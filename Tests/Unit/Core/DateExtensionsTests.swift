@@ -14,14 +14,14 @@ final class DateExtensionsTests: XCTestCase {
     // MARK: - 刚刚（秒级差）
 
     /// 当前时间 → "刚刚"
-    func testTimeAgoDisplay_当前时间_返回刚刚() {
+    func testTimeAgoDisplayCurrentTimeReturnsJustNow() {
         let now = Date()
         let result = now.timeAgoDisplay()
         XCTAssertEqual(result, L10n.Common.justNow)
     }
 
     /// 30 秒前 → "刚刚"（秒级差不触发 minute 分支）
-    func testTimeAgoDisplay_30秒前_返回刚刚() {
+    func testTimeAgoDisplay30SecondsAgoReturnsJustNow() {
         let thirtySecondsAgo = Date().addingTimeInterval(-30)
         let result = thirtySecondsAgo.timeAgoDisplay()
         XCTAssertEqual(result, L10n.Common.justNow)
@@ -30,7 +30,7 @@ final class DateExtensionsTests: XCTestCase {
     // MARK: - 分钟级
 
     /// 5 分钟前 → 非空字符串（走 minute 分支）
-    func testTimeAgoDisplay_5分钟前_返回非空() {
+    func testTimeAgoDisplay5MinutesAgoReturnsNonEmpty() {
         let fiveMinutesAgo = Date().addingTimeInterval(-5 * 60)
         let result = fiveMinutesAgo.timeAgoDisplay()
         XCTAssertFalse(result.isEmpty, "5 分钟前应返回非空字符串")
@@ -40,7 +40,7 @@ final class DateExtensionsTests: XCTestCase {
     // MARK: - 小时级
 
     /// 2 小时前 → 非空字符串（走 hour 分支）
-    func testTimeAgoDisplay_2小时前_返回非空() {
+    func testTimeAgoDisplay2HoursAgoReturnsNonEmpty() {
         let twoHoursAgo = Date().addingTimeInterval(-2 * 3600)
         let result = twoHoursAgo.timeAgoDisplay()
         XCTAssertFalse(result.isEmpty)
@@ -50,14 +50,14 @@ final class DateExtensionsTests: XCTestCase {
     // MARK: - 天级
 
     /// 1 天前 → "昨天"
-    func testTimeAgoDisplay_1天前_返回昨天() {
+    func testTimeAgoDisplay1DayAgoReturnsYesterday() {
         let oneDayAgo = Date().addingTimeInterval(-24 * 3600)
         let result = oneDayAgo.timeAgoDisplay()
         XCTAssertEqual(result, L10n.Common.yesterday)
     }
 
     /// 2 天前 → 非空字符串（走 day > 1 分支，非"昨天"）
-    func testTimeAgoDisplay_2天前_返回非昨天() {
+    func testTimeAgoDisplay2DaysAgoReturnsNotYesterday() {
         let twoDaysAgo = Date().addingTimeInterval(-2 * 24 * 3600)
         let result = twoDaysAgo.timeAgoDisplay()
         XCTAssertFalse(result.isEmpty)
@@ -67,7 +67,7 @@ final class DateExtensionsTests: XCTestCase {
     // MARK: - 月级
 
     /// 35 天前 → 非空字符串（走 month 分支）
-    func testTimeAgoDisplay_35天前_返回非空() {
+    func testTimeAgoDisplay35DaysAgoReturnsNonEmpty() {
         let thirtyFiveDaysAgo = Date().addingTimeInterval(-35 * 24 * 3600)
         let result = thirtyFiveDaysAgo.timeAgoDisplay()
         XCTAssertFalse(result.isEmpty)
@@ -76,7 +76,7 @@ final class DateExtensionsTests: XCTestCase {
     // MARK: - 年级
 
     /// 400 天前 → 非空字符串（走 year 分支）
-    func testTimeAgoDisplay_400天前_返回非空() {
+    func testTimeAgoDisplay400DaysAgoReturnsNonEmpty() {
         let fourHundredDaysAgo = Date().addingTimeInterval(-400 * 24 * 3600)
         let result = fourHundredDaysAgo.timeAgoDisplay()
         XCTAssertFalse(result.isEmpty)
@@ -85,7 +85,7 @@ final class DateExtensionsTests: XCTestCase {
     // MARK: - 返回值类型
 
     /// 任何时间都应返回非空字符串
-    func testTimeAgoDisplay_任意时间_返回非空字符串() {
+    func testTimeAgoDisplayAnyTimeReturnsNonEmptyString() {
         let pastDate = Date().addingTimeInterval(-100)
         XCTAssertFalse(pastDate.timeAgoDisplay().isEmpty)
     }

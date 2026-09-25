@@ -75,14 +75,14 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     // MARK: - identityType 契约
 
     /// 验证 identityType 恒为 "github"
-    func testIdentityType恒为github字符串() {
+    func testIdentityTypeAlwaysGithubString() {
         XCTAssertEqual(strategy.identityType, expectedIdentityType)
     }
 
     /// 验证 identityType 与 AuthCredential.identityType 一致    // MARK: - Mock 凭证字段完整性
 
     /// 验证 Mock 路径返回的 extraInfo 包含 state 与 nickname 两个键
-    func testMock凭证extraInfo包含state与nickname键() async throws {
+    func testMockCredentialExtraInfoContainsStateAndNicknameKeys() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
 
@@ -93,7 +93,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 路径 identifier 为固定 mock_github_user_id
-    func testMock凭证identifier为固定值() async throws {
+    func testMockCredentialIdentifierIsFixedValue() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
         XCTAssertEqual(credential.identifier, mockIdentifier)
@@ -101,7 +101,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 路径 credential 以 mock_github_code_ 前缀开头且非空
-    func testMock凭证credential以mock前缀开头且非空() async throws {
+    func testMockCredentialCredentialStartsWithMockPrefixAndNonEmpty() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
         XCTAssertFalse(credential.credential.isEmpty)
@@ -110,7 +110,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 路径 credential 包含 UUID 后缀
-    func testMock凭证credential包含UUID后缀() async throws {
+    func testMockCredentialCredentialContainsUUIDSuffix() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
         let suffix = String(credential.credential.dropFirst(mockCodePrefix.count))
@@ -120,7 +120,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 路径 state 为合法 UUID 字符串
-    func testMock凭证state为合法UUID字符串() async throws {
+    func testMockCredentialStateIsLegalUUIDString() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
         guard let state = credential.extraInfo?[extraInfoStateKey] else {
@@ -136,7 +136,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
 
     /// 验证 Mock 路径下 state 被包含在 extraInfo 中供后端校验
     /// - Note: C-6/Bug#2 已修复 — 真实 OAuth 回调路径现已校验 state 一致性（CSRF 防护）。
-    func testMock路径state被包含在extraInfo中供后端校验() async throws {
+    func testMockPathStateIncludedInExtraInfoForBackendVerification() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
         // Mock 路径将 state 放入 extraInfo，后端可据此校验
@@ -162,19 +162,19 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     // MARK: - clientId 配置
 
     /// 验证 clientId 从 AppConfig 读取（当前配置为空字符串）
-    func testClientId从AppConfig读取() {
+    func testClientIdReadFromAppConfig() {
         let clientId = AppConfig.gitHubOAuthClientId
         // 当前 AppConfig.json 中 github_oauth_client_id 为空，触发 Mock/抛错分支
         XCTAssertEqual(clientId, AppConfig.gitHubOAuthClientId, "clientId 应从 AppConfig 读取")
     }
 
     /// 验证 callbackScheme 从 AppConstants 读取且为 "zhiyu"
-    func testCallbackScheme为zhiyu() {
+    func testCallbackSchemeIsZhiyu() {
         XCTAssertEqual(AppConstants.Network.oauthCallbackScheme, expectedCallbackScheme)
     }
 
     /// 验证 APIPaths.gitHubOAuthAuthorize 为 GitHub 官方授权页 URL
-    func testGitHubOAuthAuthorizeURL为官方地址() {
+    func testGitHubOAuthAuthorizeURLIsOfficialAddress() {
         XCTAssertEqual(APIPaths.gitHubOAuthAuthorize, expectedAuthorizeURL)
     }
 
@@ -229,7 +229,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     /// 验证 AuthCredential 可跨 actor 边界传递    // MARK: - NSObject 继承契约
 
     /// 验证 GitHubAuthStrategy 继承自 NSObject（ASWebAuthenticationPresentationContextProviding 要求）
-    func testGitHubAuthStrategy继承自NSObject() {
+    func testGitHubAuthStrategyInheritsFromNSObject() {
         XCTAssertTrue(strategy is NSObject)
         XCTAssertTrue(strategy is ASWebAuthenticationPresentationContextProviding)
     }
@@ -238,7 +238,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
 
     /// 验证 OAuth scope 常量值正确
     /// - Note: C-7/Bug#3 已修复 — scope 现已通过 addingPercentEncoding 进行 URL encode。
-    func testOAuthScope常量为readUserUserEmail() {
+    func testOAuthScopeConstantIsReadUserUserEmail() {
         // 通过反射无法访问 private enum，间接验证：Mock 路径不依赖 scope，
         // 但 scope 常量影响真实 OAuth URL 构造。此处验证常量值符合预期。
         XCTAssertEqual(expectedOAuthScope, "read:user,user:email")

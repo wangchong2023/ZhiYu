@@ -150,7 +150,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     // MARK: - login Mock 模式
 
     /// 验证 Mock 模式下密码登录成功并设置 currentUser
-    func testLogin_Mock模式_成功设置currentUser() async {
+    func testLoginMockModeSuccessSetsCurrentUser() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -165,7 +165,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下密码登录写入 refresh token
-    func testLogin_Mock模式_写入RefreshToken() async throws {
+    func testLoginMockModeWritesRefreshToken() async throws {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -181,7 +181,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下密码登录空密码仍成功（Mock 不校验凭证）
-    func testLogin_Mock模式_空密码_仍成功() async {
+    func testLoginMockModeEmptyPasswordStillSucceeds() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -194,7 +194,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下密码登录 isGuest 被置为 false
-    func testLogin_Mock模式_isGuest置为false() async {
+    func testLoginMockModeSetsIsGuestToFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -211,7 +211,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     // MARK: - login 非 Mock 模式
 
     /// 验证非 Mock 模式下密码登录网络成功返回 true
-    func testLogin_非Mock模式_网络成功_返回true() async throws {
+    func testLoginNonMockModeNetworkSuccessReturnsTrue() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -242,7 +242,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下密码登录后端业务错误（code != 0）返回 false
-    func testLogin_非Mock模式_后端业务错误_返回false() async {
+    func testLoginNonMockModeBackendBusinessErrorReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -273,7 +273,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下密码登录后端返回 data 为 null 返回 false
-    func testLogin_非Mock模式_data为null_返回false() async {
+    func testLoginNonMockModeDataNullReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -304,7 +304,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下密码登录 HTTP 500 返回 false
-    func testLogin_非Mock模式_HTTP500_返回false() async {
+    func testLoginNonMockModeHttp500ReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -327,7 +327,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下密码登录成功后写入 Keychain token
-    func testLogin_非Mock模式_成功_写入KeychainToken() async throws {
+    func testLoginNonMockModeSuccessWritesKeychainToken() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -365,7 +365,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     // MARK: - sendSmsCode 非 Mock 模式
 
     /// 验证非 Mock 模式下 sendSmsCode 网络成功返回 true
-    func testSendSmsCode_非Mock模式_网络成功_返回true() async {
+    func testSendSmsCodeNonMockModeNetworkSuccessReturnsTrue() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -388,7 +388,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 sendSmsCode 网络失败返回 false    /// 验证非 Mock 模式下 sendSmsCode 后端业务错误返回 false
-    func testSendSmsCode_非Mock模式_后端业务错误_返回false() async {
+    func testSendSmsCodeNonMockModeBackendBusinessErrorReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -418,7 +418,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     /// 验证非 Mock 模式下 sendSmsCode scene 为 register 时仍正常请求
     /// - Note: TestMockURLProtocol 中 request.httpBody 可能为 nil（body 流已被消费），
     ///         此处仅验证请求成功返回 true，scene 参数传递由编译期 SendSmsRequest 保证。
-    func testSendSmsCode_非Mock模式_scene为register_正常请求() async {
+    func testSendSmsCodeNonMockModeSceneRegisterNormalRequest() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -441,7 +441,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 sendSmsCode 请求路径正确
-    func testSendSmsCode_非Mock模式_请求路径正确() async {
+    func testSendSmsCodeNonMockModeRequestPathCorrect() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -467,7 +467,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 sendSmsCode 请求方法为 POST
-    func testSendSmsCode_非Mock模式_请求方法为POST() async {
+    func testSendSmsCodeNonMockModeRequestMethodIsPost() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -493,7 +493,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 sendSmsCode requiresAuth 为 false
-    func testSendSmsCode_非Mock模式_requiresAuth为false() async {
+    func testSendSmsCodeNonMockModeRequiresAuthIsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -521,7 +521,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     // MARK: - register（短信验证码登录/注册）非 Mock 模式
 
     /// 验证非 Mock 模式下 register 网络成功返回 true
-    func testRegister_非Mock模式_网络成功_返回true() async throws {
+    func testRegisterNonMockModeNetworkSuccessReturnsTrue() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -552,7 +552,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 register 网络失败返回 false    /// 验证非 Mock 模式下 register 后端业务错误返回 false
-    func testRegister_非Mock模式_后端业务错误_返回false() async {
+    func testRegisterNonMockModeBackendBusinessErrorReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -584,7 +584,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     /// 验证非 Mock 模式下 register 请求路径包含登录接口
     /// - Note: register 会先请求 phoneLoginPath 再请求 userProfilePath，
     ///         此处捕获所有请求路径并验证包含 phoneLoginPath。
-    func testRegister_非Mock模式_请求路径正确() async {
+    func testRegisterNonMockModeRequestPathCorrect() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -617,7 +617,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 register 成功后 currentUser name 为 phone
-    func testRegister_非Mock模式_成功_currentUserName为phone() async throws {
+    func testRegisterNonMockModeSuccessCurrentUserNameIsPhone() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -650,7 +650,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 register 成功后写入 Keychain token
-    func testRegister_非Mock模式_成功_写入KeychainToken() async throws {
+    func testRegisterNonMockModeSuccessWritesKeychainToken() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -688,7 +688,7 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 register 拉取 profile 失败返回 false
-    func testRegister_非Mock模式_拉取Profile失败_返回false() async {
+    func testRegisterNonMockModeFetchProfileFailedReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif

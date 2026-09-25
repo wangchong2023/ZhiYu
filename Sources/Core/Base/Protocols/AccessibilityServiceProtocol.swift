@@ -32,7 +32,7 @@ public enum AccessibilityServiceKey: DependencyKey {
 
     nonisolated public static var testValue: any AccessibilityServiceProtocol {
         ServiceContainer.shared.resolveOptional((any AccessibilityServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpAccessibilityService() }
+            ?? runOnMainSync { NoOpAccessibilityService() }
     }
     nonisolated public static var previewValue: any AccessibilityServiceProtocol { testValue }
 }

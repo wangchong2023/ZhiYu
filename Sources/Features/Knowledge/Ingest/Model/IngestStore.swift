@@ -215,7 +215,7 @@ enum IngestStoreKey: DependencyKey {
     nonisolated static var liveValue: IngestStore { ServiceContainer.shared.resolve(IngestStore.self) }
     nonisolated static var testValue: IngestStore {
         ServiceContainer.shared.resolveOptional(IngestStore.self)
-            ?? MainActor.assumeIsolated { IngestStore() }
+            ?? runOnMainSync { IngestStore() }
     }
     nonisolated static var previewValue: IngestStore { testValue }
 }

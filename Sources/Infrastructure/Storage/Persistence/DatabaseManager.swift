@@ -22,10 +22,12 @@ private enum DatabaseManagerConstants {
 /// 它是知识笔记本高内聚持久化层（Persistence）的基座大脑，托管了专属笔记本数据库（Workspace DB）
 /// 和全局共享设置数据库（Global DB）的双轨道生命周期。
 @MainActor
-final class DatabaseManager: TestStateResettable {
+final class DatabaseManager: TestStateResettable, @unchecked Sendable {
     
     /// 全局唯一的线程安全单例实例。
-    static let shared = DatabaseManager()
+    /// `nonisolated(unsafe)`：init 已标注 `nonisolated`，仅注册 TestStateResetRegistry，不访问 @MainActor 属性；
+    /// 跨线程获取引用安全，后续 @MainActor 方法仍需在主线程上 `await` 调用。
+    nonisolated(unsafe) static let shared = DatabaseManager()
 
     /// 解析 Application Support 目录下的默认数据库 URL。
     /// 消除 `AppEnvironment.prepareDatabase` 与 `ContentView.triggerReverification` 中重复的
@@ -90,7 +92,8 @@ final class DatabaseManager: TestStateResettable {
     var isInTesting: Bool = false
     
     /// 私有化单例构造方法。
-    private init() {
+    /// `nonisolated`：仅注册 TestStateResetRegistry（非 @MainActor），允许 `nonisolated(unsafe) static let shared` 跨线程初始化。
+    nonisolated private init() {
         // 单例自注册到测试状态重置注册表
         TestStateResetRegistry.shared.register(self)
     }
@@ -359,7 +362,7 @@ final class DatabaseManager: TestStateResettable {
 
     /// 重置单例状态用于测试隔离
     nonisolated func resetStateForTesting() {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             reset()
         }
     }
@@ -471,12 +474,9 @@ extension Notification.Name {
 import Dependencies
 
 enum DatabaseManagerKey: DependencyKey {
-    nonisolated static var liveValue: DatabaseManager {
-        MainActor.assumeIsolated { ServiceContainer.shared.resolve(DatabaseManager.self) }
-    }
-
-    nonisolated static var testValue: DatabaseManager { MainActor.assumeIsolated { DatabaseManager.shared } }
-    nonisolated static var previewValue: DatabaseManager { testValue }
+    nonisolated static var liveValue: DatabaseManager { DatabaseManager.shared }
+    nonisolated static var testValue: DatabaseManager { DatabaseManager.shared }
+    nonisolated static var previewValue: DatabaseManager { DatabaseManager.shared }
 }
 
 extension DependencyValues {

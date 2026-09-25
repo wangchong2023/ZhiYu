@@ -119,7 +119,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     // MARK: - performSynthesis 正常路径（6 类）
 
     /// 验证 performSynthesis(.mindmap) 正常生成文档。
-    func testPerformSynthesis_mindmap正常路径() async throws {
+    func testPerformSynthesisMindmapNormalPath() async throws {
         mockLLM.defaultResponse = validContent(for: .mindmap)
 
         let doc = try await store.performSynthesis(type: .mindmap, combinedContent: "源内容")
@@ -131,7 +131,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.slides) 正常生成文档。
-    func testPerformSynthesis_slides正常路径() async throws {
+    func testPerformSynthesisSlidesNormalPath() async throws {
         mockLLM.defaultResponse = validContent(for: .slides)
 
         let doc = try await store.performSynthesis(type: .slides, combinedContent: "源内容")
@@ -142,7 +142,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.quiz) 正常生成文档。
-    func testPerformSynthesis_quiz正常路径() async throws {
+    func testPerformSynthesisQuizNormalPath() async throws {
         mockLLM.defaultResponse = validContent(for: .quiz)
 
         let doc = try await store.performSynthesis(type: .quiz, combinedContent: "源内容")
@@ -153,7 +153,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.report) 正常生成文档。
-    func testPerformSynthesis_report正常路径() async throws {
+    func testPerformSynthesisReportNormalPath() async throws {
         mockLLM.defaultResponse = validContent(for: .report)
 
         let doc = try await store.performSynthesis(type: .report, combinedContent: "源内容")
@@ -164,7 +164,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.infographic) 正常生成文档。
-    func testPerformSynthesis_infographic正常路径() async throws {
+    func testPerformSynthesisInfographicNormalPath() async throws {
         mockLLM.defaultResponse = validContent(for: .infographic)
 
         let doc = try await store.performSynthesis(type: .infographic, combinedContent: "源内容")
@@ -175,7 +175,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis(.expansion) 正常生成文档。
-    func testPerformSynthesis_expansion正常路径() async throws {
+    func testPerformSynthesisExpansionNormalPath() async throws {
         mockLLM.defaultResponse = validContent(for: .expansion)
 
         let doc = try await store.performSynthesis(type: .expansion, combinedContent: "源内容")
@@ -188,7 +188,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     // MARK: - performSynthesis TaskCenter 任务状态推演
 
     /// 验证 performSynthesis 成功时 TaskCenter 任务从 pending → completed。
-    func testPerformSynthesis成功时TaskCenter任务完成() async throws {
+    func testPerformSynthesisSuccessTaskCenterTaskCompletes() async throws {
         mockLLM.defaultResponse = validContent(for: .report)
 
         let initialTaskCount = taskCenter.tasks.count
@@ -201,7 +201,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis 任务名称使用 SynthesisType.title。
-    func testPerformSynthesis任务名称使用TypeTitle() async throws {
+    func testPerformSynthesisTaskNameUsesTypeTitle() async throws {
         mockLLM.defaultResponse = validContent(for: .quiz)
 
         _ = try await store.performSynthesis(type: .quiz, combinedContent: "源内容")
@@ -213,7 +213,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     // MARK: - performSynthesis 容量上限
 
     /// 验证 performSynthesis 在已达 5 份上限时抛错且不自动删除旧文档。
-    func testPerformSynthesis达到5份上限时拒绝生成() async throws {
+    func testPerformSynthesisRejectsWhenReachesFiveLimit() async throws {
         let type = SynthesisStore.SynthesisType.mindmap
         // 填满 5 份
         for i in 1...5 {
@@ -233,7 +233,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis 在已有 4 份时仍可生成第 5 份。
-    func testPerformSynthesis已有4份时可生成第5份() async throws {
+    func testPerformSynthesisCanGenerateFifthWhenFourExist() async throws {
         let type = SynthesisStore.SynthesisType.report
         for i in 1...4 {
             store.saveSynthesisResult(type: type, content: "# 报告\(i)\n这是第\(i)份报告的正文内容。")
@@ -248,7 +248,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     // MARK: - performSynthesis 并发锁（generating 状态拒绝）
 
     /// 验证 performSynthesis 在 synthesisStates 为 .generating 时抛出 "Task already in progress" 错误。
-    func testPerformSynthesis正在生成时拒绝重复调用() async throws {
+    func testPerformSynthesisRejectsDuplicateCallWhenGenerating() async throws {
         // 手动设置 generating 状态
         store.synthesisStates[.mindmap] = .generating
 
@@ -264,7 +264,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     // MARK: - performSynthesis 与 SynthesisControlOptions 交互
 
     /// 验证 performSynthesis 传入 SynthesisControlOptions 时 promptInstruction 被拼接到 augmentedContent。
-    func testPerformSynthesis传入ControlOptions时拼接promptInstruction() async throws {
+    func testPerformSynthesisWithControlOptionsConcatenatesPromptInstruction() async throws {
         mockLLM.defaultResponse = validContent(for: .report)
         let options = SynthesisControlOptions(depth: .detailed, audience: .executive, tone: .academic, customPrompt: "包含高并发视角")
 
@@ -279,7 +279,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis 默认 SynthesisControlOptions 不崩溃。
-    func testPerformSynthesis默认ControlOptions不崩溃() async throws {
+    func testPerformSynthesisDefaultControlOptionsNoCrash() async throws {
         mockLLM.defaultResponse = validContent(for: .report)
 
         let doc = try await store.performSynthesis(type: .report, combinedContent: "源内容", options: SynthesisControlOptions())
@@ -288,7 +288,7 @@ final class SynthesisStoreNormalPathDeepTests: XCTestCase {
     }
 
     /// 验证 performSynthesis 传入 sourcePageIDs 时文档携带该 IDs。
-    func testPerformSynthesis传入sourcePageIDs时文档携带() async throws {
+    func testPerformSynthesisWithSourcePageIDsDocCarriesThem() async throws {
         mockLLM.defaultResponse = validContent(for: .report)
         let pageIDs = [UUID(), UUID()]
 

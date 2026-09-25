@@ -116,7 +116,7 @@ final class AuthLoginDeepTests: XCTestCase {
     // MARK: - updateUserProfile Mock 模式
 
     /// 验证 Mock 模式下 updateUserProfile 成功更新昵称
-    func testUpdateUserProfile_Mock模式_成功更新昵称() async {
+    func testUpdateUserProfileMockModeSuccessUpdateNickname() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -130,7 +130,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 更新头像 URL
-    func testUpdateUserProfile_Mock模式_更新头像URL() async {
+    func testUpdateUserProfileMockModeUpdateAvatarURL() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -144,7 +144,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 更新性别
-    func testUpdateUserProfile_Mock模式_更新性别() async {
+    func testUpdateUserProfileMockModeUpdateGender() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -158,7 +158,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 更新生日
-    func testUpdateUserProfile_Mock模式_更新生日() async {
+    func testUpdateUserProfileMockModeUpdateBirthday() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -172,7 +172,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 不传性别时保留原性别
-    func testUpdateUserProfile_Mock模式_不传性别_保留原性别() async {
+    func testUpdateUserProfileMockModeNoGenderKeepsOriginal() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -186,7 +186,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 不传生日时保留原生日
-    func testUpdateUserProfile_Mock模式_不传生日_保留原生日() async {
+    func testUpdateUserProfileMockModeNoBirthdayKeepsOriginal() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -201,7 +201,7 @@ final class AuthLoginDeepTests: XCTestCase {
 
     /// 验证 Mock 模式下 updateUserProfile 保留 email 和 phone
     /// - Note: C-4 已修复 — Mock 模式构造 User 时补充了 phone 和 features 参数。
-    func testUpdateUserProfile_Mock模式_保留email和phone() async {
+    func testUpdateUserProfileMockModeKeepsEmailAndPhone() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -216,7 +216,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 保留 planKey 和配额
-    func testUpdateUserProfile_Mock模式_保留planKey和配额() async {
+    func testUpdateUserProfileMockModeKeepsPlanKeyAndQuota() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -230,7 +230,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 无当前用户时返回 false
-    func testUpdateUserProfile_Mock模式_无当前用户_返回false() async {
+    func testUpdateUserProfileMockModeNoCurrentUserReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -243,7 +243,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 updateUserProfile 头像传 nil 时保留原头像
-    func testUpdateUserProfile_Mock模式_头像传nil_保留原头像() async {
+    func testUpdateUserProfileMockModeAvatarNilKeepsOriginal() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -264,7 +264,7 @@ final class AuthLoginDeepTests: XCTestCase {
     /// 源码 AuthService.swift:174-189，`if let user = AuthSession.shared.currentUser` 为 false 时跳过更新，
     /// 但函数末尾仍 `return true`。这意味着即使没有当前用户，也报告更新成功，但实际未更新任何用户。
     /// 严重程度：中（用户无感知更新失败，可能导致 UI 显示成功但数据未变更）
-    func testUpdateUserProfile_非Mock模式_无当前用户_错误地返回true() async throws {
+    func testUpdateUserProfileNonMockModeNoCurrentUserIncorrectlyReturnsTrue() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -305,7 +305,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 updateUserProfile 网络失败时返回 false
-    func testUpdateUserProfile_非Mock模式_网络失败_返回false() async {
+    func testUpdateUserProfileNonMockModeNetworkFailureReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -330,7 +330,7 @@ final class AuthLoginDeepTests: XCTestCase {
     // MARK: - uploadAvatar Mock 模式
 
     /// 验证 Mock 模式下 uploadAvatar 返回非 nil URL 字符串
-    func testUploadAvatar_Mock模式_返回非nilURL字符串() async {
+    func testUploadAvatarMockModeReturnsNonNilURLString() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -344,7 +344,7 @@ final class AuthLoginDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 uploadAvatar 多次调用返回不同 URL
-    func testUploadAvatar_Mock模式_多次调用_返回不同URL() async {
+    func testUploadAvatarMockModeMultipleCallsReturnDifferentURLs() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }

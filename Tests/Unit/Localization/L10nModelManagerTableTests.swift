@@ -17,13 +17,13 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_ModelManager_为ModelManager() {
+    func testTableNameModelManagerIsModelManager() {
         XCTAssertEqual(L10n.ModelManager.tableName, "ModelManager")
     }
 
     // MARK: - 顶层属性 key 存在性
 
-    func testModelManager_顶层基础属性返回非Missing值() {
+    func testModelManagerTopLevelBasicPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.storeTitle,
             L10n.ModelManager.parametersTitle,
@@ -39,7 +39,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Card 子命名空间
 
-    func testModelManager_Card_属性返回非Missing值() {
+    func testModelManagerCardPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Card.ready,
             L10n.ModelManager.Card.activated,
@@ -59,14 +59,14 @@ final class L10nModelManagerTableTests: XCTestCase {
         }
     }
 
-    func testModelManager_Card_vendor_返回非Missing且包含参数() {
+    func testModelManagerCardVendorReturnsNonMissingWithParam() {
         let result = L10n.ModelManager.Card.vendor("Apple")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Card.vendor 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testModelManager_Card_size_返回非Missing且包含参数() {
+    func testModelManagerCardSizeReturnsNonMissingWithParam() {
         let result = L10n.ModelManager.Card.size("4GB")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Card.size 返回 Missing: \(result)")
@@ -75,7 +75,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Task 子命名空间
 
-    func testModelManager_Task_属性返回非Missing值() {
+    func testModelManagerTaskPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Task.chat,
             L10n.ModelManager.Task.completion,
@@ -94,7 +94,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Parameters 子命名空间
 
-    func testModelManager_Parameters_属性返回非Missing值() {
+    func testModelManagerParametersPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Parameters.temperature,
             L10n.ModelManager.Parameters.topP,
@@ -125,7 +125,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Server 子命名空间
 
-    func testModelManager_Server_属性返回非Missing值() {
+    func testModelManagerServerPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Server.addServer,
             L10n.ModelManager.Server.editServer,
@@ -160,21 +160,21 @@ final class L10nModelManagerTableTests: XCTestCase {
         }
     }
 
-    func testModelManager_Server_latency_返回非Missing且包含参数() {
+    func testModelManagerServerLatencyReturnsNonMissingWithParam() {
         let result = L10n.ModelManager.Server.latency(120)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Server.latency 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testModelManager_Server_lastTested_返回非Missing且包含参数() {
+    func testModelManagerServerLastTestedReturnsNonMissingWithParam() {
         let result = L10n.ModelManager.Server.lastTested("2026-08-10")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Server.lastTested 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testModelManager_Server_latencyMs_返回非Missing且包含参数() {
+    func testModelManagerServerLatencyMsReturnsNonMissingWithParam() {
         let result = L10n.ModelManager.Server.latencyMs(45)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Server.latencyMs 返回 Missing: \(result)")
@@ -183,7 +183,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Routing 子命名空间
 
-    func testModelManager_Routing_属性返回非Missing值() {
+    func testModelManagerRoutingPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Routing.onlineEscalation,
             L10n.ModelManager.Routing.modelStrategy,
@@ -229,7 +229,7 @@ final class L10nModelManagerTableTests: XCTestCase {
         }
     }
 
-    func testModelManager_Routing_currentOnlineModel_返回非Missing且包含参数() {
+    func testModelManagerRoutingCurrentOnlineModelReturnsNonMissingWithParam() {
         let result = L10n.ModelManager.Routing.currentOnlineModel("gpt-4o")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Routing.currentOnlineModel 返回 Missing: \(result)")
@@ -238,7 +238,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Status 子命名空间
 
-    func testModelManager_Status_属性返回非Missing值() {
+    func testModelManagerStatusPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Status.downloading,
             L10n.ModelManager.Status.verifying,
@@ -255,7 +255,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Lab 子命名空间
 
-    func testModelManager_Lab_属性返回非Missing值() {
+    func testModelManagerLabPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Lab.noActiveModelTitle,
             L10n.ModelManager.Lab.noActiveModelSubtitle,
@@ -316,7 +316,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Lab.Prompt 子命名空间
 
-    func testModelManager_Lab_Prompt_属性返回非Missing值() {
+    func testModelManagerLabPromptPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Lab.Prompt.askImage,
             L10n.ModelManager.Lab.Prompt.chat,
@@ -334,7 +334,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Lab.tips 属性
 
-    func testModelManager_Lab_tips_属性返回非Missing值() {
+    func testModelManagerLabTipsPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Lab.tipsMultimodal,
             L10n.ModelManager.Lab.tipsAgent
@@ -348,7 +348,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Lab.Attach 子命名空间
 
-    func testModelManager_Lab_Attach_属性返回非Missing值() {
+    func testModelManagerLabAttachPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Lab.Attach.linkPage,
             L10n.ModelManager.Lab.Attach.linkPageSuccess,
@@ -368,7 +368,7 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Lab.Extra 子命名空间
 
-    func testModelManager_Lab_Extra_属性返回非Missing值() {
+    func testModelManagerLabExtraPropsReturnNonMissing() {
         let values = [
             L10n.ModelManager.Lab.Extra.objectDetection,
             L10n.ModelManager.Lab.Extra.speechTranscribing,
@@ -392,14 +392,14 @@ final class L10nModelManagerTableTests: XCTestCase {
 
     // MARK: - Alert 子命名空间
 
-    func testModelManager_Alert_oomTitle_返回非Missing值() {
+    func testModelManagerAlertOomTitleReturnsNonMissing() {
         let value = L10n.ModelManager.Alert.oomTitle
         XCTAssertFalse(value.contains("[MISSING:"),
                        "ModelManager.Alert.oomTitle 返回 Missing: \(value)")
         XCTAssertFalse(value.isEmpty, "ModelManager.Alert.oomTitle 返回空字符串")
     }
 
-    func testModelManager_Alert_oomMessage_返回非Missing且包含参数() {
+    func testModelManagerAlertOomMessageReturnsNonMissingWithParam() {
         let result = L10n.ModelManager.Alert.oomMessage("TestModel", "8", "4")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Alert.oomMessage 返回 Missing: \(result)")

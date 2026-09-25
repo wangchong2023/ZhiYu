@@ -858,6 +858,11 @@ extension XCTestCase {
 
         // 5. Localized.languageMode 持久化值
         defaults.removeObject(forKey: AppConstants.Keys.Storage.languageMode)
+        // 同时重置 Localized 内存缓存（_inMemoryFallback），避免跨测试污染
+        Localized.resetForTesting()
+        // 重置后设置默认中文环境（模拟器默认语言环境，多数测试期望中文断言文本）
+        // 需要英文环境的测试（如 ModelDownloadManager 断言 "Idle"）会在自身 setUp 中覆盖为 .english
+        Localized.languageMode = .chinese
 
         // 6. 重置 KeychainService mock 内部 store
         if let mock = KeychainService.testOverride as? MockKeychainService {
@@ -869,7 +874,7 @@ extension XCTestCase {
         //    IntentRateLimiter、MedalService、DynamicComplianceManager
         //    注：ServiceContainer 不在此列表中（DI 容器清空语义不同，由 setupFullMockEnvironment 管理）；
         //    PluginRegistry/TaskCenter/PromptService 通过 @Dependency 注入（非单例）；
-        //    Localized 是 struct，通过上方 UserDefaults 清理覆盖
+        //    Localized 是 struct，通过上方 resetForTesting + UserDefaults 清理覆盖
         TestStateResetRegistry.shared.resetAll()
 
         // 8. 清除 swift-dependencies 的 @Dependency 缓存

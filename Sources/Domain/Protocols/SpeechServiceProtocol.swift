@@ -91,7 +91,7 @@ public enum SpeechServiceKey: DependencyKey {
 
     nonisolated public static var testValue: any SpeechServiceProtocol {
         ServiceContainer.shared.resolveOptional((any SpeechServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpSpeechService() }
+            ?? runOnMainSync { NoOpSpeechService() }
     }
     nonisolated public static var previewValue: any SpeechServiceProtocol { testValue }
 }

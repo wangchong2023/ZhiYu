@@ -16,17 +16,17 @@ import XCTest
 final class L10nAITableTests: XCTestCase {
 
     // MARK: - tableName 正确性
-    func testTableName_Chat_为AI() {
+    func testTableNameChatIsAI() {
         XCTAssertEqual(L10n.Chat.tableName, "AI")
     }
 
-    func testTableName_Voice_为AI() {
+    func testTableNameVoiceIsAI() {
         XCTAssertEqual(L10n.Voice.tableName, "AI")
     }
 
     // MARK: - AI.Status 属性 key 存在性
 
-    func testAI_Status_所有属性返回非Missing值() {
+    func testAIStatusAllPropsReturnNonMissing() {
         let values = [
             L10n.AI.Status.analyzing,
             L10n.AI.Status.digging,
@@ -47,7 +47,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Status_indexing_返回非Missing且包含参数() {
+    func testAIStatusIndexingReturnsNonMissingAndContainsArgs() {
         let result = L10n.AI.Status.indexing(3, 10, "test.pdf")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "AI.Status.indexing 返回 Missing: \(result)")
@@ -56,7 +56,7 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - AI.LLM 属性 key 存在性
 
-    func testAI_LLM_基础属性返回非Missing值() {
+    func testAILLMBasicPropsReturnNonMissing() {
         let values = [
             L10n.AI.LLM.title,
             L10n.AI.LLM.apiAddress,
@@ -80,14 +80,14 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_LLM_latency_返回非Missing且包含参数() {
+    func testAILLMLatencyReturnsNonMissingAndContainsArgs() {
         let result = L10n.AI.LLM.latency("120ms")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "AI.LLM.latency 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testAI_LLM_Model_属性返回非Missing值() {
+    func testAILLMModelPropsReturnNonMissing() {
         let values = [L10n.AI.LLM.Model.preset, L10n.AI.LLM.Model.custom]
         for value in values {
             XCTAssertFalse(value.contains("[MISSING:"),
@@ -96,7 +96,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_LLM_Validation_属性返回非Missing值() {
+    func testAILLMValidationPropsReturnNonMissing() {
         let values = [
             L10n.AI.LLM.Validation.emptyKey
         ]
@@ -107,21 +107,21 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_LLM_Validation_prefixHint_返回非Missing且包含参数() {
+    func testAILLMValidationPrefixHintReturnsNonMissingAndContainsArgs() {
         let result = L10n.AI.LLM.Validation.prefixHint("sk-")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "AI.LLM.Validation.prefixHint 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testAI_LLM_Validation_lengthHint_返回非Missing且包含参数() {
+    func testAILLMValidationLengthHintReturnsNonMissingAndContainsArgs() {
         let result = L10n.AI.LLM.Validation.lengthHint(8)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "AI.LLM.Validation.lengthHint 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testAI_LLM_历史与消息属性返回非Missing值() {
+    func testAILLMHistoryAndMessagePropsReturnNonMissing() {
         let values = [
             L10n.AI.LLM.chatHistory,
             L10n.AI.LLM.clearHistory,
@@ -136,7 +136,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_LLM_Provider_属性返回非Missing值() {
+    func testAILLMProviderPropsReturnNonMissing() {
         let values = [
             L10n.AI.LLM.Provider.title,
             L10n.AI.LLM.Provider.openai,
@@ -149,7 +149,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_LLM_Error_属性返回非Missing值() {
+    func testAILLMErrorPropsReturnNonMissing() {
         let values = [
             L10n.AI.LLM.Error.invalidURL,
             L10n.AI.LLM.Error.invalidResponse,
@@ -164,7 +164,7 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - AI.OnDevice 属性 key 存在性
 
-    func testAI_OnDevice_基础属性返回非Missing值() {
+    func testAIOnDeviceBasicPropsReturnNonMissing() {
         let values = [
             L10n.AI.OnDevice.assistMode,
             L10n.AI.OnDevice.assistDesc,
@@ -177,7 +177,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_OnDevice_Error_属性返回非Missing值() {
+    func testAIOnDeviceErrorPropsReturnNonMissing() {
         let values = [
             L10n.AI.OnDevice.Error.loadFailed,
             L10n.AI.OnDevice.Error.compilationFailed,
@@ -192,21 +192,21 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - AI.Eval 属性 key 存在性
 
-    func testAI_Eval_systemPrompt_返回非Missing值() {
+    func testAIEvalSystemPromptReturnsNonMissing() {
         let value = L10n.AI.Eval.systemPrompt
         XCTAssertFalse(value.contains("[MISSING:"),
                        "AI.Eval.systemPrompt 返回 Missing: \(value)")
         XCTAssertFalse(value.isEmpty, "AI.Eval.systemPrompt 返回空字符串")
     }
 
-    func testAI_Eval_judgePrompt_返回非Missing且包含参数() {
+    func testAIEvalJudgePromptReturnsNonMissingAndContainsArgs() {
         let result = L10n.AI.Eval.judgePrompt("context", "query", "answer")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "AI.Eval.judgePrompt 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testAI_Eval_Status_属性返回非Missing值() {
+    func testAIEvalStatusPropsReturnNonMissing() {
         let values = [
             L10n.AI.Eval.Status.pass,
             L10n.AI.Eval.Status.warning,
@@ -221,7 +221,7 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - AI.Synthesis 属性 key 存在性
 
-    func testAI_Synthesis_基础属性返回非Missing值() {
+    func testAISynthesisBasicPropsReturnNonMissing() {
         let values = [
             L10n.AI.Synthesis.title,
             L10n.AI.Synthesis.sidebarTitle,
@@ -234,7 +234,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Synthesis_Control_Depth_属性返回非Missing值() {
+    func testAISynthesisControlDepthPropsReturnNonMissing() {
         let values = [
             L10n.AI.Synthesis.Control.Depth.concise,
             L10n.AI.Synthesis.Control.Depth.standard,
@@ -247,7 +247,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Synthesis_Control_Audience_属性返回非Missing值() {
+    func testAISynthesisControlAudiencePropsReturnNonMissing() {
         let values = [
             L10n.AI.Synthesis.Control.Audience.beginner,
             L10n.AI.Synthesis.Control.Audience.professional,
@@ -260,7 +260,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Synthesis_Error_属性返回非Missing值() {
+    func testAISynthesisErrorPropsReturnNonMissing() {
         let values = [
             L10n.AI.Synthesis.Error.limitReached,
             L10n.AI.Synthesis.Error.noPages,
@@ -273,7 +273,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Synthesis_Mindmap_属性返回非Missing值() {
+    func testAISynthesisMindmapPropsReturnNonMissing() {
         let values = [
             L10n.AI.Synthesis.Mindmap.title,
             L10n.AI.Synthesis.Mindmap.renderError,
@@ -288,7 +288,7 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - AI.Task 属性 key 存在性
 
-    func testAI_Task_基础属性返回非Missing值() {
+    func testAITaskBasicPropsReturnNonMissing() {
         let values = [
             L10n.AI.Task.running,
             L10n.AI.Task.processing,
@@ -301,7 +301,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Task_Status_属性返回非Missing值() {
+    func testAITaskStatusPropsReturnNonMissing() {
         let values = [
             L10n.AI.Task.Status.ready,
             L10n.AI.Task.Status.running,
@@ -316,7 +316,7 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - AI.Prompt 属性 key 存在性
 
-    func testAI_Prompt_基础属性返回非Missing值() {
+    func testAIPromptBasicPropsReturnNonMissing() {
         let values = [
             L10n.AI.Prompt.relevanceScore,
             L10n.AI.Prompt.chunkType,
@@ -329,7 +329,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Prompt_System_属性返回非Missing值() {
+    func testAIPromptSystemPropsReturnNonMissing() {
         let values = [
             L10n.AI.Prompt.System.summarize,
             L10n.AI.Prompt.System.mindmap,
@@ -342,7 +342,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testAI_Prompt_Expert_Mindmap_属性返回非Missing值() {
+    func testAIPromptExpertMindmapPropsReturnNonMissing() {
         let values = [L10n.AI.Prompt.Expert.Mindmap.title, L10n.AI.Prompt.Expert.Mindmap.footer]
         for value in values {
             XCTAssertFalse(value.contains("[MISSING:"),
@@ -353,7 +353,7 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - Chat 属性 key 存在性
 
-    func testChat_基础属性返回非Missing值() {
+    func testChatBasicPropsReturnNonMissing() {
         let values = [
             L10n.Chat.title,
             L10n.Chat.welcomeDesc,
@@ -384,28 +384,28 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testChat_messageCount_返回非Missing且包含参数() {
+    func testChatMessageCountReturnsNonMissingAndContainsArgs() {
         let result = L10n.Chat.messageCount(5)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Chat.messageCount 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testChat_activeSessionCount_返回非Missing且包含参数() {
+    func testChatActiveSessionCountReturnsNonMissingAndContainsArgs() {
         let result = L10n.Chat.activeSessionCount(2)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Chat.activeSessionCount 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testChat_tokenUsage_返回非Missing且包含参数() {
+    func testChatTokenUsageReturnsNonMissingAndContainsArgs() {
         let result = L10n.Chat.tokenUsage(1024)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Chat.tokenUsage 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testChat_deepExplorePrompt_返回非Missing且包含参数() {
+    func testChatDeepExplorePromptReturnsNonMissingAndContainsArgs() {
         let result = L10n.Chat.deepExplorePrompt("量子计算")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Chat.deepExplorePrompt 返回 Missing: \(result)")
@@ -414,7 +414,7 @@ final class L10nAITableTests: XCTestCase {
 
     // MARK: - Voice.Speech 属性 key 存在性
 
-    func testVoice_Speech_基础属性返回非Missing值() {
+    func testVoiceSpeechBasicPropsReturnNonMissing() {
         let values = [
             L10n.Voice.Speech.title,
             L10n.Voice.Speech.subtitle,
@@ -440,7 +440,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testVoice_Speech_Status_属性返回非Missing值() {
+    func testVoiceSpeechStatusPropsReturnNonMissing() {
         let values = [
             L10n.Voice.Speech.Status.ready,
             L10n.Voice.Speech.Status.recording,
@@ -458,7 +458,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testVoice_Speech_Error_属性返回非Missing值() {
+    func testVoiceSpeechErrorPropsReturnNonMissing() {
         let values = [
             L10n.Voice.Speech.Error.audioEngine,
             L10n.Voice.Speech.Error.localeNotSupported,
@@ -471,7 +471,7 @@ final class L10nAITableTests: XCTestCase {
         }
     }
 
-    func testVoice_Speech_Lang_属性返回非Missing值() {
+    func testVoiceSpeechLangPropsReturnNonMissing() {
         let values = [
             L10n.Voice.Speech.Lang.zhHans,
             L10n.Voice.Speech.Lang.zhHant,

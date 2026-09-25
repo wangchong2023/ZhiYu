@@ -79,9 +79,9 @@ public enum AppEnvironmentKey: DependencyKey {
     }
     nonisolated public static var testValue: any AppEnvironmentProtocol {
         ServiceContainer.shared.resolveOptional((any AppEnvironmentProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpAppEnvironment() }
+            ?? runOnMainSync { NoOpAppEnvironment() }
     }
-    nonisolated public static var previewValue: any AppEnvironmentProtocol { MainActor.assumeIsolated { NoOpAppEnvironment() } }
+    nonisolated public static var previewValue: any AppEnvironmentProtocol { runOnMainSync { NoOpAppEnvironment() } }
 }
 
 extension DependencyValues {

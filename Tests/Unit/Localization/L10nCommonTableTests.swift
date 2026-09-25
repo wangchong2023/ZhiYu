@@ -17,37 +17,37 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Action_为Common() {
+    func testTableNameActionIsCommon() {
         XCTAssertEqual(L10n.Action.tableName, "Common")
     }
 
-    func testTableName_Accessibility_为Common() {
+    func testTableNameAccessibilityIsCommon() {
         XCTAssertEqual(L10n.Accessibility.tableName, "Common")
     }
 
-    func testTableName_Log_为Common() {
+    func testTableNameLogIsCommon() {
         XCTAssertEqual(L10n.Log.tableName, "Common")
     }
 
-    func testTableName_Schema_为Common() {
+    func testTableNameSchemaIsCommon() {
         XCTAssertEqual(L10n.Schema.tableName, "Common")
     }
 
-    func testTableName_Components_为Common() {
+    func testTableNameComponentsIsCommon() {
         XCTAssertEqual(L10n.Components.tableName, "Common")
     }
 
-    func testTableName_CoreModels_为Common() {
+    func testTableNameCoreModelsIsCommon() {
         XCTAssertEqual(L10n.CoreModels.tableName, "Common")
     }
 
-    func testTableName_Search_为Common() {
+    func testTableNameSearchIsCommon() {
         XCTAssertEqual(L10n.Search.tableName, "Common")
     }
 
     // MARK: - Action 属性 key 存在性
 
-    func testAction_所有属性返回非Missing值() {
+    func testActionAllPropsReturnNonMissing() {
         let values = [
             L10n.Action.createPage,
             L10n.Action.createPageSubtitle,
@@ -67,7 +67,7 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - Accessibility 属性 key 存在性
 
-    func testAccessibility_所有属性返回非Missing值() {
+    func testAccessibilityAllPropsReturnNonMissing() {
         let values = [
             L10n.Accessibility.tags,
             L10n.Accessibility.words,
@@ -86,7 +86,7 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - Log 属性 key 存在性
 
-    func testLog_所有属性返回非Missing值() {
+    func testLogAllPropsReturnNonMissing() {
         let values = [
             L10n.Log.noLogs,
             L10n.Log.clearConfirmTitle,
@@ -107,7 +107,7 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - Schema 属性 key 存在性
 
-    func testSchema_concept_所有属性返回非Missing值() {
+    func testSchemaConceptAllPropsReturnNonMissing() {
         let values = [
             L10n.Schema.concept.template,
             L10n.Schema.concept.prompt,
@@ -121,7 +121,7 @@ final class L10nCommonTableTests: XCTestCase {
         }
     }
 
-    func testSchema_entity_所有属性返回非Missing值() {
+    func testSchemaEntityAllPropsReturnNonMissing() {
         let values = [
             L10n.Schema.entity.template,
             L10n.Schema.entity.prompt,
@@ -138,7 +138,7 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - Components 属性 key 存在性
 
-    func testComponents_所有属性返回非Missing值() {
+    func testComponentsAllPropsReturnNonMissing() {
         let values = [
             L10n.Components.noOutgoing,
             L10n.Components.noBackLinks,
@@ -153,7 +153,7 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - CoreModels 属性 key 存在性
 
-    func testCoreModels_type_所有属性返回非Missing值() {
+    func testCoreModelsTypeAllPropsReturnNonMissing() {
         let values = [
             L10n.CoreModels.type.entity,
             L10n.CoreModels.type.concept,
@@ -168,7 +168,7 @@ final class L10nCommonTableTests: XCTestCase {
         }
     }
 
-    func testCoreModels_Status_所有属性返回非Missing值() {
+    func testCoreModelsStatusAllPropsReturnNonMissing() {
         let values = [
             L10n.CoreModels.Status.active,
             L10n.CoreModels.Status.stub,
@@ -182,7 +182,7 @@ final class L10nCommonTableTests: XCTestCase {
         }
     }
 
-    func testCoreModels_confidence_所有属性返回非Missing值() {
+    func testCoreModelsConfidenceAllPropsReturnNonMissing() {
         let values = [
             L10n.CoreModels.confidence.high,
             L10n.CoreModels.confidence.medium,
@@ -197,7 +197,7 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - Search 属性 key 存在性
 
-    func testSearch_所有属性返回非Missing值() {
+    func testSearchAllPropsReturnNonMissing() {
         let values = [
             L10n.Search.base,
             L10n.Search.title,
@@ -214,7 +214,7 @@ final class L10nCommonTableTests: XCTestCase {
         }
     }
 
-    func testSearch_Diag_所有属性返回非Missing值() {
+    func testSearchDiagAllPropsReturnNonMissing() {
         let values = [
             L10n.Search.Diag.title,
             L10n.Search.Diag.rewrite,
@@ -237,14 +237,14 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - Search trf 参数化方法
 
-    func testSearch_resultsCount_返回非Missing且包含参数() {
+    func testSearchResultsCountReturnsNonMissingWithParams() {
         let result = L10n.Search.resultsCount(42)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "resultsCount 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testSearch_pagesCount_返回非Missing且包含参数() {
+    func testSearchPagesCountReturnsNonMissingWithParams() {
         let result = L10n.Search.pagesCount(7)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "pagesCount 返回 Missing: \(result)")
@@ -253,7 +253,7 @@ final class L10nCommonTableTests: XCTestCase {
 
     // MARK: - Common 基础属性 key 存在性（跨表引用基础）
 
-    func testCommon_基础属性返回非Missing值() {
+    func testCommonBasicPropsReturnNonMissing() {
         let values = [
             L10n.Common.appName,
             L10n.Common.ok,

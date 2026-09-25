@@ -36,7 +36,7 @@ public enum AIWorkflowCapabilitiesKey: DependencyKey {
 
     nonisolated public static var testValue: any AIWorkflowCapabilities {
         ServiceContainer.shared.resolveOptional((any AIWorkflowCapabilities).self)
-            ?? MainActor.assumeIsolated { NoOpAIWorkflowCapabilities() }
+            ?? runOnMainSync { NoOpAIWorkflowCapabilities() }
     }
     nonisolated public static var previewValue: any AIWorkflowCapabilities { testValue }
 }

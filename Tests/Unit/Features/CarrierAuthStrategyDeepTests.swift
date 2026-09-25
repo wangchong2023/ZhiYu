@@ -67,14 +67,14 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - identityType 契约
 
     /// 验证 identityType 恒为 "carrier"，多次实例化不变化
-    func testIdentityType恒为carrier字符串() {
+    func testIdentityTypeAlwaysCarrierString() {
         XCTAssertEqual(strategy.identityType, expectedIdentityType)
         let another = CarrierAuthStrategy()
         XCTAssertEqual(another.identityType, expectedIdentityType)
     }
 
     /// 验证 identityType 与 AuthCredential.identityType 一致
-    func testAcquireCredentials返回的identityType与策略一致() async throws {
+    func testAcquireCredentialsReturnsIdentityTypeConsistentWithStrategy() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
         XCTAssertEqual(credential.identityType, strategy.identityType)
@@ -84,7 +84,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - Mock 凭证字段完整性
 
     /// 验证 Mock 路径返回的 extraInfo 包含全部三个键且值符合契约
-    func testMock凭证extraInfo包含全部契约键() async throws {
+    func testMockCredentialExtraInfoContainsAllContractKeys() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
 
@@ -96,7 +96,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 路径 identifier 与 credential 均为空字符串（契约要求）
-    func testMock凭证identifier与credential均为空字符串() async throws {
+    func testMockCredentialIdentifierAndCredentialBothEmptyStrings() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
 
@@ -106,7 +106,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 路径 carrierToken 每次调用均包含 UUID 后缀（动态性）
-    func testMock凭证carrierToken包含UUID后缀() async throws {
+    func testMockCredentialCarrierTokenContainsUUIDSuffix() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
         guard let token = credential.extraInfo?[extraInfoCarrierTokenKey] else {
@@ -123,7 +123,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - initializeSDK 静态状态
 
     /// 验证 initializeSDK 是静态方法且不依赖实例
-    func testInitializeSDK为静态方法可独立调用() {
+    func testInitializeSDKIsStaticMethodCallableIndependently() {
         // 静态方法调用不应崩溃，且不影响实例方法
         CarrierAuthStrategy.initializeSDK(with: testAppKey)
         // 再次创建实例验证无副作用
@@ -135,7 +135,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     /// - Note: C-5/Bug#1 评估结论 — isInitialized 作为 static var 是合理设计，
     ///   ATAuthSDK 是进程级 SDK，初始化一次即全局生效，不是 per-instance 状态。
     ///   本测试验证静态状态共享行为符合预期。
-    func testInitializeSDK静态状态跨实例共享() {
+    func testInitializeSDKStaticStateSharedAcrossInstances() {
         // 调用静态初始化
         CarrierAuthStrategy.initializeSDK(with: testAppKey)
         // 创建新实例 — 静态状态应已生效（证明状态是类级别共享）
@@ -148,7 +148,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - AuthError 错误域完整性
 
     /// 验证 AuthError 所有枚举 case 的 errorDescription 均返回非空本地化字符串
-    func testAuthError所有case的errorDescription均非空() {
+    func testAuthErrorAllCasesErrorDescriptionNonEmpty() {
         let allCases: [AuthError] = [
             .carrierSDKNotInitialized,
             .carrierFailed,
@@ -164,7 +164,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     }
 
     /// 验证 AuthError Equatable 契约 — 相同 case 相等，不同 case 不等
-    func testAuthErrorEquatable契约() {
+    func testAuthErrorEquatableContract() {
         XCTAssertEqual(AuthError.carrierSDKNotInitialized, AuthError.carrierSDKNotInitialized)
         XCTAssertEqual(AuthError.carrierFailed, AuthError.carrierFailed)
         XCTAssertEqual(AuthError.userCancelled, AuthError.userCancelled)
@@ -231,7 +231,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     // MARK: - AuthCredential Sendable 契约
 
     /// 验证 AuthCredential 可跨 actor 边界传递（Sendable 契约）
-    func testAuthCredential符合Sendable契约可跨actor传递() async throws {
+    func testAuthCredentialConformsToSendableCrossActorPassable() async throws {
         #if DEBUG
         let credential = try await strategy.acquireCredentials()
 

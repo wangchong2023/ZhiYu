@@ -76,7 +76,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     // MARK: - login Mock 模式
 
     /// 验证 Mock 模式下密码登录成功
-    func testLogin_Mock模式_密码登录成功() async {
+    func testLoginMockModePasswordLoginSuccess() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -91,7 +91,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下密码登录写入 Keychain Token
-    func testLogin_Mock模式_密码登录_写入KeychainToken() async throws {
+    func testLoginMockModePasswordLoginWritesKeychainToken() async throws {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -109,7 +109,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     // MARK: - login 非 Mock 模式
 
     /// 验证非 Mock 模式下密码登录网络失败返回 false
-    func testLogin_非Mock模式_网络失败_返回false() async {
+    func testLoginNonMockModeNetworkFailureReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -130,7 +130,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     // MARK: - sendSmsCode 非 Mock 模式
 
     /// 验证非 Mock 模式下 sendSmsCode 网络失败返回 false
-    func testSendSmsCode_非Mock模式_网络失败_返回false() async {
+    func testSendSmsCodeNonMockModeNetworkFailureReturnsFalse() async {
         TestMockURLProtocol.requestHandler = { request in
             let url = try XCTUnwrap(request.url)
             let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil))
@@ -143,7 +143,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 sendSmsCode 成功返回 true
-    func testSendSmsCode_非Mock模式_成功_返回true() async {
+    func testSendSmsCodeNonMockModeSuccessReturnsTrue() async {
         TestMockURLProtocol.requestHandler = { request in
             let url = try XCTUnwrap(request.url)
             let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]))
@@ -166,7 +166,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     // MARK: - register 非 Mock 模式
 
     /// 验证非 Mock 模式下 register 网络失败返回 false
-    func testRegister_非Mock模式_网络失败_返回false() async {
+    func testRegisterNonMockModeNetworkFailureReturnsFalse() async {
         TestMockURLProtocol.requestHandler = { request in
             let url = try XCTUnwrap(request.url)
             let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil))
@@ -181,7 +181,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     // MARK: - OAuth login Mock 模式
 
     /// 验证 Mock 模式下 Carrier 登录成功
-    func testLogin_Mock模式_Carrier登录成功() async {
+    func testLoginMockModeCarrierLoginSuccess() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -195,7 +195,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 GitHub 登录成功
-    func testLogin_Mock模式_GitHub登录成功() async {
+    func testLoginMockModeGitHubLoginSuccess() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -209,7 +209,7 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 WeChat 登录成功
-    func testLogin_Mock模式_WeChat登录成功() async {
+    func testLoginMockModeWeChatLoginSuccess() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }

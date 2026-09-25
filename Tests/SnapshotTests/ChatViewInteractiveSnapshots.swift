@@ -32,6 +32,7 @@ final class ChatViewInteractiveSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
         let store = ServiceContainer.shared.resolveOptional(KnowledgeStore.self) ?? KnowledgeStore()
         store.pages = []
         ServiceContainer.shared.resolveOptional(TaskCenter.self)?.reset()

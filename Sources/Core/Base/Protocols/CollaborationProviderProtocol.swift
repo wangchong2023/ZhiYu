@@ -97,7 +97,7 @@ enum CollaborationProviderKey: DependencyKey {
 
     nonisolated static var testValue: any CollaborationProviderProtocol {
         ServiceContainer.shared.resolveOptional((any CollaborationProviderProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpCollaborationProvider() }
+            ?? runOnMainSync { NoOpCollaborationProvider() }
     }
     nonisolated static var previewValue: any CollaborationProviderProtocol { testValue }
 }

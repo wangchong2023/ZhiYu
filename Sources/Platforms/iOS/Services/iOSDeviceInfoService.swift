@@ -28,13 +28,19 @@ final class iOSDeviceInfoService: DeviceInfoProtocol, Sendable {
 
     var screenHeight: CGFloat {
         // iOS 26.0 废弃 UIScreen.main，改为从活跃 UIWindowScene 获取 screen
+        // 测试环境（无 Host App）无 foregroundActive 场景，回退到 UIScreen.main
         runOnMainSync {
             let activeScene = UIApplication.shared.connectedScenes
                 .compactMap { $0 as? UIWindowScene }
                 .first { $0.activationState == .foregroundActive }
-            return activeScene?.screen.bounds.height
-                ?? activeScene?.windows.first?.window?.screen.bounds.height
-                ?? 0
+            if let scene = activeScene {
+                return scene.screen.bounds.height
+            }
+            if let window = activeScene?.windows.first {
+                return window.screen.bounds.height
+            }
+            // 测试环境回退到 UIScreen.main（iOS 26 废弃但测试环境仍可用）
+            return UIScreen.main.bounds.height
         }
     }
 }

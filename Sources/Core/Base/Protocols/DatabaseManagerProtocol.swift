@@ -57,17 +57,17 @@ public final class NoOpVaultDatabaseSwitcher: VaultDatabaseSwitcher, @unchecked 
 /// VaultDatabaseSwitcher 的 DependencyKey（P7 迁移：过渡期 liveValue 从 ServiceContainer 解析）
 public enum VaultDatabaseSwitcherKey: DependencyKey {
     public nonisolated static var liveValue: any VaultDatabaseSwitcher {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             ServiceContainer.shared.resolve((any VaultDatabaseSwitcher).self)
         }
     }
     public nonisolated static var testValue: any VaultDatabaseSwitcher {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             ServiceContainer.shared.resolveOptional((any VaultDatabaseSwitcher).self) ?? NoOpVaultDatabaseSwitcher()
         }
     }
     public nonisolated static var previewValue: any VaultDatabaseSwitcher {
-        MainActor.assumeIsolated { NoOpVaultDatabaseSwitcher() }
+        runOnMainSync { NoOpVaultDatabaseSwitcher() }
     }
 }
 

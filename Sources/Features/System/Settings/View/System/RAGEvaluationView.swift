@@ -52,7 +52,8 @@ struct RAGEvaluationView: View {
     @State private var selectedTab: EvalTab = .retrieval
 
     var body: some View {
-        let activeTooltipBinding = $activeTooltip
+        // swiftlint:disable:next redundant_discardable_let
+        let _ = activeTooltip
         Group {
             if isLoading {
                 ProgressView()
@@ -76,12 +77,12 @@ struct RAGEvaluationView: View {
                                 hitRate: hitRate, mrr: mrr, ndcg: ndcg,
                                 recall: recall, f1Score: f1Score, mapScore: mapScore,
                                 latency: latency,
-                                activeTooltip: activeTooltipBinding
+                                activeTooltip: $activeTooltip
                             )
                         case .generation:
                             RAGGenerationPanel(
                                 avgScores: avgScores,
-                                activeTooltip: activeTooltipBinding
+                                activeTooltip: $activeTooltip
                             )
                         case .evaluation:
                             RAGSatisfactionPanel(

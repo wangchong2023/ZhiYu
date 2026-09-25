@@ -42,7 +42,7 @@ final class WorkflowServiceTests: XCTestCase {
     // MARK: - Markdown 任务标记解析
 
     /// 含未完成任务标记（- [ ]）的 Markdown 应被识别为任务
-    func testSyncToReminders_含未完成任务_调用createReminder() async {
+    func testSyncToRemindersWithUncompletedTasksCallsCreateReminder() async {
         let markdown = """
         # 测试页面
         - [ ] 待办事项 1
@@ -58,7 +58,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 含已完成任务标记（- [x]）的 Markdown 不应被同步（finding #8 已修复）
-    func testSyncToReminders_含已完成任务_不同步() async {
+    func testSyncToRemindersWithCompletedTasksNotSynced() async {
         let markdown = """
         # 测试页面
         - [x] 已完成事项
@@ -73,7 +73,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 含 `- ` 前缀的无序列表应被识别为任务
-    func testSyncToReminders_含无序列表_调用createReminder() async {
+    func testSyncToRemindersWithUnorderedListCallsCreateReminder() async {
         let markdown = """
         - 任务 1
         - 任务 2
@@ -84,7 +84,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 含 `* ` 前缀的无序列表应被识别为任务
-    func testSyncToReminders_含星号无序列表_调用createReminder() async {
+    func testSyncToRemindersWithAsteriskUnorderedListCallsCreateReminder() async {
         let markdown = """
         * 任务 1
         * 任务 2
@@ -95,7 +95,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 含 `1. ` 前缀的有序列表应被识别为任务
-    func testSyncToReminders_含有序列表_调用createReminder() async {
+    func testSyncToRemindersWithOrderedListCallsCreateReminder() async {
         let markdown = """
         1. 任务 1
         2. 任务 2
@@ -106,7 +106,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 无任务标记的 Markdown 不应调用 createReminder
-    func testSyncToReminders_无任务标记_不调用() async {
+    func testSyncToRemindersNoTaskMarkerNotCalled() async {
         let markdown = """
         # 普通页面
         这是一段普通文本。
@@ -117,7 +117,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 空字符串不应调用 createReminder
-    func testSyncToReminders_空字符串_不调用() async {
+    func testSyncToRemindersEmptyStringNotCalled() async {
         try? await service.syncToReminders(text: "", title: "测试")
         XCTAssertEqual(mockReminderService.createReminderCallCount, 0)
     }
@@ -125,7 +125,7 @@ final class WorkflowServiceTests: XCTestCase {
     // MARK: - Markdown 样式标记剔除
 
     /// 任务文本中的加粗标记应被剔除
-    func testSyncToReminders_加粗标记_被剔除() async {
+    func testSyncToRemindersBoldMarkerStripped() async {
         let markdown = "- **重要任务**"
         try? await service.syncToReminders(text: markdown, title: "测试")
 
@@ -133,7 +133,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 任务文本中的斜体标记应被剔除
-    func testSyncToReminders_斜体标记_被剔除() async {
+    func testSyncToRemindersItalicMarkerStripped() async {
         let markdown = "- _强调任务_"
         try? await service.syncToReminders(text: markdown, title: "测试")
 
@@ -141,7 +141,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 任务文本中的删除线标记应被剔除
-    func testSyncToReminders_删除线标记_被剔除() async {
+    func testSyncToRemindersStrikethroughMarkerStripped() async {
         let markdown = "- ~~废弃任务~~"
         try? await service.syncToReminders(text: markdown, title: "测试")
 
@@ -149,7 +149,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 任务文本中的行内代码标记应被剔除
-    func testSyncToReminders_行内代码标记_被剔除() async {
+    func testSyncToRemindersInlineCodeMarkerStripped() async {
         let markdown = "- `代码任务`"
         try? await service.syncToReminders(text: markdown, title: "测试")
 
@@ -159,7 +159,7 @@ final class WorkflowServiceTests: XCTestCase {
     // MARK: - 副作用：Toast 反馈
 
     /// 同步成功后应显示成功 Toast
-    func testSyncToReminders_成功_显示成功Toast() async {
+    func testSyncToRemindersSuccessShowsSuccessToast() async {
         let markdown = "- [ ] 测试任务"
         try? await service.syncToReminders(text: markdown, title: "测试")
 
@@ -170,7 +170,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 权限拒绝时应显示错误 Toast 并抛出 accessDenied
-    func testSyncToReminders_权限拒绝_显示错误Toast() async {
+    func testSyncToRemindersPermissionDeniedShowsErrorToast() async {
         mockReminderService.requestAccessResult = false
         let markdown = "- [ ] 测试任务"
 
@@ -193,7 +193,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// 无任务时应显示 info Toast（noTasksFoundMessage）
-    func testSyncToReminders_无任务_显示infoToast() async {
+    func testSyncToRemindersNoTasksShowsInfoToast() async {
         let markdown = "普通文本，无任务"
         try? await service.syncToReminders(text: markdown, title: "测试")
 
@@ -204,7 +204,7 @@ final class WorkflowServiceTests: XCTestCase {
     }
 
     /// createReminder 抛错时应显示错误 Toast 并重新抛出
-    func testSyncToReminders_createReminder失败_显示错误Toast() async {
+    func testSyncToRemindersCreateReminderFailureShowsErrorToast() async {
         mockReminderService.createReminderShouldThrow = true
         let markdown = "- [ ] 测试任务"
 

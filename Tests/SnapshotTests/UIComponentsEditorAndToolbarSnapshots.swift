@@ -33,6 +33,7 @@ final class UIComponentsEditorAndToolbarSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     override func tearDown() async throws {

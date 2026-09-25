@@ -33,6 +33,7 @@ final class TaskCenterInteractiveSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
         @Dependency(\.taskCenter) var taskCenter
         (taskCenter as? TaskCenter)?.reset()
     }

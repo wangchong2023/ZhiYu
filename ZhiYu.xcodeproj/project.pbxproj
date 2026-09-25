@@ -1473,7 +1473,6 @@
 		7EEA0A93C53BE8E3B212C0F4 /* LLMRefactorServiceErrorPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86896ED622CD042974F6923 /* LLMRefactorServiceErrorPathTests.swift */; };
 		7EF2B095346620715CC70FAC /* DesignSystem+Gallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B952D728298AB5FB1CDC4E2 /* DesignSystem+Gallery.swift */; };
 		7EF59D4628006AF1CAC28D89 /* LintRuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE3A262FBE098945A2E6AE3 /* LintRuleManager.swift */; };
-		7F08DCA53E1BACA35B8A7CFF /* KeyboardShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F85DAB8C82942C91CABC3FC /* KeyboardShortcutsView.swift */; };
 		7F09A42554EBE7EA3D5A4728 /* LintFixSuggestionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD9DD73E8FDB75E331E4F3C /* LintFixSuggestionSheet.swift */; };
 		7F0BF6EBFB1213B35BCD70CE /* PlatformConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47817737DBAD0449D0AA89A9 /* PlatformConstants.swift */; };
 		7F10499A92FA05C7ECAF28FA /* MarkdownRendererView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E576EA1E3290CF2CFA8C35 /* MarkdownRendererView.swift */; };
@@ -2216,7 +2215,6 @@
 		BC2EA8E82CC87970C87CAE70 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116BDDFA071091AC3EE4F4ED /* Logger.swift */; };
 		BC60048E2A7A91BD0ACEF4E4 /* CollaborationAndSettingsViewSnapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079787C594E674595C30BA37 /* CollaborationAndSettingsViewSnapshots.swift */; };
 		BC60CBD6FBBEAEA68DFE8C2A /* AuthAndSubscriptionDeepAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9824C7EA3367D4FFB17049AD /* AuthAndSubscriptionDeepAuditTests.swift */; };
-		BC625D51AFBF4E3D3634DB61 /* KeyboardShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F85DAB8C82942C91CABC3FC /* KeyboardShortcutsView.swift */; };
 		BC69B31ACD9459FA9E9BCDFF /* FeatureProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0227844531C257F93B5878DA /* FeatureProtocols.swift */; };
 		BC8D0722646AEE1287F97113 /* PerformanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AFCC3B83BA7A24313D6EA7 /* PerformanceService.swift */; };
 		BCA0437285899849910CB14F /* RAGBenchmarkPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1939F1DA44EE1F7E5ECFA2 /* RAGBenchmarkPanel.swift */; };
@@ -3840,7 +3838,6 @@
 		5F36AF1890B8E2629E4575A5 /* ThemeManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManagerTests.swift; sourceTree = "<group>"; };
 		5F3F78C5ECE4B40AC4CC4D74 /* testGraphInsightsPanelEmpty.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testGraphInsightsPanelEmpty.1.png; sourceTree = "<group>"; };
 		5F6BFB35588F9400037674FD /* LiveActivityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityServiceTests.swift; sourceTree = "<group>"; };
-		5F85DAB8C82942C91CABC3FC /* KeyboardShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsView.swift; sourceTree = "<group>"; };
 		5F9954C0450D2B7F9D54A718 /* CommandPaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteView.swift; sourceTree = "<group>"; };
 		5FD33819F38C8033C6ABF5AD /* L10n+Reminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+Reminder.swift"; sourceTree = "<group>"; };
 		5FF6E6BF24DCBF1C62CC2061 /* UnsupportedServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnsupportedServicesTests.swift; sourceTree = "<group>"; };
@@ -5984,14 +5981,6 @@
 			path = View;
 			sourceTree = "<group>";
 		};
-		2BE5E828307FB1FEC37202CE /* Interaction */ = {
-			isa = PBXGroup;
-			children = (
-				5F85DAB8C82942C91CABC3FC /* KeyboardShortcutsView.swift */,
-			);
-			path = Interaction;
-			sourceTree = "<group>";
-		};
 		2D3675B0973E72F2C7C3618D /* Strategy */ = {
 			isa = PBXGroup;
 			children = (
@@ -6964,7 +6953,6 @@
 				90B550F51B5C22D6B0678905 /* Feedback */,
 				12E39D1C54ECB62F42DDFA27 /* Image */,
 				1E0F58796628768D83034575 /* Inputs */,
-				2BE5E828307FB1FEC37202CE /* Interaction */,
 				B01215CE8924A892E3D2B13F /* Layouts */,
 				E8A682383F92DD4F8F855B27 /* Lists */,
 				561983D8F9F02A6F351541BC /* Menus */,
@@ -11369,7 +11357,6 @@
 				3E3A97DFBF899DE1BB3050AA /* JailbreakDetector.swift in Sources */,
 				76570BD87F2AA353648ABD1D /* JavaScriptPlugin.swift in Sources */,
 				663DA1887361F40DCB517290 /* KeyStoreProtocol.swift in Sources */,
-				BC625D51AFBF4E3D3634DB61 /* KeyboardShortcutsView.swift in Sources */,
 				9F294B3E3E79EBC07F0ECFA7 /* KeychainQueryHelper.swift in Sources */,
 				2E10EC4AC4ECEB631E318DA6 /* KeychainService.swift in Sources */,
 				DFBC0B0883D140644F277BA4 /* KnowledgeDashboardView.swift in Sources */,
@@ -12205,7 +12192,6 @@
 				FE678907278763B2377A67C7 /* JailbreakDetector.swift in Sources */,
 				1840F5049157664B2AECBBE5 /* JavaScriptPlugin.swift in Sources */,
 				73FEB313B1B4ED54EF34E444 /* KeyStoreProtocol.swift in Sources */,
-				7F08DCA53E1BACA35B8A7CFF /* KeyboardShortcutsView.swift in Sources */,
 				A7CF8972C253974CD514CB89 /* KeychainQueryHelper.swift in Sources */,
 				E2D6D8968A5B2D9BC765DF50 /* KeychainService.swift in Sources */,
 				92CA2CD9303940BDCC226A79 /* KnowledgeDashboardView.swift in Sources */,

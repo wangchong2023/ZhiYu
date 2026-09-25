@@ -22,7 +22,7 @@ final class L10nCommonTableExtrasTests: XCTestCase {
 
     // MARK: - Shared 属性 key 存在性
 
-    func testShared_基础属性返回非Missing值() {
+    func testSharedBasicPropsReturnNonMissing() {
         let values = [
             L10n.Shared.errorTitle,
             L10n.Shared.retryButton,
@@ -38,7 +38,7 @@ final class L10nCommonTableExtrasTests: XCTestCase {
         }
     }
 
-    func testShared_pageCountFormat_返回非Missing且包含参数() {
+    func testSharedPageCountFormatReturnsNonMissingWithParams() {
         let result = L10n.Shared.pageCountFormat(42)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Shared.pageCountFormat 返回 Missing: \(result)")
@@ -47,7 +47,7 @@ final class L10nCommonTableExtrasTests: XCTestCase {
 
     // MARK: - Graph 属性 key 存在性
 
-    func testGraph_基础属性返回非Missing值() {
+    func testGraphBasicPropsReturnNonMissing() {
         let values = [
             L10n.Graph.filter,
             L10n.Graph.insights,
@@ -77,28 +77,28 @@ final class L10nCommonTableExtrasTests: XCTestCase {
         }
     }
 
-    func testGraph_nodesConnections_返回非Missing且包含参数() {
+    func testGraphNodesConnectionsReturnsNonMissingWithParams() {
         let result = L10n.Graph.nodesConnections(10, 20)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Graph.nodesConnections 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testGraph_edgeTruncationHint_返回非Missing且包含参数() {
+    func testGraphEdgeTruncationHintReturnsNonMissingWithParams() {
         let result = L10n.Graph.edgeTruncationHint(50)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Graph.edgeTruncationHint 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testGraph_linksCountFormat_返回非Missing且包含参数() {
+    func testGraphLinksCountFormatReturnsNonMissingWithParams() {
         let result = L10n.Graph.linksCountFormat(15)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Graph.linksCountFormat 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testGraph_clusterName_返回非Missing且包含参数() {
+    func testGraphClusterNameReturnsNonMissingWithParams() {
         let result = L10n.Graph.clusterName(3)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Graph.clusterName 返回 Missing: \(result)")
@@ -107,7 +107,7 @@ final class L10nCommonTableExtrasTests: XCTestCase {
 
     // MARK: - Graph.Accessibility 子命名空间
 
-    func testGraph_Accessibility_属性返回非Missing值() {
+    func testGraphAccessibilityPropsReturnNonMissing() {
         let accessibility = L10n.Graph.Accessibility()
         let values = [
             accessibility.nodeHint,
@@ -127,7 +127,7 @@ final class L10nCommonTableExtrasTests: XCTestCase {
 
     // MARK: - Graph.ThreeD 子命名空间
 
-    func testGraph_ThreeD_title_返回非Missing值() {
+    func testGraphThreeDTitleReturnsNonMissing() {
         let value = L10n.Graph.ThreeD.title
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Graph.ThreeD.title 返回 Missing: \(value)")
@@ -136,7 +136,7 @@ final class L10nCommonTableExtrasTests: XCTestCase {
 
     // MARK: - Graph.guide 子命名空间
 
-    func testGraph_guide_属性返回非Missing值() {
+    func testGraphGuidePropsReturnNonMissing() {
         let values = [
             L10n.Graph.guide.entryTitle,
             L10n.Graph.guide.entrySubtitle,

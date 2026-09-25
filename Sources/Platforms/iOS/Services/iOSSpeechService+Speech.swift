@@ -13,6 +13,7 @@
 @preconcurrency import Speech
 import AVFoundation
 import Foundation
+import UFPCore
 
 /// 线程安全包装器，用于在 @Sendable 闭包中持有非 Sendable 的 iOSSpeechService 引用
 private final class SpeechServiceBox: @unchecked Sendable {
@@ -131,7 +132,7 @@ extension iOSSpeechService {
     ///   `Sendable` 数据（`String`/`Bool`/`Error`），再传到 `Task { @MainActor in }`。
     nonisolated func startRecognitionTask(recognizer: SFSpeechRecognizer) {
         let box = SpeechServiceBox(self)
-        let request = MainActor.assumeIsolated { box.value.recognitionRequest }
+        let request = runOnMainSync { box.value.recognitionRequest }
         guard let request = request else { return }
         let task = recognizer.recognitionTask(with: request) { result, error in
             // 在后台线程同步提取 Sendable 数据，避免跨 actor 传递非 Sendable 的 result/error
@@ -150,7 +151,7 @@ extension iOSSpeechService {
                 }
             }
         }
-        MainActor.assumeIsolated { box.value.recognitionTask = task }
+        runOnMainSync { box.value.recognitionTask = task }
     }
 
     /// transcribeFile

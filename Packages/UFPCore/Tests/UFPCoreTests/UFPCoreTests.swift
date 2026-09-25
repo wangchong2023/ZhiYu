@@ -22,6 +22,7 @@ private final class DummyService: DummyServiceProtocol, @unchecked Sendable {
     func execute() -> String { "UFPCoreSuccess" }
 }
 
+@MainActor
 final class UFPCoreTests: XCTestCase {
 
     override func setUp() {

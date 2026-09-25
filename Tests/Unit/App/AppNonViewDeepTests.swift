@@ -23,12 +23,12 @@ final class AppNonViewDeepTests: XCTestCase {
         XCTAssertEqual(CoachMarkType.graphDiscovery.rawValue, "graph_discovery")
     }
 
-    func testCoachMarkType_所有case() {
+    func testCoachMarkTypeAllCases() {
         let allCases: [CoachMarkType] = [.graphDiscovery]
         XCTAssertEqual(allCases.count, 1, "CoachMarkType 应有 1 个 case")
     }
 
-    func testKnowledgeGrowthPoint_构造与属性() {
+    func testKnowledgeGrowthPointConstructionAndProperties() {
         let date = Date()
         let point = KnowledgeGrowthPoint(date: date, count: 42)
         XCTAssertEqual(point.date, date)
@@ -36,7 +36,7 @@ final class AppNonViewDeepTests: XCTestCase {
         XCTAssertNotNil(point.id)
     }
 
-    func testKnowledgeGrowthPoint_不同实例id不同() {
+    func testKnowledgeGrowthPointDifferentInstancesDifferentId() {
         let point1 = KnowledgeGrowthPoint(date: Date(), count: 1)
         let point2 = KnowledgeGrowthPoint(date: Date(), count: 2)
         XCTAssertNotEqual(point1.id, point2.id, "不同实例应有不同 id")
@@ -45,7 +45,7 @@ final class AppNonViewDeepTests: XCTestCase {
     // MARK: - AppModel (ZhiYuAppModel)
 
     @MainActor
-    func testZhiYuAppModel_init_所有State非空() {
+    func testZhiYuAppModelInitAllStateNonNil() {
         let model = ZhiYuAppModel()
         XCTAssertNotNil(model.router)
         XCTAssertNotNil(model.onboarding)
@@ -71,7 +71,7 @@ final class AppNonViewDeepTests: XCTestCase {
     }
 
     @MainActor
-    func testZhiYuAppModel_preview_返回新实例() {
+    func testZhiYuAppModelPreviewReturnsNewInstance() {
         let model1 = ZhiYuAppModel.preview()
         let model2 = ZhiYuAppModel.preview()
         XCTAssertNotNil(model1)
@@ -113,7 +113,7 @@ final class AppNonViewDeepTests: XCTestCase {
     // MARK: - ViewFactory
 
     @MainActor
-    func testViewFactory_registerAndMakeView_未注册domain显示404() {
+    func testViewFactoryRegisterAndMakeViewUnregisteredDomainShows404() {
         // 使用 AppRoute.dashboard 作为有效路由
         let route = AppRoute.dashboard
         let view = ViewFactory.makeView(for: route)
@@ -192,7 +192,7 @@ final class AppNonViewDeepTests: XCTestCase {
 
     #if !os(watchOS)
     @available(iOS 16.0, macCatalyst 16.0, *)
-    func testAppWindowSceneDelegate_可实例化() {
+    func testAppWindowSceneDelegateInstantiable() {
         let delegate = AppWindowSceneDelegate()
         XCTAssertNotNil(delegate)
         XCTAssertNil(delegate.window, "初始化后 window 应为 nil")

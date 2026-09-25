@@ -181,7 +181,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - sendMessage 流式对话全流程
 
     /// 验证 sendMessage 成功完成流式对话后，用户消息和助手消息都追加到 chatHistory
-    func testSendMessage_成功完成_追加用户和助手消息() async throws {
+    func testSendMessageSuccessAppendsUserAndAssistantMessages() async throws {
         capturableChat.streamChatHandler = { _, _ in
             [self.streamChunk1, self.streamChunk2]
         }
@@ -196,7 +196,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 成功后，ChatService.saveUserMessage 和 saveAssistantMessage 都被调用
-    func testSendMessage_成功完成_调用ChatService持久化() async throws {
+    func testSendMessageSuccessCallsChatServicePersist() async throws {
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
         await coordinator.sendMessage(query: testQuery, pages: [])
@@ -206,7 +206,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 完成后 isProcessing 恢复为 false
-    func testSendMessage_完成后_isProcessing恢复False() async throws {
+    func testSendMessageAfterCompletionIsProcessingRestoresFalse() async throws {
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
         await coordinator.sendMessage(query: testQuery, pages: [])
@@ -215,7 +215,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 完成后 streamingContent 被清空
-    func testSendMessage_完成后_streamingContent被清空() async throws {
+    func testSendMessageAfterCompletionStreamingContentCleared() async throws {
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1, self.streamChunk2] }
 
         await coordinator.sendMessage(query: testQuery, pages: [])
@@ -224,7 +224,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 使用 inputText 作为默认 query（query 为 nil 时）
-    func testSendMessage_使用inputText作为默认query() async throws {
+    func testSendMessageUsesInputTextAsDefaultQuery() async throws {
         coordinator.inputText = testQuery
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
@@ -234,7 +234,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 使用 inputText 后清空 inputText
-    func testSendMessage_使用inputText后_清空inputText() async throws {
+    func testSendMessageAfterUsingInputTextClearsInputText() async throws {
         coordinator.inputText = testQuery
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
@@ -244,7 +244,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 传入显式 query 时不清空 inputText
-    func testSendMessage_显式query_不清空inputText() async throws {
+    func testSendMessageExplicitQueryDoesNotClearInputText() async throws {
         coordinator.inputText = "残留输入"
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
@@ -254,7 +254,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 对超长输入截断至 maxUserInputLength
-    func testSendMessage_超长输入_截断至最大长度() async throws {
+    func testSendMessageOverlongInputTruncatedToMaxLength() async throws {
         let longText = String(repeating: "A", count: overLengthCount)
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
@@ -265,7 +265,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 对纯空白字符输入直接返回不处理
-    func testSendMessage_纯空白字符_不处理() async throws {
+    func testSendMessagePureWhitespaceNotProcessed() async throws {
         await coordinator.sendMessage(query: "\n\t  \n", pages: [])
 
         XCTAssertTrue(coordinator.chatHistory.isEmpty, "纯空白输入不应追加消息")
@@ -276,7 +276,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     /// - Note: 流式完成后 runStreamTask 会异步启动 generatePredictedQuestions Task
     ///   重新填充 predictedQuestions。设置 stubFollowUpQuestions 为空确保预测返回空数组，
     ///   从而验证 91 行的清空逻辑 + 预测完成后仍为空。
-    func testSendMessage_发送后_清空predictedQuestions() async throws {
+    func testSendMessageAfterSendClearsPredictedQuestions() async throws {
         coordinator.predictedQuestions = ["旧追问1", "旧追问2"]
         capturableSynthesis.stubFollowUpQuestions = []
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
@@ -289,7 +289,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 发送后清空 errorMessage
-    func testSendMessage_发送后_清空errorMessage() async throws {
+    func testSendMessageAfterSendClearsErrorMessage() async throws {
         coordinator.errorMessage = "旧错误"
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
@@ -303,7 +303,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     /// 验证 sendMessage 在 isProcessing 为 true 时调用 cancelCurrentRequest 并直接返回
     /// - Note: streamChatHandler 需阻塞足够长时间，确保第二次 sendMessage 调用时
     ///   第一次仍在 isProcessing 状态。Mock 返回过快会导致时序竞态。
-    func testSendMessage_isProcessing时_取消当前请求并返回() async throws {
+    func testSendMessageWhenIsProcessingCancelsCurrentRequestAndReturns() async throws {
         let delayNanoseconds: UInt64 = 500_000_000
         capturableChat.streamChatHandler = { _, _ in
             try await Task.sleep(nanoseconds: delayNanoseconds)
@@ -334,7 +334,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - sendMessage 错误路径
 
     /// 验证 sendMessage 流式抛出 LLMError.notConfigured 时设置 showLLMAlert
-    func testSendMessage_流式抛notConfigured_设置showLLMAlert() async throws {
+    func testSendMessageStreamThrowsNotConfiguredSetsShowLLMAlert() async throws {
         capturableChat.streamChatHandler = { _, _ in
             throw LLMError.notConfigured
         }
@@ -347,7 +347,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 流式抛出普通错误时设置 showError 和 errorMessage
-    func testSendMessage_流式抛普通错误_设置showError和ErrorMessage() async throws {
+    func testSendMessageStreamThrowsCommonErrorSetsShowErrorAndErrorMessage() async throws {
         struct TestError: Error, LocalizedError {
             var errorDescription: String? { "测试网络错误" }
         }
@@ -363,7 +363,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 流式抛错后 isProcessing 恢复 false
-    func testSendMessage_流式抛错后_isProcessing恢复False() async throws {
+    func testSendMessageStreamThrowsAfterIsProcessingRestoresFalse() async throws {
         struct TestError: Error {}
         capturableChat.streamChatHandler = { _, _ in
             throw TestError()
@@ -375,7 +375,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 流式抛错后 streamingContent 被清空
-    func testSendMessage_流式抛错后_streamingContent被清空() async throws {
+    func testSendMessageStreamThrowsAfterStreamingContentCleared() async throws {
         struct TestError: Error {}
         capturableChat.streamChatHandler = { _, _ in
             throw TestError()
@@ -387,7 +387,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 sendMessage 流式抛错后不追加助手消息
-    func testSendMessage_流式抛错后_不追加助手消息() async throws {
+    func testSendMessageStreamThrowsAfterDoesNotAppendAssistantMessage() async throws {
         struct TestError: Error {}
         capturableChat.streamChatHandler = { _, _ in
             throw TestError()
@@ -402,7 +402,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - cancelCurrentRequest
 
     /// 验证 cancelCurrentRequest 清空 currentStreamTask 引用
-    func testCancelCurrentRequest_清空currentStreamTask() async throws {
+    func testCancelCurrentRequestClearsCurrentStreamTask() async throws {
         capturableChat.streamChatHandler = { _, _ in
             // 模拟慢速流式，让 cancel 有机会介入
             try await Task.sleep(nanoseconds: 500_000_000)
@@ -424,7 +424,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - regenerateLastMessage
 
     /// 验证 regenerateLastMessage 无用户消息时直接返回不处理
-    func testRegenerateLastMessage_无用户消息_不处理() async throws {
+    func testRegenerateLastMessageNoUserMessageNotProcessed() async throws {
         coordinator.chatHistory = [
             ChatMessage(role: .assistant, content: "只有助手消息")
         ]
@@ -437,7 +437,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 regenerateLastMessage 保留最后用户提问之前的消息
-    func testRegenerateLastMessage_保留用户提问前的消息() async throws {
+    func testRegenerateLastMessageKeepsMessagesBeforeUserQuestion() async throws {
         coordinator.chatHistory = [
             ChatMessage(role: .user, content: "第一个问题"),
             ChatMessage(role: .assistant, content: "第一个回复"),
@@ -459,7 +459,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 regenerateLastMessage 调用 clearHistory 清空持久化
-    func testRegenerateLastMessage_调用clearHistory清空持久化() async throws {
+    func testRegenerateLastMessageCallsClearHistoryClearsPersistence() async throws {
         coordinator.chatHistory = [
             ChatMessage(role: .user, content: "问题"),
             ChatMessage(role: .assistant, content: "回复")
@@ -472,7 +472,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 regenerateLastMessage 重写持久化时保留的消息按角色正确保存
-    func testRegenerateLastMessage_重写持久化_按角色保存保留消息() async throws {
+    func testRegenerateLastMessageRewritesPersistenceSavesRetainedMessagesByRole() async throws {
         coordinator.chatHistory = [
             ChatMessage(role: .user, content: "保留的用户问题"),
             ChatMessage(role: .assistant, content: "保留的助手回复"),
@@ -491,7 +491,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - clearChatHistory 持久化
 
     /// 验证 clearChatHistory 调用 ChatService.clearHistory
-    func testClearChatHistory_调用ChatServiceClearHistory() {
+    func testClearChatHistoryCallsChatServiceClearHistory() {
         coordinator.chatHistory.append(ChatMessage(role: .user, content: "test"))
 
         coordinator.clearChatHistory()
@@ -502,14 +502,14 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - loadInsightfulQuestions
 
     /// 验证 loadInsightfulQuestions 空页面数组时直接返回不处理
-    func testLoadInsightfulQuestions_空页面_不处理() async throws {
+    func testLoadInsightfulQuestionsEmptyPagesNotProcessed() async throws {
         await coordinator.loadInsightfulQuestions(pages: [], forceRefresh: true)
 
         XCTAssertEqual(capturableSynthesis.insightfulCallCount, 0, "空页面不应调用 generateInsightfulQuestions")
     }
 
     /// 验证 loadInsightfulQuestions 已有问题且非强制刷新时不重复生成
-    func testLoadInsightfulQuestions_已有问题非强制刷新_不重复生成() async throws {
+    func testLoadInsightfulQuestionsExistingQuestionsNonForceRefreshDoesNotRegenerate() async throws {
         coordinator.insightfulQuestions = [insightfulQuestion1]
         capturableSynthesis.stubInsightfulQuestions = ["新问题"]
 
@@ -520,7 +520,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 loadInsightfulQuestions 强制刷新时重新生成
-    func testLoadInsightfulQuestions_强制刷新_重新生成() async throws {
+    func testLoadInsightfulQuestionsForceRefreshRegenerates() async throws {
         coordinator.insightfulQuestions = [insightfulQuestion1]
         capturableSynthesis.stubInsightfulQuestions = [insightfulQuestion2]
 
@@ -531,7 +531,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 loadInsightfulQuestions 已有问题为空时自动生成
-    func testLoadInsightfulQuestions_问题为空_自动生成() async throws {
+    func testLoadInsightfulQuestionsEmptyQuestionsAutoGenerates() async throws {
         coordinator.insightfulQuestions = []
         capturableSynthesis.stubInsightfulQuestions = [insightfulQuestion1, insightfulQuestion2]
 
@@ -541,7 +541,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 loadInsightfulQuestions 生成抛错时清空问题列表
-    func testLoadInsightfulQuestions_生成抛错_清空问题列表() async throws {
+    func testLoadInsightfulQuestionsGenerateThrowsClearsQuestionList() async throws {
         coordinator.insightfulQuestions = []
         capturableSynthesis.shouldThrowInsightful = true
 
@@ -551,7 +551,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 loadInsightfulQuestions 生成抛错后 isGeneratingAIQuestions 恢复 false
-    func testLoadInsightfulQuestions_生成抛错后_isGeneratingAIQuestions恢复False() async throws {
+    func testLoadInsightfulQuestionsGenerateThrowsAfterIsGeneratingAIQuestionsRestoresFalse() async throws {
         capturableSynthesis.shouldThrowInsightful = true
 
         await coordinator.loadInsightfulQuestions(pages: [makePage()], forceRefresh: true)
@@ -560,7 +560,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 loadInsightfulQuestions 成功后 isGeneratingAIQuestions 恢复 false
-    func testLoadInsightfulQuestions_成功后_isGeneratingAIQuestions恢复False() async throws {
+    func testLoadInsightfulQuestionsSuccessAfterIsGeneratingAIQuestionsRestoresFalse() async throws {
         await coordinator.loadInsightfulQuestions(pages: [makePage()], forceRefresh: true)
 
         XCTAssertFalse(coordinator.isGeneratingAIQuestions, "成功后 isGeneratingAIQuestions 应恢复 false")
@@ -569,7 +569,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - generatePredictedQuestions
 
     /// 验证 generatePredictedQuestions 空 chatHistory 时直接返回不处理
-    func testGeneratePredictedQuestions_空chatHistory_不处理() async throws {
+    func testGeneratePredictedQuestionsEmptyChatHistoryNotProcessed() async throws {
         coordinator.chatHistory = []
         capturableSynthesis.stubFollowUpQuestions = [followUpQuestion1]
 
@@ -580,7 +580,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 generatePredictedQuestions 成功后更新 predictedQuestions
-    func testGeneratePredictedQuestions_成功_更新predictedQuestions() async throws {
+    func testGeneratePredictedQuestionsSuccessUpdatesPredictedQuestions() async throws {
         coordinator.chatHistory = [ChatMessage(role: .user, content: "问题")]
         capturableSynthesis.stubFollowUpQuestions = [followUpQuestion1]
 
@@ -590,7 +590,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 generatePredictedQuestions 抛错时清空 predictedQuestions
-    func testGeneratePredictedQuestions_抛错_清空predictedQuestions() async throws {
+    func testGeneratePredictedQuestionsThrowsClearsPredictedQuestions() async throws {
         coordinator.chatHistory = [ChatMessage(role: .user, content: "问题")]
         coordinator.predictedQuestions = ["旧追问"]
         capturableSynthesis.shouldThrowFollowUp = true
@@ -601,7 +601,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 generatePredictedQuestions 抛错后 isGeneratingPredictedQuestions 恢复 false
-    func testGeneratePredictedQuestions_抛错后_isGenerating恢复False() async throws {
+    func testGeneratePredictedQuestionsThrowsAfterIsGeneratingRestoresFalse() async throws {
         coordinator.chatHistory = [ChatMessage(role: .user, content: "问题")]
         capturableSynthesis.shouldThrowFollowUp = true
 
@@ -611,7 +611,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 generatePredictedQuestions 成功后 isGeneratingPredictedQuestions 恢复 false
-    func testGeneratePredictedQuestions_成功后_isGenerating恢复False() async throws {
+    func testGeneratePredictedQuestionsSuccessAfterIsGeneratingRestoresFalse() async throws {
         coordinator.chatHistory = [ChatMessage(role: .user, content: "问题")]
 
         await coordinator.generatePredictedQuestions(pages: [makePage()])
@@ -622,7 +622,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - exportChat
 
     /// 验证 exportChat 空历史时直接返回不处理
-    func testExportChat_空历史_不处理() async throws {
+    func testExportChatEmptyHistoryNotProcessed() async throws {
         coordinator.chatHistory = []
 
         await coordinator.exportChat()
@@ -632,7 +632,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 exportChat 成功后设置 exportURL
-    func testExportChat_成功_设置exportURL() async throws {
+    func testExportChatSuccessSetsExportURL() async throws {
         coordinator.chatHistory = [
             ChatMessage(role: .user, content: "问题"),
             ChatMessage(role: .assistant, content: "回复")
@@ -645,7 +645,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 exportChat 选择模式下仅导出选中消息
-    func testExportChat_选择模式_仅导出选中消息() async throws {
+    func testExportChatSelectionModeExportsOnlySelectedMessages() async throws {
         let selectedID = UUID()
         coordinator.chatHistory = [
             ChatMessage(role: .user, content: "选中问题"),
@@ -663,7 +663,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 exportChat 选择模式但无选中消息时导出全部
-    func testExportChat_选择模式无选中_导出全部() async throws {
+    func testExportChatSelectionModeNoSelectionExportsAll() async throws {
         coordinator.chatHistory = [
             ChatMessage(role: .user, content: "问题1"),
             ChatMessage(role: .assistant, content: "回复1")
@@ -679,7 +679,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - toggleSelectionMode 关闭时清空选择
 
     /// 验证 toggleSelectionMode 从 true 切换到 false 时清空 selectedMessageIDs
-    func testToggleSelectionMode_从True切换到False_清空selectedMessageIDs() {
+    func testToggleSelectionModeFromTrueToFalseClearsSelectedMessageIDs() {
         coordinator.isSelectionMode = true
         coordinator.selectedMessageIDs.insert(UUID())
         coordinator.selectedMessageIDs.insert(UUID())
@@ -693,7 +693,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - toggleMessageSelection
 
     /// 验证 toggleMessageSelection 切换选中状态
-    func testToggleMessageSelection_切换选中状态() {
+    func testToggleMessageSelectionTogglesSelectionState() {
         let id1 = UUID()
         let id2 = UUID()
 
@@ -710,7 +710,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - clearChatHistory 清空 predictedQuestions
 
     /// 验证 clearChatHistory 清空 predictedQuestions
-    func testClearChatHistory_清空predictedQuestions() {
+    func testClearChatHistoryClearsPredictedQuestions() {
         coordinator.predictedQuestions = [followUpQuestion1, "追问2"]
         coordinator.chatHistory = [ChatMessage(role: .user, content: "test")]
 
@@ -722,7 +722,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     // MARK: - init 加载历史
 
     /// 验证 init 时从 ChatService 加载历史
-    func testInit_从ChatService加载历史() {
+    func testInitLoadsHistoryFromChatService() {
         let stubMessages = [
             ChatMessage(role: .user, content: "历史问题"),
             ChatMessage(role: .assistant, content: "历史回复")
@@ -737,7 +737,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
     }
 
     /// 验证 init 时 ChatService 返回空历史则 chatHistory 为空
-    func testInit_ChatService返回空_则chatHistory为空() {
+    func testInitChatServiceReturnsEmptyThenChatHistoryEmpty() {
         capturableChat.stubHistory = []
 
         let newCoordinator = ChatCoordinator()

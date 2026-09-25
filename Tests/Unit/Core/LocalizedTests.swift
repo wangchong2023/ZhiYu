@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 @MainActor
@@ -24,21 +25,21 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - LanguageMode 枚举
 
-    func testLanguageMode_allCases_包含11种语言() {
+    func testLanguageModeAllCasesContainsElevenLanguages() {
         XCTAssertEqual(LanguageMode.allCases.count, 11)
         XCTAssertTrue(LanguageMode.allCases.contains(.auto))
         XCTAssertTrue(LanguageMode.allCases.contains(.english))
         XCTAssertTrue(LanguageMode.allCases.contains(.chinese))
     }
 
-    func testLanguageMode_rawValue_正确() {
+    func testLanguageModeRawValueCorrect() {
         XCTAssertEqual(LanguageMode.auto.rawValue, "auto")
         XCTAssertEqual(LanguageMode.english.rawValue, "en")
         XCTAssertEqual(LanguageMode.chinese.rawValue, "zh-Hans")
         XCTAssertEqual(LanguageMode.traditionalChinese.rawValue, "zh-Hant")
         XCTAssertEqual(LanguageMode.japanese.rawValue, "ja")
     }
-    func testLanguageMode_displayName_所有case非空非Missing() {
+    func testLanguageModeDisplayNameAllCasesNonEmptyNonMissing() {
         for mode in LanguageMode.allCases {
             let name = mode.displayName
             XCTAssertFalse(name.isEmpty, "displayName 不应为空：\(mode)")
@@ -48,28 +49,28 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - currentLanguage
 
-    func testCurrentLanguage_english模式_返回en() {
+    func testCurrentLanguageEnglishModeReturnsEn() {
         let original = Localized.languageMode
         Localized.languageMode = .english
         defer { Localized.languageMode = original }
         XCTAssertEqual(Localized.currentLanguage, "en")
     }
 
-    func testCurrentLanguage_chinese模式_返回zhHans() {
+    func testCurrentLanguageChineseModeReturnsZhHans() {
         let original = Localized.languageMode
         Localized.languageMode = .chinese
         defer { Localized.languageMode = original }
         XCTAssertEqual(Localized.currentLanguage, "zh-Hans")
     }
 
-    func testCurrentLanguage_traditionalChinese模式_返回zhHant() {
+    func testCurrentLanguageTraditionalChineseModeReturnsZhHant() {
         let original = Localized.languageMode
         Localized.languageMode = .traditionalChinese
         defer { Localized.languageMode = original }
         XCTAssertEqual(Localized.currentLanguage, "zh-Hant")
     }
 
-    func testCurrentLanguage_japanese模式_返回ja() {
+    func testCurrentLanguageJapaneseModeReturnsJa() {
         let original = Localized.languageMode
         Localized.languageMode = .japanese
         defer { Localized.languageMode = original }
@@ -78,7 +79,7 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - currentLocale
 
-    func testCurrentLocale_english模式_返回enLocale() {
+    func testCurrentLocaleEnglishModeReturnsEnLocale() {
         let original = Localized.languageMode
         Localized.languageMode = .english
         defer { Localized.languageMode = original }
@@ -87,21 +88,21 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - isChinese
 
-    func testIsChinese_chinese模式_返回true() {
+    func testIsChineseChineseModeReturnsTrue() {
         let original = Localized.languageMode
         Localized.languageMode = .chinese
         defer { Localized.languageMode = original }
         XCTAssertTrue(Localized.isChinese)
     }
 
-    func testIsChinese_traditionalChinese模式_返回true() {
+    func testIsChineseTraditionalChineseModeReturnsTrue() {
         let original = Localized.languageMode
         Localized.languageMode = .traditionalChinese
         defer { Localized.languageMode = original }
         XCTAssertTrue(Localized.isChinese)
     }
 
-    func testIsChinese_english模式_返回false() {
+    func testIsChineseEnglishModeReturnsFalse() {
         let original = Localized.languageMode
         Localized.languageMode = .english
         defer { Localized.languageMode = original }
@@ -110,17 +111,17 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - tr 翻译
 
-    func testTr_已知key_返回非Missing翻译() {
+    func testTrKnownKeyReturnsNonMissingTranslation() {
         let result = Localized.tr("accessibility.links", table: "Common")
         XCTAssertFalse(result.contains("[MISSING"), "已知 key 应返回有效翻译，实际：\(result)")
     }
 
-    func testTr_未知key_返回Missing占位符() {
+    func testTrUnknownKeyReturnsMissingPlaceholder() {
         let result = Localized.tr("nonexistent.key.zzz", table: "Common")
         XCTAssertTrue(result.contains("[MISSING"), "未知 key 应返回 MISSING 占位符")
     }
 
-    func testTr_默认table参数_使用Common表() {
+    func testTrDefaultTableParameterUsesCommonTable() {
         let result1 = Localized.tr("accessibility.links")
         let result2 = Localized.tr("accessibility.links", table: "Common")
         XCTAssertEqual(result1, result2, "默认 table 应为 Common")
@@ -128,12 +129,12 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - trf 格式化翻译
 
-    func testTrf_格式化参数_正确注入() {
+    func testTrfFormatParameterCorrectlyInjected() {
         let formatted = Localized.trf("search.pagesCount", table: "Common", 5)
         XCTAssertTrue(formatted.contains("5") || formatted.contains("[MISSING"), "格式化结果应包含参数值或 MISSING")
     }
 
-    func testTrf_多参数_正确注入() {
+    func testTrfMultipleParametersCorrectlyInjected() {
         // search.pagesCount 只有一个 %d，多参数会被忽略
         let formatted = Localized.trf("search.pagesCount", table: "Common", 1)
         XCTAssertTrue(formatted.contains("1") || formatted.contains("[MISSING"))
@@ -141,7 +142,7 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - bestMatch 多语言匹配
 
-    func testBestMatch_完全匹配_优先返回() {
+    func testBestMatchExactMatchReturnsFirst() {
         let dict = ["en": "Hello", "zh-Hans": "你好"]
         let original = Localized.languageMode
         Localized.languageMode = .chinese
@@ -149,7 +150,7 @@ final class LocalizedTests: XCTestCase {
         XCTAssertEqual(Localized.bestMatch(in: dict), "你好")
     }
 
-    func testBestMatch_前缀匹配_降级返回() {
+    func testBestMatchPrefixMatchReturnsFallback() {
         let dict = ["zh": "中文通用"]
         let original = Localized.languageMode
         Localized.languageMode = .chinese
@@ -157,7 +158,7 @@ final class LocalizedTests: XCTestCase {
         XCTAssertEqual(Localized.bestMatch(in: dict), "中文通用")
     }
 
-    func testBestMatch_无匹配_返回enFallback() {
+    func testBestMatchNoMatchReturnsEnFallback() {
         let dict = ["en": "English default", "fr": "Français"]
         let original = Localized.languageMode
         Localized.languageMode = .chinese
@@ -165,7 +166,7 @@ final class LocalizedTests: XCTestCase {
         XCTAssertEqual(Localized.bestMatch(in: dict), "English default")
     }
 
-    func testBestMatch_无en_返回任意值() {
+    func testBestMatchNoEnReturnsAnyValue() {
         let dict = ["fr": "Français", "de": "Deutsch"]
         let original = Localized.languageMode
         Localized.languageMode = .chinese
@@ -174,14 +175,14 @@ final class LocalizedTests: XCTestCase {
         XCTAssertTrue(dict.values.contains(result), "无匹配时应返回字典中任意值")
     }
 
-    func testBestMatch_空字典_返回fallback() {
+    func testBestMatchEmptyDictReturnsFallback() {
         let original = Localized.languageMode
         Localized.languageMode = .chinese
         defer { Localized.languageMode = original }
         XCTAssertEqual(Localized.bestMatch(in: [:], fallback: "DEFAULT"), "DEFAULT")
     }
 
-    func testBestMatch_自定义fallback_无匹配时返回() {
+    func testBestMatchCustomFallbackReturnsWhenNoMatch() {
         // bestMatch 在字典非空时返回 dict.values.first（任意值），空字典时才返回 fallback
         let dict = ["fr": "Français"]
         let original = Localized.languageMode
@@ -193,17 +194,17 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - allValues(forKey:table:)
 
-    func testAllValues_已知key_返回非空数组() {
+    func testAllValuesKnownKeyReturnsNonEmptyArray() {
         let values = Localized.allValues(forKey: "accessibility.links", table: "Common")
         XCTAssertFalse(values.isEmpty, "已知 key 应至少返回一种语言翻译")
     }
 
-    func testAllValues_未知key_返回空数组() {
+    func testAllValuesUnknownKeyReturnsEmptyArray() {
         let values = Localized.allValues(forKey: "nonexistent.key.zzz", table: "Common")
         XCTAssertTrue(values.isEmpty, "未知 key 应返回空数组")
     }
 
-    func testAllValues_去重_相同翻译只保留一份() {
+    func testAllValuesDeduplicateSameTranslationKeptOnce() {
         let values = Localized.allValues(forKey: "accessibility.links", table: "Common")
         let uniqueValues = Set(values)
         XCTAssertEqual(values.count, uniqueValues.count, "翻译值应已去重")
@@ -212,7 +213,7 @@ final class LocalizedTests: XCTestCase {
     // MARK: - languageMode 持久化
 
     @MainActor
-    func testLanguageMode_setter_更新内存缓存() {
+    func testLanguageModeSetterUpdatesMemoryCache() {
         let original = Localized.languageMode
         Localized.languageMode = .japanese
         defer { Localized.languageMode = original }
@@ -220,7 +221,7 @@ final class LocalizedTests: XCTestCase {
     }
 
     @MainActor
-    func testLanguageMode_setter_无效值降级为auto() {
+    func testLanguageModeSetterInvalidValueDegradesToAuto() {
         let original = Localized.languageMode
         Localized.languageMode = .english
         defer { Localized.languageMode = original }
@@ -230,8 +231,14 @@ final class LocalizedTests: XCTestCase {
     // MARK: - loadCachedLanguageMode
 
     @MainActor
-    func testLoadCachedLanguageMode_DI未就绪_不崩溃() {
+    func testLoadCachedLanguageModeDINotReadyNoCrash() {
         // 不注册 KeyStoreProtocol，调用 loadCachedLanguageMode 应优雅降级
+        // 重置为 auto（resetPersistentTestState 默认设置 .chinese，此测试需要 .auto）
+        Localized.resetForTesting()
+        // 清理 keyStore 中可能残留的 languageMode（resetPersistentTestState 会写入 .chinese）
+        if let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) {
+            keyStore.removeObject(forKey: AppConstants.Keys.Storage.languageMode)
+        }
         Localized.loadCachedLanguageMode()
         // 验证不崩溃即可，languageMode 保持默认
         XCTAssertEqual(Localized.languageMode, .auto)
@@ -239,7 +246,7 @@ final class LocalizedTests: XCTestCase {
 
     // MARK: - L10nTableEntry 协议
 
-    func testL10nTableEntry_tr_默认实现调用Localized() {
+    func testL10nTableEntryTrDefaultImplCallsLocalized() {
         // L10n 命名空间的扩展通过 L10nTableEntry 协议获得 tr/trf 默认实现
         // 验证 L10n.Common 存在且可调用
         let result = L10n.Common.ok

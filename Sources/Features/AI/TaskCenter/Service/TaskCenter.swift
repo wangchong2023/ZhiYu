@@ -318,7 +318,7 @@ public final class TaskCenter: @unchecked Sendable {
 // MARK: - 测试隔离注册
 extension TaskCenter: TestStateResettable {
     nonisolated public func resetStateForTesting() {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             reset()
         }
     }
@@ -328,12 +328,12 @@ extension TaskCenter: TestStateResettable {
 
 private enum TaskCenterKey: DependencyKey {
     nonisolated static var liveValue: TaskCenter {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             TaskCenter(activityService: ServiceContainer.shared.resolveOptional((any LiveActivityProtocol).self)) // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
         }
     }
-    nonisolated static let testValue: TaskCenter = MainActor.assumeIsolated { TaskCenter(activityService: nil) }
-    nonisolated static let previewValue: TaskCenter = MainActor.assumeIsolated { TaskCenter(activityService: nil) }
+    nonisolated static let testValue: TaskCenter = runOnMainSync { TaskCenter(activityService: nil) }
+    nonisolated static let previewValue: TaskCenter = runOnMainSync { TaskCenter(activityService: nil) }
 }
 
 extension DependencyValues {

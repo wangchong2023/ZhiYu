@@ -30,6 +30,7 @@ final class SettingsViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     // MARK: - FeedbackView 快照测试

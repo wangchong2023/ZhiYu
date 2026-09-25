@@ -15,14 +15,14 @@ final class JailbreakDetectorTests: XCTestCase {
     // MARK: - 单例一致性
 
     /// shared 应返回同一实例
-    func testShared_多次访问_同一实例() {
+    func testSharedMultipleAccessSameInstance() {
         let a = JailbreakDetector.shared
         let b = JailbreakDetector.shared
         XCTAssertTrue(a === b)
     }
 
     /// 独立实例应与 shared 不同（init 已改为 internal，见 finding #4）
-    func testInit_独立实例_与shared不同() {
+    func testInitIndependentInstanceDifferentFromShared() {
         let independent = JailbreakDetector()
         let shared = JailbreakDetector.shared
         XCTAssertFalse(independent === shared)
@@ -31,7 +31,7 @@ final class JailbreakDetectorTests: XCTestCase {
     // MARK: - 多次调用稳定性
 
     /// 多次调用 isJailbroken() 应返回一致结果
-    func testIsJailbroken_多次调用_结果一致() {
+    func testIsJailbrokenMultipleCallsConsistentResult() {
         let detector = JailbreakDetector.shared
         let first = detector.isJailbroken()
         for _ in 0..<10 {
@@ -42,7 +42,7 @@ final class JailbreakDetectorTests: XCTestCase {
     // MARK: - 非越狱环境（finding #5 已修复：移除 macOS 自带路径）
 
     /// 测试环境（模拟器/CI）应检测为非越狱（finding #5 修复后）
-    func testIsJailbroken_非越狱环境_返回false() {
+    func testIsJailbrokenNonJailbrokenEnvReturnsFalse() {
         let detector = JailbreakDetector.shared
         XCTAssertFalse(
             detector.isJailbroken(),
@@ -51,7 +51,7 @@ final class JailbreakDetectorTests: XCTestCase {
     }
 
     /// 独立实例也应检测为非越狱
-    func testIsJailbroken_独立实例_返回false() {
+    func testIsJailbrokenIndependentInstanceReturnsFalse() {
         let detector = JailbreakDetector()
         XCTAssertFalse(detector.isJailbroken())
     }

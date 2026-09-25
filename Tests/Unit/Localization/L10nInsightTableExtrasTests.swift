@@ -19,7 +19,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
     // MARK: - tableName 正确性
     // MARK: - Dashboard 顶层属性 key 存在性
 
-    func testDashboard_顶层基础属性返回非Missing值() {
+    func testDashboardTopLevelBasicPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.pageListPages,
             L10n.Dashboard.pageListLinks,
@@ -40,7 +40,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.insight 子命名空间
 
-    func testDashboard_insight_基础属性返回非Missing值() {
+    func testDashboardInsightBasicPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.insight.weeklyTitle,
             L10n.Dashboard.insight.generateReport,
@@ -54,7 +54,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
     }
     // MARK: - Dashboard.insight.mock 子命名空间
 
-    func testDashboard_insight_mock_属性返回非Missing值() {
+    func testDashboardInsightMockPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.insight.mock.insight,
             L10n.Dashboard.insight.mock.suggestedConnection
@@ -68,7 +68,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.insight.recap 子命名空间
 
-    func testDashboard_insight_recap_属性返回非Missing值() {
+    func testDashboardInsightRecapPropsReturnNonMissing() {
         let value = L10n.Dashboard.insight.recap.tip
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Dashboard.insight.recap.tip 返回 Missing: \(value)")
@@ -77,14 +77,14 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.insight.weekly 子命名空间
 
-    func testDashboard_insight_weekly_属性返回非Missing值() {
+    func testDashboardInsightWeeklyPropsReturnNonMissing() {
         let value = L10n.Dashboard.insight.weekly.systemPrompt
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Dashboard.insight.weekly.systemPrompt 返回 Missing: \(value)")
         XCTAssertFalse(value.isEmpty, "Dashboard.insight.weekly.systemPrompt 返回空字符串")
     }
 
-    func testDashboard_insight_weekly_prompt_返回非Missing且包含参数() {
+    func testDashboardInsightWeeklyPromptReturnsNonMissingWithParams() {
         let result = L10n.Dashboard.insight.weekly.prompt("topic1")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Dashboard.insight.weekly.prompt 返回 Missing: \(result)")
@@ -93,7 +93,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.insight.growth 子命名空间
 
-    func testDashboard_insight_growth_属性返回非Missing值() {
+    func testDashboardInsightGrowthPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.insight.growth.explosive,
             L10n.Dashboard.insight.growth.steady
@@ -107,7 +107,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard 密度与坐标轴属性
 
-    func testDashboard_密度与坐标轴属性返回非Missing值() {
+    func testDashboardDensityAndAxisPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.title,
             L10n.Dashboard.unitMs,
@@ -128,7 +128,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.pageList 子命名空间
 
-    func testDashboard_pageList_属性返回非Missing值() {
+    func testDashboardPageListPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.pageList.tags,
             L10n.Dashboard.pageList.sources,
@@ -151,7 +151,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard 统计相关属性
 
-    func testDashboard_统计属性返回非Missing值() {
+    func testDashboardStatsPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.totalPages,
             L10n.Dashboard.totalLinks,
@@ -176,7 +176,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.stats 子命名空间
 
-    func testDashboard_stats_基础属性返回非Missing值() {
+    func testDashboardStatsBasicPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.stats.title,
             L10n.Dashboard.stats.audioFormat,
@@ -190,7 +190,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
         }
     }
 
-    func testDashboard_stats_itemsCount_返回非Missing且包含参数() {
+    func testDashboardStatsItemsCountReturnsNonMissingWithParams() {
         let result = L10n.Dashboard.stats.itemsCount(5)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Dashboard.stats.itemsCount 返回 Missing: \(result)")
@@ -199,7 +199,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.index 子命名空间
 
-    func testDashboard_index_属性返回非Missing值() {
+    func testDashboardIndexPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.index.title,
             L10n.Dashboard.index.overview
@@ -213,7 +213,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.System 子命名空间
 
-    func testDashboard_System_属性返回非Missing值() {
+    func testDashboardSystemPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.System.status,
             L10n.Dashboard.System.database,
@@ -231,7 +231,7 @@ final class L10nInsightTableExtrasTests: XCTestCase {
 
     // MARK: - Dashboard.stats.short 子命名空间
 
-    func testDashboard_stats_short_属性返回非Missing值() {
+    func testDashboardStatsShortPropsReturnNonMissing() {
         let values = [
             L10n.Dashboard.stats.short.entity,
             L10n.Dashboard.stats.short.concept,

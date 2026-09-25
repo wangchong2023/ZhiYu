@@ -37,7 +37,7 @@ final class ZipUtilityDeflateTests: XCTestCase {
     /// 注：源码 decompressDeflate 用 compressedSize * 10 作为解压缓冲区，
     /// 高压缩比数据（如重复字符串）会超出缓冲区导致解压不完整。
     /// 此测试用低压缩比数据（随机字节）确保 10 倍缓冲区足够。
-    func testReadZipArchive_deflate压缩ZIP_正确解压() throws {
+    func testReadZipArchiveDeflateCompressedZipDecompressesCorrectly() throws {
         let fileName = "deflate_test.txt"
         // 构造低压缩比数据：80 字节随机数据，压缩后约 80+ 字节，10 倍缓冲区足够
         var originalData = Data(count: 80)
@@ -61,7 +61,7 @@ final class ZipUtilityDeflateTests: XCTestCase {
     }
 
     /// 解析 deflate 压缩但数据损坏的 ZIP 应跳过该文件（解压失败不崩溃）
-    func testReadZipArchive_deflate数据损坏_跳过该文件() throws {
+    func testReadZipArchiveDeflateDataCorruptSkipsFile() throws {
         let fileName = "corrupt_deflate.txt"
         let corruptCompressedData = Data([0x00, 0x01, 0x02, 0x03]) // 无效 deflate 数据
 
@@ -77,7 +77,7 @@ final class ZipUtilityDeflateTests: XCTestCase {
     /// Finding #16 修复验证：decompressDeflate 改用循环倍增缓冲区后，
     /// 高压缩比数据应正确完整解压（不再截断）。
     /// 源码 ZipUtility.swift `decompressDeflate` 初始 10 倍，倍增重试直到完整或达 256MB 上限。
-    func testReadZipArchive_deflate高压缩比数据_循环倍增缓冲区完整解压() throws {
+    func testReadZipArchiveDeflateHighRatioDataLoopDoublingBufferFullDecompress() throws {
         let fileName = "high_ratio.txt"
         // 800 字节重复字符串，压缩后约 26 字节，10 倍缓冲区 = 260 < 800
         // 修复后应倍增到 520 仍不足，再倍增到 1040 足够完整解压
@@ -103,7 +103,7 @@ final class ZipUtilityDeflateTests: XCTestCase {
     // MARK: - 损坏 ZIP 签名扫描恢复
 
     /// ZIP 数据前缀有垃圾字节时，应通过签名扫描找到下一个文件头
-    func testReadZipArchive_前缀垃圾字节_签名扫描恢复() throws {
+    func testReadZipArchivePrefixGarbageBytesSignatureScanRecovery() throws {
         let fileName = "after_garbage.txt"
         let contentData = Data("recovered".utf8)
 
@@ -124,7 +124,7 @@ final class ZipUtilityDeflateTests: XCTestCase {
     // MARK: - 非 UTF-8 文件名跳过
 
     /// 文件名非 UTF-8 编码时应跳过该文件（不崩溃）
-    func testReadZipArchive_非UTF8文件名_跳过该文件() throws {
+    func testReadZipArchiveNonUTF8FilenameSkipsFile() throws {
         let invalidUtf8Name = Data([0xFF, 0xFE, 0xFD]) // 无效 UTF-8 字节
         let contentData = Data("content".utf8)
 
@@ -140,7 +140,7 @@ final class ZipUtilityDeflateTests: XCTestCase {
     // MARK: - 数据截断 guard break
 
     /// ZIP 数据在文件头声明的大小超过实际数据时应 break（不越界读取）
-    func testReadZipArchive_数据截断_不越界读取() throws {
+    func testReadZipArchiveDataTruncatedNoOutOfBoundsRead() throws {
         let fileName = "truncated.txt"
         let declaredSize = 1000 // 声明 1000 字节
         let actualData = Data("short".utf8) // 实际只有 5 字节

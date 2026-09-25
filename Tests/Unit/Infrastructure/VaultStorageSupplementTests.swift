@@ -21,20 +21,20 @@ final class VaultStorageSupplementTests: XCTestCase {
     // MARK: - VaultStorageSecurityService
 
     /// VaultStorageSecurityService 初始状态应锁定（isLocked 默认 false）
-    func testVaultStorageSecurityService_初始状态_isLocked为false() {
+    func testVaultStorageSecurityServiceInitialStateIsLockedFalse() {
         let service = VaultStorageSecurityService()
         XCTAssertFalse(service.isLocked)
     }
 
     /// VaultStorageSecurityService lock 后 isLocked 为 true
-    func testVaultStorageSecurityService_lock后_isLocked为true() {
+    func testVaultStorageSecurityServiceAfterLockIsLockedTrue() {
         let service = VaultStorageSecurityService()
         service.lock()
         XCTAssertTrue(service.isLocked)
     }
 
     /// VaultStorageSecurityService biometricsAvailable 在无生物识别时返回 false
-    func testVaultStorageSecurityService_无生物识别_biometricsAvailable为false() {
+    func testVaultStorageSecurityServiceNoBiometricsBiometricsAvailableFalse() {
         ServiceContainer.shared.resetForTesting()
         let noOp = NoOpBiometricAuthProvider()
         ServiceContainer.shared.register(noOp as any BiometricAuthProviderProtocol, for: (any BiometricAuthProviderProtocol).self)
@@ -44,7 +44,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// VaultStorageSecurityService authenticateWithBiometrics 硬件不支持时返回 true（避免死锁）
-    func testVaultStorageSecurityService_硬件不支持_认证返回true() async {
+    func testVaultStorageSecurityServiceHardwareNotSupportedAuthReturnsTrue() async {
         ServiceContainer.shared.resetForTesting()
         let noOp = NoOpBiometricAuthProvider()
         ServiceContainer.shared.register(noOp as any BiometricAuthProviderProtocol, for: (any BiometricAuthProviderProtocol).self)
@@ -54,7 +54,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// VaultStorageSecurityService unlock 失败时保持锁定
-    func testVaultStorageSecurityService_unlock失败_保持锁定() async {
+    func testVaultStorageSecurityServiceUnlockFailureKeepsLocked() async {
         ServiceContainer.shared.resetForTesting()
         let mock = FailingBiometricAuthProvider()
         ServiceContainer.shared.register(mock as any BiometricAuthProviderProtocol, for: (any BiometricAuthProviderProtocol).self)
@@ -68,7 +68,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     // MARK: - VaultStorageService
 
     /// VaultStorageService 扫描不存在的目录应返回空
-    func testVaultStorageService_扫描不存在目录_返回空() {
+    func testVaultStorageServiceScanNonExistentDirectoryReturnsEmpty() {
         let service = VaultStorageService()
         let nonExistent = URL(fileURLWithPath: "/tmp/nonexistent_\(UUID().uuidString)")
         let pages = service.scan(directory: nonExistent)
@@ -76,7 +76,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// VaultStorageService 扫描含 H1 的 Markdown 应提取标题
-    func testVaultStorageService_扫描含H1_提取标题() throws {
+    func testVaultStorageServiceScanWithH1ExtractsTitle() throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("VaultTest-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -91,7 +91,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// VaultStorageService 扫描无 H1 的 Markdown 应使用文件名
-    func testVaultStorageService_扫描无H1_使用文件名() throws {
+    func testVaultStorageServiceScanWithoutH1UsesFilename() throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("VaultTest-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -106,7 +106,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// VaultStorageService 扫描应跳过非 Markdown 文件
-    func testVaultStorageService_扫描_跳过非Markdown() throws {
+    func testVaultStorageServiceScanSkipsNonMarkdown() throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("VaultTest-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -122,7 +122,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     // MARK: - BackupService
 
     /// BackupService 禁用自动备份后 createBackup 不创建条目
-    func testBackupService_禁用自动备份_不创建条目() {
+    func testBackupServiceDisableAutoBackupNoEntryCreated() {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("Backup-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -134,7 +134,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// BackupService 节流：连续两次备份间隔过短时第二次被跳过
-    func testBackupService_节流_间隔过短跳过第二次() {
+    func testBackupServiceThrottleIntervalTooShortSkipsSecond() {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("Backup-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -147,7 +147,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// BackupService deleteBackup 应移除条目
-    func testBackupService_deleteBackup_移除条目() {
+    func testBackupServiceDeleteBackupRemovesEntry() {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("Backup-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -162,7 +162,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// BackupService restoreBackup 恢复不存在的文件应返回 nil
-    func testBackupService_restoreBackup_文件不存在_返回nil() {
+    func testBackupServiceRestoreBackupFileNotExistsReturnsNil() {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("Backup-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -177,7 +177,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// BackupService markDirty/markClean/hasUnsavedChanges 环回
-    func testBackupService_markDirtyClean_环回() {
+    func testBackupServiceMarkDirtyCleanRoundTrip() {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("Backup-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -191,13 +191,13 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// BackupService defaultBackupDirectory 返回有效 URL
-    func testBackupService_defaultBackupDirectory_返回有效URL() {
+    func testBackupServiceDefaultBackupDirectoryReturnsValidURL() {
         let url = BackupService.defaultBackupDirectory()
         XCTAssertTrue(url.path.contains("AppBackups"))
     }
 
     /// BackupService BackupEntry fileSize 对不存在文件返回 "-"
-    func testBackupService_fileSize_文件不存在_返回横线() {
+    func testBackupServiceFileSizeFileNotExistsReturnsDash() {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("Backup-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
@@ -211,7 +211,7 @@ final class VaultStorageSupplementTests: XCTestCase {
     }
 
     /// BackupService 超过 maxBackups 时自动清理旧备份
-    func testBackupService_超过maxBackups_自动清理() {
+    func testBackupServiceExceedsMaxBackupsAutoCleanup() {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("Backup-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }

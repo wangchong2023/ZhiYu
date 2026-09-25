@@ -48,7 +48,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径 encrypt 应返回非空 Base64 密文，且与明文不同
     /// 发现目的：验证 encrypt 不会静默返回空字符串（combined 为 nil 的降级分支）
-    func testEncrypt_降级路径_返回非空Base64且与明文不同() throws {
+    func testEncryptFallbackPathReturnsNonEmptyBase64DifferentFromPlaintext() throws {
         let plaintext = "sk-supplement-test-key"
         let encrypted = try service.encrypt(plaintext)
 
@@ -60,7 +60,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径：encrypt 后密文应可被 Data(base64Encoded:) 解析
     /// 发现目的：确保返回值是可解码的 Base64，而非损坏数据
-    func testEncrypt_降级路径_密文可被Base64解码() throws {
+    func testEncryptFallbackPathCiphertextBase64Decodable() throws {
         let plaintext = "test-plaintext-for-decode"
         let encrypted = try service.encrypt(plaintext)
 
@@ -75,7 +75,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     // MARK: - 降级路径：环回正确性
 
     /// 降级路径：encrypt → decrypt 完整环回，明文一致
-    func testEncryptDecrypt_降级路径环回_明文一致() throws {
+    func testEncryptDecryptFallbackPathRoundtripPlaintextConsistent() throws {
         let plaintext = "roundtrip-supplement-2026"
         let encrypted = try service.encrypt(plaintext)
         let decrypted = try service.decrypt(encrypted)
@@ -85,7 +85,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径：Unicode + Emoji 文本环回
     /// 发现目的：验证 UTF-8 编码对多字节字符的处理
-    func testEncryptDecrypt_降级路径_UnicodeEmoji环回() throws {
+    func testEncryptDecryptFallbackPathUnicodeEmojiRoundtrip() throws {
         let plaintext = "智宇 🔐 API密钥 2026 — 日本語 テスト"
         let encrypted = try service.encrypt(plaintext)
         let decrypted = try service.decrypt(encrypted)
@@ -95,7 +95,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径：超长文本（10KB）环回
     /// 发现目的：验证无长度截断或缓冲区溢出
-    func testEncryptDecrypt_降级路径_超长文本环回() throws {
+    func testEncryptDecryptFallbackPathLongTextRoundtrip() throws {
         let plaintext = String(repeating: "abcdefghij", count: 1024) // 10KB
         let encrypted = try service.encrypt(plaintext)
         let decrypted = try service.decrypt(encrypted)
@@ -107,21 +107,21 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     // MARK: - 降级路径：错误分支
 
     /// 降级路径 decrypt：无效 Base64 应抛错
-    func testDecrypt_降级路径_无效Base64_抛出错误() {
+    func testDecryptFallbackPathInvalidBase64ThrowsError() {
         XCTAssertThrowsError(try service.decrypt("!!!not-base64!!!")) { error in
             XCTAssertFalse(error.localizedDescription.isEmpty, "错误应包含描述信息")
         }
     }
 
     /// 降级路径 decrypt：空字符串应抛错（无法解码为 AES-GCM SealedBox）
-    func testDecrypt_降级路径_空字符串_抛出错误() {
+    func testDecryptFallbackPathEmptyStringThrowsError() {
         XCTAssertThrowsError(try service.decrypt("")) { error in
             XCTAssertFalse(error.localizedDescription.isEmpty)
         }
     }
 
     /// 降级路径 decrypt：合法 Base64 但非 AES-GCM 格式应抛错
-    func testDecrypt_降级路径_合法Base64非AESGCM_抛出错误() {
+    func testDecryptFallbackPathValidBase64NonAesGcmThrowsError() {
         let invalidData = Data("not a sealed box".utf8).base64EncodedString()
         XCTAssertThrowsError(try service.decrypt(invalidData)) { error in
             XCTAssertFalse(error.localizedDescription.isEmpty)
@@ -130,7 +130,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径 decrypt：截断的 AES-GCM 密文（缺少 tag）应抛错
     /// 发现目的：验证截断数据不会被错误接受
-    func testDecrypt_降级路径_截断密文_抛出错误() throws {
+    func testDecryptFallbackPathTruncatedCiphertextThrowsError() throws {
         let plaintext = "truncation-test"
         let encrypted = try service.encrypt(plaintext)
         guard let fullData = Data(base64Encoded: encrypted) else {
@@ -146,7 +146,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径 decrypt：篡改的密文（翻转字节）应抛错
     /// 发现目的：验证 AES-GCM 的完整性校验生效
-    func testDecrypt_降级路径_篡改密文_抛出错误() throws {
+    func testDecryptFallbackPathTamperedCiphertextThrowsError() throws {
         let plaintext = "tamper-test"
         let encrypted = try service.encrypt(plaintext)
         guard var data = Data(base64Encoded: encrypted) else {
@@ -165,7 +165,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径：同一服务实例多次加解密应使用相同密钥
     /// 发现目的：验证 getDatabasePassphrase 缓存生效，密钥不会漂移
-    func testEncryptDecrypt_降级路径_多次环回_密钥一致() throws {
+    func testEncryptDecryptFallbackPathMultipleRoundtripsKeyConsistent() throws {
         let plaintexts = ["key1", "key2", "key3", "key4", "key5"]
 
         // 先加密所有明文
@@ -180,7 +180,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径：不同服务实例应使用相同密钥（密钥持久化在 Keychain）
     /// 发现目的：验证密钥不会因实例重建而变化
-    func testEncryptDecrypt_降级路径_不同实例_密钥一致() throws {
+    func testEncryptDecryptFallbackPathDifferentInstancesKeyConsistent() throws {
         let plaintext = "cross-instance-test"
         let service1 = SecureEnclaveCryptoService()
         let encrypted = try service1.encrypt(plaintext)
@@ -194,7 +194,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     // MARK: - isSupported 行为
 
     /// 模拟器环境 isSupported 应返回 false
-    func testIsSupported_模拟器_返回false() {
+    func testIsSupportedSimulatorReturnsFalse() {
         #if targetEnvironment(simulator)
         XCTAssertFalse(service.isSupported, "模拟器环境 isSupported 应返回 false")
         #else
@@ -206,7 +206,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     // MARK: - testOverride 单例替换
 
     /// testOverride 设置后 shared 应返回 Mock 实例
-    func testTestOverride_设置后shared返回Mock() {
+    func testTestOverrideSetSharedReturnsMock() {
         let mock = MockSecureEnclaveCryptoService()
         let original = SecureEnclaveCryptoService.testOverride
         SecureEnclaveCryptoService.testOverride = mock
@@ -220,7 +220,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     /// 真机路径模拟：isSupported=true 时，模拟器上 SecureEnclave 行为取决于 Xcode 版本
     /// 业界方案：双路径断言 — 模拟器上 SecureEnclave.P256 可能抛错也可能成功（Apple Silicon Mac 模拟器）
     /// 抛错时验证错误信息非空；成功时验证密文非空。真机上应成功加密。
-    func testEncrypt_真机路径模拟_模拟器行为验证() throws {
+    func testEncryptRealDevicePathSimulatorBehaviorVerification() throws {
         let stub = SecureEnclaveStub(isSupported: true)
 
         #if targetEnvironment(simulator)
@@ -241,7 +241,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     }
 
     /// 真机路径模拟：decrypt 在模拟器上的行为同样取决于 Xcode 版本
-    func testDecrypt_真机路径模拟_模拟器行为验证() throws {
+    func testDecryptRealDevicePathSimulatorBehaviorVerification() throws {
         let stub = SecureEnclaveStub(isSupported: true)
 
         #if targetEnvironment(simulator)
@@ -260,7 +260,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径：加密不应在 Keychain 中写入 SecureEnclave 相关 token
     /// 发现目的：验证降级路径不会污染 Keychain（不调用 getOrCreateHardwarePrivateKey）
-    func testEncrypt_降级路径_不写入KeychainToken() throws {
+    func testEncryptFallbackPathNoKeychainTokenWritten() throws {
         let tokenKey = "com.zhiyu.secure_enclave.token"
         let saltKey = "com.zhiyu.secure_enclave.hkdf_salt"
 
@@ -275,7 +275,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 并发加密：多线程同时调用 encrypt 应全部成功
     /// 发现目的：验证 @unchecked Sendable 的并发安全性
-    func testEncrypt_并发调用_全部成功() throws {
+    func testEncryptConcurrentCallsAllSucceed() throws {
         let plaintexts = (0..<20).map { "concurrent-test-\($0)" }
         let queue = DispatchQueue(label: "test.concurrent", attributes: .concurrent)
         let group = DispatchGroup()
@@ -314,7 +314,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     }
 
     /// 并发加解密混合：同时 encrypt 和 decrypt 应线程安全
-    func testEncryptDecrypt_并发混合_线程安全() throws {
+    func testEncryptDecryptConcurrentMixedThreadSafe() throws {
         // 预先加密一批密文
         let plaintexts = (0..<10).map { "mixed-\($0)" }
         let preEncrypted = try plaintexts.map { try service.encrypt($0) }
@@ -361,7 +361,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     // MARK: - 边界场景
 
     /// 单字符明文加解密环回
-    func testEncryptDecrypt_单字符_环回正确() throws {
+    func testEncryptDecryptSingleCharRoundtripCorrect() throws {
         let plaintext = "A"
         let encrypted = try service.encrypt(plaintext)
         let decrypted = try service.decrypt(encrypted)
@@ -370,7 +370,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     }
 
     /// 仅空格的明文加解密环回
-    func testEncryptDecrypt_仅空格_环回正确() throws {
+    func testEncryptDecryptOnlySpacesRoundtripCorrect() throws {
         let plaintext = "   "
         let encrypted = try service.encrypt(plaintext)
         let decrypted = try service.decrypt(encrypted)
@@ -379,7 +379,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
     }
 
     /// 含换行符的明文加解密环回
-    func testEncryptDecrypt_含换行符_环回正确() throws {
+    func testEncryptDecryptWithNewlinesRoundtripCorrect() throws {
         let plaintext = "line1\nline2\r\nline3\ttab"
         let encrypted = try service.encrypt(plaintext)
         let decrypted = try service.decrypt(encrypted)
@@ -389,7 +389,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 重复加密同一明文 100 次应全部可解密
     /// 发现目的：验证无状态泄漏或密钥漂移
-    func testEncrypt_重复100次_全部可解密() throws {
+    func testEncryptRepeated100TimesAllDecodable() throws {
         let plaintext = "repeatability-test"
         for index in 0..<100 {
             let encrypted = try service.encrypt(plaintext)
@@ -402,7 +402,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 注入 MockSecurityManager 后，降级路径应使用 Mock 的直通逻辑
     /// 发现目的：验证降级路径确实委托给 SecurityManager
-    func testEncrypt_注入MockSecurityManager_使用Mock直通() throws {
+    func testEncryptInjectMockSecurityManagerUsesMockPassthrough() throws {
         let mockSecurity = MockSecurityManager()
         SecurityManager.testOverride = mockSecurity
 
@@ -420,7 +420,7 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
     /// 降级路径密文不应包含明文子串（防泄露）
     /// 发现目的：验证密文是真正的加密结果，而非编码/混淆
-    func testEncrypt_降级路径_密文不含明文子串() throws {
+    func testEncryptFallbackPathCiphertextExcludesPlaintextSubstring() throws {
         let plaintext = "sensitive-api-key-12345"
         let encrypted = try service.encrypt(plaintext)
 

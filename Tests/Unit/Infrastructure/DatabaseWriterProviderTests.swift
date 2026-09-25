@@ -43,7 +43,7 @@ final class DatabaseWriterProviderTests: XCTestCase {
     // MARK: - Finding #17 修复验证：dbWriter 为 nil 时抛 ZhiYu.DatabaseError.notReady
 
     /// Finding #17 修复后：dbWriter 为 nil 时抛 ZhiYu.DatabaseError.notReady，而非静默降级创建内存库。
-    func testFinding17_dbWriter为Nil_抛NotReady错误() async {
+    func testFinding17DbWriterNilThrowsNotReadyError() async {
         let provider = StubWriterProvider()
         XCTAssertNil(DatabaseManager.shared.dbWriter, "前置条件：dbWriter 应为 nil")
 
@@ -58,7 +58,7 @@ final class DatabaseWriterProviderTests: XCTestCase {
     }
 
     /// Finding #17 修复后：连续获取 dbWriter 在 nil 时都抛错（不再每次创建新内存库）。
-    func testFinding17_连续获取在Nil时都抛错() async {
+    func testFinding17ContinuousGetThrowsWhenNil() async {
         let provider = StubWriterProvider()
         XCTAssertNil(DatabaseManager.shared.dbWriter)
 
@@ -78,7 +78,7 @@ final class DatabaseWriterProviderTests: XCTestCase {
 
     // MARK: - dbWriter 正常路径
 
-    func testDbWriter_正常路径返回真实Writer() async throws {
+    func testDbWriterNormalPathReturnsRealWriter() async throws {
         let memoryQueue = try DatabaseQueue()
         DatabaseManager.shared.dbWriter = memoryQueue
 
@@ -90,7 +90,7 @@ final class DatabaseWriterProviderTests: XCTestCase {
 
     // MARK: - reset 后抛错
 
-    func testDbWriter_reset后抛NotReady() async throws {
+    func testDbWriterAfterResetThrowsNotReady() async throws {
         let memoryQueue = try DatabaseQueue()
         DatabaseManager.shared.dbWriter = memoryQueue
 

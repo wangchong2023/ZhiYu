@@ -47,17 +47,17 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - reset 后属性验证
 
-    func testReset后_dbWriter为Nil() {
+    func testResetAfterDbWriterIsNil() {
         XCTAssertNil(DatabaseManager.shared.dbWriter, "reset 后 dbWriter 应为 nil")
     }
 
-    func testReset后_globalWriter为Nil() {
+    func testResetAfterGlobalWriterIsNil() {
         XCTAssertNil(DatabaseManager.shared.globalWriter, "reset 后 globalWriter 应为 nil")
     }
 
     // MARK: - 事务计数（Finding #18 修复后：通过 TransactionGatekeeper actor 串行化）
 
-    func testIncrementActiveTransactions_计数递增() async throws {
+    func testIncrementActiveTransactionsCountIncrements() async throws {
         let before = await DatabaseManager.shared.activeTransactionsCount
         try await DatabaseManager.shared.incrementActiveTransactions()
         let after1 = await DatabaseManager.shared.activeTransactionsCount
@@ -70,7 +70,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         await DatabaseManager.shared.decrementActiveTransactions()
     }
 
-    func testDecrementActiveTransactions_计数递减() async throws {
+    func testDecrementActiveTransactionsCountDecrements() async throws {
         let before = await DatabaseManager.shared.activeTransactionsCount
         try await DatabaseManager.shared.incrementActiveTransactions()
         try await DatabaseManager.shared.incrementActiveTransactions()
@@ -81,7 +81,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         await DatabaseManager.shared.decrementActiveTransactions()
     }
 
-    func testDecrementActiveTransactions_计数为零时不变为负数() async throws {
+    func testDecrementActiveTransactionsCountZeroDoesNotGoNegative() async throws {
         // Finding #18 相关：decrement 的 if > 0 保护
         // 先 increment 到已知值，再连续 decrement 超过该值，验证不会变负
         try await DatabaseManager.shared.incrementActiveTransactions()
@@ -92,7 +92,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         XCTAssertEqual(count, 0, "计数为 0 时 decrement 不应变为负数")
     }
 
-    func testDecrementActiveTransactions_incrementDecrement配对归零() async throws {
+    func testDecrementActiveTransactionsIncrementDecrementPairedToZero() async throws {
         let before = await DatabaseManager.shared.activeTransactionsCount
         try await DatabaseManager.shared.incrementActiveTransactions()
         try await DatabaseManager.shared.incrementActiveTransactions()
@@ -106,7 +106,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - Finding #18 修复验证：TransactionGatekeeper 排空期间拒绝新事务
 
-    func testFinding18_排空期间拒绝新事务() async throws {
+    func testFinding18RejectsNewTransactionsDuringDrain() async throws {
         // 触发排空（drain），但因为有活跃事务会等待
         try await DatabaseManager.shared.incrementActiveTransactions()
         // 启动排空任务（在后台）
@@ -132,14 +132,14 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         XCTAssertTrue(drained, "释放事务后 drain 应成功")
     }
 
-    func testFinding18_drain无活跃事务时立即成功() async throws {
+    func testFinding18DrainNoActiveTransactionsImmediateSuccess() async throws {
         let drained = await DatabaseManager.shared.transactionGatekeeper.drain(maxWaitTime: .milliseconds(100))
         XCTAssertTrue(drained, "无活跃事务时 drain 应立即成功")
     }
 
     // MARK: - migrate（避免调用 setupForTesting 以防 DI 容器污染）
 
-    func testMigrate_对内存库执行迁移_验证schema() throws {
+    func testMigrateMemoryQueueVerifySchema() throws {
         let memoryQueue = try DatabaseQueue()
         try DatabaseManager.shared.migrate(memoryQueue)
         let tables = try memoryQueue.read { db in
@@ -152,7 +152,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - reset
 
-    func testReset_清空所有Writer() throws {
+    func testResetClearsAllWriters() throws {
         // 用独立 DatabaseQueue 验证 reset 逻辑，不调用 setupForTesting 避免 DI 污染
         let memoryQueue = try DatabaseQueue()
         DatabaseManager.shared.dbWriter = memoryQueue
@@ -165,7 +165,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - Finding #17 修复验证：dbWriter 为 nil 时抛错而非静默降级
 
-    func testFinding17_dbWriter为Nil时_抛错而非降级() async throws {
+    func testFinding17DbWriterNilThrowsInsteadOfDegrading() async throws {
         // 确保 dbWriter 为 nil
         DatabaseManager.shared.reset()
         XCTAssertNil(DatabaseManager.shared.dbWriter)
@@ -186,7 +186,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         }
     }
 
-    func testFinding17_dbWriter存在时_正常返回() async throws {
+    func testFinding17DbWriterExistsReturnsNormally() async throws {
         // 设置 dbWriter
         let memoryQueue = try DatabaseQueue()
         DatabaseManager.shared.dbWriter = memoryQueue
@@ -198,7 +198,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - releaseDatabaseConnection
 
-    func testReleaseDatabaseConnection_dbWriter置Nil() throws {
+    func testReleaseDatabaseConnectionDbWriterSetToNil() throws {
         // 用独立 DatabaseQueue，不调用 setup(at:) 避免 DI 污染
         let memoryQueue = try DatabaseQueue()
         DatabaseManager.shared.dbWriter = memoryQueue
@@ -210,7 +210,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - DatabaseState 判等
 
-    func testDatabaseState_判等语义() {
+    func testDatabaseStateEqualitySemantics() {
         XCTAssertEqual(DatabaseState.uninitialized, .uninitialized)
         XCTAssertEqual(DatabaseState.ready, .ready)
         XCTAssertEqual(DatabaseState.corrupted("err1"), .corrupted("err1"))
@@ -221,7 +221,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - countPagesInCurrentVault
 
-    func testCountPagesInCurrentVault_dbWriter为Nil时返回零() async throws {
+    func testCountPagesInCurrentVaultDbWriterNilReturnsZero() async throws {
         DatabaseManager.shared.reset()
         let count = try await DatabaseManager.shared.countPagesInCurrentVault()
         XCTAssertEqual(count, 0, "dbWriter 为 nil 时应返回 0")
@@ -229,7 +229,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
 
     // MARK: - 通知名称存在性
 
-    func testNotificationNames_已定义() {
+    func testNotificationNamesDefined() {
         XCTAssertEqual(Notification.Name.databaseDidSwitch.rawValue, "databaseDidSwitch")
         XCTAssertEqual(Notification.Name.databaseIntegrityCheckFailed.rawValue, "databaseIntegrityCheckFailed")
         XCTAssertEqual(Notification.Name.databaseStateDidChange.rawValue, "databaseStateDidChange")

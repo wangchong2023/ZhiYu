@@ -15,15 +15,26 @@ import Dependencies
 @MainActor
 final class IngestCoordinatorDeepMutationTests: XCTestCase {
 
+    /// 保存当前测试的 coordinator 引用，供 tearDown 取消后台 Task
+    private var coordinator: IngestCoordinator?
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
+    }
+
+    override func tearDown() async throws {
+        // 主动取消 performIngest() 启动的后台 Task，避免跨测试数据库锁竞争死锁
+        coordinator?.cancelIngestTask()
+        coordinator = nil
+        try await super.tearDown()
     }
 
     // MARK: - 1. Ingest IngestCoordinator LifeCycle & Preparation
 
     func testIngestCoordinatorFormAndPreparation() async throws {
         let coordinator = IngestCoordinator()
+        self.coordinator = coordinator
 
         // 1. 测试未达冷却时间时的 performIngest
         coordinator.newTitle = "Test Document Title"
@@ -59,6 +70,7 @@ final class IngestCoordinatorDeepMutationTests: XCTestCase {
 
     func testAITaggingAndJSONExtraction() async throws {
         let coordinator = IngestCoordinator()
+        self.coordinator = coordinator
 
         // 1. 测试标准 JSON 提取
         let validJSON = """
@@ -94,6 +106,7 @@ final class IngestCoordinatorDeepMutationTests: XCTestCase {
 
     func testOpenManualFormWithHistoricalRecord() async throws {
         let coordinator = IngestCoordinator()
+        self.coordinator = coordinator
         let store = AppStore()
         let testPage = KnowledgePage(
             title: "Historical Page",

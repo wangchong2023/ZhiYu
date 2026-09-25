@@ -33,6 +33,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
         // 清空 TaskCenter 单例，确保空状态测试不受残留任务影响
         taskCenter.reset()
     }

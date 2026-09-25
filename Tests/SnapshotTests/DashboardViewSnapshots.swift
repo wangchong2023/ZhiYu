@@ -31,6 +31,7 @@ final class DashboardViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     // MARK: - 测试数据工厂

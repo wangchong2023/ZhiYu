@@ -15,13 +15,13 @@ final class StubServicesTests: XCTestCase {
     // MARK: - StubBackgroundTaskProvider
 
     /// register 应不崩溃（空实现）
-    func testStubBackgroundTaskProvider_register_不崩溃() {
+    func testStubBackgroundTaskProviderRegisterNoCrash() {
         let provider = StubBackgroundTaskProvider()
         provider.register(handler: { })
     }
 
     /// schedule 应不崩溃（空实现）
-    func testStubBackgroundTaskProvider_schedule_不崩溃() {
+    func testStubBackgroundTaskProviderScheduleNoCrash() {
         let provider = StubBackgroundTaskProvider()
         provider.schedule()
     }
@@ -29,19 +29,19 @@ final class StubServicesTests: XCTestCase {
     // MARK: - StubWatchSyncService
 
     /// 初始 lastReceivedText 应为空字符串
-    func testStubWatchSyncService_lastReceivedText_初始为空() {
+    func testStubWatchSyncServiceLastReceivedTextInitiallyEmpty() {
         let service = StubWatchSyncService()
         XCTAssertEqual(service.lastReceivedText, "")
     }
 
     /// 初始 latestBriefing 应为 nil
-    func testStubWatchSyncService_latestBriefing_初始为nil() {
+    func testStubWatchSyncServiceLatestBriefingInitiallyNil() {
         let service = StubWatchSyncService()
         XCTAssertNil(service.latestBriefing)
     }
 
     /// 初始 isBriefingLoading 应为 false
-    func testStubWatchSyncService_isBriefingLoading_初始为false() {
+    func testStubWatchSyncServiceIsBriefingLoadingInitiallyFalse() {
         let service = StubWatchSyncService()
         XCTAssertFalse(service.isBriefingLoading)
     }
@@ -49,7 +49,7 @@ final class StubServicesTests: XCTestCase {
     /// sendContent 应不崩溃（空实现）    /// requestDailyBriefing 应不崩溃    /// handleBriefingResponse 应不崩溃    // MARK: - StubCollaborationProvider
 
     /// delegate 可设置
-    func testStubCollaborationProvider_delegate可设置() {
+    func testStubCollaborationProviderDelegateSettable() {
         let provider = StubCollaborationProvider()
         let delegate = MockCollaborationProviderDelegate()
         provider.delegate = delegate
@@ -57,7 +57,7 @@ final class StubServicesTests: XCTestCase {
     }
 
     /// startHosting 应触发 delegate.providerDidUpdateStatus（simulatorNotSupported）
-    func testStubCollaborationProvider_startHosting_触发delegate状态() {
+    func testStubCollaborationProviderStartHostingTriggersDelegateStatus() {
         let provider = StubCollaborationProvider()
         let delegate = MockCollaborationProviderDelegate()
         provider.delegate = delegate
@@ -69,7 +69,7 @@ final class StubServicesTests: XCTestCase {
     }
 
     /// startBrowsing 应触发 delegate.providerDidUpdateStatus（simulatorNotSupported）
-    func testStubCollaborationProvider_startBrowsing_触发delegate状态() {
+    func testStubCollaborationProviderStartBrowsingTriggersDelegateStatus() {
         let provider = StubCollaborationProvider()
         let delegate = MockCollaborationProviderDelegate()
         provider.delegate = delegate
@@ -81,7 +81,7 @@ final class StubServicesTests: XCTestCase {
     }
 
     /// joinRoom 应不崩溃（空实现，不触发 delegate）
-    func testStubCollaborationProvider_joinRoom_不崩溃() {
+    func testStubCollaborationProviderJoinRoomNoCrash() {
         let provider = StubCollaborationProvider()
         let delegate = MockCollaborationProviderDelegate()
         provider.delegate = delegate
@@ -98,7 +98,7 @@ final class StubServicesTests: XCTestCase {
     }
 
     /// stop 应触发 delegate.providerDidUpdateStatus（disconnected）
-    func testStubCollaborationProvider_stop_触发delegate断开() {
+    func testStubCollaborationProviderStopTriggersDelegateDisconnect() {
         let provider = StubCollaborationProvider()
         let delegate = MockCollaborationProviderDelegate()
         provider.delegate = delegate
@@ -110,13 +110,13 @@ final class StubServicesTests: XCTestCase {
     }
 
     /// broadcast 应不崩溃（空实现）
-    func testStubCollaborationProvider_broadcast_不崩溃() {
+    func testStubCollaborationProviderBroadcastNoCrash() {
         let provider = StubCollaborationProvider()
         provider.broadcast(data: Data([0x01, 0x02]))
     }
 
     /// 无 delegate 时所有方法应不崩溃
-    func testStubCollaborationProvider_无delegate_不崩溃() {
+    func testStubCollaborationProviderNoDelegateNoCrash() {
         let provider = StubCollaborationProvider()
         provider.startHosting(roomName: "test", userName: "user")
         provider.startBrowsing(userName: "user")

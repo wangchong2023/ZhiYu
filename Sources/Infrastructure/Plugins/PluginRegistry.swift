@@ -164,9 +164,9 @@ final class PluginRegistry: @unchecked Sendable {
 private enum PluginRegistryKey: DependencyKey {
     static var liveValue: PluginRegistry { ServiceContainer.shared.resolve(PluginRegistry.self) }
     static var testValue: PluginRegistry {
-        ServiceContainer.shared.resolveOptional(PluginRegistry.self) ?? MainActor.assumeIsolated { PluginRegistry() }
+        ServiceContainer.shared.resolveOptional(PluginRegistry.self) ?? runOnMainSync { PluginRegistry() }
     }
-    static var previewValue: PluginRegistry { MainActor.assumeIsolated { PluginRegistry() } }
+    static var previewValue: PluginRegistry { runOnMainSync { PluginRegistry() } }
 }
 
 extension DependencyValues {

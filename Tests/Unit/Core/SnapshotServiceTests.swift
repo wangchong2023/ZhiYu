@@ -32,13 +32,13 @@ final class SnapshotServiceTests: XCTestCase {
 
     // MARK: - saveSnapshot + getHistory
 
-    func testSaveSnapshot_创建快照文件() {
+    func testSaveSnapshotCreatesSnapshotFile() {
         service.saveSnapshot(pageID: pageID, title: "测试页面", content: "正文内容")
         let history = service.getHistory(for: pageID)
         XCTAssertGreaterThanOrEqual(history.count, 1, "应至少有 1 个快照")
     }
 
-    func testSaveSnapshot_多次保存_历史按时间倒序() {
+    func testSaveSnapshotMultipleSavesHistoryDescendingByTime() {
         service.saveSnapshot(pageID: pageID, title: "v1", content: "内容1")
         Thread.sleep(forTimeInterval: 1.1)
         service.saveSnapshot(pageID: pageID, title: "v2", content: "内容2")
@@ -51,7 +51,7 @@ final class SnapshotServiceTests: XCTestCase {
         XCTAssertGreaterThan(history[0].date, history[1].date, "应按时间倒序")
     }
 
-    func testGetHistory_无快照_返回空数组() {
+    func testGetHistoryNoSnapshotReturnsEmptyArray() {
         let otherPageID = UUID()
         let history = service.getHistory(for: otherPageID)
         XCTAssertTrue(history.isEmpty)
@@ -59,7 +59,7 @@ final class SnapshotServiceTests: XCTestCase {
 
     // MARK: - rollback
 
-    func testRollback_返回剥离Frontmatter的内容() {
+    func testRollbackReturnsContentStrippedOfFrontmatter() {
         service.saveSnapshot(pageID: pageID, title: "标题", content: "原始正文")
         let history = service.getHistory(for: pageID)
         XCTAssertFalse(history.isEmpty)
@@ -69,7 +69,7 @@ final class SnapshotServiceTests: XCTestCase {
         XCTAssertTrue(content?.contains("原始正文") == true, "回滚内容应包含原始正文")
     }
 
-    func testRollback_内容不含Frontmatter标记() {
+    func testRollbackContentHasNoFrontmatterMarkers() {
         service.saveSnapshot(pageID: pageID, title: "标题", content: "正文")
         let history = service.getHistory(for: pageID)
         XCTAssertFalse(history.isEmpty)
@@ -81,7 +81,7 @@ final class SnapshotServiceTests: XCTestCase {
         XCTAssertFalse(content?.contains("Original-Title") == true, "应剥离 Frontmatter")
     }
 
-    func testRollback_文件不存在_返回nil() {
+    func testRollbackFileNotExistsReturnsNil() {
         let fakeSnapshot = SnapshotInfo(
             url: tempDir.appendingPathComponent("nonexistent.md"),
             date: Date()
@@ -93,13 +93,13 @@ final class SnapshotServiceTests: XCTestCase {
     // MARK: - SnapshotInfo
     // MARK: - 边界情况
 
-    func testSaveSnapshot_空内容_仍创建快照() {
+    func testSaveSnapshotEmptyContentStillCreatesSnapshot() {
         service.saveSnapshot(pageID: pageID, title: "空页面", content: "")
         let history = service.getHistory(for: pageID)
         XCTAssertGreaterThanOrEqual(history.count, 1)
     }
 
-    func testSaveSnapshot_特殊字符标题_正常保存() {
+    func testSaveSnapshotSpecialCharTitleSavesNormally() {
         let specialTitle = "标题/with\\special:chars"
         service.saveSnapshot(pageID: pageID, title: specialTitle, content: "内容")
         let history = service.getHistory(for: pageID)

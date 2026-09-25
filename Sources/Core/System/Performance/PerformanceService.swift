@@ -173,7 +173,7 @@ import Dependencies
 /// PerformanceService 依赖注入键
 enum PerformanceServiceKey: DependencyKey {
     nonisolated static var liveValue: PerformanceService {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             ServiceContainer.shared.resolveOptional(PerformanceService.self) ?? PerformanceService()
         }
     }

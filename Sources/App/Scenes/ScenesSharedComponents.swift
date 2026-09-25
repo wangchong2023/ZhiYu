@@ -143,7 +143,7 @@ enum SplashAnimationScheduler {
     /// 共享的延迟动画核心：在指定延迟后以指定动画执行闭包，消除 scheduleFadeIn 与 scheduleStandardTransition 间的样板重复。
     private static func scheduleAnimatedTransition(after delay: Double, animation: Animation, action: @escaping @MainActor () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            MainActor.assumeIsolated {
+            runOnMainSync {
                 withAnimation(animation) {
                     action()
                 }

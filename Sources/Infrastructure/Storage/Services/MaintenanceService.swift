@@ -164,7 +164,7 @@ public enum MaintenanceServiceKey: DependencyKey {
 
     nonisolated public static var testValue: MaintenanceService {
         ServiceContainer.shared.resolveOptional(MaintenanceService.self)
-            ?? MainActor.assumeIsolated { MaintenanceService() }
+            ?? runOnMainSync { MaintenanceService() }
     }
     nonisolated public static var previewValue: MaintenanceService { testValue }
 }

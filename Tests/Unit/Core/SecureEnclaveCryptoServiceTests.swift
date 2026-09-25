@@ -40,7 +40,7 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     // MARK: - isSupported 检测
 
     /// 模拟器环境下 isSupported 应返回 false（走降级路径）
-    func testIsSupported_模拟器环境_返回false() {
+    func testIsSupportedSimulatorEnvironmentReturnsFalse() {
         #if targetEnvironment(simulator)
         XCTAssertFalse(service.isSupported, "模拟器环境 isSupported 应返回 false")
         #else
@@ -53,7 +53,7 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     // MARK: - 降级路径加解密环回（模拟器）
 
     /// 模拟器降级路径：encrypt/decrypt 应通过 SecurityManager AES-GCM 环回
-    func testEncryptDecrypt_降级路径环回_明文密文一致() throws {
+    func testEncryptDecryptFallbackPathRoundtripPlaintextCiphertextConsistent() throws {
         let plaintext = "sk-test-api-key-2026"
         let encrypted = try service.encrypt(plaintext)
         XCTAssertFalse(encrypted.isEmpty, "加密后密文不应为空")
@@ -63,13 +63,13 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     }
 
     /// 空字符串加密应返回非空密文（AES-GCM 会添加 nonce+tag）
-    func testEncrypt_空字符串_返回非空密文() throws {
+    func testEncryptEmptyStringReturnsNonEmptyCiphertext() throws {
         let encrypted = try service.encrypt("")
         XCTAssertFalse(encrypted.isEmpty, "空字符串加密后密文不应为空（含 nonce+tag）")
     }
 
     /// 多次加密同一明文应返回不同密文（AES-GCM 随机 nonce）
-    func testEncrypt_同一明文多次加密_密文不同() throws {
+    func testEncryptSamePlaintextMultipleTimesCiphertextDifferent() throws {
         let plaintext = "same-plaintext"
         let encrypted1 = try service.encrypt(plaintext)
         let encrypted2 = try service.encrypt(plaintext)
@@ -79,7 +79,7 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     // MARK: - decrypt 错误分支
 
     /// 解密无效 Base64 字符串应抛出错误
-    func testDecrypt_无效Base64_抛出错误() {
+    func testDecryptInvalidBase64ThrowsError() {
         #if targetEnvironment(simulator)
         // 模拟器降级路径：SecurityManager.decrypt 处理无效 Base64
         XCTAssertThrowsError(try service.decrypt("!!!invalid base64!!!")) { error in
@@ -96,7 +96,7 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     }
 
     /// 解密空字符串应抛出错误或返回特定值
-    func testDecrypt_空字符串_抛出错误或返回空() {
+    func testDecryptEmptyStringThrowsErrorOrReturnsEmpty() {
         #if targetEnvironment(simulator)
         // 模拟器降级路径：空字符串可能抛出错误或返回空
         do {
@@ -113,7 +113,7 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     }
 
     /// 解密有效 Base64 但非 AES-GCM 密文应抛出错误
-    func testDecrypt_有效Base64但非AESGCM密文_抛出错误() {
+    func testDecryptValidBase64NonAesGcmCiphertextThrowsError() {
         let nonAesGcmData = Data("not a sealed box".utf8).base64EncodedString()
         #if targetEnvironment(simulator)
         // 模拟器降级路径：SecurityManager.decrypt 处理
@@ -125,14 +125,14 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
 
     // MARK: - MockSecureEnclaveCryptoService 直通
 
-    func testMockSecureEnclaveCryptoService_encrypt直通() throws {
+    func testMockSecureEnclaveCryptoServiceEncryptPassthrough() throws {
         let mock = MockSecureEnclaveCryptoService()
         let plaintext = "mock-test-plaintext"
         let encrypted = try mock.encrypt(plaintext)
         XCTAssertEqual(encrypted, plaintext, "Mock encrypt 应直通明文")
     }
 
-    func testMockSecureEnclaveCryptoService_decrypt直通() throws {
+    func testMockSecureEnclaveCryptoServiceDecryptPassthrough() throws {
         let mock = MockSecureEnclaveCryptoService()
         let cipherText = "mock-test-ciphertext"
         let decrypted = try mock.decrypt(cipherText)
@@ -142,7 +142,7 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     // MARK: - 长文本加解密
 
     /// 长文本加解密环回应正确还原
-    func testEncryptDecrypt_长文本环回_明文密文一致() throws {
+    func testEncryptDecryptLongTextRoundtripPlaintextCiphertextConsistent() throws {
         let longPlaintext = String(repeating: "A very long API key segment. ", count: 100)
         let encrypted = try service.encrypt(longPlaintext)
         let decrypted = try service.decrypt(encrypted)
@@ -150,7 +150,7 @@ final class SecureEnclaveCryptoServiceTests: XCTestCase {
     }
 
     /// 含中文/特殊字符的文本加解密环回
-    func testEncryptDecrypt_中文字符环回_明文密文一致() throws {
+    func testEncryptDecryptChineseCharsRoundtripPlaintextCiphertextConsistent() throws {
         let chinesePlaintext = "智宇 API 密钥 2026 🔐"
         let encrypted = try service.encrypt(chinesePlaintext)
         let decrypted = try service.decrypt(encrypted)

@@ -30,6 +30,7 @@ final class GraphViewSnapshots: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        Localized.languageMode = .chinese
     }
 
     // MARK: - GraphEmptyStateView 快照测试

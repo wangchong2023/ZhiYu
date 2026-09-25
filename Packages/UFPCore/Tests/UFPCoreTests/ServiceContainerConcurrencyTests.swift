@@ -16,6 +16,7 @@ private final class ConcurrentService: ConcurrentServiceProtocol, @unchecked Sen
     init(id: Int) { self.id = id }
 }
 
+@MainActor
 final class ServiceContainerConcurrencyTests: XCTestCase {
 
     override func setUp() {

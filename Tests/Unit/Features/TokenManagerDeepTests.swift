@@ -186,7 +186,7 @@ final class TokenManagerDeepTests: XCTestCase {
     // MARK: - tryAutoLogin Mock 模式
 
     /// 验证 Mock 模式下 tryAutoLogin 注入的 Mock 用户邮箱正确
-    func testTryAutoLogin_Mock模式_注入正确邮箱() async {
+    func testTryAutoLoginMockModeInjectsCorrectEmail() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -200,7 +200,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 tryAutoLogin 注入的 Mock 用户手机号正确
-    func testTryAutoLogin_Mock模式_注入正确手机号() async {
+    func testTryAutoLoginMockModeInjectsCorrectPhone() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -214,7 +214,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 tryAutoLogin 调用 saveState 持久化
-    func testTryAutoLogin_Mock模式_调用saveState() async {
+    func testTryAutoLoginMockModeCallsSaveState() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -231,7 +231,7 @@ final class TokenManagerDeepTests: XCTestCase {
     // MARK: - tryAutoLogin 非 Mock 模式
 
     /// 验证非 Mock 模式下 tryAutoLogin 有 Token 但网络失败返回 false
-    func testTryAutoLogin_非Mock模式_有Token网络失败_返回false() async {
+    func testTryAutoLoginNonMockModeHasTokenNetworkFailureReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -257,7 +257,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 tryAutoLogin 有 Token 且网络成功返回 true 并填充 currentUser
-    func testTryAutoLogin_非Mock模式_有Token网络成功_返回true并填充用户() async throws {
+    func testTryAutoLoginNonMockModeHasTokenNetworkSuccessReturnsTrueAndFillsUser() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -298,7 +298,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 tryAutoLogin 网络成功后调用 saveState（isGuest 为 false）
-    func testTryAutoLogin_非Mock模式_网络成功_调用saveState() async throws {
+    func testTryAutoLoginNonMockModeNetworkSuccessCallsSaveState() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -325,7 +325,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 tryAutoLogin 后端返回 code != 0 时返回 false
-    func testTryAutoLogin_非Mock模式_后端业务错误_返回false() async {
+    func testTryAutoLoginNonMockModeBackendBusinessErrorReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -357,7 +357,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 tryAutoLogin 后端返回 data 为 null 时返回 false
-    func testTryAutoLogin_非Mock模式_data为null_返回false() async {
+    func testTryAutoLoginNonMockModeDataNullReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -395,7 +395,7 @@ final class TokenManagerDeepTests: XCTestCase {
     /// - Note: login 的 Mock 分支固定构造 accessToken="mock_jwt_access_token"，
     ///         refreshToken="mock_jwt_refresh_token"，无法传入自定义 response。
     ///         此处验证 login Mock 模式写入的固定 token 值。
-    func testHandleSuccessfulLogin_Mock模式_写入KeychainToken() async throws {
+    func testHandleSuccessfulLoginMockModeWritesKeychainToken() async throws {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -415,7 +415,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 handleSuccessfulLogin 设置 currentUser 为 identity
-    func testHandleSuccessfulLogin_Mock模式_设置currentUser为identity() async {
+    func testHandleSuccessfulLoginMockModeSetsCurrentUserToIdentity() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -433,7 +433,7 @@ final class TokenManagerDeepTests: XCTestCase {
     // MARK: - handleSuccessfulLogin 非 Mock 模式
 
     /// 验证非 Mock 模式下 handleSuccessfulLogin 写入 access 和 refresh token
-    func testHandleSuccessfulLogin_非Mock模式_写入Access和RefreshToken() async throws {
+    func testHandleSuccessfulLoginNonMockModeWritesAccessAndRefreshToken() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -473,7 +473,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 handleSuccessfulLogin 无 refreshToken 时只写入 access token
-    func testHandleSuccessfulLogin_非Mock模式_无RefreshToken_只写入AccessToken() async throws {
+    func testHandleSuccessfulLoginNonMockModeNoRefreshTokenOnlyWritesAccessToken() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -512,7 +512,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 handleSuccessfulLogin 拉取 profile 失败时返回 false
-    func testHandleSuccessfulLogin_非Mock模式_拉取Profile失败_返回false() async throws {
+    func testHandleSuccessfulLoginNonMockModeFetchProfileFailureReturnsFalse() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -545,7 +545,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证非 Mock 模式下 handleSuccessfulLogin 拉取 profile 成功后填充 currentUser
-    func testHandleSuccessfulLogin_非Mock模式_拉取Profile成功_填充currentUser() async throws {
+    func testHandleSuccessfulLoginNonMockModeFetchProfileSuccessFillsCurrentUser() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -584,7 +584,7 @@ final class TokenManagerDeepTests: XCTestCase {
     // MARK: - saveState
 
     /// 验证 saveState 将 isAuthenticated 写入 KeyStore
-    func testSaveState_写入isAuthenticated到KeyStore() async {
+    func testSaveStateWritesIsAuthenticatedToKeyStore() async {
         AuthSession.shared.update(user: makeTestUser())
 
         AuthService.shared.saveState()
@@ -595,7 +595,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 saveState 在 logout 后将 isAuthenticated 写为 false
-    func testSaveState_logout后_isAuthenticated为false() async {
+    func testSaveStateAfterLogoutIsAuthenticatedFalse() async {
         AuthSession.shared.update(user: makeTestUser())
         AuthService.shared.logout()
         await awaitAllLogoutTasks()
@@ -606,7 +606,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 saveState 在 continueAsGuest 后将 isGuest 写为 true
-    func testSaveState_continueAsGuest后_isGuest为true() {
+    func testSaveStateAfterContinueAsGuestIsGuestTrue() {
         AuthSession.shared.logout()
         AuthService.shared.continueAsGuest()
 
@@ -618,7 +618,7 @@ final class TokenManagerDeepTests: XCTestCase {
     /// 验证 saveState 无 keyStore 时不崩溃
     /// - Note: keyStore 通过 ServiceContainer.resolveOptional 解析，未注册时返回 nil。
     ///   saveState 使用可选链 `keyStore?.set`，nil 时不执行任何操作但不崩溃。
-    func testSaveState_无KeyStore_不崩溃() {
+    func testSaveStateNoKeyStoreNoCrash() {
         // 临时移除 KeyStore 注册（通过注册 nil 实现不可达）
         // 注意：ServiceContainer 不支持注销，此处仅验证有 keyStore 时的正常路径
         AuthSession.shared.update(user: makeTestUser())
@@ -632,7 +632,7 @@ final class TokenManagerDeepTests: XCTestCase {
     // MARK: - refreshUserProfile 订阅解析
 
     /// 验证 refreshUserProfile 订阅接口失败时降级为 Lite 默认配额
-    func testRefreshUserProfile_订阅失败_降级为Lite默认配额() async throws {
+    func testRefreshUserProfileSubscriptionFailureDegradesToLiteDefaultQuotas() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -676,7 +676,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 订阅返回 Pro 套餐时更新配额为 Pro
-    func testRefreshUserProfile_订阅Pro_更新为Pro配额() async throws {
+    func testRefreshUserProfileSubscriptionProUpdatesToProQuotas() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -728,7 +728,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 订阅返回 features JSON 时解析并更新 features
-    func testRefreshUserProfile_订阅返回features_解析并更新() async throws {
+    func testRefreshUserProfileSubscriptionReturnsFeaturesParsesAndUpdates() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -770,7 +770,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 订阅返回无效 features JSON 时保持空数组
-    func testRefreshUserProfile_无效featuresJson_保持空数组() async throws {
+    func testRefreshUserProfileInvalidFeaturesJsonKeepsEmptyArray() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -809,7 +809,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 订阅返回无效 quotas JSON 时降级为 Lite 默认配额
-    func testRefreshUserProfile_无效quotasJson_降级为Lite默认配额() async throws {
+    func testRefreshUserProfileInvalidQuotasJsonDegradesToLiteDefaultQuotas() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -849,7 +849,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 订阅返回 planKey 为 nil 时降级为 free
-    func testRefreshUserProfile_订阅planKey为nil_降级为free() async throws {
+    func testRefreshUserProfileSubscriptionPlanKeyNilDegradesToFree() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -891,7 +891,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile profile 接口失败时抛出错误
-    func testRefreshUserProfile_profile失败_抛出错误() async {
+    func testRefreshUserProfileProfileFailureThrowsError() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -919,7 +919,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 保留原 user.id
-    func testRefreshUserProfile_保留原UserId() async throws {
+    func testRefreshUserProfileKeepsOriginalUserId() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -955,7 +955,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 后端返回空 email 时保留本地 email
-    func testRefreshUserProfile_空email_保留本地email() async throws {
+    func testRefreshUserProfileEmptyEmailKeepsLocalEmail() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -995,7 +995,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 后端返回非空 email 时更新本地 email
-    func testRefreshUserProfile_非空email_更新本地email() async throws {
+    func testRefreshUserProfileNonEmptyEmailUpdatesLocalEmail() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif

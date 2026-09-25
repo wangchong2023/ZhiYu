@@ -49,26 +49,26 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
     // MARK: pageByTitle 未匹配返回 nil
 
-    func testPageByTitle_未匹配返回nil() async {
+    func testPageByTitleNoMatchReturnsNil() async {
         let pages = [KnowledgePage(title: "Swift", content: "")]
         let result = await sut.pageByTitle("不存在的标题", in: pages)
         XCTAssertNil(result, "未匹配标题时应返回 nil")
     }
 
-    func testPageByTitle_空页面集合返回nil() async {
+    func testPageByTitleEmptyPageCollectionReturnsNil() async {
         let result = await sut.pageByTitle("任意", in: [])
         XCTAssertNil(result, "空页面集合应返回 nil")
     }
 
     // MARK: backlinks pageID 不存在
 
-    func testBacklinks_pageID不存在返回空数组() async {
+    func testBacklinksPageIDNotExistsReturnsEmptyArray() async {
         let pages = [KnowledgePage(title: "A", content: "内容")]
         let result = await sut.backlinks(for: UUID(), in: pages)
         XCTAssertTrue(result.isEmpty, "pageID 不存在时应返回空数组")
     }
 
-    func testBacklinks_无反向链接返回空数组() async {
+    func testBacklinksNoBacklinksReturnsEmptyArray() async {
         let pageA = KnowledgePage(title: "A", content: "独立内容无链接")
         let pageB = KnowledgePage(title: "B", content: "另一独立页面")
         let result = await sut.backlinks(for: pageA.id, in: [pageA, pageB])
@@ -77,7 +77,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
     // MARK: search 别名匹配分支
 
-    func testSearch_别名匹配分支() async {
+    func testSearchAliasMatchBranch() async {
         var page = KnowledgePage(title: "架构设计", content: "内容不含关键词")
         page.aliases = ["Architecture"]
         let results = await sut.search(query: "architecture", in: [page])
@@ -87,7 +87,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
     // MARK: search 空查询返回原集合
 
-    func testSearch_空查询返回原集合() async {
+    func testSearchEmptyQueryReturnsOriginalCollection() async {
         let pages = [
             KnowledgePage(title: "A", content: "a"),
             KnowledgePage(title: "B", content: "b")
@@ -98,19 +98,19 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
     // MARK: rrf 空输入
 
-    func testRRF_空输入返回空数组() async {
+    func testRRFEmptyInputReturnsEmptyArray() async {
         let result = await sut.rrf(keywordResults: [], semanticResults: [])
         XCTAssertTrue(result.isEmpty, "空输入应返回空数组")
     }
 
-    func testRRF_仅关键词结果() async {
+    func testRRFOnlyKeywordResults() async {
         let page = KnowledgePage(title: "Only", content: "")
         let result = await sut.rrf(keywordResults: [page], semanticResults: [])
         XCTAssertEqual(result.count, 1)
         XCTAssertEqual(result.first?.id, page.id)
     }
 
-    func testRRF_仅语义结果() async {
+    func testRRFOnlySemanticResults() async {
         let page = KnowledgePage(title: "OnlySemantic", content: "")
         let result = await sut.rrf(keywordResults: [], semanticResults: [page])
         XCTAssertEqual(result.count, 1)
@@ -119,12 +119,12 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
     // MARK: allTags 空集合与无标签
 
-    func testAllTags_空页面集合返回空数组() async {
+    func testAllTagsEmptyPageCollectionReturnsEmptyArray() async {
         let result = await sut.allTags(in: [])
         XCTAssertTrue(result.isEmpty, "空页面集合应返回空标签列表")
     }
 
-    func testAllTags_无标签页面返回空数组() async {
+    func testAllTagsNoTagsPageReturnsEmptyArray() async {
         let page = KnowledgePage(title: "NoTags", content: "")
         let result = await sut.allTags(in: [page])
         XCTAssertTrue(result.isEmpty, "无标签页面应返回空数组")
@@ -132,7 +132,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
     // MARK: prepareRename 无反向链接
 
-    func testPrepareRename_无反向链接仅返回主页面() async {
+    func testPrepareRenameNoBacklinksReturnsOnlyMainPage() async {
         let mainPage = KnowledgePage(title: "OldName", content: "内容")
         let otherPage = KnowledgePage(title: "Other", content: "无引用")
         let result = await sut.prepareRename(page: mainPage, to: "NewName", in: [mainPage, otherPage])
@@ -142,7 +142,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
     // MARK: hybridSearch 短查询高置信度分支
 
-    func testHybridSearch_短查询高置信度语义结果保留() async throws {
+    func testHybridSearchShortQueryHighConfidenceSemanticResultKept() async throws {
         setupFullMockEnvironment()
         let pageID = UUID()
         let page = KnowledgePage(id: pageID, title: "3D", content: "三维渲染")
@@ -153,7 +153,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
         XCTAssertTrue(result.results.contains { $0.id == pageID }, "高置信度语义结果应被保留")
     }
 
-    func testHybridSearch_短查询低置信度但标题含查询词保留() async throws {
+    func testHybridSearchShortQueryLowConfidenceButTitleContainsQueryKept() async throws {
         setupFullMockEnvironment()
         let pageID = UUID()
         let page = KnowledgePage(id: pageID, title: "3D Graphics", content: "内容")
@@ -164,7 +164,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
         XCTAssertTrue(result.results.contains { $0.id == pageID }, "标题含查询词的低置信度结果应被保留")
     }
 
-    func testHybridSearch_短查询低置信度且标题不含查询词过滤() async throws {
+    func testHybridSearchShortQueryLowConfidenceAndTitleNotContainsQueryFiltered() async throws {
         setupFullMockEnvironment()
         let pageID = UUID()
         let page = KnowledgePage(id: pageID, title: "无关标题", content: "内容")
@@ -175,7 +175,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
         XCTAssertFalse(result.results.contains { $0.id == pageID }, "低置信度且标题不含查询词应被过滤")
     }
 
-    func testHybridSearch_长查询高于阈值保留() async throws {
+    func testHybridSearchLongQueryAboveThresholdKept() async throws {
         setupFullMockEnvironment()
         let pageID = UUID()
         let page = KnowledgePage(id: pageID, title: "SwiftUI", content: "声明式UI")
@@ -186,7 +186,7 @@ final class DomainLinkServiceBranchTests: XCTestCase {
         XCTAssertTrue(result.results.contains { $0.id == pageID }, "长查询高于阈值应保留")
     }
 
-    func testHybridSearch_语义结果ID不在pages中被过滤() async throws {
+    func testHybridSearchSemanticResultIDNotInPagesFiltered() async throws {
         setupFullMockEnvironment()
         let realPage = KnowledgePage(title: "Real", content: "真实页面")
         let ghostID = UUID()
@@ -262,18 +262,18 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: parse 空模板与空变量
 
-    func testParse_空模板返回空字符串() {
+    func testParseEmptyTemplateReturnsEmptyString() {
         let result = promptEngine.parse(template: "", with: ["key": "value"])
         XCTAssertEqual(result, "", "空模板应返回空字符串")
     }
 
-    func testParse_空变量字典返回原模板() {
+    func testParseEmptyVariableDictReturnsOriginalTemplate() {
         let template = "无占位符的模板 {{unfilled}}"
         let result = promptEngine.parse(template: template, with: [:])
         XCTAssertEqual(result, template, "空变量字典应返回原模板")
     }
 
-    func testParse_多占位符全部替换() {
+    func testParseMultiplePlaceholdersAllReplaced() {
         let template = "{{a}}-{{b}}-{{c}}"
         let result = promptEngine.parse(template: template, with: ["a": "1", "b": "2", "c": "3"])
         XCTAssertEqual(result, "1-2-3", "所有占位符应被替换")
@@ -281,7 +281,7 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: renderPrompt 远程空内容降级
 
-    func testRenderPrompt_远程返回空内容降级到本地模板() async {
+    func testRenderPromptRemoteReturnsEmptyContentFallsBackToLocalTemplate() async {
         let skill = AgentSkill(
             skillId: "test_empty_remote",
             displayName: "空远程",
@@ -302,7 +302,7 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: renderPrompt 远程非200状态码降级
 
-    func testRenderPrompt_远程非200状态码降级到本地模板() async {
+    func testRenderPromptRemoteNon200StatusCodeFallsBackToLocalTemplate() async {
         let skill = AgentSkill(
             skillId: "test_500",
             displayName: "500错误",
@@ -323,7 +323,7 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: renderPrompt SHA256 校验失败降级
 
-    func testRenderPrompt_远程SHA256不匹配降级到本地模板() async {
+    func testRenderPromptRemoteSHA256MismatchFallsBackToLocalTemplate() async {
         let skill = AgentSkill(
             skillId: "test_hash_mismatch",
             displayName: "哈希不匹配",
@@ -345,7 +345,7 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: renderPrompt SHA256 校验通过使用远程内容
 
-    func testRenderPrompt_远程SHA256匹配使用远程内容() async throws {
+    func testRenderPromptRemoteSHA256MatchUsesRemoteContent() async throws {
         let remoteContent = "远程正确内容：{{query}}"
         let skill = AgentSkill(
             skillId: "test_hash_match",
@@ -368,7 +368,7 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: renderPrompt 无效URL降级
 
-    func testRenderPrompt_无效URLString降级到本地模板() async {
+    func testRenderPromptInvalidURLStringFallsBackToLocalTemplate() async {
         let skill = AgentSkill(
             skillId: "test_invalid_url",
             displayName: "无效URL",
@@ -383,7 +383,7 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: renderPrompt 路径遍历防护
 
-    func testRenderPrompt_路径遍历skillId被清理() async throws {
+    func testRenderPromptPathTraversalSkillIdSanitized() async throws {
         let skill = AgentSkill(
             skillId: "../../../etc/passwd",
             displayName: "路径遍历",
@@ -405,7 +405,7 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
     // MARK: clearCache 清空缓存
 
-    func testClearCache_清空后远程重新拉取() async {
+    func testClearCacheAfterClearRemoteRefetched() async {
         let skill = AgentSkill(
             skillId: "test_clear_cache",
             displayName: "清缓存",
@@ -461,7 +461,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: isQuotaExceeded -1 无限不超限
 
-    func testIsQuotaExceeded_无限配额不超限() throws {
+    func testIsQuotaExceededUnlimitedQuotaNotExceeded() throws {
         let manager = try XCTUnwrap(sut)
         let proVo = PlanQuotasVo.createProDefault
         manager.updateActiveQuotas(proVo)
@@ -471,7 +471,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: isQuotaExceeded 恰好等于限制算超限
 
-    func testIsQuotaExceeded_恰好等于限制算超限() throws {
+    func testIsQuotaExceededExactlyAtLimitCountsAsExceeded() throws {
         let manager = try XCTUnwrap(sut)
         let liteVo = PlanQuotasVo.createLiteDefault
         manager.updateActiveQuotas(liteVo)
@@ -481,7 +481,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: isQuotaExceeded 低于限制不超限
 
-    func testIsQuotaExceeded_低于限制不超限() throws {
+    func testIsQuotaExceededBelowLimitNotExceeded() throws {
         let manager = try XCTUnwrap(sut)
         let liteVo = PlanQuotasVo.createLiteDefault
         manager.updateActiveQuotas(liteVo)
@@ -490,7 +490,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: getQuotaLimit 无缓存且禁用游客返回0
 
-    func testGetQuotaLimit_无缓存禁用游客返回0() throws {
+    func testGetQuotaLimitNoCacheGuestDisabledReturns0() throws {
         let manager = try XCTUnwrap(sut)
         manager.clearQuotasCache()
         // DEBUG 模式下 isGuestModeAllowed = true，会返回 offlineColdStartQuotas
@@ -504,7 +504,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: isFeatureEnabled 无缓存返回false（Release模式）
 
-    func testIsFeatureEnabled_无缓存返回默认值() throws {
+    func testIsFeatureEnabledNoCacheReturnsDefaultValue() throws {
         let manager = try XCTUnwrap(sut)
         manager.clearQuotasCache()
         #if DEBUG
@@ -517,7 +517,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: clearQuotasCache 清空后 activeQuotas 为 nil
 
-    func testClearQuotasCache_清空后activeQuotas为Nil() throws {
+    func testClearQuotasCacheAfterClearActiveQuotasIsNil() throws {
         let manager = try XCTUnwrap(sut)
         manager.updateActiveQuotas(PlanQuotasVo.createProDefault)
         XCTAssertNotNil(manager.activeQuotas)
@@ -527,7 +527,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: updateActiveQuotas 触发通知
 
-    func testUpdateActiveQuotas_触发quotasSubject通知() throws {
+    func testUpdateActiveQuotasTriggersQuotasSubjectNotification() throws {
         let manager = try XCTUnwrap(sut)
         let expectation = XCTestExpectation(description: "quotasSubject 应发送通知")
         let cancellable = manager.quotasSubject.sink { quotas in
@@ -540,7 +540,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     // MARK: loadCachedQuotas 损坏数据返回nil
 
-    func testLoadCachedQuotas_损坏数据返回Nil() throws {
+    func testLoadCachedQuotasCorruptDataReturnsNil() throws {
         let defaults = try XCTUnwrap(testUserDefaults)
         // 写入损坏的 JSON 数据
         defaults.set(Data("not-json".utf8), forKey: "zhiyu_cached_plan_quotas")
@@ -570,7 +570,7 @@ final class DomainAIContentEnricherBranchTests: XCTestCase {
 
     // MARK: enrich 纯文本不触发增强
 
-    func testEnrich_纯文本不触发增强() async {
+    func testEnrichPlainTextDoesNotTriggerEnrichment() async {
         let content = "这是一段纯文本，没有任何表格或图片。"
         let result = await enricher.enrich(content, llm: mockLLM)
         XCTAssertEqual(result, content, "纯文本应直接返回原内容")
@@ -578,14 +578,14 @@ final class DomainAIContentEnricherBranchTests: XCTestCase {
 
     // MARK: enrich 空内容不触发增强
 
-    func testEnrich_空内容不触发增强() async {
+    func testEnrichEmptyContentDoesNotTriggerEnrichment() async {
         let result = await enricher.enrich("", llm: mockLLM)
         XCTAssertEqual(result, "", "空内容应直接返回")
     }
 
     // MARK: enrich 表格LLM抛错返回原表格
 
-    func testEnrich_表格LLM抛错返回原表格() async {
+    func testEnrichTableLLMThrowsReturnsOriginalTable() async {
         mockLLM.generateHandler = { _, _ in throw NSError(domain: "test", code: 1) }
         let table = """
         | 名称 | 值 |
@@ -598,7 +598,7 @@ final class DomainAIContentEnricherBranchTests: XCTestCase {
 
     // MARK: enrich 图片alt为空不触发LLM
 
-    func testEnrich_图片alt为空不触发LLM() async {
+    func testEnrichImageEmptyAltDoesNotTriggerLLM() async {
         let llmCalled = MutableBox(false)
         mockLLM.generateHandler = { _, _ in llmCalled.value = true; return "描述" }
         let content = "![](https://example.com/image.png)"
@@ -609,7 +609,7 @@ final class DomainAIContentEnricherBranchTests: XCTestCase {
 
     // MARK: enrich 图片LLM抛错返回原图片
 
-    func testEnrich_图片LLM抛错返回原图片() async {
+    func testEnrichImageLLMThrowsReturnsOriginalImage() async {
         mockLLM.generateHandler = { _, _ in throw NSError(domain: "test", code: 1) }
         let content = "![描述](https://example.com/image.png)"
         let result = await enricher.enrich(content, llm: mockLLM)
@@ -618,7 +618,7 @@ final class DomainAIContentEnricherBranchTests: XCTestCase {
 
     // MARK: enrich 表格后紧跟文本正确分块
 
-    func testEnrich_表格后紧跟文本正确分块() async {
+    func testEnrichTableFollowedByTextCorrectChunking() async {
         mockLLM.generateHandler = { _, _ in "增强洞察" }
         let content = """
         前置文本
@@ -637,7 +637,7 @@ final class DomainAIContentEnricherBranchTests: XCTestCase {
 
     // MARK: enrich 多图片并行增强
 
-    func testEnrich_多图片并行增强() async {
+    func testEnrichMultipleImagesParallelEnrichment() async {
         mockLLM.generateHandler = { _, _ in "图片描述" }
         let content = """
         ![图1](https://example.com/1.png)

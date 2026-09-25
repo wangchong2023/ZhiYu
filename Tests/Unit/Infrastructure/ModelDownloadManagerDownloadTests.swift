@@ -81,6 +81,7 @@ final class ModelDownloadManagerDownloadTests: XCTestCase {
 
     /// 验证 pauseDownload 在无 activeTask 时直接 return（不崩溃）
     func testPauseDownloadWithNoActiveTaskReturnsEarly() async throws {
+        Localized.languageMode = .english
         let modelId = "test-pause-no-task-\(UUID().uuidString)"
 
         // 无 activeTask，应直接 return 不崩溃

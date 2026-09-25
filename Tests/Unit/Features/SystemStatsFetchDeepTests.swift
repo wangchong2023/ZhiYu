@@ -99,46 +99,46 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     // MARK: - formatBytes 边界值
 
     /// 验证 formatBytes(0) 返回零字节格式
-    func testFormatBytes_0_返回零字节格式() {
+    func testFormatBytesZeroReturnsZeroBytesFormat() {
         let result = coordinator.formatBytes(0)
         XCTAssertFalse(result.isEmpty, "formatBytes(0) 不应返回空字符串")
         XCTAssertTrue(result.contains("0") || result.contains("Zero"), "formatBytes(0) 应包含 0 或 Zero")
     }
 
     /// 验证 formatBytes(1023) 返回字节单位
-    func testFormatBytes_1023_返回字节单位() {
+    func testFormatBytes1023ReturnsBytesUnit() {
         let result = coordinator.formatBytes(1023)
         XCTAssertFalse(result.isEmpty, "formatBytes(1023) 不应返回空字符串")
     }
 
     /// 验证 formatBytes(1024) 返回 KB 单位
-    func testFormatBytes_1024_返回KB单位() {
+    func testFormatBytes1024ReturnsKBUnit() {
         let result = coordinator.formatBytes(1024)
         XCTAssertFalse(result.isEmpty, "formatBytes(1024) 不应返回空字符串")
     }
 
     /// 验证 formatBytes(1024*1024) 返回 MB 单位
-    func testFormatBytes_1MB_返回MB单位() {
+    func testFormatBytes1MBReturnsMBUnit() {
         let oneMB: Int64 = 1024 * 1024
         let result = coordinator.formatBytes(oneMB)
         XCTAssertFalse(result.isEmpty, "formatBytes(1MB) 不应返回空字符串")
     }
 
     /// 验证 formatBytes(1024*1024*1024) 返回 GB 单位
-    func testFormatBytes_1GB_返回GB单位() {
+    func testFormatBytes1GBReturnsGBUnit() {
         let oneGB: Int64 = 1024 * 1024 * 1024
         let result = coordinator.formatBytes(oneGB)
         XCTAssertFalse(result.isEmpty, "formatBytes(1GB) 不应返回空字符串")
     }
 
     /// 验证 formatBytes 负数不崩溃且返回非空字符串
-    func testFormatBytes_负数_不崩溃返回非空() {
+    func testFormatBytesNegativeNoCrashReturnsNonEmpty() {
         let result = coordinator.formatBytes(-100)
         XCTAssertFalse(result.isEmpty, "formatBytes(负数) 不应返回空字符串")
     }
 
     /// 验证 formatBytes 同一值多次调用返回一致结果
-    func testFormatBytes_同一值多次调用返回一致() {
+    func testFormatBytesSameValueMultipleCallsConsistent() {
         let value: Int64 = 5000
         let result1 = coordinator.formatBytes(value)
         let result2 = coordinator.formatBytes(value)
@@ -146,7 +146,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 formatBytes 大整数不崩溃
-    func testFormatBytes_大整数_不崩溃() {
+    func testFormatBytesLargeIntegerNoCrash() {
         let largeValue: Int64 = Int64.max
         let result = coordinator.formatBytes(largeValue)
         XCTAssertFalse(result.isEmpty, "formatBytes(Int64.max) 不应返回空字符串")
@@ -155,43 +155,43 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     // MARK: - iconForCategory 分支
 
     /// 验证 iconForCategory 对 database 标签返回 database 图标
-    func testIconForCategory_database标签_返回Database图标() {
+    func testIconForCategoryDatabaseLabelReturnsDatabaseIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.database)
         XCTAssertEqual(result, DesignSystem.Icons.StorageStats.database, "database 标签应返回 database 图标")
     }
 
     /// 验证 iconForCategory 对 logs 标签返回 logs 图标
-    func testIconForCategory_logs标签_返回Logs图标() {
+    func testIconForCategoryLogsLabelReturnsLogsIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.logs)
         XCTAssertEqual(result, DesignSystem.Icons.StorageStats.logs, "logs 标签应返回 logs 图标")
     }
 
     /// 验证 iconForCategory 对 storageImport 标签返回 storageImport 图标
-    func testIconForCategory_storageImport标签_返回StorageImport图标() {
+    func testIconForCategoryStorageImportLabelReturnsStorageImportIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.stats.storageImport)
         XCTAssertEqual(result, DesignSystem.Icons.StorageStats.storageImport, "storageImport 标签应返回 storageImport 图标")
     }
 
     /// 验证 iconForCategory 对 storageExport 标签返回 storageExport 图标
-    func testIconForCategory_storageExport标签_返回StorageExport图标() {
+    func testIconForCategoryStorageExportLabelReturnsStorageExportIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.stats.storageExport)
         XCTAssertEqual(result, DesignSystem.Icons.StorageStats.storageExport, "storageExport 标签应返回 storageExport 图标")
     }
 
     /// 验证 iconForCategory 对未知标签返回 fallback 图标
-    func testIconForCategory_未知标签_返回Fallback图标() {
+    func testIconForCategoryUnknownLabelReturnsFallbackIcon() {
         let result = coordinator.iconForCategory("未知分类")
         XCTAssertEqual(result, DesignSystem.Icons.StorageStats.fallback, "未知标签应返回 fallback 图标")
     }
 
     /// 验证 iconForCategory 对 models 标签返回 models 图标（修复后：models 已映射）
-    func testIconForCategory_models标签_返回Fallback图标() {
+    func testIconForCategoryModelsLabelReturnsFallbackIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.models)
         XCTAssertEqual(result, DesignSystem.Icons.StorageStats.models, "修复后：models 标签已映射，应返回 models 图标")
     }
 
     /// 验证 iconForCategory 对空字符串返回 fallback
-    func testIconForCategory_空字符串_返回Fallback图标() {
+    func testIconForCategoryEmptyStringReturnsFallbackIcon() {
         let result = coordinator.iconForCategory("")
         XCTAssertEqual(result, DesignSystem.Icons.StorageStats.fallback, "空字符串应返回 fallback 图标")
     }
@@ -199,7 +199,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     // MARK: - fetchRawPageStats 原始页统计
 
     /// 验证 loadStats 后 rawStorageStats 统计 .raw 类型页面的数量与字节大小
-    func testFetchRawPageStats_统计Raw页面数量与字节大小() async throws {
+    func testFetchRawPageStatsCountsRawPagesAndByteSize() async throws {
         let rawPage1 = makePage(type: .raw, content: "原始内容1")
         let rawPage2 = makePage(type: .raw, content: "原始内容2更长")
         let conceptPage = makePage(type: .concept, content: "概念内容不应计入")
@@ -212,7 +212,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 fetchRawPageStats 无 .raw 页面时 rawStorageStats.count 为 0
-    func testFetchRawPageStats_无Raw页面_count为0() async throws {
+    func testFetchRawPageStatsNoRawPagesCountIsZero() async throws {
         let conceptPage = makePage(type: .concept, content: "概念")
         let entityPage = makePage(type: .entity, content: "实体")
         configurableKnowledgeRepo.stubAllPages = [conceptPage, entityPage]
@@ -224,14 +224,14 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     // MARK: - fetchVaultStorageSizes 多笔记本关联
 
     /// 验证 VaultService 无 vaults 时 vaultStorageItems 为空
-    func testFetchVaultStorageSizes_无Vaults_vaultStorageItems为空() async throws {
+    func testFetchVaultStorageSizesNoVaultsItemsEmpty() async throws {
         VaultService.shared.vaults = []
         await coordinator.loadStats()
         XCTAssertTrue(coordinator.vaultStorageItems.isEmpty, "无 vaults 时 vaultStorageItems 应为空")
     }
 
     /// 验证 fetchVaultStorageSizes 为每个 Vault 生成 VaultStorageItem（即使目录不存在）
-    func testFetchVaultStorageSizes_为每个Vault生成Item() async throws {
+    func testFetchVaultStorageSizesGeneratesItemForEachVault() async throws {
         let vault1 = Vault(name: "笔记本1")
         let vault2 = Vault(name: "笔记本2")
         VaultService.shared.vaults = [vault1, vault2]
@@ -242,7 +242,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 fetchVaultStorageSizes 后 VaultStorageItem 的 name 来自 Vault.name
-    func testFetchVaultStorageSizes_VaultStorageItemName来自VaultName() async throws {
+    func testFetchVaultStorageSizesItemNameFromVaultName() async throws {
         let vault = Vault(name: "我的测试笔记本")
         VaultService.shared.vaults = [vault]
         await coordinator.loadStats()
@@ -251,7 +251,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 fetchVaultStorageSizes 后 VaultStorageItem 的 size 在目录不存在时为 0
-    func testFetchVaultStorageSizes_目录不存在_size为0() async throws {
+    func testFetchVaultStorageSizesDirNotExistsSizeIsZero() async throws {
         let vault = Vault(name: "空目录笔记本")
         VaultService.shared.vaults = [vault]
         await coordinator.loadStats()
@@ -260,7 +260,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 vaultStorageItems 按 size 降序排列
-    func testFetchVaultStorageSizes_按Size降序排列() async throws {
+    func testFetchVaultStorageSizesSortedBySizeDescending() async throws {
         let vault1 = Vault(name: "A")
         let vault2 = Vault(name: "B")
         let vault3 = Vault(name: "C")
@@ -275,7 +275,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     // MARK: - vaultStorageItems 与 VaultService.vaults 关联
 
     /// 验证 vaultStorageItems 数量与 VaultService.vaults 数量一致
-    func testVaultStorageItems_数量与VaultServiceVaults一致() async throws {
+    func testVaultStorageItemsCountMatchesVaultServiceVaults() async throws {
         VaultService.shared.vaults = [
             Vault(name: "笔记本A"),
             Vault(name: "笔记本B"),
@@ -287,7 +287,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 VaultService.vaults 变化后再次 loadStats vaultStorageItems 同步更新
-    func testVaultStorageItems_vaults变化后再次LoadStats同步更新() async throws {
+    func testVaultStorageItemsSyncAfterVaultsChangeAndLoadStats() async throws {
         VaultService.shared.vaults = [Vault(name: "笔记本1")]
         await coordinator.loadStats()
         XCTAssertEqual(coordinator.vaultStorageItems.count, 1, "首次 loadStats 后应有 1 个 item")
@@ -299,7 +299,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     // MARK: - storageCategories 完整性
 
     /// 验证 storageCategories 中 database 分类的 count 来自 VaultService.vaults.count
-    func testStorageCategories_database分类Count来自VaultsCount() async throws {
+    func testStorageCategoriesDatabaseCountFromVaultsCount() async throws {
         VaultService.shared.vaults = [Vault(name: "A"), Vault(name: "B"), Vault(name: "C")]
         await coordinator.loadStats()
         let databaseCategory = coordinator.storageCategories.first { $0.label == L10n.Dashboard.System.database }
@@ -307,7 +307,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 storageCategories 中 logs 分类的 count 来自 logger.getLogEntries().count
-    func testStorageCategories_logs分类Count来自LogEntriesCount() async throws {
+    func testStorageCategoriesLogsCountFromLogEntriesCount() async throws {
         recordableLogger.stubLogEntries = [
             LogEntry(action: .create, target: "1"),
             LogEntry(action: .update, target: "2"),
@@ -321,7 +321,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 storageCategories 中 storageExport 分类的 count 来自 LogEntries 中 action==.export 的数量
-    func testStorageCategories_storageExport分类Count来自ExportActionCount() async throws {
+    func testStorageCategoriesStorageExportCountFromExportActionCount() async throws {
         recordableLogger.stubLogEntries = [
             LogEntry(action: .export, target: "导出1"),
             LogEntry(action: .export, target: "导出2"),
@@ -334,7 +334,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 storageCategories 中 storageImport 分类的 count 来自 importRecordRepo.fetchAll().count
-    func testStorageCategories_storageImport分类Count来自FetchAllCount() async throws {
+    func testStorageCategoriesStorageImportCountFromFetchAllCount() async throws {
         try? await mockImportRecordRepo.save(makeRecord(category: .voice, size: 100))
         try? await mockImportRecordRepo.save(makeRecord(category: .file, size: 200))
         try? await mockImportRecordRepo.save(makeRecord(category: .ocr, size: 300))
@@ -344,7 +344,7 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     }
 
     /// 验证 storageCategories 中 models 分类的 count 来自 GlobalModelManager.shared.modelStorageUsage.count
-    func testStorageCategories_models分类Count来自ModelStorageUsageCount() async throws {
+    func testStorageCategoriesModelsCountFromModelStorageUsageCount() async throws {
         await coordinator.loadStats()
         let modelsCategory = coordinator.storageCategories.first { $0.label == L10n.Dashboard.System.models }
         XCTAssertEqual(modelsCategory?.count, 0, "models 分类 count 应等于 GlobalModelManager.shared.modelStorageUsage.count")

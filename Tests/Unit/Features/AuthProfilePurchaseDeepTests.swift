@@ -132,7 +132,7 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
     // MARK: - verifyApplePurchase Mock 模式
 
     /// 验证 Mock 模式下 verifyApplePurchase 成功激活 Pro
-    func testVerifyApplePurchase_Mock模式_成功激活Pro() async {
+    func testVerifyApplePurchaseMockModeSuccessActivatePro() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -153,7 +153,7 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 verifyApplePurchase 无当前用户时返回 false
-    func testVerifyApplePurchase_Mock模式_无当前用户_返回false() async {
+    func testVerifyApplePurchaseMockModeNoCurrentUserReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -173,7 +173,7 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
     /// 源码 AuthService.swift:235-247，Mock 模式构造 updated User 时未传入 gender、birthday、features、phone，
     /// 导致这些字段被 User.init 默认值覆盖（gender=nil, birthday=nil, features=[], phone=nil）。
     /// 严重程度：中（用户购买 Pro 后丢失个人资料字段）
-    func testVerifyApplePurchase_Mock模式_激活Pro_丢失gender和birthday() async {
+    func testVerifyApplePurchaseMockModeActivateProLosesGenderAndBirthday() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -200,7 +200,7 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 verifyApplePurchase 保留 name 和 email
-    func testVerifyApplePurchase_Mock模式_保留name和email() async {
+    func testVerifyApplePurchaseMockModeKeepsNameAndEmail() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -219,7 +219,7 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
     }
 
     /// 验证 Mock 模式下 verifyApplePurchase orderNo 为 nil 时仍成功
-    func testVerifyApplePurchase_Mock模式_orderNo为nil_仍成功() async {
+    func testVerifyApplePurchaseMockModeOrderNoNilStillSucceeds() async {
         #if DEBUG
         AuthService.forceMockBackend = true
         defer { AuthService.forceMockBackend = false }
@@ -238,7 +238,7 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
     // MARK: - verifyApplePurchase 非 Mock 模式
 
     /// 验证非 Mock 模式下 verifyApplePurchase 网络失败时返回 false
-    func testVerifyApplePurchase_非Mock模式_网络失败_返回false() async {
+    func testVerifyApplePurchaseNonMockModeNetworkFailureReturnsFalse() async {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif

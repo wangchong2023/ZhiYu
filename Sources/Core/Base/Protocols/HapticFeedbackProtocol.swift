@@ -42,7 +42,7 @@ public enum HapticFeedbackKey: DependencyKey {
 
     nonisolated public static var testValue: any HapticFeedbackProtocol {
         ServiceContainer.shared.resolveOptional((any HapticFeedbackProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpHapticFeedback() }
+            ?? runOnMainSync { NoOpHapticFeedback() }
     }
     nonisolated public static var previewValue: any HapticFeedbackProtocol { testValue }
 }

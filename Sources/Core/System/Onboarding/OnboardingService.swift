@@ -82,7 +82,7 @@ import Dependencies
 
     /// 重置单例状态用于测试隔离
     nonisolated func resetStateForTesting() {
-        MainActor.assumeIsolated {
+        runOnMainSync {
             reset()
         }
     }

@@ -20,13 +20,13 @@ final class L10nAIDeepTests: XCTestCase {
         XCTAssertFalse(value.isEmpty, "属性返回空字符串 \(context)")
     }
 
-    func testTableName_AI_为AI() {
+    func testTableNameAIIsAI() {
         XCTAssertEqual(L10n.AI.tableName, "AI")
     }
 
     // MARK: - 全量属性批量验证
 
-    func testAI_所有静态属性返回非Missing值() {
+    func testAIAllStaticPropertiesReturnNonMissingValues() {
         let values: [String] = [
             L10n.AI.Status.analyzing,
             L10n.AI.Status.digging,
@@ -366,7 +366,7 @@ final class L10nAIDeepTests: XCTestCase {
 
     // MARK: - 全量格式化方法验证
 
-    func testAI_所有格式化方法返回非Missing值() {
+    func testAIAllFormatMethodsReturnNonMissingValues() {
         assertNonMissing(L10n.AI.Status.indexing(1, 1, "x"), "L10n.AI.Status.indexing")
         assertNonMissing(L10n.AI.LLM.latency("x"), "L10n.AI.LLM.latency")
         assertNonMissing(L10n.AI.LLM.Validation.prefixHint("x"), "L10n.AI.LLM.Validation.prefixHint")

@@ -38,9 +38,9 @@ public enum ShareSheetKey: DependencyKey {
     }
     nonisolated public static var testValue: any ShareSheetProtocol {
         ServiceContainer.shared.resolveOptional((any ShareSheetProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpShareSheet() }
+            ?? runOnMainSync { NoOpShareSheet() }
     }
-    nonisolated public static var previewValue: any ShareSheetProtocol { MainActor.assumeIsolated { NoOpShareSheet() } }
+    nonisolated public static var previewValue: any ShareSheetProtocol { runOnMainSync { NoOpShareSheet() } }
 }
 
 extension DependencyValues {

@@ -31,6 +31,9 @@ final class IngestCoordinator {
     let importCooldownSeconds = AppConstants.Keys.ImportLimits.importCooldownSeconds
     var lastImportTime: Date = .distantPast
 
+    /// 后台导入 Task 句柄，用于测试 tearDown 主动取消，避免跨测试状态污染
+    private var ingestTask: Task<Void, Never>?
+
     // ── UI 控制状态 ──
     var isIngesting = false
     var isImporting: Bool {
@@ -111,7 +114,7 @@ final class IngestCoordinator {
         )
         Task { try? await importRecordRepo.save(record) }
 
-        Task {
+        ingestTask = Task {
             do {
                 let page = try await ingestStore.performIngest(
                     title: title,
@@ -146,6 +149,12 @@ final class IngestCoordinator {
                 }
             }
         }
+    }
+
+    /// 取消后台导入任务（用户离开页面或测试 tearDown 时调用）
+    func cancelIngestTask() {
+        ingestTask?.cancel()
+        ingestTask = nil
     }
 
     /// 预备保存导入的多媒体及文本文件

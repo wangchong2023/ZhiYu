@@ -49,7 +49,8 @@ struct CollaborationViewContent: View {
     }
 
     var body: some View {
-        let roomNameBinding = $roomName
+        // swiftlint:disable:next redundant_discardable_let
+        let _ = roomName
         ScrollView {
             VStack(spacing: DesignSystem.giant) {
                 headerSection
@@ -70,7 +71,7 @@ struct CollaborationViewContent: View {
         .background(PageBackgroundView(accentColor: .appAccent))
         .appSubPageToolbar(title: L10n.Collaboration.title)
         .sheet(isPresented: $showHostingSheet) {
-            HostingSetupSheet(collabService: collabService, roomName: roomNameBinding)
+            HostingSetupSheet(collabService: collabService, roomName: $roomName)
         }
         .alert(L10n.Collaboration.Error.connectionTimeout, isPresented: $showConnectionError) {
             Button(L10n.Common.ok, role: .cancel) { }

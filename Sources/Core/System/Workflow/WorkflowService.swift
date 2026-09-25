@@ -125,7 +125,7 @@ final class WorkflowService: ObservableObject {
 enum WorkflowServiceKey: DependencyKey {
     nonisolated static var liveValue: WorkflowService {
         ServiceContainer.shared.resolveOptional(WorkflowService.self)
-            ?? MainActor.assumeIsolated { WorkflowService() }
+            ?? runOnMainSync { WorkflowService() }
     }
     nonisolated static var testValue: WorkflowService { liveValue }
     nonisolated static var previewValue: WorkflowService { liveValue }

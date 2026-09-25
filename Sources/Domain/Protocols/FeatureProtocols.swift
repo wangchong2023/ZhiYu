@@ -139,7 +139,7 @@ public enum VaultServiceKey: DependencyKey {
 
     nonisolated public static var testValue: any VaultServiceProtocol {
         ServiceContainer.shared.resolveOptional((any VaultServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpVaultService() }
+            ?? runOnMainSync { NoOpVaultService() }
     }
     nonisolated public static var previewValue: any VaultServiceProtocol { testValue }
 }
@@ -204,7 +204,7 @@ enum ChatServiceKey: DependencyKey {
 
     nonisolated static var testValue: any ChatServiceProtocol {
         ServiceContainer.shared.resolveOptional((any ChatServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpChatService() }
+            ?? runOnMainSync { NoOpChatService() }
     }
     nonisolated static var previewValue: any ChatServiceProtocol { testValue }
 }

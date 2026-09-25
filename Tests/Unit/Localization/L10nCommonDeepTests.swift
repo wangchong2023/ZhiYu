@@ -25,17 +25,17 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - tableName
 
-    func testTableName_Common_为Common() {
+    func testTableNameCommonIsCommon() {
         XCTAssertEqual(L10n.Common.tableName, "Common")
     }
 
-    func testTableName_InitialNotebook_为Common() {
+    func testTableNameInitialNotebookIsCommon() {
         XCTAssertEqual(L10n.InitialNotebook.tableName, "Common")
     }
 
     // MARK: - 顶层属性
 
-    func testCommon_顶层基础属性返回非Missing值() {
+    func testCommonTopLevelBasicPropsReturnNonMissing() {
         let values = [
             L10n.Common.appName, L10n.Common.aiThinking, L10n.Common.configureAI,
             L10n.Common.rename, L10n.Common.appendToBody,
@@ -71,7 +71,7 @@ final class L10nCommonDeepTests: XCTestCase {
         assertNonMissing(L10n.Common.Status.simulatorNotSupported, "Status.simulatorNotSupported")
     }
 
-    func testCommon_Security_所有属性() {
+    func testCommonSecurityAllProps() {
         let values = [
             L10n.Common.Security.title, L10n.Common.Security.unlockReason,
             L10n.Common.Security.unlockToView, L10n.Common.Security.privacyMasked,
@@ -83,7 +83,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - LogAction
 
-    func testCommon_LogAction_所有属性() {
+    func testCommonLogActionAllProps() {
         let values = [
             L10n.Common.LogAction.create, L10n.Common.LogAction.delete,
             L10n.Common.LogAction.update, L10n.Common.LogAction.ingest
@@ -93,7 +93,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Stat / Stats
 
-    func testCommon_Stat_所有属性() {
+    func testCommonStatAllProps() {
         let values = [
             L10n.Common.Stat.newPages, L10n.Common.Stat.growth,
             L10n.Common.Stat.title, L10n.Common.Stat.totalWords
@@ -101,7 +101,7 @@ final class L10nCommonDeepTests: XCTestCase {
         for value in values { assertNonMissing(value) }
     }
 
-    func testCommon_Stats_所有属性() {
+    func testCommonStatsAllProps() {
         let values = [
             L10n.Common.Stats.newPages, L10n.Common.Stats.growth,
             L10n.Common.Stats.title
@@ -111,7 +111,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Sidebar
 
-    func testCommon_Sidebar_所有属性() {
+    func testCommonSidebarAllProps() {
         let values = [
             L10n.Common.Sidebar.title, L10n.Common.Sidebar.weeklyInsight,
             L10n.Common.Sidebar.dashboard, L10n.Common.Sidebar.allPages,
@@ -128,7 +128,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Tab
 
-    func testCommon_Tab_所有属性() {
+    func testCommonTabAllProps() {
         let values = [
             L10n.Common.Tab.knowledge, L10n.Common.Tab.chat,
             L10n.Common.Tab.graph, L10n.Common.Tab.synthesis,
@@ -141,7 +141,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Global / Empty
 
-    func testCommon_Global_所有属性() {
+    func testCommonGlobalAllProps() {
         assertNonMissing(L10n.Common.Global.noData)
         assertNonMissing(L10n.Common.Global.esc)
     }
@@ -152,7 +152,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Log.Status
 
-    func testCommon_Log_Status_所有属性() {
+    func testCommonLogStatusAllProps() {
         assertNonMissing(L10n.Common.Log.Status.success)
         assertNonMissing(L10n.Common.Log.Status.failure)
         assertNonMissing(L10n.Common.Log.Status.processing)
@@ -160,7 +160,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Perf
 
-    func testCommon_Perf_所有属性() {
+    func testCommonPerfAllProps() {
         let values = [
             L10n.Common.Perf.title, L10n.Common.Perf.lastUpdated,
             L10n.Common.Perf.memory, L10n.Common.Perf.timing,
@@ -174,7 +174,7 @@ final class L10nCommonDeepTests: XCTestCase {
         for value in values { assertNonMissing(value) }
     }
 
-    func testCommon_Perf_summary_所有属性() {
+    func testCommonPerfSummaryAllProps() {
         let values = [
             L10n.Common.Perf.summary.title, L10n.Common.Perf.summary.search,
             L10n.Common.Perf.summary.pages, L10n.Common.Perf.summary.words,
@@ -192,7 +192,7 @@ final class L10nCommonDeepTests: XCTestCase {
         assertNonMissing(L10n.Common.Palette.searchPlaceholder)
     }
 
-    func testCommon_Splash_所有属性() {
+    func testCommonSplashAllProps() {
         let values = [
             L10n.Common.Splash.appName, L10n.Common.Splash.author,
             L10n.Common.Splash.enter, L10n.Common.Splash.quote,
@@ -203,7 +203,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Spatial
 
-    func testCommon_Spatial_基础属性() {
+    func testCommonSpatialBasicProps() {
         let values = [
             L10n.Common.Spatial.title, L10n.Common.Spatial.subtitle,
             L10n.Common.Spatial.features, L10n.Common.Spatial.requirement
@@ -211,7 +211,7 @@ final class L10nCommonDeepTests: XCTestCase {
         for value in values { assertNonMissing(value) }
     }
 
-    func testCommon_Spatial_Feature引用属性() {
+    func testCommonSpatialFeatureRefProps() {
         let values = [
             L10n.Common.Spatial.featureGraph3D, L10n.Common.Spatial.featureGraph3DDesc,
             L10n.Common.Spatial.featureGaze, L10n.Common.Spatial.featureGazeDesc,
@@ -243,7 +243,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Demo.Welcome
 
-    func testCommon_Demo_Welcome_所有属性() {
+    func testCommonDemoWelcomeAllProps() {
         let values = [
             L10n.Common.Demo.Welcome.title, L10n.Common.Demo.Welcome.content,
             L10n.Common.Demo.Welcome.prompt, L10n.Common.Demo.Welcome.tag1,
@@ -256,7 +256,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Demo 子模块
 
-    func testCommon_Demo_各子模块title和content() {
+    func testCommonDemoSubModulesTitleAndContent() {
         let pairs: [(String, String)] = [
             (L10n.Common.Demo.aiAgent.title, L10n.Common.Demo.aiAgent.content),
             (L10n.Common.Demo.planning.title, L10n.Common.Demo.planning.content),
@@ -282,7 +282,7 @@ final class L10nCommonDeepTests: XCTestCase {
         }
     }
 
-    func testCommon_Demo_连接词属性() {
+    func testCommonDemoConnectorProps() {
         let values = [
             L10n.Common.Demo.relatedConcepts, L10n.Common.Demo.dependsOn,
             L10n.Common.Demo.core, L10n.Common.Demo.integratesWith,
@@ -293,7 +293,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Tags
 
-    func testCommon_Tags_所有属性() {
+    func testCommonTagsAllProps() {
         let values = [
             L10n.Common.Tags.ai, L10n.Common.Tags.agent,
             L10n.Common.Tags.planning, L10n.Common.Tags.memory,
@@ -310,7 +310,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     /// B-1: Tags.memory 使用 `demo.memory.title` key 而非 `tags.memory` key
     /// 与 Perf.memory（使用 `tags.memory`）不一致，可能导致标签显示的是 Demo 标题而非标签文案
-    func testCommon_Tags_memory与Perf_memory应使用相同key() {
+    func testCommonTagsMemoryAndPerfMemoryShouldUseSameKey() {
         let tagsMemory = L10n.Common.Tags.memory
         let perfMemory = L10n.Common.Perf.memory
         // 如果两者使用不同 key，返回值可能不同
@@ -321,7 +321,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - Misc
 
-    func testCommon_Misc_所有属性() {
+    func testCommonMiscAllProps() {
         let values = [
             L10n.Common.Misc.correct, L10n.Common.Misc.incorrect,
             L10n.Common.Misc.nextQuestion, L10n.Common.Misc.viewResults,
@@ -335,7 +335,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - InitialNotebook.PKM
 
-    func testInitialNotebook_PKM_所有属性() {
+    func testInitialNotebookPKMAllProps() {
         let values = [
             L10n.InitialNotebook.PKM.title1, L10n.InitialNotebook.PKM.content1,
             L10n.InitialNotebook.PKM.title2, L10n.InitialNotebook.PKM.content2,
@@ -348,7 +348,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - InitialNotebook.Coffee
 
-    func testInitialNotebook_Coffee_所有属性() {
+    func testInitialNotebookCoffeeAllProps() {
         let values = [
             L10n.InitialNotebook.Coffee.title1, L10n.InitialNotebook.Coffee.content1,
             L10n.InitialNotebook.Coffee.title2, L10n.InitialNotebook.Coffee.content2,
@@ -361,7 +361,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - InitialNotebook.Fallback
 
-    func testInitialNotebook_Fallback_所有属性() {
+    func testInitialNotebookFallbackAllProps() {
         let values = [
             L10n.InitialNotebook.Fallback.methodology,
             L10n.InitialNotebook.Fallback.workflow,
@@ -373,7 +373,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - InitialNotebook.Snippet
 
-    func testInitialNotebook_Snippet_所有属性() {
+    func testInitialNotebookSnippetAllProps() {
         let values = [
             L10n.InitialNotebook.Snippet.methodology,
             L10n.InitialNotebook.Snippet.workflow,
@@ -393,7 +393,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     /// B-2: Snippet.workflow 使用 `demo.fallback.workflow` key 而非 `demo.snippet.workflow`
     /// 与同 enum 中其他属性使用 `demo.snippet.*` 前缀不一致
-    func testInitialNotebook_Snippet_workflow与Fallback_workflow使用相同key() {
+    func testInitialNotebookSnippetWorkflowAndFallbackWorkflowUseSameKey() {
         let snippetWorkflow = L10n.InitialNotebook.Snippet.workflow
         let fallbackWorkflow = L10n.InitialNotebook.Fallback.workflow
         // 两者都使用 demo.fallback.workflow — Snippet.workflow 应该用 demo.snippet.workflow
@@ -402,7 +402,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - InitialNotebook.FileNames
 
-    func testInitialNotebook_FileNames_所有属性() {
+    func testInitialNotebookFileNamesAllProps() {
         let values = [
             L10n.InitialNotebook.FileNames.methodology,
             L10n.InitialNotebook.FileNames.workflow,
@@ -418,7 +418,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - InitialNotebook.Log
 
-    func testInitialNotebook_Log_所有属性() {
+    func testInitialNotebookLogAllProps() {
         let values = [
             L10n.InitialNotebook.Log.defaultDemoData,
             L10n.InitialNotebook.Log.researchDemoData,
@@ -431,7 +431,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - InitialNotebook.Tags
 
-    func testInitialNotebook_Tags_所有属性() {
+    func testInitialNotebookTagsAllProps() {
         let values = [
             L10n.InitialNotebook.Tags.knowledgeMgmt,
             L10n.InitialNotebook.Tags.methodology,
@@ -477,7 +477,7 @@ final class L10nCommonDeepTests: XCTestCase {
 
     // MARK: - SearchPlaceholder 顶层
 
-    func testSearchPlaceholder_顶层属性() {
+    func testSearchPlaceholderTopLevelProps() {
         assertNonMissing(L10n.SearchPlaceholder)
     }
 }

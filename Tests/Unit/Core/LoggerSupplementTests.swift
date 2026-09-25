@@ -28,31 +28,31 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - Logger 基础日志方法
 
     /// Logger.debug 应不崩溃（DEBUG 模式下打印）
-    func testLogger_debug_不崩溃() {
+    func testLoggerDebugNoCrash() {
         Logger.shared.debug("test debug message")
         // 不崩溃即通过
     }
 
     /// Logger.info 应不崩溃
-    func testLogger_info_不崩溃() {
+    func testLoggerInfoNoCrash() {
         Logger.shared.info("test info message")
         // 不崩溃即通过
     }
 
     /// Logger.warning 应不崩溃
-    func testLogger_warning_不崩溃() {
+    func testLoggerWarningNoCrash() {
         Logger.shared.warning("test warning message")
         // 不崩溃即通过
     }
 
     /// Logger.error 无 error 参数应不崩溃
-    func testLogger_error_无error_不崩溃() {
+    func testLoggerErrorNoErrorNoCrash() {
         Logger.shared.error("test error message")
         // 不崩溃即通过
     }
 
     /// Logger.error 带 error 参数应不崩溃
-    func testLogger_error_带error_不崩溃() {
+    func testLoggerErrorWithErrorNoCrash() {
         let error = NSError(domain: "test", code: 1, userInfo: nil)
         Logger.shared.error("test error with error", error: error)
         // 不崩溃即通过
@@ -61,7 +61,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - addLog 结构化日志
 
     /// Logger.addLog 完整参数应不崩溃并记录
-    func testLogger_addLog_完整参数_记录成功() async {
+    func testLoggerAddLogFullParamsRecordsSuccessfully() async {
         await Logger.shared.clearAllLogs()
         Logger.shared.addLog(
             action: .create, target: "test_target", details: "test_details",
@@ -75,14 +75,14 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// Logger.addLog 最小参数应不崩溃
-    func testLogger_addLog_最小参数_不崩溃() async {
+    func testLoggerAddLogMinimalParamsNoCrash() async {
         Logger.shared.addLog(action: .update, target: "minimal")
         try? await Task.sleep(nanoseconds: 100_000_000)
         // 不崩溃即通过
     }
 
     /// Logger.addLog 失败状态应记录 failureReason
-    func testLogger_addLog_失败状态_记录failureReason() async {
+    func testLoggerAddLogFailureStatusRecordsFailureReason() async {
         await Logger.shared.clearAllLogs()
         Logger.shared.addLog(
             action: .delete, target: "failed_op",
@@ -100,7 +100,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - logTimed
 
     /// Logger.logTimed 成功操作应记录 success 状态
-    func testLogger_logTimed_成功_记录Success() async throws {
+    func testLoggerLogTimedSuccessRecordsSuccess() async throws {
         await Logger.shared.clearAllLogs()
         let result = Logger.shared.logTimed(action: .ingest, target: "timed_op") {
             return 42
@@ -115,7 +115,7 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// Logger.logTimed 抛出异常应记录 failure 状态并重新抛出
-    func testLogger_logTimed_抛异常_记录Failure并重新抛出() async {
+    func testLoggerLogTimedThrowsRecordsFailureAndRethrows() async {
         await Logger.shared.clearAllLogs()
         struct TestError: Error {}
 
@@ -137,7 +137,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - 持久化
 
     /// Logger.clearAllLogs 应清空所有日志
-    func testLogger_clearAllLogs_清空日志() async {
+    func testLoggerClearAllLogsClearsLogs() async {
         Logger.shared.addLog(action: .create, target: "to_be_cleared")
         try? await Task.sleep(nanoseconds: 100_000_000)
         await Logger.shared.clearAllLogs()
@@ -146,7 +146,7 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// Logger.saveToDisk + loadFromDisk 应能持久化和恢复
-    func testLogger_saveAndLoad_持久化恢复() async {
+    func testLoggerSaveAndLoadPersistenceRestore() async {
         await Logger.shared.clearAllLogs()
         Logger.shared.addLog(action: .create, target: "persist_test")
         try? await Task.sleep(nanoseconds: 200_000_000)
@@ -158,7 +158,7 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// Logger.getLogEntries 应按时间倒序排列
-    func testLogger_getLogEntries_按时间倒序() async {
+    func testLoggerGetLogEntriesByTimeDescending() async {
         await Logger.shared.clearAllLogs()
         Logger.shared.addLog(action: .create, target: "first")
         try? await Task.sleep(nanoseconds: 50_000_000)
@@ -176,7 +176,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - logEntriesPublisher
 
     /// Logger.logEntriesPublisher 应能订阅并接收更新
-    func testLogger_logEntriesPublisher_订阅接收() async {
+    func testLoggerLogEntriesPublisherSubscribeReceive() async {
         await Logger.shared.clearAllLogs()
         var receivedEntries: [LogEntry] = []
         let cancellable = Logger.shared.logEntriesPublisher
@@ -192,7 +192,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - maxLogEntries 截断
 
     /// Logger 超过 maxLogEntries(500) 应截断
-    func testLogger_超过500条_截断() async {
+    func testLoggerOver500EntriesTruncated() async {
         let logger = Logger(customDirectory: FileManager.default.temporaryDirectory
             .appendingPathComponent("logger_test_\(UUID().uuidString)"))
         await logger.clearAllLogs()
@@ -208,45 +208,45 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - LogMasker 脱敏
 
     /// LogMasker 应脱敏 OpenAI API key (sk-)
-    func testLogMasker_OpenAIKey_脱敏() {
+    func testLogMaskerOpenAIKeyMasked() {
         let masked = LogMasker.mask("my key is sk-1234567890abcdefghijklmnopqrstuvwxyz")
         XCTAssertTrue(masked.contains("sk-****"), "OpenAI key 应被脱敏为 sk-****")
         XCTAssertFalse(masked.contains("sk-1234567890abcdefghijklmnopqrstuvwxyz"), "原始 key 不应残留")
     }
 
     /// LogMasker 应脱敏 Anthropic API key (sk-ant-)
-    func testLogMasker_AnthropicKey_脱敏() {
+    func testLogMaskerAnthropicKeyMasked() {
         let masked = LogMasker.mask("key: sk-ant-1234567890abcdefghij")
         XCTAssertTrue(masked.contains("sk-ant-****"), "Anthropic key 应被脱敏")
     }
 
     /// LogMasker 应脱敏 Google API key (AIza)
-    func testLogMasker_GoogleKey_脱敏() {
+    func testLogMaskerGoogleKeyMasked() {
         let masked = LogMasker.mask("google: AIza1234567890abcdefghijklmnopqrstuvwxyz")
         XCTAssertTrue(masked.contains("AIza****"), "Google key 应被脱敏")
     }
 
     /// LogMasker 应脱敏 Zhipu API key (xxx.xxx 格式)
-    func testLogMasker_ZhipuKey_脱敏() {
+    func testLogMaskerZhipuKeyMasked() {
         let masked = LogMasker.mask("zhipu: abcdef1234567890abcdef1234567890.abcdefgh1234567890")
         XCTAssertTrue(masked.contains("****.****"), "Zhipu key 应被脱敏")
     }
 
     /// LogMasker 应脱敏 Authorization Bearer header
-    func testLogMasker_AuthBearer_脱敏() {
+    func testLogMaskerAuthBearerMasked() {
         let masked = LogMasker.mask("Authorization: Bearer abc123def456")
         XCTAssertTrue(masked.contains("Authorization: Bearer ****"), "Auth Bearer 应被脱敏")
     }
 
     /// LogMasker 无敏感信息应原样返回
-    func testLogMasker_无敏感信息_原样返回() {
+    func testLogMaskerNoSensitiveInfoReturnsAsIs() {
         let plain = "this is a normal log message"
         let masked = LogMasker.mask(plain)
         XCTAssertEqual(masked, plain, "无敏感信息应原样返回")
     }
 
     /// LogMasker 空字符串应原样返回
-    func testLogMasker_空字符串_原样返回() {
+    func testLogMaskerEmptyStringReturnsAsIs() {
         let masked = LogMasker.mask("")
         XCTAssertEqual(masked, "")
     }
@@ -254,21 +254,21 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - TimeInterval.formattedAdaptive
 
     /// formattedAdaptive 微秒级 (< 1ms)
-    func testFormattedAdaptive_微秒级() {
+    func testFormattedAdaptiveMicrosecondLevel() {
         let interval: TimeInterval = 0.0005
         let formatted = interval.formattedAdaptive
         XCTAssertTrue(formatted.contains("µs"), "微秒级应显示 µs 单位")
     }
 
     /// formattedAdaptive 毫秒级 (< 1s)
-    func testFormattedAdaptive_毫秒级() {
+    func testFormattedAdaptiveMillisecondLevel() {
         let interval: TimeInterval = 0.05
         let formatted = interval.formattedAdaptive
         XCTAssertTrue(formatted.contains("ms"), "毫秒级应显示 ms 单位")
     }
 
     /// formattedAdaptive 秒级 (< 60s)
-    func testFormattedAdaptive_秒级() {
+    func testFormattedAdaptiveSecondLevel() {
         let interval: TimeInterval = 5.0
         let formatted = interval.formattedAdaptive
         XCTAssertTrue(formatted.contains("s"), "秒级应显示 s 单位")
@@ -276,7 +276,7 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// formattedAdaptive 分钟级 (>= 60s)
-    func testFormattedAdaptive_分钟级() {
+    func testFormattedAdaptiveMinuteLevel() {
         let interval: TimeInterval = 125.0
         let formatted = interval.formattedAdaptive
         XCTAssertTrue(formatted.contains("m"), "分钟级应显示 m 单位")
@@ -285,7 +285,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - NoOpLogger
 
     /// NoOpLogger 所有方法应不崩溃且返回安全默认值
-    func testNoOpLogger_所有方法_安全默认值() async {
+    func testNoOpLoggerAllMethodsSafeDefaults() async {
         let logger = NoOpLogger()
         logger.debug("test")
         logger.info("test")
@@ -301,7 +301,7 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// NoOpLogger.logTimed 应直接执行操作并返回结果
-    func testNoOpLogger_logTimed_直接执行() throws {
+    func testNoOpLoggerLogTimedDirectExecution() throws {
         let logger = NoOpLogger()
         let result = try logger.logTimed(action: .create, target: "test", module: nil, details: "") {
             return 100
@@ -312,21 +312,21 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - LogAction 枚举
 
     /// LogAction 所有 case 的 colorName 应非空
-    func testLogAction_allCases_colorName非空() {
+    func testLogActionAllCasesColorNameNonEmpty() {
         for action in LogAction.allCases {
             XCTAssertFalse(action.colorName.isEmpty, "\(action) 的 colorName 不应为空")
         }
     }
 
     /// LogAction 所有 case 的 icon 应非空
-    func testLogAction_allCases_icon非空() {
+    func testLogActionAllCasesIconNonEmpty() {
         for action in LogAction.allCases {
             XCTAssertFalse(action.icon.isEmpty, "\(action) 的 icon 不应为空")
         }
     }
 
     /// LogAction.localizedName 应非空
-    func testLogAction_localizedName_非空() {
+    func testLogActionLocalizedNameNonEmpty() {
         for action in LogAction.allCases {
             XCTAssertFalse(action.localizedName.isEmpty, "\(action) 的 localizedName 不应为空")
         }
@@ -335,7 +335,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - LogStatus 枚举
 
     /// LogStatus 所有 case 的 localizedName 应非空
-    func testLogStatus_allCases_localizedName非空() {
+    func testLogStatusAllCasesLocalizedNameNonEmpty() {
         for status in LogStatus.allCases {
             XCTAssertFalse(status.localizedName.isEmpty, "\(status) 的 localizedName 不应为空")
         }
@@ -344,7 +344,7 @@ final class LoggerSupplementTests: XCTestCase {
     // MARK: - LogEntry
 
     /// LogEntry 默认初始化应正确设置属性
-    func testLogEntry_默认初始化_属性正确() {
+    func testLogEntryDefaultInitPropsCorrect() {
         let entry = LogEntry(action: .create, target: "test")
         XCTAssertEqual(entry.action, .create)
         XCTAssertEqual(entry.target, "test")
@@ -358,7 +358,7 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// LogEntry 完整初始化应正确设置所有属性
-    func testLogEntry_完整初始化_属性正确() {
+    func testLogEntryFullInitPropsCorrect() {
         let id = UUID()
         let start = Date()
         let end = Date()
@@ -382,7 +382,7 @@ final class LoggerSupplementTests: XCTestCase {
     }
 
     /// LogEntry Codable 编解码应正确往返
-    func testLogEntry_Codable_编解码往返() throws {
+    func testLogEntryCodableEncodeDecodeRoundtrip() throws {
         let entry = LogEntry(
             action: .update, target: "codec_test",
             details: "codec details", duration: 1.0,

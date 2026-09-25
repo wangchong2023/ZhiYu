@@ -180,7 +180,7 @@ enum LLMChatServiceKey: DependencyKey {
 
     nonisolated public static var testValue: any LLMChatServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMChatServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpLLMChatService() }
+            ?? runOnMainSync { NoOpLLMChatService() }
     }
     nonisolated static var previewValue: any LLMChatServiceProtocol { testValue }
 }
@@ -193,7 +193,7 @@ enum LLMKnowledgeServiceKey: DependencyKey {
 
     nonisolated public static var testValue: any LLMKnowledgeServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMKnowledgeServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpLLMKnowledgeService() }
+            ?? runOnMainSync { NoOpLLMKnowledgeService() }
     }
     nonisolated static var previewValue: any LLMKnowledgeServiceProtocol { testValue }
 }
@@ -206,7 +206,7 @@ enum LLMRetrievalServiceKey: DependencyKey {
 
     nonisolated public static var testValue: any LLMRetrievalServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMRetrievalServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpLLMRetrievalService() }
+            ?? runOnMainSync { NoOpLLMRetrievalService() }
     }
     nonisolated static var previewValue: any LLMRetrievalServiceProtocol { testValue }
 }
@@ -245,7 +245,7 @@ enum LLMServiceKey: DependencyKey {
 
     nonisolated public static var testValue: any LLMServiceProtocol {
         ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self)
-            ?? MainActor.assumeIsolated { NoOpLLMService() }
+            ?? runOnMainSync { NoOpLLMService() }
     }
     nonisolated static var previewValue: any LLMServiceProtocol { testValue }
 }

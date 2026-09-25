@@ -14,13 +14,13 @@ final class AudioSplitterTests: XCTestCase {
     // MARK: - split 等价类划分
 
     /// 空 Data → 空数组
-    func testSplit_空数据_返回空数组() {
+    func testSplitEmptyDataReturnsEmptyArray() {
         let result = AudioSplitter.split(data: Data())
         XCTAssertTrue(result.isEmpty, "空数据应返回空数组")
     }
 
     /// 数据长度 < chunkSize → 单分片
-    func testSplit_数据小于chunkSize_单分片() {
+    func testSplitDataLessThanChunkSizeSingleChunk() {
         let data = Data(repeating: 0xAB, count: 100)
         let result = AudioSplitter.split(data: data, chunkSize: 256)
         XCTAssertEqual(result.count, 1)
@@ -28,7 +28,7 @@ final class AudioSplitterTests: XCTestCase {
     }
 
     /// 数据长度 == chunkSize → 单分片
-    func testSplit_数据等于chunkSize_单分片() {
+    func testSplitDataEqualsChunkSizeSingleChunk() {
         let data = Data(repeating: 0xAB, count: 256)
         let result = AudioSplitter.split(data: data, chunkSize: 256)
         XCTAssertEqual(result.count, 1)
@@ -36,7 +36,7 @@ final class AudioSplitterTests: XCTestCase {
     }
 
     /// 数据长度 == chunkSize * N → N 个分片
-    func testSplit_数据整除chunkSize_N个分片() {
+    func testSplitDataDivisibleByChunkSizeNChunks() {
         let data = Data(repeating: 0xAB, count: 512)
         let result = AudioSplitter.split(data: data, chunkSize: 256)
         XCTAssertEqual(result.count, 2)
@@ -45,7 +45,7 @@ final class AudioSplitterTests: XCTestCase {
     }
 
     /// 数据长度 == chunkSize * N + remainder → N+1 个分片，最后一个为 remainder
-    func testSplit_数据非整除chunkSize_N加1个分片() {
+    func testSplitDataNotDivisibleByChunkSizeNPlusOneChunks() {
         let data = Data(repeating: 0xAB, count: 300)
         let result = AudioSplitter.split(data: data, chunkSize: 256)
         XCTAssertEqual(result.count, 2)
@@ -54,7 +54,7 @@ final class AudioSplitterTests: XCTestCase {
     }
 
     /// 自定义 chunkSize=1 → 每字节一个分片
-    func testSplit_chunkSize为1_每字节一个分片() {
+    func testSplitChunkSizeIs1OneChunkPerByte() {
         let data = Data(repeating: 0xAB, count: 5)
         let result = AudioSplitter.split(data: data, chunkSize: 1)
         XCTAssertEqual(result.count, 5)
@@ -64,7 +64,7 @@ final class AudioSplitterTests: XCTestCase {
     }
 
     /// 默认 chunkSize 为 256KB
-    func testSplit_默认chunkSize_256KB() {
+    func testSplitDefaultChunkSize256KB() {
         let data = Data(repeating: 0xAB, count: 256 * 1024 + 1)
         let result = AudioSplitter.split(data: data)
         XCTAssertEqual(result.count, 2)
@@ -75,13 +75,13 @@ final class AudioSplitterTests: XCTestCase {
     // MARK: - merge 测试
 
     /// 空数组 → 空 Data
-    func testMerge_空数组_返回空Data() {
+    func testMergeEmptyArrayReturnsEmptyData() {
         let result = AudioSplitter.merge(chunks: [])
         XCTAssertTrue(result.isEmpty)
     }
 
     /// 单分片 → 原始 Data
-    func testMerge_单分片_返回原始Data() {
+    func testMergeSingleChunkReturnsOriginalData() {
         let original = Data(repeating: 0xCD, count: 100)
         let result = AudioSplitter.merge(chunks: [original])
         XCTAssertEqual(result, original)
@@ -90,7 +90,7 @@ final class AudioSplitterTests: XCTestCase {
     // MARK: - 往返测试（split → merge 还原）
 
     /// split 后 merge 应还原原始数据
-    func testRoundTrip_split后merge_还原原始数据() {
+    func testRoundTripSplitThenMergeRestoresOriginalData() {
         let original = Data(repeating: 0xEF, count: 1000)
         let chunks = AudioSplitter.split(data: original, chunkSize: 256)
         let recovered = AudioSplitter.merge(chunks: chunks)
@@ -98,7 +98,7 @@ final class AudioSplitterTests: XCTestCase {
     }
 
     /// 大数据往返测试（默认 chunkSize）
-    func testRoundTrip_大数据_默认chunkSize() {
+    func testRoundTripLargeDataDefaultChunkSize() {
         let original = Data(repeating: 0x12, count: 1024 * 1024)
         let chunks = AudioSplitter.split(data: original)
         let recovered = AudioSplitter.merge(chunks: chunks)

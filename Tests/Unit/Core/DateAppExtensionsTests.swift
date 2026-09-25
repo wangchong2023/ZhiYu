@@ -14,30 +14,30 @@ final class DateAppExtensionsTests: XCTestCase {
 
     // MARK: - AppFormatStyle 常量值断言
 
-    func testAppFormat_iso8601常量值() {
+    func testAppFormatIso8601ConstantValue() {
         XCTAssertEqual(Date.AppFormatStyle.iso8601, "yyyy-MM-dd")
     }
 
-    func testAppFormat_detailed常量值() {
+    func testAppFormatDetailedConstantValue() {
         XCTAssertEqual(Date.AppFormatStyle.detailed, "yyyy-MM-dd HH:mm")
     }
 
-    func testAppFormat_slashDetailed常量值() {
+    func testAppFormatSlashDetailedConstantValue() {
         XCTAssertEqual(Date.AppFormatStyle.slashDetailed, "yyyy/M/d HH:mm")
     }
 
-    func testAppFormat_monthDay常量值() {
+    func testAppFormatMonthDayConstantValue() {
         XCTAssertEqual(Date.AppFormatStyle.monthDay, "M-d")
     }
 
-    func testAppFormat_year常量值() {
+    func testAppFormatYearConstantValue() {
         XCTAssertEqual(Date.AppFormatStyle.year, "yyyy")
     }
 
     // MARK: - formatted(as:) 格式化验证
 
     /// 固定日期验证 5 种格式（用 UTC 固定时区避免漂移）
-    func testFormatted_固定日期_5种格式() {
+    func testFormattedFixedDateFiveFormats() {
         var components = DateComponents()
         components.year = 2026
         components.month = 8
@@ -71,7 +71,7 @@ final class DateAppExtensionsTests: XCTestCase {
     }
 
     /// formatted(as:) 返回非空字符串
-    func testFormatted_任意日期_返回非空() {
+    func testFormattedAnyDateReturnsNonEmpty() {
         let date = Date()
         XCTAssertFalse(date.formatted(as: Date.AppFormatStyle.iso8601).isEmpty)
         XCTAssertFalse(date.formatted(as: Date.AppFormatStyle.detailed).isEmpty)

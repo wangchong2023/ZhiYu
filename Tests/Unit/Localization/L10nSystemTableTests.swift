@@ -17,25 +17,25 @@ final class L10nSystemTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Shortcuts_为System() {
+    func testTableNameShortcutsIsSystem() {
         XCTAssertEqual(L10n.Shortcuts.tableName, "System")
     }
 
-    func testTableName_Workflow_为System() {
+    func testTableNameWorkflowIsSystem() {
         XCTAssertEqual(L10n.Workflow.tableName, "System")
     }
 
-    func testTableName_Coachmark_为System() {
+    func testTableNameCoachmarkIsSystem() {
         XCTAssertEqual(L10n.Coachmark.tableName, "System")
     }
 
-    func testTableName_Reminder_为System() {
+    func testTableNameReminderIsSystem() {
         XCTAssertEqual(L10n.Reminder.tableName, "System")
     }
 
     // MARK: - Shortcuts 属性 key 存在性
 
-    func testShortcuts_Capture_所有属性返回非Missing值() {
+    func testShortcutsCaptureAllPropsReturnNonMissing() {
         let values = [
             L10n.Shortcuts.Capture.title,
             L10n.Shortcuts.Capture.description,
@@ -50,7 +50,7 @@ final class L10nSystemTableTests: XCTestCase {
         }
     }
 
-    func testShortcuts_Search_所有属性返回非Missing值() {
+    func testShortcutsSearchAllPropsReturnNonMissing() {
         let values = [
             L10n.Shortcuts.Search.title,
             L10n.Shortcuts.Search.description,
@@ -64,7 +64,7 @@ final class L10nSystemTableTests: XCTestCase {
         }
     }
 
-    func testShortcuts_Stats_所有属性返回非Missing值() {
+    func testShortcutsStatsAllPropsReturnNonMissing() {
         let values = [
             L10n.Shortcuts.Stats.title,
             L10n.Shortcuts.Stats.description
@@ -76,7 +76,7 @@ final class L10nSystemTableTests: XCTestCase {
         }
     }
 
-    func testShortcuts_Provider_所有属性返回非Missing值() {
+    func testShortcutsProviderAllPropsReturnNonMissing() {
         let values = [
             L10n.Shortcuts.Provider.capturePhrases1,
             L10n.Shortcuts.Provider.capturePhrases2,
@@ -97,21 +97,21 @@ final class L10nSystemTableTests: XCTestCase {
 
     // MARK: - Shortcuts trf 参数化方法
 
-    func testShortcuts_Capture_pageTitle_返回非Missing() {
+    func testShortcutsCapturePageTitleReturnsNonMissing() {
         let result = L10n.Shortcuts.Capture.pageTitle("测试摘要")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Capture.pageTitle 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testShortcuts_Search_success_返回非Missing() {
+    func testShortcutsSearchSuccessReturnsNonMissing() {
         let result = L10n.Shortcuts.Search.success("测试查询")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Search.success 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testShortcuts_Stats_success_返回非Missing() {
+    func testShortcutsStatsSuccessReturnsNonMissing() {
         let result = L10n.Shortcuts.Stats.success(10)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Stats.success 返回 Missing: \(result)")
@@ -120,7 +120,7 @@ final class L10nSystemTableTests: XCTestCase {
 
     // MARK: - Workflow 属性 key 存在性
 
-    func testWorkflow_所有属性返回非Missing值() {
+    func testWorkflowAllPropsReturnNonMissing() {
         let values = [
             L10n.Workflow.accessDeniedMessage,
             L10n.Workflow.noTasksFoundMessage
@@ -134,28 +134,28 @@ final class L10nSystemTableTests: XCTestCase {
 
     // MARK: - Workflow trf 参数化方法
 
-    func testWorkflow_syncingMessage_返回非Missing() {
+    func testWorkflowSyncingMessageReturnsNonMissing() {
         let result = L10n.Workflow.syncingMessage(5)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "syncingMessage 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testWorkflow_sourceNotes_返回非Missing() {
+    func testWorkflowSourceNotesReturnsNonMissing() {
         let result = L10n.Workflow.sourceNotes("测试标题")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "sourceNotes 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testWorkflow_syncSuccessMessage_返回非Missing() {
+    func testWorkflowSyncSuccessMessageReturnsNonMissing() {
         let result = L10n.Workflow.syncSuccessMessage(3)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "syncSuccessMessage 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
     }
 
-    func testWorkflow_syncErrorMessage_返回非Missing() {
+    func testWorkflowSyncErrorMessageReturnsNonMissing() {
         let result = L10n.Workflow.syncErrorMessage("测试错误")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "syncErrorMessage 返回 Missing: \(result)")
@@ -164,7 +164,7 @@ final class L10nSystemTableTests: XCTestCase {
 
     // MARK: - Coachmark 属性 key 存在性
 
-    func testCoachmark_所有属性返回非Missing值() {
+    func testCoachmarkAllPropsReturnNonMissing() {
         let values = [
             L10n.Coachmark.graphDiscoveryTitle,
             L10n.Coachmark.graphDiscoveryDesc,
@@ -179,7 +179,7 @@ final class L10nSystemTableTests: XCTestCase {
 
     // MARK: - Reminder 属性 key 存在性
 
-    func testReminder_所有属性返回非Missing值() {
+    func testReminderAllPropsReturnNonMissing() {
         let value = L10n.Reminder.noListAvailableMessage
         XCTAssertFalse(value.contains("[MISSING:"),
                        "Reminder 属性返回 Missing: \(value)")

@@ -17,21 +17,21 @@ final class L10nPlatformTableTests: XCTestCase {
 
     // MARK: - tableName 正确性
 
-    func testTableName_Watch_为Platform() {
+    func testTableNameWatchIsPlatform() {
         XCTAssertEqual(L10n.Watch.tableName, "Platform")
     }
 
-    func testTableName_Widget_为Platform() {
+    func testTableNameWidgetIsPlatform() {
         XCTAssertEqual(L10n.Widget.tableName, "Platform")
     }
 
-    func testTableName_Platform_为Platform() {
+    func testTableNamePlatformIsPlatform() {
         XCTAssertEqual(L10n.Platform.tableName, "Platform")
     }
 
     // MARK: - Watch 属性 key 存在性
 
-    func testWatch_基础属性返回非Missing值() {
+    func testWatchBasicPropsReturnNonMissing() {
         let values = [
             L10n.Watch.capture,
             L10n.Watch.recents,
@@ -55,7 +55,7 @@ final class L10nPlatformTableTests: XCTestCase {
         }
     }
 
-    func testWatch_占位提示属性返回非Missing值() {
+    func testWatchPlaceholderPropsReturnNonMissing() {
         let values = [
             L10n.Watch.taskCenterPlaceholder,
             L10n.Watch.promptWorkshopPlaceholder,
@@ -74,7 +74,7 @@ final class L10nPlatformTableTests: XCTestCase {
 
     // MARK: - Watch trf 参数化方法
 
-    func testWatch_briefingPromptTemplate_返回非Missing() {
+    func testWatchBriefingPromptTemplateReturnsNonMissing() {
         let result = L10n.Watch.briefingPromptTemplate("测试内容")
         XCTAssertFalse(result.contains("[MISSING:"),
                        "briefingPromptTemplate 返回 Missing: \(result)")
@@ -83,7 +83,7 @@ final class L10nPlatformTableTests: XCTestCase {
 
     // MARK: - Widget 属性 key 存在性
 
-    func testWidget_所有属性返回非Missing值() {
+    func testWidgetAllPropsReturnNonMissing() {
         let values = [
             L10n.Widget.title,
             L10n.Widget.pages,
@@ -126,7 +126,7 @@ final class L10nPlatformTableTests: XCTestCase {
 
     // MARK: - Widget trf 参数化方法
 
-    func testWidget_pages_返回非Missing() {
+    func testWidgetPagesReturnsNonMissing() {
         let result = L10n.Widget.pages(10)
         XCTAssertFalse(result.contains("[MISSING:"),
                        "Widget.pages 返回 Missing: \(result)")
@@ -135,7 +135,7 @@ final class L10nPlatformTableTests: XCTestCase {
 
     // MARK: - Platform 属性 key 存在性
 
-    func testPlatform_Unsupported_所有属性返回非Missing值() {
+    func testPlatformUnsupportedAllPropsReturnNonMissing() {
         let values = [
             L10n.Platform.Unsupported.pdf,
             L10n.Platform.Unsupported.mermaid
@@ -147,7 +147,7 @@ final class L10nPlatformTableTests: XCTestCase {
         }
     }
 
-    func testPlatform_Watch_所有属性返回非Missing值() {
+    func testPlatformWatchAllPropsReturnNonMissing() {
         let values = [
             L10n.Platform.Watch.pages,
             L10n.Platform.Watch.words,

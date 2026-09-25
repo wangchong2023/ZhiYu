@@ -75,7 +75,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     // MARK: - deleteSynthesisDoc
 
     /// 验证 deleteSynthesisDoc 删除指定文档。
-    func testDeleteSynthesisDoc删除指定文档() {
+    func testDeleteSynthesisDocDeletesSpecifiedDoc() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文内容。")
         let docID = store.synthesisResults[.report]?.first?.id
 
@@ -88,7 +88,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 deleteSynthesisDoc 删除不存在的 docID 不崩溃。
-    func testDeleteSynthesisDoc不存在的docID不崩溃() {
+    func testDeleteSynthesisDocNonexistentDocIDNoCrash() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文内容。")
         let initialCount = store.synthesisResults[.report]?.count ?? 0
 
@@ -99,13 +99,13 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 deleteSynthesisDoc 删除类型下不存在的文档（类型为空）不崩溃。
-    func testDeleteSynthesisDoc类型为空时不崩溃() {
+    func testDeleteSynthesisDocEmptyTypeNoCrash() {
         store.deleteSynthesisDoc(type: .expansion, docID: UUID())
         XCTAssertTrue(store.synthesisResults[.expansion]?.isEmpty ?? true)
     }
 
     /// 验证 deleteSynthesisDoc 删除最后一个文档后状态重置为 .idle。
-    func testDeleteSynthesisDoc删除最后一个后状态重置Idle() {
+    func testDeleteSynthesisDocDeleteLastResetsStateToIdle() {
         store.saveSynthesisResult(type: .quiz, content: "{\"title\":\"测验\",\"questions\":[]}")
         XCTAssertEqual(store.synthesisStates[.quiz], .completed)
 
@@ -117,7 +117,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 deleteSynthesisDoc 删除后持久化更新（UserDefaults 中数据同步移除）。
-    func testDeleteSynthesisDoc删除后持久化更新() {
+    func testDeleteSynthesisDocPersistenceUpdatedAfterDelete() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文内容。")
         let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + SynthesisStore.SynthesisType.report.rawValue
         XCTAssertNotNil(UserDefaults.standard.data(forKey: key))
@@ -133,7 +133,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     // MARK: - renameSynthesisDoc
 
     /// 验证 renameSynthesisDoc 重命名文档。
-    func testRenameSynthesisDoc重命名文档() {
+    func testRenameSynthesisDocRenamesDoc() {
         store.saveSynthesisResult(type: .report, content: "# 原始报告\n正文内容。")
         let docID = store.synthesisResults[.report]?.first?.id
 
@@ -144,13 +144,13 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 renameSynthesisDoc 重命名不存在的 docID 不崩溃。
-    func testRenameSynthesisDoc不存在的docID不崩溃() {
+    func testRenameSynthesisDocNonexistentDocIDNoCrash() {
         store.renameSynthesisDoc(type: .report, docID: UUID(), newName: "新名称")
         // 不崩溃即通过
     }
 
     /// 验证 renameSynthesisDoc 重命名后保留其他属性（content/createdAt/size）。
-    func testRenameSynthesisDoc保留其他属性() {
+    func testRenameSynthesisDocPreservesOtherProperties() {
         let content = "# 报告\n正文内容。"
         store.saveSynthesisResult(type: .report, content: content)
         let original = store.synthesisResults[.report]?.first
@@ -170,7 +170,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     // MARK: - batchDeleteSynthesisDocs
 
     /// 验证 batchDeleteSynthesisDocs 跨类型批量删除。
-    func testBatchDeleteSynthesisDocs跨类型批量删除() {
+    func testBatchDeleteSynthesisDocsCrossTypeBatchDelete() {
         store.saveSynthesisResult(type: .report, content: "# 报告1\n正文。")
         store.saveSynthesisResult(type: .mindmap, content: "# 导图1\nmindmap\n  root((主题))")
         store.saveSynthesisResult(type: .quiz, content: "{\"title\":\"测验\",\"questions\":[]}")
@@ -187,14 +187,14 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 batchDeleteSynthesisDocs 传入空集合不崩溃。
-    func testBatchDeleteSynthesisDocs空集合不崩溃() {
+    func testBatchDeleteSynthesisDocsEmptySetNoCrash() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文。")
         store.batchDeleteSynthesisDocs(ids: [])
         XCTAssertEqual(store.synthesisResults[.report]?.count, 1, "空集合不应删除任何文档")
     }
 
     /// 验证 batchDeleteSynthesisDocs 删除后状态重置。
-    func testBatchDeleteSynthesisDocs删除后状态重置() {
+    func testBatchDeleteSynthesisDocsStateResetAfterDelete() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文。")
         XCTAssertEqual(store.synthesisStates[.report], .completed)
 
@@ -208,7 +208,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     // MARK: - clearAll
 
     /// 验证 clearAll 清空所有类型的文档和状态。
-    func testClearAll清空所有文档和状态() {
+    func testClearAllClearsAllDocsAndStates() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文。")
         store.saveSynthesisResult(type: .mindmap, content: "# 导图\nmindmap\n  root((主题))")
 
@@ -221,7 +221,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 clearAll 移除 UserDefaults 中所有合成文档 key。
-    func testClearAll移除UserDefaults所有Key() {
+    func testClearAllRemovesAllUserDefaultsKeys() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文。")
         store.saveSynthesisResult(type: .mindmap, content: "# 导图\nmindmap\n  root((主题))")
 
@@ -234,7 +234,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 clearAll 在空存储时不崩溃。
-    func testClearAll空存储时不崩溃() {
+    func testClearAllEmptyStorageNoCrash() {
         store.clearAll()
         // 不崩溃即通过
         for type in SynthesisStore.SynthesisType.allCases {
@@ -245,7 +245,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     // MARK: - AppEventBus.clearAllDataRequested 联动
 
     /// 验证 AppEventBus 发布 clearAllDataRequested 事件时 SynthesisStore 自动 clearAll。
-    func testAppEventBusClearAllDataRequested触发SynthesisStoreClearAll() async throws {
+    func testAppEventBusClearAllDataRequestedTriggersSynthesisStoreClearAll() async throws {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文。")
         XCTAssertFalse(store.synthesisResults[.report]?.isEmpty ?? true)
 
@@ -261,7 +261,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     // MARK: - loadSynthesisResults
 
     /// 验证 loadSynthesisResults 从 UserDefaults 加载已持久化的文档。
-    func testLoadSynthesisResults从UserDefaults加载文档() {
+    func testLoadSynthesisResultsLoadsDocsFromUserDefaults() {
         // 先保存文档
         let content = "# 加载测试\n正文内容。"
         store.saveSynthesisResult(type: .report, content: content)
@@ -279,7 +279,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 loadSynthesisResults 在空存储时不崩溃。
-    func testLoadSynthesisResults空存储时不崩溃() {
+    func testLoadSynthesisResultsEmptyStorageNoCrash() {
         // 确保 UserDefaults 为空
         for type in SynthesisStore.SynthesisType.allCases {
             let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
@@ -298,7 +298,7 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     }
 
     /// 验证 loadSynthesisResults 在遇到损坏数据时静默跳过不崩溃。
-    func testLoadSynthesisResults损坏数据时静默跳过() {
+    func testLoadSynthesisResultsCorruptedDataSilentlySkipped() {
         // 写入损坏的 JSON 数据
         let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + SynthesisStore.SynthesisType.report.rawValue
         let corruptedData = Data("这不是合法的JSON".utf8)

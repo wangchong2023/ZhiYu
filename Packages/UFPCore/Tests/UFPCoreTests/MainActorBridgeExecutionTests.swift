@@ -9,6 +9,7 @@
 import XCTest
 @testable import UFPCore
 
+@MainActor
 final class MainActorBridgeExecutionTests: XCTestCase {
 
     // MARK: - 带返回值版本 (Generic T)

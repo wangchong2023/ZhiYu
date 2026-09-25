@@ -11,6 +11,14 @@
 import SwiftUI
 import UFPCore
 
+// MARK: - 通知名称
+#if os(macOS)
+extension Notification.Name {
+    /// 创建新页面通知名称（macOS Command+N 快捷键触发）
+    static let createNewPage = Notification.Name("AppCreateNewPage")
+}
+#endif
+
 struct ZhiYuApp: App {
     /// 状态持有：App 全局环境（负责所有后台服务的生命周期）
     @State private var appEnv = AppEnvironment.shared
