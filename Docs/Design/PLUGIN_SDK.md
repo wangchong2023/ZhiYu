@@ -2,6 +2,39 @@
 
 本文档为第三方开发者提供智宇插件生态的深度指导，涵盖底层原理、API 规范、全球化 (i18n) 以及与 Obsidian 的深度对标。
 
+## 0. 插件架构与生命周期
+
+```mermaid
+flowchart TB
+    subgraph 加载阶段[插件加载]
+        ML[manifest.json 解析] --> VL[权限清单校验]
+        VL --> JC[创建 JSContext]
+        JC --> BR[注入 ZhiYu 桥接对象]
+        BR --> OL[调用 onLoad]
+    end
+
+    subgraph 执行阶段[插件运行]
+        OL --> RG[注册命令/视图/事件]
+        RG --> PP[preProcess 内容拦截]
+        RG --> PO[postProcess 渲染拦截]
+        RG --> AI[requestAIAccess]
+        RG --> FT[fetch 网络请求]
+    end
+
+    subgraph 安全守护[Watchdog 2.0]
+        PP --> WD{500ms 竞速}
+        WD -->|超时| KL[销毁 JSContext]
+        KL --> BL[写入持久化黑名单]
+        WD -->|正常| EX[继续执行]
+    end
+
+    subgraph 卸载阶段[插件卸载]
+        EX --> OU[调用 onUnload]
+        OU --> RC[资源释放]
+        RC --> DM[从注册表移除]
+    end
+```
+
 ---
 
 ## 1. 核心架构原理 (Architecture)

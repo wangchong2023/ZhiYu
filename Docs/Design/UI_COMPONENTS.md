@@ -41,7 +41,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **SR-01/02** | 数据隔离与沙盒 | `SECURITY_DESIGN.md` | `VaultStorageSecurityService.swift`, `SQLiteStore.swift` | `VaultSecurityTests.swift` |
 | **SR-03/04** | 身份鉴权与插件沙盒 | `AuthArchitecture.md`, `PLUGIN_SDK.md` | `AuthService.swift`, `PluginRegistry.swift` | `AuthTests.swift`, `PluginSandboxTests.swift` |
-| **PR-01/02** | FTS5 与 RAG 性能 | `DETAILED_DESIGN.md`, `RAG_GOVERNANCE.md` | `AnyPageStore.swift`, `VectorIndexer.swift` | `SearchPerformanceTests.swift`, `RAGPipelineTests.swift` |
+| **PR-01/02** | FTS5 与 RAG 性能 | `DETAILED_DESIGN.md`, `RAG_GOVERNANCE.md` | `SQLiteStore.swift`, `VectorIndexer.swift` | `SearchPerformanceTests.swift`, `RAGPipelineTests.swift` |
 | **PR-05** | 数据库冷启动加载 | `ARCHITECTURE_4PLUS1.md` | `AppEnvironment.swift`, `SQLiteStore.swift` | `DatabaseStartupTests.swift` |
 | **RR-01/03** | ACID 与 内存管控 | `DETAILED_DESIGN.md` | `SQLiteStore.swift`, `PerformanceBenchmarker.swift` | `TransactionTests.swift`, `MemoryFootprintTests.swift` |
 
@@ -58,7 +58,7 @@
 
 ## 5. DFX 与可观测性 (Log/Tracing/Metric)
 
-系统在 `Sources/Core/Logger/Logger.swift` 和 `Sources/Core/Performance/PerformanceBenchmarker.swift` 中集中落实 DFX 要求：
+系统在 `Sources/Core/System/Logger/Logger.swift` 和 `Sources/Infrastructure/Performance/PerformanceBenchmarker.swift` 中集中落实 DFX 要求：
 
 1. **功能单一性 (SOLID)**：`Logger` 仅负责操作日志的内存聚合与磁盘原子写入；`PerformanceBenchmarker` 仅负责耗时指标的计算与分析。两者通过 `AppEventBus` 松耦合交互。
 2. **追踪与度量 (Tracing & Metric)**：

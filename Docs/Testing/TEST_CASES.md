@@ -17,9 +17,12 @@
 
 ### 测试结构度量指标（CI 门禁）
 
-`Tools/CI/audit-test-structure.py` 在 `make audit` 中强制校验 6 项指标（2026-09-07 测试结构重构后全部达标）：
+`Tools/CI/audit-test-structure.py` 在 `make audit` 中强制校验 6 项指标。
 
-| 指标 | 当前值 | 阈值 | 说明 |
+> **基线对比**：2026-09-07 重构前基线见 `test-structure-baseline.md`（4 项未达标）。
+> 下表为重构后目标值，运行 `make audit` 获取最新实际度量值。
+
+| 指标 | 重构后目标值 | 阈值 | 说明 |
 | :--- | :--- | :--- | :--- |
 | `directory_alignment_rate` | 1.0 | ≥ 0.95 | `Tests/Unit/` 子目录与架构层级/功能域对齐率 |
 | `spm_test_coverage_ratio` | 0.80 | ≥ 0.80 | SPM 包测试用例占 SPM 相关测试总用例比例 |

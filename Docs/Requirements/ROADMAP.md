@@ -12,11 +12,13 @@ gantt
     section 阶段一 (MVP)
     验证基本闭环           :done, a1, 2026-01, 2026-02
     section 阶段二 (v1.0)
-    严格并发与多端发布      :active, a2, 2026-03, 2026-04
+    严格并发与多端发布      :done, a2, 2026-03, 2026-04
     section 阶段三 (v1.5)
-    架构拆分与质量防防线    :a3, 2026-05, 2026-06
+    架构拆分与质量防线      :done, a3, 2026-05, 2026-06
+    section 阶段 3.5 (v2.3)
+    开源库物理隔离与AI加固  :done, a35, 2026-07, 2026-08
     section 阶段四 (v2.0)
-    同步插件生态与端侧AI     :a4, 2026-07, 2026-09
+    同步插件生态与端侧AI     :active, a4, 2026-07, 2026-09
 ```
 
 ---
@@ -33,20 +35,20 @@ gantt
 
 ---
 
-### 🚀 阶段二：v1.0 — 开启严格并发与多平台发布 (当前版本)
+### 🚀 阶段二：v1.0 — 开启严格并发与多平台发布 (已完成)
 * **核心焦点**：消灭冷启动闪退，支持 iOS / macOS Catalyst / watchOS 三端独立编译，引入高阶安全与本地化。
 * **主要特性**：
   * **Swift 6 Concurrency 完全适配**：开启 `SWIFT_STRICT_CONCURRENCY: complete` 严格并发编译选项，全线消除 Data Race 隐患。
   * **依赖倒置与 DIP**：实现轻量级 DI 容器 `ServiceContainer` 和 `@Inject` 包装器，全面阻断 UI Feature 跨层依赖基础设施具体类。
   * **SPM 模块化架构演进 (v1.5 Milestone)**：采用 `UFP` (通用平台) + `ZhiYu` (业务大脑) 本地多 SPM Package (`UFPCore`, `UFPStorage`, `UFPDesignSystem`, `ZhiYuDomain`, `ZhiYuAICore`, `ZhiYuFeatures`) 架构，实现编译期硬隔离与毫秒级独立单元测试。
   * **多 Target 优化**：定制 `project.yml`。对 watchOS 客户端进行重型视图和后台数据流物理裁剪，保障轻量级载荷；支持 macOS Catalyst 桌面端多窗口运行与 Mac 键盘快捷键。
-  * **底层安全防线**：集成 SQLCipher 对本地数据库进行全盘硬件级物理加密；引入 HMAC-SHA256 对敏感知识库文件进行防篡改指纹签名，并借助 `signatureRepository` 持久化，保护用户数据资产。
+  * **底层安全防线**：引入 HMAC-SHA256 对敏感知识库文件进行防篡改指纹签名，并借助 `signatureRepository` 持久化，保护用户数据资产。（注：SQLCipher 静态加密经评估后推迟至阶段四，见 Non-Goals）
   * **多语言强类型本地化**：通过 `L10n` 和 `.xcstrings` 收口，静态审查工具一键拦截裸露字面量。
   * **空间计算适配**：实装 `VisionProSpatialView`，提供 Vision Pro 基础空间视觉与交互展示。
 
 ---
 
-### 🧱 阶段三：v1.5 — 架构微服务化拆分与质量防线建设 (当前重构焦点)
+### 🧱 阶段三：v1.5 — 架构微服务化拆分与质量防线建设 (已完成)
 * **核心焦点**：消除 `LLMService` 神类、给 `AppStore` 瘦身，补齐全体系单测覆盖率红线，拦截质量劣化。
 * **主要特性**：
   * **AI 基础设施拆分**：将 `LLMService` 彻底剥离并解耦为 `ChatLLMService` (对话编排)、`IngestLLMService` (摄入/拆分/折叠) 与 `RerankService` (同义扩展与重排)，由门面类透传，降低代码文件复杂度。
@@ -78,7 +80,7 @@ gantt
 
 ---
 
-### 🌌 阶段四：v2.0 — iCloud 自动同步、开放插件 SDK 与变现生态 (展望)
+### 🌌 阶段四：v2.0 — iCloud 自动同步、开放插件 SDK 与变现生态 (当前焦点)
 * **核心焦点**：打通多终端无缝同步，开放第三方 JS 沙盒插件市场，建立商业化变现平台。
 * **主要特性**：
   * **多 Vault LWW (Last-Write-Wins) iCloud 自动融合**：集成 CloudKit 增量同步，在多终端网络断开恢复后，基于修改时间戳和版本指纹自动解决数据合并冲突。

@@ -2,6 +2,45 @@
 
 本文件记录了智宇 (ZhiYu) 核心数据库的结构设计及其版本演进历程。系统基于 SQLite 存储，使用 GRDB.swift 进行版本管理与对象映射。
 
+## 0. ER 关系总览
+
+```mermaid
+erDiagram
+    pages ||--o{ page_chunks : "1:N 分块"
+    pages ||--o{ page_links : "双向链接"
+    pages ||--o{ import_records : "导入记录"
+    pages ||--o{ tag_relations : "标签关联"
+    page_chunks ||--o{ page_chunks : "parent_id 层级"
+    pages_fts }o--|| pages : "FTS5 同步"
+    token_usage }o--|| pages : "AI 调用监控"
+
+    pages {
+        UUID id PK
+        TEXT title UK
+        TEXT content
+        TEXT page_type
+        INTEGER lamport_timestamp
+        DATETIME updated_at
+    }
+    page_chunks {
+        TEXT id PK
+        UUID page_id FK
+        TEXT parent_id FK
+        TEXT chunk_type
+        TEXT content
+        BLOB embedding
+    }
+    token_usage {
+        INTEGER id PK
+        TEXT model
+        INTEGER prompt_tokens
+        INTEGER completion_tokens
+        DATETIME created
+    }
+```
+
+---
+
 ## 1. 核心表结构
 
 ### 1.1 `pages` (知识页面表)

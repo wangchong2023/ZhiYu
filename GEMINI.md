@@ -69,8 +69,8 @@ xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iO
 ## 开发约定
 
 ### 1. 依赖注入 (DI) 与依赖倒置 (DIP)
-- 使用 `ServiceContainer` 模式和 `@Inject` 属性包装器。
-- **强制约束**：业务功能层 (Features) 严禁直接依赖基础设施的具体实现类（如 `SQLiteStore`）。必须通过定义在 `Core/Base` 或 `Domain/Protocols` 中的协议（如 `any AnyPageStoreCapabilities`）进行注入。所有服务必须在 `ZhiYuApp.init()` 中注册。
+- 推荐 `@Dependency` 属性包装器（基于 [swift-dependencies](https://github.com/pointfreeco/swift-dependencies)），通过 `DependencyKey` 注册服务，支持 `liveValue`/`testValue`/`previewValue` 三环境切换。`@Inject`（基于 `ServiceContainer`）为遗留状态，CI-4 门禁禁止 `Sources/` 中新增 `@Inject`，新代码必须使用 `@Dependency`。
+- **强制约束**：业务功能层 (Features) 严禁直接依赖基础设施的具体实现类（如 `SQLiteStore`）。必须通过定义在 `Core/Base` 或 `Domain/Protocols` 中的协议（如 `any AnyPageStoreCapabilities`）进行注入。所有服务必须在 `AppEnvironment.init()` 中通过 `ModuleRegistrar` 协议注册。
 
 ### 2. 领域层纯净化 (Domain Purity)
 - **强制约束**：L1.5 领域层必须保持平台无关。严禁在 Domain 层导入 `ActivityKit`, `UIKit`, `AppKit` 或使用 `#if os` 宏进行业务分支。平台相关的能力必须抽象为协议并下沉至 `Platforms/` 或 `Core/System/` 实现。
@@ -125,7 +125,8 @@ xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iO
 
 ## 关键文件路径
 - `Sources/ZhiYuApp.swift`: 应用入口与服务注册中心。
-- `Sources/Core/Base/ServiceContainer.swift`: DI 容器实现。
+- `Sources/Core/Base/ServiceContainer.swift`: DI 容器实现（遗留，配合 `@Inject`）。
+- `Sources/Core/Base/Dependencies/`: `@Dependency`（swift-dependencies）注册入口（`DependencyKey` 实现）。
 - `Sources/Domain/Models/`: 核心领域模型。
 - `Sources/Shared/UIComponents/`: 跨平台 SwiftUI 通用视图。
 - `Tools/`: 开发者工具（`Gatekeeper/` 编译门禁、`CI/` 流水线、`Lint/` 代码检查、`Mock/` 模拟服务器、`Plugins/` 插件SDK、`Utils/` 辅助脚本）。

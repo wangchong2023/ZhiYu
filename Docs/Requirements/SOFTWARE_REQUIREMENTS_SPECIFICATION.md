@@ -40,7 +40,7 @@
 - **RR-03**: 内存占用在常规运行下不得超过 300MB，防止被系统 OOM 强制终止。
 
 ## 5. 本地化需求 (Localization)
-- **LR-01**: 支持中英文双语切换，所有 UI 文本必须通过 `Localized.tr()` 动态加载。
+- **LR-01**: 支持中英文双语切换，所有 UI 文本必须通过 `L10n.模块.属性` 强类型访问。
 - **LR-02**: 搜索算法必须支持 CJK (中日韩) 分词增强，解决 Markdown 中的中文搜索瓶颈。
 
 ## 6. 功能性需求 (Functional Requirements)
@@ -68,7 +68,7 @@
 
 ### 6.2 API 契约 (LLMServiceProtocol)
 
-LLM 服务协议定义在 `Sources/Shared/Services/Core/Protocols/LLMServiceProtocol.swift`：
+LLM 服务协议定义在 `Sources/Domain/Protocols/LLMServiceProtocol.swift`：
 
 | 方法 | 用途 | 约束 |
 | :--- | :--- | :--- |
@@ -84,7 +84,7 @@ LLM 服务协议定义在 `Sources/Shared/Services/Core/Protocols/LLMServiceProt
 
 ### 6.3 插件接口 (Plugin Interfaces)
 
-插件协议定义在 `Sources/Shared/Services/Plugins/PluginProtocols.swift`：
+插件协议定义在 `Sources/Infrastructure/Plugins/PluginProtocols.swift`：
 
 **基础协议 `KnowledgePlugin`：**
 - `manifest: PluginManifest` — 元数据（id, name, version, permissions）
@@ -112,7 +112,7 @@ LLM 服务协议定义在 `Sources/Shared/Services/Core/Protocols/LLMServiceProt
 ### 6.4 状态管理 (State Management)
 
 - **`AppStore`**：`@MainActor @Observable` 门面类，管理页面列表、搜索状态、导航路径、隐私模式
-- **`@Inject` 依赖注入**：通过 `ServiceContainer` 解析服务实例，支持测试 Mock 替换
+- **`@Dependency` 依赖注入**：通过 [swift-dependencies](https://github.com/pointfreeco/swift-dependencies) 的 `DependencyKey` 注册服务，支持 `liveValue`/`testValue`/`previewValue` 三环境切换。`@Inject`（基于 `ServiceContainer`）为遗留状态，新代码必须使用 `@Dependency`。
 - **`SceneStorage` 桥接**：通过自定义 Binding 包装器将 `@Observable` 状态同步到 SwiftUI `@SceneStorage`，确保多窗口状态隔离
 - **`AppNotifications`**：基于 `Notification.Name` 扩展的事件总线，`SQLiteStore` 发布数据变更信号，`GraphView` 等订阅者自动刷新。
 
@@ -145,7 +145,7 @@ iCloud 多端同步采用 **Lamport Last-Writer-Wins (LWW)** 策略：
 - **圈复杂度**: 函数内部圈复杂度严禁超过 15。
 - **函数长度控制**: 单个函数的非空非注释行数 (NBNC) 严禁超过 100 行。超出则必须重构拆分。
 - **中文注释完备性**: 模块文件头、关键类、结构体、枚举和算法函数均需配备清晰的中文注释，说明其意图、输入和副作用。
-- **反“魔鬼数字/字符串”**: 杜绝将魔法值散落在逻辑代码中。颜色、间距等 UI 布局属性存放到 `Shared/DesignSystem/Tokens/` 目录下；专用布局模板存放于 `Shared/UIComponents/Layouts/` 目录下；业务常量存放于 `AppConstants.swift`。
+- **反“魔鬼数字/字符串”**: 杜绝将魔法值散落在逻辑代码中。颜色、间距等 UI 布局属性存放到 `Shared/DesignSystem/Tokens/` 目录下；专用布局模板存放于 `Shared/UIComponents/Layouts/` 目录下；业务常量存放于 `Sources/Core/Base/Constants/AppConstants.swift`。
 - **UI 布局定制**: 重构时必须保持既有布局效果不变。全局公共标准存放在 DesignSystem 中，特定业务界面的布局定制模板应存放到 `Shared/UIComponents/Layouts/` 目录下。
 
 ## 9. 遗留技术规格与未来演进需求 (Legacy Technical Specifications & Backlogs)

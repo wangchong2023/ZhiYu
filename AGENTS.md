@@ -17,25 +17,39 @@
 |------|------|
 | `Docs/Architecture/HIGH_LEVEL_DESIGN.md` | L0-L3 分层、模块依赖、数据流 |
 | `Docs/Architecture/LAYERING_L0_L3.md` | 严格分层架构定义与依赖规则（含 8 条红线 + 12 项 CI 门禁） |
+| `Docs/Architecture/ARCHITECTURE_4PLUS1.md` | 4+1 视图架构（逻辑/进程/开发/物理 + 场景） |
 | `Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md` | 🆕 跨平台协议分层设计、#if os() 宏协议化、PlatformRegistrar 模式 |
-| `Docs/Guides/srp-file-organization.md` | 🆕 SRP 文件拆分原则、重构方法论、View/Service 拆分模式 |
+| `Docs/Architecture/CROSS_PLATFORM_EXPANSION.md` | 跨平台扩展设计（macOS原生/Windows/Android/鸿蒙） |
+| `Docs/Architecture/INFRASTRUCTURE.md` | 🆕 基础设施层总览（存储/向量/AI/安全/同步/备份/网络/插件） |
+| `Docs/Architecture/OPS.md` | 🆕 运维可观测性（日志/性能/健康检查/事件总线/分析/触觉/维护/诊断） |
+| `Docs/Architecture/ADR.md` | 架构决策记录（ADR-001~012） |
 | `Docs/Architecture/AUTH_ARCHITECTURE.md` | 认证架构与多平台登录流程 |
+| `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署、Git 分支管理与 MR 卡控规范（对齐 ZhiYu-Backend） |
+| `Docs/Guides/srp-file-organization.md` | 🆕 SRP 文件拆分原则、重构方法论、View/Service 拆分模式 |
 | `Docs/Design/DATABASE_SCHEMA.md` | 完整 DDL、ER 关系、索引设计 |
+| `Docs/Design/DETAILED_DESIGN.md` | 详细设计（模块级接口与数据流） |
 | `Docs/Design/EXTERNAL_API_SPECIFICATION.md` | 🆕 对外 RESTful API 接口规范（认证、订阅、反馈、RAG评估、本地LLM、插件市场等） |
 | `Docs/Design/SECURITY_DESIGN.md` | 安全设计、OWASP、个人信息保护 |
+| `Docs/Design/SECURITY_THREAT_MODEL.md` | 安全威胁模型 |
+| `Docs/Design/RAG_GOVERNANCE.md` | RAG 治理（分块策略、召回率、评估闭环） |
 | `Docs/Design/UI_COMPONENTS.md` | 通用 UI 组件库规范 |
 | `Docs/Design/PLUGIN_SDK.md` | 插件 SDK 接口与沙箱规范 |
+| `Docs/Design/PLUGIN_MARKET_HLD.md` | 插件市场高层设计（变现、StoreKit、沙箱网关） |
+| `Docs/Design/VERSION_MANAGEMENT.md` | 版本管理规范 |
 | `Docs/Requirements/PRODUCT_REQUIREMENTS.md` | 产品需求与功能范围 |
+| `Docs/Requirements/FEATURE_LIST.md` | 功能清单（含实现状态与代码路径） |
 | `Docs/Requirements/SOFTWARE_REQUIREMENTS_SPECIFICATION.md` | 软件需求规格说明 |
+| `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Testing/TEST_CASES.md` | 各模块测试用例 |
 | `Docs/Testing/UNIT_TEST_GUIDE.md` | 单元测试编写指南 |
 | `Docs/Testing/TEST_DRIVEN_FINDINGS.md` | 🆕 测试驱动发现问题台账（含序号、问题描述、严重程度、修改方案、是否解决） |
+| `Docs/Testing/COVERAGE_REPORT.md` | 🆕 代码覆盖率与测试质量报告（SonarQube 标准） |
+| `Docs/Testing/PERFORMANCE_BENCHMARK.md` | 性能基准测试 |
+| `Docs/Testing/INTEGRATION_TEST_STRATEGY.md` | 集成测试策略 |
 | `Docs/Testing/SYSTEM_TEST_PLAN.md` | 系统测试计划 |
-| `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署、Git 分支管理与 MR 卡控规范（对齐 ZhiYu-Backend） |
-| `Docs/Design/SECURITY_THREAT_MODEL.md` | 安全威胁模型 |
-| `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Guides/CONTRIBUTING.md` | 贡献指南 |
 | `Docs/Guides/USER_GUIDE.md` | 用户使用手册 |
+| `Docs/Guides/development-standards.md` | 🆕 开发标准速查表（DI/L10n/去魔鬼化/DesignSystem Token） |
 ## 任务清单与实施计划更新规范 (Task & Plan Protection Policy)
 
 > **实施计划 (`implementation_plan.md`) 和任务清单 (`task.md`) 中如果存在未完成的事项，严禁未经 USER 确认直接覆写、删除或重置！修改或替换未完成事项前必须明确向 USER 汇报并获得确认。**

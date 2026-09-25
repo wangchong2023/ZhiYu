@@ -2,6 +2,41 @@
 
 本文档阐述了智宇系统的安全设计原则、数据隔离机制及隐私保护措施。
 
+## 0. 安全架构总览
+
+```mermaid
+flowchart TB
+    subgraph 数据隔离层[1. 数据隔离 Sandbox & Isolation]
+        FA[文件访问控制<br/>Security-Scoped Bookmarks]
+        PS[插件沙盒隔离<br/>Watchdog 500ms + 黑名单]
+        PE[插件存储加密<br/>AES-256-GCM]
+    end
+
+    subgraph 隐私保护层[2. 隐私保护 Privacy Protection]
+        PM[隐私模式<br/>#private 高斯模糊]
+        LE[离线优先向量化<br/>Apple NLEmbedding]
+    end
+
+    subgraph 金库安全层[3. 金库加锁 Vault Locking]
+        VL[物理锁定<br/>SQLite 连接关闭]
+        BI[生物识别<br/>FaceID / TouchID]
+    end
+
+    subgraph 审计层[4. 安全审计 Audit Logs]
+        AL[操作审计<br/>LogService 不可篡改]
+    end
+
+    subgraph LLM 安全层[5. LLM 安全 LLM Security]
+        PI[Prompt 注入防御<br/>正则过滤 + 隔离执行]
+        MD[元数据阻断<br/>#private 内容隔离]
+    end
+
+    数据隔离层 --> 隐私保护层
+    隐私保护层 --> 金库安全层
+    金库安全层 --> 审计层
+    审计层 --> LLM 安全层
+```
+
 ---
 
 ## 1. 数据隔离架构 (Sandbox & Isolation)

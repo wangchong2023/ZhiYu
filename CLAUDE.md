@@ -15,21 +15,40 @@
 | 文档 | 内容 |
 |------|------|
 | `Docs/Architecture/HIGH_LEVEL_DESIGN.md` | L0-L3 分层、模块依赖、数据流 |
-| `Docs/Architecture/LAYERING_L0_L3.md` | 严格分层架构定义与依赖规则 |
+| `Docs/Architecture/LAYERING_L0_L3.md` | 严格分层架构定义与依赖规则（含 8 条红线 + 12 项 CI 门禁） |
+| `Docs/Architecture/ARCHITECTURE_4PLUS1.md` | 4+1 视图架构（逻辑/进程/开发/物理 + 场景） |
+| `Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md` | 🆕 跨平台协议分层设计、#if os() 宏协议化、PlatformRegistrar 模式 |
+| `Docs/Architecture/CROSS_PLATFORM_EXPANSION.md` | 跨平台扩展设计（macOS原生/Windows/Android/鸿蒙） |
+| `Docs/Architecture/INFRASTRUCTURE.md` | 🆕 基础设施层总览（存储/向量/AI/安全/同步/备份/网络/插件） |
+| `Docs/Architecture/OPS.md` | 🆕 运维可观测性（日志/性能/健康检查/事件总线/分析/触觉/维护/诊断） |
+| `Docs/Architecture/ADR.md` | 架构决策记录（ADR-001~012） |
 | `Docs/Architecture/AUTH_ARCHITECTURE.md` | 认证架构与多平台登录流程 |
+| `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署、Git 分支管理与 MR 卡控规范（对齐 ZhiYu-Backend） |
+| `Docs/Guides/srp-file-organization.md` | 🆕 SRP 文件拆分原则、重构方法论、View/Service 拆分模式 |
 | `Docs/Design/DATABASE_SCHEMA.md` | 完整 DDL、ER 关系、索引设计 |
+| `Docs/Design/DETAILED_DESIGN.md` | 详细设计（模块级接口与数据流） |
+| `Docs/Design/EXTERNAL_API_SPECIFICATION.md` | 🆕 对外 RESTful API 接口规范（认证、订阅、反馈、RAG评估、本地LLM、插件市场等） |
 | `Docs/Design/SECURITY_DESIGN.md` | 安全设计、OWASP、个人信息保护 |
+| `Docs/Design/SECURITY_THREAT_MODEL.md` | 安全威胁模型 |
+| `Docs/Design/RAG_GOVERNANCE.md` | RAG 治理（分块策略、召回率、评估闭环） |
 | `Docs/Design/UI_COMPONENTS.md` | 通用 UI 组件库规范 |
 | `Docs/Design/PLUGIN_SDK.md` | 插件 SDK 接口与沙箱规范 |
+| `Docs/Design/PLUGIN_MARKET_HLD.md` | 插件市场高层设计（变现、StoreKit、沙箱网关） |
+| `Docs/Design/VERSION_MANAGEMENT.md` | 版本管理规范 |
 | `Docs/Requirements/PRODUCT_REQUIREMENTS.md` | 产品需求与功能范围 |
+| `Docs/Requirements/FEATURE_LIST.md` | 功能清单（含实现状态与代码路径） |
 | `Docs/Requirements/SOFTWARE_REQUIREMENTS_SPECIFICATION.md` | 软件需求规格说明 |
+| `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Testing/TEST_CASES.md` | 各模块测试用例 |
 | `Docs/Testing/UNIT_TEST_GUIDE.md` | 单元测试编写指南 |
+| `Docs/Testing/TEST_DRIVEN_FINDINGS.md` | 🆕 测试驱动发现问题台账（含序号、问题描述、严重程度、修改方案、是否解决） |
+| `Docs/Testing/COVERAGE_REPORT.md` | 🆕 代码覆盖率与测试质量报告（SonarQube 标准） |
+| `Docs/Testing/PERFORMANCE_BENCHMARK.md` | 性能基准测试 |
+| `Docs/Testing/INTEGRATION_TEST_STRATEGY.md` | 集成测试策略 |
 | `Docs/Testing/SYSTEM_TEST_PLAN.md` | 系统测试计划 |
-| `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署 |
-| `Docs/Design/SECURITY_THREAT_MODEL.md` | 安全威胁模型 |
-| `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Guides/CONTRIBUTING.md` | 贡献指南 |
+| `Docs/Guides/USER_GUIDE.md` | 用户使用手册 |
+| `Docs/Guides/development-standards.md` | 🆕 开发标准速查表（DI/L10n/去魔鬼化/DesignSystem Token） |
 ## 四大强制质量红线 (4 Non-Negotiable Quality Redlines)
 
 > **所有 Agent 在此仓库编写、修补或重构 Swift 代码时，必须严格遵守以下 4 条绝对红线，严禁任何违规！**
@@ -55,37 +74,29 @@
 
 智宇 (ZhiYu) — 面向 iOS/macOS/watchOS 的 AI 原生知识管理应用，基于 Karpathy 的 LLM Wiki 方法论构建。不仅是一个 Markdown 编辑器，更是一个 RAG 闭环系统：语义分块 → 混合 FTS5+向量存储 → AI 合成实验室（含深度引用）。
 
-## 构建与开发
+## 构建与开发 (Makefile SSOT)
+
+建议优先使用根目录 `Makefile` 快捷入口（自动强载 `Config/.env.local` 环境变量并触发 `scripts-run-dev-bootstrap.sh` 校验）：
 
 ```bash
-# 从 project.yml 生成 Xcode 项目（配置变更后必须执行）
-xcodegen generate
+# 自动强载环境变量 → 自动 xcodegen → 一键构建对应 Targets
+make ios                  # 构建 iOS App (ZhiYu scheme)
+make mac                  # 构建 macOS Catalyst App (ZhiYuMac scheme)
+make watch                # 构建 watchOS App (ZhiYuWatch scheme)
+make test                 # 运行主 App 全量测试（单元 + UI，实时进度监控 + 超时保护）
+make test-unit            # 仅运行单元测试（排除 UI 测试，约 3 分钟）
+make test-ui              # 仅运行 UI 测试（实时进度监控 + 超时保护）
+make test-spm PKG=包名     # 运行指定 SPM 本地包极速单测 (例: make test-spm PKG=UFPStorage)
+make test-spm-all         # 运行全量 6 大 SPM 本地包极速单测 (UFPCore/Storage/DesignSystem/Domain/AICore/Features)
+make test-all             # 运行全量 SPM 单测 + 主 App 单元测试
+make audit                # 运行 CI 架构与依赖审计门禁（含测试结构 6 项度量指标）
+make gen                  # 仅运行 bootstrap 加载环境并重生成 ZhiYu.xcodeproj
+make lint                 # 运行 SwiftLint 严格检查
 
-# 构建 iOS
+# 排障场景可直接使用 xcodebuild（需手动先 source Config/.env.local；正常流程必须用 make 命令）
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'generic/platform=iOS'
-
-# 构建 macOS (Catalyst)
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuMac -destination 'platform=macOS'
-
-# 构建 watchOS
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'generic/platform=watchOS'
-
-# 列出可用模拟器
-xcodebuild -project ZhiYu.xcodeproj -scheme ZhiYu -showdestinations | grep simulator
-
-# 运行 SPM 本地包极速单测 (脱离模拟器，毫秒级通过)
-swift test --package-path Packages/UFPCore
-swift test --package-path Packages/ZhiYuDomain
-swift test --package-path Packages/ZhiYuAICore
-
-# 运行主 App 单元测试
-xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -enableCodeCoverage YES
-
-# 运行单个测试类
-xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests/AppStoreTests
-
-# 代码检查（需安装 SwiftLint）
-swiftlint --strict
 ```
 
 ## 架构：L0–L3 严格分层
@@ -103,9 +114,10 @@ swiftlint --strict
 | 层级 | 名称 | 内容 |
 |-------|------|-----------------|
 | **L3** | 表现层 | SwiftUI Views、`@Observable` ViewModels、导航（Router、ViewFactory） |
-| **L2** | 领域/功能层 | 业务逻辑服务 — 按功能域组织（AI / Knowledge / Insight / System） |
-| **L1** | 服务层 | 数据仓储（Repository）、AI 适配器（LLM、Embedding）、存储引擎 |
-| **L0** | 基础设施层 | SQLite (GRDB)、网络、Keychain、Logger、平台适配、插件系统 |
+| **L2** | 功能层 | 业务逻辑服务 — 按功能域组织（AI / Knowledge / Insight / System） |
+| **L1.5** | 领域层 | 业务规则、RAG 编排、跨模块契约（Domain Models、Protocols、KnowledgePageManager、KnowledgeIngestPipeline） |
+| **L1** | 服务层 | 数据仓储（Repository）、AI 适配器（LLM、Embedding）、存储引擎、插件系统 |
+| **L0** | 基础设施层 | SQLite (GRDB)、网络、Keychain、Logger、平台适配、DI 容器、基础协议 |
 
 ## 项目结构（关键路径）
 
@@ -128,7 +140,7 @@ Sources/
 │   ├── Store/AppStore.swift     # 全局状态树
 │   └── Environment/             # 平台 AppEnvironmentProtocol 实现
 ├── Core/                        # [L0] ServiceContainer (DI)、协议、工具类、系统能力
-│   ├── Base/                    # ServiceContainer、@Inject、协议定义、扩展、DTOs
+│   ├── Base/                    # ServiceContainer、@Inject(遗留)、@Dependency、协议定义、扩展、DTOs
 │   └── System/                  # Logger、Analytics、Haptic、Security、Routing 等
 ├── Infrastructure/              # [L0–L1] 存储引擎、AI 客户端、向量索引、处理器
 │   ├── LLM/                     # LLMService、LLMClient、PromptService、适配器
@@ -175,7 +187,7 @@ Tests/
 5. **L3 注册** → `AppModuleRegistrar`：Router、ViewFactory 注册各功能域 ViewProvider
 6. **Store 初始化** → `IngestStore()`、`SynthesisStore()`、`AppStore()` （在 DI 完成后实例化）
 
-### `@Inject` 属性包装器
+### `@Inject` 属性包装器（遗留）
 
 ```swift
 @Inject var store: AppStore
@@ -183,6 +195,27 @@ Tests/
 
 从 `ServiceContainer.shared` 解析服务。服务必须在使用前注册——未注册会触发 `fatalError`。
 对于 `@Observable` 类型，一般由 `AppEnvironment` 直接持有并通过 SwiftUI `.environment()` 注入，而非通过 `@Inject` 解析。
+
+> **⚠️ 遗留状态**: `@Inject` 已被 `@Dependency`（swift-dependencies）取代。CI-4 门禁（`audit-inject-deprecated.py`）禁止 `Sources/` 中新增 `@Inject`，仅白名单（60 项）保留存量。新代码必须使用 `@Dependency`。
+
+### `@Dependency` 属性包装器（推荐）
+
+```swift
+@Dependency(\.llmService) var llmService: LLMServiceProtocol
+```
+
+基于 [swift-dependencies](https://github.com/pointfreeco/swift-dependencies)，通过 `DependencyKey` 注册服务：
+- **`liveValue`**: 生产环境实现（注册在 `ModuleRegistrar` 中）
+- **`testValue`**: 测试环境实现（优先从 `ServiceContainer.shared.resolveOptional` 解析，fallback 到 NoOp）
+- **`previewValue`**: SwiftUI Preview 实现
+
+**关键规则**:
+- `@Observable` 类中 `@Dependency` 属性必须加 `@ObservationIgnored`
+- `@Dependency` 属性如需在 extension 中访问，不能标记 `private`
+- `@Observable` 类不能用 `@Dependency` 属性在 init 中赋值（computed property），需改为存储属性
+- `@Dependency` 不支持 `$` 投影，`@Observable` 绑定需用 `@Bindable var` 包装
+- `@Dependency` 在 `init` 时解析一次并缓存 — 测试中重新注册 `ServiceContainer` 不会更新已缓存值
+- `ObservableObject` 协议类型不适合 `@Dependency` — 保留 `@Inject` + `inject_exempt` 白名单
 
 ### 模块化注册 — ModuleRegistrar 协议
 
@@ -222,6 +255,7 @@ Tests/
 
 - [GRDB](https://github.com/groue/GRDB.swift.git) (~> 6.29) — SQLite + FTS5 数据库
 - [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) (~> 1.17) — 快照测试
+- [swift-dependencies](https://github.com/pointfreeco/swift-dependencies) — 依赖注入框架（`@Dependency` 属性包装器）
 
 ## 提交规范
 

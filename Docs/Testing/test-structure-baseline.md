@@ -3,6 +3,7 @@
 > **度量日期**：2026-09-07
 > **度量脚本**：`Tools/CI/audit-test-structure.py`
 > **分支**：`test-structure-refactor`（重构前基线）
+> **说明**：本文件记录测试结构重构前的基线值，用于与重构后目标值对比。重构后目标值见 `TEST_CASES.md` 第 0 节。
 
 ---
 

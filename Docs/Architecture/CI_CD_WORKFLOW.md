@@ -8,6 +8,26 @@
 
 智宇客户端与 `ZhiYu-Backend` 统一采用 **GitLab CE v18.1.0 + GitLab Runner** 持续集成架构：
 
+```mermaid
+flowchart LR
+    A[GitLab CE :8480] -->|push / MR| B[GitLab CI/CD Engine]
+    B -->|Job Queue| C[macOS Shell Runner]
+    C --> D[XcodeGen + Gatekeeper]
+    D --> E[analyze 阶段]
+    D --> F[prepare 阶段]
+    E --> G[static-analysis<br/>20项审计]
+    E --> H[SonarQube<br/>95%/90%门禁]
+    F --> I[build-ios]
+    F --> J[build-macos]
+    F --> K[build-watchos]
+    I --> L[test-and-coverage<br/>语句≥95% 分支≥90%]
+    J --> L
+    K --> L
+    L --> M{Quality Gate}
+    M -->|通过| N[MR 可合并]
+    M -->|阻断| O[MR 被拒绝]
+```
+
 ```
 ┌──────────────┐    push / MR     ┌──────────────────────┐    Job Queue   ┌──────────────────────────┐
 │  GitLab CE   │ ───────────────→ │ GitLab CI/CD Engine  │ ─────────────→ │ macOS Shell Runner       │

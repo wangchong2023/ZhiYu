@@ -72,7 +72,7 @@
 
 ## 属性包装器使用规范
 
-- **依赖注入**: 统一使用 `@Inject` 访问跨层服务。
+- **依赖注入**: 统一使用 `@Dependency`（swift-dependencies）访问跨层服务。`@Inject` 为遗留状态，CI-4 门禁禁止 `Sources/` 中新增 `@Inject`。
 - **状态管理**: 逻辑层使用 `Observation` 框架的 `@Observable`；View 层使用 `@State`, `@Environment`。
 - **持久化**: 全局偏好设置使用 `@AppStorage`（Key 必须来源于 `AppConstants.Keys.Storage`）。
 

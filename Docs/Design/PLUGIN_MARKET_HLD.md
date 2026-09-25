@@ -54,9 +54,9 @@
 | `vault:read_all` | 允许读取当前 Notebook 金库内的所有卡片 | 🔴 极高 (知识泄露)| 默认禁止，企业受控插件需二次生物识别 (FaceID) 授权解锁 |
 
 ### 2.2 运行期滑动窗口限流与熔断 (Runtime Rate Limiter)
-所有插件对敏感桥接 API（如调用 LLM 推理 `requestAIAccess`）的调用将经过 `PluginWatchdog` 和 `PluginRateLimiter` 的严格看守：
+所有插件对敏感桥接 API（如调用 LLM 推理 `requestAIAccess`）的调用将经过 `PluginSandboxGateway` 的严格看守：
 1. **流量窗口（Rate Limit）**：采用 Token Bucket（令牌桶）算法，限制单个插件最大调用频率为 **60次/分钟**。
-2. **超时判定（Watchdog）**：单次 JavaScript 同步阻塞执行时间不得超过 **2.0 秒**。如若超时，Watchdog 强行关闭该 `JSContext` 句柄，回收内存，向用户广播插件崩溃并释放物理资源，防止死锁与主线程卡顿。
+2. **超时判定（Watchdog）**：单次 JavaScript 同步阻塞执行时间不得超过 **2.0 秒**。如若超时，`PluginSandboxGateway.configureWatchdog(for:)` 强行关闭该 `JSContext` 句柄，回收内存，向用户广播插件崩溃并释放物理资源，防止死锁与主线程卡顿。
 
 ---
 

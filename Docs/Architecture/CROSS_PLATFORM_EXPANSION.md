@@ -10,6 +10,44 @@
 
 ## 1. 背景与目标
 
+### 1.0 平台扩展架构总览
+
+```mermaid
+flowchart TB
+    subgraph 核心逻辑层[核心逻辑 — 跨平台复用]
+        direction LR
+        RAG[RAG 管道]
+        AI[AI 中台]
+        PS[Prompt 沙箱]
+        KG[知识图谱]
+    end
+
+    subgraph 契约层[Protobuf IDL 契约]
+        PB[核心契约定义]
+    end
+
+    subgraph Apple 平台[Apple 原生 — Swift]
+        iOS[iOS — SwiftUI]
+        mac[macOS 原生]
+        watch[watchOS]
+        vision[visionOS]
+    end
+
+    subgraph Android 平台[Android — Skip.tools 转译]
+        and[Android — Kotlin]
+    end
+
+    subgraph 其他平台[独立重写]
+        win[Windows — C# WinUI 3]
+        harm[鸿蒙 — ArkTS ArkUI]
+    end
+
+    核心逻辑层 --> 契约层
+    契约层 --> Apple 平台
+    契约层 -->|Skip 转译| Android 平台
+    契约层 -->|翻译改写| 其他平台
+```
+
 ### 1.1 背景
 
 ZhiYu 当前是纯 Apple 原生 Swift 生态，已建立成熟的 Apple 内跨平台架构（iOS / macOS Catalyst / watchOS），通过 PlatformRegistrar 协议 + DI 容器 + PlatformModifiers + 运行时 Trait 四件套，将业务层 `#if os()` 从 46 处压缩到 10 处（-78%），并有 CI 门禁防止回退。
