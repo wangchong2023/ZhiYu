@@ -840,7 +840,7 @@ private enum TaskCenterKey: DependencyKey {
 
 ## 5. 参考文档
 
-- [第三次深度审计报告](../Audit/2026-08-10-third-deep-quality-audit.md)
+- [第三次深度审计报告](../Archive/2026-08-10-third-deep-quality-audit.md)
 - [改进任务清单](../Audit/2026-08-10-improvement-task-list.md)
 - [缺陷清单](../Audit/2026-08-10-review-defects.md)
 - [分层架构定义](LAYERING_L0_L3.md)

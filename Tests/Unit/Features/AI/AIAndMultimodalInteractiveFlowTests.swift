@@ -68,7 +68,11 @@ final class AIAndMultimodalInteractiveFlowTests: XCTestCase {
         }
 
         let view = Wrapper(quiz: quiz).snapshotEnvironment()
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        host.view.layoutIfNeeded()
         XCTAssertNotNil(host.view)
         XCTAssertEqual(quiz.title, "Swift 6 Concurrency")
         XCTAssertEqual(quiz.questions.count, 1)
