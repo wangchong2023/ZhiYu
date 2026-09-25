@@ -48,7 +48,7 @@
 | `AppNotifications` | `Sources/Core/System/Notifications/AppNotifications.swift` | 数据变更通知（`Notification.Name` 扩展） |
 
 - **发布者**：`SQLiteStore`（数据变更）、`IngestQueue`（导入进度）等
-- **订阅者**：`GraphView`、`DashboardView` 等自动刷新
+- **订阅者**：`GraphView`、`KnowledgeDashboardView` 等自动刷新
 
 ## 5. 本地分析 (Local Analytics)
 

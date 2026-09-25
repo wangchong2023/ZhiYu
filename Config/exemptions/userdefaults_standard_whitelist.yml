@@ -3,9 +3,9 @@
 # 登记总数：28 项
 
   - file: "Sources/App/Core/ZhiYuApp.swift"
-    line: 157
+    line: 165
   - file: "Sources/App/Core/ZhiYuApp.swift"
-    line: 170
+    line: 178
   - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"
     line: 404
   - file: "Sources/Features/AI/Synthesis/Model/SynthesisStore.swift"

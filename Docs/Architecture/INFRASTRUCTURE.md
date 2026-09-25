@@ -105,7 +105,7 @@
 |------|------|------|
 | `PluginSandboxGateway` | `Sources/Infrastructure/Plugins/PluginSandboxGateway.swift` | JSContext 沙盒网关 + Watchdog |
 | `PluginRuntime` | `Sources/Infrastructure/Plugins/PluginRuntime.swift` | 插件运行时生命周期 |
-| `PluginProtocols` | `Sources/Infrastructure/Plugins/PluginProtocols.swift` | 插件协议定义 |
+| `PluginContext` | `Sources/Infrastructure/Plugins/PluginProtocols.swift` | 插件协议定义 |
 
 ## 8. 轻量配置 (UserDefaults)
 

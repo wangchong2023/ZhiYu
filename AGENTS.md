@@ -221,7 +221,7 @@ Tests/
 1. **数据库** → `DatabaseManager.shared.setup(at:)` 确保护航数据库就绪
 2. **L0 注册** → `CoreModuleRegistrar`：Logger、平台适配器、系统服务
 3. **L1 注册** → `StorageModuleRegistrar`：SQLiteStore、Repository 实现、EmbeddingManager
-4. **L2 注册** → `DomainModuleRegistrar`：LLMService、AISynthesisService、IngestService 等
+4. **L2 注册** → 功能域注册器（`KnowledgeModuleRegistrar` / `AIModuleRegistrar` / `AuthModuleRegistrar`）：LLMService、AISynthesisService、IngestService 等
 5. **L3 注册** → `AppModuleRegistrar`：Router、ViewFactory 注册各功能域 ViewProvider
 6. **Store 初始化** → `IngestStore()`、`SynthesisStore()`、`AppStore()` （在 DI 完成后实例化）
 
@@ -255,12 +255,12 @@ Tests/
 - `@Dependency` 在 `init` 时解析一次并缓存 — 测试中重新注册 `ServiceContainer` 不会更新已缓存值
 - `ObservableObject` 协议类型不适合 `@Dependency` — 保留 `@Inject` + `inject_exempt` 白名单
 
-### 模块化注册 — ModuleRegistrar 协议
+### 模块化注册 — ModuleRegistrar 注册器模式
 
-所有服务注册通过实现 `ModuleRegistrar` 协议完成。四个注册器按序执行，解耦 ZhiYuApp 的初始化：
+所有服务注册通过 `ModuleRegistrar` 注册器模式实现。核心注册器按序执行，功能域注册器按需注册，解耦 ZhiYuApp 的初始化：
 - `CoreModuleRegistrar` — 日志、平台适配、系统级服务
 - `StorageModuleRegistrar` — 数据库、仓储、向量索引（`guard` 确保数据库就绪）
-- `DomainModuleRegistrar` — 业务逻辑、AI 能力、插件系统
+- `KnowledgeModuleRegistrar` / `AIModuleRegistrar` / `AuthModuleRegistrar` — 业务逻辑、AI 能力、插件系统
 - `AppModuleRegistrar` — Router、ViewFactory
 
 ### 路由系统

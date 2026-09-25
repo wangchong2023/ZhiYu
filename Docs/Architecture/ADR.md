@@ -60,7 +60,7 @@
 **背景**: 跨层调用需解耦，不能直接依赖具体类。需选择 DI 机制。
 **决策**: 采用协议导向的 DI 模式。初期自研 `ServiceContainer` + `@Inject` 属性包装器（从 `ServiceContainer.shared` 解析服务）。
 **演进**: 2026-08 起，`@Inject` 被 [swift-dependencies](https://github.com/pointfreeco/swift-dependencies) 的 `@Dependency` 取代。`@Dependency` 通过 `DependencyKey` 注册服务，支持 `liveValue` / `testValue` / `previewValue` 三环境。CI-4 门禁禁止 `Sources/` 中新增 `@Inject`，仅白名单保留存量。
-**影响**: 服务注册通过 `ModuleRegistrar` 协议实现（`CoreModuleRegistrar` / `StorageModuleRegistrar` / `DomainModuleRegistrar` / `AppModuleRegistrar`），按序执行。
+**影响**: 服务注册通过 `ModuleRegistrar` 注册器模式实现（`CoreModuleRegistrar` / `StorageModuleRegistrar` / `AppModuleRegistrar`），按序执行。功能域注册器（`KnowledgeModuleRegistrar` / `AIModuleRegistrar` / `AuthModuleRegistrar`）按需注册业务服务。
 **后果**: 解耦跨层依赖；测试环境可注入 Mock；但 `@Dependency` 在 `@Observable` 类中需加 `@ObservationIgnored`，且 init 时解析一次并缓存。
 
 ---
