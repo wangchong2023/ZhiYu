@@ -12,6 +12,30 @@
 //
 
 import PackageDescription
+import Foundation
+
+// MARK: - 开源库本地路径自动智能推导（环境变量优先 -> 向上解析 Config/.env.local -> 默认降级路径）
+let opensrcRoot: String = {
+    if let env = ProcessInfo.processInfo.environment["OPENSRC_ROOT"], !env.isEmpty {
+        return env
+    }
+    let envFile = URL(fileURLWithPath: #file)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent("Config/.env.local")
+    if let content = try? String(contentsOf: envFile, encoding: .utf8) {
+        for line in content.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("OPENSRC_ROOT=") {
+                let val = trimmed.replacingOccurrences(of: "OPENSRC_ROOT=", with: "")
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+                if !val.isEmpty { return val }
+            }
+        }
+    }
+    return "/Users/constantine/Documents/work/code/opensrc/swift"
+}()
 
 let package = Package(
     name: "UFPCore",
@@ -37,7 +61,7 @@ let package = Package(
         // 离线优先：本地克隆到 ${OPENSRC_ROOT}/swift-dependencies
         // 传递依赖：combine-schedulers, swift-clocks, swift-concurrency-extras,
         //          xctest-dynamic-overlay, swift-syntax（均已本地克隆）
-        .package(path: "../../../../opensrc/swift/swift-dependencies")
+        .package(path: "\(opensrcRoot)/swift-dependencies")
     ],
     targets: [
         .target(
