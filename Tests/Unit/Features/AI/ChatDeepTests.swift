@@ -350,7 +350,7 @@ final class ChatDeepTests: XCTestCase {
         // 渲染 TaskCenterView
         let taskCenterView = TaskCenterView()
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: taskCenterView)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -383,7 +383,7 @@ final class ChatDeepTests: XCTestCase {
         let chatView = ChatView(selectedTab: binding)
             .snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: chatView)
         window.rootViewController = host
         window.makeKeyAndVisible()

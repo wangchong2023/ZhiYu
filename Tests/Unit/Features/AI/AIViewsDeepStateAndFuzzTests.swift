@@ -52,9 +52,8 @@ final class AIViewsDeepStateAndFuzzTests: XCTestCase {
     // MARK: - 4. TaskCenterView 任务列表展开与清理
 
     func testTaskCenterView_ActiveAndCompletedTasks() {
-        taskCenter.addTask(type: .ai, name: "知识库深度同步", target: "微服务专题")
-        taskCenter.addTask(type: .synthesis, name: "知识合成报告生成", target: "架构演进")
-
+        _ = taskCenter.addTask(type: .ai, name: "知识库深度同步", target: "微服务专题")
+        _ = taskCenter.addTask(type: .synthesis, name: "知识合成报告生成", target: "架构演进")
         let taskCenterView = TaskCenterView()
             .snapshotEnvironment()
 

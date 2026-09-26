@@ -165,7 +165,7 @@ final class GlobalModelPersistenceDeepTests: XCTestCase {
 
     /// 验证 downloadStates 为 .completed 时 isModelLocalReady 返回 true。
     func testIsModelLocalReadyCompletedReturnsTrue() {
-        let url = URL(fileURLWithPath: "/tmp/test.bin")
+        _ = URL(fileURLWithPath: "/tmp/test.bin")
         // 通过反射或直接设置 downloadStates（private(set) 需通过 refreshLocalModelFiles 间接设置）
         // 这里用 refreshLocalModelFiles 配合物理文件来设置 completed 状态
         // 由于无法直接设置，验证默认行为即可

@@ -28,7 +28,7 @@ final class FTS5TokenizerCorruptionRecoveryTests: XCTestCase {
         tempDBURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("FTS5Test_\(UUID().uuidString).sqlite")
         dbQueue = try DatabaseQueue(path: tempDBURL.path)
-        try await DatabaseManager.shared.migrate(dbQueue)
+        try DatabaseManager.shared.migrate(dbQueue)
         store = SQLiteStore(dbWriter: dbQueue)
     }
 

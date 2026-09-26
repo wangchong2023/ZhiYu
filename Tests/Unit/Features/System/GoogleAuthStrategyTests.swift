@@ -19,10 +19,10 @@ import XCTest
 @MainActor
 final class GoogleAuthStrategyTests: XCTestCase {
 
-    var strategy: GoogleAuthStrategy!
+    nonisolated(unsafe) var strategy: GoogleAuthStrategy!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         strategy = GoogleAuthStrategy()
     }
 

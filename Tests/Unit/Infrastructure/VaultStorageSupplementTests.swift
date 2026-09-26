@@ -216,7 +216,7 @@ final class VaultStorageSupplementTests: XCTestCase {
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        let service = BackupService(baseDirectory: tempDir)
+        _ = BackupService(baseDirectory: tempDir)
         // 由于 backupInterval 节流，直接创建 25 个条目
         // 这里验证 maxBackups 常量存在且 cleanOldBackups 逻辑可触发
         XCTAssertTrue(BackupService.self == BackupService.self, "BackupService 类型应可比较")

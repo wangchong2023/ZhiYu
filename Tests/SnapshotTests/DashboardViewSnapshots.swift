@@ -259,7 +259,7 @@ final class DashboardViewSnapshots: XCTestCase {
     /// 注意：编辑模式使用 MarkdownEditorView，后者通过 OCRPickerModifier 间接依赖
     /// @Environment(IngestStore.self)，需注入 IngestStore 实例。
     func testPageDetailContentSection_EditingMode() {
-        var page = makeRawPage()
+        let page = makeRawPage()
         let view = PageDetailContentSection(
             page: .constant(page),
             isEditing: .constant(true),

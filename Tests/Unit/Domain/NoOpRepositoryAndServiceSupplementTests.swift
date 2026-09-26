@@ -468,7 +468,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpVaultService 初始状态应返回安全默认值
     func testNoOpVaultServiceInitialStateSafeDefaults() async {
-        let service = await NoOpVaultService()
+        let service = NoOpVaultService()
         XCTAssertTrue(service.vaults.isEmpty, "初始 vaults 应为空")
         XCTAssertNil(service.selectedVaultID, "初始 selectedVaultID 应为 nil")
         XCTAssertNil(service.currentVault, "初始 currentVault 应为 nil")
@@ -476,7 +476,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpVaultService 所有操作应不崩溃
     func testNoOpVaultServiceAllOperationsNoCrash() async throws {
-        let service = await NoOpVaultService()
+        let service = NoOpVaultService()
         let vault = Vault(name: "test")
         try await service.selectVaultAndWait(vault)
         await service.refreshPageCount(for: UUID())
@@ -492,14 +492,14 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpChatService loadHistory 应返回空数组
     func testNoOpChatServiceLoadHistoryReturnsEmptyArray() async {
-        let service = await NoOpChatService()
+        let service = NoOpChatService()
         let history = service.loadHistory()
         XCTAssertTrue(history.isEmpty)
     }
 
     /// NoOpChatService streamChat 应立即 finish
     func testNoOpChatServiceStreamChatFinishesImmediately() async throws {
-        let service = await NoOpChatService()
+        let service = NoOpChatService()
         let stream = service.streamChat(query: "test", pages: [])
         var count = 0
         for try await _ in stream {
@@ -510,7 +510,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpChatService clearHistory/saveMessages 应不崩溃
     func testNoOpChatServiceClearAndSaveNoCrash() async {
-        let service = await NoOpChatService()
+        let service = NoOpChatService()
         service.clearHistory()
         service.saveUserMessage("test")
         service.saveAssistantMessage("response")
@@ -520,7 +520,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpSpeechService 初始状态应返回安全默认值
     func testNoOpSpeechServiceInitialStateSafeDefaults() async {
-        let service = await NoOpSpeechService()
+        let service = NoOpSpeechService()
         XCTAssertFalse(service.isRecording)
         XCTAssertFalse(service.isTranscribing)
         XCTAssertEqual(service.transcribedText, "")
@@ -536,7 +536,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpSpeechService checkPermission/startRecording/stopRecording 应不崩溃
     func testNoOpSpeechServiceRecordingOperationsNoCrash() async {
-        let service = await NoOpSpeechService()
+        let service = NoOpSpeechService()
         service.checkPermission()
         service.startRecording()
         service.stopRecording()
@@ -544,14 +544,14 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpSpeechService transcribeFile 应返回空字符串
     func testNoOpSpeechServiceTranscribeFileReturnsEmptyString() async throws {
-        let service = await NoOpSpeechService()
+        let service = NoOpSpeechService()
         let result = try await service.transcribeFile(url: URL(fileURLWithPath: "/tmp/test.m4a"))
         XCTAssertEqual(result, "")
     }
 
     /// NoOpSpeechService saveRecording 应保留 title
     func testNoOpSpeechServiceSaveRecordingKeepsTitle() async {
-        let service = await NoOpSpeechService()
+        let service = NoOpSpeechService()
         let recording = service.saveRecording(title: "test recording")
         XCTAssertEqual(recording.title, "test recording")
         XCTAssertEqual(recording.text, "")
@@ -559,7 +559,7 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpSpeechService deleteRecording/clearTranscription 应不崩溃
     func testNoOpSpeechServiceDeleteAndClearNoCrash() async {
-        let service = await NoOpSpeechService()
+        let service = NoOpSpeechService()
         let recording = service.saveRecording(title: "test")
         service.deleteRecording(recording)
         service.clearTranscription()
@@ -569,63 +569,63 @@ final class NoOpRepositoryAndServiceSupplementTests: XCTestCase {
 
     /// NoOpPDFService savePDF 应返回 nil
     func testNoOpPDFServiceSavePDFReturnsNil() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let url = await service.savePDF(data: Data(), fileName: "test.pdf")
         XCTAssertNil(url)
     }
 
     /// NoOpPDFService deletePDF 应返回 false
     func testNoOpPDFServiceDeletePDFReturnsFalse() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let result = await service.deletePDF(fileName: "test.pdf")
         XCTAssertFalse(result)
     }
 
     /// NoOpPDFService allPDFFilenames 应返回空数组
     func testNoOpPDFServiceAllPDFFilenamesReturnsEmptyArray() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let filenames = await service.allPDFFilenames()
         XCTAssertTrue(filenames.isEmpty)
     }
 
     /// NoOpPDFService getPDFURL 应返回 nil
     func testNoOpPDFServiceGetPDFURLReturnsNil() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let url = service.getPDFURL(fileName: "test.pdf")
         XCTAssertNil(url)
     }
 
     /// NoOpPDFService extractText 应返回 nil
     func testNoOpPDFServiceExtractTextReturnsNil() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let text = await service.extractText(from: URL(fileURLWithPath: "/tmp/test.pdf"))
         XCTAssertNil(text)
     }
 
     /// NoOpPDFService extractText pageRange 应返回 nil
     func testNoOpPDFServiceExtractTextPageRangeReturnsNil() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let text = await service.extractText(from: URL(fileURLWithPath: "/tmp/test.pdf"), pageRange: 0..<5)
         XCTAssertNil(text)
     }
 
     /// NoOpPDFService extractImages 应返回空数组
     func testNoOpPDFServiceExtractImagesReturnsEmptyArray() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let images = await service.extractImages(from: URL(fileURLWithPath: "/tmp/test.pdf"))
         XCTAssertTrue(images.isEmpty)
     }
 
     /// NoOpPDFService loadDocumentsInfo 应返回空数组
     func testNoOpPDFServiceLoadDocumentsInfoReturnsEmptyArray() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         let docs = await service.loadDocumentsInfo()
         XCTAssertTrue(docs.isEmpty)
     }
 
     /// NoOpPDFService saveDocumentsInfo 应不崩溃
     func testNoOpPDFServiceSaveDocumentsInfoNoCrash() async {
-        let service = await NoOpPDFService()
+        let service = NoOpPDFService()
         await service.saveDocumentsInfo([])
     }
 

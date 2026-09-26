@@ -252,7 +252,7 @@ final class AIWorkflowClearAllDeepTests: XCTestCase {
         store.lintIssues = []
         decoded = try? JSONDecoder().decode([LintIssue].self, from: keyStore.data(forKey: AppConstants.Keys.Storage.lastLintIssues) ?? Data())
         // 空数组编码成功则持久化为空数组，失败则不写入（旧值残留或 nil）
-        if let data = keyStore.data(forKey: AppConstants.Keys.Storage.lastLintIssues) {
+        if keyStore.data(forKey: AppConstants.Keys.Storage.lastLintIssues) != nil {
             XCTAssertEqual(decoded, [], "空数组赋值后持久化应解码为空数组")
         }
     }

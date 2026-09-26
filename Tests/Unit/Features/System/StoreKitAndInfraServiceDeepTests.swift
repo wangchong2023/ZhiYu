@@ -92,7 +92,7 @@ final class StoreKitAndInfraServiceDeepTests: XCTestCase {
     // MARK: - 2. SubscriptionPurchaseFlow 视图与购买流深测
 
     func testSubscriptionPurchaseFlow_MonthlyAndYearlyRendering() {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 667))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 667))
 
         var isPurchasingMonthly = false
         var isSuccessMonthly = false
@@ -278,7 +278,7 @@ final class StoreKitAndInfraServiceDeepTests: XCTestCase {
     // MARK: - 6. ServerConfigView 与 MockServerConfig 深测
 
     func testServerConfigView_LifecycleAndRendering() {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 667))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 375, height: 667))
         let rawView = ServerConfigView()
         XCTAssertNotNil(rawView)
         let view = rawView.snapshotEnvironment()

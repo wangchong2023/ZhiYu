@@ -54,15 +54,15 @@ final class MockSyncConflictResolver: SyncConflictResolver, @unchecked Sendable 
 @MainActor
 final class AppSyncOrchestratorTests: XCTestCase {
     
-    private var provider: MockCloudStorageProvider!
-    private var resolver: MockSyncConflictResolver!
-    private var orchestrator: AppSyncOrchestrator!
+    nonisolated(unsafe) private var provider: MockCloudStorageProvider!
+    nonisolated(unsafe) private var resolver: MockSyncConflictResolver!
+    nonisolated(unsafe) private var orchestrator: AppSyncOrchestrator!
     
-    private var localPages: [KnowledgePage]!
-    private var localLogs: [LogEntry]!
+    nonisolated(unsafe) private var localPages: [KnowledgePage]!
+    nonisolated(unsafe) private var localLogs: [LogEntry]!
     
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         provider = MockCloudStorageProvider()
         resolver = MockSyncConflictResolver()
         orchestrator = AppSyncOrchestrator(provider: provider, resolver: resolver)
@@ -84,7 +84,7 @@ final class AppSyncOrchestratorTests: XCTestCase {
     // MARK: - 辅助断言方法
     
     /// 由于 LogEntry 并不遵循 Equatable，使用此方法手动检验两个 LogEntry 数组的值是否一致
-    private func assertLogEntriesEqual(_ actual: [LogEntry], _ expected: [LogEntry], file: StaticString = #file, line: UInt = #line) {
+    private func assertLogEntriesEqual(_ actual: [LogEntry], _ expected: [LogEntry], file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertEqual(actual.count, expected.count, "日志数量不一致", file: file, line: line)
         for (act, exp) in zip(actual, expected) {
             XCTAssertEqual(act.id, exp.id, "日志 ID 不一致", file: file, line: line)
@@ -120,8 +120,8 @@ final class AppSyncOrchestratorTests: XCTestCase {
     func testPerformSyncWhenCloudIsEmpty() async throws {
         // Arrange
         var pushCalled = false
-        var pushedPages: [KnowledgePage] = []
-        var pushedLogs: [LogEntry] = []
+        nonisolated(unsafe) var pushedPages: [KnowledgePage] = []
+        nonisolated(unsafe) var pushedLogs: [LogEntry] = []
         
         provider.pullHandler = {
             // 模拟云端为空抛出错误
@@ -190,8 +190,8 @@ final class AppSyncOrchestratorTests: XCTestCase {
             return CloudSnapshot(pages: [remotePage], logs: remoteLogs, lastModified: Date())
         }
         
-        var pushedPages: [KnowledgePage] = []
-        var pushedLogs: [LogEntry] = []
+        nonisolated(unsafe) var pushedPages: [KnowledgePage] = []
+        nonisolated(unsafe) var pushedLogs: [LogEntry] = []
         provider.pushHandler = { pages, logs in
             pushedPages = pages
             pushedLogs = logs

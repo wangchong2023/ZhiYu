@@ -396,7 +396,7 @@ final class CoreProtocolsSupplementTests: XCTestCase {
     /// StubWatchSyncService sendAudioData 默认实现应不崩溃
     func testStubWatchSyncServiceSendAudioDataDefaultImplNoCrash() async {
         let service = StubWatchSyncService()
-        await service.sendAudioData(Data(), filename: "test.m4a")
+        service.sendAudioData(Data(), filename: "test.m4a")
         // 不崩溃即通过（WatchSyncProtocol extension 默认实现）
     }
 

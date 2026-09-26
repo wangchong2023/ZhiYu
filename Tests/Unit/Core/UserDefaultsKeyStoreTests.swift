@@ -12,12 +12,12 @@ import XCTest
 @MainActor
 final class UserDefaultsKeyStoreTests: XCTestCase {
 
-    private var store: UserDefaultsKeyStore!
-    private var defaults: UserDefaults!
+    nonisolated(unsafe) private var store: UserDefaultsKeyStore!
+    nonisolated(unsafe) private var defaults: UserDefaults!
     private let testKey = "test.key.\(UUID().uuidString)"
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         // 使用独立 suiteName 避免污染 .standard
         let suiteName = "UserDefaultsKeyStoreTests-\(UUID().uuidString)"
         guard let testDefaults = UserDefaults(suiteName: suiteName) else {

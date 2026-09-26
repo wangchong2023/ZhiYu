@@ -18,25 +18,25 @@ import Dependencies
 
 // MARK: - 测试专用 Equatable 一致性（仅测试 target 内生效，避免修改生产模型文件）
 
-extension RefactorSuggestionDTO: Equatable {
+extension RefactorSuggestionDTO: @retroactive Equatable {
     public static func == (lhs: RefactorSuggestionDTO, rhs: RefactorSuggestionDTO) -> Bool {
         lhs.type == rhs.type && lhs.target == rhs.target && lhs.reason == rhs.reason && lhs.suggestion == rhs.suggestion
     }
 }
 
-extension PotentialLinkSuggestion: Equatable {
+extension PotentialLinkSuggestion: @retroactive Equatable {
     public static func == (lhs: PotentialLinkSuggestion, rhs: PotentialLinkSuggestion) -> Bool {
         lhs.id == rhs.id && lhs.sourcePageID == rhs.sourcePageID && lhs.sourceTitle == rhs.sourceTitle && lhs.targetTitle == rhs.targetTitle
     }
 }
 
-extension LintIssue: Equatable {
+extension LintIssue: @retroactive Equatable {
     public static func == (lhs: LintIssue, rhs: LintIssue) -> Bool {
         lhs.id == rhs.id && lhs.severity == rhs.severity && lhs.type == rhs.type && lhs.pageID == rhs.pageID && lhs.message == rhs.message && lhs.suggestion == rhs.suggestion
     }
 }
 
-extension QuizModel: Equatable {
+extension QuizModel: @retroactive Equatable {
     public static func == (lhs: QuizModel, rhs: QuizModel) -> Bool {
         lhs.title == rhs.title && lhs.questions.count == rhs.questions.count
     }

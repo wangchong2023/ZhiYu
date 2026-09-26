@@ -148,7 +148,7 @@ final class VaultDeepTests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.01)
         service.updateVault(id: id, name: "更新", icon: nil, description: nil)
 
-        let updated = service.vaults.first { $0.id == id }
+        _ = service.vaults.first { $0.id == id }
         guard let updated = service.vaults.first(where: { $0.id == id }) else {
             XCTFail("未找到更新后的 vault")
             return

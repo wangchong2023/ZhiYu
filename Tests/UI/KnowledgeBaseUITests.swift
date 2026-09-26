@@ -138,7 +138,7 @@ class KnowledgeBaseUITests: XCTestCase {
     /// 强制点击元素：元素不存在或不可点击时触发 XCTFail
     /// 适用于必须存在的 UI 元素（官方测试套件关键项）
     /// - Note: 优先使用 element.tap() 以确保 SwiftUI Button action 被触发。
-    func assertTap(_ element: XCUIElement, file: StaticString = #file, line: UInt = #line) {
+    func assertTap(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(element.exists, "元素不存在: \(element.identifier)", file: file, line: line)
         guard element.exists else { return }
         element.tap()

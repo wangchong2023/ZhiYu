@@ -87,7 +87,7 @@ final class KnowledgeViewsExploratoryBugHuntTests: XCTestCase {
 
         let detailView = PageDetailView(page: complexPage).snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         let host = UIHostingController(rootView: detailView)
         window.rootViewController = host
         window.makeKeyAndVisible()

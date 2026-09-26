@@ -16,15 +16,14 @@ import UFPCore
 @MainActor
 final class SynthesisStoreStateFailureTests: XCTestCase {
 
-    private var store: SynthesisStore!
+    nonisolated(unsafe) private var store: SynthesisStore!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         store = SynthesisStore()
     }
 
     override func tearDown() {
-        store.clearAll()
         store = nil
         super.tearDown()
     }

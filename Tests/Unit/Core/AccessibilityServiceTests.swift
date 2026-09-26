@@ -13,10 +13,10 @@ import CoreGraphics
 @MainActor
 final class AccessibilityServiceTests: XCTestCase {
 
-    private var service: AccessibilityService!
+    nonisolated(unsafe) private var service: AccessibilityService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         service = AccessibilityService()
     }
 

@@ -69,7 +69,7 @@ final class EmbeddingManagerDeterminismTests: XCTestCase {
         // 步骤 1：当前进程索引页面，生成向量并存入 mock DB
         await manager.syncEmbeddings(pages: [page])
         let dbEmbeddings = try await mockRepository.fetchAllEmbeddings()
-        let storedVector = try XCTUnwrap(dbEmbeddings[pageID], "向量应已持久化到 DB")
+        _ = try XCTUnwrap(dbEmbeddings[pageID], "向量应已持久化到 DB")
 
         // 步骤 2：创建新的 manager 实例（模拟 app 重启）
         // 新实例会从 DB 加载旧向量到缓存

@@ -192,6 +192,7 @@ final class AppNonViewDeepTests: XCTestCase {
 
     #if !os(watchOS)
     @available(iOS 16.0, macCatalyst 16.0, *)
+    @MainActor
     func testAppWindowSceneDelegateInstantiable() {
         let delegate = AppWindowSceneDelegate()
         XCTAssertNotNil(delegate)

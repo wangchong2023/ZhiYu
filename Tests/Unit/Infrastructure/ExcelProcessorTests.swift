@@ -42,8 +42,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertEqual(processor.values, ["[5]"], "t=\"s\" 类型应记录为 [索引] 格式")
     }
 
@@ -62,8 +61,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertEqual(processor.values, ["[0]", "[1]", "[2]"], "多个共享字符串单元格应全部记录")
     }
 
@@ -82,8 +80,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertEqual(processor.values, ["[3]"], "t=\"inlineStr\" 类型也应记录为 [索引] 格式")
     }
 
@@ -102,8 +99,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertTrue(processor.values.isEmpty, "无 t 属性的数字单元格不应被记录")
     }
 
@@ -122,8 +118,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertTrue(processor.values.isEmpty, "空值的单元格不应被记录")
     }
 
@@ -143,8 +138,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertTrue(processor.values.isEmpty, "超过 sharedStringIndexMax 的索引不应被记录")
     }
 
@@ -163,8 +157,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertTrue(processor.values.isEmpty, "非数字值不应被记录为索引")
     }
 
@@ -184,8 +177,7 @@ final class ExcelProcessorTests: XCTestCase {
         """
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
-        processor.parse()
-
+        _ = processor.parse()
         XCTAssertEqual(processor.values, ["[10]"], "值字符应被完整累积")
     }
 }

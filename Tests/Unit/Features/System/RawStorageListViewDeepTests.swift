@@ -71,7 +71,7 @@ final class RawStorageListViewDeepTests: XCTestCase {
         store.pages = []
         let emptyView = RawStorageListView()
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let hostEmpty = UIHostingController(rootView: emptyView)
         window.rootViewController = hostEmpty
         window.makeKeyAndVisible()

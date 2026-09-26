@@ -233,7 +233,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testDetermineSourceMarketNotLoadedBoundary() {
         let registry = PluginRegistry()
         ServiceContainer.shared.register(registry, for: PluginRegistry.self)
-        let marketService = PluginMarketService(registry: registry)
+        _ = PluginMarketService(registry: registry)
         // availablePlugins 为空（市场未加载）
 
         // 模拟已安装的社区插件

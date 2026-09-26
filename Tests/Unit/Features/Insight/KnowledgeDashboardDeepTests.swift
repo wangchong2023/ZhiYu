@@ -32,7 +32,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         router = ServiceContainer.shared.resolveOptional(Router.self) ?? Router()
         themeManager = ServiceContainer.shared.resolveOptional(ThemeManager.self) ?? ThemeManager()
 
-        window = UIWindow(frame: CGRect(x: 0, y: 0, width: TestConstants.windowWidth, height: TestConstants.windowHeight))
+        window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: TestConstants.windowWidth, height: TestConstants.windowHeight))
     }
 
     func createTestPages() -> [KnowledgePage] {
@@ -237,7 +237,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
 
     func testKnowledgeDashboardViewMountingWithData() async throws {
         let store = ServiceContainer.shared.resolveOptional(KnowledgeStore.self) ?? KnowledgeStore()
-        let appStore = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+        _ = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
 
         let page1 = KnowledgePage(title: "Architecture Guide", tags: ["iOS", "Architecture"])
         let page2 = KnowledgePage(title: "Concurrency Patterns", tags: ["Swift", "iOS"])
@@ -249,7 +249,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let view = KnowledgeDashboardView()
             .snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -384,7 +384,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
             .snapshotEnvironment()
 
         let host = UIHostingController(rootView: view)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()
@@ -514,7 +514,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
             .snapshotEnvironment()
 
         let host = UIHostingController(rootView: reportView)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()

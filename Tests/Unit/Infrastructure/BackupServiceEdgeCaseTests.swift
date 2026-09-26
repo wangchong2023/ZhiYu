@@ -76,7 +76,7 @@ final class BackupServiceEdgeTests: XCTestCase {
         backupService.isAutoBackupEnabled = true
 
         // 创建 22 个备份，每次间隔超过节流时间
-        for i in 0..<22 {
+        for _ in 0..<22 {
             // 模拟 lastBackupDate 为过去时间以绕过节流
             backupService.lastBackupDate = Date().addingTimeInterval(-400)
             backupService.createBackup(pages: makePages(count: 1))
@@ -87,7 +87,7 @@ final class BackupServiceEdgeTests: XCTestCase {
 
     /// 验证：恰好 20 个备份时不触发清理。
     func testCleanOldBackupsAtExactLimit() async throws {
-        for i in 0..<20 {
+        for _ in 0..<20 {
             backupService.lastBackupDate = Date().addingTimeInterval(-400)
             backupService.createBackup(pages: makePages(count: 1))
         }

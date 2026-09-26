@@ -32,7 +32,7 @@ final class IngestViewDeepTests: XCTestCase {
         appStore = AppStore()
         router = Router.shared
         themeManager = ThemeManager()
-        window = UIWindow(frame: UIScreen.main.bounds)
+        window = TestWindowFactory.makeWindow()
     }
 
     func testIngestCoordinator_cooldownGuard_blocksRapidImports() {

@@ -12,10 +12,10 @@ import XCTest
 @MainActor
 final class LLMConfigManagerTests: XCTestCase {
 
-    private var config: LLMConfigManager!
+    nonisolated(unsafe) private var config: LLMConfigManager!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         config = LLMConfigManager()
     }
 

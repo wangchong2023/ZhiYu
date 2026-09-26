@@ -198,44 +198,44 @@ final class DatabaseNotificationNameTests: XCTestCase {
 
     /// 发送 databaseDidSwitch 通知并由监听者正常接收
     func testPostDatabaseDidSwitchNotification() {
-        var received = false
+        let received = MutexBox<Bool>(false)
         let expectation = expectation(description: "databaseDidSwitch")
         let observer = NotificationCenter.default.addObserver(forName: .databaseDidSwitch, object: nil, queue: .main) { _ in
-            received = true
+            received.mutate { $0 = true }
             expectation.fulfill()
         }
         NotificationCenter.default.post(name: .databaseDidSwitch, object: nil)
         wait(for: [expectation], timeout: 1.0)
         NotificationCenter.default.removeObserver(observer)
-        XCTAssertTrue(received, "应成功接收到 databaseDidSwitch 通知")
+        XCTAssertTrue(received.get(), "应成功接收到 databaseDidSwitch 通知")
     }
 
     /// 发送 databaseIntegrityCheckFailed 通知并由监听者正常接收
     func testPostDatabaseIntegrityCheckFailedNotification() {
-        var received = false
+        let received = MutexBox<Bool>(false)
         let expectation = expectation(description: "databaseIntegrityCheckFailed")
         let observer = NotificationCenter.default.addObserver(forName: .databaseIntegrityCheckFailed, object: nil, queue: .main) { _ in
-            received = true
+            received.mutate { $0 = true }
             expectation.fulfill()
         }
         NotificationCenter.default.post(name: .databaseIntegrityCheckFailed, object: nil)
         wait(for: [expectation], timeout: 1.0)
         NotificationCenter.default.removeObserver(observer)
-        XCTAssertTrue(received, "应成功接收到 databaseIntegrityCheckFailed 通知")
+        XCTAssertTrue(received.get(), "应成功接收到 databaseIntegrityCheckFailed 通知")
     }
 
     /// 发送 databaseStateDidChange 通知并由监听者正常接收
     func testPostDatabaseStateDidChangeNotification() {
-        var received = false
+        let received = MutexBox<Bool>(false)
         let expectation = expectation(description: "databaseStateDidChange")
         let observer = NotificationCenter.default.addObserver(forName: .databaseStateDidChange, object: nil, queue: .main) { _ in
-            received = true
+            received.mutate { $0 = true }
             expectation.fulfill()
         }
         NotificationCenter.default.post(name: .databaseStateDidChange, object: nil)
         wait(for: [expectation], timeout: 1.0)
         NotificationCenter.default.removeObserver(observer)
-        XCTAssertTrue(received, "应成功接收到 databaseStateDidChange 通知")
+        XCTAssertTrue(received.get(), "应成功接收到 databaseStateDidChange 通知")
     }
 }
 

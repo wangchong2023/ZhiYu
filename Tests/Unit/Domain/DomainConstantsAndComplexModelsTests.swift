@@ -429,7 +429,7 @@ final class LLMManifestComplexTests: XCTestCase {
 
     /// 验证 LLMManifest init 含默认值
     func testLLMManifestInitWithDefaults() {
-        let defaultParams = InferenceParameters()
+        _ = InferenceParameters()
         let manifest = LLMManifest(
             modelId: "gemma-2b",
             displayName: "Gemma 2B",

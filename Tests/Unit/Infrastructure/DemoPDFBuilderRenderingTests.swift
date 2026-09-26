@@ -52,7 +52,7 @@ final class DemoPDFBuilderRenderingTests: XCTestCase {
         let path = tempDir + "test_overwrite.pdf"
         // 第一次生成
         _ = DemoPDFBuilder.ensurePDFExists(at: path, title: "第一版", content: "内容A")
-        let firstSize = try FileManager.default.attributesOfItem(atPath: path)[.size] as? Int ?? 0
+        _ = try FileManager.default.attributesOfItem(atPath: path)[.size] as? Int ?? 0
         // 第二次生成（不同内容）
         _ = DemoPDFBuilder.ensurePDFExists(at: path, title: "第二版", content: "内容B更长的内容")
         let secondSize = try FileManager.default.attributesOfItem(atPath: path)[.size] as? Int ?? 0

@@ -14,12 +14,12 @@ import Dependencies
 @MainActor
 final class WorkflowServiceTests: XCTestCase {
 
-    var mockReminderService: MockReminderService!
-    var service: WorkflowService!
+    nonisolated(unsafe) var mockReminderService: MockReminderService!
+    nonisolated(unsafe) var service: WorkflowService!
     @Dependency(\.toastService) var toastManager
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         mockReminderService = MockReminderService()
         mockReminderService.requestAccessResult = true
         service = WorkflowService(reminderService: mockReminderService)
@@ -29,11 +29,10 @@ final class WorkflowServiceTests: XCTestCase {
             for: (any HapticFeedbackProtocol).self
         )
         // 重置 Toast 状态
-        toastManager.currentToast = nil
+        await MainActor.run { toastManager.currentToast = nil }
     }
 
     override func tearDown() {
-        toastManager.currentToast = nil
         service = nil
         mockReminderService = nil
         super.tearDown()

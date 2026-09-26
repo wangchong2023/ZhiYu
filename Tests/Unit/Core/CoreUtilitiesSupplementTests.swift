@@ -22,13 +22,15 @@ import UFPCore
 @MainActor
 final class CoreUtilitiesSupplementTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         Localized.resetForTesting()
     }
 
     override func tearDown() {
-        Localized.resetForTesting()
+        MainActor.assumeIsolated {
+            Localized.resetForTesting()
+        }
         super.tearDown()
     }
 

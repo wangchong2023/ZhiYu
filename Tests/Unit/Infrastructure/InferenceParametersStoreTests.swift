@@ -12,16 +12,15 @@ import XCTest
 @MainActor
 final class InferenceParametersStoreTests: XCTestCase {
 
-    private var store: InferenceParametersStore!
+    nonisolated(unsafe) private var store: InferenceParametersStore!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         store = InferenceParametersStore.shared
         store.clearAll()
     }
 
     override func tearDown() {
-        store.clearAll()
         store = nil
         super.tearDown()
     }

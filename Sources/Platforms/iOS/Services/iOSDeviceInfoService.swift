@@ -28,19 +28,18 @@ final class iOSDeviceInfoService: DeviceInfoProtocol, Sendable {
 
     var screenHeight: CGFloat {
         // iOS 26.0 废弃 UIScreen.main，改为从活跃 UIWindowScene 获取 screen
-        // 测试环境（无 Host App）无 foregroundActive 场景，回退到 UIScreen.main
+        // 测试环境（无 Host App）无 foregroundActive 场景，回退到 UITraitCollection
         runOnMainSync {
-            let activeScene = UIApplication.shared.connectedScenes
+            let scenes = UIApplication.shared.connectedScenes
                 .compactMap { $0 as? UIWindowScene }
-                .first { $0.activationState == .foregroundActive }
-            if let scene = activeScene {
+            if let scene = scenes.first(where: { $0.activationState == .foregroundActive }) {
                 return scene.screen.bounds.height
             }
-            if let window = activeScene?.windows.first {
-                return window.screen.bounds.height
+            if let scene = scenes.first {
+                return scene.screen.bounds.height
             }
-            // 测试环境回退到 UIScreen.main（iOS 26 废弃但测试环境仍可用）
-            return UIScreen.main.bounds.height
+            // 测试环境回退：无 connectedScenes 时使用固定值（iPhone 14 Pro 高度）
+            return CGFloat(852)
         }
     }
 }

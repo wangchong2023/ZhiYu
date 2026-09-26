@@ -121,22 +121,22 @@ final class VaultCoordinatorDeepTests: XCTestCase {
         let part1 = Data([0x01, 0x02, 0x03])
         let part2 = Data([0x04, 0x05, 0x06])
 
-        var receivedAudioNotification = false
+        let receivedAudioNotification = MutexBox<Bool>(false)
         let observer = NotificationCenter.default.addObserver(
             forName: .didReceiveWatchAudio,
             object: nil,
             queue: .main
         ) { notif in
             if let data = notif.object as? Data, data.count == 6 {
-                receivedAudioNotification = true
+                receivedAudioNotification.mutate { $0 = true }
             }
         }
 
         service.handleReceivedAudioChunk(transferId: transferId, index: 0, total: 2, filename: "record.m4a", data: part1)
-        XCTAssertFalse(receivedAudioNotification)
+        XCTAssertFalse(receivedAudioNotification.get())
 
         service.handleReceivedAudioChunk(transferId: transferId, index: 1, total: 2, filename: "record.m4a", data: part2)
-        XCTAssertTrue(receivedAudioNotification)
+        XCTAssertTrue(receivedAudioNotification.get())
         XCTAssertTrue(service.lastReceivedText.hasPrefix("audio:record.m4a:6"))
 
         NotificationCenter.default.removeObserver(observer)
@@ -218,7 +218,7 @@ final class VaultCoordinatorDeepTests: XCTestCase {
             selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 })
         )
         let host = UIHostingController(rootView: ingestView.snapshotEnvironment())
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()
@@ -249,7 +249,7 @@ final class VaultCoordinatorDeepTests: XCTestCase {
                 selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 })
             )
             let host = UIHostingController(rootView: ingestView.snapshotEnvironment())
-            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+            let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
             window.rootViewController = host
             window.makeKeyAndVisible()
             host.view.layoutIfNeeded()

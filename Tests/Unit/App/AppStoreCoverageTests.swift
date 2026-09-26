@@ -79,7 +79,7 @@ final class AppStoreCoverageTests: XCTestCase {
     func testPerformBatchWrite_DoesNotCrash() async throws {
         let countBefore = store.totalPages
         try await store.performBatchWrite { db in
-            var newPage = KnowledgePage(title: "BatchCreatedPage", pageType: .concept, content: "batch content")
+            let newPage = KnowledgePage(title: "BatchCreatedPage", pageType: .concept, content: "batch content")
             try newPage.insert(db)
         }
         await store.refresh()

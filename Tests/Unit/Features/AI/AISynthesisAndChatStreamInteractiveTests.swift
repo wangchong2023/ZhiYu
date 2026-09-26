@@ -33,7 +33,7 @@ final class AISynthesisAndChatStreamInteractiveTests: XCTestCase {
 
         let wrapper = Wrapper()
         let view = wrapper.snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -60,7 +60,7 @@ final class AISynthesisAndChatStreamInteractiveTests: XCTestCase {
 
         let wrapper = Wrapper()
         let view = wrapper.snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()

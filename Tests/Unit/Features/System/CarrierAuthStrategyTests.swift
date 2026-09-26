@@ -14,10 +14,10 @@ import XCTest
 @MainActor
 final class CarrierAuthStrategyTests: XCTestCase {
 
-    var strategy: CarrierAuthStrategy!
+    nonisolated(unsafe) var strategy: CarrierAuthStrategy!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         strategy = CarrierAuthStrategy()
     }
 

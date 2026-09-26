@@ -115,7 +115,7 @@ final class QuizViewInteractiveTests: XCTestCase {
 
         let quizView = QuizView(quiz: quiz)
         let host = UIHostingController(rootView: quizView.snapshotEnvironment())
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()

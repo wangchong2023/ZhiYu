@@ -15,16 +15,15 @@ import XCTest
 @MainActor
 final class SynthesisStoreTests: XCTestCase {
 
-    var store: SynthesisStore!
+    nonisolated(unsafe) var store: SynthesisStore!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         store = SynthesisStore()
         store.clearAll()
     }
 
     override func tearDown() {
-        store?.clearAll()
         store = nil
         super.tearDown()
     }

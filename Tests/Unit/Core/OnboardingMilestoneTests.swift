@@ -15,8 +15,8 @@ import UFPCore
 @MainActor
 final class OnboardingMilestoneTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         // P2-1 迁移：每个测试强制注册独立 UserDefaults 实例，确保测试间完全隔离。
         //           不再用 if ... == nil 条件注册（会复用前一个测试的有状态实例）。
         guard let testDefaults = UserDefaults(suiteName: "OnboardingMilestoneTests-\(UUID().uuidString)") else {

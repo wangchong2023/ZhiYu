@@ -56,7 +56,7 @@ final class GraphLayoutProcessorEdgeTests: XCTestCase {
     // MARK: - 边创建
 
     func testLayout_linkedPages_createsEdge() {
-        let pageA = KnowledgePage(title: "A")
+        _ = KnowledgePage(title: "A")
         let pageB = KnowledgePage(title: "B")
         let resolver: (String) -> KnowledgePage? = { title in
             title == "B" ? pageB : nil

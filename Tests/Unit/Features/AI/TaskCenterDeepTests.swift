@@ -147,7 +147,7 @@ final class TaskCenterDeepTests: XCTestCase {
     func testTaskCenterViewRendering() {
         let view = TaskCenterView().snapshotEnvironment()
         let host = UIHostingController(rootView: view)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()

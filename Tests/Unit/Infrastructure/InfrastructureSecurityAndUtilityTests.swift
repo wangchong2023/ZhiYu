@@ -165,7 +165,7 @@ final class ModelDownloadManagerSHA256Tests: XCTestCase {
         let fileURL = tempDir.appendingPathComponent("test.bin")
         try Data("content".utf8).write(to: fileURL)
         let manager = ModelDownloadManager.shared
-        let result = await manager.verifySHA256(of: fileURL, expectedHash: "")
+        let result = manager.verifySHA256(of: fileURL, expectedHash: "")
         XCTAssertFalse(result, "空 hash 应视为校验失败返回 false（防止中间人篡改）")
     }
 
@@ -173,14 +173,14 @@ final class ModelDownloadManagerSHA256Tests: XCTestCase {
         let fileURL = tempDir.appendingPathComponent("test.bin")
         try Data("content".utf8).write(to: fileURL)
         let manager = ModelDownloadManager.shared
-        let result = await manager.verifySHA256(of: fileURL, expectedHash: "abc123")
+        let result = manager.verifySHA256(of: fileURL, expectedHash: "abc123")
         XCTAssertFalse(result, "非 64 字符 hash 应拒绝")
     }
 
     func testVerifySHA256FileNotFoundReturnsFalse() async {
         let nonExistent = tempDir.appendingPathComponent("nonexistent.bin")
         let manager = ModelDownloadManager.shared
-        let result = await manager.verifySHA256(of: nonExistent, expectedHash: String(repeating: "a", count: 64))
+        let result = manager.verifySHA256(of: nonExistent, expectedHash: String(repeating: "a", count: 64))
         XCTAssertFalse(result, "文件不存在应返回 false")
     }
 
@@ -190,7 +190,7 @@ final class ModelDownloadManagerSHA256Tests: XCTestCase {
         try content.write(to: fileURL)
         let expectedHash = SHA256.hash(data: content).compactMap { String(format: "%02x", $0) }.joined()
         let manager = ModelDownloadManager.shared
-        let result = await manager.verifySHA256(of: fileURL, expectedHash: expectedHash)
+        let result = manager.verifySHA256(of: fileURL, expectedHash: expectedHash)
         XCTAssertTrue(result, "正确 hash 应返回 true")
     }
 
@@ -200,7 +200,7 @@ final class ModelDownloadManagerSHA256Tests: XCTestCase {
         try content.write(to: fileURL)
         let wrongHash = String(repeating: "0", count: 64)
         let manager = ModelDownloadManager.shared
-        let result = await manager.verifySHA256(of: fileURL, expectedHash: wrongHash)
+        let result = manager.verifySHA256(of: fileURL, expectedHash: wrongHash)
         XCTAssertFalse(result, "错误 hash 应返回 false")
     }
 
@@ -210,7 +210,7 @@ final class ModelDownloadManagerSHA256Tests: XCTestCase {
         try content.write(to: fileURL)
         let upperHash = SHA256.hash(data: content).compactMap { String(format: "%02X", $0) }.joined()
         let manager = ModelDownloadManager.shared
-        let result = await manager.verifySHA256(of: fileURL, expectedHash: upperHash)
+        let result = manager.verifySHA256(of: fileURL, expectedHash: upperHash)
         XCTAssertTrue(result, "大写 hash 应与计算的小写 hash 匹配")
     }
 }

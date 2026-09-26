@@ -19,7 +19,7 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try DatabaseManager.shared.setupForTesting(with: dbQueue)
     }
 
     override func tearDown() async throws {
@@ -87,7 +87,7 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
 
     /// 验证：globalMigrator 创建所有预期表。
     func testGlobalMigratorCreatesAllExpectedTables() async throws {
-        let writer = await DatabaseManager.shared.globalWriter
+        let writer = DatabaseManager.shared.globalWriter
         guard let unwrappedWriter = writer else {
             XCTFail("globalWriter 不应为 nil")
             return
@@ -113,7 +113,7 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
 
     /// 验证：globalMigrator 已创建 plugin_records 表（缺陷 #9 已修复）。
     func testGlobalMigratorCreatesPluginRecordsTable_Bug9() async throws {
-        let writer = await DatabaseManager.shared.globalWriter
+        let writer = DatabaseManager.shared.globalWriter
         guard let unwrappedWriter = writer else {
             XCTFail("globalWriter 不应为 nil")
             return

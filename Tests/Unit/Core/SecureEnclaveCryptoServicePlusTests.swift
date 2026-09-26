@@ -279,9 +279,8 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
         let plaintexts = (0..<20).map { "concurrent-test-\($0)" }
         let queue = DispatchQueue(label: "test.concurrent", attributes: .concurrent)
         let group = DispatchGroup()
-        let lock = NSLock()
-        var results: [String: String] = [:]
-        var errors: [Error] = []
+        let results = MutexBox<[String: String]>([:])
+        let errors = MutexBox<[Error]>([])
         // 提取 service 为局部变量，避免在 @Sendable 闭包中捕获非 Sendable 的 self
         guard let service = self.service else { XCTFail("service 未初始化"); return }
 
@@ -290,24 +289,20 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
             queue.async {
                 do {
                     let encrypted = try service.encrypt(plaintext)
-                    lock.lock()
-                    results[plaintext] = encrypted
-                    lock.unlock()
+                    results.mutate { $0[plaintext] = encrypted }
                 } catch {
-                    lock.lock()
-                    errors.append(error)
-                    lock.unlock()
+                    errors.mutate { $0.append(error) }
                 }
                 group.leave()
             }
         }
         group.wait()
 
-        XCTAssertTrue(errors.isEmpty, "并发加密不应产生错误: \(errors)")
-        XCTAssertEqual(results.count, plaintexts.count, "所有并发加密应成功")
+        XCTAssertTrue(errors.get().isEmpty, "并发加密不应产生错误: \(errors.get())")
+        XCTAssertEqual(results.get().count, plaintexts.count, "所有并发加密应成功")
 
         // 验证每个密文都能正确解密
-        for (plaintext, encrypted) in results {
+        for (plaintext, encrypted) in results.get() {
             let decrypted = try service.decrypt(encrypted)
             XCTAssertEqual(decrypted, plaintext, "并发加密的密文应可正确解密")
         }
@@ -321,9 +316,8 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
 
         let queue = DispatchQueue(label: "test.mixed", attributes: .concurrent)
         let group = DispatchGroup()
-        let lock = NSLock()
-        var successCount = 0
-        var errorCount = 0
+        let successCount = MutexBox<Int>(0)
+        let errorCount = MutexBox<Int>(0)
         // 提取 service 为局部变量，避免在 @Sendable 闭包中捕获非 Sendable 的 self
         guard let service = self.service else { XCTFail("service 未初始化"); return }
 
@@ -333,9 +327,9 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
             queue.async {
                 do {
                     _ = try service.encrypt(plaintext)
-                    lock.lock(); successCount += 1; lock.unlock()
+                    successCount.mutate { $0 += 1 }
                 } catch {
-                    lock.lock(); errorCount += 1; lock.unlock()
+                    errorCount.mutate { $0 += 1 }
                 }
                 group.leave()
             }
@@ -345,17 +339,17 @@ final class SecureEnclaveCryptoServicePlusTests: XCTestCase {
             queue.async {
                 do {
                     _ = try service.decrypt(encrypted)
-                    lock.lock(); successCount += 1; lock.unlock()
+                    successCount.mutate { $0 += 1 }
                 } catch {
-                    lock.lock(); errorCount += 1; lock.unlock()
+                    errorCount.mutate { $0 += 1 }
                 }
                 group.leave()
             }
         }
         group.wait()
 
-        XCTAssertEqual(errorCount, 0, "并发混合加解密不应产生错误")
-        XCTAssertEqual(successCount, plaintexts.count * 2, "所有并发操作应成功")
+        XCTAssertEqual(errorCount.get(), 0, "并发混合加解密不应产生错误")
+        XCTAssertEqual(successCount.get(), plaintexts.count * 2, "所有并发操作应成功")
     }
 
     // MARK: - 边界场景

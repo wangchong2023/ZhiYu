@@ -64,7 +64,7 @@ final class PageDetailInsightDeepTests: XCTestCase {
 
         let processingView = Wrapper(page: page)
             .snapshotEnvironment(aiWorkflowStore: processingStore)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: processingView)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -150,7 +150,7 @@ final class PageDetailInsightDeepTests: XCTestCase {
         XCTAssertEqual(page.title, "Target Page")
         XCTAssertEqual(referrer.pageType, .entity)
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -283,7 +283,7 @@ final class PageDetailInsightDeepTests: XCTestCase {
             .snapshotEnvironment(appStore: appStore)
 
         let host = UIHostingController(rootView: view)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()
@@ -559,7 +559,7 @@ final class PageDetailInsightDeepTests: XCTestCase {
 
         let welcomeDetailView = PageDetailView(page: welcomePage)
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let hostWelcome = UIHostingController(rootView: welcomeDetailView)
         window.rootViewController = hostWelcome
         window.makeKeyAndVisible()

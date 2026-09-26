@@ -15,12 +15,12 @@ import XCTest
 @MainActor
 final class ModelLabManagerTests: XCTestCase {
     
-    private var manager: ModelLabManager!
-    private var mockChatModel: LLMManifest!
-    private var mockMultimodalModel: LLMManifest!
+    nonisolated(unsafe) private var manager: ModelLabManager!
+    nonisolated(unsafe) private var mockChatModel: LLMManifest!
+    nonisolated(unsafe) private var mockMultimodalModel: LLMManifest!
     
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         manager = ModelLabManager()
         
         // 构造专门用于测试的 Mock 聊天模型

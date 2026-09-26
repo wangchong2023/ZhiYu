@@ -14,10 +14,10 @@ import UFPCore
 final class KeychainServiceTests: XCTestCase {
 
     /// 测试用 KeychainService 实例（不依赖真实 Keychain entitlements）
-    private var service: KeychainService!
+    nonisolated(unsafe) private var service: KeychainService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         // 注册 KeyStoreProtocol mock，让 KeychainService 在模拟器无 entitlements 时
         // 可降级到 KeyStore 缓存路径（errSecMissingEntitlement -34018 回退）
         // P2-1 迁移：创建独立 UserDefaults 实例，避免 .shared 跨测试残留

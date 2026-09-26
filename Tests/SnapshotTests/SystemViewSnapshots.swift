@@ -104,7 +104,7 @@ final class SystemViewSnapshots: XCTestCase {
     func testRAGRetrievalPanelExtremeValues() {
         setupMockEnvironment()
 
-        var activeTooltip: String?
+        let activeTooltip: String? = nil
         let avgScores = AverageRAGScores(
             faithfulness: 0.0,
             relevance: 0.0,
@@ -162,7 +162,7 @@ final class SystemViewSnapshots: XCTestCase {
     func testRAGGenerationPanelExtremeValues() {
         setupMockEnvironment()
 
-        var activeTooltip: String?
+        let activeTooltip: String? = nil
         let avgScores = AverageRAGScores(
             faithfulness: 1.0,
             relevance: 1.0,

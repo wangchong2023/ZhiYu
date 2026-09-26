@@ -30,7 +30,7 @@ final class TagCloudDeepTests: XCTestCase {
         router = ServiceContainer.shared.resolveOptional(Router.self) ?? Router()
         themeManager = ServiceContainer.shared.resolveOptional(ThemeManager.self) ?? ThemeManager()
 
-        window = UIWindow(frame: CGRect(x: 0, y: 0, width: TestConstants.windowWidth, height: TestConstants.windowHeight))
+        window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: TestConstants.windowWidth, height: TestConstants.windowHeight))
     }
 
     func testLogView_EmptyState_RendersGracefully() {
@@ -238,7 +238,7 @@ final class TagCloudDeepTests: XCTestCase {
             .environment(appStore)
             .snapshotEnvironment()
         let host = UIHostingController(rootView: view)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()

@@ -22,7 +22,7 @@ final class WeeklyInsightDeepTests: XCTestCase {
 
     func testTagCloudViewContentListAndBubbleMode() throws {
         let coordinator = TagCloudCoordinator()
-        let store = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+        _ = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
         
         coordinator.tags = [
             ("Swift", 14),
@@ -44,7 +44,7 @@ final class WeeklyInsightDeepTests: XCTestCase {
         // 1. 列表模式折叠状态
         let viewListCollapsed = TagCloudView()
             .snapshotEnvironment()
-        let window1 = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window1 = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host1 = UIHostingController(rootView: viewListCollapsed)
         window1.rootViewController = host1
         window1.makeKeyAndVisible()
@@ -67,12 +67,12 @@ final class WeeklyInsightDeepTests: XCTestCase {
 
     func testTagCloudEmptyStateAndBubbleRatio() throws {
         let coordinator = TagCloudCoordinator()
-        let store = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+        _ = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
         coordinator.tags = []
         
         let view = TagCloudView()
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -83,9 +83,9 @@ final class WeeklyInsightDeepTests: XCTestCase {
     }
 
     func testWeeklyInsightCardWithInsightData() throws {
-        let store = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
+        _ = ServiceContainer.shared.resolveOptional(AppStore.self) ?? AppStore()
         let aiStore = ServiceContainer.shared.resolveOptional(AIInsightStore.self) ?? AIInsightStore()
-        let router = Router.shared
+        _ = Router.shared
         
         let testInsight = KnowledgeInsightService.WeeklyInsight(
             dateRange: "2026.08.25 - 2026.08.31",
@@ -98,7 +98,7 @@ final class WeeklyInsightDeepTests: XCTestCase {
         
         let card = WeeklyInsightCard()
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: card)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -129,7 +129,7 @@ final class WeeklyInsightDeepTests: XCTestCase {
         
         let card = WeeklyInsightCard()
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: card)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -145,7 +145,7 @@ final class WeeklyInsightDeepTests: XCTestCase {
         store.logEntries = []
         let emptyLogView = LogView()
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let hostEmpty = UIHostingController(rootView: emptyLogView)
         window.rootViewController = hostEmpty
         window.makeKeyAndVisible()

@@ -25,9 +25,9 @@ private enum DatabaseManagerConstants {
 final class DatabaseManager: TestStateResettable, @unchecked Sendable {
     
     /// 全局唯一的线程安全单例实例。
-    /// `nonisolated(unsafe)`：init 已标注 `nonisolated`，仅注册 TestStateResetRegistry，不访问 @MainActor 属性；
-    /// 跨线程获取引用安全，后续 @MainActor 方法仍需在主线程上 `await` 调用。
-    nonisolated(unsafe) static let shared = DatabaseManager()
+    /// 标注 `nonisolated`：DatabaseManager 已是 `@unchecked Sendable`，`let` 常量可安全跨线程访问；
+    /// 后续 @MainActor 方法仍需在主线程上 `await` 调用。
+    nonisolated static let shared = DatabaseManager()
 
     /// 解析 Application Support 目录下的默认数据库 URL。
     /// 消除 `AppEnvironment.prepareDatabase` 与 `ContentView.triggerReverification` 中重复的

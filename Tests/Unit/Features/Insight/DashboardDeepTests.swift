@@ -31,7 +31,7 @@ final class DashboardDeepTests: XCTestCase {
             .snapshotEnvironment()
 
         let host = UIHostingController(rootView: dashboardView)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = host
         window.makeKeyAndVisible()
         host.view.layoutIfNeeded()
@@ -99,7 +99,7 @@ final class DashboardDeepTests: XCTestCase {
 
         let dashboardView = KnowledgeDashboardView()
             .snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: dashboardView)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -151,7 +151,7 @@ final class DashboardDeepTests: XCTestCase {
         let wrapper = Wrapper()
         XCTAssertNotNil(wrapper)
         let view = wrapper.snapshotEnvironment()
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()

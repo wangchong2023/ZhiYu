@@ -232,7 +232,7 @@ final class ModelDownloadAndStoreKitDeepTests: XCTestCase {
             selectedCycle: .yearly
         )
         let host1 = UIHostingController(rootView: flowYearly.snapshotEnvironment())
-        let window1 = UIWindow(frame: CGRect(x: 0, y: 0, width: 350, height: 120))
+        let window1 = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 350, height: 120))
         window1.rootViewController = host1
         window1.makeKeyAndVisible()
         host1.view.layoutIfNeeded()
@@ -246,7 +246,7 @@ final class ModelDownloadAndStoreKitDeepTests: XCTestCase {
             selectedCycle: .monthly
         )
         let host2 = UIHostingController(rootView: flowMonthly.snapshotEnvironment())
-        let window2 = UIWindow(frame: CGRect(x: 0, y: 0, width: 350, height: 120))
+        let window2 = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 350, height: 120))
         window2.rootViewController = host2
         window2.makeKeyAndVisible()
         host2.view.layoutIfNeeded()

@@ -12,11 +12,11 @@ import XCTest
 @MainActor
 final class LocalAnalyticsServiceTests: XCTestCase {
 
-    var tempLogURL: URL!
-    var service: LocalAnalyticsService!
+    nonisolated(unsafe) var tempLogURL: URL!
+    nonisolated(unsafe) var service: LocalAnalyticsService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         tempLogURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("test-analytics-\(UUID().uuidString).json")
         service = LocalAnalyticsService(logURL: tempLogURL)

@@ -26,7 +26,7 @@ final class SettingsAdvancedConfigAndCacheDeepTests: XCTestCase {
         XCTAssertNotNil(rawView)
         let view = rawView.snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()

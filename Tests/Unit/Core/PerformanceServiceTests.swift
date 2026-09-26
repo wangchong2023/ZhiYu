@@ -12,10 +12,10 @@ import XCTest
 @MainActor
 final class PerformanceServiceTests: XCTestCase {
 
-    private var service: PerformanceService!
+    nonisolated(unsafe) private var service: PerformanceService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         service = PerformanceService()
     }
 

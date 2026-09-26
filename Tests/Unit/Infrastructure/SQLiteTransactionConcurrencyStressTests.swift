@@ -28,7 +28,7 @@ final class SQLiteTransactionConcurrencyStressTests: XCTestCase {
         tempDBURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("ConcurrencyStress_\(UUID().uuidString).sqlite")
         dbQueue = try DatabaseQueue(path: tempDBURL.path)
-        try await DatabaseManager.shared.migrate(dbQueue)
+        try DatabaseManager.shared.migrate(dbQueue)
         store = SQLiteStore(dbWriter: dbQueue)
     }
 

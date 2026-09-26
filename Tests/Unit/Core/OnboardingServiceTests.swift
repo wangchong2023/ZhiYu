@@ -13,10 +13,10 @@ import UFPCore
 @MainActor
 final class OnboardingServiceTests: XCTestCase {
 
-    private var service: OnboardingService!
+    nonisolated(unsafe) private var service: OnboardingService!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         // P2-1 迁移：强制清理 DI，确保 testInit_DI未就绪 测试语义正确。
         //           OnboardingService.init 从 ServiceContainer 解析 KeyStoreProtocol，
         //           若前序测试注册了有状态的 KeyStore，hasCompletedOnboarding 会继承残留。

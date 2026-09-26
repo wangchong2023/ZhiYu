@@ -53,7 +53,7 @@ final class FrontmatterParserDeepTests: XCTestCase {
     }
 
     func testFuzz_RandomJson_ParseNeverCrashes() {
-        let baseSeed = UInt64(9999)
+        _ = UInt64(9999)
         let jsonFragments = [
             "{}", "{\"outlines\": null}", "{\"invalid\": true}",
             "{\"outlines\": []}", "[]", "null", "\"string\"",
@@ -240,10 +240,9 @@ final class FrontmatterParserDeepTests: XCTestCase {
 
     func testMutation_DeepNestedYaml_CompletesWithinTimeout() {
         // 构造 100 层缩进（远超正常使用场景）
-        var nestedYaml = "title: root\n"
-        for i in 0..<50 {
-            nestedYaml += String(repeating: "  ", count: i + 1) + "level_\(i): value\n"
-        }
+        let nestedYaml = "title: root\n" + (0..<50).map { i in
+            String(repeating: "  ", count: i + 1) + "level_\(i): value\n"
+        }.joined()
 
         let expectation = XCTestExpectation(description: "解析应在 2 秒内完成")
 

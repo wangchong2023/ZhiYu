@@ -84,7 +84,7 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
 
     /// 验证 cancelDownload 对不存在的 modelId 不崩溃。
     func testCancelDownloadNonExistentModelIdNoCrash() async {
-        await manager.cancelDownload(for: "nonexistent")
+        manager.cancelDownload(for: "nonexistent")
         // 异步 Task 内执行，状态可能未立即更新，但不崩溃即可
     }
 
@@ -131,12 +131,12 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
 
     /// 验证 pauseDownload 对不存在的 modelId 不崩溃。
     func testPauseDownloadNonExistentModelIdNoCrash() async {
-        await manager.pauseDownload(for: "nonexistent")
+        manager.pauseDownload(for: "nonexistent")
     }
 
     /// 验证 resumeDownload 对不存在的 modelId 不崩溃。
     func testResumeDownloadNonExistentModelIdNoCrash() async {
-        await manager.resumeDownload(for: "nonexistent")
+        manager.resumeDownload(for: "nonexistent")
     }
 
     // MARK: - reload

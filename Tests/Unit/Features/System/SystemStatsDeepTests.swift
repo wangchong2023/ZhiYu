@@ -327,7 +327,7 @@ final class SystemStatsDeepTests: XCTestCase {
             "file": SystemStatsCoordinator.AssetStats(count: 2, size: 1024 * 1024 * 5)
         ]
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
 
         // 1. Performance Tab Mounted
         let perfView = SystemStatsView(initialTab: .performance, coordinator: coordinator)

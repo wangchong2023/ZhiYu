@@ -174,7 +174,7 @@ final class PluginLoaderSupplementTests: XCTestCase {
 
     #if DEBUG
     func testLoadPluginFromRawJSLoadsInDebugMode() throws {
-        let loader = PluginLoader()
+        _ = PluginLoader()
         // 创建临时 .js 文件
         let jsFile = tempDir.appendingPathComponent("test-raw-plugin.js")
         let scriptContent = "console.log('raw plugin test')"

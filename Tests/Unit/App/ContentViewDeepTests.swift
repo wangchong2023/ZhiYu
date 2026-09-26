@@ -41,7 +41,7 @@ final class ContentViewDeepTests: XCTestCase {
         let contentView = ContentView()
         let view = contentView.snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -58,7 +58,7 @@ final class ContentViewDeepTests: XCTestCase {
         let contentView = ContentView()
         let view = contentView.snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -77,7 +77,7 @@ final class ContentViewDeepTests: XCTestCase {
         let contentView = ContentView()
         let view = contentView.snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
@@ -113,7 +113,7 @@ final class ContentViewDeepTests: XCTestCase {
         let contentView = ContentView()
         let view = contentView.snapshotEnvironment()
 
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window = TestWindowFactory.makeWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         let host = UIHostingController(rootView: view)
         window.rootViewController = host
         window.makeKeyAndVisible()
