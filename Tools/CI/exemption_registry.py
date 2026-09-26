@@ -185,7 +185,7 @@ def collect_project_symbols():
 
 # SDK 提取超时（秒）
 SDK_PATH_TIMEOUT_SECONDS = 10
-SDK_EXTRACT_TIMEOUT_SECONDS = 30
+SDK_EXTRACT_TIMEOUT_SECONDS = 120
 
 # SDK 候选列表（按优先级）
 SDK_CANDIDATES = ["macosx", "iphoneos", "iphonesimulator"]
