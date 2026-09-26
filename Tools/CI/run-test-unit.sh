@@ -139,14 +139,18 @@ if [ "${CI_MODE}" = "true" ]; then
 fi
 
 set +e
-xcodebuild "${BUILD_ARGS[@]}" 2>&1 | tee "${BUILD_DIR}/build_raw.log"
-BUILD_EXIT_CODE=${PIPESTATUS[0]}
+# 编译日志只写入文件，不输出到 stdout，避免 GitLab 4MB 日志限制截断
+xcodebuild "${BUILD_ARGS[@]}" > "${BUILD_DIR}/build_raw.log" 2>&1
+BUILD_EXIT_CODE=$?
 set -e
 
 if [ ${BUILD_EXIT_CODE} -ne 0 ]; then
+    echo "❌ 编译失败，输出编译日志："
+    cat "${BUILD_DIR}/build_raw.log"
     summarize_xcodebuild_errors "${BUILD_DIR}/build_raw.log" "编译测试目标" "${BUILD_EXIT_CODE}"
     exit ${BUILD_EXIT_CODE}
 fi
+echo "✅ 编译成功"
 
 # ── 5.1 编译告警检查 ─────────────────────────────────────────
 # 在测试执行前检查编译阶段产生的告警，若有则阻断流水线并打印所有告警
