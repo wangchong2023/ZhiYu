@@ -25,11 +25,16 @@ if [ ! -f "$LOG_FILE" ]; then
     exit 2
 fi
 
-# 提取编译告警（⚠️ 标记），排除第三方库（opensrc/ 路径）
+# 提取编译告警，排除第三方库（opensrc/ 路径）
+# 匹配两种告警格式：
+#   1. TTY 模式：⚠️ 标记（xcodebuild 输出到终端时使用）
+#   2. 非 TTY 模式：warning: 关键词（xcodebuild 输出重定向到文件时使用）
 # 清理 ANSI 颜色码，清理 ⚠️ 之前的 CI 时间戳/runner 前缀
-WARNINGS=$(grep "⚠️" "$LOG_FILE" \
+WARNINGS=$(grep -E "⚠️|warning:" "$LOG_FILE" \
     | sed -E 's/\x1b\[[0-9;]*m//g' \
     | grep -v "opensrc/" \
+    | grep -v "check-build-warnings" \
+    | grep -v "slather" \
     | sed -E 's/^[^⚠️]*⚠️/⚠️/' \
     || true)
 
