@@ -56,7 +56,7 @@ echo "📱 使用模拟器: ${SIM_NAME}（进程级并行 ×${PARALLEL_COUNT}）
 
 # ── 4. 构造 xcodebuild 参数 ──────────────────────────────────
 XCODEBUILD_ARGS=(
-    test
+    test-without-building
     -project "${PROJECT}"
     -scheme "${SCHEME}"
     -only-testing:ZhiYuTests
@@ -111,9 +111,9 @@ print_version_info() {
     fi
 }
 
-# ── 5. 执行测试逻辑 ──────────────────────────────────────────
+# ── 5. 编译阶段（build-for-testing）──────────────────────────
 print_version_info
-echo "===> 开始运行单元测试..."
+echo "===> 开始编译测试目标..."
 echo "模式: $([ "${CI_MODE}" = "true" ] && echo "CI 自动化模式" || echo "本地开发模式")"
 
 # 测试前重置模拟器，避免残留状态导致启动失败
@@ -121,6 +121,43 @@ echo "📱 重置模拟器 ${SIM_NAME}..."
 xcrun simctl shutdown all 2>/dev/null || true
 xcrun simctl erase all 2>/dev/null || true
 echo "📱 模拟器已重置"
+
+# 构造编译参数（build-for-testing 只需单个 destination，不需 -only-testing/-enableCodeCoverage）
+BUILD_ARGS=(
+    build-for-testing
+    -project "${PROJECT}"
+    -scheme "${SCHEME}"
+    -destination "platform=iOS Simulator,name=${SIM_NAME}"
+    -derivedDataPath "${DERIVED_DATA_PATH}"
+    CODE_SIGNING_ALLOWED=NO
+    CODE_SIGNING_REQUIRED=NO
+)
+
+if [ "${CI_MODE}" = "true" ]; then
+    BUILD_ARGS+=("-clonedSourcePackagesDirPath" "${SPM_CACHE_DIR}")
+fi
+
+set +e
+xcodebuild "${BUILD_ARGS[@]}" 2>&1 | tee "${BUILD_DIR}/build_raw.log"
+BUILD_EXIT_CODE=${PIPESTATUS[0]}
+set -e
+
+if [ ${BUILD_EXIT_CODE} -ne 0 ]; then
+    summarize_xcodebuild_errors "${BUILD_DIR}/build_raw.log" "编译测试目标" "${BUILD_EXIT_CODE}"
+    exit ${BUILD_EXIT_CODE}
+fi
+
+# ── 5.1 编译告警检查 ─────────────────────────────────────────
+# 在测试执行前检查编译阶段产生的告警，若有则阻断流水线并打印所有告警
+echo "===> 检查编译告警..."
+bash Tools/CI/check-build-warnings.sh "${BUILD_DIR}/build_raw.log"
+WARNING_EXIT_CODE=$?
+if [ ${WARNING_EXIT_CODE} -ne 0 ]; then
+    exit ${WARNING_EXIT_CODE}
+fi
+
+# ── 5.2 测试阶段（test-without-building）─────────────────────
+echo "===> 开始运行单元测试..."
 
 set +e
 if [ "${CI_MODE}" = "true" ]; then
