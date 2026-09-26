@@ -17,18 +17,45 @@ import Dependencies
 @MainActor
 final class AuthOAuthStrategiesBranchTests: XCTestCase {
 
+    /// 测试用 URLSession — 拦截 logout 后台任务的真实网络调用，防止 30 秒超时
+    private var testSession: URLSession!
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
         AuthService.forceMockBackend = true
+
+        // 注入 TestMockURLProtocol 的测试 URLSession
+        // logout() 创建的后台任务会发起网络调用吊销 refresh token，
+        // 若不拦截将因无 mock handler 而挂起至 requestTimeout（30 秒），
+        // stale 任务泄漏至后续测试类的 awaitAllLogoutTasks() 导致 CI 600 秒超时
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [TestMockURLProtocol.self]
+        testSession = URLSession(configuration: config)
+        await NetworkClient.shared.setTestSession(testSession)
     }
 
     override func tearDown() async throws {
         AuthService.forceMockBackend = false
         AuthSession.shared.logout()
+        await awaitAllLogoutTasks()
+        await NetworkClient.shared.awaitRefreshTask()
+        await NetworkClient.shared.setTestSession(nil)
+        TestMockURLProtocol.requestHandler = nil
         DatabaseManager.shared.reset()
         ServiceContainer.shared.reset()
         try await super.tearDown()
+    }
+
+    // MARK: - 辅助方法
+
+    /// 等待所有 logout 后台任务完成并清空任务列表
+    /// - Note: 防止 stale 任务泄漏至后续测试类，导致 awaitAllLogoutTasks() 挂起
+    private func awaitAllLogoutTasks() async {
+        for task in AuthService.shared.testLogoutTasks {
+            await task.value
+        }
+        AuthService.shared.testLogoutTasks.removeAll()
     }
 
     // MARK: - 1. 游客模式生命周期分支
