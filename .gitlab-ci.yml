@@ -126,6 +126,7 @@ test-and-coverage:
   stage: test
   needs: [build-watchos, build-prepare]
   dependencies: [build-prepare]
+  timeout: 2h
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
