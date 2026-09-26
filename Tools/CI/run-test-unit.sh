@@ -123,8 +123,9 @@ xcrun simctl erase all 2>/dev/null || true
 echo "📱 模拟器已重置"
 
 # 构造编译参数（build-for-testing 只需单个 destination，不需 -only-testing/-enableCodeCoverage）
+# 添加 clean 确保全量编译，避免增量编译跳过告警检测
 BUILD_ARGS=(
-    build-for-testing
+    clean build-for-testing
     -project "${PROJECT}"
     -scheme "${SCHEME}"
     -destination "platform=iOS Simulator,name=${SIM_NAME}"
