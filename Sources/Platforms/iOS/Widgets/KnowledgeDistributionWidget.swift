@@ -25,13 +25,7 @@ struct KnowledgeDistributionProvider: TimelineProvider {
     func placeholder(in context: Context) -> KnowledgeDistributionEntry {
         KnowledgeDistributionEntry(
             date: Date(),
-            distribution: WidgetDistributionStats(
-                sourceRatio: 0.4,
-                conceptRatio: 0.3,
-                entityRatio: 0.2,
-                mapRatio: 0.1,
-                weeklyGrowth: 18
-            )
+            distribution: WidgetDistributionStats.from(distribution: nil)
         )
     }
 

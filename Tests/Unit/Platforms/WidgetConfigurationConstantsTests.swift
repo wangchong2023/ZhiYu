@@ -17,10 +17,10 @@ final class WidgetConfigurationConstantsTests: XCTestCase {
         XCTAssertEqual(PlatformConstants.WidgetWatch.maxRecentTitles, 5)
         XCTAssertEqual(PlatformConstants.WidgetWatch.defaultPageCount, 42)
         let dist = PlatformConstants.WidgetWatch.defaultDistribution
-        XCTAssertEqual(dist["Source"], 0.4)
-        XCTAssertEqual(dist["Concept"], 0.3)
-        XCTAssertEqual(dist["Entity"], 0.2)
-        XCTAssertEqual(dist["Map"], 0.1)
+        XCTAssertEqual(dist["source"], 0.4)
+        XCTAssertEqual(dist["concept"], 0.3)
+        XCTAssertEqual(dist["entity"], 0.2)
+        XCTAssertEqual(dist["map"], 0.1)
     }
 
     /// 验证 WidgetL10n.ocr 存在且非空

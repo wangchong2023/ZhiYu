@@ -76,22 +76,9 @@ enum WidgetRepository {
     }
 
     static func fetchDistribution() async -> WidgetDistributionStats {
-        guard let snapshot = decodeSnapshot(),
-              let dist = snapshot.distribution else {
-            return WidgetDistributionStats(
-                sourceRatio: 0.4,
-                conceptRatio: 0.3,
-                entityRatio: 0.2,
-                mapRatio: 0.1,
-                weeklyGrowth: 18
-            )
+        guard let snapshot = decodeSnapshot() else {
+            return WidgetDistributionStats.from(distribution: nil)
         }
-        return WidgetDistributionStats(
-            sourceRatio: dist["source"] ?? 0.4,
-            conceptRatio: dist["concept"] ?? 0.3,
-            entityRatio: dist["entity"] ?? 0.2,
-            mapRatio: dist["map"] ?? 0.1,
-            weeklyGrowth: 18
-        )
+        return WidgetDistributionStats.from(distribution: snapshot.distribution)
     }
 }

@@ -121,6 +121,22 @@ struct WidgetDistributionStats: Codable {
     let entityRatio: Double
     let mapRatio: Double
     let weeklyGrowth: Int
+
+    /// 从分布字典构造，缺失 key 用 PlatformConstants 默认值兜底
+    static func from(
+        distribution: [String: Double]?,
+        defaultDistribution: [String: Double] = PlatformConstants.WidgetWatch.defaultDistribution,
+        defaultWeeklyGrowth: Int = PlatformConstants.WidgetWatch.defaultWeeklyGrowth
+    ) -> WidgetDistributionStats {
+        let resolvedDistribution = distribution ?? defaultDistribution
+        return WidgetDistributionStats(
+            sourceRatio: resolvedDistribution["source"] ?? defaultDistribution["source"] ?? 0.4,
+            conceptRatio: resolvedDistribution["concept"] ?? defaultDistribution["concept"] ?? 0.3,
+            entityRatio: resolvedDistribution["entity"] ?? defaultDistribution["entity"] ?? 0.2,
+            mapRatio: resolvedDistribution["map"] ?? defaultDistribution["map"] ?? 0.1,
+            weeklyGrowth: defaultWeeklyGrowth
+        )
+    }
 }
 
 /// Widget 统计数据快照（主 App 写入 App Group JSON，Widget Extension 只读）

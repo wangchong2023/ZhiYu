@@ -82,14 +82,17 @@ public enum PlatformConstants {
         /// 知识分布小组件默认页面数（Preview 占位值）
         public static let defaultPageCount: Int = 42
         /// 知识分布小组件默认分布比例（Source/Concept/Entity/Map）
+        /// key 与 FeatureConstants.SourceType 保持一致（小写）
         public static let defaultDistribution: [String: Double] = [
-            "Source": 0.4,
-            "Concept": 0.3,
-            "Entity": 0.2,
-            "Map": 0.1
+            "source": 0.4,
+            "concept": 0.3,
+            "entity": 0.2,
+            "map": 0.1
         ]
         /// 分布比例缺失时的 fallback 透明度
         public static let distributionFallbackOpacity: Double = 0.2
+        /// 默认周增长数（placeholder 与 fallback 共用）
+        public static let defaultWeeklyGrowth: Int = 18
     }
 
     // MARK: - DeepLink URL
