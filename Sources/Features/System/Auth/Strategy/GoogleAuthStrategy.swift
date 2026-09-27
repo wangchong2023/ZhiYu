@@ -51,7 +51,7 @@ public final class GoogleAuthStrategy: AuthStrategy {
             .compactMap { $0 as? UIWindowScene }
             .first { $0.activationState == .foregroundActive }
         
-        guard let rootVC = activeScene?.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+        guard let rootVC = activeScene?.keyWindow?.rootViewController else {
             throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -1, description: L10n.Auth.googleWindowError)
         }
         

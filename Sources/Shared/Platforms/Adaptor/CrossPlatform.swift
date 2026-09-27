@@ -59,7 +59,7 @@ public enum AppScreen {
             .compactMap { $0 as? UIWindowScene }
             .first { $0.activationState == .foregroundActive }
         let screenWidth = activeScene?.screen.bounds.width
-            ?? activeScene?.windows.first?.window?.screen.bounds.width
+            ?? activeScene?.keyWindow?.window?.screen.bounds.width
             ?? 375
         return screenWidth * 0.85
         #endif
@@ -77,12 +77,12 @@ public enum PlatformPresentationAnchor {
             .compactMap { $0 as? UIWindowScene }
         // 优先取 foregroundActive 场景的 keyWindow
         if let activeScene = scenes.first(where: { $0.activationState == .foregroundActive }),
-           let keyWindow = activeScene.windows.first(where: { $0.isKeyWindow }) {
+           let keyWindow = activeScene.keyWindow {
             return keyWindow
         }
-        // fallback：取任意场景的 keyWindow
-        if let anyScene = scenes.first(where: { !$0.windows.isEmpty }),
-           let window = anyScene.windows.first(where: { $0.isKeyWindow }) {
+        // fallback：取任意有 window 的场景
+        if let anyScene = scenes.first(where: { $0.keyWindow != nil }),
+           let window = anyScene.keyWindow {
             return window
         }
         // 最后 fallback：用第一个可用场景创建新 UIWindow
@@ -96,7 +96,7 @@ public enum PlatformPresentationAnchor {
         }
         // iOS 26.0+：再次遍历 connectedScenes 查找任意 window（兜底）
         for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
-            if let window = scene.windows.first {
+            if let window = scene.keyWindow {
                 return window
             }
         }

@@ -19,7 +19,7 @@ final class iOSShareSheetService: ShareSheetProtocol, Sendable {
         let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
 
         guard let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
-              let keyWindow = scene.windows.first(where: { $0.isKeyWindow }),
+              let keyWindow = scene.keyWindow,
               let root = keyWindow.rootViewController else {
             return
         }

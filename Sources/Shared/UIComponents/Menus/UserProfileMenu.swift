@@ -98,7 +98,12 @@ final class CatalystFloatingMenuManager: NSObject {
 
     /// 查找场景中的正常窗口（消除重复的 windows.first(where:) 链）
     private static func normalWindow(in scene: UIWindowScene?) -> UIWindow? {
-        scene?.windows.first(where: { !$0.isHidden && $0.windowLevel == .normal })
+        // iOS 15+ 废弃 UIWindowScene.windows，使用 keyWindow 替代
+        let key = scene?.keyWindow
+        guard let key, !key.isHidden, key.windowLevel == .normal else {
+            return nil
+        }
+        return key
     }
 
     func dismiss(_ completion: @escaping () -> Void = {}) {
