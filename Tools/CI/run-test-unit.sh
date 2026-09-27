@@ -122,14 +122,17 @@ xcrun simctl shutdown all 2>/dev/null || true
 xcrun simctl erase all 2>/dev/null || true
 echo "📱 模拟器已重置"
 
-# 构造编译参数（build-for-testing 只需单个 destination，不需 -only-testing/-enableCodeCoverage）
+# 构造编译参数（build-for-testing 只需单个 destination，不需 -only-testing）
 # 添加 clean 确保全量编译，避免增量编译跳过告警检测
+# 添加 -enableCodeCoverage YES 确保编译产物包含覆盖率 instrumentation，
+# 否则 test-without-building 生成的 xcresult 不含覆盖率归档（Metadata.plist 缺失）
 BUILD_ARGS=(
     clean build-for-testing
     -project "${PROJECT}"
     -scheme "${SCHEME}"
     -destination "platform=iOS Simulator,name=${SIM_NAME}"
     -derivedDataPath "${DERIVED_DATA_PATH}"
+    -enableCodeCoverage YES
     CODE_SIGNING_ALLOWED=NO
     CODE_SIGNING_REQUIRED=NO
 )
