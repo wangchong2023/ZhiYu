@@ -15,9 +15,11 @@ final class SubscriptionPlanViewCalculationTests: XCTestCase {
 
     /// 验证 max==0 时配额计算 safeRatio 为 0 避免除零
     func testQuotaProgress_zeroMax_returnsZeroRatio() {
-        let max = 0
-        let current = 5
-        let safeRatio: Double = (max > 0) ? min(Double(current) / Double(max), 1.0) : 0.0
+        // 使用函数参数避免编译器将 max>0 识别为死分支
+        func computeSafeRatio(max: Int, current: Int) -> Double {
+            return (max > 0) ? min(Double(current) / Double(max), 1.0) : 0.0
+        }
+        let safeRatio = computeSafeRatio(max: 0, current: 5)
         XCTAssertEqual(safeRatio, 0.0, "max==0 时 ratio 应为 0")
     }
 
