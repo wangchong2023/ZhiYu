@@ -14,6 +14,7 @@ import XCTest
 import SwiftUI
 @testable import ZhiYu
 
+@MainActor
 final class WidgetAndWatchViewsBodyTests: XCTestCase {
 
     // MARK: - DailyInsightWidgetView

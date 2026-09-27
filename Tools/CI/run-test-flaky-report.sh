@@ -10,7 +10,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     set -euo pipefail
 fi
 
-TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../Tests" && pwd)"
+TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../Tests" && pwd)"
 OUTPUT_FILE="build/.flaky_tests"
 
 echo "🔍 扫描 @flaky 标记的测试..." >&2

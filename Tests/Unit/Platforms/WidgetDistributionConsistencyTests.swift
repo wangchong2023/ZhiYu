@@ -10,6 +10,7 @@ import XCTest
 import UFPCore
 @testable import ZhiYu
 
+@MainActor
 final class WidgetDistributionConsistencyTests: XCTestCase {
 
     // MARK: - 缺陷 #1：默认分布常量 key 大小写跨模块不一致
