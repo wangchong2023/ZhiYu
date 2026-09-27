@@ -49,12 +49,9 @@ final class IngestWorkflowAndImportSheetTests: XCTestCase {
 
     /// 验证 checkCancellation 优先于文本识别执行，取消时保持识别内容为 nil
     func testOCRScanView_cancellationBeforeRecognize_skipsTextExtraction() {
+        // 取消状态下识别内容应保持 nil
         let isCancelled = true
-        var recognizedText: String?
-
-        if !isCancelled {
-            recognizedText = "text"
-        }
+        let recognizedText: String? = nil
 
         XCTAssertTrue(isCancelled)
         XCTAssertNil(recognizedText, "取消时不应生成识别文本")

@@ -329,7 +329,8 @@ final class DocumentExtractionServiceTests: XCTestCase {
             XCTFail("应抛出错误")
         } catch {
             // 验证错误被抛出
-            XCTAssertTrue(error is ProcessorError || error is Error)
+            // 进入 catch 即说明错误被正确抛出
+            _ = error
         }
     }
 
@@ -345,7 +346,8 @@ final class DocumentExtractionServiceTests: XCTestCase {
             // 如果没有抛出错误，可能是格式被识别为 plainText，这是可接受的
         } catch {
             // 抛出错误也是可接受的
-            XCTAssertTrue(error is ProcessorError || error is Error)
+            // 进入 catch 即说明错误被正确抛出
+            _ = error
         }
     }
 }

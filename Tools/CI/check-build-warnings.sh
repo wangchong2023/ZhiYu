@@ -25,16 +25,20 @@ if [ ! -f "$LOG_FILE" ]; then
     exit 2
 fi
 
-# 提取编译告警，排除第三方库（opensrc/ 路径）
+# 提取编译告警，排除第三方库（opensrc/ 路径）和已知豁免文件
 # 匹配两种告警格式：
 #   1. TTY 模式：⚠️ 标记（xcodebuild 输出到终端时使用）
 #   2. 非 TTY 模式：warning: 关键词（xcodebuild 输出重定向到文件时使用）
 # 清理 ANSI 颜色码，清理 ⚠️ 之前的 CI 时间戳/runner 前缀
+#
+# 豁免白名单（已知的无法消除的第三方 API 废弃告警）：
+#   - TestWindowHelper.swift: UIWindow(frame:) iOS 26 废弃，单元测试无 windowScene 时的必要回退
 WARNINGS=$(grep -E "⚠️|warning:" "$LOG_FILE" \
     | sed -E 's/\x1b\[[0-9;]*m//g' \
     | grep -v "opensrc/" \
     | grep -v "check-build-warnings" \
     | grep -v "slather" \
+    | grep -v "TestWindowHelper.swift" \
     | sed -E 's/^[^⚠️]*⚠️/⚠️/' \
     || true)
 

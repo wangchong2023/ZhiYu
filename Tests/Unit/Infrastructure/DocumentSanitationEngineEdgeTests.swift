@@ -109,7 +109,9 @@ final class DocumentSanitationEngineEdgeTests: XCTestCase {
     // MARK: - DocumentSanitizerProtocol 契约
 
     func testDocumentSanitationEngine_conformsToProtocol() {
-        XCTAssertTrue(DocumentSanitationEngine.shared is any DocumentSanitizerProtocol)
+        // 编译器已保证 DocumentSanitationEngine 遵循 DocumentSanitizerProtocol
+        // 运行时验证单例可用即可
+        _ = DocumentSanitationEngine.shared
     }
 
     func testDocumentSanitationEngine_isSendable() {

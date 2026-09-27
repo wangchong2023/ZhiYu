@@ -297,13 +297,13 @@ final class LoggerSupplementTests: XCTestCase {
         await logger.clearAllLogs()
         let entries = await logger.getLogEntries()
         XCTAssertTrue(entries.isEmpty, "NoOp getLogEntries 应返回空数组")
-        XCTAssertTrue(logger.logEntriesPublisher is AnyPublisher<[LogEntry], Never>)
+        XCTAssertNotNil(logger.logEntriesPublisher)
     }
 
     /// NoOpLogger.logTimed 应直接执行操作并返回结果
     func testNoOpLoggerLogTimedDirectExecution() throws {
         let logger = NoOpLogger()
-        let result = try logger.logTimed(action: .create, target: "test", module: nil, details: "") {
+        let result = logger.logTimed(action: .create, target: "test", module: nil, details: "") {
             return 100
         }
         XCTAssertEqual(result, 100, "NoOp logTimed 应返回操作结果")

@@ -103,6 +103,6 @@ final class SettingsViewInteractiveTests: XCTestCase {
         XCTAssertNotNil(router)
         host.view.setNeedsLayout()
         host.view.layoutIfNeeded()
-        XCTAssertNotNil(host.view.window ?? UIWindow())
+        XCTAssertNotNil(host.view.window ?? TestWindowFactory.makeWindow())
     }
 }

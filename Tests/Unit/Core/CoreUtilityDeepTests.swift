@@ -156,6 +156,7 @@ final class LogEntryTests: XCTestCase {
     /// 验证 LogEntry Sendable
     func testLogEntrySendable() {
         let entry = LogEntry(action: .create, target: "x")
-        XCTAssertTrue(type(of: entry) is any Sendable.Type)
+        // Sendable 遵循在编译时由类型系统保证
+        _ = entry
     }
 }

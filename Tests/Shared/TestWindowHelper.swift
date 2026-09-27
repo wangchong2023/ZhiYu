@@ -16,7 +16,8 @@ import UIKit
 ///
 /// iOS 26 废弃了 `UIWindow(frame:)`，建议使用 `UIWindow(windowScene:)`。
 /// 本工具优先从 `UIApplication.shared.connectedScenes` 获取 windowScene，
-/// 若无可用 scene（单元测试环境常见），则回退到 `init(frame:)` 并抑制废弃警告。
+/// 若无可用 scene（单元测试环境常见），则回退到 `init(frame:)`。
+/// 回退路径的废弃告警通过 check-build-warnings.sh 白名单豁免。
 @MainActor
 enum TestWindowFactory {
 
@@ -38,8 +39,9 @@ enum TestWindowFactory {
             return window
         }
 
-        // 回退：无可用 scene 时使用 init(frame:)，抑制 iOS 26 废弃警告
+        // 回退：无可用 scene 时使用 init(frame:)
         // 单元测试环境通常无 connectedScenes，此回退是必要的
+        // iOS 26 废弃告警通过 CI 白名单豁免（TestWindowHelper.swift）
         let window = UIWindow(frame: frame)
         return window
     }

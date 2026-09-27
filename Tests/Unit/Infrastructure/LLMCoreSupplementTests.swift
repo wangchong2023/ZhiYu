@@ -212,8 +212,8 @@ final class LLMCoreSupplementTests: XCTestCase {
     /// 验证 discoverModels 返回数组（不崩溃）
     func testOnDeviceLLMServiceDiscoverModelsReturnsArray() {
         let service = OnDeviceLLMService()
-        let models = service.discoverModels()
-        XCTAssertNotNil(models)
+        // discoverModels 返回 Void，调用不崩溃即可
+        service.discoverModels()
     }
 
     /// 验证 availableModels 属性可访问

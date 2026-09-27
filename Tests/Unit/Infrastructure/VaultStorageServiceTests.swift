@@ -9,11 +9,10 @@
 import XCTest
 @testable import ZhiYu
 
-@MainActor
 final class VaultStorageServiceTests: XCTestCase {
 
-    private var tempDir: URL!
-    private var service: VaultStorageService!
+    nonisolated(unsafe) var tempDir: URL!
+    nonisolated(unsafe) var service: VaultStorageService!
 
     override func setUp() {
         super.setUp()
@@ -36,7 +35,7 @@ final class VaultStorageServiceTests: XCTestCase {
         XCTAssertTrue(pages.isEmpty)
     }
 
-    func testScanFindsMarkdownFiles() throws {
+    @MainActor func testScanFindsMarkdownFiles() throws {
         let mdURL = tempDir.appendingPathComponent("note1.md")
         try "# Test Title\n\nContent here".write(to: mdURL, atomically: true, encoding: .utf8)
 
@@ -46,7 +45,7 @@ final class VaultStorageServiceTests: XCTestCase {
         XCTAssertEqual(pages.first?.content, "# Test Title\n\nContent here")
     }
 
-    func testScanSkipsNonMarkdownFiles() throws {
+    @MainActor func testScanSkipsNonMarkdownFiles() throws {
         try "text".write(to: tempDir.appendingPathComponent("file.txt"), atomically: true, encoding: .utf8)
         try "data".write(to: tempDir.appendingPathComponent("data.json"), atomically: true, encoding: .utf8)
         try "# MD".write(to: tempDir.appendingPathComponent("real.md"), atomically: true, encoding: .utf8)
@@ -64,7 +63,7 @@ final class VaultStorageServiceTests: XCTestCase {
         XCTAssertEqual(pages.count, 2)
     }
 
-    func testScanUsesFilenameWhenNoH1() throws {
+    @MainActor func testScanUsesFilenameWhenNoH1() throws {
         try "No heading here".write(to: tempDir.appendingPathComponent("noheading.md"), atomically: true, encoding: .utf8)
 
         let pages = service.scan(directory: tempDir)
@@ -72,7 +71,7 @@ final class VaultStorageServiceTests: XCTestCase {
         XCTAssertEqual(pages.first?.title, "noheading")
     }
 
-    func testScanExtractsLastModified() throws {
+    @MainActor func testScanExtractsLastModified() throws {
         let mdURL = tempDir.appendingPathComponent("dated.md")
         try "# Dated".write(to: mdURL, atomically: true, encoding: .utf8)
 

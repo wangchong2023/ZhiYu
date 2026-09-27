@@ -25,7 +25,7 @@ final class SubscriptionPlanViewCalculationTests: XCTestCase {
     func testQuotaProgress_validMax_calculatesAccurateRatio() {
         let max = 100
         let current = 75
-        let safeRatio: Double = (max > 0) ? min(Double(current) / Double(max), 1.0) : 0.0
+        let safeRatio: Double = min(Double(current) / Double(max), 1.0)
         XCTAssertEqual(safeRatio, 0.75, "正常情况 ratio 应为 0.75")
     }
 

@@ -200,10 +200,9 @@ final class DomainLinkServiceBranchTests: XCTestCase {
 
 // MARK: - PromptTemplateEngine 边界分支测试
 
-@MainActor
 final class DomainPromptTemplateEngineBranchTests: XCTestCase {
-    private var promptEngine: PromptTemplateEngine!
-    private var mockSession: URLSession!
+    nonisolated(unsafe) private var promptEngine: PromptTemplateEngine!
+    nonisolated(unsafe) private var mockSession: URLSession!
 
     private class MockURLProtocol: URLProtocol {
         nonisolated(unsafe) static var mockData: Data?
@@ -437,10 +436,9 @@ final class DomainPromptTemplateEngineBranchTests: XCTestCase {
 
 // MARK: - FeatureGateManager 边界分支测试
 
-@MainActor
 final class DomainFeatureGateManagerBranchTests: XCTestCase {
-    private var testUserDefaults: UserDefaults?
-    private var sut: FeatureGateManager?
+    nonisolated(unsafe) private var testUserDefaults: UserDefaults?
+    nonisolated(unsafe) private var sut: FeatureGateManager?
 
     override func setUp() {
         super.setUp()

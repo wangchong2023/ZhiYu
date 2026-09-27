@@ -66,10 +66,11 @@ final class OnDeviceLLMServiceSupplementTests: XCTestCase {
 
     // MARK: - generate emptyResponse（currentModel 不是 MLModel）
 
-    func testGenerateThrowsEmptyResponseWhenModelLoadedButNoMLModel() async {
+    func testGenerateThrowsEmptyResponseWhenModelLoadedButNoMLModel() async throws {
         // 模拟 isModelLoaded=true 但 currentModel 不是 MLModel 的情况
         // 通过反射设置 isModelLoaded（因为 loadModel 需要真实 MLModel）
-        let mirror = Mirror(reflecting: service)
+        let unwrappedService = try XCTUnwrap(service)
+        let mirror = Mirror(reflecting: unwrappedService)
         XCTAssertNotNil(mirror, "反射应成功")
         // 直接调用 generate 会因 isModelLoaded=false 抛 modelNotLoaded
         // 需要先设置 isModelLoaded=true

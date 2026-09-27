@@ -229,9 +229,12 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     /// 验证 AuthCredential 可跨 actor 边界传递    // MARK: - NSObject 继承契约
 
     /// 验证 GitHubAuthStrategy 继承自 NSObject（ASWebAuthenticationPresentationContextProviding 要求）
-    func testGitHubAuthStrategyInheritsFromNSObject() {
-        XCTAssertTrue(strategy is NSObject)
-        XCTAssertTrue(strategy is ASWebAuthenticationPresentationContextProviding)
+    func testGitHubAuthStrategyInheritsFromNSObject() throws {
+        let unwrappedStrategy = try XCTUnwrap(strategy)
+        // GitHubAuthStrategy 继承 NSObject 并遵循 ASWebAuthenticationPresentationContextProviding
+        // 使用类型检查而非 `is` 模式以避免 always-true 告警
+        XCTAssertNotNil(unwrappedStrategy as NSObject)
+        XCTAssertNotNil(unwrappedStrategy as ASWebAuthenticationPresentationContextProviding)
     }
 
     // MARK: - OAuth scope 常量验证

@@ -12,11 +12,10 @@ import XCTest
 import UFPStorage
 @testable import ZhiYu
 
-@MainActor
 final class DatabaseSchemaMigratorTests: XCTestCase {
 
-    var dbQueue: DatabaseQueue!
-    var globalQueue: DatabaseQueue!
+    nonisolated(unsafe) var dbQueue: DatabaseQueue!
+    nonisolated(unsafe) var globalQueue: DatabaseQueue!
 
     override func setUpWithError() throws {
         // 创建独立的内存数据库
@@ -29,7 +28,7 @@ final class DatabaseSchemaMigratorTests: XCTestCase {
         globalQueue = nil
     }
 
-    func testMigratorCreatesVaultTables() throws {
+    @MainActor func testMigratorCreatesVaultTables() throws {
         let manager = DatabaseManager.shared
         manager.isInTesting = true
         
@@ -45,7 +44,7 @@ final class DatabaseSchemaMigratorTests: XCTestCase {
         }
     }
 
-    func testGlobalMigratorCreatesGlobalTables() throws {
+    @MainActor func testGlobalMigratorCreatesGlobalTables() throws {
         let manager = DatabaseManager.shared
         manager.isInTesting = true
         

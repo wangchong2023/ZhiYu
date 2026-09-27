@@ -35,7 +35,7 @@ final class TaskCenterInteractiveSnapshots: XCTestCase {
         setupFullMockEnvironment()
         Localized.languageMode = .chinese
         @Dependency(\.taskCenter) var taskCenter
-        (taskCenter as? TaskCenter)?.reset()
+        taskCenter.reset()
     }
 
     // MARK: - 1. 任务中心主页空状态快照

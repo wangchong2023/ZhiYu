@@ -16,11 +16,11 @@ final class StoreKitTransactionVerificationTests: XCTestCase {
 
     /// 验证后端验证失败时不 finish 交易以保留重推机会
     func testStoreKit_backendVerificationFailed_doesNotFinishTransaction() {
+        // 后端验证失败时 didFinish 保持 false
         let success = false
-        var didFinish = false
-        if success {
-            didFinish = true
-        }
+        let didFinish = success
+
+        XCTAssertFalse(success, "后端验证应失败")
         XCTAssertFalse(didFinish, "后端验证失败时不应 finish 交易")
     }
 
