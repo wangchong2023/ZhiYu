@@ -12,7 +12,10 @@
 import Foundation
 import UFPCore
 
-public enum DesignSystem {
+/// 通用设计令牌命名空间（Universal Foundation Platform Design Tokens）。
+/// 遵循 W3C Design Tokens 三层规范：Tier 1 物理 / Tier 2 语义 / Tier 3 组件。
+/// 与 app 内 `DesignSystem`（组件库）命名空间隔离，避免冲突。
+public enum DesignTokens {
     public enum Spacing {
         // MARK: - Tier 1: 基础物理间距 Token (Base Physical Scale)
         public static let nano: CGFloat = 2.0

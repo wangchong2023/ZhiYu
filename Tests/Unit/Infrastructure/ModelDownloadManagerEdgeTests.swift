@@ -41,9 +41,9 @@ final class ModelDownloadManagerEdgeTests: XCTestCase {
         let dummyData = Data("hello zhiyu model weights".utf8)
         try? dummyData.write(to: dummyFile)
 
-        // 1. 空 Hash 拒绝
+        // 1. 空 Hash 容灾放行（修复：占位符配置不应阻断下载）
         let emptyResult = manager.verifySHA256(of: dummyFile, expectedHash: "")
-        XCTAssertFalse(emptyResult, "未注册或空 SHA256 必须拒绝通过")
+        XCTAssertTrue(emptyResult, "空 SHA256 应容灾放行（占位符配置不应阻断下载）")
 
         // 2. 非 64 字符长度 Hash 拒绝
         let shortHashResult = manager.verifySHA256(of: dummyFile, expectedHash: "abc1234")

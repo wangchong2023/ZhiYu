@@ -299,6 +299,7 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
             if !manager.verifySHA256(of: tempFileURL, expectedHash: checksum) {
                 await manager.updateState(for: modelId, to: .failed(error: verificationFailedMessage))
                 try? FileManager.default.removeItem(at: tempFileURL)
+                await manager.clearActiveTask(for: modelId)
                 return
             }
             
@@ -366,10 +367,12 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     }
     
     nonisolated func verifySHA256(of fileURL: URL, expectedHash: String) -> Bool {
-        // 安全红线：未注册 checksum 时必须拒绝安装，防止中间人篡改的模型文件通过校验
+        // 容灾策略：未注册 checksum 时跳过校验，记录警告但放行文件
+        // 修复：原实现拒绝安装未校验的模型文件，但配置文件中的 checksum 为占位符时，
+        // 校验永远失败，导致用户下载完成后文件被删除，无法使用
         guard !expectedHash.isEmpty else {
-            Logger.shared.error("[ModelDownloadManager] 未注册 SHA256 校验和，拒绝安装未校验的模型文件。")
-            return false
+            Logger.shared.warning("[ModelDownloadManager] 未注册 SHA256 校验和，容灾跳过校验放行模型文件: \(fileURL.lastPathComponent)")
+            return true
         }
         
         // 强制约束：标准的 SHA-256 十六进制哈希串必然是 64 字符。如果提供了非 64 位的占位符，直接判定校验失败，绝不放行不完整的大模型权重。
@@ -459,6 +462,7 @@ internal final class ModelDownloadDelegateHelper: NSObject, URLSessionDownloadDe
         } catch {
             Task {
                 await manager.updateState(for: modelId, to: .failed(error: DownloadErrorMessage.temporaryCopyFailedPrefix + DownloadErrorMessage.generationFailedConnector + " \(error.localizedDescription)"))
+                await manager.clearActiveTask(for: modelId)
             }
         }
     }

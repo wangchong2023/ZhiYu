@@ -286,9 +286,9 @@ targets:
     sources:
       - path: Sources/Platforms/iOS/Widgets
       - path: Sources/Platforms/iOS/Activity/AIProcessingAttributes.swift
-      - path: Sources/Platforms/Shared/PlatformConstants.swift
       - path: Sources/Core/Base/Protocols/LiveActivityProtocol.swift
       - path: Sources/Core/Base/Constants/AppConstants.swift
+      - path: Sources/Platforms/Shared/PlatformConstants.swift
       - path: Sources/Localization/Catalogs/Platform.xcstrings
     settings:
       base:
@@ -331,8 +331,8 @@ targets:
           - "Platforms/iOS/Widgets/WidgetSharedConstants.swift"
           - "Platforms/iOS/Widgets/WidgetVisualConstants.swift"
           - "Platforms/iOS/Widgets/WidgetSharedViews.swift"
-          - "Platforms/Shared/PlatformConstants.swift"
           - "Core/Base/Constants/AppConstants.swift"
+          - "Platforms/Shared/PlatformConstants.swift"
     settings:
       base:
         SWIFT_STRICT_CONCURRENCY: minimal

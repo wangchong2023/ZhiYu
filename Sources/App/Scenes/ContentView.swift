@@ -34,12 +34,13 @@ struct ContentView: View {
     
     @Inject internal var deepLinkService: DeepLinkService // inject_exempt: ObservableObject 不适合 @Dependency
     @Dependency(\.appEnvironment) internal var appEnv: any AppEnvironmentProtocol
-    
+    @Dependency(\.databaseManager) internal var databaseManager
+
     @State internal var showSidebar = false
     // Bug #71 修复：AuthSession 是 @Observable，@State 包装单例语义错误且不保证
     // 内部属性变化触发重绘。改为直接引用单例，@Observable 会自动追踪。
     internal var authSession = AuthSession.shared
-    @State private var dbState: DatabaseState = DatabaseManager.shared.state
+    @State private var dbState: DatabaseState = .uninitialized
     /// Bug #72 修复：标记是否已尝试过自动登录，避免 onAppear 多次触发时重复登录。
     @State private var hasAttemptedAutoLogin = false
 
@@ -146,7 +147,7 @@ struct ContentView: View {
         .environment(\.locale, router.currentLocale)
         .onReceive(NotificationCenter.default.publisher(for: .databaseStateDidChange)) { _ in
             withAnimation(.spring()) {
-                dbState = DatabaseManager.shared.state
+                dbState = databaseManager.state
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .userAuthExpired)) { _ in
@@ -296,11 +297,13 @@ extension View {
 struct DatabaseCorruptedBanner: View {
     /// 异常错误信息
     let errorMessage: String
-    
+
     /// 状态控制：是否正在重新验证中
     @State private var isRetrying = false
     /// 状态控制：是否展示详细的报错堆栈
     @State private var showDetail = false
+    /// 数据库管理器（通过 DI 注入，避免 L3 视图直接访问 L1 单例）
+    @Dependency(\.databaseManager) private var databaseManager
     
     var body: some View {
         VStack(spacing: SystemSpacing.element) {
@@ -383,10 +386,10 @@ struct DatabaseCorruptedBanner: View {
         isRetrying = true
         Task {
             do {
-                let dbURL = try DatabaseManager.defaultSandboxDatabaseURL()
+                let dbURL = try databaseManager.defaultSandboxDatabaseURL()
 
-                // 重新执行 setup 挂载物理沙盒
-                try DatabaseManager.shared.setup(at: dbURL)
+                // 重新执行 setup 挂载物理沙盒（通过 DI 注入的 databaseManager）
+                try await databaseManager.setup(at: dbURL)
                 Logger.shared.info("[DatabaseCorruptedBanner] Reverification succeeded! Remounted physical database.")
             } catch {
                 Logger.shared.error("[DatabaseCorruptedBanner] Reverification" + " failed: \(error)", error: error)

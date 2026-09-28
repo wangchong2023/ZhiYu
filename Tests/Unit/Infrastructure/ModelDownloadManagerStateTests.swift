@@ -117,14 +117,14 @@ final class ModelDownloadManagerStateTests: XCTestCase {
 
     // MARK: - verifySHA256 边界测试
 
-    /// 验证 verifySHA256 对空 checksum 返回 false（已修复的问题 #2）
-    func testVerifySHA256RejectsEmptyChecksum() async {
+    /// 验证 verifySHA256 对空 checksum 容灾放行（修复：占位符配置不应阻断下载）
+    func testVerifySHA256AcceptsEmptyChecksum() async {
         let tempFile = NSTemporaryDirectory() + "test_sha256_empty_\(UUID().uuidString)"
         try? Data("test content".utf8).write(to: URL(fileURLWithPath: tempFile))
         defer { try? FileManager.default.removeItem(atPath: tempFile) }
 
         let result = manager.verifySHA256(of: URL(fileURLWithPath: tempFile), expectedHash: "")
-        XCTAssertFalse(result, "空 checksum 应拒绝校验（已修复的问题 #2）")
+        XCTAssertTrue(result, "空 checksum 应容灾放行（占位符配置不应阻断下载）")
     }
 
     /// 验证 verifySHA256 对非 64 字符 checksum 返回 false
@@ -159,6 +159,24 @@ final class ModelDownloadManagerStateTests: XCTestCase {
 
         let result = manager.verifySHA256(of: URL(fileURLWithPath: tempFile), expectedHash: hexHash)
         XCTAssertTrue(result, "正确 checksum 应通过校验")
+    }
+
+    // MARK: - 空 checksum 容灾放行测试（修复：占位符配置不应阻断下载）
+
+    /// 验证空 checksum 时容灾放行，文件不会被删除（端到端场景模拟）
+    /// 修复前：空 checksum 直接拒绝校验，导致下载完成后文件被删除，用户无法使用
+    func testEmptyChecksumFailsafePreservesFile() async {
+        let tempFile = NSTemporaryDirectory() + "test_empty_checksum_preserve_\(UUID().uuidString)"
+        let content = "model weights content"
+        try? Data(content.utf8).write(to: URL(fileURLWithPath: tempFile))
+        defer { try? FileManager.default.removeItem(atPath: tempFile) }
+
+        // 1. 空 checksum 应容灾放行
+        let result = manager.verifySHA256(of: URL(fileURLWithPath: tempFile), expectedHash: "")
+        XCTAssertTrue(result, "空 checksum 应容灾放行（占位符配置不应阻断下载）")
+
+        // 2. 验证文件仍然存在（未被删除）
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempFile), "空 checksum 容灾放行后文件应保留")
     }
 
     // MARK: - 辅助方法

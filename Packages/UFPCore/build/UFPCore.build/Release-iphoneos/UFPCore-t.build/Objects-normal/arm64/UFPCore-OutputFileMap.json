@@ -1,0 +1,96 @@
+{
+  "" : {
+    "const-values" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/UFPCore-primary.swiftconstvalues",
+    "dependencies" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/UFPCore-primary.d",
+    "diagnostics" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/UFPCore-primary.dia",
+    "emit-module-dependencies" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/UFPCore-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/UFPCore-primary-emit-module.dia",
+    "pch" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/UFPCore-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/UFPCore-primary.swiftdeps"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/AppErrorFactory.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/AppErrorFactory.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/AppErrorFactory.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/AppErrorFactory.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/ByteFormatter.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ByteFormatter.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ByteFormatter.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ByteFormatter.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/Extensions/Character+CJK.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Character+CJK.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Character+CJK.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Character+CJK.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/Extensions/Date+Formatting.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Date+Formatting.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Date+Formatting.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Date+Formatting.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/Extensions/String+Masking.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/String+Masking.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/String+Masking.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/String+Masking.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/IPAddressUtility.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/IPAddressUtility.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/IPAddressUtility.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/IPAddressUtility.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/MainActorBridge.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/MainActorBridge.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/MainActorBridge.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/MainActorBridge.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/NetworkConstants.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/NetworkConstants.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/NetworkConstants.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/NetworkConstants.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/ServiceContainer.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ServiceContainer.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ServiceContainer.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ServiceContainer.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/SystemConstants.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/SystemConstants.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/SystemConstants.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/SystemConstants.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/TestStateResetRegistry.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/TestStateResetRegistry.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/TestStateResetRegistry.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/TestStateResetRegistry.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/TextAnalyzer.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/TextAnalyzer.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/TextAnalyzer.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/TextAnalyzer.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/Unimplemented.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Unimplemented.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Unimplemented.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Unimplemented.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/VectorMath.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/VectorMath.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/VectorMath.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/VectorMath.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Base/ZipUtility.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ZipUtility.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ZipUtility.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/ZipUtility.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/Security/SSRFGuard.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/SSRFGuard.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/SSRFGuard.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/SSRFGuard.o"
+  },
+  "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/Sources/UFPCore/System/Logger.swift" : {
+    "index-unit-output-path" : "/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Logger.o",
+    "llvm-bc" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Logger.bc",
+    "object" : "/Users/constantine/Documents/work/code/projects/ZhiYu/Packages/UFPCore/build/UFPCore.build/Release-iphoneos/UFPCore-t.build/Objects-normal/arm64/Logger.o"
+  }
+}

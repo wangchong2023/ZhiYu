@@ -34,7 +34,7 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
     /// `urls(for: .applicationSupportDirectory, in: .userDomainMask).first` + `appendingPathComponent(databaseName)` 模式。
     /// - Returns: 默认沙盒数据库文件 URL。
     /// - Throws: 当 Application Support 目录不可用时抛出 `NSError`。
-    static func defaultSandboxDatabaseURL() throws -> URL {
+    func defaultSandboxDatabaseURL() throws -> URL {
         guard let appSupport = FileManager.default.urls(
             for: .applicationSupportDirectory,
             in: .userDomainMask

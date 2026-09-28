@@ -14,6 +14,7 @@ import Foundation
 import Observation
 import SwiftUI
 import UFPCore
+import Dependencies
 
 /// 大模型测试实验室的 7 大用例场景类型
 public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
@@ -133,7 +134,12 @@ public struct AttachmentOption: Sendable, Identifiable {
 @Observable
 @MainActor
 public final class ModelLabManager {
-    
+
+    // MARK: - 依赖注入
+
+    /// LLM 推理服务（通过 DI 注入，避免直接访问 LLMService.shared 单例）
+    @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
+
     // MARK: - 状态属性
     
     /// 当前选中的测试场景用例，为 nil 时展示格栅式主页
@@ -235,7 +241,7 @@ public final class ModelLabManager {
         if !cleanPrompt.isEmpty {
             do {
                 let systemPrompt = "你是端侧大模型 \(model.displayName)。请针对用户的输入提供专业、简洁且切中要害的回答。"
-                let responseText = try await LLMService.shared.generate(prompt: cleanPrompt, systemPrompt: systemPrompt)
+                let responseText = try await llmService.generate(prompt: cleanPrompt, systemPrompt: systemPrompt)
                 if !responseText.isEmpty {
                     realLLMResponse = responseText
                 }

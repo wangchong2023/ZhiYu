@@ -5,8 +5,10 @@
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L0] 底层基座层
-//  核心职责：跨层协议定义，建立 L0-L3 各层间的抽象契约。
+//  系统层级：[Shared] 跨层共享层
+//  核心职责：视图工厂协议，建立 L2 功能层与 L3 表现层之间的视图创建契约。
+//  迁移说明：原位于 L0 Core/Base/Protocols/，因依赖 SwiftUI AnyView 违反 L0 纯净性，
+//           迁移至 Shared 层（L2/L3 共享依赖，无反向依赖风险）。
 //
 import SwiftUI
 

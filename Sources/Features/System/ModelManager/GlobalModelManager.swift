@@ -326,6 +326,15 @@ public final class GlobalModelManager: TestStateResettable {
                     if case .completed = state {
                         self.markModelAsDownloaded(modelId)
                     }
+                    // 终态时立即清理订阅标记，允许后续重新订阅
+                    // 修复：原实现仅在流结束时清理，但 AsyncStream 永不 finish 导致订阅泄漏，
+                    // 用户再次点击下载时被 guard 拦截，状态流不更新，UI 无反馈
+                    switch state {
+                    case .completed, .failed, .cancelled:
+                        self.subscribedModelIds.remove(modelId)
+                    default:
+                        break
+                    }
                 }
             }
             // 流结束后清理订阅标记，允许后续重新订阅

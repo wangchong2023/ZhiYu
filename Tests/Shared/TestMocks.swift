@@ -592,6 +592,35 @@ final class FakeModelDownloadManager: ModelDownloadCapabilities, @unchecked Send
     }
 }
 
+/// 可控的下载管理器 Mock，能模拟真实 ModelDownloadManager 的状态流行为（不 finish，先 yield 终态）
+/// 用于验证订阅泄漏修复：终态后 subscribedModelIds 被清理，允许重新订阅
+final class ControllableMockModelDownloadManager: ModelDownloadCapabilities, @unchecked Sendable {
+    /// 待 yield 的状态序列
+    var statesToYield: [DownloadState] = []
+    /// observeDownloadState 调用计数
+    var observeCallCount = 0
+    /// startDownload 调用计数
+    var startDownloadCallCount = 0
+    
+    func startDownload(modelId: String, remoteURL: URL) async throws {
+        startDownloadCallCount += 1
+    }
+    func pauseDownload(modelId: String) async throws {}
+    func resumeDownload(modelId: String) async throws {}
+    func cancelDownload(modelId: String) async throws {}
+    
+    func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState> {
+        observeCallCount += 1
+        let states = statesToYield
+        return AsyncStream { continuation in
+            for state in states {
+                continuation.yield(state)
+            }
+            // 不 finish，模拟真实 ModelDownloadManager 的行为（永不调用 continuation.finish()）
+        }
+    }
+}
+
 /// 模拟云端配置与 Manifest 服务实现类
 final class MockRemoteConfigService: RemoteConfigCapabilities, @unchecked Sendable {
     var mockManifests: [LLMManifest] = []

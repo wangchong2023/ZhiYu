@@ -96,15 +96,16 @@ extension VaultService {
 
     /// 从主数据库（App.sqlite）读取页面计数，仅赋值给指定 vault。
     func refreshPageCountFromMainDB(for vaultID: UUID) async {
-        guard let writer = DatabaseManager.shared.dbWriter else { return }
+        guard let databaseSwitcher = databaseSwitcher else {
+            Logger.shared.warning(" [VaultService] refreshPageCountFromMainDB 被跳过，因为 databaseSwitcher 未在 DI 注册")
+            return
+        }
         guard let vaultRepository = vaultRepository else {
             Logger.shared.warning(" [VaultService] refreshPageCountFromMainDB 被跳过，因为 vaultRepository 未在 DI 注册")
             return
         }
         do {
-            let count = try await writer.read { db in
-                try KnowledgePage.fetchCount(db)
-            }
+            let count = try await databaseSwitcher.countPagesInCurrentVault()
             if let index = vaults.firstIndex(where: { $0.id == vaultID }) {
                 vaults[index].pageCount = count
                 try? await vaultRepository.saveVault(vaults[index])

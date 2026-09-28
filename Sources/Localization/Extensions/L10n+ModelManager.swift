@@ -650,6 +650,22 @@ extension L10n {
                 public static var toolLocation: String { ModelManager.tr("model_manager.lab.extra.tool_location") }
                 public static var contextSummary: String { ModelManager.tr("model_manager.lab.extra.context_summary") }
             }
+
+            // MARK: - Mock 演示数据
+            public enum Mock {
+                public static var notebookLabel: String { ModelManager.tr("model_manager.lab.mock.notebook_label") }
+                public static var penLabel: String { ModelManager.tr("model_manager.lab.mock.pen_label") }
+                public static var iphoneScreenLabel: String { ModelManager.tr("model_manager.lab.mock.iphone_screen_label") }
+                public static var traceStep1Desc: String { ModelManager.tr("model_manager.lab.mock.trace_step1_desc") }
+                public static var traceStep2Desc: String { ModelManager.tr("model_manager.lab.mock.trace_step2_desc") }
+                public static var intentMatchDesc: String { ModelManager.tr("model_manager.lab.mock.intent_match_desc") }
+                public static var uiRenderingDesc: String { ModelManager.tr("model_manager.lab.mock.ui_rendering_desc") }
+                public static var intentAnalyserDesc: String { ModelManager.tr("model_manager.lab.mock.intent_analyser_desc") }
+                public static var sandboxGatekeeperDesc: String { ModelManager.tr("model_manager.lab.mock.sandbox_gatekeeper_desc") }
+                public static var hapticFeedbackDesc: String { ModelManager.tr("model_manager.lab.mock.haptic_feedback_desc") }
+                public static var sandboxReadDesc: String { ModelManager.tr("model_manager.lab.mock.sandbox_read_desc") }
+                public static var contextSummaryDesc: String { ModelManager.tr("model_manager.lab.mock.context_summary_desc") }
+            }
         }
 
         public enum Alert {
