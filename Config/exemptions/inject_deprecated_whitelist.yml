@@ -300,3 +300,9 @@ inject_deprecated_whitelist:
   reason: synthesisStore 局部解析，避免循环依赖
   added: '2026-09-15'
   expiry_check: P11
+- file: Sources/Infrastructure/LLM/LLMModels.swift
+  line: 257
+  type: ServiceContainer.shared
+  reason: LLMConfigStore.init() 中解析 keyStore，@Dependency 在存储属性未初始化时不可访问
+  added: '2026-09-28'
+  expiry_check: P11
