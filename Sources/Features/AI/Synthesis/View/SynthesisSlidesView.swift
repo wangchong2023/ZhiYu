@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 渲染演示文稿 / 幻灯片类型的合成文档
 struct SynthesisSlidesView: View {
@@ -46,10 +47,10 @@ struct SynthesisSlidesView: View {
     }
 
     var body: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             // 页码与控制顶部栏
             HStack {
-                Label(L10n.AI.Prompt.Expert.Slides.title, systemImage: DesignSystem.Icons.playRectangleFill)
+                Label(L10n.AI.Prompt.Expert.Slides.title, systemImage: DesignTokens.Icons.playRectangleFill)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appAccent)
 
@@ -57,13 +58,13 @@ struct SynthesisSlidesView: View {
 
                 Text("\(currentSlideIndex + 1) / \(slides.count)")
                     .font(.caption.bold())
-                    .padding(.horizontal, DesignSystem.small)
-                    .padding(.vertical, DesignSystem.tiny)
-                    .background(Capsule().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)))
+                    .padding(.horizontal, DesignTokens.Spacing.small)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
+                    .background(Capsule().fill(Color.appAccent.opacity(DesignTokens.Opacity.subtle)))
                     .foregroundStyle(.appAccent)
             }
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.top, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.top, DesignTokens.Spacing.small)
 
             // 幻灯片TabView
             TabView(selection: $currentSlideIndex) {
@@ -76,22 +77,22 @@ struct SynthesisSlidesView: View {
             .frame(maxHeight: .infinity)
 
             // 底部翻页控制器
-            HStack(spacing: DesignSystem.loosePadding) {
+            HStack(spacing: DesignTokens.Spacing.loosePadding) {
                 slideNavigationButton(
-                    icon: DesignSystem.Icons.chevronLeftCircleFill,
+                    icon: DesignTokens.Icons.chevronLeftCircleFill,
                     isEnabled: currentSlideIndex > 0,
                     action: { withAnimation { currentSlideIndex -= 1 } }
                 )
                 .disabled(currentSlideIndex == 0)
 
                 slideNavigationButton(
-                    icon: DesignSystem.Icons.chevronRightCircleFill,
+                    icon: DesignTokens.Icons.chevronRightCircleFill,
                     isEnabled: currentSlideIndex < slides.count - 1,
                     action: { withAnimation { currentSlideIndex += 1 } }
                 )
                 .disabled(currentSlideIndex >= slides.count - 1)
             }
-            .padding(.bottom, DesignSystem.medium)
+            .padding(.bottom, DesignTokens.Spacing.medium)
         }
         .background(Color.appBackground)
         .onAppear {
@@ -111,24 +112,24 @@ struct SynthesisSlidesView: View {
         }) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(isEnabled ? Color.appAccent : Color.appSecondary.opacity(DesignSystem.Opacity.soft))
+                .foregroundStyle(isEnabled ? Color.appAccent : Color.appSecondary.opacity(DesignTokens.Opacity.soft))
         }
     }
 
     private func slideCard(content: String, pageIndex _: Int) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 MarkdownRendererView(content: content, isPrivate: false, onLinkTap: { _ in })
-                    .padding(DesignSystem.loosePadding)
+                    .padding(DesignTokens.Spacing.loosePadding)
             }
-            .frame(maxWidth: .infinity, minHeight: Spacing.Grid.emptyStateHeight, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: DesignTokens.Spacing.Grid.emptyStateHeight, alignment: .topLeading)
             .background(
-                RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius)
                     .fill(Color.appCard)
-                    .shadow(color: .black.opacity(DesignSystem.Opacity.soft), radius: DesignSystem.mediumRadius, x: 0, y: DesignSystem.tiny)
+                    .shadow(color: .black.opacity(DesignTokens.Opacity.soft), radius: DesignTokens.Spacing.mediumRadius, x: 0, y: DesignTokens.Spacing.tiny)
             )
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.vertical, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.vertical, DesignTokens.Spacing.small)
         }
     }
 }

@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 应用程序根视图
 /// 负责全局导航分发（Tab/SplitView）、安全遮罩及全局弹窗调度
@@ -66,7 +67,7 @@ struct ContentView: View {
                 if case .corrupted(let errorMsg) = dbState {
                     DatabaseCorruptedBanner(errorMessage: errorMsg)
                         .transition(.move(edge: .top).combined(with: .opacity))
-                        .zIndex(DesignSystem.ZIndex.lockOverlay - 1)
+                        .zIndex(DesignTokens.ZIndex.lockOverlay - 1)
                 }
                 Spacer()
             }
@@ -82,8 +83,8 @@ struct ContentView: View {
             // 全局安全锁定覆盖层：覆盖所有笔记本及工作台视图
             if store.securityService.isLocked {
                 LockOverlayView()
-                    .transition(AnyTransition.opacity.combined(with: .scale(scale: 1.0 * DesignSystem.Metrics.lockOverlayScaleMultiplier)))
-                    .zIndex(DesignSystem.ZIndex.lockOverlay)
+                    .transition(AnyTransition.opacity.combined(with: .scale(scale: 1.0 * DesignTokens.Metrics.lockOverlayScaleMultiplier)))
+                    .zIndex(DesignTokens.ZIndex.lockOverlay)
             }
         }
         .fullScreenCover(isPresented: $router.isShowingSettingsSheet) {
@@ -141,8 +142,8 @@ struct ContentView: View {
             .globalSheetTheme()
             .applyPresentationSizing()
         }
-        .animation(DesignSystem.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
-        .animation(DesignSystem.Animation.Config.prominentSpring, value: vaultService.selectedVaultID)
+        .animation(DesignTokens.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
+        .animation(DesignTokens.Animation.Config.prominentSpring, value: vaultService.selectedVaultID)
         .environmentObject(MedalService.shared)
         .environment(\.locale, router.currentLocale)
         .onReceive(NotificationCenter.default.publisher(for: .databaseStateDidChange)) { _ in
@@ -180,10 +181,10 @@ struct ContentView: View {
     
     @ViewBuilder
     private var sidebarOverlayLayer: some View {
-        Color.theme.black.opacity(DesignSystem.dimmedOpacity)
+        Color.theme.black.opacity(DesignTokens.Colors.Opacity.dimmedOpacity)
             .ignoresSafeArea()
             .onTapGesture {
-                withAnimation(DesignSystem.Animation.Config.prominentSpring) {
+                withAnimation(DesignTokens.Animation.Config.prominentSpring) {
                     showSidebar = false
                 }
             }
@@ -193,14 +194,14 @@ struct ContentView: View {
             SidebarView(heroNamespace: heroNamespace)
                 .frame(width: DesignSystem.Sidebar.width)
                 .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-                .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.shadowRadius)
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous))
+                .shadow(color: .primary.opacity(DesignTokens.SystemOpacity.ghost), radius: DesignTokens.Spacing.shadowRadius)
                 .padding(.vertical, DesignSystem.Layout.sidebarOverlayVerticalPadding)
-                .padding(.leading, DesignSystem.medium)
+                .padding(.leading, DesignTokens.Spacing.medium)
             Spacer()
         }
         .transition(.move(edge: .leading))
-        .zIndex(DesignSystem.ZIndex.sidebarOverlay)
+        .zIndex(DesignTokens.ZIndex.sidebarOverlay)
     }
 }
 
@@ -264,7 +265,7 @@ extension View {
             // iPad 与 Mac 大屏下，差异化控制尺寸，为双栏左右分栏提供完美的自适应呈现空间
             #if targetEnvironment(macCatalyst)
             // Mac Catalyst 运行模式下，指定适合 macOS 系统的固定宽屏尺寸
-            self.frame(width: DesignSystem.Metrics.minWindowWidth, height: DesignSystem.Metrics.minWindowHeight)
+            self.frame(width: DesignTokens.Metrics.minWindowWidth, height: DesignTokens.Metrics.minWindowHeight)
             #else
             // iPad 设备运行模式下：防止强设 minWidth 导致系统默认的 sheet 内容发生截断。
             if #available(iOS 18.0, *) {
@@ -306,14 +307,14 @@ struct DatabaseCorruptedBanner: View {
     @Dependency(\.databaseManager) private var databaseManager
     
     var body: some View {
-        VStack(spacing: SystemSpacing.element) {
-            HStack(spacing: SystemSpacing.medium) {
+        VStack(spacing: DesignTokens.SystemSpacing.element) {
+            HStack(spacing: DesignTokens.SystemSpacing.medium) {
                 // 安全警告图标
-                Image(systemName: DesignSystem.Icons.exclamationShieldFill)
+                Image(systemName: DesignTokens.Icons.exclamationShieldFill)
                     .font(.title3)
                     .foregroundColor(.theme.orange)
                 
-                VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                     // 主警告文案 (从强类型本地化 L10n 中拉取)
                     Text(L10n.Security.databaseCorrupted)
                         .font(.subheadline)
@@ -335,14 +336,14 @@ struct DatabaseCorruptedBanner: View {
                 Spacer()
                 
                 // 动作按钮组
-                HStack(spacing: SystemSpacing.medium) {
+                HStack(spacing: DesignTokens.SystemSpacing.medium) {
                     // 折叠切换按钮
                     Button(action: {
                         withAnimation {
                             showDetail.toggle()
                         }
                     }) {
-                        Image(systemName: showDetail ? DesignSystem.Icons.chevronUp : DesignSystem.Icons.chevronDown)
+                        Image(systemName: showDetail ? DesignTokens.Icons.chevronUp : DesignTokens.Icons.chevronDown)
                             .foregroundColor(.secondary)
                             .font(.caption)
                     }
@@ -359,7 +360,7 @@ struct DatabaseCorruptedBanner: View {
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .padding(.horizontal, 12)
-                                .padding(.vertical, SystemSpacing.small)
+                                .padding(.vertical, DesignTokens.SystemSpacing.small)
                                 .background(Capsule().fill(Color.theme.orange))
                                 .foregroundColor(.theme.white)
                         }
@@ -371,14 +372,14 @@ struct DatabaseCorruptedBanner: View {
             .padding(.vertical, 12)
             .background(.ultraThinMaterial)
             .cornerRadius(12)
-            .shadow(color: .primary.opacity(DesignSystem.Opacity.subtle), radius: 6, x: 0, y: 3)
+            .shadow(color: .primary.opacity(DesignTokens.Opacity.subtle), radius: 6, x: 0, y: 3)
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                    .stroke(Color.theme.orange.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                    .stroke(Color.theme.orange.opacity(DesignTokens.Opacity.shadow), lineWidth: DesignTokens.SystemStroke.divider)
             )
         }
         .padding(.horizontal, 16)
-        .padding(.top, SystemSpacing.element)
+        .padding(.top, DesignTokens.SystemSpacing.element)
     }
     
     /// 触发重新挂载与完整性校验逻辑

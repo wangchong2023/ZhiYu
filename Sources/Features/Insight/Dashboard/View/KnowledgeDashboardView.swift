@@ -11,6 +11,7 @@
 import SwiftUI
 import Charts
 import Dependencies
+import UFPDesignSystem
 
 // 仪表盘业务阈值常量
 private enum InsightBusinessConstants {
@@ -40,16 +41,16 @@ struct KnowledgeDashboardView: View {
         ZStack(alignment: .top) {
             // 1. 方案 D 沉浸式高级背景同步
             ZStack {
-                Color.theme.black.overlay(themeManager.pageBackground().opacity(DesignSystem.Opacity.disabled))
+                Color.theme.black.overlay(themeManager.pageBackground().opacity(DesignTokens.Opacity.disabled))
                 MeshGradientView()
                     .blur(radius: 80)
             }
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.huge) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.huge) {
                     AIProcessingStatusBanner()
-                        .padding(.bottom, -DesignSystem.standardPadding)
+                        .padding(.bottom, -DesignTokens.Spacing.standardPadding)
                         
                     metricSection
                     densityChartSection
@@ -57,7 +58,7 @@ struct KnowledgeDashboardView: View {
                     hotTopicsSection
                 }
                 .padding()
-                .padding(.bottom, ComponentSpacing.chartHalfHeight)
+                .padding(.bottom, DesignTokens.ComponentSpacing.chartHalfHeight)
             }
             .scrollIndicators(.hidden)
             
@@ -77,7 +78,7 @@ struct KnowledgeDashboardView: View {
             InsightMetricCard(
                 title: L10n.Dashboard.totalPages,
                 value: "\(store.pages.count)",
-                icon: DesignSystem.Icons.documentFill,
+                icon: DesignTokens.Icons.documentFill,
                 color: .appAccent,
                 unit: L10n.Dashboard.pageListPages,
                 trend: nil,
@@ -86,7 +87,7 @@ struct KnowledgeDashboardView: View {
             InsightMetricCard(
                 title: L10n.Dashboard.totalLinks,
                 value: "\(coordinator.totalLinks)",
-                icon: DesignSystem.Icons.network,
+                icon: DesignTokens.Icons.network,
                 color: .appConcept,
                 unit: L10n.Dashboard.pageListLinks,
                 trend: nil,
@@ -97,10 +98,10 @@ struct KnowledgeDashboardView: View {
     
     private var densityChartSection: some View {
         // 2. 连接密度图表 (语义分块质量)
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             // 标题 (边框外左上角)
             HStack {
-                InsightDashboardSectionTitle(icon: DesignSystem.Icons.network, title: L10n.Dashboard.density, infoAction: { showDensityInfo.toggle() })
+                InsightDashboardSectionTitle(icon: DesignTokens.Icons.network, title: L10n.Dashboard.density, infoAction: { showDensityInfo.toggle() })
                     .buttonStyle(.plain)
                 
                 Spacer()
@@ -109,27 +110,27 @@ struct KnowledgeDashboardView: View {
                     HapticFeedback.shared.trigger(.selection)
                     router.navigate(to: .graph)
                 }) {
-                    HStack(spacing: DesignSystem.tiny) {
-                        Image(systemName: DesignSystem.Icons.circleGrid3x3Fill)
+                    HStack(spacing: DesignTokens.Spacing.tiny) {
+                        Image(systemName: DesignTokens.Icons.circleGrid3x3Fill)
                         Text(L10n.Dashboard.graphShortcut)
                     }
-                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold))
                     .insightGlassCapsule(color: .appAccent)
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.leading, DesignSystem.tiny)
+            .padding(.leading, DesignTokens.Spacing.tiny)
             
             if showDensityInfo {
                 Text(L10n.Dashboard.densityDesc)
                     .font(.caption)
                     .foregroundColor(.appSecondary)
-                    .padding(.bottom, DesignSystem.tiny)
-                    .padding(.leading, DesignSystem.tiny)
+                    .padding(.bottom, DesignTokens.Spacing.tiny)
+                    .padding(.leading, DesignTokens.Spacing.tiny)
             }
             
             // 卡片内容 (应用统一容器外框)
-            VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                 if coordinator.densityData.isEmpty {
                     emptyView
                 } else {
@@ -138,7 +139,7 @@ struct KnowledgeDashboardView: View {
                         densityBarMark(value: item.outbound, label: InsightBusinessConstants.DensityLabel.outbound, pageName: item.name, color: .appAccent)
                         densityBarMark(value: item.inbound, label: InsightBusinessConstants.DensityLabel.inbound, pageName: item.name, color: Color.theme.purple)
                     }
-                    .frame(height: DesignSystem.Metrics.chartHeight + DesignSystem.medium)
+                    .frame(height: DesignTokens.Metrics.chartHeight + DesignTokens.Spacing.medium)
                     .chartXAxis(.hidden) // 彻底删除冗余“0个关联”等繁杂文案，回归极其大气的物理大厂留白
                     .chartYAxis {
                         AxisMarks(position: .leading) { value in
@@ -146,20 +147,20 @@ struct KnowledgeDashboardView: View {
                                 if let name = value.as(String.self) {
                                     // 正常完整展示具体的页面文案内容（最多支持 12 个汉字，完美适应 iPhone 屏幕宽度，超过时以 "..." 雅致折叠）
                                     Text(name.prefix(InsightBusinessConstants.axisNamePrefixLength) + (name.count > InsightBusinessConstants.axisNamePrefixLength ? "..." : ""))
-                                        .font(.system(size: DesignSystem.captionFontSize, weight: .medium, design: .rounded))
+                                        .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .medium, design: .rounded))
                                         .foregroundStyle(.appSource)
                                 }
                             }
                         }
                     }
                     .chartLegend(.hidden)
-                    .padding(.bottom, DesignSystem.small) // 额外物理扩展图表底部外边距，形成高级空气流动美感
+                    .padding(.bottom, DesignTokens.Spacing.small) // 额外物理扩展图表底部外边距，形成高级空气流动美感
                     
                     // 💡 完美的「图例与 X 轴含义说明单行看板」 (Legend & X-Axis Note Panel)
                     // 左右完美对称，信息量饱满且布局轻盈开阔，彻底移除了沉重的胶囊和重复的“纵轴说明”
                     HStack {
                         // 左侧图例（带高亮圆点，富有呼吸感和大厂精致度）
-                        HStack(spacing: DesignSystem.small) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
                             legendDot(color: Color.appAccent, text: L10n.Dashboard.densityOutbound)
                             legendDot(color: Color.theme.purple, text: L10n.Dashboard.densityInbound)
                         }
@@ -167,18 +168,18 @@ struct KnowledgeDashboardView: View {
                         Spacer()
                         
                         // 右侧双轴物理含义释义 (箭头+含义，通过 | 分隔，完美揭示空间物理轴方向)
-                        HStack(spacing: DesignSystem.tiny) {
-                            axisLegend(icon: DesignSystem.Icons.arrowUp, text: L10n.Dashboard.axisPages)
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
+                            axisLegend(icon: DesignTokens.Icons.arrowUp, text: L10n.Dashboard.axisPages)
                             
                             Text("")
-                                .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
-                                .foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.disabled))
+                                .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold))
+                                .foregroundStyle(.appAccent.opacity(DesignTokens.Opacity.disabled))
                             
-                            axisLegend(icon: DesignSystem.Icons.arrowRight, text: L10n.Dashboard.axisRelations)
+                            axisLegend(icon: DesignTokens.Icons.arrowRight, text: L10n.Dashboard.axisRelations)
                         }
                     }
-                    .padding(.top, -DesignSystem.tiny)
-                    .padding(.bottom, DesignSystem.tiny)
+                    .padding(.top, -DesignTokens.Spacing.tiny)
+                    .padding(.bottom, DesignTokens.Spacing.tiny)
                 }
             }
             .appContainer(padding: true) // 应用统一容器样式
@@ -187,22 +188,22 @@ struct KnowledgeDashboardView: View {
     
     private var dailyInsightsSection: some View {
         // 3. 每日灵感 (AI 合成摘要预览)
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             HStack {
-                Image(systemName: DesignSystem.Icons.sparkles)
+                Image(systemName: DesignTokens.Icons.sparkles)
                     .font(.caption)
                     .foregroundStyle(.appAccent)
                 Text(L10n.Dashboard.dailyInsights)
                     .font(.headline)
                 Spacer()
                 Button(action: { Task { await coordinator.refreshInsights() } }) {
-                    infoButtonIcon(DesignSystem.Icons.refresh)
+                    infoButtonIcon(DesignTokens.Icons.refresh)
                 }
                 .buttonStyle(.plain)
                 .disabled(coordinator.isGeneratingInsights)
             }
             
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 if coordinator.isGeneratingInsights {
                     HStack {
                         Spacer()
@@ -214,7 +215,7 @@ struct KnowledgeDashboardView: View {
                             .italic()
                         Spacer()
                     }
-                    .padding(.vertical, DesignSystem.wide)
+                    .padding(.vertical, DesignTokens.Spacing.wide)
                 } else if let recap = coordinator.dailyRecap {
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
@@ -224,28 +225,28 @@ struct KnowledgeDashboardView: View {
                             toastManager.show(type: .info, message: L10n.Dashboard.insightsPageDeleted)
                         }
                     }) {
-                        VStack(alignment: .leading, spacing: DesignSystem.small) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                             Text(recap.targetPageTitle)
-                                .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
+                                .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold))
                                 .foregroundColor(.appAccent)
                             
                             Text(recap.insight)
-                                .font(.system(size: DesignSystem.Metrics.dashboardLabelSize))
+                                .font(.system(size: DesignTokens.Metrics.dashboardLabelSize))
                                 .foregroundColor(.appText)
-                                .lineSpacing(DesignSystem.tiny)
+                                .lineSpacing(DesignTokens.Spacing.tiny)
                                 .multilineTextAlignment(.leading)
                             
                             if !recap.suggestedConnection.isEmpty {
-                                HStack(alignment: .top, spacing: DesignSystem.tiny) {
-                                    Image(systemName: DesignSystem.Icons.concept)
-                                        .font(.system(size: DesignSystem.caption2FontSize))
+                                HStack(alignment: .top, spacing: DesignTokens.Spacing.tiny) {
+                                    Image(systemName: DesignTokens.Icons.concept)
+                                        .font(.system(size: DesignTokens.Typography.caption2FontSize))
                                         .foregroundColor(.theme.orange)
                                     Text(recap.suggestedConnection)
-                                        .font(.system(size: DesignSystem.captionFontSize, weight: .medium))
+                                        .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .medium))
                                         .foregroundColor(.appSecondary)
                                         .multilineTextAlignment(.leading)
                                 }
-                                .padding(.top, DesignSystem.tiny)
+                                .padding(.top, DesignTokens.Spacing.tiny)
                             }
                         }
                     }
@@ -259,14 +260,14 @@ struct KnowledgeDashboardView: View {
                 }
             }
             .padding(DesignSystem.Layout.cardContentPadding) // 使用标准卡片内边距 (16pt)
-            .appMetricCardStyle(color: .appAccent, cornerRadius: DesignSystem.standardRadius)
+            .appMetricCardStyle(color: .appAccent, cornerRadius: DesignTokens.Spacing.standardRadius)
         }
     }
     
     private var hotTopicsSection: some View {
         // 4. 热门领域 (PageType 分布)
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-            InsightDashboardSectionTitle(icon: DesignSystem.Icons.grid, title: L10n.Dashboard.hotTopics)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
+            InsightDashboardSectionTitle(icon: DesignTokens.Icons.grid, title: L10n.Dashboard.hotTopics)
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.Grid.standardSpacing) {
                 // 遍历用户可见页面类型，屏蔽 raw 选项的统计
@@ -289,12 +290,12 @@ struct KnowledgeDashboardView: View {
     /// 密度图表图例圆点项（圆点 + 文本）
     @ViewBuilder
     private func legendDot(color: Color, text: String) -> some View {
-        HStack(spacing: DesignSystem.atomic) {
+        HStack(spacing: DesignTokens.Spacing.atomic) {
             Circle()
                 .fill(color)
-                .frame(width: DesignSystem.IconSize.atomic, height: DesignSystem.IconSize.atomic)
+                .frame(width: DesignTokens.IconSize.atomic, height: DesignTokens.IconSize.atomic)
             Text(text)
-                .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
+                .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold, design: .rounded))
                 .foregroundStyle(.appSecondary)
         }
     }
@@ -302,12 +303,12 @@ struct KnowledgeDashboardView: View {
     /// 密度图表轴向图例项（箭头图标 + 文本）
     @ViewBuilder
     private func axisLegend(icon: String, text: String) -> some View {
-        HStack(spacing: DesignSystem.atomic) {
+        HStack(spacing: DesignTokens.Spacing.atomic) {
             Image(systemName: icon)
-                .font(.system(size: SystemFontSize.micro, weight: .bold))
+                .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .bold))
                 .foregroundColor(.appAccent)
             Text(text)
-                .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
+                .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold, design: .rounded))
                 .foregroundStyle(.appSecondary)
         }
     }
@@ -319,9 +320,9 @@ struct KnowledgeDashboardView: View {
             x: .value(label, value),
             y: .value("Page", pageName)
         )
-        .cornerRadius(DesignSystem.Radius.small)
+        .cornerRadius(DesignTokens.Radius.small)
         .foregroundStyle(LinearGradient(
-            colors: [color, color.opacity(DesignSystem.Opacity.dim)],
+            colors: [color, color.opacity(DesignTokens.Opacity.dim)],
             startPoint: .leading,
             endPoint: .trailing
         ))
@@ -338,42 +339,42 @@ struct HotTopicMedal: View {
     let color: Color
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(DesignSystem.glassOpacity))
-                    .frame(width: DesignSystem.Metrics.iconBoxSize, height: DesignSystem.Metrics.iconBoxSize)
+                    .fill(color.opacity(DesignTokens.Colors.Opacity.glassOpacity))
+                    .frame(width: DesignTokens.Metrics.iconBoxSize, height: DesignTokens.Metrics.iconBoxSize)
                 Image(systemName: icon)
-                    .font(.system(size: DesignSystem.headlineFontSize))
+                    .font(.system(size: DesignTokens.Typography.headlineFontSize))
                     .foregroundColor(color)
             }
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(category)
-                    .font(.system(size: DesignSystem.titleFontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold))
                     .foregroundColor(.appText)
                 Text("\(count) " + L10n.Dashboard.pageListPages)
-                    .font(.system(size: DesignSystem.captionFontSize))
+                    .font(.system(size: DesignTokens.Typography.captionFontSize))
                     .foregroundColor(.appSecondary)
             }
             
             Spacer()
         }
-        .padding(DesignSystem.standardPadding)
-        .appMetricCardStyle(color: color, cornerRadius: DesignSystem.standardRadius)
+        .padding(DesignTokens.Spacing.standardPadding)
+        .appMetricCardStyle(color: color, cornerRadius: DesignTokens.Spacing.standardRadius)
     }
 }
 
 private var emptyView: some View {
     VStack {
-        Image(systemName: DesignSystem.Icons.chartBar)
+        Image(systemName: DesignTokens.Icons.chartBar)
             .font(.largeTitle)
-            .foregroundColor(.appSecondary.opacity(DesignSystem.Opacity.medium))
+            .foregroundColor(.appSecondary.opacity(DesignTokens.Opacity.medium))
         Text(L10n.Common.Global.noData)
             .font(.caption)
             .foregroundColor(.appSecondary)
     }
-    .frame(maxWidth: .infinity, minHeight: DesignSystem.Metrics.chartHeight)
+    .frame(maxWidth: .infinity, minHeight: DesignTokens.Metrics.chartHeight)
 }
 
 // MARK: - 信息按钮图标

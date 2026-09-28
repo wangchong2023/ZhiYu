@@ -11,6 +11,7 @@
 
 import SwiftUI
 import PhotosUI
+import UFPDesignSystem
 
 /// 个人资料及套餐详情视图
 @MainActor
@@ -59,9 +60,9 @@ public struct UserProfileView: View {
         Text(L10n.Auth.avatar)
             .font(.caption.bold())
             .foregroundStyle(.appAccent)
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, DesignSystem.tiny)
-            .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
+            .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
             .clipShape(Capsule())
     }
 
@@ -74,7 +75,7 @@ public struct UserProfileView: View {
 
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: DesignSystem.large) {
+                    VStack(spacing: DesignTokens.Spacing.large) {
                         // 1. 头像区
                         avatarSection
 
@@ -84,7 +85,7 @@ public struct UserProfileView: View {
                         // 3. 知识资产统计与活跃度看板（用于充实大屏设备底部的留白空间）
                         statisticsSection
                     }
-                    .padding(DesignSystem.medium)
+                    .padding(DesignTokens.Spacing.medium)
                 }
 
             }
@@ -144,7 +145,7 @@ public struct UserProfileView: View {
 
     /// 头像修改区域（包含 PhotosPicker 触发与上传 Loading 覆层）
     private var avatarSection: some View {
-        VStack(spacing: DesignSystem.small) {
+        VStack(spacing: DesignTokens.Spacing.small) {
             ZStack {
                 // 显示现有头像或默认占位图
                 if let avatarURL = authService.currentUser?.avatarURL {
@@ -155,21 +156,21 @@ public struct UserProfileView: View {
                     } placeholder: {
                         ProgressView()
                     }
-                    .frame(width: ComponentSpacing.emptyStateImageHalf, height: ComponentSpacing.emptyStateImageHalf)
+                    .frame(width: DesignTokens.ComponentSpacing.emptyStateImageHalf, height: DesignTokens.ComponentSpacing.emptyStateImageHalf)
                     .clipShape(Circle())
                 } else {
-                    Image(systemName: DesignSystem.Icons.personCropFill)
+                    Image(systemName: DesignTokens.Icons.personCropFill)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: ComponentSpacing.emptyStateImageHalf, height: ComponentSpacing.emptyStateImageHalf)
+                        .frame(width: DesignTokens.ComponentSpacing.emptyStateImageHalf, height: DesignTokens.ComponentSpacing.emptyStateImageHalf)
                         .foregroundStyle(.appSecondary)
                 }
 
                 // 上传过程中显示遮罩
                 if isUploading {
                     Circle()
-                        .fill(Color.theme.black.opacity(DesignSystem.Opacity.disabled))
-                        .frame(width: ComponentSpacing.emptyStateImageHalf, height: ComponentSpacing.emptyStateImageHalf)
+                        .fill(Color.theme.black.opacity(DesignTokens.Opacity.disabled))
+                        .frame(width: DesignTokens.ComponentSpacing.emptyStateImageHalf, height: DesignTokens.ComponentSpacing.emptyStateImageHalf)
                     ProgressView()
                         .tint(.white)
                 }
@@ -183,11 +184,11 @@ public struct UserProfileView: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: SystemStroke.selected
+                        lineWidth: DesignTokens.SystemStroke.selected
                     )
                     // 绑定发光呼吸动效：通过动态切换阴影的透明度模拟发光呼吸
                     .shadow(
-                        color: Color.appAccent.opacity(isAnimatingGlow ? DesignSystem.glassOpacity : DesignSystem.subtleOpacity),
+                        color: Color.appAccent.opacity(isAnimatingGlow ? DesignTokens.Colors.Opacity.glassOpacity : DesignTokens.Colors.subtleOpacity),
                         radius: 6
                     )
             )
@@ -208,16 +209,16 @@ public struct UserProfileView: View {
             }
             .disabled(isUploading)
         }
-        .padding(.vertical, DesignSystem.medium)
+        .padding(.vertical, DesignTokens.Spacing.medium)
     }
 
     /// 昵称修改表单区域
     private var infoFormSection: some View {
         AppCard {
-            VStack(alignment: .leading, spacing: DesignSystem.large) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
                 // 账号 ID (不可修改)
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    FormLabelRow(icon: DesignSystem.Icons.entity, title: L10n.Auth.accountId, iconColor: Color.theme.gray)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                    FormLabelRow(icon: DesignTokens.Icons.entity, title: L10n.Auth.accountId, iconColor: Color.theme.gray)
                     Text(authService.currentUser?.id.uuidString ?? "-")
                         .font(.subheadline)
                         .foregroundStyle(.appText)
@@ -226,8 +227,8 @@ public struct UserProfileView: View {
                 
                 // 手机号（如果通过短信登录则展示，不可修改）
                 if let phone = authService.currentUser?.phone, !phone.isEmpty {
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
-                        FormLabelRow(icon: DesignSystem.Icons.phoneFill, title: L10n.Auth.phoneLabel, iconColor: Color.theme.gray)
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                        FormLabelRow(icon: DesignTokens.Icons.phoneFill, title: L10n.Auth.phoneLabel, iconColor: Color.theme.gray)
                         Text(phone)
                             .font(.subheadline)
                             .foregroundStyle(.appText)
@@ -235,8 +236,8 @@ public struct UserProfileView: View {
                 }
 
                 // 昵称修改
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    FormLabelRow(icon: DesignSystem.Icons.person, title: L10n.Auth.nickname, iconColor: Color.theme.accent)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                    FormLabelRow(icon: DesignTokens.Icons.person, title: L10n.Auth.nickname, iconColor: Color.theme.accent)
 
                     // AppTextField 正确参数顺序：placeholder: 在前，text: 在后
                     AppTextField(
@@ -247,8 +248,8 @@ public struct UserProfileView: View {
                 }
                 
                 // 性别选择
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    FormLabelRow(icon: DesignSystem.Icons.persons, title: L10n.Auth.gender, iconColor: Color.theme.accent)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                    FormLabelRow(icon: DesignTokens.Icons.persons, title: L10n.Auth.gender, iconColor: Color.theme.accent)
                     
                     Picker("", selection: $gender) {
                         Text(L10n.Auth.genderSecret).tag(0)
@@ -259,65 +260,65 @@ public struct UserProfileView: View {
                 }
                 
                 // 生日选择
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    FormLabelRow(icon: DesignSystem.Icons.calendar, title: L10n.Auth.birthday, iconColor: Color.theme.accent)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                    FormLabelRow(icon: DesignTokens.Icons.calendar, title: L10n.Auth.birthday, iconColor: Color.theme.accent)
                     
                     DatePicker("", selection: $birthday, displayedComponents: .date)
                         .labelsHidden()
                         .environment(\.locale, Locale.current)
                 }
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
         }
     }
 
     /// 知识资产统计与活跃度仪表卡 (用以充实页面大屏留白，提供真实的资产和活跃指标)
     private var statisticsSection: some View {
         AppCard {
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 // 模块页头
-                HStack(spacing: SystemSpacing.element) {
-                    Image(systemName: DesignSystem.Icons.chartLine)
+                HStack(spacing: DesignTokens.SystemSpacing.element) {
+                    Image(systemName: DesignTokens.Icons.chartLine)
                         .foregroundStyle(Color.theme.accent)
                     Text(L10n.Auth.statsBoard)
                         .font(.headline.bold())
                         .foregroundStyle(.primary)
                 }
-                .padding(.bottom, SystemSpacing.tiny)
+                .padding(.bottom, DesignTokens.SystemSpacing.tiny)
                 
                 // 2x2 网格，清晰统计用户的知识库状况
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.medium) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignTokens.Spacing.medium) {
                     MetricTile(
                         title: L10n.Auth.statsNotebooks,
                         value: "\(vaultService.vaults.count)",
-                        icon: DesignSystem.Icons.booksVerticalFill,
+                        icon: DesignTokens.Icons.booksVerticalFill,
                         iconColor: Color.theme.blue,
                         valueColor: .primary
                     )
                     MetricTile(
                         title: L10n.Auth.statsPages,
                         value: "\(knowledgeStore.totalPages)",
-                        icon: DesignSystem.Icons.docTextFill,
+                        icon: DesignTokens.Icons.docTextFill,
                         iconColor: Color.theme.green,
                         valueColor: .primary
                     )
                     MetricTile(
                         title: L10n.Auth.statsSynthesis,
                         value: "\(synthesisStore.allSortedDocuments.count)",
-                        icon: DesignSystem.Icons.sparkles,
+                        icon: DesignTokens.Icons.sparkles,
                         iconColor: Color.theme.purple,
                         valueColor: .primary
                     )
                     MetricTile(
                         title: L10n.Auth.statsActiveDays,
                         value: "\(activeDays)",
-                        icon: DesignSystem.Icons.calendarDayTimeline,
+                        icon: DesignTokens.Icons.calendarDayTimeline,
                         iconColor: Color.theme.orange,
                         valueColor: .primary
                     )
                 }
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
         }
     }
 

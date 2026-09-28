@@ -12,39 +12,40 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 头部信息区
 
 extension PluginDetailView {
 
     var headerSection: some View {
-        HStack(alignment: .top, spacing: DesignSystem.wide) {
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.wide) {
             // 插件大图标 — 优先显示已缓存的本地 icon.png，使用 App Store 经典的 Squircle 平滑圆角
             if let uiImage = localIcon {
                 Image(uiImage: uiImage)
                     .pluginLocalIconBase()
-                    .iconClipShadow(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)
+                    .iconClipShadow(cornerRadius: DesignTokens.SystemRadius.chip, strokeOpacity: DesignTokens.SystemOpacity.glass)
             } else if let iconURL = URL(string: plugin.icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
                 PluginRemoteIconLoader(
                     iconURL: iconURL,
                     size: DesignSystem.Gallery.itemSize,
-                    cornerRadius: SystemRadius.chip,
-                    strokeOpacity: SystemOpacity.glass,
+                    cornerRadius: DesignTokens.SystemRadius.chip,
+                    strokeOpacity: DesignTokens.SystemOpacity.glass,
                     strokeColor: Color.appBorder,
                     emptyContent: {
-                        AppSkeleton(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize, cornerRadius: SystemRadius.chip)
+                        AppSkeleton(width: DesignSystem.Gallery.itemSize, height: DesignSystem.Gallery.itemSize, cornerRadius: DesignTokens.SystemRadius.chip)
                             .overlay(ProgressView().controlSize(.small))
                     },
                     fallback: { fallbackPluginIcon }
                 )
             } else {
                 fallbackPluginIcon
-                    .iconContainerStyle(cornerRadius: SystemRadius.chip, strokeOpacity: SystemOpacity.glass)
+                    .iconContainerStyle(cornerRadius: DesignTokens.SystemRadius.chip, strokeOpacity: DesignTokens.SystemOpacity.glass)
             }
 
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 // 名称 + 版本标签
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     Text(plugin.name)
                         .font(.title2.bold())
                         .foregroundStyle(.appText)
@@ -61,15 +62,15 @@ extension PluginDetailView {
 
                 // 安装状态标签 (移至大字号区域下端，保持视觉重点清晰)
                 if isInstalled {
-                    HStack(spacing: DesignSystem.tiny) {
-                        Image(systemName: DesignSystem.Icons.checkCircle)
+                    HStack(spacing: DesignTokens.Spacing.tiny) {
+                        Image(systemName: DesignTokens.Icons.checkCircle)
                             .font(.caption)
                             .foregroundStyle(Color.theme.green)
                         Text(L10n.Plugin.Detail.installed)
                             .font(.caption.weight(.medium))
                             .foregroundStyle(Color.theme.green)
                     }
-                    .padding(.top, DesignSystem.atomic)
+                    .padding(.top, DesignTokens.Spacing.atomic)
                 }
             }
         }
@@ -78,7 +79,7 @@ extension PluginDetailView {
     /// 远程图标加载失败时的 fallback 拼图块默认图标（带渐变底）
     private var fallbackPluginIcon: some View {
         Color.clear
-            .pluginFallbackIconStyle(iconName: DesignSystem.Icons.puzzlepieceExtensionFill, gradientOpacity: SystemOpacity.textSecondary)
+            .pluginFallbackIconStyle(iconName: DesignTokens.Icons.puzzlepieceExtensionFill, gradientOpacity: DesignTokens.SystemOpacity.textSecondary)
     }
 }
 
@@ -94,7 +95,7 @@ private extension View {
     func iconClipShadow(cornerRadius: CGFloat, strokeOpacity: Double) -> some View {
         self
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Color.appBorder.opacity(strokeOpacity), lineWidth: SystemStroke.hairline))
-            .shadow(color: Color.theme.black.opacity(DesignSystem.subtleOpacity), radius: 12, x: 0, y: 6)
+            .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Color.appBorder.opacity(strokeOpacity), lineWidth: DesignTokens.SystemStroke.hairline))
+            .shadow(color: Color.theme.black.opacity(DesignTokens.Colors.subtleOpacity), radius: 12, x: 0, y: 6)
     }
 }

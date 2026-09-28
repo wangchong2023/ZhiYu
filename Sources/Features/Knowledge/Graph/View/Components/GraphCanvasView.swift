@@ -9,6 +9,7 @@
 //  核心职责：构建 GraphCanvas 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 知识图谱画布视图
 /// 负责 2D 环境下的节点渲染、连线绘制及平移/缩放手法交互处理
@@ -88,7 +89,7 @@ struct GraphCanvasView: View {
             scale: scale
         )
         .position(node.position)
-        .opacity(isDimmed ? SystemOpacity.glassStrong : DesignSystem.fullOpacity)
+        .opacity(isDimmed ? DesignTokens.SystemOpacity.glassStrong : DesignTokens.Colors.Opacity.fullOpacity)
     }
     
     private func drawEdges(in context: GraphicsContext, size _: CGSize) {
@@ -99,7 +100,7 @@ struct GraphCanvasView: View {
             guard let s = nodeLookup[edge.source], let t = nodeLookup[edge.target] else { continue }
             
             let isHighlighted = selectedNodeID == edge.source || selectedNodeID == edge.target
-            let opacity = isHighlighted ? SystemOpacity.overlay : (isAnySelected ? SystemOpacity.ghost : SystemOpacity.glassStrong)
+            let opacity = isHighlighted ? DesignTokens.SystemOpacity.overlay : (isAnySelected ? DesignTokens.SystemOpacity.ghost : DesignTokens.SystemOpacity.glassStrong)
             let lineWidth: CGFloat = isHighlighted ? DesignSystem.Graph.highlightedLineWidth : 1.0
             
             var path = Path()
@@ -113,7 +114,7 @@ struct GraphCanvasView: View {
                 )
                 context.stroke(path, with: gradient, lineWidth: lineWidth)
             } else {
-                context.stroke(path, with: .color(.appBorder.opacity(opacity)), lineWidth: DesignSystem.borderWidth)
+                context.stroke(path, with: .color(.appBorder.opacity(opacity)), lineWidth: DesignTokens.Spacing.borderWidth)
             }
         }
     }

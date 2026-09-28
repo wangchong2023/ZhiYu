@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 页面详情 AI 结果展示区
 struct PageDetailAISection: View {
@@ -22,9 +23,9 @@ struct PageDetailAISection: View {
     
     var body: some View {
         if aiStore.isProcessingPageAI || aiStore.activePageAIResult != nil {
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 HStack {
-                    Image(systemName: DesignSystem.Icons.sparkles)
+                    Image(systemName: DesignTokens.Icons.sparkles)
                         .foregroundStyle(.appAccent)
                     Text(L10n.Knowledge.Page.AI.labOutput)
                         .font(.headline)
@@ -45,11 +46,11 @@ struct PageDetailAISection: View {
                                     aiStore.activePageAIResult = nil
                                 }
                             }) {
-                                Label(L10n.Common.appendToBody, systemImage: DesignSystem.Icons.squareAndArrowDown)
+                                Label(L10n.Common.appendToBody, systemImage: DesignTokens.Icons.squareAndArrowDown)
                                     .font(.caption)
                                     .foregroundStyle(.appAccent)
                             }
-                            .padding(.trailing, DesignSystem.small)
+                            .padding(.trailing, DesignTokens.Spacing.small)
                         }
 
                         if let result = aiStore.activePageAIResult, result.contains(SystemConstants.MarkdownSyntax.bulletDash) {
@@ -59,24 +60,24 @@ struct PageDetailAISection: View {
                                     try await workflowService.syncToReminders(text: result, title: page.title)
                                 }
                             }) {
-                                Label(L10n.Common.syncToReminders, systemImage: DesignSystem.Icons.checklist)
+                                Label(L10n.Common.syncToReminders, systemImage: DesignTokens.Icons.checklist)
                                     .font(.caption)
                                     .foregroundStyle(.appAccent)
                             }
-                            .padding(.trailing, DesignSystem.small)
+                            .padding(.trailing, DesignTokens.Spacing.small)
                         }
                         
                         Button(action: { 
                             AppPasteboard.string = aiStore.activePageAIResult
                             HapticFeedback.shared.trigger(.success)
                         }) {
-                            Image(systemName: DesignSystem.Icons.copy)
+                            Image(systemName: DesignTokens.Icons.copy)
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                         }
                         
                         Button(action: { aiStore.activePageAIResult = nil }) {
-                            Image(systemName: DesignSystem.Icons.xmarkCircle)
+                            Image(systemName: DesignTokens.Icons.xmarkCircle)
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                         }
@@ -84,8 +85,8 @@ struct PageDetailAISection: View {
                 }
                 
                 if aiStore.isProcessingPageAI {
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                        AppSkeleton(height: DesignSystem.IconSize.small).frame(width: DesignSystem.Metrics.sourceCardWidth)
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                        AppSkeleton(height: DesignTokens.IconSize.small).frame(width: DesignTokens.Metrics.sourceCardWidth)
                         AppSkeleton(height: 120)
                         AppSkeleton(height: 60)
                     }

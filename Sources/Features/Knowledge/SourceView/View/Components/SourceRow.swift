@@ -9,6 +9,7 @@
 //  核心职责：Features/Knowledge/SourceView/View/Components 模块的 SourceRow 实现。
 //
 import SwiftUI
+import UFPDesignSystem
 
 struct SourceRow: View {
     let source: KnowledgeSource
@@ -16,13 +17,13 @@ struct SourceRow: View {
     
     var body: some View {
         Button(action: { onSelect(source.pageID) }) {
-            VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                 HStack {
-                    Image(systemName: DesignSystem.Icons.documentFill)
+                    Image(systemName: DesignTokens.Icons.documentFill)
                         .font(.caption)
                         .foregroundStyle(.appAccent)
                     
-                    VStack(alignment: .leading, spacing: SystemSpacing.divider) {
+                    VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.divider) {
                         Text(source.title)
                             .font(.footnote.weight(.bold))
                             .foregroundStyle(.appText)
@@ -42,8 +43,8 @@ struct SourceRow: View {
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.appSecondary)
                         .accentSubtleCapsule(
-                            horizontalPadding: DesignSystem.tightPadding,
-                            verticalPadding: DesignSystem.atomic
+                            horizontalPadding: DesignTokens.Spacing.tightPadding,
+                            verticalPadding: DesignTokens.Spacing.atomic
                         )
                 }
                 
@@ -53,12 +54,12 @@ struct SourceRow: View {
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
             }
-            .padding(DesignSystem.small)
-            .background(Color.appCard.opacity(DesignSystem.softOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .padding(DesignTokens.Spacing.small)
+            .background(Color.appCard.opacity(DesignTokens.Colors.Opacity.softOpacity))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.shadow), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                    .stroke(Color.appBorder.opacity(DesignTokens.Opacity.shadow), lineWidth: 0.5)
             )
         }
         .buttonStyle(.plain)

@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Observation
+import UFPDesignSystem
 
 // MARK: - 图谱容器
 @MainActor
@@ -87,7 +88,7 @@ struct GraphContainerView: View {
 
             if viewModel.isLayouting {
                 // 首次加载中：显示加载指示器，避免闪烁空状态视图
-                VStack(spacing: DesignSystem.standardPadding) {
+                VStack(spacing: DesignTokens.Spacing.standardPadding) {
                     ProgressView()
                         .controlSize(.large)
                     Text(L10n.Common.loading)
@@ -98,9 +99,9 @@ struct GraphContainerView: View {
                 GraphEmptyStateView(selectedTab: $selectedTab)
             } else {
                 // 2. 主体布局：标题/过滤项 + 画布
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     // 顶部非描边区域：统计与过滤器
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                         graphStatsBar
                         
                         GraphFilterPillsView(
@@ -108,8 +109,8 @@ struct GraphContainerView: View {
                             tooltipManager: tooltipManager
                         )
                     }
-                    .padding(.horizontal, DesignSystem.standardPadding)
-                    .padding(.top, DesignSystem.medium)
+                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                    .padding(.top, DesignTokens.Spacing.medium)
                     .zIndex(10) // 确保在画布之上
 
                     // 核心绘图区：应用柔和边框与裁剪
@@ -141,8 +142,8 @@ struct GraphContainerView: View {
                         .accessibilityHint(L10n.Graph.accessibility.canvasHint)
                     }
                     .containerCardStyle()
-                    .padding(.horizontal, DesignSystem.standardPadding)
-                    .padding(.bottom, DesignSystem.standardPadding)
+                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                    .padding(.bottom, DesignTokens.Spacing.standardPadding)
                 }
             }
         }
@@ -186,11 +187,11 @@ struct GraphContainerView: View {
                     onFitToScreen: fitToScreen
                 )
                 .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-                .overlay(RoundedRectangle(cornerRadius: DesignSystem.standardRadius).stroke(Color.appBorder.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
+                .overlay(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius).stroke(Color.appBorder.opacity(DesignTokens.Colors.Opacity.disabledOpacity), lineWidth: DesignTokens.Spacing.borderWidth))
                 .padding(.trailing, DesignSystem.Graph.toolbarPaddingTrailing)
                 .padding(.bottom, viewModel.selectedNodeID != nil ? DesignSystem.Graph.toolbarPaddingBottomExpanded : DesignSystem.Graph.toolbarPaddingBottomDefault)
-                .animation(DesignSystem.standardAnimation, value: viewModel.selectedNodeID)
+                .animation(DesignTokens.Animations.Interaction.standardAnimation, value: viewModel.selectedNodeID)
             }
         }
         .overlay(alignment: .bottom) {
@@ -198,7 +199,7 @@ struct GraphContainerView: View {
             if let selectedID = viewModel.selectedNodeID,
                let page = store.pages.first(where: { $0.id == selectedID }) {
                 GraphSelectedNodeCard(page: page)
-                    .padding(.bottom, DesignSystem.loosePadding)
+                    .padding(.bottom, DesignTokens.Spacing.loosePadding)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
@@ -209,7 +210,7 @@ struct GraphContainerView: View {
      * @return {*}
      */
     private func dismissCard() {
-        withAnimation(DesignSystem.Animation.standard) {
+        withAnimation(DesignTokens.Animation.standard) {
             viewModel.selectedNodeID = nil
             viewModel.isAnimating = false
         }
@@ -227,7 +228,7 @@ struct GraphContainerView: View {
             HapticFeedback.shared.trigger(.selection)
             return
         }
-        withAnimation(DesignSystem.Animation.prominent) {
+        withAnimation(DesignTokens.Animation.prominent) {
             if viewModel.selectedNodeID == node.id {
                 viewModel.selectedNodeID = nil
                 viewModel.isAnimating = false
@@ -264,32 +265,32 @@ struct GraphContainerView: View {
             computeInsights()
             viewModel.showInsights = true
         }) {
-            HStack(spacing: SystemSpacing.small) {
-                chipIcon(DesignSystem.Icons.sparkles, color: .appAccent)
+            HStack(spacing: DesignTokens.SystemSpacing.small) {
+                chipIcon(DesignTokens.Icons.sparkles, color: .appAccent)
 
                 Text(L10n.Graph.nodesConnections(viewModel.getFilteredNodes().count, currentFilteredEdges.count))
-                    .font(.system(size: DesignSystem.microFontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold))
                     .foregroundStyle(.appSecondary)
 
                 if isTruncatingEdges {
                     Text(L10n.Graph.edgeTruncationHint(maxEdgesPerNode))
-                        .font(.system(size: DesignSystem.microFontSize, weight: .regular))
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                        .font(.system(size: DesignTokens.Typography.microFontSize, weight: .regular))
+                        .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
                 }
 
-                chipIcon(DesignSystem.Icons.forward, color: .appAccent.opacity(DesignSystem.softOpacity))
+                chipIcon(DesignTokens.Icons.forward, color: .appAccent.opacity(DesignTokens.Colors.Opacity.softOpacity))
             }
             .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
             .padding(.vertical, DesignSystem.Chip.verticalPadding)
             .background(
                 Capsule()
-                    .fill(Color.appAccent.opacity(SystemOpacity.ghost))
+                    .fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.ghost))
             )
             .overlay(
                 Capsule()
-                    .stroke(Color.appAccent.opacity(SystemOpacity.glass), lineWidth: DesignSystem.borderWidth)
+                    .stroke(Color.appAccent.opacity(DesignTokens.SystemOpacity.glass), lineWidth: DesignTokens.Spacing.borderWidth)
             )
-            .shadow(color: .black.opacity(SystemOpacity.faint), radius: SystemSpacing.tiny, x: 0, y: DesignSystem.borderWidth)
+            .shadow(color: .black.opacity(DesignTokens.SystemOpacity.faint), radius: DesignTokens.SystemSpacing.tiny, x: 0, y: DesignTokens.Spacing.borderWidth)
         }
         .buttonStyle(.plain)
         .contentShape(Capsule())
@@ -304,7 +305,7 @@ struct GraphContainerView: View {
     @ViewBuilder
     private func chipIcon(_ name: String, color: Color) -> some View {
         Image(systemName: name)
-            .font(.system(size: DesignSystem.microFontSize, weight: .bold))
+            .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold))
             .foregroundStyle(color)
     }
 

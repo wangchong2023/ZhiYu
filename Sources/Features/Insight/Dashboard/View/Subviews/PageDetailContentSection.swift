@@ -9,6 +9,7 @@
 //  核心职责：仪表盘：页面列表、知识统计、每周洞察、回链视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 页面详情内容展示与编辑区
 struct PageDetailContentSection: View {
@@ -23,7 +24,7 @@ struct PageDetailContentSection: View {
         Group {
             if isEditing {
                 MarkdownEditorView(text: $page.content, placeholder: L10n.Editor.placeholder)
-                    .padding(.top, DesignSystem.wide)
+                    .padding(.top, DesignTokens.Spacing.wide)
             } else if page.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 emptyStateView
             } else {
@@ -49,22 +50,22 @@ struct PageDetailContentSection: View {
     }
     
     private var emptyStateView: some View {
-        VStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.pencilLine)
-                .font(.system(size: DesignSystem.huge))
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.pencilLine)
+                .font(.system(size: DesignTokens.Spacing.huge))
                 .foregroundStyle(.appSecondary)
             Text(L10n.Knowledge.Page.empty)
                 .font(.subheadline)
                 .foregroundStyle(.appSecondary)
             Text(L10n.Knowledge.Page.emptyHint)
                 .font(.caption)
-                .foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.overlay))
-                .padding(.horizontal, DesignSystem.wide)
-                .padding(.vertical, DesignSystem.small)
+                .foregroundStyle(.appAccent.opacity(DesignTokens.Opacity.overlay))
+                .padding(.horizontal, DesignTokens.Spacing.wide)
+                .padding(.vertical, DesignTokens.Spacing.small)
                 .background(Color.appAccent.opacity(hintBgOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
         }
-        .frame(maxWidth: .infinity, minHeight: Spacing.Grid.emptyStateHeight)
+        .frame(maxWidth: .infinity, minHeight: DesignTokens.Spacing.Grid.emptyStateHeight)
         .padding()
     }
 }

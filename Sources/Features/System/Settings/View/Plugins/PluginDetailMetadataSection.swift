@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 元数据面板（参照 VS Code 扩展详情页）
 
@@ -21,50 +22,50 @@ extension PluginDetailView {
             VStack(spacing: 0) {
                 // 版本
                 metadataRow(
-                    icon: DesignSystem.Icons.number,
+                    icon: DesignTokens.Icons.number,
                     label: L10n.Plugin.Detail.version,
                     value: displayVersion
                 )
 
-                Divider().padding(.leading, ComponentSpacing.ultra)
+                Divider().padding(.leading, DesignTokens.ComponentSpacing.ultra)
 
                 // 作者
                 metadataRow(
-                    icon: DesignSystem.Icons.personFill,
+                    icon: DesignTokens.Icons.personFill,
                     label: L10n.Plugin.Detail.author,
                     value: plugin.author
                 )
 
-                Divider().padding(.leading, ComponentSpacing.ultra)
+                Divider().padding(.leading, DesignTokens.ComponentSpacing.ultra)
 
                 // 最低应用版本
                 if let minVersion = plugin.minAppVersion {
                     metadataRow(
-                        icon: DesignSystem.Icons.appBadgeCheckmark,
+                        icon: DesignTokens.Icons.appBadgeCheckmark,
                         label: L10n.Plugin.Detail.minAppVersion,
                         value: minVersion
                     )
-                    Divider().padding(.leading, ComponentSpacing.ultra)
+                    Divider().padding(.leading, DesignTokens.ComponentSpacing.ultra)
                 }
 
                 // 分类
                 metadataRow(
-                    icon: DesignSystem.Icons.folderFill,
+                    icon: DesignTokens.Icons.folderFill,
                     label: L10n.Plugin.Detail.category,
                     value: categoryName
                 )
 
-                Divider().padding(.leading, ComponentSpacing.ultra)
+                Divider().padding(.leading, DesignTokens.ComponentSpacing.ultra)
 
                 // 许可
                 metadataRow(
-                    icon: DesignSystem.Icons.checkmarkSealFill,
+                    icon: DesignTokens.Icons.checkmarkSealFill,
                     label: L10n.Plugin.Detail.license,
                     value: monetizationLabel
                 )
             }
-            .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .background(Color.appCard.opacity(DesignTokens.Opacity.disabled))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
         }
     }
 

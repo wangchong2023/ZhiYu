@@ -10,6 +10,7 @@
 //
 #if ICLOUD_ENABLED
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Sync Status Row
 /// iCloud 同步状态行：图标 + 状态文字 + 上次同步时间
@@ -42,7 +43,7 @@ struct SyncStatusRow: View {
                 .foregroundStyle(statusColor)
                 .font(.title3)
 
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(syncService.syncStatus.label)
                     .font(.subheadline)
                     .foregroundStyle(.appText)
@@ -60,7 +61,7 @@ struct SyncStatusRow: View {
                 ProgressView()
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 }
 
@@ -80,7 +81,7 @@ struct SyncActionsSection: View {
         Section {
             // Push to iCloud
             Button(action: onPush) {
-                Label(L10n.ICloud.pushToCloud, systemImage: DesignSystem.Icons.icloudArrowUp)
+                Label(L10n.ICloud.pushToCloud, systemImage: DesignTokens.Icons.icloudArrowUp)
                     .foregroundStyle(.appText)
             }
             .accessibilityIdentifier("push-to-icloud")
@@ -88,7 +89,7 @@ struct SyncActionsSection: View {
 
             // Pull from iCloud
             Button(action: onPullRequest) {
-                Label(L10n.ICloud.pullFromCloud, systemImage: DesignSystem.Icons.icloudArrowDown)
+                Label(L10n.ICloud.pullFromCloud, systemImage: DesignTokens.Icons.icloudArrowDown)
                     .foregroundStyle(.appText)
             }
             .accessibilityIdentifier("pull-from-icloud")
@@ -125,7 +126,7 @@ struct SyncSettingsSection: View {
                     onAutoSyncChange(newValue)
                 }
 
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 Text(L10n.ICloud.conflictPolicy)
                     .font(.subheadline)
                     .foregroundStyle(.appText)
@@ -156,10 +157,10 @@ struct SyncInfoRow: View {
             icon: icon,
             text: text,
             alignment: .top,
-            spacing: SystemSpacing.element,
+            spacing: DesignTokens.SystemSpacing.element,
             iconColor: .appText,
             textColor: .appSecondary,
-            iconWidth: DesignSystem.IconSize.small
+            iconWidth: DesignTokens.IconSize.small
         )
     }
 }

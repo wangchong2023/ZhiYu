@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 统一的玻璃卡片视图修饰符
 /// 使用系统材质 (Material) 结合自定义不透明度实现通用的玻璃质感背景。
@@ -26,7 +27,7 @@ public struct GlassCardModifier: ViewModifier {
     /// - Parameters:
     ///   - opacity: 默认 1.0
     ///   - cornerRadius: 默认使用全局卡片圆角规范
-    public init(opacity: Double = 1.0, cornerRadius: CGFloat = Spacing.cardRadius) {
+    public init(opacity: Double = 1.0, cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius) {
         self.opacity = opacity
         self.cornerRadius = cornerRadius
     }
@@ -42,7 +43,7 @@ public struct GlassCardModifier: ViewModifier {
             .glassOverlay(
                 borderColor: .appBorder,
                 cornerRadius: cornerRadius,
-                shadowOpacity: DesignSystem.Opacity.ghost,
+                shadowOpacity: DesignTokens.Opacity.ghost,
                 shadowRadius: 10,
                 shadowY: 5
             )
@@ -57,7 +58,7 @@ public extension View {
     ///   - opacity: 材质不透明度
     ///   - cornerRadius: 圆角半径
     /// - Returns: 装饰后的视图
-    func appGlassCardStyle(opacity: Double = 1.0, cornerRadius: CGFloat = Spacing.cardRadius) -> some View {
+    func appGlassCardStyle(opacity: Double = 1.0, cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius) -> some View {
         self.modifier(GlassCardModifier(opacity: opacity, cornerRadius: cornerRadius))
     }
     
@@ -65,16 +66,16 @@ public extension View {
     /// 提供统一的内边距、背景和阴影效果。
     /// - Parameter cornerRadius: 圆角半径
     /// - Returns: 装饰后的视图
-    func appCardStyle(cornerRadius: CGFloat = Spacing.cardRadius) -> some View {
-        self.padding(Spacing.large)
+    func appCardStyle(cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius) -> some View {
+        self.padding(DesignTokens.Spacing.large)
             .background(.ultraThinMaterial)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.overlay))
+            .background(Color.appCard.opacity(DesignTokens.Opacity.overlay))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.disabled), lineWidth: Spacing.borderWidth)
+                    .stroke(Color.appBorder.opacity(DesignTokens.Opacity.disabled), lineWidth: DesignTokens.Spacing.borderWidth)
             )
-            .shadow(color: Color.theme.black.opacity(DesignSystem.Opacity.ghost), radius: 10, x: 0, y: 5)
+            .shadow(color: Color.theme.black.opacity(DesignTokens.Opacity.ghost), radius: 10, x: 0, y: 5)
     }
     
     /// 应用通用页面容器样式
@@ -87,20 +88,20 @@ public extension View {
     func appContainer(
         background: Color = .appCard,
         borderColor: Color = .appBorder,
-        cornerRadius: CGFloat = Spacing.cardRadius,
+        cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius,
         padding: Bool = true
     ) -> some View {
-        self.padding(padding ? Spacing.standardPadding : 0)
+        self.padding(padding ? DesignTokens.Spacing.standardPadding : 0)
             .background(
                 ZStack {
-                    Rectangle().fill(.ultraThinMaterial).opacity(DesignSystem.Opacity.disabled) // 降低材质干扰
+                    Rectangle().fill(.ultraThinMaterial).opacity(DesignTokens.Opacity.disabled) // 降低材质干扰
                     background.opacity(UIConstants.backgroundOpacity) // 优化通透度
                 }
             )
             .glassOverlay(
                 borderColor: borderColor,
                 cornerRadius: cornerRadius,
-                shadowOpacity: DesignSystem.Opacity.faint,
+                shadowOpacity: DesignTokens.Opacity.faint,
                 shadowRadius: 10,
                 shadowY: 5
             )
@@ -112,13 +113,13 @@ public extension View {
     ///   - color: 强调色背景
     ///   - cornerRadius: 默认使用仪表盘专用圆角
     /// - Returns: 装饰后的视图
-    func appMetricCardStyle(color: Color = .appAccent, cornerRadius: CGFloat = Spacing.Metrics.dashboardRadius) -> some View {
+    func appMetricCardStyle(color: Color = .appAccent, cornerRadius: CGFloat = DesignTokens.Spacing.Metrics.dashboardRadius) -> some View {
         self.background(.ultraThinMaterial)
             .background(
                 ZStack {
-                    Color.appCard.opacity(DesignSystem.Opacity.prominent) // 提高亮度
+                    Color.appCard.opacity(DesignTokens.Opacity.prominent) // 提高亮度
                     LinearGradient(
-                        colors: [color.opacity(DesignSystem.Opacity.glass), .clear],
+                        colors: [color.opacity(DesignTokens.Opacity.glass), .clear],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -127,7 +128,7 @@ public extension View {
             .glassOverlay(
                 borderColor: color,
                 cornerRadius: cornerRadius,
-                shadowOpacity: DesignSystem.Opacity.atomic,
+                shadowOpacity: DesignTokens.Opacity.atomic,
                 shadowRadius: 8,
                 shadowY: 4
             )
@@ -148,9 +149,9 @@ private extension View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor.opacity(DesignSystem.Opacity.medium), lineWidth: SystemStroke.hairline)
+                    .stroke(borderColor.opacity(DesignTokens.Opacity.medium), lineWidth: DesignTokens.SystemStroke.hairline)
             )
-            .shadow(color: Color.theme.black.opacity(shadowOpacity), radius: shadowRadius, x: SystemSpacing.none, y: shadowY)
+            .shadow(color: Color.theme.black.opacity(shadowOpacity), radius: shadowRadius, x: DesignTokens.SystemSpacing.none, y: shadowY)
     }
 }
 
@@ -167,7 +168,7 @@ public struct AppListRowBackground: View {
     // MARK: - 视图主体
     
     public var body: some View {
-        Color.appCard.opacity(DesignSystem.subtleOpacity)
+        Color.appCard.opacity(DesignTokens.Colors.subtleOpacity)
             .background(.ultraThinMaterial)
     }
 }
@@ -200,5 +201,5 @@ public extension View {
 
 // MARK: - 常量
 private enum UIConstants {
-    static let backgroundOpacity: Double = SystemOpacity.strong
+    static let backgroundOpacity: Double = DesignTokens.SystemOpacity.strong
 }

@@ -12,6 +12,7 @@
 
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 插件详情页（参照 VS Code 扩展商店 / Obsidian 社区插件标准）
 struct PluginDetailView: View {
@@ -43,7 +44,7 @@ struct PluginDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.giant) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.giant) {
 
                 // MARK: - 1. 头部信息区 (Squircle 图标与简要)
                 headerSection
@@ -55,7 +56,7 @@ struct PluginDetailView: View {
                     Text(error)
                         .font(.caption)
                         .foregroundStyle(Color.theme.red)
-                        .padding(.top, -DesignSystem.small)
+                        .padding(.top, -DesignTokens.Spacing.small)
                 }
 
                 Divider()
@@ -78,7 +79,7 @@ struct PluginDetailView: View {
                 // MARK: - 3. 详细信息面板 (底栏信息)
                 metadataSection
             }
-            .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+            .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .task {

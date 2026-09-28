@@ -10,20 +10,21 @@
 //
 import SwiftUI
 import CoreGraphics
+import UFPDesignSystem
 
 extension DesignSystem {
 
     // MARK: - 16. 侧边栏模式 (Sidebar)
     public enum Sidebar {
-        public static let rowSpacing: CGFloat = Spacing.Sidebar.rowSpacing
-        public static let rowRadius: CGFloat = Spacing.Sidebar.rowRadius
-        public static let rowVerticalPadding: CGFloat = Spacing.Sidebar.rowVerticalPadding
-        public static let iconBoxSize: CGFloat = Spacing.Sidebar.iconBoxSize
-        public static let iconFrameWidth: CGFloat = Spacing.Sidebar.iconFrameWidth
-        public static let badgePadding: CGFloat = Spacing.Sidebar.badgePadding
-        public static let vaultShadowRadius: CGFloat = Spacing.Sidebar.vaultShadowRadius
-        public static let vaultShadowY: CGFloat = Spacing.Sidebar.vaultShadowY
-        public static let width: CGFloat = Spacing.Sidebar.width
-        public static let backButtonWidth: CGFloat = Spacing.Sidebar.backButtonWidth
+        public static let rowSpacing: CGFloat = DesignTokens.Spacing.Sidebar.rowSpacing
+        public static let rowRadius: CGFloat = DesignTokens.Spacing.Sidebar.rowRadius
+        public static let rowVerticalPadding: CGFloat = DesignTokens.Spacing.Sidebar.rowVerticalPadding
+        public static let iconBoxSize: CGFloat = DesignTokens.Spacing.Sidebar.iconBoxSize
+        public static let iconFrameWidth: CGFloat = DesignTokens.Spacing.Sidebar.iconFrameWidth
+        public static let badgePadding: CGFloat = DesignTokens.Spacing.Sidebar.badgePadding
+        public static let vaultShadowRadius: CGFloat = DesignTokens.Spacing.Sidebar.vaultShadowRadius
+        public static let vaultShadowY: CGFloat = DesignTokens.Spacing.Sidebar.vaultShadowY
+        public static let width: CGFloat = DesignTokens.Spacing.Sidebar.width
+        public static let backButtonWidth: CGFloat = DesignTokens.Spacing.Sidebar.backButtonWidth
     }
 }

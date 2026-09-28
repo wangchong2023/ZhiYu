@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 身份认证主视图
 struct AuthView: View {
@@ -41,7 +42,7 @@ struct AuthView: View {
                 // 顶部控制条（区域选择与语言切换）
                 topControlBar
 
-                VStack(spacing: Spacing.huge) {
+                VStack(spacing: DesignTokens.Spacing.huge) {
                     // 1. Logo & 标语 (品牌展示板块)
                     heroHeader
 
@@ -74,8 +75,8 @@ struct AuthView: View {
                     // 4. 游客模式
                     AuthGuestSection()
                 }
-                .padding(.horizontal, Spacing.wide)
-                .padding(.vertical, Spacing.wide)
+                .padding(.horizontal, DesignTokens.Spacing.wide)
+                .padding(.vertical, DesignTokens.Spacing.wide)
             }
         }
         .policySheet(
@@ -103,8 +104,8 @@ struct AuthView: View {
 
             languageSwitcher
         }
-        .padding(.horizontal, Spacing.wide)
-        .padding(.top, Spacing.tiny)
+        .padding(.horizontal, DesignTokens.Spacing.wide)
+        .padding(.top, DesignTokens.Spacing.tiny)
     }
 
     /// 触发 3D 卡片翻转动效
@@ -137,50 +138,50 @@ struct AuthView: View {
                     }
                 }
             } label: {
-                HStack(spacing: SystemSpacing.tiny) {
-                    Image(systemName: DesignSystem.Icons.globe)
+                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.globe)
                         .font(.subheadline)
                     Text(selectedLanguage.displayName)
                         .font(.caption)
                 }
                 .foregroundStyle(.appSecondary)
-                .padding(.horizontal, SystemSpacing.medium)
-                .padding(.vertical, SystemSpacing.small)
+                .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+                .padding(.vertical, DesignTokens.SystemSpacing.small)
                 .background(.ultraThinMaterial)
                 .clipShape(Capsule())
             }
         }
-        .padding(.trailing, Spacing.medium)
-        .padding(.top, Spacing.tiny)
+        .padding(.trailing, DesignTokens.Spacing.medium)
+        .padding(.top, DesignTokens.Spacing.tiny)
     }
 
     private var heroHeader: some View {
-        VStack(spacing: Spacing.giant) {
+        VStack(spacing: DesignTokens.Spacing.giant) {
             ZStack {
                 Circle()
-                    .fill(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .appConcept.opacity(DesignSystem.Opacity.subtle)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .fill(LinearGradient(colors: [.appAccent.opacity(DesignTokens.Opacity.medium), .appConcept.opacity(DesignTokens.Opacity.subtle)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: DesignSystem.Domain.Auth.logoBackgroundSize, height: DesignSystem.Domain.Auth.logoBackgroundSize)
-                    .blur(radius: Spacing.shadowRadius)
+                    .blur(radius: DesignTokens.Spacing.shadowRadius)
 
-                Image(systemName: DesignSystem.Icons.knowledge)
-                    .font(.system(size: Reference.FontSize.mega))
+                Image(systemName: DesignTokens.Icons.knowledge)
+                    .font(.system(size: DesignTokens.Reference.FontSize.mega))
                     .foregroundStyle(LinearGradient(colors: [.appAccent, .appConcept], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .shadow(color: .appAccent.opacity(DesignSystem.Opacity.disabled), radius: Spacing.shadowRadius, y: Spacing.shadowY)
+                    .shadow(color: .appAccent.opacity(DesignTokens.Opacity.disabled), radius: DesignTokens.Spacing.shadowRadius, y: DesignTokens.Spacing.shadowY)
             }
 
-            VStack(spacing: Spacing.small) {
+            VStack(spacing: DesignTokens.Spacing.small) {
                 Text(L10n.Common.appName)
-                    .font(.system(size: DesignSystem.titleFontSize, weight: .black, design: .rounded))
+                    .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .black, design: .rounded))
                     .foregroundStyle(.appText)
-                    .tracking(Reference.Spacing.one)
+                    .tracking(DesignTokens.Reference.DesignTokens.Spacing.one)
 
                 Text(L10n.Onboarding.subtitle)
-                    .font(.system(size: DesignSystem.subheadlineFontSize, weight: .medium))
+                    .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .medium))
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
             }
         }
-        .padding(.top, Spacing.wide)
+        .padding(.top, DesignTokens.Spacing.wide)
     }
 
     // MARK: - 逻辑

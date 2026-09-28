@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 页面详情 AI 操作菜单按钮
 ///
@@ -67,7 +68,7 @@ public struct PageDetailAIMenuButton: View {
     #if os(watchOS)
     private var simpleButton: some View {
         Button(action: onGenerateSummary) {
-            Image(systemName: DesignSystem.Icons.sparkles)
+            Image(systemName: DesignTokens.Icons.sparkles)
                 .foregroundStyle(.appAccent)
         }
         .disabled(isDisabled)
@@ -80,44 +81,44 @@ public struct PageDetailAIMenuButton: View {
     private var fullMenu: some View {
         Menu {
             Button(action: onGenerateSummary) {
-                Label(L10n.Knowledge.Page.AI.summary, systemImage: DesignSystem.Icons.aiSummary)
+                Label(L10n.Knowledge.Page.AI.summary, systemImage: DesignTokens.Icons.aiSummary)
             }
             Button(action: onExtractActions) {
-                Label(L10n.Knowledge.Page.AI.extractActions, systemImage: DesignSystem.Icons.aiExtract)
+                Label(L10n.Knowledge.Page.AI.extractActions, systemImage: DesignTokens.Icons.aiExtract)
             }
 
             Menu {
                 Button(action: onMindmap) {
-                    Label(L10n.Knowledge.Page.AI.mindmap, systemImage: DesignSystem.Icons.mindmap)
+                    Label(L10n.Knowledge.Page.AI.mindmap, systemImage: DesignTokens.Icons.mindmap)
                 }
                 Button(action: onQuiz) {
-                    Label(L10n.Knowledge.Page.AI.quiz, systemImage: DesignSystem.Icons.quiz)
+                    Label(L10n.Knowledge.Page.AI.quiz, systemImage: DesignTokens.Icons.quiz)
                 }
                 Button(action: onSlides) {
-                    Label(L10n.Knowledge.Page.AI.slides, systemImage: DesignSystem.Icons.slides)
+                    Label(L10n.Knowledge.Page.AI.slides, systemImage: DesignTokens.Icons.slides)
                 }
                 Button(action: onReport) {
-                    Label(L10n.Knowledge.Page.AI.report, systemImage: DesignSystem.Icons.report)
+                    Label(L10n.Knowledge.Page.AI.report, systemImage: DesignTokens.Icons.report)
                 }
                 Button(action: onInfographic) {
-                    Label(L10n.Knowledge.Page.AI.infographic, systemImage: DesignSystem.Icons.infographic)
+                    Label(L10n.Knowledge.Page.AI.infographic, systemImage: DesignTokens.Icons.infographic)
                 }
             } label: {
-                Label(L10n.Knowledge.Page.AI.lab, systemImage: DesignSystem.Icons.lab)
+                Label(L10n.Knowledge.Page.AI.lab, systemImage: DesignTokens.Icons.lab)
             }
 
             Divider()
             Button(action: onShowSnapshotHistory) {
-                Label(L10n.Knowledge.Page.History.title, systemImage: DesignSystem.Icons.history)
+                Label(L10n.Knowledge.Page.History.title, systemImage: DesignTokens.Icons.history)
             }
             Button(action: onExpandContent) {
-                Label(L10n.Knowledge.Page.expandStub, systemImage: DesignSystem.Icons.expandStub)
+                Label(L10n.Knowledge.Page.expandStub, systemImage: DesignTokens.Icons.expandStub)
             }
             Button(action: onFindRelatedLinks) {
-                Label(L10n.Knowledge.Page.findLinks, systemImage: DesignSystem.Icons.findLinks)
+                Label(L10n.Knowledge.Page.findLinks, systemImage: DesignTokens.Icons.findLinks)
             }
         } label: {
-            Image(systemName: DesignSystem.Icons.sparkles)
+            Image(systemName: DesignTokens.Icons.sparkles)
                 .foregroundStyle(.appAccent)
         }
         .disabled(isDisabled)

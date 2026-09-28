@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 主视图
 
@@ -59,7 +60,7 @@ struct RAGEvaluationView: View {
                 ProgressView()
             } else {
                 ScrollView {
-                    VStack(spacing: DesignSystem.wide) {
+                    VStack(spacing: DesignTokens.Spacing.wide) {
                         RAGTimeRangePicker(selectedDays: $selectedDays)
 
                         Picker("", selection: $selectedTab) {
@@ -68,7 +69,7 @@ struct RAGEvaluationView: View {
                             }
                         }
                         .pickerStyle(.segmented)
-                        .padding(.horizontal, DesignSystem.small)
+                        .padding(.horizontal, DesignTokens.Spacing.small)
 
                         switch selectedTab {
                         case .retrieval:
@@ -100,7 +101,7 @@ struct RAGEvaluationView: View {
                             }
                         }
                     }
-                    .padding(DesignSystem.standardPadding)
+                    .padding(DesignTokens.Spacing.standardPadding)
                 }
             }
         }

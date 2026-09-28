@@ -9,6 +9,7 @@
 //  核心职责：实现 GraphClustering 模块的核心业务逻辑服务。
 //
 import Foundation
+import UFPDesignSystem
 
 /// 图谱聚类服务 (Architect 视角：知识涌现)
 /// 负责对知识库中的页面进行语义聚类。

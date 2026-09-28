@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 全局指令中枢 (Command Palette)
 /// 满足硬核用户 Cmd+K 盲操需求，极大缩短交互路径。
@@ -24,16 +25,16 @@ struct CommandPaletteView: View {
         VStack(spacing: 0) {
             // 搜索栏
             HStack {
-                Image(systemName: DesignSystem.Icons.command)
+                Image(systemName: DesignTokens.Icons.command)
                     .foregroundStyle(.appAccent)
                 TextField(L10n.Common.Palette.searchPlaceholder, text: $searchText)
                     .textFieldStyle(.plain)
                     .focused($isFocused)
                 Text(L10n.Common.Global.esc)
                     .font(.caption2.weight(.bold))
-                    .padding(DesignSystem.tiny)
-                    .background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+                    .padding(DesignTokens.Spacing.tiny)
+                    .background(Color.appBorder.opacity(DesignTokens.Opacity.shadow))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius))
             }
             .padding()
             .background(Color.appCard)
@@ -43,11 +44,11 @@ struct CommandPaletteView: View {
             // 结果列表
             List {
                 Section(L10n.Action.cmd.quickActions) {
-                    CommandRow(icon: DesignSystem.Icons.sparkles, title: L10n.Action.cmd.deepExplore, shortcut: "") {
+                    CommandRow(icon: DesignTokens.Icons.sparkles, title: L10n.Action.cmd.deepExplore, shortcut: "") {
                         // 触发逻辑
                         dismiss()
                     }
-                    CommandRow(icon: DesignSystem.Icons.docBadgePlus, title: L10n.Action.cmd.newKnowledgePage, shortcut: "N") {
+                    CommandRow(icon: DesignTokens.Icons.docBadgePlus, title: L10n.Action.cmd.newKnowledgePage, shortcut: "N") {
                         dismiss()
                     }
                 }
@@ -61,7 +62,7 @@ struct CommandPaletteView: View {
                     if !filteredCommands.isEmpty {
                         Section(L10n.Plugin.commands.title) {
                             ForEach(filteredCommands) { command in
-                                CommandRow(icon: DesignSystem.Icons.pluginOutline, title: command.name) {
+                                CommandRow(icon: DesignTokens.Icons.pluginOutline, title: command.name) {
                                     command.action()
                                     dismiss()
                                 }
@@ -79,12 +80,12 @@ struct CommandPaletteView: View {
                 }
             }
             .listStyle(.plain)
-            .frame(height: DesignSystem.Metrics.commandPaletteHeight)
+            .frame(height: DesignTokens.Metrics.commandPaletteHeight)
             .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.mediumRadius)
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous))
+            .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.mediumRadius)
         }
-        .frame(width: DesignSystem.Metrics.commandPaletteWidth)
+        .frame(width: DesignTokens.Metrics.commandPaletteWidth)
         .onAppear { isFocused = true }
     }
 }
@@ -99,7 +100,7 @@ private struct CommandRow: View {
         Button(action: action) {
             HStack {
                 Image(systemName: icon)
-                    .frame(width: DesignSystem.IconSize.small)
+                    .frame(width: DesignTokens.IconSize.small)
                 Text(title)
                     .font(.subheadline)
                 Spacer()

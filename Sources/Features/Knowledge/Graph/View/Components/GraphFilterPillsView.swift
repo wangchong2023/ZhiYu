@@ -9,6 +9,7 @@
 //  核心职责：构建 GraphFilterPills 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 知识图谱类型过滤器药丸视图
 @MainActor
@@ -19,7 +20,7 @@ struct GraphFilterPillsView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             PageTypeFilterPills(filterType: $filterType)
-                .padding(.vertical, DesignSystem.tiny)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
         }
     }
 }

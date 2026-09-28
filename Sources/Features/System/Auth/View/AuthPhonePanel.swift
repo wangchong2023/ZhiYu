@@ -9,6 +9,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 国内手机号一键登录面板
 struct AuthPhonePanel: View {
@@ -20,7 +21,7 @@ struct AuthPhonePanel: View {
     @Environment(AuthService.self) var authService
 
     var body: some View {
-        VStack(spacing: Spacing.large) {
+        VStack(spacing: DesignTokens.Spacing.large) {
             // 手机号掩码显示
             Text(authService.currentUser?.phone?.maskedPhoneNumber ?? "180****6625")
                 .authHeroTextStyle()
@@ -31,10 +32,10 @@ struct AuthPhonePanel: View {
             // 协议勾选
             agreementSection
 
-            Spacer().frame(height: Spacing.large)
+            Spacer().frame(height: DesignTokens.Spacing.large)
         }
-        .padding(Spacing.wide)
-        .appContainer(cornerRadius: Spacing.largeRadius)
+        .padding(DesignTokens.Spacing.wide)
+        .appContainer(cornerRadius: DesignTokens.Spacing.largeRadius)
     }
 
     private var actionButton: some View {

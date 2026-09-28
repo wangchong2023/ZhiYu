@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 页面详情元数据展示区
 struct PageDetailMetadataSection: View {
@@ -33,7 +34,7 @@ struct PageDetailMetadataSection: View {
     private var provenanceSection: some View {
         Group {
             if let sourceURL = page.sourceURL, let url = URL(string: sourceURL) {
-                VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                     HStack {
                         Image(systemName: page.displaySourceIcon).foregroundStyle(.appAccent)
                         Text(L10n.Knowledge.Page.Source.title).font(.headline).foregroundStyle(.appText)
@@ -53,7 +54,7 @@ struct PageDetailMetadataSection: View {
                                     }
                                 }
                             }) {
-                                HStack(spacing: DesignSystem.tiny) {
+                                HStack(spacing: DesignTokens.Spacing.tiny) {
                                     Text(copiedUrl == sourceURL ? L10n.Knowledge.Page.Source.copied : L10n.Knowledge.Page.Source.copyPath)
                                     Image(systemName: copiedUrl == sourceURL ? "checkmark.circle.fill" : "doc.on.doc")
                                 }
@@ -63,9 +64,9 @@ struct PageDetailMetadataSection: View {
                             .buttonStyle(.plain)
                         } else {
                             Link(destination: url) {
-                                HStack(spacing: DesignSystem.tiny) {
+                                HStack(spacing: DesignTokens.Spacing.tiny) {
                                     Text(L10n.Knowledge.Page.Source.open)
-                                    Image(systemName: DesignSystem.Icons.arrowUpRightCircle)
+                                    Image(systemName: DesignTokens.Icons.arrowUpRightCircle)
                                 }
                                 .font(.caption)
                                 .foregroundStyle(.appAccent)
@@ -73,7 +74,7 @@ struct PageDetailMetadataSection: View {
                         }
                     }
                     
-                    VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                         if page.isLocalFileSource {
                             sourceInfoText("\(L10n.Knowledge.Page.Source.localFile): \(page.displaySourceName)")
                         } else {
@@ -85,10 +86,10 @@ struct PageDetailMetadataSection: View {
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                                 .cardStyle(
-                                    horizontalPadding: DesignSystem.small,
-                                    verticalPadding: DesignSystem.small,
-                                    backgroundOpacity: DesignSystem.Opacity.solid,
-                                    cornerRadius: DesignSystem.microRadius
+                                    horizontalPadding: DesignTokens.Spacing.small,
+                                    verticalPadding: DesignTokens.Spacing.small,
+                                    backgroundOpacity: DesignTokens.Opacity.solid,
+                                    cornerRadius: DesignTokens.Spacing.microRadius
                                 )
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .lineLimit(3)
@@ -104,11 +105,11 @@ struct PageDetailMetadataSection: View {
     private var semanticRecommendationsSection: some View {
         Group {
             if !recommendations.isEmpty {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                    HStack(spacing: DesignSystem.small) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         ZStack {
-                            Circle().fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle)).frame(width: DesignSystem.IconSize.standard, height: DesignSystem.IconSize.standard)
-                            Image(systemName: DesignSystem.Icons.sparkles).font(.system(size: DesignSystem.iconTiny)).foregroundStyle(.appAccent)
+                            Circle().fill(Color.appAccent.opacity(DesignTokens.Opacity.subtle)).frame(width: DesignTokens.IconSize.standard, height: DesignTokens.IconSize.standard)
+                            Image(systemName: DesignTokens.Icons.sparkles).font(.system(size: DesignTokens.Spacing.iconTiny)).foregroundStyle(.appAccent)
                         }
                         
                         VStack(alignment: .leading, spacing: 0) {
@@ -116,15 +117,15 @@ struct PageDetailMetadataSection: View {
                             Text(L10n.Knowledge.Page.AI.insightsDesc).font(.caption2).foregroundStyle(.appSecondary)
                         }
                     }
-                    .padding(.bottom, DesignSystem.tiny)
+                    .padding(.bottom, DesignTokens.Spacing.tiny)
                     
-                    VStack(spacing: DesignSystem.tightPadding) {
+                    VStack(spacing: DesignTokens.Spacing.tightPadding) {
                         ForEach(recommendations) { recPage in
                             recommendationRow(for: recPage)
                         }
                     }
                 }
-                .aiRecommendationCardStyle(verticalPadding: DesignSystem.standardPadding)
+                .aiRecommendationCardStyle(verticalPadding: DesignTokens.Spacing.standardPadding)
             }
         }
     }
@@ -133,44 +134,44 @@ struct PageDetailMetadataSection: View {
         NavigationLink(value: AppRoute.pageDetail(id: recPage.id)) {
             HStack {
                 Image(systemName: recPage.displayIcon).foregroundStyle(Color.fromModelColorName(recPage.pageType.colorName))
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                     Text(recPage.title).font(.subheadline.weight(.medium))
                     let summaryText = String(recPage.content.prefix(FeatureConstants.PageDetailMetadata.summaryPrefixLength)) + "..."
                     Text(summaryText).font(.caption2).foregroundStyle(.appSecondary)
                 }
                 forwardArrow
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
             .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.tightPadding))
-            .overlay(RoundedRectangle(cornerRadius: DesignSystem.tightPadding).stroke(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.shadow), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: SystemStroke.divider))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.tightPadding))
+            .overlay(RoundedRectangle(cornerRadius: DesignTokens.Spacing.tightPadding).stroke(LinearGradient(colors: [.appAccent.opacity(DesignTokens.Opacity.shadow), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: DesignTokens.SystemStroke.divider))
         }
         .buttonStyle(.plain)
     }
     
     private var backlinksSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             HStack {
-                Image(systemName: DesignSystem.Icons.link).foregroundStyle(.appAccent)
+                Image(systemName: DesignTokens.Icons.link).foregroundStyle(.appAccent)
                 Text(L10n.Knowledge.Page.backlinks).font(.headline).foregroundStyle(.appText)
                 Text("(\(backlinks.count))").font(.subheadline).foregroundStyle(.appSecondary)
             }
             
             if backlinks.isEmpty {
-                Text(L10n.Knowledge.Page.noBackLinks).font(.caption).foregroundStyle(.appSecondary).padding(.vertical, DesignSystem.small)
+                Text(L10n.Knowledge.Page.noBackLinks).font(.caption).foregroundStyle(.appSecondary).padding(.vertical, DesignTokens.Spacing.small)
             } else {
                 ForEach(backlinks) { linkedPage in
                     NavigationLink(value: AppRoute.pageDetail(id: linkedPage.id)) {
-                        HStack(spacing: DesignSystem.medium) {
+                        HStack(spacing: DesignTokens.Spacing.medium) {
                             pageTypeIcon(page: linkedPage)
                             Text(linkedPage.title).font(.subheadline).foregroundStyle(.appText)
                             forwardArrow
                         }
                         .cardStyle(
-                            horizontalPadding: DesignSystem.tightPadding,
-                            verticalPadding: DesignSystem.small,
-                            backgroundOpacity: DesignSystem.Opacity.solid,
-                            cornerRadius: DesignSystem.smallRadius
+                            horizontalPadding: DesignTokens.Spacing.tightPadding,
+                            verticalPadding: DesignTokens.Spacing.small,
+                            backgroundOpacity: DesignTokens.Opacity.solid,
+                            cornerRadius: DesignTokens.Spacing.smallRadius
                         )
                     }
                     .buttonStyle(.plain)
@@ -185,14 +186,14 @@ struct PageDetailMetadataSection: View {
     /// 页面类型图标：displayIcon + 颜色背景 + 圆角裁剪
     @ViewBuilder
     private func pageTypeIcon(page: KnowledgePage) -> some View {
-        InsightPageTypeIcon(page: page, size: DesignSystem.IconSize.medium)
+        InsightPageTypeIcon(page: page, size: DesignTokens.IconSize.medium)
     }
 
     /// 前进箭头：Spacer + forward 图标
     @ViewBuilder
     private var forwardArrow: some View {
         Spacer()
-        Image(systemName: DesignSystem.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)
+        Image(systemName: DesignTokens.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)
     }
 
     /// 来源信息文本：caption2 + appSecondary + lineLimit(1) + truncationMode(.middle)

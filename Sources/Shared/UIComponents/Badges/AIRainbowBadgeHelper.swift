@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 全局 AI 呼吸指示微标逻辑与视觉计算辅助
 public enum AIRainbowBadgeHelper {
@@ -48,20 +49,20 @@ public enum AIRainbowBadgeHelper {
     /// 解析发光层颜色
     public static func resolveGlowColor(isLocalReady: Bool) -> Color {
         if isLocalReady {
-            return Color.theme.green.opacity(DesignSystem.Opacity.prominent)
+            return Color.theme.green.opacity(DesignTokens.Opacity.prominent)
         } else {
-            return Color.appAccent.opacity(DesignSystem.Opacity.prominent)
+            return Color.appAccent.opacity(DesignTokens.Opacity.prominent)
         }
     }
 
     /// 解析控制中枢在不同设备上的自适应宽度
     public static func resolveControlCenterWidth(isPad: Bool, isMacCatalyst: Bool) -> CGFloat {
         if isMacCatalyst {
-            return Spacing.Sidebar.macCompactWidth
+            return DesignTokens.Spacing.Sidebar.macCompactWidth
         } else if isPad {
-            return Spacing.Sidebar.padSidebarWidth
+            return DesignTokens.Spacing.Sidebar.padSidebarWidth
         } else {
-            return Spacing.Sidebar.popoverDefaultWidth
+            return DesignTokens.Spacing.Sidebar.popoverDefaultWidth
         }
     }
 

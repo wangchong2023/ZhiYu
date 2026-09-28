@@ -13,6 +13,7 @@ import SwiftUI
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import ActivityKit
 import WidgetKit
+import UFPDesignSystem
 
 // MARK: - 活动类型图标映射
 
@@ -20,9 +21,9 @@ import WidgetKit
 /// LockScreenLiveActivityView 中重复的 `iconName(for:)` 方法定义。
 func liveActivityIconName(for kind: ActivityKind) -> String {
     switch kind {
-    case .synthesis: return DesignSystem.Icons.mindmap
-    case .ingestOCR: return DesignSystem.Icons.scan
-    case .voiceNote: return DesignSystem.Icons.voiceNote
+    case .synthesis: return DesignTokens.Icons.mindmap
+    case .ingestOCR: return DesignTokens.Icons.scan
+    case .voiceNote: return DesignTokens.Icons.voiceNote
     }
 }
 
@@ -33,18 +34,18 @@ public struct LiveActivityView: Widget {
         ActivityConfiguration(for: AIProcessingAttributes.self) { context in
             // 锁屏界面 (Lock Screen Banner)
             LockScreenLiveActivityView(context: context)
-                .activityBackgroundTint(Color.appCard.opacity(DesignSystem.Opacity.soft))
+                .activityBackgroundTint(Color.appCard.opacity(DesignTokens.Opacity.soft))
                 .activitySystemActionForegroundColor(Color.appAccent)
         } dynamicIsland: { context in
             DynamicIsland {
                 // 展开状态 (Expanded Layout)
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack(spacing: DesignSystem.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         Image(systemName: liveActivityIconName(for: context.state.kind))
                             .foregroundStyle(Color.appAccent)
                             .font(.title3)
                         
-                        VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                             Text(context.attributes.taskName)
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(.primary)
@@ -57,7 +58,7 @@ public struct LiveActivityView: Widget {
                 }
                 
                 DynamicIslandExpandedRegion(.trailing) {
-                    VStack(alignment: .trailing, spacing: DesignSystem.atomic) {
+                    VStack(alignment: .trailing, spacing: DesignTokens.Spacing.atomic) {
                         Text("\(Int(context.state.progress * 100))%")
                             .font(.system(.title3, design: .monospaced).weight(.bold))
                             .foregroundStyle(Color.appAccent)
@@ -71,13 +72,13 @@ public struct LiveActivityView: Widget {
                 }
 
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(spacing: DesignSystem.tiny) {
+                    VStack(spacing: DesignTokens.Spacing.tiny) {
                         ProgressView(value: context.state.progress)
                             .tint(Color.appAccent)
                         
                         if context.state.kind == .synthesis && context.state.sourceCount > 0 {
                             HStack {
-                                Label("\(context.state.sourceCount) Sources", systemImage: DesignSystem.Icons.quote)
+                                Label("\(context.state.sourceCount) Sources", systemImage: DesignTokens.Icons.quote)
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                 Spacer()
@@ -92,7 +93,7 @@ public struct LiveActivityView: Widget {
                             }
                         }
                     }
-                    .padding(.top, DesignSystem.tiny)
+                    .padding(.top, DesignTokens.Spacing.tiny)
                 }
             } compactLeading: {
                 Image(systemName: liveActivityIconName(for: context.state.kind))
@@ -116,18 +117,18 @@ private struct LockScreenLiveActivityView: View {
     let context: ActivityViewContext<AIProcessingAttributes>
 
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             ZStack {
                 Circle()
-                    .fill(Color.appAccent.opacity(DesignSystem.Opacity.soft))
-                    .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
+                    .fill(Color.appAccent.opacity(DesignTokens.Opacity.soft))
+                    .frame(width: DesignTokens.Spacing.Sidebar.backButtonWidth, height: DesignTokens.Spacing.Sidebar.backButtonWidth)
                 
                 Image(systemName: liveActivityIconName(for: context.state.kind))
                     .foregroundStyle(Color.appAccent)
                     .font(.title3)
             }
 
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 HStack {
                     Text(context.attributes.taskName)
                         .font(.subheadline.weight(.bold))
@@ -147,7 +148,7 @@ private struct LockScreenLiveActivityView: View {
                     .lineLimit(1)
             }
         }
-        .padding(DesignSystem.standardPadding)
+        .padding(DesignTokens.Spacing.standardPadding)
     }
 }
 #endif

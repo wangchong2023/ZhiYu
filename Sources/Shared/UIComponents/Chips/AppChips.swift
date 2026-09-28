@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - App Chip
 
@@ -17,10 +18,10 @@ import SwiftUI
 public struct AppChip: View {
     public let text: String
     public var color: Color = .appAccent
-    public var backgroundOpacity: Double = Colors.glassOpacity
+    public var backgroundOpacity: Double = DesignTokens.Colors.glassOpacity
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    public init(text: String, color: Color = .appAccent, backgroundOpacity: Double = Colors.glassOpacity) {
+    public init(text: String, color: Color = .appAccent, backgroundOpacity: Double = DesignTokens.Colors.glassOpacity) {
         self.text = text
         self.color = color
         self.backgroundOpacity = backgroundOpacity
@@ -28,7 +29,7 @@ public struct AppChip: View {
 
     /// 根据屏幕尺寸类自动适配字号
     private var chipFont: Font {
-        horizontalSizeClass == .regular ? Typography.captionFont : Typography.caption2Font
+        horizontalSizeClass == .regular ? DesignTokens.Typography.captionFont : DesignTokens.Typography.caption2Font
     }
 
     public var body: some View {
@@ -66,20 +67,20 @@ public struct AppIconChip: View {
     }
 
     public var body: some View {
-        HStack(spacing: Spacing.tiny + Spacing.atomic) { // 6
+        HStack(spacing: DesignTokens.Spacing.tiny + DesignTokens.Spacing.atomic) { // 6
             Image(systemName: icon)
                 .font(.caption)
             Text(text)
                 .font(chipFont)
         }
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, DesignSystem.small)
-        .background(isSelected ? color.opacity(SystemOpacity.glassStrong) : Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+        .padding(.horizontal, DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.Spacing.small)
+        .background(isSelected ? color.opacity(DesignTokens.SystemOpacity.glassStrong) : Color.appCard)
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
         .foregroundStyle(isSelected ? color : .appSecondary)
         .overlay(
-            RoundedRectangle(cornerRadius: Spacing.smallRadius)
-                .stroke(isSelected ? color.opacity(Colors.disabledOpacity) : Color.clear, lineWidth: Spacing.borderWidth)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                .stroke(isSelected ? color.opacity(DesignTokens.Colors.disabledOpacity) : Color.clear, lineWidth: DesignTokens.Spacing.borderWidth)
         )
     }
 }
@@ -113,7 +114,7 @@ public struct AppBadge: View {
                 Text(text)
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.white)
-                    .frame(width: Spacing.Decorator.badgeMinSize, height: Spacing.Decorator.badgeMinSize)
+                    .frame(width: DesignTokens.Spacing.Decorator.badgeMinSize, height: DesignTokens.Spacing.Decorator.badgeMinSize)
                     .background(color)
                     .clipShape(Circle())
             }
@@ -148,7 +149,7 @@ public struct AppScrollableChips<Data: RandomAccessCollection, Content: View>: V
 
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 ForEach(Array(items), id: \.self) { item in
                     Button(action: { onSelect(item) }) {
                         chipContent(item)
@@ -176,9 +177,9 @@ public struct AppSubtlePill: View {
         Text(text)
             .font(.caption2)
             .foregroundStyle(color)
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, DesignSystem.atomic)
-            .background(color.opacity(DesignSystem.Opacity.subtle))
+            .padding(.horizontal, DesignTokens.Spacing.small)
+            .padding(.vertical, DesignTokens.Spacing.atomic)
+            .background(color.opacity(DesignTokens.Opacity.subtle))
             .clipShape(Capsule())
     }
 }

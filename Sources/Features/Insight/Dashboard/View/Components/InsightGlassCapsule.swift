@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// Insight 模块通用玻璃胶囊修饰符
 ///
@@ -20,7 +21,7 @@ struct InsightGlassCapsuleModifier: ViewModifier {
     var color: Color
     var horizontalPadding: CGFloat = DesignSystem.Chip.horizontalPadding
     var verticalPadding: CGFloat = DesignSystem.Chip.verticalPadding
-    var backgroundOpacity: Double = DesignSystem.glassOpacity
+    var backgroundOpacity: Double = DesignTokens.Colors.Opacity.glassOpacity
 
     func body(content: Content) -> some View {
         content
@@ -38,7 +39,7 @@ extension View {
         color: Color,
         horizontalPadding: CGFloat = DesignSystem.Chip.horizontalPadding,
         verticalPadding: CGFloat = DesignSystem.Chip.verticalPadding,
-        backgroundOpacity: Double = DesignSystem.glassOpacity
+        backgroundOpacity: Double = DesignTokens.Colors.Opacity.glassOpacity
     ) -> some View {
         modifier(InsightGlassCapsuleModifier(
             color: color,

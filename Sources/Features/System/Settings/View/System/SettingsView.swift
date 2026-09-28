@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 struct SettingsView: View {
     @Dependency(\.toastService) private var toastManager
@@ -71,13 +72,13 @@ struct SettingsView: View {
         var iconName: String {
             switch self {
             case .appearance:
-                return DesignSystem.Icons.settingsAppearance
+                return DesignTokens.Icons.settingsAppearance
             case .security:
-                return DesignSystem.Icons.settingsSecurity
+                return DesignTokens.Icons.settingsSecurity
             case .data:
-                return DesignSystem.Icons.settingsData
+                return DesignTokens.Icons.settingsData
             case .plugins:
-                return DesignSystem.Icons.settingsPlugins
+                return DesignTokens.Icons.settingsPlugins
             case .feedback:
                 return "bubble.left.and.bubble.right.fill"
             #if DEBUG
@@ -85,7 +86,7 @@ struct SettingsView: View {
                 return "hammer.fill"
             #endif
             case .about:
-                return DesignSystem.Icons.settingsAbout
+                return DesignTokens.Icons.settingsAbout
             }
         }
     }
@@ -106,10 +107,10 @@ struct SettingsView: View {
             if idiom == .macCatalyst {
                 HStack(spacing: 0) {
                     sidebarColumn
-                        .frame(width: DesignSystem.Metrics.settingsSidebarWidth)
+                        .frame(width: DesignTokens.Metrics.settingsSidebarWidth)
 
                     Divider()
-                        .background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
+                        .background(Color.appBorder.opacity(DesignTokens.Opacity.shadow))
 
                     ZStack {
                         themeManager.pageBackground()
@@ -210,36 +211,36 @@ struct SettingsView: View {
     /// 构建大屏左侧分类侧边栏（气泡圆角卡片样式，具备呼吸感与选中高亮）
     private var sidebarColumn: some View {
         ScrollView {
-            VStack(spacing: SystemSpacing.small) {
+            VStack(spacing: DesignTokens.SystemSpacing.small) {
                 ForEach(SettingsSection.allCases) { section in
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
                         selectedSection = section
                     }) {
-                        HStack(spacing: DesignSystem.medium) {
+                        HStack(spacing: DesignTokens.Spacing.medium) {
                             Image(systemName: section.iconName)
                                 .font(.subheadline)
                                 .foregroundStyle(selectedSection == section ? .white : .appAccent)
-                                .frame(width: DesignSystem.IconSize.standard, alignment: .center)
+                                .frame(width: DesignTokens.IconSize.standard, alignment: .center)
                             Text(section.displayName)
                                 .font(.body.weight(.medium))
                                 .foregroundStyle(selectedSection == section ? .white : .appText)
                             Spacer()
                         }
-                        .padding(.horizontal, SystemSpacing.content)
-                        .padding(.vertical, SystemSpacing.medium)
+                        .padding(.horizontal, DesignTokens.SystemSpacing.content)
+                        .padding(.vertical, DesignTokens.SystemSpacing.medium)
                         .background(
-                            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
+                            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
                                 .fill(selectedSection == section ? Color.appAccent : Color.clear)
                         )
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, SystemSpacing.medium)
-            .padding(.vertical, SystemSpacing.content)
+            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+            .padding(.vertical, DesignTokens.SystemSpacing.content)
         }
-        .background(Color.appCard.opacity(DesignSystem.Opacity.disabled)) // 侧边栏微暗色半透明质感
+        .background(Color.appCard.opacity(DesignTokens.Opacity.disabled)) // 侧边栏微暗色半透明质感
     }
     
     /// 根据当前选中的分类，渲染右侧具体详情面板
@@ -297,7 +298,7 @@ struct SettingsView: View {
                     Text(mode.displayName).tag(mode)
                 }
             } label: {
-                Label(L10n.Settings.systemTheme, systemImage: DesignSystem.Icons.settingsAppearance)
+                Label(L10n.Settings.systemTheme, systemImage: DesignTokens.Icons.settingsAppearance)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.indigo))
             }
 
@@ -306,7 +307,7 @@ struct SettingsView: View {
                     Text(mode.displayName).tag(mode)
                 }
             } label: {
-                Label(L10n.Settings.systemLanguage, systemImage: DesignSystem.Icons.globe)
+                Label(L10n.Settings.systemLanguage, systemImage: DesignTokens.Icons.globe)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
             }
             .onChange(of: selectedLanguage) { _, newValue in
@@ -326,7 +327,7 @@ struct SettingsView: View {
             NavigationLink {
                 SystemStatsView()
             } label: {
-                Label(L10n.Common.usage, systemImage: DesignSystem.Icons.chartBarFill)
+                Label(L10n.Common.usage, systemImage: DesignTokens.Icons.chartBarFill)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.teal))
             }
 
@@ -334,7 +335,7 @@ struct SettingsView: View {
             NavigationLink {
                 iCloudSyncView()
             } label: {
-                Label(L10n.Settings.iCloudSync, systemImage: DesignSystem.Icons.icloud)
+                Label(L10n.Settings.iCloudSync, systemImage: DesignTokens.Icons.icloud)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
             }
             #endif
@@ -343,21 +344,21 @@ struct SettingsView: View {
             NavigationLink {
                 BackupView()
             } label: {
-                Label(L10n.Settings.backupRestore, systemImage: DesignSystem.Icons.settingsData)
+                Label(L10n.Settings.backupRestore, systemImage: DesignTokens.Icons.settingsData)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.brown))
             }
             
             NavigationLink {
                 LogView()
             } label: {
-                Label(L10n.Settings.operationLog, systemImage: DesignSystem.Icons.listBulletRectangleFill)
+                Label(L10n.Settings.operationLog, systemImage: DesignTokens.Icons.listBulletRectangleFill)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.mint))
             }
             
             // 恢复预设：生成默认的演示笔记本
             Button(action: { showInjectConfirmation = true }) {
                 HStack {
-                    Label(L10n.Settings.rebuildInitialNotebooks, systemImage: DesignSystem.Icons.arrowCounterclockwise)
+                    Label(L10n.Settings.rebuildInitialNotebooks, systemImage: DesignTokens.Icons.arrowCounterclockwise)
                         .labelStyle(ColorfulIconLabelStyle(color: Color.theme.red))
                         .foregroundStyle(.appText)
                     Spacer()
@@ -407,13 +408,13 @@ struct SettingsView: View {
         
         return Section {
             Toggle(isOn: privacyBinding) {
-                Label(L10n.Settings.privacyMode, systemImage: DesignSystem.Icons.settingsSecurity)
+                Label(L10n.Settings.privacyMode, systemImage: DesignTokens.Icons.settingsSecurity)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.purple))
             }
             
             if showBiometric {
                 Toggle(isOn: biometricBinding) {
-                    Label(L10n.Settings.biometricProtection, systemImage: DesignSystem.Icons.faceid)
+                    Label(L10n.Settings.biometricProtection, systemImage: DesignTokens.Icons.faceid)
                         .labelStyle(ColorfulIconLabelStyle(color: Color.theme.green))
                 }
             }
@@ -449,7 +450,7 @@ struct SettingsView: View {
             NavigationLink {
                 AboutView()
             } label: {
-                Label(L10n.Settings.Section.about, systemImage: DesignSystem.Icons.settingsAbout)
+                Label(L10n.Settings.Section.about, systemImage: DesignTokens.Icons.settingsAbout)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.gray))
             }
         }
@@ -465,7 +466,7 @@ struct SettingsView: View {
                     .environment(store.settingsStore)
                     .environmentObject(onboardingService)
             } label: {
-                Label(L10n.Settings.Section.developer, systemImage: DesignSystem.Icons.settingsDeveloper)
+                Label(L10n.Settings.Section.developer, systemImage: DesignTokens.Icons.settingsDeveloper)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.gray))
             }
         }
@@ -504,9 +505,9 @@ struct SettingsView: View {
     
     @ViewBuilder
     private func emptyDetailPlaceholder(router: Router) -> some View {
-        VStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.gearshape2)
-                .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.gearshape2)
+                .font(.system(size: DesignTokens.Reference.FontSize.mega)) // Dynamic Type
                 .foregroundStyle(.appAccent)
             Text(L10n.Settings.selectCategoryTip)
                 .font(.headline)
@@ -525,13 +526,13 @@ struct ColorfulIconLabelStyle: LabelStyle {
     var color: Color
     
     func makeBody(configuration: Configuration) -> some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             configuration.icon
-                .font(.system(size: SystemFontSize.body, weight: .medium)) // Dynamic Type
+                .font(.system(size: DesignTokens.SystemFontSize.body, weight: .medium)) // Dynamic Type
                 .foregroundStyle(.white)
-                .frame(width: DesignSystem.Metrics.settingsIconFrameSize, height: DesignSystem.Metrics.settingsIconFrameSize)
+                .frame(width: DesignTokens.Metrics.settingsIconFrameSize, height: DesignTokens.Metrics.settingsIconFrameSize)
                 .background(color)
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small, style: .continuous))
             
             configuration.title
         }

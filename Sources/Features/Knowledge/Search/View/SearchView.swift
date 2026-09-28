@@ -9,6 +9,7 @@
 //  核心职责：构建 Search 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 struct SearchView: View {
     @Environment(KnowledgeStore.self) var store
@@ -91,11 +92,11 @@ struct SearchView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Search Header (Bar + Filters)
-            VStack(spacing: DesignSystem.medium) {
+            VStack(spacing: DesignTokens.Spacing.medium) {
                 // Unified Search Bar
             // 1. 现代风格搜索区域 (对齐图 3)
             HStack {
-                Image(systemName: DesignSystem.Icons.search)
+                Image(systemName: DesignTokens.Icons.search)
                     .font(.callout.weight(.bold))
                     .foregroundStyle(.appAccent)
                 
@@ -122,21 +123,21 @@ struct SearchView: View {
             }
             .commonContentPadding()
             .borderedCardStyle(
-                horizontalPadding: DesignSystem.standardPadding,
-                verticalPadding: SystemSpacing.elementLarge,
-                backgroundOpacity: DesignSystem.Opacity.dim,
-                cornerRadius: DesignSystem.mediumRadius
+                horizontalPadding: DesignTokens.Spacing.standardPadding,
+                verticalPadding: DesignTokens.SystemSpacing.elementLarge,
+                backgroundOpacity: DesignTokens.Opacity.dim,
+                cornerRadius: DesignTokens.Spacing.mediumRadius
             )
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                    .strokeBorder(.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
+                    .strokeBorder(.appAccent.opacity(DesignTokens.Opacity.medium), lineWidth: 1)
             )
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.vertical, DesignSystem.medium)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.vertical, DesignTokens.Spacing.medium)
                 
                 // Filters
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: DesignSystem.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         PageTypeFilterPills(
                             filterType: $filterType,
                             triggersHaptic: true,
@@ -154,7 +155,7 @@ struct SearchView: View {
                                 }
                             } label: {
                                 filterMenuLabel(
-                                    icon: DesignSystem.Icons.flag,
+                                    icon: DesignTokens.Icons.flag,
                                     title: filterStatus?.displayName ?? L10n.Knowledge.Page.status,
                                     background: filterStatusBackgroundColor,
                                     foreground: filterStatusLabelColor
@@ -170,14 +171,14 @@ struct SearchView: View {
                             Menu {
                                 ForEach(SortOption.allCases, id: \.self) { option in
                                     Button(action: { sortBy = option }) {
-                                        Label(L10n.Common.tr(option.rawValue), systemImage: sortBy == option ? DesignSystem.Icons.check : "")
+                                        Label(L10n.Common.tr(option.rawValue), systemImage: sortBy == option ? DesignTokens.Icons.check : "")
                                     }
                                 }
                             } label: {
                                 filterMenuLabel(
-                                    icon: DesignSystem.Icons.sortUpDown,
+                                    icon: DesignTokens.Icons.sortUpDown,
                                     title: L10n.Common.tr(sortBy.rawValue),
-                                    background: Color.appCard.opacity(SystemOpacity.active),
+                                    background: Color.appCard.opacity(DesignTokens.SystemOpacity.active),
                                     foreground: .appSecondary
                                 )
                             }
@@ -187,14 +188,14 @@ struct SearchView: View {
                     .padding(.horizontal)
                 }
             }
-            .padding(.top, DesignSystem.medium)
-            .background(Color.appBackground.opacity(DesignSystem.Opacity.disabled))
+            .padding(.top, DesignTokens.Spacing.medium)
+            .background(Color.appBackground.opacity(DesignTokens.Opacity.disabled))
             .background(.ultraThinMaterial)
             
             // Main Results Content
             ZStack {
                 if searchStore.isSearching {
-                    VStack(spacing: DesignSystem.standardPadding) {
+                    VStack(spacing: DesignTokens.Spacing.standardPadding) {
                         ForEach(0..<FeatureConstants.SearchView.skeletonRowCount, id: \.self) { _ in
                             SkeletonListRow()
                                 .padding(.horizontal)
@@ -203,11 +204,11 @@ struct SearchView: View {
                     }
                     .padding(.top, DesignSystem.Action.iconSize) // 20
                 } else if filteredPages.isEmpty {
-                    VStack(spacing: DesignSystem.standardPadding) {
+                    VStack(spacing: DesignTokens.Spacing.standardPadding) {
                         Spacer()
-                        Image(systemName: searchText.isEmpty ? DesignSystem.Icons.search : DesignSystem.Icons.weeklyInsight)
-                            .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.SearchView.emptyIconSizeMultiplier)) // 48
-                            .foregroundStyle(.appSecondary.opacity(Reference.Opacity.fifty)) // 0.5
+                        Image(systemName: searchText.isEmpty ? DesignTokens.Icons.search : DesignTokens.Icons.weeklyInsight)
+                            .font(.system(size: DesignTokens.Metrics.heroValueSize * FeatureConstants.SearchView.emptyIconSizeMultiplier)) // 48
+                            .foregroundStyle(.appSecondary.opacity(DesignTokens.Reference.Opacity.fifty)) // 0.5
                         
                         Text(searchText.isEmpty ? L10n.SearchPlaceholder : L10n.Search.noResults)
                             .font(.headline)
@@ -216,9 +217,9 @@ struct SearchView: View {
                         if !searchText.isEmpty {
                             Text(L10n.Search.noResultsHint)
                                 .font(.caption)
-                                .foregroundStyle(.appSecondary.opacity(SystemOpacity.textTertiary)) // 0.7
+                                .foregroundStyle(.appSecondary.opacity(DesignTokens.SystemOpacity.textTertiary)) // 0.7
                                 .multilineTextAlignment(.center)
-                                .padding(.horizontal, DesignSystem.huge)
+                                .padding(.horizontal, DesignTokens.Spacing.huge)
                         }
                         Spacer()
                     }
@@ -239,13 +240,13 @@ struct SearchView: View {
                                     HapticFeedback.shared.trigger(.selection)
                                     previewPage = page
                                 } label: {
-                                    Label(L10n.Common.quickPreview, systemImage: DesignSystem.Icons.eye)
+                                    Label(L10n.Common.quickPreview, systemImage: DesignTokens.Icons.eye)
                                 }
                                 
                                 Button {
                                     AppPasteboard.string = "[[\(page.title)]]"
                                 } label: {
-                                    Label(L10n.Common.copyPageLink, systemImage: DesignSystem.Icons.link)
+                                    Label(L10n.Common.copyPageLink, systemImage: DesignTokens.Icons.link)
                                 }
                             }
                         }
@@ -259,7 +260,7 @@ struct SearchView: View {
             
             // Footer
             if !filteredPages.isEmpty {
-                Divider().background(Color.appBorder.opacity(Reference.Opacity.fifty)) // 0.5
+                Divider().background(Color.appBorder.opacity(DesignTokens.Reference.Opacity.fifty)) // 0.5
                 HStack {
                     Text(L10n.Search.pagesCount(filteredPages.count))
                         .font(.caption)
@@ -268,7 +269,7 @@ struct SearchView: View {
                     if useAdvancedSearch {
                         Spacer()
                         Button(action: { showDiagnostics = true }) {
-                            Label(L10n.Search.Diagnostics, systemImage: DesignSystem.Icons.info)
+                            Label(L10n.Search.Diagnostics, systemImage: DesignTokens.Icons.info)
                                 .font(.caption2)
                                 .foregroundStyle(.appAccent)
                         }
@@ -277,7 +278,7 @@ struct SearchView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.vertical, SystemSpacing.elementLarge) // 10
+                .padding(.vertical, DesignTokens.SystemSpacing.elementLarge) // 10
                 .background(themeManager.pageBackground())
             }
         }
@@ -321,26 +322,26 @@ struct SearchView: View {
     }
     
     private var filterStatusBackgroundColor: Color {
-        filterStatus == nil ? Color.appCard.opacity(SystemOpacity.active) : Color.appAccent.opacity(SystemOpacity.faint)
+        filterStatus == nil ? Color.appCard.opacity(DesignTokens.SystemOpacity.active) : Color.appAccent.opacity(DesignTokens.SystemOpacity.faint)
     }
 
     /// 筛选区竖向分隔线，消除 2 处重复的 Divider().frame().background() 链
     @ViewBuilder
     private func filterDivider() -> some View {
-        Divider().frame(height: DesignSystem.IconSize.standard).background(Color.appBorder)
+        Divider().frame(height: DesignTokens.IconSize.standard).background(Color.appBorder)
     }
 
     /// 筛选 Menu 的胶囊标签，消除 Status/Sort 两处重复的 HStack+padding+background+Capsule 链
     @ViewBuilder
     private func filterMenuLabel(icon: String, title: String, background: Color, foreground: Color) -> some View {
-        HStack(spacing: DesignSystem.tiny) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
             Image(systemName: icon)
                 .font(.caption)
             Text(title)
                 .font(.caption)
         }
-        .padding(.horizontal, SystemSpacing.elementLarge)
-        .padding(.vertical, SystemSpacing.small)
+        .padding(.horizontal, DesignTokens.SystemSpacing.elementLarge)
+        .padding(.vertical, DesignTokens.SystemSpacing.small)
         .background(background)
         .clipShape(Capsule())
         .foregroundStyle(foreground)
@@ -363,7 +364,7 @@ struct FilterPill: View {
     }
 
     var body: some View {
-        HStack(spacing: SystemSpacing.small) { // 6
+        HStack(spacing: DesignTokens.SystemSpacing.small) { // 6
             if let icon = icon {
                 Image(systemName: icon)
                     .font(horizontalSizeClass == .regular ? .subheadline : .caption)
@@ -372,8 +373,8 @@ struct FilterPill: View {
                 .font(pillFont.weight(isSelected ? .semibold : .regular))
         }
         .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-        .padding(.vertical, SystemSpacing.small) // 6
-        .background(isSelected ? color.opacity(DesignSystem.Opacity.subtle) : Color.appCard.opacity(DesignSystem.Opacity.dim))
+        .padding(.vertical, DesignTokens.SystemSpacing.small) // 6
+        .background(isSelected ? color.opacity(DesignTokens.Opacity.subtle) : Color.appCard.opacity(DesignTokens.Opacity.dim))
         .clipShape(Capsule())
         .foregroundStyle(isSelected ? color : .appSecondary)
         .contentShape(Capsule())

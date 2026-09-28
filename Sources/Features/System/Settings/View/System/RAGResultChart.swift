@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 👍 用户满意度面板
 
@@ -21,21 +22,21 @@ struct RAGSatisfactionPanel: View {
 
     var body: some View {
         let barHeight: CGFloat = 12
-        return VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack(spacing: DesignSystem.small) {
-                Label(L10n.Dashboard.stats.userSatisfaction, systemImage: DesignSystem.Icons.handThumbsupFill).font(.headline).foregroundStyle(.blue)
+        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Label(L10n.Dashboard.stats.userSatisfaction, systemImage: DesignTokens.Icons.handThumbsupFill).font(.headline).foregroundStyle(.blue)
                 // info icon omitted here — handled by caller
             }
 
             let total = satisfactionThumbsUp + satisfactionThumbsDown
             if total > 0 {
-                HStack(spacing: DesignSystem.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     // 进度条
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: DesignSystem.atomic)
+                            RoundedRectangle(cornerRadius: DesignTokens.Spacing.atomic)
                                 .fill(Color.appCard).frame(height: barHeight)
-                            RoundedRectangle(cornerRadius: DesignSystem.atomic)
+                            RoundedRectangle(cornerRadius: DesignTokens.Spacing.atomic)
                                 .fill(satisfactionColor)
                                 .frame(width: geo.size.width * satisfactionRate, height: barHeight)
                         }
@@ -55,7 +56,7 @@ struct RAGSatisfactionPanel: View {
             } else {
                 Text(L10n.Dashboard.stats.noRatings)
                     .font(.subheadline).foregroundStyle(.secondary)
-                    .padding(.vertical, DesignSystem.small).frame(maxWidth: .infinity)
+                    .padding(.vertical, DesignTokens.Spacing.small).frame(maxWidth: .infinity)
             }
         }
         .appCardStyle()
@@ -75,11 +76,11 @@ struct RAGCostPanel: View {
     let tokenEfficiency: TokenEfficiency
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack(spacing: DesignSystem.small) {
-                Label(L10n.Dashboard.stats.tokenEfficiency, systemImage: DesignSystem.Icons.dollarsignCircle).font(.headline).foregroundStyle(.green)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Label(L10n.Dashboard.stats.tokenEfficiency, systemImage: DesignTokens.Icons.dollarsignCircle).font(.headline).foregroundStyle(.green)
             }
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 tokenMetricCard(id: "totalTokens", title: L10n.Dashboard.stats.totalTokens,
                                 value: tokenEfficiency.totalTokens.formatted(.number.notation(.compactName)))
                 tokenMetricCard(id: "queryCount", title: L10n.Dashboard.stats.queryCount,
@@ -94,20 +95,20 @@ struct RAGCostPanel: View {
                     .font(.system(size: FontSize.tokenValue, weight: .bold, design: .monospaced))
                     .foregroundStyle(tokenEfficiency.estimatedCostUSD < CostThreshold.low ? Color.theme.green : Color.theme.orange)
             }
-            .padding(.horizontal, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.small)
         }
         .appCardStyle()
     }
 
     private func tokenMetricCard(id _: String, title: String, value: String) -> some View {
-        VStack(spacing: DesignSystem.tightPadding) {
+        VStack(spacing: DesignTokens.Spacing.tightPadding) {
             Text(value).font(.system(size: FontSize.tokenValue, weight: .bold, design: .rounded)).foregroundStyle(.primary)
-            HStack(spacing: SystemSpacing.atomic) {
+            HStack(spacing: DesignTokens.SystemSpacing.atomic) {
                 Text(title).font(.caption2).foregroundStyle(.tertiary).multilineTextAlignment(.center)
             }
         }
-        .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
-        .background(Color.theme.green.opacity(CardVisual.tokenBgOpacity)).clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+        .frame(maxWidth: .infinity).padding(.vertical, DesignTokens.Spacing.small)
+        .background(Color.theme.green.opacity(CardVisual.tokenBgOpacity)).clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
     }
 }
 
@@ -120,12 +121,12 @@ struct RAGEvaluationHistoryPanel: View {
     let onReload: () async -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            Label(L10n.Dashboard.stats.recentEvaluations, systemImage: DesignSystem.Icons.listBulletClipboard).font(.headline).foregroundStyle(.orange)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            Label(L10n.Dashboard.stats.recentEvaluations, systemImage: DesignTokens.Icons.listBulletClipboard).font(.headline).foregroundStyle(.orange)
             if recentEvaluations.isEmpty {
                 Text(L10n.Dashboard.stats.noEvaluations)
                     .font(.subheadline).foregroundStyle(.secondary)
-                    .padding(.vertical, DesignSystem.large).frame(maxWidth: .infinity)
+                    .padding(.vertical, DesignTokens.Spacing.large).frame(maxWidth: .infinity)
             } else {
                 // Bug #97 修复：预计算 prefix 数组，避免每次迭代重新切片。
                 let displayedEvaluations = Array(recentEvaluations.prefix(EvalDisplay.displayLimit))
@@ -142,7 +143,7 @@ struct RAGEvaluationHistoryPanel: View {
     // MARK: - 评估记录行
 
     private func evaluationRow(_ eval: RAGEvaluation) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             HStack {
                 Text(eval.query.prefix(EvalDisplay.queryPreviewChars)
                      + (eval.query.count > EvalDisplay.queryPreviewChars ? "…" : ""))
@@ -153,19 +154,19 @@ struct RAGEvaluationHistoryPanel: View {
                 ratingButton(eval: eval, rating: UserRating.thumbsUp, icon: RatingIcon.thumbsUp, isActive: eval.userRating == UserRating.thumbsUp)
                 ratingButton(eval: eval, rating: UserRating.thumbsDown, icon: RatingIcon.thumbsDown, isActive: eval.userRating == UserRating.thumbsDown)
             }
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 tagLabel(MetricTag.faithfulness, value: eval.faithfulness)
                 tagLabel(MetricTag.relevance, value: eval.relevance)
                 tagLabel(MetricTag.hallucination, value: eval.hallucinationRate, inverted: true)
             }
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 tagLabel(MetricTag.correctness, value: eval.answerCorrectness)
                 tagLabel(MetricTag.citation, value: eval.citationAccuracy)
                 tagLabel(MetricTag.contextSufficiency, value: eval.contextSufficiency)
             }
             Text(eval.evaluatorModel).font(.caption2).foregroundStyle(.tertiary)
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 
     private func ratingButton(eval: RAGEvaluation, rating: Int, icon: String, isActive: Bool) -> some View {
@@ -177,7 +178,7 @@ struct RAGEvaluationHistoryPanel: View {
             }
         } label: {
             Image(systemName: icon)
-                .font(.caption).foregroundStyle(isActive ? .blue : .appSecondary.opacity(DesignSystem.Opacity.disabled))
+                .font(.caption).foregroundStyle(isActive ? .blue : .appSecondary.opacity(DesignTokens.Opacity.disabled))
         }
         .buttonStyle(.plain)
     }
@@ -185,8 +186,8 @@ struct RAGEvaluationHistoryPanel: View {
     private func scoreBadge(_ score: Double) -> some View {
         Text(String(format: FormatPattern.score1, score * FeatureConstants.PercentageBase.full))
             .font(.caption.bold()).foregroundStyle(scoreColor(score))
-            .padding(.horizontal, DesignSystem.small).padding(.vertical, DesignSystem.atomic)
-            .background(scoreColor(score).opacity(DesignSystem.Opacity.subtle)).clipShape(Capsule())
+            .padding(.horizontal, DesignTokens.Spacing.small).padding(.vertical, DesignTokens.Spacing.atomic)
+            .background(scoreColor(score).opacity(DesignTokens.Opacity.subtle)).clipShape(Capsule())
     }
 
     private func tagLabel(_ prefix: String, value: Double, inverted: Bool = false) -> some View {
@@ -194,7 +195,7 @@ struct RAGEvaluationHistoryPanel: View {
         return Text("\(prefix):\(String(format: FormatPattern.score2, value))")
             .font(.system(size: FontSize.tag, weight: .medium, design: .monospaced)).foregroundStyle(color)
             .padding(.horizontal, TagVisual.horizontalPadding).padding(.vertical, TagVisual.verticalPadding)
-            .background(color.opacity(DesignSystem.Opacity.light)).clipShape(RoundedRectangle(cornerRadius: TagVisual.cornerRadius))
+            .background(color.opacity(DesignTokens.Opacity.light)).clipShape(RoundedRectangle(cornerRadius: TagVisual.cornerRadius))
     }
 
     // MARK: - 评分与颜色

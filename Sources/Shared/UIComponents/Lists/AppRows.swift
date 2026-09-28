@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - App Section Header
 
@@ -88,15 +89,15 @@ public struct AppStepRow: View {
 
     /// 根据屏幕尺寸类自动适配字号
     private var stepFont: Font {
-        horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont
+        horizontalSizeClass == .regular ? DesignTokens.Typography.secondaryFont : DesignTokens.Typography.captionFont
     }
 
     public var body: some View {
-        HStack(spacing: Spacing.medium - Spacing.atomic) { // 10
+        HStack(spacing: DesignTokens.Spacing.medium - DesignTokens.Spacing.atomic) { // 10
             Text("\(number)")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.white)
-                .frame(width: ComponentSpacing.section, height: ComponentSpacing.section) // 22
+                .frame(width: DesignTokens.ComponentSpacing.section, height: DesignTokens.ComponentSpacing.section) // 22
                 .background(Circle().fill(Color.appAccent))
 
             Text(text)
@@ -122,7 +123,7 @@ public struct AppDivider: View {
     }
 
     public var body: some View {
-        HStack(spacing: Spacing.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             if let icon = icon {
                 Image(systemName: icon)
                     .font(.caption)
@@ -135,7 +136,7 @@ public struct AppDivider: View {
             }
             Rectangle()
                 .fill(color)
-                .frame(height: DesignSystem.Metrics.dividerThickness)
+                .frame(height: DesignTokens.Metrics.dividerThickness)
         }
     }
 }
@@ -146,9 +147,9 @@ public struct AppDivider: View {
 /// 用于引导视觉焦点，通常放在卡片或列表项的侧边。
 public struct AppAccentLine: View {
     public var color: Color = .appAccent
-    public var width: CGFloat = Spacing.Decorator.accentLineWidth
+    public var width: CGFloat = DesignTokens.Spacing.Decorator.accentLineWidth
 
-    public init(color: Color = .appAccent, width: CGFloat = Spacing.Decorator.accentLineWidth) {
+    public init(color: Color = .appAccent, width: CGFloat = DesignTokens.Spacing.Decorator.accentLineWidth) {
         self.color = color
         self.width = width
     }
@@ -157,7 +158,7 @@ public struct AppAccentLine: View {
         Rectangle()
             .fill(color)
             .frame(width: width)
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.tiny))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.tiny))
     }
 }
 
@@ -168,9 +169,9 @@ public struct AppAccentLine: View {
 public struct AppIconBox: View {
     public let icon: String
     public var color: Color = .appAccent
-    public var size: CGFloat = Spacing.Gallery.iconSize
+    public var size: CGFloat = DesignTokens.Spacing.Gallery.iconSize
 
-    public init(icon: String, color: Color = .appAccent, size: CGFloat = Spacing.Gallery.iconSize) {
+    public init(icon: String, color: Color = .appAccent, size: CGFloat = DesignTokens.Spacing.Gallery.iconSize) {
         self.icon = icon
         self.color = color
         self.size = size
@@ -178,8 +179,8 @@ public struct AppIconBox: View {
 
     public var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: Spacing.small)
-                .fill(color.opacity(DesignSystem.Opacity.subtle))
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.small)
+                .fill(color.opacity(DesignTokens.Opacity.subtle))
 
             Image(systemName: icon)
                 .font(.system(size: size * 0.45, weight: .medium))

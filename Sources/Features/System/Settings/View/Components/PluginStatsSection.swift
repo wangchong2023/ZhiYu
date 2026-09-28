@@ -12,6 +12,7 @@
 import SwiftUI
 import Charts
 import Dependencies
+import UFPDesignSystem
 
 struct PluginStatsSection: View {
     @Dependency(\.pluginRegistry) var registry
@@ -25,52 +26,52 @@ struct PluginStatsSection: View {
                 let sortedUsage = registry.pluginResourceUsage.sorted { $0.value.totalExecutionTime > $1.value.totalExecutionTime }
                 let totalTime = sortedUsage.map(\.value.totalExecutionTime).reduce(0, +)
 
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     // 顶部统计卡片，让画面更显饱满与专业
-                    HStack(spacing: DesignSystem.medium) {
+                    HStack(spacing: DesignTokens.Spacing.medium) {
                         MetricTile(
                             title: L10n.Plugin.Stats.enabledCount,
                             value: "\(registry.plugins.count)",
-                            icon: DesignSystem.Icons.puzzlepieceExtensionFill,
+                            icon: DesignTokens.Icons.puzzlepieceExtensionFill,
                             iconColor: Color.theme.blue,
                             valueColor: .appText,
-                            containerOpacity: DesignSystem.Opacity.dim,
-                            cornerRadius: DesignSystem.mediumRadius
+                            containerOpacity: DesignTokens.Opacity.dim,
+                            cornerRadius: DesignTokens.Spacing.mediumRadius
                         )
                         MetricTile(
                             title: L10n.Plugin.Stats.activeCount,
                             value: "\(registry.pluginResourceUsage.filter { $0.value.status == .active }.count)",
-                            icon: DesignSystem.Icons.playCircleFill,
+                            icon: DesignTokens.Icons.playCircleFill,
                             iconColor: Color.theme.green,
                             valueColor: .appText,
-                            containerOpacity: DesignSystem.Opacity.dim,
-                            cornerRadius: DesignSystem.mediumRadius
+                            containerOpacity: DesignTokens.Opacity.dim,
+                            cornerRadius: DesignTokens.Spacing.mediumRadius
                         )
                     }
-                    .padding(.horizontal, DesignSystem.small)
+                    .padding(.horizontal, DesignTokens.Spacing.small)
 
                     // Donut 环形占比图表
                     if totalTime > 0 {
-                        VStack(spacing: DesignSystem.small) {
+                        VStack(spacing: DesignTokens.Spacing.small) {
                             Chart(sortedUsage, id: \.key) { id, usage in
                                 SectorMark(
                                     angle: .value("Time", usage.totalExecutionTime),
                                     innerRadius: .ratio(0.65),
-                                    angularInset: DesignSystem.atomic
+                                    angularInset: DesignTokens.Spacing.atomic
                                 )
                                 .foregroundStyle(by: .value("Plugin", displayName(for: id)))
-                                .cornerRadius(DesignSystem.microRadius)
+                                .cornerRadius(DesignTokens.Spacing.microRadius)
                             }
-                            .frame(height: DesignSystem.Metrics.chartHeight)
-                            .padding(.top, DesignSystem.small)
+                            .frame(height: DesignTokens.Metrics.chartHeight)
+                            .padding(.top, DesignTokens.Spacing.small)
 
                             Text(L10n.Plugin.Stats.totalExecutionTime(String(format: "%.3fs", totalTime)))
-                                .font(.system(size: DesignSystem.captionFontSize, weight: .semibold, design: .monospaced))
+                                .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .semibold, design: .monospaced))
                                 .foregroundStyle(.appSecondary)
                         }
-                        .padding(.vertical, DesignSystem.small)
-                        .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-                        .cornerRadius(SystemRadius.small)
+                        .padding(.vertical, DesignTokens.Spacing.small)
+                        .background(Color.appCard.opacity(DesignTokens.Opacity.subtle))
+                        .cornerRadius(DesignTokens.SystemRadius.small)
                     }
 
                     // 插件列表明细
@@ -79,12 +80,12 @@ struct PluginStatsSection: View {
                             let (id, usage) = item
                             let percentage = totalTime > 0 ? usage.totalExecutionTime / totalTime : 0.0
 
-                            HStack(spacing: DesignSystem.medium) {
+                            HStack(spacing: DesignTokens.Spacing.medium) {
                                 // 插件专有动态或本地缓存图标
                                 pluginIconView(for: id)
 
-                                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                                    HStack(spacing: DesignSystem.small) {
+                                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                                    HStack(spacing: DesignTokens.Spacing.small) {
                                         // 动态语言匹配的插件显示名称
                                         Text(displayName(for: id))
                                             .font(.subheadline.bold())
@@ -93,56 +94,56 @@ struct PluginStatsSection: View {
                                         // 彩点状态指示器
                                         Circle()
                                             .fill(statusColor(for: usage.status))
-                                            .frame(width: SystemSpacing.small, height: SystemSpacing.small)
+                                            .frame(width: DesignTokens.SystemSpacing.small, height: DesignTokens.SystemSpacing.small)
                                     }
 
                                     // 自定义微缩进度条表示总时间占比 (利用标准化 progressHeight 消除硬编码)
                                     GeometryReader { geo in
                                         ZStack(alignment: .leading) {
                                             Capsule()
-                                                .fill(Color.appBorder.opacity(DesignSystem.Opacity.subtle))
-                                                .frame(height: DesignSystem.Metrics.progressHeight)
+                                                .fill(Color.appBorder.opacity(DesignTokens.Opacity.subtle))
+                                                .frame(height: DesignTokens.Metrics.progressHeight)
 
                                             Capsule()
                                                 .fill(pluginColor(for: id))
-                                                .frame(width: geo.size.width * CGFloat(percentage), height: DesignSystem.Metrics.progressHeight)
+                                                .frame(width: geo.size.width * CGFloat(percentage), height: DesignTokens.Metrics.progressHeight)
                                         }
                                     }
-                                    .frame(height: DesignSystem.Metrics.progressHeight)
-                                    .padding(.top, DesignSystem.atomic)
+                                    .frame(height: DesignTokens.Metrics.progressHeight)
+                                    .padding(.top, DesignTokens.Spacing.atomic)
                                 }
 
                                 Spacer()
 
-                                VStack(alignment: .trailing, spacing: DesignSystem.tiny) {
+                                VStack(alignment: .trailing, spacing: DesignTokens.Spacing.tiny) {
                                     // 耗时数值与占比 (添加 CPU 与 占比 的辅助文本)
-                                    HStack(spacing: SystemSpacing.atomic) {
+                                    HStack(spacing: DesignTokens.SystemSpacing.atomic) {
                                         Text(L10n.Plugin.Stats.cpu)
-                                            .font(.system(size: DesignSystem.microFontSize))
+                                            .font(.system(size: DesignTokens.Typography.microFontSize))
                                             .foregroundStyle(.appSecondary)
                                         Text(String(format: "%.2fs", usage.totalExecutionTime))
                                             .font(.system(.footnote, design: .monospaced).weight(.bold))
                                             .foregroundStyle(usage.status == .suspended ? Color.theme.red : .appText)
                                     }
 
-                                    HStack(spacing: SystemSpacing.atomic) {
+                                    HStack(spacing: DesignTokens.SystemSpacing.atomic) {
                                         Text(L10n.Plugin.Stats.ratio)
-                                            .font(.system(size: DesignSystem.microFontSize))
+                                            .font(.system(size: DesignTokens.Typography.microFontSize))
                                             .foregroundStyle(.appSecondary)
                                         Text(String(format: "%.1f%%", percentage * FeatureConstants.PercentageBase.full))
-                                            .font(.system(size: SystemFontSize.micro, design: .monospaced))
+                                            .font(.system(size: DesignTokens.SystemFontSize.micro, design: .monospaced))
                                             .foregroundStyle(.appSecondary)
                                     }
                                 }
                             }
-                            .padding(.vertical, SystemSpacing.element)
+                            .padding(.vertical, DesignTokens.SystemSpacing.element)
 
                             if index < sortedUsage.count - 1 {
-                                Divider().opacity(DesignSystem.Opacity.shadow)
+                                Divider().opacity(DesignTokens.Opacity.shadow)
                             }
                         }
                     }
-                    .padding(.horizontal, DesignSystem.small)
+                    .padding(.horizontal, DesignTokens.Spacing.small)
                 }
             }
         }
@@ -171,16 +172,16 @@ struct PluginStatsSection: View {
             Image(uiImage: uiImage)
                 .resizable()
                 .scaledToFit()
-                .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
-                .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
-                .overlay(RoundedRectangle(cornerRadius: SystemRadius.small).stroke(Color.appBorder.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider))
+                .frame(width: DesignTokens.IconSize.large, height: DesignTokens.IconSize.large)
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
+                .overlay(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small).stroke(Color.appBorder.opacity(DesignTokens.Opacity.subtle), lineWidth: DesignTokens.SystemStroke.divider))
         } else {
             ZStack {
-                RoundedRectangle(cornerRadius: SystemRadius.small, style: .continuous)
-                    .fill(pluginColor(for: pluginID).opacity(DesignSystem.Opacity.subtle))
-                    .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
+                RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small, style: .continuous)
+                    .fill(pluginColor(for: pluginID).opacity(DesignTokens.Opacity.subtle))
+                    .frame(width: DesignTokens.IconSize.large, height: DesignTokens.IconSize.large)
 
-                Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
+                Image(systemName: DesignTokens.Icons.puzzlepieceExtensionFill)
                     .font(.title3)
                     .foregroundStyle(pluginColor(for: pluginID))
             }

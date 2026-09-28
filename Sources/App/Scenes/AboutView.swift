@@ -9,6 +9,7 @@
 //  核心职责：构建 About 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 关于页面
 struct AboutView: View {
@@ -16,34 +17,34 @@ struct AboutView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: Spacing.huge) {
+            VStack(spacing: DesignTokens.Spacing.huge) {
                 // App Icon & Name
-                VStack(spacing: Spacing.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: Spacing.giant)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.giant)
                             .fill(LinearGradient(colors: [.appAccent, .appConcept], startPoint: .topLeading, endPoint: .bottomTrailing))
                             .frame(width: DesignSystem.Domain.About.logoSize, height: DesignSystem.Domain.About.logoSize)
-                            .shadow(color: .appAccent.opacity(DesignSystem.Opacity.shadow), radius: 15, y: 8)
+                            .shadow(color: .appAccent.opacity(DesignTokens.Opacity.shadow), radius: 15, y: 8)
                         
-                        // 修正：使用 DesignSystem.Icons.library 作为标志图标，以确保与 Splash 启动页的品牌标志完全一致
-                        Image(systemName: DesignSystem.Icons.library)
+                        // 修正：使用 DesignTokens.Icons.library 作为标志图标，以确保与 Splash 启动页的品牌标志完全一致
+                        Image(systemName: DesignTokens.Icons.library)
                             .font(.system(size: DesignSystem.Domain.About.logoSize / 2))
                             .foregroundStyle(.white)
                     }
                     
-                    VStack(spacing: DesignSystem.tiny) {
+                    VStack(spacing: DesignTokens.Spacing.tiny) {
                         Text(L10n.Common.appName)
                             .font(.title2.bold())
                     }
                 }
-                .padding(.top, ComponentSpacing.ultra)
+                .padding(.top, DesignTokens.ComponentSpacing.ultra)
                 
                 // 去粗糙化：移除在此处误引用的 L10n.Vault.subtitle (即“选择一个笔记本开始探索”提示语)
                 
                 // Info List
-                VStack(spacing: SystemSpacing.divider) {
+                VStack(spacing: DesignTokens.SystemSpacing.divider) {
                     infoRow(title: L10n.Settings.About.developer, value: L10n.Settings.About.developerName)
-                    Divider().padding(.leading, Spacing.standardPadding)
+                    Divider().padding(.leading, DesignTokens.Spacing.standardPadding)
                     
                     // 将“官方网站”只读文本更换为 Link，支持点击调用系统默认浏览器进行跳转
                     HStack {
@@ -59,18 +60,18 @@ struct AboutView: View {
                                 .foregroundStyle(.appSecondary)
                         }
                     }
-                    .padding(Spacing.standardPadding)
+                    .padding(DesignTokens.Spacing.standardPadding)
                     
-                    Divider().padding(.leading, Spacing.standardPadding)
+                    Divider().padding(.leading, DesignTokens.Spacing.standardPadding)
                     infoRow(title: L10n.Settings.About.version, value: versionDisplayString)
-                    Divider().padding(.leading, Spacing.standardPadding)
+                    Divider().padding(.leading, DesignTokens.Spacing.standardPadding)
                     infoRow(title: L10n.Settings.About.build, value: buildDetailString)
-                    Divider().padding(.leading, Spacing.standardPadding)
+                    Divider().padding(.leading, DesignTokens.Spacing.standardPadding)
                     infoRow(title: L10n.Settings.About.buildTime, value: buildTimestampString)
                 }
-                .background(Color.appCard.opacity(DesignSystem.Opacity.soft))
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-                .padding(.horizontal, Spacing.standardPadding)
+                .background(Color.appCard.opacity(DesignTokens.Opacity.soft))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
                 
                 Spacer()
                 
@@ -79,7 +80,7 @@ struct AboutView: View {
                     .font(.caption2)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.bottom, ComponentSpacing.ultra)
+                    .padding(.bottom, DesignTokens.ComponentSpacing.ultra)
             }
         }
         .background(PageBackgroundView(accentColor: .appAccent))
@@ -118,6 +119,6 @@ struct AboutView: View {
             Text(value)
                 .foregroundStyle(.appSecondary)
         }
-        .padding(Spacing.standardPadding)
+        .padding(DesignTokens.Spacing.standardPadding)
     }
 }

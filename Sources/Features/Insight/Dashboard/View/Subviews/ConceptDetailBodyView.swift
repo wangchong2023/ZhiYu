@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// [L3] 表现层：主题页面差异化详情视图
 struct ConceptDetailBodyView: View {
@@ -37,7 +38,7 @@ struct ConceptDetailBodyView: View {
     private static let neighborNodeAngleScale: Double = 0.35
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
             // 1. 局部关系脑图 (Local Relation Graph)
             localRelationGraphSection
             
@@ -61,17 +62,17 @@ struct ConceptDetailBodyView: View {
     
     // MARK: - 1. 局部关系脑图 (Local Relation Graph)
     private var localRelationGraphSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             InsightSectionHeader(title: L10n.Graph.title, icon: "point.3.connected.trianglepath.dotted")
             
             ZStack {
                 // 脑图背景卡片
-                RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                    .fill(Color.appCard.opacity(DesignSystem.Opacity.ghost))
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                    .fill(Color.appCard.opacity(DesignTokens.Opacity.ghost))
                     .frame(height: Self.graphHeight)
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                            .stroke(Color.appBorder, lineWidth: DesignTokens.Spacing.borderWidth)
                     )
                 
                 let outgoing = Array(page.outgoingLinks.prefix(Self.limitOutgoingCount))
@@ -97,7 +98,7 @@ struct ConceptDetailBodyView: View {
                         }
                         .stroke(
                             LinearGradient(
-                                colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.disabled)],
+                                colors: [.appAccent, .appAccent.opacity(DesignTokens.Opacity.disabled)],
                                 startPoint: .center,
                                 endPoint: .trailing
                             ),
@@ -111,23 +112,23 @@ struct ConceptDetailBodyView: View {
                             Button(action: {
                                 onLinkTap(link)
                             }) {
-                                HStack(spacing: DesignSystem.tightPadding) {
-                                    Image(systemName: DesignSystem.Icons.tagFill)
+                                HStack(spacing: DesignTokens.Spacing.tightPadding) {
+                                    Image(systemName: DesignTokens.Icons.tagFill)
                                         .font(.system(size: Self.tagIconSize))
                                     Text(link)
                                         .font(.caption2.weight(.medium))
                                         .lineLimit(1)
                                 }
                                 .foregroundStyle(.appText)
-                                .padding(.horizontal, DesignSystem.medium)
-                                .padding(.vertical, DesignSystem.tightPadding)
+                                .padding(.horizontal, DesignTokens.Spacing.medium)
+                                .padding(.vertical, DesignTokens.Spacing.tightPadding)
                                 .background(Color.appCard)
                                 .clipShape(Capsule())
                                 .overlay(
                                     Capsule()
-                                        .stroke(Color.appAccent.opacity(DesignSystem.Opacity.prominent), lineWidth: Self.neighborNodeBorderWidth)
+                                        .stroke(Color.appAccent.opacity(DesignTokens.Opacity.prominent), lineWidth: Self.neighborNodeBorderWidth)
                                 )
-                                .shadow(color: Color.appText.opacity(DesignSystem.Opacity.shadow), radius: 3)
+                                .shadow(color: Color.appText.opacity(DesignTokens.Opacity.shadow), radius: 3)
                             }
                             .position(nodePoint)
                         }
@@ -136,24 +137,24 @@ struct ConceptDetailBodyView: View {
                         Button {
                             // Center node action
                         } label: {
-                            HStack(spacing: DesignSystem.tightPadding) {
+                            HStack(spacing: DesignTokens.Spacing.tightPadding) {
                                 Circle()
                                     .fill(Color.appCard)
-                                    .frame(width: DesignSystem.iconTiny, height: DesignSystem.iconTiny)
+                                    .frame(width: DesignTokens.Spacing.iconTiny, height: DesignTokens.Spacing.iconTiny)
                                 Text(page.title)
                                     .font(.caption.weight(.bold))
                                     .lineLimit(1)
                             }
                             .accentCapsuleStyle(
-                                horizontalPadding: DesignSystem.standardPadding,
-                                verticalPadding: DesignSystem.tightPadding,
-                                gradientEndOpacity: DesignSystem.Opacity.prominent
+                                horizontalPadding: DesignTokens.Spacing.standardPadding,
+                                verticalPadding: DesignTokens.Spacing.tightPadding,
+                                gradientEndOpacity: DesignTokens.Opacity.prominent
                             )
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: Self.neighborNodeBorderWidth)
+                                    .stroke(Color.appAccent.opacity(DesignTokens.Opacity.medium), lineWidth: Self.neighborNodeBorderWidth)
                             )
-                            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: Self.centralNodeShadowRadius)
+                            .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: Self.centralNodeShadowRadius)
                         }
                         .position(center)
                     }
@@ -165,11 +166,11 @@ struct ConceptDetailBodyView: View {
     
     // MARK: - 2. 认知碰撞卡 (Surprising Insights)
     private func insightsSection(_ insights: [ConceptFrontmatter.SurprisingInsight]) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            InsightSectionHeader(title: L10n.Dashboard.stats.citationAccuracy, icon: DesignSystem.Icons.sparkles, color: Color.theme.orange)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            InsightSectionHeader(title: L10n.Dashboard.stats.citationAccuracy, icon: DesignTokens.Icons.sparkles, color: Color.theme.orange)
             
             ForEach(insights, id: \.insightTitle) { insight in
-                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     HStack {
                         Text(insight.insightTitle)
                             .font(.caption.bold())
@@ -181,9 +182,9 @@ struct ConceptDetailBodyView: View {
                             Text(insight.linkedConceptID)
                                 .font(.system(size: Self.insightBadgeSize, weight: .bold))
                                 .foregroundStyle(Color.theme.orange)
-                                .padding(.horizontal, Spacing.tiny)
-                                .padding(.vertical, Spacing.atomic)
-                                .background(Color.theme.orange.opacity(DesignSystem.subtleFillOpacity))
+                                .padding(.horizontal, DesignTokens.Spacing.tiny)
+                                .padding(.vertical, DesignTokens.Spacing.atomic)
+                                .background(Color.theme.orange.opacity(DesignTokens.Colors.subtleFillOpacity))
                                 .clipShape(Capsule())
                         }
                     }
@@ -193,13 +194,13 @@ struct ConceptDetailBodyView: View {
                         .foregroundStyle(.appSecondary)
                 }
                 .borderedCardStyle(
-                    horizontalPadding: DesignSystem.medium,
-                    verticalPadding: DesignSystem.medium,
-                    backgroundOpacity: DesignSystem.Opacity.soft,
-                    cornerRadius: DesignSystem.standardRadius,
+                    horizontalPadding: DesignTokens.Spacing.medium,
+                    verticalPadding: DesignTokens.Spacing.medium,
+                    backgroundOpacity: DesignTokens.Opacity.soft,
+                    cornerRadius: DesignTokens.Spacing.standardRadius,
                     borderWidth: Self.neighborNodeBorderWidth,
                     borderColor: Color.theme.orange,
-                    borderOpacity: DesignSystem.Opacity.disabled
+                    borderOpacity: DesignTokens.Opacity.disabled
                 )
             }
         }
@@ -207,14 +208,14 @@ struct ConceptDetailBodyView: View {
     
     // MARK: - 3. 知识脉络树 (Outlines Tree)
     private var outlinesTreeSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            InsightSectionHeader(title: L10n.Editor.toc, icon: DesignSystem.Icons.listBulletIndent)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            InsightSectionHeader(title: L10n.Editor.toc, icon: DesignTokens.Icons.listBulletIndent)
             
             if let outlines = frontmatter?.outlines, !outlines.isEmpty {
                 // 如果 Frontmatter 解析出了层级大纲
                 VStack(alignment: .leading, spacing: Self.outlineSpacing) {
                     ForEach(outlines) { node in
-                        HStack(spacing: Spacing.small) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
                             Spacer()
                                 .frame(width: CGFloat(node.level - 1) * Self.indentStep)
                             
@@ -250,11 +251,11 @@ struct ConceptDetailBodyView: View {
                 } else {
                     VStack(alignment: .leading, spacing: Self.outlineSpacing) {
                         ForEach(derivedOutlines) { item in
-                            HStack(spacing: Spacing.small) {
+                            HStack(spacing: DesignTokens.Spacing.small) {
                                 Spacer()
                                     .frame(width: CGFloat(item.level - 1) * Self.indentStep)
                                 
-                                Image(systemName: DesignSystem.Icons.squareFill)
+                                Image(systemName: DesignTokens.Icons.squareFill)
                                     .font(.system(size: Self.derivedDotSize))
                                     .foregroundStyle(.appSecondary)
                                 

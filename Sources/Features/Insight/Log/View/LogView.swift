@@ -9,6 +9,7 @@
 //  核心职责：构建 Log 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 导航入口
 /// 操作日志主视图容器
@@ -29,7 +30,7 @@ struct LogViewContent: View {
     @State private var showConfirmation = false
 
     private var emptyPadding: CGFloat {
-        ComponentSpacing.ultra
+        DesignTokens.ComponentSpacing.ultra
     }
 
     var body: some View {
@@ -49,7 +50,7 @@ struct LogViewContent: View {
             Button(role: .destructive) {
                 showConfirmation = true
             } label: {
-                Label(L10n.Common.Misc.clear, systemImage: DesignSystem.Icons.trashSlash)
+                Label(L10n.Common.Misc.clear, systemImage: DesignTokens.Icons.trashSlash)
             }
         }
         .confirmationDialog(
@@ -73,8 +74,8 @@ struct LogViewContent: View {
 
     @ViewBuilder
     private var emptyStateView: some View {
-        VStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.history)
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.history)
                 .font(.system(size: DesignSystem.Timeline.emptyIconSize))
                 .foregroundStyle(.appSecondary)
             Text(L10n.Log.noLogs)
@@ -82,7 +83,7 @@ struct LogViewContent: View {
                 .foregroundStyle(.appSecondary)
             Text(L10n.Log.noLogsHint)
                 .font(.caption)
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.secondaryOpacity))
+                .foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, emptyPadding)
@@ -92,7 +93,7 @@ struct LogViewContent: View {
     private var logListRows: some View {
         ForEach(store.logEntries) { entry in
             Button(action: {
-                withAnimation(.easeInOut(duration: DesignSystem.Animation.standardDuration)) {
+                withAnimation(.easeInOut(duration: DesignTokens.Animation.standardDuration)) {
                     if expandedEntryIDs.contains(entry.id) {
                         expandedEntryIDs.remove(entry.id)
                     } else {
@@ -119,37 +120,37 @@ private struct LogEntryRow: View {
 
     // 提前计算复杂的布局常量，避免在 View 渲染中进行繁重的算术运算导致编译器超时
     private var vspacing: CGFloat {
-        SystemSpacing.small
+        DesignTokens.SystemSpacing.small
     }
     private var modFontSize: CGFloat {
-        DesignSystem.microFontSize - SystemStroke.divider
+        DesignTokens.Typography.microFontSize - DesignTokens.SystemStroke.divider
     }
     private var modVerticalPadding: CGFloat {
-        SystemStroke.divider
+        DesignTokens.SystemStroke.divider
     }
     private var modCornerRadius: CGFloat {
-        DesignSystem.microRadius - SystemStroke.divider
+        DesignTokens.Spacing.microRadius - DesignTokens.SystemStroke.divider
     }
     private var statusFontSize: CGFloat {
-        DesignSystem.caption2FontSize - SystemStroke.divider
+        DesignTokens.Typography.caption2FontSize - DesignTokens.SystemStroke.divider
     }
     private var statusHorizontalPadding: CGFloat {
-        SystemSpacing.small
+        DesignTokens.SystemSpacing.small
     }
     private var actionBgOpacity: Double {
-        SystemOpacity.faint
+        DesignTokens.SystemOpacity.faint
     }
     private var statusBgOpacity: Double {
-        DesignSystem.glassOpacity
+        DesignTokens.Colors.Opacity.glassOpacity
     }
     private var detailBgOpacity: Double {
-        SystemOpacity.disabled
+        DesignTokens.SystemOpacity.disabled
     }
     private var failureBgOpacity: Double {
-        SystemOpacity.ghost
+        DesignTokens.SystemOpacity.ghost
     }
     private var failureTextOpacity: Double {
-        DesignSystem.secondaryOpacity
+        DesignTokens.Colors.Opacity.secondaryOpacity
     }
 
     private var statusBackgroundColor: Color {
@@ -182,15 +183,15 @@ private struct LogEntryRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: vspacing) {
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 actionIcon
                 
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                     mainHeaderRow
                     timeAndDurationRow
                 }
 
-                Image(systemName: isExpanded ? DesignSystem.Icons.up : DesignSystem.Icons.down)
+                Image(systemName: isExpanded ? DesignTokens.Icons.up : DesignTokens.Icons.down)
                     .font(.caption2)
                     .foregroundStyle(.appSecondary)
             }
@@ -213,7 +214,7 @@ private struct LogEntryRow: View {
             
             Image(systemName: entry.action.icon)
                 .foregroundStyle(Color.fromModelColorName(entry.action.colorName))
-                .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
+                .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold))
         }
     }
 
@@ -232,7 +233,7 @@ private struct LogEntryRow: View {
             if let mod = entry.module {
                 Text(mod)
                     .font(.system(size: modFontSize, weight: .bold))
-                    .padding(.horizontal, DesignSystem.tiny)
+                    .padding(.horizontal, DesignTokens.Spacing.tiny)
                     .padding(.vertical, modVerticalPadding)
                     .background(Color.appSecondary.opacity(statusBgOpacity))
                     .clipShape(RoundedRectangle(cornerRadius: modCornerRadius))
@@ -245,7 +246,7 @@ private struct LogEntryRow: View {
                 Text(status.localizedName)
                     .font(.system(size: statusFontSize, weight: .bold))
                     .padding(.horizontal, statusHorizontalPadding)
-                    .padding(.vertical, DesignSystem.atomic)
+                    .padding(.vertical, DesignTokens.Spacing.atomic)
                     .background(statusBackgroundColor)
                     .foregroundStyle(statusForegroundColor)
                     .clipShape(Capsule())
@@ -255,11 +256,11 @@ private struct LogEntryRow: View {
 
     @ViewBuilder
     private var timeAndDurationRow: some View {
-        HStack(spacing: DesignSystem.tightPadding) {
+        HStack(spacing: DesignTokens.Spacing.tightPadding) {
             Text(timeRangeString)
             
             if let dur = entry.duration {
-                Text(DesignSystem.Icons.bullet)
+                Text(DesignTokens.Icons.bullet)
                 Text(dur.formattedAdaptive)
                     .foregroundStyle(.appAccent)
             }
@@ -270,8 +271,8 @@ private struct LogEntryRow: View {
 
     @ViewBuilder
     private var expandedDetailsView: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack(spacing: DesignSystem.wide) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            HStack(spacing: DesignTokens.Spacing.wide) {
                 if entry.startTime != nil {
                     VStack(alignment: .leading) {
                         Text(L10n.Log.startTime)
@@ -306,10 +307,10 @@ private struct LogEntryRow: View {
             .padding(.horizontal, DesignSystem.Timeline.detailHorizontalPadding)
             .padding(.vertical, DesignSystem.Timeline.detailVerticalPadding)
             .background(Color.appCard.opacity(detailBgOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
 
             if let reason = entry.failureReason {
-                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     Text(L10n.Log.failureReason)
                         .font(.caption2.bold())
                         .foregroundStyle(Color.theme.red)
@@ -320,7 +321,7 @@ private struct LogEntryRow: View {
                 .padding(DesignSystem.Timeline.detailHorizontalPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.theme.red.opacity(failureBgOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
             }
 
             if !entry.details.isEmpty {
@@ -330,13 +331,13 @@ private struct LogEntryRow: View {
                     .cardStyle(
                         horizontalPadding: DesignSystem.Timeline.detailHorizontalPadding,
                         verticalPadding: DesignSystem.Timeline.detailHorizontalPadding,
-                        backgroundOpacity: DesignSystem.Opacity.solid,
-                        cornerRadius: DesignSystem.standardRadius
+                        backgroundOpacity: DesignTokens.Opacity.solid,
+                        cornerRadius: DesignTokens.Spacing.standardRadius
                     )
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.leading, DesignSystem.Timeline.indentPadding)
-        .padding(.top, DesignSystem.tiny)
+        .padding(.top, DesignTokens.Spacing.tiny)
     }
 }

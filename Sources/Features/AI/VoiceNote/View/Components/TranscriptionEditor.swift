@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 转写文本编辑器组件
 /// 根据 idiom 自动切换 TextEditor（非 watch）或 TextField（watch），消除两处重复的编辑器样式链
@@ -34,7 +35,7 @@ struct TranscriptionEditor: View {
                     Group {
                         if showBorder {
                             RoundedRectangle(cornerRadius: cornerRadius)
-                                .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                                .stroke(Color.appBorder, lineWidth: DesignTokens.Spacing.borderWidth)
                         }
                     }
                 )

@@ -41,44 +41,44 @@ struct IngestTimelineView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(stages.enumerated()), id: \.element.id) { index, stage in
-                HStack(alignment: .top, spacing: DesignSystem.medium) {
+                HStack(alignment: .top, spacing: DesignTokens.Spacing.medium) {
                     // 左侧图标与连线
                     VStack(spacing: 0) {
                         ZStack {
                             Circle()
-                                .fill(isCompleted(stage.id) ? stage.color : (isActive(stage.id) ? stage.color.opacity(DesignSystem.Opacity.medium) : Color.appCard))
-                                .frame(width: DesignSystem.IconSize.standard, height: DesignSystem.IconSize.standard)
+                                .fill(isCompleted(stage.id) ? stage.color : (isActive(stage.id) ? stage.color.opacity(DesignTokens.Opacity.medium) : Color.appCard))
+                                .frame(width: DesignTokens.IconSize.standard, height: DesignTokens.IconSize.standard)
                             
                             if isActive(stage.id) {
                                 AppLottieView(name: IngestLottieAnimation.processing)
-                                    .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
+                                    .frame(width: DesignTokens.IconSize.large, height: DesignTokens.IconSize.large)
                             }
                             
                             Image(systemName: isCompleted(stage.id) ? "checkmark" : stage.icon)
-                                .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
-                                .foregroundStyle(isCompleted(stage.id) ? .white : (isActive(stage.id) ? stage.color : .appSecondary.opacity(DesignSystem.Opacity.soft)))
+                                .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .bold)) // Dynamic Type
+                                .foregroundStyle(isCompleted(stage.id) ? .white : (isActive(stage.id) ? stage.color : .appSecondary.opacity(DesignTokens.Opacity.soft)))
                         }
                         
                         if index < stages.count - 1 {
                             Rectangle()
                                 .fill(isCompleted(stage.id) ? stage.color : Color.appBorder)
-                                .frame(width: DesignSystem.atomic)
+                                .frame(width: DesignTokens.Spacing.atomic)
                                 .frame(minHeight: isActive(stage.id) ? 30 : 16)
-                                .padding(.vertical, SystemSpacing.atomic)
+                                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
                         }
                     }
                     
                     // 右侧内容
-                    VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                         Text(stage.title)
                             .font(.subheadline.weight(isActive(stage.id) ? .bold : .medium))
-                            .foregroundStyle(isActive(stage.id) ? stage.color : (isCompleted(stage.id) ? .appText : .appSecondary.opacity(DesignSystem.Opacity.soft)))
-                            .padding(.top, SystemSpacing.atomic)
+                            .foregroundStyle(isActive(stage.id) ? stage.color : (isCompleted(stage.id) ? .appText : .appSecondary.opacity(DesignTokens.Opacity.soft)))
+                            .padding(.top, DesignTokens.SystemSpacing.atomic)
                         
                         // 只在当前活跃阶段显示最新的子日志
                         if isActive(stage.id), let latestLog = subLogs.last {
                             Text(latestLog)
-                                .font(.system(size: DesignSystem.captionFontSize, design: .monospaced))
+                                .font(.system(size: DesignTokens.Typography.captionFontSize, design: .monospaced))
                                 .foregroundStyle(.appSecondary)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
@@ -86,7 +86,7 @@ struct IngestTimelineView: View {
                                 .animation(.easeOut(duration: 0.3), value: latestLog)
                         }
                     }
-                    .padding(.bottom, index < stages.count - 1 ? DesignSystem.small : 0)
+                    .padding(.bottom, index < stages.count - 1 ? DesignTokens.Spacing.small : 0)
                 }
             }
         }

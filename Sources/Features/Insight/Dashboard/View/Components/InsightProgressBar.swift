@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：通用水平进度条
 ///
@@ -18,7 +19,7 @@ import SwiftUI
 /// 通过 `progress`（0.0–1.0）控制前景宽度比例，消除各处重复的进度条代码。
 struct InsightProgressBar: View {
     let progress: Double
-    var lineHeight: CGFloat = Spacing.atomic
+    var lineHeight: CGFloat = DesignTokens.Spacing.atomic
     var trackColor: Color = .appBorder
     var fillColor: Color = .appAccent
 

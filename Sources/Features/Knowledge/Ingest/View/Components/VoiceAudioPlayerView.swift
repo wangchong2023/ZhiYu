@@ -14,14 +14,15 @@ import Combine
 import AVFoundation
 import NaturalLanguage
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 语音播放器私有常量
 private enum VoiceUIConstants {
-    static let waveformMaxHeight: CGFloat = ComponentSpacing.huge
-    static let waveformMinHeight: CGFloat = SystemSpacing.element
-    static let waveformIdleHeight: CGFloat = SystemSpacing.medium
-    static let playButtonSize: CGFloat = ComponentSpacing.iconDisplay
-    static let waveformBarCount: Int = Int(ComponentSpacing.iconCompact)
+    static let waveformMaxHeight: CGFloat = DesignTokens.ComponentSpacing.huge
+    static let waveformMinHeight: CGFloat = DesignTokens.SystemSpacing.element
+    static let waveformIdleHeight: CGFloat = DesignTokens.SystemSpacing.medium
+    static let playButtonSize: CGFloat = DesignTokens.ComponentSpacing.iconDisplay
+    static let waveformBarCount: Int = Int(DesignTokens.ComponentSpacing.iconCompact)
 }
 
 // MARK: - 语音播放器播放配置（非 UI 语境）
@@ -67,11 +68,11 @@ struct VoiceAudioPlayerView: View {
     private let timer = Timer.publish(every: VoicePlaybackConfig.timerInterval, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             // 1. 音频播放器主卡片
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 HStack {
-                    SourceBadge(label: L10n.Ingest.voiceNote, icon: DesignSystem.Icons.waveform, color: .appAccent)
+                    SourceBadge(label: L10n.Ingest.voiceNote, icon: DesignTokens.Icons.waveform, color: .appAccent)
 
                     Spacer()
                     
@@ -81,20 +82,20 @@ struct VoiceAudioPlayerView: View {
                 }
                 
                 // 波形跳动图
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     ForEach(0..<waveformLevels.count, id: \.self) { index in
-                        RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                            .fill(isPlaying ? Color.appAccent : Color.appAccent.opacity(DesignSystem.Opacity.medium))
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.tiny)
+                            .fill(isPlaying ? Color.appAccent : Color.appAccent.opacity(DesignTokens.Opacity.medium))
                             .frame(height: isPlaying ? waveformLevels[index] * VoiceUIConstants.waveformMaxHeight + VoiceUIConstants.waveformMinHeight : VoiceUIConstants.waveformIdleHeight)
                             .animation(.easeInOut(duration: VoicePlaybackConfig.waveformAnimationDuration).repeatCount(1, autoreverses: true), value: isPlaying)
                     }
                 }
-                .frame(height: DesignSystem.Metrics.iconBoxSize)
+                .frame(height: DesignTokens.Metrics.iconBoxSize)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, DesignSystem.tiny)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
                 
                 // 播放进度与控制行
-                VStack(spacing: DesignSystem.tiny) {
+                VStack(spacing: DesignTokens.Spacing.tiny) {
                     Slider(value: $currentTime, in: 0...max(1, duration)) { editing in
                         if !editing, let player = audioPlayer {
                             player.currentTime = currentTime
@@ -116,11 +117,11 @@ struct VoiceAudioPlayerView: View {
                 }
                 
                 // 控制按钮行
-                HStack(spacing: DesignSystem.loosePadding) {
+                HStack(spacing: DesignTokens.Spacing.loosePadding) {
                     Spacer()
                     
                     Button(action: { seekBy(-VoicePlaybackConfig.seekInterval) }) {
-                        Image(systemName: DesignSystem.Icons.goBackward5)
+                        Image(systemName: DesignTokens.Icons.goBackward5)
                             .font(.title3)
                             .foregroundStyle(.primary)
                     }
@@ -129,11 +130,11 @@ struct VoiceAudioPlayerView: View {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                             .font(.system(size: VoiceUIConstants.playButtonSize)) // Dynamic Type
                             .foregroundStyle(.appAccent)
-                            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
+                            .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.smallRadius)
                     }
 
                     Button(action: { seekBy(VoicePlaybackConfig.seekInterval) }) {
-                        Image(systemName: DesignSystem.Icons.goForward5)
+                        Image(systemName: DesignTokens.Icons.goForward5)
                             .font(.title3)
                             .foregroundStyle(.primary)
                     }
@@ -141,19 +142,19 @@ struct VoiceAudioPlayerView: View {
                     Spacer()
                 }
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
             .background(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
                     .fill(Color.appCard)
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .stroke(Color.appAccent.opacity(DesignSystem.Opacity.medium), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                            .stroke(Color.appAccent.opacity(DesignTokens.Opacity.medium), lineWidth: 1)
                     )
             )
             
             // 2. 语音转写正文
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
-                Label(L10n.Voice.Speech.result, systemImage: DesignSystem.Icons.docPlaintext)
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                Label(L10n.Voice.Speech.result, systemImage: DesignTokens.Icons.docPlaintext)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
                 

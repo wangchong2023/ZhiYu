@@ -11,6 +11,7 @@
 
 import SwiftUI
 import StoreKit
+import UFPDesignSystem
 
 /// 订阅购买流程组件：购买按钮、恢复购买与支付逻辑
 @MainActor
@@ -25,7 +26,7 @@ struct SubscriptionPurchaseFlow: View {
     private var storeKitService: StoreKitService { StoreKitService.shared }
 
     var body: some View {
-        VStack(spacing: DesignSystem.small) {
+        VStack(spacing: DesignTokens.Spacing.small) {
             // 购买按钮
             let btnText: String = selectedCycle == .yearly
                 ? L10n.Auth.upgradeToProYearly
@@ -33,7 +34,7 @@ struct SubscriptionPurchaseFlow: View {
 
             AppPrimaryButton(
                 title: btnText,
-                icon: DesignSystem.Icons.applelogo,
+                icon: DesignTokens.Icons.applelogo,
                 isLoading: isPurchasing
             ) {
                 handleApplePurchase()
@@ -43,10 +44,10 @@ struct SubscriptionPurchaseFlow: View {
             Button(action: {
                 Task { await handleRestorePurchases() }
             }) {
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     if storeKitService.isRestoring {
                         ProgressView()
-                            .scaleEffect(DesignSystem.Opacity.light)
+                            .scaleEffect(DesignTokens.Opacity.light)
                     }
                     Text(storeKitService.isRestoring
                          ? L10n.Auth.restoring
@@ -71,9 +72,9 @@ struct SubscriptionPurchaseFlow: View {
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, DesignSystem.large)
+                .padding(.horizontal, DesignTokens.Spacing.large)
         }
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
         .animation(.easeInOut(duration: 0.25), value: storeKitService.restoreMessage)
     }
 

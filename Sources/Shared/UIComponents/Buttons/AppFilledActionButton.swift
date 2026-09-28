@@ -10,11 +10,12 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 品牌色填充主操作按钮
 ///
 /// 消除 `VoiceNoteComponents`、`PageHistoryView`、`OCRScanView`、`CollaborationView` 中重复的
-/// `Text/HStack.font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding().background(Color.appAccent).clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))` 模式。
+/// `Text/HStack.font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding().background(Color.appAccent).clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))` 模式。
 public struct AppFilledActionButton: View {
     public let title: String
     public var icon: String?
@@ -43,7 +44,7 @@ public struct AppFilledActionButton: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
         }
         .buttonStyle(.plain)
     }

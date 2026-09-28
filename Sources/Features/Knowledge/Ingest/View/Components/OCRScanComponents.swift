@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import PhotosUI
+import UFPDesignSystem
 
 // MARK: - OCR 组件常量（组件特定尺寸，无对应命名 token）
 private enum OCRConstants {
@@ -33,17 +34,17 @@ struct OCRImagePickerArea: View {
     let onStartRecognition: () -> Void
 
     var body: some View {
-        VStack(spacing: DesignSystem.standardPadding) { // 16
+        VStack(spacing: DesignTokens.Spacing.standardPadding) { // 16
             if let image = selectedImage {
                 OCRImageContentView(image: image)
             } else {
                 // Placeholder
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
                     .fill(Color.appCard)
-                    .frame(height: ComponentSpacing.chartHeight) // 220 最近档舍入
+                    .frame(height: DesignTokens.ComponentSpacing.chartHeight) // 220 最近档舍入
                     .overlay(
-                        VStack(spacing: DesignSystem.medium) { // 12
-                            Image(systemName: DesignSystem.Icons.ocr)
+                        VStack(spacing: DesignTokens.Spacing.medium) { // 12
+                            Image(systemName: DesignTokens.Icons.ocr)
                                 .font(.system(size: OCRConstants.placeholderIconSize)) // 36 组件特定尺寸
                                 .foregroundStyle(.appSecondary)
                             Text(L10n.Ingest.OCR.selectImage)
@@ -52,42 +53,42 @@ struct OCRImagePickerArea: View {
                         }
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                            .strokeBorder(style: StrokeStyle(lineWidth: Reference.Stroke.two, dash: [CGFloat(DesignSystem.small)])) // 2, 8
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                            .strokeBorder(style: StrokeStyle(lineWidth: DesignTokens.Reference.Stroke.two, dash: [CGFloat(DesignTokens.Spacing.small)])) // 2, 8
                             .foregroundStyle(.appBorder)
                     )
             }
 
             // Photo picker
-            HStack(spacing: DesignSystem.standardPadding) { // 16
+            HStack(spacing: DesignTokens.Spacing.standardPadding) { // 16
                 PhotosPicker(selection: Binding(
                     get: { selectedPhoto },
                     set: { onPhotoSelected($0) }
                 ), matching: .images) {
-                    Label(L10n.Ingest.OCR.fromAlbum, systemImage: DesignSystem.Icons.photoOnRectangle)
+                    Label(L10n.Ingest.OCR.fromAlbum, systemImage: DesignTokens.Icons.photoOnRectangle)
                         .font(.subheadline)
                         .foregroundStyle(.appAccent)
-                        .padding(.horizontal, DesignSystem.standardPadding) // 16
-                        .padding(.vertical, SystemSpacing.elementLarge) // 10
-                        .background(Color.appAccent.opacity(DesignSystem.glassOpacity), in: RoundedRectangle(cornerRadius: DesignSystem.smallRadius)) // 0.1
+                        .padding(.horizontal, DesignTokens.Spacing.standardPadding) // 16
+                        .padding(.vertical, DesignTokens.SystemSpacing.elementLarge) // 10
+                        .background(Color.appAccent.opacity(DesignTokens.Colors.Opacity.glassOpacity), in: RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)) // 0.1
                 }
                 .accessibilityIdentifier("ocr-select-photo")
 
                 if selectedImage != nil {
                     Button(action: onStartRecognition) {
-                        HStack(spacing: SystemSpacing.small) { // 6
+                        HStack(spacing: DesignTokens.SystemSpacing.small) { // 6
                             if isProcessing {
                                 ProgressView()
                                     .tint(.white)
-                                    .scaleEffect(SystemOpacity.textSecondary) // 0.8
+                                    .scaleEffect(DesignTokens.SystemOpacity.textSecondary) // 0.8
                             }
                             Text(isProcessing ? L10n.Ingest.OCR.processing : L10n.Ingest.OCR.recognize)
                         }
                         .font(.subheadline)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, DesignSystem.standardPadding) // 16
-                        .padding(.vertical, SystemSpacing.elementLarge) // 10
-                        .background(Color.appAccent, in: RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                        .padding(.horizontal, DesignTokens.Spacing.standardPadding) // 16
+                        .padding(.vertical, DesignTokens.SystemSpacing.elementLarge) // 10
+                        .background(Color.appAccent, in: RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
                     }
                     .accessibilityIdentifier("ocr-start-recognition")
                     .disabled(isProcessing)
@@ -106,16 +107,16 @@ struct OCRResultDisplay: View {
     let onCopy: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) { // 12
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) { // 12
             HStack {
-                Label(L10n.Ingest.OCR.result, systemImage: DesignSystem.Icons.document)
+                Label(L10n.Ingest.OCR.result, systemImage: DesignTokens.Icons.document)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
 
                 Spacer()
 
                 Button(action: onCopy) {
-                    Label(L10n.Common.copy, systemImage: DesignSystem.Icons.copy)
+                    Label(L10n.Common.copy, systemImage: DesignTokens.Icons.copy)
                         .font(.caption)
                         .foregroundStyle(.appAccent)
                 }
@@ -125,13 +126,13 @@ struct OCRResultDisplay: View {
             AdaptiveTextEditor(text: $recognizedText)
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.appText)
-                .frame(minHeight: ComponentSpacing.emptyStateImageHalf, maxHeight: OCRConstants.resultEditorMaxHeight) // 120, 368
+                .frame(minHeight: DesignTokens.ComponentSpacing.emptyStateImageHalf, maxHeight: OCRConstants.resultEditorMaxHeight) // 120, 368
                 .borderedCardStyle(
-                    horizontalPadding: DesignSystem.small,
-                    verticalPadding: DesignSystem.small,
-                    backgroundOpacity: DesignSystem.Opacity.dim,
-                    cornerRadius: DesignSystem.smallRadius,
-                    borderWidth: DesignSystem.borderWidth
+                    horizontalPadding: DesignTokens.Spacing.small,
+                    verticalPadding: DesignTokens.Spacing.small,
+                    backgroundOpacity: DesignTokens.Opacity.dim,
+                    cornerRadius: DesignTokens.Spacing.smallRadius,
+                    borderWidth: DesignTokens.Spacing.borderWidth
                 )
 
             HStack {

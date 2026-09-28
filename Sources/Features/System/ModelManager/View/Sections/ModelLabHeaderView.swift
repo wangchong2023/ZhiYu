@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 头部与格栅
 
@@ -22,7 +23,7 @@ extension ModelLabView {
 
     /// 用例卡片列表
     var useCaseGridView: some View {
-        LazyVGrid(columns: columns, spacing: DesignSystem.medium) {
+        LazyVGrid(columns: columns, spacing: DesignTokens.Spacing.medium) {
             ForEach(UseCaseType.allCases) { useCase in
                 useCaseCard(for: useCase)
             }
@@ -44,7 +45,7 @@ extension ModelLabView {
                 }
             }
         } label: {
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 // 用例图标与兼容状态
                 HStack {
                     Image(systemName: useCase.icon)
@@ -55,15 +56,15 @@ extension ModelLabView {
 
                     if !isCompatible {
                         Text(L10n.ModelManager.Lab.unsupported)
-                            .font(.system(size: SystemFontSize.micro))
-                            .padding(.horizontal, DesignSystem.standardPadding)
-                            .padding(.vertical, SystemSpacing.tiny)
-                            .background(Color.theme.red.opacity(DesignSystem.Opacity.medium))
+                            .font(.system(size: DesignTokens.SystemFontSize.micro))
+                            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
+                            .background(Color.theme.red.opacity(DesignTokens.Opacity.medium))
                             .foregroundStyle(Color.theme.red)
                             .clipShape(Capsule())
                     }
                 }
-                .padding(.bottom, DesignSystem.standardPadding)
+                .padding(.bottom, DesignTokens.Spacing.standardPadding)
 
                 Text(useCase.title)
                     .font(.headline)
@@ -71,28 +72,28 @@ extension ModelLabView {
 
                 Text(useCase.description)
                     .font(.caption)
-                    .foregroundStyle(isCompatible ? .appText.opacity(DesignSystem.subtleOpacity) : .secondary)
+                    .foregroundStyle(isCompatible ? .appText.opacity(DesignTokens.Colors.subtleOpacity) : .secondary)
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(DesignSystem.medium)
-            .frame(minHeight: DesignSystem.Metrics.sourceCardHeight + DesignSystem.large, alignment: .topLeading)
+            .padding(DesignTokens.Spacing.medium)
+            .frame(minHeight: DesignTokens.Metrics.sourceCardHeight + DesignTokens.Spacing.large, alignment: .topLeading)
             // 暗黑毛玻璃态 (Glassmorphism)
-            .background(.ultraThinMaterial.opacity(isCompatible ? DesignSystem.Opacity.shadow : DesignSystem.Opacity.glass))
-            .cornerRadius(DesignSystem.mediumRadius)
+            .background(.ultraThinMaterial.opacity(isCompatible ? DesignTokens.Opacity.shadow : DesignTokens.Opacity.glass))
+            .cornerRadius(DesignTokens.Spacing.mediumRadius)
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
                     .stroke(
                         LinearGradient(
-                            colors: isCompatible ? [.cyan.opacity(DesignSystem.Opacity.disabled), .purple.opacity(DesignSystem.Opacity.subtle)] : [.gray.opacity(DesignSystem.Opacity.subtle)],
+                            colors: isCompatible ? [.cyan.opacity(DesignTokens.Opacity.disabled), .purple.opacity(DesignTokens.Opacity.subtle)] : [.gray.opacity(DesignTokens.Opacity.subtle)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: SystemStroke.divider
+                        lineWidth: DesignTokens.SystemStroke.divider
                     )
             )
-            .shadow(color: isCompatible ? .cyan.opacity(DesignSystem.Opacity.light) : .clear, radius: DesignSystem.shadowRadius, x: 0, y: DesignSystem.shadowY)
+            .shadow(color: isCompatible ? .cyan.opacity(DesignTokens.Opacity.light) : .clear, radius: DesignTokens.Spacing.shadowRadius, x: 0, y: DesignTokens.Spacing.shadowY)
         }
         .buttonStyle(.plain)
     }

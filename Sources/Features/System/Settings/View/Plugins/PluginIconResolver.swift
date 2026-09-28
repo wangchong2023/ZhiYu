@@ -2,6 +2,7 @@
 // 核心职责：插件图标名称映射工具与 fallback 图标样式，根据插件 ID 特征返回对应的 SF Symbol 名称
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 插件图标名称解析器，消除跨文件的 ID→SF Symbol 映射重复逻辑
 enum PluginIconResolver {
@@ -24,7 +25,7 @@ enum PluginIconResolver {
         } else if id.contains(PluginConstants.LocalIconKeyword.markdownBeautifier) {
             return "doc.text.magnifyingglass"
         } else {
-            return DesignSystem.Icons.puzzlepieceExtensionFill
+            return DesignTokens.Icons.puzzlepieceExtensionFill
         }
     }
 }
@@ -47,7 +48,7 @@ struct PluginFallbackIconStyle: ViewModifier {
 
 extension View {
     /// 应用插件 fallback 图标样式
-    func pluginFallbackIconStyle(iconName: String, gradientOpacity: Double = DesignSystem.Opacity.prominent) -> some View {
+    func pluginFallbackIconStyle(iconName: String, gradientOpacity: Double = DesignTokens.Opacity.prominent) -> some View {
         modifier(PluginFallbackIconStyle(iconName: iconName, gradientOpacity: gradientOpacity))
     }
 }
@@ -57,9 +58,9 @@ struct PluginVersionTagStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.caption2.weight(.semibold))
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, DesignSystem.tiny)
-            .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
+            .padding(.horizontal, DesignTokens.Spacing.small)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
+            .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
             .foregroundStyle(.appAccent)
             .clipShape(Capsule())
     }
@@ -93,11 +94,11 @@ struct PluginDetailRow: View {
     var valueTrailing: Bool = false
 
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             Image(systemName: icon)
                 .font(.subheadline)
                 .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.IconSize.small)
+                .frame(width: DesignTokens.IconSize.small)
             Text(label)
                 .font(.subheadline)
                 .foregroundStyle(.appSecondary)
@@ -109,8 +110,8 @@ struct PluginDetailRow: View {
                 .foregroundStyle(.appText)
                 .multilineTextAlignment(valueTrailing ? .trailing : .leading)
         }
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, SystemSpacing.small)
+        .padding(.horizontal, DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.SystemSpacing.small)
     }
 }
 

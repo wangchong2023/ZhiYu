@@ -11,6 +11,7 @@
 import SwiftUI
 import SceneKit
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 3D 图谱组件常量（组件特定尺寸，无对应命名 token）
 private enum Graph3DViewConstants {
@@ -54,8 +55,8 @@ struct Graph3DView: View {
             
             if !isFullScreen {
                 headerOverlay
-                    .padding(.top, DesignSystem.standardPadding)
-                    .padding(.leading, DesignSystem.widePadding)
+                    .padding(.top, DesignTokens.Spacing.standardPadding)
+                    .padding(.leading, DesignTokens.Spacing.widePadding)
             }
             
             // FPS Indicator (Bottom Left, Subtle)
@@ -64,15 +65,15 @@ struct Graph3DView: View {
         .overlay(alignment: .topTrailing) {
             if !hideControls {
                 controlsOverlay
-                    .padding(.top, isFullScreen ? ComponentSpacing.ultra : DesignSystem.tightPadding)
-                    .padding(.trailing, DesignSystem.standardPadding)
+                    .padding(.top, isFullScreen ? DesignTokens.ComponentSpacing.ultra : DesignTokens.Spacing.tightPadding)
+                    .padding(.trailing, DesignTokens.Spacing.standardPadding)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
         .overlay(alignment: .bottom) {
             if let page = infoPage {
                 nodeInfoBar(page: page)
-                    .padding(.bottom, isFullScreen ? DesignSystem.widePadding : DesignSystem.tightPadding)
+                    .padding(.bottom, isFullScreen ? DesignTokens.Spacing.widePadding : DesignTokens.Spacing.tightPadding)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
@@ -107,29 +108,29 @@ struct Graph3DView: View {
         VStack {
             Spacer()
             HStack {
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     Circle()
                         .fill(fps > GraphConstants.ThreeD.fpsGoodThreshold ? Color.theme.green : (fps > GraphConstants.ThreeD.fpsWarnThreshold ? Color.theme.orange : Color.theme.red))
-                        .frame(width: SystemSpacing.small, height: SystemSpacing.small)
+                        .frame(width: DesignTokens.SystemSpacing.small, height: DesignTokens.SystemSpacing.small)
                     Text(L10n.Graph.ThreeD.fpsFormat(Int(fps)))
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding(.horizontal, DesignSystem.tightPadding)
-                .padding(.vertical, DesignSystem.tiny)
+                .padding(.horizontal, DesignTokens.Spacing.tightPadding)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
                 .background(.ultraThinMaterial)
                 .clipShape(Capsule())
-                .opacity(DesignSystem.translucentOpacity)
+                .opacity(DesignTokens.Colors.Opacity.translucentOpacity)
                 Spacer()
             }
-            .padding(.leading, DesignSystem.standardPadding)
-            .padding(.bottom, isFullScreen ? ComponentSpacing.ultra : DesignSystem.standardPadding)
+            .padding(.leading, DesignTokens.Spacing.standardPadding)
+            .padding(.bottom, isFullScreen ? DesignTokens.ComponentSpacing.ultra : DesignTokens.Spacing.standardPadding)
         }
         .allowsHitTesting(false)
     }
 
     private var headerOverlay: some View {
-        VStack(alignment: isFullScreen ? .center : .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: isFullScreen ? .center : .leading, spacing: DesignTokens.Spacing.tiny) {
             Text(L10n.Graph.ThreeD.title)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appText)
@@ -142,7 +143,7 @@ struct Graph3DView: View {
                     .frame(maxWidth: Graph3DViewConstants.descriptionMaxWidth) // 240 组件特定尺寸
             }
         }
-        .padding(.top, isFullScreen ? DesignSystem.wide : 0)
+        .padding(.top, isFullScreen ? DesignTokens.Spacing.wide : 0)
         .allowsHitTesting(false)
     }
 
@@ -204,8 +205,8 @@ struct Graph3DView: View {
     private func addStarfield(to scene: SCNScene) {
         let starCount = GraphConstants.ThreeD.starCount
         let starGeometry = SCNSphere(radius: DesignSystem.Graph.ThreeD.starRadius)
-        starGeometry.firstMaterial?.emission.contents = UIColor(Color.appAccent).withAlphaComponent(DesignSystem.surfaceOpacity)
-        starGeometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(SystemOpacity.faint)
+        starGeometry.firstMaterial?.emission.contents = UIColor(Color.appAccent).withAlphaComponent(DesignTokens.Colors.Opacity.surfaceOpacity)
+        starGeometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(DesignTokens.SystemOpacity.faint)
         
         for _ in 0..<starCount {
             let node = SCNNode(geometry: starGeometry)
@@ -272,11 +273,11 @@ struct Graph3DView: View {
             let isDimmed = selectedNodeID != nil && !isSelected && !isNeighbor
             
             let uiColor = UIColor(Color.fromModelColorName(page.pageType.colorName))
-            let opacity: CGFloat = isDimmed ? DesignSystem.dimmedOpacity : DesignSystem.fullOpacity
+            let opacity: CGFloat = isDimmed ? DesignTokens.Colors.Opacity.dimmedOpacity : DesignTokens.Colors.Opacity.fullOpacity
             
             geometry.firstMaterial?.diffuse.contents = uiColor.withAlphaComponent(opacity)
             geometry.firstMaterial?.specular.contents = UIColor.theme.white.withAlphaComponent(opacity)
-            geometry.firstMaterial?.emission.contents = isDimmed ? uiColor.withAlphaComponent(SystemOpacity.faint) : uiColor.withAlphaComponent(SystemOpacity.faint)
+            geometry.firstMaterial?.emission.contents = isDimmed ? uiColor.withAlphaComponent(DesignTokens.SystemOpacity.faint) : uiColor.withAlphaComponent(DesignTokens.SystemOpacity.faint)
 
             let node = SCNNode(geometry: geometry)
             node.position = SCNVector3(

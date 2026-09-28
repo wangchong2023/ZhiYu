@@ -10,19 +10,20 @@
 //
 import SwiftUI
 import CoreGraphics
+import UFPDesignSystem
 
 extension DesignSystem {
 
     // MARK: - 12. 任务规范 (Task)
     public enum Task {
-        public static let rowSpacing: CGFloat = Spacing.Task.rowSpacing
-        public static let rowVerticalPadding: CGFloat = Spacing.Task.rowVerticalPadding
-        public static let iconBoxSize: CGFloat = Spacing.Task.iconBoxSize
-        public static let statusIndicatorSize: CGFloat = Spacing.Task.statusIndicatorSize
-        public static let badgeSize: CGFloat = Spacing.Task.badgeSize
-        public static let progressWidth: CGFloat = Spacing.Task.progressWidth
-        public static let dashboardSpacing: CGFloat = Spacing.Task.dashboardSpacing
-        public static let dashboardPadding: CGFloat = Spacing.Task.dashboardPadding
-        public static let dashboardRadius: CGFloat = Spacing.Task.dashboardRadius
+        public static let rowSpacing: CGFloat = DesignTokens.Spacing.Task.rowSpacing
+        public static let rowVerticalPadding: CGFloat = DesignTokens.Spacing.Task.rowVerticalPadding
+        public static let iconBoxSize: CGFloat = DesignTokens.Spacing.Task.iconBoxSize
+        public static let statusIndicatorSize: CGFloat = DesignTokens.Spacing.Task.statusIndicatorSize
+        public static let badgeSize: CGFloat = DesignTokens.Spacing.Task.badgeSize
+        public static let progressWidth: CGFloat = DesignTokens.Spacing.Task.progressWidth
+        public static let dashboardSpacing: CGFloat = DesignTokens.Spacing.Task.dashboardSpacing
+        public static let dashboardPadding: CGFloat = DesignTokens.Spacing.Task.dashboardPadding
+        public static let dashboardRadius: CGFloat = DesignTokens.Spacing.Task.dashboardRadius
     }
 }

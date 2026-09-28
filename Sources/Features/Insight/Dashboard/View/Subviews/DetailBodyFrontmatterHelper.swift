@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：详情页 Frontmatter 解析辅助
 ///
@@ -72,7 +73,7 @@ extension View {
 /// [L3] 表现层：详情页正文容器修饰符
 ///
 /// 统一 4 个 DetailBodyView 底部 `Divider + DetailBodyMarkdownSection` 的收尾布局，
-/// 消除重复的 `Divider().opacity(DesignSystem.softOpacity)` 与 `bodyText.isEmpty ? page.content : bodyText` 三元判断。
+/// 消除重复的 `Divider().opacity(DesignTokens.Colors.Opacity.softOpacity)` 与 `bodyText.isEmpty ? page.content : bodyText` 三元判断。
 struct DetailBodyEpilogue: View {
     let page: KnowledgePage
     let bodyText: String
@@ -80,9 +81,9 @@ struct DetailBodyEpilogue: View {
     var sectionTitle: String = L10n.Editor.placeholder
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
             Divider()
-                .opacity(DesignSystem.softOpacity)
+                .opacity(DesignTokens.Colors.Opacity.softOpacity)
 
             DetailBodyMarkdownSection(
                 title: sectionTitle,

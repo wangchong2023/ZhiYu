@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：标签交互辅助
 ///
@@ -24,7 +25,7 @@ enum InsightTagInteractions {
     ///   - coordinator: 标签云协调器
     @MainActor
     static func toggleSelection(tag: String, coordinator: TagCloudCoordinator) {
-        withAnimation(DesignSystem.Animation.prominent) {
+        withAnimation(DesignTokens.Animation.prominent) {
             if coordinator.isEditMode {
                 if coordinator.selectedTagsForBulk.contains(tag) {
                     coordinator.selectedTagsForBulk.remove(tag)
@@ -54,13 +55,13 @@ struct TagManagementContextMenu: ViewModifier {
                     coordinator.tagToRename = tag
                     coordinator.newTagName = tag
                 }) {
-                    Label(L10n.Common.rename, systemImage: DesignSystem.Icons.edit)
+                    Label(L10n.Common.rename, systemImage: DesignTokens.Icons.edit)
                 }
                 Button(role: .destructive, action: {
                     coordinator.tagToDelete = tag
                     coordinator.showDeleteConfirm = true
                 }) {
-                    Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
+                    Label(L10n.Common.delete, systemImage: DesignTokens.Icons.delete)
                 }
             }
         }

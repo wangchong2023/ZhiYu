@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 任务中心入口
 /// 任务中心主视图
@@ -33,20 +34,20 @@ struct TaskCenterView: View {
             Group {
                 if taskCenter.tasks.isEmpty {
                     ScrollView {
-                        VStack(spacing: DesignSystem.loosePadding) {
+                        VStack(spacing: DesignTokens.Spacing.loosePadding) {
                             statusDashboard
                                 .padding(.horizontal, DesignSystem.Task.dashboardPadding)
                             emptyState
-                                .padding(.top, DesignSystem.loosePadding)
+                                .padding(.top, DesignTokens.Spacing.loosePadding)
                         }
                         // 追加底部安全间距，确保在小屏或带底部 TabBar 的机型上，描述文字可以完全滚上来
-                        .padding(.bottom, DesignSystem.huge)
+                        .padding(.bottom, DesignTokens.Spacing.huge)
                     }
                 } else {
                     List {
                         Section {
                             statusDashboard
-                                .padding(.vertical, DesignSystem.tightPadding)
+                                .padding(.vertical, DesignTokens.Spacing.tightPadding)
                         } header: {
                             Text(L10n.AI.Task.categories)
                                 .font(.subheadline.bold())
@@ -112,7 +113,7 @@ struct TaskCenterView: View {
                 Text(L10n.AI.Task.noHistory)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
-                    .padding(.vertical, DesignSystem.tightPadding)
+                    .padding(.vertical, DesignTokens.Spacing.tightPadding)
             } else {
                 ForEach(tasks.sorted(by: { $0.startTime > $1.startTime })) { task in
                     TaskRow(task: task)
@@ -136,7 +137,7 @@ struct TaskCenterView: View {
 
     // MARK: - 分类段头（消除 watchOS/watchOS非重复）
     private func sectionHeader(type: TaskType, metrics: TaskCenter.TaskMetrics) -> some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             taskIconBadge(
                 color: taskColor(for: type),
                 size: DesignSystem.Task.badgeSize,
@@ -145,7 +146,7 @@ struct TaskCenterView: View {
                 iconColor: taskColor(for: type)
             )
 
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(type.localizedName)
                     .font(.subheadline.bold())
                 Text(L10n.AI.Task.historyCount(metrics.total))
@@ -156,20 +157,20 @@ struct TaskCenterView: View {
             Spacer()
 
             if metrics.running > 0 {
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     ProgressView()
                         .controlSize(.small)
                     Text("\(metrics.running)")
-                        .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold, design: .rounded))
+                        .font(.system(size: DesignTokens.Metrics.dashboardLabelSize, weight: .bold, design: .rounded))
                         .foregroundStyle(taskColor(for: type))
                 }
-                .padding(.horizontal, DesignSystem.tightPadding)
-                .padding(.vertical, DesignSystem.tiny)
-                .background(taskColor(for: type).opacity(SystemOpacity.ghost))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .padding(.horizontal, DesignTokens.Spacing.tightPadding)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
+                .background(taskColor(for: type).opacity(DesignTokens.SystemOpacity.ghost))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 
     // MARK: - Status Dashboard
@@ -192,54 +193,54 @@ struct TaskCenterView: View {
         let isSelected = selectedFilterType == type
         let isAnySelected = selectedFilterType != nil
         
-        return VStack(alignment: .center, spacing: DesignSystem.tiny) {
+        return VStack(alignment: .center, spacing: DesignTokens.Spacing.tiny) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(SystemOpacity.ghost))
+                    .fill(color.opacity(DesignTokens.SystemOpacity.ghost))
                     .frame(width: UIConstants.filterIndicatorSize, height: UIConstants.filterIndicatorSize) // 32
                 Image(systemName: type.icon)
-                    .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold))
                     .foregroundStyle(color)
                 
                 if runningCount > 0 {
                     Circle()
                         .trim(from: 0, to: 0.8)
-                        .stroke(color, lineWidth: SystemStroke.selected)
+                        .stroke(color, lineWidth: DesignTokens.SystemStroke.selected)
                         .frame(width: DesignSystem.Timeline.indicatorSize, height: DesignSystem.Timeline.indicatorSize)
                         .rotationEffect(.degrees(-90))
                 }
             }
             
-            VStack(spacing: DesignSystem.atomic) {
+            VStack(spacing: DesignTokens.Spacing.atomic) {
                 Text(type.localizedName)
                     .font(.system(size: UIConstants.filterLabelFontSize, weight: .bold)) // 11
                     .foregroundStyle(.appSecondary)
                 
-                HStack(alignment: .firstTextBaseline, spacing: DesignSystem.atomic) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.atomic) {
                     Text("\(metrics.completed)")
                         .font(.system(size: UIConstants.filterCountFontSize, weight: .bold, design: .rounded)) // 20
                         .foregroundStyle(.appText)
                     Text("/ \(metrics.total)")
-                        .font(.system(size: DesignSystem.microFontSize, weight: .medium, design: .rounded))
+                        .font(.system(size: DesignTokens.Typography.microFontSize, weight: .medium, design: .rounded))
                         .foregroundStyle(.appSecondary.opacity(UIConstants.filterTotalOpacity)) // 0.6
                 }
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, DesignSystem.standardPadding)
-        .appMetricCardStyle(color: color, cornerRadius: DesignSystem.standardRadius)
+        .padding(.vertical, DesignTokens.Spacing.standardPadding)
+        .appMetricCardStyle(color: color, cornerRadius: DesignTokens.Spacing.standardRadius)
         // 选中状态应用细微的色彩边框，提供强力视觉锚点
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .stroke(isSelected ? color : Color.clear, lineWidth: SystemStroke.selected)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                .stroke(isSelected ? color : Color.clear, lineWidth: DesignTokens.SystemStroke.selected)
         )
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
         // 阴影和缩放微动效
         .shadow(
-            color: Color.theme.black.opacity(isSelected ? SystemOpacity.ghost : SystemOpacity.ghost),
-            radius: isSelected ? DesignSystem.medium : DesignSystem.small,
+            color: Color.theme.black.opacity(isSelected ? DesignTokens.SystemOpacity.ghost : DesignTokens.SystemOpacity.ghost),
+            radius: isSelected ? DesignTokens.Spacing.medium : DesignTokens.Spacing.small,
             x: 0,
-            y: isSelected ? DesignSystem.small : DesignSystem.tiny
+            y: isSelected ? DesignTokens.Spacing.small : DesignTokens.Spacing.tiny
         )
         .scaleEffect(isSelected ? 1.03 : 1.0)
         // 当过滤了其他类型时，对未选中的卡片进行半透明度弱化
@@ -257,30 +258,30 @@ struct TaskCenterView: View {
     }
     
     private var emptyState: some View {
-        VStack(spacing: DesignSystem.loosePadding) {
+        VStack(spacing: DesignTokens.Spacing.loosePadding) {
             ZStack {
                 Circle()
-                    .fill(Color.appAccent.opacity(SystemOpacity.ghost))
+                    .fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.ghost))
                     .frame(width: DesignSystem.Gallery.displayIconSize, height: DesignSystem.Gallery.displayIconSize)
                 
-                Image(systemName: DesignSystem.Icons.trayFill)
-                    .font(.system(size: DesignSystem.Gallery.splashIconSize - DesignSystem.medium))
+                Image(systemName: DesignTokens.Icons.trayFill)
+                    .font(.system(size: DesignSystem.Gallery.splashIconSize - DesignTokens.Spacing.medium))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.appAccent.opacity(DesignSystem.fullOpacity), .appAccent.opacity(SystemOpacity.glassStrong)],
+                            colors: [.appAccent.opacity(DesignTokens.Colors.Opacity.fullOpacity), .appAccent.opacity(DesignTokens.SystemOpacity.glassStrong)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                    .offset(y: DesignSystem.tiny)
+                    .offset(y: DesignTokens.Spacing.tiny)
                 
-                Image(systemName: DesignSystem.Icons.sparkles)
+                Image(systemName: DesignTokens.Icons.sparkles)
                     .font(.system(size: DesignSystem.Action.largeIconSize))
                     .foregroundStyle(Color.theme.purple)
                     .offset(x: UIConstants.emptyStateSparkleOffset, y: -UIConstants.emptyStateSparkleOffset)
             }
             
-            VStack(spacing: DesignSystem.medium) {
+            VStack(spacing: DesignTokens.Spacing.medium) {
                 Text(L10n.AI.Task.emptyTitle)
                     .font(.title3.weight(.bold))
                     .foregroundStyle(.appText)
@@ -289,39 +290,39 @@ struct TaskCenterView: View {
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(SystemSpacing.tiny)
+                    .lineSpacing(DesignTokens.SystemSpacing.tiny)
             }
             
-            VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                 Text(L10n.AI.Task.howToTrigger)
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.appSecondary)
-                    .padding(.bottom, DesignSystem.tiny)
+                    .padding(.bottom, DesignTokens.Spacing.tiny)
                 
-                guideRow(icon: DesignSystem.Icons.stethoscope, color: Color.theme.red, title: L10n.AI.Task.guideHealth, desc: L10n.AI.Task.guideHealthDesc)
-                guideRow(icon: DesignSystem.Icons.boltShieldFill, color: Color.theme.orange, title: L10n.AI.Task.guideAIScan, desc: L10n.AI.Task.guideAIScanDesc)
-                guideRow(icon: DesignSystem.Icons.trayArrowDownFill, color: Color.theme.blue, title: L10n.AI.Task.guideIngest, desc: L10n.AI.Task.guideIngestDesc)
-                guideRow(icon: DesignSystem.Icons.wandAndStars, color: Color.theme.purple, title: L10n.AI.Task.guideSynthesis, desc: L10n.AI.Task.guideSynthesisDesc)
+                guideRow(icon: DesignTokens.Icons.stethoscope, color: Color.theme.red, title: L10n.AI.Task.guideHealth, desc: L10n.AI.Task.guideHealthDesc)
+                guideRow(icon: DesignTokens.Icons.boltShieldFill, color: Color.theme.orange, title: L10n.AI.Task.guideAIScan, desc: L10n.AI.Task.guideAIScanDesc)
+                guideRow(icon: DesignTokens.Icons.trayArrowDownFill, color: Color.theme.blue, title: L10n.AI.Task.guideIngest, desc: L10n.AI.Task.guideIngestDesc)
+                guideRow(icon: DesignTokens.Icons.wandAndStars, color: Color.theme.purple, title: L10n.AI.Task.guideSynthesis, desc: L10n.AI.Task.guideSynthesisDesc)
             }
             .padding()
             .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-            .padding(.horizontal, SystemSpacing.sectionCompact)
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+            .padding(.horizontal, DesignTokens.SystemSpacing.sectionCompact)
         }
         .frame(maxWidth: .infinity)
         .listRowBackground(Color.clear)
     }
     
     private func guideRow(icon: String, color: Color, title: String, desc: String) -> some View {
-        HStack(spacing: DesignSystem.standardPadding) {
+        HStack(spacing: DesignTokens.Spacing.standardPadding) {
             Image(systemName: icon)
                 .font(.system(size: DesignSystem.Action.iconSize))
                 .foregroundStyle(color)
                 .frame(width: DesignSystem.Task.badgeSize, height: DesignSystem.Task.badgeSize)
-                .background(color.opacity(SystemOpacity.ghost))
+                .background(color.opacity(DesignTokens.SystemOpacity.ghost))
                 .clipShape(Circle())
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(title)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.appText)
@@ -349,7 +350,7 @@ private struct TaskRow: View {
             // 类型图标与状态
             ZStack(alignment: .bottomTrailing) {
                 Circle()
-                    .fill(typeColor.opacity(SystemOpacity.ghost))
+                    .fill(typeColor.opacity(DesignTokens.SystemOpacity.ghost))
                     .frame(width: DesignSystem.Task.iconBoxSize, height: DesignSystem.Task.iconBoxSize)
                 
                 Image(systemName: task.type.icon)
@@ -361,17 +362,17 @@ private struct TaskRow: View {
                     Circle()
                         .fill(Color.theme.red)
                         .frame(width: DesignSystem.Task.statusIndicatorSize, height: DesignSystem.Task.statusIndicatorSize)
-                        .overlay(Circle().stroke(Color.appCard, lineWidth: SystemStroke.selected))
+                        .overlay(Circle().stroke(Color.appCard, lineWidth: DesignTokens.SystemStroke.selected))
                 }
             }
             
-            VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.tiny) {
                 HStack {
                     Text(task.name)
                         .font(.subheadline.bold())
                         .lineLimit(1)
                     if task.associatedPageID != nil {
-                        Image(systemName: DesignSystem.Icons.arrowUpRightSquare)
+                        Image(systemName: DesignTokens.Icons.arrowUpRightSquare)
                             .font(.caption2)
                             .foregroundStyle(.appAccent)
                     }
@@ -387,22 +388,22 @@ private struct TaskRow: View {
                         .font(.caption2)
                         .foregroundStyle(Color.theme.red)
                         .lineLimit(2)
-                        .padding(.top, DesignSystem.atomic)
+                        .padding(.top, DesignTokens.Spacing.atomic)
                 }
             }
             
             Spacer()
             
-            VStack(alignment: .trailing, spacing: DesignSystem.Metrics.progressHeight) {
+            VStack(alignment: .trailing, spacing: DesignTokens.Metrics.progressHeight) {
                 statusText
                 Text(task.startTime.formatted(.dateTime.hour().minute().second().locale(Localized.currentLocale)))
-                    .font(.system(size: DesignSystem.microFontSize - SystemSpacing.tiny, design: .monospaced)) // 8
-                    .foregroundStyle(.appSecondary.opacity(SystemOpacity.glassStrong))
+                    .font(.system(size: DesignTokens.Typography.microFontSize - DesignTokens.SystemSpacing.tiny, design: .monospaced)) // 8
+                    .foregroundStyle(.appSecondary.opacity(DesignTokens.SystemOpacity.glassStrong))
                     .fixedSize()
             }
         }
         .padding(.vertical, DesignSystem.Task.rowVerticalPadding)
-        .opacity(task.isRead ? DesignSystem.disabledOpacity : DesignSystem.fullOpacity)
+        .opacity(task.isRead ? DesignTokens.Colors.Opacity.disabledOpacity : DesignTokens.Colors.Opacity.fullOpacity)
     }
     
     private var isFailed: Bool {
@@ -418,7 +419,7 @@ private struct TaskRow: View {
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
         case .running(let progress, _):
-            HStack(spacing: DesignSystem.tiny) {
+            HStack(spacing: DesignTokens.Spacing.tiny) {
                 ProgressView(value: progress)
                     .progressViewStyle(.linear)
                     .frame(width: DesignSystem.Task.progressWidth)
@@ -452,12 +453,12 @@ extension TaskType {
 
 // MARK: - TaskCenterView UI 常量
 private enum UIConstants {
-    static let filterIndicatorSize: CGFloat = ComponentSpacing.huge
-    static let filterLabelFontSize: CGFloat = SystemFontSize.caption
-    static let filterCountFontSize: CGFloat = SystemFontSize.title
-    static let filterTotalOpacity: Double = SystemOpacity.overlay
-    static let emptyStateSparkleOffset: CGFloat = SystemSpacing.sectionCompact
-    static let taskRowIconSize: CGFloat = ComponentSpacing.iconCompact
+    static let filterIndicatorSize: CGFloat = DesignTokens.ComponentSpacing.huge
+    static let filterLabelFontSize: CGFloat = DesignTokens.SystemFontSize.caption
+    static let filterCountFontSize: CGFloat = DesignTokens.SystemFontSize.title
+    static let filterTotalOpacity: Double = DesignTokens.SystemOpacity.overlay
+    static let emptyStateSparkleOffset: CGFloat = DesignTokens.SystemSpacing.sectionCompact
+    static let taskRowIconSize: CGFloat = DesignTokens.ComponentSpacing.iconCompact
 }
 
 // MARK: - 任务图标徽章辅助
@@ -472,7 +473,7 @@ private func taskIconBadge(
 ) -> some View {
     ZStack {
         Circle()
-            .fill(color.opacity(SystemOpacity.ghost))
+            .fill(color.opacity(DesignTokens.SystemOpacity.ghost))
             .frame(width: size, height: size)
         Image(systemName: icon)
             .font(iconFont)

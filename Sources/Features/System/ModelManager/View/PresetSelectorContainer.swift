@@ -2,6 +2,7 @@
 // 核心职责: 预设模板选择器共享容器，消除 InferenceParametersView 与 ModelLabConfigSheet 的 presetSelector + customButton + presetButton 重复
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 预设模板选择器共享容器
 ///
@@ -24,12 +25,12 @@ struct PresetSelectorContainer: View {
     let applyAction: (ParameterPreset) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(L10n.ModelManager.Parameters.presetTemplate)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.appText)
 
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 ForEach(ParameterPreset.allCases, id: \.self) { preset in
                     presetButton(for: preset)
                 }
@@ -37,8 +38,8 @@ struct PresetSelectorContainer: View {
             }
         }
         .cardStyle(
-            horizontalPadding: DesignSystem.standardPadding,
-            verticalPadding: DesignSystem.standardPadding
+            horizontalPadding: DesignTokens.Spacing.standardPadding,
+            verticalPadding: DesignTokens.Spacing.standardPadding
         )
     }
 
@@ -46,8 +47,8 @@ struct PresetSelectorContainer: View {
     private var customButton: some View {
         let isCustom = matchedPreset == nil
         return Button(action: customNudgeAction) {
-            VStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.sliderHorizontal)
+            VStack(spacing: DesignTokens.Spacing.tiny) {
+                Image(systemName: DesignTokens.Icons.sliderHorizontal)
                     .font(.title3)
                 Text(L10n.ModelManager.Parameters.custom)
                     .font(.caption.weight(.medium))

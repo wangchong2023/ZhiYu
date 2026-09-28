@@ -11,6 +11,7 @@
 import SwiftUI
 #if canImport(WebKit)
 import WebKit
+import UFPDesignSystem
 #endif
 
 struct IdentifiableURL: Identifiable {
@@ -122,25 +123,25 @@ struct MermaidWebView: View {
             
             // Zoom Controls (统一图谱风格：合拢式排列)
             HStack(spacing: 0) {
-                zoomButton(icon: DesignSystem.Icons.minusMagnifyingglass) { zoom(by: 0.8) }
-                zoomButton(icon: DesignSystem.Icons.plusMagnifyingglass) { zoom(by: 1.2) }
+                zoomButton(icon: DesignTokens.Icons.minusMagnifyingglass) { zoom(by: 0.8) }
+                zoomButton(icon: DesignTokens.Icons.plusMagnifyingglass) { zoom(by: 1.2) }
                 
                 Divider()
-                    .frame(width: DesignSystem.Metrics.dividerThickness, height: DesignSystem.IconSize.small)
-                    .background(Color.appBorder.opacity(DesignSystem.Opacity.soft))
+                    .frame(width: DesignTokens.Metrics.dividerThickness, height: DesignTokens.IconSize.small)
+                    .background(Color.appBorder.opacity(DesignTokens.Opacity.soft))
                 
-                zoomButton(icon: DesignSystem.Icons.refresh) { resetZoom() }
+                zoomButton(icon: DesignTokens.Icons.refresh) { resetZoom() }
             }
             .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.soft), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                    .stroke(Color.appBorder.opacity(DesignTokens.Opacity.soft), lineWidth: 0.5)
             )
-            .shadow(color: .black.opacity(DesignSystem.Opacity.light), radius: 8, x: 0, y: 4)
+            .shadow(color: .black.opacity(DesignTokens.Opacity.light), radius: 8, x: 0, y: 4)
             .padding(DesignSystem.Layout.cardContentPadding)
         }
-        .frame(minHeight: Spacing.Grid.emptyStateHeight)
+        .frame(minHeight: DesignTokens.Spacing.Grid.emptyStateHeight)
         .sheet(item: $identifiablePDFURL) { identifiable in
             #if os(iOS)
             ActivityView(activityItems: [identifiable.url])
@@ -148,7 +149,7 @@ struct MermaidWebView: View {
         }
         #else
         VStack {
-            Image(systemName: DesignSystem.Icons.chartBarDoc)
+            Image(systemName: DesignTokens.Icons.chartBarDoc)
                 .font(.largeTitle)
             Text(L10n.AI.Synthesis.Mindmap.renderError)
             Text(L10n.Common.demo)
@@ -167,7 +168,7 @@ struct MermaidWebView: View {
             Image(systemName: icon)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appText)
-                .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
+                .frame(width: DesignTokens.Spacing.Sidebar.backButtonWidth, height: DesignTokens.Spacing.Sidebar.backButtonWidth)
                 .contentShape(Rectangle())
         }
         .buttonStyle(ScaleButtonStyle()) // 使用统一的缩放反馈样式

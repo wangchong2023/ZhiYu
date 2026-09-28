@@ -2,6 +2,7 @@
 // 核心职责: 认证模块共享按钮样式修饰符，消除跨文件的 frame+padding+background+clipShape+shadow 链
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 认证主操作按钮样式修饰符，消除 AuthPhonePanel 与 OverseasLoginCardView 的重复
 struct AuthActionButtonStyle: ViewModifier {
@@ -11,7 +12,7 @@ struct AuthActionButtonStyle: ViewModifier {
             .padding(.vertical, DesignSystem.Domain.Auth.actionButtonVerticalPadding)
             .background(Color.appAccent)
             .clipShape(Capsule())
-            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: Spacing.shadowRadius, y: Spacing.shadowY)
+            .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.shadowRadius, y: DesignTokens.Spacing.shadowY)
     }
 }
 
@@ -26,9 +27,9 @@ extension View {
 struct AuthHeroTextStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: SystemFontSize.hero, weight: .bold, design: .rounded))
+            .font(.system(size: DesignTokens.SystemFontSize.hero, weight: .bold, design: .rounded))
             .foregroundStyle(.appText)
-            .padding(.top, Spacing.medium)
+            .padding(.top, DesignTokens.Spacing.medium)
     }
 }
 

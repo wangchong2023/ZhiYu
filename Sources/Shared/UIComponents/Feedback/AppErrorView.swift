@@ -9,6 +9,7 @@
 //  核心职责：构建 AppError 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 全局通用错误反馈视图
 /// 提供一致的错误提示样式，包含错误图标、错误提示语以及重试交互。
@@ -41,7 +42,7 @@ public struct AppErrorView: View {
     }
     
     public var body: some View {
-        VStack(spacing: SystemSpacing.content) {
+        VStack(spacing: DesignTokens.SystemSpacing.content) {
             // 渐变质感的警告图标
             Image(systemName: iconName)
                 .font(.system(size: UIConstants.iconSize)) // Dynamic Type
@@ -52,19 +53,19 @@ public struct AppErrorView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: Color.theme.red.opacity(DesignSystem.Opacity.medium), radius: 10, x: 0, y: 5)
+                .shadow(color: Color.theme.red.opacity(DesignTokens.Opacity.medium), radius: 10, x: 0, y: 5)
             
             // 标题
             Text(title)
-                .font(.system(size: SystemFontSize.title2, weight: .bold, design: .rounded)) // Dynamic Type
+                .font(.system(size: DesignTokens.SystemFontSize.title2, weight: .bold, design: .rounded)) // Dynamic Type
                 .foregroundColor(.primary)
             
             // 详细描述
             Text(message)
-                .font(.system(size: SystemFontSize.subheadline)) // Dynamic Type
+                .font(.system(size: DesignTokens.SystemFontSize.subheadline)) // Dynamic Type
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, SystemSpacing.medium)
+                .padding(.horizontal, DesignTokens.SystemSpacing.medium)
                 .lineLimit(4)
             
             // 重试按钮
@@ -79,10 +80,10 @@ public struct AppErrorView: View {
                     retryAction()
                 }) {
                     Text(L10n.Shared.retryButton)
-                        .font(.system(size: SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
+                        .font(.system(size: DesignTokens.SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
                         .foregroundColor(Color.theme.white)
-                        .padding(.horizontal, SystemSpacing.medium)
-                        .padding(.vertical, SystemSpacing.tight)
+                        .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+                        .padding(.vertical, DesignTokens.SystemSpacing.tight)
                         .background(
                             LinearGradient(
                                 colors: [Color.theme.blue, Color.theme.purple],
@@ -91,13 +92,13 @@ public struct AppErrorView: View {
                             )
                         )
                         .cornerRadius(20)
-                        .shadow(color: Color.theme.blue.opacity(DesignSystem.Opacity.shadow), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color.theme.blue.opacity(DesignTokens.Opacity.shadow), radius: 8, x: 0, y: 4)
                 }
                 .buttonStyle(PlainButtonStyle())
-                .padding(.top, SystemSpacing.element)
+                .padding(.top, DesignTokens.SystemSpacing.element)
             }
         }
-        .padding(DesignSystem.loosePadding)
+        .padding(DesignTokens.Spacing.loosePadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.clear)
     }

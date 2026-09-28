@@ -12,6 +12,7 @@
 import SwiftUI
 import StoreKit
 import Dependencies
+import UFPDesignSystem
 
 /// 订阅周期
 enum BillingCycle {
@@ -77,10 +78,10 @@ public struct SubscriptionPlanView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: DesignSystem.large) {
+                VStack(spacing: DesignTokens.Spacing.large) {
                     if !(authService.currentUser?.isPro ?? false) && !isUpgradeSuccess {
                         // 标题
-                        VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                             Text(L10n.Auth.upgradeToPro)
                                 .font(.headline.bold())
                                 .foregroundStyle(.appText)
@@ -104,7 +105,7 @@ public struct SubscriptionPlanView: View {
                             Text(error)
                                 .font(.caption)
                                 .foregroundStyle(Color.theme.red)
-                                .padding(.horizontal, DesignSystem.medium)
+                                .padding(.horizontal, DesignTokens.Spacing.medium)
                         }
 
                         // 购买流程
@@ -118,7 +119,7 @@ public struct SubscriptionPlanView: View {
                         successView
                     }
                 }
-                .padding(DesignSystem.medium)
+                .padding(DesignTokens.Spacing.medium)
             }
 
             // 全屏购买 Loading 覆盖
@@ -131,7 +132,7 @@ public struct SubscriptionPlanView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { isQuotaExpanded.toggle() }) {
-                    Image(systemName: DesignSystem.Icons.chartBarDoc)
+                    Image(systemName: DesignTokens.Icons.chartBarDoc)
                         .font(.body.bold())
                 }
                 .popover(isPresented: $isQuotaExpanded) {
@@ -148,12 +149,12 @@ public struct SubscriptionPlanView: View {
     // MARK: - 配额监控弹窗 (Popover)
 
     private var quotaPopoverContent: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             Text(L10n.Common.usage)
                 .font(.headline.bold())
                 .foregroundStyle(.appText)
             
-            VStack(spacing: DesignSystem.medium) {
+            VStack(spacing: DesignTokens.Spacing.medium) {
                 let vaultsCount = VaultService.shared.vaults.count
                 let vaultsMax = authService.currentUser?.maxVaults ?? FeatureConstants.SubscriptionQuota.defaultMaxVaults
                 glassQuotaCard(title: L10n.Auth.vaultUsage, icon: "books.vertical", current: vaultsCount, max: vaultsMax)
@@ -166,12 +167,12 @@ public struct SubscriptionPlanView: View {
                 let pluginsMax = authService.currentUser?.maxPlugins ?? FeatureConstants.SubscriptionQuota.defaultMaxPlugins
                 glassQuotaCard(title: L10n.Auth.pluginsUsage, icon: "puzzlepiece", current: pluginsCount, max: pluginsMax)
             }
-            .padding(DesignSystem.medium)
-            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Radius.large))
+            .padding(DesignTokens.Spacing.medium)
+            .background(Color.appCard.opacity(DesignTokens.SystemOpacity.glassStrong))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.large))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.Radius.large)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.light), lineWidth: SystemStroke.divider)
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.large)
+                    .stroke(Color.appBorder.opacity(DesignTokens.Opacity.light), lineWidth: DesignTokens.SystemStroke.divider)
             )
         }
         .padding()
@@ -185,9 +186,9 @@ public struct SubscriptionPlanView: View {
         let ratio = CGFloat(safeRatio)
         let isDanger = ratio > FeatureConstants.SubscriptionQuota.dangerRatioThreshold
 
-        return VStack(spacing: DesignSystem.small) {
+        return VStack(spacing: DesignTokens.Spacing.small) {
             HStack {
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     Image(systemName: icon)
                         .font(.caption2)
                     Text(title)
@@ -205,7 +206,7 @@ public struct SubscriptionPlanView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.appBorder.opacity(DesignSystem.Opacity.light))
+                        .fill(Color.appBorder.opacity(DesignTokens.Opacity.light))
                         .frame(height: Constants.barHeight)
 
                     let barWidth = max > 0 ? geo.size.width * ratio : 0
@@ -228,9 +229,9 @@ public struct SubscriptionPlanView: View {
 
     private var successView: some View {
         AppCard {
-            VStack(spacing: DesignSystem.medium) {
-                Image(systemName: DesignSystem.Icons.crown)
-                    .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
+            VStack(spacing: DesignTokens.Spacing.medium) {
+                Image(systemName: DesignTokens.Icons.crown)
+                    .font(.system(size: DesignTokens.Reference.FontSize.mega)) // Dynamic Type
                     .foregroundStyle(
                         LinearGradient(
                             colors: [Color.theme.yellow, Color.theme.orange],
@@ -238,7 +239,7 @@ public struct SubscriptionPlanView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .padding(.top, DesignSystem.medium)
+                    .padding(.top, DesignTokens.Spacing.medium)
 
                 Text(L10n.Auth.upgradeSuccessTitle)
                     .font(.headline)
@@ -248,8 +249,8 @@ public struct SubscriptionPlanView: View {
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, DesignSystem.medium)
-                    .padding(.bottom, DesignSystem.medium)
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.bottom, DesignTokens.Spacing.medium)
             }
             .frame(maxWidth: .infinity)
         }

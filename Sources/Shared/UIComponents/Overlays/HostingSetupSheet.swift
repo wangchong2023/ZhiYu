@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Hosting Setup Sheet
 /// 协作托管设置面板组件
@@ -21,7 +22,7 @@ struct HostingSetupSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: DesignSystem.giant) {
+                VStack(spacing: DesignTokens.Spacing.giant) {
                     headerIcon
                     titleText
                     roomNameField
@@ -37,7 +38,7 @@ struct HostingSetupSheet: View {
     }
     
     private var headerIcon: some View {
-        Image(systemName: DesignSystem.Icons.antenna)
+        Image(systemName: DesignTokens.Icons.antenna)
             .font(.largeTitle)
             .foregroundStyle(.appAccent)
     }
@@ -49,7 +50,7 @@ struct HostingSetupSheet: View {
     }
     
     private var roomNameField: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             Text(L10n.Collaboration.roomName)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -63,14 +64,14 @@ struct HostingSetupSheet: View {
     }
     
     private var infoSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(L10n.Collaboration.howItWorks)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
             
             CollabInfoRow(icon: "wifi", text: L10n.Collaboration.info.local)
-            CollabInfoRow(icon: DesignSystem.Icons.lockShieldFill, text: L10n.Collaboration.info.encrypted)
-            CollabInfoRow(icon: DesignSystem.Icons.persons, text: L10n.Collaboration.info.maxPeers)
+            CollabInfoRow(icon: DesignTokens.Icons.lockShieldFill, text: L10n.Collaboration.info.encrypted)
+            CollabInfoRow(icon: DesignTokens.Icons.persons, text: L10n.Collaboration.info.maxPeers)
         }
         .padding()
         .appCardClip()

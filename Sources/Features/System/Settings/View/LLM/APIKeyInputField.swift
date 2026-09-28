@@ -2,6 +2,7 @@
 // 核心职责：API Key 输入组件，消除 LLMSettingsView 中 TextField/SecureField + eye toggle 的重复
 
 import SwiftUI
+import UFPDesignSystem
 
 /// API Key 输入组件（带显隐切换与校验提示）
 ///
@@ -26,20 +27,20 @@ struct APIKeyInputField: View {
             .foregroundStyle(.appText)
             .font(.system(.body, design: .monospaced))
             Button(action: { isShown.toggle() }) {
-                Image(systemName: isShown ? DesignSystem.Icons.eyeSlash : DesignSystem.Icons.eye)
+                Image(systemName: isShown ? DesignTokens.Icons.eyeSlash : DesignTokens.Icons.eye)
                     .foregroundStyle(.appSecondary)
             }
         }
         .padding()
-        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+        .background(Color.appCard.opacity(DesignTokens.Opacity.prominent))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
         .overlay(
-            RoundedRectangle(cornerRadius: SystemRadius.small)
+            RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small)
                 .stroke(
                     isValid || text.isEmpty
-                        ? Color.appBorder.opacity(DesignSystem.Opacity.prominent)
-                        : Color.appAlert.opacity(DesignSystem.Opacity.prominent),
-                    lineWidth: SystemStroke.divider
+                        ? Color.appBorder.opacity(DesignTokens.Opacity.prominent)
+                        : Color.appAlert.opacity(DesignTokens.Opacity.prominent),
+                    lineWidth: DesignTokens.SystemStroke.divider
                 )
         )
     }

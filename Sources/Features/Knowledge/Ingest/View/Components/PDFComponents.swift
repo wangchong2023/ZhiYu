@@ -11,13 +11,14 @@
 import SwiftUI
 #if canImport(PDFKit)
 import PDFKit
+import UFPDesignSystem
 #endif
 
 // MARK: - PDF 组件私有常量
 private enum PDFUIConstants {
     static let pageRangeFieldWidth: CGFloat = 50
     static let previewMaxHeight: CGFloat = 150
-    static let previewLineLimit: Int = Int(SystemSpacing.elementLarge)
+    static let previewLineLimit: Int = Int(DesignTokens.SystemSpacing.elementLarge)
     static let pageStartPlaceholder: String = "1"
 }
 
@@ -258,24 +259,24 @@ struct PDFDocumentRow: View {
     let doc: PDFDocumentInfo
     
     var body: some View {
-        HStack(spacing: Spacing.medium) { // 12
+        HStack(spacing: DesignTokens.Spacing.medium) { // 12
             pdfIcon
             docInfo
             Spacer()
-            Image(systemName: DesignSystem.Icons.forward)
+            Image(systemName: DesignTokens.Icons.forward)
                 .font(.caption)
                 .foregroundStyle(.appSecondary)
         }
-        .padding(.vertical, Spacing.tiny) // 4
+        .padding(.vertical, DesignTokens.Spacing.tiny) // 4
     }
     
     private var pdfIcon: some View {
-        RoundedRectangle(cornerRadius: Spacing.microRadius)
-            .fill(Color.appAccent.opacity(DesignSystem.Opacity.glass)) // 0.15
-            .frame(width: Spacing.iconDisplay, height: Spacing.iconDisplay + Spacing.standardPadding) // 48, 64
+        RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
+            .fill(Color.appAccent.opacity(DesignTokens.Opacity.glass)) // 0.15
+            .frame(width: DesignTokens.Spacing.iconDisplay, height: DesignTokens.Spacing.iconDisplay + DesignTokens.Spacing.standardPadding) // 48, 64
             .overlay(
-                VStack(spacing: Spacing.tiny) { // 4
-                    Image(systemName: DesignSystem.Icons.docRichtext)
+                VStack(spacing: DesignTokens.Spacing.tiny) { // 4
+                    Image(systemName: DesignTokens.Icons.docRichtext)
                         .font(.title3)
                         .foregroundStyle(.appAccent)
                     Text("\(doc.pageCount)")
@@ -286,18 +287,18 @@ struct PDFDocumentRow: View {
     }
     
     private var docInfo: some View {
-        VStack(alignment: .leading, spacing: Spacing.atomic * 2) { // 4
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic * 2) { // 4
             Text(doc.title)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appText)
                 .lineLimit(1)
             
-            HStack(spacing: Spacing.small) { // 8
-                Label(L10n.Ingest.pdfPageCountFormat(doc.pageCount), systemImage: DesignSystem.Icons.document)
+            HStack(spacing: DesignTokens.Spacing.small) { // 8
+                Label(L10n.Ingest.pdfPageCountFormat(doc.pageCount), systemImage: DesignTokens.Icons.document)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                 
-                Label(L10n.Ingest.pdfHighlightCountFormat(doc.highlights.count), systemImage: DesignSystem.Icons.highlighter)
+                Label(L10n.Ingest.pdfHighlightCountFormat(doc.highlights.count), systemImage: DesignTokens.Icons.highlighter)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
             }

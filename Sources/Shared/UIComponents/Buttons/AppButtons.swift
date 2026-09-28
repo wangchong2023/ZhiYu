@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - App Primary Button
 
@@ -18,7 +19,7 @@ public struct AppPrimaryButton: View {
     public let title: String
     public var icon: String?
     public var isLoading: Bool = false
-    public var gradientColors: [Color] = [.appAccent, .appAccent.opacity(DesignSystem.subtleOpacity)]
+    public var gradientColors: [Color] = [.appAccent, .appAccent.opacity(DesignTokens.Colors.subtleOpacity)]
     public var maxWidth: CGFloat? = .infinity
     public let action: () -> Void
 
@@ -26,7 +27,7 @@ public struct AppPrimaryButton: View {
         title: String,
         icon: String? = nil,
         isLoading: Bool = false,
-        gradientColors: [Color] = [.appAccent, .appAccent.opacity(DesignSystem.subtleOpacity)],
+        gradientColors: [Color] = [.appAccent, .appAccent.opacity(DesignTokens.Colors.subtleOpacity)],
         maxWidth: CGFloat? = .infinity,
         action: @escaping () -> Void
     ) {
@@ -45,7 +46,7 @@ public struct AppPrimaryButton: View {
                 .background(
                     LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
                 .foregroundStyle(.white)
         }
         .buttonStyle(ScaleButtonStyle())
@@ -81,12 +82,12 @@ public struct AppBorderedButton: View {
         Button(action: action) {
             AppButtonLabel(title: title, icon: icon, isLoading: false, fontWeight: .medium)
                 .appButtonLabelLayout(maxWidth: maxWidth)
-                .background(color.opacity(SystemOpacity.ghost))
+                .background(color.opacity(DesignTokens.SystemOpacity.ghost))
                 .overlay(
-                    RoundedRectangle(cornerRadius: Spacing.cardRadius)
-                        .stroke(color.opacity(DesignSystem.softOpacity), lineWidth: Spacing.borderWidth)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                        .stroke(color.opacity(DesignTokens.Colors.Opacity.softOpacity), lineWidth: DesignTokens.Spacing.borderWidth)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
                 .foregroundStyle(color)
         }
         .buttonStyle(ScaleButtonStyle())
@@ -100,8 +101,8 @@ private extension View {
     func appButtonLabelLayout(maxWidth: CGFloat?) -> some View {
         self
             .frame(maxWidth: maxWidth)
-            .padding(.vertical, Spacing.medium)
-            .padding(.horizontal, Spacing.large)
+            .padding(.vertical, DesignTokens.Spacing.medium)
+            .padding(.horizontal, DesignTokens.Spacing.large)
     }
 }
 
@@ -115,7 +116,7 @@ private struct AppButtonLabel: View {
     let fontWeight: Font.Weight
 
     var body: some View {
-        HStack(spacing: Spacing.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             if isLoading {
                 ProgressView()
                     .tint(.white)
@@ -170,7 +171,7 @@ public struct AppCapsuleButton: View {
     
     // MARK: - 胶囊样式内容
     private var capsuleLabel: some View {
-        HStack(spacing: Spacing.tiny) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
             if let icon = icon {
                 Image(systemName: icon)
                     .font(.caption2)
@@ -178,8 +179,8 @@ public struct AppCapsuleButton: View {
             Text(title)
                 .font(.caption.weight(.semibold))
         }
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, DesignSystem.small)
+        .padding(.horizontal, DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.Spacing.small)
         .background(isPrimary ? color : Color.appCard)
         .foregroundStyle(isPrimary ? .white : .appSecondary)
         .clipShape(Capsule())
@@ -197,8 +198,8 @@ public struct ScaleButtonStyle: ButtonStyle {
     /// - Parameter configuration: configuration
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? Animations.Interaction.pressScale : 1.0)
-            .animation(.easeOut(duration: Spacing.Action.animationDuration), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? DesignTokens.Animations.Interaction.pressScale : 1.0)
+            .animation(.easeOut(duration: DesignTokens.Spacing.Action.animationDuration), value: configuration.isPressed)
     }
 }
 
@@ -209,8 +210,8 @@ public struct ClearSearchButton: View {
     public init() {}
 
     public var body: some View {
-        Image(systemName: DesignSystem.Icons.errorCircle)
-            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+        Image(systemName: DesignTokens.Icons.errorCircle)
+            .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
     }
 }
 
@@ -231,9 +232,9 @@ public struct SourceBadge: View {
     public var body: some View {
         Label(label, systemImage: icon)
             .font(.caption.weight(.bold))
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, DesignSystem.tightPadding)
-            .background(Capsule().fill(color.opacity(DesignSystem.Opacity.subtle)))
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+            .padding(.vertical, DesignTokens.Spacing.tightPadding)
+            .background(Capsule().fill(color.opacity(DesignTokens.Opacity.subtle)))
             .foregroundStyle(color)
     }
 }

@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - App Loading Overlay
 /// 全屏加载遮罩，统一各页面的 Loading 状态展示。
@@ -27,7 +28,7 @@ public struct AppLoadingOverlay: View {
     public init(
         isLoading: Bool,
         message: String? = nil,
-        backgroundColor: Color = Color.theme.black.opacity(DesignSystem.Opacity.soft),
+        backgroundColor: Color = Color.theme.black.opacity(DesignTokens.Opacity.soft),
         foregroundColor: Color = .appAccent
     ) {
         self.isLoading = isLoading
@@ -44,7 +45,7 @@ public struct AppLoadingOverlay: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(message ?? L10n.Common.loading)
 
-                VStack(spacing: DesignSystem.standardPadding) {
+                VStack(spacing: DesignTokens.Spacing.standardPadding) {
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(foregroundColor)
@@ -57,8 +58,8 @@ public struct AppLoadingOverlay: View {
                             .multilineTextAlignment(.center)
                     }
                 }
-                .padding(DesignSystem.large)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                .padding(DesignTokens.Spacing.large)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
             }
         }
     }

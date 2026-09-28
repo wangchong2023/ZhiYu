@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// Siri-like 智感流光正弦波形视图
 struct SiriWaveformView: View {
@@ -91,7 +92,7 @@ struct SiriWaveformView: View {
     ZStack {
         Color.theme.black.ignoresSafeArea()
         SiriWaveformView(speedMultiplier: 1.0, amplitudeMultiplier: 1.0)
-            .frame(height: DesignSystem.Metrics.heroValueSize)
+            .frame(height: DesignTokens.Metrics.heroValueSize)
             .padding()
     }
 }

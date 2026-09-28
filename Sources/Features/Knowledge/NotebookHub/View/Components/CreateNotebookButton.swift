@@ -9,6 +9,7 @@
 //  核心职责：笔记本中心：入口页面、笔记本卡片、创建表单。
 //
 import SwiftUI
+import UFPDesignSystem
 
 @MainActor
 struct CreateNotebookButton: View {
@@ -34,28 +35,28 @@ struct CreateNotebookButton: View {
             HapticFeedback.shared.trigger(.selection)
             viewModel.isShowingCreateSheet = true 
         }) {
-            HStack(spacing: DesignSystem.medium) {
-                Image(systemName: DesignSystem.Icons.plusCircle)
-                    .font(.system(size: DesignSystem.titleFontSize))
+            HStack(spacing: DesignTokens.Spacing.medium) {
+                Image(systemName: DesignTokens.Icons.plusCircle)
+                    .font(.system(size: DesignTokens.Typography.titleFontSize))
                     .foregroundStyle(.appAccent)
                 
                 Text(L10n.Vault.new)
-                    .font(.system(size: DesignSystem.headlineFontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.headlineFontSize, weight: .bold))
                     .foregroundStyle(.appText)
                 
                 Spacer()
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
             .borderedCardStyle(
-                horizontalPadding: DesignSystem.medium,
-                verticalPadding: DesignSystem.medium,
-                backgroundOpacity: DesignSystem.Opacity.dim,
-                cornerRadius: DesignSystem.cardRadius
+                horizontalPadding: DesignTokens.Spacing.medium,
+                verticalPadding: DesignTokens.Spacing.medium,
+                backgroundOpacity: DesignTokens.Opacity.dim,
+                cornerRadius: DesignTokens.Spacing.cardRadius
             )
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                    .strokeBorder(style: StrokeStyle(lineWidth: DesignSystem.borderWidth, dash: [4]))
-                    .foregroundStyle(.appAccent.opacity(DesignSystem.secondaryOpacity))
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                    .strokeBorder(style: StrokeStyle(lineWidth: DesignTokens.Spacing.borderWidth, dash: [4]))
+                    .foregroundStyle(.appAccent.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
             )
         }
         .buttonStyle(.plain)
@@ -66,15 +67,15 @@ struct CreateNotebookButton: View {
             HapticFeedback.shared.trigger(.selection)
             viewModel.isShowingCreateSheet = true 
         }) {
-            VStack(spacing: DesignSystem.medium) {
+            VStack(spacing: DesignTokens.Spacing.medium) {
                 Spacer()
                 
                 ZStack {
                     Circle()
-                        .fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                        .frame(width: DesignSystem.Metrics.notebookActionIconSize, height: DesignSystem.Metrics.notebookActionIconSize)
+                        .fill(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
+                        .frame(width: DesignTokens.Metrics.notebookActionIconSize, height: DesignTokens.Metrics.notebookActionIconSize)
                     
-                    Image(systemName: DesignSystem.Icons.plus)
+                    Image(systemName: DesignTokens.Icons.plus)
                         .font(.title.weight(.bold))
                         .foregroundStyle(.appAccent)
                 }
@@ -86,17 +87,17 @@ struct CreateNotebookButton: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity)
-            .frame(height: DesignSystem.Metrics.notebookCardHeight)
+            .frame(height: DesignTokens.Metrics.notebookCardHeight)
             .cardStyle(
-                horizontalPadding: DesignSystem.standardPadding,
-                verticalPadding: DesignSystem.standardPadding,
-                backgroundOpacity: DesignSystem.subtleFillOpacity,
-                cornerRadius: DesignSystem.cardRadius
+                horizontalPadding: DesignTokens.Spacing.standardPadding,
+                verticalPadding: DesignTokens.Spacing.standardPadding,
+                backgroundOpacity: DesignTokens.Colors.subtleFillOpacity,
+                cornerRadius: DesignTokens.Spacing.cardRadius
             )
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
-                    .strokeBorder(style: StrokeStyle(lineWidth: SystemStroke.emphasis, dash: FeatureConstants.DashedBorder.pattern))
-                    .foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.medium))
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
+                    .strokeBorder(style: StrokeStyle(lineWidth: DesignTokens.SystemStroke.emphasis, dash: FeatureConstants.DashedBorder.pattern))
+                    .foregroundStyle(.appAccent.opacity(DesignTokens.Opacity.medium))
             )
         }
         .buttonStyle(.plain)

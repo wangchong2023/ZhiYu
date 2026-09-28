@@ -12,6 +12,7 @@
 
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 大模型测试实验室主视图
 @MainActor
@@ -77,7 +78,7 @@ public struct ModelLabView: View {
     // MARK: - 布局网格
 
     let columns = [
-        GridItem(.adaptive(minimum: DesignSystem.Vault.gridCardMin, maximum: DesignSystem.Vault.gridCardMax), spacing: DesignSystem.medium)
+        GridItem(.adaptive(minimum: DesignSystem.Vault.gridCardMin, maximum: DesignSystem.Vault.gridCardMax), spacing: DesignTokens.Spacing.medium)
     ]
 
     /// 是否需要外层 ScrollView 包装，用于扁平化整合单页滚动
@@ -121,7 +122,7 @@ public struct ModelLabView: View {
 
     @ViewBuilder
     private var contentStack: some View {
-        VStack(spacing: DesignSystem.large) {
+        VStack(spacing: DesignTokens.Spacing.large) {
             if !hasActiveLocalModel() {
                 // 如果没有激活的模型，直接在局域展示未激活提示卡，不阻拦上方的商店
                 noModelMaskView
@@ -131,6 +132,6 @@ public struct ModelLabView: View {
                 useCaseGridView
             }
         }
-        .padding(DesignSystem.medium)
+        .padding(DesignTokens.Spacing.medium)
     }
 }

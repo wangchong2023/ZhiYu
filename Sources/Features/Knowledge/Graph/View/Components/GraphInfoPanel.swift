@@ -9,6 +9,7 @@
 //  核心职责：知识图谱：3D 可视化、社区发现、力导向布局。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Graph Selected Node Card
 /// 选中节点的详情卡片。
@@ -22,7 +23,7 @@ import SwiftUI
 /// 详情行组件：标题 + 副标题 + 箭头，消除 GraphSelectedNodeCard 与 GraphInsightsPanel 的重复布局
 @ViewBuilder
 private func detailChevronRow(title: String, subtitle: String, titleWeight: Font.Weight = .semibold) -> some View {
-    VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+    VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
         Text(title)
             .font(.subheadline.weight(titleWeight))
             .foregroundStyle(.appText)
@@ -31,21 +32,21 @@ private func detailChevronRow(title: String, subtitle: String, titleWeight: Font
             .foregroundStyle(.appSecondary)
     }
     Spacer()
-    Image(systemName: DesignSystem.Icons.forward)
+    Image(systemName: DesignTokens.Icons.forward)
         .foregroundStyle(.appSecondary)
 }
 
 /// 标题 + 描述文本对，消除 guideRow 与 insightSectionExpandedContent 的重复 Text 链
 @ViewBuilder
 private func titleDescPair(title: String, desc: String) -> some View {
-    VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
+    VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.tiny) {
         Text(title)
             .font(.subheadline.bold())
             .foregroundStyle(.appText)
         Text(desc)
             .font(.caption)
             .foregroundStyle(.appSecondary)
-            .lineSpacing(DesignSystem.atomic)
+            .lineSpacing(DesignTokens.Spacing.atomic)
     }
 }
 
@@ -58,8 +59,8 @@ struct GraphSelectedNodeCard: View {
             cardContent
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.bottom, DesignSystem.standardPadding)
+        .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+        .padding(.bottom, DesignTokens.Spacing.standardPadding)
     }
 
     /**
@@ -67,12 +68,12 @@ struct GraphSelectedNodeCard: View {
      * @return {View}
      */
     private var cardContent: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             Image(systemName: page.displayIcon)
                 .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
                 .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignSystem.glassOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignTokens.Colors.Opacity.glassOpacity))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
 
             detailChevronRow(
                 title: page.title,
@@ -80,12 +81,12 @@ struct GraphSelectedNodeCard: View {
             )
         }
         .cardStyle(
-            horizontalPadding: DesignSystem.standardPadding,
-            verticalPadding: DesignSystem.standardPadding,
-            backgroundOpacity: DesignSystem.Opacity.dim,
-            cornerRadius: DesignSystem.mediumRadius
+            horizontalPadding: DesignTokens.Spacing.standardPadding,
+            verticalPadding: DesignTokens.Spacing.standardPadding,
+            backgroundOpacity: DesignTokens.Opacity.dim,
+            cornerRadius: DesignTokens.Spacing.mediumRadius
         )
-        .shadow(color: Color.theme.black.opacity(SystemOpacity.glassStrong), radius: DesignSystem.mediumRadius)
+        .shadow(color: Color.theme.black.opacity(DesignTokens.SystemOpacity.glassStrong), radius: DesignTokens.Spacing.mediumRadius)
     }
 }
 
@@ -108,13 +109,13 @@ struct GraphInsightsPanel: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: DesignSystem.standardPadding) {
+            VStack(spacing: DesignTokens.Spacing.standardPadding) {
                 // 概念图解指南入口卡片 (Glassmorphism + Hover effect)
                 Button {
                     showGuide = true
                 } label: {
-                    HStack(spacing: DesignSystem.medium) {
-                        Image(systemName: DesignSystem.Icons.questionmarkCircleFill)
+                    HStack(spacing: DesignTokens.Spacing.medium) {
+                        Image(systemName: DesignTokens.Icons.questionmarkCircleFill)
                             .font(.title2)
                             .foregroundStyle(.appAccent)
                         
@@ -126,22 +127,22 @@ struct GraphInsightsPanel: View {
                     }
                     .padding()
                     .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                            .stroke(Color.appAccent.opacity(SystemOpacity.faint), lineWidth: SystemStroke.hairline)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
+                            .stroke(Color.appAccent.opacity(DesignTokens.SystemOpacity.faint), lineWidth: DesignTokens.SystemStroke.hairline)
                     )
-                    .shadow(color: Color.theme.black.opacity(SystemOpacity.ghost), radius: DesignSystem.shadowRadius, x: 0, y: SystemShadow.offsetSmall)
+                    .shadow(color: Color.theme.black.opacity(DesignTokens.SystemOpacity.ghost), radius: DesignTokens.Spacing.shadowRadius, x: 0, y: DesignTokens.SystemShadow.offsetSmall)
                 }
                 .buttonStyle(.plain)
-                .padding(.bottom, DesignSystem.small)
+                .padding(.bottom, DesignTokens.Spacing.small)
                 .sheet(isPresented: $showGuide) {
                     GraphConceptGuideSheet()
                 }
 
                 insightSection(
                     id: "surprising",
-                    icon: DesignSystem.Icons.link,
+                    icon: DesignTokens.Icons.link,
                     title: L10n.Graph.insightSurprising,
                     count: surprising.count,
                     description: L10n.Graph.insightSurprisingDesc,
@@ -150,7 +151,7 @@ struct GraphInsightsPanel: View {
                 
                 insightSection(
                     id: "orphans",
-                    icon: DesignSystem.Icons.questionCircle,
+                    icon: DesignTokens.Icons.questionCircle,
                     title: L10n.Graph.insightOrphans,
                     count: orphans.count,
                     description: L10n.Graph.insightOrphansDesc,
@@ -159,7 +160,7 @@ struct GraphInsightsPanel: View {
                 
                 insightSection(
                     id: "sparse",
-                    icon: DesignSystem.Icons.chartBarXaxis,
+                    icon: DesignTokens.Icons.chartBarXaxis,
                     title: L10n.Graph.insightSparse,
                     count: sparse.count,
                     description: L10n.Graph.insightSparseDesc,
@@ -168,7 +169,7 @@ struct GraphInsightsPanel: View {
                 
                 insightSection(
                     id: "bridges",
-                    icon: DesignSystem.Icons.arrowTriangleBranch,
+                    icon: DesignTokens.Icons.arrowTriangleBranch,
                     title: L10n.Graph.insightBridges,
                     count: bridges.count,
                     description: L10n.Graph.insightBridgesDesc,
@@ -183,11 +184,11 @@ struct GraphInsightsPanel: View {
     /// 提取 Header view 以缩短函数长度，完美打消 SwiftLint 警告
     @ViewBuilder
     private func sectionHeader(title: String, icon: String, count: Int, color: Color, isExpanded: Bool) -> some View {
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             Image(systemName: icon)
                 .font(.subheadline)
                 .foregroundStyle(color)
-                .frame(width: DesignSystem.iconLarge)
+                .frame(width: DesignTokens.Spacing.iconLarge)
             
             Text(title)
                 .font(.subheadline.bold())
@@ -197,21 +198,21 @@ struct GraphInsightsPanel: View {
             Text("\(count)")
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(.white)
-                .padding(.horizontal, Spacing.Chip.iconSpacing)
-                .padding(.vertical, Spacing.Chip.verticalPadding)
+                .padding(.horizontal, DesignTokens.Spacing.Chip.iconSpacing)
+                .padding(.vertical, DesignTokens.Spacing.Chip.verticalPadding)
                 .background(
                     LinearGradient(
-                        colors: [color, color.opacity(SystemOpacity.glassStrong)],
+                        colors: [color, color.opacity(DesignTokens.SystemOpacity.glassStrong)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
                 .clipShape(Capsule())
-                .shadow(color: color.opacity(DesignSystem.disabledOpacity), radius: DesignSystem.smallRadius, x: 0, y: DesignSystem.atomic)
+                .shadow(color: color.opacity(DesignTokens.Colors.Opacity.disabledOpacity), radius: DesignTokens.Spacing.smallRadius, x: 0, y: DesignTokens.Spacing.atomic)
             
             Spacer()
             
-            Image(systemName: isExpanded ? DesignSystem.Icons.down : DesignSystem.Icons.forward)
+            Image(systemName: isExpanded ? DesignTokens.Icons.down : DesignTokens.Icons.forward)
                 .font(.footnote)
                 .foregroundStyle(.appSecondary)
         }
@@ -220,7 +221,7 @@ struct GraphInsightsPanel: View {
     
     /// 渲染图分析报告中的单项洞察板块 (Glassmorphic + soft borders)
     private func insightSection(id: String, icon: String, title: String, count: Int, description: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.mediumRadius) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.mediumRadius) {
             // Section header
             Button(action: {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -238,60 +239,60 @@ struct GraphInsightsPanel: View {
             
             if expandedSections.contains(id) {
                 insightSectionExpandedContent(id: id, description: description, color: color)
-                    .transition(.opacity.combined(with: .move(edge: .top)).animation(.easeInOut(duration: DesignSystem.dimmedOpacity)))
+                    .transition(.opacity.combined(with: .move(edge: .top)).animation(.easeInOut(duration: DesignTokens.Colors.Opacity.dimmedOpacity)))
             }
         }
-        .padding(DesignSystem.medium)
+        .padding(DesignTokens.Spacing.medium)
         .background(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                .fill(Color.appCard.opacity(SystemOpacity.glassStrong))
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
+                .fill(Color.appCard.opacity(DesignTokens.SystemOpacity.glassStrong))
         )
         .background(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
                 .stroke(
                     LinearGradient(
-                        colors: [color.opacity(SystemOpacity.glassStrong), color.opacity(SystemOpacity.ghost)],
+                        colors: [color.opacity(DesignTokens.SystemOpacity.glassStrong), color.opacity(DesignTokens.SystemOpacity.ghost)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: DesignSystem.borderWidth
+                    lineWidth: DesignTokens.Spacing.borderWidth
                 )
         )
-        .shadow(color: Color.theme.black.opacity(SystemOpacity.ghost), radius: DesignSystem.mediumRadius, x: 0, y: DesignSystem.smallRadius)
+        .shadow(color: Color.theme.black.opacity(DesignTokens.SystemOpacity.ghost), radius: DesignTokens.Spacing.mediumRadius, x: 0, y: DesignTokens.Spacing.smallRadius)
     }
 
     /// 渲染已展开分析板块的详情和节点推荐 Chips (微交互 & Hover 效果)
     private func insightSectionExpandedContent(id: String, description: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.mediumRadius) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.mediumRadius) {
             Text(description)
                 .font(.footnote)
                 .foregroundStyle(.appSecondary)
-                .padding(.leading, DesignSystem.huge)
-                .lineSpacing(SystemSpacing.tight)
+                .padding(.leading, DesignTokens.Spacing.huge)
+                .lineSpacing(DesignTokens.SystemSpacing.tight)
             
             // Node chips
             let nodeIDs = getNodeIDs(for: id)
             if !nodeIDs.isEmpty {
-                FlowLayout(spacing: DesignSystem.small) {
+                FlowLayout(spacing: DesignTokens.Spacing.small) {
                     ForEach(nodeIDs, id: \.self) { nodeID in
                         if let node = nodes.first(where: { $0.id == nodeID }) {
                             Button(action: {
                                 HapticFeedback.shared.trigger(.selection)
                                 onSelectNode(nodeID)
                             }) {
-                                HStack(spacing: Spacing.Chip.iconSpacing) {
+                                HStack(spacing: DesignTokens.Spacing.Chip.iconSpacing) {
                                     Image(systemName: node.pageType.icon)
                                         .font(.caption)
                                     Text(node.title)
                                         .font(.caption.weight(.medium))
                                         .lineLimit(1)
                                 }
-                                .padding(.horizontal, DesignSystem.medium)
-                                .padding(.vertical, DesignSystem.tiny)
-                                .background(color.opacity(SystemOpacity.ghost))
+                                .padding(.horizontal, DesignTokens.Spacing.medium)
+                                .padding(.vertical, DesignTokens.Spacing.tiny)
+                                .background(color.opacity(DesignTokens.SystemOpacity.ghost))
                                 .overlay(
                                     Capsule()
-                                        .stroke(color.opacity(DesignSystem.dimmedOpacity), lineWidth: DesignSystem.borderWidth)
+                                        .stroke(color.opacity(DesignTokens.Colors.Opacity.dimmedOpacity), lineWidth: DesignTokens.Spacing.borderWidth)
                                 )
                                 .clipShape(Capsule())
                                 .foregroundStyle(color)
@@ -300,7 +301,7 @@ struct GraphInsightsPanel: View {
                         }
                     }
                 }
-                .padding(.leading, DesignSystem.huge)
+                .padding(.leading, DesignTokens.Spacing.huge)
             }
         }
     }
@@ -323,16 +324,16 @@ struct GraphConceptGuideSheet: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: DesignSystem.huge) {
+            VStack(spacing: DesignTokens.Spacing.huge) {
                 // 1. 头部标题
                 HStack {
-                    Label(L10n.Graph.guide.sheetTitle, systemImage: DesignSystem.Icons.infoCircleFill)
+                    Label(L10n.Graph.guide.sheetTitle, systemImage: DesignTokens.Icons.infoCircleFill)
                         .font(.headline)
                         .foregroundStyle(.appAccent)
                     Spacer()
                     PanelCloseButton()
                 }
-                .padding(.bottom, DesignSystem.medium)
+                .padding(.bottom, DesignTokens.Spacing.medium)
                 
                 // 2. 3D 概念指南干净的图示
                 VStack(spacing: 0) {
@@ -340,18 +341,18 @@ struct GraphConceptGuideSheet: View {
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
-                        .shadow(color: Color.theme.black.opacity(DesignSystem.translucentOpacity), radius: DesignSystem.shadowRadius)
+                        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius))
+                        .shadow(color: Color.theme.black.opacity(DesignTokens.Colors.Opacity.translucentOpacity), radius: DesignTokens.Spacing.shadowRadius)
                 }
-                .appContainer(background: Color.appCard.opacity(DesignSystem.surfaceOpacity), padding: false)
+                .appContainer(background: Color.appCard.opacity(DesignTokens.Colors.Opacity.surfaceOpacity), padding: false)
                 
                 // 3. SwiftUI 图例对照与大白话描述 (适配 iPad/Mac 的双列卡片网格布局，颜色与上图严格呼应)
                 LazyVGrid(
                     columns: [
-                        GridItem(.flexible(), spacing: DesignSystem.medium),
-                        GridItem(.flexible(), spacing: DesignSystem.medium)
+                        GridItem(.flexible(), spacing: DesignTokens.Spacing.medium),
+                        GridItem(.flexible(), spacing: DesignTokens.Spacing.medium)
                     ],
-                    spacing: DesignSystem.medium
+                    spacing: DesignTokens.Spacing.medium
                 ) {
                     guideRow(color: .appAccent, icon: "circle.fill", title: L10n.Graph.guide.legendNodeTitle, desc: L10n.Graph.guide.legendNodeDesc)
                     guideRow(color: .appSecondary, icon: "minus", title: L10n.Graph.guide.legendLinkTitle, desc: L10n.Graph.guide.legendLinkDesc)
@@ -363,9 +364,9 @@ struct GraphConceptGuideSheet: View {
                     guideRow(color: .appComparison, icon: "bolt.fill", title: L10n.Graph.guide.surprisingTitle, desc: L10n.Graph.guide.surprisingDesc) // 对应中间粉红桥接线
                 }
                 
-                Spacer(minLength: DesignSystem.huge)
+                Spacer(minLength: DesignTokens.Spacing.huge)
             }
-            .padding(DesignSystem.huge)
+            .padding(DesignTokens.Spacing.huge)
         }
         .presentationDetents([.large])
         .presentationBackground(.ultraThinMaterial)
@@ -373,11 +374,11 @@ struct GraphConceptGuideSheet: View {
     
     /// 实色饱满圆形 + 高对比度白图标的高阶排版，在深浅色模式下都拥有完美的色彩表现力与无障碍阅读对比度
     private func guideRow(color: Color, icon: String, title: String, desc: String) -> some View {
-        HStack(alignment: .top, spacing: DesignSystem.medium) {
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.medium) {
             ZStack {
                 Circle()
                     .fill(color)
-                    .frame(width: DesignSystem.iconHuge, height: DesignSystem.iconHuge)
+                    .frame(width: DesignTokens.Spacing.iconHuge, height: DesignTokens.Spacing.iconHuge)
                 Image(systemName: icon)
                     .font(.footnote.weight(.bold))
                     .foregroundStyle(.white)
@@ -389,14 +390,14 @@ struct GraphConceptGuideSheet: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .borderedCardStyle(
-            horizontalPadding: DesignSystem.standardPadding,
-            verticalPadding: DesignSystem.standardPadding,
-            backgroundOpacity: SystemOpacity.glass,
-            cornerRadius: DesignSystem.mediumRadius
+            horizontalPadding: DesignTokens.Spacing.standardPadding,
+            verticalPadding: DesignTokens.Spacing.standardPadding,
+            backgroundOpacity: DesignTokens.SystemOpacity.glass,
+            cornerRadius: DesignTokens.Spacing.mediumRadius
         )
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous)
-                .stroke(Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.hairline)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
+                .stroke(Color.appBorder.opacity(DesignTokens.SystemOpacity.overlay), lineWidth: DesignTokens.SystemStroke.hairline)
         )
     }
 }

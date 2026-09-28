@@ -9,6 +9,7 @@
 //  核心职责：构建 Backlinks 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 struct BacklinksView: View {
     let page: KnowledgePage
@@ -48,12 +49,12 @@ struct BacklinksView: View {
                             .foregroundStyle(.appSecondary)
                     } else {
                         ForEach(outgoingPages) { linkedPage in
-                            linkRow(page: linkedPage, arrowIcon: DesignSystem.Icons.arrowRight, arrowColor: .appAccent)
+                            linkRow(page: linkedPage, arrowIcon: DesignTokens.Icons.arrowRight, arrowColor: .appAccent)
                         }
                     }
                 } header: {
                     HStack {
-                        Image(systemName: DesignSystem.Icons.arrowRight)
+                        Image(systemName: DesignTokens.Icons.arrowRight)
                         Text(L10n.Vault.Backlinks.outgoing( outgoingPages.count))
                     }
                 }
@@ -66,12 +67,12 @@ struct BacklinksView: View {
                             .foregroundStyle(.appSecondary)
                     } else {
                         ForEach(backlinks) { linkingPage in
-                            linkRow(page: linkingPage, arrowIcon: DesignSystem.Icons.arrowLeft, arrowColor: .appComparison)
+                            linkRow(page: linkingPage, arrowIcon: DesignTokens.Icons.arrowLeft, arrowColor: .appComparison)
                         }
                     }
                 } header: {
                     HStack {
-                        Image(systemName: DesignSystem.Icons.arrowLeft)
+                        Image(systemName: DesignTokens.Icons.arrowLeft)
                         Text(L10n.Vault.Backlinks.count( backlinks.count))
                     }
                 }
@@ -90,14 +91,14 @@ struct BacklinksView: View {
     /// 链接行视图：箭头 + 页面图标 + 标题 + 类型
     @ViewBuilder
     private func linkRow(page: KnowledgePage, arrowIcon: String, arrowColor: Color) -> some View {
-        HStack(spacing: SystemSpacing.element) {
+        HStack(spacing: DesignTokens.SystemSpacing.element) {
             Image(systemName: arrowIcon)
                 .font(.caption)
                 .foregroundStyle(arrowColor)
 
-            InsightPageTypeIcon(page: page, size: DesignSystem.IconSize.medium)
+            InsightPageTypeIcon(page: page, size: DesignTokens.IconSize.medium)
 
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(page.title)
                     .font(.subheadline)
                     .foregroundStyle(.appText)
@@ -106,6 +107,6 @@ struct BacklinksView: View {
                     .foregroundStyle(.appSecondary)
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 }

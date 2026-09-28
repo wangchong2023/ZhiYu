@@ -9,6 +9,7 @@
 //  核心职责：SwiftUI 视图组件，构建应用的导航、侧边栏、布局等 UI 结构。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 功能引导弹窗常量
 private enum CoachMarkConstants {
@@ -27,25 +28,25 @@ struct CoachMarkOverlay: View {
     var body: some View {
         ZStack {
             // 半透明背景
-            Color.theme.black.opacity(DesignSystem.coachMarkBackgroundOpacity)
+            Color.theme.black.opacity(DesignTokens.Colors.Opacity.coachMarkBackgroundOpacity)
                 .ignoresSafeArea()
             
-            VStack(spacing: DesignSystem.giant) {
+            VStack(spacing: DesignTokens.Spacing.giant) {
                 // 图标
                 ZStack {
                     Circle()
                         .fill(LinearGradient(colors: [.appAccent, .appSource], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: DesignSystem.Gallery.splashIconSize, height: DesignSystem.Gallery.splashIconSize)
-                        .shadow(color: .appAccent.opacity(SystemOpacity.disabled), radius: DesignSystem.medium, y: SystemSpacing.element)
+                        .shadow(color: .appAccent.opacity(DesignTokens.SystemOpacity.disabled), radius: DesignTokens.Spacing.medium, y: DesignTokens.SystemSpacing.element)
                     
                     Image(systemName: iconName)
-                        .font(.system(size: DesignSystem.Metrics.titleFontSize * DesignSystem.Metrics.coachMarkIconScale, weight: .bold))
+                        .font(.system(size: DesignTokens.Metrics.titleFontSize * DesignTokens.Metrics.coachMarkIconScale, weight: .bold))
                         .foregroundStyle(.white)
                 }
                 .scaleEffect(isAnimating ? 1.0 : 0.8)
                 .opacity(isAnimating ? 1.0 : 0)
                 
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     Text(title)
                         .font(.title3.bold())
                         .foregroundStyle(.appText)
@@ -56,40 +57,40 @@ struct CoachMarkOverlay: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
-                .offset(y: isAnimating ? 0 : DesignSystem.loosePadding)
-                .opacity(isAnimating ? SystemOpacity.active : 0)
+                .offset(y: isAnimating ? 0 : DesignTokens.Spacing.loosePadding)
+                .opacity(isAnimating ? DesignTokens.SystemOpacity.active : 0)
                 
                 Button(action: performAction) {
                     Text(actionText)
                         .font(.headline)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, DesignSystem.Metrics.coachMarkActionHorizontalPadding)
-                        .padding(.vertical, DesignSystem.medium)
+                        .padding(.horizontal, DesignTokens.Metrics.coachMarkActionHorizontalPadding)
+                        .padding(.vertical, DesignTokens.Spacing.medium)
                         .background(
                             Capsule()
                                 .fill(Color.appAccent)
                         )
                 }
-                .scaleEffect(isAnimating ? SystemOpacity.active : DesignSystem.Metrics.coachMarkScaleMultiplier)
-                .opacity(isAnimating ? SystemOpacity.active : 0)
+                .scaleEffect(isAnimating ? DesignTokens.SystemOpacity.active : DesignTokens.Metrics.coachMarkScaleMultiplier)
+                .opacity(isAnimating ? DesignTokens.SystemOpacity.active : 0)
                 
                 Button(action: dismissWithAnimation) {
                     Text(L10n.Common.skip)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
             }
-            .padding(ComponentSpacing.ultra)
+            .padding(DesignTokens.ComponentSpacing.ultra)
             .background(
                 RoundedRectangle(cornerRadius: CoachMarkConstants.cardCornerRadius)
                     .fill(Color.appCard)
-                    .shadow(color: .primary.opacity(SystemOpacity.glassStrong), radius: DesignSystem.Metrics.coachMarkShadowRadius, x: 0, y: DesignSystem.Metrics.coachMarkShadowY)
+                    .shadow(color: .primary.opacity(DesignTokens.SystemOpacity.glassStrong), radius: DesignTokens.Metrics.coachMarkShadowRadius, x: 0, y: DesignTokens.Metrics.coachMarkShadowY)
             )
-            .padding(DesignSystem.giant)
+            .padding(DesignTokens.Spacing.giant)
         }
         .onAppear {
-            withAnimation(.spring(response: DesignSystem.Animation.standardDuration, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: DesignTokens.Animation.standardDuration, dampingFraction: 0.7)) {
                 isAnimating = true
             }
         }
@@ -131,13 +132,13 @@ struct CoachMarkOverlay: View {
     }
     
     private func dismissWithAnimation() {
-        withAnimation(.easeIn(duration: DesignSystem.Animation.fastDuration)) {
+        withAnimation(.easeIn(duration: DesignTokens.Animation.fastDuration)) {
             isAnimating = false
         }
         // Bug #99 修复：DispatchQueue.main.asyncAfter 改为 Task + Task.sleep，
         // 符合项目并发规范（AGENTS.md：优先 async/await）。
         Task {
-            try? await Task.sleep(for: .seconds(DesignSystem.Animation.fastDuration))
+            try? await Task.sleep(for: .seconds(DesignTokens.Animation.fastDuration))
             await MainActor.run { onDismiss() }
         }
     }

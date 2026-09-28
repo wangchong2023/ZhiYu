@@ -9,6 +9,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 大模型卡片组件
 
@@ -36,24 +37,24 @@ struct ModelCardView: View {
         let isLocalReady = modelManager.isModelLocalReady(for: manifest.modelId)
 
         let cardBackground = Color.appCard.opacity(eligibility == .restricted ? 0.4 : 0.8)
-        let borderColor = isSelected ? Color.appAccent : (eligibility == .restricted ? Color.theme.red.opacity(DesignSystem.Opacity.disabled) : Color.appBorder.opacity(DesignSystem.Opacity.prominent))
-        let shadowColor = isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.medium) : Color.theme.black.opacity(DesignSystem.Opacity.ghost)
+        let borderColor = isSelected ? Color.appAccent : (eligibility == .restricted ? Color.theme.red.opacity(DesignTokens.Opacity.disabled) : Color.appBorder.opacity(DesignTokens.Opacity.prominent))
+        let shadowColor = isSelected ? Color.appAccent.opacity(DesignTokens.Opacity.medium) : Color.theme.black.opacity(DesignTokens.Opacity.ghost)
 
         VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 // 头部：标题与状态标签
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-                        HStack(spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
                             Text(manifest.displayName)
                                 .font(.headline)
                                 .foregroundStyle(eligibility == .restricted ? .appSecondary : .appText)
 
                             Text(manifest.parameterCount)
-                                .font(.system(size: SystemFontSize.micro, weight: .bold, design: .monospaced)) // Dynamic Type
-                                .padding(.horizontal, SystemSpacing.small)
-                                .padding(.vertical, SystemSpacing.atomic)
-                                .background(Color.appAccent.opacity(DesignSystem.Opacity.glass))
+                                .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .bold, design: .monospaced)) // Dynamic Type
+                                .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                                .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
                                 .clipShape(Capsule())
                                 .foregroundStyle(.appAccent)
                         }
@@ -63,7 +64,7 @@ struct ModelCardView: View {
                             .foregroundStyle(.appSecondary)
 
                         // 独立的文件大小和状态行
-                        HStack(spacing: DesignSystem.small) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
                             let statusIcon: String = {
                                 if isLocalReady {
                                     return "checkmark.circle.fill"
@@ -90,7 +91,7 @@ struct ModelCardView: View {
                                 }
                             }()
 
-                            HStack(spacing: SystemSpacing.tiny) {
+                            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                                 Image(systemName: statusIcon)
                                     .font(.caption2)
                                     .foregroundStyle(iconColor)
@@ -102,8 +103,8 @@ struct ModelCardView: View {
                             
                             if let urlString = manifest.huggingfaceURLString ?? manifest.modelscopeURLString,
                                let url = URL(string: urlString) {
-                                HStack(spacing: SystemSpacing.atomic) {
-                                    Image(systemName: DesignSystem.Icons.arrowUpRightSquare)
+                                HStack(spacing: DesignTokens.SystemSpacing.atomic) {
+                                    Image(systemName: DesignTokens.Icons.arrowUpRightSquare)
                                         .font(.caption2)
                                         .foregroundStyle(.appAccent)
                                     Link(L10n.ModelManager.Card.learnMore, destination: url)
@@ -116,10 +117,10 @@ struct ModelCardView: View {
 
                     Spacer()
 
-                    HStack(spacing: DesignSystem.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         if isLocalReady {
-                            HStack(spacing: SystemSpacing.atomic) {
-                                Image(systemName: DesignSystem.Icons.checkmarkShieldFill)
+                            HStack(spacing: DesignTokens.SystemSpacing.atomic) {
+                                Image(systemName: DesignTokens.Icons.checkmarkShieldFill)
                                 Text(L10n.ModelManager.Card.ready)
                             }
                             .font(.caption2.bold())
@@ -131,11 +132,11 @@ struct ModelCardView: View {
                                 expandedModelId = (expandedModelId == manifest.modelId) ? nil : manifest.modelId
                             }
                         } label: {
-                            Image(systemName: DesignSystem.Icons.chevronUpDown)
+                            Image(systemName: DesignTokens.Icons.chevronUpDown)
                                 .font(.caption2)
                                 .foregroundStyle(.appSecondary)
-                                .padding(DesignSystem.tiny)
-                                .background(Color.appCard.opacity(DesignSystem.Opacity.soft))
+                                .padding(DesignTokens.Spacing.tiny)
+                                .background(Color.appCard.opacity(DesignTokens.Opacity.soft))
                                 .clipShape(Circle())
                         }
                         .buttonStyle(.plain)
@@ -151,19 +152,19 @@ struct ModelCardView: View {
                 // 场景能力标签 (Chips)
                 if !manifest.displayTasks.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: DesignSystem.tiny) {
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
                             ForEach(manifest.displayTasks, id: \.self) { task in
                                 Text(taskLabel(for: task))
-                                    .font(.system(size: DesignSystem.microFontSize, weight: .medium))
-                                    .padding(.horizontal, DesignSystem.small)
-                                    .padding(.vertical, DesignSystem.atomic)
-                                    .background(taskColor(for: task).opacity(DesignSystem.Opacity.subtle))
-                                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.chip))
+                                    .font(.system(size: DesignTokens.Typography.microFontSize, weight: .medium))
+                                    .padding(.horizontal, DesignTokens.Spacing.small)
+                                    .padding(.vertical, DesignTokens.Spacing.atomic)
+                                    .background(taskColor(for: task).opacity(DesignTokens.Opacity.subtle))
+                                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.chip))
                                     .foregroundStyle(taskColor(for: task))
                             }
                         }
                     }
-                    .padding(.vertical, DesignSystem.atomic)
+                    .padding(.vertical, DesignTokens.Spacing.atomic)
                 }
 
                 // 硬件防爆护栏层
@@ -174,7 +175,7 @@ struct ModelCardView: View {
                 }
 
                 Divider()
-                    .foregroundStyle(Color.appBorder.opacity(DesignSystem.Opacity.soft))
+                    .foregroundStyle(Color.appBorder.opacity(DesignTokens.Opacity.soft))
 
                 // 底部下载/激活状态交互组
                 HStack {
@@ -196,12 +197,12 @@ struct ModelCardView: View {
             }
             .padding()
             .background(cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
                     .stroke(borderColor, lineWidth: isSelected ? 2 : 1)
             )
-            .shadow(color: shadowColor, radius: SystemShadow.radiusMedium, x: 0, y: SystemShadow.offsetSmall)
+            .shadow(color: shadowColor, radius: DesignTokens.SystemShadow.radiusMedium, x: 0, y: DesignTokens.SystemShadow.offsetSmall)
             .onTapGesture {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     expandedModelId = (expandedModelId == manifest.modelId) ? nil : manifest.modelId
@@ -219,14 +220,14 @@ struct ModelCardView: View {
 
     @ViewBuilder
     private func modelSpecSheet(for manifest: LLMManifest) -> some View {
-        let specBg = Color.appCard.opacity(DesignSystem.Opacity.dim)
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            Divider().foregroundStyle(Color.appBorder.opacity(DesignSystem.Opacity.soft))
+        let specBg = Color.appCard.opacity(DesignTokens.Opacity.dim)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            Divider().foregroundStyle(Color.appBorder.opacity(DesignTokens.Opacity.soft))
 
             Text(manifest.description)
                 .font(.subheadline).foregroundStyle(.appText).fixedSize(horizontal: false, vertical: true)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.small) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignTokens.Spacing.small) {
                 specItem(icon: "cpu", label: L10n.ModelManager.Spec.memory, value: String(format: "%.0f GB", manifest.minDeviceMemoryInGb))
                 specItem(icon: "arrow.down.doc", label: L10n.ModelManager.Spec.downloadSize, value: formattedSize(manifest.fileSizeInBytes))
                 specItem(icon: "square.3.layers.3d", label: L10n.ModelManager.Spec.parameters, value: manifest.parameterCount)
@@ -234,42 +235,42 @@ struct ModelCardView: View {
             }
 
             if !manifest.displayTasks.isEmpty {
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     Text(L10n.ModelManager.Spec.tasks).font(.caption).foregroundStyle(.appSecondary)
                     ForEach(manifest.displayTasks, id: \.self) { t in
-                        HStack(spacing: SystemSpacing.tight) {
+                        HStack(spacing: DesignTokens.SystemSpacing.tight) {
                             // 胶囊引入微型功能图标，增强视觉可读性
                             Image(systemName: taskIcon(for: t))
-                                .font(.system(size: SystemFontSize.nano)) // Dynamic Type
+                                .font(.system(size: DesignTokens.SystemFontSize.nano)) // Dynamic Type
                             Text(taskLabel(for: t))
                                 .font(.caption2)
                         }
-                        .padding(.horizontal, SystemSpacing.small)
-                        .padding(.vertical, SystemSpacing.atomic)
-                        .background(taskColor(for: t).opacity(DesignSystem.Opacity.subtle)).clipShape(Capsule())
+                        .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                        .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                        .background(taskColor(for: t).opacity(DesignTokens.Opacity.subtle)).clipShape(Capsule())
                         .foregroundStyle(taskColor(for: t))
                     }
                 }
             }
         }
-        .padding(DesignSystem.medium)
+        .padding(DesignTokens.Spacing.medium)
         .background(specBg)
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
 
     private func specItem(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: DesignSystem.tiny) {
-            Image(systemName: icon).font(.caption2).foregroundStyle(.appAccent).frame(width: DesignSystem.IconSize.micro)
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
+            Image(systemName: icon).font(.caption2).foregroundStyle(.appAccent).frame(width: DesignTokens.IconSize.micro)
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(value).font(.subheadline.weight(.medium)).foregroundStyle(.appText)
-                Text(label).font(.system(size: DesignSystem.microFontSize)).foregroundStyle(.appSecondary)
+                Text(label).font(.system(size: DesignTokens.Typography.microFontSize)).foregroundStyle(.appSecondary)
             }
         }
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.appBackground.opacity(DesignSystem.Opacity.shadow))
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+        .background(Color.appBackground.opacity(DesignTokens.Opacity.shadow))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
     }
 
     // MARK: - Banner 信息条
@@ -277,7 +278,7 @@ struct ModelCardView: View {
     /// 强物理内存拦截红条
     private func restrictedBanner(for manifest: LLMManifest) -> some View {
         memoryBanner(
-            icon: DesignSystem.Icons.warning,
+            icon: DesignTokens.Icons.warning,
             text: " \(String(format: "%.1f", manifest.minDeviceMemoryInGb)) GB  OOM",
             color: Color.theme.red
         )
@@ -286,7 +287,7 @@ struct ModelCardView: View {
     /// 临界运存警告黄条
     private var warningBanner: some View {
         memoryBanner(
-            icon: DesignSystem.Icons.exclamationmarkCircleFill,
+            icon: DesignTokens.Icons.exclamationmarkCircleFill,
             text: L10n.ModelManager.Card.warningLowMemory,
             color: Color.theme.orange
         )
@@ -294,17 +295,17 @@ struct ModelCardView: View {
 
     /// 通用内存警告横幅，消除 restrictedBanner/warningBanner 的重复结构
     private func memoryBanner(icon: String, text: String, color: Color) -> some View {
-        HStack(spacing: SystemSpacing.element) {
+        HStack(spacing: DesignTokens.SystemSpacing.element) {
             Image(systemName: icon)
                 .foregroundStyle(color)
             Text(text)
-                .font(.system(size: SystemFontSize.micro)) // Dynamic Type
+                .font(.system(size: DesignTokens.SystemFontSize.micro)) // Dynamic Type
                 .foregroundStyle(color)
             Spacer()
         }
-        .padding(DesignSystem.tightPadding)
-        .background(color.opacity(DesignSystem.Opacity.subtle))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.Chip.cornerRadius))
+        .padding(DesignTokens.Spacing.tightPadding)
+        .background(color.opacity(DesignTokens.Opacity.subtle))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.Chip.cornerRadius))
     }
 
     // MARK: - 辅助计算
@@ -343,13 +344,13 @@ struct ModelCardView: View {
     /// 映射模型能力任务对应的 SF Symbols 图标名称
     func taskIcon(for task: String) -> String {
         switch task {
-        case FeatureConstants.TaskName.chat: return DesignSystem.Icons.chatBubbles
-        case FeatureConstants.TaskName.completion: return DesignSystem.Icons.checklistChecked
-        case FeatureConstants.TaskName.reasoning: return DesignSystem.Icons.brainProfile
-        case FeatureConstants.TaskName.code: return DesignSystem.Icons.chevronCode
-        case FeatureConstants.TaskName.rag: return DesignSystem.Icons.docMagnify
-        case FeatureConstants.TaskName.translation: return DesignSystem.Icons.characterBook
-        default: return DesignSystem.Icons.sparkles
+        case FeatureConstants.TaskName.chat: return DesignTokens.Icons.chatBubbles
+        case FeatureConstants.TaskName.completion: return DesignTokens.Icons.checklistChecked
+        case FeatureConstants.TaskName.reasoning: return DesignTokens.Icons.brainProfile
+        case FeatureConstants.TaskName.code: return DesignTokens.Icons.chevronCode
+        case FeatureConstants.TaskName.rag: return DesignTokens.Icons.docMagnify
+        case FeatureConstants.TaskName.translation: return DesignTokens.Icons.characterBook
+        default: return DesignTokens.Icons.sparkles
         }
     }
 }

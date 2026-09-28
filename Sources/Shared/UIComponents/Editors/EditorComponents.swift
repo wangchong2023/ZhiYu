@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Editor Toolbar Button
 /// 编辑器工具栏按钮组件
@@ -19,16 +20,16 @@ struct EditorToolbarButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: DesignSystem.atomic) {
+            VStack(spacing: DesignTokens.Spacing.atomic) {
                 Image(systemName: icon)
                     .font(.subheadline)
                 Text(title)
                     .font(.caption2)
             }
             .foregroundStyle(Color.appSecondary)
-            .frame(width: DesignSystem.IconSize.xlarge, height: 36)
-            .background(Color.appBorder.opacity(DesignSystem.Opacity.glass))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+            .frame(width: DesignTokens.IconSize.xlarge, height: 36)
+            .background(Color.appBorder.opacity(DesignTokens.Opacity.glass))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(title)

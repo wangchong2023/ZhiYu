@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - Markdown Renderer View
 /// Renders structured Markdown blocks using MarkdownProcessor.
@@ -27,7 +28,7 @@ struct MarkdownRendererView: View {
     private let parser = MarkdownProcessor()
 
     private enum Layout {
-        static let minColWidth: CGFloat = ComponentSpacing.metricChipWidth
+        static let minColWidth: CGFloat = DesignTokens.ComponentSpacing.metricChipWidth
         static let maxColWidth: CGFloat = 180
         static let cellHeight: CGFloat = 36
     }
@@ -42,7 +43,7 @@ struct MarkdownRendererView: View {
             }) {
                 renderSkeleton()
             } else {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     let blocks = parser.parse(content)
                     ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
                         renderBlock(block)
@@ -51,20 +52,20 @@ struct MarkdownRendererView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .blur(radius: (store.isPrivacyModeEnabled && isPrivate && !tempUnlocked) ? DesignSystem.cardRadius : 0)
+        .blur(radius: (store.isPrivacyModeEnabled && isPrivate && !tempUnlocked) ? DesignTokens.Spacing.cardRadius : 0)
         .overlay {
             if store.isPrivacyModeEnabled && isPrivate && !tempUnlocked {
-                VStack(spacing: DesignSystem.medium) {
-                    Image(systemName: DesignSystem.Icons.privacyMode)
-                        .font(.system(size: ComponentSpacing.iconCompact))
+                VStack(spacing: DesignTokens.Spacing.medium) {
+                    Image(systemName: DesignTokens.Icons.privacyMode)
+                        .font(.system(size: DesignTokens.ComponentSpacing.iconCompact))
                     Text(L10n.Common.Security.privacyMasked)
-                        .font(DesignSystem.titleFont)
+                        .font(DesignTokens.Typography.titleFont)
                     Button(action: {
                         authenticate()
                     }) {
-                        Label(L10n.Common.Security.unlockToView, systemImage: DesignSystem.Icons.lockOpen)
-                            .padding(.horizontal, DesignSystem.standardPadding)
-                            .padding(.vertical, DesignSystem.tightPadding)
+                        Label(L10n.Common.Security.unlockToView, systemImage: DesignTokens.Icons.lockOpen)
+                            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                            .padding(.vertical, DesignTokens.Spacing.tightPadding)
                             .background(Color.appAccent)
                             .foregroundStyle(.white)
                             .clipShape(Capsule())
@@ -114,18 +115,18 @@ struct MarkdownRendererView: View {
     @ViewBuilder
     private func renderDetailsBlock(summary: String, content: String) -> some View {
         #if os(watchOS)
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             Text(summary)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appAccent)
             MarkdownRendererView(content: content, isPrivate: isPrivate, onLinkTap: onLinkTap, isCompact: true)
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
         }
         .detailsBlockStyle()
         #else
         DisclosureGroup {
             MarkdownRendererView(content: content, isPrivate: isPrivate, onLinkTap: onLinkTap, isCompact: true)
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
         } label: {
             Text(summary)
                 .font(.subheadline.weight(.medium))
@@ -137,7 +138,7 @@ struct MarkdownRendererView: View {
 
     // MARK: - Render Heading
     private func renderHeading(text: String, level: Int) -> some View {
-        let headingLevel = DesignSystem.HeadingLevel(rawValue: level) ?? .h6
+        let headingLevel = DesignTokens.Typography.HeadingLevel(rawValue: level) ?? .h6
         let isMainTitle = level == 1
         
         return Text(text)
@@ -146,44 +147,44 @@ struct MarkdownRendererView: View {
             .foregroundStyle(.appText)
             .multilineTextAlignment(isMainTitle ? .center : .leading)
             .frame(maxWidth: .infinity, alignment: isMainTitle ? .center : .leading)
-            .padding(.top, isMainTitle ? DesignSystem.widePadding : headingLevel.topPadding)
-            .padding(.bottom, isMainTitle ? DesignSystem.standardPadding : DesignSystem.tiny)
+            .padding(.top, isMainTitle ? DesignTokens.Spacing.widePadding : headingLevel.topPadding)
+            .padding(.bottom, isMainTitle ? DesignTokens.Spacing.standardPadding : DesignTokens.Spacing.tiny)
     }
 
     @ViewBuilder
     private func renderParagraph(text: String) -> some View {
         renderInlineContent(text)
-            .font(isCompact ? DesignSystem.secondaryFont : .system(.body, design: .serif))
-            .lineSpacing(isCompact ? SystemSpacing.tiny : SystemSpacing.small)
-            .foregroundStyle(.appText.opacity(SystemOpacity.active - SystemOpacity.glass))
+            .font(isCompact ? DesignTokens.Typography.secondaryFont : .system(.body, design: .serif))
+            .lineSpacing(isCompact ? DesignTokens.SystemSpacing.tiny : DesignTokens.SystemSpacing.small)
+            .foregroundStyle(.appText.opacity(DesignTokens.SystemOpacity.active - DesignTokens.SystemOpacity.glass))
     }
 
     // MARK: - Render Bullet List
     @ViewBuilder
     private func renderBulletList(items: [String], indent: Int, startNumber: Int = 1) -> some View {
         let isOrdered = indent == -1
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                HStack(alignment: .top, spacing: DesignSystem.tightPadding) {
+                HStack(alignment: .top, spacing: DesignTokens.Spacing.tightPadding) {
                     if isOrdered {
                         Text("\(startNumber + index).")
                             .font(.system(.body, design: .rounded).weight(.bold))
                             .foregroundStyle(.appAccent)
-                            .frame(width: DesignSystem.IconSize.standard, alignment: .trailing)
+                            .frame(width: DesignTokens.IconSize.standard, alignment: .trailing)
                     } else {
                         Text("")
                             .foregroundStyle(.appAccent)
-                            .frame(width: DesignSystem.iconSmall)
+                            .frame(width: DesignTokens.Spacing.iconSmall)
                     }
                     
                     renderInlineContent(item)
                         .foregroundStyle(.appText)
                     Spacer(minLength: 0)
                 }
-                .padding(.leading, isOrdered ? 0 : CGFloat(indent) * DesignSystem.standardPadding)
+                .padding(.leading, isOrdered ? 0 : CGFloat(indent) * DesignTokens.Spacing.standardPadding)
             }
         }
-        .padding(.vertical, DesignSystem.atomic)
+        .padding(.vertical, DesignTokens.Spacing.atomic)
     }
 
     // MARK: - Render Blockquote
@@ -192,22 +193,22 @@ struct MarkdownRendererView: View {
         let isAISummary = text.contains("AI") || text.hasPrefix("> AI")
         
         HStack(spacing: 0) {
-            RoundedRectangle(cornerRadius: DesignSystem.tiny)
-                .fill(isAISummary ? Color.appAccent : Color.appAccent.opacity(SystemOpacity.disabled))
-                .frame(width: DesignSystem.atomic + SystemStroke.border)
-                .padding(.trailing, DesignSystem.mediumRadius)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.tiny)
+                .fill(isAISummary ? Color.appAccent : Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled))
+                .frame(width: DesignTokens.Spacing.atomic + DesignTokens.SystemStroke.border)
+                .padding(.trailing, DesignTokens.Spacing.mediumRadius)
 
             renderInlineContent(text)
                 .font(isAISummary ? .system(.body, design: .serif).italic() : .body.italic())
                 .foregroundStyle(isAISummary ? .appAccent : .appSecondary)
-                .lineSpacing(isAISummary ? DesignSystem.small : SystemSpacing.small) // AI 总结采用更宽松的行间距提升阅读舒适度
+                .lineSpacing(isAISummary ? DesignTokens.Spacing.small : DesignTokens.SystemSpacing.small) // AI 总结采用更宽松的行间距提升阅读舒适度
 
             Spacer(minLength: 0)
         }
-        .padding(isAISummary ? DesignSystem.medium : 0)
-        .background(isAISummary ? Color.appAccent.opacity(SystemOpacity.ghost) : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: isAISummary ? DesignSystem.smallRadius : 0))
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(isAISummary ? DesignTokens.Spacing.medium : 0)
+        .background(isAISummary ? Color.appAccent.opacity(DesignTokens.SystemOpacity.ghost) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: isAISummary ? DesignTokens.Spacing.smallRadius : 0))
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 
     // MARK: - Render Code Block
@@ -215,15 +216,15 @@ struct MarkdownRendererView: View {
     private func renderCodeBlock(code: String, language: String) -> some View {
         if language.lowercased() == "mermaid" {
             MermaidWebView(mermaidCode: code)
-                .padding(.vertical, DesignSystem.tightPadding)
+                .padding(.vertical, DesignTokens.Spacing.tightPadding)
         } else {
             VStack(alignment: .leading, spacing: 0) {
                 if !language.isEmpty {
                     Text(language)
                         .font(.system(.caption2, design: .monospaced).weight(.medium))
                         .foregroundStyle(.appSecondary)
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.top, DesignSystem.tightPadding)
+                        .padding(.horizontal, DesignTokens.Spacing.medium)
+                        .padding(.top, DesignTokens.Spacing.tightPadding)
                 }
 
                 ScrollView(.horizontal, showsIndicators: true) {
@@ -235,17 +236,17 @@ struct MarkdownRendererView: View {
                         }
                     }
                     .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(.appText.opacity(SystemOpacity.active - SystemOpacity.glass))
-                    .padding(DesignSystem.medium)
+                    .foregroundStyle(.appText.opacity(DesignTokens.SystemOpacity.active - DesignTokens.SystemOpacity.glass))
+                    .padding(DesignTokens.Spacing.medium)
                 }
             }
-            .background(Color.appCard.opacity(SystemOpacity.textSecondary))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .background(Color.appCard.opacity(DesignTokens.SystemOpacity.textSecondary))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                    .stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                    .stroke(Color.appBorder.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.border)
             )
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
         }
     }
 
@@ -263,14 +264,14 @@ struct MarkdownRendererView: View {
                                 .foregroundStyle(.appAccent)
                                 .tableCellFrame(minColWidth: Layout.minColWidth, maxColWidth: Layout.maxColWidth)
                         }
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
+                        .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
                         // 列间分割线（最后一列不加）
                         if index < headers.count - 1 {
-                            tableDivider(opacity: DesignSystem.Opacity.shadow)
+                            tableDivider(opacity: DesignTokens.Opacity.shadow)
                         }
                     }
                 }
-                Divider().background(Color.appBorder.opacity(DesignSystem.Opacity.disabled))
+                Divider().background(Color.appBorder.opacity(DesignTokens.Opacity.disabled))
                 // 数据行
                 ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
                     GridRow {
@@ -282,24 +283,24 @@ struct MarkdownRendererView: View {
                                     .tableCellFrame(minColWidth: Layout.minColWidth, maxColWidth: Layout.maxColWidth)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
-                            .background(rowIndex % 2 != 0 ? Color.appCard.opacity(DesignSystem.Opacity.shadow) : Color.clear)
+                            .background(rowIndex % 2 != 0 ? Color.appCard.opacity(DesignTokens.Opacity.shadow) : Color.clear)
                             if colIndex < row.count - 1 {
-                                tableDivider(opacity: DesignSystem.Opacity.shadow)
+                                tableDivider(opacity: DesignTokens.Opacity.shadow)
                             }
                         }
                     }
                     if rowIndex < rows.count - 1 {
-                        tableDivider(opacity: DesignSystem.Opacity.shadow)
+                        tableDivider(opacity: DesignTokens.Opacity.shadow)
                     }
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.shadow), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                    .stroke(Color.appBorder.opacity(DesignTokens.Opacity.shadow), lineWidth: 0.5)
             )
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 
     /// 表格分割线（消除重复的 Divider + background 链）
@@ -315,16 +316,16 @@ struct MarkdownRendererView: View {
     private func renderHorizontalRule() -> some View {
         Divider()
             .background(Color.appBorder)
-            .padding(.vertical, DesignSystem.tightPadding)
+            .padding(.vertical, DesignTokens.Spacing.tightPadding)
     }
 
     // MARK: - Render Task List
     @ViewBuilder
     private func renderTaskList(items: [(text: String, checked: Bool)]) -> some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.small) {
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                HStack(spacing: DesignSystem.tightPadding) {
-                    Image(systemName: item.checked ? DesignSystem.Icons.checkSquareFill : DesignSystem.Icons.emptySquare)
+                HStack(spacing: DesignTokens.Spacing.tightPadding) {
+                    Image(systemName: item.checked ? DesignTokens.Icons.checkSquareFill : DesignTokens.Icons.emptySquare)
                         .font(.body)
                         .foregroundStyle(item.checked ? .green : .appSecondary)
                     renderInlineContent(item.text)
@@ -334,7 +335,7 @@ struct MarkdownRendererView: View {
                 }
             }
         }
-        .padding(.vertical, DesignSystem.atomic)
+        .padding(.vertical, DesignTokens.Spacing.atomic)
     }
 
     // MARK: - Inline Content Renderer
@@ -423,7 +424,7 @@ struct MarkdownRendererView: View {
     private func codeSegment(_ segment: MarkdownProcessor.InlineSegment) -> AttributedString {
         var container = AttributedString(segment.content)
         container.swiftUI.font = .system(.caption, design: .monospaced)
-        container.swiftUI.backgroundColor = Color.appAccent.opacity(SystemOpacity.glass)
+        container.swiftUI.backgroundColor = Color.appAccent.opacity(DesignTokens.SystemOpacity.glass)
         container.swiftUI.foregroundColor = .appText
         return container
     }
@@ -471,26 +472,26 @@ struct MarkdownRendererView: View {
     // MARK: - Skeleton View
     @ViewBuilder
     private func renderSkeleton() -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
-            RoundedRectangle(cornerRadius: DesignSystem.microRadius)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
                 .fill(Color.appCard)
-                .frame(width: DesignSystem.Gallery.callToActionWidth + DesignSystem.huge, height: DesignSystem.Action.largeIconSize)
+                .frame(width: DesignSystem.Gallery.callToActionWidth + DesignTokens.Spacing.huge, height: DesignSystem.Action.largeIconSize)
             
-            VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                 ForEach(0..<3, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                        .fill(Color.appCard.opacity(SystemOpacity.glassStrong))
-                        .frame(height: SystemSpacing.contentMedium)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
+                        .fill(Color.appCard.opacity(DesignTokens.SystemOpacity.glassStrong))
+                        .frame(height: DesignTokens.SystemSpacing.contentMedium)
                         .frame(maxWidth: .infinity)
                 }
             }
             
-            RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                .fill(Color.appCard.opacity(SystemOpacity.disabled))
-                .frame(width: DesignSystem.Gallery.callToActionWidth - DesignSystem.tightPadding, height: DesignSystem.subheadlineFontSize + SystemSpacing.tiny)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
+                .fill(Color.appCard.opacity(DesignTokens.SystemOpacity.disabled))
+                .frame(width: DesignSystem.Gallery.callToActionWidth - DesignTokens.Spacing.tightPadding, height: DesignTokens.Typography.subheadlineFontSize + DesignTokens.SystemSpacing.tiny)
         }
-        .padding(.vertical, DesignSystem.tightPadding)
-        .opacity(SystemOpacity.glassStrong)
+        .padding(.vertical, DesignTokens.Spacing.tightPadding)
+        .opacity(DesignTokens.SystemOpacity.glassStrong)
     }
 }
 
@@ -499,17 +500,17 @@ private extension View {
     /// 折叠块统一样式：padding + accent 背景 + cardRadius 圆角 + 垂直间距，消除 watchOS / iOS 两处重复。
     func detailsBlockStyle() -> some View {
         self
-            .padding(DesignSystem.medium)
-            .background(Color.appAccent.opacity(SystemOpacity.ghost))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(DesignTokens.Spacing.medium)
+            .background(Color.appAccent.opacity(DesignTokens.SystemOpacity.ghost))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+            .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 
     /// 表格单元格统一 frame + padding，消除表头与数据行两处重复。
     func tableCellFrame(minColWidth: CGFloat, maxColWidth: CGFloat) -> some View {
         self
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, DesignSystem.tightPadding)
+            .padding(.horizontal, DesignTokens.Spacing.small)
+            .padding(.vertical, DesignTokens.Spacing.tightPadding)
             .frame(minWidth: minColWidth, maxWidth: maxColWidth, alignment: .leading)
     }
 }

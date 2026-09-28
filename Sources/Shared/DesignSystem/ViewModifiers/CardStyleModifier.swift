@@ -10,17 +10,18 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 卡片样式修饰符，消除重复的 padding+background+clipShape(+overlay+stroke) 链
 struct CardStyleModifier: ViewModifier {
-    var horizontalPadding: CGFloat = DesignSystem.standardPadding
-    var verticalPadding: CGFloat = SystemSpacing.elementLarge
-    var backgroundOpacity: Double = DesignSystem.Opacity.dim
-    var cornerRadius: CGFloat = DesignSystem.mediumRadius
+    var horizontalPadding: CGFloat = DesignTokens.Spacing.standardPadding
+    var verticalPadding: CGFloat = DesignTokens.SystemSpacing.elementLarge
+    var backgroundOpacity: Double = DesignTokens.Opacity.dim
+    var cornerRadius: CGFloat = DesignTokens.Spacing.mediumRadius
     var showBorder: Bool = false
-    var borderWidth: CGFloat = SystemStroke.divider
+    var borderWidth: CGFloat = DesignTokens.SystemStroke.divider
     var borderColor: Color = .appBorder
-    var borderOpacity: Double = DesignSystem.Opacity.prominent
+    var borderOpacity: Double = DesignTokens.Opacity.prominent
 
     func body(content: Content) -> some View {
         content
@@ -42,10 +43,10 @@ struct CardStyleModifier: ViewModifier {
 extension View {
     /// 标准卡片样式：padding + background + clipShape
     func cardStyle(
-        horizontalPadding: CGFloat = DesignSystem.standardPadding,
-        verticalPadding: CGFloat = SystemSpacing.elementLarge,
-        backgroundOpacity: Double = DesignSystem.Opacity.dim,
-        cornerRadius: CGFloat = DesignSystem.mediumRadius
+        horizontalPadding: CGFloat = DesignTokens.Spacing.standardPadding,
+        verticalPadding: CGFloat = DesignTokens.SystemSpacing.elementLarge,
+        backgroundOpacity: Double = DesignTokens.Opacity.dim,
+        cornerRadius: CGFloat = DesignTokens.Spacing.mediumRadius
     ) -> some View {
         modifier(CardStyleModifier(
             horizontalPadding: horizontalPadding,
@@ -57,13 +58,13 @@ extension View {
 
     /// 带边框卡片样式：padding + background + clipShape + overlay(stroke)
     func borderedCardStyle(
-        horizontalPadding: CGFloat = DesignSystem.standardPadding,
-        verticalPadding: CGFloat = SystemSpacing.elementLarge,
-        backgroundOpacity: Double = DesignSystem.Opacity.dim,
-        cornerRadius: CGFloat = DesignSystem.mediumRadius,
-        borderWidth: CGFloat = SystemStroke.divider,
+        horizontalPadding: CGFloat = DesignTokens.Spacing.standardPadding,
+        verticalPadding: CGFloat = DesignTokens.SystemSpacing.elementLarge,
+        backgroundOpacity: Double = DesignTokens.Opacity.dim,
+        cornerRadius: CGFloat = DesignTokens.Spacing.mediumRadius,
+        borderWidth: CGFloat = DesignTokens.SystemStroke.divider,
         borderColor: Color = .appBorder,
-        borderOpacity: Double = DesignSystem.Opacity.prominent
+        borderOpacity: Double = DesignTokens.Opacity.prominent
     ) -> some View {
         modifier(CardStyleModifier(
             horizontalPadding: horizontalPadding,
@@ -80,8 +81,8 @@ extension View {
     /// 信息卡片样式：padding + frame(maxWidth) + background + clipShape + optional overlay(stroke)
     /// 用于实体/来源详情页的信息卡片展示
     func infoCardStyle(
-        backgroundOpacity: Double = DesignSystem.Opacity.ghost,
-        cornerRadius: CGFloat = DesignSystem.standardRadius,
+        backgroundOpacity: Double = DesignTokens.Opacity.ghost,
+        cornerRadius: CGFloat = DesignTokens.Spacing.standardRadius,
         useBorder: Bool = false
     ) -> some View {
         self
@@ -93,7 +94,7 @@ extension View {
                 Group {
                     if useBorder {
                         RoundedRectangle(cornerRadius: cornerRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                            .stroke(Color.appBorder, lineWidth: DesignTokens.Spacing.borderWidth)
                     }
                 }
             )
@@ -110,14 +111,14 @@ struct SmallCardBorderModifier: ViewModifier {
             .cornerRadius(cornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.appBorder.opacity(strokeOpacity), lineWidth: SystemStroke.divider)
+                    .stroke(Color.appBorder.opacity(strokeOpacity), lineWidth: DesignTokens.SystemStroke.divider)
             )
     }
 }
 
 extension View {
-    /// 应用小卡片边框样式（默认 SystemRadius.small + Opacity.subtle）
-    func smallCardBorder(cornerRadius: CGFloat = SystemRadius.small, strokeOpacity: Double = DesignSystem.Opacity.subtle) -> some View {
+    /// 应用小卡片边框样式（默认 DesignTokens.SystemRadius.small + Opacity.subtle）
+    func smallCardBorder(cornerRadius: CGFloat = DesignTokens.SystemRadius.small, strokeOpacity: Double = DesignTokens.Opacity.subtle) -> some View {
         modifier(SmallCardBorderModifier(cornerRadius: cornerRadius, strokeOpacity: strokeOpacity))
     }
 }

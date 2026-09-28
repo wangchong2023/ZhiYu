@@ -12,6 +12,7 @@ import SwiftUI
 import Dependencies
 #if canImport(WebKit)
 import WebKit
+import UFPDesignSystem
 #endif
 
 // MARK: - 导航入口
@@ -25,7 +26,7 @@ struct ChatView: View {
 // MARK: - ChatView UI 常量
 private enum UIConstants {
     static let streamingBubbleIconSize: CGFloat = 28.8
-    static let stopButtonFontSize: CGFloat = SystemFontSize.microLarge
+    static let stopButtonFontSize: CGFloat = DesignTokens.SystemFontSize.microLarge
 }
 
 // MARK: - 视图核心
@@ -106,20 +107,20 @@ struct ChatViewContent: View {
             Menu {
                 Section {
                     Button(action: { }) {
-                        Label("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignSystem.Icons.chatBubble)
+                        Label("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignTokens.Icons.chatBubble)
                     }
                     .disabled(true)
                     
                     Button(role: .destructive, action: { 
                         coordinator.showClearConfirmation = true
                     }) {
-                        Label(L10n.AI.LLM.clearHistory, systemImage: DesignSystem.Icons.delete)
+                        Label(L10n.AI.LLM.clearHistory, systemImage: DesignTokens.Icons.delete)
                     }
                 }
                 
                 Section {
                     NavigationLink(destination: PromptWorkshopView()) {
-                        Label(L10n.Settings.promptSettings, systemImage: DesignSystem.Icons.promptLibrary)
+                        Label(L10n.Settings.promptSettings, systemImage: DesignTokens.Icons.promptLibrary)
                     }
                 }
                 
@@ -128,18 +129,18 @@ struct ChatViewContent: View {
                         Button(action: {
                             coordinator.toggleSelectionMode()
                         }) {
-                            Label(coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport, systemImage: coordinator.isSelectionMode ? DesignSystem.Icons.checkCircle : DesignSystem.Icons.checklist)
+                            Label(coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport, systemImage: coordinator.isSelectionMode ? DesignTokens.Icons.checkCircle : DesignTokens.Icons.checklist)
                         }
 
                         Button(action: {
                             Task { await coordinator.exportChat() }
                         }) {
-                            Label(coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF, systemImage: DesignSystem.Icons.docRichtext)
+                            Label(coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF, systemImage: DesignTokens.Icons.docRichtext)
                         }
                     }
                 }
             } label: {
-                Image(systemName: DesignSystem.Icons.more)
+                Image(systemName: DesignTokens.Icons.more)
                     .font(.callout.weight(.bold))
                     .foregroundStyle(.appSecondary)
             }
@@ -150,7 +151,7 @@ struct ChatViewContent: View {
     private var chatMessageList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: DesignSystem.medium) {
+                LazyVStack(spacing: DesignTokens.Spacing.medium) {
                     if coordinator.chatHistory.isEmpty && !coordinator.isProcessing {
                         ChatWelcomeView()
                             .environment(coordinator)
@@ -166,8 +167,8 @@ struct ChatViewContent: View {
                         }
                     }
                 }
-                .padding(.horizontal, DesignSystem.tiny)
-                .padding(.bottom, DesignSystem.standardPadding)
+                .padding(.horizontal, DesignTokens.Spacing.tiny)
+                .padding(.bottom, DesignTokens.Spacing.standardPadding)
             }
             .scrollIndicators(.hidden)
             // 绑定测试标识符，便于自动化 UI 冒烟测试快速抓取
@@ -221,15 +222,15 @@ struct ChatViewContent: View {
     }
     
     private var streamingBubble: some View {
-        HStack(alignment: .top, spacing: DesignSystem.tightPadding) {
-            Image(systemName: DesignSystem.Icons.thinking)
-                .font(DesignSystem.secondaryFont)
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.tightPadding) {
+            Image(systemName: DesignTokens.Icons.thinking)
+                .font(DesignTokens.Typography.secondaryFont)
                 .foregroundStyle(.appAccent)
                 .frame(width: UIConstants.streamingBubbleIconSize, height: UIConstants.streamingBubbleIconSize)
-                .background(Color.appAccent.opacity(SystemOpacity.glass))
+                .background(Color.appAccent.opacity(DesignTokens.SystemOpacity.glass))
                 .clipShape(Circle())
             
-            VStack(alignment: .leading, spacing: SystemSpacing.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.small) {
                 if coordinator.streamingContent.isEmpty {
                     // 获取当前活跃任务的阶段
                     let stage = taskCenter.currentRunningStage
@@ -238,8 +239,8 @@ struct ChatViewContent: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     MarkdownRendererView(content: coordinator.streamingContent, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
-                        .padding(DesignSystem.medium)
-                        .appCardClip(cornerRadius: DesignSystem.mediumRadius)
+                        .padding(DesignTokens.Spacing.medium)
+                        .appCardClip(cornerRadius: DesignTokens.Spacing.mediumRadius)
                 }
                 
                 // 一键中断(Stop)生成按钮
@@ -249,32 +250,32 @@ struct ChatViewContent: View {
                     // 触发系统的选择触觉反馈，提升交互感知
                     HapticFeedback.shared.trigger(.selection)
                 }) {
-                    HStack(spacing: DesignSystem.atomic) {
-                        Image(systemName: DesignSystem.Icons.stopFill)
+                    HStack(spacing: DesignTokens.Spacing.atomic) {
+                        Image(systemName: DesignTokens.Icons.stopFill)
                             .font(.system(size: UIConstants.stopButtonFontSize, weight: .bold)) // Dynamic Type
                         Text(L10n.Common.cancel)
                             .font(.system(size: UIConstants.stopButtonFontSize, weight: .semibold)) // Dynamic Type
                     }
-                    .padding(.horizontal, Spacing.Chip.horizontalPadding)
-                    .padding(.vertical, DesignSystem.atomic)
+                    .padding(.horizontal, DesignTokens.Spacing.Chip.horizontalPadding)
+                    .padding(.vertical, DesignTokens.Spacing.atomic)
                     .foregroundStyle(Color.theme.red)
-                    .background(Color.theme.red.opacity(DesignSystem.Opacity.glass))
+                    .background(Color.theme.red.opacity(DesignTokens.Opacity.glass))
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
             }
-            Spacer(minLength: ComponentSpacing.iconStandard)
+            Spacer(minLength: DesignTokens.ComponentSpacing.iconStandard)
         }
     }
     
     private var chatInputBar: some View {
         VStack(spacing: 0) {
             Divider()
-            HStack(alignment: .center, spacing: DesignSystem.medium) {
+            HStack(alignment: .center, spacing: DesignTokens.Spacing.medium) {
                 Button(action: { coordinator.showPrompts.toggle() }) {
-                    Image(systemName: DesignSystem.Icons.promptLibrary).font(.title3)
-                        .foregroundStyle(coordinator.isProcessing ? .appSecondary.opacity(DesignSystem.Opacity.disabled) : .appAccent)
+                    Image(systemName: DesignTokens.Icons.promptLibrary).font(.title3)
+                        .foregroundStyle(coordinator.isProcessing ? .appSecondary.opacity(DesignTokens.Opacity.disabled) : .appAccent)
                         .frame(width: DesignSystem.Action.buttonHeight, height: DesignSystem.Action.buttonHeight)
                         .background(Color.appCard).clipShape(Circle())
                 }
@@ -291,7 +292,7 @@ struct ChatViewContent: View {
                 Button { 
                     if coordinator.isProcessing { coordinator.cancelCurrentRequest() } else { HapticFeedback.shared.trigger(.selection); Task { await coordinator.sendMessage(pages: store.pages) } }
                 } label: {
-                    Image(systemName: coordinator.isProcessing ? DesignSystem.Icons.stop : DesignSystem.Icons.send)
+                    Image(systemName: coordinator.isProcessing ? DesignTokens.Icons.stop : DesignTokens.Icons.send)
                         .font(.title2).foregroundStyle(coordinator.isProcessing ? Color.theme.red : (canSend ? .appAccent : .appSecondary))
                         .symbolEffect(.bounce, value: coordinator.isProcessing)
                         .frame(width: DesignSystem.Action.inputBarHeight, height: DesignSystem.Action.inputBarHeight)
@@ -300,8 +301,8 @@ struct ChatViewContent: View {
                 .accessibilityIdentifier("ChatSend_Button")
                 .disabled(!canSend && !coordinator.isProcessing)
             }
-            .padding(.horizontal, DesignSystem.standardPadding).padding(.vertical, DesignSystem.tightPadding)
-            .background(coordinator.isProcessing ? Color.appCard.opacity(DesignSystem.Opacity.soft) : Color.appCard)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding).padding(.vertical, DesignTokens.Spacing.tightPadding)
+            .background(coordinator.isProcessing ? Color.appCard.opacity(DesignTokens.Opacity.soft) : Color.appCard)
             .sheet(isPresented: $coordinator.showPrompts) {
                 NavigationStack {
                     ChatWelcomeView(isSheet: true)
@@ -326,36 +327,36 @@ struct ChatViewContent: View {
                let lastMessage = coordinator.chatHistory.last,
                lastMessage.role == .assistant,
                !coordinator.predictedQuestions.isEmpty {
-                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: DesignSystem.tightPadding) {
+                        HStack(spacing: DesignTokens.Spacing.tightPadding) {
                             ForEach(coordinator.predictedQuestions, id: \.self) { question in
                                 Button(action: {
                                     // 触发系统的轻微选择触感反馈
                                     HapticFeedback.shared.trigger(.selection)
                                     sendQuestion(question)
                                 }) {
-                                    HStack(spacing: DesignSystem.tiny) {
-                                        Image(systemName: DesignSystem.Icons.arrowUpRightBubble)
+                                    HStack(spacing: DesignTokens.Spacing.tiny) {
+                                        Image(systemName: DesignTokens.Icons.arrowUpRightBubble)
                                             .font(.caption)
                                             .foregroundStyle(.appAccent)
                                         Text(question)
-                                            .font(.system(size: DesignSystem.captionFontSize, weight: .medium))
+                                            .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .medium))
                                             .foregroundStyle(.appText)
                                     }
-                                    .padding(.horizontal, DesignSystem.standardPadding)
-                                    .padding(.vertical, Spacing.Chip.horizontalPadding)
-                                    .appCardClip(cornerRadius: DesignSystem.standardRadius, backgroundOpacity: DesignSystem.Opacity.glass)
+                                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                                    .padding(.vertical, DesignTokens.Spacing.Chip.horizontalPadding)
+                                    .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius, backgroundOpacity: DesignTokens.Opacity.glass)
                                     .overlayStroke()
                                 }
                                 .buttonStyle(.plain)
                             }
                         }
-                        .padding(.horizontal, DesignSystem.standardPadding)
+                        .padding(.horizontal, DesignTokens.Spacing.standardPadding)
                     }
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
-                .padding(.vertical, DesignSystem.tiny)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
             }
         }
     }

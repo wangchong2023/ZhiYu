@@ -9,6 +9,7 @@
 //  核心职责：构建 NotebookCover 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 笔记本封面渲染组件
 /// 支持线性渐变与动态网格材质，可嵌入至笔记本列表或详情页眉中，渲染极具吸引力的视觉封面。
@@ -46,35 +47,35 @@ public struct NotebookCoverView: View {
     }
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.medium) {
             // 图标与装饰条
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: SystemFontSize.title, weight: .bold)) // Dynamic Type
+                    .font(.system(size: DesignTokens.SystemFontSize.title, weight: .bold)) // Dynamic Type
                     .foregroundColor(.theme.white)
                 Spacer()
                 RoundedRectangle(cornerRadius: 2 /* 装饰微圆角，暂无 DesignSystem token */)
-                    .fill(Color.theme.white.opacity(DesignSystem.Opacity.disabled))
-                    .frame(width: DesignSystem.Metrics.notebookBadgeWidth, height: DesignSystem.tiny)
+                    .fill(Color.theme.white.opacity(DesignTokens.Opacity.disabled))
+                    .frame(width: DesignTokens.Metrics.notebookBadgeWidth, height: DesignTokens.Spacing.tiny)
             }
             
             Spacer()
             
             // 标题与统计元数据
-            VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.tiny) {
                 Text(title)
-                    .font(.system(size: SystemFontSize.title3, weight: .black, design: .rounded)) // Dynamic Type
+                    .font(.system(size: DesignTokens.SystemFontSize.title3, weight: .black, design: .rounded)) // Dynamic Type
                     .foregroundColor(.theme.white)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                 
                 Text(L10n.Shared.pageCountFormat(pageCount))
-                    .font(.system(size: SystemFontSize.caption, weight: .medium)) // Dynamic Type
-                    .foregroundColor(Color.theme.white.opacity(DesignSystem.Opacity.prominent))
+                    .font(.system(size: DesignTokens.SystemFontSize.caption, weight: .medium)) // Dynamic Type
+                    .foregroundColor(Color.theme.white.opacity(DesignTokens.Opacity.prominent))
             }
         }
-        .padding(DesignSystem.standardPadding)
-        .frame(width: DesignSystem.Metrics.notebookCardWidth, height: DesignSystem.Metrics.notebookCardHeight)
+        .padding(DesignTokens.Spacing.standardPadding)
+        .frame(width: DesignTokens.Metrics.notebookCardWidth, height: DesignTokens.Metrics.notebookCardHeight)
         .background(
             // 根据主题类型绘制背景
             Group {
@@ -96,7 +97,7 @@ public struct NotebookCoverView: View {
             }
         )
         .cornerRadius(12)
-        .shadow(color: Color.theme.black.opacity(DesignSystem.Opacity.glass), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.theme.black.opacity(DesignTokens.Opacity.glass), radius: 8, x: 0, y: 4)
         .scaleEffect(isPressed ? 0.95 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
     }

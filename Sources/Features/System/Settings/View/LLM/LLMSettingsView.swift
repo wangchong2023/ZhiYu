@@ -9,6 +9,7 @@
 //  核心职责：构建 LLMSettings 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - LLM Settings View
 @MainActor
@@ -37,7 +38,7 @@ struct LLMSettingsView: View {
             // 1. 服务开关
             Section {
                 Toggle(isOn: $config.isEnabled) {
-                    Label(L10n.AI.LLM.enableAssistant, systemImage: DesignSystem.Icons.sparkles)
+                    Label(L10n.AI.LLM.enableAssistant, systemImage: DesignTokens.Icons.sparkles)
                         .foregroundStyle(.appText)
                 }
                 .tint(.appAccent)
@@ -49,16 +50,16 @@ struct LLMSettingsView: View {
                         config.autoRefactor = newValue
                     }
                 )) {
-                    VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                         Text(L10n.AI.OnDevice.assistMode)
                             .font(.body.bold())
                             .foregroundStyle(.appText)
                         Text(L10n.AI.OnDevice.assistDesc)
                             .font(.caption)
-                            .foregroundStyle(.appText.opacity(DesignSystem.subtleOpacity))
+                            .foregroundStyle(.appText.opacity(DesignTokens.Colors.subtleOpacity))
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(.vertical, DesignSystem.tiny)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
                 }
                 .tint(.appAccent)
             } header: {
@@ -69,7 +70,7 @@ struct LLMSettingsView: View {
             // 2. 提供商选择与详细参数配置
             Section {
                 DisclosureGroup(isExpanded: $isProvidersExpanded) {
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                         ForEach(LLMProvider.allCases) { provider in
                             Button(action: {
                                 testResult = nil
@@ -81,33 +82,33 @@ struct LLMSettingsView: View {
                             }) {
                                 HStack {
                                     Image(systemName: provider.icon)
-                                        .frame(width: DesignSystem.titleIconSize, alignment: .center)
+                                        .frame(width: DesignTokens.Spacing.titleIconSize, alignment: .center)
                                         .foregroundStyle(config.provider == provider ? .appAccent : .appSecondary)
                                     Text(provider.displayName)
                                         .foregroundStyle(.appText)
                                     Spacer()
                                     if config.provider == provider {
-                                        Image(systemName: DesignSystem.Icons.check)
+                                        Image(systemName: DesignTokens.Icons.check)
                                             .font(.body.bold())
                                             .foregroundStyle(.appAccent)
                                     }
                                 }
-                                .padding(.vertical, DesignSystem.tiny)
+                                .padding(.vertical, DesignTokens.Spacing.tiny)
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                         }
                         
                         Divider()
-                            .padding(.vertical, DesignSystem.small)
+                            .padding(.vertical, DesignTokens.Spacing.small)
                         
                         // 联动参数配置块
                         configurationContent
                     }
-                    .padding(.top, DesignSystem.small)
+                    .padding(.top, DesignTokens.Spacing.small)
                 } label: {
                     HStack {
-                        Label(L10n.AI.LLM.Provider.title, systemImage: DesignSystem.Icons.cpuOutline)
+                        Label(L10n.AI.LLM.Provider.title, systemImage: DesignTokens.Icons.cpuOutline)
                             .foregroundStyle(.appText)
                         Spacer()
                         Text(config.provider.displayName)
@@ -141,7 +142,7 @@ struct LLMSettingsView: View {
                             ProgressView()
                                 .tint(.appAccent)
                         } else {
-                            Image(systemName: DesignSystem.Icons.bolt)
+                            Image(systemName: DesignTokens.Icons.bolt)
                                 .foregroundStyle(.appAccent)
                         }
                         Text(testing ? L10n.AI.LLM.testing : L10n.AI.LLM.testConnection)
@@ -152,11 +153,11 @@ struct LLMSettingsView: View {
                 .opacity(config.apiKey.isEmpty ? 0.6 : 1.0)
                 
                 if let result = testResult {
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         switch result {
                         case .success(let latency, _, _):
                           HStack {
-                              Image(systemName: DesignSystem.Icons.checkCircle)
+                              Image(systemName: DesignTokens.Icons.checkCircle)
                                   .foregroundStyle(Color.theme.green)
                               Text(L10n.AI.OnDevice.connected)
                                   .font(.subheadline.bold())
@@ -166,9 +167,9 @@ struct LLMSettingsView: View {
                           }
                         case .failure(let code, let message, let latency, _):
                           HStack(alignment: .top) {
-                              Image(systemName: DesignSystem.Icons.errorCircle)
+                              Image(systemName: DesignTokens.Icons.errorCircle)
                                   .foregroundStyle(Color.theme.red)
-                              VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                              VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                                   Text(L10n.AI.OnDevice.errorFormat("\(code)"))
                                       .font(.subheadline.bold())
                                   Text(message)
@@ -182,7 +183,7 @@ struct LLMSettingsView: View {
                           }
                         }
                     }
-                    .padding(.vertical, DesignSystem.tiny)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
                 }
             } header: {
                 Text(L10n.AI.LLM.validation)
@@ -198,9 +199,9 @@ struct LLMSettingsView: View {
         @Bindable var config = config
         let validation = config.provider.validateAPIKeyFormat(config.apiKey)
         
-        return VStack(spacing: DesignSystem.wide) {
+        return VStack(spacing: DesignTokens.Spacing.wide) {
             // API Key
-            VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                 HStack {
                     Text(L10n.AI.LLM.apiKey)
                         .font(.caption.weight(.medium))
@@ -221,7 +222,7 @@ struct LLMSettingsView: View {
             }
             
             // Base URL
-            VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                 Text(L10n.AI.LLM.apiAddress)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appSecondary)
@@ -229,7 +230,7 @@ struct LLMSettingsView: View {
             }
             
             // Model (非自定义模式呈现 Picker 下拉菜单，自定义模式或手动模式呈现 TextField)
-            VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                 HStack {
                     Text(L10n.AI.LLM.model)
                         .font(.caption.weight(.medium))
@@ -266,16 +267,16 @@ struct LLMSettingsView: View {
                                 .font(.system(.body, design: .monospaced))
                                 .foregroundStyle(.appText)
                             Spacer()
-                            Image(systemName: DesignSystem.Icons.chevronUpDown)
+                            Image(systemName: DesignTokens.Icons.chevronUpDown)
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                         }
-                        .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
+                        .borderedCardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding, backgroundOpacity: DesignTokens.Opacity.prominent, cornerRadius: DesignTokens.SystemRadius.small)
                     }
                 }
             }
         }
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
     }
 
     /// 等宽字体 TextField + borderedCardStyle，消除 baseURL 与 model 输入框的重复
@@ -285,7 +286,7 @@ struct LLMSettingsView: View {
             .textFieldStyle(.plain)
             .font(.system(.body, design: .monospaced))
             .foregroundStyle(.appText)
-            .borderedCardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.prominent, cornerRadius: SystemRadius.small)
+            .borderedCardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding, backgroundOpacity: DesignTokens.Opacity.prominent, cornerRadius: DesignTokens.SystemRadius.small)
             .skipOnWatch {
                 $0.autocapitalization(.none)
                 if let keyboardType { $0.keyboardType(keyboardType) }

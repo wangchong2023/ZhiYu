@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 笔记本标识与快速切换组件
 /// 采用平台感知的交互模式：
@@ -58,7 +59,7 @@ struct VaultBadge: View {
                         vaultService.exitVault()
                     }
                 }) {
-                    Label(L10n.Vault.backToHub, systemImage: DesignSystem.Icons.backToHub)
+                    Label(L10n.Vault.backToHub, systemImage: DesignTokens.Icons.backToHub)
                 }
                 .accessibilityIdentifier("vaultBackToHubButton")
             } label: {
@@ -71,24 +72,24 @@ struct VaultBadge: View {
     
     @ViewBuilder
     private func badgeLabel(currentVault _: any VaultProtocol) -> some View {
-        HStack(spacing: DesignSystem.tiny) {
-            Image(systemName: DesignSystem.Icons.booksVerticalFill)
+        HStack(spacing: DesignTokens.Spacing.tiny) {
+            Image(systemName: DesignTokens.Icons.booksVerticalFill)
                 .imageScale(.small)
                 .foregroundStyle(.primary)
 
             Text(vaultService.currentVault?.name ?? L10n.Vault.defaultName)
-                .font(.system(size: DesignSystem.bodyFontSize, weight: .bold))
+                .font(.system(size: DesignTokens.Typography.bodyFontSize, weight: .bold))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
                 .frame(maxWidth: DesignSystem.Gallery.cardMinWidth)
 
             if platformEnv.interactionStyle != InteractionStyle.crown {
-                Image(systemName: DesignSystem.Icons.chevronUpDown)
+                Image(systemName: DesignTokens.Icons.chevronUpDown)
                     .imageScale(.small)
-                    .foregroundStyle(.primary.opacity(DesignSystem.Opacity.disabled))
+                    .foregroundStyle(.primary.opacity(DesignTokens.Opacity.disabled))
             }
         }
-        .padding(.vertical, DesignSystem.tightPadding)
+        .padding(.vertical, DesignTokens.Spacing.tightPadding)
         .foregroundStyle(.primary)
     }
 }

@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import PhotosUI
+import UFPDesignSystem
 
 /// Markdown 编辑器核心视图
 struct MarkdownEditorView: View {
@@ -26,8 +27,8 @@ struct MarkdownEditorView: View {
             if text.isEmpty {
                 Text(placeholder)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, DesignSystem.tiny)
-                    .padding(.vertical, DesignSystem.small)
+                    .padding(.horizontal, DesignTokens.Spacing.tiny)
+                    .padding(.vertical, DesignTokens.Spacing.small)
             }
             
             TextEditor(text: $text)
@@ -43,20 +44,20 @@ struct MarkdownEditorView: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Button(action: { showOCRScanner = true }) {
-                    Label(L10n.Ingest.ocr.title, systemImage: DesignSystem.Icons.ocr)
+                    Label(L10n.Ingest.ocr.title, systemImage: DesignTokens.Icons.ocr)
                 }
                 .disabled(ingestStore == nil)
                 
                 Button(action: { text += "****" }) {
-                    Image(systemName: DesignSystem.Icons.bold)
+                    Image(systemName: DesignTokens.Icons.bold)
                 }
                 
                 Button(action: { text += "**" }) {
-                    Image(systemName: DesignSystem.Icons.italic)
+                    Image(systemName: DesignTokens.Icons.italic)
                 }
                 
                 Button(action: { text += "[[]]" }) {
-                    Image(systemName: DesignSystem.Icons.link)
+                    Image(systemName: DesignTokens.Icons.link)
                 }
             }
         }

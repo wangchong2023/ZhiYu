@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 本地大模型管理统一入口视图
 /// 采用 Tab 切换架构，整合模型市场和参数调优两大核心功能模块
@@ -29,10 +30,10 @@ public struct LocalModelManagerView: View {
     public var body: some View {
         ScrollView {
             ScrollViewReader { proxy in
-                VStack(spacing: DesignSystem.giant) {
+                VStack(spacing: DesignTokens.Spacing.giant) {
                     // Section 1: 模型市场
                     VStack(alignment: .leading, spacing: 0) {
-                        modelSectionHeader(icon: DesignSystem.Icons.stackFill, iconColor: Color.theme.cyan, title: L10n.ModelManager.storeTitle)
+                        modelSectionHeader(icon: DesignTokens.Icons.stackFill, iconColor: Color.theme.cyan, title: L10n.ModelManager.storeTitle)
                         
                         ModelStoreView(embedInScrollView: false) {
                             withAnimation(.easeInOut) {
@@ -47,7 +48,7 @@ public struct LocalModelManagerView: View {
                     
                     // Section 2: 测试实验室
                     VStack(alignment: .leading, spacing: 0) {
-                        modelSectionHeader(icon: DesignSystem.Icons.flaskFill, iconColor: Color.theme.purple, title: L10n.ModelManager.laboratoryTitle)
+                        modelSectionHeader(icon: DesignTokens.Icons.flaskFill, iconColor: Color.theme.purple, title: L10n.ModelManager.laboratoryTitle)
                         
                         ModelLabView(embedInScrollView: false) {
                             withAnimation(.easeInOut) {
@@ -69,15 +70,15 @@ public struct LocalModelManagerView: View {
 private struct ModelSectionCardModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
-            .cornerRadius(DesignSystem.mediumRadius)
+            .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
+            .cornerRadius(DesignTokens.Spacing.mediumRadius)
             .padding(.horizontal)
     }
 }
 
 /// 模型区块标题，消除 Store/Lab 区块的 HStack+padding 重复
 private func modelSectionHeader(icon: String, iconColor: Color, title: String) -> some View {
-    HStack(spacing: DesignSystem.small) {
+    HStack(spacing: DesignTokens.Spacing.small) {
         Image(systemName: icon)
             .foregroundStyle(iconColor)
             .font(.title3)
@@ -85,8 +86,8 @@ private func modelSectionHeader(icon: String, iconColor: Color, title: String) -
             .font(.title3.bold())
             .foregroundStyle(Color.theme.text)
     }
-    .padding(.horizontal, DesignSystem.medium)
-    .padding(.top, DesignSystem.medium)
+    .padding(.horizontal, DesignTokens.Spacing.medium)
+    .padding(.top, DesignTokens.Spacing.medium)
 }
 
 // MARK: - 预览

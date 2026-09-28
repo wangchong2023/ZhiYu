@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 struct CreatePageView: View {
     @Environment(AppStore.self) var store
@@ -58,30 +59,30 @@ struct CreatePageView: View {
                 .accessibilityIdentifier("pageTitle")
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     // 遍历用户可见的页面类型，过滤掉内部 raw 类型
                     ForEach(PageType.allVisibleCases) { pageType in
                         let isSelected = type == pageType
                         let typeColor = Color.fromModelColorName(pageType.colorName)
                         Button(action: { type = pageType }) {
-                            HStack(spacing: DesignSystem.tightPadding) {
+                            HStack(spacing: DesignTokens.Spacing.tightPadding) {
                                 Image(systemName: pageType.icon).font(.caption)
                                 Text(pageType.displayName).font(.caption)
                             }
-                            .padding(.horizontal, DesignSystem.medium)
-                            .padding(.vertical, DesignSystem.small)
+                            .padding(.horizontal, DesignTokens.Spacing.medium)
+                            .padding(.vertical, DesignTokens.Spacing.small)
                             .background(isSelected
-                                ? typeColor.opacity(DesignSystem.Opacity.medium)
+                                ? typeColor.opacity(DesignTokens.Opacity.medium)
                                 : Color.appCard)
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
                             .foregroundStyle(isSelected
                                 ? typeColor
                                 : .appSecondary)
                             .overlay(
-                                RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                                RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
                                     .stroke(isSelected
-                                        ? typeColor.opacity(DesignSystem.Opacity.soft)
-                                        : Color.clear, lineWidth: SystemStroke.divider)
+                                        ? typeColor.opacity(DesignTokens.Opacity.soft)
+                                        : Color.clear, lineWidth: DesignTokens.SystemStroke.divider)
                             )
                         }
                         .buttonStyle(.plain)
@@ -98,21 +99,21 @@ struct CreatePageView: View {
 
     private var templateSection: some View {
         Section {
-            VStack(spacing: DesignSystem.small) {
+            VStack(spacing: DesignTokens.Spacing.small) {
                 templateCard(
-                    icon: DesignSystem.Icons.entity,
+                    icon: DesignTokens.Icons.entity,
                     title: L10n.Creation.entityTemplate,
                     description: L10n.Creation.template.entity.desc,
                     action: { type = .entity }
                 )
                 templateCard(
-                    icon: DesignSystem.Icons.concept,
+                    icon: DesignTokens.Icons.concept,
                     title: L10n.Creation.conceptTemplate,
                     description: L10n.Creation.template.concept.desc,
                     action: { type = .concept }
                 )
                 templateCard(
-                    icon: DesignSystem.Icons.comparison,
+                    icon: DesignTokens.Icons.comparison,
                     title: L10n.Creation.comparisonTemplate,
                     description: L10n.Creation.template.comparison.desc,
                     action: { type = .comparison }
@@ -169,10 +170,10 @@ struct CreatePageView: View {
 
     private var comparisonContent: some View {
         Section {
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 labeledField(L10n.Creation.template.comparison.desc, hint: "", text: $summary)
                 Divider()
-                HStack(spacing: DesignSystem.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     compareItemField(label: L10n.Creation.compareItemA, text: $compareItemA, color: .appAccent)
                     compareItemField(label: L10n.Creation.compareItemB, text: $compareItemB, color: Color.theme.orange)
                 }
@@ -193,14 +194,14 @@ struct CreatePageView: View {
     /// 对比项字段：标签 + 文本输入框
     @ViewBuilder
     private func compareItemField(label: String, text: Binding<String>, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             Text(label).font(.caption.weight(.semibold)).foregroundStyle(color)
             TextField(label, text: text).font(.body)
         }
     }
 
     private func labeledField(_ label: String, hint: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             Text(label).font(.caption.weight(.semibold)).foregroundStyle(.appSecondary)
             TextField(hint.isEmpty ? label : hint, text: text, axis: .vertical)
                 .font(.body)
@@ -208,14 +209,14 @@ struct CreatePageView: View {
     }
 
     private func labeledEditor(_ hint: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             PlatformTextEditor(text: text, minHeight: 80)
                 .overlay(alignment: .topLeading) {
                     if text.wrappedValue.isEmpty {
                         Text(hint)
                             .font(.body)
-                            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.disabled))
-                            .padding(.top, SystemSpacing.element).padding(.leading, SystemSpacing.tiny)
+                            .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.disabled))
+                            .padding(.top, DesignTokens.SystemSpacing.element).padding(.leading, DesignTokens.SystemSpacing.tiny)
                             .allowsHitTesting(false)
                     }
                 }
@@ -249,7 +250,7 @@ struct CreatePageView: View {
         trailing: ContentTrailing
     ) -> some View {
         Section {
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 labeledField(summaryLabel, hint: summaryHint, text: $summary)
                 Divider()
                 labeledEditor(editorHint, text: $bodyContent)
@@ -268,19 +269,19 @@ struct CreatePageView: View {
 
     private func templateCard(icon: String, title: String, description: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 Image(systemName: icon)
                     .font(.title3).foregroundStyle(.appAccent)
-                    .frame(width: DesignSystem.iconLarge)
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                    .frame(width: DesignTokens.Spacing.iconLarge)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                     Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.appText)
                     Text(description).font(.caption).foregroundStyle(.appSecondary).lineLimit(2)
                 }
                 Spacer()
-                Image(systemName: DesignSystem.Icons.forward)
-                    .font(.caption).foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.disabled))
+                Image(systemName: DesignTokens.Icons.forward)
+                    .font(.caption).foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.disabled))
             }
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

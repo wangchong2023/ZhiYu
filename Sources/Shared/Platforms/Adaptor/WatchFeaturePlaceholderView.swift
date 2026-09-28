@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// watchOS 功能占位通用 View
 ///
@@ -22,9 +23,9 @@ struct WatchFeaturePlaceholderView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: DesignSystem.standardPadding) {
+            VStack(spacing: DesignTokens.Spacing.standardPadding) {
                 Image(systemName: "iphone")
-                    .font(.system(size: DesignSystem.largeIconSize))
+                    .font(.system(size: DesignTokens.Spacing.largeIconSize))
                     .foregroundStyle(Color.theme.purple)
 
                 Text(placeholderMessage)
@@ -32,7 +33,7 @@ struct WatchFeaturePlaceholderView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.theme.secondaryText)
             }
-            .padding(DesignSystem.standardPadding)
+            .padding(DesignTokens.Spacing.standardPadding)
         }
     }
 }

@@ -9,6 +9,7 @@
 //  核心职责：构建 PageRow 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 知识库页面行视图组件
 /// 展示页面图标、标题、类型、更新时间及状态指示器。
@@ -28,16 +29,16 @@ struct PageRowView: View {
     // MARK: - Body
     
     public var body: some View {
-        HStack(spacing: Spacing.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             // 类型图标容器
             Image(systemName: page.displayIcon)
                 .font(.body)
                 .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
-                .frame(width: Spacing.largeIconSize, height: Spacing.largeIconSize) // 32
-                .background(Color.fromModelColorName(page.pageType.colorName).opacity(Colors.glassOpacity * 1.5))
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+                .frame(width: DesignTokens.Spacing.largeIconSize, height: DesignTokens.Spacing.largeIconSize) // 32
+                .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignTokens.Colors.glassOpacity * 1.5))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             
-            VStack(alignment: .leading, spacing: Spacing.atomic * 1.5) { // 3
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic * 1.5) { // 3
                 // 页面标题
                 Text(page.title)
                     .font(.subheadline.weight(.medium))
@@ -46,13 +47,13 @@ struct PageRowView: View {
                 
                 // 紧凑模式下隐藏辅助信息
                 if !compact {
-                    HStack(spacing: Spacing.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         // 页面类型标签
                         Text(page.pageType.displayName)
                             .font(.caption2)
                             .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
                             .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                            .background(Color.fromModelColorName(page.pageType.colorName).opacity(Colors.glassOpacity * 2))
+                            .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignTokens.Colors.glassOpacity * 2))
                             .clipShape(Capsule())
                             .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
                         
@@ -75,13 +76,13 @@ struct PageRowView: View {
             Spacer()
             
             // 导航箭头（标准 chevron 替代绿点，语义更清晰）
-            Image(systemName: DesignSystem.Icons.forward)
+            Image(systemName: DesignTokens.Icons.forward)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.disabled))
+                .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.disabled))
         }
-        .padding(.horizontal, DesignSystem.small)
-        .padding(.vertical, DesignSystem.small)
-        .appCardClip(cornerRadius: Spacing.smallRadius, backgroundOpacity: DesignSystem.Opacity.prominent)
+        .padding(.horizontal, DesignTokens.Spacing.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
+        .appCardClip(cornerRadius: DesignTokens.Spacing.smallRadius, backgroundOpacity: DesignTokens.Opacity.prominent)
         .contentShape(Rectangle()) // 确保整行可点击
     }
 }

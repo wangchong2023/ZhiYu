@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 订阅套餐卡片对比组件（Lite vs Pro）
 @MainActor
@@ -21,7 +22,7 @@ struct SubscriptionPlanCard: View {
     private static let proGradient = LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing)
 
     var body: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             cycleTabSelector
             tierCardsSection
         }
@@ -30,7 +31,7 @@ struct SubscriptionPlanCard: View {
     // MARK: - 周期选择器
 
     private var cycleTabSelector: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             cycleButton(
                 cycle: .monthly,
                 title: L10n.Auth.monthly,
@@ -58,16 +59,16 @@ struct SubscriptionPlanCard: View {
             HapticFeedback.shared.trigger(.selection)
             onCycleChange(cycle)
         }) {
-            VStack(spacing: SystemSpacing.atomic) {
+            VStack(spacing: DesignTokens.SystemSpacing.atomic) {
                 if let badge {
-                    HStack(spacing: SystemSpacing.tiny) {
+                    HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                         Text(title)
                             .font(.subheadline.bold())
                         Text(badge)
-                            .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
+                            .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .bold)) // Dynamic Type
                             .foregroundStyle(.white)
-                            .padding(.horizontal, SystemSpacing.tiny)
-                            .padding(.vertical, SystemSpacing.divider)
+                            .padding(.horizontal, DesignTokens.SystemSpacing.tiny)
+                            .padding(.vertical, DesignTokens.SystemSpacing.divider)
                             .background(Color.theme.blue)
                             .clipShape(Capsule())
                     }
@@ -76,7 +77,7 @@ struct SubscriptionPlanCard: View {
                         .font(.subheadline.bold())
                 }
                 Text(price)
-                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
+                    .font(.system(size: DesignTokens.SystemFontSize.micro)) // Dynamic Type
             }
             .cycleButtonContent(isSelected: selectedCycle == cycle)
         }
@@ -86,26 +87,26 @@ struct SubscriptionPlanCard: View {
     // MARK: - 套餐卡片对比
 
     private var tierCardsSection: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             // Lite Card
-            VStack(alignment: .leading, spacing: SystemSpacing.element) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
                 HStack {
-                    Image(systemName: DesignSystem.Icons.lightbulb)
+                    Image(systemName: DesignTokens.Icons.lightbulb)
                         .font(.title3)
                         .foregroundStyle(.appSecondary)
                         .frame(width: DesignSystem.Timeline.iconCircleSize, height: DesignSystem.Timeline.iconCircleSize)
-                        .background(Color.appBorder.opacity(DesignSystem.Opacity.subtle))
+                        .background(Color.appBorder.opacity(DesignTokens.Opacity.subtle))
                         .clipShape(Circle())
 
                     Spacer()
 
                     Text(FeatureConstants.MockData.litePlanName)
-                        .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
+                        .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
-                        .padding(.horizontal, SystemSpacing.small)
-                        .padding(.vertical, SystemSpacing.atomic)
+                        .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                        .padding(.vertical, DesignTokens.SystemSpacing.atomic)
                         .overlay(
-                            Capsule().stroke(Color.appBorder, lineWidth: SystemStroke.divider)
+                            Capsule().stroke(Color.appBorder, lineWidth: DesignTokens.SystemStroke.divider)
                         )
                 }
                 Text(L10n.Auth.priceMonthlyLite)
@@ -116,17 +117,17 @@ struct SubscriptionPlanCard: View {
                     .planDescStyle()
             }
             .planCardContainerBase()
-            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
+            .background(Color.appCard.opacity(DesignTokens.SystemOpacity.glassStrong))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                    .stroke(Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.emphasis)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius)
+                    .stroke(Color.appBorder.opacity(DesignTokens.Opacity.prominent), lineWidth: DesignTokens.SystemStroke.emphasis)
             )
 
             // Pro Card
-            VStack(alignment: .leading, spacing: SystemSpacing.element) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
                 HStack {
-                    Image(systemName: DesignSystem.Icons.boltFill)
+                    Image(systemName: DesignTokens.Icons.boltFill)
                         .font(.title3)
                         .foregroundStyle(.white)
                         .frame(width: DesignSystem.Timeline.iconCircleSize, height: DesignSystem.Timeline.iconCircleSize)
@@ -136,10 +137,10 @@ struct SubscriptionPlanCard: View {
                     Spacer()
 
                     Text(L10n.Auth.proPlan)
-                        .font(.system(size: SystemFontSize.nano, weight: .bold)) // Dynamic Type
+                        .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.white)
-                        .padding(.horizontal, SystemSpacing.small)
-                        .padding(.vertical, SystemSpacing.atomic)
+                        .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                        .padding(.vertical, DesignTokens.SystemSpacing.atomic)
                         .background(LinearGradient(colors: [Color.theme.purple, Color.theme.blue], startPoint: .leading, endPoint: .trailing))
                         .clipShape(Capsule())
                 }
@@ -153,16 +154,16 @@ struct SubscriptionPlanCard: View {
                     .planDescStyle()
             }
             .planCardContainerBase()
-            .background(Color.appCard.opacity(SystemOpacity.disabled))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
+            .background(Color.appCard.opacity(DesignTokens.SystemOpacity.disabled))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius)
                     .stroke(
                         Self.proGradient,
-                        lineWidth: SystemStroke.heavy
+                        lineWidth: DesignTokens.SystemStroke.heavy
                     )
             )
-            .shadow(color: .purple.opacity(DesignSystem.Opacity.shadow), radius: SystemShadow.radiusMedium, x: 0, y: 0)
+            .shadow(color: .purple.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.SystemShadow.radiusMedium, x: 0, y: 0)
         }
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -174,7 +175,7 @@ private extension View {
     func cycleButtonContent(isSelected: Bool) -> some View {
         self
             .frame(maxWidth: .infinity)
-            .padding(.vertical, SystemSpacing.element)
+            .padding(.vertical, DesignTokens.SystemSpacing.element)
             .foregroundStyle(isSelected ? .appAccent : .appSecondary)
     }
 
@@ -182,14 +183,14 @@ private extension View {
     func cycleButtonStyle(isSelected: Bool, gradient: LinearGradient) -> some View {
         self
             .buttonStyle(.plain)
-            .background(Color.appCard.opacity(SystemOpacity.glassStrong))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .background(Color.appCard.opacity(DesignTokens.SystemOpacity.glassStrong))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
             .overlay(
-                RoundedRectangle(cornerRadius: SystemRadius.card)
+                RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card)
                     .stroke(
                         isSelected
                             ? AnyShapeStyle(gradient)
-                            : AnyShapeStyle(Color.appBorder.opacity(DesignSystem.Opacity.light)),
+                            : AnyShapeStyle(Color.appBorder.opacity(DesignTokens.Opacity.light)),
                         lineWidth: isSelected ? 2 : 1
                     )
             )
@@ -198,7 +199,7 @@ private extension View {
     /// 套餐描述文本样式，消除 Lite/Pro Card 的重复
     func planDescStyle() -> some View {
         self
-            .font(.system(size: SystemFontSize.micro))
+            .font(.system(size: DesignTokens.SystemFontSize.micro))
             .foregroundStyle(.appSecondary)
             .lineLimit(2)
     }
@@ -206,7 +207,7 @@ private extension View {
     /// 套餐卡片容器基础布局，消除 Lite/Pro Card 的 padding+frame 重复
     func planCardContainerBase() -> some View {
         self
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }

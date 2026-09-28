@@ -9,6 +9,7 @@
 //  核心职责：笔记本中心：入口页面、笔记本卡片、创建表单。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 笔记本网格卡片组件。
 /// 
@@ -28,14 +29,14 @@ struct NotebookCard: View {
     /// 笔记本卡片的渲染视图布局
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                 // 1. 图标展示 (根据卡片哈希色计算出来的彩色发光底座，赋予视觉独特性)
                 NotebookIconView(
                     emoji: notebook.defaultEmojiIcon,
-                    backgroundShape: RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous),
-                    backgroundColor: colorForVault.opacity(DesignSystem.Opacity.subtle)
+                    backgroundShape: RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous),
+                    backgroundColor: colorForVault.opacity(DesignTokens.Opacity.subtle)
                 )
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
                 
                 // 2. 笔记本名称标题
                 Text(notebook.name)
@@ -50,26 +51,26 @@ struct NotebookCard: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                 
-                Spacer(minLength: DesignSystem.small)
+                Spacer(minLength: DesignTokens.Spacing.small)
                 
                 // 4. 元数据底部说明（采用强类型相对时间表达，保持跨语言的国际化适配）
                 Text("\(L10n.Vault.lastEdited) \(notebook.updatedAt.formatted(.relative(presentation: .numeric)))")
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary.opacity(DesignSystem.Opacity.dim))
+                    .foregroundStyle(.secondary.opacity(DesignTokens.Opacity.dim))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: DesignSystem.Metrics.notebookCardHeight)
+            .frame(height: DesignTokens.Metrics.notebookCardHeight)
             .borderedCardStyle(
-                horizontalPadding: DesignSystem.small,
-                verticalPadding: DesignSystem.small,
-                backgroundOpacity: DesignSystem.Opacity.dim,
-                cornerRadius: DesignSystem.cardRadius
+                horizontalPadding: DesignTokens.Spacing.small,
+                verticalPadding: DesignTokens.Spacing.small,
+                backgroundOpacity: DesignTokens.Opacity.dim,
+                cornerRadius: DesignTokens.Spacing.cardRadius
             )
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
-                    .strokeBorder(.primary.opacity(DesignSystem.Opacity.faint), lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
+                    .strokeBorder(.primary.opacity(DesignTokens.Opacity.faint), lineWidth: 0.5)
             )
-            .premiumAmbientShadow(color: .primary.opacity(DesignSystem.Opacity.light), radius: 10)
+            .premiumAmbientShadow(color: .primary.opacity(DesignTokens.Opacity.light), radius: 10)
             .scaleOnHover()
             // 绑定长按上下文菜单 (ContextMenu)，支持重命名与沙盒物理彻底擦除
             .contextMenu { NotebookContextMenu(notebook: notebook, viewModel: viewModel) }

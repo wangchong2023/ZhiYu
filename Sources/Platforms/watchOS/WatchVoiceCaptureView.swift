@@ -14,6 +14,7 @@ import UFPCore
 
 #if os(watchOS)
 import WatchKit
+import UFPDesignSystem
 #endif
 
 public struct WatchVoiceCaptureView: View {
@@ -25,7 +26,7 @@ public struct WatchVoiceCaptureView: View {
     public init() {}
 
     public var body: some View {
-        VStack(spacing: DesignSystem.small) {
+        VStack(spacing: DesignTokens.Spacing.small) {
             Text(isRecording ? L10n.Widget.dictating : L10n.Widget.voiceFlashCapture)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(isRecording ? Color.appAccent : Color.appText)
@@ -33,10 +34,10 @@ public struct WatchVoiceCaptureView: View {
             Button(action: toggleRecording) {
                 ZStack {
                     Circle()
-                        .fill(isRecording ? Color.theme.red.opacity(DesignSystem.Opacity.soft) : Color.appAccent.opacity(DesignSystem.Opacity.soft))
-                        .frame(width: ComponentSpacing.colossal, height: ComponentSpacing.colossal)
+                        .fill(isRecording ? Color.theme.red.opacity(DesignTokens.Opacity.soft) : Color.appAccent.opacity(DesignTokens.Opacity.soft))
+                        .frame(width: DesignTokens.ComponentSpacing.colossal, height: DesignTokens.ComponentSpacing.colossal)
 
-                    Image(systemName: isRecording ? DesignSystem.Icons.stopFill : DesignSystem.Icons.voiceNote)
+                    Image(systemName: isRecording ? DesignTokens.Icons.stopFill : DesignTokens.Icons.voiceNote)
                         .font(.title2.weight(.bold))
                         .foregroundStyle(isRecording ? Color.theme.red : Color.appAccent)
                 }
@@ -51,17 +52,17 @@ public struct WatchVoiceCaptureView: View {
             }
 
             if showSuccessBanner {
-                Label(L10n.Widget.syncedToiOS, systemImage: DesignSystem.Icons.check)
+                Label(L10n.Widget.syncedToiOS, systemImage: DesignTokens.Icons.check)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(Color.theme.green)
                     .transition(.opacity)
             }
         }
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
     }
 
     private func toggleRecording() {
-        withAnimation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping)) {
+        withAnimation(.spring(response: DesignTokens.Animation.springResponse, dampingFraction: DesignTokens.Animation.springDamping)) {
             isRecording.toggle()
             if !isRecording {
                 recordedText = L10n.Widget.sampleVoiceNote

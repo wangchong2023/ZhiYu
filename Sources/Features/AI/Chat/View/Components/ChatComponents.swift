@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - Chat Bubble View
 /// 聊天气泡视图
@@ -32,9 +33,9 @@ struct ChatBubbleView: View {
     var onSelectQuestion: ((String) -> Void)?
     
     var body: some View {
-        HStack(spacing: Spacing.medium) { // 12
+        HStack(spacing: DesignTokens.Spacing.medium) { // 12
             if isSelectionMode {
-                Image(systemName: isSelected ? DesignSystem.Icons.checkCircle : DesignSystem.Icons.emptyCircle)
+                Image(systemName: isSelected ? DesignTokens.Icons.checkCircle : DesignTokens.Icons.emptyCircle)
                     .foregroundStyle(isSelected ? Color.appAccent : Color.appSecondary)
                     .font(.title3)
                     .transition(.move(edge: .leading).combined(with: .opacity))
@@ -51,7 +52,7 @@ struct ChatBubbleView: View {
                 }
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
     
     private var timestampString: String {
@@ -61,64 +62,64 @@ struct ChatBubbleView: View {
     /// 时间戳标签（消除 userBubble 与 assistantBubble 内重复的时间戳样式链）
     private var timestampLabel: some View {
         Text(timestampString)
-            .font(.system(size: DesignSystem.caption2FontSize))
-            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+            .font(.system(size: DesignTokens.Typography.caption2FontSize))
+            .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
     }
     
     private var userBubble: some View {
-        VStack(alignment: .trailing, spacing: Spacing.tiny) {
-            HStack(alignment: .top, spacing: Spacing.tiny) {
+        VStack(alignment: .trailing, spacing: DesignTokens.Spacing.tiny) {
+            HStack(alignment: .top, spacing: DesignTokens.Spacing.tiny) {
                 Text(message.content)
                     .font(.body)
                     .foregroundStyle(.white)
-                    .padding(.horizontal, Spacing.standardPadding)
-                    .padding(.vertical, Spacing.medium)
+                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                    .padding(.vertical, DesignTokens.Spacing.medium)
                     .background(
                         LinearGradient(
-                            colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.pressed)],
+                            colors: [.appAccent, .appAccent.opacity(DesignTokens.Opacity.pressed)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Domain.AI.Chat.bubbleCornerRadius))
-                    .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.subtle), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.subtle), radius: 8, x: 0, y: 4)
                 
-                Image(systemName: DesignSystem.Icons.personCircle)
+                Image(systemName: DesignTokens.Icons.personCircle)
                     .font(.title3)
-                    .foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.dim))
-                    .padding(.top, DesignSystem.tiny)
+                    .foregroundStyle(.appAccent.opacity(DesignTokens.Opacity.dim))
+                    .padding(.top, DesignTokens.Spacing.tiny)
             }
             
             timestampLabel
-                .padding(.trailing, SystemSpacing.content)
+                .padding(.trailing, DesignTokens.SystemSpacing.content)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
         .padding(.leading, DesignSystem.Domain.AI.Chat.bubbleTrailingPadding) // 左侧与 trailing 对称避让
-        .padding(.trailing, Spacing.standardPadding) // 增加右侧间距，防贴边
+        .padding(.trailing, DesignTokens.Spacing.standardPadding) // 增加右侧间距，防贴边
     }
     
     private var assistantBubble: some View {
-        VStack(alignment: .leading, spacing: Spacing.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             // Header: Assistant Identity (Outside the bubble)
-            HStack(spacing: Spacing.tiny + Spacing.atomic) {
+            HStack(spacing: DesignTokens.Spacing.tiny + DesignTokens.Spacing.atomic) {
                 ZStack {
                     Circle()
-                        .fill(Color.appAccent.opacity(DesignSystem.Opacity.glass))
+                        .fill(Color.appAccent.opacity(DesignTokens.Opacity.glass))
                         .frame(width: DesignSystem.Domain.AI.Chat.avatarSize, height: DesignSystem.Domain.AI.Chat.avatarSize)
-                    Image(systemName: DesignSystem.Icons.sparkles)
-                        .font(.system(size: DesignSystem.microFontSize, weight: .bold))
+                    Image(systemName: DesignTokens.Icons.sparkles)
+                        .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold))
                         .foregroundStyle(.appAccent)
                 }
                 Text(L10n.Chat.aiAssistantName)
-                    .font(.system(size: DesignSystem.captionFontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .bold))
                     .foregroundStyle(.appAccent)
                 
                 Spacer()
                 
                 timestampLabel
             }
-            .padding(.horizontal, Spacing.tiny)
-            .padding(.bottom, DesignSystem.atomic)
+            .padding(.horizontal, DesignTokens.Spacing.tiny)
+            .padding(.bottom, DesignTokens.Spacing.atomic)
             
             // 气泡最大宽度通过 AppScreen 统一封装，屏蔽 UIScreen/WKInterfaceDevice 平台差异
             let bubbleMaxWidth = AppScreen.bubbleMaxWidth
@@ -132,7 +133,7 @@ struct ChatBubbleView: View {
             if !message.relatedPageIDs.isEmpty {
                 referencesPanel
                     .frame(maxWidth: AppScreen.bubbleMaxWidth, alignment: .leading)
-                    .padding(.top, DesignSystem.tiny)
+                    .padding(.top, DesignTokens.Spacing.tiny)
             }
             
             // 延伸探讨与追问推荐卡片 (渲染与 GPT 体验一致的嵌套卡片)
@@ -141,11 +142,11 @@ struct ChatBubbleView: View {
                     onSelectQuestion?(question)
                 }
                 .frame(maxWidth: bubbleMaxWidth, alignment: .leading)
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
             }
             
             // 操作按钮栏：点赞、贬低、复制、重新生成
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 // 点赞按钮
                 ratingButton(ratingValue: 1,
                              activeIcon: FeatureConstants.ChatRatingIcon.thumbsupFill,
@@ -165,7 +166,7 @@ struct ChatBubbleView: View {
                     AppPasteboard.string = processed.mainContent
                     toastManager.show(type: .success, message: L10n.Chat.copied)
                 }) {
-                    Image(systemName: DesignSystem.Icons.copy)
+                    Image(systemName: DesignTokens.Icons.copy)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
@@ -177,25 +178,25 @@ struct ChatBubbleView: View {
                         HapticFeedback.shared.trigger(.selection)
                         onRegenerate()
                     }) {
-                        HStack(spacing: SystemSpacing.tiny) {
-                            Image(systemName: DesignSystem.Icons.arrowClockwise)
+                        HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                            Image(systemName: DesignTokens.Icons.arrowClockwise)
                                 .font(.caption2)
                             Text(L10n.Chat.regenerate)
-                                .font(.system(size: DesignSystem.captionFontSize, weight: .medium))
+                                .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .medium))
                         }
-                        .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
+                        .commonContentPadding(horizontal: DesignTokens.Spacing.small, vertical: DesignTokens.Spacing.tiny)
+                        .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
                         .foregroundStyle(.appAccent)
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.top, DesignSystem.tiny)
-            .padding(.leading, Spacing.tiny)
+            .padding(.top, DesignTokens.Spacing.tiny)
+            .padding(.leading, DesignTokens.Spacing.tiny)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.leading, Spacing.standardPadding)
+        .padding(.leading, DesignTokens.Spacing.standardPadding)
         .padding(.trailing, DesignSystem.Domain.AI.Chat.bubbleTrailingPadding)
     }
 
@@ -214,11 +215,11 @@ struct ChatBubbleView: View {
     
     /// Collapsible references panel showing cited knowledge pages grouped by type
     private var referencesPanel: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             // Header with expand/collapse toggle
             Button(action: { withAnimation { referencesExpanded.toggle() } }) {
-                HStack(spacing: DesignSystem.tightPadding) {
-                    Image(systemName: referencesExpanded ? DesignSystem.Icons.chevronDown : DesignSystem.Icons.chevronRight)
+                HStack(spacing: DesignTokens.Spacing.tightPadding) {
+                    Image(systemName: referencesExpanded ? DesignTokens.Icons.chevronDown : DesignTokens.Icons.chevronRight)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
                     Text(referencesExpanded ? L10n.Chat.referencesExpanded : L10n.Chat.referencesCollapsed)
@@ -238,32 +239,32 @@ struct ChatBubbleView: View {
                 // 遍历用户可见的页面类型，过滤掉内部 raw 类型
                 ForEach(PageType.allVisibleCases.filter { grouped[$0] != nil }, id: \.self) { type in
                     if let pagesOfType = grouped[type], !pagesOfType.isEmpty {
-                        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                             // Type header
-                            HStack(spacing: DesignSystem.tiny) {
+                            HStack(spacing: DesignTokens.Spacing.tiny) {
                                 Image(systemName: type.icon)
                                     .font(.caption2)
                                 Text(type.displayName)
                                     .font(.caption.weight(.medium))
                             }
                             .foregroundStyle(Color.fromModelColorName(type.colorName))
-                            .padding(.top, DesignSystem.tiny)
+                            .padding(.top, DesignTokens.Spacing.tiny)
                             
                             // Page chips
-                            FlowLayout(spacing: DesignSystem.tightPadding) {
+                            FlowLayout(spacing: DesignTokens.Spacing.tightPadding) {
                                 ForEach(pagesOfType, id: \.id) { page in
                                     Button(action: { 
                                         selectedTab = .knowledge
                                         router.navigateToPage(id: page.id)
                                     }) {
-                                        HStack(spacing: SystemSpacing.tight) {
+                                        HStack(spacing: DesignTokens.SystemSpacing.tight) {
                                             Image(systemName: page.displayIcon)
                                                 .font(.caption2)
                                             Text(page.title)
                                                 .font(.caption)
                                         }
-                                        .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
-                                        .background(Color.fromModelColorName(type.colorName).opacity(DesignSystem.Opacity.glass))
+                                        .commonContentPadding(horizontal: DesignTokens.Spacing.small, vertical: DesignTokens.Spacing.tiny)
+                                        .background(Color.fromModelColorName(type.colorName).opacity(DesignTokens.Opacity.glass))
                                         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Domain.AI.Chat.referencePanelCornerRadius))
                                         .foregroundStyle(Color.fromModelColorName(type.colorName))
                                     }
@@ -275,22 +276,22 @@ struct ChatBubbleView: View {
                 }
             }
         }
-        .padding(DesignSystem.medium)
-        .chatSmallCardStyle(backgroundOpacity: DesignSystem.surfaceOpacity)
+        .padding(DesignTokens.Spacing.medium)
+        .chatSmallCardStyle(backgroundOpacity: DesignTokens.Colors.Opacity.surfaceOpacity)
     }
     
     private var systemBubble: some View {
         HStack {
             Spacer()
             Text(message.content)
-                .font(.system(size: Typography.microFontSize + Spacing.atomic)) // 11
-                .foregroundStyle(.appSecondary.opacity(Colors.secondaryOpacity)) // 0.8
-                .padding(.horizontal, Spacing.wide) // 20
-                .padding(.vertical, Spacing.tiny) // 4
-                .background(Capsule().fill(Color.appCard.opacity(DesignSystem.Opacity.soft))) // 0.5
+                .font(.system(size: DesignTokens.Typography.microFontSize + DesignTokens.Spacing.atomic)) // 11
+                .foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.secondaryOpacity)) // 0.8
+                .padding(.horizontal, DesignTokens.Spacing.wide) // 20
+                .padding(.vertical, DesignTokens.Spacing.tiny) // 4
+                .background(Capsule().fill(Color.appCard.opacity(DesignTokens.Opacity.soft))) // 0.5
             Spacer()
         }
-        .padding(.vertical, Spacing.tightPadding) // 8
+        .padding(.vertical, DesignTokens.Spacing.tightPadding) // 8
     }
 }
 
@@ -308,18 +309,18 @@ struct ChatContentView: View {
     var body: some View {
         let processed = ThinkingProcessor.process(text)
         
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             // 🛡️ AI 思考过程：从正文中剥离并展示为默认折叠的交互卡片
             if let thinking = processed.thinkingContent {
-                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
-                        withAnimation(DesignSystem.standardAnimation) {
+                        withAnimation(DesignTokens.Animations.Interaction.standardAnimation) {
                             isThinkingExpanded.toggle()
                         }
                     }) {
-                        HStack(spacing: DesignSystem.tiny) {
-                            Image(systemName: DesignSystem.Icons.sparkles)
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
+                            Image(systemName: DesignTokens.Icons.sparkles)
                                 .font(.caption2.weight(.semibold))
                                 .foregroundStyle(Color.appAccent)
                             Text(L10n.Common.aiThinking)
@@ -330,11 +331,11 @@ struct ChatContentView: View {
                                 .font(.caption2)
                                 .foregroundStyle(.appSecondary)
                         }
-                        .padding(.horizontal, DesignSystem.small)
-                        .padding(.vertical, DesignSystem.tightPadding)
+                        .padding(.horizontal, DesignTokens.Spacing.small)
+                        .padding(.vertical, DesignTokens.Spacing.tightPadding)
                         .background(
-                            RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                                .fill(Color.appAccent.opacity(SystemOpacity.disabled))
+                            RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                                .fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled))
                         )
                     }
                     .buttonStyle(.plain)
@@ -343,18 +344,18 @@ struct ChatContentView: View {
                         Text(thinking)
                             .font(.caption)
                             .foregroundStyle(.appSecondary)
-                            .padding(.leading, DesignSystem.small)
-                            .padding(.vertical, DesignSystem.tiny)
+                            .padding(.leading, DesignTokens.Spacing.small)
+                            .padding(.vertical, DesignTokens.Spacing.tiny)
                             .overlay(
                                 Rectangle()
-                                    .fill(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
-                                    .frame(width: DesignSystem.atomic),
+                                    .fill(Color.appAccent.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
+                                    .frame(width: DesignTokens.Spacing.atomic),
                                 alignment: .leading
                             )
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
-                .padding(.bottom, DesignSystem.tiny)
+                .padding(.bottom, DesignTokens.Spacing.tiny)
             }
             
             // 清理常见的 LLM 转义符错误 (确保 Markdown 渲染正常)
@@ -379,55 +380,55 @@ struct SuggestedFollowUpCardView: View {
     let onSelect: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             // Header
-            HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.sparkles)
+            HStack(spacing: DesignTokens.Spacing.tiny) {
+                Image(systemName: DesignTokens.Icons.sparkles)
                     .font(.caption)
                     .foregroundStyle(.appAccent)
                 Text(L10n.AI.Prompt.followUpHeader)
-                    .font(.system(size: DesignSystem.captionFontSize, weight: .semibold))
+                    .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .semibold))
                     .foregroundStyle(.appText)
             }
 
             // Numbered List Items
-            VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                 ForEach(Array(questions.enumerated()), id: \.offset) { index, question in
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
                         onSelect(question)
                     }) {
-                        HStack(alignment: .top, spacing: DesignSystem.small) {
+                        HStack(alignment: .top, spacing: DesignTokens.Spacing.small) {
                             Text("\(index + 1).")
-                                .font(.system(size: DesignSystem.bodyFontSize, weight: .bold))
+                                .font(.system(size: DesignTokens.Typography.bodyFontSize, weight: .bold))
                                 .foregroundStyle(.appAccent)
 
                             Text(question)
-                                .font(.system(size: DesignSystem.bodyFontSize, weight: .medium))
+                                .font(.system(size: DesignTokens.Typography.bodyFontSize, weight: .medium))
                                 .foregroundStyle(.appText)
                                 .multilineTextAlignment(.leading)
 
                             Spacer(minLength: 0)
 
-                            Image(systemName: DesignSystem.Icons.chevronRight)
+                            Image(systemName: DesignTokens.Icons.chevronRight)
                                 .font(.caption2)
-                                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                                .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
                         }
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.vertical, DesignSystem.small)
-                        .chatSmallCardStyle(backgroundOpacity: DesignSystem.Opacity.subtle)
+                        .padding(.horizontal, DesignTokens.Spacing.medium)
+                        .padding(.vertical, DesignTokens.Spacing.small)
+                        .chatSmallCardStyle(backgroundOpacity: DesignTokens.Opacity.subtle)
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
-        .padding(DesignSystem.standardPadding)
+        .padding(DesignTokens.Spacing.standardPadding)
         .background(
-            RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                .fill(Color.appCard.opacity(DesignSystem.Opacity.glass))
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                .fill(Color.appCard.opacity(DesignTokens.Opacity.glass))
         )
         .overlayStroke()
-        .shadow(color: Color.appBackground.opacity(DesignSystem.shadowOpacity), radius: 6, x: 0, y: 2)
+        .shadow(color: Color.appBackground.opacity(DesignTokens.Spacing.shadowOpacity), radius: 6, x: 0, y: 2)
     }
 }
 
@@ -437,7 +438,7 @@ private extension View {
     func chatSmallCardStyle(backgroundOpacity: Double) -> some View {
         self
             .background(Color.appCard.opacity(backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-            .overlayStroke(cornerRadius: DesignSystem.smallRadius)
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
+            .overlayStroke(cornerRadius: DesignTokens.Spacing.smallRadius)
     }
 }

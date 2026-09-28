@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 插件详情页 Section 容器：统一标题头 + 内容区的 VStack 布局
 struct PluginDetailSectionContainer<Content: View>: View {
@@ -18,7 +19,7 @@ struct PluginDetailSectionContainer<Content: View>: View {
     let spacing: CGFloat
     @ViewBuilder let content: () -> Content
 
-    init(title: String, spacing: CGFloat = DesignSystem.medium, @ViewBuilder content: @escaping () -> Content) {
+    init(title: String, spacing: CGFloat = DesignTokens.Spacing.medium, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
         self.spacing = spacing
         self.content = content

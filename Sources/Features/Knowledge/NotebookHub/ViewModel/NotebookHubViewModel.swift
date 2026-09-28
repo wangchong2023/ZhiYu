@@ -11,6 +11,7 @@
 import Foundation
 import Observation
 import SwiftUI
+import UFPDesignSystem
 
 /// 笔记本工作台视图模型
 @Observable
@@ -24,7 +25,7 @@ public final class NotebookHubViewModel {
         case grid, list
         
         var icon: String {
-            self == .grid ? DesignSystem.Icons.gridOutline : DesignSystem.Icons.list
+            self == .grid ? DesignTokens.Icons.gridOutline : DesignTokens.Icons.list
         }
     }
     
@@ -45,7 +46,7 @@ public final class NotebookHubViewModel {
     /// 新笔记本名称
     public var newNotebookName: String = "" {
         didSet {
-            let limit = DesignSystem.Metrics.maxNotebookNameLength
+            let limit = DesignTokens.Metrics.maxNotebookNameLength
             if newNotebookName.count > limit {
                 newNotebookName = String(newNotebookName.prefix(limit))
             }
@@ -53,7 +54,7 @@ public final class NotebookHubViewModel {
     }
     
     /// 新笔记本图标 (Emoji)
-    public var newNotebookIcon: String = DesignSystem.Icons.Notebook.options.first ?? DesignSystem.Icons.Notebook.fallback
+    public var newNotebookIcon: String = DesignTokens.Icons.Notebook.options.first ?? DesignTokens.Icons.Notebook.fallback
     
     /// 新笔记本描述
     public var newNotebookDescription: String = ""
@@ -70,7 +71,7 @@ public final class NotebookHubViewModel {
     public var editingVault: Vault?
     public var editingName: String = "" {
         didSet {
-            let limit = DesignSystem.Metrics.maxNotebookNameLength
+            let limit = DesignTokens.Metrics.maxNotebookNameLength
             if editingName.count > limit {
                 editingName = String(editingName.prefix(limit))
             }
@@ -147,7 +148,7 @@ public final class NotebookHubViewModel {
         
         // 重置状态
         newNotebookName = ""
-        newNotebookIcon = DesignSystem.Icons.Notebook.options.first ?? DesignSystem.Icons.Notebook.fallback
+        newNotebookIcon = DesignTokens.Icons.Notebook.options.first ?? DesignTokens.Icons.Notebook.fallback
         newNotebookDescription = ""
         isShowingCreateSheet = false
     }

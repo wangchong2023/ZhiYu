@@ -10,14 +10,15 @@
 //
 import SwiftUI
 import CoreGraphics
+import UFPDesignSystem
 
 extension DesignSystem {
 
     // MARK: - 14. 列表模式 (List)
     public enum List {
-        public static let rowVerticalPadding: CGFloat = Spacing.List.rowVerticalPadding
-        public static let rowHorizontalPadding: CGFloat = Spacing.List.rowHorizontalPadding
-        public static let rowSpacing: CGFloat = Spacing.List.rowSpacing
-        public static let rowRadius: CGFloat = Spacing.List.rowRadius
+        public static let rowVerticalPadding: CGFloat = DesignTokens.Spacing.List.rowVerticalPadding
+        public static let rowHorizontalPadding: CGFloat = DesignTokens.Spacing.List.rowHorizontalPadding
+        public static let rowSpacing: CGFloat = DesignTokens.Spacing.List.rowSpacing
+        public static let rowRadius: CGFloat = DesignTokens.Spacing.List.rowRadius
     }
 }

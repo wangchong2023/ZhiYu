@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 面板关闭按钮
 ///
@@ -22,7 +23,7 @@ struct PanelCloseButton: View {
         Button {
             dismiss()
         } label: {
-            Image(systemName: DesignSystem.Icons.errorCircle)
+            Image(systemName: DesignTokens.Icons.errorCircle)
                 .font(.title2)
                 .foregroundStyle(.secondary)
         }

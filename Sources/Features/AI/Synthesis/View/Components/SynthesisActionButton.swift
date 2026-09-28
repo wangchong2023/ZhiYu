@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 合成操作启动按钮组件
 /// 负责单个合成任务（如思维导图生成）的触发逻辑、前置校验、生成进度展示及超限状态控制
@@ -31,8 +32,8 @@ struct SynthesisActionButton: View {
 
     /// 标准 spring 动画（消除重复的 .spring(response:dampingFraction:) 链）
     private static let standardSpring = Animation.spring(
-        response: DesignSystem.Animation.springResponse,
-        dampingFraction: DesignSystem.Animation.springDamping
+        response: DesignTokens.Animation.springResponse,
+        dampingFraction: DesignTokens.Animation.springDamping
     )
 
     var body: some View {
@@ -40,33 +41,33 @@ struct SynthesisActionButton: View {
         let currentCount = synthesisStore.synthesisResults[type]?.count ?? 0
         let isLimitReached = currentCount >= synthesisStore.maxSynthesisDocsPerType
         
-        VStack(spacing: DesignSystem.tightPadding) {
+        VStack(spacing: DesignTokens.Spacing.tightPadding) {
             ZStack(alignment: .topTrailing) {
                 Button(action: { 
                     HapticFeedback.shared.trigger(.selection)
                     performSynthesis(options: nil)
                 }) {
-                    VStack(spacing: DesignSystem.tiny) {
+                    VStack(spacing: DesignTokens.Spacing.tiny) {
                         ZStack {
-                            Circle().fill(type.formatColor.opacity(SystemOpacity.faint)).frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
+                            Circle().fill(type.formatColor.opacity(DesignTokens.SystemOpacity.faint)).frame(width: DesignTokens.Metrics.largeIconBoxSize, height: DesignTokens.Metrics.largeIconBoxSize)
                             Image(systemName: type.icon)
-                                .font(.system(size: DesignSystem.iconMedium, weight: .semibold))
+                                .font(.system(size: DesignTokens.Spacing.iconMedium, weight: .semibold))
                                 .foregroundStyle(type.formatColor)
-                                .opacity(state == .generating ? DesignSystem.dimmedOpacity : DesignSystem.fullOpacity)
+                                .opacity(state == .generating ? DesignTokens.Colors.Opacity.dimmedOpacity : DesignTokens.Colors.Opacity.fullOpacity)
                             
                             if state == .generating {
                                 ProgressView()
-                                    .scaleEffect(DesignSystem.Animation.pressScale)
+                                    .scaleEffect(DesignTokens.Animation.pressScale)
                                     .tint(type.formatColor)
                             }
                         }
                         Text(type.title)
-                            .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold))
+                            .font(.system(size: DesignTokens.Metrics.dashboardLabelSize, weight: .bold))
                             .foregroundStyle(.appText)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, DesignSystem.standardPadding)
-                    .appMetricCardStyle(color: type.formatColor, cornerRadius: DesignSystem.standardRadius)
+                    .padding(.vertical, DesignTokens.Spacing.standardPadding)
+                    .appMetricCardStyle(color: type.formatColor, cornerRadius: DesignTokens.Spacing.standardRadius)
                 }
                 .buttonStyle(AppCardButtonStyle())
                 .disabled(state == .generating)
@@ -76,30 +77,30 @@ struct SynthesisActionButton: View {
                     HapticFeedback.shared.trigger(.selection)
                     showControlSheet = true
                 } label: {
-                    Image(systemName: DesignSystem.Icons.sliderHorizontal)
-                        .font(.system(size: DesignSystem.iconTiny, weight: .bold))
+                    Image(systemName: DesignTokens.Icons.sliderHorizontal)
+                        .font(.system(size: DesignTokens.Spacing.iconTiny, weight: .bold))
                         .foregroundStyle(type.formatColor)
-                        .padding(DesignSystem.tightPadding)
-                        .background(Color.appCard.opacity(DesignSystem.surfaceOpacity))
+                        .padding(DesignTokens.Spacing.tightPadding)
+                        .background(Color.appCard.opacity(DesignTokens.Colors.Opacity.surfaceOpacity))
                         .clipShape(Circle())
-                        .shadow(radius: SystemShadow.radiusSmall)
+                        .shadow(radius: DesignTokens.SystemShadow.radiusSmall)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.AI.Synthesis.Control.title)
-                .padding(DesignSystem.tiny)
+                .padding(DesignTokens.Spacing.tiny)
                 .disabled(state == .generating)
             }
             .contextMenu {
                 Button {
                     performSynthesis(options: nil)
                 } label: {
-                    Label(L10n.AI.Status.generating, systemImage: DesignSystem.Icons.boltFill)
+                    Label(L10n.AI.Status.generating, systemImage: DesignTokens.Icons.boltFill)
                 }
                 
                 Button {
                     showControlSheet = true
                 } label: {
-                    Label(L10n.AI.Synthesis.Control.title, systemImage: DesignSystem.Icons.sliderHorizontal)
+                    Label(L10n.AI.Synthesis.Control.title, systemImage: DesignTokens.Icons.sliderHorizontal)
                 }
             }
             .animation(Self.standardSpring, value: state)
@@ -112,7 +113,7 @@ struct SynthesisActionButton: View {
             
             if isLimitReached {
                 Text(L10n.AI.Synthesis.limitReachedWarning)
-                    .font(.system(size: DesignSystem.microFontSize, weight: .medium))
+                    .font(.system(size: DesignTokens.Typography.microFontSize, weight: .medium))
                     .foregroundStyle(Color.theme.red)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -153,7 +154,7 @@ struct SynthesisActionButton: View {
                 _ = try await synthesisStore.performSynthesis(type: type, combinedContent: combinedContent, sourcePageIDs: sourceIDs)
                 await MainActor.run {
                     HapticFeedback.shared.trigger(.success)
-                    withAnimation(DesignSystem.standardAnimation) {
+                    withAnimation(DesignTokens.Animations.Interaction.standardAnimation) {
                         if selectedFilterType != nil && selectedFilterType != type {
                             selectedFilterType = nil
                         }

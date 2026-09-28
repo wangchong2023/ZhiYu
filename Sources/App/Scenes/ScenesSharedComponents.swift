@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - CommandPalette Sheet 修饰符
 
@@ -23,7 +24,7 @@ struct CommandPaletteSheetModifier: ViewModifier {
         content
             .sheet(isPresented: $isPresented) {
                 CommandPaletteView()
-                    .presentationDetents([.height(DesignSystem.Metrics.commandPaletteHeight)])
+                    .presentationDetents([.height(DesignTokens.Metrics.commandPaletteHeight)])
                     .presentationBackground(.clear)
             }
             .background {
@@ -75,15 +76,15 @@ extension ContentView {
 struct SidebarIconBox: View {
     let icon: String
     let color: Color
-    var backgroundOpacity: Double = DesignSystem.Opacity.subtle
+    var backgroundOpacity: Double = DesignTokens.Opacity.subtle
 
     var body: some View {
         Image(systemName: icon)
             .font(.subheadline.weight(.medium))
             .foregroundStyle(color)
-            .frame(width: DesignSystem.largeIconSize, height: DesignSystem.largeIconSize)
+            .frame(width: DesignTokens.Spacing.largeIconSize, height: DesignTokens.Spacing.largeIconSize)
             .background(color.opacity(backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius, style: .continuous))
     }
 }
 
@@ -105,7 +106,7 @@ struct SidebarRowTitle: View {
 struct SidebarCountBadge: View {
     let count: Int
     let color: Color
-    var backgroundOpacity: Double = DesignSystem.subtleFillOpacity
+    var backgroundOpacity: Double = DesignTokens.Colors.subtleFillOpacity
 
     var body: some View {
         Text("\(count)")
@@ -137,7 +138,7 @@ enum SplashAnimationScheduler {
     ///   - delay: 延迟时间（秒）
     ///   - action: 状态变更闭包（在 MainActor 上执行）
     static func scheduleStandardTransition(after delay: Double, action: @escaping @MainActor () -> Void) {
-        scheduleAnimatedTransition(after: delay, animation: .easeInOut(duration: DesignSystem.Animation.standardDuration), action: action)
+        scheduleAnimatedTransition(after: delay, animation: .easeInOut(duration: DesignTokens.Animation.standardDuration), action: action)
     }
 
     /// 共享的延迟动画核心：在指定延迟后以指定动画执行闭包，消除 scheduleFadeIn 与 scheduleStandardTransition 间的样板重复。
@@ -187,8 +188,8 @@ struct ToggleSidebarModifier: ViewModifier {
         content
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name.toggleSidebar)) { _ in
                 withAnimation(.spring(
-                    response: DesignSystem.Animation.springResponse,
-                    dampingFraction: DesignSystem.Animation.springDamping
+                    response: DesignTokens.Animation.springResponse,
+                    dampingFraction: DesignTokens.Animation.springDamping
                 )) {
                     action()
                 }

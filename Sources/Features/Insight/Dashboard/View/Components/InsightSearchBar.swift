@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：Insight 模块通用搜索栏
 ///
@@ -21,12 +22,12 @@ struct InsightSearchBar: View {
     @Binding var text: String
     var onSubmit: (() -> Void)?
     var accessibilityIdentifier: String?
-    var horizontalPadding: CGFloat = DesignSystem.tiny
-    var bottomPadding: CGFloat = DesignSystem.tiny
+    var horizontalPadding: CGFloat = DesignTokens.Spacing.tiny
+    var bottomPadding: CGFloat = DesignTokens.Spacing.tiny
 
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.search)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.search)
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(.appAccent)
 
@@ -52,13 +53,13 @@ struct InsightSearchBar: View {
             }
         }
         .borderedCardStyle(
-            horizontalPadding: DesignSystem.standardPadding,
-            verticalPadding: SystemSpacing.elementLarge,
-            backgroundOpacity: DesignSystem.Opacity.dim,
-            cornerRadius: DesignSystem.mediumRadius,
-            borderWidth: DesignSystem.borderWidth,
+            horizontalPadding: DesignTokens.Spacing.standardPadding,
+            verticalPadding: DesignTokens.SystemSpacing.elementLarge,
+            backgroundOpacity: DesignTokens.Opacity.dim,
+            cornerRadius: DesignTokens.Spacing.mediumRadius,
+            borderWidth: DesignTokens.Spacing.borderWidth,
             borderColor: .appAccent,
-            borderOpacity: DesignSystem.Opacity.medium
+            borderOpacity: DesignTokens.Opacity.medium
         )
         .padding(.horizontal, horizontalPadding)
         .padding(.bottom, bottomPadding)

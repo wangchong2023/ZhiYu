@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 健康检查板块
 
@@ -39,7 +40,7 @@ struct LintHealthCheckSection: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: DesignSystem.giant) {
+            VStack(spacing: DesignTokens.Spacing.giant) {
                 // 1. Dashboard Header
                 healthDashboardHeader
                     .padding(.top)
@@ -49,68 +50,68 @@ struct LintHealthCheckSection: View {
 
                 // 3. Issue List (如果存在问题)
                 if !aiStore.lintIssues.isEmpty {
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                         Text(L10n.Lint.detailIssues)
                             .font(.headline)
-                            .padding(.horizontal, DesignSystem.huge)
+                            .padding(.horizontal, DesignTokens.Spacing.huge)
 
                         VStack(alignment: .leading, spacing: 0) {
                             issueSection(title: L10n.Lint.errors(aiStore.lintIssues.filter { $0.severity == .error }.count),
                                          issues: aiStore.lintIssues.filter { $0.severity == .error },
-                                         icon: DesignSystem.Icons.errorCircle, color: .red)
+                                         icon: DesignTokens.Icons.errorCircle, color: .red)
 
                             issueSection(title: L10n.Lint.warnings(aiStore.lintIssues.filter { $0.severity == .warning }.count),
                                          issues: aiStore.lintIssues.filter { $0.severity == .warning },
-                                         icon: DesignSystem.Icons.warning, color: .orange)
+                                         icon: DesignTokens.Icons.warning, color: .orange)
 
                             issueSection(title: L10n.Lint.tips(aiStore.lintIssues.filter { $0.severity == .info }.count),
                                          issues: aiStore.lintIssues.filter { $0.severity == .info },
-                                         icon: DesignSystem.Icons.info, color: .blue)
+                                         icon: DesignTokens.Icons.info, color: .blue)
                         }
                         .appContainer(padding: true)
-                        .padding(.horizontal, DesignSystem.huge)
+                        .padding(.horizontal, DesignTokens.Spacing.huge)
                     }
                 }
             }
-            .padding(.bottom, DesignSystem.wide)
+            .padding(.bottom, DesignTokens.Spacing.wide)
         }
     }
 
     // MARK: - Dashboard 头部
 
     private var healthDashboardHeader: some View {
-        VStack(spacing: DesignSystem.wide) {
+        VStack(spacing: DesignTokens.Spacing.wide) {
             ZStack {
                 // 上次检查时间展示在左上角
-                VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                     Text(L10n.Lint.lastCheckTitle)
-                        .font(.system(size: DesignSystem.microFontSize, weight: .bold))
+                        .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold))
                         .foregroundStyle(.appText)
-                        .padding(.leading, DesignSystem.tiny)
+                        .padding(.leading, DesignTokens.Spacing.tiny)
 
-                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                         Text(formattedLastDate)
-                            .font(.system(size: DesignSystem.microFontSize, design: .monospaced))
+                            .font(.system(size: DesignTokens.Typography.microFontSize, design: .monospaced))
                             .foregroundStyle(.appText)
                     }
                     .appContainer(padding: false)
-                    .padding(DesignSystem.small)
+                    .padding(DesignTokens.Spacing.small)
                 }
-                .padding(.leading, DesignSystem.huge)
+                .padding(.leading, DesignTokens.Spacing.huge)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 HStack {
                     Spacer()
                     ZStack {
                         Circle()
-                            .stroke(healthColor.opacity(DesignSystem.Opacity.light), lineWidth: progressRingLineWidth)
+                            .stroke(healthColor.opacity(DesignTokens.Opacity.light), lineWidth: progressRingLineWidth)
                             .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
 
                         // 进度环
                         Circle()
                             .trim(from: 0, to: CGFloat(aiStore.lintScore) / FeatureConstants.LintHealthThreshold.progressMax)
                             .stroke(
-                                LinearGradient(colors: [healthColor.opacity(DesignSystem.Opacity.dim), healthColor], startPoint: .top, endPoint: .bottom),
+                                LinearGradient(colors: [healthColor.opacity(DesignTokens.Opacity.dim), healthColor], startPoint: .top, endPoint: .bottom),
                                 style: StrokeStyle(lineWidth: progressRingLineWidth, lineCap: .round)
                             )
                             .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
@@ -122,7 +123,7 @@ struct LintHealthCheckSection: View {
                                 .foregroundStyle(.appText)
 
                             Text(aiStore.healthLevel.title)
-                                .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
+                                .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold))
                                 .foregroundStyle(healthColor)
                         }
                     }
@@ -130,7 +131,7 @@ struct LintHealthCheckSection: View {
                 }
 
                 // 评分标准展示在右下角
-                VStack(alignment: .trailing, spacing: DesignSystem.tiny) {
+                VStack(alignment: .trailing, spacing: DesignTokens.Spacing.tiny) {
                     let ranges = [
                         (L10n.Lint.healthExcellent, "90-100"),
                         (L10n.Lint.healthGood, "70-89"),
@@ -139,55 +140,55 @@ struct LintHealthCheckSection: View {
                     ]
 
                     ForEach(ranges, id: \.1) { label, range in
-                        HStack(spacing: DesignSystem.small) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
                             Text(label)
-                                .font(.system(size: DesignSystem.microFontSize, weight: .bold))
-                                .frame(width: DesignSystem.IconSize.large, alignment: .trailing)
+                                .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold))
+                                .frame(width: DesignTokens.IconSize.large, alignment: .trailing)
                             Text(range)
-                                .font(.system(size: DesignSystem.microFontSize, design: .monospaced))
-                                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.prominent))
-                                .frame(width: DesignSystem.IconSize.xxlarge, alignment: .leading)
+                                .font(.system(size: DesignTokens.Typography.microFontSize, design: .monospaced))
+                                .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.prominent))
+                                .frame(width: DesignTokens.IconSize.xxlarge, alignment: .leading)
                         }
                     }
                 }
                 .appContainer(padding: false)
-                .padding(DesignSystem.small)
-                .padding(.trailing, DesignSystem.standardPadding)
+                .padding(DesignTokens.Spacing.small)
+                .padding(.trailing, DesignTokens.Spacing.standardPadding)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
-            .frame(height: ComponentSpacing.chartHeightCompact)
+            .frame(height: DesignTokens.ComponentSpacing.chartHeightCompact)
         }
     }
 
     // MARK: - 指标网格
 
     private var metricsGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: DesignSystem.standardPadding), GridItem(.flexible(), spacing: DesignSystem.standardPadding)], spacing: DesignSystem.standardPadding) {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding), GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding)], spacing: DesignTokens.Spacing.standardPadding) {
             InsightMetricCard(title: L10n.Lint.metricPages,
                               value: "\(store.pages.count)",
-                              icon: DesignSystem.Icons.documentFill,
+                              icon: DesignTokens.Icons.documentFill,
                               color: Color.theme.blue,
                               layout: .lint)
 
             InsightMetricCard(title: L10n.Lint.metricBroken,
                               value: "\(store.brokenLinkCount)",
-                              icon: DesignSystem.Icons.link,
+                              icon: DesignTokens.Icons.link,
                               color: Color.theme.red,
                               layout: .lint)
 
             InsightMetricCard(title: L10n.Lint.metricOrphans,
                               value: "\(store.orphanPageCount)",
-                              icon: DesignSystem.Icons.orphanPage,
+                              icon: DesignTokens.Icons.orphanPage,
                               color: Color.theme.orange,
                               layout: .lint)
 
             InsightMetricCard(title: L10n.Lint.metricLinks,
                               value: "\(store.totalConnectionCount)",
-                              icon: DesignSystem.Icons.network,
+                              icon: DesignTokens.Icons.network,
                               color: .appAccent,
                               layout: .lint)
         }
-        .padding(.horizontal, DesignSystem.huge)
+        .padding(.horizontal, DesignTokens.Spacing.huge)
     }
 
     // MARK: - 问题分组
@@ -195,27 +196,27 @@ struct LintHealthCheckSection: View {
     private func issueSection(title: String, issues: [LintIssue], icon: String, color: Color) -> some View {
         Group {
             if !issues.isEmpty {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     HStack {
                         InsightSectionHeader(title: title, icon: icon, color: color)
                         Spacer()
                     }
-                    .padding(.horizontal, DesignSystem.tiny)
+                    .padding(.horizontal, DesignTokens.Spacing.tiny)
 
                     VStack(spacing: 0) {
                         ForEach(issues) { issue in
                             LintIssueRow(issue: issue)
                                 .padding(.horizontal)
-                                .padding(.vertical, DesignSystem.small)
+                                .padding(.vertical, DesignTokens.Spacing.small)
 
                             if issue.id != issues.last?.id {
-                                Divider().padding(.leading, ComponentSpacing.ultra)
+                                Divider().padding(.leading, DesignTokens.ComponentSpacing.ultra)
                             }
                         }
                     }
                     .appContainer(padding: true)
                 }
-                .padding(.bottom, DesignSystem.small)
+                .padding(.bottom, DesignTokens.Spacing.small)
             }
         }
     }

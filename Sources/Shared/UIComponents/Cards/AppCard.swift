@@ -9,14 +9,15 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - App Card Modifier
 
 /// 应用卡片背景的视图修饰符
 /// 负责注入一致的内边距、背景色及圆角样式。
 public struct AppCardModifier: ViewModifier {
-    public var cornerRadiusToken: DesignSystem.RadiusToken = .card
-    public var paddingToken: DesignSystem.SpacingToken = .standardPadding
+    public var cornerRadiusToken: DesignTokens.RadiusToken = .card
+    public var paddingToken: DesignTokens.SpacingToken = .standardPadding
     public var backgroundColor: Color = .appCard
 
     /// 视图主体
@@ -36,12 +37,12 @@ public struct AppCardModifier: ViewModifier {
 /// 提供符合设计系统的阴影、圆角及背景封装。
 public struct AppCard<Content: View>: View {
     public let content: Content
-    public var cornerRadiusToken: DesignSystem.RadiusToken = .card
-    public var paddingToken: DesignSystem.SpacingToken = .standardPadding
+    public var cornerRadiusToken: DesignTokens.RadiusToken = .card
+    public var paddingToken: DesignTokens.SpacingToken = .standardPadding
 
     public init(
-        cornerRadiusToken: DesignSystem.RadiusToken = .card,
-        paddingToken: DesignSystem.SpacingToken = .standardPadding,
+        cornerRadiusToken: DesignTokens.RadiusToken = .card,
+        paddingToken: DesignTokens.SpacingToken = .standardPadding,
         @ViewBuilder content: () -> Content
     ) {
         self.cornerRadiusToken = cornerRadiusToken
@@ -76,11 +77,11 @@ public struct AppCard<Content: View>: View {
 /// 适用于需要视觉分割或引导点击的入口区域。
 public struct AppBorderedCard<Content: View>: View {
     public let content: Content
-    public var cornerRadius: CGFloat = Spacing.cardRadius
+    public var cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius
     public var borderColor: Color = .appBorder
 
     public init(
-        cornerRadius: CGFloat = Spacing.cardRadius,
+        cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius,
         borderColor: Color = .appBorder,
         @ViewBuilder content: () -> Content
     ) {
@@ -91,13 +92,13 @@ public struct AppBorderedCard<Content: View>: View {
 
     public var body: some View {
         content
-            .padding(.vertical, Spacing.standardPadding)
-            .padding(.horizontal, Spacing.medium)
+            .padding(.vertical, DesignTokens.Spacing.standardPadding)
+            .padding(.horizontal, DesignTokens.Spacing.medium)
             .frame(maxWidth: .infinity)
             .appCardClip(cornerRadius: cornerRadius)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor, lineWidth: Spacing.borderWidth)
+                    .stroke(borderColor, lineWidth: DesignTokens.Spacing.borderWidth)
             )
     }
 }
@@ -108,11 +109,11 @@ public struct AppBorderedCard<Content: View>: View {
 /// 使用系统材质 (Material) 结合阴影实现高阶视觉层次感。
 public struct AppGlassCard<Content: View>: View {
     public let content: Content
-    public var cornerRadius: CGFloat = Spacing.cardRadius
+    public var cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius
     public var isHighlighted: Bool = false
 
     public init(
-        cornerRadius: CGFloat = Spacing.cardRadius,
+        cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius,
         isHighlighted: Bool = false,
         @ViewBuilder content: () -> Content
     ) {
@@ -123,25 +124,25 @@ public struct AppGlassCard<Content: View>: View {
 
     public var body: some View {
         content
-            .padding(Spacing.Layout.cardContentPadding)
+            .padding(DesignTokens.Spacing.Layout.cardContentPadding)
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: cornerRadius)
                         .fill(.ultraThinMaterial)
                     RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(Color.appCard.opacity(DesignSystem.translucentOpacity))
+                        .fill(Color.appCard.opacity(DesignTokens.Colors.Opacity.translucentOpacity))
                     if isHighlighted {
                         RoundedRectangle(cornerRadius: cornerRadius)
-                            .stroke(Color.appAccent.opacity(DesignSystem.accentStrokeOpacity), lineWidth: SystemStroke.border)
+                            .stroke(Color.appAccent.opacity(DesignTokens.Colors.Opacity.accentStrokeOpacity), lineWidth: DesignTokens.SystemStroke.border)
                     }
                 }
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .shadow(
-                color: .primary.opacity(isHighlighted ? SystemOpacity.glass : SystemOpacity.ghost),
-                radius: isHighlighted ? Spacing.Decorator.shadowRadiusLarge : Spacing.Decorator.shadowRadiusSmall, 
+                color: .primary.opacity(isHighlighted ? DesignTokens.SystemOpacity.glass : DesignTokens.SystemOpacity.ghost),
+                radius: isHighlighted ? DesignTokens.Spacing.Decorator.shadowRadiusLarge : DesignTokens.Spacing.Decorator.shadowRadiusSmall, 
                 x: 0, 
-                y: isHighlighted ? Spacing.Decorator.shadowOffsetYLarge : Spacing.Decorator.shadowOffsetYSmall
+                y: isHighlighted ? DesignTokens.Spacing.Decorator.shadowOffsetYLarge : DesignTokens.Spacing.Decorator.shadowOffsetYSmall
             )
     }
 }
@@ -152,15 +153,15 @@ public struct AppGlassCard<Content: View>: View {
 /// 用于通过颜色标识卡片类别或状态。
 public struct AppCardAccent: View {
     public var color: Color = .appAccent
-    public var height: CGFloat = Spacing.Decorator.accentLineWidth
+    public var height: CGFloat = DesignTokens.Spacing.Decorator.accentLineWidth
 
-    public init(color: Color = .appAccent, height: CGFloat = Spacing.Decorator.accentLineWidth) {
+    public init(color: Color = .appAccent, height: CGFloat = DesignTokens.Spacing.Decorator.accentLineWidth) {
         self.color = color
         self.height = height
     }
 
     public var body: some View {
-        RoundedRectangle(cornerRadius: Spacing.tiny)
+        RoundedRectangle(cornerRadius: DesignTokens.Spacing.tiny)
             .fill(color)
             .frame(height: height)
     }
@@ -171,8 +172,8 @@ public struct AppCardAccent: View {
 public extension View {
     /// 应用标准卡片背景，使用强类型设计系统令牌。
     func appCard(
-        cornerRadiusToken: DesignSystem.RadiusToken = .card, 
-        paddingToken: DesignSystem.SpacingToken = .standardPadding
+        cornerRadiusToken: DesignTokens.RadiusToken = .card, 
+        paddingToken: DesignTokens.SpacingToken = .standardPadding
     ) -> some View {
         modifier(AppCardModifier(cornerRadiusToken: cornerRadiusToken, paddingToken: paddingToken))
     }
@@ -180,7 +181,7 @@ public extension View {
     /// 向后兼容原有 CGFloat 参数的卡片背景应用扩展。
     func appCard(
         cornerRadius: CGFloat, 
-        padding: CGFloat = Spacing.Layout.cardContentPadding
+        padding: CGFloat = DesignTokens.Spacing.Layout.cardContentPadding
     ) -> some View {
         let cornerToken = AppCardTokenMapper.radiusToken(for: cornerRadius)
         let padToken = AppCardTokenMapper.spacingToken(for: padding)
@@ -192,24 +193,24 @@ public extension View {
 // MARK: - SpacingToken 映射辅助
 private enum AppCardTokenMapper {
     /// CGFloat padding → SpacingToken（消除两处重复的三元表达式链）
-    static func spacingToken(for padding: CGFloat) -> DesignSystem.SpacingToken {
-        if padding == Spacing.atomic { return .atomic }
-        if padding == Spacing.tiny { return .tiny }
-        if padding == Spacing.small { return .small }
-        if padding == Spacing.medium { return .medium }
-        if padding == Spacing.Layout.cardContentPadding { return .standardPadding }
-        if padding == Spacing.giant { return .giant }
-        if padding == Spacing.huge { return .huge }
+    static func spacingToken(for padding: CGFloat) -> DesignTokens.SpacingToken {
+        if padding == DesignTokens.Spacing.atomic { return .atomic }
+        if padding == DesignTokens.Spacing.tiny { return .tiny }
+        if padding == DesignTokens.Spacing.small { return .small }
+        if padding == DesignTokens.Spacing.medium { return .medium }
+        if padding == DesignTokens.Spacing.Layout.cardContentPadding { return .standardPadding }
+        if padding == DesignTokens.Spacing.giant { return .giant }
+        if padding == DesignTokens.Spacing.huge { return .huge }
         return .standardPadding
     }
 
     /// CGFloat cornerRadius → RadiusToken（消除两处重复的三元表达式链）
-    static func radiusToken(for cornerRadius: CGFloat) -> DesignSystem.RadiusToken {
-        if cornerRadius == Spacing.microRadius { return .micro }
-        if cornerRadius == Spacing.smallRadius { return .small }
-        if cornerRadius == Spacing.mediumRadius { return .medium }
-        if cornerRadius == Spacing.largeRadius { return .large }
-        if cornerRadius == Spacing.chipRadius { return .chip }
+    static func radiusToken(for cornerRadius: CGFloat) -> DesignTokens.RadiusToken {
+        if cornerRadius == DesignTokens.Spacing.microRadius { return .micro }
+        if cornerRadius == DesignTokens.Spacing.smallRadius { return .small }
+        if cornerRadius == DesignTokens.Spacing.mediumRadius { return .medium }
+        if cornerRadius == DesignTokens.Spacing.largeRadius { return .large }
+        if cornerRadius == DesignTokens.Spacing.chipRadius { return .chip }
         return .card
     }
 }

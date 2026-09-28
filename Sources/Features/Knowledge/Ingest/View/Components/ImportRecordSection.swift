@@ -12,6 +12,7 @@ import SwiftUI
 import UFPCore
 import QuickLook
 import Dependencies
+import UFPDesignSystem
 
 /// 校验是否是纯文本文件后缀（消除 ImportRecordSection 与 ImportPreviewHandler 的重复定义）
 private func isTextFile(path: String) -> Bool {
@@ -44,11 +45,11 @@ struct ImportRecordSection: View {
     }()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             AppSectionHeader(title: L10n.Ingest.importRecords, icon: "arrow.down.doc")
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     ForEach(tabs, id: \.key) { tab in
                         categoryTab(tab.key, tab.label)
                     }
@@ -59,7 +60,7 @@ struct ImportRecordSection: View {
                 Text(L10n.Ingest.noImportRecords)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .padding(.vertical, DesignSystem.large)
+                    .padding(.vertical, DesignTokens.Spacing.large)
                     .frame(maxWidth: .infinity)
             } else if selectedCategory == FeatureConstants.CategoryFilter.all {
                 tagGroupedList
@@ -100,14 +101,14 @@ struct ImportRecordSection: View {
         VStack(spacing: 0) {
             ocrPreviewHeader
         }
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
     private var standardPreviewScrollView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 if previewRecord?.category == FeatureConstants.SourceType.voice {
                     VoiceAudioPlayerView(
                         title: previewRecord?.title ?? "",
@@ -126,7 +127,7 @@ struct ImportRecordSection: View {
                         FileTextPreviewView(filePath: path)
                     } else {
                         FormattedMarkdownText(text: cleanPreviewText(previewText ?? ""))
-                            .padding(.top, DesignSystem.tiny)
+                            .padding(.top, DesignTokens.Spacing.tiny)
                     }
                 }
             }
@@ -199,11 +200,11 @@ struct ImportRecordSection: View {
     @ViewBuilder
     private var ocrPreviewHeader: some View {
         if let record = previewRecord {
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 HStack {
                     sourceBadge(
                         label: L10n.Ingest.ocrScan,
-                        icon: DesignSystem.Icons.cameraViewfinder,
+                        icon: DesignTokens.Icons.cameraViewfinder,
                         color: .appAccent
                     )
 
@@ -222,7 +223,7 @@ struct ImportRecordSection: View {
                 if let uiImg = DemoImageBuilder.ensureImageExists(at: targetPath, title: record.title) {
                     ZoomableOCRImageView(image: uiImg)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding(.vertical, DesignSystem.tiny)
+                        .padding(.vertical, DesignTokens.Spacing.tiny)
                 }
                 #endif
             }
@@ -268,13 +269,13 @@ struct ImportRecordSection: View {
 
     private var tagGroupedList: some View {
         let grouped = ImportRecordTagGrouper.group(records, untaggedLabel: L10n.Ingest.untagged)
-        return VStack(spacing: DesignSystem.small) {
+        return VStack(spacing: DesignTokens.Spacing.small) {
             ForEach(grouped.keys.sorted(), id: \.self) { tag in
-                VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
                     Text(tag)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.appAccent)
-                        .padding(.horizontal, DesignSystem.tiny)
+                        .padding(.horizontal, DesignTokens.Spacing.tiny)
                     flatCardList(grouped[tag] ?? [], groupTag: tag)
                 }
             }
@@ -317,8 +318,8 @@ struct ImportRecordSection: View {
         return Button(action: { selectedCategory = key }) {
             Text(label)
                 .font(.caption.weight(selected ? .semibold : .regular))
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, DesignSystem.tightPadding)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.vertical, DesignTokens.Spacing.tightPadding)
                 .background(selected ? Capsule().fill(Color.appAccent) : Capsule().fill(Color.appCard))
                 .foregroundStyle(selected ? .white : .secondary)
         }

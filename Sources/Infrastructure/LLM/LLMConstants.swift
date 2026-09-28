@@ -8,6 +8,7 @@
 
 import Foundation
 import UFPCore
+import UFPDesignSystem
 
 /// LLM 模块常量集
 public enum LLMConstants {
@@ -288,7 +289,7 @@ public enum LLMConstants {
 
     /// 端侧模型 SF Symbol 图标名常量集
     /// Note: 由于 L1 Infrastructure 层不可依赖 L3 DesignSystem 层，
-    /// 此处保留字面量定义。UI 层应优先使用 DesignSystem.Icons.onDevice*。
+    /// 此处保留字面量定义。UI 层应优先使用 DesignTokens.Icons.onDevice*。
     public enum OnDeviceIcon {
         /// 内置模型图标
         public static let bundled: String = "cube.box.fill"

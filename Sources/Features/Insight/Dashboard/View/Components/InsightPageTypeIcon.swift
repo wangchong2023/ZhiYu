@@ -11,21 +11,22 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：通用页面类型图标
 ///
 /// 统一封装 `displayIcon` + `Color.fromModelColorName(pageType.colorName)` 前景色 +
-/// 同色 `Opacity.glass` 背景 + `RoundedRectangle(cornerRadius: DesignSystem.microRadius)` 裁剪，
+/// 同色 `Opacity.glass` 背景 + `RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)` 裁剪，
 /// 消除 BacklinksView、PageDetailMetadataSection 与其他列表行中重复的 5 行修饰符链。
 struct InsightPageTypeIcon: View {
     let page: KnowledgePage
-    var size: CGFloat = DesignSystem.IconSize.medium
+    var size: CGFloat = DesignTokens.IconSize.medium
 
     var body: some View {
         Image(systemName: page.displayIcon)
             .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
             .frame(width: size, height: size)
-            .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignSystem.Opacity.glass))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+            .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignTokens.Opacity.glass))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius))
     }
 }

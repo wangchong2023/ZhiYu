@@ -9,6 +9,7 @@
 //  核心职责：构建 Quiz 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 测评数据模型
 /// 知识测评（Quiz）整体数据模型
@@ -43,30 +44,30 @@ struct QuizView: View {
     @State private var isCompleted = false
     
     var body: some View {
-        VStack(spacing: Spacing.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             // 标题页眉
             Text(quiz.title)
-                .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
-                .padding(.top, Spacing.wide)
-                .padding(.bottom, Spacing.small)
-                .padding(.horizontal, Spacing.standardPadding)
+                .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
+                .padding(.top, DesignTokens.Spacing.wide)
+                .padding(.bottom, DesignTokens.Spacing.small)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
                 .frame(maxWidth: .infinity, alignment: .center)
 
             if quiz.questions.isEmpty {
                 // 空题目守卫：避免 questions[currentIndex] 越界与 ProgressView total=0 除零
                 ContentUnavailableView(
                     L10n.Quiz.empty,
-                    systemImage: DesignSystem.Icons.questionCircle,
+                    systemImage: DesignTokens.Icons.questionCircle,
                     description: Text(L10n.Quiz.emptyDescription)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Spacer()
                 backButton
-                    .padding(.horizontal, Spacing.huge)
-                    .padding(.bottom, Spacing.standardPadding)
+                    .padding(.horizontal, DesignTokens.Spacing.huge)
+                    .padding(.bottom, DesignTokens.Spacing.standardPadding)
             } else if !isCompleted {
                 // 进度页眉
-                VStack(spacing: Spacing.small) {
+                VStack(spacing: DesignTokens.Spacing.small) {
                     HStack {
                         Text(L10n.Quiz.questionFormat(currentIndex + 1, quiz.questions.count))
                             .font(.footnote.weight(.bold))
@@ -80,17 +81,17 @@ struct QuizView: View {
                     ProgressView(value: Double(currentIndex + 1), total: Double(quiz.questions.count))
                         .tint(.appAccent)
                 }
-                .padding(.horizontal, Spacing.standardPadding)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
                 
                 // Question Content
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.wide) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.wide) {
                         Text(quiz.questions[currentIndex].text)
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(.appText)
                             .lineSpacing(4)
                         
-                        VStack(spacing: DesignSystem.medium) {
+                        VStack(spacing: DesignTokens.Spacing.medium) {
                             ForEach(0..<quiz.questions[currentIndex].options.count, id: \.self) { index in
                                 OptionRow(
                                     label: optionLabel(for: index),
@@ -109,9 +110,9 @@ struct QuizView: View {
                         
                         if showResult {
                             let correctIdx = quiz.questions[currentIndex].answer
-                            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                                 HStack {
-                                    Image(systemName: selectedOption == correctIdx ? DesignSystem.Icons.checkCircle : DesignSystem.Icons.errorCircle)
+                                    Image(systemName: selectedOption == correctIdx ? DesignTokens.Icons.checkCircle : DesignTokens.Icons.errorCircle)
                                         .foregroundStyle(selectedOption == correctIdx ? Color.theme.green : Color.theme.red)
                                     Text(selectedOption == correctIdx ? L10n.Common.Misc.correct : L10n.Common.Misc.incorrect)
                                         .font(.subheadline.bold())
@@ -128,9 +129,9 @@ struct QuizView: View {
                                     .foregroundStyle(.appSecondary)
                                     .multilineTextAlignment(.leading)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(Spacing.standardPadding)
-                                    .background(Color.appAccent.opacity(DesignSystem.Opacity.ghost))
-                                    .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+                                    .padding(DesignTokens.Spacing.standardPadding)
+                                    .background(Color.appAccent.opacity(DesignTokens.Opacity.ghost))
+                                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
                             }
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
@@ -145,30 +146,30 @@ struct QuizView: View {
                     Button(action: nextQuestion) {
                         Text(currentIndex + 1 < quiz.questions.count ? L10n.Common.Misc.nextQuestion : L10n.Common.Misc.viewResults)
                             .primaryButtonLabelStyle()
-                            .shadow(color: .appAccent.opacity(DesignSystem.Opacity.shadow), radius: 10, y: 5)
+                            .shadow(color: .appAccent.opacity(DesignTokens.Opacity.shadow), radius: 10, y: 5)
                     }
-                    .padding(Spacing.standardPadding)
+                    .padding(DesignTokens.Spacing.standardPadding)
                 }
             } else {
                 // Completion View
-                VStack(spacing: DesignSystem.loosePadding) {
-                    Image(systemName: DesignSystem.Icons.trophy)
-                        .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.QuizCompletion.trophyFontScale)) // 80
+                VStack(spacing: DesignTokens.Spacing.loosePadding) {
+                    Image(systemName: DesignTokens.Icons.trophy)
+                        .font(.system(size: DesignTokens.Metrics.heroValueSize * FeatureConstants.QuizCompletion.trophyFontScale)) // 80
                         .foregroundStyle(.appAccent)
                     
-                    VStack(spacing: DesignSystem.tightPadding) {
+                    VStack(spacing: DesignTokens.Spacing.tightPadding) {
                         Text(L10n.Quiz.completed)
                             .font(.title.bold())
                         Text(L10n.Quiz.yourScore)
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                         Text("\(score) / \(quiz.questions.count)")
-                            .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.QuizCompletion.scoreFontScale, weight: .black, design: .rounded)) // 48
+                            .font(.system(size: DesignTokens.Metrics.heroValueSize * FeatureConstants.QuizCompletion.scoreFontScale, weight: .black, design: .rounded)) // 48
                             .foregroundStyle(.appAccent)
                     }
                     
                     backButton
-                        .padding(.horizontal, Spacing.huge)
+                        .padding(.horizontal, DesignTokens.Spacing.huge)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -244,9 +245,9 @@ private extension View {
             .font(.headline.weight(.bold))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(Spacing.standardPadding)
+            .padding(DesignTokens.Spacing.standardPadding)
             .background(Color.appAccent)
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
     }
 }
 
@@ -270,14 +271,14 @@ private struct OptionRow: View {
                 Spacer()
                 if showResult {
                     if isCorrect {
-                        Image(systemName: DesignSystem.Icons.checkCircle)
+                        Image(systemName: DesignTokens.Icons.checkCircle)
                             .foregroundStyle(Color.theme.green)
                     } else if isSelected {
-                        Image(systemName: DesignSystem.Icons.errorCircle)
+                        Image(systemName: DesignTokens.Icons.errorCircle)
                             .foregroundStyle(Color.theme.red)
                     }
                 } else if isSelected {
-                    Image(systemName: DesignSystem.Icons.checkCircle)
+                    Image(systemName: DesignTokens.Icons.checkCircle)
                         .foregroundStyle(.appAccent)
                 }
             }
@@ -292,10 +293,10 @@ private struct OptionRow: View {
     
     private var backgroundColor: Color {
         if !showResult {
-            return isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appCard
+            return isSelected ? Color.appAccent.opacity(DesignTokens.SystemOpacity.faint) : Color.appCard
         }
-        if isCorrect { return Color.theme.green.opacity(SystemOpacity.faint) }
-        if isSelected { return Color.theme.red.opacity(SystemOpacity.faint) }
+        if isCorrect { return Color.theme.green.opacity(DesignTokens.SystemOpacity.faint) }
+        if isSelected { return Color.theme.red.opacity(DesignTokens.SystemOpacity.faint) }
         return Color.appCard
     }
     

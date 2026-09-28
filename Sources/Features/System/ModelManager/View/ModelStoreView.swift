@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 动态端侧大模型市场面板视图
 @MainActor
@@ -81,7 +82,7 @@ public struct ModelStoreView: View {
 
     @ViewBuilder
     private var contentList: some View {
-        LazyVStack(spacing: DesignSystem.medium) {
+        LazyVStack(spacing: DesignTokens.Spacing.medium) {
             ForEach(modelManager.remoteManifests) { manifest in
                 ModelCardView(
                     manifest: manifest,
@@ -92,6 +93,6 @@ public struct ModelStoreView: View {
                 )
             }
         }
-        .padding(DesignSystem.medium)
+        .padding(DesignTokens.Spacing.medium)
     }
 }

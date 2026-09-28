@@ -9,6 +9,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 下载进度状态栏
 
@@ -37,8 +38,8 @@ struct ModelDownloadStatusBar: View {
 
     @ViewBuilder
     private func ringWithStatus(state: DownloadState, statusText: String? = nil, color: Color = .appAccent) -> some View {
-        HStack(spacing: DesignSystem.small) {
-            DownloadProgressRing(state: state, size: DesignSystem.Metrics.ringSize)
+        HStack(spacing: DesignTokens.Spacing.small) {
+            DownloadProgressRing(state: state, size: DesignTokens.Metrics.ringSize)
 
             if let statusText {
                 Text(statusText)
@@ -114,9 +115,9 @@ struct ModelActionButton: View {
     /// 渲染因硬件限制而被拦截的下载按钮
     private var restrictedActionButton: some View {
         downloadActionButton(
-            icon: DesignSystem.Icons.exclamationmarkOctagonFill,
+            icon: DesignTokens.Icons.exclamationmarkOctagonFill,
             text: L10n.ModelManager.Card.unavailable,
-            background: Color.theme.red.opacity(DesignSystem.Opacity.glass),
+            background: Color.theme.red.opacity(DesignTokens.Opacity.glass),
             foreground: Color.theme.red,
             action: { alertManifest = manifest }
         )
@@ -139,10 +140,10 @@ struct ModelActionButton: View {
             onGoToLab()
             HapticFeedback.shared.trigger(.success)
         }) {
-            Image(systemName: DesignSystem.Icons.arrowRight)
-                .font(.system(size: SystemFontSize.body, weight: .bold)) // Dynamic Type
+            Image(systemName: DesignTokens.Icons.arrowRight)
+                .font(.system(size: DesignTokens.SystemFontSize.body, weight: .bold)) // Dynamic Type
                 .foregroundStyle(.white)
-                .frame(width: DesignSystem.Metrics.ringSize, height: DesignSystem.Metrics.ringSize)
+                .frame(width: DesignTokens.Metrics.ringSize, height: DesignTokens.Metrics.ringSize)
                 .background(Color.appAccent)
                 .clipShape(Circle())
         }
@@ -154,28 +155,28 @@ struct ModelActionButton: View {
         switch downloadState {
         case .pending, .downloading:
             Button(action: { modelManager.pauseDownload(for: manifest.modelId) }) {
-                Image(systemName: DesignSystem.Icons.pauseFill)
+                Image(systemName: DesignTokens.Icons.pauseFill)
                     .font(.caption)
-                    .padding(DesignSystem.small)
+                    .padding(DesignTokens.Spacing.small)
                     .background(Color.appBackground)
                     .foregroundStyle(Color.theme.orange)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.theme.orange, lineWidth: SystemStroke.divider))
+                    .overlay(Circle().stroke(Color.theme.orange, lineWidth: DesignTokens.SystemStroke.divider))
             }
         case .paused:
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 Button(action: { modelManager.cancelDownload(for: manifest.modelId) }) {
-                    Image(systemName: DesignSystem.Icons.xmark)
+                    Image(systemName: DesignTokens.Icons.xmark)
                         .font(.caption2)
-                        .padding(DesignSystem.small)
+                        .padding(DesignTokens.Spacing.small)
                         .background(Color.appBackground)
                         .foregroundStyle(.appSecondary)
                         .clipShape(Circle())
                 }
                 Button(action: { modelManager.resumeDownload(for: manifest.modelId) }) {
-                    Image(systemName: DesignSystem.Icons.playFill)
+                    Image(systemName: DesignTokens.Icons.playFill)
                         .font(.caption2)
-                        .padding(DesignSystem.small)
+                        .padding(DesignTokens.Spacing.small)
                         .background(Color.appAccent)
                         .foregroundStyle(.white)
                         .clipShape(Circle())
@@ -183,7 +184,7 @@ struct ModelActionButton: View {
             }
         default:
             downloadActionButton(
-                icon: DesignSystem.Icons.icloudArrowDown,
+                icon: DesignTokens.Icons.icloudArrowDown,
                 text: L10n.ModelManager.Card.download,
                 background: Color.appAccent,
                 foreground: .white,
@@ -195,13 +196,13 @@ struct ModelActionButton: View {
     /// 通用下载操作按钮，消除重复的 HStack+padding+background+clipShape(Capsule) 链
     private func downloadActionButton(icon: String, text: String, background: Color, foreground: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: SystemSpacing.tiny) {
+            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                 Image(systemName: icon)
                 Text(text)
             }
             .font(.subheadline.bold())
-            .padding(.horizontal, SystemSpacing.content)
-            .padding(.vertical, SystemSpacing.element)
+            .padding(.horizontal, DesignTokens.SystemSpacing.content)
+            .padding(.vertical, DesignTokens.SystemSpacing.element)
             .background(background)
             .foregroundStyle(foreground)
             .clipShape(Capsule())

@@ -12,6 +12,7 @@
 import SwiftUI
 import UFPCore
 import AVFoundation
+import UFPDesignSystem
 
 /// 手表端语音简报收听界面
 @MainActor
@@ -24,7 +25,7 @@ struct WatchBriefingView: View {
     @State private var delegate = SpeechDelegate()
     
     var body: some View {
-        VStack(spacing: SystemSpacing.medium) {
+        VStack(spacing: DesignTokens.SystemSpacing.medium) {
             if watchSync.isBriefingLoading {
                 ProgressView(L10n.Watch.briefingSynthesizing)
                     .foregroundStyle(Color.theme.purple)
@@ -35,7 +36,7 @@ struct WatchBriefingView: View {
                         .padding()
                 }
                 
-                HStack(spacing: SystemSpacing.content) {
+                HStack(spacing: DesignTokens.SystemSpacing.content) {
                     Button(action: {
                         if isPlaying {
                             synthesizer.pauseSpeaking(at: .word)
@@ -50,7 +51,7 @@ struct WatchBriefingView: View {
                         }
                     }) {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: Reference.FontSize.hero)) // Dynamic Type
+                            .font(.system(size: DesignTokens.Reference.FontSize.hero)) // Dynamic Type
                             .foregroundStyle(Color.theme.purple)
                     }
                     .buttonStyle(.plain)
@@ -60,14 +61,14 @@ struct WatchBriefingView: View {
                         isPlaying = false
                     }) {
                         Image(systemName: "stop.circle.fill")
-                            .font(.system(size: Reference.FontSize.largeTitle)) // Dynamic Type
+                            .font(.system(size: DesignTokens.Reference.FontSize.largeTitle)) // Dynamic Type
                             .foregroundStyle(Color.theme.red)
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.top, SystemSpacing.element)
+                .padding(.top, DesignTokens.SystemSpacing.element)
             } else {
-                VStack(spacing: SystemSpacing.element) {
+                VStack(spacing: DesignTokens.SystemSpacing.element) {
                     Image(systemName: "headphones")
                         .font(.largeTitle)
                         .foregroundStyle(Color.theme.purple)

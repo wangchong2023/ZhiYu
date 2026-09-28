@@ -10,13 +10,14 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// Accent 渐变边框卡片修饰符，消除重复的 padding+background(appAccent)+overlay(LinearGradient stroke) 链
 struct AccentGradientCardModifier: ViewModifier {
-    var cornerRadius: CGFloat = DesignSystem.largeRadius
-    var backgroundOpacity: Double = DesignSystem.Opacity.atomic
-    var borderWidth: CGFloat = SystemStroke.divider
-    var borderOpacity: Double = DesignSystem.Opacity.medium
+    var cornerRadius: CGFloat = DesignTokens.Spacing.largeRadius
+    var backgroundOpacity: Double = DesignTokens.Opacity.atomic
+    var borderWidth: CGFloat = DesignTokens.SystemStroke.divider
+    var borderOpacity: Double = DesignTokens.Opacity.medium
 
     func body(content: Content) -> some View {
         content
@@ -42,10 +43,10 @@ struct AccentGradientCardModifier: ViewModifier {
 extension View {
     /// Accent 渐变边框卡片样式：padding + background(appAccent) + overlay(LinearGradient stroke)
     func accentGradientCardStyle(
-        cornerRadius: CGFloat = DesignSystem.largeRadius,
-        backgroundOpacity: Double = DesignSystem.Opacity.atomic,
-        borderWidth: CGFloat = SystemStroke.divider,
-        borderOpacity: Double = DesignSystem.Opacity.medium
+        cornerRadius: CGFloat = DesignTokens.Spacing.largeRadius,
+        backgroundOpacity: Double = DesignTokens.Opacity.atomic,
+        borderWidth: CGFloat = DesignTokens.SystemStroke.divider,
+        borderOpacity: Double = DesignTokens.Opacity.medium
     ) -> some View {
         modifier(AccentGradientCardModifier(
             cornerRadius: cornerRadius,

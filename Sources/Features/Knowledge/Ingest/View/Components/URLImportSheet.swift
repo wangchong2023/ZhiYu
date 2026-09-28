@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - URL Import Sheet
 /// 批量网页链接导入面板（最多 10 个 URL，带格式校验）
@@ -63,7 +64,7 @@ struct URLImportSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     Text(L10n.Ingest.batchURLPlaceholder)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
@@ -72,34 +73,34 @@ struct URLImportSheet: View {
                     .font(Font.system(.body, design: Font.Design.monospaced))
                     .frame(maxWidth: CGFloat.infinity, maxHeight: CGFloat.infinity)
                     .cardStyle(
-                        horizontalPadding: DesignSystem.small,
-                        verticalPadding: DesignSystem.small,
-                        backgroundOpacity: DesignSystem.Opacity.dim,
-                        cornerRadius: DesignSystem.smallRadius
+                        horizontalPadding: DesignTokens.Spacing.small,
+                        verticalPadding: DesignTokens.Spacing.small,
+                        backgroundOpacity: DesignTokens.Opacity.dim,
+                        cornerRadius: DesignTokens.Spacing.smallRadius
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
                             .stroke(
-                                firstInvalidLine != nil ? Color.theme.red.opacity(SystemOpacity.faint) : Color.appAccent.opacity(SystemOpacity.glassStrong),
-                                lineWidth: DesignSystem.borderWidth
+                                firstInvalidLine != nil ? Color.theme.red.opacity(DesignTokens.SystemOpacity.faint) : Color.appAccent.opacity(DesignTokens.SystemOpacity.glassStrong),
+                                lineWidth: DesignTokens.Spacing.borderWidth
                             )
                     )
                 }
                 .padding()
 
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                     if let line = firstInvalidLine {
-                        Label(String(format: L10n.Ingest.invalidURLAtLine(line)), systemImage: DesignSystem.Icons.warning)
+                        Label(String(format: L10n.Ingest.invalidURLAtLine(line)), systemImage: DesignTokens.Icons.warning)
                             .font(.caption2)
                             .foregroundStyle(Color.theme.red)
                     }
-                    Label(String(format: L10n.Ingest.validURLCount(validURLs.count, maxURLCount)), systemImage: DesignSystem.Icons.link)
+                    Label(String(format: L10n.Ingest.validURLCount(validURLs.count, maxURLCount)), systemImage: DesignTokens.Icons.link)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
 
                     AppPrimaryButton(
                         title: L10n.Ingest.batchImport,
-                        icon: DesignSystem.Icons.trayArrowDown,
+                        icon: DesignTokens.Icons.trayArrowDown,
                         isLoading: false
                     ) {
                         // Bug #98 修复：超限时显示警告，避免静默截断

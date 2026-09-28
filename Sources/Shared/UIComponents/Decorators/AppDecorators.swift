@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - App Dot Pattern
 
@@ -16,10 +17,10 @@ import SwiftUI
 /// 使用 Canvas 高性能渲染重复的圆点模式，常用于背景装饰。
 public struct AppDotPattern: View {
     public var dotColor: Color = .appBorder
-    public var spacing: CGFloat = Spacing.wide
-    public var dotSize: CGFloat = Spacing.atomic
+    public var spacing: CGFloat = DesignTokens.Spacing.wide
+    public var dotSize: CGFloat = DesignTokens.Spacing.atomic
 
-    public init(dotColor: Color = .appBorder, spacing: CGFloat = Spacing.wide, dotSize: CGFloat = Spacing.atomic) {
+    public init(dotColor: Color = .appBorder, spacing: CGFloat = DesignTokens.Spacing.wide, dotSize: CGFloat = DesignTokens.Spacing.atomic) {
         self.dotColor = dotColor
         self.spacing = spacing
         self.dotSize = dotSize
@@ -37,7 +38,7 @@ public struct AppDotPattern: View {
                     let rect = CGRect(x: x, y: y, width: dotSize, height: dotSize)
                     context.fill(
                         Circle().path(in: rect),
-                        with: .color(dotColor.opacity(DesignSystem.Opacity.disabled))
+                        with: .color(dotColor.opacity(DesignTokens.Opacity.disabled))
                     )
                 }
             }

@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 引导步骤行组件
 /// 提供带数字序号的渐变圆圈和描述文本。
@@ -30,23 +31,23 @@ public struct GuideStepRow: View {
     // MARK: - Body
     
     public var body: some View {
-        HStack(spacing: Spacing.medium + Spacing.atomic * 2) { // 14
+        HStack(spacing: DesignTokens.Spacing.medium + DesignTokens.Spacing.atomic * 2) { // 14
             // 带数字序号的渐变圆
             ZStack {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [.appAccent, .appAccent.opacity(Colors.secondaryOpacity)],
+                            colors: [.appAccent, .appAccent.opacity(DesignTokens.Colors.secondaryOpacity)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: Spacing.largeIconSize, height: Spacing.largeIconSize) // 32
+                    .frame(width: DesignTokens.Spacing.largeIconSize, height: DesignTokens.Spacing.largeIconSize) // 32
                     .shadow(
-                        color: .appAccent.opacity(Colors.disabledOpacity), 
-                        radius: Spacing.shadowRadius / 2.5, 
+                        color: .appAccent.opacity(DesignTokens.Colors.disabledOpacity), 
+                        radius: DesignTokens.Spacing.shadowRadius / 2.5, 
                         x: 0, 
-                        y: Spacing.shadowY / 2
+                        y: DesignTokens.Spacing.shadowY / 2
                     )
 
                 Text("\(number)")

@@ -12,6 +12,7 @@ import SwiftUI
 import Combine
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 语音笔记入口
 /// 语音笔记功能主视图
@@ -19,7 +20,7 @@ import Dependencies
 struct VoiceNoteView: View {
     // MARK: - UI 常量
     private enum UIConstants {
-        static let waveformBarCount: Int = Int(ComponentSpacing.section)
+        static let waveformBarCount: Int = Int(DesignTokens.ComponentSpacing.section)
     }
     
     @Dependency(\.speechService) private var speechService: any SpeechServiceProtocol
@@ -39,7 +40,7 @@ struct VoiceNoteView: View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = (noteTitle, showSaveSheet)
         ScrollView {
-            VStack(spacing: Spacing.standardPadding) {
+            VStack(spacing: DesignTokens.Spacing.standardPadding) {
                 headerSection
                 languagePicker
                 recordingSection
@@ -57,9 +58,9 @@ struct VoiceNoteView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, Spacing.standardPadding)
-            .padding(.top, Spacing.medium)
-            .padding(.bottom, Spacing.giant)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.top, DesignTokens.Spacing.medium)
+            .padding(.bottom, DesignTokens.Spacing.giant)
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .navigationTitle(L10n.Voice.Speech.title)
@@ -80,9 +81,9 @@ struct VoiceNoteView: View {
     
     // MARK: - Header
     private var headerSection: some View {
-        VStack(spacing: Spacing.large) {
-            Image(systemName: DesignSystem.Icons.waveformCircleFill)
-                .font(.system(size: Reference.FontSize.mega))
+        VStack(spacing: DesignTokens.Spacing.large) {
+            Image(systemName: DesignTokens.Icons.waveformCircleFill)
+                .font(.system(size: DesignTokens.Reference.FontSize.mega))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.appAccent, .appSource],
@@ -96,12 +97,12 @@ struct VoiceNoteView: View {
                 .foregroundStyle(.appSecondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(.top, Spacing.medium)
+        .padding(.top, DesignTokens.Spacing.medium)
     }
     
     // MARK: - Language Picker
     private var languagePicker: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(L10n.Voice.Speech.Language)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -116,7 +117,7 @@ struct VoiceNoteView: View {
             }
             .skipOnWatch { $0.pickerStyle(.menu).tint(.appAccent) }
         }
-        .appContainer(cornerRadius: DesignSystem.cardRadius, padding: true)
+        .appContainer(cornerRadius: DesignTokens.Spacing.cardRadius, padding: true)
     }
     
     // MARK: - 录音控制板块
@@ -133,7 +134,7 @@ struct VoiceNoteView: View {
     
     private var permissionSection: some View {
         VStack(spacing: DesignSystem.Domain.Voice.permissionSectionSpacing) {
-            Image(systemName: DesignSystem.Icons.micSlashFill)
+            Image(systemName: DesignTokens.Icons.micSlashFill)
                 .font(.title)
                 .foregroundStyle(Color.theme.red)
             
@@ -145,10 +146,10 @@ struct VoiceNoteView: View {
             Button(action: { speechService.checkPermission() }) {
                 Text(L10n.Voice.Speech.requestPermission)
                     .font(.subheadline.weight(.medium))
-                    .voiceAccentButton(horizontalPadding: Spacing.wide, cornerRadius: Spacing.standardRadius)
+                    .voiceAccentButton(horizontalPadding: DesignTokens.Spacing.wide, cornerRadius: DesignTokens.Spacing.standardRadius)
             }
         }
-        .appContainer(cornerRadius: DesignSystem.cardRadius, padding: true)
+        .appContainer(cornerRadius: DesignTokens.Spacing.cardRadius, padding: true)
     }
     
     private var recordButton: some View {
@@ -164,16 +165,16 @@ struct VoiceNoteView: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(speechService.isRecording ? Color.appRecording.opacity(SystemOpacity.glass) : Color.appAccent.opacity(DesignSystem.Opacity.glass))
+                    .fill(speechService.isRecording ? Color.appRecording.opacity(DesignTokens.SystemOpacity.glass) : Color.appAccent.opacity(DesignTokens.Opacity.glass))
                     .frame(width: DesignSystem.Domain.Voice.recordButtonSize, height: DesignSystem.Domain.Voice.recordButtonSize)
                 
                 if speechService.isRecording {
-                    RoundedRectangle(cornerRadius: DesignSystem.microRadius)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
                         .fill(Color.appRecording)
-                        .frame(width: ComponentSpacing.huge, height: ComponentSpacing.huge)
+                        .frame(width: DesignTokens.ComponentSpacing.huge, height: DesignTokens.ComponentSpacing.huge)
                 } else {
-                    Image(systemName: DesignSystem.Icons.micFill)
-                        .font(.system(size: DesignSystem.displayFontSize))
+                    Image(systemName: DesignTokens.Icons.micFill)
+                        .font(.system(size: DesignTokens.Typography.displayFontSize))
                         .foregroundStyle(.appAccent)
                 }
             }
@@ -192,32 +193,32 @@ struct VoiceNoteView: View {
                 .foregroundStyle(.appSecondary)
                 .padding(.horizontal, DesignSystem.Domain.Voice.statusLabelHorizontalPadding)
                 .padding(.vertical, DesignSystem.Domain.Voice.statusLabelVerticalPadding)
-                .appCardClip(cornerRadius: Spacing.smallRadius)
+                .appCardClip(cornerRadius: DesignTokens.Spacing.smallRadius)
         }
     }
     
     // MARK: - 波形展示
     private var waveformSection: some View {
-        VStack(spacing: Spacing.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             Text(L10n.Voice.Speech.audioLevel)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
 
             HStack(spacing: DesignSystem.Domain.Voice.waveBarSpacing) {
                 ForEach(0..<UIConstants.waveformBarCount, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: DesignSystem.tiny)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.tiny)
                         .fill(Color.appAccent)
                         .frame(width: DesignSystem.Domain.Voice.waveBarWidth, height: max(DesignSystem.Domain.Voice.waveBarMinHeight, CGFloat(speechService.audioLevelHistory[i]) * DesignSystem.Domain.Voice.waveScale))
                 }
             }
             .frame(height: DesignSystem.Domain.Voice.waveformHeight)
         }
-        .appContainer(cornerRadius: DesignSystem.cardRadius, padding: true)
+        .appContainer(cornerRadius: DesignTokens.Spacing.cardRadius, padding: true)
     }
     
     // MARK: - 转写结果
     private var transcriptionSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.large) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
             HStack {
                 Text(L10n.Voice.Speech.result)
                     .font(.subheadline.weight(.semibold))
@@ -226,13 +227,13 @@ struct VoiceNoteView: View {
                 Spacer()
                 
                 Button(action: { AppPasteboard.string = speechService.transcribedText }) {
-                    Image(systemName: DesignSystem.Icons.docOnDocFill)
+                    Image(systemName: DesignTokens.Icons.docOnDocFill)
                         .font(.caption)
                         .foregroundStyle(.appAccent)
                 }
                 
                 Button(action: { speechService.clearTranscription() }) {
-                    Image(systemName: DesignSystem.Icons.errorCircle)
+                    Image(systemName: DesignTokens.Icons.errorCircle)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
@@ -243,8 +244,8 @@ struct VoiceNoteView: View {
                 idiom: idiom,
                 minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight,
                 maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight,
-                padding: Spacing.medium,
-                cornerRadius: DesignSystem.smallRadius
+                padding: DesignTokens.Spacing.medium,
+                cornerRadius: DesignTokens.Spacing.smallRadius
             )
             
             if idiom == .watch {
@@ -260,21 +261,21 @@ struct VoiceNoteView: View {
                         dismiss()
                     }) {
                         HStack {
-                            Image(systemName: DesignSystem.Icons.squareAndPencil)
+                            Image(systemName: DesignTokens.Icons.squareAndPencil)
                             Text(L10n.Voice.Speech.confirmAndEdit)
                         }
                         .font(.subheadline.weight(.medium))
-                        .voiceAccentButton(horizontalPadding: Spacing.standardPadding, cornerRadius: Spacing.standardRadius)
+                        .voiceAccentButton(horizontalPadding: DesignTokens.Spacing.standardPadding, cornerRadius: DesignTokens.Spacing.standardRadius)
                     }
                 }
             }
         }
-        .appContainer(cornerRadius: DesignSystem.cardRadius, padding: true)
+        .appContainer(cornerRadius: DesignTokens.Spacing.cardRadius, padding: true)
     }
     
     // MARK: - Recordings History
     private var recordingsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             HStack {
                 Text(L10n.Voice.Speech.history)
                     .font(.subheadline.weight(.semibold))
@@ -282,10 +283,10 @@ struct VoiceNoteView: View {
                 
                 Text("\(speechService.recordings.count)")
                     .font(.caption2.weight(.medium))
-                    .voiceAccentButton(horizontalPadding: Spacing.small, cornerRadius: Spacing.microRadius)
+                    .voiceAccentButton(horizontalPadding: DesignTokens.Spacing.small, cornerRadius: DesignTokens.Spacing.microRadius)
             }
             
-            VStack(spacing: Spacing.small) {
+            VStack(spacing: DesignTokens.Spacing.small) {
                 ForEach(Array(speechService.recordings.prefix(FeatureConstants.VoiceNote.maxRecordingPreview))) { recording in
                     VoiceRecordingRow(recording: recording)
                 }

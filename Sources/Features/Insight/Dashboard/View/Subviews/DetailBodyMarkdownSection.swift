@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：知识详情页通用 Markdown 正文渲染切片
 struct DetailBodyMarkdownSection: View {
@@ -31,7 +32,7 @@ struct DetailBodyMarkdownSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(title)
                 .font(.caption2.bold())
                 .foregroundStyle(.appSecondary)

@@ -9,6 +9,7 @@
 //  核心职责：多人协作：Multipeer 连接、实时同步。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Collab Info Row
 /// 协作信息提示行（图标 + 文字），轻量级复用组件。
@@ -34,7 +35,7 @@ struct DiscoveredRoomRow: View {
     var body: some View {
         Button(action: onJoin) {
             HStack {
-                Image(systemName: DesignSystem.Icons.collaboration)
+                Image(systemName: DesignTokens.Icons.collaboration)
                     .foregroundStyle(.appAccent)
 
                 VStack(alignment: .leading) {
@@ -48,7 +49,7 @@ struct DiscoveredRoomRow: View {
 
                 Spacer()
 
-                Image(systemName: DesignSystem.Icons.forwardCircle)
+                Image(systemName: DesignTokens.Icons.forwardCircle)
                     .foregroundStyle(.appAccent)
             }
             .collabCardStyle()
@@ -69,7 +70,7 @@ struct ConnectedPeerRow: View {
 
     var body: some View {
         HStack {
-            Image(systemName: DesignSystem.Icons.person)
+            Image(systemName: DesignTokens.Icons.person)
                 .foregroundStyle(.appAccent)
             Text(peer.displayName)
                 .font(.subheadline)
@@ -99,14 +100,14 @@ struct RecentEditRow: View {
 
     var body: some View {
         HStack {
-            Image(systemName: DesignSystem.Icons.pencilCircle)
+            Image(systemName: DesignTokens.Icons.pencilCircle)
                 .foregroundStyle(.appConcept)
 
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) { // 2
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) { // 2
                 Text(edit.userID.components(separatedBy: "|").first ?? edit.userID)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appText)
-                Text("\(edit.field)  \(String(edit.newValue.prefix(DesignSystem.Metrics.maxCollabEditPreviewLength)))") // 50
+                Text("\(edit.field)  \(String(edit.newValue.prefix(DesignTokens.Metrics.maxCollabEditPreviewLength)))") // 50
                     .font(.caption2)
                     .foregroundStyle(.appSecondary)
                     .lineLimit(1)
@@ -141,9 +142,9 @@ struct CollabRoleBadge: View {
     var body: some View {
         Text(role.displayName)
             .font(.caption.weight(.medium))
-            .padding(.horizontal, DesignSystem.small) // 8
-            .padding(.vertical, DesignSystem.tiny) // 4
-            .background(color.opacity(DesignSystem.glassOpacity)) // 0.15
+            .padding(.horizontal, DesignTokens.Spacing.small) // 8
+            .padding(.vertical, DesignTokens.Spacing.tiny) // 4
+            .background(color.opacity(DesignTokens.Colors.Opacity.glassOpacity)) // 0.15
             .clipShape(Capsule())
             .foregroundStyle(color)
     }
@@ -154,10 +155,10 @@ extension View {
     func collabCardStyle() -> some View {
         self
             .cardStyle(
-                horizontalPadding: DesignSystem.standardPadding,
-                verticalPadding: DesignSystem.standardPadding,
-                backgroundOpacity: DesignSystem.Opacity.solid,
-                cornerRadius: DesignSystem.standardRadius
+                horizontalPadding: DesignTokens.Spacing.standardPadding,
+                verticalPadding: DesignTokens.Spacing.standardPadding,
+                backgroundOpacity: DesignTokens.Opacity.solid,
+                cornerRadius: DesignTokens.Spacing.standardRadius
             )
     }
 }

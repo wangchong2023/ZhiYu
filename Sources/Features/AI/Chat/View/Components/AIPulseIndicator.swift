@@ -11,14 +11,15 @@
 import SwiftUI
 import Observation
 import Dependencies
+import UFPDesignSystem
 
 /// AI 脉搏指示器
 /// 负责增强用户对 AI 处理状态（如思考、全库扫描）的感知，提供动态波纹动画及实时状态文本展示
 struct AIPulseIndicator: View {
     // MARK: - UI 常量
     private enum UIConstants {
-        static let indicatorDotSize: CGFloat = SystemSpacing.element
-        static let statusFontSize: CGFloat = SystemFontSize.nano
+        static let indicatorDotSize: CGFloat = DesignTokens.SystemSpacing.element
+        static let statusFontSize: CGFloat = DesignTokens.SystemFontSize.nano
     }
 
     // MARK: - 脉冲动画配置（非 UI 语境）
@@ -57,7 +58,7 @@ struct AIPulseIndicator: View {
         } else if store.isScanningAI {
             return .appAccent // 正在全库扫描 (Orange)
         }
-        return .appSecondary.opacity(DesignSystem.disabledOpacity) // 0.3
+        return .appSecondary.opacity(DesignTokens.Colors.Opacity.disabledOpacity) // 0.3
     }
 
     private var waveformSpeed: Double {
@@ -70,12 +71,12 @@ struct AIPulseIndicator: View {
     }
     
     var body: some View {
-        HStack(spacing: DesignSystem.small) { // 8
+        HStack(spacing: DesignTokens.Spacing.small) { // 8
             ZStack {
                 if isActive {
                     // 全新 Siri-like 霓虹正弦波形动效 (SR-12)
                     SiriWaveformView(speedMultiplier: waveformSpeed, amplitudeMultiplier: 0.7)
-                        .frame(width: DesignSystem.IconSize.huge, height: 16)
+                        .frame(width: DesignTokens.IconSize.huge, height: 16)
                 } else {
                     Circle()
                         .fill(pulseColor)
@@ -84,15 +85,15 @@ struct AIPulseIndicator: View {
             }
             
             if isActive {
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) { // 2
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) { // 2
                     Text(currentStageTitle)
-                        .font(.system(size: DesignSystem.microFontSize, weight: .bold, design: .rounded)) // 10
+                        .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold, design: .rounded)) // 10
                         .foregroundStyle(pulseColor)
                     
                     if !taskCenter.latestStatus.isEmpty {
                         Text(taskCenter.latestStatus)
                             .font(.system(size: UIConstants.statusFontSize, design: .monospaced)) // 8
-                            .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.prominent)) // 0.8
+                            .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.prominent)) // 0.8
                             .lineLimit(1)
                             .transition(.asymmetric(insertion: .push(from: .bottom), removal: .opacity))
                     }
@@ -100,12 +101,12 @@ struct AIPulseIndicator: View {
                 .transition(.opacity.combined(with: .move(edge: .leading)))
             }
         }
-        .padding(.horizontal, SystemSpacing.elementLarge) // 10
-        .padding(.vertical, SystemSpacing.small) // 6
+        .padding(.horizontal, DesignTokens.SystemSpacing.elementLarge) // 10
+        .padding(.vertical, DesignTokens.SystemSpacing.small) // 6
         .background(
             Capsule()
-                .fill(Color.appCard.opacity(DesignSystem.Opacity.prominent)) // 0.8
-                .shadow(color: .black.opacity(PulseAnimationConfig.shadowOpacity), radius: SystemStroke.selected) // 0.05, 2
+                .fill(Color.appCard.opacity(DesignTokens.Opacity.prominent)) // 0.8
+                .shadow(color: .black.opacity(PulseAnimationConfig.shadowOpacity), radius: DesignTokens.SystemStroke.selected) // 0.05, 2
         )
         .animation(.spring(response: PulseAnimationConfig.pulseSpringResponse), value: taskCenter.latestStatus) // 0.3
         .animation(.spring(), value: isActive)
@@ -132,7 +133,7 @@ struct AIPulseIndicator: View {
         Task {
             while isActive {
                 HapticFeedback.shared.trigger(.pulse)
-                try? await Task.sleep(nanoseconds: UInt64(DesignSystem.Animation.AI.pulseInterval * 1_000_000_000))
+                try? await Task.sleep(nanoseconds: UInt64(DesignTokens.Animation.AI.pulseInterval * 1_000_000_000))
             }
         }
     }

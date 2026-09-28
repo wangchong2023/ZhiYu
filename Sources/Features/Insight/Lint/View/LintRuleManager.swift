@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - AI 建议面板
 
@@ -63,14 +64,14 @@ struct LintAISuggestionsPanel: View {
     @ViewBuilder
     private func ignoreSwipeAction(perform action: @escaping () -> Void) -> some View {
         Button(role: .destructive, action: action) {
-            Label(L10n.Common.ignore, systemImage: DesignSystem.Icons.privacyMode)
+            Label(L10n.Common.ignore, systemImage: DesignTokens.Icons.privacyMode)
         }
     }
 
     private var emptyAIView: some View {
-        VStack(spacing: DesignSystem.standardPadding) {
+        VStack(spacing: DesignTokens.Spacing.standardPadding) {
             Spacer()
-            Image(systemName: DesignSystem.Icons.sparkles)
+            Image(systemName: DesignTokens.Icons.sparkles)
                 .font(.system(size: DesignSystem.Domain.Lint.emptyIconSize))
                 .foregroundStyle(.appAccent)
             Text(L10n.Lint.noAISuggestions)
@@ -92,13 +93,13 @@ struct RefactorSuggestionRow: View {
     @Environment(AppStore.self) var store
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             HStack {
                 Label(suggestion.type.uppercased(), systemImage: iconName)
                     .font(.caption2.bold())
-                    .padding(.horizontal, DesignSystem.tightPadding)
-                    .padding(.vertical, DesignSystem.atomic)
-                    .background(color.opacity(DesignSystem.Opacity.medium))
+                    .padding(.horizontal, DesignTokens.Spacing.tightPadding)
+                    .padding(.vertical, DesignTokens.Spacing.atomic)
+                    .background(color.opacity(DesignTokens.Opacity.medium))
                     .foregroundStyle(color)
                     .clipShape(Capsule())
 
@@ -118,19 +119,19 @@ struct RefactorSuggestionRow: View {
 
             Text(L10n.Lint.aiFixSuggestion(suggestion.suggestion))
                 .font(.caption2)
-                .padding(DesignSystem.tightPadding)
+                .padding(DesignTokens.Spacing.tightPadding)
                 .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius))
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 
     private var iconName: String {
         switch suggestion.type {
-        case FeatureConstants.LintAction.merge: return DesignSystem.Icons.merge
-        case FeatureConstants.LintAction.split: return DesignSystem.Icons.branch
-        case FeatureConstants.LintAction.rename: return DesignSystem.Icons.cursorIbeam
-        default: return DesignSystem.Icons.sparkles
+        case FeatureConstants.LintAction.merge: return DesignTokens.Icons.merge
+        case FeatureConstants.LintAction.split: return DesignTokens.Icons.branch
+        case FeatureConstants.LintAction.rename: return DesignTokens.Icons.cursorIbeam
+        default: return DesignTokens.Icons.sparkles
         }
     }
 
@@ -150,11 +151,11 @@ struct PotentialLinkRow: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(link.sourceTitle)
                     .font(.subheadline.bold())
-                HStack(spacing: DesignSystem.tiny) {
-                    Image(systemName: DesignSystem.Icons.forward)
+                HStack(spacing: DesignTokens.Spacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.forward)
                         .font(.caption2)
                     Text("[[\(link.targetTitle)]]")
                         .font(.caption)
@@ -168,6 +169,6 @@ struct PotentialLinkRow: View {
                 Task { await store.applyPotentialLink(link) }
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 }

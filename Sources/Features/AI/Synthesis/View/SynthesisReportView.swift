@@ -12,6 +12,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 报告内容视图
 
@@ -29,13 +30,13 @@ struct SynthesisReportView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 MarkdownRendererView(content: doc.content, isPrivate: false, onLinkTap: { target in
                     handleLinkTap(target)
                 })
             }
-            .padding(DesignSystem.standardPadding)
-            .padding(.bottom, DesignSystem.huge)
+            .padding(DesignTokens.Spacing.standardPadding)
+            .padding(.bottom, DesignTokens.Spacing.huge)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .appBackgroundFill()
@@ -63,52 +64,52 @@ struct SynthesisSourcePagesBar: View {
         let sourcePages = store.pages.filter { sourcePageIDs.contains($0.id) }
         VStack(alignment: .leading, spacing: 0) {
             Divider()
-                .background(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
+                .background(Color.appBorder.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
 
             HStack {
-                Label(L10n.AI.Synthesis.sourceCount(sourcePageIDs.count), systemImage: DesignSystem.Icons.document)
+                Label(L10n.AI.Synthesis.sourceCount(sourcePageIDs.count), systemImage: DesignTokens.Icons.document)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.appSecondary)
                 Spacer()
             }
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.top, DesignSystem.small)
-            .padding(.bottom, DesignSystem.tiny)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.top, DesignTokens.Spacing.small)
+            .padding(.bottom, DesignTokens.Spacing.tiny)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     ForEach(sourcePages, id: \.id) { page in
                         Button(action: {
                             onNavigate(page.id)
                         }) {
-                            HStack(spacing: DesignSystem.tiny) {
+                            HStack(spacing: DesignTokens.Spacing.tiny) {
                                 Image(systemName: page.displayIcon)
                                     .font(.caption2.weight(.medium))
                                 Text(page.title)
                                     .font(.caption.weight(.medium))
                                     .lineLimit(1)
-                                Image(systemName: DesignSystem.Icons.chevronRight)
-                                    .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
-                                    .foregroundStyle(Color.appAccent.opacity(DesignSystem.secondaryOpacity))
+                                Image(systemName: DesignTokens.Icons.chevronRight)
+                                    .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .bold)) // Dynamic Type
+                                    .foregroundStyle(Color.appAccent.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
                             }
-                            .padding(.horizontal, SystemSpacing.small)
-                            .padding(.vertical, SystemSpacing.small)
+                            .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                            .padding(.vertical, DesignTokens.SystemSpacing.small)
                             .background(
                                 ZStack {
-                                    Capsule().fill(Color.appAccent.opacity(SystemOpacity.disabled))
-                                    Capsule().strokeBorder(Color.appAccent.opacity(DesignSystem.dimmedOpacity), lineWidth: 1)
+                                    Capsule().fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled))
+                                    Capsule().strokeBorder(Color.appAccent.opacity(DesignTokens.Colors.Opacity.dimmedOpacity), lineWidth: 1)
                                 }
                             )
                             .foregroundStyle(Color.appAccent)
                         }
                     }
                 }
-                .padding(.horizontal, DesignSystem.standardPadding)
-                .padding(.bottom, DesignSystem.small)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .padding(.bottom, DesignTokens.Spacing.small)
             }
         }
         .background(DesignSystem.containerMaterial)
-        .shadow(color: Color.appBorder.opacity(DesignSystem.secondaryOpacity), radius: 8, x: 0, y: -4)
+        .shadow(color: Color.appBorder.opacity(DesignTokens.Colors.Opacity.secondaryOpacity), radius: 8, x: 0, y: -4)
     }
 }
 

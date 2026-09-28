@@ -13,6 +13,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 标签气泡微组件
 
@@ -95,7 +96,7 @@ struct TagCapsuleView: View {
     }
 
     private var opacity: Double {
-        isBubbleMode ? bubbleModeMinOpacity + clampedBubbleRatio * bubbleModeOpacityRange : SystemOpacity.overlay
+        isBubbleMode ? bubbleModeMinOpacity + clampedBubbleRatio * bubbleModeOpacityRange : DesignTokens.SystemOpacity.overlay
     }
 
     private var size: CGFloat {
@@ -167,7 +168,7 @@ struct TagCapsuleView: View {
     @ViewBuilder
     private func labelContent(isSelected: Bool) -> some View {
         if isBubbleMode {
-            VStack(spacing: DesignSystem.tiny) {
+            VStack(spacing: DesignTokens.Spacing.tiny) {
                 tagTitleText(isSelected: isSelected)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
@@ -175,12 +176,12 @@ struct TagCapsuleView: View {
 
                 Text("\(item.count)")
                     .font(.system(size: fontSize * FeatureConstants.TagBubbleCloud.capsuleCountFontScale, weight: .bold, design: .monospaced))
-                    .padding(.horizontal, SystemSpacing.tiny)
+                    .padding(.horizontal, DesignTokens.SystemSpacing.tiny)
                     .padding(.vertical, FeatureConstants.TagBubbleCloud.capsuleCountVerticalPadding)
                     .background(countTextBg)
                     .clipShape(Capsule())
             }
-            .padding(clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.medium : DesignSystem.small)
+            .padding(clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignTokens.Spacing.medium : DesignTokens.Spacing.small)
             .frame(minWidth: size * FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold)
             .background {
                 Circle()
@@ -188,7 +189,7 @@ struct TagCapsuleView: View {
             }
             .overlay {
                 Circle()
-                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + clampedBubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignSystem.borderWidth)
+                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(bubbleBorderOpacityBase + clampedBubbleRatio * bubbleBorderOpacityFactor), lineWidth: DesignTokens.Spacing.borderWidth)
             }
             .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, isEditMode: coordinator.isEditMode, editBadge: { AnyView(editBadgeView(isSelected: isSelected)) })
         } else {
@@ -197,21 +198,21 @@ struct TagCapsuleView: View {
 
                 InsightTagCountBadge(
                     count: item.count,
-                    fontSize: DesignSystem.microFontSize,
+                    fontSize: DesignTokens.Typography.microFontSize,
                     isSelected: isSelected,
-                    selectedColor: Color.appAccent.opacity(SystemOpacity.glass),
-                    unselectedColor: Color.appSecondary.opacity(SystemOpacity.ghost)
+                    selectedColor: Color.appAccent.opacity(DesignTokens.SystemOpacity.glass),
+                    unselectedColor: Color.appSecondary.opacity(DesignTokens.SystemOpacity.ghost)
                 )
             }
             .padding(.horizontal, paddingH)
             .padding(.vertical, paddingV)
             .background {
                 Capsule()
-                    .fill(isSelected ? Color.appAccent.opacity(SystemOpacity.glass) : Color.appCard.opacity(opacity))
+                    .fill(isSelected ? Color.appAccent.opacity(DesignTokens.SystemOpacity.glass) : Color.appCard.opacity(opacity))
             }
             .overlay {
                 Capsule()
-                    .stroke(isSelected ? Color.appAccent.opacity(SystemOpacity.textSecondary) : Color.appBorder.opacity(SystemOpacity.overlay), lineWidth: SystemStroke.divider)
+                    .stroke(isSelected ? Color.appAccent.opacity(DesignTokens.SystemOpacity.textSecondary) : Color.appBorder.opacity(DesignTokens.SystemOpacity.overlay), lineWidth: DesignTokens.SystemStroke.divider)
             }
             .applyEditOverlay(isSelected: isSelected, clampedBubbleRatio: clampedBubbleRatio, isEditMode: coordinator.isEditMode, editBadge: { AnyView(editBadgeView(isSelected: isSelected)) })
         }
@@ -223,21 +224,21 @@ struct TagCapsuleView: View {
         ZStack {
             Circle()
                 .fill(isSelected ? Color.appAccent : Color.appCard)
-                .frame(width: DesignSystem.headlineFontSize, height: DesignSystem.headlineFontSize)
+                .frame(width: DesignTokens.Typography.headlineFontSize, height: DesignTokens.Typography.headlineFontSize)
 
             if isSelected {
-                Image(systemName: DesignSystem.Icons.check)
-                    .font(.system(size: DesignSystem.microFontSize, weight: .black))
+                Image(systemName: DesignTokens.Icons.check)
+                    .font(.system(size: DesignTokens.Typography.microFontSize, weight: .black))
                     .foregroundStyle(.white)
             } else {
                 Circle()
-                    .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
-                    .frame(width: DesignSystem.headlineFontSize, height: DesignSystem.headlineFontSize)
+                    .stroke(Color.appBorder, lineWidth: DesignTokens.Spacing.borderWidth)
+                    .frame(width: DesignTokens.Typography.headlineFontSize, height: DesignTokens.Typography.headlineFontSize)
             }
         }
         .offset(
-            x: isBubbleMode ? -DesignSystem.small : DesignSystem.small,
-            y: isBubbleMode ? DesignSystem.small : -DesignSystem.small
+            x: isBubbleMode ? -DesignTokens.Spacing.small : DesignTokens.Spacing.small,
+            y: isBubbleMode ? DesignTokens.Spacing.small : -DesignTokens.Spacing.small
         )
     }
 
@@ -274,7 +275,7 @@ private struct EditOverlayModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scaleEffect(isSelected ? DesignSystem.Gallery.hoverScale : 1.0)
-            .shadow(color: isSelected ? Color.appAccent.opacity(SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignSystem.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
+            .shadow(color: isSelected ? Color.appAccent.opacity(DesignTokens.SystemOpacity.faint) : Color.appAccent.opacity(clampedBubbleRatio * FeatureConstants.TagBubbleCloud.capsuleShadowOpacityFactor), radius: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignTokens.Spacing.shadowRadius : FeatureConstants.TagBubbleCloud.capsuleShadowRadius, y: clampedBubbleRatio > FeatureConstants.TagBubbleCloud.capsuleBubbleRatioThreshold ? DesignTokens.Spacing.shadowY : FeatureConstants.TagBubbleCloud.capsuleShadowY)
             .overlay(alignment: .topTrailing) {
                 if isEditMode {
                     editBadge()

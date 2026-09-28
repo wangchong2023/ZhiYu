@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：对比页面差异化详情视图
 struct ComparisonDetailBodyView: View {
@@ -35,7 +36,7 @@ struct ComparisonDetailBodyView: View {
     private static let badgeVerticalPadding: CGFloat = 2
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
             // 1. 结论板 (Recommendation Panel)
             recommendationPanelSection
             
@@ -62,9 +63,9 @@ struct ComparisonDetailBodyView: View {
     
     // MARK: - 1. 结论板 (Recommendation Panel)
     private var recommendationPanelSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack(spacing: Spacing.small) {
-                Image(systemName: DesignSystem.Icons.handThumbsupFill)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Image(systemName: DesignTokens.Icons.handThumbsupFill)
                     .font(.headline)
                     .foregroundStyle(Color.theme.purple)
                 
@@ -81,11 +82,11 @@ struct ComparisonDetailBodyView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .gradientBorderCardStyle(
-            padding: DesignSystem.standardPadding,
-            cornerRadius: DesignSystem.standardRadius,
-            backgroundOpacity: DesignSystem.Opacity.ghost,
+            padding: DesignTokens.Spacing.standardPadding,
+            cornerRadius: DesignTokens.Spacing.standardRadius,
+            backgroundOpacity: DesignTokens.Opacity.ghost,
             gradientStartColor: Color.theme.purple,
-            gradientStartOpacity: DesignSystem.Opacity.disabled,
+            gradientStartOpacity: DesignTokens.Opacity.disabled,
             borderWidth: Self.borderGradientWidth
         )
     }
@@ -110,15 +111,15 @@ struct ComparisonDetailBodyView: View {
         subjects: [ComparisonFrontmatter.ComparisonSubject],
         dimensions: [ComparisonFrontmatter.ComparisonDimension]
     ) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            InsightSectionHeader(title: L10n.Dashboard.stats.title, icon: DesignSystem.Icons.grid)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            InsightSectionHeader(title: L10n.Dashboard.stats.title, icon: DesignTokens.Icons.grid)
             
             // 只取前 3 个 Subjects 进行网格排列，防止横向溢出
             let displaySubjects = subjects.prefix(Self.maxSubjectsCount)
             
-            VStack(spacing: Spacing.small) {
+            VStack(spacing: DesignTokens.Spacing.small) {
                 // 表头
-                HStack(spacing: Spacing.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     Text(L10n.Dashboard.totalStorage) // 左上角首列标签
                         .font(.caption2.bold())
                         .foregroundStyle(.appSecondary)
@@ -132,23 +133,23 @@ struct ComparisonDetailBodyView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
-                .padding(.bottom, Spacing.atomic)
+                .padding(.bottom, DesignTokens.Spacing.atomic)
                 
                 Divider()
-                    .opacity(DesignSystem.softOpacity)
+                    .opacity(DesignTokens.Colors.Opacity.softOpacity)
                 
                 // 表体：每一行渲染一个 Dimension
                 ForEach(dimensions) { dim in
-                    HStack(spacing: Spacing.medium) {
+                    HStack(spacing: DesignTokens.Spacing.medium) {
                         // 维度名称与单位
-                        VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+                        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                             Text(dim.name)
                                 .font(.caption.bold())
                                 .foregroundStyle(.appSecondary)
                             if let unit = dim.unit, !unit.isEmpty {
                                 Text("(\(unit))")
                                     .font(.system(size: Self.detailFontSize))
-                                    .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                                    .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -160,19 +161,19 @@ struct ComparisonDetailBodyView: View {
                                 .frame(maxWidth: .infinity, alignment: .center)
                         }
                     }
-                    .padding(.vertical, Spacing.tiny)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
                     Divider()
-                        .opacity(DesignSystem.softOpacity)
+                        .opacity(DesignTokens.Colors.Opacity.softOpacity)
                 }
             }
             .borderedCardStyle(
-                horizontalPadding: DesignSystem.standardPadding,
-                verticalPadding: DesignSystem.standardPadding,
-                backgroundOpacity: DesignSystem.Opacity.subtle,
-                cornerRadius: DesignSystem.standardRadius,
-                borderWidth: DesignSystem.borderWidth,
+                horizontalPadding: DesignTokens.Spacing.standardPadding,
+                verticalPadding: DesignTokens.Spacing.standardPadding,
+                backgroundOpacity: DesignTokens.Opacity.subtle,
+                cornerRadius: DesignTokens.Spacing.standardRadius,
+                borderWidth: DesignTokens.Spacing.borderWidth,
                 borderColor: .appBorder,
-                borderOpacity: DesignSystem.Opacity.prominent
+                borderOpacity: DesignTokens.Opacity.prominent
             )
         }
     }
@@ -198,18 +199,18 @@ struct ComparisonDetailBodyView: View {
             
         case .rating(let val):
             // 渲染精致的小评分
-            HStack(spacing: SystemSpacing.divider) {
+            HStack(spacing: DesignTokens.SystemSpacing.divider) {
                 let rounded = Int(val.rounded())
                 ForEach(1...Self.ratingMaxStars, id: \.self) { star in
                     Image(systemName: star <= rounded ? "star.fill" : "star")
                         .font(.system(size: Self.starFontSize))
-                        .foregroundStyle(star <= rounded ? .yellow : .appSecondary.opacity(DesignSystem.Opacity.disabled))
+                        .foregroundStyle(star <= rounded ? .yellow : .appSecondary.opacity(DesignTokens.Opacity.disabled))
                 }
             }
             
         case .range(let minVal, let maxVal):
             // 渲染迷你渐变横条
-            VStack(spacing: SystemSpacing.atomic) {
+            VStack(spacing: DesignTokens.SystemSpacing.atomic) {
                 Text(L10n.Dashboard.stats.rawPageCountFormat(Int(minVal), "\(Int(maxVal))")) // 借用格式化展示区间
                     .font(.system(size: Self.rangeTextSize, weight: .bold))
                     .foregroundStyle(.appAccent)
@@ -224,14 +225,14 @@ struct ComparisonDetailBodyView: View {
         case .imageList(let items):
             // 渲染气泡徽章列表
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: SystemSpacing.atomic) {
+                HStack(spacing: DesignTokens.SystemSpacing.atomic) {
                     ForEach(items, id: \.self) { item in
                         Text(item)
                             .font(.system(size: Self.badgeFontSize, weight: .bold))
                             .foregroundStyle(Color.theme.purple)
                             .padding(.horizontal, Self.badgeHorizontalPadding)
                             .padding(.vertical, Self.badgeVerticalPadding)
-                            .background(Color.theme.purple.opacity(DesignSystem.subtleFillOpacity))
+                            .background(Color.theme.purple.opacity(DesignTokens.Colors.subtleFillOpacity))
                             .clipShape(Capsule())
                     }
                 }
@@ -240,7 +241,7 @@ struct ComparisonDetailBodyView: View {
         case .null:
             Text(FeatureConstants.Decorator.dash)
                 .font(.caption2)
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.disabled))
+                .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.disabled))
         }
     }
 }

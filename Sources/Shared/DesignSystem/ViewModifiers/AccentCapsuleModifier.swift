@@ -10,12 +10,13 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// Accent 渐变胶囊修饰符，消除重复的 padding+background(LinearGradient)+clipShape(Capsule) 链
 struct AccentCapsuleModifier: ViewModifier {
-    var horizontalPadding: CGFloat = DesignSystem.medium
-    var verticalPadding: CGFloat = DesignSystem.small
-    var gradientEndOpacity: Double = DesignSystem.Opacity.prominent
+    var horizontalPadding: CGFloat = DesignTokens.Spacing.medium
+    var verticalPadding: CGFloat = DesignTokens.Spacing.small
+    var gradientEndOpacity: Double = DesignTokens.Opacity.prominent
 
     func body(content: Content) -> some View {
         content
@@ -36,9 +37,9 @@ struct AccentCapsuleModifier: ViewModifier {
 extension View {
     /// Accent 渐变胶囊样式：padding + background(LinearGradient appAccent) + clipShape(Capsule)
     func accentCapsuleStyle(
-        horizontalPadding: CGFloat = DesignSystem.medium,
-        verticalPadding: CGFloat = DesignSystem.small,
-        gradientEndOpacity: Double = DesignSystem.Opacity.prominent
+        horizontalPadding: CGFloat = DesignTokens.Spacing.medium,
+        verticalPadding: CGFloat = DesignTokens.Spacing.small,
+        gradientEndOpacity: Double = DesignTokens.Opacity.prominent
     ) -> some View {
         modifier(AccentCapsuleModifier(
             horizontalPadding: horizontalPadding,

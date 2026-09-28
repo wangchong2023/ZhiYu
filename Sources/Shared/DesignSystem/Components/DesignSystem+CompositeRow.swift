@@ -10,15 +10,16 @@
 //
 import SwiftUI
 import CoreGraphics
+import UFPDesignSystem
 
 extension DesignSystem {
 
     // MARK: - 10. 复合行模式 (CompositeRow)
     public enum CompositeRow {
-        public static let spacing: CGFloat = Spacing.CompositeRow.spacing
-        public static let cornerRadius: CGFloat = Spacing.CompositeRow.cornerRadius
-        public static let iconBoxSize: CGFloat = Spacing.CompositeRow.iconBoxSize
-        public static let actionAreaWidth: CGFloat = Spacing.CompositeRow.actionAreaWidth
-        public static let indicatorWidth: CGFloat = Spacing.CompositeRow.indicatorWidth
+        public static let spacing: CGFloat = DesignTokens.Spacing.CompositeRow.spacing
+        public static let cornerRadius: CGFloat = DesignTokens.Spacing.CompositeRow.cornerRadius
+        public static let iconBoxSize: CGFloat = DesignTokens.Spacing.CompositeRow.iconBoxSize
+        public static let actionAreaWidth: CGFloat = DesignTokens.Spacing.CompositeRow.actionAreaWidth
+        public static let indicatorWidth: CGFloat = DesignTokens.Spacing.CompositeRow.indicatorWidth
     }
 }

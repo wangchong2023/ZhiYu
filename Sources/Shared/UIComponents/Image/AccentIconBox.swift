@@ -10,11 +10,12 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// Accent 图标块组件
 ///
 /// 消除 `SourceDetailBodyView` 与 `RawStorageListView` 中重复的
-/// `Image(systemName:).font(.system(size: DesignSystem.large)).foregroundStyle(.appAccent).frame(width:height:).background(Color.appAccent.opacity(DesignSystem.glassOpacity)).clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))` 模式。
+/// `Image(systemName:).font(.system(size: DesignTokens.Spacing.large)).foregroundStyle(.appAccent).frame(width:height:).background(Color.appAccent.opacity(DesignTokens.Colors.Opacity.glassOpacity)).clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))` 模式。
 public struct AccentIconBox: View {
     public let iconName: String
     public var fontSize: CGFloat
@@ -24,10 +25,10 @@ public struct AccentIconBox: View {
 
     public init(
         iconName: String,
-        fontSize: CGFloat = DesignSystem.large,
-        boxSize: CGFloat = DesignSystem.Metrics.largeIconBoxSize,
-        cornerRadius: CGFloat = DesignSystem.smallRadius,
-        backgroundOpacity: Double = DesignSystem.glassOpacity
+        fontSize: CGFloat = DesignTokens.Spacing.large,
+        boxSize: CGFloat = DesignTokens.Metrics.largeIconBoxSize,
+        cornerRadius: CGFloat = DesignTokens.Spacing.smallRadius,
+        backgroundOpacity: Double = DesignTokens.Colors.Opacity.glassOpacity
     ) {
         self.iconName = iconName
         self.fontSize = fontSize
