@@ -3,7 +3,7 @@
 #
 # 版权所有 (c) 2026 ZhiYu。保留所有权利。
 #
-# 职责说明: 本脚本用于对设计令牌命名规范进行 CI 门禁检查。
+# 职责说明: 本脚本用于对设计令牌算术表达式进行 CI 门禁检查。
 # 验证内容：
 # 1. token 定义文件内禁止算术表达式（Reference 纯原子值，System/Component 仅允许 Reference.A 引用）
 # 2. 视图代码禁止任何 token 算术表达式（* / + -），包括旧 DesignSystem.* token
@@ -21,9 +21,9 @@ from gatekeeper_reporter import GatekeeperReporter
 
 PROJECT_ROOT = os.path.abspath(os.path.join(SYS_GATEKEEPER_DIR, '..'))
 SOURCES_DIR = os.path.join(PROJECT_ROOT, 'Sources')
-TOKENS_DIR = os.path.join(SOURCES_DIR, 'Shared/DesignSystem/Tokens')
+TOKENS_DIR = os.path.join(PROJECT_ROOT, 'Packages/UFPDesignSystem/Sources/UFPDesignSystem/Tokens')
 
-reporter = GatekeeperReporter("Design Token Naming Check")
+reporter = GatekeeperReporter("Design Token Arithmetic Check")
 
 # token 定义文件
 REFERENCE_FILE = os.path.join(TOKENS_DIR, 'Reference.swift')
@@ -69,8 +69,8 @@ def _scan_definition_file(fpath, message):
             s = line.strip()
             if s.startswith('//') or s.startswith('/*'):
                 continue
-            # 检测 token 之间的算术运算：Reference.A * N、System.B + N 等
-            if re.search(r'\b(Reference|System|Component)\.\w+\.\w+' + ARITH_PATTERN + r'\d', line):
+            # 检测 token 之间的算术运算：DesignTokens.Reference.A * N、DesignTokens.System.B + N 等
+            if re.search(r'\bDesignTokens\.(Reference|System|Component)\.\w+\.\w+' + ARITH_PATTERN + r'\d', line):
                 reporter.add_issue(
                     filepath=os.path.relpath(fpath, PROJECT_ROOT),
                     line_no=i,
@@ -97,7 +97,7 @@ def check_view_token_arithmetic():
         os.path.join(SOURCES_DIR, 'Platforms'),
         os.path.join(SOURCES_DIR, 'App'),
     ]
-    exempt_files = {'Reference.swift', 'System.swift', 'Component.swift'}
+    exempt_files = {'Reference.swift', 'System.swift', 'Component.swift', 'Colors.swift', 'Typography.swift', 'Animations.swift', 'DesignTokens.swift'}
 
     for v_dir in views_dirs:
         if not os.path.exists(v_dir):
@@ -128,25 +128,24 @@ def _scan_file_for_token_arithmetic(fpath):
 
 def _check_token_math_in_view(fpath, i, s, line):
     """检查视图代码中的 token 算术表达式"""
-    # 仅检测新 token 命名空间（Reference/System/Component）的算术运算
-    # 旧 DesignSystem.* token 保留阶段，其算术由 audit-design-magic-numbers.py 检测
+    # 检测 DesignTokens.* 命名空间的算术运算（含残留 DesignSystem.* Token）
     # 严格禁止 * / + - 四种运算符
-    pattern = r'\b(Reference|System|Component)\w*\.\w+' + ARITH_PATTERN + r'(0\.\d+|\d+\.?\d*)\b'
+    pattern = r'\b(DesignTokens\.|DesignSystem\.)?(Reference|System|Component)\w*\.\w+' + ARITH_PATTERN + r'(0\.\d+|\d+\.?\d*)\b'
     if re.search(pattern, line):
         reporter.add_issue(
             filepath=os.path.relpath(fpath, PROJECT_ROOT),
             line_no=i,
-            message="视图代码禁止新 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
+            message="视图代码禁止 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
             level="ERROR",
             content=s
         )
-    # 反向匹配：N * Reference.xxx / N * System.xxx / N * Component.xxx
-    pattern_reverse = r'\b(0\.\d+|\d+\.?\d*)' + ARITH_PATTERN + r'(Reference|System|Component)\w*\.\w+'
+    # 反向匹配：N * DesignTokens.Reference.xxx / N * DesignSystem.Reference.xxx 等
+    pattern_reverse = r'\b(0\.\d+|\d+\.?\d*)' + ARITH_PATTERN + r'(DesignTokens\.|DesignSystem\.)?(Reference|System|Component)\w*\.\w+'
     if re.search(pattern_reverse, line):
         reporter.add_issue(
             filepath=os.path.relpath(fpath, PROJECT_ROOT),
             line_no=i,
-            message="视图代码禁止新 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
+            message="视图代码禁止 token 算术表达式（严格有限原则：禁止倍数/派生/加减），应使用命名 token",
             level="ERROR",
             content=s
         )

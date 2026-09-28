@@ -11,6 +11,8 @@
 #if ICLOUD_ENABLED
 import Foundation
 import Combine
+import Dependencies
+import UFPCore
 
 /// iCloud 配置同步管理器 (PM 视角：跨设备连续性)
 /// 负责在设备间自动同步用户设置（如 LLM 配置、主题偏好等）。
@@ -20,6 +22,9 @@ final class iCloudSyncManager {
 
     private let kvStore = NSUbiquitousKeyValueStore.default
     private var cancellables = Set<AnyCancellable>()
+
+    /// 键值存储抽象（DI 注入，替代 UserDefaults.standard 直接访问）
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     private init() {
         setupSync()
@@ -46,7 +51,7 @@ final class iCloudSyncManager {
         let keys = ["llm_api_key", "llm_model", "llm_enabled", "llm_provider_type"]
         for key in keys {
             if let cloudValue = kvStore.object(forKey: key) {
-                UserDefaults.standard.set(cloudValue, forKey: key)
+                keyStore?.set(cloudValue, forKey: key)
             }
         }
     }

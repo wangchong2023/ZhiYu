@@ -13,7 +13,8 @@ import os, re, sys
 
 EXCLUDE_DIRS = {'.git','build','DerivedData','.build','Frameworks','Tests','env','__pycache__'}
 TOKEN_FILES = {
-    'Colors.swift', 'DesignSystem.swift', 'IconTokens.swift', 'Spacing.swift',
+    'Colors.swift', 'DesignTokens.swift', 'IconTokens.swift', 'Spacing.swift',
+    'Typography.swift', 'Animations.swift',
     'DemoImageBuilder.swift', 'InitialNotebookGenerator.swift',
     'Reference.swift', 'System.swift', 'Component.swift',
 }
@@ -30,7 +31,7 @@ MAX_DISPLAY_LIMIT = 5
 def scan_file(path, ext):
     """扫描单个文件中的硬编码魔鬼数字，返回 (类型, 路径, 行号, 代码) 元组列表。"""
     issues = []
-    if 'Sources/Shared/DesignSystem' in path or os.path.basename(path) in TOKEN_FILES:
+    if 'Packages/UFPDesignSystem/Sources/UFPDesignSystem' in path or os.path.basename(path) in TOKEN_FILES:
         return issues
     with open(path, errors='ignore') as f:
         lines = f.readlines()
@@ -133,7 +134,7 @@ def check_swift_colors(raw, path, line_no, s):
 
 def _check_rgb_color(raw, path, line_no, s, res):
     """检查 RGB 颜色硬编码。"""
-    valid_color = any(k in raw or k in path for k in ['DesignSystem', 'Colors.swift', 'UIColor.theme', 'Color.theme'])
+    valid_color = any(k in raw or k in path for k in ['DesignTokens', 'Colors.swift', 'UIColor.theme', 'Color.theme'])
     if (re.search(r'\bColor\(red:', raw) or re.search(r'\bUIColor\(red:', raw) or re.search(r'\bUIColor\(white:', raw)) and not valid_color:
         res.append(('Color/UIColor(red:/white:)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
@@ -175,13 +176,13 @@ def _check_business_threshold(raw, path, line_no, s, res):
     # 检测 > N, < N, >= N, <= N（2 位以上数字，避免 > 0/> 1 误报）
     if re.search(r'[<>]=?\s*(\d{2,})\b', raw):
         # 排除 DesignSystem token 上下文
-        if not any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component']):
+        if not any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component']):
             res.append(('hardcoded business threshold', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
 def _check_padding_and_radius(raw, path, line_no, s, res):
     """检查 padding 与 cornerRadius。"""
-    valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
+    valid = any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
     if re.search(r'\.padding\(\s*(\d+)\s*\)', raw) and not valid:
         res.append(('hardcoded padding', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
     # 检测带 label 的双参数形式：.padding(.vertical, 10) / .padding(.horizontal, 8)
@@ -193,17 +194,17 @@ def _check_padding_and_radius(raw, path, line_no, s, res):
 
 def _check_frame_and_opacity(raw, path, line_no, s, res):
     """检查 frame 尺寸与 opacity。"""
-    valid_frame = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component', 'geo', 'CGFloat', 'Double'])
+    valid_frame = any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component', 'geo', 'CGFloat', 'Double'])
     if re.search(r'\.frame\([^)]*\b(width|height|minWidth|minHeight|maxWidth|maxHeight):\s*\d{2,}\b', raw) and not valid_frame:
         res.append(('hardcoded frame dimension', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    valid_opacity = any(k in raw for k in ['DesignSystem', 'Colors', 'Opacity', 'Color.theme', 'glassOpacity', 'Reference', 'System', 'Component'])
+    valid_opacity = any(k in raw for k in ['DesignTokens', 'Colors', 'Opacity', 'Color.theme', 'glassOpacity', 'Reference', 'System', 'Component'])
     if re.search(r'\.opacity\(\s*0\.\d+\s*\)', raw) and not valid_opacity:
         res.append(('hardcoded opacity', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
 def _check_spacing_and_layout_params(raw, path, line_no, s, res):
     """检查容器 spacing、font size、lineWidth、shadow 等布局参数中的魔鬼数字。"""
-    valid = any(k in raw for k in ['DesignSystem', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
+    valid = any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
     if valid:
         return
     _check_container_spacing(raw, path, line_no, s, res)
@@ -255,40 +256,13 @@ def _check_kerning_tracking(raw, path, line_no, s, res):
 
 
 def _check_magic_math(raw, path, line_no, s, res):
-    """检查魔鬼算术表达式与 customSize。"""
-    # 严格有限原则：禁止任何 token 算术表达式（* / + -），无豁免
-    exempt_tokens = ['DesignSystem.Domain', 'DesignSystem.Metrics', 'DesignSystem.Gallery', 'Spacing']
-    _check_view_arithmetic(raw, path, line_no, s, res)
-    _check_token_arithmetic(raw, path, line_no, s, res, exempt_tokens)
+    """检查 customSize 伪 token 模式（算术检测由 arithmetic.py 负责）。"""
     _check_custom_size(raw, path, line_no, s, res)
-
-
-def _check_view_arithmetic(raw, path, line_no, s, res):
-    """检查 View 修饰符中的 token 算术表达式。"""
-    pattern = r'\.(padding|frame|offset|radius)\([^)]*\b(DesignSystem|Spacing)\.[a-zA-Z0-9_.]+\s*[\*\/\+\-]\s*(0\.\d+|\d+\.?\d*)\b'
-    if re.search(pattern, raw):
-        res.append(('Magic Math View算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-
-
-def _check_token_arithmetic(raw, path, line_no, s, res, exempt_tokens):
-    """检查 token 算术表达式（严格禁止 * / + -）。检测 Token op number 和 Token op Token 两种形式。"""
-    # 形式 1: Token op number（如 DesignSystem.small * 2）
-    token_math_num = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/\+\-]\s*(\d+\.?\d*)\b', raw)
-    if token_math_num:
-        token_full = f'{token_math_num.group(1)}.{token_math_num.group(2)}'
-        if token_full not in exempt_tokens and not any(token_full.startswith(e) for e in exempt_tokens):
-            res.append(('Magic Math token算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
-    # 形式 2: Token op Token（如 DesignSystem.small + DesignSystem.atomic）
-    token_math_token = re.search(r'\b(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\s*[\*\/\+\-]\s*(DesignSystem|Spacing|Reference|System|Component)\.([a-zA-Z0-9_.]+)\b', raw)
-    if token_math_token:
-        token_full = f'{token_math_token.group(1)}.{token_math_token.group(2)}'
-        if token_full not in exempt_tokens and not any(token_full.startswith(e) for e in exempt_tokens):
-            res.append(('Magic Math token+token算术表达式', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
 def _check_custom_size(raw, path, line_no, s, res):
     """检查 customSizeN 伪 token 模式。"""
-    if re.search(r'customSize\d+', raw) and 'DesignSystem+Metrics.swift' not in path and 'Spacing.swift' not in path:
+    if re.search(r'customSize\d+', raw) and 'DesignTokens+Metrics.swift' not in path and 'Spacing.swift' not in path:
         res.append(('pseudo-token customSize (硬编码数字变相包裹)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
@@ -326,7 +300,7 @@ PRIVATE_CONST_WHITELIST = _load_private_const_whitelist()
 
 def _load_token_values():
     """从 Reference.swift/System.swift/Component.swift 动态解析所有 token 值，避免硬编码。"""
-    tokens_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Sources', 'Shared', 'DesignSystem', 'Tokens')
+    tokens_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Packages', 'UFPDesignSystem', 'Sources', 'UFPDesignSystem', 'Tokens')
     token_files = ['Reference.swift', 'System.swift', 'Component.swift']
     values = set()
     for fname in token_files:

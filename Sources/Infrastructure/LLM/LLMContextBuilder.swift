@@ -334,6 +334,9 @@ final class ChatHistoryStore: ObservableObject {
 
     private let historyKey = LLMConstants.ChatHistory.storageKey
 
+    /// 键值存储抽象（DI 注入，替代 UserDefaults.standard 直接访问）
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
+
     init() {
         load()
     }
@@ -361,7 +364,7 @@ final class ChatHistoryStore: ObservableObject {
     /// Explicitly persist current state to disk (public for external sync).
     func persistToDisk() {
         if let data = try? JSONEncoder().encode(messages) {
-            UserDefaults.standard.set(data, forKey: historyKey)
+            keyStore?.set(data, forKey: historyKey)
         }
     }
 
@@ -371,7 +374,7 @@ final class ChatHistoryStore: ObservableObject {
     }
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: historyKey),
+        if let data = keyStore?.data(forKey: historyKey),
            let history = try? JSONDecoder().decode([ChatMessageDTO].self, from: data) {
             messages = history
         }

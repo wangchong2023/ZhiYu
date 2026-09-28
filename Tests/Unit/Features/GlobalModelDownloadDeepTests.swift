@@ -11,6 +11,7 @@
 
 import XCTest
 import UFPCore
+@_spi(Internals) import Dependencies
 @testable import ZhiYu
 
 // MARK: - GlobalModelManager 下载流程深度测试
@@ -252,6 +253,8 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
         let controllableMock = ControllableMockModelDownloadManager()
         controllableMock.statesToYield = [.failed(error: "test error")]
         ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock
+        DependencyValues._current.cachedValues.resetCache()
 
         // 创建新的 manager 以使用可控 Mock（@Dependency 在 init 时解析一次并缓存）
         let testManager = GlobalModelManager()
@@ -285,6 +288,8 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
         let completedURL = URL(fileURLWithPath: "/tmp/test-completed.bin")
         controllableMock.statesToYield = [.completed(localURL: completedURL)]
         ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock
+        DependencyValues._current.cachedValues.resetCache()
 
         let testManager = GlobalModelManager()
         let manifest = makeManifest(modelId: "resubscribe-completed-test")
@@ -312,6 +317,8 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
         let controllableMock = ControllableMockModelDownloadManager()
         controllableMock.statesToYield = [.cancelled]
         ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock 而非 setUp 中 manager 缓存的 FakeModelDownloadManager
+        DependencyValues._current.cachedValues.resetCache()
 
         let testManager = GlobalModelManager()
         let manifest = makeManifest(modelId: "resubscribe-cancelled-test")
@@ -336,6 +343,8 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
         let controllableMock = ControllableMockModelDownloadManager()
         controllableMock.statesToYield = [.downloading(progress: 0.5, bytesPerSecond: 100)]
         ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock
+        DependencyValues._current.cachedValues.resetCache()
 
         let testManager = GlobalModelManager()
         let manifest = makeManifest(modelId: "downloading-keep-sub-test")

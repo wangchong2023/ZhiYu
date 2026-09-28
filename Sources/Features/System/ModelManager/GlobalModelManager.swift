@@ -135,11 +135,11 @@ public final class GlobalModelManager: TestStateResettable {
     /// 获取/更新本地记录的已完成模型 ID 集合
     public private(set) var downloadedModelIds: Set<String> {
         get {
-            let list = UserDefaults.standard.stringArray(forKey: Self.downloadedModelIdsKey) ?? []
+            let list = keyStore?.object(forKey: Self.downloadedModelIdsKey) as? [String] ?? []
             return Set(list)
         }
         set {
-            UserDefaults.standard.set(Array(newValue), forKey: Self.downloadedModelIdsKey)
+            keyStore?.set(Array(newValue), forKey: Self.downloadedModelIdsKey)
         }
     }
     

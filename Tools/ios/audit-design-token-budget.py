@@ -16,7 +16,7 @@ import re
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-TOKENS_DIR = os.path.join(PROJECT_ROOT, 'Sources/Shared/DesignSystem/Tokens')
+TOKENS_DIR = os.path.join(PROJECT_ROOT, 'Packages/UFPDesignSystem/Sources/UFPDesignSystem/Tokens')
 
 # token 数量上限（对齐 Tailwind CSS 严格有限原则）
 LIMITS = {

@@ -11,6 +11,8 @@
 
 import SwiftUI
 import UFPDesignSystem
+import Dependencies
+import UFPCore
 
 /// Mock 服务器配置管理视图
 @MainActor
@@ -19,6 +21,7 @@ public struct ServerConfigView: View {
     // MARK: - 环境注入
 
     @Environment(ThemeManager.self) private var themeManager
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     // MARK: - 状态管理
 
@@ -139,11 +142,11 @@ public struct ServerConfigView: View {
 
     private func saveServers() {
         guard let data = try? JSONEncoder().encode(servers) else { return }
-        UserDefaults.standard.set(data, forKey: Self.storageKey)
+        keyStore?.set(data, forKey: Self.storageKey)
     }
 
     private func loadServers() {
-        guard let data = UserDefaults.standard.data(forKey: Self.storageKey),
+        guard let data = keyStore?.data(forKey: Self.storageKey),
               let saved = try? JSONDecoder().decode([MockServerConfig].self, from: data),
               !saved.isEmpty else {
             // 无已保存数据时使用示例配置

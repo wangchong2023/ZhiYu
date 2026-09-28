@@ -64,7 +64,7 @@ run_parallel_task "Architecture Dependency" "arch_dependency" "python3 Tools/ios
 run_parallel_task "Domain Purity" "domain_purity" "python3 Tools/ios/audit-arch-domain-purity.py" & pid2=$!
 run_parallel_task "DI Test Setup" "di_test_setup" "python3 Tools/ios/check-arch-test-di-setup.py" & pid3=$!
 run_parallel_task "Root Hygiene" "root_hygiene" "python3 Tools/scripts/check-quality-root-hygiene.py" & pid4=$!
-run_parallel_task "Magic Numbers & Strings" "magic_numbers" "python3 Tools/ios/audit-design-magic-numbers.py" & pid5=$!
+run_parallel_task "Magic Numbers & Strings" "magic_numbers" "python3 Tools/ios/audit-design-token-magic-numbers.py" & pid5=$!
 run_parallel_task "Layer Markers" "layer_markers" "bash Tools/ios/check-arch-layer-markers.sh" & pid6=$!
 run_parallel_task "Unsafe String.Index Scan" "unsafe_string_index" "python3 Tools/ios/check-code-unsafe-string-index.py" & pid7=$!
 run_parallel_task "Docs & Config Integrity" "docs_and_configs" "python3 Tools/docs/check-quality-docs.py" & pid8=$!
@@ -98,7 +98,7 @@ run_parallel_task "UserDefaults Standard Frozen" "userdefaults_frozen" "python3 
 run_parallel_task "Inject Deprecated" "inject_deprecated" "python3 Tools/ios/audit-inject-deprecated.py" & pid37=$!
 run_parallel_task "OpenSource Internal Deps" "opensource_internal_deps" "python3 Tools/ios/check-arch-opensource-internal-deps.py" & pid38=$!
 run_parallel_task "OWASP MASVS Security Scan" "owasp_masvs" "python3 Tools/ios/check-security-owasp-masvs.py --strict" & pid39=$!
-run_parallel_task "Design Token Naming" "token_naming" "python3 Tools/ios/audit-design-token-naming.py" & pid40=$!
+run_parallel_task "Design Token Naming" "token_naming" "python3 Tools/ios/audit-design-token-arithmetic.py" & pid40=$!
 run_parallel_task "Design Token Budget" "token_budget" "python3 Tools/ios/audit-design-token-budget.py" & pid41=$!
 
 # 等待所有后台任务，并收拢退出状态

@@ -221,12 +221,13 @@ struct InitialNotebookGenerator {
     /// 必须在 MainActor 上执行，以安全访问 DatabaseManager
     private static func resolveImportsFolder(for category: ImportCategory) async -> URL? {
         await MainActor.run {
+            @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
             if let dbURL = DatabaseManager.shared.dbURL {
                 let fm = FileManager.default
                 let categoryDirName = category.directoryName
                 
-                // 从 UserDefaults 读取当前活跃笔记本英文名，作为 raw 隔离目录结构一部分
-                let englishName = UserDefaults.standard.string(forKey: "vaultSelectedEnglishName") ?? "fallback"
+                // 从键值存储读取当前活跃笔记本英文名，作为 raw 隔离目录结构一部分
+                let englishName = keyStore?.string(forKey: "vaultSelectedEnglishName") ?? "fallback"
                 
                 let folder = dbURL.deletingLastPathComponent()
                     .appendingPathComponent("raw")

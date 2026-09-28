@@ -136,6 +136,7 @@ NAMED_ARG_EXCLUDE_PATTERNS = [
     re.compile(r'PlatformConstants\.'),
     re.compile(r'AppConstants\.'),
     re.compile(r'DesignSystem\.'),
+    re.compile(r'DesignTokens\.'),
     re.compile(r'^\s*//'),  # 注释行
     re.compile(r'^\s*\*'),  # 文档注释续行
     re.compile(r'/// '),  # 文档注释
@@ -160,6 +161,7 @@ SWIFTUI_COLOR_EXCLUDE_PATTERNS = [
     re.compile(r'Color\.theme\.'),
     re.compile(r'DesignSystem\.Colors\.'),
     re.compile(r'DesignSystem\.'),
+    re.compile(r'DesignTokens\.'),
     re.compile(r'Colors\.'),
     re.compile(r'^\s*//'),  # 注释行
     re.compile(r'^\s*\*'),  # 文档注释续行

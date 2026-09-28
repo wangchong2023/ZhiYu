@@ -12,6 +12,8 @@
 import SwiftUI
 import PhotosUI
 import UFPDesignSystem
+import Dependencies
+import UFPCore
 
 /// 个人资料及套餐详情视图
 @MainActor
@@ -23,6 +25,7 @@ public struct UserProfileView: View {
     @Environment(KnowledgeStore.self) private var knowledgeStore
     @Environment(VaultService.self) private var vaultService
     @Environment(SynthesisStore.self) private var synthesisStore
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     // MARK: - 状态属性
 
@@ -327,7 +330,7 @@ public struct UserProfileView: View {
     ///   计算属性本身保持纯函数语义。
     private var activeDays: Int {
         let key = AppConstants.Keys.Storage.firstLaunchTime
-        guard let time = UserDefaults.standard.object(forKey: key) as? Date else {
+        guard let time = keyStore?.object(forKey: key) as? Date else {
             return 1
         }
         let diff = Calendar.current.dateComponents([.day], from: time, to: Date())
@@ -339,8 +342,8 @@ public struct UserProfileView: View {
     /// 确保首次启动时间已记录（副作用隔离，由 onAppear 调用）
     private func ensureFirstLaunchRecorded() {
         let key = AppConstants.Keys.Storage.firstLaunchTime
-        if UserDefaults.standard.object(forKey: key) == nil {
-            UserDefaults.standard.set(Date(), forKey: key)
+        if keyStore?.object(forKey: key) == nil {
+            keyStore?.set(Date(), forKey: key)
         }
     }
 

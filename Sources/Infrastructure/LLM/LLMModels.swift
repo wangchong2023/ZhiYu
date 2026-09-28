@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import Dependencies
 
 // MARK: - LLM 提供商元数据
 
@@ -40,6 +41,7 @@ struct LLMProviderMetadata: Codable, Sendable {
 final class LLMRegistry: Sendable {
     static let shared = LLMRegistry()
     private let providers: [String: LLMProviderMetadata]
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     private init() {
         providers = LLMRegistry.loadProviders()
@@ -252,7 +254,7 @@ final class LLMConfigStore: ObservableObject {
         var initialAutoScan = true
         var initialAutoRefactor = false
 
-        if let data = UserDefaults.standard.data(forKey: configKey),
+        if let data = keyStore?.data(forKey: configKey),
            let config = try? JSONDecoder().decode(Config.self, from: data) {
             initialProvider = config.provider
             initialIsEnabled = config.isEnabled
@@ -288,7 +290,7 @@ final class LLMConfigStore: ObservableObject {
             return provider.defaultBaseURL
         }
         let key = baseURLStorageKey(for: provider)
-        if let stored = UserDefaults.standard.string(forKey: key), !stored.isEmpty {
+        if let stored = keyStore?.string(forKey: key), !stored.isEmpty {
             return stored
         }
         return provider.defaultBaseURL
@@ -297,7 +299,7 @@ final class LLMConfigStore: ObservableObject {
     /// 保存指定提供商绑定的 Base URL
     private func saveBaseURL(_ url: String, for provider: LLMProvider) {
         let key = baseURLStorageKey(for: provider)
-        UserDefaults.standard.set(url, forKey: key)
+        keyStore?.set(url, forKey: key)
         saveConfig()
     }
 
@@ -306,11 +308,11 @@ final class LLMConfigStore: ObservableObject {
     private func loadModel(for provider: LLMProvider) -> String {
         if provider == .custom {
             let key = modelStorageKey(for: provider)
-            return UserDefaults.standard.string(forKey: key) ?? ""
+            return keyStore?.string(forKey: key) ?? ""
         }
         
         let key = modelStorageKey(for: provider)
-        if let stored = UserDefaults.standard.string(forKey: key), !stored.isEmpty {
+        if let stored = keyStore?.string(forKey: key), !stored.isEmpty {
             if provider.suggestedModels.contains(stored) {
                 return stored
             }
@@ -321,7 +323,7 @@ final class LLMConfigStore: ObservableObject {
     /// 保存指定提供商绑定的 Model
     private func saveModel(_ m: String, for provider: LLMProvider) {
         let key = modelStorageKey(for: provider)
-        UserDefaults.standard.set(m, forKey: key)
+        keyStore?.set(m, forKey: key)
         saveConfig()
     }
 
@@ -335,7 +337,7 @@ final class LLMConfigStore: ObservableObject {
             autoRefactor: autoRefactor
         )
         if let data = try? JSONEncoder().encode(config) {
-            UserDefaults.standard.set(data, forKey: configKey)
+            keyStore?.set(data, forKey: configKey)
         }
     }
 
@@ -368,7 +370,7 @@ final class LLMConfigStore: ObservableObject {
 
         let cleanKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         let fallbackKey = "zhiyu_llm_api_key_fallback_\(provider.rawValue)"
-        UserDefaults.standard.removeObject(forKey: fallbackKey)
+        keyStore?.removeObject(forKey: fallbackKey)
 
         guard !cleanKey.isEmpty else {
             try? KeychainService.shared.delete(key: key)
