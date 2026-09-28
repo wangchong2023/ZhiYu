@@ -39,7 +39,9 @@ public enum KeyStoreKey: DependencyKey {
         ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
     }
     nonisolated public static var testValue: (any KeyStoreProtocol)? {
-        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        // 测试环境优先从 ServiceContainer 解析（已注册 mock 时使用 mock），
+        // 未注册时回退到 UserDefaultsKeyStore.shared，保持与迁移前 UserDefaults.standard 行为一致
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) ?? UserDefaultsKeyStore.shared
     }
     nonisolated public static var previewValue: (any KeyStoreProtocol)? { nil }
 }
