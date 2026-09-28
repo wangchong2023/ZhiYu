@@ -16,8 +16,8 @@ final class UFPDesignSystemTests: XCTestCase {
 
     func testDesignSystemSpacingTokensIntegrity() {
         XCTAssertEqual(DesignTokens.Spacing.small, 8.0)
-        XCTAssertEqual(DesignTokens.Spacing.medium, 16.0)
-        XCTAssertEqual(DesignTokens.Spacing.cardPadding, DesignTokens.Spacing.medium)
+        XCTAssertEqual(DesignTokens.Spacing.medium, 12.0)
+        XCTAssertEqual(DesignTokens.Spacing.standardPadding, 16.0)
     }
 
     func testModuleBundleExistence() {
