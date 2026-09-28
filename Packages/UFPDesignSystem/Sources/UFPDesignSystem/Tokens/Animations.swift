@@ -110,9 +110,9 @@ extension DesignTokens {
             public static let slowDuration: Double = Animations.slowDuration
             public static let looseDuration: Double = Animations.looseDuration
             public static let standardDamping: Double = 0.8
-            public static let standardAnimation: Animation = .appStandard
-            public static let prominentAnimation: Animation = .appProminent
-            public static let fastAnimation: Animation = .appFast
+            public static let standardAnimation: SwiftUI.Animation = .appStandard
+            public static let prominentAnimation: SwiftUI.Animation = .appProminent
+            public static let fastAnimation: SwiftUI.Animation = .appFast
         }
 
         public struct Decorator {

@@ -1,0 +1,163 @@
+//
+//  DesignTokens+Metrics.swift
+//  UFPDesignSystem
+//
+//  Created by Antigravity on 2026/05/29.
+//  Copyright © 2026 WangChong. All rights reserved.
+//
+//  系统层级：[UFPDesignSystem]
+//  核心职责：指标与仪表盘令牌（Metrics）— 仪表盘、快照测试、UI 组件尺寸。
+//
+import SwiftUI
+import CoreGraphics
+
+extension DesignTokens {
+
+    // MARK: - 11. 指标与仪表盘 (Metrics)
+    public enum Metrics {
+        public static let heroValueSize: CGFloat = DesignTokens.Spacing.Metrics.heroValueSize
+        public static let subValueSize: CGFloat = DesignTokens.Spacing.Metrics.subValueSize
+        public static let chartHeight: CGFloat = DesignTokens.Spacing.Metrics.chartHeight
+        public static let boxHeight: CGFloat = DesignTokens.Spacing.Metrics.boxHeight
+        public static let indicatorSize: CGFloat = DesignTokens.Spacing.Metrics.indicatorSize
+        public static let progressHeight: CGFloat = DesignTokens.Spacing.Metrics.progressHeight
+        public static let ringSize: CGFloat = DesignTokens.Spacing.Metrics.ringSize
+        public static let boxAspectRatio: CGFloat = DesignTokens.Spacing.Metrics.boxAspectRatio
+        public static let dashboardValueSize: CGFloat = DesignTokens.Spacing.Metrics.dashboardValueSize
+        public static let dashboardLabelSize: CGFloat = DesignTokens.Spacing.Metrics.dashboardLabelSize
+        public static let dashboardRadius: CGFloat = DesignTokens.Spacing.Metrics.dashboardRadius
+        public static let iconBoxSize: CGFloat = DesignTokens.Spacing.Metrics.iconBoxSize
+        public static let smallIconBoxSize: CGFloat = DesignTokens.Spacing.Metrics.smallIconBoxSize
+        public static let largeIconBoxSize: CGFloat = DesignTokens.Spacing.Metrics.largeIconBoxSize
+        public static let titleFontSize: CGFloat = DesignTokens.Spacing.Metrics.titleFontSize
+        public static let sourceCardWidth: CGFloat = DesignTokens.Spacing.Metrics.sourceCardWidth
+        public static let sourceCardHeight: CGFloat = DesignTokens.Spacing.Metrics.sourceCardHeight
+        public static let titleSmallFontSize: CGFloat = DesignTokens.Spacing.Metrics.titleSmallFontSize
+        public static let maxBreadcrumbCount: Int = DesignTokens.Spacing.Metrics.maxBreadcrumbCount
+        public static let maxCollabEditHistory: Int = DesignTokens.Spacing.Metrics.maxCollabEditHistory
+        public static let maxCollabEditPreviewLength: Int = DesignTokens.Spacing.Metrics.maxCollabEditPreviewLength
+        public static let maxTagCloudHeight: CGFloat = DesignTokens.Spacing.Metrics.maxTagCloudHeight
+        public static let knowledgeGrowthDaysLimit: Int = DesignTokens.Spacing.Metrics.knowledgeGrowthDaysLimit
+        public static let graphCoachMarkThreshold: Int = DesignTokens.Spacing.Metrics.graphCoachMarkThreshold
+        public static let maxReportPageExportCount: Int = DesignTokens.Spacing.Metrics.maxReportPageExportCount
+        public static let reportContentPreviewLength: Int = DesignTokens.Spacing.Metrics.reportContentPreviewLength
+        public static let maxReportContentLineLimit: Int = DesignTokens.Spacing.Metrics.maxReportContentLineLimit
+        public static let maxDashboardItems: Int = DesignTokens.Spacing.Metrics.maxDashboardItems
+        public static let maxRecentItems: Int = DesignTokens.Spacing.Metrics.maxRecentItems
+        public static let A4Width: CGFloat = DesignTokens.Spacing.Metrics.A4Width
+        public static let A4Height: CGFloat = DesignTokens.Spacing.Metrics.A4Height
+        public static let emptyStateVerticalPadding: CGFloat = DesignTokens.Spacing.Metrics.emptyStateVerticalPadding
+        public static let emptyStateIconOpacity: CGFloat = DesignTokens.Spacing.Metrics.emptyStateIconOpacity
+        public static let sectionSpacing: CGFloat = DesignTokens.Spacing.Metrics.sectionSpacing
+        
+        public static let lockOverlayScaleMultiplier: CGFloat = DesignTokens.Spacing.Metrics.lockOverlayScaleMultiplier
+        public static let coachMarkScaleMultiplier: CGFloat = DesignTokens.Spacing.Metrics.coachMarkScaleMultiplier
+        public static let splashQuoteShimmerOffset: CGFloat = DesignTokens.Spacing.Metrics.splashQuoteShimmerOffset
+        
+        public static let commandPaletteHeight: CGFloat = DesignTokens.Spacing.Metrics.commandPaletteHeight
+        public static let coachMarkIconScale: CGFloat = DesignTokens.Spacing.Metrics.coachMarkIconScale
+        public static let coachMarkActionHorizontalPadding: CGFloat = DesignTokens.Spacing.Metrics.coachMarkActionHorizontalPadding
+        public static let coachMarkRadiusOffset: CGFloat = DesignTokens.Spacing.Metrics.coachMarkRadiusOffset
+        public static let coachMarkShadowRadius: CGFloat = DesignTokens.Spacing.Metrics.coachMarkShadowRadius
+        public static let coachMarkShadowY: CGFloat = DesignTokens.Spacing.Metrics.coachMarkShadowY
+        
+        public static let welcomeHeroDotWidth: CGFloat = DesignTokens.Spacing.Metrics.welcomeHeroDotWidth
+        public static let welcomeHeroDotHeight: CGFloat = DesignTokens.Spacing.Metrics.welcomeHeroDotHeight
+        public static let welcomeHeroCircleSize: CGFloat = DesignTokens.Spacing.Metrics.welcomeHeroCircleSize
+        public static let welcomeHeroIconSize: CGFloat = DesignTokens.Spacing.Metrics.welcomeHeroIconSize
+        public static let statCardMinWidth: CGFloat = DesignTokens.Spacing.Metrics.statCardMinWidth
+        /// macOS/Catalyst 最小窗口宽度 (800px)
+        public static let minWindowWidth: CGFloat = DesignTokens.Spacing.Metrics.minWindowWidth
+        /// macOS/Catalyst 最小窗口高度 (600px)
+        public static let minWindowHeight: CGFloat = DesignTokens.Spacing.Metrics.minWindowHeight
+        /// 笔记本名称最大长度限制 (24字符)
+        public static let maxNotebookNameLength: Int = 24
+        /// 耗时分析标签宽度 (60px)
+        public static let timingLabelWidth: CGFloat = 60
+    
+        // MARK: - 语义化 UI 组件与布局 Token
+        /// 分割线厚度 (1px)
+        public static let dividerThickness: CGFloat = 1
+        /// UI 测试专用按钮尺寸 (44px) — 满足 XCUITest 最小可点击区域
+        public static let uiTestButtonSize: CGFloat = 44
+        /// 按钮与图标操作框尺寸 (56px)
+        public static let notebookActionIconSize: CGFloat = 56
+        /// 笔记本卡片宽度 (140px)
+        public static let notebookCardWidth: CGFloat = 140
+        /// 笔记本卡片高度 (180px)
+        public static let notebookCardHeight: CGFloat = 180
+        /// 笔记本标记条宽度 (40px)
+        public static let notebookBadgeWidth: CGFloat = 40
+        /// 头像选择框尺寸 (96px)
+        public static let avatarPickerSize: CGFloat = 96
+        /// 颜色选项圈尺寸 (54px)
+        public static let colorOptionSize: CGFloat = 54
+        /// 图谱控制浮框宽度 (140px)
+        public static let graphControlWidth: CGFloat = 140
+        /// 搜索命令面板宽度 (500px)
+        public static let commandPaletteWidth: CGFloat = 500
+        /// 锁屏/安全校验弹窗宽度 (500px)
+        public static let lockDialogWidth: CGFloat = 500
+        /// 锁屏/安全校验弹窗高度 (400px)
+        public static let lockDialogHeight: CGFloat = 400
+        /// 骨架屏头像尺寸 (40px)
+        public static let avatarSkeletonSize: CGFloat = 40
+        /// 骨架屏文本高度 (14px)
+        public static let textSkeletonHeight: CGFloat = 14
+        /// 空状态插画高度 (100px)
+        public static let emptyStateGraphicHeight: CGFloat = 100
+        /// 背景装饰光晕尺寸 (300px / 500px)
+        public static let backgroundDecorativeSize: CGFloat = 300
+        public static let backgroundLargeDecorativeSize: CGFloat = 500
+        /// 彩虹徽章小/大图标 (14px / 22px)
+        public static let glowBadgeSmallIcon: CGFloat = 14
+        public static let glowBadgeLargeIcon: CGFloat = 22
+        public static let glowBadgeSize: CGFloat = 14
+        public static let glowBadgeRingSize: CGFloat = 22
+        
+        /// 动画光晕与解密动效圈尺寸 (500px / 400px / 180px / 220px)
+        public static let largeGlowSize: CGFloat = 500
+        public static let mediumGlowSize: CGFloat = 400
+        public static let ringSmallSize: CGFloat = 180
+        public static let ringLargeSize: CGFloat = 220
+        
+        public static let settingsSidebarWidth: CGFloat = DesignTokens.Spacing.Metrics.settingsSidebarWidth
+        public static let settingsIconFrameSize: CGFloat = DesignTokens.Spacing.Metrics.settingsIconFrameSize
+
+        // MARK: - 快照测试设备与布局尺寸 Token
+        /// iPhone 13/14/15 Pro 竖屏逻辑宽度 (375pt)
+        public static let snapshotPhoneWidth: CGFloat = 375
+        /// iPhone 13/14/15 Pro 竖屏逻辑高度 (812pt)
+        public static let snapshotPhoneHeight: CGFloat = 812
+        /// iPad 竖屏逻辑宽度 (768pt)
+        public static let snapshotPadWidth: CGFloat = 768
+        /// 侧边栏快照固定宽度 (300pt)
+        public static let snapshotSidebarWidth: CGFloat = 300
+        /// 详情视图快照固定宽度 (500pt)
+        public static let snapshotDetailWidth: CGFloat = 500
+        /// 长滚动视图快照高度 (1200pt)
+        public static let snapshotScrollHeight: CGFloat = 1200
+        /// 面包屑栏快照高度 (50pt)
+        public static let snapshotBreadcrumbHeight: CGFloat = 50
+        /// 小型组件快照尺寸 (100pt)
+        public static let snapshotSmallComponentSize: CGFloat = 100
+        /// 中型组件快照尺寸 (150pt)
+        public static let snapshotMediumComponentSize: CGFloat = 150
+        /// 图谱节点视口快照尺寸 (200pt)
+        public static let snapshotGraphViewportSize: CGFloat = 200
+        /// 图谱布局标准测试画布宽度 (800pt)
+        public static let snapshotGraphCanvasWidth: CGFloat = 800
+        /// 图谱布局标准测试画布高度 (600pt)
+        public static let snapshotGraphCanvasHeight: CGFloat = 600
+        /// iPad 横屏逻辑宽度 (1024pt)
+        public static let snapshotPadLandscapeWidth: CGFloat = 1024
+        /// 空图像占位尺寸 (10pt)，用于测试空画布安全转换
+        public static let snapshotEmptyImageSize: CGFloat = 10
+        /// 笔记本卡片快照宽度 (180pt)
+        public static let snapshotNotebookCardWidth: CGFloat = 180
+        /// 笔记本卡片快照高度 (220pt)
+        public static let snapshotNotebookCardHeight: CGFloat = 220
+        /// 笔记本列表行快照高度 (80pt)
+        public static let snapshotNotebookRowHeight: CGFloat = 80
+    }
+}
