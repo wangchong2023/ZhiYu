@@ -390,7 +390,7 @@ struct DatabaseCorruptedBanner: View {
                 let dbURL = try databaseManager.defaultSandboxDatabaseURL()
 
                 // 重新执行 setup 挂载物理沙盒（通过 DI 注入的 databaseManager）
-                try await databaseManager.setup(at: dbURL)
+                try databaseManager.setup(at: dbURL)
                 Logger.shared.info("[DatabaseCorruptedBanner] Reverification succeeded! Remounted physical database.")
             } catch {
                 Logger.shared.error("[DatabaseCorruptedBanner] Reverification" + " failed: \(error)", error: error)
