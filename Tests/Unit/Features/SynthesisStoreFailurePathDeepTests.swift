@@ -29,6 +29,12 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
     private var taskCenter: TaskCenter!
     private var store: SynthesisStore!
 
+    /// 与 SynthesisStore 的 @Dependency(\.keyStore) 使用同一存储实例，
+    /// 避免穿透抽象层直接读 UserDefaults.standard 导致存储实例不一致
+    private var keyStore: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) ?? UserDefaultsKeyStore.shared
+    }
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
@@ -319,7 +325,7 @@ final class SynthesisStoreFailurePathDeepTests: XCTestCase {
         store.saveSynthesisResult(type: .report, content: content)
 
         let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + SynthesisStore.SynthesisType.report.rawValue
-        XCTAssertNotNil(UserDefaults.standard.data(forKey: key), "应持久化到 UserDefaults")
+        XCTAssertNotNil(keyStore?.data(forKey: key), "应持久化到 keyStore")
     }
 
     // MARK: - extractTitle 私有方法（通过 saveSynthesisResult 间接验证）

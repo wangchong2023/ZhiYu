@@ -19,17 +19,25 @@ import UFPStorage
 final class ChatHistoryStoreTests: XCTestCase {
     
     var store: ChatHistoryStore!
-    
+
+    /// 与 ChatHistoryStore 的 @Dependency(\.keyStore) 使用同一存储实例，
+    /// 避免穿透抽象层直接读 UserDefaults.standard 导致存储实例不一致
+    private var keyStore: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) ?? UserDefaultsKeyStore.shared
+    }
+
+    private let historyKey = LLMConstants.ChatHistory.storageKey
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
         store = ChatHistoryStore()
         store.messages.removeAll()
-        UserDefaults.standard.removeObject(forKey: "zhiyu_chat_history")
+        keyStore?.removeObject(forKey: historyKey)
     }
     
     override func tearDown() async throws {
-        UserDefaults.standard.removeObject(forKey: "zhiyu_chat_history")
+        keyStore?.removeObject(forKey: historyKey)
         store = nil
         ServiceContainer.shared.reset()
         try await super.tearDown()
@@ -77,7 +85,7 @@ final class ChatHistoryStoreTests: XCTestCase {
         store.append(original)
         
         // 从沙盒偏好设置中提取，还原比对
-        guard let data = UserDefaults.standard.data(forKey: "zhiyu_chat_history"),
+        guard let data = keyStore?.data(forKey: historyKey),
               let decoded = try? JSONDecoder().decode([ChatMessage].self, from: data) else {
             XCTFail("无法正确加载被持久化的消息"); return
         }

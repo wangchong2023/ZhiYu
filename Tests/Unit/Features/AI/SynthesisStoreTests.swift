@@ -10,12 +10,19 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 @MainActor
 final class SynthesisStoreTests: XCTestCase {
 
     nonisolated(unsafe) var store: SynthesisStore!
+
+    /// 与 SynthesisStore 的 @Dependency(\.keyStore) 使用同一存储实例，
+    /// 避免穿透抽象层直接读 UserDefaults.standard 导致存储实例不一致
+    private var keyStore: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) ?? UserDefaultsKeyStore.shared
+    }
 
     override func setUp() async throws {
         try await super.setUp()
@@ -118,7 +125,7 @@ final class SynthesisStoreTests: XCTestCase {
 
         // 2. 从磁盘物理 Key 反向解码读取
         let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
-        guard let diskData = UserDefaults.standard.data(forKey: key),
+        guard let diskData = keyStore?.data(forKey: key),
               let diskDocs = try? JSONDecoder().decode([SynthesisStore.SynthesisDocument].self, from: diskData),
               let diskDoc = diskDocs.first else {
             XCTFail("磁盘 Key 下必须能成功物理解包出 SynthesisDocument")
@@ -134,14 +141,14 @@ final class SynthesisStoreTests: XCTestCase {
         store.saveSynthesisResult(type: type, content: content)
 
         let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + type.rawValue
-        XCTAssertNotNil(UserDefaults.standard.data(forKey: key), "存盘后磁盘物理 Key 必须存在数据")
+        XCTAssertNotNil(keyStore?.data(forKey: key), "存盘后磁盘物理 Key 必须存在数据")
 
         // 执行清空
         store.clearAll()
 
         // 反向物理读取校验
         XCTAssertTrue(store.synthesisResults[type]?.isEmpty ?? true, "反向读取：内存字典必须已被完全清空")
-        XCTAssertNil(UserDefaults.standard.data(forKey: key), "反向读取：磁盘 Key 下物理数据必须已被 100% 抹除，返回 nil")
+        XCTAssertNil(keyStore?.data(forKey: key), "反向读取：磁盘 Key 下物理数据必须已被 100% 抹除，返回 nil")
     }
 
     func testPerformSynthesis_WithOptionsAndCustomPrompt() async throws {

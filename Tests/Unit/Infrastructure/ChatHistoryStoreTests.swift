@@ -7,19 +7,26 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 final class ChatHistoryStoreLifecycleTests: XCTestCase {
 
     private let historyKey = LLMConstants.ChatHistory.storageKey
 
+    /// 与 ChatHistoryStore 的 @Dependency(\.keyStore) 使用同一存储实例，
+    /// 避免穿透抽象层直接读 UserDefaults.standard 导致存储实例不一致
+    private var keyStore: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) ?? UserDefaultsKeyStore.shared
+    }
+
     override func setUp() {
         super.setUp()
-        UserDefaults.standard.removeObject(forKey: historyKey)
+        keyStore?.removeObject(forKey: historyKey)
     }
 
     override func tearDown() {
-        UserDefaults.standard.removeObject(forKey: historyKey)
+        keyStore?.removeObject(forKey: historyKey)
         super.tearDown()
     }
 
@@ -38,7 +45,7 @@ final class ChatHistoryStoreLifecycleTests: XCTestCase {
         let store = ChatHistoryStore()
         store.clear()
         store.append(ChatMessageDTO(role: .user, content: "Persisted"))
-        XCTAssertTrue(UserDefaults.standard.data(forKey: historyKey) != nil)
+        XCTAssertNotNil(keyStore?.data(forKey: historyKey))
     }
 
     // MARK: - appendBatch
@@ -106,7 +113,7 @@ final class ChatHistoryStoreLifecycleTests: XCTestCase {
     }
 
     func testLoadWithEmptyStorageReturnsEmpty() {
-        UserDefaults.standard.removeObject(forKey: historyKey)
+        keyStore?.removeObject(forKey: historyKey)
         let store = ChatHistoryStore()
         XCTAssertTrue(store.messages.isEmpty)
     }
@@ -117,8 +124,8 @@ final class ChatHistoryStoreLifecycleTests: XCTestCase {
         let store = ChatHistoryStore()
         store.clear()
         store.append(ChatMessageDTO(role: .user, content: "JSON test"))
-        guard let data = UserDefaults.standard.data(forKey: historyKey) else {
-            XCTFail("应写入 UserDefaults")
+        guard let data = keyStore?.data(forKey: historyKey) else {
+            XCTFail("应写入 keyStore")
             return
         }
         let decoded = try? JSONDecoder().decode([ChatMessageDTO].self, from: data)

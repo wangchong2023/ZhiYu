@@ -27,6 +27,12 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     private var taskCenter: TaskCenter!
     private var store: SynthesisStore!
 
+    /// 与 SynthesisStore 的 @Dependency(\.keyStore) 使用同一存储实例，
+    /// 避免穿透抽象层直接读 UserDefaults.standard 导致存储实例不一致
+    private var keyStore: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) ?? UserDefaultsKeyStore.shared
+    }
+
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
@@ -120,13 +126,13 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
     func testDeleteSynthesisDocPersistenceUpdatedAfterDelete() {
         store.saveSynthesisResult(type: .report, content: "# 报告\n正文内容。")
         let key = AppConstants.Keys.Storage.Legacy.synthesisDocsPrefix + SynthesisStore.SynthesisType.report.rawValue
-        XCTAssertNotNil(UserDefaults.standard.data(forKey: key))
+        XCTAssertNotNil(keyStore?.data(forKey: key))
 
         let docID = store.synthesisResults[.report]?.first?.id
         if let id = docID {
             store.deleteSynthesisDoc(type: .report, docID: id)
             // 删除最后一个后，persistResults 应移除 key
-            XCTAssertNil(UserDefaults.standard.data(forKey: key), "删除最后一个后 UserDefaults key 应被移除")
+            XCTAssertNil(keyStore?.data(forKey: key), "删除最后一个后 keyStore key 应被移除")
         }
     }
 
