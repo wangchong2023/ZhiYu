@@ -9,6 +9,7 @@
 //  核心职责：验证 SystemStatsCoordinator 的字节格式化、图标选择与统计加载流程。
 //
 
+import UFPDesignSystem
 import XCTest
 import UFPCore
 @testable import ZhiYu
@@ -66,31 +67,31 @@ final class SystemStatsCoordinatorTests: XCTestCase {
     /// 验证 iconForCategory 数据库标签返回 database 图标
     func testIconForCategoryDatabase() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.database)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.database)
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.database)
     }
 
     /// 验证 iconForCategory 日志标签返回 logs 图标
     func testIconForCategoryLogs() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.logs)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.logs)
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.logs)
     }
 
     /// 验证 iconForCategory 导入标签返回 storageImport 图标
     func testIconForCategoryImport() {
         let result = coordinator.iconForCategory(L10n.Dashboard.stats.storageImport)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.storageImport)
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.storageImport)
     }
 
     /// 验证 iconForCategory 导出标签返回 storageExport 图标
     func testIconForCategoryExport() {
         let result = coordinator.iconForCategory(L10n.Dashboard.stats.storageExport)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.storageExport)
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.storageExport)
     }
 
     /// 验证 iconForCategory 未知标签返回 fallback 图标
     func testIconForCategoryUnknownReturnsFallback() {
         let result = coordinator.iconForCategory("未知分类")
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.fallback)
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.fallback)
     }
 
     // MARK: - loadStats

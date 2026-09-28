@@ -6,6 +6,7 @@
 //  核心职责：验证 MockColorName、SystemShadow、Color.theme 颜色令牌及通用 UI 符号与占位符完整性。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 @testable import ZhiYu
@@ -24,9 +25,9 @@ final class DesignSystemAndUIConstantsTests: XCTestCase {
         XCTAssertEqual(FeatureConstants.MockColorName.yellow, "yellow")
     }
 
-    /// 验证 SystemShadow.radiusSmall 为正值
+    /// 验证 DesignTokens.SystemShadow.radiusSmall 为正值
     func testSystemShadow_radiusSmall_isPositive() {
-        XCTAssertGreaterThan(SystemShadow.radiusSmall, 0)
+        XCTAssertGreaterThan(DesignTokens.SystemShadow.radiusSmall, 0)
     }
 
     /// 验证 Color.theme 包含所有标准颜色令牌且正常可访问

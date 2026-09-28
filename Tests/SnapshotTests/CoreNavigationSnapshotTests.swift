@@ -11,6 +11,7 @@
 //           针对边界值、异常输入、状态组合设计用例。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -64,10 +65,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
 
         let view = RegionSelectorToggle(currentRegion: .constant(.china), onToggle: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-02: 选中国际区域时的视觉一致性
@@ -76,10 +77,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
 
         let view = RegionSelectorToggle(currentRegion: .constant(.international), onToggle: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-03: onToggle 回调行为验证 — 切换区域时应触发回调
@@ -121,10 +122,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
 
         let view = ActivityRow(task: task)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-05: 失败任务（无关联页面 ID）的视觉一致性
@@ -141,10 +142,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
 
         let view = ActivityRow(task: task)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-06: 运行中任务（带进度和阶段）的视觉一致性
@@ -161,10 +162,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
 
         let view = ActivityRow(task: task)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-07: 等待中任务的视觉一致性
@@ -180,10 +181,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
 
         let view = ActivityRow(task: task)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-08: 任务名称和目标为空字符串时的边界行为
@@ -200,10 +201,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
 
         let view = ActivityRow(task: task)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 3. TagCapsuleView（标签气泡）
@@ -220,10 +221,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: false
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-10: 列表模式选中标签的视觉一致性
@@ -239,10 +240,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: false
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-11: 气泡模式高词频标签（bubbleRatio=1.0）的视觉一致性
@@ -257,10 +258,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: true
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)))
     }
 
     /// TC-PILOT-12: 气泡模式低词频标签（bubbleRatio=0.0）的视觉一致性
@@ -275,10 +276,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: true
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)))
     }
 
     /// TC-PILOT-13: 编辑模式下选中标签的视觉一致性（应显示编辑角标）
@@ -295,10 +296,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: false
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-14: bubbleRatio 超出 [0,1] 范围（负值）的边界行为
@@ -314,10 +315,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: true
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)))
     }
 
     /// TC-PILOT-15: bubbleRatio 超出 [0,1] 范围（超过 1.0）的边界行为
@@ -333,10 +334,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: true
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)))
     }
 
     /// TC-PILOT-16: 标签包含 "#" 前缀时的显示行为
@@ -352,10 +353,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: false
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// TC-PILOT-17: count 为 0 时的边界行为
@@ -371,10 +372,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             isBubbleMode: false
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 4. SynthesisActionButton（合成操作按钮）
@@ -402,10 +403,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             showOutput: boolBinding(false)
         )
         .snapshotEnvironment(synthesisStore: synthesisStore)
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)))
     }
 
     /// TC-PILOT-19: 生成中状态合成按钮的视觉一致性
@@ -428,10 +429,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             showOutput: boolBinding(false)
         )
         .snapshotEnvironment(synthesisStore: synthesisStore)
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2)))
     }
 
     /// TC-PILOT-20: 达到上限状态合成按钮的视觉一致性
@@ -468,10 +469,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
             showOutput: boolBinding(false)
         )
         .snapshotEnvironment(synthesisStore: synthesisStore)
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2.5)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2.5)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 2.5)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 2.5)))
     }
 
     // MARK: - 5. OnDeviceTestView（端侧大模型测试沙盒）
@@ -483,10 +484,10 @@ final class CoreNavigationSnapshotTests: XCTestCase {
         let service = OnDeviceLLMService()
         let view = OnDeviceTestView(onDeviceService: service)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// TC-PILOT-22: OnDeviceTestView 生成中状态的视觉一致性
@@ -500,9 +501,9 @@ final class CoreNavigationSnapshotTests: XCTestCase {
         service.generatedText = "正在生成中..."
         let view = OnDeviceTestView(onDeviceService: service)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 }

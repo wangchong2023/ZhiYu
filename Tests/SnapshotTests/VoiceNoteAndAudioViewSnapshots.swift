@@ -9,6 +9,7 @@
 //  核心职责：语音笔记与音频处理模块的 SwiftUI 视觉回归与渲染一致性验证。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -62,6 +63,6 @@ final class VoiceNoteAndAudioViewSnapshots: XCTestCase {
         )
         .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 }

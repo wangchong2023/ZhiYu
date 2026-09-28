@@ -9,6 +9,7 @@
 //  核心职责：AI交互、问答测试与编辑器组件视图快照测试，针对边界值、异常输入、状态组合设计用例。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -63,7 +64,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = QuizView(quiz: quiz)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -78,7 +79,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = QuizView(quiz: quiz)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -106,7 +107,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = ConceptDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -123,7 +124,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = ConceptDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -158,7 +159,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = ConceptDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -192,7 +193,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = SourceDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -216,7 +217,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = SourceDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -243,7 +244,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = SourceDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -268,7 +269,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = ComparisonDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -341,7 +342,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = ComparisonDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -360,7 +361,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = EntityDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -400,7 +401,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = EntityDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -423,7 +424,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = MedalCard(medal: medal, isEarned: true)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -444,7 +445,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = MedalCard(medal: medal, isEarned: false)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -468,7 +469,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = MedalRewardPopup(medal: medal, onDismiss: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -481,7 +482,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
     func testSubscriptionPlanCardMonthlySelected() {
         let view = SubscriptionPlanCard(selectedCycle: .monthly, onCycleChange: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 400)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 400)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -492,7 +493,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
     func testSubscriptionPlanCardYearlySelected() {
         let view = SubscriptionPlanCard(selectedCycle: .yearly, onCycleChange: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 400)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 400)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -505,7 +506,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
     func testCollabInfoRowBasic() {
         let view = CollabInfoRow(icon: "wifi", text: "局域网协作已开启")
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 60)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 60)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -523,7 +524,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = DiscoveredRoomRow(room: room, onJoin: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 80)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 80)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -541,7 +542,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = ConnectedPeerRow(peer: peer, showRole: true, roleDisplayName: "编辑")
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 80)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 80)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -559,7 +560,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = ConnectedPeerRow(peer: peer, showRole: false, roleDisplayName: nil)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 80)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 80)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -581,7 +582,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
 
         let view = RecentEditRow(edit: edit)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 80)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 80)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -590,14 +591,14 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
     /// 目的：验证 .owner / .editor / .viewer 三种角色的颜色和文案，
     ///       同时检测 color switch 分支（yellow/appAccent/appSecondary）与 role.displayName 本地化
     func testCollabRoleBadgeThreeRoles() {
-        let view = VStack(spacing: DesignSystem.medium) {
+        let view = VStack(spacing: DesignTokens.Spacing.medium) {
             CollabRoleBadge(role: .owner)
             CollabRoleBadge(role: .editor)
             CollabRoleBadge(role: .viewer)
         }
         .padding()
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 160)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 160)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -617,7 +618,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
             pageCount: 42
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 220)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 220)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -635,7 +636,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
             pageCount: 0
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 220)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 220)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -654,7 +655,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
             pageCount: 1
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 220)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 220)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -673,7 +674,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
             isPressed: true
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 220)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 220)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }

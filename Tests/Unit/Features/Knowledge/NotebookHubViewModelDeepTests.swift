@@ -9,6 +9,7 @@
 //  核心职责：深入验证 NotebookHubViewModel 的名称长度安全截断、搜索词过滤、按日期/名称排序与显示模式切换分支。
 //
 
+import UFPDesignSystem
 import XCTest
 import UFPCore
 import Dependencies
@@ -32,11 +33,11 @@ final class NotebookHubViewModelDeepTests: XCTestCase {
 
     func testNewNotebookName_LengthLimit_CapsSafely() {
         let vm = NotebookHubViewModel()
-        let hugeName = String(repeating: "A", count: DesignSystem.Metrics.maxNotebookNameLength + 20)
+        let hugeName = String(repeating: "A", count: DesignTokens.Metrics.maxNotebookNameLength + 20)
 
         vm.newNotebookName = hugeName
 
-        XCTAssertEqual(vm.newNotebookName.count, DesignSystem.Metrics.maxNotebookNameLength,
+        XCTAssertEqual(vm.newNotebookName.count, DesignTokens.Metrics.maxNotebookNameLength,
                        "笔记本名称应当被安全截断至最大限制长度")
     }
 

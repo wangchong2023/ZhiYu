@@ -173,7 +173,7 @@ struct AuthView: View {
                 Text(L10n.Common.appName)
                     .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .black, design: .rounded))
                     .foregroundStyle(.appText)
-                    .tracking(DesignTokens.Reference.DesignTokens.Spacing.one)
+                    .tracking(DesignTokens.Reference.Spacing.one)
 
                 Text(L10n.Onboarding.subtitle)
                     .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .medium))

@@ -9,6 +9,7 @@
 //  核心职责：验证侧边栏自适应布局组件、角标格式化、颜色解析、标题容错及深度链接路由状态机。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPCore
@@ -69,7 +70,7 @@ final class SidebarAndAppLayoutInteractiveTests: XCTestCase {
 
     func testSidebarIconRow_standardAndFilledBadges() {
         let defaultRow = SidebarIconRow(
-            icon: DesignSystem.Icons.dashboard,
+            icon: DesignTokens.Icons.dashboard,
             color: .blue,
             title: "控制台",
             badge: 0,
@@ -78,7 +79,7 @@ final class SidebarAndAppLayoutInteractiveTests: XCTestCase {
         XCTAssertNotNil(defaultRow.body)
 
         let badgeRow = SidebarIconRow(
-            icon: DesignSystem.Icons.refresh,
+            icon: DesignTokens.Icons.refresh,
             color: .orange,
             title: "任务中心",
             badge: 105,
@@ -89,7 +90,7 @@ final class SidebarAndAppLayoutInteractiveTests: XCTestCase {
 
     func testUniverseNavRow_accentAndModelColor() {
         let accentNav = UniverseNavRow(
-            icon: DesignSystem.Icons.pageList,
+            icon: DesignTokens.Icons.pageList,
             colorName: "accent",
             title: "所有页面",
             count: 42
@@ -98,7 +99,7 @@ final class SidebarAndAppLayoutInteractiveTests: XCTestCase {
         XCTAssertEqual(accentNav.iconColor, .appAccent)
 
         let namedNav = UniverseNavRow(
-            icon: DesignSystem.Icons.tag,
+            icon: DesignTokens.Icons.tag,
             colorName: "green",
             title: "已标记",
             count: 0

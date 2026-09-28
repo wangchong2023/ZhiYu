@@ -9,6 +9,7 @@
 //  核心职责：知识库与核心展示视图快照测试，针对边界值、异常输入、状态组合设计用例。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -68,7 +69,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testLogViewEmptyState() {
         let view = LogView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -79,7 +80,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testLogViewContentEmptyStateBoundary() {
         let view = LogViewContent()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -94,7 +95,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
 
         let view = UserProfileView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -108,7 +109,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
 
         let view = UserProfileView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
 
@@ -127,7 +128,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
 
         let view = UserProfileView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -139,7 +140,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testKnowledgePageListViewDefaultNoFilter() {
         let view = KnowledgePageListView(filterType: nil)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -149,7 +150,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testKnowledgePageListViewFilterConcept() {
         let view = KnowledgePageListView(filterType: .concept)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -161,7 +162,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testKnowledgePageListViewEmptySearchWithFilterTypeNoPages() {
         let view = KnowledgePageListView(filterType: .comparison)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -173,7 +174,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testCollaborationViewDefaultNotJoined() {
         let view = CollaborationView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -183,7 +184,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testCollaborationViewContentSimulatorWarning() {
         let view = CollaborationViewContent()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -195,7 +196,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testOnDeviceLLMSettingsViewDefaultNoModel() {
         let view = OnDeviceLLMSettingsView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -207,7 +208,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testLLMSettingsViewDefaultDisabled() {
         let view = LLMSettingsView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -223,7 +224,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
 
         let view = SynthesisView(selection: Binding(get: { selection }, set: { selection = $0 }), selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 }))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -235,7 +236,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testAuthViewDefaultChinaRegion() {
         let view = AuthView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -246,7 +247,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
         // 通过 AuthRegionDetector 设置默认区域为 international
         let view = AuthView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -259,7 +260,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
         var selectedTab: AppTab = .graph
         let view = GraphEmptyStateView(selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 }))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -270,9 +271,9 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
         var filterType: PageType? = .raw
         let view = GraphFilterPillsView(filterType: Binding(get: { filterType }, set: { filterType = $0 }), tooltipManager: TooltipManager())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 10. Graph3DView（3D 知识图谱视图）
@@ -285,7 +286,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
 
         let view = Graph3DView(selectedNodeID: Binding(get: { selectedNodeID }, set: { selectedNodeID = $0 }), isFullScreen: Binding(get: { isFullScreen }, set: { isFullScreen = $0 }))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -298,7 +299,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
 
         let view = Graph3DView(selectedNodeID: Binding(get: { selectedNodeID }, set: { selectedNodeID = $0 }), isFullScreen: Binding(get: { isFullScreen }, set: { isFullScreen = $0 }))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -311,7 +312,7 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     func testLogViewEmptyStateDuplicateTextDetection() {
         let view = LogViewContent()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }

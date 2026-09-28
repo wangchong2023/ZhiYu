@@ -8,6 +8,7 @@
 //  系统层级：[Shared] 测试层
 //  核心职责：针对 LintService 开展原始页面、自引用链接、循环链接、空页面与重复标题的边界单元测试验证。
 //
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPStorage
@@ -58,7 +59,7 @@ final class LintServiceEdgeCasesTests: XCTestCase {
                 if title == "B" { return pageB }
                 return nil
             },
-            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotGraphCanvasWidth, height: DesignSystem.Metrics.snapshotGraphCanvasHeight)
+            canvasSize: CGSize(width: DesignTokens.Metrics.snapshotGraphCanvasWidth, height: DesignTokens.Metrics.snapshotGraphCanvasHeight)
         )
         XCTAssertEqual(result.edges.count, 2, "Circular links should produce 2 edges")
     }

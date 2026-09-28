@@ -9,6 +9,7 @@
 //  核心职责：验证 AppButton、AppCard、AppChip、AppMetricCard、StatCard 等核心基础视觉组件的快照渲染与暗黑模式。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -45,13 +46,13 @@ final class UIComponentsButtonAndCardSnapshots: XCTestCase {
     // MARK: - 1. 按钮组件变体快照
 
     func testAppButtons_AllVariantsSnapshot() {
-        let view = VStack(spacing: DesignSystem.medium) {
+        let view = VStack(spacing: DesignTokens.Spacing.medium) {
             AppPrimaryButton(title: "主要操作", icon: "arrow.right", action: {})
             AppBorderedButton(title: "次要操作", icon: "gear", action: {})
             AppCapsuleButton(title: "胶囊标签", icon: "tag.fill")
         }
-        .padding(DesignSystem.medium)
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
+        .padding(DesignTokens.Spacing.medium)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
         .snapshotEnvironment()
 
         assertSnapshot(of: view, as: .image(layout: .sizeThatFits))
@@ -60,7 +61,7 @@ final class UIComponentsButtonAndCardSnapshots: XCTestCase {
     // MARK: - 2. 卡片与指标组件快照
 
     func testAppMetricCards_Snapshot() {
-        let view = VStack(spacing: DesignSystem.medium) {
+        let view = VStack(spacing: DesignTokens.Spacing.medium) {
             AppMetricCard(
                 title: "知识页面总数",
                 value: "1,248",
@@ -74,8 +75,8 @@ final class UIComponentsButtonAndCardSnapshots: XCTestCase {
                 color: .blue
             )
         }
-        .padding(DesignSystem.medium)
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
+        .padding(DesignTokens.Spacing.medium)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
         .snapshotEnvironment()
 
         assertSnapshot(of: view, as: .image(layout: .sizeThatFits))

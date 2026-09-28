@@ -6,6 +6,7 @@
 //  核心职责：AI 合成实验室子视图的快照测试，覆盖错误状态、文档行、报告、幻灯片、思维导图、控制弹窗。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -42,7 +43,7 @@ final class SynthesisViewSnapshots: XCTestCase {
             onSwitchToText: nil,
             onRetry: { }
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -55,7 +56,7 @@ final class SynthesisViewSnapshots: XCTestCase {
             onSwitchToText: { },
             onRetry: { }
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -68,7 +69,7 @@ final class SynthesisViewSnapshots: XCTestCase {
             onSwitchToText: nil,
             onRetry: nil
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -95,10 +96,10 @@ final class SynthesisViewSnapshots: XCTestCase {
             onRename: { },
             onDelete: { }
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     /// 测试文档行 — 编辑模式，选中状态，含来源页面
@@ -120,10 +121,10 @@ final class SynthesisViewSnapshots: XCTestCase {
             onRename: { },
             onDelete: { }
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     /// 测试文档行 — 编辑模式，未选中状态
@@ -145,10 +146,10 @@ final class SynthesisViewSnapshots: XCTestCase {
             onRename: { },
             onDelete: { }
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     // MARK: - SynthesisReportView
@@ -164,7 +165,7 @@ final class SynthesisViewSnapshots: XCTestCase {
 
         let view = SynthesisReportView(doc: doc)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -186,7 +187,7 @@ final class SynthesisViewSnapshots: XCTestCase {
 
         let view = SynthesisSlidesView(doc: doc)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -203,7 +204,7 @@ final class SynthesisViewSnapshots: XCTestCase {
 
         let view = SynthesisSlidesView(doc: doc)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -221,7 +222,7 @@ final class SynthesisViewSnapshots: XCTestCase {
         )
 
         let view = SynthesisMindmapView(doc: doc)
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -237,7 +238,7 @@ final class SynthesisViewSnapshots: XCTestCase {
         )
 
         let view = SynthesisMindmapView(doc: doc)
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -248,7 +249,7 @@ final class SynthesisViewSnapshots: XCTestCase {
     /// 测试控制弹窗 — 报告类型
     func testSynthesisControlSheet_ReportType() {
         let view = SynthesisControlSheet(type: .report) { _ in }
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -257,7 +258,7 @@ final class SynthesisViewSnapshots: XCTestCase {
     /// 测试控制弹窗 — 思维导图类型
     func testSynthesisControlSheet_MindmapType() {
         let view = SynthesisControlSheet(type: .mindmap) { _ in }
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -269,10 +270,10 @@ final class SynthesisViewSnapshots: XCTestCase {
     func testSynthesisTimelineView_NoRunningTasks() {
         let taskCenter = TaskCenter()
         let view = SynthesisTimelineView(taskCenter: taskCenter)
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     /// 测试时间线视图 — 含运行中合成任务
@@ -288,9 +289,9 @@ final class SynthesisViewSnapshots: XCTestCase {
         ]
 
         let view = SynthesisTimelineView(taskCenter: taskCenter)
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 }

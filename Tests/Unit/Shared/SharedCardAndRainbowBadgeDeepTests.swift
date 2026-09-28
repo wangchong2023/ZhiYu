@@ -9,6 +9,7 @@
 //  核心职责：深度覆盖 L3 Shared 通用卡片体系 (AppCard/GlassCard/BorderedCard) 与彩虹呼吸光晕指示微标。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 @testable import ZhiYu
@@ -37,7 +38,7 @@ final class SharedCardAndRainbowBadgeDeepTests: XCTestCase {
         XCTAssertEqual(card1.paddingToken, .standardPadding)
 
         // 2. CGFloat 映射构造器分支覆盖
-        let card2 = AppCard(cornerRadius: Spacing.microRadius, padding: Spacing.atomic) {
+        let card2 = AppCard(cornerRadius: DesignTokens.Spacing.microRadius, padding: DesignTokens.Spacing.atomic) {
             Text("Micro Atomic")
         }
         let host2 = UIHostingController(rootView: card2.snapshotEnvironment())
@@ -46,7 +47,7 @@ final class SharedCardAndRainbowBadgeDeepTests: XCTestCase {
         XCTAssertNotNil(host2.view)
         XCTAssertEqual(card2.cornerRadiusToken, .micro)
 
-        let card3 = AppCard(cornerRadius: Spacing.largeRadius, padding: Spacing.giant) {
+        let card3 = AppCard(cornerRadius: DesignTokens.Spacing.largeRadius, padding: DesignTokens.Spacing.giant) {
             Text("Large Giant")
         }
         let host3 = UIHostingController(rootView: card3.snapshotEnvironment())
@@ -55,7 +56,7 @@ final class SharedCardAndRainbowBadgeDeepTests: XCTestCase {
         XCTAssertNotNil(host3.view)
         XCTAssertEqual(card3.cornerRadiusToken, .large)
 
-        let card4 = AppCard(cornerRadius: Spacing.chipRadius, padding: Spacing.huge) {
+        let card4 = AppCard(cornerRadius: DesignTokens.Spacing.chipRadius, padding: DesignTokens.Spacing.huge) {
             Text("Chip Huge")
         }
         let host4 = UIHostingController(rootView: card4.snapshotEnvironment())
@@ -69,17 +70,17 @@ final class SharedCardAndRainbowBadgeDeepTests: XCTestCase {
 
     func testAppBorderedAndGlassCard() {
         // 1. 描边卡片
-        let bordered = AppBorderedCard(cornerRadius: Spacing.cardRadius, borderColor: .appBorder) {
+        let bordered = AppBorderedCard(cornerRadius: DesignTokens.Spacing.cardRadius, borderColor: .appBorder) {
             Text("Bordered Card Content")
         }
         let host1 = UIHostingController(rootView: bordered.snapshotEnvironment())
         host1.view.frame = CGRect(x: 0, y: 0, width: 300, height: 100)
         host1.view.layoutIfNeeded()
         XCTAssertNotNil(host1.view)
-        XCTAssertEqual(bordered.cornerRadius, Spacing.cardRadius)
+        XCTAssertEqual(bordered.cornerRadius, DesignTokens.Spacing.cardRadius)
 
         // 2. 玻璃拟态卡片 - 普通态
-        let glassNormal = AppGlassCard(cornerRadius: Spacing.cardRadius, isHighlighted: false) {
+        let glassNormal = AppGlassCard(cornerRadius: DesignTokens.Spacing.cardRadius, isHighlighted: false) {
             Text("Glass Normal")
         }
         let host2 = UIHostingController(rootView: glassNormal.snapshotEnvironment())
@@ -89,7 +90,7 @@ final class SharedCardAndRainbowBadgeDeepTests: XCTestCase {
         XCTAssertFalse(glassNormal.isHighlighted)
 
         // 3. 玻璃拟态卡片 - 高亮态
-        let glassHighlighted = AppGlassCard(cornerRadius: Spacing.cardRadius, isHighlighted: true) {
+        let glassHighlighted = AppGlassCard(cornerRadius: DesignTokens.Spacing.cardRadius, isHighlighted: true) {
             Text("Glass Highlighted")
         }
         let host3 = UIHostingController(rootView: glassHighlighted.snapshotEnvironment())
@@ -99,12 +100,12 @@ final class SharedCardAndRainbowBadgeDeepTests: XCTestCase {
         XCTAssertTrue(glassHighlighted.isHighlighted)
 
         // 4. 卡片顶部色彩条
-        let accent = AppCardAccent(color: .appAccent, height: Spacing.Decorator.accentLineWidth)
+        let accent = AppCardAccent(color: .appAccent, height: DesignTokens.Spacing.Decorator.accentLineWidth)
         let host4 = UIHostingController(rootView: accent.snapshotEnvironment())
         host4.view.frame = CGRect(x: 0, y: 0, width: 300, height: 10)
         host4.view.layoutIfNeeded()
         XCTAssertNotNil(host4.view)
-        XCTAssertEqual(accent.height, Spacing.Decorator.accentLineWidth)
+        XCTAssertEqual(accent.height, DesignTokens.Spacing.Decorator.accentLineWidth)
     }
 
     // MARK: - 3. View Extension 修饰符测试
@@ -116,12 +117,12 @@ final class SharedCardAndRainbowBadgeDeepTests: XCTestCase {
         host1.view.layoutIfNeeded()
         XCTAssertNotNil(host1.view)
 
-        let viewLegacy = Text("World").appCard(cornerRadius: Spacing.smallRadius, padding: Spacing.small)
+        let viewLegacy = Text("World").appCard(cornerRadius: DesignTokens.Spacing.smallRadius, padding: DesignTokens.Spacing.small)
         let host2 = UIHostingController(rootView: viewLegacy.snapshotEnvironment())
         host2.view.frame = CGRect(x: 0, y: 0, width: 200, height: 80)
         host2.view.layoutIfNeeded()
         XCTAssertNotNil(host2.view)
-        XCTAssertEqual(Spacing.smallRadius, 8)
+        XCTAssertEqual(DesignTokens.Spacing.smallRadius, 8)
     }
 
     // MARK: - 4. AIRainbowGlowBadge 呼吸指示微标渲染测试

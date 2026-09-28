@@ -9,6 +9,7 @@ import Dependencies
 import SceneKit
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 import UFPStorage
 import XCTest
 
@@ -93,15 +94,15 @@ final class AIRainbowDeepTests: XCTestCase {
     func testAIRainbowBadgeHelper_ResolveControlCenterWidth() {
         // Mac Catalyst 自适应宽度
         let macWidth = AIRainbowBadgeHelper.resolveControlCenterWidth(isPad: false, isMacCatalyst: true)
-        XCTAssertEqual(macWidth, Spacing.Sidebar.macCompactWidth)
+        XCTAssertEqual(macWidth, DesignTokens.Spacing.Sidebar.macCompactWidth)
 
         // iPad 自适应宽度
         let padWidth = AIRainbowBadgeHelper.resolveControlCenterWidth(isPad: true, isMacCatalyst: false)
-        XCTAssertEqual(padWidth, Spacing.Sidebar.padSidebarWidth)
+        XCTAssertEqual(padWidth, DesignTokens.Spacing.Sidebar.padSidebarWidth)
 
         // iPhone / 默认浮窗宽度
         let phoneWidth = AIRainbowBadgeHelper.resolveControlCenterWidth(isPad: false, isMacCatalyst: false)
-        XCTAssertEqual(phoneWidth, Spacing.Sidebar.popoverDefaultWidth)
+        XCTAssertEqual(phoneWidth, DesignTokens.Spacing.Sidebar.popoverDefaultWidth)
     }
 
     func testAIRainbowBadgeHelper_FormatMemoryInGB() {

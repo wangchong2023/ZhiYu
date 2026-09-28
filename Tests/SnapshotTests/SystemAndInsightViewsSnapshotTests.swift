@@ -9,6 +9,7 @@
 //  核心职责：系统管理、洞察面板与搜索视图快照测试，针对边界值、异常输入、状态组合设计用例。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -60,7 +61,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testPluginCenterViewDefaultLoading() {
         let view = PluginCenterView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -71,7 +72,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testPluginCenterViewMyPluginsEmpty() {
         let view = PluginCenterView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -94,7 +95,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
 
         let view = card
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 120)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 120)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -118,7 +119,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
 
         let view = card
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 120)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 120)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -165,7 +166,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
 
         let view = card
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 120)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 120)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -187,7 +188,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
 
         let view = card
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 120)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 120)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -222,7 +223,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
 
         let view = card
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 120)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 120)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -259,7 +260,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
 
         let view = card
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 120)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 120)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -271,7 +272,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testMarkdownRendererViewEmptyContent() {
         let view = MarkdownRendererView(content: "", isPrivate: false) { _ in }
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -298,7 +299,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
         """
         let view = MarkdownRendererView(content: content, isPrivate: false) { _ in }
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -310,7 +311,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testKnowledgeDashboardViewEmptyData() {
         let view = KnowledgeDashboardView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -322,7 +323,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testSystemStatsViewDefaultPerformanceTab() {
         let view = SystemStatsView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -335,7 +336,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testSearchViewDefaultEmpty() {
         let view = SearchView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -349,7 +350,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
         try XCTSkipIf(true, "全量测试负载下模拟器渲染时序差异导致基线漂移，单独运行通过")
         let view = BackupView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -361,7 +362,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testModelStoreViewDefaultEmpty() {
         let view = ModelStoreView(onGoToLab: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -373,7 +374,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testSmartRoutingViewDefault() {
         let view = SmartRoutingView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
@@ -385,7 +386,7 @@ final class SystemAndInsightViewsSnapshotTests: XCTestCase {
     func testTaskRoutingRulesViewDefaultEmpty() {
         let view = TaskRoutingRulesView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }

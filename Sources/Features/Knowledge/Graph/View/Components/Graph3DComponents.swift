@@ -10,11 +10,11 @@
 //
 import SwiftUI
 import SceneKit
+import UFPDesignSystem
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
 import AppKit
-import UFPDesignSystem
 #endif
 
 // MARK: - 3D 图谱组件私有常量

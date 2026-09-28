@@ -9,6 +9,7 @@
 //  核心职责：Features/System View 快照测试，验证视觉一致性
 //
 
+import UFPDesignSystem
 import XCTest
 import UFPCore
 import SwiftUI
@@ -94,10 +95,10 @@ final class SystemViewSnapshots: XCTestCase {
             latency: latency,
             activeTooltip: Binding(get: { activeTooltip }, set: { activeTooltip = $0 })
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 RAGRetrievalPanel 极端值（0/100）与 nil tooltip 状态
@@ -127,10 +128,10 @@ final class SystemViewSnapshots: XCTestCase {
             latency: latency,
             activeTooltip: Binding(get: { activeTooltip }, set: { _ in })
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 RAGGenerationPanel 默认数据状态的视觉一致性
@@ -152,7 +153,7 @@ final class SystemViewSnapshots: XCTestCase {
             avgScores: avgScores,
             activeTooltip: Binding(get: { activeTooltip }, set: { activeTooltip = $0 })
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -177,7 +178,7 @@ final class SystemViewSnapshots: XCTestCase {
             avgScores: avgScores,
             activeTooltip: Binding(get: { activeTooltip }, set: { _ in })
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -191,10 +192,10 @@ final class SystemViewSnapshots: XCTestCase {
 
         let view = ChartView(stats: [], type: .requests)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.chartHeight + 60)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.chartHeight + 60)))
     }
 
     /// 测试 ChartView 非空数组 + requests 类型的视觉一致性
@@ -204,10 +205,10 @@ final class SystemViewSnapshots: XCTestCase {
         let stats = Self.makeDailyAIUsageSamples()
         let view = ChartView(stats: stats, type: .requests)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.chartHeight + 60)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.chartHeight + 60)))
     }
 
     /// 测试 ChartView 非空数组 + tokens 类型的视觉一致性
@@ -217,10 +218,10 @@ final class SystemViewSnapshots: XCTestCase {
         let stats = Self.makeDailyAIUsageSamples()
         let view = ChartView(stats: stats, type: .tokens)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.chartHeight + 60)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.chartHeight + 60)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.chartHeight + 60)))
     }
 
     /// 构造本月每日 AI 使用统计样本数据（固定基准日期杜绝月份跨越导致快照漂移）
@@ -252,7 +253,7 @@ final class SystemViewSnapshots: XCTestCase {
 
         let view = ServerConfigView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -282,10 +283,10 @@ final class SystemViewSnapshots: XCTestCase {
             LocalPluginDetailView(manifest: manifest)
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 LocalPluginDetailView 极简 manifest（无权限）状态的视觉一致性
@@ -310,10 +311,10 @@ final class SystemViewSnapshots: XCTestCase {
             LocalPluginDetailView(manifest: manifest)
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     // MARK: - 5. PluginStatsSection
@@ -324,7 +325,7 @@ final class SystemViewSnapshots: XCTestCase {
 
         let view = PluginStatsSection()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -340,7 +341,7 @@ final class SystemViewSnapshots: XCTestCase {
             RawStorageListView()
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -359,10 +360,10 @@ final class SystemViewSnapshots: XCTestCase {
         }
         .snapshotEnvironment()
         .environment(store) // snapshot_env_exempt: 覆盖默认空 KnowledgeStore 以注入 pages 测试数据
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 构造原始页面样本数据（含 sourceURL，触发 RawStorageListView 渲染分支）
@@ -407,10 +408,10 @@ final class SystemViewSnapshots: XCTestCase {
         let service = PerformanceService()
         let view = PerformanceDashboardView(service: service)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 PerformanceDashboardView 带指标数据的视觉一致性
@@ -435,10 +436,10 @@ final class SystemViewSnapshots: XCTestCase {
 
         let view = PerformanceDashboardView(service: service)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     // MARK: - 8. InferenceParametersView
@@ -449,10 +450,10 @@ final class SystemViewSnapshots: XCTestCase {
 
         let view = InferenceParametersView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 InferenceParametersView 在 NavigationStack 中的视觉一致性
@@ -463,9 +464,9 @@ final class SystemViewSnapshots: XCTestCase {
             InferenceParametersView()
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 }

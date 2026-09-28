@@ -147,8 +147,7 @@ final class PluginStorageTests: XCTestCase {
 
 // MARK: - Mock KeyStore
 
-@MainActor
-private final class MockKeyStoreForPluginStorage: KeyStoreProtocol {
+private final class MockKeyStoreForPluginStorage: KeyStoreProtocol, @unchecked Sendable {
     var store: [String: Any] = [:]
 
     func bool(forKey key: String) -> Bool { store[key] as? Bool ?? false }

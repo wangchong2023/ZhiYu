@@ -9,6 +9,7 @@
 //  核心职责：AI 对话视图 (ChatView)、气泡排版与多轮交互状态的视觉快照与渲染回归。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -59,7 +60,7 @@ final class ChatViewInteractiveSnapshots: XCTestCase {
         .padding()
         .snapshotEnvironment()
 
-        assertSnapshot(of: bubble, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: bubble, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     // MARK: - 3. AI 思考中与回答卡片
@@ -72,6 +73,6 @@ final class ChatViewInteractiveSnapshots: XCTestCase {
         .padding()
         .snapshotEnvironment()
 
-        assertSnapshot(of: bubble, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: bubble, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 }

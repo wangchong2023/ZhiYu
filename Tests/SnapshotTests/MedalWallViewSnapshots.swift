@@ -6,6 +6,7 @@
 //  核心职责：MedalWall 组件快照测试，覆盖 MedalCard 已解锁/未解锁状态与 MedalRewardPopup 弹窗。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -80,24 +81,24 @@ final class MedalWallViewSnapshots: XCTestCase {
     func testMedalCard_Earned() {
         let view = MedalCard(medal: makeEarnedMedal(), isEarned: true)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotMediumComponentSize, height: DesignSystem.Metrics.snapshotMediumComponentSize)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotMediumComponentSize, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+            .frame(width: DesignTokens.Metrics.snapshotMediumComponentSize, height: DesignTokens.Metrics.snapshotMediumComponentSize)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotMediumComponentSize, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     /// 测试未解锁奖章卡片 — 展示锁定状态与灰色图标
     func testMedalCard_Locked() {
         let view = MedalCard(medal: makeLockedMedal(), isEarned: false)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotMediumComponentSize, height: DesignSystem.Metrics.snapshotMediumComponentSize)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotMediumComponentSize, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+            .frame(width: DesignTokens.Metrics.snapshotMediumComponentSize, height: DesignTokens.Metrics.snapshotMediumComponentSize)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotMediumComponentSize, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     /// 测试连接类已解锁奖章 — 验证不同颜色主题渲染
     func testMedalCard_ConnectionEarned() {
         let view = MedalCard(medal: makeConnectionMedal(), isEarned: true)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotMediumComponentSize, height: DesignSystem.Metrics.snapshotMediumComponentSize)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotMediumComponentSize, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+            .frame(width: DesignTokens.Metrics.snapshotMediumComponentSize, height: DesignTokens.Metrics.snapshotMediumComponentSize)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotMediumComponentSize, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 
     // MARK: - MedalRewardPopup 快照测试
@@ -106,7 +107,7 @@ final class MedalWallViewSnapshots: XCTestCase {
     func testMedalRewardPopup_Default() {
         let view = MedalRewardPopup(medal: makeEarnedMedal(), onDismiss: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -114,7 +115,7 @@ final class MedalWallViewSnapshots: XCTestCase {
     func testMedalRewardPopup_ConnectionMedal() {
         let view = MedalRewardPopup(medal: makeConnectionMedal(), onDismiss: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

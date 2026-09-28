@@ -373,7 +373,7 @@ struct SystemStatsView: View {
                 Text(L10n.Dashboard.totalStorage)
                     .font(.system(size: DesignTokens.Typography.microFontSize, weight: .black))
                     .foregroundStyle(.appSecondary)
-                    .kerning(DesignTokens.Reference.DesignTokens.Spacing.one)
+                    .kerning(DesignTokens.Reference.Spacing.one)
                     .textCase(.uppercase)
             }
         }

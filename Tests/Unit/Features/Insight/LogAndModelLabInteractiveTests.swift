@@ -6,6 +6,7 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPCore
@@ -22,7 +23,7 @@ final class LogAndModelLabInteractiveTests: XCTestCase {
     // MARK: - 1. LogViewStatusHelper 背景色解析（全三态 + 空状态）
 
     func testLogViewStatusHelper_statusBackgroundColor_resolvesAllThreeStates() {
-        let opacity: Double = DesignSystem.secondaryOpacity
+        let opacity: Double = DesignTokens.Colors.Opacity.secondaryOpacity
         let traits = UITraitCollection(userInterfaceStyle: .light)
 
         // 验证缺陷 #175 修复：.processing 不可误显为红色
@@ -214,10 +215,10 @@ final class LogAndModelLabInteractiveTests: XCTestCase {
         )
 
         let traits = UITraitCollection(userInterfaceStyle: .light)
-        let bg = UIColor(LogViewStatusHelper.statusBackgroundColor(for: entry.status, opacity: DesignSystem.glassOpacity)).resolvedColor(with: traits)
+        let bg = UIColor(LogViewStatusHelper.statusBackgroundColor(for: entry.status, opacity: DesignTokens.Colors.Opacity.glassOpacity)).resolvedColor(with: traits)
         let fg = UIColor(LogViewStatusHelper.statusForegroundColor(for: entry.status)).resolvedColor(with: traits)
 
-        let expectedBg = UIColor(Color.theme.blue.opacity(DesignSystem.glassOpacity)).resolvedColor(with: traits)
+        let expectedBg = UIColor(Color.theme.blue.opacity(DesignTokens.Colors.Opacity.glassOpacity)).resolvedColor(with: traits)
         let expectedFg = UIColor(Color.theme.blue).resolvedColor(with: traits)
 
         XCTAssertEqual(bg, expectedBg)

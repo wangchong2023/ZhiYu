@@ -9,6 +9,7 @@
 //  核心职责：笔记本中心 (NotebookHubView)、卡片与网格列表的视觉快照与渲染回归。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -65,6 +66,6 @@ final class NotebookHubInteractiveSnapshots: XCTestCase {
         .padding()
         .snapshotEnvironment()
 
-        assertSnapshot(of: card, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotMediumComponentSize)))
+        assertSnapshot(of: card, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotMediumComponentSize)))
     }
 }

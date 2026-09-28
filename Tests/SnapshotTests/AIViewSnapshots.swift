@@ -12,6 +12,7 @@
 //           验证视觉一致性并暴露源码潜在问题。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -76,10 +77,10 @@ final class AIViewSnapshots: XCTestCase {
             PromptWorkshopView()
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 PromptWorkshopView watch 占位状态 — 验证 WatchFeaturePlaceholderView 分支
@@ -92,7 +93,7 @@ final class AIViewSnapshots: XCTestCase {
             PromptWorkshopView()
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -116,10 +117,10 @@ final class AIViewSnapshots: XCTestCase {
             onNavigate: { _ in }
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 180)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 180)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 180)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 180)))
     }
 
     /// 测试 SynthesisSourcePagesBar 空来源页面状态（sourcePageIDs 为空但 store 有页面）
@@ -134,10 +135,10 @@ final class AIViewSnapshots: XCTestCase {
             onNavigate: { _ in }
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     // MARK: - 3. SynthesisOutputContent（SynthesisReportView.swift）
@@ -155,7 +156,7 @@ final class AIViewSnapshots: XCTestCase {
 
         let view = SynthesisOutputContent(doc: doc)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -174,7 +175,7 @@ final class AIViewSnapshots: XCTestCase {
 
         let view = SynthesisOutputContent(doc: doc)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -199,10 +200,10 @@ final class AIViewSnapshots: XCTestCase {
             selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 })
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)))
     }
 
     /// 测试 ChatBubbleView AI 助手消息（含追问推荐）的视觉一致性
@@ -229,10 +230,10 @@ final class AIViewSnapshots: XCTestCase {
             onSelectQuestion: { _ in }
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 ChatBubbleView 系统消息气泡的视觉一致性
@@ -252,10 +253,10 @@ final class AIViewSnapshots: XCTestCase {
             selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 })
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     /// 测试 ChatBubbleView 选择模式 + AI 消息含引用面板（折叠态）
@@ -280,10 +281,10 @@ final class AIViewSnapshots: XCTestCase {
             isSelected: true
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     // MARK: - 5. ChatContentView（ChatComponents.swift）
@@ -299,10 +300,10 @@ final class AIViewSnapshots: XCTestCase {
             selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 })
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)))
     }
 
     /// 测试 ChatContentView 含思考过程（<think> 标签）的视觉一致性
@@ -323,10 +324,10 @@ final class AIViewSnapshots: XCTestCase {
             selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 })
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 300)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 300)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 300)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 300)))
     }
 
     // MARK: - 6. SuggestedFollowUpCardView（ChatComponents.swift）
@@ -344,10 +345,10 @@ final class AIViewSnapshots: XCTestCase {
             onSelect: { _ in }
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 SuggestedFollowUpCardView 单问题的视觉一致性
@@ -359,10 +360,10 @@ final class AIViewSnapshots: XCTestCase {
             onSelect: { _ in }
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 180)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 180)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 180)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 180)))
     }
 
     // MARK: - 7. SaveVoiceNoteSheet（VoiceNoteComponents.swift）
@@ -380,10 +381,10 @@ final class AIViewSnapshots: XCTestCase {
             title: Binding(get: { title }, set: { title = $0 })
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotScrollHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotScrollHeight)))
     }
 
     /// 测试 SaveVoiceNoteSheet 空转写文本状态
@@ -399,7 +400,7 @@ final class AIViewSnapshots: XCTestCase {
             title: Binding(get: { title }, set: { title = $0 })
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -421,10 +422,10 @@ final class AIViewSnapshots: XCTestCase {
 
         let view = VoiceRecordingRow(recording: recording)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     /// 测试 VoiceRecordingRow 长文本截断状态（验证 prefix(50) 截断逻辑）
@@ -442,9 +443,9 @@ final class AIViewSnapshots: XCTestCase {
 
         let view = VoiceRecordingRow(recording: recording)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 }

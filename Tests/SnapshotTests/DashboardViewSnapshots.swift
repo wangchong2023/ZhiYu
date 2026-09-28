@@ -7,6 +7,7 @@
 //           4 种 PageType 差异化 BodyView（Entity/Concept/Comparison/Source）、PageDetailMetadataSection。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -221,7 +222,7 @@ final class DashboardViewSnapshots: XCTestCase {
     func testPageDetailHeader_EntityType_HighConfidence() {
         let page = makeEntityPage()
         let view = PageDetailHeader(page: page)
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -231,7 +232,7 @@ final class DashboardViewSnapshots: XCTestCase {
     func testPageDetailHeader_ConceptType_MediumConfidence() {
         let page = makeConceptPage()
         let view = PageDetailHeader(page: page)
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -247,7 +248,7 @@ final class DashboardViewSnapshots: XCTestCase {
             isPinned: true
         )
         let view = PageDetailHeader(page: page)
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -266,7 +267,7 @@ final class DashboardViewSnapshots: XCTestCase {
             onLinkTap: { _ in }
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -282,7 +283,7 @@ final class DashboardViewSnapshots: XCTestCase {
             isEditing: .constant(true),
             onLinkTap: { _ in }
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -296,7 +297,7 @@ final class DashboardViewSnapshots: XCTestCase {
             isEditing: .constant(false),
             onLinkTap: { _ in }
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -312,7 +313,7 @@ final class DashboardViewSnapshots: XCTestCase {
             onLinkTap: { _ in }
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -326,7 +327,7 @@ final class DashboardViewSnapshots: XCTestCase {
         let page = makeEntityPage()
         let view = EntityDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -341,7 +342,7 @@ final class DashboardViewSnapshots: XCTestCase {
         )
         let view = EntityDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -355,7 +356,7 @@ final class DashboardViewSnapshots: XCTestCase {
         let page = makeConceptPage()
         let view = ConceptDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -369,7 +370,7 @@ final class DashboardViewSnapshots: XCTestCase {
         let page = makeComparisonPage()
         let view = ComparisonDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -383,7 +384,7 @@ final class DashboardViewSnapshots: XCTestCase {
         let page = makeSourcePage()
         let view = SourceDetailBodyView(page: page, onLinkTap: { _ in })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
@@ -413,7 +414,7 @@ final class DashboardViewSnapshots: XCTestCase {
             backlinks: backlinks,
             recommendations: recommendations
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
@@ -428,7 +429,7 @@ final class DashboardViewSnapshots: XCTestCase {
             backlinks: [],
             recommendations: []
         )
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         .background(Color.appBackground)
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))

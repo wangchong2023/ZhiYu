@@ -6,6 +6,7 @@
 //  核心职责：Dashboard 组件快照测试，覆盖 BacklinksView 反向链接视图与 CreatePageView 新建页面表单。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -56,7 +57,7 @@ final class DashboardComponentsSnapshots: XCTestCase {
     func testBacklinksView_WithOutgoingLinks() {
         let view = BacklinksView(page: makePage())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -64,7 +65,7 @@ final class DashboardComponentsSnapshots: XCTestCase {
     func testBacklinksView_NoOutgoingLinks() {
         let view = BacklinksView(page: makePage(content: "纯文本内容无双向链接"))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -74,7 +75,7 @@ final class DashboardComponentsSnapshots: XCTestCase {
     func testCreatePageView_Default() {
         let view = CreatePageView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

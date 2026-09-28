@@ -106,7 +106,7 @@ struct MedalRewardPopup: View {
                     Text(L10n.Insight.Medal.congrats)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appAccent)
-                        .kerning(DesignTokens.Reference.DesignTokens.Spacing.two)
+                        .kerning(DesignTokens.Reference.Spacing.two)
                     
                     Text(L10n.Insight.tr(medal.titleKey))
                         .font(.title.bold())

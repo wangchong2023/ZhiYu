@@ -9,6 +9,7 @@
 //  核心职责：深度覆盖 L3 Shared 通用空态、面包屑、通用输入与背景层组件交互。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 @testable import ZhiYu
@@ -27,7 +28,7 @@ final class SharedComponentsDeepInteractiveTests: XCTestCase {
     func testAppEmptyState_SimpleAndWithActionRoles() {
         // 1. 简单空状态
         let simpleView = AppEmptyState.simple(
-            icon: DesignSystem.Icons.docText,
+            icon: DesignTokens.Icons.docText,
             title: "暂无数据",
             description: "当前知识库尚未收录任何卡片"
         )
@@ -41,19 +42,19 @@ final class SharedComponentsDeepInteractiveTests: XCTestCase {
         var destructiveActionTriggered = false
 
         let primaryView = AppEmptyState.withAction(
-            icon: DesignSystem.Icons.plusCircle,
+            icon: DesignTokens.Icons.plusCircle,
             title: "新建页面",
             description: "立即创建第一篇知识卡片",
             hint: "支持 Markdown 与双向链接",
             actionLabel: "立即创建",
-            actionIcon: DesignSystem.Icons.plus,
+            actionIcon: DesignTokens.Icons.plus,
             actionRole: .primary
         ) {
             primaryActionTriggered = true
         }
 
         let secondaryView = AppEmptyState.withAction(
-            icon: DesignSystem.Icons.arrowClockwise,
+            icon: DesignTokens.Icons.arrowClockwise,
             title: "同步失败",
             actionLabel: "重试同步",
             actionRole: .secondary
@@ -62,7 +63,7 @@ final class SharedComponentsDeepInteractiveTests: XCTestCase {
         }
 
         let destructiveView = AppEmptyState.withAction(
-            icon: DesignSystem.Icons.delete,
+            icon: DesignTokens.Icons.delete,
             title: "清空回收站",
             actionLabel: "全部抹除",
             actionRole: .destructive

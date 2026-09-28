@@ -6,6 +6,7 @@
 //  核心职责：VoiceNoteView 快照测试，覆盖语音笔记初始/录制中/有转录文本/有录音记录各状态。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -74,7 +75,7 @@ final class VoiceNoteViewSnapshots: XCTestCase {
     func testVoiceNoteView_Initial() {
         let view = VoiceNoteView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -85,7 +86,7 @@ final class VoiceNoteViewSnapshots: XCTestCase {
         mockSpeech.audioLevelHistory = [0.1, 0.3, 0.5, 0.7, 0.9, 0.6, 0.4, 0.2, 0.1, 0.3, 0.5, 0.7, 0.9, 0.6, 0.4, 0.2, 0.1, 0.3, 0.5, 0.7]
         let view = VoiceNoteView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -94,7 +95,7 @@ final class VoiceNoteViewSnapshots: XCTestCase {
         mockSpeech.transcribedText = "这是一段语音转录的测试文本，用于验证 VoiceNoteView 在有转录内容时的渲染状态。"
         let view = VoiceNoteView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -106,7 +107,7 @@ final class VoiceNoteViewSnapshots: XCTestCase {
         ]
         let view = VoiceNoteView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

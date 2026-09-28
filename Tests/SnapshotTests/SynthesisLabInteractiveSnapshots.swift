@@ -9,6 +9,7 @@
 //  核心职责：AI 合成实验室 (SynthesisView)、异常状态卡片与合成文档行的视觉快照与渲染回归。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -64,7 +65,7 @@ final class SynthesisLabInteractiveSnapshots: XCTestCase {
         .padding()
         .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)))
     }
 
     // MARK: - 3. 合成文档行项渲染（思维导图与报告卡片）
@@ -80,7 +81,7 @@ final class SynthesisLabInteractiveSnapshots: XCTestCase {
             sourcePageIDs: []
         )
 
-        let view = VStack(spacing: Spacing.medium) {
+        let view = VStack(spacing: DesignTokens.Spacing.medium) {
             SynthesisDocRow(
                 doc: doc,
                 type: .mindmap,
@@ -104,6 +105,6 @@ final class SynthesisLabInteractiveSnapshots: XCTestCase {
         .padding()
         .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotGraphViewportSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotGraphViewportSize)))
     }
 }

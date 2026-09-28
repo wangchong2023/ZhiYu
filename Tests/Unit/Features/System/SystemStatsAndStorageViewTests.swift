@@ -9,6 +9,7 @@
 //  核心职责：验证 SystemStatsCoordinator、各存储分类聚合、数据源溯源、时延指标与物理表修剪状态机。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPCore
@@ -50,28 +51,28 @@ final class SystemStatsAndStorageViewTests: XCTestCase {
 
         // 测试所有已知类别的 Icon 映射分支
         let dbIcon = coordinator.iconForCategory(L10n.Dashboard.System.database)
-        XCTAssertEqual(dbIcon, DesignSystem.Icons.StorageStats.database)
+        XCTAssertEqual(dbIcon, DesignTokens.Icons.StorageStats.database)
 
         let logsIcon = coordinator.iconForCategory(L10n.Dashboard.System.logs)
-        XCTAssertEqual(logsIcon, DesignSystem.Icons.StorageStats.logs)
+        XCTAssertEqual(logsIcon, DesignTokens.Icons.StorageStats.logs)
 
         let modelsIcon = coordinator.iconForCategory(L10n.Dashboard.System.models)
-        XCTAssertEqual(modelsIcon, DesignSystem.Icons.StorageStats.models)
+        XCTAssertEqual(modelsIcon, DesignTokens.Icons.StorageStats.models)
 
         let pluginsIcon = coordinator.iconForCategory(L10n.Dashboard.System.plugins)
-        XCTAssertEqual(pluginsIcon, DesignSystem.Icons.StorageStats.plugins)
+        XCTAssertEqual(pluginsIcon, DesignTokens.Icons.StorageStats.plugins)
 
         let cachesIcon = coordinator.iconForCategory(L10n.Dashboard.System.caches)
-        XCTAssertEqual(cachesIcon, DesignSystem.Icons.StorageStats.caches)
+        XCTAssertEqual(cachesIcon, DesignTokens.Icons.StorageStats.caches)
 
         let importIcon = coordinator.iconForCategory(L10n.Dashboard.stats.storageImport)
-        XCTAssertEqual(importIcon, DesignSystem.Icons.StorageStats.storageImport)
+        XCTAssertEqual(importIcon, DesignTokens.Icons.StorageStats.storageImport)
 
         let exportIcon = coordinator.iconForCategory(L10n.Dashboard.stats.storageExport)
-        XCTAssertEqual(exportIcon, DesignSystem.Icons.StorageStats.storageExport)
+        XCTAssertEqual(exportIcon, DesignTokens.Icons.StorageStats.storageExport)
 
         let fallbackIcon = coordinator.iconForCategory("未知类别")
-        XCTAssertEqual(fallbackIcon, DesignSystem.Icons.StorageStats.fallback)
+        XCTAssertEqual(fallbackIcon, DesignTokens.Icons.StorageStats.fallback)
     }
 
     // MARK: - 3. 数据清理与孤儿分块修剪状态机

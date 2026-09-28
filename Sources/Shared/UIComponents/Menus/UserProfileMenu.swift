@@ -9,11 +9,11 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 #if targetEnvironment(macCatalyst)
 import UIKit
 import UFPCore
-import UFPDesignSystem
 
 /// Mac Catalyst 悬浮菜单窗口管理器
 /// 使用独立 UIWindow 替代 UIPopoverPresentationController，避免 UIKit 转场冲突

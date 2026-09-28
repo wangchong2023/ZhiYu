@@ -9,6 +9,7 @@
 //  核心职责：验证 UserProfile 菜单数据流与 MarkdownRenderer 渲染选项分支。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPCore
@@ -51,8 +52,8 @@ final class UserProfileAndMarkdownRendererTests: XCTestCase {
     // MARK: - 2. DesignSystem 调色板与圆角 Token
 
     func testDesignSystem_TokensIntegrity() {
-        XCTAssertGreaterThan(DesignSystem.standardPadding, 0)
-        XCTAssertGreaterThan(DesignSystem.cardRadius, 0)
-        XCTAssertGreaterThan(DesignSystem.iconMedium, 0)
+        XCTAssertGreaterThan(DesignTokens.Spacing.standardPadding, 0)
+        XCTAssertGreaterThan(DesignTokens.Spacing.cardRadius, 0)
+        XCTAssertGreaterThan(DesignTokens.Icons.medium, 0)
     }
 }

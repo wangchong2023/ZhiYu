@@ -294,8 +294,7 @@ private final class MockEventListenerPlugin: MockKnowledgePlugin {
     }
 }
 
-@MainActor
-private final class MockKeyStoreForPlugins: KeyStoreProtocol {
+private final class MockKeyStoreForPlugins: KeyStoreProtocol, @unchecked Sendable {
     private var storage: [String: Any] = [:]
 
     func bool(forKey key: String) -> Bool { storage[key] as? Bool ?? false }
@@ -310,8 +309,7 @@ private final class MockKeyStoreForPlugins: KeyStoreProtocol {
     func dictionaryRepresentation() -> [String: Any] { storage }
 }
 
-@MainActor
-private final class UserFaultsKeyStoreFallback: KeyStoreProtocol {
+private final class UserFaultsKeyStoreFallback: KeyStoreProtocol, @unchecked Sendable {
     static let shared = UserFaultsKeyStoreFallback()
     private var storage: [String: Any] = [:]
 

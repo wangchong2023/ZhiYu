@@ -41,7 +41,6 @@ struct LLMProviderMetadata: Codable, Sendable {
 final class LLMRegistry: Sendable {
     static let shared = LLMRegistry()
     private let providers: [String: LLMProviderMetadata]
-    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     private init() {
         providers = LLMRegistry.loadProviders()
@@ -198,6 +197,7 @@ enum LLMError: LocalizedError {
 // MARK: - LLM Config (Persistence)
 /// Manages LLM provider configuration with UserDefaults + Keychain persistence.
 final class LLMConfigStore: ObservableObject {
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     @Published var provider: LLMProvider {
         didSet { 
             if oldValue != provider {
@@ -254,7 +254,8 @@ final class LLMConfigStore: ObservableObject {
         var initialAutoScan = true
         var initialAutoRefactor = false
 
-        if let data = keyStore?.data(forKey: configKey),
+        let resolvedKeyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        if let data = resolvedKeyStore?.data(forKey: configKey),
            let config = try? JSONDecoder().decode(Config.self, from: data) {
             initialProvider = config.provider
             initialIsEnabled = config.isEnabled
