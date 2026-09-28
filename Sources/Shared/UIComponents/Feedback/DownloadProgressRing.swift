@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// Apple Store 风格圆形下载进度环
 public struct DownloadProgressRing: View {
@@ -19,7 +20,7 @@ public struct DownloadProgressRing: View {
     @State private var lastProgress: Double = 0
     @State private var rotationAngle: Double = 0
 
-    public init(state: DownloadState, size: CGFloat = DesignSystem.Metrics.ringSize) {
+    public init(state: DownloadState, size: CGFloat = DesignTokens.Metrics.ringSize) {
         self.state = state
         self.size = size
     }
@@ -82,7 +83,7 @@ public struct DownloadProgressRing: View {
     @ViewBuilder
     private var trackCircle: some View {
         Circle()
-            .stroke(Color.appBorder.opacity(DesignSystem.Opacity.disabled), lineWidth: lineWidth)
+            .stroke(Color.appBorder.opacity(DesignTokens.Opacity.disabled), lineWidth: lineWidth)
     }
 
     @ViewBuilder

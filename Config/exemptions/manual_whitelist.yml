@@ -1843,11 +1843,11 @@ business_magic_exempt:
   reason: SQL LIKE 下划线通配符转义字面量，标准 SQL 语法，无法进一步抽象
   expiry_check: false
 - file: Sources/Features/Knowledge/Graph/View/Graph3DView.swift
-  line: 263
+  line: 264
   reason: 元组索引 $0.0/$0.1 被误判为数字字面量，实为 Swift 元组成员访问语法
   expiry_check: false
 - file: Sources/Features/Insight/Dashboard/View/Subviews/SourceDetailBodyView.swift
-  line: 32
+  line: 33
   reason: 波形采样数据数组（10 个 Double），每个值无独立语义，整体已命名 defaultWaveform
   expiry_check: false
 - file: Sources/Infrastructure/Storage/Utility/DemoMediaConstants.swift

@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - Navigation Definitions
 
@@ -86,7 +87,7 @@ struct CapabilitiesSection: View {
         Section {
             SidebarRowWrapper(value: SidebarSelection.tool(.dashboard)) {
                 SidebarIconRow(
-                    icon: DesignSystem.Icons.dashboard,
+                    icon: DesignTokens.Icons.dashboard,
                     color: .blue,
                     title: L10n.Common.Sidebar.dashboard
                 )
@@ -94,7 +95,7 @@ struct CapabilitiesSection: View {
             }
             SidebarRowWrapper(value: SidebarSelection.tool(.weeklyReport)) {
                 SidebarIconRow(
-                    icon: DesignSystem.Icons.weeklyInsight,
+                    icon: DesignTokens.Icons.weeklyInsight,
                     color: .purple,
                     title: L10n.Common.Sidebar.weeklyInsight
                 )
@@ -121,12 +122,12 @@ struct SourcesSection: View {
                             Text("\(sourceStore.activeSources.count)")
                                 .font(.caption2.monospacedDigit())
                                 .foregroundStyle(.white)
-                                .padding(.horizontal, DesignSystem.tightPadding)
+                                .padding(.horizontal, DesignTokens.Spacing.tightPadding)
                                 .background(Color.appAccent)
                                 .clipShape(Capsule())
                         }
                     } icon: {
-                        Image(systemName: DesignSystem.Icons.quoteBubble)
+                        Image(systemName: DesignTokens.Icons.quoteBubble)
                             .foregroundStyle(.appAccent)
                     }
                 }
@@ -146,7 +147,7 @@ struct UniverseSection: View {
         Section {
             SidebarRowWrapper(value: SidebarSelection.tool(.pageList)) {
                 UniverseNavRow(
-                    icon: DesignSystem.Icons.pageList,
+                    icon: DesignTokens.Icons.pageList,
                     colorName: "accent",
                     title: L10n.Common.Sidebar.pageList,
                     count: store.pages.count
@@ -216,7 +217,7 @@ struct ToolsSection: View {
             // 健康检查（带 lint 问题数量角标）
             SidebarRowWrapper(value: SidebarSelection.tool(.lint)) {
                 SidebarIconRow(
-                    icon: DesignSystem.Icons.healthCheck,
+                    icon: DesignTokens.Icons.healthCheck,
                     color: .green,
                     title: L10n.Common.Sidebar.healthCheck,
                     badge: appStore.lintIssues.count
@@ -226,7 +227,7 @@ struct ToolsSection: View {
             // 标签管理
             SidebarRowWrapper(value: SidebarSelection.tool(.tagCloud)) {
                 SidebarIconRow(
-                    icon: DesignSystem.Icons.tag,
+                    icon: DesignTokens.Icons.tag,
                     color: .orange,
                     title: L10n.Common.Sidebar.tagManager
                 )
@@ -235,7 +236,7 @@ struct ToolsSection: View {
             // 任务中心（带未读数量角标，使用填充橙色高亮）
             SidebarRowWrapper(value: SidebarSelection.tool(.taskCenter)) {
                 SidebarIconRow(
-                    icon: DesignSystem.Icons.refresh,
+                    icon: DesignTokens.Icons.refresh,
                     color: .cyan,
                     title: L10n.AI.Task.centerTitle,
                     badge: taskCenter.unreadCount,
@@ -246,7 +247,7 @@ struct ToolsSection: View {
             // 协作
             SidebarRowWrapper(value: SidebarSelection.tool(.collab)) {
                 SidebarIconRow(
-                    icon: DesignSystem.Icons.collaborationPeers,
+                    icon: DesignTokens.Icons.collaborationPeers,
                     color: .teal,
                     title: L10n.Common.Sidebar.collaboration
                 )
@@ -263,7 +264,7 @@ struct ToolsSection: View {
 
 struct SidebarRowBackground: View {
     var body: some View {
-        Color.appCard.opacity(DesignSystem.subtleOpacity)
+        Color.appCard.opacity(DesignTokens.Colors.subtleOpacity)
             .background(.ultraThinMaterial)
     }
 }
@@ -286,7 +287,7 @@ struct SidebarIconRow: View {
     var badgeFilled: Bool = false
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             // 彩色圆角图标框（与知识宇宙风格统一）
             SidebarIconBox(icon: icon, color: color)
             
@@ -306,7 +307,7 @@ struct SidebarIconRow: View {
                 }
             }
         }
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
     }
 }
 
@@ -322,7 +323,7 @@ struct UniverseNavRow: View {
     }
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             // 彩色图标区域
             SidebarIconBox(icon: icon, color: iconColor)
             
@@ -334,7 +335,7 @@ struct UniverseNavRow: View {
                 SidebarCountBadge(count: count, color: .appAccent)
             }
         }
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
     }
 }
 
@@ -345,9 +346,9 @@ struct SidebarTypeRow: View {
     
     var body: some View {
         let typeColor = Color.fromModelColorName(type.colorName)
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             // 彩色图标区域（匹配类型主色）
-            SidebarIconBox(icon: type.icon, color: typeColor, backgroundOpacity: Reference.Opacity.ten) // 0.12
+            SidebarIconBox(icon: type.icon, color: typeColor, backgroundOpacity: DesignTokens.Reference.Opacity.ten) // 0.12
             
             // 分类名称
             SidebarRowTitle(title: type.displayName)
@@ -357,11 +358,11 @@ struct SidebarTypeRow: View {
                 .font(.caption2.weight(.bold))
                 .padding(.horizontal, count > 9 ? DesignSystem.Chip.horizontalPadding : DesignSystem.Chip.verticalPadding)
                 .padding(.vertical, DesignSystem.Chip.verticalPadding)
-                .background(typeColor.opacity(Reference.Opacity.fifteen)) // 0.15
+                .background(typeColor.opacity(DesignTokens.Reference.Opacity.fifteen)) // 0.15
                 .foregroundStyle(typeColor)
                 .clipShape(Capsule())
         }
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
     }
 }
 
@@ -377,11 +378,11 @@ struct SidebarPinnedRow: View {
         }
         .contextMenu {
             Button(action: onTogglePin) {
-                Label(page.isPinned ? L10n.Knowledge.Page.unpin : L10n.Knowledge.Page.pin, systemImage: page.isPinned ? DesignSystem.Icons.unpin : DesignSystem.Icons.pin)
+                Label(page.isPinned ? L10n.Knowledge.Page.unpin : L10n.Knowledge.Page.pin, systemImage: page.isPinned ? DesignTokens.Icons.unpin : DesignTokens.Icons.pin)
             }
             Divider()
             Button(role: .destructive, action: onDelete) {
-                Label(L10n.Knowledge.Page.deletePage, systemImage: DesignSystem.Icons.delete)
+                Label(L10n.Knowledge.Page.deletePage, systemImage: DesignTokens.Icons.delete)
             }
         }
     }
@@ -391,18 +392,18 @@ struct PageSidebarRow: View {
     let page: KnowledgePage
     var heroNamespace: Namespace.ID
     var body: some View {
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             Image(systemName: page.pageType.icon)
-                .font(.system(size: DesignSystem.Icons.small))
+                .font(.system(size: DesignTokens.Icons.small))
                 .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
                 .frame(width: DesignSystem.Sidebar.iconFrameWidth)
             
             Text(page.title)
-                .font(.system(size: DesignSystem.subheadlineFontSize, weight: .medium))
+                .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .medium))
                 .foregroundStyle(.appText)
                 .lineLimit(1)
         }
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
     }
 }
 

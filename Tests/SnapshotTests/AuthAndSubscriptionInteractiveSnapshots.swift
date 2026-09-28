@@ -9,6 +9,7 @@
 //  核心职责：身份认证 (AuthView) 与海外 OAuth 登录卡片的视觉快照与渲染回归。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -60,6 +61,6 @@ final class AuthAndSubscriptionInteractiveSnapshots: XCTestCase {
             .padding()
             .snapshotEnvironment()
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)))
     }
 }

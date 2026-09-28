@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 时间范围选择器
 
@@ -30,14 +31,14 @@ struct RAGTimeRangePicker: View {
     private let dayOptions = RAGTimeRange.dayOptions
 
     var body: some View {
-        HStack(spacing: DesignSystem.tightPadding) {
+        HStack(spacing: DesignTokens.Spacing.tightPadding) {
             ForEach(dayOptions, id: \.self) { days in
                 Button {
                     selectedDays = days
                 } label: {
                     Text("\(days) \(L10n.Dashboard.stats.unitDays)")
                         .font(.subheadline.weight(selectedDays == days ? .semibold : .regular))
-                        .padding(.horizontal, DesignSystem.medium).padding(.vertical, DesignSystem.small)
+                        .padding(.horizontal, DesignTokens.Spacing.medium).padding(.vertical, DesignTokens.Spacing.small)
                         .background(selectedDays == days ? Capsule().fill(Color.appAccent) : Capsule().fill(Color.appCard))
                         .foregroundStyle(selectedDays == days ? .white : .appSecondary)
                 }

@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 胶囊式登录区域选择切换组件
 struct RegionSelectorToggle: View {
@@ -25,8 +26,8 @@ struct RegionSelectorToggle: View {
                     .font(.caption2.bold())
                     .foregroundStyle(currentRegion == region ? .white : .appSecondary)
                     .lineLimit(1)
-                    .padding(.horizontal, Spacing.medium)
-                    .padding(.vertical, Spacing.tiny)
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
                     .background(
                         Capsule()
                             .fill(currentRegion == region ? Color.appAccent : Color.clear)
@@ -44,7 +45,7 @@ struct RegionSelectorToggle: View {
                     }
             }
         }
-        .padding(Spacing.atomic)
+        .padding(DesignTokens.Spacing.atomic)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
     }

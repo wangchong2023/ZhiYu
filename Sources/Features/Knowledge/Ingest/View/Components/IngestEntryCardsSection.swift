@@ -9,6 +9,7 @@
 //  核心职责：知识摄入：文档导入、URL 抓取、OCR 扫描、PDF 解析。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Ingest Entry Cards Section
 /// 导入入口卡片组组件
@@ -27,14 +28,14 @@ struct IngestEntryCardsSection: View {
     /// 响应式列配置：iPhone 2列，iPad 自适应多列
     private var columns: [GridItem] {
         if horizontalSizeClass == .regular {
-            Array(repeating: GridItem(.flexible(minimum: DesignSystem.Metrics.heroValueSize * FeatureConstants.IngestGrid.flexibleMinMultiplier, maximum: DesignSystem.Metrics.heroValueSize * FeatureConstants.IngestGrid.flexibleMaxMultiplier), spacing: DesignSystem.medium), count: FeatureConstants.IngestGrid.regularColumns) // 80, 180, 12
+            Array(repeating: GridItem(.flexible(minimum: DesignTokens.Metrics.heroValueSize * FeatureConstants.IngestGrid.flexibleMinMultiplier, maximum: DesignTokens.Metrics.heroValueSize * FeatureConstants.IngestGrid.flexibleMaxMultiplier), spacing: DesignTokens.Spacing.medium), count: FeatureConstants.IngestGrid.regularColumns) // 80, 180, 12
         } else {
             [GridItem(.flexible()), GridItem(.flexible())]
         }
     }
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: DesignSystem.medium) {
+        LazyVGrid(columns: columns, spacing: DesignTokens.Spacing.medium) {
             // 1. File import card
             Button(action: {
                 guard isLLMConfigured else { onLLMNotConfigured(); return }
@@ -42,7 +43,7 @@ struct IngestEntryCardsSection: View {
             }) {
                 entryCardContent(
                     title: L10n.Ingest.fileImport,
-                    icon: DesignSystem.Icons.docBadgePlus,
+                    icon: DesignTokens.Icons.docBadgePlus,
                     color: Color.theme.blue
                 )
             }
@@ -58,7 +59,7 @@ struct IngestEntryCardsSection: View {
             }) {
                 entryCardContent(
                     title: L10n.Ingest.manualEntry,
-                    icon: DesignSystem.Icons.pencilClipboard,
+                    icon: DesignTokens.Icons.pencilClipboard,
                     color: Color.theme.orange
                 )
             }
@@ -74,7 +75,7 @@ struct IngestEntryCardsSection: View {
             }) {
                 entryCardContent(
                     title: L10n.Ingest.urlImport,
-                    icon: DesignSystem.Icons.link,
+                    icon: DesignTokens.Icons.link,
                     color: Color.theme.teal
                 )
             }
@@ -90,7 +91,7 @@ struct IngestEntryCardsSection: View {
             }) {
                 entryCardContent(
                     title: L10n.Ingest.ocrScan,
-                    icon: DesignSystem.Icons.ocr,
+                    icon: DesignTokens.Icons.ocr,
                     color: Color.theme.purple
                 )
             }
@@ -106,7 +107,7 @@ struct IngestEntryCardsSection: View {
             }) {
                 entryCardContent(
                     title: L10n.Ingest.clipboardImport,
-                    icon: DesignSystem.Icons.docOnClipboard,
+                    icon: DesignTokens.Icons.docOnClipboard,
                     color: Color.theme.green
                 )
             }
@@ -122,7 +123,7 @@ struct IngestEntryCardsSection: View {
             }) {
                 entryCardContent(
                     title: L10n.Ingest.voiceNote,
-                    icon: DesignSystem.Icons.waveform,
+                    icon: DesignTokens.Icons.waveform,
                     color: Color.theme.red
                 )
             }
@@ -134,23 +135,23 @@ struct IngestEntryCardsSection: View {
     }
 
     private func entryCardContent(title: String, icon: String, color: Color) -> some View {
-        VStack(spacing: DesignSystem.tiny) {
+        VStack(spacing: DesignTokens.Spacing.tiny) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(Reference.Opacity.ten)) // 0.1 最近档舍入
-                    .frame(width: DesignSystem.Metrics.largeIconBoxSize, height: DesignSystem.Metrics.largeIconBoxSize)
+                    .fill(color.opacity(DesignTokens.Reference.Opacity.ten)) // 0.1 最近档舍入
+                    .frame(width: DesignTokens.Metrics.largeIconBoxSize, height: DesignTokens.Metrics.largeIconBoxSize)
                 Image(systemName: icon)
-                    .font(.system(size: DesignSystem.iconMedium, weight: .semibold))
+                    .font(.system(size: DesignTokens.Spacing.iconMedium, weight: .semibold))
                     .foregroundStyle(color)
             }
             
             Text(title)
-                .font(.system(size: DesignSystem.Metrics.dashboardLabelSize, weight: .bold))
+                .font(.system(size: DesignTokens.Metrics.dashboardLabelSize, weight: .bold))
                 .foregroundStyle(.appText)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, DesignSystem.standardPadding)
-        .appMetricCardStyle(color: color, cornerRadius: DesignSystem.standardRadius)
+        .padding(.vertical, DesignTokens.Spacing.standardPadding)
+        .appMetricCardStyle(color: color, cornerRadius: DesignTokens.Spacing.standardRadius)
     }
 }

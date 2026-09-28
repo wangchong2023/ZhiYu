@@ -6,6 +6,7 @@
 //  核心职责：验证 System 层语义映射的正确性，确保所有 token 正确引用 Reference。
 //
 
+import UFPDesignSystem
 import XCTest
 @testable import ZhiYu
 
@@ -13,65 +14,65 @@ final class DesignSystemSystemTests: XCTestCase {
 
     // MARK: - SystemSpacing 映射正确性
     func testSystemSpacingMapsToReference() {
-        XCTAssertEqual(SystemSpacing.none, Reference.Spacing.zero)
-        XCTAssertEqual(SystemSpacing.hairline, Reference.Spacing.half)
-        XCTAssertEqual(SystemSpacing.divider, Reference.Spacing.one)
-        XCTAssertEqual(SystemSpacing.atomic, Reference.Spacing.two)
-        XCTAssertEqual(SystemSpacing.tight, Reference.Spacing.three)
-        XCTAssertEqual(SystemSpacing.tiny, Reference.Spacing.four)
-        XCTAssertEqual(SystemSpacing.small, Reference.Spacing.six)
-        XCTAssertEqual(SystemSpacing.element, Reference.Spacing.eight)
-        XCTAssertEqual(SystemSpacing.medium, Reference.Spacing.twelve)
-        XCTAssertEqual(SystemSpacing.content, Reference.Spacing.sixteen)
+        XCTAssertEqual(DesignTokens.SystemSpacing.none, DesignTokens.Reference.Spacing.zero)
+        XCTAssertEqual(DesignTokens.SystemSpacing.hairline, DesignTokens.Reference.Spacing.half)
+        XCTAssertEqual(DesignTokens.SystemSpacing.divider, DesignTokens.Reference.Spacing.one)
+        XCTAssertEqual(DesignTokens.SystemSpacing.atomic, DesignTokens.Reference.Spacing.two)
+        XCTAssertEqual(DesignTokens.SystemSpacing.tight, DesignTokens.Reference.Spacing.three)
+        XCTAssertEqual(DesignTokens.SystemSpacing.tiny, DesignTokens.Reference.Spacing.four)
+        XCTAssertEqual(DesignTokens.SystemSpacing.small, DesignTokens.Reference.Spacing.six)
+        XCTAssertEqual(DesignTokens.SystemSpacing.element, DesignTokens.Reference.Spacing.eight)
+        XCTAssertEqual(DesignTokens.SystemSpacing.medium, DesignTokens.Reference.Spacing.twelve)
+        XCTAssertEqual(DesignTokens.SystemSpacing.content, DesignTokens.Reference.Spacing.sixteen)
     }
 
     // MARK: - SystemOpacity 映射正确性
     func testSystemOpacityMapsToReference() {
-        XCTAssertEqual(SystemOpacity.hidden, Reference.Opacity.zero)
-        XCTAssertEqual(SystemOpacity.ghost, Reference.Opacity.five)
-        XCTAssertEqual(SystemOpacity.faint, Reference.Opacity.ten)
-        XCTAssertEqual(SystemOpacity.glass, Reference.Opacity.fifteen)
-        XCTAssertEqual(SystemOpacity.glassStrong, Reference.Opacity.thirty)
-        XCTAssertEqual(SystemOpacity.overlay, Reference.Opacity.sixty)
-        XCTAssertEqual(SystemOpacity.disabled, Reference.Opacity.forty)
-        XCTAssertEqual(SystemOpacity.active, Reference.Opacity.full)
+        XCTAssertEqual(DesignTokens.SystemOpacity.hidden, DesignTokens.Reference.Opacity.zero)
+        XCTAssertEqual(DesignTokens.SystemOpacity.ghost, DesignTokens.Reference.Opacity.five)
+        XCTAssertEqual(DesignTokens.SystemOpacity.faint, DesignTokens.Reference.Opacity.ten)
+        XCTAssertEqual(DesignTokens.SystemOpacity.glass, DesignTokens.Reference.Opacity.fifteen)
+        XCTAssertEqual(DesignTokens.SystemOpacity.glassStrong, DesignTokens.Reference.Opacity.thirty)
+        XCTAssertEqual(DesignTokens.SystemOpacity.overlay, DesignTokens.Reference.Opacity.sixty)
+        XCTAssertEqual(DesignTokens.SystemOpacity.disabled, DesignTokens.Reference.Opacity.forty)
+        XCTAssertEqual(DesignTokens.SystemOpacity.active, DesignTokens.Reference.Opacity.full)
     }
 
     func testSystemOpacityTextLevels() {
-        XCTAssertEqual(SystemOpacity.textSecondary, Reference.Opacity.eighty)
-        XCTAssertEqual(SystemOpacity.textTertiary, Reference.Opacity.seventy)
+        XCTAssertEqual(DesignTokens.SystemOpacity.textSecondary, DesignTokens.Reference.Opacity.eighty)
+        XCTAssertEqual(DesignTokens.SystemOpacity.textTertiary, DesignTokens.Reference.Opacity.seventy)
     }
 
     // MARK: - SystemRadius 映射正确性
     func testSystemRadiusMapsToReference() {
-        XCTAssertEqual(SystemRadius.none, Reference.Radius.zero)
-        XCTAssertEqual(SystemRadius.micro, Reference.Radius.two)
-        XCTAssertEqual(SystemRadius.chip, Reference.Radius.four)
-        XCTAssertEqual(SystemRadius.small, Reference.Radius.eight)
-        XCTAssertEqual(SystemRadius.card, Reference.Radius.twelve)
-        XCTAssertEqual(SystemRadius.large, Reference.Radius.sixteen)
-        XCTAssertEqual(SystemRadius.section, Reference.Radius.twenty)
-        XCTAssertEqual(SystemRadius.capsule, Reference.Radius.full)
+        XCTAssertEqual(DesignTokens.SystemRadius.none, DesignTokens.Reference.Radius.zero)
+        XCTAssertEqual(DesignTokens.SystemRadius.micro, DesignTokens.Reference.Radius.two)
+        XCTAssertEqual(DesignTokens.SystemRadius.chip, DesignTokens.Reference.Radius.four)
+        XCTAssertEqual(DesignTokens.SystemRadius.small, DesignTokens.Reference.Radius.eight)
+        XCTAssertEqual(DesignTokens.SystemRadius.card, DesignTokens.Reference.Radius.twelve)
+        XCTAssertEqual(DesignTokens.SystemRadius.large, DesignTokens.Reference.Radius.sixteen)
+        XCTAssertEqual(DesignTokens.SystemRadius.section, DesignTokens.Reference.Radius.twenty)
+        XCTAssertEqual(DesignTokens.SystemRadius.capsule, DesignTokens.Reference.Radius.full)
     }
 
     // MARK: - SystemStroke 映射正确性
     func testSystemStrokeMapsToReference() {
-        XCTAssertEqual(SystemStroke.none, Reference.Stroke.zero)
-        XCTAssertEqual(SystemStroke.hairline, Reference.Stroke.half)
-        XCTAssertEqual(SystemStroke.border, Reference.Stroke.thin)
-        XCTAssertEqual(SystemStroke.divider, Reference.Stroke.one)
-        XCTAssertEqual(SystemStroke.emphasis, Reference.Stroke.oneHalf)
-        XCTAssertEqual(SystemStroke.selected, Reference.Stroke.two)
-        XCTAssertEqual(SystemStroke.heavy, Reference.Stroke.four)
+        XCTAssertEqual(DesignTokens.SystemStroke.none, DesignTokens.Reference.Stroke.zero)
+        XCTAssertEqual(DesignTokens.SystemStroke.hairline, DesignTokens.Reference.Stroke.half)
+        XCTAssertEqual(DesignTokens.SystemStroke.border, DesignTokens.Reference.Stroke.thin)
+        XCTAssertEqual(DesignTokens.SystemStroke.divider, DesignTokens.Reference.Stroke.one)
+        XCTAssertEqual(DesignTokens.SystemStroke.emphasis, DesignTokens.Reference.Stroke.oneHalf)
+        XCTAssertEqual(DesignTokens.SystemStroke.selected, DesignTokens.Reference.Stroke.two)
+        XCTAssertEqual(DesignTokens.SystemStroke.heavy, DesignTokens.Reference.Stroke.four)
     }
 
     // MARK: - SystemFontSize 映射正确性
     func testSystemFontSizeMapsToReference() {
-        XCTAssertEqual(SystemFontSize.micro, Reference.FontSize.micro)
-        XCTAssertEqual(SystemFontSize.caption, Reference.FontSize.caption)
-        XCTAssertEqual(SystemFontSize.body, Reference.FontSize.body)
-        XCTAssertEqual(SystemFontSize.title, Reference.FontSize.title)
-        XCTAssertEqual(SystemFontSize.display, Reference.FontSize.display)
-        XCTAssertEqual(SystemFontSize.hero, Reference.FontSize.hero)
+        XCTAssertEqual(DesignTokens.SystemFontSize.micro, DesignTokens.Reference.FontSize.micro)
+        XCTAssertEqual(DesignTokens.SystemFontSize.caption, DesignTokens.Reference.FontSize.caption)
+        XCTAssertEqual(DesignTokens.SystemFontSize.body, DesignTokens.Reference.FontSize.body)
+        XCTAssertEqual(DesignTokens.SystemFontSize.title, DesignTokens.Reference.FontSize.title)
+        XCTAssertEqual(DesignTokens.SystemFontSize.display, DesignTokens.Reference.FontSize.display)
+        XCTAssertEqual(DesignTokens.SystemFontSize.hero, DesignTokens.Reference.FontSize.hero)
     }
 }

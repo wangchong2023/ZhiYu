@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 圆角边框描边修饰符，消除重复的 overlay(RoundedRectangle().stroke()) 链
 struct OverlayStrokeModifier: ViewModifier {
@@ -28,9 +29,9 @@ struct OverlayStrokeModifier: ViewModifier {
 extension View {
     /// 圆角边框描边
     func overlayStroke(
-        cornerRadius: CGFloat = DesignSystem.standardRadius,
-        borderColor: Color = Color.appBorder.opacity(DesignSystem.Opacity.subtle),
-        borderWidth: CGFloat = DesignSystem.borderWidth
+        cornerRadius: CGFloat = DesignTokens.Spacing.standardRadius,
+        borderColor: Color = Color.appBorder.opacity(DesignTokens.Opacity.subtle),
+        borderWidth: CGFloat = DesignTokens.Spacing.borderWidth
     ) -> some View {
         modifier(OverlayStrokeModifier(
             cornerRadius: cornerRadius,

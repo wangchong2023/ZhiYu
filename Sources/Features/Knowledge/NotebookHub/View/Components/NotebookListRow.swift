@@ -9,6 +9,7 @@
 //  核心职责：笔记本中心：入口页面、笔记本卡片、创建表单。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 笔记本列表单行行组件。
 /// 
@@ -29,23 +30,23 @@ struct NotebookListRow: View {
     /// 笔记本列表行的渲染视图布局
     var body: some View {
         Button(action: action) {
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 // 1. 图标展示（圆形背景与 Emoji 图标）
                 NotebookIconView(
                     emoji: notebook.defaultEmojiIcon,
                     backgroundShape: Circle(),
-                    backgroundColor: Color.appAccent.opacity(DesignSystem.Opacity.subtle)
+                    backgroundColor: Color.appAccent.opacity(DesignTokens.Opacity.subtle)
                 )
                 
                 // 2. 笔记本元数据展示 (名称标题及描述，描述过长时智能单行截断)
-                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     Text(notebook.name)
-                        .font(.system(size: DesignSystem.headlineFontSize, weight: .bold))
+                        .font(.system(size: DesignTokens.Typography.headlineFontSize, weight: .bold))
                         .foregroundStyle(.appText)
                     
                     if let desc = notebook.description, !desc.isEmpty {
                         Text(desc)
-                            .font(.system(size: DesignSystem.captionFontSize))
+                            .font(.system(size: DesignTokens.Typography.captionFontSize))
                             .foregroundStyle(.appSecondary)
                             .lineLimit(1)
                     }
@@ -54,22 +55,22 @@ struct NotebookListRow: View {
                 Spacer()
                 
                 // 3. 统计指标展示（显示该笔记本中已持久化的知识页面总数）
-                HStack(alignment: .lastTextBaseline, spacing: DesignSystem.atomic) {
+                HStack(alignment: .lastTextBaseline, spacing: DesignTokens.Spacing.atomic) {
                     Text("\(notebook.pageCount)")
-                        .font(.system(size: DesignSystem.bodyFontSize, weight: .semibold, design: .rounded))
+                        .font(.system(size: DesignTokens.Typography.bodyFontSize, weight: .semibold, design: .rounded))
                         .foregroundStyle(.appAccent)
                     
                     Text(L10n.Vault.pageCountSuffix)
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+                        .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
                 }
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
             .cardStyle(
-                horizontalPadding: DesignSystem.medium,
-                verticalPadding: DesignSystem.medium,
-                backgroundOpacity: DesignSystem.glassOpacity,
-                cornerRadius: DesignSystem.cardRadius
+                horizontalPadding: DesignTokens.Spacing.medium,
+                verticalPadding: DesignTokens.Spacing.medium,
+                backgroundOpacity: DesignTokens.Colors.Opacity.glassOpacity,
+                cornerRadius: DesignTokens.Spacing.cardRadius
             )
             .contentShape(Rectangle())
             // 绑定 iOS 原生滑动快捷动作 (SwipeActions)，支持侧滑删除和快速编辑
@@ -77,13 +78,13 @@ struct NotebookListRow: View {
                 Button(role: .destructive) {
                     viewModel.deleteNotebook(id: notebook.id)
                 } label: {
-                    Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
+                    Label(L10n.Common.delete, systemImage: DesignTokens.Icons.delete)
                 }
                 
                 Button {
                     viewModel.prepareEdit(notebook)
                 } label: {
-                    Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
+                    Label(L10n.Vault.edit, systemImage: DesignTokens.Icons.edit)
                 }
             }
             // 绑定长按上下文菜单 (ContextMenu)

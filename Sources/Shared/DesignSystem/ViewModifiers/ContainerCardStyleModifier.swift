@@ -10,14 +10,15 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 容器卡片样式修饰符
 ///
 /// 消除 `WeeklyInsightCard.weeklyInsightContainerStyle()` 与 `GraphView` 中重复的
-/// `background(DesignSystem.containerBackground).clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius)).overlay(RoundedRectangle.stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth))` 模式。
+/// `background(DesignSystem.containerBackground).clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)).overlay(RoundedRectangle.stroke(DesignSystem.containerBorder, lineWidth: DesignTokens.Spacing.borderWidth))` 模式。
 struct ContainerCardStyleModifier: ViewModifier {
-    var cornerRadius: CGFloat = DesignSystem.cardRadius
-    var borderWidth: CGFloat = DesignSystem.borderWidth
+    var cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius
+    var borderWidth: CGFloat = DesignTokens.Spacing.borderWidth
 
     func body(content: Content) -> some View {
         content
@@ -33,8 +34,8 @@ struct ContainerCardStyleModifier: ViewModifier {
 extension View {
     /// 容器卡片样式：background(containerBackground) + clipShape + overlay(stroke containerBorder)
     func containerCardStyle(
-        cornerRadius: CGFloat = DesignSystem.cardRadius,
-        borderWidth: CGFloat = DesignSystem.borderWidth
+        cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius,
+        borderWidth: CGFloat = DesignTokens.Spacing.borderWidth
     ) -> some View {
         modifier(ContainerCardStyleModifier(cornerRadius: cornerRadius, borderWidth: borderWidth))
     }

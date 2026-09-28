@@ -12,6 +12,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 页面详情视图
 struct PageDetailView: View {
@@ -38,7 +39,7 @@ struct PageDetailView: View {
     
     private func pinButton(coordinator: PageDetailCoordinator) -> some View {
         Button(action: { Task { await coordinator.togglePin() } }) {
-            Image(systemName: coordinator.page.isPinned ? DesignSystem.Icons.pinFill : DesignSystem.Icons.pin)
+            Image(systemName: coordinator.page.isPinned ? DesignTokens.Icons.pinFill : DesignTokens.Icons.pin)
                 .foregroundStyle(coordinator.page.isPinned ? Color.theme.orange : .appSecondary)
         }
         .accessibilityIdentifier("pin")
@@ -46,8 +47,8 @@ struct PageDetailView: View {
     
     private func backlinksButton(coordinator: PageDetailCoordinator) -> some View {
         Button(action: { coordinator.showBacklinks.toggle() }) {
-            HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.link)
+            HStack(spacing: DesignTokens.Spacing.tiny) {
+                Image(systemName: DesignTokens.Icons.link)
                 Text("\(coordinator.backlinks.count)")
             }
             .foregroundStyle(.appText)
@@ -62,7 +63,7 @@ struct PageDetailView: View {
             }
             coordinator.isEditing.toggle()
         }) {
-            Image(systemName: coordinator.isEditing ? DesignSystem.Icons.check : DesignSystem.Icons.squareAndPencil)
+            Image(systemName: coordinator.isEditing ? DesignTokens.Icons.check : DesignTokens.Icons.squareAndPencil)
                 .foregroundStyle(coordinator.isEditing ? Color.theme.green : .appText)
         }
     }
@@ -84,9 +85,9 @@ struct PageDetailView: View {
     }
     
     private var welcomeAhaPromptCard: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack(spacing: DesignSystem.small) {
-                Image(systemName: DesignSystem.Icons.sparkles)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Image(systemName: DesignTokens.Icons.sparkles)
                     .font(.title2)
                     .foregroundStyle(LinearGradient(
                         colors: [.appAccent, Color.theme.orange],
@@ -110,43 +111,43 @@ struct PageDetailView: View {
                 router.pendingInitialChatPrompt = L10n.Common.Demo.Welcome.prompt
                 router.navigateToTool(.chat)
             }) {
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     Text("\(L10n.Common.Demo.Welcome.cardRecommend)\"\(L10n.Common.Demo.Welcome.prompt)\"")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .lineLimit(1)
                     
-                    Image(systemName: DesignSystem.Icons.arrowRight)
+                    Image(systemName: DesignTokens.Icons.arrowRight)
                         .font(.caption)
                         .fontWeight(.bold)
                 }
                 .accentCapsuleStyle(
-                    horizontalPadding: DesignSystem.medium,
-                    verticalPadding: DesignSystem.small,
-                    gradientEndOpacity: DesignSystem.Opacity.prominent
+                    horizontalPadding: DesignTokens.Spacing.medium,
+                    verticalPadding: DesignTokens.Spacing.small,
+                    gradientEndOpacity: DesignTokens.Opacity.prominent
                 )
-                .shadow(color: .appAccent.opacity(DesignSystem.Opacity.shadow), radius: 5, x: 0, y: 3)
+                .shadow(color: .appAccent.opacity(DesignTokens.Opacity.shadow), radius: 5, x: 0, y: 3)
             }
             .buttonStyle(ScaleButtonStyle())
         }
-        .padding(DesignSystem.standardPadding)
+        .padding(DesignTokens.Spacing.standardPadding)
         .background(
-            RoundedRectangle(cornerRadius: DesignSystem.Radius.card)
-                .fill(Color.appCard.opacity(DesignSystem.Opacity.dim))
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.card)
+                .fill(Color.appCard.opacity(DesignTokens.Opacity.dim))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.Radius.card)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.card)
                 .stroke(
                     LinearGradient(
-                        colors: [.appAccent.opacity(DesignSystem.Opacity.disabled), .orange.opacity(DesignSystem.Opacity.medium)],
+                        colors: [.appAccent.opacity(DesignTokens.Opacity.disabled), .orange.opacity(DesignTokens.Opacity.medium)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: SystemStroke.divider
+                    lineWidth: DesignTokens.SystemStroke.divider
                 )
         )
-        .shadow(color: .primary.opacity(DesignSystem.Opacity.ghost), radius: 10, x: 0, y: 5)
-        .padding(.vertical, DesignSystem.medium)
+        .shadow(color: .primary.opacity(DesignTokens.Opacity.ghost), radius: 10, x: 0, y: 5)
+        .padding(.vertical, DesignTokens.Spacing.medium)
     }
     
     var body: some View {
@@ -169,7 +170,7 @@ struct PageDetailView: View {
         .frame(maxWidth: .infinity)
         .background(PageBackgroundView(accentColor: Color.fromModelColorName(coordinator.page.pageType.colorName)))
         .appSubPageToolbar(title: coordinator.page.title) {
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 pinButton(coordinator: coordinator)
                 backlinksButton(coordinator: coordinator)
                 editButton(coordinator: coordinator)
@@ -189,12 +190,12 @@ struct PageDetailView: View {
     private func detailScrollView(coordinator: PageDetailCoordinator) -> some View {
         ScrollView {
             VStack(spacing: 0) {
-                Color.clear.frame(height: DesignSystem.mediumRadius)
+                Color.clear.frame(height: DesignTokens.Spacing.mediumRadius)
                 
                 VStack(alignment: .leading, spacing: 0) {
                     PageDetailAISection(page: coordinator.page, onLinkTap: navigateToPage)
                         .id("aiResultSection")
-                        .padding(.bottom, DesignSystem.standardPadding)
+                        .padding(.bottom, DesignTokens.Spacing.standardPadding)
                     
                     Group {
                         PageDetailContentSection(
@@ -310,25 +311,25 @@ struct PageDetailView: View {
     }
 
     private func sourceCitationBar(coordinator: PageDetailCoordinator) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-            Label(L10n.Knowledge.Page.sourceCitation, systemImage: DesignSystem.Icons.link)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
+            Label(L10n.Knowledge.Page.sourceCitation, systemImage: DesignTokens.Icons.link)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.appSecondary)
             sourceCitationDetails(coordinator: coordinator)
         }
-        .padding(DesignSystem.medium)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.soft))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-        .padding(.vertical, DesignSystem.tightPadding)
+        .padding(DesignTokens.Spacing.medium)
+        .background(Color.appCard.opacity(DesignTokens.Opacity.soft))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
+        .padding(.vertical, DesignTokens.Spacing.tightPadding)
     }
 
     private func sourceCitationDetails(coordinator: PageDetailCoordinator) -> some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             if let url = coordinator.page.sourceURL {
                 sourceCitationLinkButton(url: url, coordinator: coordinator)
             }
             if let st = coordinator.page.sourceType {
-                Label("\(L10n.Knowledge.Page.sourceTypeFile): \(st)", systemImage: DesignSystem.Icons.doc)
+                Label("\(L10n.Knowledge.Page.sourceTypeFile): \(st)", systemImage: DesignTokens.Icons.doc)
                     .font(.caption2)
                     .foregroundStyle(.appSecondary)
             }
@@ -379,29 +380,29 @@ struct PageDetailView: View {
         
         Group {
             if aiStore.isScanningAI {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                    HStack(spacing: DesignSystem.small) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         ProgressView()
                             .controlSize(.small)
                         Text(L10n.Knowledge.Page.AI.potentialLinksScanning)
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                     }
-                    .scanStatusBackground(backgroundOpacity: DesignSystem.Opacity.atomic, useAccent: true)
-                    .padding(.vertical, DesignSystem.small)
+                    .scanStatusBackground(backgroundOpacity: DesignTokens.Opacity.atomic, useAccent: true)
+                    .padding(.vertical, DesignTokens.Spacing.small)
                 }
             } else if !relevantLinks.isEmpty {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                    HStack(spacing: DesignSystem.small) {
-                        Image(systemName: DesignSystem.Icons.linkBadgePlus)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
+                        Image(systemName: DesignTokens.Icons.linkBadgePlus)
                             .foregroundStyle(.appAccent)
                         Text(L10n.Knowledge.Page.AI.potentialLinksTitle)
                             .font(.headline)
                             .foregroundStyle(.appText)
                     }
-                    .padding(.bottom, DesignSystem.tiny)
+                    .padding(.bottom, DesignTokens.Spacing.tiny)
                     
-                    VStack(spacing: DesignSystem.tightPadding) {
+                    VStack(spacing: DesignTokens.Spacing.tightPadding) {
                         ForEach(relevantLinks) { link in
                             potentialLinkRow(link: link, store: store, aiStore: aiStore)
                         }
@@ -409,16 +410,16 @@ struct PageDetailView: View {
                 }
                 .aiRecommendationCardStyle()
             } else if coordinator.hasScannedForLinks {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                    HStack(spacing: DesignSystem.small) {
-                        Image(systemName: DesignSystem.Icons.settingsAbout)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
+                        Image(systemName: DesignTokens.Icons.settingsAbout)
                             .foregroundStyle(.appSecondary)
                         Text(L10n.Knowledge.Page.AI.potentialLinksEmpty)
                             .font(.subheadline)
                             .foregroundStyle(.appSecondary)
                     }
-                    .scanStatusBackground(backgroundOpacity: DesignSystem.Opacity.dim, useAccent: false)
-                    .padding(.vertical, DesignSystem.small)
+                    .scanStatusBackground(backgroundOpacity: DesignTokens.Opacity.dim, useAccent: false)
+                    .padding(.vertical, DesignTokens.Spacing.small)
                 }
             }
         }
@@ -427,12 +428,12 @@ struct PageDetailView: View {
     @ViewBuilder
     private func potentialLinkRow(link: PotentialLinkSuggestion, store: AppStore, aiStore: AIWorkflowStore) -> some View {
         HStack {
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
-                HStack(spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     Text(link.sourceTitle)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appText)
-                    Image(systemName: DesignSystem.Icons.forward)
+                    Image(systemName: DesignTokens.Icons.forward)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
                     Text("[[\(link.targetTitle)]]")
@@ -453,21 +454,21 @@ struct PageDetailView: View {
                 Text(L10n.Lint.apply)
                     .font(.caption.bold())
                     .foregroundStyle(.white)
-                    .padding(.horizontal, DesignSystem.medium)
-                    .padding(.vertical, DesignSystem.tiny)
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
                     .background(Color.appAccent)
                     .clipShape(Capsule())
             }
             .buttonStyle(ScaleButtonStyle())
         }
         .borderedCardStyle(
-            horizontalPadding: DesignSystem.medium,
-            verticalPadding: DesignSystem.medium,
-            backgroundOpacity: DesignSystem.Opacity.solid,
-            cornerRadius: DesignSystem.tightPadding,
-            borderWidth: SystemStroke.divider,
+            horizontalPadding: DesignTokens.Spacing.medium,
+            verticalPadding: DesignTokens.Spacing.medium,
+            backgroundOpacity: DesignTokens.Opacity.solid,
+            cornerRadius: DesignTokens.Spacing.tightPadding,
+            borderWidth: DesignTokens.SystemStroke.divider,
             borderColor: .appBorder,
-            borderOpacity: DesignSystem.glassOpacity
+            borderOpacity: DesignTokens.Colors.Opacity.glassOpacity
         )
     }
 }
@@ -480,7 +481,7 @@ private extension View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius)
                     .fill(useAccent ? Color.appAccent.opacity(backgroundOpacity) : Color.appCard.opacity(backgroundOpacity))
             )
     }

@@ -9,6 +9,7 @@
 //  核心职责：构建 Source 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 struct SourceView: View {
     @State private var sourceStore = SourceStore.shared
@@ -22,7 +23,7 @@ struct SourceView: View {
                 emptyState
             } else {
                 ScrollView {
-                    LazyVStack(spacing: DesignSystem.medium) {
+                    LazyVStack(spacing: DesignTokens.Spacing.medium) {
                         ForEach(sourceStore.activeSources) { source in
                             SourceRow(source: source) { pageID in
                                 // 跳转到原文
@@ -39,7 +40,7 @@ struct SourceView: View {
     
     private var header: some View {
         HStack {
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(L10n.Knowledge.Page.Source.title)
                     .font(.headline)
                     .foregroundStyle(.appText)
@@ -50,27 +51,27 @@ struct SourceView: View {
             Spacer()
             
             Button(action: { sourceStore.clear() }) {
-                Image(systemName: DesignSystem.Icons.delete)
+                Image(systemName: DesignTokens.Icons.delete)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
             }
         }
         .padding()
-        .background(Color.appCard.opacity(DesignSystem.glassOpacity))
+        .background(Color.appCard.opacity(DesignTokens.Colors.Opacity.glassOpacity))
     }
     
     private var emptyState: some View {
-        VStack(spacing: DesignSystem.wide) {
+        VStack(spacing: DesignTokens.Spacing.wide) {
             Spacer()
-            Image(systemName: DesignSystem.Icons.quoteOpening)
+            Image(systemName: DesignTokens.Icons.quoteOpening)
                 .font(.largeTitle)
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.shadow))
+                .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.shadow))
             
             Text(L10n.Knowledge.Page.Source.empty)
                 .font(.subheadline)
                 .foregroundStyle(.appSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, ComponentSpacing.ultra)
+                .padding(.horizontal, DesignTokens.ComponentSpacing.ultra)
             Spacer()
         }
         .frame(maxWidth: .infinity)

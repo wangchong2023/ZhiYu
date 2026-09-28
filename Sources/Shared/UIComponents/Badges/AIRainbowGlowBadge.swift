@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 全局常驻发光 AI 呼吸指示微标
 @MainActor
@@ -66,13 +67,13 @@ public struct AIRainbowGlowBadge: View {
         
         // 色彩配置：本地就绪采用极客霓虹绿，云端提权采用极客梦幻蓝紫，正在下载采用炫彩旋转
         let mainColor: Color = isLocalReady ? Color.theme.green : (modelManager.isCloudEscalationEnabled ? Color.theme.purple : .appAccent)
-        let glowColor: Color = isLocalReady ? Color.theme.green.opacity(DesignSystem.Opacity.prominent) : .appAccent.opacity(DesignSystem.Opacity.prominent)
+        let glowColor: Color = isLocalReady ? Color.theme.green.opacity(DesignTokens.Opacity.prominent) : .appAccent.opacity(DesignTokens.Opacity.prominent)
         
         return ZStack {
             // 1. 底层呼吸发光光晕 (Rainbow Glow Effect)
             Circle()
                 .fill(glowColor)
-                .frame(width: DesignSystem.Metrics.glowBadgeSize, height: DesignSystem.Metrics.glowBadgeSize)
+                .frame(width: DesignTokens.Metrics.glowBadgeSize, height: DesignTokens.Metrics.glowBadgeSize)
                 .scaleEffect(1.0 + breathAnim * 0.45)
                 .blur(radius: 2.0 + breathAnim * 3.0)
                 .opacity(0.4 + breathAnim * 0.5)
@@ -85,9 +86,9 @@ public struct AIRainbowGlowBadge: View {
                             colors: [.green, .cyan, .blue, .purple, .pink, .green],
                             center: .center
                         ),
-                        lineWidth: SystemStroke.selected
+                        lineWidth: DesignTokens.SystemStroke.selected
                     )
-                    .frame(width: DesignSystem.Metrics.glowBadgeRingSize, height: DesignSystem.Metrics.glowBadgeRingSize)
+                    .frame(width: DesignTokens.Metrics.glowBadgeRingSize, height: DesignTokens.Metrics.glowBadgeRingSize)
                     .rotationEffect(.degrees(rotateAnim))
             } else if modelManager.isCloudEscalationEnabled {
                 Circle()
@@ -97,9 +98,9 @@ public struct AIRainbowGlowBadge: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        lineWidth: SystemStroke.emphasis
+                        lineWidth: DesignTokens.SystemStroke.emphasis
                     )
-                    .frame(width: DesignSystem.IconSize.small, height: DesignSystem.IconSize.small)
+                    .frame(width: DesignTokens.IconSize.small, height: DesignTokens.IconSize.small)
                     .scaleEffect(1.0 + breathAnim * 0.1)
             }
             
@@ -107,21 +108,21 @@ public struct AIRainbowGlowBadge: View {
             ZStack {
                 Circle()
                     .fill(Color.appCard)
-                    .frame(width: DesignSystem.large, height: DesignSystem.large)
+                    .frame(width: DesignTokens.Spacing.large, height: DesignTokens.Spacing.large)
                 
                 Image(systemName: isLocalReady ? "checkmark.shield.fill" : (isDownloading ? "arrow.down.circle.fill" : "sparkles"))
                     .font(.system(size: isLocalReady ? 10 : 9, weight: .bold))
                     .foregroundStyle(mainColor)
             }
         }
-        .padding(Spacing.Chip.verticalPadding)
+        .padding(DesignTokens.Spacing.Chip.verticalPadding)
         .contentShape(Circle())
     }
     
     // MARK: - 控制中枢 Popover 浮窗 (V2 控制中枢)
     
     private var controlCenterPopoverView: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             // 头部：标题与关闭按钮
             HStack {
                 Image(systemName: "cpu")
@@ -134,27 +135,27 @@ public struct AIRainbowGlowBadge: View {
                 
                 Button(action: { isShowingPopover = false }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
-                        .font(.system(size: SystemFontSize.title2)) // Dynamic Type
+                        .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
+                        .font(.system(size: DesignTokens.SystemFontSize.title2)) // Dynamic Type
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.bottom, SystemSpacing.atomic)
+            .padding(.bottom, DesignTokens.SystemSpacing.atomic)
             
             Divider()
             
             // 1. 当前大模型运行状态
-            VStack(alignment: .leading, spacing: SystemSpacing.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.small) {
                 Text(L10n.Common.unknown)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                 
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     Image(systemName: modelManager.isModelLocalReady(for: modelManager.activeModelId) ? "checkmark.shield.fill" : "network")
                         .foregroundStyle(modelManager.isModelLocalReady(for: modelManager.activeModelId) ? Color.theme.green : .appAccent)
                         .font(.title3)
                     
-                    VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+                    VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                         Text(modelManager.activeModelId)
                             .font(.system(.body, design: .monospaced))
                             .bold()
@@ -167,8 +168,8 @@ public struct AIRainbowGlowBadge: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.appBackground.opacity(DesignSystem.Opacity.dim))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .background(Color.appBackground.opacity(DesignTokens.Opacity.dim))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             }
             
             // 2. 「云端深度考据提权」一键 Toggle (2.4 契约)
@@ -176,7 +177,7 @@ public struct AIRainbowGlowBadge: View {
                 get: { modelManager.isCloudEscalationEnabled },
                 set: { modelManager.isCloudEscalationEnabled = $0 }
             )) {
-                VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                     Text(L10n.Common.unknown)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appText)
@@ -186,7 +187,7 @@ public struct AIRainbowGlowBadge: View {
                 }
             }
             .tint(.appAccent)
-            .padding(.vertical, SystemSpacing.tiny)
+            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
             
             // 3. 硬件安全与拦截计数
             let memInGb = Double(modelManager.physicalMemory) / SystemConstants.bytesPerGB
@@ -201,9 +202,9 @@ public struct AIRainbowGlowBadge: View {
                     .font(.caption.monospaced())
                     .foregroundStyle(.appSecondary)
             }
-            .padding(DesignSystem.tiny)
-            .background(Color.theme.green.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.Chip.cornerRadius))
+            .padding(DesignTokens.Spacing.tiny)
+            .background(Color.theme.green.opacity(DesignTokens.Opacity.subtle))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.Chip.cornerRadius))
             
             Divider()
             
@@ -224,13 +225,13 @@ public struct AIRainbowGlowBadge: View {
                 .padding()
                 .background(Color.appAccent)
                 .foregroundStyle(Color.theme.white)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             }
             .buttonStyle(.plain)
         }
         .padding()
         .frame(width: controlCenterWidth)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.pressed))
+        .background(Color.appCard.opacity(DesignTokens.Opacity.pressed))
         .presentationBackgroundInteraction(.enabled)
     }
 

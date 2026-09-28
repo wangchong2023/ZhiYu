@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 大模型策略配置视图
 @MainActor
@@ -23,27 +24,27 @@ public struct SmartRoutingView: View {
     public var body: some View {
         // 直接返回 ScrollView，利用父容器统一渲染的渐变背景，避免多层 ignoresSafeArea 劫持手势
         ScrollView {
-            VStack(spacing: DesignSystem.large) {
+            VStack(spacing: DesignTokens.Spacing.large) {
                 modelStrategySection
                 runtimeStatusSection
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
         }
     }
 
     // MARK: - 大模型策略
 
     private var modelStrategySection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             sectionHeader(L10n.ModelManager.Routing.modelStrategy)
 
             // 端侧与在线混合开关
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
-                HStack(alignment: .center, spacing: SystemSpacing.element) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                HStack(alignment: .center, spacing: DesignTokens.SystemSpacing.element) {
                     // 主开关左侧添加合并融合图标，以表现端侧与在线智能调度的含义
-                    Image(systemName: DesignSystem.Icons.arrowTriangleMerge)
+                    Image(systemName: DesignTokens.Icons.arrowTriangleMerge)
                         .foregroundStyle(Color.theme.accent)
-                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                         Text(L10n.ModelManager.Routing.onlineEscalationToggle)
                             .font(.subheadline).foregroundStyle(.appText)
                         Text(L10n.ModelManager.Routing.onlineEscalationDesc)
@@ -57,41 +58,41 @@ public struct SmartRoutingView: View {
                 
                 // 补全辅助配置的微型功能图标
                 Toggle(isOn: .constant(false)) {
-                    Label(L10n.ModelManager.Routing.wifiOnly, systemImage: DesignSystem.Icons.wifi)
+                    Label(L10n.ModelManager.Routing.wifiOnly, systemImage: DesignTokens.Icons.wifi)
                 }
                 .font(.subheadline)
                 
                 Toggle(isOn: .constant(true)) {
-                    Label(L10n.ModelManager.Routing.autoFallback, systemImage: DesignSystem.Icons.shieldFill)
+                    Label(L10n.ModelManager.Routing.autoFallback, systemImage: DesignTokens.Icons.shieldFill)
                 }
                 .font(.subheadline)
                 
                 Toggle(isOn: .constant(true)) {
-                    Label(L10n.ModelManager.Routing.preferLocal, systemImage: DesignSystem.Icons.models)
+                    Label(L10n.ModelManager.Routing.preferLocal, systemImage: DesignTokens.Icons.models)
                 }
                 .font(.subheadline)
             }
-            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
+            .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding)
         }
     }
 
     // MARK: - 运行状态
 
     private var runtimeStatusSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             sectionHeader(L10n.ModelManager.Routing.runtimeStatus)
 
-            VStack(spacing: DesignSystem.small) {
+            VStack(spacing: DesignTokens.Spacing.small) {
                 statusRow(label: L10n.ModelManager.Routing.localModelReady,
                     value: getActiveModelName(),
                     status: modelManager.isModelLocalReady(for: modelManager.activeModelId) ? .healthy : .warning)
                 HStack {
-                    Image(systemName: DesignSystem.Icons.cpuOutline).foregroundStyle(.appAccent).frame(width: DesignSystem.titleIconSize)
+                    Image(systemName: DesignTokens.Icons.cpuOutline).foregroundStyle(.appAccent).frame(width: DesignTokens.Spacing.titleIconSize)
                     Text(L10n.ModelManager.Routing.currentDecision).font(.subheadline).foregroundStyle(.appText)
                     Spacer()
                     Text(getCurrentRoutingDecision()).font(.caption.weight(.bold)).foregroundStyle(.appAccent)
-                        .padding(.horizontal, DesignSystem.small).padding(.vertical, DesignSystem.atomic)
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.glass)).clipShape(Capsule())
+                        .padding(.horizontal, DesignTokens.Spacing.small).padding(.vertical, DesignTokens.Spacing.atomic)
+                        .background(Color.appAccent.opacity(DesignTokens.Opacity.glass)).clipShape(Capsule())
                 }
                 
                 // 本地模型未就绪且非强制云端时的自动托管友好诊断提示
@@ -99,7 +100,7 @@ public struct SmartRoutingView: View {
                     Text(L10n.ModelManager.Routing.autoOnlineDesc)
                         .font(.caption2)
                         .foregroundStyle(Color.theme.orange)
-                        .padding(.leading, ComponentSpacing.huge)
+                        .padding(.leading, DesignTokens.ComponentSpacing.huge)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
@@ -108,19 +109,19 @@ public struct SmartRoutingView: View {
                 statusRow(label: L10n.ModelManager.Routing.networkLatency, value: FeatureConstants.MockData.latency23ms, status: .healthy)
                 statusRow(label: L10n.ModelManager.Routing.networkBandwidth, value: L10n.ModelManager.Routing.networkBandwidthExcellent, status: .healthy)
             }
-            .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
+            .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding)
         }
     }
 
     /// 区块标题头样式，消除 modelStrategySection 与 runtimeStatusSection 的重复
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.subheadline.weight(.semibold)).foregroundStyle(.appText).padding(.horizontal, DesignSystem.small)
+            .font(.subheadline.weight(.semibold)).foregroundStyle(.appText).padding(.horizontal, DesignTokens.Spacing.small)
     }
 
     private func statusRow(label: String, value: String, status: HealthStatus) -> some View {
         HStack {
-            Circle().fill(status.color).frame(width: DesignSystem.iconSmall, height: DesignSystem.iconSmall)
+            Circle().fill(status.color).frame(width: DesignTokens.Spacing.iconSmall, height: DesignTokens.Spacing.iconSmall)
             Text(label).font(.subheadline).foregroundStyle(.appText)
             Spacer()
             Text(value).font(.subheadline.weight(.medium)).foregroundStyle(.appText)

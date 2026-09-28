@@ -9,11 +9,12 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 extension View {
     /// 应用设计系统标准阴影
     func appStandardShadow() -> some View {
-        let shadow = DesignSystem.Shadows.standard
+        let shadow = DesignTokens.Shadows.standard
         return self.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
     }
 }

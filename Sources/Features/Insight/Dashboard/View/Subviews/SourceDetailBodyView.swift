@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// [L3] 表现层：来源页面差异化详情视图
 struct SourceDetailBodyView: View {
@@ -32,7 +33,7 @@ struct SourceDetailBodyView: View {
     private static let defaultWaveform: [Double] = [0.15, 0.45, 0.72, 0.88, 0.52, 0.22, 0.65, 0.81, 0.35, 0.12]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
             // 1. 物理载体展示窗口 (Source Player / Canvas)
             playerCanvasSection
             
@@ -70,10 +71,10 @@ struct SourceDetailBodyView: View {
     
     /// 语音/音频播放器窗口
     private var audioPlayerWindow: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             // 播放器状态栏
             HStack {
-                Label(L10n.Ingest.audioSubtitle, systemImage: DesignSystem.Icons.waveformCircleFill)
+                Label(L10n.Ingest.audioSubtitle, systemImage: DesignTokens.Icons.waveformCircleFill)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appAccent)
                 Spacer()
@@ -84,19 +85,19 @@ struct SourceDetailBodyView: View {
             
             // 发光声波波形图
             let waves = frontmatter?.voiceAmplitudeWaveform ?? Self.defaultWaveform
-            HStack(spacing: Spacing.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 ForEach(Array(waves.enumerated()), id: \.offset) { _, wave in
                     let scale = isPlaying ? Double.random(in: 0.6...1.2) : 1.0
-                    RoundedRectangle(cornerRadius: Spacing.microRadius)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
                         .fill(
                             LinearGradient(
-                                colors: [Color.appAccent, Color.appAccent.opacity(DesignSystem.Opacity.disabled)],
+                                colors: [Color.appAccent, Color.appAccent.opacity(DesignTokens.Opacity.disabled)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
                         .frame(
-                            width: Spacing.small,
+                            width: DesignTokens.Spacing.small,
                             height: CGFloat(wave) * Self.waveMaxHeight * CGFloat(scale)
                         )
                         .animation(.easeInOut(duration: 0.2), value: scale)
@@ -105,7 +106,7 @@ struct SourceDetailBodyView: View {
             .frame(height: Self.waveMaxHeight)
             
             // 播放控制器
-            HStack(spacing: DesignSystem.wide) {
+            HStack(spacing: DesignTokens.Spacing.wide) {
                 Button(action: {
                     isPlaying.toggle()
                     if isPlaying {
@@ -125,7 +126,7 @@ struct SourceDetailBodyView: View {
                     }
                 }) {
                     Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: DesignSystem.large))
+                        .font(.system(size: DesignTokens.Spacing.large))
                         .foregroundStyle(.appAccent)
                 }
                 .buttonStyle(.plain)
@@ -135,47 +136,47 @@ struct SourceDetailBodyView: View {
                     InsightProgressBar(progress: Double(playProgress))
                         .position(x: geo.size.width / 2, y: geo.size.height / 2)
                 }
-                .frame(height: Spacing.atomic)
+                .frame(height: DesignTokens.Spacing.atomic)
             }
         }
-        .appCardStyle(cornerRadius: DesignSystem.standardRadius)
+        .appCardStyle(cornerRadius: DesignTokens.Spacing.standardRadius)
     }
     
     /// OCR 扫描图片文字窗口
     private var ocrCanvasWindow: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            InsightSectionHeader(title: L10n.Ingest.OCR.previewTitle, icon: DesignSystem.Icons.viewfinder)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            InsightSectionHeader(title: L10n.Ingest.OCR.previewTitle, icon: DesignTokens.Icons.viewfinder)
             
             ZStack {
                 // 毛玻璃渐变大卡底板，模拟照片画板
-                RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                    .fill(Color.appCard.opacity(DesignSystem.Opacity.subtle))
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                    .fill(Color.appCard.opacity(DesignTokens.Opacity.subtle))
                     .frame(height: Self.canvasHeight)
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                            .stroke(Color.appBorder, lineWidth: DesignSystem.borderWidth)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                            .stroke(Color.appBorder, lineWidth: DesignTokens.Spacing.borderWidth)
                     )
                 
                 // 模拟高亮点击文字热区
-                VStack(spacing: Spacing.small) {
+                VStack(spacing: DesignTokens.Spacing.small) {
                     Text(L10n.Vault.raw.ocrSimulated)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
                     
-                    HStack(spacing: Spacing.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         Text(L10n.Vault.raw.detectedTextZone)
-                            .font(.system(size: SystemFontSize.nano, design: .monospaced)) // Dynamic Type
+                            .font(.system(size: DesignTokens.SystemFontSize.nano, design: .monospaced)) // Dynamic Type
                             .foregroundStyle(.appAccent)
-                            .padding(.horizontal, Spacing.tiny)
-                            .padding(.vertical, Spacing.atomic)
-                            .background(Color.appAccent.opacity(DesignSystem.subtleFillOpacity))
-                            .clipShape(RoundedRectangle(cornerRadius: Spacing.microRadius))
+                            .padding(.horizontal, DesignTokens.Spacing.tiny)
+                            .padding(.vertical, DesignTokens.Spacing.atomic)
+                            .background(Color.appAccent.opacity(DesignTokens.Colors.subtleFillOpacity))
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius))
                             .overlay(
-                                RoundedRectangle(cornerRadius: Spacing.microRadius)
-                                    .stroke(Color.appAccent.opacity(DesignSystem.Opacity.disabled), lineWidth: Self.ocrBoxBorderWidth)
+                                RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
+                                    .stroke(Color.appAccent.opacity(DesignTokens.Opacity.disabled), lineWidth: Self.ocrBoxBorderWidth)
                             )
                     }
-                    .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: 5)
+                    .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: 5)
                 }
             }
         }
@@ -183,23 +184,23 @@ struct SourceDetailBodyView: View {
     
     /// 物理文档预览窗口
     private var documentPreviewWindow: some View {
-        HStack(spacing: DesignSystem.medium) {
-            AccentIconBox(iconName: DesignSystem.Icons.docRichtext)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            AccentIconBox(iconName: DesignTokens.Icons.docRichtext)
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(frontmatter?.fileName ?? page.displaySourceName)
                     .font(.caption.bold())
                     .foregroundStyle(.appText)
                     .lineLimit(1)
                 
-                HStack(spacing: Spacing.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     Text(page.sourceType?.uppercased() ?? "FILE")
-                        .font(.system(size: SystemFontSize.nano, weight: .heavy)) // Dynamic Type
+                        .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .heavy)) // Dynamic Type
                         .foregroundStyle(.appAccent)
-                        .padding(.horizontal, Spacing.tiny)
-                        .padding(.vertical, SystemSpacing.divider)
-                        .background(Color.appAccent.opacity(DesignSystem.subtleFillOpacity))
-                        .cornerRadius(Spacing.microRadius)
+                        .padding(.horizontal, DesignTokens.Spacing.tiny)
+                        .padding(.vertical, DesignTokens.SystemSpacing.divider)
+                        .background(Color.appAccent.opacity(DesignTokens.Colors.subtleFillOpacity))
+                        .cornerRadius(DesignTokens.Spacing.microRadius)
                     
                     if let size = frontmatter?.fileSize ?? page.fileSize {
                         Text(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))
@@ -209,7 +210,7 @@ struct SourceDetailBodyView: View {
                 }
             }
         }
-        .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.ghost, cornerRadius: DesignSystem.standardRadius, useBorder: true)
+        .infoCardStyle(backgroundOpacity: DesignTokens.Opacity.ghost, cornerRadius: DesignTokens.Spacing.standardRadius, useBorder: true)
     }
 
     // MARK: - 2. 提取关系溯源链 (Extraction Lineage)
@@ -218,28 +219,28 @@ struct SourceDetailBodyView: View {
         
         return Group {
             if !refs.isEmpty {
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    InsightSectionHeader(title: L10n.Ingest.resultTitle, icon: DesignSystem.Icons.sparkles, color: .appAccent)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                    InsightSectionHeader(title: L10n.Ingest.resultTitle, icon: DesignTokens.Icons.sparkles, color: .appAccent)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: Spacing.small) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
                             ForEach(refs, id: \.pageID) { ref in
                                 Button(action: {
                                     onLinkTap(ref.name)
                                 }) {
-                                    HStack(spacing: Spacing.atomic) {
-                                        Image(systemName: ref.type == FeatureConstants.SourceType.concept ? DesignSystem.Icons.library : DesignSystem.Icons.entity)
-                                            .font(.system(size: SystemFontSize.nano))
+                                    HStack(spacing: DesignTokens.Spacing.atomic) {
+                                        Image(systemName: ref.type == FeatureConstants.SourceType.concept ? DesignTokens.Icons.library : DesignTokens.Icons.entity)
+                                            .font(.system(size: DesignTokens.SystemFontSize.nano))
                                         Text(ref.name)
                                             .font(.caption2.bold())
                                     }
                                     .foregroundStyle(ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal : Color.theme.yellow)
                                     .insightTagChipStyle(InsightTagChipStyle(
                                         backgroundColor: .appCard,
-                                        backgroundOpacity: DesignSystem.Opacity.subtle,
+                                        backgroundOpacity: DesignTokens.Opacity.subtle,
                                         borderColor: ref.type == FeatureConstants.SourceType.concept ? Color.theme.teal : Color.theme.yellow,
-                                        borderWidth: SystemStroke.divider,
-                                        borderOpacity: DesignSystem.Opacity.disabled
+                                        borderWidth: DesignTokens.SystemStroke.divider,
+                                        borderOpacity: DesignTokens.Opacity.disabled
                                     ))
                                 }
                                 .buttonStyle(.plain)

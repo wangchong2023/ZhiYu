@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 struct ChatWelcomeView: View {
     let isSheet: Bool
@@ -22,13 +23,13 @@ struct ChatWelcomeView: View {
     }
 
     var body: some View {
-        VStack(spacing: isSheet ? DesignSystem.medium : DesignSystem.small) {
+        VStack(spacing: isSheet ? DesignTokens.Spacing.medium : DesignTokens.Spacing.small) {
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.wide) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.wide) {
                     // 1. 我的指令 (置顶)
                     SuggestionGroupView(
                         title: L10n.Chat.group.user,
-                        icon: DesignSystem.Icons.pinFill,
+                        icon: DesignTokens.Icons.pinFill,
                         queries: promptService.userShortcuts.map { $0.text }
                     )
                     
@@ -41,7 +42,7 @@ struct ChatWelcomeView: View {
                     } else if !coordinator.insightfulQuestions.isEmpty {
                         SuggestionGroupView(
                             title: L10n.Chat.group.ai,
-                            icon: DesignSystem.Icons.sparkles,
+                            icon: DesignTokens.Icons.sparkles,
                             queries: coordinator.insightfulQuestions,
                             color: .appAccent
                         )
@@ -65,23 +66,23 @@ struct SuggestionGroupView: View {
     @Environment(AppStore.self) var store
 
     var body: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.elementLarge) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.elementLarge) {
             // 标题现在支持点击直接触发“总体探索”
             Button(action: {
                 HapticFeedback.shared.trigger(.link)
                 let query = L10n.Chat.deepExplorePrompt(title)
                 sendQuery(query)
             }) {
-                HStack(spacing: SystemSpacing.small) {
+                HStack(spacing: DesignTokens.SystemSpacing.small) {
                     Image(systemName: icon).font(.caption2)
                     Text(title).font(.caption.weight(.bold))
                     Spacer()
-                    Image(systemName: DesignSystem.Icons.promptLibrary)
-                        .font(.system(size: DesignSystem.Metrics.heroValueSize * FeatureConstants.ChatWelcome.iconFontScale))
-                        .opacity(DesignSystem.Opacity.soft)
+                    Image(systemName: DesignTokens.Icons.promptLibrary)
+                        .font(.system(size: DesignTokens.Metrics.heroValueSize * FeatureConstants.ChatWelcome.iconFontScale))
+                        .opacity(DesignTokens.Opacity.soft)
                 }
                 .foregroundStyle(color)
-                .padding(.leading, DesignSystem.tiny)
+                .padding(.leading, DesignTokens.Spacing.tiny)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -95,11 +96,11 @@ struct SuggestionGroupView: View {
                     HStack {
                         Text(query).font(.subheadline).foregroundStyle(.appText).multilineTextAlignment(.leading)
                         Spacer()
-                        Image(systemName: DesignSystem.Icons.arrowUpRight).font(.caption2).foregroundStyle(.appAccent.opacity(DesignSystem.Opacity.overlay))
+                        Image(systemName: DesignTokens.Icons.arrowUpRight).font(.caption2).foregroundStyle(.appAccent.opacity(DesignTokens.Opacity.overlay))
                     }
                     .padding()
-                    .appCardClip(cornerRadius: DesignSystem.standardRadius)
-                    .overlayStroke(borderColor: Color.appBorder.opacity(DesignSystem.disabledOpacity))
+                    .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
+                    .overlayStroke(borderColor: Color.appBorder.opacity(DesignTokens.Colors.Opacity.disabledOpacity))
                 }
                 .buttonStyle(.plain)
             }

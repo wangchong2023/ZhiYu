@@ -14,8 +14,7 @@ import Foundation
 ///
 /// 将 UserDefaults.standard 封装为 KeyStoreProtocol 的适配器，
 /// 支持通过构造函数注入自定义 UserDefaults 实例（如 App Group 共享容器）。
-@MainActor
-final class UserDefaultsKeyStore: KeyStoreProtocol {
+final class UserDefaultsKeyStore: KeyStoreProtocol, @unchecked Sendable {
     /// 全局共享实例
     static let shared = UserDefaultsKeyStore()
 

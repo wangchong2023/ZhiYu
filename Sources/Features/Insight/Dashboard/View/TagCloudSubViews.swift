@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // 标签云业务阈值常量
 private enum InsightBusinessConstants {
@@ -30,8 +31,8 @@ extension TagCloudViewContent {
             Spacer()
             Button(role: .destructive, action: { showBulkDeleteConfirm = true }) {
                 Text(L10n.Common.Misc.bulkDelete)
-                    .padding(.horizontal, DesignSystem.large)
-                    .padding(.vertical, SystemSpacing.small) // 6
+                    .padding(.horizontal, DesignTokens.Spacing.large)
+                    .padding(.vertical, DesignTokens.SystemSpacing.small) // 6
                     .background(Color.theme.red)
                     .clipShape(Capsule())
                     .foregroundStyle(.white)
@@ -39,15 +40,15 @@ extension TagCloudViewContent {
             .buttonStyle(.plain)
         }
         .padding()
-        .background(BlurView().background(Color.appAccent.opacity(DesignSystem.surfaceOpacity)))
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .background(BlurView().background(Color.appAccent.opacity(DesignTokens.Colors.Opacity.surfaceOpacity)))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
         .padding()
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     var emptyTagsView: some View {
         InsightEmptyState(
-            icon: DesignSystem.Icons.tag,
+            icon: DesignTokens.Icons.tag,
             title: L10n.Tag.Action.noTags,
             hint: L10n.Tag.Action.noTagsHint
         )
@@ -77,9 +78,9 @@ extension TagCloudViewContent {
                             )
                         }
                     }
-                    .padding(DesignSystem.medium)
+                    .padding(DesignTokens.Spacing.medium)
                 }
-                .frame(maxHeight: isExpanded ? .infinity : DesignSystem.Metrics.maxTagCloudHeight)
+                .frame(maxHeight: isExpanded ? .infinity : DesignTokens.Metrics.maxTagCloudHeight)
                 .fixedSize(horizontal: false, vertical: true)
                 .overlay(alignment: .bottom) {
                     if shouldCollapse {
@@ -113,32 +114,32 @@ extension TagCloudViewContent {
                         isExpanded = true
                     }
                 }) {
-                    HStack(spacing: DesignSystem.tiny) {
+                    HStack(spacing: DesignTokens.Spacing.tiny) {
                         Text(L10n.Tag.expandAll)
-                        Image(systemName: DesignSystem.Icons.chevronDown)
+                        Image(systemName: DesignTokens.Icons.chevronDown)
                     }
                     .font(.caption.bold())
                     .foregroundStyle(.appAccent)
-                    .tagToggleCapsule(borderColor: .appAccent, borderOpacity: DesignSystem.Opacity.light)
+                    .tagToggleCapsule(borderColor: .appAccent, borderOpacity: DesignTokens.Opacity.light)
                 }
                 .buttonStyle(.plain)
-                .padding(.bottom, DesignSystem.small)
+                .padding(.bottom, DesignTokens.Spacing.small)
             } else {
                 Button(action: {
                     withAnimation(.spring()) {
                         isExpanded = false
                     }
                 }) {
-                    HStack(spacing: DesignSystem.tiny) {
+                    HStack(spacing: DesignTokens.Spacing.tiny) {
                         Text(L10n.Tag.collapse)
-                        Image(systemName: DesignSystem.Icons.chevronUp)
+                        Image(systemName: DesignTokens.Icons.chevronUp)
                     }
                     .font(.caption.bold())
                     .foregroundStyle(.appSecondary)
-                    .tagToggleCapsule(borderColor: .appBorder, borderOpacity: DesignSystem.Opacity.light)
+                    .tagToggleCapsule(borderColor: .appBorder, borderOpacity: DesignTokens.Opacity.light)
                 }
                 .buttonStyle(.plain)
-                .padding(.bottom, DesignSystem.small)
+                .padding(.bottom, DesignTokens.Spacing.small)
             }
             Spacer()
         }
@@ -154,12 +155,12 @@ extension TagCloudViewContent {
                                 Router.shared.path.append(AppRoute.pageDetail(id: page.id))
                             } label: {
                                 PageRowView(page: page, compact: true)
-                                    .padding(.vertical, DesignSystem.tiny)
+                                    .padding(.vertical, DesignTokens.Spacing.tiny)
                             }
                             .listRowBackground(
-                                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                                    .fill(Color.appCard.opacity(DesignSystem.softOpacity))
-                                    .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
+                                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                                    .fill(Color.appCard.opacity(DesignTokens.Colors.Opacity.softOpacity))
+                                    .commonContentPadding(horizontal: DesignTokens.Spacing.small, vertical: DesignTokens.Spacing.tiny)
                             )
                             .skipOnWatch { $0.listRowSeparator(.hidden) }
                         }
@@ -169,17 +170,17 @@ extension TagCloudViewContent {
                 .scrollContentBackground(.hidden)
                 .frame(maxHeight: .infinity)
             } else {
-                VStack(spacing: DesignSystem.medium) {
-                    Image(systemName: coordinator.isEditMode ? DesignSystem.Icons.checklist : DesignSystem.Icons.tag)
-                        .font(.system(size: DesignSystem.iconHuge))
-                        .foregroundStyle(.appSecondary.opacity(DesignSystem.translucentOpacity))
+                VStack(spacing: DesignTokens.Spacing.medium) {
+                    Image(systemName: coordinator.isEditMode ? DesignTokens.Icons.checklist : DesignTokens.Icons.tag)
+                        .font(.system(size: DesignTokens.Spacing.iconHuge))
+                        .foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.Opacity.translucentOpacity))
                     Text(coordinator.isEditMode ? L10n.Tag.Management.selectToManage : L10n.Tag.Cloud.selectTag)
                         .font(.subheadline)
                         .foregroundStyle(.appSecondary)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: DesignSystem.Metrics.sourceCardHeight)
-                .background(Color.appBackground.opacity(DesignSystem.ghostOpacity))
+                .frame(height: DesignTokens.Metrics.sourceCardHeight)
+                .background(Color.appBackground.opacity(DesignTokens.Colors.Opacity.ghostOpacity))
                 .onTapGesture {
                     if coordinator.isEditMode { coordinator.isEditMode = false }
                 }
@@ -193,12 +194,12 @@ private extension View {
     /// 标签切换胶囊：padding + background + clipShape(Capsule) + overlay(stroke)
     func tagToggleCapsule(borderColor: Color, borderOpacity: Double) -> some View {
         self
-            .padding(.horizontal, DesignSystem.large)
-            .padding(.vertical, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.large)
+            .padding(.vertical, DesignTokens.Spacing.small)
             .background(Color.appCard)
             .clipShape(Capsule())
             .overlay(
-                Capsule().stroke(borderColor.opacity(borderOpacity), lineWidth: SystemStroke.divider)
+                Capsule().stroke(borderColor.opacity(borderOpacity), lineWidth: DesignTokens.SystemStroke.divider)
             )
     }
 }

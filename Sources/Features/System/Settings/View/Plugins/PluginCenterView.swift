@@ -12,6 +12,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 插件中心 (Stub: 为未来生态预留位置)
 struct PluginCenterView: View {
@@ -40,7 +41,7 @@ struct PluginCenterView: View {
             
             // 分类筛选 Chip 药丸栏
             categoryPillsSection
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
             
             // 2. 分段切换 (带动效)
             Picker("", selection: $selectedTab) {
@@ -49,7 +50,7 @@ struct PluginCenterView: View {
             }
             .segmentedPickerStyleIfAvailable()
             .padding(.horizontal)
-            .padding(.vertical, DesignSystem.small)
+            .padding(.vertical, DesignTokens.Spacing.small)
             
             // 3. 内容主体
             ScrollView {
@@ -96,22 +97,22 @@ struct PluginCenterView: View {
     
     /// 头部筛选栏
     private var headerSection: some View {
-        VStack(spacing: DesignSystem.standardPadding) {
+        VStack(spacing: DesignTokens.Spacing.standardPadding) {
             // 搜索框：玻璃拟态
             HStack {
-                Image(systemName: DesignSystem.Icons.search)
+                Image(systemName: DesignTokens.Icons.search)
                     .foregroundStyle(.appAccent)
                 TextField(L10n.Plugin.searchPlaceholder, text: $searchText)
                     .textFieldStyle(.plain)
             }
-            .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
-            .overlay(RoundedRectangle(cornerRadius: SystemRadius.card).stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline))
+            .cardStyle(horizontalPadding: DesignTokens.Spacing.medium, verticalPadding: DesignTokens.Spacing.medium, backgroundOpacity: DesignTokens.Opacity.solid, cornerRadius: DesignTokens.SystemRadius.card)
+            .overlay(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card).stroke(Color.appBorder.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.hairline))
             
             // 安全模式与加载按钮
-            HStack(spacing: DesignSystem.large) {
+            HStack(spacing: DesignTokens.Spacing.large) {
                 // 安全模式切换
-                HStack(spacing: DesignSystem.small) {
-                    Image(systemName: isSafeModeOn ? DesignSystem.Icons.shieldFill : DesignSystem.Icons.shieldSlash)
+                HStack(spacing: DesignTokens.Spacing.small) {
+                    Image(systemName: isSafeModeOn ? DesignTokens.Icons.shieldFill : DesignTokens.Icons.shieldSlash)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appAccent)
                     
@@ -140,22 +141,22 @@ struct PluginCenterView: View {
                     HapticFeedback.shared.trigger(.selection)
                     showFileImporter = true
                 }) {
-                    Label(L10n.Plugin.local.mount, systemImage: DesignSystem.Icons.plusCircle)
+                    Label(L10n.Plugin.local.mount, systemImage: DesignTokens.Icons.plusCircle)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appAccent)
                 }
                 
                 Spacer() // 靠左对齐
             }
-            .padding(.top, DesignSystem.tiny)
+            .padding(.top, DesignTokens.Spacing.tiny)
         }
-        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+        .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
         .background(Color.clear)
     }
     
     /// 本地已启用/已安装的插件列表区域
     private var myPluginsSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.widePadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.widePadding) {
             let filtered = registry.plugins.filter { plugin in
                 matchesSearch(plugin.manifest.name) && matchesCategory(plugin.manifest.category)
             }
@@ -185,51 +186,51 @@ struct PluginCenterView: View {
             } else if searchText.isEmpty {
                 if selectedCategory != nil && !registry.plugins.isEmpty {
                     AppEmptyState.simple(
-                        icon: DesignSystem.Icons.pluginOutline,
+                        icon: DesignTokens.Icons.pluginOutline,
                         title: L10n.Plugin.noPluginsInCategory,
                         description: L10n.Plugin.noPluginsInCategoryHint
                     )
-                    .padding(.vertical, DesignSystem.giant)
+                    .padding(.vertical, DesignTokens.Spacing.giant)
                 } else {
                     AppEmptyState.simple(
-                        icon: DesignSystem.Icons.pluginOutline,
+                        icon: DesignTokens.Icons.pluginOutline,
                         title: L10n.Plugin.noPlugins,
                         description: L10n.Plugin.noPluginsHint
                     )
-                    .padding(.vertical, DesignSystem.giant)
+                    .padding(.vertical, DesignTokens.Spacing.giant)
                 }
             } else {
                 AppEmptyState.simple(
-                    icon: DesignSystem.Icons.search,
+                    icon: DesignTokens.Icons.search,
                     title: L10n.Plugin.noResults,
                     description: L10n.Plugin.noResultsHint
                 )
-                .padding(.vertical, DesignSystem.giant)
+                .padding(.vertical, DesignTokens.Spacing.giant)
             }
         }
     }
     
     /// 远端/社区插件市场的插件列表区域
     private var marketSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
             if marketService.isLoading {
                 ProgressView()
-                    .padding(.top, DesignSystem.Gallery.splashIconSize - DesignSystem.tightPadding)
+                    .padding(.top, DesignSystem.Gallery.splashIconSize - DesignTokens.Spacing.tightPadding)
                     .frame(maxWidth: .infinity)
             } else {
                 if let errorMessage = marketService.errorMessage {
                     AppEmptyState.withAction(
-                        icon: DesignSystem.Icons.wifiSlash,
+                        icon: DesignTokens.Icons.wifiSlash,
                         title: L10n.Plugin.market.connectionError,
                         description: errorMessage,
                         actionLabel: L10n.Shared.retryButton,
-                        actionIcon: DesignSystem.Icons.arrowClockwise
+                        actionIcon: DesignTokens.Icons.arrowClockwise
                     ) {
                         Task {
                             await marketService.fetchPlugins()
                         }
                     }
-                    .padding(.vertical, DesignSystem.giant)
+                    .padding(.vertical, DesignTokens.Spacing.giant)
                 } else {
                     let filtered = marketService.availablePlugins.filter { p in
                         matchesSearch(p.name) && matchesCategory(p.category)
@@ -237,11 +238,11 @@ struct PluginCenterView: View {
                     
                     if filtered.isEmpty {
                         AppEmptyState.simple(
-                            icon: DesignSystem.Icons.storefront,
+                            icon: DesignTokens.Icons.storefront,
                             title: L10n.Plugin.market.empty,
                             description: L10n.Plugin.market.emptyHint
                         )
-                        .padding(.vertical, DesignSystem.giant)
+                        .padding(.vertical, DesignTokens.Spacing.giant)
                     } else {
                         ForEach(filtered) { p in
                             NavigationLink(destination: PluginDetailView(plugin: p, marketService: marketService)) {
@@ -301,7 +302,7 @@ struct PluginCenterView: View {
 
     private var categoryPillsSection: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 categoryPill(title: L10n.Plugin.Category.all, category: nil)
                 categoryPill(title: L10n.Plugin.Category.efficiency, category: PluginConstants.Category.efficiency)
                 categoryPill(title: L10n.Plugin.Category.social, category: PluginConstants.Category.social)
@@ -309,7 +310,7 @@ struct PluginCenterView: View {
                 categoryPill(title: L10n.Plugin.Category.other, category: PluginConstants.Category.other)
             }
             .padding(.horizontal)
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
         }
     }
     
@@ -317,14 +318,14 @@ struct PluginCenterView: View {
         let isSelected = selectedCategory == category
         return Text(title)
             .font(.caption.bold())
-            .padding(.horizontal, SystemSpacing.medium)
-            .padding(.vertical, SystemSpacing.small)
-            .background(isSelected ? Color.appAccent : Color.appCard.opacity(DesignSystem.Opacity.dim))
+            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+            .padding(.vertical, DesignTokens.SystemSpacing.small)
+            .background(isSelected ? Color.appAccent : Color.appCard.opacity(DesignTokens.Opacity.dim))
             .foregroundColor(isSelected ? .white : .appText)
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .stroke(isSelected ? Color.clear : Color.appBorder.opacity(DesignSystem.Opacity.prominent), lineWidth: SystemStroke.hairline)
+                    .stroke(isSelected ? Color.clear : Color.appBorder.opacity(DesignTokens.Opacity.prominent), lineWidth: DesignTokens.SystemStroke.hairline)
             )
             .onTapGesture {
                 HapticFeedback.shared.trigger(.selection)
@@ -376,43 +377,43 @@ struct PluginCard: View {
     }
 
     var body: some View {
-        HStack(spacing: DesignSystem.standardPadding) {
+        HStack(spacing: DesignTokens.Spacing.standardPadding) {
             // 优先显示本地 icon.png，fallback SF Symbol
             if let uiImage = localIcon {
                 Image(uiImage: uiImage)
                     .renderingMode(.original)
                     .resizable().scaledToFit()
                     .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card, style: .continuous).stroke(Color.appBorder.opacity(DesignTokens.SystemOpacity.glass), lineWidth: DesignTokens.SystemStroke.hairline))
             } else if let iconURL = URL(string: icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {
                 PluginRemoteIconLoader(
                     iconURL: iconURL,
                     size: DesignSystem.Action.minTouchTarget,
-                    cornerRadius: SystemRadius.card,
-                    strokeOpacity: SystemOpacity.glass,
+                    cornerRadius: DesignTokens.SystemRadius.card,
+                    strokeOpacity: DesignTokens.SystemOpacity.glass,
                     strokeColor: Color.appBorder,
                     emptyContent: {
                         // 网络图标加载中时，展示静止淡雅的拼图占位符，去除凌乱的局部菊花与闪烁
-                        Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
+                        Image(systemName: DesignTokens.Icons.puzzlepieceExtensionFill)
                             .font(.title3)
-                            .foregroundStyle(.appSecondary.opacity(DesignSystem.disabledOpacity))
+                            .foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.Opacity.disabledOpacity))
                             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-                            .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
+                            .background(Color.appCard.opacity(DesignTokens.Opacity.prominent))
                     },
                     fallback: { pluginCardFallbackIcon }
                 )
             } else {
                 pluginGradientIcon(icon)
-                    .pluginIconContainerStyle(cornerRadius: SystemRadius.card, strokeOpacity: SystemOpacity.glass)
+                    .pluginIconContainerStyle(cornerRadius: DesignTokens.SystemRadius.card, strokeOpacity: DesignTokens.SystemOpacity.glass)
             }
             
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(name)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appText)
                 
-                HStack(spacing: DesignSystem.tightPadding) {
+                HStack(spacing: DesignTokens.Spacing.tightPadding) {
                     Text("v\(displayVersion)")
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
@@ -420,16 +421,16 @@ struct PluginCard: View {
                     // 来源类型微缩标签
                     if let src = source {
                         Text(sourceLabel(src))
-                            .font(.system(size: DesignSystem.microFontSize, weight: .bold))
-                            .padding(.horizontal, SystemSpacing.tiny)
-                            .padding(.vertical, SystemSpacing.atomic)
+                            .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold))
+                            .padding(.horizontal, DesignTokens.SystemSpacing.tiny)
+                            .padding(.vertical, DesignTokens.SystemSpacing.atomic)
                             .background(sourceColor(src))
                             .clipShape(Capsule())
                             .foregroundStyle(.white)
                     }
                     
                     if let author = author {
-                        Text(DesignSystem.Icons.bullet)
+                        Text(DesignTokens.Icons.bullet)
                             .font(.caption2)
                             .foregroundStyle(.appSecondary)
                         Text(author)
@@ -439,15 +440,15 @@ struct PluginCard: View {
                 }
                 
                 if let downloads = downloads, let rating = rating {
-                    HStack(spacing: DesignSystem.tightPadding) {
-                        Label(downloads, systemImage: DesignSystem.Icons.arrowDownCircle)
-                            .font(.system(size: DesignSystem.microFontSize))
-                        Label(String(format: "%.1f", rating), systemImage: DesignSystem.Icons.star)
-                            .font(.system(size: DesignSystem.microFontSize))
+                    HStack(spacing: DesignTokens.Spacing.tightPadding) {
+                        Label(downloads, systemImage: DesignTokens.Icons.arrowDownCircle)
+                            .font(.system(size: DesignTokens.Typography.microFontSize))
+                        Label(String(format: "%.1f", rating), systemImage: DesignTokens.Icons.star)
+                            .font(.system(size: DesignTokens.Typography.microFontSize))
                             .foregroundStyle(Color.theme.yellow)
                     }
                     .foregroundStyle(.appSecondary)
-                    .padding(.top, SystemSpacing.atomic)
+                    .padding(.top, DesignTokens.SystemSpacing.atomic)
                 }
             }
             Spacer()
@@ -455,14 +456,14 @@ struct PluginCard: View {
             // 快捷安装 / 卸载一键操作按钮
             actionButton
             
-            Image(systemName: DesignSystem.Icons.forward)
+            Image(systemName: DesignTokens.Icons.forward)
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: SystemRadius.section, style: .continuous).fill(.ultraThinMaterial))
-        .overlay(RoundedRectangle(cornerRadius: SystemRadius.section, style: .continuous).stroke(Color.theme.white.opacity(SystemOpacity.glass), lineWidth: SystemStroke.hairline))
-        .shadow(color: Color.theme.black.opacity(SystemOpacity.faint), radius: SystemShadow.radiusMedium, x: 0, y: SystemShadow.offsetSmall)
+        .background(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.section, style: .continuous).fill(.ultraThinMaterial))
+        .overlay(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.section, style: .continuous).stroke(Color.theme.white.opacity(DesignTokens.SystemOpacity.glass), lineWidth: DesignTokens.SystemStroke.hairline))
+        .shadow(color: Color.theme.black.opacity(DesignTokens.SystemOpacity.faint), radius: DesignTokens.SystemShadow.radiusMedium, x: 0, y: DesignTokens.SystemShadow.offsetSmall)
         .task {
             if let id = pluginID {
                 // 兼容支持物理包名 ID 与市场简短 ID 的匹配
@@ -501,8 +502,8 @@ struct PluginCard: View {
     @ViewBuilder
     private var actionButton: some View {
         if isInstalled {
-            HStack(spacing: SystemSpacing.tiny) {
-                Image(systemName: DesignSystem.Icons.delete)
+            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                Image(systemName: DesignTokens.Icons.delete)
                     .font(.caption2)
                 Text(L10n.Plugin.Action.uninstall)
                     .font(.caption.bold())
@@ -516,12 +517,12 @@ struct PluginCard: View {
             }
         } else if let marketPlugin = marketPlugin, let service = marketService {
             let isDownloading = service.downloadingPluginID == pluginID
-            HStack(spacing: SystemSpacing.tiny) {
+            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                 if isDownloading {
                     ProgressView()
                         .scaleEffect(0.7)
                 } else {
-                    Image(systemName: DesignSystem.Icons.icloudArrowDown)
+                    Image(systemName: DesignTokens.Icons.icloudArrowDown)
                         .font(.caption2)
                 }
                 Text(L10n.Plugin.Action.install)
@@ -540,7 +541,7 @@ struct PluginCard: View {
 
     /// 远程图标加载失败时的 fallback 拼图块默认图标（带渐变底）
     private var pluginCardFallbackIcon: some View {
-        pluginGradientIcon(DesignSystem.Icons.puzzlepieceExtensionFill)
+        pluginGradientIcon(DesignTokens.Icons.puzzlepieceExtensionFill)
     }
 
     /// 构建带渐变背景的插件图标，消除 Image+LinearGradient 重复
@@ -549,7 +550,7 @@ struct PluginCard: View {
             .font(.title3)
             .foregroundStyle(.white)
             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
-            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
+            .background(LinearGradient(colors: [Color.appAccent, Color.appAccent.opacity(DesignTokens.SystemOpacity.active)], startPoint: .topLeading, endPoint: .bottomTrailing))
     }
 
     /// 查找本地已安装插件实体，消除 displayVersion 与 resolveTargetID 的重复查询
@@ -571,14 +572,14 @@ private extension View {
         self
             .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Color.theme.white.opacity(strokeOpacity), lineWidth: SystemStroke.hairline))
+            .overlay(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).stroke(Color.theme.white.opacity(strokeOpacity), lineWidth: DesignTokens.SystemStroke.hairline))
     }
 
     /// 操作按钮胶囊样式，消除重复的 padding+background+clipShape+foregroundStyle+contentShape 链
     func actionPillStyle(background: Color) -> some View {
         self
-            .padding(.horizontal, SystemSpacing.small)
-            .padding(.vertical, SystemSpacing.tiny)
+            .padding(.horizontal, DesignTokens.SystemSpacing.small)
+            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
             .background(background)
             .clipShape(Capsule())
             .foregroundStyle(.white)

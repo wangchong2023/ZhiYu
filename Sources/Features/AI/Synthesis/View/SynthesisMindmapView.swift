@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 思维导图内容视图
 
@@ -38,22 +39,22 @@ struct SynthesisMindmapView: View {
     }
 
     var body: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             Picker("", selection: $selectedDisplayMode) {
                 Text(L10n.AI.Synthesis.actions).tag(0)
                 Text(L10n.AI.Synthesis.documentList).tag(1)
             }
             .pickerStyle(.segmented)
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.top, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.top, DesignTokens.Spacing.small)
 
             if selectedDisplayMode == 0 {
                 if !mermaidCode.isEmpty && SynthesisProcessor.isValidMermaidSyntax(mermaidCode) {
-                    VStack(spacing: DesignSystem.standardPadding) {
+                    VStack(spacing: DesignTokens.Spacing.standardPadding) {
                         if let title = extractTitle(from: doc.content) {
                             Text(title)
                                 .font(.title2.bold())
-                                .padding(.top, DesignSystem.small)
+                                .padding(.top, DesignTokens.Spacing.small)
                                 .padding(.horizontal)
                                 .frame(maxWidth: .infinity, alignment: .center)
                         }

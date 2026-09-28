@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 正圆形标签气泡组件
 struct CircularTagBubbleView: View {
@@ -78,14 +79,14 @@ struct CircularTagBubbleView: View {
         Button(action: {
             InsightTagInteractions.toggleSelection(tag: item.tag, coordinator: coordinator)
         }) {
-            VStack(spacing: SystemSpacing.tight) {
+            VStack(spacing: DesignTokens.SystemSpacing.tight) {
                 // 标签文本：首要保证单行显示，支持字体自适应缩小(最高压缩至48%)，仍溢出时尾部截断
                 Text(item.tag.replacingOccurrences(of: "#", with: ""))
                     .font(.system(size: textFontSize, design: .rounded).weight(isSelected ? .bold : .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(minTextScaleLimit)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, SystemSpacing.small)
+                    .padding(.horizontal, DesignTokens.SystemSpacing.small)
                 
                 // 词频指示数字胶囊
                 InsightTagCountBadge(
@@ -106,7 +107,7 @@ struct CircularTagBubbleView: View {
             .overlay {
                 // 正圆描边
                 Circle()
-                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(borderBaseOpacity + bubbleRatio * borderOpacityRange), lineWidth: SystemStroke.divider)
+                    .stroke(isSelected ? Color.appAccent : Color.appBorder.opacity(borderBaseOpacity + bubbleRatio * borderOpacityRange), lineWidth: DesignTokens.SystemStroke.divider)
             }
             .shadow(color: isSelected ? Color.appAccent.opacity(shadowGlowOpacity) : Color.clear, radius: shadowGlowRadius, y: shadowGlowOffset)
             .scaleEffect(interactiveScale)
@@ -120,12 +121,12 @@ struct CircularTagBubbleView: View {
                             .frame(width: checkboxDiameter, height: checkboxDiameter)
                         
                         if isSelected {
-                            Image(systemName: DesignSystem.Icons.check)
+                            Image(systemName: DesignTokens.Icons.check)
                                 .font(.caption2.weight(.black))
                                 .foregroundStyle(Color.theme.white)
                         } else {
                             Circle()
-                                .stroke(Color.appBorder, lineWidth: SystemStroke.divider)
+                                .stroke(Color.appBorder, lineWidth: DesignTokens.SystemStroke.divider)
                                 .frame(width: checkboxDiameter, height: checkboxDiameter)
                         }
                     }

@@ -10,24 +10,25 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 设备端 LLM 操作按钮
 ///
 /// 消除 `OnDeviceComponents.generateButton`、`OnDeviceLLMSettingsView.loadModelButton`、`OnDeviceLLMSettingsView.testSection` 中重复的
-/// `Button { HStack { if isGenerating { ProgressView } else { Image }; Text }.font(.subheadline.weight(.semibold)).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical).background(...).clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius)) }` 模式。
+/// `Button { HStack { if isGenerating { ProgressView } else { Image }; Text }.font(.subheadline.weight(.semibold)).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical).background(...).clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)) }` 模式。
 @MainActor
 struct OnDeviceActionButton: View {
     let title: String
     let icon: String
     var isLoading: Bool = false
-    var loadingIcon: String = DesignSystem.Icons.sparkles
+    var loadingIcon: String = DesignTokens.Icons.sparkles
     var background: Color
     var isDisabled: Bool = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 if isLoading {
                     ProgressView()
                         .tint(.white)
@@ -39,9 +40,9 @@ struct OnDeviceActionButton: View {
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.medium)
+            .padding(.vertical, DesignTokens.Spacing.medium)
             .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
         }
         .disabled(isDisabled)
     }

@@ -10,6 +10,9 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
+import Dependencies
+import UFPCore
 
 /// Mock 服务器配置管理视图
 @MainActor
@@ -18,6 +21,7 @@ public struct ServerConfigView: View {
     // MARK: - 环境注入
 
     @Environment(ThemeManager.self) private var themeManager
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     // MARK: - 状态管理
 
@@ -61,10 +65,10 @@ public struct ServerConfigView: View {
 
     /// 空状态视图
     private var emptyStateView: some View {
-        VStack(spacing: DesignSystem.large) {
-            Image(systemName: DesignSystem.Icons.serverRack)
-                .font(.system(size: ComponentSpacing.colossal)) // Dynamic Type
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.dim))
+        VStack(spacing: DesignTokens.Spacing.large) {
+            Image(systemName: DesignTokens.Icons.serverRack)
+                .font(.system(size: DesignTokens.ComponentSpacing.colossal)) // Dynamic Type
+                .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.dim))
 
             Text(L10n.ModelManager.Server.emptyTitle)
                 .font(.headline)
@@ -74,14 +78,14 @@ public struct ServerConfigView: View {
                 .font(.subheadline)
                 .foregroundStyle(.appSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, DesignSystem.large)
+                .padding(.horizontal, DesignTokens.Spacing.large)
 
             Button(action: { showAddSheet = true }) {
-                Label(L10n.ModelManager.Server.addServer, systemImage: DesignSystem.Icons.plus)
+                Label(L10n.ModelManager.Server.addServer, systemImage: DesignTokens.Icons.plus)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, DesignSystem.large)
-                    .padding(.vertical, DesignSystem.medium)
+                    .padding(.horizontal, DesignTokens.Spacing.large)
+                    .padding(.vertical, DesignTokens.Spacing.medium)
                     .background(Color.appAccent)
                     .clipShape(Capsule())
             }
@@ -92,12 +96,12 @@ public struct ServerConfigView: View {
     /// 服务器列表
     private var serverList: some View {
         ScrollView {
-            LazyVStack(spacing: DesignSystem.medium) {
+            LazyVStack(spacing: DesignTokens.Spacing.medium) {
                 ForEach(servers) { server in
                     serverCard(for: server)
                 }
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
         }
     }
 
@@ -121,15 +125,15 @@ public struct ServerConfigView: View {
     /// 添加按钮
     private var addButton: some View {
         Button(action: { showAddSheet = true }) {
-            Image(systemName: DesignSystem.Icons.plus)
+            Image(systemName: DesignTokens.Icons.plus)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.white)
-                .frame(width: DesignSystem.Metrics.notebookActionIconSize, height: DesignSystem.Metrics.notebookActionIconSize)
+                .frame(width: DesignTokens.Metrics.notebookActionIconSize, height: DesignTokens.Metrics.notebookActionIconSize)
                 .background(Color.appAccent)
                 .clipShape(Circle())
-                .shadow(color: .primary.opacity(DesignSystem.Opacity.medium), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
+                .shadow(color: .primary.opacity(DesignTokens.Opacity.medium), radius: DesignTokens.SystemShadow.radiusMedium, y: DesignTokens.SystemShadow.offsetSmall)
         }
-        .padding(DesignSystem.large)
+        .padding(DesignTokens.Spacing.large)
     }
 
     // MARK: - 辅助方法
@@ -138,11 +142,11 @@ public struct ServerConfigView: View {
 
     private func saveServers() {
         guard let data = try? JSONEncoder().encode(servers) else { return }
-        UserDefaults.standard.set(data, forKey: Self.storageKey)
+        keyStore?.set(data, forKey: Self.storageKey)
     }
 
     private func loadServers() {
-        guard let data = UserDefaults.standard.data(forKey: Self.storageKey),
+        guard let data = keyStore?.data(forKey: Self.storageKey),
               let saved = try? JSONDecoder().decode([MockServerConfig].self, from: data),
               !saved.isEmpty else {
             // 无已保存数据时使用示例配置
@@ -402,11 +406,11 @@ private struct ServerCardView: View {
     let onSetDefault: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             HStack {
                 statusIndicator(for: server)
 
-                VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.tiny) {
                     Text(server.name)
                         .font(.headline)
                         .foregroundStyle(.appText)
@@ -420,14 +424,14 @@ private struct ServerCardView: View {
                 Spacer()
 
                 if server.isDefault {
-                    Image(systemName: DesignSystem.Icons.pinFill)
+                    Image(systemName: DesignTokens.Icons.pinFill)
                         .foregroundStyle(Color.theme.orange)
                         .font(.caption)
                 }
             }
 
             if let lastTested = server.lastTestedAt, let latency = server.latencyMs {
-                HStack(spacing: SystemSpacing.tiny) {
+                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                     Text(L10n.ModelManager.Server.lastTested(formatDate(lastTested)))
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
@@ -443,7 +447,7 @@ private struct ServerCardView: View {
 
             Divider()
 
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 Button(action: onTestConnection) {
                     Text(L10n.ModelManager.Server.testConnection)
                         .font(.caption.weight(.medium))
@@ -473,10 +477,10 @@ private struct ServerCardView: View {
                 }
             }
         }
-        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid)
+        .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding, backgroundOpacity: DesignTokens.Opacity.solid)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                .stroke(server.isDefault ? Color.appAccent : Color.appBorder.opacity(DesignSystem.Opacity.shadow), lineWidth: server.isDefault ? 2 : 1)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
+                .stroke(server.isDefault ? Color.appAccent : Color.appBorder.opacity(DesignTokens.Opacity.shadow), lineWidth: server.isDefault ? 2 : 1)
         )
     }
 
@@ -495,5 +499,5 @@ private struct ServerCardView: View {
 private func serverStatusIndicator(isHealthy: Bool) -> some View {
     Circle()
         .fill(isHealthy ? Color.theme.green : Color.theme.red)
-        .frame(width: DesignSystem.medium, height: DesignSystem.medium)
+        .frame(width: DesignTokens.Spacing.medium, height: DesignTokens.Spacing.medium)
 }

@@ -13,6 +13,7 @@ import UFPCore
 import Dependencies
 import Observation
 import UFPStorage
+import UFPDesignSystem
 
 /// 系统维护服务 (L1-Infra)
 /// 负责处理非核心业务的系统级管理任务。
@@ -42,8 +43,8 @@ public final class MaintenanceService {
     public func generateInitialNotebooks() async -> (total: Int, details: [(name: String, count: Int)]) {
         struct VaultConfig { let name: String; let icon: String; let description: String }
         let demoVaultConfigs: [VaultConfig] = [
-            VaultConfig(name: L10n.Vault.defaultName, icon: DesignSystem.Icons.Notebook.defaultBook, description: L10n.Vault.defaultDescription),
-            VaultConfig(name: L10n.Vault.researchName, icon: DesignSystem.Icons.Notebook.defaultResearch, description: L10n.Vault.researchDescription)
+            VaultConfig(name: L10n.Vault.defaultName, icon: DesignTokens.Icons.Notebook.defaultBook, description: L10n.Vault.defaultDescription),
+            VaultConfig(name: L10n.Vault.researchName, icon: DesignTokens.Icons.Notebook.defaultResearch, description: L10n.Vault.researchDescription)
         ]
 
         var existingVaults = vaultService.vaults

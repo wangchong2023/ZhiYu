@@ -9,6 +9,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 第三方 OAuth 登录面板
 struct AuthOAuthPanel: View {
@@ -22,29 +23,29 @@ struct AuthOAuthPanel: View {
     var handleThirdPartyLogin: (any AuthStrategy) -> Void
 
     var body: some View {
-        VStack(spacing: Spacing.large) {
+        VStack(spacing: DesignTokens.Spacing.large) {
             HStack {
-                Rectangle().fill(Color.appBorder.opacity(DesignSystem.Opacity.shadow)).frame(height: DesignSystem.borderWidth)
+                Rectangle().fill(Color.appBorder.opacity(DesignTokens.Opacity.shadow)).frame(height: DesignTokens.Spacing.borderWidth)
                 Text(L10n.Auth.moreLoginMethods)
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
-                    .padding(.horizontal, Spacing.small)
-                Rectangle().fill(Color.appBorder.opacity(DesignSystem.Opacity.shadow)).frame(height: DesignSystem.borderWidth)
+                    .padding(.horizontal, DesignTokens.Spacing.small)
+                Rectangle().fill(Color.appBorder.opacity(DesignTokens.Opacity.shadow)).frame(height: DesignTokens.Spacing.borderWidth)
             }
 
-            HStack(spacing: Spacing.large) {
+            HStack(spacing: DesignTokens.Spacing.large) {
                 #if DEBUG
                 let forceShowAll = true
                 #else
                 let forceShowAll = authService.isMockMode
                 #endif
 
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.apple, icon: DesignSystem.Icons.appleLogo, isSystem: true, color: .primary) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.apple, icon: DesignTokens.Icons.appleLogo, isSystem: true, color: .primary) {
                     handleThirdPartyLogin(AppleAuthStrategy())
                 }
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.google, icon: DesignSystem.Icons.googleLogo, isSystem: false, color: Color.theme.blue) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.google, icon: DesignTokens.Icons.googleLogo, isSystem: false, color: Color.theme.blue) {
                     #if DEBUG
                     handleThirdPartyLogin(GoogleAuthStrategy())
                     #else
@@ -55,7 +56,7 @@ struct AuthOAuthPanel: View {
                     }
                     #endif
                 }
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.github, icon: DesignSystem.Icons.githubLogo, isSystem: false, color: .primary) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.github, icon: DesignTokens.Icons.githubLogo, isSystem: false, color: .primary) {
                     #if DEBUG
                     handleThirdPartyLogin(GitHubAuthStrategy())
                     #else
@@ -104,7 +105,7 @@ struct ThirdPartyIconButton: View {
                 Circle()
                     .fill(Color.appCard)
                     .frame(width: DesignSystem.Domain.Auth.thirdPartyIconContainerSize, height: DesignSystem.Domain.Auth.thirdPartyIconContainerSize)
-                    .shadow(color: .primary.opacity(DesignSystem.Opacity.ghost), radius: Spacing.tiny, y: Spacing.atomic)
+                    .shadow(color: .primary.opacity(DesignTokens.Opacity.ghost), radius: DesignTokens.Spacing.tiny, y: DesignTokens.Spacing.atomic)
 
                 if isSystem {
                     Image(systemName: icon)
@@ -128,7 +129,7 @@ struct ThirdPartyIconButton: View {
             }
             .overlay(
                 Circle()
-                    .stroke(color.opacity(DesignSystem.Opacity.soft), lineWidth: DesignSystem.borderWidth)
+                    .stroke(color.opacity(DesignTokens.Opacity.soft), lineWidth: DesignTokens.Spacing.borderWidth)
             )
         }
         .buttonStyle(.plain)

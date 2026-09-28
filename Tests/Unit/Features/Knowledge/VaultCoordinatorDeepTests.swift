@@ -5,6 +5,7 @@
 //  合并自 2 个碎片化测试文件：IngestAndVaultCoordinatorDeepTests.swift, VaultCoordinatorAndIngestFlowDeepTests.swift
 //
 
+import UFPDesignSystem
 import Dependencies
 import SwiftUI
 import UFPCore
@@ -69,7 +70,7 @@ final class VaultCoordinatorDeepTests: XCTestCase {
             updatedAt: Date(),
             pageCount: 5,
             themePayload: nil,
-            icon: DesignSystem.Icons.Notebook.defaultBook,
+            icon: DesignTokens.Icons.Notebook.defaultBook,
             description: "Desc"
         )
         service.vaults = [testVault]
@@ -94,7 +95,7 @@ final class VaultCoordinatorDeepTests: XCTestCase {
             updatedAt: Date(),
             pageCount: 3,
             themePayload: nil,
-            icon: DesignSystem.Icons.Notebook.defaultBook,
+            icon: DesignTokens.Icons.Notebook.defaultBook,
             description: "Desc"
         )
         service.vaults = [testVault]

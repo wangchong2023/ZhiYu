@@ -135,11 +135,11 @@ public final class GlobalModelManager: TestStateResettable {
     /// 获取/更新本地记录的已完成模型 ID 集合
     public private(set) var downloadedModelIds: Set<String> {
         get {
-            let list = UserDefaults.standard.stringArray(forKey: Self.downloadedModelIdsKey) ?? []
+            let list = keyStore?.object(forKey: Self.downloadedModelIdsKey) as? [String] ?? []
             return Set(list)
         }
         set {
-            UserDefaults.standard.set(Array(newValue), forKey: Self.downloadedModelIdsKey)
+            keyStore?.set(Array(newValue), forKey: Self.downloadedModelIdsKey)
         }
     }
     
@@ -325,6 +325,15 @@ public final class GlobalModelManager: TestStateResettable {
                     self.downloadStates[modelId] = state
                     if case .completed = state {
                         self.markModelAsDownloaded(modelId)
+                    }
+                    // 终态时立即清理订阅标记，允许后续重新订阅
+                    // 修复：原实现仅在流结束时清理，但 AsyncStream 永不 finish 导致订阅泄漏，
+                    // 用户再次点击下载时被 guard 拦截，状态流不更新，UI 无反馈
+                    switch state {
+                    case .completed, .failed, .cancelled:
+                        self.subscribedModelIds.remove(modelId)
+                    default:
+                        break
                     }
                 }
             }

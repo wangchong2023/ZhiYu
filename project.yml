@@ -261,9 +261,8 @@ targets:
       - path: Sources/Infrastructure/LLM/LLMModels.swift
       # 协作模型（DiscoveredRoom/CollabUser，MultipeerConnectivity 已条件编译隔离）
       - path: Sources/Features/System/Collaboration/Model/CollaborationModels.swift
-      # 共享设计系统（DesignSystem 令牌入口 + Tokens 子目录 + PageType UI 扩展）
+      # 共享设计系统（DesignSystem 令牌入口 + PageType UI 扩展；Token 文件已迁移至 UFPDesignSystem SPM 包）
       - path: Sources/Shared/DesignSystem/DesignSystem.swift
-      - path: Sources/Shared/DesignSystem/Tokens
       - path: Sources/Shared/DesignSystem/Styles/PageType+UI.swift
       # 跨平台适配
       - path: Sources/Shared/Platforms/Adaptor/CrossPlatform.swift
@@ -286,9 +285,9 @@ targets:
     sources:
       - path: Sources/Platforms/iOS/Widgets
       - path: Sources/Platforms/iOS/Activity/AIProcessingAttributes.swift
-      - path: Sources/Platforms/Shared/PlatformConstants.swift
       - path: Sources/Core/Base/Protocols/LiveActivityProtocol.swift
       - path: Sources/Core/Base/Constants/AppConstants.swift
+      - path: Sources/Platforms/Shared/PlatformConstants.swift
       - path: Sources/Localization/Catalogs/Platform.xcstrings
     settings:
       base:
@@ -331,8 +330,8 @@ targets:
           - "Platforms/iOS/Widgets/WidgetSharedConstants.swift"
           - "Platforms/iOS/Widgets/WidgetVisualConstants.swift"
           - "Platforms/iOS/Widgets/WidgetSharedViews.swift"
-          - "Platforms/Shared/PlatformConstants.swift"
           - "Core/Base/Constants/AppConstants.swift"
+          - "Platforms/Shared/PlatformConstants.swift"
     settings:
       base:
         SWIFT_STRICT_CONCURRENCY: minimal

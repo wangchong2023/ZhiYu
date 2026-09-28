@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 推理参数调节视图
 @MainActor
@@ -46,7 +47,7 @@ public struct InferenceParametersView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: DesignSystem.large) {
+            VStack(spacing: DesignTokens.Spacing.large) {
                 // 预设模板选择
                 presetSelector
 
@@ -83,7 +84,7 @@ public struct InferenceParametersView: View {
                 )
 
             }
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
         }
         .onAppear {
             // 首次加载当前模型的参数
@@ -157,7 +158,7 @@ public struct InferenceParametersView: View {
 
     /// 滑块标题行（标题 + 提示图标），消除 parameterSlider 与 parameterIntSlider 的重复
     private func sliderHeader(title: String, tip: String) -> some View {
-        HStack(spacing: SystemSpacing.tiny) {
+        HStack(spacing: DesignTokens.SystemSpacing.tiny) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.appText)
@@ -212,10 +213,10 @@ public struct InferenceParametersView: View {
                 }
             }
         }) {
-            Image(systemName: DesignSystem.Icons.settingsAbout)
+            Image(systemName: DesignTokens.Icons.settingsAbout)
                 .font(.caption)
-                .foregroundStyle(isExpanded ? .appAccent : .appSecondary.opacity(DesignSystem.Opacity.soft))
-                .frame(width: DesignSystem.Metrics.iconBoxSize, height: DesignSystem.Metrics.iconBoxSize)
+                .foregroundStyle(isExpanded ? .appAccent : .appSecondary.opacity(DesignTokens.Opacity.soft))
+                .frame(width: DesignTokens.Metrics.iconBoxSize, height: DesignTokens.Metrics.iconBoxSize)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -233,7 +234,7 @@ public struct InferenceParametersView: View {
             Text(tip)
                 .font(.caption2)
                 .foregroundStyle(.appText)
-                .padding(DesignSystem.medium)
+                .padding(DesignTokens.Spacing.medium)
                 .frame(width: Constants.popoverWidth) // 限制最佳宽度
                 .presentationCompactAdaptation(.popover) // 强力适配：在 iPhone 紧凑布局上也呈现为气泡卡片，而非全屏 Sheet
         }
@@ -298,11 +299,11 @@ public struct InferenceParametersView: View {
     /// 滑块卡片容器，消除 parameterSlider 与 parameterIntSlider 的 VStack+cardStyle 重复
     @ViewBuilder
     private func sliderCard<Content: View>(title: String, tip: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             sliderHeader(title: title, tip: tip)
             content()
         }
-        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding)
+        .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding)
     }
 }
 

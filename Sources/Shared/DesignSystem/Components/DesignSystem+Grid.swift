@@ -10,15 +10,16 @@
 //
 import SwiftUI
 import CoreGraphics
+import UFPDesignSystem
 
 extension DesignSystem {
 
     // MARK: - 8. 网格模式 (Grid)
     public enum Grid {
-        public static let standardSpacing: CGFloat = Spacing.Grid.standardSpacing
-        public static let largeSpacing: CGFloat = Spacing.Grid.largeSpacing
-        public static let tightSpacing: CGFloat = Spacing.Grid.tightSpacing
-        public static let flowSpacing: CGFloat = Spacing.Grid.flowSpacing
-        public static let emptyStateHeight: CGFloat = Spacing.Grid.emptyStateHeight
+        public static let standardSpacing: CGFloat = DesignTokens.Spacing.Grid.standardSpacing
+        public static let largeSpacing: CGFloat = DesignTokens.Spacing.Grid.largeSpacing
+        public static let tightSpacing: CGFloat = DesignTokens.Spacing.Grid.tightSpacing
+        public static let flowSpacing: CGFloat = DesignTokens.Spacing.Grid.flowSpacing
+        public static let emptyStateHeight: CGFloat = DesignTokens.Spacing.Grid.emptyStateHeight
     }
 }

@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 沙盒面板
 
@@ -25,19 +26,19 @@ extension ModelLabView {
                 PageBackgroundView(accentColor: .appAccent)
                     .ignoresSafeArea(.all)
 
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     if useCase == .aiChat {
                         aiChatSandboxView
                     } else {
                         // 使用 ScrollView 包裹标准交互沙盒，防止多参数导致内容溢出挤压安全区
                         ScrollView(.vertical, showsIndicators: false) {
                             standardSandboxView(for: useCase)
-                                .padding(.vertical, SystemSpacing.atomic)
+                                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
                         }
                     }
                 }
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.bottom, SystemSpacing.element)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.bottom, DesignTokens.SystemSpacing.element)
             }
             .navigationTitle(useCase.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -84,11 +85,11 @@ extension ModelLabView {
                 }
             }
         } label: {
-            HStack(spacing: SystemSpacing.tiny) {
+            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                 Text(getActiveModel()?.displayName ?? useCase.title)
                     .font(.headline)
                     .foregroundStyle(.appText)
-                Image(systemName: DesignSystem.Icons.chevronDown)
+                Image(systemName: DesignTokens.Icons.chevronDown)
                     .font(.caption)
                     .foregroundStyle(Color.theme.cyan)
             }
@@ -126,27 +127,27 @@ extension ModelLabView {
         if useCase != .audioScribe {
             TextEditor(text: $testPrompt)
                 .focused($isPromptFocused)
-                .padding(DesignSystem.standardPadding)
-                .frame(height: ComponentSpacing.colossal)
-                .background(Color.theme.white.opacity(DesignSystem.Opacity.ghost))
-                .cornerRadius(SystemRadius.small)
+                .padding(DesignTokens.Spacing.standardPadding)
+                .frame(height: DesignTokens.ComponentSpacing.colossal)
+                .background(Color.theme.white.opacity(DesignTokens.Opacity.ghost))
+                .cornerRadius(DesignTokens.SystemRadius.small)
                 .overlay(
-                    RoundedRectangle(cornerRadius: SystemRadius.small)
+                    RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small)
                         .stroke(
                             isPromptFocused ?
                             LinearGradient(colors: [Color.theme.cyan, Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing) :
-                            LinearGradient(colors: [Color.theme.white.opacity(DesignSystem.Opacity.glass)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            LinearGradient(colors: [Color.theme.white.opacity(DesignTokens.Opacity.glass)], startPoint: .topLeading, endPoint: .bottomTrailing),
                             lineWidth: isPromptFocused ? 1.5 : 1.0
                         )
                 )
-                .shadow(color: isPromptFocused ? Color.theme.cyan.opacity(DesignSystem.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: 0, y: 0)
+                .shadow(color: isPromptFocused ? Color.theme.cyan.opacity(DesignTokens.Colors.Opacity.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: 0, y: 0)
                 .overlay(
                     Group {
                         if testPrompt.isEmpty {
                             Text(L10n.ModelManager.Lab.placeholderInput)
                                 .foregroundStyle(.secondary)
-                                .padding(.horizontal, SystemSpacing.content)
-                                .padding(.vertical, SystemSpacing.content)
+                                .padding(.horizontal, DesignTokens.SystemSpacing.content)
+                                .padding(.vertical, DesignTokens.SystemSpacing.content)
                         }
                     },
                     alignment: .topLeading
@@ -166,11 +167,11 @@ extension ModelLabView {
                 labManager.stopSimulation()
             }) {
                 Text(L10n.ModelManager.Lab.stopInference)
-                    .padding(.horizontal, SystemSpacing.small)
-                    .padding(.vertical, SystemSpacing.content)
-                    .background(Color.theme.red.opacity(DesignSystem.Opacity.shadow))
+                    .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                    .padding(.vertical, DesignTokens.SystemSpacing.content)
+                    .background(Color.theme.red.opacity(DesignTokens.Opacity.shadow))
                     .foregroundStyle(Color.theme.red)
-                    .cornerRadius(SystemRadius.small)
+                    .cornerRadius(DesignTokens.SystemRadius.small)
             }
         } else {
             Button(action: {
@@ -183,8 +184,8 @@ extension ModelLabView {
             }) {
                 Text(L10n.ModelManager.Lab.runTest)
                     .bold()
-                    .padding(.horizontal, SystemSpacing.element)
-                    .padding(.vertical, SystemSpacing.content)
+                    .padding(.horizontal, DesignTokens.SystemSpacing.element)
+                    .padding(.vertical, DesignTokens.SystemSpacing.content)
                     .background(
                         LinearGradient(
                             colors: [Color.theme.cyan, Color.theme.blue],
@@ -193,11 +194,11 @@ extension ModelLabView {
                         )
                     )
                     .foregroundStyle(Color.theme.white)
-                    .cornerRadius(SystemRadius.small)
-                    .shadow(color: Color.theme.cyan.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.shadowRadius)
+                    .cornerRadius(DesignTokens.SystemRadius.small)
+                    .shadow(color: Color.theme.cyan.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.shadowRadius)
             }
             .disabled(testPrompt.isEmpty && useCase != .audioScribe)
-            .opacity((testPrompt.isEmpty && useCase != .audioScribe) ? DesignSystem.Opacity.soft : DesignSystem.Opacity.solid)
+            .opacity((testPrompt.isEmpty && useCase != .audioScribe) ? DesignTokens.Opacity.soft : DesignTokens.Opacity.solid)
         }
     }
 
@@ -212,8 +213,8 @@ extension ModelLabView {
                 HapticFeedback.shared.trigger(.selection)
                 showConfigSheet = true
             }) {
-                HStack(spacing: SystemSpacing.tiny) {
-                    Image(systemName: DesignSystem.Icons.sliderHorizontal)
+                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.sliderHorizontal)
                         .font(.caption)
                     Text(L10n.ModelManager.parametersTitle)
                         .font(.caption)
@@ -228,7 +229,7 @@ extension ModelLabView {
     /// 单轮沙盒交互测试视图
     @ViewBuilder
     func standardSandboxView(for useCase: UseCaseType) -> some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             // 大模型选择与参数配置栏
             modelAndConfigControlBar(for: useCase)
 
@@ -236,7 +237,7 @@ extension ModelLabView {
             metricsMonitorBoard
 
             // 核心功能测试交互区
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 Text(L10n.ModelManager.Lab.configureInputs)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appText)
@@ -260,7 +261,7 @@ extension ModelLabView {
                     controlButton(for: useCase)
                 }
             }
-            .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium)
+            .cardStyle(horizontalPadding: DesignTokens.Spacing.medium, verticalPadding: DesignTokens.Spacing.medium)
 
             // 推理流输出展示板
             outputScribeBoard
@@ -277,9 +278,9 @@ private extension View {
     /// 胶囊 pill 样式修饰符，消除重复的 padding+background+clipShape(Capsule) 链
     func pillStyle() -> some View {
         self
-            .padding(.horizontal, SystemSpacing.medium)
-            .padding(.vertical, SystemSpacing.small)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
+            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+            .padding(.vertical, DesignTokens.SystemSpacing.small)
+            .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
             .clipShape(Capsule())
     }
 }

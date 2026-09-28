@@ -11,6 +11,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - On-Device LLM Settings View
 /// 设备端本地大模型配置面板视图
@@ -116,10 +117,10 @@ public struct OnDeviceLLMSettingsView: View {
     
     // MARK: - Hero Header
     private var headerSection: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             Spacer(minLength: 4)
-            Image(systemName: DesignSystem.Icons.cpuOutline)
-                .font(.system(size: Reference.FontSize.mega))
+            Image(systemName: DesignTokens.Icons.cpuOutline)
+                .font(.system(size: DesignTokens.Reference.FontSize.mega))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.appSource, .appAccent],
@@ -127,7 +128,7 @@ public struct OnDeviceLLMSettingsView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
+                .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.SystemShadow.radiusMedium, y: DesignTokens.SystemShadow.offsetSmall)
             
             Text(L10n.AI.OnDevice.subtitle)
                 .font(.subheadline)
@@ -137,17 +138,17 @@ public struct OnDeviceLLMSettingsView: View {
             Spacer(minLength: 4)
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
     }
     
     // MARK: - 可用性与硬件参数视图
     private var availabilitySection: some View {
-        HStack(spacing: SystemSpacing.medium) {
+        HStack(spacing: DesignTokens.SystemSpacing.medium) {
             Image(systemName: onDeviceService.isAvailable ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                 .font(.title3)
                 .foregroundStyle(onDeviceService.isAvailable ? Color.theme.green : Color.theme.red)
             
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(onDeviceService.isAvailable ? L10n.AI.OnDevice.available : L10n.AI.OnDevice.unavailable)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
@@ -170,22 +171,22 @@ public struct OnDeviceLLMSettingsView: View {
             }
             Spacer()
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
     
     // MARK: - 模型选型列表
     private var modelSelectionSection: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.element) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
             if onDeviceService.availableModels.isEmpty {
-                VStack(spacing: DesignSystem.small) {
-                    Image(systemName: DesignSystem.Icons.squareDashed)
+                VStack(spacing: DesignTokens.Spacing.small) {
+                    Image(systemName: DesignTokens.Icons.squareDashed)
                         .font(.title3)
                         .foregroundStyle(.appSecondary)
                     Text(L10n.AI.OnDevice.noModels)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
-                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+                .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
                 .frame(maxWidth: .infinity)
             } else {
                 ForEach(onDeviceService.availableModels) { model in
@@ -200,19 +201,19 @@ public struct OnDeviceLLMSettingsView: View {
                 }
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
     
     // MARK: - 加载/卸载/管理模型
     private var modelManagementSection: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             if onDeviceService.isModelLoaded {
-                HStack(spacing: DesignSystem.medium) {
-                    Image(systemName: DesignSystem.Icons.checkCircle)
+                HStack(spacing: DesignTokens.Spacing.medium) {
+                    Image(systemName: DesignTokens.Icons.checkCircle)
                         .foregroundStyle(Color.theme.green)
                         .font(.title3)
                     
-                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                         Text(L10n.AI.OnDevice.modelLoaded)
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.appText)
@@ -229,19 +230,19 @@ public struct OnDeviceLLMSettingsView: View {
                         Text(L10n.AI.OnDevice.unload)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(Color.theme.red)
-                            .padding(.horizontal, SystemSpacing.element)
-                            .padding(.vertical, DesignSystem.tightPadding)
-                            .background(Color.theme.red.opacity(DesignSystem.Opacity.subtle))
+                            .padding(.horizontal, DesignTokens.SystemSpacing.element)
+                            .padding(.vertical, DesignTokens.Spacing.tightPadding)
+                            .background(Color.theme.red.opacity(DesignTokens.Opacity.subtle))
                             .clipShape(Capsule())
                     }
                 }
                 .padding()
-                .background(Color.appAccent.opacity(DesignSystem.Opacity.ghost))
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .background(Color.appAccent.opacity(DesignTokens.Opacity.ghost))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
             } else {
                 OnDeviceActionButton(
                     title: L10n.AI.OnDevice.loadModel,
-                    icon: DesignSystem.Icons.onDeviceDownloaded,
+                    icon: DesignTokens.Icons.onDeviceDownloaded,
                     isLoading: onDeviceService.isGenerating,
                     background: onDeviceService.selectedModelID.isEmpty ? Color.theme.gray : Color.appAccent,
                     isDisabled: onDeviceService.selectedModelID.isEmpty || onDeviceService.isGenerating,
@@ -251,16 +252,16 @@ public struct OnDeviceLLMSettingsView: View {
             
             // 物理模型本地导入入口
             Button(action: { showImportPicker = true }) {
-                HStack(spacing: DesignSystem.small) {
-                    Image(systemName: DesignSystem.Icons.importIcon)
+                HStack(spacing: DesignTokens.Spacing.small) {
+                    Image(systemName: DesignTokens.Icons.importIcon)
                     Text(L10n.AI.OnDevice.importModel)
                 }
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appAccent)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, SystemSpacing.element)
-                .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
+                .padding(.vertical, DesignTokens.SystemSpacing.element)
+                .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
             }
             .skipOnWatch { $0.fileImporter(
                 isPresented: $showImportPicker,
@@ -291,16 +292,16 @@ public struct OnDeviceLLMSettingsView: View {
                 }
             } }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
     
     // MARK: - 测试 Playground 入口
     private var testSection: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.element) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
             OnDeviceActionButton(
                 title: L10n.AI.OnDevice.testGeneration,
-                icon: DesignSystem.Icons.textBubble,
-                background: onDeviceService.isModelLoaded ? Color.theme.green : Color.theme.gray.opacity(DesignSystem.Opacity.dim),
+                icon: DesignTokens.Icons.textBubble,
+                background: onDeviceService.isModelLoaded ? Color.theme.green : Color.theme.gray.opacity(DesignTokens.Opacity.dim),
                 isDisabled: !onDeviceService.isModelLoaded,
                 action: {
                     showTestSheet = true
@@ -312,7 +313,7 @@ public struct OnDeviceLLMSettingsView: View {
                 HStack {
                     Label(
                         L10n.AI.OnDevice.inferenceSpeed,
-                        systemImage: DesignSystem.Icons.dashboard
+                        systemImage: DesignTokens.Icons.dashboard
                     )
                     .font(.caption)
                     .foregroundStyle(.appSecondary)
@@ -323,36 +324,36 @@ public struct OnDeviceLLMSettingsView: View {
                         .font(.caption.weight(.bold))
                         .foregroundStyle(Color.theme.green)
                 }
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
     
     // MARK: - 隐私和属性提示
     private var infoSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             OnDeviceInfoRow(
-                icon: DesignSystem.Icons.lockShieldFill,
+                icon: DesignTokens.Icons.lockShieldFill,
                 text: L10n.AI.OnDevice.Info.privacy
             )
             
             OnDeviceInfoRow(
-                icon: DesignSystem.Icons.wifiSlash,
+                icon: DesignTokens.Icons.wifiSlash,
                 text: L10n.AI.OnDevice.Info.offline
             )
             
             OnDeviceInfoRow(
-                icon: DesignSystem.Icons.boltFill,
+                icon: DesignTokens.Icons.boltFill,
                 text: L10n.AI.OnDevice.Info.ne
             )
             
             OnDeviceInfoRow(
-                icon: DesignSystem.Icons.memorychipFill,
+                icon: DesignTokens.Icons.memorychipFill,
                 text: L10n.AI.OnDevice.Info.memory
             )
         }
-        .padding(.vertical, DesignSystem.tightPadding)
+        .padding(.vertical, DesignTokens.Spacing.tightPadding)
     }
     
     // MARK: - 异步加载模型动作

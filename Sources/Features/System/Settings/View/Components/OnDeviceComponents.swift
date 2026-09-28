@@ -9,6 +9,7 @@
 //  核心职责：系统设置：LLM 配置、性能监控、插件管理、iCloud、备份。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - On-Device Test View
 /// 设备端大语言模型推理测试沙盒视图
@@ -36,14 +37,14 @@ public struct OnDeviceTestView: View {
 
     public var body: some View {
         NavigationStack {
-            VStack(spacing: DesignSystem.wide) {
+            VStack(spacing: DesignTokens.Spacing.wide) {
                 promptInputSection
                 generateButton
                 progressIndicator
                 resultSection
                 Spacer()
             }
-            .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+            .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
             .background(PageBackgroundView(accentColor: .appAccent))
             .navigationTitle(L10n.AI.OnDevice.test)
 .appNavigationBarTitleDisplayMode(.inline)
@@ -59,47 +60,47 @@ public struct OnDeviceTestView: View {
     
     // MARK: - 提示词输入区域
     private var promptInputSection: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.element) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
             Text(L10n.AI.OnDevice.testPrompt)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.appSecondary)
-                .tracking(Reference.Spacing.one)
+                .tracking(DesignTokens.Reference.Spacing.one)
             
             AdaptiveTextEditor(text: $prompt)
             .font(.body)
-            .frame(height: DesignSystem.Metrics.largeIconBoxSize)
-            .padding(SystemSpacing.element) /* 10pt = 2+8 */
+            .frame(height: DesignTokens.Metrics.largeIconBoxSize)
+            .padding(DesignTokens.SystemSpacing.element) /* 10pt = 2+8 */
             .scrollContentBackground(.hidden)
-            .onDeviceContainerStyle(backgroundOpacity: DesignSystem.Opacity.disabled, strokeColor: Color.appAccent.opacity(DesignSystem.Opacity.medium), strokeWidth: SystemStroke.emphasis)
+            .onDeviceContainerStyle(backgroundOpacity: DesignTokens.Opacity.disabled, strokeColor: Color.appAccent.opacity(DesignTokens.Opacity.medium), strokeWidth: DesignTokens.SystemStroke.emphasis)
         }
     }
     
     // MARK: - 一键生成按钮
     private var generateButton: some View {
         Button(action: generate) {
-            HStack(spacing: SystemSpacing.element) {
+            HStack(spacing: DesignTokens.SystemSpacing.element) {
                 if onDeviceService.isGenerating {
                     ProgressView()
                         .tint(.white)
                 } else {
-                    Image(systemName: DesignSystem.Icons.sparkles)
+                    Image(systemName: DesignTokens.Icons.sparkles)
                 }
                 Text(onDeviceService.isGenerating ? L10n.AI.OnDevice.generating : L10n.AI.OnDevice.generate)
             }
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, SystemSpacing.medium)
+            .padding(.vertical, DesignTokens.SystemSpacing.medium)
             .background(
                 LinearGradient(
                     // swiftlint:disable:next magic_numbers_opacity
-                    colors: onDeviceService.isGenerating ? [.gray, .gray.opacity(DesignSystem.Opacity.prominent)] : [.appAccent, .appAccent.opacity(0.85)],
+                    colors: onDeviceService.isGenerating ? [.gray, .gray.opacity(DesignTokens.Opacity.prominent)] : [.appAccent, .appAccent.opacity(0.85)],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.cardRadius))
-            .shadow(color: Color.appAccent.opacity(onDeviceService.isGenerating ? 0 : 0.2), radius: SystemShadow.radiusMedium, y: SystemShadow.offsetSmall)
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+            .shadow(color: Color.appAccent.opacity(onDeviceService.isGenerating ? 0 : 0.2), radius: DesignTokens.SystemShadow.radiusMedium, y: DesignTokens.SystemShadow.offsetSmall)
         }
         .disabled(onDeviceService.isGenerating || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
@@ -108,7 +109,7 @@ public struct OnDeviceTestView: View {
     @ViewBuilder
     private var progressIndicator: some View {
         if onDeviceService.isGenerating {
-            VStack(spacing: SystemSpacing.element) {
+            VStack(spacing: DesignTokens.SystemSpacing.element) {
                 ProgressView(value: onDeviceService.generationProgress)
                     .tint(.appAccent)
                     .progressViewStyle(.linear)
@@ -125,11 +126,11 @@ public struct OnDeviceTestView: View {
     @ViewBuilder
     private var resultSection: some View {
         if !result.isEmpty {
-            VStack(alignment: .leading, spacing: SystemSpacing.element) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
                 HStack {
                     Label(
                         L10n.AI.OnDevice.result,
-                        systemImage: DesignSystem.Icons.weeklyInsight
+                        systemImage: DesignTokens.Icons.weeklyInsight
                     )
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.appSecondary)
@@ -140,12 +141,12 @@ public struct OnDeviceTestView: View {
                         AppPasteboard.string = result
                         feedbackGenerator.notificationOccurred(.success)
                     }) {
-                        Label(L10n.Common.copy, systemImage: DesignSystem.Icons.docOnDocFill)
+                        Label(L10n.Common.copy, systemImage: DesignTokens.Icons.docOnDocFill)
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.appAccent)
                             .accentSubtleCapsule(
-                                horizontalPadding: SystemSpacing.element,
-                                verticalPadding: DesignSystem.tiny
+                                horizontalPadding: DesignTokens.SystemSpacing.element,
+                                verticalPadding: DesignTokens.Spacing.tiny
                             )
                     }
                 }
@@ -158,8 +159,8 @@ public struct OnDeviceTestView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
                 }
-                .frame(maxHeight: Spacing.Grid.emptyStateHeight)
-                .onDeviceContainerStyle(backgroundOpacity: DesignSystem.Opacity.shadow, strokeColor: Color.appText.opacity(DesignSystem.Opacity.ghost), strokeWidth: SystemStroke.divider)
+                .frame(maxHeight: DesignTokens.Spacing.Grid.emptyStateHeight)
+                .onDeviceContainerStyle(backgroundOpacity: DesignTokens.Opacity.shadow, strokeColor: Color.appText.opacity(DesignTokens.Opacity.ghost), strokeWidth: DesignTokens.SystemStroke.divider)
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
@@ -208,14 +209,14 @@ public struct OnDeviceModelRow: View {
     }
     
     public var body: some View {
-        HStack(spacing: SystemSpacing.medium) {
+        HStack(spacing: DesignTokens.SystemSpacing.medium) {
             // 左侧精美模型图标
             ZStack {
-                let circleBgColor = isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.glass) : Color.appSecondary.opacity(DesignSystem.Opacity.light)
+                let circleBgColor = isSelected ? Color.appAccent.opacity(DesignTokens.Opacity.glass) : Color.appSecondary.opacity(DesignTokens.Opacity.light)
                 let iconColor = isSelected ? Color.appAccent : Color.appSecondary
                 Circle()
                     .fill(circleBgColor)
-                    .frame(width: Spacing.Sidebar.backButtonWidth, height: Spacing.Sidebar.backButtonWidth)
+                    .frame(width: DesignTokens.Spacing.Sidebar.backButtonWidth, height: DesignTokens.Spacing.Sidebar.backButtonWidth)
                 
                 Image(systemName: model.icon)
                     .font(.subheadline.weight(.bold))
@@ -223,12 +224,12 @@ public struct OnDeviceModelRow: View {
             }
             
             // 中间模型名称及来源描述
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(model.name)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
                 
-                HStack(spacing: SystemSpacing.element) {
+                HStack(spacing: DesignTokens.SystemSpacing.element) {
                     if model.size > 0 {
                         Text(model.sizeLabel)
                             .font(.caption2.weight(.medium))
@@ -237,9 +238,9 @@ public struct OnDeviceModelRow: View {
                     
                     Text(modelTypeLabel)
                         .font(.caption2.weight(.bold))
-                        .padding(.horizontal, SystemSpacing.element)
-                        .padding(.vertical, SystemSpacing.atomic)
-                        .background(isSelected ? Color.appAccent.opacity(SystemOpacity.glass) : Color.appSecondary.opacity(DesignSystem.Opacity.subtle))
+                        .padding(.horizontal, DesignTokens.SystemSpacing.element)
+                        .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                        .background(isSelected ? Color.appAccent.opacity(DesignTokens.SystemOpacity.glass) : Color.appSecondary.opacity(DesignTokens.Opacity.subtle))
                         .foregroundStyle(isSelected ? .appAccent : .appSecondary)
                         .clipShape(Capsule())
                 }
@@ -249,26 +250,26 @@ public struct OnDeviceModelRow: View {
             
             // 右侧精美单选对勾
             if isSelected {
-                Image(systemName: DesignSystem.Icons.checkCircle)
+                Image(systemName: DesignTokens.Icons.checkCircle)
                     .font(.title3)
                     .foregroundStyle(Color.theme.green)
                     .transition(.scale.combined(with: .opacity))
             } else {
                 Circle()
-                    .stroke(Color.appSecondary.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.emphasis)
-                    .frame(width: DesignSystem.IconSize.small, height: DesignSystem.IconSize.small)
+                    .stroke(Color.appSecondary.opacity(DesignTokens.Opacity.shadow), lineWidth: DesignTokens.SystemStroke.emphasis)
+                    .frame(width: DesignTokens.IconSize.small, height: DesignTokens.IconSize.small)
             }
         }
-        .padding(.vertical, DesignSystem.medium)
-        .padding(.horizontal, DesignSystem.standardPadding)
+        .padding(.vertical, DesignTokens.Spacing.medium)
+        .padding(.horizontal, DesignTokens.Spacing.standardPadding)
         .background(
-            RoundedRectangle(cornerRadius: Spacing.cardRadius)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
                 // swiftlint:disable:next magic_numbers_opacity
-                .fill(isSelected ? Color.appAccent.opacity(0.06) : Color.appCard.opacity(DesignSystem.Opacity.shadow))
+                .fill(isSelected ? Color.appAccent.opacity(0.06) : Color.appCard.opacity(DesignTokens.Opacity.shadow))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: Spacing.cardRadius)
-                .strokeBorder(isSelected ? Color.appAccent.opacity(DesignSystem.Opacity.shadow) : Color.appText.opacity(DesignSystem.Opacity.ghost), lineWidth: SystemStroke.emphasis)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                .strokeBorder(isSelected ? Color.appAccent.opacity(DesignTokens.Opacity.shadow) : Color.appText.opacity(DesignTokens.Opacity.ghost), lineWidth: DesignTokens.SystemStroke.emphasis)
         )
         .contentShape(Rectangle())
         .onTapGesture {
@@ -299,11 +300,11 @@ struct OnDeviceInfoRow: View {
     let text: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: SystemSpacing.element) {
+        HStack(alignment: .top, spacing: DesignTokens.SystemSpacing.element) {
             Image(systemName: icon)
                 .font(.footnote)
                 .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.large)
+                .frame(width: DesignTokens.Spacing.large)
             
             Text(text)
                 .font(.caption)
@@ -320,9 +321,9 @@ private extension View {
     func onDeviceContainerStyle(backgroundOpacity: Double, strokeColor: Color, strokeWidth: CGFloat) -> some View {
         self
             .background(Color.appCard.opacity(backgroundOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: Spacing.standardRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
                     .strokeBorder(strokeColor, lineWidth: strokeWidth)
             )
     }

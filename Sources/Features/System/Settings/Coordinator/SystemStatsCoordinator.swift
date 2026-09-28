@@ -12,6 +12,7 @@ import SwiftUI
 import UFPCore
 import Observation
 import Dependencies
+import UFPDesignSystem
 
 @MainActor
 @Observable
@@ -271,13 +272,13 @@ final class SystemStatsCoordinator {
 
     /// 标签图标选择器
     func iconForCategory(_ label: String) -> String {
-        if label == L10n.Dashboard.System.database { return DesignSystem.Icons.StorageStats.database }
-        if label == L10n.Dashboard.System.logs { return DesignSystem.Icons.StorageStats.logs }
-        if label == L10n.Dashboard.System.models { return DesignSystem.Icons.StorageStats.models }
-        if label == L10n.Dashboard.System.plugins { return DesignSystem.Icons.StorageStats.plugins }
-        if label == L10n.Dashboard.System.caches { return DesignSystem.Icons.StorageStats.caches }
-        if label == L10n.Dashboard.stats.storageImport { return DesignSystem.Icons.StorageStats.storageImport }
-        if label == L10n.Dashboard.stats.storageExport { return DesignSystem.Icons.StorageStats.storageExport }
-        return DesignSystem.Icons.StorageStats.fallback
+        if label == L10n.Dashboard.System.database { return DesignTokens.Icons.StorageStats.database }
+        if label == L10n.Dashboard.System.logs { return DesignTokens.Icons.StorageStats.logs }
+        if label == L10n.Dashboard.System.models { return DesignTokens.Icons.StorageStats.models }
+        if label == L10n.Dashboard.System.plugins { return DesignTokens.Icons.StorageStats.plugins }
+        if label == L10n.Dashboard.System.caches { return DesignTokens.Icons.StorageStats.caches }
+        if label == L10n.Dashboard.stats.storageImport { return DesignTokens.Icons.StorageStats.storageImport }
+        if label == L10n.Dashboard.stats.storageExport { return DesignTokens.Icons.StorageStats.storageExport }
+        return DesignTokens.Icons.StorageStats.fallback
     }
 }

@@ -9,6 +9,7 @@
 //  核心职责：验证 NotebookHubViewModel 的过滤排序、创建/编辑/重命名流程与名称长度限制。
 //
 
+import UFPDesignSystem
 import XCTest
 import UFPCore
 @testable import ZhiYu
@@ -78,14 +79,14 @@ final class NotebookHubViewModelTests: XCTestCase {
 
     /// 验证 newNotebookName 超长截断
     func testNewNotebookNameTruncates() {
-        let limit = DesignSystem.Metrics.maxNotebookNameLength
+        let limit = DesignTokens.Metrics.maxNotebookNameLength
         viewModel.newNotebookName = String(repeating: "a", count: limit + 10)
         XCTAssertEqual(viewModel.newNotebookName.count, limit)
     }
 
     /// 验证 editingName 超长截断
     func testEditingNameTruncates() {
-        let limit = DesignSystem.Metrics.maxNotebookNameLength
+        let limit = DesignTokens.Metrics.maxNotebookNameLength
         viewModel.editingName = String(repeating: "b", count: limit + 5)
         XCTAssertEqual(viewModel.editingName.count, limit)
     }

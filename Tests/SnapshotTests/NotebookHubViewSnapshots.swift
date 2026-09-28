@@ -6,6 +6,7 @@
 //  核心职责：NotebookHub 组件快照测试，覆盖 NotebookCard 卡片、NotebookListRow 列表行与 NotebookHubView 主视图。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -69,16 +70,16 @@ final class NotebookHubViewSnapshots: XCTestCase {
     func testNotebookCard_FullData() {
         let view = NotebookCard(notebook: makeVault(), action: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)))
+            .frame(width: DesignTokens.Metrics.snapshotNotebookCardWidth, height: DesignTokens.Metrics.snapshotNotebookCardHeight)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotNotebookCardWidth, height: DesignTokens.Metrics.snapshotNotebookCardHeight)))
     }
 
     /// 测试笔记本卡片 — 最小数据（无图标无描述）
     func testNotebookCard_MinimalData() {
         let view = NotebookCard(notebook: makeMinimalVault(), action: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotNotebookCardWidth, height: DesignSystem.Metrics.snapshotNotebookCardHeight)))
+            .frame(width: DesignTokens.Metrics.snapshotNotebookCardWidth, height: DesignTokens.Metrics.snapshotNotebookCardHeight)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotNotebookCardWidth, height: DesignTokens.Metrics.snapshotNotebookCardHeight)))
     }
 
     // MARK: - NotebookListRow 快照测试
@@ -87,16 +88,16 @@ final class NotebookHubViewSnapshots: XCTestCase {
     func testNotebookListRow_FullData() {
         let view = NotebookListRow(notebook: makeVault(), action: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotNotebookRowHeight)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotNotebookRowHeight)))
     }
 
     /// 测试笔记本列表行 — 无描述
     func testNotebookListRow_NoDescription() {
         let view = NotebookListRow(notebook: makeMinimalVault(), action: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotNotebookRowHeight)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotNotebookRowHeight)))
     }
 
     // MARK: - NotebookHubView 快照测试
@@ -105,7 +106,7 @@ final class NotebookHubViewSnapshots: XCTestCase {
     func testNotebookHubView_Default() {
         let view = NotebookHubView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.relaxedPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

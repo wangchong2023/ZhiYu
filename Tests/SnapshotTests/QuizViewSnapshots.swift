@@ -6,6 +6,7 @@
 //  核心职责：QuizView 快照测试，覆盖测评初始/答题中/结果展示各阶段状态。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -79,7 +80,7 @@ final class QuizViewSnapshots: XCTestCase {
     func testQuizView_SingleQuestion_Initial() {
         let view = QuizView(quiz: makeSingleQuestionQuiz())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -87,7 +88,7 @@ final class QuizViewSnapshots: XCTestCase {
     func testQuizView_MultiQuestion_Initial() {
         let view = QuizView(quiz: makeMultiQuestionQuiz())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -95,7 +96,7 @@ final class QuizViewSnapshots: XCTestCase {
     func testQuizView_EmptyOptions_DegradedRendering() {
         let view = QuizView(quiz: makeEmptyOptionsQuiz())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

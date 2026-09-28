@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - App Pulse Dot
 
@@ -16,11 +17,11 @@ import SwiftUI
 /// 通过缩放和透明度变化实现呼吸感反馈。
 public struct AppPulseDot: View {
     public var color: Color = .appAccent
-    public var size: CGFloat = Spacing.small
+    public var size: CGFloat = DesignTokens.Spacing.small
 
     @State private var isPulsing = false
 
-    public init(color: Color = .appAccent, size: CGFloat = Spacing.small) {
+    public init(color: Color = .appAccent, size: CGFloat = DesignTokens.Spacing.small) {
         self.color = color
         self.size = size
     }
@@ -28,9 +29,9 @@ public struct AppPulseDot: View {
     public var body: some View {
         ZStack {
             Circle()
-                .fill(color.opacity(DesignSystem.Opacity.shadow))
+                .fill(color.opacity(DesignTokens.Opacity.shadow))
                 .frame(width: size * 2, height: size * 2)
-                .scaleEffect(isPulsing ? Spacing.Decorator.pulseScale : 1.0)
+                .scaleEffect(isPulsing ? DesignTokens.Spacing.Decorator.pulseScale : 1.0)
                 .opacity(isPulsing ? 0 : 1)
 
             Circle()
@@ -38,7 +39,7 @@ public struct AppPulseDot: View {
                 .frame(width: size, height: size)
         }
         .onAppear {
-            withAnimation(.easeOut(duration: Animations.Decorator.pulseDuration).repeatForever(autoreverses: false)) {
+            withAnimation(.easeOut(duration: DesignTokens.Animations.Decorator.pulseDuration).repeatForever(autoreverses: false)) {
                 isPulsing = true
             }
         }
@@ -58,7 +59,7 @@ public struct AppShimmer: View {
         LinearGradient(
             colors: [
                 .clear,
-                Color.appAccent.opacity(DesignSystem.Opacity.glass),
+                Color.appAccent.opacity(DesignTokens.Opacity.glass),
                 .clear
             ],
             startPoint: .leading,
@@ -66,7 +67,7 @@ public struct AppShimmer: View {
         )
         .offset(x: phase)
         .onAppear {
-            ShimmerAnimation.startLinear { phase = Animations.Decorator.shimmerPhaseShift }
+            ShimmerAnimation.startLinear { phase = DesignTokens.Animations.Decorator.shimmerPhaseShift }
         }
     }
 }
@@ -75,7 +76,7 @@ public struct AppShimmer: View {
 
 /// 流光效果视图修饰符
 public struct ShimmerModifier: ViewModifier {
-    @State private var phase: CGFloat = -Animations.Decorator.shimmerPhaseShift / 2
+    @State private var phase: CGFloat = -DesignTokens.Animations.Decorator.shimmerPhaseShift / 2
 
     public init() {}
 
@@ -89,16 +90,16 @@ public struct ShimmerModifier: ViewModifier {
                     LinearGradient(
                         colors: [
                             .clear,
-                            Color.theme.white.opacity(DesignSystem.Opacity.medium),
+                            Color.theme.white.opacity(DesignTokens.Opacity.medium),
                             .clear
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
-                    .frame(width: geometry.size.width * Animations.Decorator.shimmerWidthRatio)
+                    .frame(width: geometry.size.width * DesignTokens.Animations.Decorator.shimmerWidthRatio)
                     .offset(x: phase)
                     .onAppear {
-                        ShimmerAnimation.startLinear { phase = geometry.size.width * Animations.Decorator.shimmerEndRatio }
+                        ShimmerAnimation.startLinear { phase = geometry.size.width * DesignTokens.Animations.Decorator.shimmerEndRatio }
                     }
                 }
             )
@@ -111,10 +112,10 @@ public struct ShimmerModifier: ViewModifier {
 /// 骨架屏占位组件
 public struct AppSkeleton: View {
     public var width: CGFloat?
-    public var height: CGFloat = Spacing.large
-    public var cornerRadius: CGFloat = Spacing.tiny
+    public var height: CGFloat = DesignTokens.Spacing.large
+    public var cornerRadius: CGFloat = DesignTokens.Spacing.tiny
 
-    public init(width: CGFloat? = nil, height: CGFloat = Spacing.large, cornerRadius: CGFloat = Spacing.tiny) {
+    public init(width: CGFloat? = nil, height: CGFloat = DesignTokens.Spacing.large, cornerRadius: CGFloat = DesignTokens.Spacing.tiny) {
         self.width = width
         self.height = height
         self.cornerRadius = cornerRadius
@@ -122,7 +123,7 @@ public struct AppSkeleton: View {
 
     public var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius)
-            .fill(Color.appSecondary.opacity(DesignSystem.Opacity.glass))
+            .fill(Color.appSecondary.opacity(DesignTokens.Opacity.glass))
             .frame(width: width, height: height)
             .shimmerApp()
     }
@@ -144,8 +145,8 @@ public struct AppSuccessBanner: View {
     }
 
     public var body: some View {
-        HStack(spacing: Spacing.tiny + Spacing.atomic) { // 6
-            Image(systemName: DesignSystem.Icons.checkCircle)
+        HStack(spacing: DesignTokens.Spacing.tiny + DesignTokens.Spacing.atomic) { // 6
+            Image(systemName: DesignTokens.Icons.checkCircle)
                 .foregroundStyle(Color.theme.green)
             Text(message)
                 .font(bannerFont)
@@ -153,8 +154,8 @@ public struct AppSuccessBanner: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.theme.green.opacity(Colors.glassOpacity))
-        .clipShape(RoundedRectangle(cornerRadius: Spacing.standardRadius))
+        .background(Color.theme.green.opacity(DesignTokens.Colors.glassOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
     }
 }
 
@@ -164,9 +165,9 @@ public struct AppSuccessBanner: View {
 public struct AppGlow: View {
     public let icon: String
     public var color: Color = .appAccent
-    public var size: CGFloat = Spacing.huge
+    public var size: CGFloat = DesignTokens.Spacing.huge
 
-    public init(icon: String, color: Color = .appAccent, size: CGFloat = Spacing.huge) {
+    public init(icon: String, color: Color = .appAccent, size: CGFloat = DesignTokens.Spacing.huge) {
         self.icon = icon
         self.color = color
         self.size = size
@@ -176,15 +177,15 @@ public struct AppGlow: View {
         ZStack {
             // 外层光晕
             Circle()
-                .fill(color.opacity(DesignSystem.Opacity.glass))
-                .frame(width: size * Spacing.Decorator.glowScaleLarge, height: size * Spacing.Decorator.glowScaleLarge)
-                .blur(radius: Spacing.Decorator.glowBlurMedium)
+                .fill(color.opacity(DesignTokens.Opacity.glass))
+                .frame(width: size * DesignTokens.Spacing.Decorator.glowScaleLarge, height: size * DesignTokens.Spacing.Decorator.glowScaleLarge)
+                .blur(radius: DesignTokens.Spacing.Decorator.glowBlurMedium)
 
             // 内层光晕
             Circle()
-                .fill(color.opacity(DesignSystem.Opacity.medium))
-                .frame(width: size * Spacing.Decorator.glowScaleMedium, height: size * Spacing.Decorator.glowScaleMedium)
-                .blur(radius: Spacing.Decorator.glowBlurSmall)
+                .fill(color.opacity(DesignTokens.Opacity.medium))
+                .frame(width: size * DesignTokens.Spacing.Decorator.glowScaleMedium, height: size * DesignTokens.Spacing.Decorator.glowScaleMedium)
+                .blur(radius: DesignTokens.Spacing.Decorator.glowBlurSmall)
 
             // 中心图标
             Image(systemName: icon)
@@ -205,10 +206,10 @@ public extension View {
 
 // MARK: - 自适应排版辅助
 
-/// 根据水平尺寸类选择字号，消除 AppChips / AppFeedback 中重复的 `horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont` 三元表达式。
+/// 根据水平尺寸类选择字号，消除 AppChips / AppFeedback 中重复的 `horizontalSizeClass == .regular ? DesignTokens.Typography.secondaryFont : DesignTokens.Typography.captionFont` 三元表达式。
 enum AdaptiveTypography {
     static func adaptiveSecondaryFont(horizontalSizeClass: UserInterfaceSizeClass?) -> Font {
-        horizontalSizeClass == .regular ? Typography.secondaryFont : Typography.captionFont
+        horizontalSizeClass == .regular ? DesignTokens.Typography.secondaryFont : DesignTokens.Typography.captionFont
     }
 }
 
@@ -219,6 +220,6 @@ enum AdaptiveTypography {
 enum ShimmerAnimation {
     /// @PR-03: 使用高性能线性动画减少主线程压力
     static func startLinear(body: @escaping () -> Void) {
-        withAnimation(.linear(duration: Animations.Decorator.shimmerDuration).repeatForever(autoreverses: false), body)
+        withAnimation(.linear(duration: DesignTokens.Animations.Decorator.shimmerDuration).repeatForever(autoreverses: false), body)
     }
 }

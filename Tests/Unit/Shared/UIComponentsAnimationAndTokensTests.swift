@@ -6,6 +6,7 @@
 //  核心职责：验证 CoachMarkOverlay 异步调度、SplashBackgroundView 连线去重、IconPickerView 本地化及通用设计系统阴影/圆角/骨架屏透明度。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 @testable import ZhiYu
@@ -43,17 +44,17 @@ final class UIComponentsAnimationAndTokensTests: XCTestCase {
         XCTAssertFalse(L10n.Editor.iconPicker.symbols.isEmpty)
     }
 
-    /// 验证 DesignSystem.Shadows.standard 及 Radius.small 设计令牌
+    /// 验证 DesignTokens.Shadows.standard 及 Radius.small 设计令牌
     func testAppTextEditor_shadowAndRadiusTokens_matchDesignSystem() {
-        XCTAssertEqual(DesignSystem.Shadows.standard.radius, 8)
-        XCTAssertEqual(DesignSystem.Shadows.standard.x, 0)
-        XCTAssertEqual(DesignSystem.Shadows.standard.y, 4)
-        XCTAssertEqual(DesignSystem.Radius.small, 8)
+        XCTAssertEqual(DesignTokens.Shadows.standard.radius, 8)
+        XCTAssertEqual(DesignTokens.Shadows.standard.x, 0)
+        XCTAssertEqual(DesignTokens.Shadows.standard.y, 4)
+        XCTAssertEqual(DesignTokens.Radius.small, 8)
     }
 
     /// 验证 AppLoadingSkeleton 初始透明度令牌
     func testAppLoadingSkeleton_initialOpacity_matchesDesignSystem() {
-        XCTAssertEqual(DesignSystem.Opacity.shadow, 0.3)
-        XCTAssertEqual(DesignSystem.Opacity.prominent, 0.8)
+        XCTAssertEqual(DesignTokens.Opacity.shadow, 0.3)
+        XCTAssertEqual(DesignTokens.Opacity.prominent, 0.8)
     }
 }

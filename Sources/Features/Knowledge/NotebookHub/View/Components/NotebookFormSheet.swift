@@ -9,6 +9,7 @@
 //  核心职责：笔记本中心：入口页面、笔记本卡片、创建表单。
 //
 import SwiftUI
+import UFPDesignSystem
 
 @MainActor
 struct CreateNotebookSheet: View {
@@ -52,7 +53,7 @@ struct NotebookFormSheet: View {
     @Environment(\.dismiss) var dismiss
     @Environment(ThemeManager.self) var themeManager
     /// 笔记本可供选择的高品质 Emoji 图标数组，引用自 Shared 设计令牌
-    private let iconOptions = DesignSystem.Icons.Notebook.options
+    private let iconOptions = DesignTokens.Icons.Notebook.options
     
     var body: some View {
         NavigationStack {
@@ -61,32 +62,32 @@ struct NotebookFormSheet: View {
                     .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: DesignSystem.huge) {
+                    VStack(spacing: DesignTokens.Spacing.huge) {
                         // 1. 图标选择
-                        VStack(spacing: DesignSystem.medium) {
+                        VStack(spacing: DesignTokens.Spacing.medium) {
                             ZStack {
                                 Circle()
-                                    .fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
+                                    .fill(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
                                     .overlay(
                                         Circle()
-                                            .strokeBorder(Color.appAccent.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.selected)
+                                            .strokeBorder(Color.appAccent.opacity(DesignTokens.Opacity.shadow), lineWidth: DesignTokens.SystemStroke.selected)
                                     )
-                                    .frame(width: DesignSystem.Metrics.avatarPickerSize, height: DesignSystem.Metrics.avatarPickerSize)
-                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius, style: .continuous))
-                                    .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.ghost), radius: DesignSystem.smallRadius, y: 3)
+                                    .frame(width: DesignTokens.Metrics.avatarPickerSize, height: DesignTokens.Metrics.avatarPickerSize)
+                                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous))
+                                    .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.ghost), radius: DesignTokens.Spacing.smallRadius, y: 3)
                                 
                                 Text(icon.isEmpty ? "" : icon)
                                     .font(.largeTitle)
                             }
                             .buttonStyle(.plain)
-                            .padding(.vertical, DesignSystem.small)
+                            .padding(.vertical, DesignTokens.Spacing.small)
                             
                             Text(L10n.Vault.iconLabel)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             
                             ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: DesignSystem.small) {
+                                HStack(spacing: DesignTokens.Spacing.small) {
                                     ForEach(iconOptions, id: \.self) { item in
                                         Button {
                                             icon = item
@@ -94,12 +95,12 @@ struct NotebookFormSheet: View {
                                             ZStack {
                                                 Circle()
                                                     .fill(icon == item ? Color.appAccent : Color.appCard)
-                                                    .frame(width: DesignSystem.Metrics.colorOptionSize, height: DesignSystem.Metrics.colorOptionSize)
-                                                .background(icon == item ? Color.appAccent.opacity(DesignSystem.Opacity.medium) : Color.primary.opacity(DesignSystem.Opacity.ghost))
+                                                    .frame(width: DesignTokens.Metrics.colorOptionSize, height: DesignTokens.Metrics.colorOptionSize)
+                                                .background(icon == item ? Color.appAccent.opacity(DesignTokens.Opacity.medium) : Color.primary.opacity(DesignTokens.Opacity.ghost))
                                                 .clipShape(Circle())
                                                 .overlay(
                                                     Circle()
-                                                        .strokeBorder(icon == item ? Color.appAccent : Color.clear, lineWidth: SystemStroke.selected)
+                                                        .strokeBorder(icon == item ? Color.appAccent : Color.clear, lineWidth: DesignTokens.SystemStroke.selected)
                                                 )
                                             }
                                         }
@@ -108,10 +109,10 @@ struct NotebookFormSheet: View {
                                 .padding(.horizontal)
                             }
                         }
-                        .padding(.top, DesignSystem.huge)
+                        .padding(.top, DesignTokens.Spacing.huge)
                         
                         // 2. 表单
-                        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                             formField(
                                 label: L10n.Vault.nameLabel,
                                 placeholder: L10n.Vault.namePlaceholder,
@@ -119,7 +120,7 @@ struct NotebookFormSheet: View {
                                 accessibilityID: FeatureConstants.AccessibilityID.notebookNameTextfield
                             )
 
-                            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                                 Text(L10n.Vault.descriptionLabel)
                                     .font(.caption.bold())
                                     .foregroundStyle(.secondary)
@@ -162,7 +163,7 @@ struct NotebookFormSheet: View {
         text: Binding<String>,
         accessibilityID: String
     ) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             Text(label)
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
@@ -180,10 +181,10 @@ private extension View {
     @ViewBuilder
     func notebookFormFieldStyle() -> some View {
         self.cardStyle(
-            horizontalPadding: DesignSystem.standardPadding,
-            verticalPadding: DesignSystem.standardPadding,
-            backgroundOpacity: DesignSystem.Opacity.dim,
-            cornerRadius: DesignSystem.cardRadius
+            horizontalPadding: DesignTokens.Spacing.standardPadding,
+            verticalPadding: DesignTokens.Spacing.standardPadding,
+            backgroundOpacity: DesignTokens.Opacity.dim,
+            cornerRadius: DesignTokens.Spacing.cardRadius
         )
     }
 }

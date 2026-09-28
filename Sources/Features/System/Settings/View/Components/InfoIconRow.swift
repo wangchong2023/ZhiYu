@@ -2,6 +2,7 @@
 // 核心职责：信息图标行组件，消除 CollabInfoRow 与 SyncInfoRow 的重复
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 信息图标行组件（图标 + 文本）
 ///
@@ -24,7 +25,7 @@ struct InfoIconRow: View {
         spacing: CGFloat = DesignSystem.CompositeRow.spacing,
         iconColor: Color = .appAccent,
         textColor: Color = .appText,
-        iconWidth: CGFloat? = ComponentSpacing.section
+        iconWidth: CGFloat? = DesignTokens.ComponentSpacing.section
     ) {
         self.icon = icon
         self.text = text

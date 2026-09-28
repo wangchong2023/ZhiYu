@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 快速操作行组件
 /// 提供图标、主标题、副标题及进入指示器，支持按下缩放效果。
@@ -37,25 +38,25 @@ public struct QuickActionRow: View {
     
     public var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.medium + Spacing.atomic * 2) { // 14
+            HStack(spacing: DesignTokens.Spacing.medium + DesignTokens.Spacing.atomic * 2) { // 14
                 // 渐变图标背景
                 ZStack {
-                    RoundedRectangle(cornerRadius: Spacing.small)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.small)
                         .fill(
                             LinearGradient(
-                                colors: [color.opacity(Colors.glassOpacity * 2), color.opacity(Colors.glassOpacity * 0.8)],
+                                colors: [color.opacity(DesignTokens.Colors.glassOpacity * 2), color.opacity(DesignTokens.Colors.glassOpacity * 0.8)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: ComponentSpacing.buttonHeight, height: ComponentSpacing.buttonHeight) // 44
+                        .frame(width: DesignTokens.ComponentSpacing.buttonHeight, height: DesignTokens.ComponentSpacing.buttonHeight) // 44
 
                     Image(systemName: icon)
-                        .font(.system(size: Spacing.titleIconSize, weight: .semibold))
+                        .font(.system(size: DesignTokens.Spacing.titleIconSize, weight: .semibold))
                         .foregroundStyle(color)
                 }
 
-                VStack(alignment: .leading, spacing: Spacing.atomic * 1.5) { // 3
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic * 1.5) { // 3
                     Text(title)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.appText)
@@ -66,19 +67,19 @@ public struct QuickActionRow: View {
 
                 Spacer()
 
-                Image(systemName: DesignSystem.Icons.forward)
+                Image(systemName: DesignTokens.Icons.forward)
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.appSecondary.opacity(Colors.dimmedOpacity))
+                    .foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.dimmedOpacity))
             }
-            .padding(Spacing.standardPadding)
-            .appCardClip(cornerRadius: Spacing.medium, backgroundOpacity: DesignSystem.Opacity.prominent)
+            .padding(DesignTokens.Spacing.standardPadding)
+            .appCardClip(cornerRadius: DesignTokens.Spacing.medium, backgroundOpacity: DesignTokens.Opacity.prominent)
             .shadow(
-                color: .black.opacity(isPressed ? Spacing.shadowOpacity : Spacing.shadowOpacity * 2), 
-                radius: isPressed ? Spacing.shadowRadius / 2.5 : Spacing.shadowRadius / 1.25, 
+                color: .black.opacity(isPressed ? DesignTokens.Spacing.shadowOpacity : DesignTokens.Spacing.shadowOpacity * 2), 
+                radius: isPressed ? DesignTokens.Spacing.shadowRadius / 2.5 : DesignTokens.Spacing.shadowRadius / 1.25, 
                 x: 0, 
-                y: isPressed ? Spacing.shadowY / 2 : Spacing.shadowY
+                y: isPressed ? DesignTokens.Spacing.shadowY / 2 : DesignTokens.Spacing.shadowY
             )
-            .scaleEffect(isPressed ? Animations.Interaction.pressScale : 1.0)
+            .scaleEffect(isPressed ? DesignTokens.Animations.Interaction.pressScale : 1.0)
         }
         .buttonStyle(.plain)
         .simultaneousGesture(

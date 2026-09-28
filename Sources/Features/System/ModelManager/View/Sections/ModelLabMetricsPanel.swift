@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 性能监控与输出面板
 
@@ -17,17 +18,17 @@ extension ModelLabView {
 
     /// 实时评估性能指标看板
     var metricsMonitorBoard: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.cpuOutline)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            HStack(spacing: DesignTokens.Spacing.tiny) {
+                Image(systemName: DesignTokens.Icons.cpuOutline)
                     .foregroundStyle(Color.theme.cyan)
                 Text(L10n.ModelManager.Lab.performanceMetrics)
                     .font(.caption.bold())
                     .foregroundStyle(Color.theme.cyan)
             }
-            .padding(.horizontal, SystemSpacing.tiny)
+            .padding(.horizontal, DesignTokens.SystemSpacing.tiny)
 
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 metricItemCard(
                     title: L10n.ModelManager.Lab.speed,
                     value: String(format: "%.1f", labManager.currentStats.speed),
@@ -54,25 +55,25 @@ extension ModelLabView {
                 )
             }
         }
-        .padding(DesignSystem.medium)
+        .padding(DesignTokens.Spacing.medium)
         .background(.ultraThinMaterial)
-        .cornerRadius(DesignSystem.mediumRadius)
+        .cornerRadius(DesignTokens.Spacing.mediumRadius)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
                 .stroke(
                     LinearGradient(
-                        colors: [Color.theme.cyan.opacity(DesignSystem.softOpacity), Color.theme.purple.opacity(DesignSystem.shadowOpacity)],
+                        colors: [Color.theme.cyan.opacity(DesignTokens.Colors.Opacity.softOpacity), Color.theme.purple.opacity(DesignTokens.Spacing.shadowOpacity)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: SystemStroke.divider
+                    lineWidth: DesignTokens.SystemStroke.divider
                 )
         )
     }
 
     /// 单个带渐变边框发光的科技微面板
     func metricItemCard(title: String, value: String, unit: String, glowColor: Color) -> some View {
-        VStack(spacing: SystemSpacing.tiny) {
+        VStack(spacing: DesignTokens.SystemSpacing.tiny) {
             Text(title)
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -85,47 +86,47 @@ extension ModelLabView {
 
             Text(unit)
                 .font(.caption2.weight(.bold))
-                .foregroundStyle(glowColor.opacity(DesignSystem.Opacity.prominent))
+                .foregroundStyle(glowColor.opacity(DesignTokens.Opacity.prominent))
         }
-        .padding(.vertical, DesignSystem.small)
+        .padding(.vertical, DesignTokens.Spacing.small)
         .frame(maxWidth: .infinity)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.ghost))
-        .cornerRadius(SystemRadius.small)
+        .background(Color.appCard.opacity(DesignTokens.Opacity.ghost))
+        .cornerRadius(DesignTokens.SystemRadius.small)
         .overlay(
-            RoundedRectangle(cornerRadius: SystemRadius.small)
+            RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small)
                 .stroke(
                     LinearGradient(
-                        colors: [glowColor.opacity(DesignSystem.softOpacity), .clear],
+                        colors: [glowColor.opacity(DesignTokens.Colors.Opacity.softOpacity), .clear],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: SystemStroke.border
+                    lineWidth: DesignTokens.SystemStroke.border
                 )
         )
-        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignSystem.glassOpacity) : .clear, radius: SystemShadow.radiusSmall, x: 0, y: 0)
+        .shadow(color: labManager.isGenerating ? glowColor.opacity(DesignTokens.Colors.Opacity.glassOpacity) : .clear, radius: DesignTokens.SystemShadow.radiusSmall, x: 0, y: 0)
     }
 
     // MARK: - 辅助子视图（高精度 AI 模拟效果展示）
 
     private func confidenceRow(name: String, score: Double, color: Color) -> some View {
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             Text(name)
                 .font(.caption)
                 .foregroundStyle(.appText)
-                .frame(width: DesignSystem.Metrics.sourceCardWidth - DesignSystem.tiny, alignment: .leading)
+                .frame(width: DesignTokens.Metrics.sourceCardWidth - DesignTokens.Spacing.tiny, alignment: .leading)
 
             ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                    .fill(Color.appBorder.opacity(DesignSystem.dimmedOpacity))
-                    .frame(height: DesignSystem.Metrics.progressHeight)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
+                    .fill(Color.appBorder.opacity(DesignTokens.Colors.Opacity.dimmedOpacity))
+                    .frame(height: DesignTokens.Metrics.progressHeight)
 
-                RoundedRectangle(cornerRadius: DesignSystem.microRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
                     .fill(color)
                     // Bug #74 修复：钳制 score 到 [0, 1]，避免 score > 1 时进度条溢出容器。
-                    .frame(width: DesignSystem.Metrics.boxHeight * CGFloat(min(max(score, 0.0), 1.0)), height: DesignSystem.Metrics.progressHeight)
-                    .shadow(color: color.opacity(DesignSystem.softOpacity), radius: SystemShadow.radiusSmall)
+                    .frame(width: DesignTokens.Metrics.boxHeight * CGFloat(min(max(score, 0.0), 1.0)), height: DesignTokens.Metrics.progressHeight)
+                    .shadow(color: color.opacity(DesignTokens.Colors.Opacity.softOpacity), radius: DesignTokens.SystemShadow.radiusSmall)
             }
-            .frame(width: DesignSystem.Metrics.boxHeight)
+            .frame(width: DesignTokens.Metrics.boxHeight)
 
             Spacer()
 
@@ -137,17 +138,17 @@ extension ModelLabView {
     }
 
     private func transcriptionSegment(time: String, text: String, color: Color) -> some View {
-        HStack(alignment: .top, spacing: DesignSystem.small) {
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.small) {
             Text(time)
-                .font(.system(size: DesignSystem.caption2FontSize, weight: .semibold, design: .monospaced))
+                .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .semibold, design: .monospaced))
                 .foregroundStyle(color)
-                .padding(.horizontal, SystemSpacing.small)
-                .padding(.vertical, SystemSpacing.atomic)
-                .background(color.opacity(DesignSystem.subtleFillOpacity))
-                .cornerRadius(DesignSystem.microRadius)
+                .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                .background(color.opacity(DesignTokens.Colors.subtleFillOpacity))
+                .cornerRadius(DesignTokens.Spacing.microRadius)
                 .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                        .stroke(color.opacity(DesignSystem.accentStrokeOpacity), lineWidth: SystemStroke.hairline)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
+                        .stroke(color.opacity(DesignTokens.Colors.Opacity.accentStrokeOpacity), lineWidth: DesignTokens.SystemStroke.hairline)
                 )
 
             Text(text)
@@ -155,17 +156,17 @@ extension ModelLabView {
                 .foregroundStyle(.appText)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.vertical, SystemSpacing.atomic)
+        .padding(.vertical, DesignTokens.SystemSpacing.atomic)
     }
 
     private func traceStepRow(title: String, desc: String, icon: String, color: Color) -> some View {
-        HStack(alignment: .top, spacing: DesignSystem.small) {
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.small) {
             Image(systemName: icon)
                 .font(.caption)
                 .foregroundStyle(color)
-                .padding(.top, SystemSpacing.atomic)
+                .padding(.top, DesignTokens.SystemSpacing.atomic)
 
-            VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                 Text(title)
                     .font(.caption.bold())
                     .foregroundStyle(.appText)
@@ -176,7 +177,7 @@ extension ModelLabView {
             }
             Spacer()
         }
-        .padding(.vertical, SystemSpacing.atomic)
+        .padding(.vertical, DesignTokens.SystemSpacing.atomic)
     }
 
     private func parseColor(from name: String) -> Color {
@@ -191,27 +192,27 @@ extension ModelLabView {
 
     @ViewBuilder
     private func specializedResultPanel(for useCase: UseCaseType) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(labManager.extraPanelTitle)
                 .font(.caption.bold())
                 .foregroundStyle(Color.theme.cyan)
             
             if useCase == .askImage {
-                VStack(spacing: SystemSpacing.element) {
+                VStack(spacing: DesignTokens.SystemSpacing.element) {
                     ForEach(labManager.confidenceItems) { item in
                         confidenceRow(name: item.name, score: item.score, color: parseColor(from: item.colorName))
                     }
                 }
                 .traceContainerStyle()
             } else if useCase == .audioScribe {
-                VStack(alignment: .leading, spacing: SystemSpacing.element) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
                     ForEach(labManager.traceSteps) { item in
                         transcriptionSegment(time: item.title, text: item.desc, color: parseColor(from: item.colorName))
                     }
                 }
                 .traceContainerStyle()
             } else {
-                VStack(alignment: .leading, spacing: SystemSpacing.element) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
                     ForEach(labManager.traceSteps) { item in
                         traceStepRow(title: item.title, desc: item.desc, icon: item.icon, color: parseColor(from: item.colorName))
                     }
@@ -224,13 +225,13 @@ extension ModelLabView {
     /// 流式输出面板
     var outputScribeBoard: some View {
         let useCase = labManager.selectedUseCase ?? .aiChat
-        return VStack(alignment: .leading, spacing: DesignSystem.small) {
+        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(L10n.ModelManager.Lab.outputResult)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appText)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     // 主推理文本流
                     Text(labManager.generatedText)
                         .font(.system(.body, design: .monospaced))
@@ -241,18 +242,18 @@ extension ModelLabView {
                     // 当有数据时展示特化面板
                     if !labManager.generatedText.isEmpty, !labManager.extraPanelTitle.isEmpty {
                         Divider()
-                            .padding(.vertical, DesignSystem.tiny)
+                            .padding(.vertical, DesignTokens.Spacing.tiny)
                         
                         specializedResultPanel(for: useCase)
                     }
                 }
             }
-            .frame(height: ComponentSpacing.chartHeight)
-            .padding(ComponentSpacing.section)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.dim))
+            .frame(height: DesignTokens.ComponentSpacing.chartHeight)
+            .padding(DesignTokens.ComponentSpacing.section)
+            .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
             .smallCardBorder()
         }
-        .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium)
+        .cardStyle(horizontalPadding: DesignTokens.Spacing.medium, verticalPadding: DesignTokens.Spacing.medium)
     }
 }
 
@@ -260,8 +261,8 @@ extension ModelLabView {
 private extension View {
     func traceContainerStyle() -> some View {
         self
-            .padding(DesignSystem.small)
-            .background(Color.appBackground.opacity(DesignSystem.disabledOpacity))
-            .cornerRadius(SystemRadius.small)
+            .padding(DesignTokens.Spacing.small)
+            .background(Color.appBackground.opacity(DesignTokens.Colors.Opacity.disabledOpacity))
+            .cornerRadius(DesignTokens.SystemRadius.small)
     }
 }

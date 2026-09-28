@@ -6,6 +6,7 @@
 //  核心职责：大模型卡片快照测试，覆盖选中/未选中、下载状态与硬件护栏展示。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -71,7 +72,7 @@ final class ModelManagerViewSnapshots: XCTestCase {
             onGoToLab: {}
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
     }
 
     // MARK: - ModelCardView 快照测试
@@ -79,7 +80,7 @@ final class ModelManagerViewSnapshots: XCTestCase {
     /// 测试模型卡片 — 默认折叠状态
     func testModelCardView_Collapsed() {
         let view = makeModelCardView(manifest: makeManifest())
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)))
     }
 
     /// 测试模型卡片 — 展开状态
@@ -89,7 +90,7 @@ final class ModelManagerViewSnapshots: XCTestCase {
             manifest: manifest,
             expandedModelId: .constant(manifest.modelId)
         )
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 500)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 500)))
     }
 
     /// 测试模型卡片 — 大参数模型（8B）
@@ -100,6 +101,6 @@ final class ModelManagerViewSnapshots: XCTestCase {
             parameterCount: "8B",
             minDeviceMemoryInGb: 12.0
         ))
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)))
     }
 }

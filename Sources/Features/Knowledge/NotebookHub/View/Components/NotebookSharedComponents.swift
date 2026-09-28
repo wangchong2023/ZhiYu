@@ -10,13 +10,14 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 笔记本共享组件扩展，收拢 NotebookCard 与 NotebookListRow 的重复逻辑
 extension Vault {
     /// 获取根据笔记本 ID 哈希值计算出来的兜底默认 Emoji 图标，收拢至强类型设计令牌
     var defaultEmojiIcon: String {
-        let index = abs(id.hashValue) % DesignSystem.Icons.Notebook.options.count
-        return DesignSystem.Icons.Notebook.options[index]
+        let index = abs(id.hashValue) % DesignTokens.Icons.Notebook.options.count
+        return DesignTokens.Icons.Notebook.options[index]
     }
 }
 
@@ -30,12 +31,12 @@ struct NotebookContextMenu: View {
             Button {
                 viewModel.prepareEdit(notebook)
             } label: {
-                Label(L10n.Vault.edit, systemImage: DesignSystem.Icons.edit)
+                Label(L10n.Vault.edit, systemImage: DesignTokens.Icons.edit)
             }
             Button(role: .destructive) {
                 viewModel.deleteNotebook(id: notebook.id)
             } label: {
-                Label(L10n.Vault.deleteNotebook, systemImage: DesignSystem.Icons.delete)
+                Label(L10n.Vault.deleteNotebook, systemImage: DesignTokens.Icons.delete)
             }
         }
     }
@@ -51,7 +52,7 @@ struct NotebookIconView<S: Shape>: View {
         ZStack {
             backgroundShape
                 .fill(backgroundColor)
-                .frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)
+                .frame(width: DesignTokens.IconSize.xlarge, height: DesignTokens.IconSize.xlarge)
 
             Text(emoji)
                 .font(.title2)

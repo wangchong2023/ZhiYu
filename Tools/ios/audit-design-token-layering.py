@@ -22,11 +22,11 @@ from gatekeeper_reporter import GatekeeperReporter
 
 PROJECT_ROOT = os.path.abspath(os.path.join(SYS_GATEKEEPER_DIR, '..'))
 SOURCES_DIR = os.path.join(PROJECT_ROOT, 'Sources')
-TOKENS_DIR = os.path.join(SOURCES_DIR, 'Shared/DesignSystem/Tokens')
+SPM_TOKENS_DIR = os.path.join(PROJECT_ROOT, 'Packages/UFPDesignSystem/Sources/UFPDesignSystem/Tokens')
 
-REFERENCE_FILE = os.path.join(TOKENS_DIR, 'Reference.swift')
-SYSTEM_FILE = os.path.join(TOKENS_DIR, 'System.swift')
-COMPONENT_FILE = os.path.join(TOKENS_DIR, 'Component.swift')
+REFERENCE_FILE = os.path.join(SPM_TOKENS_DIR, 'Reference.swift')
+SYSTEM_FILE = os.path.join(SPM_TOKENS_DIR, 'System.swift')
+COMPONENT_FILE = os.path.join(SPM_TOKENS_DIR, 'Component.swift')
 
 # 旧架构文件（应已删除）
 LEGACY_FILES = [
@@ -87,14 +87,14 @@ def check_dependency_direction():
     if os.path.exists(REFERENCE_FILE):
         with open(REFERENCE_FILE, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
-        if re.search(r'\bSystem(?:Spacing|Opacity|Radius|Stroke|FontSize)\b', content):
+        if re.search(r'\bDesignTokens\.System(?:Spacing|Opacity|Radius|Stroke|FontSize)\b', content):
             reporter.add_issue(
                 filepath=os.path.relpath(REFERENCE_FILE, PROJECT_ROOT),
                 line_no=1,
                 message="Reference 层禁止引用 System 层（违反依赖方向）",
                 level="ERROR"
             )
-        if re.search(r'\bComponentSpacing\b', content):
+        if re.search(r'\bDesignTokens\.ComponentSpacing\b', content):
             reporter.add_issue(
                 filepath=os.path.relpath(REFERENCE_FILE, PROJECT_ROOT),
                 line_no=1,
@@ -106,7 +106,7 @@ def check_dependency_direction():
     if os.path.exists(SYSTEM_FILE):
         with open(SYSTEM_FILE, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
-        if re.search(r'\bComponentSpacing\b', content):
+        if re.search(r'\bDesignTokens\.ComponentSpacing\b', content):
             reporter.add_issue(
                 filepath=os.path.relpath(SYSTEM_FILE, PROJECT_ROOT),
                 line_no=1,
@@ -114,7 +114,7 @@ def check_dependency_direction():
                 level="ERROR"
             )
         # System 必须引用 Reference
-        if 'Reference.' not in content:
+        if 'DesignTokens.Reference.' not in content:
             reporter.add_issue(
                 filepath=os.path.relpath(SYSTEM_FILE, PROJECT_ROOT),
                 line_no=1,
@@ -126,7 +126,7 @@ def check_dependency_direction():
     if os.path.exists(COMPONENT_FILE):
         with open(COMPONENT_FILE, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
-        if 'SystemSpacing.' not in content:
+        if 'DesignTokens.SystemSpacing.' not in content:
             reporter.add_issue(
                 filepath=os.path.relpath(COMPONENT_FILE, PROJECT_ROOT),
                 line_no=1,
@@ -161,6 +161,8 @@ def _check_legacy_symbol_references():
         r'\bPlatformContext\.current\b',
         r'\bSemanticSpacingToken\b',
         r'\bSemanticRadiusToken\b',
+        # 迁移到 DesignTokens 后，禁止 DesignSystem.* Token 残留
+        r'\bDesignSystem\.(SpacingToken|RadiusToken|Opacity|Shadows|Radius|Metrics|Typography|Colors|Animations|IconSize|ZIndex)\b',
     ]
     combined = '|'.join(legacy_patterns)
     for root, dirs, files in os.walk(SOURCES_DIR):
@@ -195,7 +197,7 @@ def scan_view_token_bypasses():
         os.path.join(SOURCES_DIR, 'Shared/UIComponents'),
         os.path.join(SOURCES_DIR, 'Platforms'),
     ]
-    exempt_files = {'Reference.swift', 'System.swift', 'Component.swift', 'Colors.swift', 'Typography.swift', 'DesignSystem.swift'}
+    exempt_files = {'Reference.swift', 'System.swift', 'Component.swift', 'Colors.swift', 'Typography.swift', 'Animations.swift', 'DesignTokens.swift'}
 
     for v_dir in views_dirs:
         if not os.path.exists(v_dir):
@@ -218,7 +220,7 @@ def _scan_file_for_reference_bypass(fpath):
     """扫描单个文件的 Reference 层越级引用"""
     with open(fpath, 'r', encoding='utf-8', errors='ignore') as f:
         for i, line in enumerate(f, 1):
-            if re.search(r'\bReference\.(Spacing|Opacity|Radius|Stroke|FontSize)\.', line):
+            if re.search(r'\bDesignTokens\.Reference\.(Spacing|Opacity|Radius|Stroke|FontSize)\.', line):
                 reporter.add_issue(
                     filepath=os.path.relpath(fpath, PROJECT_ROOT),
                     line_no=i,

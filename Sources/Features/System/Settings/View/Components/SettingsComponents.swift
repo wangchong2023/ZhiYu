@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 插件扩展组件
 
@@ -22,9 +23,9 @@ struct PluginExtensionsSection: View {
                 ForEach(registry.settingTabs) { tab in
                     NavigationLink(destination: PluginCustomSettingsView(tab: tab)) {
                         HStack {
-                            Image(systemName: DesignSystem.Icons.puzzlepieceExtension)
+                            Image(systemName: DesignTokens.Icons.puzzlepieceExtension)
                                 .foregroundStyle(.appAccent)
-                                .frame(width: DesignSystem.IconSize.standard)
+                                .frame(width: DesignTokens.IconSize.standard)
                             Text(tab.name)
                                 .foregroundStyle(.appText)
                             Spacer()
@@ -45,9 +46,9 @@ struct PluginExtensionsDetailView: View {
         Group {
             if registry.settingTabs.isEmpty {
                 // 无已安装插件：空状态引导页
-                VStack(spacing: DesignSystem.large) {
-                    Image(systemName: DesignSystem.Icons.puzzlepieceExtensionFill)
-                        .font(.system(size: Reference.FontSize.mega)) // Dynamic Type
+                VStack(spacing: DesignTokens.Spacing.large) {
+                    Image(systemName: DesignTokens.Icons.puzzlepieceExtensionFill)
+                        .font(.system(size: DesignTokens.Reference.FontSize.mega)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
 
                     Text(L10n.Plugin.settings.noSettings)
@@ -55,7 +56,7 @@ struct PluginExtensionsDetailView: View {
                         .foregroundStyle(.appText)
 
                     Button(action: { showPluginCenter = true }) {
-                        Label(L10n.Plugin.title, systemImage: DesignSystem.Icons.plusCircle)
+                        Label(L10n.Plugin.title, systemImage: DesignTokens.Icons.plusCircle)
                             .font(.body.weight(.medium))
                     }
                     .buttonStyle(.borderedProminent)

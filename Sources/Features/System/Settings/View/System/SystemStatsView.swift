@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Charts
+import UFPDesignSystem
 
 /// 系统统计视图常量
 private enum SystemStatsConstants {
@@ -62,13 +63,13 @@ struct SystemStatsView: View {
                         }
                     }
                     .segmentedPickerStyleIfAvailable()
-                    .padding(.horizontal, Spacing.medium)
-                    .padding(.vertical, Spacing.medium)
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.vertical, DesignTokens.Spacing.medium)
                     
                     if coordinator.isLoading {
                         VStack {
                             ProgressView()
-                                .padding(.vertical, Spacing.Sidebar.backButtonWidth)
+                                .padding(.vertical, DesignTokens.Spacing.Sidebar.backButtonWidth)
                         }
                     } else {
                         switch selectedTab {
@@ -78,11 +79,11 @@ struct SystemStatsView: View {
                             storageSection
                         case .plugins:
                             PluginStatsSection()
-                                .padding(.horizontal, Spacing.medium)
+                                .padding(.horizontal, DesignTokens.Spacing.medium)
                         }
                     }
                 }
-                .padding(.bottom, DesignSystem.huge) // 底部留白
+                .padding(.bottom, DesignTokens.Spacing.huge) // 底部留白
             }
             .background(PageBackgroundView(accentColor: .appAccent))
         }
@@ -116,19 +117,19 @@ struct SystemStatsView: View {
             
             // 3. 响应时延卡片
             StandardSection(title: L10n.Dashboard.stats.latencyTitle + " (\(L10n.Dashboard.stats.rangeThirtyDays))") {
-                VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                     HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                             Text(L10n.Dashboard.stats.avgLatencyShort)
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                             
-                            HStack(alignment: .firstTextBaseline, spacing: DesignSystem.tiny) {
+                            HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.tiny) {
                                 Text("\(coordinator.avgLatency)")
-                                    .font(.system(size: DesignSystem.displayFontSize, weight: .bold, design: .rounded))
+                                    .font(.system(size: DesignTokens.Typography.displayFontSize, weight: .bold, design: .rounded))
                                     .foregroundColor(.appText)
                                 Text(L10n.Dashboard.unitMs)
-                                    .font(.system(size: DesignSystem.subheadlineFontSize, weight: .semibold))
+                                    .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .semibold))
                                     .foregroundColor(.appSecondary)
                             }
                         }
@@ -137,16 +138,16 @@ struct SystemStatsView: View {
                         
                         ZStack {
                             Circle()
-                                .fill((coordinator.avgLatency > AppConstants.Performance.latencyWarningThreshold ? Color.theme.orange : Color.appAccent).opacity(DesignSystem.Opacity.subtle))
-                                .frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)
-                            Image(systemName: DesignSystem.Icons.timer)
+                                .fill((coordinator.avgLatency > AppConstants.Performance.latencyWarningThreshold ? Color.theme.orange : Color.appAccent).opacity(DesignTokens.Opacity.subtle))
+                                .frame(width: DesignTokens.IconSize.xlarge, height: DesignTokens.IconSize.xlarge)
+                            Image(systemName: DesignTokens.Icons.timer)
                                 .font(.title3.bold())
                                 .foregroundColor(coordinator.avgLatency > AppConstants.Performance.latencyWarningThreshold ? Color.theme.orange : .appAccent)
                         }
                     }
                     
                     Divider()
-                        .opacity(DesignSystem.softOpacity)
+                        .opacity(DesignTokens.Colors.Opacity.softOpacity)
                     
                     HStack(spacing: 0) {
                         latencySubValue(label: L10n.Dashboard.stats.maxLatency, value: "\(coordinator.maxLatency)")
@@ -156,7 +157,7 @@ struct SystemStatsView: View {
                         latencySubValue(label: L10n.Dashboard.stats.measureCount, value: "\(coordinator.latencyCount)")
                     }
                 }
-                .padding(Spacing.medium)
+                .padding(DesignTokens.Spacing.medium)
             }
         }
     }
@@ -167,33 +168,33 @@ struct SystemStatsView: View {
         Group {
             // 1. 知识库资产分布 (饼图 + 详细图例)
             StandardSection(title: L10n.Dashboard.stats.storageDistribution) {
-                VStack(spacing: Spacing.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     if coordinator.storageCategories.isEmpty {
                         ProgressView()
-                            .frame(height: ComponentSpacing.chartHeight)
+                            .frame(height: DesignTokens.ComponentSpacing.chartHeight)
                     } else if coordinator.storageCategories.allSatisfy({ $0.value == 0 }) {
-                        VStack(spacing: Spacing.medium) {
-                            Image(systemName: DesignSystem.Icons.chartPie)
+                        VStack(spacing: DesignTokens.Spacing.medium) {
+                            Image(systemName: DesignTokens.Icons.chartPie)
                                 .font(.system(size: DesignSystem.Gallery.iconSize))
-                                .foregroundStyle(.appSecondary.opacity(DesignSystem.softOpacity))
+                                .foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.Opacity.softOpacity))
                             Text(L10n.Common.Global.noData)
                                 .font(.caption)
                                 .foregroundStyle(.appSecondary)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: ComponentSpacing.chartHeight)
+                        .frame(height: DesignTokens.ComponentSpacing.chartHeight)
                     } else {
-                        HStack(spacing: Spacing.medium) {
+                        HStack(spacing: DesignTokens.Spacing.medium) {
                             chartContainer
                                 .skipOnWatch { $0.frame(maxWidth: .infinity, alignment: .center) }
                             
                             legendContainer
                                 .frame(maxWidth: .infinity)
                         }
-                        .padding(.vertical, Spacing.small)
+                        .padding(.vertical, DesignTokens.Spacing.small)
                     }
                 }
-                .padding(Spacing.medium)
+                .padding(DesignTokens.Spacing.medium)
             }
             
             // 2. 存储空间分布列表
@@ -201,26 +202,26 @@ struct SystemStatsView: View {
                 ForEach(coordinator.storageCategories) { category in
                     let isLast = category.id == coordinator.storageCategories.last?.id
                     VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: Spacing.standardPadding) {
+                        HStack(spacing: DesignTokens.Spacing.standardPadding) {
                             Image(systemName: coordinator.iconForCategory(category.label))
                                 .foregroundStyle(category.color)
-                                .frame(width: DesignSystem.giant)
+                                .frame(width: DesignTokens.Spacing.giant)
                             
-                            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                                 Text(category.label)
                                     .foregroundStyle(.appText)
                                 
                                 if category.label == L10n.Dashboard.System.database {
                                     Text(L10n.Dashboard.stats.multiVaultDesc(category.count))
-                                        .font(.system(size: DesignSystem.microFontSize))
+                                        .font(.system(size: DesignTokens.Typography.microFontSize))
                                         .foregroundStyle(.appSecondary)
                                 }
                             }
                             
                             Spacer()
                             
-                            VStack(alignment: .trailing, spacing: DesignSystem.atomic) {
-                                HStack(spacing: DesignSystem.tiny) {
+                            VStack(alignment: .trailing, spacing: DesignTokens.Spacing.atomic) {
+                                HStack(spacing: DesignTokens.Spacing.tiny) {
                                     Text(coordinator.formatBytes(category.value))
                                         .font(.subheadline.bold())
                                         .foregroundStyle(.appText)
@@ -238,12 +239,12 @@ struct SystemStatsView: View {
                             let ocr = coordinator.assetCategoryStats["ocr"] ?? SystemStatsCoordinator.AssetStats(count: 0, size: 0)
                             let file = coordinator.assetCategoryStats["file"] ?? SystemStatsCoordinator.AssetStats(count: 0, size: 0)
                             
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.small) {
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: DesignTokens.Spacing.small) {
                                 assetCategoryGridItem(title: L10n.Dashboard.stats.audioFormat, count: voice.count, size: voice.size, color: Color.theme.indigo)
                                 assetCategoryGridItem(title: L10n.Dashboard.stats.imageFormat, count: ocr.count, size: ocr.size, color: Color.theme.orange)
                                 assetCategoryGridItem(title: L10n.Dashboard.stats.documentFormat, count: file.count, size: file.size, color: Color.theme.teal)
                             }
-                            .padding(.top, DesignSystem.small)
+                            .padding(.top, DesignTokens.Spacing.small)
                             .padding(.leading, SystemStatsConstants.assetGridLeadingPadding)
                         }
                     }
@@ -256,18 +257,18 @@ struct SystemStatsView: View {
                 StandardSection(title: L10n.Dashboard.stats.vaultStorageTitle) {
                     ForEach(coordinator.vaultStorageItems) { item in
                         let isLast = item.id == coordinator.vaultStorageItems.last?.id
-                        HStack(spacing: Spacing.standardPadding) {
+                        HStack(spacing: DesignTokens.Spacing.standardPadding) {
                             // 笔记本专属图标
                             ZStack {
                                 Circle()
-                                    .fill(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                                    .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
+                                    .fill(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
+                                    .frame(width: DesignTokens.IconSize.large, height: DesignTokens.IconSize.large)
                                 Image(systemName: item.icon.isEmpty ? "books.vertical.fill" : item.icon)
-                                    .font(.system(size: DesignSystem.captionFontSize))
+                                    .font(.system(size: DesignTokens.Typography.captionFontSize))
                                     .foregroundStyle(.appAccent)
                             }
                             
-                            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                                 Text(item.name)
                                     .font(.subheadline.bold())
                                     .foregroundStyle(.appText)
@@ -286,7 +287,7 @@ struct SystemStatsView: View {
                             
                             Spacer()
                             
-                            VStack(alignment: .trailing, spacing: DesignSystem.atomic) {
+                            VStack(alignment: .trailing, spacing: DesignTokens.Spacing.atomic) {
                                 Text(coordinator.formatBytes(item.size))
                                     .font(.subheadline.bold())
                                     .foregroundStyle(.appText)
@@ -308,28 +309,28 @@ struct SystemStatsView: View {
                     RawStorageListView()
                 } label: {
                     HStack {
-                        Label(L10n.Dashboard.stats.viewRawPages, systemImage: DesignSystem.Icons.docPlaintext)
+                        Label(L10n.Dashboard.stats.viewRawPages, systemImage: DesignTokens.Icons.docPlaintext)
                         Spacer()
-                        Image(systemName: DesignSystem.Icons.forward)
+                        Image(systemName: DesignTokens.Icons.forward)
                             .font(.caption)
                             .foregroundStyle(.appSecondary)
                     }
-                    .padding(Spacing.medium)
+                    .padding(DesignTokens.Spacing.medium)
                 }
                 .buttonStyle(.plain)
             }
 
             // 3. 治理与维护
             StandardSection(title: L10n.Dashboard.maintenance) {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     Button(action: { Task { await coordinator.cleanupData() } }) {
                         HStack {
-                            Label(L10n.Dashboard.cleanupAction, systemImage: DesignSystem.Icons.sparkles)
+                            Label(L10n.Dashboard.cleanupAction, systemImage: DesignTokens.Icons.sparkles)
                             Spacer()
                             if coordinator.isCleaning {
                                 ProgressView()
                             } else {
-                                Image(systemName: DesignSystem.Icons.forward)
+                                Image(systemName: DesignTokens.Icons.forward)
                                     .font(.caption)
                                     .foregroundStyle(.appSecondary)
                             }
@@ -344,7 +345,7 @@ struct SystemStatsView: View {
                             .foregroundColor(Color.theme.green)
                     }
                 }
-                .padding(Spacing.medium)
+                .padding(DesignTokens.Spacing.medium)
             }
         }
     }
@@ -363,40 +364,40 @@ struct SystemStatsView: View {
                 .foregroundStyle(category.color)
             }
             .chartLegend(.hidden)
-            .frame(height: ComponentSpacing.chartHeight)
+            .frame(height: DesignTokens.ComponentSpacing.chartHeight)
             
-            VStack(spacing: DesignSystem.tiny) {
+            VStack(spacing: DesignTokens.Spacing.tiny) {
                 Text(coordinator.formatBytes(coordinator.totalStorage))
-                    .font(.system(size: SystemFontSize.title, weight: .bold, design: .rounded))
+                    .font(.system(size: DesignTokens.SystemFontSize.title, weight: .bold, design: .rounded))
                     .foregroundStyle(.appAccent)
                 Text(L10n.Dashboard.totalStorage)
-                    .font(.system(size: DesignSystem.microFontSize, weight: .black))
+                    .font(.system(size: DesignTokens.Typography.microFontSize, weight: .black))
                     .foregroundStyle(.appSecondary)
-                    .kerning(Reference.Spacing.one)
+                    .kerning(DesignTokens.Reference.Spacing.one)
                     .textCase(.uppercase)
             }
         }
     }
     
     private var legendContainer: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             ForEach(coordinator.storageCategories) { category in
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     Circle()
                         .fill(category.color)
-                        .frame(width: SystemSpacing.tiny, height: SystemSpacing.tiny)
+                        .frame(width: DesignTokens.SystemSpacing.tiny, height: DesignTokens.SystemSpacing.tiny)
                     
                     VStack(alignment: .leading, spacing: 0) {
                         Text(category.label)
-                            .font(DesignSystem.caption2Font)
+                            .font(DesignTokens.Typography.caption2Font)
                             .foregroundStyle(.appText)
                             .lineLimit(1)
-                        HStack(spacing: DesignSystem.tiny) {
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
                             Text(coordinator.formatBytes(category.value))
                             let percent = coordinator.totalStorage > 0 ? Int(Double(category.value) / Double(coordinator.totalStorage) * Double(FeatureConstants.PercentageBase.fullInt)) : 0
                             Text("(\(percent)%)")
                         }
-                        .font(.system(size: DesignSystem.microFontSize))
+                        .font(.system(size: DesignTokens.Typography.microFontSize))
                         .foregroundStyle(.appSecondary)
                     }
                 }
@@ -407,7 +408,7 @@ struct SystemStatsView: View {
     // MARK: - 时延卡片辅助
     
     private func latencySubValue(label: String, value: String) -> some View {
-        VStack(alignment: .center, spacing: DesignSystem.tiny) {
+        VStack(alignment: .center, spacing: DesignTokens.Spacing.tiny) {
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
@@ -421,14 +422,14 @@ struct SystemStatsView: View {
     
     private var divider: some View {
         Divider()
-            .frame(height: DesignSystem.IconSize.micro)
-            .padding(.horizontal, DesignSystem.tiny)
+            .frame(height: DesignTokens.IconSize.micro)
+            .padding(.horizontal, DesignTokens.Spacing.tiny)
     }
     
     private func assetCategoryGridItem(title: String, count: Int, size: Int64, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
             Text(title)
-                .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
+                .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .bold)) // Dynamic Type
                 .foregroundStyle(.secondary)
             
             Text(L10n.Dashboard.stats.itemsCount(count))
@@ -439,28 +440,28 @@ struct SystemStatsView: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-        .cornerRadius(SystemRadius.small)
+        .background(Color.appCard.opacity(DesignTokens.Opacity.subtle))
+        .cornerRadius(DesignTokens.SystemRadius.small)
         .overlay(
-            RoundedRectangle(cornerRadius: SystemRadius.small)
-                .stroke(color.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
+            RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small)
+                .stroke(color.opacity(DesignTokens.Opacity.shadow), lineWidth: DesignTokens.SystemStroke.divider)
         )
     }
 
     /// 百分比文本，消除存储分类与数据库条目的重复
     private func percentText(_ percent: Int) -> some View {
         Text("\(percent)%")
-            .font(.system(size: DesignSystem.microFontSize, design: .rounded))
+            .font(.system(size: DesignTokens.Typography.microFontSize, design: .rounded))
             .foregroundStyle(.appSecondary)
     }
 
     /// 统计卡片标题行，消除 API 请求与 Token 消耗卡片的重复
     private func statsCardHeader(value: String, label: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
+        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.small) {
             Text(value)
-                .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
+                .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
                 .foregroundStyle(.appText)
             Text(label)
                 .font(.caption)
@@ -476,15 +477,15 @@ struct SystemStatsView: View {
         chartType: ChartView.ChartType
     ) -> some View {
         StandardSection(title: title) {
-            VStack(alignment: .leading, spacing: Spacing.tiny) {
-                HStack(alignment: .firstTextBaseline, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.small) {
                     statsCardHeader(value: "\(totalValue)", label: valueLabel)
                 }
 
                 ChartView(stats: coordinator.dailyStats, type: chartType)
-                    .frame(height: ComponentSpacing.chartHeight)
+                    .frame(height: DesignTokens.ComponentSpacing.chartHeight)
             }
-            .padding(Spacing.medium)
+            .padding(DesignTokens.Spacing.medium)
         }
     }
 }

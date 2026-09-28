@@ -58,6 +58,9 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     /// 注入的模型编译器，用于处理平台差异化编译与沙盒物理转换
     @ObservationIgnored @Dependency(\.modelCompiler) var compiler: any MLModelCompilerProtocol
 
+    /// 键值存储抽象（DI 注入，替代 UserDefaults.standard 直接访问）
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
+
     /// 用户沙盒 Documents/MLModels 目录 URL，回退至临时目录
     private var mlModelsDirectory: URL {
         let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
@@ -141,7 +144,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         self.availableModels = models
 
         // 自动还原用户上一次选定的模型偏好
-        let savedID = UserDefaults.standard.string(forKey: configKey)
+        let savedID = keyStore?.string(forKey: configKey)
         if let saved = savedID, models.contains(where: { $0.id == saved }) {
             selectedModelID = saved
         } else if let first = models.first {
@@ -210,7 +213,7 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         generationProgress = 1.0
 
         // 保存本次成功载入的本地模型偏好
-        UserDefaults.standard.set(selectedModelID, forKey: configKey)
+        keyStore?.set(selectedModelID, forKey: configKey)
     }
 
     // MARK: - 文本生成核心方法

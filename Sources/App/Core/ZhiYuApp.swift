@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 通知名称
 #if os(macOS)
@@ -90,7 +91,7 @@ struct ZhiYuApp: App {
                     SplashView(onDismiss: {
                         guard !hasSeenSplash else { return }
                         Logger.shared.info(" [Splash] ...")
-                        withAnimation(.easeInOut(duration: DesignSystem.Animation.slowDuration)) {
+                        withAnimation(.easeInOut(duration: DesignTokens.Animation.slowDuration)) {
                             hasSeenSplash = true
                             NotificationCenter.default.post(name: .splashDismissed, object: nil)
                         }

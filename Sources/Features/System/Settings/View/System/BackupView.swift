@@ -9,6 +9,7 @@
 //  核心职责：构建 Backup 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Backup & Recovery View
 struct BackupView: View {
@@ -28,7 +29,7 @@ struct BackupView: View {
                 // Auto Backup Toggle
                 Section {
                     Toggle(isOn: $backupService.isAutoBackupEnabled) {
-                        Label(L10n.Backup.autoBackup, systemImage: DesignSystem.Icons.history)
+                        Label(L10n.Backup.autoBackup, systemImage: DesignTokens.Icons.history)
                     }
                     
                     if let lastDate = backupService.lastBackupDate {
@@ -53,14 +54,14 @@ struct BackupView: View {
                         backupService.createForcedBackup(pages: store.pages)
                         HapticFeedback.shared.trigger(.selection)
                     } label: {
-                        Label(L10n.Backup.createNow, systemImage: DesignSystem.Icons.plusCircle)
+                        Label(L10n.Backup.createNow, systemImage: DesignTokens.Icons.plusCircle)
                     }
                     
                     Button {
                         Task { await store.saveToDisk() }
                         backupService.markClean()
                     } label: {
-                        Label(L10n.Backup.exportCurrent, systemImage: DesignSystem.Icons.export)
+                        Label(L10n.Backup.exportCurrent, systemImage: DesignTokens.Icons.export)
                     }
                 } header: {
                     Text(L10n.Backup.actions)
@@ -72,7 +73,7 @@ struct BackupView: View {
                     if backupService.backupEntries.isEmpty {
                         ContentUnavailableView(
                             L10n.Backup.noBackups,
-                            systemImage: DesignSystem.Icons.archiveboxOutline,
+                            systemImage: DesignTokens.Icons.archiveboxOutline,
                             description: Text(L10n.Backup.noBackupsDesc)
                         )
                     } else {
@@ -156,20 +157,20 @@ struct BackupEntryRow: View {
     let onDelete: () -> Void
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.archive)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.archive)
                 .font(.title3)
                 .foregroundStyle(.appAccent)
             
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(entry.displayName)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.appText)
                 
-                HStack(spacing: DesignSystem.medium) {
-                    Label("\(entry.pageCount) " + L10n.Backup.pages, systemImage: DesignSystem.Icons.docRichtext)
-                    Label("\(entry.totalWords) " + L10n.Backup.words, systemImage: DesignSystem.Icons.sortName)
-                    Label(entry.fileSize(in: backupDirectory), systemImage: DesignSystem.Icons.externaldrive)
+                HStack(spacing: DesignTokens.Spacing.medium) {
+                    Label("\(entry.pageCount) " + L10n.Backup.pages, systemImage: DesignTokens.Icons.docRichtext)
+                    Label("\(entry.totalWords) " + L10n.Backup.words, systemImage: DesignTokens.Icons.sortName)
+                    Label(entry.fileSize(in: backupDirectory), systemImage: DesignTokens.Icons.externaldrive)
                 }
                 .font(.caption)
                 .foregroundStyle(.appSecondary)
@@ -180,17 +181,17 @@ struct BackupEntryRow: View {
             Button {
                 onRestore()
             } label: {
-                Image(systemName: DesignSystem.Icons.undo)
+                Image(systemName: DesignTokens.Icons.undo)
                     .foregroundStyle(.appAccent)
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label(L10n.Common.delete, systemImage: DesignSystem.Icons.delete)
+                Label(L10n.Common.delete, systemImage: DesignTokens.Icons.delete)
             }
         }
     }

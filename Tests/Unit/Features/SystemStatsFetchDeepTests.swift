@@ -11,6 +11,7 @@
 //            以发现生产代码潜在 bug 为首要目标。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import Combine
@@ -157,43 +158,43 @@ final class SystemStatsFetchDeepTests: XCTestCase {
     /// 验证 iconForCategory 对 database 标签返回 database 图标
     func testIconForCategoryDatabaseLabelReturnsDatabaseIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.database)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.database, "database 标签应返回 database 图标")
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.database, "database 标签应返回 database 图标")
     }
 
     /// 验证 iconForCategory 对 logs 标签返回 logs 图标
     func testIconForCategoryLogsLabelReturnsLogsIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.logs)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.logs, "logs 标签应返回 logs 图标")
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.logs, "logs 标签应返回 logs 图标")
     }
 
     /// 验证 iconForCategory 对 storageImport 标签返回 storageImport 图标
     func testIconForCategoryStorageImportLabelReturnsStorageImportIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.stats.storageImport)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.storageImport, "storageImport 标签应返回 storageImport 图标")
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.storageImport, "storageImport 标签应返回 storageImport 图标")
     }
 
     /// 验证 iconForCategory 对 storageExport 标签返回 storageExport 图标
     func testIconForCategoryStorageExportLabelReturnsStorageExportIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.stats.storageExport)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.storageExport, "storageExport 标签应返回 storageExport 图标")
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.storageExport, "storageExport 标签应返回 storageExport 图标")
     }
 
     /// 验证 iconForCategory 对未知标签返回 fallback 图标
     func testIconForCategoryUnknownLabelReturnsFallbackIcon() {
         let result = coordinator.iconForCategory("未知分类")
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.fallback, "未知标签应返回 fallback 图标")
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.fallback, "未知标签应返回 fallback 图标")
     }
 
     /// 验证 iconForCategory 对 models 标签返回 models 图标（修复后：models 已映射）
     func testIconForCategoryModelsLabelReturnsFallbackIcon() {
         let result = coordinator.iconForCategory(L10n.Dashboard.System.models)
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.models, "修复后：models 标签已映射，应返回 models 图标")
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.models, "修复后：models 标签已映射，应返回 models 图标")
     }
 
     /// 验证 iconForCategory 对空字符串返回 fallback
     func testIconForCategoryEmptyStringReturnsFallbackIcon() {
         let result = coordinator.iconForCategory("")
-        XCTAssertEqual(result, DesignSystem.Icons.StorageStats.fallback, "空字符串应返回 fallback 图标")
+        XCTAssertEqual(result, DesignTokens.Icons.StorageStats.fallback, "空字符串应返回 fallback 图标")
     }
 
     // MARK: - fetchRawPageStats 原始页统计

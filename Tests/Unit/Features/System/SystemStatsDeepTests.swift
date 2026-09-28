@@ -5,6 +5,7 @@
 //  合并自 6 个碎片化测试文件：SystemStatsAndRAGChartsDeepTests.swift, SystemStatsAndRawStorageFullDeepTests.swift, SystemStatsAndStorageViewFullDeepTests.swift, SystemStatsAndStorageViewsDeepTests.swift, SystemStatsSubComponentsDeepTests.swift, SystemStatsViewFullCoverageTests.swift
 //
 
+import UFPDesignSystem
 import Dependencies
 import SwiftUI
 import UFPCore
@@ -410,14 +411,14 @@ final class SystemStatsDeepTests: XCTestCase {
     func testCoordinatorIconForCategory() {
         let coordinator = SystemStatsCoordinator()
 
-        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.database), DesignSystem.Icons.StorageStats.database)
-        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.logs), DesignSystem.Icons.StorageStats.logs)
-        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.models), DesignSystem.Icons.StorageStats.models)
-        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.plugins), DesignSystem.Icons.StorageStats.plugins)
-        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.caches), DesignSystem.Icons.StorageStats.caches)
-        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.stats.storageImport), DesignSystem.Icons.StorageStats.storageImport)
-        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.stats.storageExport), DesignSystem.Icons.StorageStats.storageExport)
-        XCTAssertEqual(coordinator.iconForCategory("UnknownCustomCategory"), DesignSystem.Icons.StorageStats.fallback)
+        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.database), DesignTokens.Icons.StorageStats.database)
+        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.logs), DesignTokens.Icons.StorageStats.logs)
+        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.models), DesignTokens.Icons.StorageStats.models)
+        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.plugins), DesignTokens.Icons.StorageStats.plugins)
+        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.System.caches), DesignTokens.Icons.StorageStats.caches)
+        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.stats.storageImport), DesignTokens.Icons.StorageStats.storageImport)
+        XCTAssertEqual(coordinator.iconForCategory(L10n.Dashboard.stats.storageExport), DesignTokens.Icons.StorageStats.storageExport)
+        XCTAssertEqual(coordinator.iconForCategory("UnknownCustomCategory"), DesignTokens.Icons.StorageStats.fallback)
     }
 
     func testCoordinatorLoadStatsFullFlow() async {

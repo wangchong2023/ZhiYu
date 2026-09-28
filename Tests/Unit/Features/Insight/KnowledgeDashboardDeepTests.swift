@@ -5,6 +5,7 @@
 //  合并自 3 个碎片化测试文件：KnowledgeDashboardAndPageListDeepTests.swift, KnowledgeDashboardMetricsDeepTests.swift, KnowledgeDashboardViewInteractiveTests.swift
 //
 
+import UFPDesignSystem
 import Dependencies
 import SwiftUI
 import UFPCore
@@ -145,7 +146,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let boxWithTrend = MetricBox(
             title: "核心指标",
             value: TestConstants.largeMetricValue,
-            icon: DesignSystem.Icons.documentFill,
+            icon: DesignTokens.Icons.documentFill,
             color: .appAccent,
             unit: "篇",
             trend: TestConstants.sampleTrend
@@ -158,7 +159,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let boxWithoutTrend = MetricBox(
             title: "总关联",
             value: "0",
-            icon: DesignSystem.Icons.network,
+            icon: DesignTokens.Icons.network,
             color: .purple,
             unit: nil,
             trend: nil
@@ -424,7 +425,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let rawBoxWithTrend = MetricBox(
             title: "核心指标",
             value: "128",
-            icon: DesignSystem.Icons.documentFill,
+            icon: DesignTokens.Icons.documentFill,
             color: .appAccent,
             unit: "篇",
             trend: "+12%"
@@ -438,7 +439,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let rawBoxWithoutTrend = MetricBox(
             title: "基础指标",
             value: "50",
-            icon: DesignSystem.Icons.network,
+            icon: DesignTokens.Icons.network,
             color: .purple,
             unit: nil,
             trend: nil
@@ -526,7 +527,7 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
         let rawStat = InsightStat(
             title: "本周新增",
             value: "25",
-            icon: DesignSystem.Icons.docBadgePlus,
+            icon: DesignTokens.Icons.docBadgePlus,
             color: .blue
         )
         XCTAssertEqual(rawStat.value, "25")

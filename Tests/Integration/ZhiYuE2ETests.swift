@@ -8,6 +8,7 @@
 //  系统层级：[Shared] 测试层
 //  核心职责：针对 ZhiYuE2E 开展自动化单元测试验证。
 //
+import UFPDesignSystem
 import XCTest
 import UFPCore
 import Network
@@ -554,7 +555,7 @@ final class GraphLayoutRealisticTests: XCTestCase {
                 }
                 return nil
             },
-            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotScrollHeight, height: DesignSystem.Metrics.snapshotGraphCanvasWidth)
+            canvasSize: CGSize(width: DesignTokens.Metrics.snapshotScrollHeight, height: DesignTokens.Metrics.snapshotGraphCanvasWidth)
         )
         let elapsed = Date().timeIntervalSince(start)
 
@@ -616,7 +617,7 @@ final class GraphLayoutRealisticTests: XCTestCase {
         let result = GraphLayoutProcessor.layout(
             pages: allPages,
             linkResolver: { title in allPages.first { $0.title == title } },
-            canvasSize: CGSize(width: DesignSystem.Metrics.snapshotScrollHeight, height: DesignSystem.Metrics.snapshotGraphCanvasWidth)
+            canvasSize: CGSize(width: DesignTokens.Metrics.snapshotScrollHeight, height: DesignTokens.Metrics.snapshotGraphCanvasWidth)
         )
 
         // Should have 10 nodes and 8 edges (5-1 in A, 5-1 in B)

@@ -10,17 +10,18 @@
 //
 import SwiftUI
 import CoreGraphics
+import UFPDesignSystem
 
 extension DesignSystem {
 
     // MARK: - 7. 轴线模式 (Timeline)
     public enum Timeline {
-        public static let emptyIconSize: CGFloat = Spacing.Timeline.emptyIconSize
-        public static let indicatorSize: CGFloat = Spacing.Timeline.indicatorSize
-        public static let detailHorizontalPadding: CGFloat = Spacing.Timeline.detailHorizontalPadding
-        public static let detailVerticalPadding: CGFloat = Spacing.Timeline.detailVerticalPadding
-        public static let indentPadding: CGFloat = Spacing.Timeline.indentPadding
-        public static let rowVerticalPadding: CGFloat = Spacing.Timeline.rowVerticalPadding
-        public static let iconCircleSize: CGFloat = Spacing.Timeline.iconCircleSize
+        public static let emptyIconSize: CGFloat = DesignTokens.Spacing.Timeline.emptyIconSize
+        public static let indicatorSize: CGFloat = DesignTokens.Spacing.Timeline.indicatorSize
+        public static let detailHorizontalPadding: CGFloat = DesignTokens.Spacing.Timeline.detailHorizontalPadding
+        public static let detailVerticalPadding: CGFloat = DesignTokens.Spacing.Timeline.detailVerticalPadding
+        public static let indentPadding: CGFloat = DesignTokens.Spacing.Timeline.indentPadding
+        public static let rowVerticalPadding: CGFloat = DesignTokens.Spacing.Timeline.rowVerticalPadding
+        public static let iconCircleSize: CGFloat = DesignTokens.Spacing.Timeline.iconCircleSize
     }
 }

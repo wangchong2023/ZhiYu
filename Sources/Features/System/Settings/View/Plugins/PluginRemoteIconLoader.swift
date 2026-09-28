@@ -2,6 +2,7 @@
 // 核心职责：插件远程图标加载器，消除 PluginCenterView 与 PluginDetailHeaderSection 的 CachedAsyncImage phase switch 重复
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 插件远程图标加载器
 ///
@@ -37,7 +38,7 @@ struct PluginRemoteIconLoader<Empty: View, Fallback: View>: View {
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .stroke(strokeColor.opacity(strokeOpacity), lineWidth: SystemStroke.hairline)
+                .stroke(strokeColor.opacity(strokeOpacity), lineWidth: DesignTokens.SystemStroke.hairline)
         )
     }
 }

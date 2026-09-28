@@ -9,6 +9,7 @@
 //  核心职责：AI 测验功能：自动生成与交互式答题。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 测验展示修饰符
 /// 针对 iPad 提供 Sheet 展示，针对 iPhone 提供全屏覆盖展示。
@@ -29,7 +30,7 @@ struct QuizPresentationModifier: ViewModifier {
             content
                 .sheet(item: $activeQuiz) { quiz in
                     QuizView(quiz: quiz)
-                        .frame(minWidth: Spacing.Decorator.desktopSheetMinWidth, minHeight: Spacing.Decorator.desktopSheetMinHeight)
+                        .frame(minWidth: DesignTokens.Spacing.Decorator.desktopSheetMinWidth, minHeight: DesignTokens.Spacing.Decorator.desktopSheetMinHeight)
                 }
         } else {
             if idiom == .iPhone || idiom == .iPad {

@@ -6,6 +6,7 @@
 //  核心职责：Ingest 组件快照测试，覆盖导入记录卡片与摄入时间轴各阶段状态。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -84,40 +85,40 @@ final class IngestViewSnapshots: XCTestCase {
     func testImportRecordCard_Link() {
         let view = ImportRecordCard(record: makeLinkRecord())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     /// 测试文件类导入卡片 — 展示文件图标与大小
     func testImportRecordCard_File() {
         let view = ImportRecordCard(record: makeFileRecord())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     /// 测试无标签记录 — 仅展示来源类型胶囊
     func testImportRecordCard_NoTags() {
         let view = ImportRecordCard(record: makeLinkRecord(tags: nil))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     /// 测试处理中记录 — 展示处理中状态
     func testImportRecordCard_Processing() {
         let view = ImportRecordCard(record: makeProcessingRecord())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     /// 测试失败记录 — 展示失败状态
     func testImportRecordCard_Failed() {
         let view = ImportRecordCard(record: makeFailedRecord())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 100)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 100)))
     }
 
     // MARK: - IngestTimelineView 快照测试
@@ -126,23 +127,23 @@ final class IngestViewSnapshots: XCTestCase {
     func testIngestTimelineView_ExtractionStage() {
         let view = IngestTimelineView(currentStage: .extraction, subLogs: ["正在解析文档..."])
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 300)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 300)))
     }
 
     /// 测试时间轴 — 向量化阶段（接近完成）
     func testIngestTimelineView_EmbeddingStage() {
         let view = IngestTimelineView(currentStage: .embedding, subLogs: ["生成向量中...", "已处理 128/256"])
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 300)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 300)))
     }
 
     /// 测试时间轴 — 无子日志的初始状态
     func testIngestTimelineView_EmptySubLogs() {
         let view = IngestTimelineView(currentStage: .pending, subLogs: [])
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 300)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 300)))
     }
 }

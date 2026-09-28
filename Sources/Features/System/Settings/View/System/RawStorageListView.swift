@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L1.5] 领域层/表现层辅助：原始存储分类强类型枚举，消除分类的硬编码魔鬼字符串
 enum RawCategoryType: String, CaseIterable, Identifiable {
@@ -97,7 +98,7 @@ struct HighlightedText: View {
                 // 改用 AttributeContainer 显式构造并 merge,完全绕过 key path。
                 var container = AttributeContainer()
                 container.foregroundColor = .appAccent
-                container.backgroundColor = Color.appAccent.opacity(DesignSystem.dimmedOpacity)
+                container.backgroundColor = Color.appAccent.opacity(DesignTokens.Colors.Opacity.dimmedOpacity)
                 container.inlinePresentationIntent = .stronglyEmphasized
                 attributed[attrRange].mergeAttributes(container)
             }
@@ -115,9 +116,9 @@ struct RawPageRow: View {
     // 布局常量，彻底消除魔鬼数字与硬编码
     private static let typeBadgeFontSize: CGFloat = 9
     private static let titleLineLimit = 1
-    private static let tagHorizontalPadding = Spacing.tiny
-    private static let tagVerticalPadding = Spacing.atomic * FeatureConstants.StorageListPadding.tagVerticalPaddingScale
-    private static let itemVerticalPadding = DesignSystem.tiny
+    private static let tagHorizontalPadding = DesignTokens.Spacing.tiny
+    private static let tagVerticalPadding = DesignTokens.Spacing.atomic * FeatureConstants.StorageListPadding.tagVerticalPaddingScale
+    private static let itemVerticalPadding = DesignTokens.Spacing.tiny
     
     /// 字节格式化助手
     /// - Parameter bytes: 字节大小
@@ -127,17 +128,17 @@ struct RawPageRow: View {
     }
 
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
-            AccentIconBox(iconName: page.displaySourceIcon, fontSize: SystemFontSize.title3, cornerRadius: SystemRadius.small)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            AccentIconBox(iconName: page.displaySourceIcon, fontSize: DesignTokens.SystemFontSize.title3, cornerRadius: DesignTokens.SystemRadius.small)
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 // 使用高亮文本显示匹配项
                 HighlightedText(text: page.title, highlight: searchText)
                     .font(.subheadline.bold())
                     .foregroundStyle(.appText)
                     .lineLimit(Self.titleLineLimit)
                 
-                HStack(spacing: Spacing.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     // 后缀名高亮显示
                     if let ext = page.sourceType {
                         HighlightedText(text: ext.uppercased(), highlight: searchText)
@@ -145,8 +146,8 @@ struct RawPageRow: View {
                             .foregroundStyle(Color.appAccent)
                             .padding(.horizontal, Self.tagHorizontalPadding)
                             .padding(.vertical, Self.tagVerticalPadding)
-                            .background(Color.appAccent.opacity(DesignSystem.subtleFillOpacity))
-                            .cornerRadius(Spacing.microRadius)
+                            .background(Color.appAccent.opacity(DesignTokens.Colors.subtleFillOpacity))
+                            .cornerRadius(DesignTokens.Spacing.microRadius)
                     }
                     
                     Text(L10n.Dashboard.stats.rawPageCountFormat(page.content.count, formatBytes(page.fileSize ?? Int64(page.content.utf8.count))))
@@ -259,11 +260,11 @@ struct RawStorageListView: View {
                                             RawPageRow(page: page, searchText: searchText)
                                         }
                                         .buttonStyle(.plain)
-                                        .listRowBackground(Color.appCard.opacity(DesignSystem.Opacity.disabled))
+                                        .listRowBackground(Color.appCard.opacity(DesignTokens.Opacity.disabled))
                                         .skipOnWatch { $0.listRowSeparator(.visible) }
                                     }
                                 } label: {
-                                    HStack(spacing: Spacing.small) {
+                                    HStack(spacing: DesignTokens.Spacing.small) {
                                         Image(systemName: category.systemIconName)
                                             .foregroundStyle(category.defaultColor)
                                         Text(category.displayName)
@@ -273,12 +274,12 @@ struct RawStorageListView: View {
                                         Text("\(pagesInCategory.count)")
                                             .font(.caption2.bold())
                                             .foregroundStyle(.appSecondary)
-                                            .padding(.horizontal, Spacing.Chip.horizontalPadding)
-                                            .padding(.vertical, Spacing.atomic)
-                                            .background(Color.appSecondary.opacity(DesignSystem.subtleFillOpacity))
+                                            .padding(.horizontal, DesignTokens.Spacing.Chip.horizontalPadding)
+                                            .padding(.vertical, DesignTokens.Spacing.atomic)
+                                            .background(Color.appSecondary.opacity(DesignTokens.Colors.subtleFillOpacity))
                                             .clipShape(Capsule())
                                     }
-                                    .padding(.vertical, Spacing.tiny)
+                                    .padding(.vertical, DesignTokens.Spacing.tiny)
                                 }
                                 .listRowBackground(Color.clear)
                             }
@@ -308,7 +309,7 @@ struct RawStorageListView: View {
     /// 搜索输入条
     private var searchBar: some View {
         HStack {
-            Image(systemName: DesignSystem.Icons.search)
+            Image(systemName: DesignTokens.Icons.search)
                 .font(.caption)
                 .foregroundStyle(.appSecondary)
             
@@ -324,17 +325,17 @@ struct RawStorageListView: View {
                 .buttonStyle(.plain)
             }
         }
-        .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.tightPadding, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: SystemRadius.small)
-        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+        .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.tightPadding, backgroundOpacity: DesignTokens.Opacity.subtle, cornerRadius: DesignTokens.SystemRadius.small)
+        .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
     }
     
     /// 空白占位状态
     private var emptyState: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             Spacer()
             Image(systemName: Self.emptyStateIcon)
-                .font(.system(size: Spacing.iconDisplay))
-                .foregroundStyle(.appSecondary.opacity(DesignSystem.dimmedOpacity))
+                .font(.system(size: DesignTokens.Spacing.iconDisplay))
+                .foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.Opacity.dimmedOpacity))
             Text(L10n.Search.noResults)
                 .font(.headline)
                 .foregroundStyle(.appSecondary)
@@ -365,14 +366,14 @@ struct RawPageDetailView: View {
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                     // 1. 元数据卡片
                     metadataCard
                     
                     // 2. 文件内容区
                     contentSection
                 }
-                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+                .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
             }
             .background(PageBackgroundView(accentColor: .appAccent))
         }
@@ -382,17 +383,17 @@ struct RawPageDetailView: View {
     
     /// 头部元数据渲染卡片
     private var metadataCard: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             Label(page.title, systemImage: page.displaySourceIcon)
                 .font(.headline)
                 .foregroundStyle(.appText)
             
             Divider()
-                .opacity(DesignSystem.softOpacity)
+                .opacity(DesignTokens.Colors.Opacity.softOpacity)
             
             // 来源链接
             if let sourceURL = page.sourceURL, !sourceURL.isEmpty {
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                     Text(L10n.Ingest.PDF.sourceURL)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
@@ -405,7 +406,7 @@ struct RawPageDetailView: View {
             
             // 来源类型与字节大小
             HStack {
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                     Text(L10n.Ingest.OCR.pageType)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
@@ -414,7 +415,7 @@ struct RawPageDetailView: View {
                         .foregroundStyle(.appText)
                 }
                 Spacer()
-                VStack(alignment: .trailing, spacing: DesignSystem.atomic) {
+                VStack(alignment: .trailing, spacing: DesignTokens.Spacing.atomic) {
                     Text(L10n.Dashboard.totalStorage)
                         .font(.caption2)
                         .foregroundStyle(.appSecondary)
@@ -429,16 +430,16 @@ struct RawPageDetailView: View {
     
     /// 原始文件内容展示区
     private var contentSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(L10n.Ingest.PDF.contentPreview)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appSecondary)
-                .padding(.horizontal, DesignSystem.tiny)
+                .padding(.horizontal, DesignTokens.Spacing.tiny)
             
             Text(page.content)
                 .font(.system(.footnote, design: .monospaced))
                 .foregroundStyle(.appText)
-                .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.disabled, useBorder: true)
+                .infoCardStyle(backgroundOpacity: DesignTokens.Opacity.disabled, useBorder: true)
         }
     }
 }

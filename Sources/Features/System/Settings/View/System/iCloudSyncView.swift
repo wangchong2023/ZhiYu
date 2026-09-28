@@ -10,6 +10,7 @@
 //
 #if ICLOUD_ENABLED
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - iCloud Sync Settings View
 struct iCloudSyncView: View {
@@ -54,13 +55,13 @@ struct iCloudSyncView: View {
 
             // MARK: - Info Section
             Section {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     SyncInfoRow(icon: "1.circle.fill", text: L10n.ICloud.info1)
                     SyncInfoRow(icon: "2.circle.fill", text: L10n.ICloud.info2)
                     SyncInfoRow(icon: "3.circle.fill", text: L10n.ICloud.info3)
                     SyncInfoRow(icon: "4.circle.fill", text: L10n.ICloud.info4)
                 }
-                .padding(.vertical, DesignSystem.tiny)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
             } header: {
                 Text(L10n.ICloud.aboutSync)
             }
@@ -71,7 +72,7 @@ struct iCloudSyncView: View {
                 Button(role: .destructive) {
                     coordinator.showClearCloudConfirmation = true
                 } label: {
-                    Label(L10n.ICloud.clearCloudData, systemImage: DesignSystem.Icons.trashICloud)
+                    Label(L10n.ICloud.clearCloudData, systemImage: DesignTokens.Icons.trashICloud)
                         .foregroundStyle(Color.theme.red)
                 }
                 .disabled(coordinator.isSyncing)

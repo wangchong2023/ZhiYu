@@ -9,6 +9,7 @@
 //  核心职责：设计系统令牌：颜色、排版、间距、动画、图标等可视化常量。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 卡片按压交互样式
 
@@ -27,9 +28,9 @@ struct AppCardButtonStyle: ButtonStyle {
             // 确保整个矩形区域（包括空白部分）都可以接收点击热区响应
             .contentShape(Rectangle())
             // 当用户按下时，卡片产生物理微缩效果，松开时弹性恢复原尺寸
-            .scaleEffect(configuration.isPressed ? DesignSystem.Animation.pressScale : 1.0)
+            .scaleEffect(configuration.isPressed ? DesignTokens.Animation.pressScale : 1.0)
             // 按下时透明度略微调降以提供亮度衰减层面的视觉暗示
-            .opacity(configuration.isPressed ? DesignSystem.pressedOpacity : DesignSystem.fullOpacity)
+            .opacity(configuration.isPressed ? DesignTokens.Colors.Opacity.pressedOpacity : DesignTokens.Colors.Opacity.fullOpacity)
             // 绑定苹果设备物理质感的欠阻尼弹簧曲线，实现干脆而又带微小惯性回弹的完美手感
             .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
     }

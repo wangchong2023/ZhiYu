@@ -9,6 +9,7 @@
 //  核心职责：构建 IconPicker 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Icon Picker View
 /// A reusable icon picker that presents categorized SF Symbols in a grid.
@@ -47,12 +48,12 @@ struct IconPickerView: View {
         ])
     ]
 
-    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: DesignSystem.medium), count: 6)
+    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: DesignTokens.Spacing.medium), count: 6)
 
     // MARK: - Body
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.wide) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.wide) {
                 // Current selection preview
                 currentSelectionPreview
 
@@ -76,15 +77,15 @@ struct IconPickerView: View {
 
     // MARK: - Current Selection Preview
     private var currentSelectionPreview: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             Image(systemName: selectedIcon ?? "person.text.rectangle.fill")
                 .font(.title)
                 .foregroundStyle(.appAccent)
-                .frame(width: DesignSystem.IconSize.huge, height: DesignSystem.IconSize.huge)
-                .background(Color.appAccent.opacity(DesignSystem.Opacity.glass))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                .frame(width: DesignTokens.IconSize.huge, height: DesignTokens.IconSize.huge)
+                .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
 
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(selectedIcon != nil ? L10n.Editor.iconPicker.customSelected : L10n.Editor.iconPicker.useDefault)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.appText)
@@ -104,8 +105,8 @@ struct IconPickerView: View {
                 }) {
                     Text(L10n.Common.reset)
                         .font(.caption.weight(.medium))
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.vertical, DesignSystem.tightPadding)
+                        .padding(.horizontal, DesignTokens.Spacing.medium)
+                        .padding(.vertical, DesignTokens.Spacing.tightPadding)
                         .background(Color.appCard)
                         .clipShape(Capsule())
                         .foregroundStyle(.appSecondary)
@@ -119,10 +120,10 @@ struct IconPickerView: View {
     // MARK: - Icon Category Section
     @ViewBuilder
     private func iconCategorySection(title: String, icons: [String]) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             SectionCaptionLabel(title: title)
 
-            LazyVGrid(columns: gridColumns, spacing: DesignSystem.medium) {
+            LazyVGrid(columns: gridColumns, spacing: DesignTokens.Spacing.medium) {
                 ForEach(icons, id: \.self) { icon in
                     Button(action: {
                         selectedIcon = icon
@@ -130,13 +131,13 @@ struct IconPickerView: View {
                     }) {
                         Image(systemName: icon)
                             .font(.title3)
-                            .frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)
-                            .background(selectedIcon == icon ? Color.appAccent.opacity(DesignSystem.Opacity.medium) : Color.appCard)
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                            .frame(width: DesignTokens.IconSize.xlarge, height: DesignTokens.IconSize.xlarge)
+                            .background(selectedIcon == icon ? Color.appAccent.opacity(DesignTokens.Opacity.medium) : Color.appCard)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
                             .foregroundStyle(selectedIcon == icon ? .appAccent : .appText)
                             .overlay(
-                                RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
-                                    .stroke(selectedIcon == icon ? Color.appAccent : Color.clear, lineWidth: SystemStroke.selected)
+                                RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                                    .stroke(selectedIcon == icon ? Color.appAccent : Color.clear, lineWidth: DesignTokens.SystemStroke.selected)
                             )
                     }
                     .buttonStyle(.plain)

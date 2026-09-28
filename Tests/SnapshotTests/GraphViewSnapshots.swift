@@ -6,6 +6,7 @@
 //  核心职责：Graph 组件快照测试，覆盖空状态占位视图与类型过滤器药丸。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -40,7 +41,7 @@ final class GraphViewSnapshots: XCTestCase {
         var selectedTab: AppTab = .graph
         let view = GraphEmptyStateView(selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 }))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 
@@ -51,8 +52,8 @@ final class GraphViewSnapshots: XCTestCase {
         var filterType: PageType?
         let view = GraphFilterPillsView(filterType: Binding(get: { filterType }, set: { filterType = $0 }), tooltipManager: TooltipManager())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试过滤器药丸 — 选中 concept 类型
@@ -60,8 +61,8 @@ final class GraphViewSnapshots: XCTestCase {
         var filterType: PageType? = .concept
         let view = GraphFilterPillsView(filterType: Binding(get: { filterType }, set: { filterType = $0 }), tooltipManager: TooltipManager())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试过滤器药丸 — 选中 entity 类型
@@ -69,7 +70,7 @@ final class GraphViewSnapshots: XCTestCase {
         var filterType: PageType? = .entity
         let view = GraphFilterPillsView(filterType: Binding(get: { filterType }, set: { filterType = $0 }), tooltipManager: TooltipManager())
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 }

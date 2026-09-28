@@ -10,6 +10,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - 文件类型分类器（消除 categoryDisplayName/fileIcon/categoryColor 的重复 case 块）
 /// 根据文件扩展名统一推断显示名、图标与颜色
@@ -92,31 +93,31 @@ struct ImportRecordCard: View {
     }
 
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             Image(systemName: categoryIcon)
                 .font(.title3)
                 .foregroundStyle(categoryColor)
-                .frame(width: DesignSystem.Metrics.iconBoxSize, height: DesignSystem.Metrics.iconBoxSize)
-                .background(categoryColor.opacity(DesignSystem.Opacity.subtle))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .frame(width: DesignTokens.Metrics.iconBoxSize, height: DesignTokens.Metrics.iconBoxSize)
+                .background(categoryColor.opacity(DesignTokens.Opacity.subtle))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
 
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(record.title)
                     .font(.subheadline.weight(.medium))
                     .lineLimit(1)
                 
                 // 来源类型与 AI 标签行
-                HStack(spacing: DesignSystem.atomic) {
+                HStack(spacing: DesignTokens.Spacing.atomic) {
                     // 来源类型胶囊标签 (使用高对比度的精致色彩背景)
                     categoryPill(text: categoryDisplayName, color: categoryColor, textColor: .white)
 
                     if !tagList.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: DesignSystem.atomic) {
+                            HStack(spacing: DesignTokens.Spacing.atomic) {
                                 ForEach(tagList, id: \.self) { tag in
                                     categoryPill(
                                         text: tag,
-                                        color: Color.appAccent.opacity(DesignSystem.Opacity.subtle),
+                                        color: Color.appAccent.opacity(DesignTokens.Opacity.subtle),
                                         textColor: .appAccent,
                                         weight: .medium
                                     )
@@ -132,17 +133,17 @@ struct ImportRecordCard: View {
             statusBadge
         }
         .cardStyle(
-            horizontalPadding: DesignSystem.medium,
-            verticalPadding: DesignSystem.medium,
-            backgroundOpacity: DesignSystem.Opacity.dim,
-            cornerRadius: DesignSystem.cardRadius
+            horizontalPadding: DesignTokens.Spacing.medium,
+            verticalPadding: DesignTokens.Spacing.medium,
+            backgroundOpacity: DesignTokens.Opacity.dim,
+            cornerRadius: DesignTokens.Spacing.cardRadius
         )
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
         .contextMenu {
             if canOpenFile {
                 Button(action: { onOpenWith?() }) {
-                    Label(L10n.Ingest.openWith, systemImage: DesignSystem.Icons.export)
+                    Label(L10n.Ingest.openWith, systemImage: DesignTokens.Icons.export)
                 }
             }
         }
@@ -164,24 +165,24 @@ struct ImportRecordCard: View {
 
     @ViewBuilder
     private var detailLine: some View {
-        HStack(spacing: DesignSystem.tightPadding) {
+        HStack(spacing: DesignTokens.Spacing.tightPadding) {
             switch categoryValue {
             case .file:
-                HStack(spacing: DesignSystem.tightPadding) {
+                HStack(spacing: DesignTokens.Spacing.tightPadding) {
                     if let size = record.fileSize {
-                        Label(ByteCountFormatter.string(fromByteCount: size, countStyle: .file), systemImage: DesignSystem.Icons.doc)
+                        Label(ByteCountFormatter.string(fromByteCount: size, countStyle: .file), systemImage: DesignTokens.Icons.doc)
                     }
                     if let url = record.sourceURL, let host = URL(string: url)?.host {
                         Text(FeatureConstants.Decorator.middleDot)
-                        Label(host, systemImage: DesignSystem.Icons.link)
+                        Label(host, systemImage: DesignTokens.Icons.link)
                     }
                 }
             case .link:
                 if let url = record.sourceURL, let host = URL(string: url)?.host {
-                    Label(host, systemImage: DesignSystem.Icons.link)
+                    Label(host, systemImage: DesignTokens.Icons.link)
                 }
             case .voice:
-                Label(L10n.Ingest.voiceNote, systemImage: DesignSystem.Icons.waveform)
+                Label(L10n.Ingest.voiceNote, systemImage: DesignTokens.Icons.waveform)
             default:
                 EmptyView()
             }
@@ -197,10 +198,10 @@ struct ImportRecordCard: View {
     }
 
     private var timeLine: some View {
-        HStack(spacing: DesignSystem.small) {
-            timestampLabel(record.createdAt, icon: DesignSystem.Icons.clock)
+        HStack(spacing: DesignTokens.Spacing.small) {
+            timestampLabel(record.createdAt, icon: DesignTokens.Icons.clock)
             if record.status == ImportRecordStatus.done, let done = record.completedAt {
-                timestampLabel(done, icon: DesignSystem.Icons.flagCheckered)
+                timestampLabel(done, icon: DesignTokens.Icons.flagCheckered)
             }
         }
         .foregroundStyle(.tertiary)
@@ -218,9 +219,9 @@ struct ImportRecordCard: View {
     private var statusBadge: some View {
         switch record.status {
         case FeatureConstants.ImportStatus.done:
-            Image(systemName: DesignSystem.Icons.checkCircle).foregroundStyle(Color.theme.green)
+            Image(systemName: DesignTokens.Icons.checkCircle).foregroundStyle(Color.theme.green)
         case ImportRecordStatus.failed:
-            Image(systemName: DesignSystem.Icons.errorCircle).foregroundStyle(.red)
+            Image(systemName: DesignTokens.Icons.errorCircle).foregroundStyle(.red)
         default:
             ProgressView().scaleEffect(0.8)
         }
@@ -292,8 +293,8 @@ struct ImportRecordCard: View {
     private func categoryPill(text: String, color: Color, textColor: Color, weight: Font.Weight = .bold) -> some View {
         Text(text)
             .font(.caption2.weight(weight))
-            .padding(.horizontal, DesignSystem.tightPadding)
-            .padding(.vertical, SystemSpacing.atomic)
+            .padding(.horizontal, DesignTokens.Spacing.tightPadding)
+            .padding(.vertical, DesignTokens.SystemSpacing.atomic)
             .background(Capsule().fill(color))
             .foregroundStyle(textColor)
     }

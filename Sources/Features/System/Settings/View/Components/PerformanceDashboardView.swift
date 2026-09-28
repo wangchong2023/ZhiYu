@@ -9,6 +9,7 @@
 //  核心职责：构建 PerformanceDashboard 界面的 UI 视图层组件。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Performance Dashboard View
 /// 性能监控看板主视图
@@ -28,7 +29,7 @@ struct PerformanceDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: DesignSystem.wide) {
+                VStack(spacing: DesignTokens.Spacing.wide) {
                     // Memory
                     MetricCardView(
                         title: L10n.Common.Perf.memory,
@@ -37,7 +38,7 @@ struct PerformanceDashboardView: View {
                     )
                     
                     // Page Stats
-                    HStack(spacing: DesignSystem.medium) {
+                    HStack(spacing: DesignTokens.Spacing.medium) {
                         MetricCardView(
                             title: L10n.Common.Perf.pages,
                             value: "\(service.metrics.pageCount)",
@@ -51,7 +52,7 @@ struct PerformanceDashboardView: View {
                     }
                     
                     // Graph Stats
-                    HStack(spacing: DesignSystem.medium) {
+                    HStack(spacing: DesignTokens.Spacing.medium) {
                         MetricCardView(
                             title: L10n.Common.Perf.nodes,
                             value: "\(service.metrics.graphNodeCount)",
@@ -65,7 +66,7 @@ struct PerformanceDashboardView: View {
                     }
                     
                     // AI & RAG Stats
-                    HStack(spacing: DesignSystem.medium) {
+                    HStack(spacing: DesignTokens.Spacing.medium) {
                         MetricCardView(
                             title: L10n.Common.Perf.llmCalls,
                             value: "\(service.metrics.llmCallCount)",
@@ -79,7 +80,7 @@ struct PerformanceDashboardView: View {
                     }
                     
                     // Timing
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                         Text(L10n.Common.Perf.timing)
                             .font(.headline)
                             .foregroundStyle(.appText)
@@ -91,14 +92,14 @@ struct PerformanceDashboardView: View {
                         TimingRowView(label: L10n.Common.Perf.search, duration: service.metrics.searchDuration, color: Color.theme.pink)
                         TimingRowView(label: L10n.Common.Perf.ragChain, duration: service.metrics.ragChainDuration, color: Color.theme.cyan)
                     }
-                    .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.solid, cornerRadius: SystemRadius.card)
+                    .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding, backgroundOpacity: DesignTokens.Opacity.solid, cornerRadius: DesignTokens.SystemRadius.card)
                     
                     // Last Updated
                     Text(L10n.Common.Perf.lastUpdated + ": " + service.metrics.lastUpdated.formatted(Date.FormatStyle(locale: Localized.currentLocale)))
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
-                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+                .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
             }
             .background(PageBackgroundView(accentColor: .appAccent))
             .navigationTitle(L10n.Common.Perf.title)
@@ -108,7 +109,7 @@ struct PerformanceDashboardView: View {
                     Button {
                         updateMetricsData()
                     } label: {
-                        Image(systemName: DesignSystem.Icons.refresh)
+                        Image(systemName: DesignTokens.Icons.refresh)
                     }
                 }
             }
@@ -136,12 +137,12 @@ struct MetricCardView: View {
     let color: Color
     
     var body: some View {
-        HStack(spacing: DesignSystem.small) {
-            RoundedRectangle(cornerRadius: DesignSystem.microRadius)
+        HStack(spacing: DesignTokens.Spacing.small) {
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
                 .fill(color)
-                .frame(width: DesignSystem.IconSize.atomic, height: DesignSystem.huge)
+                .frame(width: DesignTokens.IconSize.atomic, height: DesignTokens.Spacing.huge)
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(value)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
@@ -151,10 +152,10 @@ struct MetricCardView: View {
             }
             Spacer()
         }
-        .padding(DesignSystem.medium)
+        .padding(DesignTokens.Spacing.medium)
         .frame(maxWidth: .infinity)
         .background(Color.appCard)
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
     }
 }
 
@@ -171,28 +172,28 @@ struct TimingRowView: View {
     }
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             Text(label)
                 .font(.subheadline)
                 .foregroundStyle(.appText)
-                .frame(width: DesignSystem.Metrics.largeIconBoxSize, alignment: .leading)
+                .frame(width: DesignTokens.Metrics.largeIconBoxSize, alignment: .leading)
             
             GeometryReader { geo in
-                RoundedRectangle(cornerRadius: DesignSystem.microRadius)
-                    .fill(color.opacity(DesignSystem.Opacity.shadow))
-                    .frame(width: geo.size.width, height: DesignSystem.small)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
+                    .fill(color.opacity(DesignTokens.Opacity.shadow))
+                    .frame(width: geo.size.width, height: DesignTokens.Spacing.small)
                     .overlay(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: DesignSystem.microRadius)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
                             .fill(color)
-                            .frame(width: max(barWidth, duration > 0 ? DesignSystem.tiny : 0), height: DesignSystem.small)
+                            .frame(width: max(barWidth, duration > 0 ? DesignTokens.Spacing.tiny : 0), height: DesignTokens.Spacing.small)
                     }
             }
-            .frame(height: DesignSystem.small)
+            .frame(height: DesignTokens.Spacing.small)
             
             Text(String(format: "%.3fs", duration))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.appSecondary)
-                .frame(width: DesignSystem.Metrics.timingLabelWidth, alignment: .trailing)
+                .frame(width: DesignTokens.Metrics.timingLabelWidth, alignment: .trailing)
         }
     }
 }

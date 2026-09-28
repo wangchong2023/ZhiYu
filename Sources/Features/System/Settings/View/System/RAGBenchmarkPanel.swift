@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 评分颜色阈值
 
@@ -141,12 +142,12 @@ struct RAGRetrievalPanel: View {
     @Binding var activeTooltip: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             infoSectionHeader(id: "retrievalPhase", title: L10n.Dashboard.stats.retrievalQuality,
                                icon: "magnifyingglass.circle.fill", color: Color.theme.teal, tip: L10n.Dashboard.stats.tipRetrievalPhase)
 
             subSectionLabel(L10n.Dashboard.stats.rankingQuality, icon: "list.number")
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 retrievalMetricCard(id: "hitRate", title: MetricTitle.hitRate(AppConfig.AI.evaluationHitK),
                                     score: hitRate, detail: L10n.Dashboard.stats.hitRateDesc, tip: L10n.Dashboard.stats.tipHitRate)
                 retrievalMetricCard(id: "mrr", title: L10n.Dashboard.stats.mrrTitle,
@@ -156,7 +157,7 @@ struct RAGRetrievalPanel: View {
             }
 
             subSectionLabel(L10n.Dashboard.stats.coverage, icon: "chart.pie.fill")
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 retrievalMetricCard(id: "recall", title: L10n.Dashboard.stats.recallAtK,
                                     score: recall, detail: L10n.Dashboard.stats.recallDesc, tip: L10n.Dashboard.stats.tipRecall)
                 retrievalMetricCard(id: "f1", title: L10n.Dashboard.stats.f1AtK,
@@ -166,7 +167,7 @@ struct RAGRetrievalPanel: View {
             }
 
             subSectionLabel(L10n.Dashboard.stats.contextFidelity, icon: "scope")
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 scoreCardMedium(id: "precision", title: L10n.Dashboard.stats.precision,
                                 score: avgScores.precision, tip: L10n.Dashboard.stats.tipPrecision)
                 scoreCardMedium(id: "citation", title: L10n.Dashboard.stats.citationAccuracy,
@@ -181,8 +182,8 @@ struct RAGRetrievalPanel: View {
     }
 
     private var latencyGrid: some View {
-        VStack(spacing: DesignSystem.small) {
-            HStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.small) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 latencyCard(id: "latencyP50", label: L10n.Dashboard.stats.latencyP50, value: latency.p50)
                 latencyCard(id: "latencyP95", label: L10n.Dashboard.stats.latencyP95, value: latency.p95)
                 latencyCard(id: "latencyP99", label: L10n.Dashboard.stats.latencyP99, value: latency.p99)
@@ -199,7 +200,7 @@ struct RAGRetrievalPanel: View {
     // MARK: - 通用子视图
 
     private func infoSectionHeader(id: String, title: String, icon: String, color: Color, tip: String) -> some View {
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             Label(title, systemImage: icon).font(.headline).foregroundStyle(color)
             infoIcon(id: id, tip: tip)
         }
@@ -220,9 +221,9 @@ struct RAGRetrievalPanel: View {
             HapticFeedback.shared.trigger(.selection)
             activeTooltip = (activeTooltip == id) ? nil : id
         }) {
-            Image(systemName: DesignSystem.Icons.settingsAbout)
+            Image(systemName: DesignTokens.Icons.settingsAbout)
                 .font(.caption)
-                .foregroundStyle((activeTooltip == id) ? .appAccent : .appSecondary.opacity(DesignSystem.Opacity.soft))
+                .foregroundStyle((activeTooltip == id) ? .appAccent : .appSecondary.opacity(DesignTokens.Opacity.soft))
                 .frame(width: TooltipVisual.iconHitTarget, height: TooltipVisual.iconHitTarget)
                 .contentShape(Rectangle())
         }
@@ -231,8 +232,8 @@ struct RAGRetrievalPanel: View {
             Text(tip)
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, DesignSystem.small)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.vertical, DesignTokens.Spacing.small)
                 .presentationCompactAdaptation(.popover)
         }
     }
@@ -242,7 +243,7 @@ struct RAGRetrievalPanel: View {
     func scoreCard(id: String, title: String, score: Double, icon _: String,
                    inverted: Bool = false, tip: String) -> some View {
         let color = inverted ? invertedScoreColor(score) : scoreColor(score)
-        return VStack(spacing: DesignSystem.tightPadding) {
+        return VStack(spacing: DesignTokens.Spacing.tightPadding) {
             ZStack {
                 Circle().stroke(color.opacity(RingStyle.backgroundOpacity), lineWidth: RingStyle.lineWidth)
                     .frame(width: RingStyle.size, height: RingStyle.size)
@@ -259,7 +260,7 @@ struct RAGRetrievalPanel: View {
                         .foregroundStyle(color.opacity(CardVisual.percentAuxOpacity))
                 }
             }
-            HStack(spacing: SystemSpacing.atomic) {
+            HStack(spacing: DesignTokens.SystemSpacing.atomic) {
                 Text(title).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center).lineLimit(2)
                 infoIcon(id: id, tip: tip)
             }
@@ -282,8 +283,8 @@ struct RAGRetrievalPanel: View {
     /// 评分卡片核心实现，消除 scoreCardMedium 与 retrievalMetricCard 的重复
     private func scoreCardCore(id: String, title: String, score: Double, tip: String, detail: String?) -> some View {
         let color = scoreColor(score)
-        return VStack(spacing: DesignSystem.tightPadding) {
-            HStack(spacing: SystemSpacing.atomic) {
+        return VStack(spacing: DesignTokens.Spacing.tightPadding) {
+            HStack(spacing: DesignTokens.SystemSpacing.atomic) {
                 Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 infoIcon(id: id, tip: tip)
             }
@@ -298,12 +299,12 @@ struct RAGRetrievalPanel: View {
 
     private func latencyCard(id: String, label: String, value: Int) -> some View {
         let color = latencyColor(value)
-        return VStack(spacing: DesignSystem.tightPadding) {
-            HStack(spacing: SystemSpacing.atomic) {
+        return VStack(spacing: DesignTokens.Spacing.tightPadding) {
+            HStack(spacing: DesignTokens.SystemSpacing.atomic) {
                 Text(label).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 infoIcon(id: id, tip: L10n.Dashboard.stats.tipLatency)
             }
-            HStack(alignment: .bottom, spacing: SystemSpacing.atomic) {
+            HStack(alignment: .bottom, spacing: DesignTokens.SystemSpacing.atomic) {
                 Text("\(value)").font(.system(size: FontSize.metricValue, weight: .bold, design: .rounded)).foregroundStyle(color)
                 Text(L10n.Dashboard.stats.latencyUnitMS).font(.system(size: FontSize.tag, weight: .medium)).foregroundStyle(.tertiary)
             }
@@ -342,22 +343,22 @@ struct RAGGenerationPanel: View {
             latency: LatencyPercentiles(p50: 0, p95: 0, p99: 0, sampleCount: 0),
             activeTooltip: $activeTooltip
         )
-        return VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack(spacing: DesignSystem.small) {
-                Label(L10n.Dashboard.stats.generationQuality, systemImage: DesignSystem.Icons.textBubble).font(.headline).foregroundStyle(.appAccent)
+        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Label(L10n.Dashboard.stats.generationQuality, systemImage: DesignTokens.Icons.textBubble).font(.headline).foregroundStyle(.appAccent)
                 benchmark.infoIcon(id: "generationPhase", tip: L10n.Dashboard.stats.tipGenerationPhase)
             }
-            VStack(spacing: DesignSystem.small) {
-                HStack(spacing: DesignSystem.medium) {
+            VStack(spacing: DesignTokens.Spacing.small) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     benchmark.scoreCard(id: "faithfulness", title: L10n.Dashboard.stats.faithfulness,
                               score: avgScores.faithfulness, icon: "checkmark.shield", tip: L10n.Dashboard.stats.tipFaithfulness)
                     benchmark.scoreCard(id: "relevance", title: L10n.Dashboard.stats.relevance,
-                              score: avgScores.relevance, icon: DesignSystem.Icons.target, tip: L10n.Dashboard.stats.tipRelevance)
+                              score: avgScores.relevance, icon: DesignTokens.Icons.target, tip: L10n.Dashboard.stats.tipRelevance)
                     benchmark.scoreCard(id: "hallucination", title: L10n.Dashboard.stats.hallucinationRate,
-                              score: avgScores.hallucinationRate, icon: DesignSystem.Icons.exclamationmarkBubble,
+                              score: avgScores.hallucinationRate, icon: DesignTokens.Icons.exclamationmarkBubble,
                               inverted: true, tip: L10n.Dashboard.stats.tipHallucination)
                 }
-                HStack(spacing: DesignSystem.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     benchmark.scoreCard(id: "correctness", title: L10n.Dashboard.stats.answerCorrectness,
                               score: avgScores.answerCorrectness, icon: "checkmark.seal", tip: L10n.Dashboard.stats.tipCorrectness)
                     benchmark.scoreCard(id: "contextSufficiency", title: L10n.Dashboard.stats.contextSufficiency,
@@ -375,8 +376,8 @@ private extension View {
     /// 指标卡片容器样式，消除 scoreCardCore 与 latencyCard 的重复
     func metricCardContainer(color: Color) -> some View {
         self
-            .frame(maxWidth: .infinity).padding(.vertical, DesignSystem.small)
+            .frame(maxWidth: .infinity).padding(.vertical, DesignTokens.Spacing.small)
             .background(color.opacity(CardVisual.metricBgOpacity))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
     }
 }

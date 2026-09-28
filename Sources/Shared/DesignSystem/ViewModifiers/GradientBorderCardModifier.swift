@@ -10,15 +10,16 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 渐变边框卡片修饰符，消除重复的 padding+background+clipShape+overlay(LinearGradient stroke) 链
 struct GradientBorderCardModifier: ViewModifier {
-    var padding: CGFloat = DesignSystem.standardPadding
-    var cornerRadius: CGFloat = DesignSystem.standardRadius
-    var backgroundOpacity: Double = DesignSystem.Opacity.ghost
+    var padding: CGFloat = DesignTokens.Spacing.standardPadding
+    var cornerRadius: CGFloat = DesignTokens.Spacing.standardRadius
+    var backgroundOpacity: Double = DesignTokens.Opacity.ghost
     var gradientStartColor: Color = .appAccent
-    var gradientStartOpacity: Double = DesignSystem.Opacity.disabled
-    var borderWidth: CGFloat = SystemStroke.divider
+    var gradientStartOpacity: Double = DesignTokens.Opacity.disabled
+    var borderWidth: CGFloat = DesignTokens.SystemStroke.divider
 
     func body(content: Content) -> some View {
         content
@@ -42,12 +43,12 @@ struct GradientBorderCardModifier: ViewModifier {
 extension View {
     /// 渐变边框卡片样式：padding + background(appCard) + clipShape + overlay(LinearGradient stroke)
     func gradientBorderCardStyle(
-        padding: CGFloat = DesignSystem.standardPadding,
-        cornerRadius: CGFloat = DesignSystem.standardRadius,
-        backgroundOpacity: Double = DesignSystem.Opacity.ghost,
+        padding: CGFloat = DesignTokens.Spacing.standardPadding,
+        cornerRadius: CGFloat = DesignTokens.Spacing.standardRadius,
+        backgroundOpacity: Double = DesignTokens.Opacity.ghost,
         gradientStartColor: Color = .appAccent,
-        gradientStartOpacity: Double = DesignSystem.Opacity.disabled,
-        borderWidth: CGFloat = SystemStroke.divider
+        gradientStartOpacity: Double = DesignTokens.Opacity.disabled,
+        borderWidth: CGFloat = DesignTokens.SystemStroke.divider
     ) -> some View {
         modifier(GradientBorderCardModifier(
             padding: padding,

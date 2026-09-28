@@ -12,6 +12,7 @@ import SwiftUI
 import UFPCore
 import Observation
 import Dependencies
+import UFPDesignSystem
 
 /// 业务领域定义
 public enum FeatureDomain: String, CaseIterable, Sendable {
@@ -290,7 +291,7 @@ final class Router: TestStateResettable {
         if navigationHistory.last?.id == page.id { return }
         
         // 限制历史长度 (UX 建议：过多会导致认知负担)
-        if navigationHistory.count >= DesignSystem.Metrics.maxBreadcrumbCount { // 5
+        if navigationHistory.count >= DesignTokens.Metrics.maxBreadcrumbCount { // 5
             navigationHistory.removeFirst()
         }
         navigationHistory.append(page)

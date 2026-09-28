@@ -10,6 +10,7 @@
 //           HighlightedText 高亮文本渲染与 PageDetailCoordinator 页面详情双向链接及 AI 编排。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import Dependencies
@@ -40,9 +41,9 @@ final class PageDetailAndSystemStatsDeepTests: XCTestCase {
 
         // 验证分类图标映射
         let dbIcon = coordinator.iconForCategory(L10n.Dashboard.System.database)
-        XCTAssertEqual(dbIcon, DesignSystem.Icons.StorageStats.database)
+        XCTAssertEqual(dbIcon, DesignTokens.Icons.StorageStats.database)
         let fallbackIcon = coordinator.iconForCategory("unknown_category")
-        XCTAssertEqual(fallbackIcon, DesignSystem.Icons.StorageStats.fallback)
+        XCTAssertEqual(fallbackIcon, DesignTokens.Icons.StorageStats.fallback)
 
         // 触发数据清理
         await coordinator.cleanupData()

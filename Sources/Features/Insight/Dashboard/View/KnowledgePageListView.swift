@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - Index View (entry point with NavigationStack)
 @MainActor
@@ -102,7 +103,7 @@ struct KnowledgePageListContent: View {
             // 1. 方案 D 沉浸式高级背景 (同步 Hub 设计语言)
             ZStack {
                 // 1. 底层：通透感深色背景
-                themeManager.pageBackground().opacity(DesignSystem.translucentOpacity)
+                themeManager.pageBackground().opacity(DesignTokens.Colors.Opacity.translucentOpacity)
                 
                 MeshGradientView()
                     .blur(radius: DesignSystem.Gallery.blurRadius)
@@ -110,7 +111,7 @@ struct KnowledgePageListContent: View {
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: DesignSystem.loosePadding) {
+                VStack(spacing: DesignTokens.Spacing.loosePadding) {
                     listView
                 }
                 .padding(.top, appEnv.screenClass != .compact ? 48 : 0) // 适配大屏设备（如 iPad / macOS），向下偏移避让顶部悬浮 TabBar，防止第一行内容重合遮挡
@@ -151,7 +152,7 @@ struct KnowledgePageListContent: View {
     
     @ViewBuilder
     private var listView: some View {
-        LazyVStack(spacing: DesignSystem.standardPadding, pinnedViews: [.sectionHeaders]) {
+        LazyVStack(spacing: DesignTokens.Spacing.standardPadding, pinnedViews: [.sectionHeaders]) {
             // 全局统一的高级毛玻璃搜索输入卡片，完美融合于顶端！
             searchBarSection
             
@@ -161,11 +162,11 @@ struct KnowledgePageListContent: View {
 
             if store.searchStore.isSearching {
                 // 如果正在执行混合检索，展示高精度骨架屏呼吸卡片
-                VStack(spacing: DesignSystem.standardPadding) {
+                VStack(spacing: DesignTokens.Spacing.standardPadding) {
                     ForEach(0..<FeatureConstants.KnowledgePageList.skeletonRowCount, id: \.self) { _ in
                         SkeletonListRow()
                     }
-                    .padding(.top, DesignSystem.wide)
+                    .padding(.top, DesignTokens.Spacing.wide)
                 }
             } else if hasSearchResults {
                 if filterType == nil || filterType == .entity {
@@ -189,29 +190,29 @@ struct KnowledgePageListContent: View {
                 }
             } else {
                 AppEmptyState.simple(
-                    icon: DesignSystem.Icons.weeklyInsight,
+                    icon: DesignTokens.Icons.weeklyInsight,
                     title: L10n.Search.noResults,
                     description: L10n.Search.noResultsHint
                 )
-                .padding(.top, Spacing.Sidebar.backButtonWidth)
+                .padding(.top, DesignTokens.Spacing.Sidebar.backButtonWidth)
             }
         }
-        .padding(.horizontal, DesignSystem.standardPadding)
-        .padding(.vertical, DesignSystem.loosePadding)
-        .padding(.bottom, DesignSystem.huge)
+        .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+        .padding(.vertical, DesignTokens.Spacing.loosePadding)
+        .padding(.bottom, DesignTokens.Spacing.huge)
     }
     
     @ViewBuilder
     private var summarySection: some View {
         Section {
-            HStack(spacing: DesignSystem.standardPadding) {
+            HStack(spacing: DesignTokens.Spacing.standardPadding) {
                 KnowledgeStatItem(label: L10n.Dashboard.totalPages, value: "\(store.pages.count)", color: .appAccent)
                 KnowledgeStatItem(label: L10n.Dashboard.totalLinks, value: "\(totalLinks)", color: .appSource)
                 KnowledgeStatItem(label: L10n.Dashboard.pageList.tags, value: "\(store.tags.count)", color: .appConcept)
                 KnowledgeStatItem(label: L10n.Dashboard.pageList.sources, value: "\(store.sourceCount)", color: .appSource)
             }
-            .padding(.horizontal, DesignSystem.tiny)
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(.horizontal, DesignTokens.Spacing.tiny)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
         } header: {
             HStack {
                 Text(L10n.Dashboard.pageList.overview)
@@ -219,7 +220,7 @@ struct KnowledgePageListContent: View {
                     .foregroundStyle(.appSecondary)
                 Spacer()
             }
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
         }
     }
     
@@ -234,27 +235,27 @@ struct KnowledgePageListContent: View {
 
     @ViewBuilder
     private var entitySection: some View {
-        pageTypeSection(for: .entity, label: L10n.Dashboard.pageList.entityCount(filteredPages(for: .entity).count), icon: DesignSystem.Icons.entity, color: .appEntity)
+        pageTypeSection(for: .entity, label: L10n.Dashboard.pageList.entityCount(filteredPages(for: .entity).count), icon: DesignTokens.Icons.entity, color: .appEntity)
     }
 
     @ViewBuilder
     private var conceptSection: some View {
-        pageTypeSection(for: .concept, label: L10n.Dashboard.pageList.conceptCount(filteredPages(for: .concept).count), icon: DesignSystem.Icons.concept, color: .appConcept)
+        pageTypeSection(for: .concept, label: L10n.Dashboard.pageList.conceptCount(filteredPages(for: .concept).count), icon: DesignTokens.Icons.concept, color: .appConcept)
     }
 
     @ViewBuilder
     private var sourceSection: some View {
-        pageTypeSection(for: .source, label: L10n.Dashboard.pageList.sourceCount(filteredPages(for: .source).count), icon: DesignSystem.Icons.source, color: .appSource)
+        pageTypeSection(for: .source, label: L10n.Dashboard.pageList.sourceCount(filteredPages(for: .source).count), icon: DesignTokens.Icons.source, color: .appSource)
     }
 
     @ViewBuilder
     private var comparisonSection: some View {
-        pageTypeSection(for: .comparison, label: L10n.Dashboard.pageList.comparisonCount(filteredPages(for: .comparison).count), icon: DesignSystem.Icons.comparison, color: .appComparison)
+        pageTypeSection(for: .comparison, label: L10n.Dashboard.pageList.comparisonCount(filteredPages(for: .comparison).count), icon: DesignTokens.Icons.comparison, color: .appComparison)
     }
 
     @ViewBuilder
     private var rawSection: some View {
-        pageTypeSection(for: .raw, label: L10n.Dashboard.pageList.rawCount(filteredPages(for: .raw).count), icon: DesignSystem.Icons.raw, color: Color.theme.gray)
+        pageTypeSection(for: .raw, label: L10n.Dashboard.pageList.rawCount(filteredPages(for: .raw).count), icon: DesignTokens.Icons.raw, color: Color.theme.gray)
     }
 
     /// 通用页面类型分区：ForEach + header(Label + count)
@@ -263,7 +264,7 @@ struct KnowledgePageListContent: View {
         let pages = filteredPages(for: type)
         if !pages.isEmpty {
             Section {
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     ForEach(pages) { page in
                         selectablePageRow(page)
                     }
@@ -275,7 +276,7 @@ struct KnowledgePageListContent: View {
                         .foregroundStyle(color)
                     Spacer()
                 }
-                .padding(.vertical, DesignSystem.tiny)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
             }
         }
     }
@@ -287,8 +288,8 @@ struct KnowledgePageListContent: View {
             text: $searchText,
             onSubmit: { triggerSearch(query: searchText) },
             accessibilityIdentifier: FeatureConstants.AccessibilityID.searchPlaceholder,
-            horizontalPadding: DesignSystem.tiny,
-            bottomPadding: DesignSystem.tiny
+            horizontalPadding: DesignTokens.Spacing.tiny,
+            bottomPadding: DesignTokens.Spacing.tiny
         )
     }
 }
@@ -300,7 +301,7 @@ struct KnowledgeStatItem: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: DesignSystem.tiny) {
+        VStack(spacing: DesignTokens.Spacing.tiny) {
             Text(label)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.appSecondary)
@@ -311,19 +312,19 @@ struct KnowledgeStatItem: View {
                 .foregroundStyle(color)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, DesignSystem.medium)
-        .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
+        .padding(.vertical, DesignTokens.Spacing.medium)
+        .background(Color.appCard.opacity(DesignTokens.Opacity.prominent))
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                .stroke(.white.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                .stroke(.white.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.hairline)
         )
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-        .shadow(color: .primary.opacity(DesignSystem.shadowOpacity), radius: DesignSystem.small, x: 0, y: DesignSystem.tiny)
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+        .shadow(color: .primary.opacity(DesignTokens.Spacing.shadowOpacity), radius: DesignTokens.Spacing.small, x: 0, y: DesignTokens.Spacing.tiny)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                .stroke(color.opacity(DesignSystem.dimmedOpacity), lineWidth: DesignSystem.borderWidth)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                .stroke(color.opacity(DesignTokens.Colors.Opacity.dimmedOpacity), lineWidth: DesignTokens.Spacing.borderWidth)
         )
-        .shadow(color: .primary.opacity(Reference.Opacity.five), radius: DesignSystem.medium, x: 0, y: DesignSystem.tiny)
+        .shadow(color: .primary.opacity(DesignTokens.Reference.Opacity.five), radius: DesignTokens.Spacing.medium, x: 0, y: DesignTokens.Spacing.tiny)
     }
 }
 
@@ -335,7 +336,7 @@ struct AppPressButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? DesignSystem.Action.pressScale : 1.0)
-            .opacity(configuration.isPressed ? DesignSystem.pressedOpacity : 1.0)
-            .animation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping), value: configuration.isPressed)
+            .opacity(configuration.isPressed ? DesignTokens.Colors.Opacity.pressedOpacity : 1.0)
+            .animation(.spring(response: DesignTokens.Animation.springResponse, dampingFraction: DesignTokens.Animation.springDamping), value: configuration.isPressed)
     }
 }

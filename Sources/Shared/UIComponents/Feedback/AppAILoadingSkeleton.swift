@@ -40,45 +40,45 @@ public struct AppAILoadingSkeleton: View {
     }
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             // 1. 顶部状态标签
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 AppLottieView(name: "ai_thinking")
-                    .frame(width: DesignSystem.IconSize.standard, height: DesignSystem.IconSize.standard)
+                    .frame(width: DesignTokens.IconSize.standard, height: DesignTokens.IconSize.standard)
                 
                 Text(stageText)
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(stageColor)
             }
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, DesignSystem.tiny)
-            .background(stageColor.opacity(DesignSystem.Opacity.subtle))
+            .padding(.horizontal, DesignTokens.Spacing.small)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
+            .background(stageColor.opacity(DesignTokens.Opacity.subtle))
             .clipShape(Capsule())
             
             // 2. 多行模拟文本骨架
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 skeletonRow(widthRatio: 0.9)
                 skeletonRow(widthRatio: 0.85)
                 skeletonRow(widthRatio: 0.6)
             }
         }
-        .padding(DesignSystem.medium)
-        .appCardClip(cornerRadius: DesignSystem.mediumRadius)
+        .padding(DesignTokens.Spacing.medium)
+        .appCardClip(cornerRadius: DesignTokens.Spacing.mediumRadius)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.mediumRadius)
-                .stroke(stageColor.opacity(DesignSystem.Opacity.subtle), lineWidth: SystemStroke.divider)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
+                .stroke(stageColor.opacity(DesignTokens.Opacity.subtle), lineWidth: DesignTokens.SystemStroke.divider)
         )
     }
     
     private func skeletonRow(widthRatio: CGFloat) -> some View {
         GeometryReader { geo in
-            RoundedRectangle(cornerRadius: DesignSystem.microRadius)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
                 .fill(
                     LinearGradient(
                         colors: [
-                            stageColor.opacity(DesignSystem.Opacity.ghost),
-                            stageColor.opacity(DesignSystem.Opacity.glass),
-                            stageColor.opacity(DesignSystem.Opacity.ghost)
+                            stageColor.opacity(DesignTokens.Opacity.ghost),
+                            stageColor.opacity(DesignTokens.Opacity.glass),
+                            stageColor.opacity(DesignTokens.Opacity.ghost)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
@@ -87,6 +87,6 @@ public struct AppAILoadingSkeleton: View {
                 .frame(width: geo.size.width * widthRatio, height: 12)
                 .shimmerApp()
         }
-        .frame(height: DesignSystem.medium)
+        .frame(height: DesignTokens.Spacing.medium)
     }
 }

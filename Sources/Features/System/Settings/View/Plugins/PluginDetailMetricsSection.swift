@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 插件指标区常量
 private enum PluginMetricsConstants {
@@ -38,7 +39,7 @@ extension PluginDetailView {
                 metricCard(
                     title: L10n.Plugin.Detail.securePassed,
                     subtitle: L10n.Plugin.Detail.secureLabel,
-                    icon: DesignSystem.Icons.lockShieldFill,
+                    icon: DesignTokens.Icons.lockShieldFill,
                     iconColor: Color.theme.green
                 )
 
@@ -59,23 +60,23 @@ extension PluginDetailView {
                     subtitle: L10n.Plugin.Detail.compatibilityTitle
                 )
             }
-            .padding(.horizontal, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.small)
         }
         .frame(height: PluginMetricsConstants.barHeight)
     }
 
     /// 单个快捷指标项卡片渲染
     func metricCard(title: String, subtitle: String, icon: String? = nil, iconColor: Color = .secondary) -> some View {
-        VStack(spacing: DesignSystem.tiny) {
+        VStack(spacing: DesignTokens.Spacing.tiny) {
             Text(subtitle)
-                .font(.system(size: SystemFontSize.micro, weight: .bold)) // Dynamic Type
+                .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .bold)) // Dynamic Type
                 .foregroundStyle(.appSecondary)
                 .lineLimit(1)
 
             Spacer(minLength: 0)
 
             if let icon = icon {
-                HStack(spacing: SystemSpacing.tiny) {
+                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                     Image(systemName: icon)
                         .foregroundStyle(iconColor)
                         .font(.caption.bold())
@@ -90,12 +91,12 @@ extension PluginDetailView {
                     .lineLimit(1)
             }
         }
-        .frame(width: ComponentSpacing.metricChipWidth, height: ComponentSpacing.buttonHeight)
+        .frame(width: DesignTokens.ComponentSpacing.metricChipWidth, height: DesignTokens.ComponentSpacing.buttonHeight)
     }
 
     var metricDivider: some View {
         Divider()
-            .frame(height: Spacing.huge)
-            .padding(.horizontal, DesignSystem.medium)
+            .frame(height: DesignTokens.Spacing.huge)
+            .padding(.horizontal, DesignTokens.Spacing.medium)
     }
 }

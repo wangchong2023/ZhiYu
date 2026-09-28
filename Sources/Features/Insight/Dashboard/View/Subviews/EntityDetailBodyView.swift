@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：词条页面差异化详情视图
 struct EntityDetailBodyView: View {
@@ -23,12 +24,12 @@ struct EntityDetailBodyView: View {
     private static let cardBorderWidth: CGFloat = 1.0
     private static let pronunciationOpacity: Double = 0.8
     private static let columns = [
-        GridItem(.flexible(), spacing: Spacing.medium),
-        GridItem(.flexible(), spacing: Spacing.medium)
+        GridItem(.flexible(), spacing: DesignTokens.Spacing.medium),
+        GridItem(.flexible(), spacing: DesignTokens.Spacing.medium)
     ]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
             // 1. 权威释义板 (Fact Summary) 与别名芯片 (Aliases)
             factSummarySection
             
@@ -54,9 +55,9 @@ struct EntityDetailBodyView: View {
     
     // MARK: - 1. 权威释义板 (Fact Summary) 与 别名芯片组
     private var factSummarySection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             // 读音与基本定义
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 if let pronunciation = frontmatter?.pronunciation, !pronunciation.isEmpty {
                     Text(pronunciation)
                         .font(.system(.footnote, design: .monospaced))
@@ -72,13 +73,13 @@ struct EntityDetailBodyView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.ghost))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+            .background(Color.appCard.opacity(DesignTokens.Opacity.ghost))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.standardRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
                     .stroke(
                         LinearGradient(
-                            colors: [.appAccent.opacity(DesignSystem.Opacity.disabled), .clear],
+                            colors: [.appAccent.opacity(DesignTokens.Opacity.disabled), .clear],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
@@ -90,15 +91,15 @@ struct EntityDetailBodyView: View {
             let aliasList = frontmatter?.aliases ?? page.aliases
             if !aliasList.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         ForEach(aliasList, id: \.self) { alias in
                             InsightTagChip(
                                 text: alias,
-                                icon: DesignSystem.Icons.pencilClipboard,
+                                icon: DesignTokens.Icons.pencilClipboard,
                                 foregroundColor: .appSecondary,
                                 style: InsightTagChipStyle(
                                     backgroundColor: .appCard,
-                                    backgroundOpacity: DesignSystem.Opacity.subtle
+                                    backgroundOpacity: DesignTokens.Opacity.subtle
                                 )
                             )
                         }
@@ -110,12 +111,12 @@ struct EntityDetailBodyView: View {
     
     // MARK: - 2. 百科属性网格面板 (Wiki InfoBox)
     private func wikiInfoBoxSection(_ items: [EntityFrontmatter.InfoBoxItem]) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            InsightSectionHeader(title: L10n.Onboarding.featureTitle, icon: DesignSystem.Icons.macwindowBadgePlus)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            InsightSectionHeader(title: L10n.Onboarding.featureTitle, icon: DesignTokens.Icons.macwindowBadgePlus)
             
-            LazyVGrid(columns: Self.columns, spacing: Spacing.medium) {
+            LazyVGrid(columns: Self.columns, spacing: DesignTokens.Spacing.medium) {
                 ForEach(items, id: \.key) { item in
-                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                         Text(item.key)
                             .font(.caption2)
                             .foregroundStyle(.appSecondary)
@@ -125,7 +126,7 @@ struct EntityDetailBodyView: View {
                             .foregroundStyle(.appText)
                             .lineLimit(1)
                     }
-                    .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: DesignSystem.smallRadius, useBorder: true)
+                    .infoCardStyle(backgroundOpacity: DesignTokens.Opacity.subtle, cornerRadius: DesignTokens.Spacing.smallRadius, useBorder: true)
                 }
             }
         }
@@ -133,12 +134,12 @@ struct EntityDetailBodyView: View {
     
     // MARK: - 3. 内容概述大纲 (Overview)
     private func overviewSection(_ items: [String]) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            InsightSectionHeader(title: L10n.Editor.outline, icon: DesignSystem.Icons.docTextBelowEcg)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            InsightSectionHeader(title: L10n.Editor.outline, icon: DesignTokens.Icons.docTextBelowEcg)
             
-            VStack(alignment: .leading, spacing: Spacing.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, overviewItem in
-                    HStack(alignment: .top, spacing: Spacing.small) {
+                    HStack(alignment: .top, spacing: DesignTokens.Spacing.small) {
                         Text("\(index + 1).")
                             .font(.caption.bold())
                             .foregroundStyle(.appAccent)
@@ -149,7 +150,7 @@ struct EntityDetailBodyView: View {
                     }
                 }
             }
-            .infoCardStyle(backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: DesignSystem.smallRadius, useBorder: true)
+            .infoCardStyle(backgroundOpacity: DesignTokens.Opacity.subtle, cornerRadius: DesignTokens.Spacing.smallRadius, useBorder: true)
         }
     }
 }

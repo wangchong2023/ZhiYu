@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 1. 弹性物理悬停修饰器
 
@@ -54,9 +55,9 @@ struct PremiumAmbientShadowModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             // 第一层：大范围微弱漫反射阴影，确立环境光底色
-            .shadow(color: color.opacity(DesignSystem.Opacity.ghost), radius: radius, x: 0, y: radius * 0.4)
+            .shadow(color: color.opacity(DesignTokens.Opacity.ghost), radius: radius, x: 0, y: radius * 0.4)
             // 第二层：小范围紧致遮蔽阴影，确立物理接缝立体感
-            .shadow(color: color.opacity(DesignSystem.Opacity.faint), radius: radius * 0.4, x: 0, y: radius * 0.15)
+            .shadow(color: color.opacity(DesignTokens.Opacity.faint), radius: radius * 0.4, x: 0, y: radius * 0.15)
     }
 }
 
@@ -89,7 +90,7 @@ struct GlowingNeonBorderModifier: ViewModifier {
                         lineWidth: isGlowing ? 1.5 : 0
                     )
                     // 渐变外光圈发光，营造呼吸高亮
-                    .shadow(color: isGlowing ? (gradientColors.first ?? .blue).opacity(DesignSystem.Opacity.disabled) : .clear, radius: isGlowing ? 6 : 0)
+                    .shadow(color: isGlowing ? (gradientColors.first ?? .blue).opacity(DesignTokens.Opacity.disabled) : .clear, radius: isGlowing ? 6 : 0)
                     .animation(.easeInOut(duration: 0.35), value: isGlowing)
             )
     }
@@ -102,13 +103,13 @@ public extension View {
     /// - Parameters:
     ///   - edges: 内边距作用方向，默认全部边缘
     ///   - token: 强类型间距令牌
-    func appPadding(_ edges: Edge.Set = .all, _ token: DesignSystem.SpacingToken) -> some View {
+    func appPadding(_ edges: Edge.Set = .all, _ token: DesignTokens.SpacingToken) -> some View {
         self.padding(edges, token.value)
     }
     
     /// 注入基于设计系统的原子圆角裁切修饰器
     /// - Parameter token: 强类型圆角令牌
-    func appCornerRadius(_ token: DesignSystem.RadiusToken) -> some View {
+    func appCornerRadius(_ token: DesignTokens.RadiusToken) -> some View {
         self.clipShape(RoundedRectangle(cornerRadius: token.value))
     }
 

@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 旧类型名兼容（去重后统一为 InsightMetricCard）
 typealias MetricBox = InsightMetricCard
@@ -76,40 +77,40 @@ struct InsightMetricCard: View {
     // MARK: - Dashboard 布局
 
     private var dashboardLayout: some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.contentMedium) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.contentMedium) {
             HStack {
-                iconCircle(size: DesignSystem.Timeline.indicatorSize, iconFontSize: DesignSystem.subheadlineFontSize)
+                iconCircle(size: DesignSystem.Timeline.indicatorSize, iconFontSize: DesignTokens.Typography.subheadlineFontSize)
                 Spacer()
                 if let trend {
                     trendCapsule(trend)
                 }
             }
 
-            metricTitleAndValue(valueFont: .system(size: DesignSystem.Metrics.heroValueSize, weight: .bold, design: .rounded), showUnit: true)
+            metricTitleAndValue(valueFont: .system(size: DesignTokens.Metrics.heroValueSize, weight: .bold, design: .rounded), showUnit: true)
         }
-        .padding(DesignSystem.standardPadding)
+        .padding(DesignTokens.Spacing.standardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial.opacity(DesignSystem.Opacity.prominent))
+        .background(.ultraThinMaterial.opacity(DesignTokens.Opacity.prominent))
         .background(
             ZStack {
-                Color.appCard.opacity(DesignSystem.Opacity.disabled)
+                Color.appCard.opacity(DesignTokens.Opacity.disabled)
                 LinearGradient(
-                    colors: [color.opacity(DesignSystem.Opacity.subtle), .clear],
+                    colors: [color.opacity(DesignTokens.Opacity.subtle), .clear],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             }
         )
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Metrics.dashboardRadius))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Metrics.dashboardRadius))
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.Metrics.dashboardRadius)
+            RoundedRectangle(cornerRadius: DesignTokens.Metrics.dashboardRadius)
                 .stroke(
                     LinearGradient(
-                        colors: [.appBorder.opacity(DesignSystem.Opacity.dim), .appBorder.opacity(DesignSystem.Opacity.subtle)],
+                        colors: [.appBorder.opacity(DesignTokens.Opacity.dim), .appBorder.opacity(DesignTokens.Opacity.subtle)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: DesignSystem.borderWidth
+                    lineWidth: DesignTokens.Spacing.borderWidth
                 )
         )
         .appStandardShadow()
@@ -118,51 +119,51 @@ struct InsightMetricCard: View {
     // MARK: - Lint 布局
 
     private var lintLayout: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             HStack {
-                iconCircle(size: ComponentSpacing.huge, iconFontSize: DesignSystem.subheadlineFontSize)
+                iconCircle(size: DesignTokens.ComponentSpacing.huge, iconFontSize: DesignTokens.Typography.subheadlineFontSize)
                 Spacer()
             }
 
-            metricTitleAndValue(valueFont: .system(size: DesignSystem.displayFontSize, weight: .bold, design: .rounded), showUnit: false)
+            metricTitleAndValue(valueFont: .system(size: DesignTokens.Typography.displayFontSize, weight: .bold, design: .rounded), showUnit: false)
         }
-        .padding(DesignSystem.standardPadding)
+        .padding(DesignTokens.Spacing.standardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appContainer(background: Color.appCard, cornerRadius: DesignSystem.Metrics.dashboardRadius, padding: false)
-        .shadow(color: .primary.opacity(DesignSystem.Opacity.faint), radius: SystemSpacing.medium, x: 0, y: SystemSpacing.small)
+        .appContainer(background: Color.appCard, cornerRadius: DesignTokens.Metrics.dashboardRadius, padding: false)
+        .shadow(color: .primary.opacity(DesignTokens.Opacity.faint), radius: DesignTokens.SystemSpacing.medium, x: 0, y: DesignTokens.SystemSpacing.small)
     }
 
     // MARK: - Vault 布局
 
     private var vaultLayout: some View {
-        VStack(spacing: DesignSystem.tiny) {
+        VStack(spacing: DesignTokens.Spacing.tiny) {
             Text(title)
-                .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
+                .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold))
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: DesignSystem.title2FontSize, weight: .bold, design: .monospaced))
+                .font(.system(size: DesignTokens.Typography.HeadingLevel.h2.size, weight: .bold, design: .monospaced))
                 .foregroundStyle(color)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, DesignSystem.medium)
-        .appContainer(background: Color.appCard.opacity(DesignSystem.surfaceOpacity), padding: false)
+        .padding(.vertical, DesignTokens.Spacing.medium)
+        .appContainer(background: Color.appCard.opacity(DesignTokens.Colors.Opacity.surfaceOpacity), padding: false)
     }
 
     // MARK: - Weekly 布局
 
     private var weeklyLayout: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             Image(systemName: icon)
-                .font(.system(size: DesignSystem.Metrics.iconBoxSize / 2, weight: .semibold))
+                .font(.system(size: DesignTokens.Metrics.iconBoxSize / 2, weight: .semibold))
                 .foregroundStyle(color)
-                .frame(width: ComponentSpacing.buttonHeight, height: ComponentSpacing.buttonHeight)
+                .frame(width: DesignTokens.ComponentSpacing.buttonHeight, height: DesignTokens.ComponentSpacing.buttonHeight)
                 .background(
                     Circle()
-                        .fill(color.opacity(SystemOpacity.glass))
-                        .overlay(Circle().stroke(color.opacity(DesignSystem.disabledOpacity), lineWidth: DesignSystem.borderWidth))
+                        .fill(color.opacity(DesignTokens.SystemOpacity.glass))
+                        .overlay(Circle().stroke(color.opacity(DesignTokens.Colors.Opacity.disabledOpacity), lineWidth: DesignTokens.Spacing.borderWidth))
                 )
 
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(value)
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.appText)
@@ -178,13 +179,13 @@ struct InsightMetricCard: View {
     /// 标题 + 数值（+可选单位）的共享布局
     @ViewBuilder
     private func metricTitleAndValue(valueFont: Font, showUnit: Bool) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
             Text(title)
-                .font(.system(size: DesignSystem.captionFontSize, weight: .medium))
+                .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .medium))
                 .foregroundColor(.appSecondary)
 
             if showUnit {
-                HStack(alignment: .firstTextBaseline, spacing: DesignSystem.tiny) {
+                HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Spacing.tiny) {
                     Text(value)
                         .font(valueFont)
                         .foregroundColor(.appText)
@@ -207,7 +208,7 @@ struct InsightMetricCard: View {
     private func iconCircle(size: CGFloat, iconFontSize: CGFloat) -> some View {
         ZStack {
             Circle()
-                .fill(color.opacity(DesignSystem.glassOpacity))
+                .fill(color.opacity(DesignTokens.Colors.Opacity.glassOpacity))
                 .frame(width: size, height: size)
             Image(systemName: icon)
                 .font(.system(size: iconFontSize, weight: .bold))
@@ -217,11 +218,11 @@ struct InsightMetricCard: View {
 
     @ViewBuilder
     private func trendCapsule(_ trend: String) -> some View {
-        HStack(spacing: DesignSystem.atomic) {
-            Image(systemName: DesignSystem.Icons.arrowUpRightSimple)
+        HStack(spacing: DesignTokens.Spacing.atomic) {
+            Image(systemName: DesignTokens.Icons.arrowUpRightSimple)
             Text(trend)
         }
-        .font(.system(size: DesignSystem.caption2FontSize, weight: .bold, design: .rounded))
+        .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold, design: .rounded))
         .insightGlassCapsule(color: Color.theme.green)
     }
 }

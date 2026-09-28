@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 页面详情元信息展示区域
 ///
@@ -39,7 +40,7 @@ public struct PageDetailMetaSectionView: View {
         VStack(alignment: .leading) {
             metaHeaderLabel
             metaInfoContent
-                .padding(.top, DesignSystem.tiny)
+                .padding(.top, DesignTokens.Spacing.tiny)
         }
         .metaSectionContainerStyle()
     }
@@ -53,7 +54,7 @@ public struct PageDetailMetaSectionView: View {
             isExpanded: $isExpanded,
             content: {
                 metaInfoContent
-                    .padding(.top, DesignSystem.tiny)
+                    .padding(.top, DesignTokens.Spacing.tiny)
             },
             label: {
                 metaHeaderLabel
@@ -69,7 +70,7 @@ public struct PageDetailMetaSectionView: View {
     /// 元信息区头部标签（消除 watchOS / standard 两处重复的 Label + font + foregroundStyle 链）
     private var metaHeaderLabel: some View {
         HStack {
-            Label(L10n.Knowledge.Page.metaInfo, systemImage: DesignSystem.Icons.info)
+            Label(L10n.Knowledge.Page.metaInfo, systemImage: DesignTokens.Icons.info)
                 .font(.caption2.bold())
                 .foregroundStyle(.appSecondary)
             Spacer()
@@ -77,22 +78,22 @@ public struct PageDetailMetaSectionView: View {
     }
 
     private var metaInfoContent: some View {
-        HStack(spacing: DesignSystem.standardPadding) {
+        HStack(spacing: DesignTokens.Spacing.standardPadding) {
             Label(
                 L10n.Knowledge.Page.createdAtFormat(page.shortFormattedCreatedDate),
-                systemImage: DesignSystem.Icons.sortDate
+                systemImage: DesignTokens.Icons.sortDate
             )
             Label(
                 L10n.Knowledge.Page.updatedAtFormat(page.shortFormattedUpdatedDate),
-                systemImage: DesignSystem.Icons.clock
+                systemImage: DesignTokens.Icons.clock
             )
             Label(
                 L10n.Knowledge.Page.wordCount(page.wordCount),
-                systemImage: DesignSystem.Icons.wordCount
+                systemImage: DesignTokens.Icons.wordCount
             )
             Label(
                 L10n.Knowledge.Page.outLinksCount(page.outgoingLinks.count),
-                systemImage: DesignSystem.Icons.link
+                systemImage: DesignTokens.Icons.link
             )
         }
         .font(.caption)
@@ -125,8 +126,8 @@ private extension View {
     /// 统一应用 meta section 的内边距与卡片裁剪，消除 watchOSLayout / standardLayout 两处重复的 padding + appCardClip 链。
     func metaSectionContainerStyle() -> some View {
         self
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, DesignSystem.small)
-            .appCardClip(cornerRadius: Spacing.smallRadius, backgroundOpacity: DesignSystem.Opacity.disabled)
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+            .padding(.vertical, DesignTokens.Spacing.small)
+            .appCardClip(cornerRadius: DesignTokens.Spacing.smallRadius, backgroundOpacity: DesignTokens.Opacity.disabled)
     }
 }

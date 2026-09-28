@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Splash Background View
 /// 程序化启动画面背景：深空 + 神经网络节点 + 书本光芒
@@ -57,13 +58,13 @@ struct SplashBackgroundView: View {
             // MARK: DesignSystem — splash gradient (深靛蓝→海军蓝→暖琥珀光，设计意图明确)
             LinearGradient(
                 stops: [
-                    .init(color: Colors.Splash.bgStep1, location: 0.0),
-                    .init(color: Colors.Splash.bgStep2, location: 0.3),
-                    .init(color: Colors.Splash.bgStep3, location: 0.55),
-                    .init(color: Colors.Splash.bgStep4, location: 0.7),
-                    .init(color: Colors.Splash.bgStep5, location: 0.85),
-                    .init(color: Colors.Splash.bgStep6, location: 0.95),
-                    .init(color: Colors.Splash.bgStep7, location: 1.0)
+                    .init(color: DesignTokens.Colors.Splash.bgStep1, location: 0.0),
+                    .init(color: DesignTokens.Colors.Splash.bgStep2, location: 0.3),
+                    .init(color: DesignTokens.Colors.Splash.bgStep3, location: 0.55),
+                    .init(color: DesignTokens.Colors.Splash.bgStep4, location: 0.7),
+                    .init(color: DesignTokens.Colors.Splash.bgStep5, location: 0.85),
+                    .init(color: DesignTokens.Colors.Splash.bgStep6, location: 0.95),
+                    .init(color: DesignTokens.Colors.Splash.bgStep7, location: 1.0)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -76,9 +77,9 @@ struct SplashBackgroundView: View {
                         .fill(.appGloss)
                         .frame(width: star.size, height: star.size)
                         .position(x: geo.size.width * star.x, y: geo.size.height * star.y)
-                        .opacity(starTwinkle ? SystemOpacity.glassStrong : SystemOpacity.disabled)
+                        .opacity(starTwinkle ? DesignTokens.SystemOpacity.glassStrong : DesignTokens.SystemOpacity.disabled)
                         .animation(
-                            .easeInOut(duration: DesignSystem.Animation.looseDuration + star.delay)
+                            .easeInOut(duration: DesignTokens.Animation.looseDuration + star.delay)
                             .repeatForever(autoreverses: true)
                             .delay(star.delay),
                             value: starTwinkle
@@ -111,7 +112,7 @@ struct SplashBackgroundView: View {
                             startPoint: .init(x: fromNode.x, y: fromNode.y),
                             endPoint: .init(x: toNode.x, y: toNode.y)
                         ),
-                        lineWidth: SystemStroke.border
+                        lineWidth: DesignTokens.SystemStroke.border
                     )
                 }
             }
@@ -122,9 +123,9 @@ struct SplashBackgroundView: View {
                     let nodeColor1 = Self.networkNodeColor(isAccent: node.isAccent, isPrimary: true)
                     let nodeColor2 = Self.networkNodeColor(isAccent: node.isAccent, isPrimary: false)
                     
-                    let nodeScale = nodeGlow ? SystemOpacity.active : SystemOpacity.overlay
-                    let nodeOpacity = nodeGlow ? SystemOpacity.active : SystemOpacity.disabled
-                    let animDuration = DesignSystem.Animation.slowDuration + Double(index) * 0.1
+                    let nodeScale = nodeGlow ? DesignTokens.SystemOpacity.active : DesignTokens.SystemOpacity.overlay
+                    let nodeOpacity = nodeGlow ? DesignTokens.SystemOpacity.active : DesignTokens.SystemOpacity.disabled
+                    let animDuration = DesignTokens.Animation.slowDuration + Double(index) * 0.1
                     let nodeAnim = SwiftUI.Animation.easeInOut(duration: animDuration)
                         .repeatForever(autoreverses: true)
                         .delay(Double(index) * 0.08)
@@ -151,14 +152,14 @@ struct SplashBackgroundView: View {
                 Spacer()
                 RadialGradient(
                     colors: [
-                        Colors.Splash.glow1.opacity(SystemOpacity.glassStrong), // 0.25
-                        Colors.Splash.glow2.opacity(SystemOpacity.glassStrong), // 0.12
-                        Colors.Splash.glow3.opacity(SystemOpacity.ghost), // 0.05
+                        DesignTokens.Colors.Splash.glow1.opacity(DesignTokens.SystemOpacity.glassStrong), // 0.25
+                        DesignTokens.Colors.Splash.glow2.opacity(DesignTokens.SystemOpacity.glassStrong), // 0.12
+                        DesignTokens.Colors.Splash.glow3.opacity(DesignTokens.SystemOpacity.ghost), // 0.05
                         .clear
                     ],
                     center: .center,
-                    startRadius: DesignSystem.loosePadding, // 20
-                    endRadius: DesignSystem.Metrics.heroValueSize * 9.6 // 250
+                    startRadius: DesignTokens.Spacing.loosePadding, // 20
+                    endRadius: DesignTokens.Metrics.heroValueSize * 9.6 // 250
                 )
                 .frame(height: UIConstants.glowHeight) // 300
                 .offset(y: UIConstants.glowOffset) // 80
@@ -169,24 +170,24 @@ struct SplashBackgroundView: View {
                 Spacer()
                 ZStack {
                     // 书本主体
-                    bookCover(rotationDegrees: -8, offsetX: -DesignSystem.atomic)
-                    bookCover(rotationDegrees: 8, offsetX: DesignSystem.atomic)
+                    bookCover(rotationDegrees: -8, offsetX: -DesignTokens.Spacing.atomic)
+                    bookCover(rotationDegrees: 8, offsetX: DesignTokens.Spacing.atomic)
 
                     // 书脊
                     Capsule()
-                        .fill(Color.appAccent.opacity(SystemOpacity.glassStrong)) // 0.2
-                        .frame(width: SystemSpacing.tight, height: DesignSystem.iconDisplay) // 3, 44
+                        .fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.glassStrong)) // 0.2
+                        .frame(width: DesignTokens.SystemSpacing.tight, height: DesignTokens.Spacing.iconDisplay) // 3, 44
 
                     // 从书中升起的光粒子
                     ForEach(0..<5, id: \.self) { i in
                         Circle()
-                            .fill(Color.appAccent.opacity(SystemOpacity.overlay)) // 0.6
-                            .frame(width: SystemSpacing.tight, height: SystemSpacing.tight) // 3, 3
+                            .fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.overlay)) // 0.6
+                            .frame(width: DesignTokens.SystemSpacing.tight, height: DesignTokens.SystemSpacing.tight) // 3, 3
                             .offset(
-                                x: CGFloat(i - 2) * SystemSpacing.medium, // 14
-                                y: nodeGlow ? -DesignSystem.Metrics.iconBoxSize * 1.35 - CGFloat(i) * 15 : -DesignSystem.loosePadding // -60, -20
+                                x: CGFloat(i - 2) * DesignTokens.SystemSpacing.medium, // 14
+                                y: nodeGlow ? -DesignTokens.Metrics.iconBoxSize * 1.35 - CGFloat(i) * 15 : -DesignTokens.Spacing.loosePadding // -60, -20
                             )
-                            .opacity(nodeGlow ? SystemOpacity.overlay : SystemOpacity.glass) // 0.6, 0.1
+                            .opacity(nodeGlow ? DesignTokens.SystemOpacity.overlay : DesignTokens.SystemOpacity.glass) // 0.6, 0.1
                             .animation(
                                 .easeOut(duration: 3.0)
                                 .repeatForever(autoreverses: false)
@@ -195,7 +196,7 @@ struct SplashBackgroundView: View {
                             )
                     }
                 }
-                .padding(.bottom, Spacing.Vault.cardHeight) // 180
+                .padding(.bottom, DesignTokens.Spacing.Vault.cardHeight) // 180
             }
         }
     }
@@ -209,23 +210,23 @@ struct SplashBackgroundView: View {
     // MARK: - 颜色辅助
     /// 神经网络连接线颜色（消除重复的三元表达式）
     private static func networkLineColor(isAccent: Bool) -> Color {
-        isAccent ? Color.appAccent.opacity(SystemOpacity.disabled) : Color.appGloss.opacity(SystemOpacity.glassStrong)
+        isAccent ? Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled) : Color.appGloss.opacity(DesignTokens.SystemOpacity.glassStrong)
     }
 
     /// 神经网络节点颜色（消除重复的三元表达式）
     private static func networkNodeColor(isAccent: Bool, isPrimary: Bool) -> Color {
         if isAccent {
-            return isPrimary ? Color.appAccent.opacity(SystemOpacity.active) : Color.appAccent.opacity(SystemOpacity.disabled)
+            return isPrimary ? Color.appAccent.opacity(DesignTokens.SystemOpacity.active) : Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled)
         } else {
-            return isPrimary ? Color.appGloss.opacity(SystemOpacity.textSecondary) : Color.appGloss.opacity(SystemOpacity.glassStrong)
+            return isPrimary ? Color.appGloss.opacity(DesignTokens.SystemOpacity.textSecondary) : Color.appGloss.opacity(DesignTokens.SystemOpacity.glassStrong)
         }
     }
 
     /// 书本封面轮廓（消除左右两页重复的 RoundedRectangle+stroke+frame+rotation+offset 链）
     private func bookCover(rotationDegrees: Double, offsetX: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: DesignSystem.tiny)
-            .stroke(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border)
-            .frame(width: DesignSystem.Metrics.iconBoxSize + DesignSystem.medium, height: DesignSystem.iconDisplay)
+        RoundedRectangle(cornerRadius: DesignTokens.Spacing.tiny)
+            .stroke(Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.border)
+            .frame(width: DesignTokens.Metrics.iconBoxSize + DesignTokens.Spacing.medium, height: DesignTokens.Spacing.iconDisplay)
             .rotationEffect(.degrees(rotationDegrees))
             .offset(x: offsetX)
     }

@@ -8,6 +8,7 @@
 //  系统层级：[Shared] 测试层
 //  核心职责：针对 iPadRouter 开展自动化单元测试验证。
 //
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPCore
@@ -95,7 +96,7 @@ final class iPadRouterTests: XCTestCase {
         ///          2. 重复访问最新页面自动触发去重；
         ///          3. 超限后，最老的历史页面应被安全丢弃。
         
-        let maxCount = DesignSystem.Metrics.maxBreadcrumbCount
+        let maxCount = DesignTokens.Metrics.maxBreadcrumbCount
 
         // 1. 连续创建并浏览超出上限的 Mock 笔记
         var mockPages: [KnowledgePage] = []

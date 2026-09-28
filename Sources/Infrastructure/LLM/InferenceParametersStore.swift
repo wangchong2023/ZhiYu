@@ -10,6 +10,8 @@
 //
 
 import Foundation
+import Dependencies
+import UFPCore
 
 // MARK: - 推理参数配置结构
 
@@ -72,7 +74,10 @@ public final class InferenceParametersStore {
     
     /// UserDefaults 存储键
     private let userDefaultsKey = "ZhiYu.InferenceParameters"
-    
+
+    /// 键值存储抽象（DI 注入，替代 UserDefaults.standard 直接访问）
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
+
     /// 内存缓存，避免频繁解码 JSON
     private var cache: [String: InferenceParametersConfig] = [:]
     
@@ -117,14 +122,14 @@ public final class InferenceParametersStore {
     /// 清空所有配置（用于测试或重置）
     public func clearAll() {
         cache.removeAll()
-        UserDefaults.standard.removeObject(forKey: userDefaultsKey)
+        keyStore?.removeObject(forKey: userDefaultsKey)
     }
     
     // MARK: - 私有方法
     
     /// 从 UserDefaults 加载缓存
     private func loadCache() {
-        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey) else {
+        guard let data = keyStore?.data(forKey: userDefaultsKey) else {
             return
         }
 
@@ -146,7 +151,7 @@ public final class InferenceParametersStore {
             encoder.dateEncodingStrategy = .iso8601
             encoder.outputFormatting = .prettyPrinted
             let data = try encoder.encode(cache)
-            UserDefaults.standard.set(data, forKey: userDefaultsKey)
+            keyStore?.set(data, forKey: userDefaultsKey)
         } catch {
             Logger.shared.error("[InferenceParametersStore] Failed to save configuration: \(error.localizedDescription)", error: error)
         }

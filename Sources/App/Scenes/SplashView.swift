@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - SplashView
 /// 启动画面：名言引导 + 程序化生成的书本 + 神经网络星空背景
@@ -33,12 +34,12 @@ struct SplashView: View {
                 Spacer()
                 
                 // App Logo / 名称
-                VStack(spacing: DesignSystem.medium) {
-                    Image(systemName: DesignSystem.Icons.library)
+                VStack(spacing: DesignTokens.Spacing.medium) {
+                    Image(systemName: DesignTokens.Icons.library)
                         .font(.system(size: DesignSystem.Gallery.mainIconSize, weight: .light))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.appAccent, Color.appAccent.opacity(DesignSystem.secondaryOpacity)],
+                                colors: [Color.appAccent, Color.appAccent.opacity(DesignTokens.Colors.Opacity.secondaryOpacity)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -46,36 +47,36 @@ struct SplashView: View {
                         .opacity(logoOpacity)
                     
                     Text(L10n.Common.Splash.appName)
-                        .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
+                        .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .opacity(logoOpacity)
                 }
                 .padding(.bottom, DesignSystem.Gallery.splashLogoBottomPadding)
                 
                 // 名言
-                VStack(spacing: DesignSystem.standardPadding) {
+                VStack(spacing: DesignTokens.Spacing.standardPadding) {
                     Text(L10n.Common.Splash.quote)
-                        .font(.system(size: DesignSystem.bodyFontSize, weight: .medium, design: .serif))
-                        .foregroundStyle(.white.opacity(DesignSystem.pressedOpacity))
+                        .font(.system(size: DesignTokens.Typography.bodyFontSize, weight: .medium, design: .serif))
+                        .foregroundStyle(.white.opacity(DesignTokens.Colors.Opacity.pressedOpacity))
                         .multilineTextAlignment(.center)
-                        .lineSpacing(DesignSystem.small)
-                        .padding(.horizontal, DesignSystem.Metrics.largeIconBoxSize)
+                        .lineSpacing(DesignTokens.Spacing.small)
+                        .padding(.horizontal, DesignTokens.Metrics.largeIconBoxSize)
                         .opacity(quoteOpacity)
                     
                     // 署名 (仅保留装饰线)
                     HStack(spacing: 0) {
                         Text(" ")
-                            .foregroundStyle(.white.opacity(DesignSystem.secondaryOpacity))
+                            .foregroundStyle(.white.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
                         Text(L10n.Common.Splash.author)
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [Color.appAccent.opacity(DesignSystem.secondaryOpacity), Color.appAccent],
+                                    colors: [Color.appAccent.opacity(DesignTokens.Colors.Opacity.secondaryOpacity), Color.appAccent],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
                             )
                     }
-                    .font(.system(size: DesignSystem.captionFontSize, weight: .medium, design: .serif))
+                    .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .medium, design: .serif))
                     .opacity(authorOpacity)
                 }
                 
@@ -83,25 +84,25 @@ struct SplashView: View {
                 
                 // 继续按钮
                 Button(action: {
-                    withAnimation(.easeInOut(duration: DesignSystem.Animation.standardDuration)) {
+                    withAnimation(.easeInOut(duration: DesignTokens.Animation.standardDuration)) {
                         onDismiss()
                     }
                 }) {
-                    HStack(spacing: DesignSystem.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         Text(L10n.Common.Splash.enter)
-                            .font(.system(size: DesignSystem.subheadlineFontSize, weight: .semibold, design: .rounded))
-                        Image(systemName: DesignSystem.Icons.arrowRight)
-                            .font(DesignSystem.caption2Font)
+                            .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .semibold, design: .rounded))
+                        Image(systemName: DesignTokens.Icons.arrowRight)
+                            .font(DesignTokens.Typography.caption2Font)
                     }
                     .foregroundStyle(.white)
-                    .padding(.horizontal, DesignSystem.huge)
-                    .padding(.vertical, DesignSystem.medium)
+                    .padding(.horizontal, DesignTokens.Spacing.huge)
+                    .padding(.vertical, DesignTokens.Spacing.medium)
                     .background(
                         Capsule()
-                            .fill(Color.appAccent.opacity(SystemOpacity.glassStrong))
+                            .fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.glassStrong))
                             .overlay(
                                 Capsule()
-                                    .strokeBorder(Color.appAccent.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.border)
+                                    .strokeBorder(Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.border)
                             )
                     )
                 }
@@ -127,29 +128,29 @@ struct SplashView: View {
         nodeGlow = true
         
         // Logo 淡入
-        withAnimation(.easeOut(duration: DesignSystem.Animation.slowDuration)) {
+        withAnimation(.easeOut(duration: DesignTokens.Animation.slowDuration)) {
             logoOpacity = 1
         }
 
         // 名言淡入
         SplashAnimationScheduler.scheduleFadeIn(
-            after: DesignSystem.Animation.Splash.quoteDelay,
-            duration: DesignSystem.Animation.Splash.quoteFadeDuration
+            after: DesignTokens.Animation.Splash.quoteDelay,
+            duration: DesignTokens.Animation.Splash.quoteFadeDuration
         ) {
             quoteOpacity = 1
         }
         
         // 署名淡入
         SplashAnimationScheduler.scheduleFadeIn(
-            after: DesignSystem.Animation.Splash.authorDelay,
-            duration: DesignSystem.Animation.slowDuration
+            after: DesignTokens.Animation.Splash.authorDelay,
+            duration: DesignTokens.Animation.slowDuration
         ) {
             authorOpacity = 1
         }
         
         // 自动进入（仅在用户未手动点击时）
         SplashAnimationScheduler.scheduleStandardTransition(
-            after: DesignSystem.Animation.Splash.autoDismissDelay
+            after: DesignTokens.Animation.Splash.autoDismissDelay
         ) {
             onDismiss()
         }

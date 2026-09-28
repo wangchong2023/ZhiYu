@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 应用程序根视图
 /// 负责全局导航分发（Tab/SplitView）、安全遮罩及全局弹窗调度
@@ -34,12 +35,13 @@ struct ContentView: View {
     
     @Inject internal var deepLinkService: DeepLinkService // inject_exempt: ObservableObject 不适合 @Dependency
     @Dependency(\.appEnvironment) internal var appEnv: any AppEnvironmentProtocol
-    
+    @Dependency(\.databaseManager) internal var databaseManager
+
     @State internal var showSidebar = false
     // Bug #71 修复：AuthSession 是 @Observable，@State 包装单例语义错误且不保证
     // 内部属性变化触发重绘。改为直接引用单例，@Observable 会自动追踪。
     internal var authSession = AuthSession.shared
-    @State private var dbState: DatabaseState = DatabaseManager.shared.state
+    @State private var dbState: DatabaseState = .uninitialized
     /// Bug #72 修复：标记是否已尝试过自动登录，避免 onAppear 多次触发时重复登录。
     @State private var hasAttemptedAutoLogin = false
 
@@ -65,7 +67,7 @@ struct ContentView: View {
                 if case .corrupted(let errorMsg) = dbState {
                     DatabaseCorruptedBanner(errorMessage: errorMsg)
                         .transition(.move(edge: .top).combined(with: .opacity))
-                        .zIndex(DesignSystem.ZIndex.lockOverlay - 1)
+                        .zIndex(DesignTokens.ZIndex.lockOverlay - 1)
                 }
                 Spacer()
             }
@@ -81,8 +83,8 @@ struct ContentView: View {
             // 全局安全锁定覆盖层：覆盖所有笔记本及工作台视图
             if store.securityService.isLocked {
                 LockOverlayView()
-                    .transition(AnyTransition.opacity.combined(with: .scale(scale: 1.0 * DesignSystem.Metrics.lockOverlayScaleMultiplier)))
-                    .zIndex(DesignSystem.ZIndex.lockOverlay)
+                    .transition(AnyTransition.opacity.combined(with: .scale(scale: 1.0 * DesignTokens.Metrics.lockOverlayScaleMultiplier)))
+                    .zIndex(DesignTokens.ZIndex.lockOverlay)
             }
         }
         .fullScreenCover(isPresented: $router.isShowingSettingsSheet) {
@@ -140,13 +142,13 @@ struct ContentView: View {
             .globalSheetTheme()
             .applyPresentationSizing()
         }
-        .animation(DesignSystem.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
-        .animation(DesignSystem.Animation.Config.prominentSpring, value: vaultService.selectedVaultID)
+        .animation(DesignTokens.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
+        .animation(DesignTokens.Animation.Config.prominentSpring, value: vaultService.selectedVaultID)
         .environmentObject(MedalService.shared)
         .environment(\.locale, router.currentLocale)
         .onReceive(NotificationCenter.default.publisher(for: .databaseStateDidChange)) { _ in
             withAnimation(.spring()) {
-                dbState = DatabaseManager.shared.state
+                dbState = databaseManager.state
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .userAuthExpired)) { _ in
@@ -179,10 +181,10 @@ struct ContentView: View {
     
     @ViewBuilder
     private var sidebarOverlayLayer: some View {
-        Color.theme.black.opacity(DesignSystem.dimmedOpacity)
+        Color.theme.black.opacity(DesignTokens.Colors.Opacity.dimmedOpacity)
             .ignoresSafeArea()
             .onTapGesture {
-                withAnimation(DesignSystem.Animation.Config.prominentSpring) {
+                withAnimation(DesignTokens.Animation.Config.prominentSpring) {
                     showSidebar = false
                 }
             }
@@ -192,14 +194,14 @@ struct ContentView: View {
             SidebarView(heroNamespace: heroNamespace)
                 .frame(width: DesignSystem.Sidebar.width)
                 .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
-                .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.shadowRadius)
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous))
+                .shadow(color: .primary.opacity(DesignTokens.SystemOpacity.ghost), radius: DesignTokens.Spacing.shadowRadius)
                 .padding(.vertical, DesignSystem.Layout.sidebarOverlayVerticalPadding)
-                .padding(.leading, DesignSystem.medium)
+                .padding(.leading, DesignTokens.Spacing.medium)
             Spacer()
         }
         .transition(.move(edge: .leading))
-        .zIndex(DesignSystem.ZIndex.sidebarOverlay)
+        .zIndex(DesignTokens.ZIndex.sidebarOverlay)
     }
 }
 
@@ -263,7 +265,7 @@ extension View {
             // iPad 与 Mac 大屏下，差异化控制尺寸，为双栏左右分栏提供完美的自适应呈现空间
             #if targetEnvironment(macCatalyst)
             // Mac Catalyst 运行模式下，指定适合 macOS 系统的固定宽屏尺寸
-            self.frame(width: DesignSystem.Metrics.minWindowWidth, height: DesignSystem.Metrics.minWindowHeight)
+            self.frame(width: DesignTokens.Metrics.minWindowWidth, height: DesignTokens.Metrics.minWindowHeight)
             #else
             // iPad 设备运行模式下：防止强设 minWidth 导致系统默认的 sheet 内容发生截断。
             if #available(iOS 18.0, *) {
@@ -296,21 +298,23 @@ extension View {
 struct DatabaseCorruptedBanner: View {
     /// 异常错误信息
     let errorMessage: String
-    
+
     /// 状态控制：是否正在重新验证中
     @State private var isRetrying = false
     /// 状态控制：是否展示详细的报错堆栈
     @State private var showDetail = false
+    /// 数据库管理器（通过 DI 注入，避免 L3 视图直接访问 L1 单例）
+    @Dependency(\.databaseManager) private var databaseManager
     
     var body: some View {
-        VStack(spacing: SystemSpacing.element) {
-            HStack(spacing: SystemSpacing.medium) {
+        VStack(spacing: DesignTokens.SystemSpacing.element) {
+            HStack(spacing: DesignTokens.SystemSpacing.medium) {
                 // 安全警告图标
-                Image(systemName: DesignSystem.Icons.exclamationShieldFill)
+                Image(systemName: DesignTokens.Icons.exclamationShieldFill)
                     .font(.title3)
                     .foregroundColor(.theme.orange)
                 
-                VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                     // 主警告文案 (从强类型本地化 L10n 中拉取)
                     Text(L10n.Security.databaseCorrupted)
                         .font(.subheadline)
@@ -332,14 +336,14 @@ struct DatabaseCorruptedBanner: View {
                 Spacer()
                 
                 // 动作按钮组
-                HStack(spacing: SystemSpacing.medium) {
+                HStack(spacing: DesignTokens.SystemSpacing.medium) {
                     // 折叠切换按钮
                     Button(action: {
                         withAnimation {
                             showDetail.toggle()
                         }
                     }) {
-                        Image(systemName: showDetail ? DesignSystem.Icons.chevronUp : DesignSystem.Icons.chevronDown)
+                        Image(systemName: showDetail ? DesignTokens.Icons.chevronUp : DesignTokens.Icons.chevronDown)
                             .foregroundColor(.secondary)
                             .font(.caption)
                     }
@@ -356,7 +360,7 @@ struct DatabaseCorruptedBanner: View {
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .padding(.horizontal, 12)
-                                .padding(.vertical, SystemSpacing.small)
+                                .padding(.vertical, DesignTokens.SystemSpacing.small)
                                 .background(Capsule().fill(Color.theme.orange))
                                 .foregroundColor(.theme.white)
                         }
@@ -368,14 +372,14 @@ struct DatabaseCorruptedBanner: View {
             .padding(.vertical, 12)
             .background(.ultraThinMaterial)
             .cornerRadius(12)
-            .shadow(color: .primary.opacity(DesignSystem.Opacity.subtle), radius: 6, x: 0, y: 3)
+            .shadow(color: .primary.opacity(DesignTokens.Opacity.subtle), radius: 6, x: 0, y: 3)
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                    .stroke(Color.theme.orange.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                    .stroke(Color.theme.orange.opacity(DesignTokens.Opacity.shadow), lineWidth: DesignTokens.SystemStroke.divider)
             )
         }
         .padding(.horizontal, 16)
-        .padding(.top, SystemSpacing.element)
+        .padding(.top, DesignTokens.SystemSpacing.element)
     }
     
     /// 触发重新挂载与完整性校验逻辑
@@ -383,10 +387,10 @@ struct DatabaseCorruptedBanner: View {
         isRetrying = true
         Task {
             do {
-                let dbURL = try DatabaseManager.defaultSandboxDatabaseURL()
+                let dbURL = try databaseManager.defaultSandboxDatabaseURL()
 
-                // 重新执行 setup 挂载物理沙盒
-                try DatabaseManager.shared.setup(at: dbURL)
+                // 重新执行 setup 挂载物理沙盒（通过 DI 注入的 databaseManager）
+                try await databaseManager.setup(at: dbURL)
                 Logger.shared.info("[DatabaseCorruptedBanner] Reverification succeeded! Remounted physical database.")
             } catch {
                 Logger.shared.error("[DatabaseCorruptedBanner] Reverification" + " failed: \(error)", error: error)

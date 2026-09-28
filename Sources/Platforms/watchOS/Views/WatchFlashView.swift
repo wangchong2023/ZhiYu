@@ -12,6 +12,7 @@
 #if os(watchOS)
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 public struct WatchFlashView: View {
     @Inject private var watchSync: any WatchSyncProtocol // inject_exempt: ObservableObject 不适合 @Dependency
@@ -32,9 +33,9 @@ public struct WatchFlashView: View {
     public var body: some View {
         TabView(selection: $selectedIndex) {
             ForEach(0..<flashQuotes.count, id: \.self) { index in
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                     HStack {
-                        Image(systemName: DesignSystem.Icons.sparkles)
+                        Image(systemName: DesignTokens.Icons.sparkles)
                             .foregroundStyle(Color.appAccent)
                             .font(.caption)
                         Text(L10n.Widget.dailyInsight)
@@ -55,7 +56,7 @@ public struct WatchFlashView: View {
 
                     Spacer()
                 }
-                .padding(DesignSystem.small)
+                .padding(DesignTokens.Spacing.small)
                 .tag(index)
             }
         }

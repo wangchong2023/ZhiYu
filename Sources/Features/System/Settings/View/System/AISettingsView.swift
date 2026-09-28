@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 统一的 AI 大模型配置面板视图
 @MainActor
@@ -36,7 +37,7 @@ struct AISettingsView: View {
                 }
                 .segmentedPickerStyleIfAvailable()
                 .padding(.horizontal)
-                .padding(.vertical, Spacing.small)
+                .padding(.vertical, DesignTokens.Spacing.small)
  
                 // 核心状态切换区域，根据 selectedTab 动态渲染对应子模块配置视图
                 Group {

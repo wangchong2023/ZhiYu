@@ -12,6 +12,7 @@ import SwiftUI
 import UFPCore
 import WidgetKit
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 1. 每日 AI 洞察/闪念小组件视图 (Daily AI Insight Widget)
 public struct DailyInsightWidgetView: View {
@@ -24,9 +25,9 @@ public struct DailyInsightWidgetView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
-            HStack(spacing: DesignSystem.tiny) {
-                Image(systemName: DesignSystem.Icons.sparkle)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            HStack(spacing: DesignTokens.Spacing.tiny) {
+                Image(systemName: DesignTokens.Icons.sparkle)
                     .font(.caption.weight(.bold))
                     .foregroundStyle(Color.appAccent)
                 Text(L10n.Widget.dailyInsight)
@@ -38,7 +39,7 @@ public struct DailyInsightWidgetView: View {
                     .foregroundStyle(Color.appSecondary)
             }
 
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.appText)
@@ -49,13 +50,13 @@ public struct DailyInsightWidgetView: View {
                     .foregroundStyle(Color.appSecondary)
                     .lineLimit(3)
             }
-            .padding(DesignSystem.small)
+            .padding(DesignTokens.Spacing.small)
             .background(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
                     .fill(Color.appCard)
             )
         }
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
     }
 }
 
@@ -70,9 +71,9 @@ public struct KnowledgeDistributionWidgetView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             HStack {
-                Label(L10n.Widget.knowledgeDistribution, systemImage: DesignSystem.Icons.mindmap)
+                Label(L10n.Widget.knowledgeDistribution, systemImage: DesignTokens.Icons.mindmap)
                     .font(.caption.weight(.bold))
                     .foregroundStyle(Color.appAccent)
                 Spacer()
@@ -81,21 +82,21 @@ public struct KnowledgeDistributionWidgetView: View {
                     .foregroundStyle(Color.appSecondary)
             }
 
-            HStack(spacing: DesignSystem.tiny) {
+            HStack(spacing: DesignTokens.Spacing.tiny) {
                 ForEach(Array(distribution.keys.sorted()), id: \.self) { key in
-                    VStack(spacing: DesignSystem.atomic) {
+                    VStack(spacing: DesignTokens.Spacing.atomic) {
                         Text(key)
                             .font(.caption2)
                             .foregroundStyle(Color.appSecondary)
                         
-                        RoundedRectangle(cornerRadius: DesignSystem.atomic)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.atomic)
                             .fill(Color.appAccent.opacity(distribution[key] ?? PlatformConstants.WidgetWatch.distributionFallbackOpacity))
-                            .frame(height: DesignSystem.tiny)
+                            .frame(height: DesignTokens.Spacing.tiny)
                     }
                 }
             }
         }
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
     }
 }
 
@@ -104,21 +105,21 @@ public struct QuickCaptureWidgetView: View {
     public init() {}
 
     public var body: some View {
-        HStack(spacing: DesignSystem.medium) {
-            shortcutItem(icon: DesignSystem.Icons.voiceNote, label: L10n.Widget.voice)
-            shortcutItem(icon: DesignSystem.Icons.scan, label: L10n.Widget.ocr)
-            shortcutItem(icon: DesignSystem.Icons.search, label: L10n.Widget.search)
-            shortcutItem(icon: DesignSystem.Icons.sparkle, label: L10n.Widget.qa)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            shortcutItem(icon: DesignTokens.Icons.voiceNote, label: L10n.Widget.voice)
+            shortcutItem(icon: DesignTokens.Icons.scan, label: L10n.Widget.ocr)
+            shortcutItem(icon: DesignTokens.Icons.search, label: L10n.Widget.search)
+            shortcutItem(icon: DesignTokens.Icons.sparkle, label: L10n.Widget.qa)
         }
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
     }
 
     private func shortcutItem(icon: String, label: String) -> some View {
-        VStack(spacing: DesignSystem.tiny) {
+        VStack(spacing: DesignTokens.Spacing.tiny) {
             ZStack {
                 Circle()
-                    .fill(Color.appAccent.opacity(DesignSystem.Opacity.soft))
-                    .frame(width: Spacing.Action.backButtonWidth, height: Spacing.Action.backButtonWidth)
+                    .fill(Color.appAccent.opacity(DesignTokens.Opacity.soft))
+                    .frame(width: DesignTokens.Spacing.Action.backButtonWidth, height: DesignTokens.Spacing.Action.backButtonWidth)
                 
                 Image(systemName: icon)
                     .font(.caption.weight(.bold))
@@ -147,8 +148,8 @@ public struct WatchDailyInsightView: View {
     public var body: some View {
         TabView {
             ForEach(Array(insights.enumerated()), id: \.offset) { _, insight in
-                VStack(spacing: DesignSystem.small) {
-                    Image(systemName: DesignSystem.Icons.sparkle)
+                VStack(spacing: DesignTokens.Spacing.small) {
+                    Image(systemName: DesignTokens.Icons.sparkle)
                         .font(.title3)
                         .foregroundStyle(Color.appAccent)
                     
@@ -158,7 +159,7 @@ public struct WatchDailyInsightView: View {
                         .multilineTextAlignment(.center)
                         .lineLimit(4)
                 }
-                .padding(DesignSystem.small)
+                .padding(DesignTokens.Spacing.small)
             }
         }
         #if os(watchOS)
@@ -168,7 +169,7 @@ public struct WatchDailyInsightView: View {
 }
 
 #Preview(L10n.Widget.widgetsPreview) {
-    VStack(spacing: SystemSpacing.content) {
+    VStack(spacing: DesignTokens.SystemSpacing.content) {
         DailyInsightWidgetView()
         KnowledgeDistributionWidgetView()
         QuickCaptureWidgetView()

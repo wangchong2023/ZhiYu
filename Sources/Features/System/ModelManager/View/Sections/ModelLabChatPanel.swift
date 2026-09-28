@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 多轮对话沙盒
 
@@ -31,19 +32,19 @@ extension ModelLabView {
 
     @ViewBuilder
     var chatMainPanel: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             messageScrollView
             Divider()
             chatInputBarView
         }
-        .cardStyle(horizontalPadding: DesignSystem.medium, verticalPadding: DesignSystem.medium)
+        .cardStyle(horizontalPadding: DesignTokens.Spacing.medium, verticalPadding: DesignTokens.Spacing.medium)
     }
 
     @ViewBuilder
     var messageScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: DesignSystem.medium) {
+                LazyVStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     ForEach(chatHistory) { msg in
                         AIChatBubbleView(text: msg.text, isUser: msg.isUser)
                             .id(msg.id)
@@ -54,7 +55,7 @@ extension ModelLabView {
                         generatingPlaceholderView
                     }
                 }
-                .padding(.vertical, DesignSystem.small)
+                .padding(.vertical, DesignTokens.Spacing.small)
             }
             .frame(maxHeight: .infinity) // 消息滚动区域自适应撑满，使底部输入框贴合安全区
             .onChange(of: chatHistory) { _, _ in
@@ -89,7 +90,7 @@ extension ModelLabView {
 
     @ViewBuilder
     var chatInputBarView: some View {
-        HStack(alignment: .center, spacing: DesignSystem.medium) {
+        HStack(alignment: .center, spacing: DesignTokens.Spacing.medium) {
             // 左侧特化附件（加号）菜单按钮，根据不同用例由 ModelLabManager 状态层分发不同选项，避开 View 本地化审计
             Menu {
                 ForEach(labManager.attachmentOptions) { option in
@@ -101,7 +102,7 @@ extension ModelLabView {
                     }
                 }
             } label: {
-                Image(systemName: DesignSystem.Icons.plus)
+                Image(systemName: DesignTokens.Icons.plus)
                     .font(.title2)
                     .foregroundStyle(Color.theme.cyan)
                     .frame(width: DesignSystem.Action.inputBarHeight, height: DesignSystem.Action.inputBarHeight)
@@ -128,15 +129,15 @@ extension ModelLabView {
                     sendChatMessage()
                 }
             } label: {
-                Image(systemName: labManager.isGenerating ? DesignSystem.Icons.stop : DesignSystem.Icons.send)
+                Image(systemName: labManager.isGenerating ? DesignTokens.Icons.stop : DesignTokens.Icons.send)
                     .font(.title2)
                     .foregroundStyle(labManager.isGenerating ? .red : (!chatInputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.theme.cyan : .secondary))
                     .frame(width: DesignSystem.Action.inputBarHeight, height: DesignSystem.Action.inputBarHeight)
             }
             .disabled(chatInputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !labManager.isGenerating)
         }
-        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.tightPadding)
-        .background(labManager.isGenerating ? Color.appCard.opacity(DesignSystem.Opacity.soft) : Color.appCard)
+        .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.tightPadding)
+        .background(labManager.isGenerating ? Color.appCard.opacity(DesignTokens.Opacity.soft) : Color.appCard)
     }
 
     // MARK: - 对话逻辑

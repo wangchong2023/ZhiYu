@@ -52,6 +52,8 @@ extension View {
     ) -> some View {
         @Dependency(\.themeService) var themeManager
         return self
+            // MARK: Dynamic Type 固定（防止辅助功能字号缩放导致快照漂移）
+            .environment(\.sizeCategory, .medium)
             // MARK: @Environment（@Observable 类型，共 16 个）
             .environment(appStore ?? AppStore())
             .environment(Router.shared)

@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 标准卡片容器组件
 /// 提供带标题和脚注的分组视图，内部内容自动应用玻璃拟态背景。
@@ -38,15 +39,15 @@ public struct StandardSection<Content: View>: View {
     // MARK: - Body
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             // 渲染标题
             if let title = title {
                 Group {
                     Text(title)
                 }
-                .font(Typography.captionFont)
+                .font(DesignTokens.Typography.captionFont)
                 .foregroundStyle(.appSecondary)
-                .padding(.leading, Spacing.medium)
+                .padding(.leading, DesignTokens.Spacing.medium)
                 .textCase(.uppercase)
             }
             
@@ -54,20 +55,20 @@ public struct StandardSection<Content: View>: View {
             VStack(spacing: 0) {
                 content
             }
-            .appGlassCardStyle(opacity: SystemOpacity.active, cornerRadius: DesignSystem.cardRadius)
+            .appGlassCardStyle(opacity: DesignTokens.SystemOpacity.active, cornerRadius: DesignTokens.Spacing.cardRadius)
             
             // 渲染脚注
             if let footer = footer {
                 Group {
                     Text(footer)
                 }
-                .font(Typography.caption2Font)
+                .font(DesignTokens.Typography.caption2Font)
                 .foregroundStyle(.appSecondary)
-                .padding(.horizontal, Spacing.medium)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
             }
         }
-        .padding(.horizontal, Spacing.standardPadding)
-        .padding(.vertical, Spacing.small)
+        .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+        .padding(.vertical, DesignTokens.Spacing.small)
     }
 }
 
@@ -81,14 +82,14 @@ public extension View {
     func appListRowStyle(showDivider: Bool = true) -> some View {
         VStack(spacing: 0) {
             self
-                .padding(.horizontal, Spacing.medium)
-                .padding(.vertical, Spacing.medium)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.vertical, DesignTokens.Spacing.medium)
                 .contentShape(Rectangle()) // 确保整行可点击
             
             if showDivider {
                 Divider()
-                    .padding(.leading, DesignSystem.medium)
-                    .opacity(DesignSystem.dividerOpacity)
+                    .padding(.leading, DesignTokens.Spacing.medium)
+                    .opacity(DesignTokens.Colors.Opacity.dividerOpacity)
             }
         }
     }

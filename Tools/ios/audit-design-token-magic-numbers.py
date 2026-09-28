@@ -1,0 +1,430 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# 版权所有 (c) 2026 ZhiYu。保留所有权利。
+#
+# 职责说明: 本脚本用于对 Sources/ 目录以及 Tools/Mock/ 目录下的 Swift 和 Python 代码
+# 进行魔鬼数字和硬编码常量（如 padding，cornerRadius，port，以及硬编码 Hex 颜色等）的精确扫描审计。
+#
+
+"""精确扫描：排除 DesignSystem 定义文件和合法用法"""
+
+import os, re, sys
+
+EXCLUDE_DIRS = {'.git','build','DerivedData','.build','Frameworks','Tests','env','__pycache__'}
+TOKEN_FILES = {
+    'Colors.swift', 'DesignTokens.swift', 'IconTokens.swift', 'Spacing.swift',
+    'Typography.swift', 'Animations.swift',
+    'DemoImageBuilder.swift', 'InitialNotebookGenerator.swift',
+    'Reference.swift', 'System.swift', 'Component.swift',
+}
+TOKEN_FILES_PY = set()
+
+SWIFT_EXT = {'.swift'}
+PY_EXT = {'.py'}
+
+# 诊断输出时代码行内容的最大截断长度
+MAX_LINE_PREVIEW_LEN = 90
+# 每个文件最多展示的缺陷实例数量
+MAX_DISPLAY_LIMIT = 5
+
+def scan_file(path, ext):
+    """扫描单个文件中的硬编码魔鬼数字，返回 (类型, 路径, 行号, 代码) 元组列表。"""
+    issues = []
+    if 'Packages/UFPDesignSystem/Sources/UFPDesignSystem' in path or os.path.basename(path) in TOKEN_FILES:
+        return issues
+    with open(path, errors='ignore') as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines, 1):
+        s = line.strip()
+        if s.startswith('//') or s.startswith('#'):
+            continue
+        if ext in SWIFT_EXT:
+            issues.extend(check_swift_line(path, i, s, line))
+    # 检测 private enum 中的变相硬编码
+    issues.extend(scan_private_constants(path, lines))
+    return issues
+
+
+def scan_private_constants(path, lines):
+    """
+    扫描文件中 UI 语境 private enum 内的 static let = 数字 模式（变相硬编码）。
+
+    治理策略：
+    1. 只检测 UI 语境的 private enum（名称含 UI/Layout/Visual/Style/Spacing/Size/Font/Color/Opacity）
+    2. 跳过业务逻辑 enum（非 UI 语境自动跳过）
+    3. 如果值与已知 System/Component token 值重复，报错"应使用现有 token"
+    4. 如果值是纯数字字面量且不在白名单中，报错"private 常量变相硬编码"
+    """
+    issues = []
+    in_private_enum = False
+    enum_indent = 0
+    enum_name = ''
+
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith('//'):
+            continue
+        # 检测 private enum 开始
+        enum_match = re.match(r'^(\s*)private\s+enum\s+(\w+)', line)
+        if enum_match:
+            in_private_enum = True
+            enum_indent = len(enum_match.group(1))
+            enum_name = enum_match.group(2)
+            continue
+        # 检测 enum 结束（回到同级或更少缩进的 }）
+        if in_private_enum and stripped == '}' and len(line) - len(line.lstrip()) <= enum_indent:
+            in_private_enum = False
+            continue
+        # 在 private enum 内检测 static let = 数字
+        if in_private_enum and _is_ui_context_enum(enum_name):
+            issue = _check_private_constant_value(path, i, stripped, enum_name)
+            if issue:
+                issues.append(issue)
+    return issues
+
+
+def _is_ui_context_enum(enum_name):
+    """判断 enum 名称是否属于 UI 语境（含 UI/Layout/Visual/Style 等关键词）。"""
+    UI_CONTEXT_KEYWORDS = ('UI', 'Layout', 'Visual', 'Style', 'Spacing', 'Size', 'Font', 'Color', 'Opacity', 'Dimension', 'Metric')
+    return any(kw.lower() in enum_name.lower() for kw in UI_CONTEXT_KEYWORDS)
+
+
+def _check_private_constant_value(path, line_no, stripped, enum_name):
+    """检测单行 static let = 数字 是否为变相硬编码，返回 issue 元组或 None。"""
+    # 支持类型标注：static let foo: CGFloat = 12.0
+    m = re.match(r'\s*static\s+let\s+(\w+)\s*(?::\s*\w+)?\s*=\s*(\d+\.?\d*)\s*$', stripped)
+    if not m:
+        return None
+    const_name = m.group(1)
+    const_value_str = m.group(2)
+    try:
+        const_value = float(const_value_str)
+        if const_value == int(const_value):
+            const_value = int(const_value)
+    except ValueError:
+        return None
+
+    whitelist_key = f'{path}:{const_name}'
+    if whitelist_key in PRIVATE_CONST_WHITELIST:
+        return None
+
+    # 检查值是否与已知 token 重复
+    if const_value in KNOWN_TOKEN_VALUES:
+        return (
+            f'private 常量 "{const_name}={const_value}" 与现有 System/Component token 重复，应使用现有 token',
+            path, line_no, stripped[:MAX_LINE_PREVIEW_LEN]
+        )
+    # 纯数字字面量的 private 常量，需注册白名单
+    return (
+        f'private 常量 "{const_name}={const_value}" 使用数字字面量，需注册白名单或引用 Reference 层',
+        path, line_no, stripped[:MAX_LINE_PREVIEW_LEN]
+    )
+
+
+def check_swift_colors(raw, path, line_no, s):
+    """检查 Swift 代码行中是否包含硬编码颜色值。"""
+    if '//' in s:
+        return []
+    res = []
+    _check_rgb_color(raw, path, line_no, s, res)
+    _check_hex_color(raw, path, line_no, s, res)
+    return res
+
+
+def _check_rgb_color(raw, path, line_no, s, res):
+    """检查 RGB 颜色硬编码。"""
+    valid_color = any(k in raw or k in path for k in ['DesignTokens', 'Colors.swift', 'UIColor.theme', 'Color.theme'])
+    if (re.search(r'\bColor\(red:', raw) or re.search(r'\bUIColor\(red:', raw) or re.search(r'\bUIColor\(white:', raw)) and not valid_color:
+        res.append(('Color/UIColor(red:/white:)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_hex_color(raw, path, line_no, s, res):
+    """检查 Hex 颜色硬编码。"""
+    if re.search(r'\bColor\(hex:\s*"([^"]+)"', raw) and 'Colors.swift' not in path:
+        res.append(('Color(hex:"...")', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def is_layout_exempt(path, s):
+    """判断布局检查是否可豁免。仅豁免完整注释行和 Layout 定义块，行尾注释不豁免。"""
+    exempt_tokens = ['enum Layout', 'struct Layout', 'private enum', 'private struct', 'ContentView.swift', 'ZhiYuWatchView.swift']
+    return any(t in s or t in path for t in exempt_tokens)
+
+
+def check_swift_layout(raw, path, line_no, s):
+    """检查 Swift 视图代码中的布局魔鬼数字与算术表达式。"""
+    if is_layout_exempt(path, s):
+        return []
+    res = []
+    _check_padding_and_radius(raw, path, line_no, s, res)
+    _check_frame_and_opacity(raw, path, line_no, s, res)
+    _check_spacing_and_layout_params(raw, path, line_no, s, res)
+    _check_magic_math(raw, path, line_no, s, res)
+    _check_business_threshold(raw, path, line_no, s, res)
+    return res
+
+
+def _check_business_threshold(raw, path, line_no, s, res):
+    """检查 View 文件中的业务比较阈值魔鬼数字（> N, < N, >= N, <= N）。"""
+    # 仅检测 View 文件中的比较运算符后的裸数字（2 位以上，避免误报）
+    if '/View/' not in path and '/Views/' not in path and not path.endswith('View.swift'):
+        return
+    # 排除常量定义文件
+    basename = os.path.basename(path)
+    if basename in TOKEN_FILES or 'Constants' in basename:
+        return
+    # 检测 > N, < N, >= N, <= N（2 位以上数字，避免 > 0/> 1 误报）
+    if re.search(r'[<>]=?\s*(\d{2,})\b', raw):
+        # 排除 DesignSystem token 上下文
+        if not any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component']):
+            res.append(('hardcoded business threshold', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_padding_and_radius(raw, path, line_no, s, res):
+    """检查 padding 与 cornerRadius。"""
+    valid = any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
+    if re.search(r'\.padding\(\s*(\d+)\s*\)', raw) and not valid:
+        res.append(('hardcoded padding', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    # 检测带 label 的双参数形式：.padding(.vertical, 10) / .padding(.horizontal, 8)
+    if re.search(r'\.padding\(\s*\.\w+,\s*(\d+)\s*\)', raw) and not valid:
+        res.append(('hardcoded padding (labeled)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.search(r'cornerRadius:\s*(\d+)\s*[),]', raw) and not valid:
+        res.append(('hardcoded cornerRadius', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_frame_and_opacity(raw, path, line_no, s, res):
+    """检查 frame 尺寸与 opacity。"""
+    valid_frame = any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component', 'geo', 'CGFloat', 'Double'])
+    if re.search(r'\.frame\([^)]*\b(width|height|minWidth|minHeight|maxWidth|maxHeight):\s*\d{2,}\b', raw) and not valid_frame:
+        res.append(('hardcoded frame dimension', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    valid_opacity = any(k in raw for k in ['DesignTokens', 'Colors', 'Opacity', 'Color.theme', 'glassOpacity', 'Reference', 'System', 'Component'])
+    if re.search(r'\.opacity\(\s*0\.\d+\s*\)', raw) and not valid_opacity:
+        res.append(('hardcoded opacity', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_spacing_and_layout_params(raw, path, line_no, s, res):
+    """检查容器 spacing、font size、lineWidth、shadow 等布局参数中的魔鬼数字。"""
+    valid = any(k in raw for k in ['DesignTokens', 'Spacing', 'Layout', 'Reference', 'System', 'Component'])
+    if valid:
+        return
+    _check_container_spacing(raw, path, line_no, s, res)
+    _check_line_spacing(raw, path, line_no, s, res)
+    _check_font_size(raw, path, line_no, s, res)
+    _check_line_width(raw, path, line_no, s, res)
+    _check_shadow_params(raw, path, line_no, s, res)
+    _check_kerning_tracking(raw, path, line_no, s, res)
+
+
+def _check_container_spacing(raw, path, line_no, s, res):
+    """检查 HStack/VStack/ZStack 等容器的 spacing 参数。"""
+    # spacing: 0 是合法的无间距用法，豁免
+    pattern = r'\b(?:HStack|VStack|ZStack|LazyVStack|LazyHStack|Grid|LazyVGrid|LazyHGrid)\(\s*(?:alignment:[^,]+,\s*)?spacing:\s*([1-9]\d*)\s*[),]'
+    if re.search(pattern, raw):
+        res.append(('hardcoded container spacing', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_line_spacing(raw, path, line_no, s, res):
+    """检查 .lineSpacing(N) 硬编码。lineSpacing 的值必须是 token，纯数字即违规。"""
+    if re.search(r'\.lineSpacing\(\s*(\d+\.?\d*)\s*\)', raw):
+        res.append(('hardcoded lineSpacing', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_font_size(raw, path, line_no, s, res):
+    """检查 .font(.system(size: N)) 中的硬编码字号。"""
+    if re.search(r'\.font\(\s*\.system\(\s*size:\s*(\d+)\s*[,)]', raw):
+        res.append(('hardcoded font size', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_line_width(raw, path, line_no, s, res):
+    """检查 lineWidth: N 硬编码。lineWidth 的值必须是 token，纯数字即违规，不受行内其他 token 影响。"""
+    if re.search(r'\blineWidth:\s*(\d+\.?\d*)\b', raw):
+        res.append(('hardcoded lineWidth', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_shadow_params(raw, path, line_no, s, res):
+    """检查 .shadow 中的 radius/x/y 硬编码。"""
+    if re.search(r'\.shadow\(.*?radius:\s*(\d+\.?\d*)\b', raw):
+        res.append(('hardcoded shadow radius', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.search(r'\.shadow\(.*?\b[xy]:\s*(\d+\.?\d*)\b', raw):
+        res.append(('hardcoded shadow offset', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_kerning_tracking(raw, path, line_no, s, res):
+    """检查 .kerning(N) / .tracking(N) 硬编码。"""
+    if re.search(r'\.(?:kerning|tracking)\(\s*(\d+\.?\d*)\s*\)', raw):
+        res.append(('hardcoded kerning/tracking', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+def _check_magic_math(raw, path, line_no, s, res):
+    """检查 customSize 伪 token 模式（算术检测由 arithmetic.py 负责）。"""
+    _check_custom_size(raw, path, line_no, s, res)
+
+
+def _check_custom_size(raw, path, line_no, s, res):
+    """检查 customSizeN 伪 token 模式。"""
+    if re.search(r'customSize\d+', raw) and 'DesignTokens+Metrics.swift' not in path and 'Spacing.swift' not in path:
+        res.append(('pseudo-token customSize (硬编码数字变相包裹)', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+
+
+# private 常量白名单（从 Config/exemptions/manual_whitelist.yml 的 private_const_whitelist 分类动态加载）
+def _load_private_const_whitelist():
+    """从 manual_whitelist.yml 的 private_const_whitelist 分类加载白名单。
+
+    yml 格式：
+        private_const_whitelist:
+          - file: Sources/Shared/.../File.swift
+            const: iconSize
+            reason: 组件特定尺寸，无匹配 token
+            expiry_check: 2026-12-31
+    """
+    whitelist = set()
+    yml_path = os.path.join(os.path.dirname(__file__), '..', '..', 'Config', 'exemptions', 'manual_whitelist.yml')
+    if not os.path.exists(yml_path):
+        return whitelist
+    try:
+        import yaml
+        with open(yml_path, encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+        items = data.get('private_const_whitelist', []) or []
+        for item in items:
+            if isinstance(item, dict) and 'file' in item and 'const' in item:
+                key = f"{item['file']}:{item['const']}"
+                whitelist.add(key)
+    except Exception:
+        pass
+    return whitelist
+
+
+PRIVATE_CONST_WHITELIST = _load_private_const_whitelist()
+
+
+def _load_token_values():
+    """从 Reference.swift/System.swift/Component.swift 动态解析所有 token 值，避免硬编码。"""
+    tokens_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Packages', 'UFPDesignSystem', 'Sources', 'UFPDesignSystem', 'Tokens')
+    token_files = ['Reference.swift', 'System.swift', 'Component.swift']
+    values = set()
+    for fname in token_files:
+        fpath = os.path.join(tokens_dir, fname)
+        if not os.path.exists(fpath):
+            continue
+        with open(fpath, encoding='utf-8', errors='ignore') as f:
+            for line in f:
+                # 匹配 public static let name: Type = value
+                m = re.search(r'public\s+static\s+let\s+\w+\s*:\s*[\w.]+\s*=\s*(\d+\.?\d*)', line)
+                if m:
+                    val_str = m.group(1)
+                    try:
+                        val = float(val_str)
+                        if val == int(val):
+                            val = int(val)
+                        values.add(val)
+                    except ValueError:
+                        pass
+    return values
+
+
+KNOWN_TOKEN_VALUES = _load_token_values()
+
+
+def _check_private_constant(raw, path, line_no, s, res):
+    """
+    检测 private enum 中的硬编码数字（变相魔鬼数字）。
+
+    治理策略：
+    1. 扫描 private enum UIConstants / private enum Constants 中的 static let = 数字
+    2. 如果值与已知 System/Component token 值重复，报错"应使用现有 token"
+    3. 如果值是纯数字字面量且不在白名单中，报错"private 常量变相硬编码"
+    """
+    # 匹配 private enum 内的 static let = 数字 模式
+    # 如：static let backgroundOpacity = 0.9
+    m = re.match(r'\s*static\s+let\s+(\w+)\s*(?::\s*\w+)?\s*=\s*(\d+\.?\d*)\s*$', raw)
+    if m:
+        const_name = m.group(1)
+        const_value_str = m.group(2)
+        try:
+            const_value = float(const_value_str)
+            if const_value == int(const_value):
+                const_value = int(const_value)
+        except ValueError:
+            return
+
+        whitelist_key = f'{path}:{const_name}'
+        if whitelist_key in PRIVATE_CONST_WHITELIST:
+            return
+
+        # 检查值是否与已知 token 重复
+        if const_value in KNOWN_TOKEN_VALUES:
+            res.append((
+                f'private 常量 "{const_name}={const_value}" 与现有 System/Component token 重复，应使用现有 token',
+                path, line_no, s[:MAX_LINE_PREVIEW_LEN]
+            ))
+        else:
+            # 纯数字字面量的 private 常量，需注册白名单
+            res.append((
+                f'private 常量 "{const_name}={const_value}" 使用数字字面量，需注册白名单或引用 Reference 层',
+                path, line_no, s[:MAX_LINE_PREVIEW_LEN]
+            ))
+
+def check_swift_line(path, line_no, s, raw):
+    """
+    检查 Swift 单行代码中是否包含硬编码的 UI 参数，
+    例如硬编码的 RGB Color 构造、Hex Color 字符串、硬编码的 padding 或 cornerRadius。
+    """
+    return check_swift_colors(raw, path, line_no, s) + check_swift_layout(raw, path, line_no, s)
+
+
+def check_python_line(path, line_no, s, raw):
+    """
+    检查 Python 单行代码中是否包含硬编码的常数或敏感配置，
+    例如未定义为常量的硬编码 Port 端口号，或可能硬编码的版本号信息。
+    """
+    results = []
+    if re.search(r'port\s*=\s*\d{4,5}\b', raw) and 'PORT' not in raw:
+        results.append(('硬编码端口号', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.match(r'^[A-Z][A-Z_]*\s*=', s):
+        return results
+    m = re.search(r'["\'](\d+\.\d+\.\d+)["\']', raw)
+    if m and m.group(1) not in ('',):
+        if 'version' in raw.lower():
+            if 'version=' not in raw:
+                results.append(('硬编码版本号', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    return results
+
+
+results = []
+scan_dirs = ['Sources', 'Tools/Mock']
+
+for scan_dir in scan_dirs:
+    if not os.path.isdir(scan_dir):
+        continue
+    for root, dirs, files in os.walk(scan_dir):
+        dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+        for fname in files:
+            ext = os.path.splitext(fname)[1]
+            scanner_exts = {'.swift': '.swift', '.py': '.py'}
+            if ext not in scanner_exts:
+                continue
+            if fname in TOKEN_FILES or fname in TOKEN_FILES_PY:
+                continue
+            path = os.path.join(root, fname)
+            results.extend(scan_file(path, ext))
+
+# 引入统一报告管理器
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from gatekeeper_reporter import GatekeeperReporter
+
+reporter = GatekeeperReporter("Magic Number Audit")
+
+for typ, path, line_no, code in results:
+    fpath = os.path.relpath(path)
+    if 'Widget' in fpath or 'Widgets' in fpath:
+        continue
+    reporter.add_issue(
+        filepath=fpath,
+        line_no=line_no,
+        message=f"发现硬编码魔鬼参数 ({typ})，建议替换为 DesignSystem token。",
+        level="ERROR",
+        content=code
+    )
+
+reporter.report()

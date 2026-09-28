@@ -12,6 +12,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 智宇海外国际区专用登录表单卡片
 struct OverseasLoginCardView: View {
@@ -29,7 +30,7 @@ struct OverseasLoginCardView: View {
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = (showTermsSheet, showPrivacySheet)
-        VStack(spacing: Spacing.large) {
+        VStack(spacing: DesignTokens.Spacing.large) {
             // 1. 顶部占位文案（与大陆版手机号掩码 `authService.currentUser?.phone?.maskedPhoneNumber` 等高对齐）
             //    使用 L10n 国际化文案，避免在 View 中硬编码任何字符串字面量；
             //    字号 / 字重 / 字体设计 / 顶部 padding 与大陆版保持完全一致，
@@ -39,8 +40,8 @@ struct OverseasLoginCardView: View {
 
             // 2. Passkey 一键生物免密注册/登录按钮 (海外首选安全通道)
             Button(action: handlePasskeyLogin) {
-                HStack(spacing: Spacing.small) {
-                    Image(systemName: DesignSystem.Icons.personBadgeKeyFill)
+                HStack(spacing: DesignTokens.Spacing.small) {
+                    Image(systemName: DesignTokens.Icons.personBadgeKeyFill)
                         .font(.headline)
                     Text(L10n.Auth.continueWithPasskey)
                         .font(.headline.weight(.semibold))
@@ -55,10 +56,10 @@ struct OverseasLoginCardView: View {
             agreementSection
 
             // 底部 Spacer：与大陆版第 34 行完全一致，保证切换瞬间高度稳定
-            Spacer().frame(height: Spacing.large)
+            Spacer().frame(height: DesignTokens.Spacing.large)
         }
-        .padding(Spacing.wide)
-        .appContainer(cornerRadius: Spacing.largeRadius)
+        .padding(DesignTokens.Spacing.wide)
+        .appContainer(cornerRadius: DesignTokens.Spacing.largeRadius)
         .policySheet(
             isPresented: $showTermsSheet,
             title: L10n.Auth.termsOfServiceTitle,

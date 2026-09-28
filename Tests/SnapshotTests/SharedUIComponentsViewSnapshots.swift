@@ -11,6 +11,7 @@
 //           验证视觉一致性并暴露源码潜在问题。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -63,7 +64,7 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
         setupMockEnvironment()
 
         let view = AppCard {
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 Text(L10n.Common.unknown)
                     .font(.headline)
                 Text(L10n.Common.unknown)
@@ -73,10 +74,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppCard 自定义圆角与内边距令牌的视觉一致性
@@ -88,10 +89,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
                 .font(.title3.weight(.semibold))
         }
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 StatCard 统计指标卡片默认样式的视觉一致性
@@ -101,14 +102,14 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
         let view = StatCard(
             title: L10n.Common.Stats.newPages,
             value: "128",
-            icon: DesignSystem.Icons.docBadgePlus,
+            icon: DesignTokens.Icons.docBadgePlus,
             color: .blue
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.6)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.6)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.6)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.6)))
     }
 
     /// 测试 AppMetricCard 指标卡片默认样式的视觉一致性
@@ -118,14 +119,14 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
         let view = AppMetricCard(
             title: L10n.Common.Stats.newPages,
             value: "42",
-            icon: DesignSystem.Icons.sparkles,
+            icon: DesignTokens.Icons.sparkles,
             color: .purple
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.6)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.6)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth / 2, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.6)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth / 2, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.6)))
     }
 
     // MARK: - 2. Buttons
@@ -134,12 +135,12 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
     func testAppPrimaryButtonDefault() {
         setupMockEnvironment()
 
-        let view = AppPrimaryButton(title: L10n.Common.confirm, icon: DesignSystem.Icons.check) {}
+        let view = AppPrimaryButton(title: L10n.Common.confirm, icon: DesignTokens.Icons.check) {}
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppPrimaryButton 加载态的视觉一致性
@@ -148,34 +149,34 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppPrimaryButton(title: L10n.Common.confirm, isLoading: true) {}
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppBorderedButton 边框按钮默认样式的视觉一致性
     func testAppBorderedButtonDefault() {
         setupMockEnvironment()
 
-        let view = AppBorderedButton(title: L10n.Common.cancel, icon: DesignSystem.Icons.xmark, color: .appAccent) {}
+        let view = AppBorderedButton(title: L10n.Common.cancel, icon: DesignTokens.Icons.xmark, color: .appAccent) {}
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppCapsuleButton 主色胶囊按钮的视觉一致性
     func testAppCapsuleButtonPrimary() {
         setupMockEnvironment()
 
-        let view = AppCapsuleButton(title: L10n.Common.confirm, icon: DesignSystem.Icons.check, isPrimary: true) {}
+        let view = AppCapsuleButton(title: L10n.Common.confirm, icon: DesignTokens.Icons.check, isPrimary: true) {}
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
+            .frame(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)))
     }
 
     /// 测试 AppCapsuleButton 次色（纯展示）胶囊标签的视觉一致性
@@ -184,10 +185,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppCapsuleButton(title: L10n.Common.unknown, isPrimary: false, color: .appSecondary)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
+            .frame(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)))
     }
 
     // MARK: - 3. Chips
@@ -198,34 +199,34 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppChip(text: L10n.CoreModels.type.concept, color: .appAccent)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
+            .frame(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)))
     }
 
     /// 测试 AppIconChip 未选中态的视觉一致性
     func testAppIconChipUnselected() {
         setupMockEnvironment()
 
-        let view = AppIconChip(icon: DesignSystem.Icons.sparkles, text: L10n.Common.unknown, color: .appAccent, isSelected: false)
+        let view = AppIconChip(icon: DesignTokens.Icons.sparkles, text: L10n.Common.unknown, color: .appAccent, isSelected: false)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
+            .frame(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)))
     }
 
     /// 测试 AppIconChip 选中态的视觉一致性
     func testAppIconChipSelected() {
         setupMockEnvironment()
 
-        let view = AppIconChip(icon: DesignSystem.Icons.sparkles, text: L10n.Common.unknown, color: .appAccent, isSelected: true)
+        let view = AppIconChip(icon: DesignTokens.Icons.sparkles, text: L10n.Common.unknown, color: .appAccent, isSelected: true)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)
+            .frame(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotGraphViewportSize, height: DesignSystem.Metrics.snapshotNotebookRowHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotGraphViewportSize, height: DesignTokens.Metrics.snapshotNotebookRowHeight)))
     }
 
     /// 测试 AppBadge 胶囊形徽章的视觉一致性
@@ -234,10 +235,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppBadge(text: "99+", color: .red, isPill: true)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)
+            .frame(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)))
     }
 
     /// 测试 AppBadge 圆形徽章的视觉一致性
@@ -246,10 +247,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppBadge(text: "5", color: .appAccent, isPill: false)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)
+            .frame(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)))
     }
 
     // MARK: - 4. Lists
@@ -258,12 +259,12 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
     func testGuideStepRowDefault() {
         setupMockEnvironment()
 
-        let view = GuideStepRow(number: 1, text: L10n.Common.unknown, icon: DesignSystem.Icons.sparkles)
+        let view = GuideStepRow(number: 1, text: L10n.Common.unknown, icon: DesignTokens.Icons.sparkles)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 QuickActionRow 快速操作行的视觉一致性
@@ -271,17 +272,17 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
         setupMockEnvironment()
 
         let view = QuickActionRow(
-            icon: DesignSystem.Icons.sparkles,
+            icon: DesignTokens.Icons.sparkles,
             title: L10n.Common.unknown,
             subtitle: L10n.Common.unknown,
             color: .appAccent,
             action: {}
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 PageRowView 标准模式（含类型标签、更新时间、标签预览）的视觉一致性
@@ -297,10 +298,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = PageRowView(page: page, compact: false)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 PageRowView 紧凑模式（隐藏辅助信息）的视觉一致性
@@ -315,10 +316,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = PageRowView(page: page, compact: true)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 5. Banners
@@ -329,10 +330,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AIProcessingStatusBanner()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 6. Feedback
@@ -342,15 +343,15 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
         setupMockEnvironment()
 
         let view = AppEmptyState.simple(
-            icon: DesignSystem.Icons.document,
+            icon: DesignTokens.Icons.document,
             title: L10n.Common.unknown,
             description: L10n.Common.unknown
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)))
     }
 
     /// 测试 AppEmptyState 带主操作按钮空状态的视觉一致性
@@ -358,20 +359,20 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
         setupMockEnvironment()
 
         let view = AppEmptyState.withAction(
-            icon: DesignSystem.Icons.document,
+            icon: DesignTokens.Icons.document,
             title: L10n.Common.unknown,
             description: L10n.Common.unknown,
             hint: L10n.Common.unknown,
             actionLabel: L10n.Common.confirm,
-            actionIcon: DesignSystem.Icons.plus,
+            actionIcon: DesignTokens.Icons.plus,
             actionRole: .primary,
             actionHandler: {}
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)))
     }
 
     /// 测试 AppErrorView 带重试按钮的视觉一致性
@@ -383,10 +384,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
             retryAction: {}
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)))
     }
 
     /// 测试 AppErrorView 无重试按钮的视觉一致性
@@ -395,10 +396,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppErrorView(message: L10n.Common.unknown)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight / 2)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight / 2)))
     }
 
     /// 测试 DownloadProgressRing 下载中状态的视觉一致性
@@ -407,10 +408,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = DownloadProgressRing(state: .downloading(progress: 0.65, bytesPerSecond: 1024))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 DownloadProgressRing 暂停状态的视觉一致性
@@ -419,10 +420,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = DownloadProgressRing(state: .paused)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 DownloadProgressRing 失败状态的视觉一致性
@@ -431,10 +432,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = DownloadProgressRing(state: .failed(error: L10n.Common.unknown))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppAILoadingSkeleton 合成阶段骨架屏的视觉一致性
@@ -443,10 +444,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppAILoadingSkeleton(stage: .synthesis)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.5)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.5)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.5)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.5)))
     }
 
     /// 测试 AppAILoadingSkeleton 默认（通用）阶段骨架屏的视觉一致性
@@ -455,10 +456,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppAILoadingSkeleton(stage: .general)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.5)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.5)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize * 1.5)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize * 1.5)))
     }
 
     // MARK: - 7. Badges
@@ -469,10 +470,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AIRainbowGlowBadge()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotSmallComponentSize, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotSmallComponentSize, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 8. Navigation
@@ -483,10 +484,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = BreadcrumbView(history: [], onNavigate: { _ in }, onGoHome: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)))
     }
 
     /// 测试 BreadcrumbView 含多级历史节点的视觉一致性
@@ -501,10 +502,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = BreadcrumbView(history: pages, onNavigate: { _ in }, onGoHome: {})
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotBreadcrumbHeight)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotBreadcrumbHeight)))
     }
 
     /// 测试 FloatingContextCapsule 无当前 Vault（hubIndicator 分支）的视觉一致性
@@ -517,10 +518,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = FloatingContextCapsule()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 9. Decorators
@@ -531,22 +532,22 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppDotPattern()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppDotPattern 自定义颜色与间距的视觉一致性
     func testAppDotPatternCustom() {
         setupMockEnvironment()
 
-        let view = AppDotPattern(dotColor: .appAccent, spacing: DesignSystem.medium, dotSize: DesignSystem.small)
+        let view = AppDotPattern(dotColor: .appAccent, spacing: DesignTokens.Spacing.medium, dotSize: DesignTokens.Spacing.small)
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     // MARK: - 10. Inputs
@@ -557,10 +558,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppTextField(placeholder: L10n.Common.unknown, text: .constant(""))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppTextField 含文本状态的视觉一致性
@@ -569,10 +570,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppTextField(placeholder: L10n.Common.unknown, text: .constant(L10n.Common.unknown))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppTagField 空标签状态的视觉一致性
@@ -581,10 +582,10 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
 
         let view = AppTagField(placeholder: L10n.Common.unknown, tags: .constant([]))
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
             .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 
     /// 测试 AppTagField 含多个标签状态的视觉一致性
@@ -596,9 +597,9 @@ final class SharedUIComponentsViewSnapshots: XCTestCase {
             tags: .constant([L10n.CoreModels.type.concept, L10n.CoreModels.type.entity, L10n.CoreModels.type.source])
         )
         .snapshotEnvironment()
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)
         .background(Color.appBackground)
 
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotSmallComponentSize)))
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotSmallComponentSize)))
     }
 }

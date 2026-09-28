@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 质量问题行渲染
 
@@ -23,11 +24,11 @@ struct LintIssueRow: View {
     @State private var isAnalyzing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
-            HStack(spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 Image(systemName: issue.type.icon)
                     .foregroundStyle(Color.fromModelColorName(issue.severity.colorName))
-                    .frame(width: DesignSystem.IconSize.micro, height: DesignSystem.IconSize.micro)
+                    .frame(width: DesignTokens.IconSize.micro, height: DesignTokens.IconSize.micro)
 
                 Text(issue.message)
                     .font(.subheadline)
@@ -36,20 +37,20 @@ struct LintIssueRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             if !issue.suggestion.isEmpty {
-                HStack(spacing: DesignSystem.tiny) {
-                    Image(systemName: DesignSystem.Icons.concept)
+                HStack(spacing: DesignTokens.Spacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.concept)
                         .font(.caption2)
                         .foregroundStyle(Color.theme.yellow)
                     Text(issue.suggestion)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }
-                .padding(.leading, DesignSystem.giant)
+                .padding(.leading, DesignTokens.Spacing.giant)
             }
 
             if let pageID = issue.pageID,
                store.pages.contains(where: { $0.id == pageID }) {
-                HStack(spacing: DesignSystem.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     Button(action: { router.navigateToPage(id: pageID) }) {
                         Text(L10n.Lint.goToPage)
                             .font(.caption2)
@@ -58,11 +59,11 @@ struct LintIssueRow: View {
 
                     if store.llmService.isEnabled {
                         Button(action: fetchAISuggestion) {
-                            HStack(spacing: DesignSystem.tiny) {
+                            HStack(spacing: DesignTokens.Spacing.tiny) {
                                 if isAnalyzing {
                                     ProgressView().scaleEffect(0.6)
                                 } else {
-                                    Image(systemName: DesignSystem.Icons.sparkles)
+                                    Image(systemName: DesignTokens.Icons.sparkles)
                                         .font(.caption2)
                                 }
                                 Text(L10n.Lint.aiFixSuggestionShort)
@@ -73,24 +74,24 @@ struct LintIssueRow: View {
                         .disabled(isAnalyzing)
                     }
                 }
-                .padding(.leading, DesignSystem.giant)
+                .padding(.leading, DesignTokens.Spacing.giant)
             }
 
             if let suggestion = aiSuggestion {
                 Text(suggestion)
                     .font(.caption)
-                    .padding(DesignSystem.small)
-                    .background(Color.theme.purple.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                    .padding(DesignTokens.Spacing.small)
+                    .background(Color.theme.purple.opacity(DesignTokens.Opacity.subtle))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
                     .overlay(
-                        RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                            .stroke(Color.theme.purple.opacity(DesignSystem.Opacity.medium), lineWidth: SystemStroke.divider)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                            .stroke(Color.theme.purple.opacity(DesignTokens.Opacity.medium), lineWidth: DesignTokens.SystemStroke.divider)
                     )
-                    .padding(.leading, DesignSystem.giant)
+                    .padding(.leading, DesignTokens.Spacing.giant)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .padding(.vertical, DesignSystem.tiny)
+        .padding(.vertical, DesignTokens.Spacing.tiny)
     }
 
     private func fetchAISuggestion() {

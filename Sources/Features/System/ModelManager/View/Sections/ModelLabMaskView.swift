@@ -10,15 +10,16 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 引导与拦截遮罩
 
 extension ModelLabView {
 
     var noModelMaskView: some View {
-        VStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.flaskFill)
-                .font(.system(size: ComponentSpacing.iconDisplay))
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.flaskFill)
+                .font(.system(size: DesignTokens.ComponentSpacing.iconDisplay))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color.theme.purple, Color.theme.cyan],
@@ -26,7 +27,7 @@ extension ModelLabView {
                         endPoint: .bottomTrailing
                     )
                 )
-                .padding(.bottom, DesignSystem.tiny)
+                .padding(.bottom, DesignTokens.Spacing.tiny)
 
             Text(L10n.ModelManager.Lab.noActiveModelTitle)
                 .font(.headline)
@@ -36,33 +37,33 @@ extension ModelLabView {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, DesignSystem.medium)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
 
             Button(action: {
                 HapticFeedback.shared.trigger(.selection)
                 onGoToStore()
             }) {
-                HStack(spacing: DesignSystem.small) {
-                    Image(systemName: DesignSystem.Icons.stackFill)
+                HStack(spacing: DesignTokens.Spacing.small) {
+                    Image(systemName: DesignTokens.Icons.stackFill)
                     Text(L10n.ModelManager.storeTitle)
                 }
                 .font(.subheadline.bold())
                 .foregroundStyle(.white)
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, DesignSystem.small)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.vertical, DesignTokens.Spacing.small)
                 .background(Color.appAccent)
                 .clipShape(Capsule())
             }
-            .padding(.top, DesignSystem.small)
+            .padding(.top, DesignTokens.Spacing.small)
         }
-        .padding(DesignSystem.large)
+        .padding(DesignTokens.Spacing.large)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
-        .cornerRadius(DesignSystem.largeRadius)
+        .cornerRadius(DesignTokens.Spacing.largeRadius)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
-                .stroke(Color.theme.white.opacity(DesignSystem.Opacity.glass), lineWidth: SystemStroke.divider)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius)
+                .stroke(Color.theme.white.opacity(DesignTokens.Opacity.glass), lineWidth: DesignTokens.SystemStroke.divider)
         )
-        .padding(.vertical, DesignSystem.medium)
+        .padding(.vertical, DesignTokens.Spacing.medium)
     }
 }

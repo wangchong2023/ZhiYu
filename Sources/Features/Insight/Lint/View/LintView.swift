@@ -11,6 +11,7 @@
 
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 治理中心入口
 
@@ -65,11 +66,11 @@ struct LintViewContent: View {
                     Text(L10n.Lint.aiSuggestions).tag(1)
                 }
                 .segmentedPickerStyleIfAvailable()
-                .padding(.horizontal, DesignSystem.huge)
-                .padding(.vertical, DesignSystem.tiny)
-                .background(.ultraThinMaterial.opacity(DesignSystem.Opacity.shadow))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
-                .padding(.horizontal, DesignSystem.standardPadding)
+                .padding(.horizontal, DesignTokens.Spacing.huge)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
+                .background(.ultraThinMaterial.opacity(DesignTokens.Opacity.shadow))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
 
                 // 内容区
                 Group {
@@ -92,14 +93,14 @@ struct LintViewContent: View {
                 HapticFeedback.shared.trigger(.selection)
                 if selectedTab == 0 { runLint() } else { runAIScan() }
             }) {
-                HStack(spacing: DesignSystem.tightPadding) {
+                HStack(spacing: DesignTokens.Spacing.tightPadding) {
                     ZStack {
                         ProgressView()
                             .controlSize(.small)
                             .opacity(isRunning || aiStore.isScanningAI ? 1 : 0)
 
-                        Image(systemName: selectedTab == 0 ? DesignSystem.Icons.healthCheck : DesignSystem.Icons.sparkles)
-                            .font(.system(size: DesignSystem.subheadlineFontSize))
+                        Image(systemName: selectedTab == 0 ? DesignTokens.Icons.healthCheck : DesignTokens.Icons.sparkles)
+                            .font(.system(size: DesignTokens.Typography.subheadlineFontSize))
                             .opacity(isRunning || aiStore.isScanningAI ? 0 : 1)
                     }
 
@@ -107,7 +108,7 @@ struct LintViewContent: View {
                 }
                 .font(.footnote.bold())
                 .foregroundStyle(buttonGradient)
-                .padding(.horizontal, DesignSystem.small)
+                .padding(.horizontal, DesignTokens.Spacing.small)
             }
             .buttonStyle(.plain)
             .disabled(isRunning || aiStore.isScanningAI)

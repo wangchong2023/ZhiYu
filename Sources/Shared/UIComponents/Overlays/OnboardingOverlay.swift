@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Onboarding Overlay
 /// 引导蒙层组件
@@ -19,21 +20,21 @@ struct OnboardingOverlay: View {
     var body: some View {
         if let step = service.currentStep {
             ZStack {
-                Color.theme.black.opacity(Colors.Opacity.secondaryOpacity * 0.875) // 0.7
+                Color.theme.black.opacity(DesignTokens.Colors.Opacity.secondaryOpacity * 0.875) // 0.7
                     .ignoresSafeArea()
                 
-                VStack(spacing: Spacing.loosePadding) { // 24
+                VStack(spacing: DesignTokens.Spacing.loosePadding) { // 24
                     Image(systemName: step.icon)
-                        .font(.system(size: Spacing.iconHuge * 1.25))
+                        .font(.system(size: DesignTokens.Spacing.iconHuge * 1.25))
                         .foregroundStyle(.appAccent)
                     
-                    VStack(spacing: Spacing.tightPadding) { // 8
+                    VStack(spacing: DesignTokens.Spacing.tightPadding) { // 8
                         Text(step.title)
                             .font(.title2.bold())
                         Text(step.description)
                             .font(.body)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, Spacing.huge) // 32
+                            .padding(.horizontal, DesignTokens.Spacing.huge) // 32
                     }
                     
                     Button(action: { 
@@ -44,8 +45,8 @@ struct OnboardingOverlay: View {
                         Text(step == .vault ? L10n.Onboarding.Action.start : L10n.Onboarding.Action.next)
                             .font(.headline)
                             .foregroundStyle(Color.theme.white)
-                            .padding(.horizontal, Spacing.Sidebar.backButtonWidth) // 40
-                            .padding(.vertical, Spacing.medium) // 12
+                            .padding(.horizontal, DesignTokens.Spacing.Sidebar.backButtonWidth) // 40
+                            .padding(.vertical, DesignTokens.Spacing.medium) // 12
                             .background(Color.appAccent)
                             .clipShape(Capsule())
                     }
@@ -58,11 +59,11 @@ struct OnboardingOverlay: View {
                     .font(.footnote)
                     .foregroundStyle(.appSecondary)
                 }
-                .padding(Spacing.huge)
+                .padding(DesignTokens.Spacing.huge)
                 .background(Color.appCard)
-                .clipShape(RoundedRectangle(cornerRadius: Spacing.chipRadius))
-                .shadow(radius: Spacing.giant)
-                .padding(Spacing.giant)
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.chipRadius))
+                .shadow(radius: DesignTokens.Spacing.giant)
+                .padding(DesignTokens.Spacing.giant)
                 .transition(.scale.combined(with: .opacity))
             }
             .zIndex(999)

@@ -12,6 +12,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - 合成视图入口
 
@@ -94,7 +95,7 @@ struct SynthesisView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .scrollIndicators(.hidden)
-        .padding(.top, DesignSystem.widePadding)
+        .padding(.top, DesignTokens.Spacing.widePadding)
     }
 
     private var runningTasksContainer: some View {
@@ -114,10 +115,10 @@ struct SynthesisView: View {
     private var mainContentSection: some View {
         Section {
             listHeader
-                .listRowInsets(EdgeInsets(top: DesignSystem.medium, leading: DesignSystem.standardPadding, bottom: DesignSystem.small, trailing: DesignSystem.standardPadding))
+                .listRowInsets(EdgeInsets(top: DesignTokens.Spacing.medium, leading: DesignTokens.Spacing.standardPadding, bottom: DesignTokens.Spacing.small, trailing: DesignTokens.Spacing.standardPadding))
             
             filterPillsBar
-                .listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: DesignSystem.small, trailing: DesignSystem.standardPadding))
+                .listRowInsets(EdgeInsets(top: 0, leading: DesignTokens.Spacing.standardPadding, bottom: DesignTokens.Spacing.small, trailing: DesignTokens.Spacing.standardPadding))
 
             documentRows
         }
@@ -137,7 +138,7 @@ struct SynthesisView: View {
                     }
                 }
             }
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
         }
     }
 
@@ -153,10 +154,10 @@ struct SynthesisView: View {
         let docs = filteredDocs
         
         if docs.isEmpty {
-            VStack(spacing: DesignSystem.medium) {
-                Image(systemName: DesignSystem.Icons.weeklyInsight)
+            VStack(spacing: DesignTokens.Spacing.medium) {
+                Image(systemName: DesignTokens.Icons.weeklyInsight)
                     .font(.system(size: DesignSystem.Timeline.emptyIconSize))
-                    .foregroundStyle(.appSecondary.opacity(DesignSystem.Metrics.emptyStateIconOpacity))
+                    .foregroundStyle(.appSecondary.opacity(DesignTokens.Metrics.emptyStateIconOpacity))
                 Text(L10n.AI.Synthesis.noDocs)
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
@@ -168,22 +169,22 @@ struct SynthesisView: View {
                             selectedFilterType = nil
                         }
                     }) {
-                        HStack(spacing: DesignSystem.tiny) {
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
                             Text(L10n.Search.all)
                                 .font(.caption.bold())
-                            Image(systemName: DesignSystem.Icons.arrowUturnLeft)
+                            Image(systemName: DesignTokens.Icons.arrowUturnLeft)
                                 .font(.caption2)
                         }
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.vertical, DesignSystem.tightPadding)
-                        .background(Capsule().fill(Color.appAccent.opacity(SystemOpacity.disabled)))
+                        .padding(.horizontal, DesignTokens.Spacing.medium)
+                        .padding(.vertical, DesignTokens.Spacing.tightPadding)
+                        .background(Capsule().fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.disabled)))
                         .foregroundStyle(Color.appAccent)
                     }
                     .buttonStyle(.plain)
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.Metrics.emptyStateVerticalPadding)
+            .padding(.vertical, DesignTokens.Metrics.emptyStateVerticalPadding)
             .appContainer(background: DesignSystem.containerMaterial)
             .listRowBackground(Color.clear)
             .compactListRowInsets()
@@ -224,13 +225,13 @@ struct SynthesisView: View {
                             VStack {
                                 Spacer()
                                 Divider()
-                                    .background(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
-                                    .padding(.horizontal, DesignSystem.standardPadding)
+                                    .background(Color.appBorder.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
+                                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
                             }
                         }
                     }
-                    .padding(.horizontal, DesignSystem.standardPadding)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
+                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
                 )
             }
         }
@@ -239,9 +240,9 @@ struct SynthesisView: View {
     private var listHeader: some View {
         AppSectionHeader(
             title: L10n.AI.Synthesis.documentList,
-            icon: DesignSystem.Icons.docText,
+            icon: DesignTokens.Icons.docText,
             trailing: AnyView(
-                HStack(spacing: DesignSystem.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     if editMode == .active {
                         Button(action: {
                             HapticFeedback.shared.trigger(.warning)
@@ -249,7 +250,7 @@ struct SynthesisView: View {
                         }) {
                             Text(L10n.Common.delete)
                                 .font(.subheadline.bold())
-                                .foregroundStyle(selectedDocIDs.isEmpty ? .appSecondary.opacity(DesignSystem.disabledOpacity) : .red)
+                                .foregroundStyle(selectedDocIDs.isEmpty ? .appSecondary.opacity(DesignTokens.Colors.Opacity.disabledOpacity) : .red)
                         }
                         .disabled(selectedDocIDs.isEmpty)
                         .buttonStyle(.plain)
@@ -274,7 +275,7 @@ struct SynthesisView: View {
 
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
-                        withAnimation(DesignSystem.standardAnimation) {
+                        withAnimation(DesignTokens.Animations.Interaction.standardAnimation) {
                             if editMode == .inactive {
                                 editMode = .active
                             } else {
@@ -291,7 +292,7 @@ struct SynthesisView: View {
                 }
             )
         )
-        .padding(.horizontal, DesignSystem.tiny)
+        .padding(.horizontal, DesignTokens.Spacing.tiny)
     }
 
     private func batchDelete() {
@@ -336,15 +337,15 @@ struct SynthesisView: View {
                     Button(L10n.Common.done) { showOutput = false }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: DesignSystem.headlineFontSize) {
+                    HStack(spacing: DesignTokens.Typography.headlineFontSize) {
                         Button {
                             if let doc = selectedDoc {
                                 AppPasteboard.string = doc.content
                                 HapticFeedback.shared.trigger(.success)
                             }
-                        } label: { Image(systemName: DesignSystem.Icons.copy) }
+                        } label: { Image(systemName: DesignTokens.Icons.copy) }
 
-                        Button { exportAction() } label: { Image(systemName: DesignSystem.Icons.export) }
+                        Button { exportAction() } label: { Image(systemName: DesignTokens.Icons.export) }
                     }
                 }
             }
@@ -370,17 +371,17 @@ struct SynthesisView: View {
     }
 
     private var synthesisEntryView: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             AppSectionHeader(
                 title: L10n.AI.Synthesis.actions,
-                icon: DesignSystem.Icons.wand,
+                icon: DesignTokens.Icons.wand,
                 trailing: AnyView(
                     Button(action: {
                         HapticFeedback.shared.trigger(.selection)
                         showPromptWorkshop = true
                     }) {
-                        HStack(spacing: DesignSystem.tiny) {
-                            Image(systemName: DesignSystem.Icons.promptWorkshop)
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
+                            Image(systemName: DesignTokens.Icons.promptWorkshop)
                             Text(L10n.AI.Prompt.Factory.title)
                                 .font(.caption.bold())
                         }
@@ -389,9 +390,9 @@ struct SynthesisView: View {
                     .buttonStyle(.plain)
                 )
             )
-            .padding(.horizontal, DesignSystem.tiny)
+            .padding(.horizontal, DesignTokens.Spacing.tiny)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.medium) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignTokens.Spacing.medium) {
                 ForEach(SynthesisStore.SynthesisType.allCases) { type in
                     SynthesisActionButton(type: type, 
                                          store: store, 
@@ -538,13 +539,13 @@ extension View {
 private extension View {
     /// 标准列表行内边距（消除 SynthesisView 内重复的 listRowInsets + listRowBackground 链）
     func standardListRowInsets() -> some View {
-        self.listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: DesignSystem.loosePadding, trailing: DesignSystem.standardPadding))
+        self.listRowInsets(EdgeInsets(top: 0, leading: DesignTokens.Spacing.standardPadding, bottom: DesignTokens.Spacing.loosePadding, trailing: DesignTokens.Spacing.standardPadding))
             .listRowBackground(Color.clear)
     }
 
     /// 紧凑列表行内边距（bottom=0，用于空状态与条目行）
     func compactListRowInsets() -> some View {
-        self.listRowInsets(EdgeInsets(top: 0, leading: DesignSystem.standardPadding, bottom: 0, trailing: DesignSystem.standardPadding))
+        self.listRowInsets(EdgeInsets(top: 0, leading: DesignTokens.Spacing.standardPadding, bottom: 0, trailing: DesignTokens.Spacing.standardPadding))
     }
 
     /// 内联导航栏 + 取消按钮工具栏（消除重复的 navigationTitle + navigationBarTitleDisplayMode + toolbar 链）

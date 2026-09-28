@@ -9,6 +9,7 @@
 //  核心职责：验证 AdaptiveTextEditor、EditorToolbar 与 Markdown 渲染工具栏的快照视觉一致性。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -50,8 +51,8 @@ final class UIComponentsEditorAndToolbarSnapshots: XCTestCase {
                 text: .constant("# 知识架构标题\n\n- 第一条核心规则\n- 第二条核心规则")
             )
         }
-        .padding(DesignSystem.medium)
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 200)
+        .padding(DesignTokens.Spacing.medium)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 200)
         .snapshotEnvironment()
 
         assertSnapshot(of: view, as: .image(layout: .sizeThatFits))

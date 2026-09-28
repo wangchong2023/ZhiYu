@@ -13,6 +13,7 @@ import UFPCore
 import Dependencies
 #if canImport(MultipeerConnectivity)
 import MultipeerConnectivity
+import UFPDesignSystem
 #endif
 
 /// 协作视图常量
@@ -45,14 +46,14 @@ struct CollaborationViewContent: View {
     @Dependency(\.deviceInfo) var deviceInfo: any DeviceInfoProtocol
 
     private var recentEditsSnapshot: [CollabEdit] {
-        Array(collabService.recentEdits.suffix(DesignSystem.Metrics.maxCollabEditHistory)) // 10
+        Array(collabService.recentEdits.suffix(DesignTokens.Metrics.maxCollabEditHistory)) // 10
     }
 
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = roomName
         ScrollView {
-            VStack(spacing: DesignSystem.giant) {
+            VStack(spacing: DesignTokens.Spacing.giant) {
                 headerSection
                 if collabService.isSimulator { simulatorWarning }
                 statusSection
@@ -89,8 +90,8 @@ struct CollaborationViewContent: View {
     
     // MARK: - Header
     private var headerSection: some View {
-        VStack(spacing: DesignSystem.medium) { // 12
-            Image(systemName: DesignSystem.Icons.personCircle)
+        VStack(spacing: DesignTokens.Spacing.medium) { // 12
+            Image(systemName: DesignTokens.Icons.personCircle)
                 .font(.system(size: CollaborationConstants.avatarIconSize)) // 56
                 .foregroundStyle(
                     LinearGradient(
@@ -105,13 +106,13 @@ struct CollaborationViewContent: View {
                 .foregroundStyle(.appSecondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(.top, DesignSystem.small)
+        .padding(.top, DesignTokens.Spacing.small)
     }
     
     // MARK: - Simulator Warning
     private var simulatorWarning: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.warning)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.warning)
                 .foregroundStyle(Color.theme.orange)
             
             Text(L10n.Collaboration.simulatorWarning)
@@ -119,16 +120,16 @@ struct CollaborationViewContent: View {
                 .foregroundStyle(.appSecondary)
         }
         .padding()
-        .background(Color.theme.orange.opacity(Reference.Opacity.five)) // 0.08
-        .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+        .background(Color.theme.orange.opacity(DesignTokens.Reference.Opacity.five)) // 0.08
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
     }
     
     // MARK: - Status
     private var statusSection: some View {
-        HStack(spacing: DesignSystem.medium) { // 12
+        HStack(spacing: DesignTokens.Spacing.medium) { // 12
             Circle()
                 .fill(collabService.isJoined ? Color.theme.green : Color.theme.gray)
-                .frame(width: DesignSystem.iconTiny, height: DesignSystem.iconTiny) // 12
+                .frame(width: DesignTokens.Spacing.iconTiny, height: DesignTokens.Spacing.iconTiny) // 12
             
             Text(collabService.statusMessage)
                 .font(.subheadline)
@@ -139,9 +140,9 @@ struct CollaborationViewContent: View {
             if collabService.isJoined {
                 Text("\(collabService.connectedPeers.count + 1)")
                     .font(.caption.weight(.bold))
-                    .padding(.horizontal, DesignSystem.small) // 8
-                    .padding(.vertical, DesignSystem.tiny) // 4
-                    .background(Color.appAccent.opacity(DesignSystem.glassOpacity)) // 0.15
+                    .padding(.horizontal, DesignTokens.Spacing.small) // 8
+                    .padding(.vertical, DesignTokens.Spacing.tiny) // 4
+                    .background(Color.appAccent.opacity(DesignTokens.Colors.Opacity.glassOpacity)) // 0.15
                     .clipShape(Capsule())
                     .foregroundStyle(.appAccent)
             }
@@ -151,7 +152,7 @@ struct CollaborationViewContent: View {
 
     // MARK: - Actions
     private var actionSection: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             usernameField
             hostButton
             joinButton
@@ -160,13 +161,13 @@ struct CollaborationViewContent: View {
     }
     
     private var usernameField: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tightPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             Text(L10n.Collaboration.username)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
 
             HStack {
-                Image(systemName: DesignSystem.Icons.person)
+                Image(systemName: DesignTokens.Icons.person)
                     .foregroundStyle(.appAccent)
                 TextField(L10n.Collaboration.usernamePlaceholder, text: $userName)
                     .textFieldStyle(.plain)
@@ -183,7 +184,7 @@ struct CollaborationViewContent: View {
     private var hostButton: some View {
         Button(action: { showHostingSheet = true }) {
             HStack {
-                Image(systemName: DesignSystem.Icons.broadcast)
+                Image(systemName: DesignTokens.Icons.broadcast)
                 Text(L10n.Collaboration.hostSession)
             }
             .font(.headline)
@@ -191,9 +192,9 @@ struct CollaborationViewContent: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.appAccent)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
             .disabled(collabService.isSimulator)
-            .opacity(collabService.isSimulator ? DesignSystem.Opacity.soft : DesignSystem.Opacity.solid)
+            .opacity(collabService.isSimulator ? DesignTokens.Opacity.soft : DesignTokens.Opacity.solid)
             .accessibilityIdentifier("collab-host-button")
         }
     }
@@ -204,17 +205,17 @@ struct CollaborationViewContent: View {
             collabService.startBrowsing()
         }) {
             HStack {
-                Image(systemName: DesignSystem.Icons.search)
+                Image(systemName: DesignTokens.Icons.search)
                 Text(L10n.Collaboration.joinSession)
             }
             .font(.headline)
             .foregroundStyle(.appAccent)
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
             .disabled(collabService.isSimulator)
-            .opacity(collabService.isSimulator ? DesignSystem.Opacity.soft : DesignSystem.Opacity.solid)
+            .opacity(collabService.isSimulator ? DesignTokens.Opacity.soft : DesignTokens.Opacity.solid)
             .accessibilityIdentifier("collab-join-button")
         }
     }
@@ -233,7 +234,7 @@ struct CollaborationViewContent: View {
     
     // MARK: - Discovered Rooms
     private var discoveredRoomsSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             Text(L10n.Collaboration.nearbyRooms)
                 .font(.headline)
                 .foregroundStyle(.appText)
@@ -258,9 +259,9 @@ struct CollaborationViewContent: View {
     
     // MARK: - Session Info
     private var sessionSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             HStack {
-                Image(systemName: DesignSystem.Icons.crown)
+                Image(systemName: DesignTokens.Icons.crown)
                     .foregroundStyle(Color.theme.yellow)
                 Text(collabService.roomName)
                     .font(.headline)
@@ -279,22 +280,22 @@ struct CollaborationViewContent: View {
     private var leaveButton: some View {
         Button(action: { collabService.stop() }) {
             HStack {
-                Image(systemName: DesignSystem.Icons.errorCircle)
+                Image(systemName: DesignTokens.Icons.errorCircle)
                 Text(L10n.Collaboration.leaveSession)
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(Color.theme.red)
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.theme.red.opacity(DesignSystem.Opacity.light))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+            .background(Color.theme.red.opacity(DesignTokens.Opacity.light))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
         }
         .accessibilityIdentifier("collab-leave-button")
     }
 
     // MARK: - Peers
     private var peersSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             Text(L10n.Collaboration.connectedUsers)
                 .font(.headline)
                 .foregroundStyle(.appText)
@@ -302,7 +303,7 @@ struct CollaborationViewContent: View {
 
             // Self
             HStack {
-                Image(systemName: DesignSystem.Icons.personCheck)
+                Image(systemName: DesignTokens.Icons.personCheck)
                     .foregroundStyle(Color.theme.green)
                 Text(userName)
                     .font(.subheadline.weight(.medium))
@@ -324,7 +325,7 @@ struct CollaborationViewContent: View {
     
     // MARK: - Recent Edits
     private var editsSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             Text(L10n.Collaboration.recentEdits)
                 .font(.headline)
                 .foregroundStyle(.appText)

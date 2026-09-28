@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：通用空状态视图
 ///
@@ -20,13 +21,13 @@ struct InsightEmptyState: View {
     let icon: String
     let title: String
     var hint: String?
-    var iconSize: CGFloat = DesignSystem.iconHuge
+    var iconSize: CGFloat = DesignTokens.Spacing.iconHuge
     var iconColor: Color = .appSecondary
-    var hintOpacity: Double = DesignSystem.subtleOpacity
+    var hintOpacity: Double = DesignTokens.Colors.subtleOpacity
     var verticalPadding: CGFloat?
 
     var body: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             Image(systemName: icon)
                 .font(.system(size: iconSize))
                 .foregroundStyle(iconColor)

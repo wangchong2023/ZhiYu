@@ -9,6 +9,7 @@
 //  核心职责：语音笔记：录音、转写、AI 摘要。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Save Voice Note Sheet
 /// 语音笔记保存配置面板组件
@@ -30,7 +31,7 @@ struct SaveVoiceNoteSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: DesignSystem.loosePadding) { // 20
+                VStack(spacing: DesignTokens.Spacing.loosePadding) { // 20
                     titleField
                     typePicker
                     previewSection
@@ -70,8 +71,8 @@ struct SaveVoiceNoteSheet: View {
                 idiom: idiom,
                 minHeight: UIConstants.previewMinHeight,
                 maxHeight: UIConstants.previewMaxHeight,
-                padding: DesignSystem.small,
-                cornerRadius: DesignSystem.standardRadius
+                padding: DesignTokens.Spacing.small,
+                cornerRadius: DesignTokens.Spacing.standardRadius
             )
         }
     }
@@ -79,7 +80,7 @@ struct SaveVoiceNoteSheet: View {
     /// 表单分区（消除重复的 VStack + Text 标签 + caption 字体链）
     @ViewBuilder
     private func formSection<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.small) {
             Text(label)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
@@ -120,14 +121,14 @@ struct VoiceRecordingRow: View {
     let recording: VoiceRecording
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.waveform)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.waveform)
                 .foregroundStyle(.appSource)
-                .frame(width: DesignSystem.largeIconSize, height: DesignSystem.largeIconSize) // 32
-                .background(Color.appSource.opacity(SystemOpacity.glass))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .frame(width: DesignTokens.Spacing.largeIconSize, height: DesignTokens.Spacing.largeIconSize) // 32
+                .background(Color.appSource.opacity(DesignTokens.SystemOpacity.glass))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(recording.title)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.appText)
@@ -144,9 +145,9 @@ struct VoiceRecordingRow: View {
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
         }
-        .padding(.horizontal, DesignSystem.medium)
-        .padding(.vertical, SystemSpacing.elementLarge) // 10
-        .appCardClip(cornerRadius: DesignSystem.standardRadius)
+        .padding(.horizontal, DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.SystemSpacing.elementLarge) // 10
+        .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
         .frame(maxWidth: .infinity)
     }
 }

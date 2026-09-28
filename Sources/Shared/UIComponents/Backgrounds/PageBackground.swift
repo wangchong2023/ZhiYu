@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: @PR-03: 工业级页面背景系统，优化了渐变渲染性能
 // MARK: @PR-04: AI 思考指示器背景
@@ -39,7 +40,7 @@ public struct MeshGradientView: View {
                             colors: [
                                 .appBackground, .appBackground, .appBackground,
                                 // swiftlint:disable:next magic_numbers_opacity
-                                .appAccent.opacity(DesignSystem.Opacity.medium), .appConcept.opacity(DesignSystem.Opacity.glass), .appSource.opacity(0.18),
+                                .appAccent.opacity(DesignTokens.Opacity.medium), .appConcept.opacity(DesignTokens.Opacity.glass), .appSource.opacity(0.18),
                                 .appBackground, .appBackground, .appBackground
                             ],
                             smoothsColors: true
@@ -78,7 +79,7 @@ public struct MeshGradientView: View {
                 context.stroke(Path { p in
                     p.move(to: CGPoint(x: 0, y: y))
                     p.addLine(to: CGPoint(x: size.width, y: y))
-                }, with: .color(Color.appAccent.opacity(DesignSystem.Opacity.ghost)), lineWidth: 0.5)
+                }, with: .color(Color.appAccent.opacity(DesignTokens.Opacity.ghost)), lineWidth: 0.5)
             }
             
             for col in 0...cols {
@@ -86,7 +87,7 @@ public struct MeshGradientView: View {
                 context.stroke(Path { p in
                     p.move(to: CGPoint(x: x, y: 0))
                     p.addLine(to: CGPoint(x: x, y: size.height))
-                }, with: .color(Color.appAccent.opacity(DesignSystem.Opacity.ghost)), lineWidth: 0.5)
+                }, with: .color(Color.appAccent.opacity(DesignTokens.Opacity.ghost)), lineWidth: 0.5)
             }
         }
     }
@@ -107,13 +108,13 @@ public struct AmbientGlowView: View {
                 Circle()
                     .fill(
                         RadialGradient(
-                            colors: [color.opacity(DesignSystem.Opacity.medium), .clear],
+                            colors: [color.opacity(DesignTokens.Opacity.medium), .clear],
                             center: .center,
                             startRadius: 0,
                             endRadius: 300
                         )
                     )
-                    .frame(width: DesignSystem.Metrics.backgroundLargeDecorativeSize, height: DesignSystem.Metrics.backgroundLargeDecorativeSize)
+                    .frame(width: DesignTokens.Metrics.backgroundLargeDecorativeSize, height: DesignTokens.Metrics.backgroundLargeDecorativeSize)
                     .blur(radius: 80)
                     .position(x: size.width / 2, y: size.height / 2)
             }
@@ -134,7 +135,7 @@ public struct PageBackgroundView: View {
             MeshGradientView()
             VStack {
                 AmbientGlowView(color: accentColor)
-                    .frame(height: DesignSystem.Metrics.backgroundDecorativeSize)
+                    .frame(height: DesignTokens.Metrics.backgroundDecorativeSize)
                     .offset(y: -150)
                 Spacer()
             }

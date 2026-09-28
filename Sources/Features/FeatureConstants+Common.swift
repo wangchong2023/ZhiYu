@@ -59,24 +59,24 @@ extension FeatureConstants {
     }
 
     // MARK: - Mock 文本 (Mock Text)
-    /// ModelLab Mock 演示数据中的中文文本
+    /// ModelLab Mock 演示数据中的文本（通过 L10n 强类型访问，避免硬编码中文）
     enum MockText {
-        static let notebookLabel = "Notebook (笔记本)"
-        static let penLabel = "Pen (钢笔)"
-        static let iphoneScreenLabel = "iPhone Screen (手机屏)"
+        static let notebookLabel = L10n.ModelManager.Lab.Mock.notebookLabel
+        static let penLabel = L10n.ModelManager.Lab.Mock.penLabel
+        static let iphoneScreenLabel = L10n.ModelManager.Lab.Mock.iphoneScreenLabel
         static let traceStep1Title = "00:01 - 00:03"
-        static let traceStep1Desc = "智宇大模型本地测试实验室今日上线"
+        static let traceStep1Desc = L10n.ModelManager.Lab.Mock.traceStep1Desc
         static let traceStep2Title = "00:04 - 00:08"
-        static let traceStep2Desc = "完美支持 Gemma 4 最新端侧模型"
-        static let intentMatchDesc = "🌹 玫瑰播种意图触发 - SUCCESS"
-        static let uiRenderingDesc = "玫瑰花瓣粒子开花效果就绪"
-        static let intentAnalyserDesc = "识别切换暗黑主题指令 - PASS"
+        static let traceStep2Desc = L10n.ModelManager.Lab.Mock.traceStep2Desc
+        static let intentMatchDesc = L10n.ModelManager.Lab.Mock.intentMatchDesc
+        static let uiRenderingDesc = L10n.ModelManager.Lab.Mock.uiRenderingDesc
+        static let intentAnalyserDesc = L10n.ModelManager.Lab.Mock.intentAnalyserDesc
         static let sandboxGatekeeperTitle = "Sandbox Gatekeeper"
-        static let sandboxGatekeeperDesc = "设备安全准入校验 - PASS"
-        static let hapticFeedbackDesc = "系统调用已触发生效"
+        static let sandboxGatekeeperDesc = L10n.ModelManager.Lab.Mock.sandboxGatekeeperDesc
+        static let hapticFeedbackDesc = L10n.ModelManager.Lab.Mock.hapticFeedbackDesc
         static let sandboxReadTitle = "Sandbox Read"
-        static let sandboxReadDesc = "大模型方案设计.md (145行) - 读取成功"
-        static let contextSummaryDesc = "总结任务处理中，输出结果对齐 L0-L3 设计"
+        static let sandboxReadDesc = L10n.ModelManager.Lab.Mock.sandboxReadDesc
+        static let contextSummaryDesc = L10n.ModelManager.Lab.Mock.contextSummaryDesc
     }
 
     // MARK: - 模块名 (Module Name)

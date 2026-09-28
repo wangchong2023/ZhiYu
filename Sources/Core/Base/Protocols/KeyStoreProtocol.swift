@@ -18,7 +18,6 @@ import UFPCore
 /// - 生产环境：UserDefaultsKeyStore（标准 UserDefaults）
 /// - iCloud：NSUbiquitousKeyValueStore 适配（未来）
 /// - 测试环境：MockKeyStore（内存实现）
-@MainActor
 public protocol KeyStoreProtocol: AnyObject, Sendable {
     func bool(forKey key: String) -> Bool
     func string(forKey key: String) -> String?

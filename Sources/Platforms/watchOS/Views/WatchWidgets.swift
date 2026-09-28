@@ -11,6 +11,7 @@
 import WidgetKit
 import SwiftUI
 import AppIntents
+import UFPDesignSystem
 
 // MARK: - 手表端小组件
 /// 手表端专用捕获意图（与 ShortcutManager.CaptureIntent 分离，避免元数据冲突）
@@ -91,7 +92,7 @@ struct WatchWidgetView: View {
         Button(intent: WatchCaptureIntent()) {
             switch family {
             case .accessoryRectangular:
-                VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                     HStack {
                         Image(systemName: "sparkles")
                             .foregroundStyle(Color.appAccent)
@@ -107,14 +108,14 @@ struct WatchWidgetView: View {
                         .lineLimit(2)
                 }
             case .accessoryInline:
-                HStack(spacing: SystemSpacing.tiny) {
+                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
                     Image(systemName: "flame.fill")
                         .foregroundStyle(Color.theme.orange)
                     Text("\(entry.synthesisCount) \(L10n.Widget.knowledgeCompile) · \(entry.flashQuote)")
                 }
             case .accessoryCorner:
                 VStack {
-                    Image(systemName: DesignSystem.Icons.micFill)
+                    Image(systemName: DesignTokens.Icons.micFill)
                         .font(.caption.weight(.bold))
                         .foregroundStyle(Color.appAccent)
                     Text("\(entry.synthesisCount)")
@@ -125,7 +126,7 @@ struct WatchWidgetView: View {
                     Circle()
                         .fill(Color.appAccent.gradient)
                     VStack(spacing: 0) {
-                        Image(systemName: DesignSystem.Icons.micFill)
+                        Image(systemName: DesignTokens.Icons.micFill)
                             .font(.system(size: 14, weight: .bold)) // Dynamic Type
                             .foregroundStyle(Color.theme.white)
                         Text("\(entry.synthesisCount)")

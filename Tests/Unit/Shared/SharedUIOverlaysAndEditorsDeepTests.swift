@@ -9,6 +9,7 @@
 //  核心职责：深度覆盖 L3 Shared 通用覆盖层、OCR、编辑器工具与加载态组件。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 @testable import ZhiYu
@@ -66,7 +67,7 @@ final class SharedUIOverlaysAndEditorsDeepTests: XCTestCase {
         var actionTriggered = false
         let button = EditorToolbarButton(
             title: "加粗",
-            icon: DesignSystem.Icons.edit
+            icon: DesignTokens.Icons.edit
         ) {
             actionTriggered = true
         }
@@ -138,7 +139,7 @@ final class SharedUIOverlaysAndEditorsDeepTests: XCTestCase {
         let visible = AppLoadingOverlay(
             isLoading: true,
             message: "知识库全量重构中...",
-            backgroundColor: Color.black.opacity(DesignSystem.Opacity.dim),
+            backgroundColor: Color.black.opacity(DesignTokens.Opacity.dim),
             foregroundColor: Color.appAccent
         )
         let host2 = UIHostingController(rootView: visible.snapshotEnvironment())

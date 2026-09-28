@@ -9,6 +9,7 @@
 //  核心职责：仪表盘：页面列表、知识统计、每周洞察、回链视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // 周报卡片组件特定常量
 private enum WeeklyCardConstants {
@@ -26,10 +27,10 @@ struct WeeklyInsightCard: View {
     @State private var isGenerating = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.loosePadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.loosePadding) {
             HStack {
-                AppGlow(icon: DesignSystem.Icons.sparkles, color: .purple, size: SystemFontSize.title) // 24
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                AppGlow(icon: DesignTokens.Icons.sparkles, color: .purple, size: DesignTokens.SystemFontSize.title) // 24
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                     Text(L10n.Dashboard.insight.weeklyTitle)
                         .font(.title3.bold())
                         .foregroundStyle(.appText)
@@ -42,21 +43,21 @@ struct WeeklyInsightCard: View {
                 Spacer()
                 
                 if isGenerating {
-                    ProgressView().scaleEffect(DesignSystem.Animation.pressScale) // 0.8
+                    ProgressView().scaleEffect(DesignTokens.Animation.pressScale) // 0.8
                 } else {
                     Button(action: { generateInsight(forceRefresh: true) }) {
-                        Image(systemName: DesignSystem.Icons.refresh)
+                        Image(systemName: DesignTokens.Icons.refresh)
                             .font(.caption.bold())
                             .foregroundStyle(.appSecondary)
-                            .padding(DesignSystem.small)
-                            .background(Circle().fill(Color.appBorder.opacity(DesignSystem.dimmedOpacity))) // 0.2
+                            .padding(DesignTokens.Spacing.small)
+                            .background(Circle().fill(Color.appBorder.opacity(DesignTokens.Colors.Opacity.dimmedOpacity))) // 0.2
                     }
                     .buttonStyle(.plain)
                 }
             }
             
             if isGenerating {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     AppSkeleton(width: 200, height: 20)
                     AppSkeleton(width: 300, height: 16)
                     AppSkeleton(width: 260, height: 16)
@@ -64,26 +65,26 @@ struct WeeklyInsightCard: View {
                 }
                 .transition(.opacity)
             } else if let insight = aiStore.weeklyInsight {
-                VStack(alignment: .leading, spacing: DesignSystem.Metrics.sectionSpacing) { // 24
+                VStack(alignment: .leading, spacing: DesignTokens.Metrics.sectionSpacing) { // 24
                     // 核心指标 (奖牌化设计)
-                    VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
-                        HStack(spacing: DesignSystem.Metrics.sectionSpacing) { // 24
-                            InsightMetricCard(title: L10n.Common.Stats.newPages, value: "\(insight.totalNewPages)", icon: DesignSystem.Icons.docBadgePlus, color: .blue, layout: .weekly)
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
+                        HStack(spacing: DesignTokens.Metrics.sectionSpacing) { // 24
+                            InsightMetricCard(title: L10n.Common.Stats.newPages, value: "\(insight.totalNewPages)", icon: DesignTokens.Icons.docBadgePlus, color: .blue, layout: .weekly)
                             Divider().frame(height: WeeklyCardConstants.dividerHeight) // 36
-                            InsightMetricCard(title: L10n.Common.Stats.growth, value: insight.growthTraction, icon: DesignSystem.Icons.chartLine, color: .green, layout: .weekly)
+                            InsightMetricCard(title: L10n.Common.Stats.growth, value: insight.growthTraction, icon: DesignTokens.Icons.chartLine, color: .green, layout: .weekly)
                         }
                         
                         if !insight.topKeywords.isEmpty {
-                            FlowLayout(spacing: DesignSystem.small) {
+                            FlowLayout(spacing: DesignTokens.Spacing.small) {
                                 ForEach(Array(Set(insight.topKeywords)).sorted(), id: \.self) { tag in
                                     InsightTagChip(
                                         text: tag,
                                         hashPrefix: true,
                                         foregroundColor: .appAccent,
-                                        font: DesignSystem.caption2Font,
+                                        font: DesignTokens.Typography.caption2Font,
                                         style: InsightTagChipStyle(
                                             backgroundColor: .appAccent,
-                                            backgroundOpacity: DesignSystem.glassOpacity,
+                                            backgroundOpacity: DesignTokens.Colors.Opacity.glassOpacity,
                                             borderColor: .clear,
                                             borderOpacity: 0
                                         )
@@ -95,11 +96,11 @@ struct WeeklyInsightCard: View {
                     .weeklyInsightContainerStyle()
 
                     // 摘要正文
-                    VStack(alignment: .leading, spacing: DesignSystem.standardPadding) { // 12
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) { // 12
                         HStack {
-                            Image(systemName: DesignSystem.Icons.quoteOpening)
+                            Image(systemName: DesignTokens.Icons.quoteOpening)
                                 .font(.title2)
-                                .foregroundStyle(.appAccent.opacity(SystemOpacity.glassStrong)) // 0.3
+                                .foregroundStyle(.appAccent.opacity(DesignTokens.SystemOpacity.glassStrong)) // 0.3
                             Spacer()
                         }
                         
@@ -108,61 +109,61 @@ struct WeeklyInsightCard: View {
                                 router.navigateToPage(id: page.id)
                             }
                         })
-                        .padding(.horizontal, DesignSystem.small) // 4
+                        .padding(.horizontal, DesignTokens.Spacing.small) // 4
                         
                         HStack {
                             Spacer()
-                            Image(systemName: DesignSystem.Icons.quoteClosing)
+                            Image(systemName: DesignTokens.Icons.quoteClosing)
                                 .font(.title2)
-                                .foregroundStyle(.appAccent.opacity(DesignSystem.disabledOpacity))
+                                .foregroundStyle(.appAccent.opacity(DesignTokens.Colors.Opacity.disabledOpacity))
                         }
                     }
-                    .padding(DesignSystem.loosePadding)
+                    .padding(DesignTokens.Spacing.loosePadding)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background {
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius) // 16
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius) // 16
                             .fill(.ultraThinMaterial)
                             .overlay(
-                                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                                    .stroke(LinearGradient(colors: [DesignSystem.containerBorder, .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: DesignSystem.borderWidth)
+                                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                                    .stroke(LinearGradient(colors: [DesignSystem.containerBorder, .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: DesignTokens.Spacing.borderWidth)
                             )
                     }
-                    .shadow(color: .primary.opacity(Reference.Opacity.ten), radius: DesignSystem.shadowRadius, y: DesignSystem.shadowY) // 0.1, 10, 4
+                    .shadow(color: .primary.opacity(DesignTokens.Reference.Opacity.ten), radius: DesignTokens.Spacing.shadowRadius, y: DesignTokens.Spacing.shadowY) // 0.1, 10, 4
                 }
                 .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .opacity))
             } else {
                 Button(action: { generateInsight(forceRefresh: true) }) {
                     HStack {
-                        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                             Text(L10n.Dashboard.insight.generateReport)
                                 .font(.headline)
                             Text(L10n.Insight.Weekly.aiAnalysis)
                                 .font(.caption)
                         }
                         Spacer()
-                        Image(systemName: DesignSystem.Icons.sparkles)
+                        Image(systemName: DesignTokens.Icons.sparkles)
                             .font(.title2)
                     }
-                    .padding(DesignSystem.Metrics.sectionSpacing) // 24
+                    .padding(DesignTokens.Metrics.sectionSpacing) // 24
                     .background(
-                        RoundedRectangle(cornerRadius: DesignSystem.cardRadius) // 16
-                            .fill(LinearGradient(colors: [.appAccent.opacity(SystemOpacity.glass), .appAccent.opacity(SystemOpacity.ghost)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .overlay(RoundedRectangle(cornerRadius: DesignSystem.cardRadius).stroke(DesignSystem.containerBorder, lineWidth: DesignSystem.borderWidth))
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius) // 16
+                            .fill(LinearGradient(colors: [.appAccent.opacity(DesignTokens.SystemOpacity.glass), .appAccent.opacity(DesignTokens.SystemOpacity.ghost)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .overlay(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius).stroke(DesignSystem.containerBorder, lineWidth: DesignTokens.Spacing.borderWidth))
                     )
                     .foregroundStyle(.appAccent)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(DesignSystem.Metrics.sectionSpacing) // 24
+        .padding(DesignTokens.Metrics.sectionSpacing) // 24
         .background(
             ZStack {
                 DesignSystem.containerBackground
-                LinearGradient(colors: [Color.theme.purple.opacity(SystemOpacity.ghost), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
+                LinearGradient(colors: [Color.theme.purple.opacity(DesignTokens.SystemOpacity.ghost), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
             }
         )
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.loosePadding)) // 20
-        .shadow(color: .primary.opacity(Reference.Opacity.ten), radius: SystemSpacing.content, x: 0, y: SystemSpacing.element) // 0.1, 16, 8
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.loosePadding)) // 20
+        .shadow(color: .primary.opacity(DesignTokens.Reference.Opacity.ten), radius: DesignTokens.SystemSpacing.content, x: 0, y: DesignTokens.SystemSpacing.element) // 0.1, 16, 8
         .onAppear {
             if aiStore.weeklyInsight == nil && !store.pages.isEmpty {
                 generateInsight()
@@ -193,13 +194,13 @@ struct WeeklyReportView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: DesignSystem.Metrics.sectionSpacing) { // 24
+            VStack(spacing: DesignTokens.Metrics.sectionSpacing) { // 24
                 WeeklyInsightCard()
                 
                 // 深度建议
-                VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                     HStack {
-                        Image(systemName: DesignSystem.Icons.concept)
+                        Image(systemName: DesignTokens.Icons.concept)
                             .foregroundStyle(Color.theme.orange)
                         Text(L10n.Dashboard.insight.tips.title)
                             .font(.headline)
@@ -207,17 +208,17 @@ struct WeeklyReportView: View {
                     
                     Text(L10n.Dashboard.insight.tips.content)
                         .font(.subheadline)
-                        .lineSpacing(SystemSpacing.small) // 6
+                        .lineSpacing(DesignTokens.SystemSpacing.small) // 6
                         .foregroundStyle(.appSecondary)
                         .weeklyInsightContainerStyle()
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.top, SystemSpacing.elementLarge) // 10
+                .padding(.top, DesignTokens.SystemSpacing.elementLarge) // 10
                 
                 // 底部占位，增加留白感
-                Spacer(minLength: DesignSystem.Metrics.iconBoxSize) // 40
+                Spacer(minLength: DesignTokens.Metrics.iconBoxSize) // 40
             }
-            .padding(DesignSystem.loosePadding)
+            .padding(DesignTokens.Spacing.loosePadding)
         }
         .background(PageBackgroundView(accentColor: Color.theme.purple))
         .appSubPageToolbar(title: L10n.Common.Sidebar.weeklyInsight)
@@ -229,7 +230,7 @@ private extension View {
     /// 周报洞察容器：padding + containerCardStyle
     func weeklyInsightContainerStyle() -> some View {
         self
-            .padding(DesignSystem.loosePadding)
+            .padding(DesignTokens.Spacing.loosePadding)
             .containerCardStyle()
     }
 }

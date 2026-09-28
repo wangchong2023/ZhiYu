@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 全局 AI 任务处理状态条
 struct AIProcessingStatusBanner: View {
@@ -24,21 +25,21 @@ struct AIProcessingStatusBanner: View {
             return false
         }) {
             VStack(spacing: 0) {
-                HStack(spacing: DesignSystem.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     // 1. 动态 AI 思考图标
                     ZStack {
                         Circle()
-                            .fill(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.medium), .purple.opacity(DesignSystem.Opacity.medium)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: DesignSystem.IconSize.large, height: DesignSystem.IconSize.large)
+                            .fill(LinearGradient(colors: [.appAccent.opacity(DesignTokens.Opacity.medium), .purple.opacity(DesignTokens.Opacity.medium)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(width: DesignTokens.IconSize.large, height: DesignTokens.IconSize.large)
                         
-                        Image(systemName: DesignSystem.Icons.sparkles)
+                        Image(systemName: DesignTokens.Icons.sparkles)
                             .font(.subheadline.weight(.bold))
                             .foregroundStyle(LinearGradient(colors: [.appAccent, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
                             .rotationEffect(.degrees(rotationAngle))
                     }
                     
                     // 2. 任务状态文本
-                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                         Text(activeTask.name)
                             .font(.footnote.weight(.bold))
                             .foregroundStyle(.appText)
@@ -58,16 +59,16 @@ struct AIProcessingStatusBanner: View {
                             .foregroundStyle(.appAccent)
                     }
                 }
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, SystemSpacing.tight)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.prominent))
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.vertical, DesignTokens.SystemSpacing.tight)
+                .background(Color.appCard.opacity(DesignTokens.Opacity.prominent))
                 .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
-                        .strokeBorder(LinearGradient(colors: [.appAccent.opacity(DesignSystem.Opacity.shadow), .purple.opacity(DesignSystem.Opacity.subtle)], startPoint: .leading, endPoint: .trailing), lineWidth: SystemStroke.divider)
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
+                        .strokeBorder(LinearGradient(colors: [.appAccent.opacity(DesignTokens.Opacity.shadow), .purple.opacity(DesignTokens.Opacity.subtle)], startPoint: .leading, endPoint: .trailing), lineWidth: DesignTokens.SystemStroke.divider)
                 )
-                .shadow(color: .black.opacity(DesignSystem.Opacity.ghost), radius: 10, y: 5)
+                .shadow(color: .black.opacity(DesignTokens.Opacity.ghost), radius: 10, y: 5)
             }
             .transition(.move(edge: .top).combined(with: .opacity))
             .onAppear {

@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import SceneKit
+import UFPDesignSystem
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -18,14 +19,14 @@ import AppKit
 
 // MARK: - 3D 图谱组件私有常量
 private enum Graph3DUIConstants {
-    static let controlPadding: CGFloat = SystemSpacing.contentMedium
+    static let controlPadding: CGFloat = DesignTokens.SystemSpacing.contentMedium
     static let filterOffsetX: CGFloat = -50
     static let filterOffsetY: CGFloat = -20
-    static let filterShadowRadius: CGFloat = SystemSpacing.element
+    static let filterShadowRadius: CGFloat = DesignTokens.SystemSpacing.element
     static let filterShadowX: CGFloat = -4
-    static let filterShadowY: CGFloat = SystemSpacing.tiny
-    static let filterPopupScale: CGFloat = CGFloat(Reference.Opacity.eighty)
-    static let cameraZMin: Float = Float(SystemSpacing.extraSmall)
+    static let filterShadowY: CGFloat = DesignTokens.SystemSpacing.tiny
+    static let filterPopupScale: CGFloat = CGFloat(DesignTokens.Reference.Opacity.eighty)
+    static let cameraZMin: Float = Float(DesignTokens.SystemSpacing.extraSmall)
 }
 
 // MARK: - 3D 图谱场景配置（非 UI 语境）
@@ -388,10 +389,10 @@ struct Graph3DControlsOverlay: View {
     var body: some View {
         let iconColor: Color = isFullScreen ? .white : .appText
 
-        VStack(spacing: DesignSystem.small) {
+        VStack(spacing: DesignTokens.Spacing.small) {
             // Fullscreen toggle
             controlButton(
-                icon: isFullScreen ? DesignSystem.Icons.fullscreenExit : DesignSystem.Icons.fullscreenEnter,
+                icon: isFullScreen ? DesignTokens.Icons.fullscreenExit : DesignTokens.Icons.fullscreenEnter,
                 iconColor: iconColor,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dFullscreen
             ) {
@@ -405,7 +406,7 @@ struct Graph3DControlsOverlay: View {
             // Hide controls toggle - 仅在全屏模式下显示
             if isFullScreen {
                 controlButton(
-                    icon: DesignSystem.Icons.eyeSlashOutline,
+                    icon: DesignTokens.Icons.eyeSlashOutline,
                     iconColor: iconColor,
                     accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dHideControls
                 ) {
@@ -418,7 +419,7 @@ struct Graph3DControlsOverlay: View {
             // Auto-rotate toggle - 仅在全屏模式下显示
             if isFullScreen {
                 controlButton(
-                    icon: autoRotate ? DesignSystem.Icons.refreshCircleFill : DesignSystem.Icons.refreshCircle,
+                    icon: autoRotate ? DesignTokens.Icons.refreshCircleFill : DesignTokens.Icons.refreshCircle,
                     iconColor: autoRotate ? Color.appAccent : iconColor,
                     accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dAutoRotate
                 ) {
@@ -428,7 +429,7 @@ struct Graph3DControlsOverlay: View {
 
             // Reset camera
             controlButton(
-                icon: DesignSystem.Icons.scope,
+                icon: DesignTokens.Icons.scope,
                 iconColor: iconColor,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dResetCamera
             ) {
@@ -437,7 +438,7 @@ struct Graph3DControlsOverlay: View {
 
             // Zoom In
             controlButton(
-                icon: DesignSystem.Icons.plusMagnifyingglass,
+                icon: DesignTokens.Icons.plusMagnifyingglass,
                 iconColor: iconColor,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dZoomIn
             ) {
@@ -446,7 +447,7 @@ struct Graph3DControlsOverlay: View {
 
             // Zoom Out
             controlButton(
-                icon: DesignSystem.Icons.minusMagnifyingglass,
+                icon: DesignTokens.Icons.minusMagnifyingglass,
                 iconColor: iconColor,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.graph3dZoomOut
             ) {
@@ -456,13 +457,13 @@ struct Graph3DControlsOverlay: View {
             // Filter - 全屏模式下根据用户要求隐藏
             if !isFullScreen {
                 Button(action: { withAnimation(.spring(response: Graph3DSceneConfig.filterSpringResponse)) { showFilterPopup.toggle() } }) {
-                    Image(systemName: DesignSystem.Icons.filterCircle)
+                    Image(systemName: DesignTokens.Icons.filterCircle)
                         .font(.title3)
                         .foregroundStyle(filterType == nil ? iconColor : Color.appAccent)
                         .padding(Graph3DUIConstants.controlPadding)
                         .background(.ultraThinMaterial)
                         .clipShape(Circle())
-                        .shadow(color: .black.opacity(filterType == nil ? 0 : DesignSystem.dimmedOpacity), radius: DesignSystem.tiny)
+                        .shadow(color: .black.opacity(filterType == nil ? 0 : DesignTokens.Colors.Opacity.dimmedOpacity), radius: DesignTokens.Spacing.tiny)
                 }
                 .overlay(alignment: .bottomTrailing) {
                     if showFilterPopup {
@@ -470,16 +471,16 @@ struct Graph3DControlsOverlay: View {
                             Text(L10n.Graph.filter)
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(.appSecondary)
-                                .padding(.horizontal, DesignSystem.medium)
-                                .padding(.top, SystemSpacing.tight)
-                                .padding(.bottom, DesignSystem.tightPadding)
+                                .padding(.horizontal, DesignTokens.Spacing.medium)
+                                .padding(.top, DesignTokens.SystemSpacing.tight)
+                                .padding(.bottom, DesignTokens.Spacing.tightPadding)
                             
-                            Divider().background(Color.appBorder.opacity(DesignSystem.Opacity.shadow))
+                            Divider().background(Color.appBorder.opacity(DesignTokens.Opacity.shadow))
                             
                             ScrollView {
                                 VStack(alignment: .leading, spacing: 0) {
                                     filterPillRow(
-                                        icon: DesignSystem.Icons.gridOutline,
+                                        icon: DesignTokens.Icons.gridOutline,
                                         title: L10n.Graph.all,
                                         isSelected: filterType == nil
                                     ) {
@@ -501,13 +502,13 @@ struct Graph3DControlsOverlay: View {
                                 }
                                 .fixedSize(horizontal: false, vertical: true)
                             }
-                            .frame(maxHeight: Spacing.Grid.emptyStateHeight) 
+                            .frame(maxHeight: DesignTokens.Spacing.Grid.emptyStateHeight) 
                         }
-                        .frame(width: DesignSystem.Metrics.graphControlWidth)
+                        .frame(width: DesignTokens.Metrics.graphControlWidth)
                         .background(
-                            RoundedRectangle(cornerRadius: DesignSystem.largeRadius)
+                            RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius)
                                 .fill(.regularMaterial)
-                                .shadow(color: .black.opacity(DesignSystem.Opacity.glass), radius: Graph3DUIConstants.filterShadowRadius, x: Graph3DUIConstants.filterShadowX, y: Graph3DUIConstants.filterShadowY)
+                                .shadow(color: .black.opacity(DesignTokens.Opacity.glass), radius: Graph3DUIConstants.filterShadowRadius, x: Graph3DUIConstants.filterShadowX, y: Graph3DUIConstants.filterShadowY)
                         )
                         .offset(x: Graph3DUIConstants.filterOffsetX, y: Graph3DUIConstants.filterOffsetY)
                         .transition(.asymmetric(
@@ -561,12 +562,12 @@ struct Graph3DControlsOverlay: View {
                     .font(.footnote)
                 Spacer()
                 if isSelected {
-                    Image(systemName: DesignSystem.Icons.check)
+                    Image(systemName: DesignTokens.Icons.check)
                         .font(.caption2.weight(.bold))
                 }
             }
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, SystemSpacing.tight)
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+            .padding(.vertical, DesignTokens.SystemSpacing.tight)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -583,7 +584,7 @@ struct Graph3DNodeInfoBar: View {
     let onViewPage: () -> Void
 
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             Circle()
                 .fill(Color.fromModelColorName(page.pageType.colorName))
                 .frame(width: DesignSystem.Timeline.indicatorSize, height: DesignSystem.Timeline.indicatorSize)
@@ -593,7 +594,7 @@ struct Graph3DNodeInfoBar: View {
                         .foregroundStyle(.white)
                 }
 
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(page.title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.appText)
@@ -608,17 +609,17 @@ struct Graph3DNodeInfoBar: View {
                 Text(L10n.Graph.viewDetail)
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.appAccent)
-                    .padding(.horizontal, DesignSystem.medium)
-                    .padding(.vertical, DesignSystem.tightPadding)
-                    .background(Color.appAccent.opacity(DesignSystem.Opacity.glass))
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.vertical, DesignTokens.Spacing.tightPadding)
+                    .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
                     .clipShape(Capsule())
             }
             .accessibilityIdentifier("graph3d-view-page")
         }
         .padding()
         .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius))
         .padding(.horizontal)
-        .padding(.bottom, DesignSystem.small)
+        .padding(.bottom, DesignTokens.Spacing.small)
     }
 }

@@ -6,6 +6,7 @@
 //  核心职责：Search 组件快照测试，覆盖 CommandPaletteView 命令面板。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -39,7 +40,7 @@ final class SearchViewSnapshots: XCTestCase {
     func testCommandPaletteView_Default() {
         let view = CommandPaletteView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
     }
 }

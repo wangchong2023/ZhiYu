@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 @MainActor
 /// 笔记本工作台视图
@@ -41,7 +42,7 @@ public struct NotebookHubView: View {
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                     // 1. 现代风格搜索区域
                     searchBar(bindableViewModel: Bindable(viewModel))
                     
@@ -55,7 +56,7 @@ public struct NotebookHubView: View {
                     }
                     notebookGridSection
                 }
-                .padding(.bottom, DesignSystem.huge)
+                .padding(.bottom, DesignTokens.Spacing.huge)
             }
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("NotebookHubView")
@@ -122,7 +123,7 @@ public struct NotebookHubView: View {
     
     private func searchBar(bindableViewModel: Bindable<NotebookHubViewModel>) -> some View {
         HStack {
-            Image(systemName: DesignSystem.Icons.search)
+            Image(systemName: DesignTokens.Icons.search)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appAccent)
             
@@ -138,24 +139,24 @@ public struct NotebookHubView: View {
         }
         .commonContentPadding()
         .borderedCardStyle(
-            horizontalPadding: DesignSystem.standardPadding,
-            verticalPadding: SystemSpacing.elementLarge,
-            backgroundOpacity: SystemOpacity.glassStrong,
-            cornerRadius: DesignSystem.cardRadius
+            horizontalPadding: DesignTokens.Spacing.standardPadding,
+            verticalPadding: DesignTokens.SystemSpacing.elementLarge,
+            backgroundOpacity: DesignTokens.SystemOpacity.glassStrong,
+            cornerRadius: DesignTokens.Spacing.cardRadius
         )
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.cardRadius, style: .continuous)
-                .strokeBorder(.appAccent.opacity(DesignSystem.Opacity.glass), lineWidth: 1)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
+                .strokeBorder(.appAccent.opacity(DesignTokens.Opacity.glass), lineWidth: 1)
         )
         .padding(.horizontal, DesignSystem.Vault.homePadding)
-        .padding(.top, DesignSystem.medium)
+        .padding(.top, DesignTokens.Spacing.medium)
     }
 
     private var notebookGridSection: some View {
         Group {
             if viewModel.notebooks.isEmpty {
                 AppEmptyState.withAction(
-                    icon: DesignSystem.Icons.folderBadgePlus,
+                    icon: DesignTokens.Icons.folderBadgePlus,
                     title: L10n.Vault.homeTitle,
                     description: nil,
                     actionLabel: L10n.Common.create,
@@ -163,13 +164,13 @@ public struct NotebookHubView: View {
                 ) {
                     viewModel.isShowingCreateSheet = true
                 }
-                .padding(.top, DesignSystem.huge)
+                .padding(.top, DesignTokens.Spacing.huge)
             } else if viewModel.displayMode == .grid {
                 let columns = appEnv.screenClass == .expansive 
-                    ? [GridItem(.adaptive(minimum: 250), spacing: DesignSystem.standardPadding)]
-                    : [GridItem(.flexible(), spacing: DesignSystem.standardPadding), GridItem(.flexible(), spacing: DesignSystem.standardPadding)]
+                    ? [GridItem(.adaptive(minimum: 250), spacing: DesignTokens.Spacing.standardPadding)]
+                    : [GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding), GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding)]
                 
-                LazyVGrid(columns: columns, spacing: DesignSystem.standardPadding) {
+                LazyVGrid(columns: columns, spacing: DesignTokens.Spacing.standardPadding) {
                     CreateNotebookButton(viewModel: viewModel, displayMode: .grid)
                     
                     ForEach(viewModel.notebooks) { notebook in
@@ -192,7 +193,7 @@ public struct NotebookHubView: View {
                     }
                 }
             } else {
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     CreateNotebookButton(viewModel: viewModel, displayMode: .list)
                     
                     ForEach(viewModel.notebooks) { notebook in
@@ -211,10 +212,10 @@ public struct NotebookHubView: View {
             HapticFeedback.shared.trigger(.selection)
             showLintSheet = true
         } label: {
-            Image(systemName: DesignSystem.Icons.sparkles)
+            Image(systemName: DesignTokens.Icons.sparkles)
                 .font(.callout.weight(.bold))
                 .foregroundStyle(.appAccent)
-                .padding(.leading, SystemSpacing.tiny)
+                .padding(.leading, DesignTokens.SystemSpacing.tiny)
         }
         .buttonStyle(.plain)
     }
@@ -222,7 +223,7 @@ public struct NotebookHubView: View {
     private var displayModeButton: some View {
         Button(action: { viewModel.toggleDisplayMode() }) {
             Image(systemName: viewModel.displayMode.icon)
-                .font(.system(size: DesignSystem.bodyFontSize))
+                .font(.system(size: DesignTokens.Typography.bodyFontSize))
                 .foregroundStyle(.appSecondary)
         }
         .buttonStyle(.plain)
@@ -234,17 +235,17 @@ public struct NotebookHubView: View {
             Button {
                 viewModel.sortOption = .date
             } label: {
-                Label(L10n.Vault.sort.date, systemImage: DesignSystem.Icons.sortDate)
+                Label(L10n.Vault.sort.date, systemImage: DesignTokens.Icons.sortDate)
             }
             
             Button {
                 viewModel.sortOption = .name
             } label: {
-                Label(L10n.Vault.sort.name, systemImage: DesignSystem.Icons.sortName)
+                Label(L10n.Vault.sort.name, systemImage: DesignTokens.Icons.sortName)
             }
         } label: {
-            Image(systemName: DesignSystem.Icons.sortUpDown)
-                .font(.system(size: DesignSystem.bodyFontSize))
+            Image(systemName: DesignTokens.Icons.sortUpDown)
+                .font(.system(size: DesignTokens.Typography.bodyFontSize))
                 .foregroundStyle(.appSecondary)
         }
         .buttonStyle(.plain)
@@ -257,11 +258,11 @@ struct WelcomeBannerView: View {
     @EnvironmentObject var onboardingService: OnboardingService
 
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.sparkles)
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.sparkles)
                 .font(.title2)
                 .foregroundStyle(Color.theme.blue)
-            VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                 Text(L10n.Onboarding.pathTitle)
                     .font(.subheadline.bold())
                 Text(L10n.Onboarding.subtitle)
@@ -273,16 +274,16 @@ struct WelcomeBannerView: View {
                 HapticFeedback.shared.trigger(.selection)
                 withAnimation { onboardingService.hasCompletedOnboarding = true }
             } label: {
-                Image(systemName: DesignSystem.Icons.xmark)
+                Image(systemName: DesignTokens.Icons.xmark)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                    .padding(DesignSystem.tightPadding)
-                    .background(Color.secondary.opacity(DesignSystem.Opacity.subtle))
+                    .padding(DesignTokens.Spacing.tightPadding)
+                    .background(Color.secondary.opacity(DesignTokens.Opacity.subtle))
                     .clipShape(Circle())
             }
         }
         .padding()
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
     }
 }

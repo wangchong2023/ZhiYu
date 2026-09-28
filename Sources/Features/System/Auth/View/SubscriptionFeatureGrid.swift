@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 订阅套餐权益对比网格组件
 @MainActor
@@ -27,7 +28,7 @@ struct SubscriptionFeatureGrid: View {
 
                     headerTitle(L10n.Auth.litePlan, color: .appSecondary)
 
-                    verticalDivider(maxHeight: Spacing.iconSmall)
+                    verticalDivider(maxHeight: DesignTokens.Spacing.iconSmall)
 
                     headerTitle(L10n.Auth.proPlan, color: .appAccent)
                 }
@@ -42,7 +43,7 @@ struct SubscriptionFeatureGrid: View {
                 ForEach(0..<displayCount, id: \.self) { i in
                     featureRow(lite: liteFeatures[i], pro: proFeatures[i])
                     if i < displayCount - 1 {
-                        AppDivider().padding(.leading, DesignSystem.large)
+                        AppDivider().padding(.leading, DesignTokens.Spacing.large)
                     }
                 }
             }
@@ -52,10 +53,10 @@ struct SubscriptionFeatureGrid: View {
     private func featureRow(lite: PlanFeature, pro: PlanFeature) -> some View {
         HStack(alignment: .center) {
             // 功能名
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 Image(systemName: pro.icon)
                     .foregroundStyle(.appAccent)
-                    .frame(width: DesignSystem.IconSize.small)
+                    .frame(width: DesignTokens.IconSize.small)
                 Text(lite.title)
                     .font(.caption)
                     .foregroundStyle(.appText)
@@ -65,7 +66,7 @@ struct SubscriptionFeatureGrid: View {
             // Lite 值
             planValueText(lite.value, color: .appSecondary)
 
-            verticalDivider(maxHeight: DesignSystem.medium)
+            verticalDivider(maxHeight: DesignTokens.Spacing.medium)
 
             // Pro 值
             planValueText(pro.value, color: .appAccent)
@@ -76,9 +77,9 @@ struct SubscriptionFeatureGrid: View {
     /// 垂直分隔线，消除表头与数据行的 Rectangle 重复
     private func verticalDivider(maxHeight: CGFloat) -> some View {
         Rectangle()
-            .fill(Color.appBorder.opacity(DesignSystem.secondaryOpacity))
-            .frame(width: DesignSystem.Metrics.dividerThickness)
-            .padding(.horizontal, SystemSpacing.tiny)
+            .fill(Color.appBorder.opacity(DesignTokens.Colors.Opacity.secondaryOpacity))
+            .frame(width: DesignTokens.Metrics.dividerThickness)
+            .padding(.horizontal, DesignTokens.SystemSpacing.tiny)
             .frame(maxHeight: maxHeight)
     }
 
@@ -105,7 +106,7 @@ private extension View {
     /// 单元格内边距，消除表头与数据行的 padding 重复
     func cellPadding() -> some View {
         self
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+            .padding(.vertical, DesignTokens.Spacing.small)
     }
 }

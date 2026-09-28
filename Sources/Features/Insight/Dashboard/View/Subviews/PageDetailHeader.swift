@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 // MARK: - Page Detail Header
 /// Page detail header displaying type/status/confidence badges, title, aliases, tags, and meta info.
@@ -25,7 +26,7 @@ struct PageDetailHeader: View {
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = isMetaExpanded
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             breadcrumb
             typeStatusConfidenceRow
             titleView
@@ -41,26 +42,26 @@ struct PageDetailHeader: View {
     
     // MARK: - Breadcrumb
     private var breadcrumb: some View {
-        HStack(spacing: DesignSystem.tiny) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
             // AI Status Indicator
             if taskCenter.tasks.contains(where: { if case .running = $0.status { return true }; return false }) {
-                HStack(spacing: DesignSystem.tiny) {
-                    Image(systemName: DesignSystem.Icons.cpu)
-                        .font(.system(size: DesignSystem.microFontSize))
+                HStack(spacing: DesignTokens.Spacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.cpu)
+                        .font(.system(size: DesignTokens.Typography.microFontSize))
                     Text(L10n.AI.Task.running)
-                        .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
+                        .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold))
                 }
                 .foregroundStyle(.appAccent)
                 .accentSubtleCapsule(
-                    horizontalPadding: DesignSystem.tightPadding,
-                    verticalPadding: DesignSystem.atomic
+                    horizontalPadding: DesignTokens.Spacing.tightPadding,
+                    verticalPadding: DesignTokens.Spacing.atomic
                 )
                 .transition(.opacity.combined(with: .scale))
             }
 
             if page.isPinned {
                 Spacer()
-                Image(systemName: DesignSystem.Icons.pinFill)
+                Image(systemName: DesignTokens.Icons.pinFill)
                     .font(.caption2)
                     .foregroundStyle(.appComparison)
             }
@@ -69,7 +70,7 @@ struct PageDetailHeader: View {
     
     // MARK: - Type / Status / Confidence Row
     private var typeStatusConfidenceRow: some View {
-        HStack(spacing: SystemSpacing.element) {
+        HStack(spacing: DesignTokens.SystemSpacing.element) {
             // Type badge
             TypeBadge(page: page, heroNamespace: heroNamespace)
             
@@ -86,7 +87,7 @@ struct PageDetailHeader: View {
     // MARK: - Title
     private var titleView: some View {
         Text(page.title)
-            .font(.system(size: DesignSystem.titleFontSize, weight: .bold, design: .rounded))
+            .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
             .foregroundStyle(.appText)
             .accessibilityAddTraits(.isHeader)
             .accessibilityLabel(L10n.Knowledge.Page.titleAccessibility(page.title))
@@ -99,41 +100,41 @@ struct PageDetailHeader: View {
         
         if !combinedTags.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     ForEach(combinedTags, id: \.self) { item in
                         let isAlias = page.aliases.contains(item)
-                        HStack(spacing: DesignSystem.tiny) {
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
                             if isAlias {
-                                Image(systemName: DesignSystem.Icons.arrowBranch)
-                                    .font(.system(size: DesignSystem.caption2FontSize))
+                                Image(systemName: DesignTokens.Icons.arrowBranch)
+                                    .font(.system(size: DesignTokens.Typography.caption2FontSize))
                             } else {
                                 Text(FeatureConstants.Decorator.hash)
-                                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
+                                    .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold))
                             }
                             Text(item)
                         }
                         .font(.caption2.weight(.medium))
-                        .padding(.horizontal, DesignSystem.medium)
-                        .padding(.vertical, DesignSystem.tiny)
+                        .padding(.horizontal, DesignTokens.Spacing.medium)
+                        .padding(.vertical, DesignTokens.Spacing.tiny)
                         .background(
                             isAlias ? 
-                            Color.appSource.opacity(DesignSystem.Opacity.subtle) : 
-                            Color.appAccent.opacity(DesignSystem.Opacity.subtle)
+                            Color.appSource.opacity(DesignTokens.Opacity.subtle) : 
+                            Color.appAccent.opacity(DesignTokens.Opacity.subtle)
                         )
                         .clipShape(Capsule())
                         .overlay(
                             Capsule()
                                 .stroke(
                                     isAlias ? 
-                                    Color.appSource.opacity(DesignSystem.Opacity.medium) : 
-                                    Color.appAccent.opacity(DesignSystem.Opacity.medium), 
-                                    lineWidth: SystemStroke.hairline
+                                    Color.appSource.opacity(DesignTokens.Opacity.medium) : 
+                                    Color.appAccent.opacity(DesignTokens.Opacity.medium), 
+                                    lineWidth: DesignTokens.SystemStroke.hairline
                                 )
                         )
                         .foregroundStyle(isAlias ? .appSource : .appAccent)
                     }
                 }
-                .padding(.vertical, DesignSystem.atomic)
+                .padding(.vertical, DesignTokens.Spacing.atomic)
             }
         }
     }
@@ -148,7 +149,7 @@ private struct TypeBadge: View {
     var heroNamespace: Namespace.ID?
     
     var body: some View {
-        HStack(spacing: DesignSystem.tiny) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
             if let ns = heroNamespace {
                 Image(systemName: page.displayIcon)
                     .font(.caption)
@@ -160,8 +161,8 @@ private struct TypeBadge: View {
             Text(page.pageType.displayName)
                 .font(.caption.weight(.medium))
         }
-        .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
-        .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignSystem.Opacity.medium))
+        .commonContentPadding(horizontal: DesignTokens.Spacing.small, vertical: DesignTokens.Spacing.tiny)
+        .background(Color.fromModelColorName(page.pageType.colorName).opacity(DesignTokens.Opacity.medium))
         .clipShape(Capsule())
         .foregroundStyle(Color.fromModelColorName(page.pageType.colorName))
         .accessibilityElement(children: .combine)
@@ -176,10 +177,10 @@ private struct StatusBadge: View {
     let page: KnowledgePage
     
     var body: some View {
-        HStack(spacing: DesignSystem.tiny) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
             Circle()
                 .fill(Color.fromModelColorName(page.status.colorName))
-                .frame(width: DesignSystem.IconSize.atomic, height: DesignSystem.IconSize.atomic)
+                .frame(width: DesignTokens.IconSize.atomic, height: DesignTokens.IconSize.atomic)
             Text(page.status.displayName)
                 .font(.caption)
         }
@@ -194,8 +195,8 @@ private struct ConfidenceBadge: View {
     let page: KnowledgePage
     
     var body: some View {
-        HStack(spacing: DesignSystem.tiny) {
-            Image(systemName: DesignSystem.Icons.cellularbars)
+        HStack(spacing: DesignTokens.Spacing.tiny) {
+            Image(systemName: DesignTokens.Icons.cellularbars)
                 .font(.caption2)
             Text(page.confidence.displayName)
                 .font(.caption)
@@ -209,8 +210,8 @@ private extension View {
     /// 徽章胶囊样式：padding + background + clipShape + foregroundStyle + accessibility
     func badgeCapsuleStyle(colorName: String, accessibilityLabel: String) -> some View {
         self
-            .commonContentPadding(horizontal: DesignSystem.small, vertical: DesignSystem.tiny)
-            .background(Color.fromModelColorName(colorName).opacity(DesignSystem.Opacity.glass))
+            .commonContentPadding(horizontal: DesignTokens.Spacing.small, vertical: DesignTokens.Spacing.tiny)
+            .background(Color.fromModelColorName(colorName).opacity(DesignTokens.Opacity.glass))
             .clipShape(Capsule())
             .foregroundStyle(Color.fromModelColorName(colorName))
             .accessibilityElement(children: .combine)

@@ -12,6 +12,7 @@
 
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// [L3] 表现层：通用来源信息按钮
 ///
@@ -51,7 +52,7 @@ struct InsightSourceButton: View {
     /// 来源按钮统一标签：图标 + 文本 + 蓝色前景
     @ViewBuilder
     private func sourceLabel(text: String) -> some View {
-        HStack(spacing: DesignSystem.tiny) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
             Image(systemName: displaySourceIcon)
                 .font(.caption2)
             Text(text)

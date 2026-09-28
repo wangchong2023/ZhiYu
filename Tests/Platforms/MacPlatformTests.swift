@@ -8,6 +8,7 @@
 //  系统层级：[Shared] 测试层
 //  核心职责：针对 MacPlatform 开展自动化单元测试验证。
 //
+import UFPDesignSystem
 import XCTest
 import LocalAuthentication
 #if os(macOS)
@@ -156,7 +157,7 @@ final class MacPlatformTests: XCTestCase {
         XCTAssertNil(service.string, "清空后剪贴板内容应当为 nil")
         
         // 3. 测试 NSImage 的 appCGImage 扩展转换（即使是空图像也不崩溃且安全返回）
-        let emptyImage = NSImage(size: NSSize(width: DesignSystem.Metrics.snapshotEmptyImageSize, height: DesignSystem.Metrics.snapshotEmptyImageSize))
+        let emptyImage = NSImage(size: NSSize(width: DesignTokens.Metrics.snapshotEmptyImageSize, height: DesignTokens.Metrics.snapshotEmptyImageSize))
         let cgImage = emptyImage.appCGImage
         // 空画布没有图像表象时可能返回 nil，重点验证不发生崩溃
         XCTAssertNil(cgImage, "未绘制内容的空图像 CGImage 应当为 nil")

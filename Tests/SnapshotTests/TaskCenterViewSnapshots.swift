@@ -6,6 +6,7 @@
 //  核心职责：TaskCenter View 的快照测试，覆盖空状态、有任务状态、不同任务类型与状态组合。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -146,7 +147,7 @@ final class TaskCenterViewSnapshots: XCTestCase {
     private func makeTaskCenterView() -> some View {
         TaskCenterView()
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth, height: DesignSystem.Metrics.snapshotPhoneHeight)
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
             .background(Color.appBackground)
     }
 }

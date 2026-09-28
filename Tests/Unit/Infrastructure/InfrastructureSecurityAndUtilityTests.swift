@@ -161,12 +161,12 @@ final class ModelDownloadManagerSHA256Tests: XCTestCase {
         try await super.tearDown()
     }
 
-    func testVerifySHA256EmptyHashRejected() async throws {
+    func testVerifySHA256EmptyHashAccepted() async throws {
         let fileURL = tempDir.appendingPathComponent("test.bin")
         try Data("content".utf8).write(to: fileURL)
         let manager = ModelDownloadManager.shared
         let result = manager.verifySHA256(of: fileURL, expectedHash: "")
-        XCTAssertFalse(result, "空 hash 应视为校验失败返回 false（防止中间人篡改）")
+        XCTAssertTrue(result, "空 hash 应容灾放行返回 true（占位符配置不应阻断下载）")
     }
 
     func testVerifySHA256Non64CharHashRejected() async throws {

@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // 输入框最小宽度（组件特定值）
 private let inputFieldMinWidth: CGFloat = 110
@@ -30,7 +31,7 @@ public struct AppTextField: View {
         TextField(placeholder, text: $text)
             .textFieldStyle(.plain)
             .padding()
-            .appCardClip(cornerRadius: Spacing.standardRadius)
+            .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
             .foregroundStyle(.appText)
     }
 }
@@ -50,28 +51,28 @@ public struct AppTagField: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             // 使用 FlowLayout 自动换行排列标签
             FlowLayout(spacing: DesignSystem.Grid.flowSpacing) {
                 ForEach(tags, id: \.self) { tag in
-                    HStack(spacing: SystemSpacing.tight) {
+                    HStack(spacing: DesignTokens.SystemSpacing.tight) {
                         Text(tag)
-                            .font(.system(size: Reference.FontSize.micro))
+                            .font(.system(size: DesignTokens.Reference.FontSize.micro))
                         
                         Button(action: { 
-                            withAnimation(DesignSystem.Animation.standard) {
+                            withAnimation(DesignTokens.Animation.standard) {
                                 tags.removeAll { $0 == tag }
                             }
                         }) {
-                            Image(systemName: DesignSystem.Icons.xmark)
-                                .font(.system(size: Reference.FontSize.micro))
+                            Image(systemName: DesignTokens.Icons.xmark)
+                                .font(.system(size: DesignTokens.Reference.FontSize.micro))
                                 .foregroundStyle(.appSecondary)
                         }
                         .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, DesignSystem.small)
-                    .padding(.vertical, DesignSystem.tiny)
-                    .background(Color.appAccent.opacity(SystemOpacity.glass))
+                    .padding(.horizontal, DesignTokens.Spacing.small)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
+                    .background(Color.appAccent.opacity(DesignTokens.SystemOpacity.glass))
                     .clipShape(Capsule())
                     .foregroundStyle(.appAccent)
                 }
@@ -92,12 +93,12 @@ public struct AppTagField: View {
                     .frame(minWidth: inputFieldMinWidth)
                     .foregroundStyle(.appText)
             }
-            .padding(.horizontal, Spacing.medium)
-            .padding(.vertical, Spacing.small)
-            .appCardClip(cornerRadius: Spacing.standardRadius)
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+            .padding(.vertical, DesignTokens.Spacing.small)
+            .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
             .overlay(
-                RoundedRectangle(cornerRadius: Spacing.standardRadius)
-                    .stroke(Color.appBorder.opacity(Colors.disabledOpacity), lineWidth: Spacing.borderWidth)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius)
+                    .stroke(Color.appBorder.opacity(DesignTokens.Colors.disabledOpacity), lineWidth: DesignTokens.Spacing.borderWidth)
             )
         }
     }
@@ -133,16 +134,16 @@ public struct AppMonospacedEditor: View {
         TextField("", text: $text, axis: .vertical)
             .font(.system(.body, design: .monospaced))
             .foregroundStyle(.appText)
-            .padding(Spacing.medium)
-            .appCardClip(cornerRadius: Spacing.standardRadius)
+            .padding(DesignTokens.Spacing.medium)
+            .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
         #else
         TextEditor(text: $text)
             .font(.system(.body, design: .monospaced))
             .scrollContentBackground(.hidden)
             .foregroundStyle(.appText)
             .frame(minHeight: minHeight)
-            .padding(Spacing.medium)
-            .appCardClip(cornerRadius: Spacing.standardRadius)
+            .padding(DesignTokens.Spacing.medium)
+            .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
         #endif
     }
 }

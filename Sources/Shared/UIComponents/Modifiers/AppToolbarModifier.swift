@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - Root Tab Toolbar
 /// 主标签页工具栏修饰符 (用于根页面)
@@ -107,7 +108,7 @@ struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
 @ViewBuilder
 @MainActor
 private func trailingToolbarContent<Trailing: View>(_ trailingItems: Trailing) -> some View {
-    HStack(spacing: Spacing.atomic) {
+    HStack(spacing: DesignTokens.Spacing.atomic) {
         if Trailing.self != EmptyView.self {
             trailingItems
         }

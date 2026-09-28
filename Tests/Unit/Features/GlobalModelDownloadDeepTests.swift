@@ -11,6 +11,7 @@
 
 import XCTest
 import UFPCore
+@_spi(Internals) import Dependencies
 @testable import ZhiYu
 
 // MARK: - GlobalModelManager 下载流程深度测试
@@ -242,5 +243,124 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
     /// 验证 DownloadState.verifying 相等比较。
     func testDownloadStateVerifyingEqualityComparison() {
         XCTAssertEqual(DownloadState.verifying, DownloadState.verifying)
+    }
+
+    // MARK: - 订阅泄漏修复测试（修复：终态后 subscribedModelIds 被清理，允许重新订阅）
+
+    /// 验证终态 .failed 后 subscribedModelIds 被清理，允许再次下载时重新订阅状态流。
+    /// 修复前：AsyncStream 永不 finish，subscribedModelIds 永不清理，再次点击下载时被 guard 拦截，状态流不更新。
+    func testTerminalStateFailedAllowsResubscribe() async {
+        let controllableMock = ControllableMockModelDownloadManager()
+        controllableMock.statesToYield = [.failed(error: "test error")]
+        ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock
+        DependencyValues._current.cachedValues.resetCache()
+
+        // 创建新的 manager 以使用可控 Mock（@Dependency 在 init 时解析一次并缓存）
+        let testManager = GlobalModelManager()
+        let manifest = makeManifest(modelId: "resubscribe-failed-test")
+
+        // 1. 第一次下载，触发订阅
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 2. 验证第一次订阅发生
+        XCTAssertEqual(controllableMock.observeCallCount, 1, "第一次下载应触发一次订阅")
+
+        // 3. 验证状态更新为 failed
+        if case .failed = testManager.downloadStates["resubscribe-failed-test"] {
+            // 符合预期
+        } else {
+            XCTFail("状态应更新为 failed，实际为: \(String(describing: testManager.downloadStates["resubscribe-failed-test"]))")
+        }
+
+        // 4. 再次下载，验证能重新订阅（修复前会被 subscribedModelIds 拦截）
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 5. 验证第二次订阅发生（修复后 subscribedModelIds 被清理，允许重新订阅）
+        XCTAssertEqual(controllableMock.observeCallCount, 2, "终态 .failed 后应允许重新订阅")
+    }
+
+    /// 验证终态 .completed 后 subscribedModelIds 被清理，允许再次下载时重新订阅状态流。
+    func testTerminalStateCompletedAllowsResubscribe() async {
+        let controllableMock = ControllableMockModelDownloadManager()
+        let completedURL = URL(fileURLWithPath: "/tmp/test-completed.bin")
+        controllableMock.statesToYield = [.completed(localURL: completedURL)]
+        ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock
+        DependencyValues._current.cachedValues.resetCache()
+
+        let testManager = GlobalModelManager()
+        let manifest = makeManifest(modelId: "resubscribe-completed-test")
+
+        // 1. 第一次下载，触发订阅
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 2. 验证第一次订阅发生
+        XCTAssertEqual(controllableMock.observeCallCount, 1, "第一次下载应触发一次订阅")
+
+        // 3. 验证状态更新为 completed
+        XCTAssertTrue(testManager.isModelLocalReady(for: "resubscribe-completed-test"), "状态应更新为 completed")
+
+        // 4. 再次下载，验证能重新订阅（修复前会被 subscribedModelIds 拦截）
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 5. 验证第二次订阅发生（修复后 subscribedModelIds 被清理，允许重新订阅）
+        XCTAssertEqual(controllableMock.observeCallCount, 2, "终态 .completed 后应允许重新订阅")
+    }
+
+    /// 验证终态 .cancelled 后 subscribedModelIds 被清理，允许再次下载时重新订阅状态流。
+    func testTerminalStateCancelledAllowsResubscribe() async {
+        let controllableMock = ControllableMockModelDownloadManager()
+        controllableMock.statesToYield = [.cancelled]
+        ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock 而非 setUp 中 manager 缓存的 FakeModelDownloadManager
+        DependencyValues._current.cachedValues.resetCache()
+
+        let testManager = GlobalModelManager()
+        let manifest = makeManifest(modelId: "resubscribe-cancelled-test")
+
+        // 1. 第一次下载，触发订阅
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 2. 验证第一次订阅发生
+        XCTAssertEqual(controllableMock.observeCallCount, 1, "第一次下载应触发一次订阅")
+
+        // 3. 再次下载，验证能重新订阅（修复前会被 subscribedModelIds 拦截）
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 4. 验证第二次订阅发生（修复后 subscribedModelIds 被清理，允许重新订阅）
+        XCTAssertEqual(controllableMock.observeCallCount, 2, "终态 .cancelled 后应允许重新订阅")
+    }
+
+    /// 验证非终态 .downloading 时 subscribedModelIds 不被清理，防止重复订阅产生僵尸 Task。
+    func testNonTerminalStateDownloadingKeepsSubscription() async {
+        let controllableMock = ControllableMockModelDownloadManager()
+        controllableMock.statesToYield = [.downloading(progress: 0.5, bytesPerSecond: 100)]
+        ServiceContainer.shared.register(controllableMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        // 清理 @Dependency 缓存，确保新创建的 testManager 解析到 ControllableMock
+        DependencyValues._current.cachedValues.resetCache()
+
+        let testManager = GlobalModelManager()
+        let manifest = makeManifest(modelId: "downloading-keep-sub-test")
+
+        // 1. 第一次下载，触发订阅
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 2. 验证第一次订阅发生
+        XCTAssertEqual(controllableMock.observeCallCount, 1, "第一次下载应触发一次订阅")
+
+        // 3. 再次下载，验证不会重新订阅（非终态，subscribedModelIds 未被清理）
+        testManager.startDownload(for: manifest)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // 4. 验证仍未发生第二次订阅（非终态保持订阅标记，防止重复订阅）
+        XCTAssertEqual(controllableMock.observeCallCount, 1, "非终态 .downloading 时不应重新订阅")
     }
 }

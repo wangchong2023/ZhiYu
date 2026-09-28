@@ -12,6 +12,7 @@
 #if canImport(UIKit)
 import SwiftUI
 import UIKit
+import UFPDesignSystem
 
 // MARK: - OCR 缩放查看器私有常量
 private enum OCRZoomConstants {
@@ -39,7 +40,7 @@ struct ZoomableOCRImageView: View {
     }
     
     var body: some View {
-        VStack(spacing: DesignSystem.small) {
+        VStack(spacing: DesignTokens.Spacing.small) {
             ZStack(alignment: .bottomTrailing) {
                 // 1. 动态可缩放平移的图像展示框
                 GeometryReader { _ in
@@ -87,41 +88,41 @@ struct ZoomableOCRImageView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.appBackground)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
                 
                 // 2. 浮动缩放控制面板
-                HStack(spacing: DesignSystem.small) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     Text(String(format: L10n.Ingest.OCR.zoomFormat, totalScale))
                         .font(.caption2.monospacedDigit().weight(.bold))
                         .foregroundStyle(.appAccent)
-                        .padding(.horizontal, DesignSystem.small)
+                        .padding(.horizontal, DesignTokens.Spacing.small)
                     
                     Button(action: zoomOut) {
-                        Image(systemName: DesignSystem.Icons.minusMagnifyingglass)
+                        Image(systemName: DesignTokens.Icons.minusMagnifyingglass)
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                     }
                     
                     Button(action: zoomIn) {
-                        Image(systemName: DesignSystem.Icons.plusMagnifyingglass)
+                        Image(systemName: DesignTokens.Icons.plusMagnifyingglass)
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                     }
                     
                     Button(action: resetZoom) {
-                        Image(systemName: DesignSystem.Icons.arrowCounterclockwise)
+                        Image(systemName: DesignTokens.Icons.arrowCounterclockwise)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.horizontal, DesignSystem.medium)
-                .padding(.vertical, DesignSystem.tightPadding)
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.vertical, DesignTokens.Spacing.tightPadding)
                 .background(
                     Capsule()
                         .fill(Color.appCard)
-                        .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.shadow), radius: DesignSystem.smallRadius)
+                        .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.smallRadius)
                 )
-                .padding(DesignSystem.medium)
+                .padding(DesignTokens.Spacing.medium)
             }
         }
     }

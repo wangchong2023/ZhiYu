@@ -9,6 +9,7 @@
 //  核心职责：仪表盘：页面列表、知识统计、每周洞察、回链视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 笔记本数据洞察面板
 struct VaultInsightsPanel: View {
@@ -18,32 +19,32 @@ struct VaultInsightsPanel: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: DesignSystem.huge) {
+            VStack(spacing: DesignTokens.Spacing.huge) {
                 // 1. 头部标题
                 HStack {
                     Label(
                         vaultService.currentVault?.name ?? L10n.Vault.noSelection,
-                        systemImage: vaultService.currentVault == nil ? DesignSystem.Icons.stackFill : DesignSystem.Icons.chartBar
+                        systemImage: vaultService.currentVault == nil ? DesignTokens.Icons.stackFill : DesignTokens.Icons.chartBar
                     )
                     .font(.headline)
                     Spacer()
                     PanelCloseButton()
                 }
-                .padding(.bottom, DesignSystem.medium)
+                .padding(.bottom, DesignTokens.Spacing.medium)
                 
                 // 2. 核心统计指标
-                HStack(spacing: DesignSystem.standardPadding) {
-                    InsightMetricCard(title: L10n.Dashboard.stats.short.pages, value: "\(store.totalPages)", icon: DesignSystem.Icons.documentFill, color: .appAccent, layout: .vault)
-                    InsightMetricCard(title: L10n.Dashboard.stats.short.new, value: FeatureConstants.StatDisplayValue.newPagesDelta, icon: DesignSystem.Icons.plus, color: Color.theme.green, layout: .vault)
-                    InsightMetricCard(title: L10n.Dashboard.stats.short.ref, value: FeatureConstants.StatDisplayValue.refPercent, icon: DesignSystem.Icons.link, color: Color.theme.orange, layout: .vault)
+                HStack(spacing: DesignTokens.Spacing.standardPadding) {
+                    InsightMetricCard(title: L10n.Dashboard.stats.short.pages, value: "\(store.totalPages)", icon: DesignTokens.Icons.documentFill, color: .appAccent, layout: .vault)
+                    InsightMetricCard(title: L10n.Dashboard.stats.short.new, value: FeatureConstants.StatDisplayValue.newPagesDelta, icon: DesignTokens.Icons.plus, color: Color.theme.green, layout: .vault)
+                    InsightMetricCard(title: L10n.Dashboard.stats.short.ref, value: FeatureConstants.StatDisplayValue.refPercent, icon: DesignTokens.Icons.link, color: Color.theme.orange, layout: .vault)
                 }
                 
                 // 3. 模拟图表：分类分布
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     Text(L10n.Dashboard.stats.categoryDistribution)
-                        .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
+                        .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold))
                     
-                    HStack(alignment: .bottom, spacing: DesignSystem.medium) {
+                    HStack(alignment: .bottom, spacing: DesignTokens.Spacing.medium) {
                         // Bug #104 修复：硬编码 0.6/0.8/0.4/0.2/0.05 改用 FeatureConstants.VaultInsightsBarRatio
                         BarItem(label: L10n.Dashboard.stats.short.entity, value: FeatureConstants.VaultInsightsBarRatio.entity, color: .appEntity)
                         BarItem(label: L10n.Dashboard.stats.short.concept, value: FeatureConstants.VaultInsightsBarRatio.concept, color: .appConcept)
@@ -51,24 +52,24 @@ struct VaultInsightsPanel: View {
                         BarItem(label: L10n.Dashboard.stats.short.comparison, value: FeatureConstants.VaultInsightsBarRatio.comparison, color: .appComparison)
                         BarItem(label: L10n.Dashboard.stats.short.raw, value: FeatureConstants.VaultInsightsBarRatio.raw, color: Color.theme.gray)
                     }
-                    .frame(height: DesignSystem.Metrics.chartHeight)
+                    .frame(height: DesignTokens.Metrics.chartHeight)
                 }
-                .appContainer(background: Color.appCard.opacity(DesignSystem.surfaceOpacity), padding: true)
+                .appContainer(background: Color.appCard.opacity(DesignTokens.Colors.Opacity.surfaceOpacity), padding: true)
                 
                 // 4. 模拟图表：增长曲线 (极简)
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     Text(L10n.Dashboard.stats.knowledgeGrowth)
-                        .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
+                        .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold))
                     
                     ChartLinePlaceholder()
-                        .frame(height: DesignSystem.Metrics.chartHeight)
+                        .frame(height: DesignTokens.Metrics.chartHeight)
                         .foregroundStyle(.appAccent.gradient)
                 }
-                .appContainer(background: Color.appCard.opacity(DesignSystem.surfaceOpacity), padding: true)
+                .appContainer(background: Color.appCard.opacity(DesignTokens.Colors.Opacity.surfaceOpacity), padding: true)
                 
-                Spacer(minLength: DesignSystem.huge)
+                Spacer(minLength: DesignTokens.Spacing.huge)
             }
-            .padding(DesignSystem.huge)
+            .padding(DesignTokens.Spacing.huge)
         }
         .presentationDetents([.large])
         .presentationBackground(.ultraThinMaterial)
@@ -84,11 +85,11 @@ private struct BarItem: View {
     var body: some View {
         VStack {
             Spacer()
-            RoundedRectangle(cornerRadius: DesignSystem.Radius.micro)
+            RoundedRectangle(cornerRadius: DesignTokens.Radius.micro)
                 .fill(color.gradient)
-                .frame(height: DesignSystem.Metrics.chartHeight * value)
+                .frame(height: DesignTokens.Metrics.chartHeight * value)
             Text(label)
-                .font(.system(size: DesignSystem.caption2FontSize))
+                .font(.system(size: DesignTokens.Typography.caption2FontSize))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)

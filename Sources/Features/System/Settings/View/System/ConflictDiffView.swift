@@ -11,6 +11,7 @@
 
 #if ICLOUD_ENABLED
 import SwiftUI
+import UFPDesignSystem
 
 /// 冲突比对视图常量
 private enum ConflictDiffConstants {
@@ -93,9 +94,9 @@ struct ConflictDiffView: View {
     
     /// 空冲突降级状态（通常仅发生日志时碰撞，不含物理 Page 冲突）
     private var emptyConflictStateView: some View {
-        VStack(spacing: DesignSystem.medium) {
-            Image(systemName: DesignSystem.Icons.checkmarkIcloudFill)
-                .font(.system(size: ComponentSpacing.colossal)) // Dynamic Type
+        VStack(spacing: DesignTokens.Spacing.medium) {
+            Image(systemName: DesignTokens.Icons.checkmarkIcloudFill)
+                .font(.system(size: DesignTokens.ComponentSpacing.colossal)) // Dynamic Type
                 .foregroundStyle(.appAccent)
             
             Text(L10n.ICloud.Conflict.noPhysicalConflict)
@@ -115,7 +116,7 @@ struct ConflictDiffView: View {
             .buttonStyle(.borderedProminent)
             .tint(.appAccent)
         }
-        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+        .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
     }
     
     /// 包含左侧列表与右侧分栏 Diff 的核心交互板式
@@ -125,7 +126,7 @@ struct ConflictDiffView: View {
             
             HStack(spacing: 0) {
                 // 1. 左侧冲突文档选取列表
-                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     Text(L10n.ICloud.Conflict.docListCount(conflicts.count))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.appSecondary)
@@ -138,13 +139,13 @@ struct ConflictDiffView: View {
                     )) {
                         ForEach(0..<conflicts.count, id: \.self) { index in
                             let item = conflicts[index]
-                            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                                 Text(item.title)
-                                    .font(.system(size: SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
+                                    .font(.system(size: DesignTokens.SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
                                     .foregroundStyle(.appText)
                                 
                                 Text("ID: \(item.id.uuidString.prefix(8))...")
-                                    .font(.system(size: SystemFontSize.micro)) // Dynamic Type
+                                    .font(.system(size: DesignTokens.SystemFontSize.micro)) // Dynamic Type
                                     .foregroundStyle(.appSecondary)
                             }
                             .tag(index)
@@ -153,7 +154,7 @@ struct ConflictDiffView: View {
                     .listStyle(.plain)
                 }
                 .frame(width: isWide ? 240 : 180)
-                .background(Color.appCard.opacity(DesignSystem.Opacity.glass))
+                .background(Color.appCard.opacity(DesignTokens.Opacity.glass))
                 
                 Divider()
                 
@@ -185,7 +186,7 @@ struct ConflictDiffView: View {
             
             // 双栏比对主体与合并编辑区
             ScrollView {
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     conflictDiffColumns(for: item, isWide: isWide)
                     
                     Divider()
@@ -194,7 +195,7 @@ struct ConflictDiffView: View {
                     // 合并编辑编辑区
                     conflictMergedEditor(for: item)
                 }
-                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+                .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
             }
         }
         .background(Color.clear)
@@ -204,12 +205,12 @@ struct ConflictDiffView: View {
     /// - Parameter item: 发生冲突的页面对象
     /// - Returns: 包含更新时间和操作菜单的头部视图
     private func conflictMetaHeader(for item: ConflictingPage) -> some View {
-        HStack(spacing: DesignSystem.medium) {
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(L10n.ICloud.Conflict.localVersionTime(formatDate(item.localPage?.updatedAt)))
                 Text(L10n.ICloud.Conflict.remoteVersionTime(formatDate(item.remotePage?.updatedAt)))
             }
-            .font(.system(size: SystemFontSize.microLarge)) // Dynamic Type
+            .font(.system(size: DesignTokens.SystemFontSize.microLarge)) // Dynamic Type
             .foregroundStyle(.appSecondary)
             
             Spacer()
@@ -226,7 +227,7 @@ struct ConflictDiffView: View {
             .font(.subheadline)
             .buttonStyle(.bordered)
         }
-        .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+        .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
         .background(Color.appCard)
     }
 
@@ -238,11 +239,11 @@ struct ConflictDiffView: View {
     private func conflictDiffColumns(for item: ConflictingPage, isWide: Bool) -> some View {
         Group {
             if isWide {
-                HStack(alignment: .top, spacing: DesignSystem.medium) {
+                HStack(alignment: .top, spacing: DesignTokens.Spacing.medium) {
                     diffColumnsContent(for: item)
                 }
             } else {
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     diffColumnsContent(for: item)
                 }
             }
@@ -259,7 +260,7 @@ struct ConflictDiffView: View {
     /// - Parameter item: 发生冲突的页面对象
     /// - Returns: 合并编辑器的整体布局视图
     private func conflictMergedEditor(for item: ConflictingPage) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             HStack {
                 Text(L10n.ICloud.Conflict.mergedResultEditorHeader)
                     .font(.subheadline.bold())
@@ -281,12 +282,12 @@ struct ConflictDiffView: View {
             ))
             .font(.system(.body, design: .monospaced))
             .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
-            .padding(DesignSystem.tiny)
+            .padding(DesignTokens.Spacing.tiny)
             .background(Color.appCard)
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
             .overlay(
-                RoundedRectangle(cornerRadius: SystemRadius.small)
-                    .stroke(Color.appAccent.opacity(DesignSystem.Opacity.shadow), lineWidth: SystemStroke.divider)
+                RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small)
+                    .stroke(Color.appAccent.opacity(DesignTokens.Opacity.shadow), lineWidth: DesignTokens.SystemStroke.divider)
             )
         }
     }
@@ -296,20 +297,20 @@ struct ConflictDiffView: View {
     ///   - title: 分栏标题
     ///   - content: Markdown 文本内容
     private func diffContentColumn(title: String, content: String) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
             Text(title)
                 .font(.caption.bold())
                 .foregroundStyle(.appSecondary)
             
             ScrollView {
                 Text(content)
-                    .font(.system(size: SystemFontSize.caption, design: .monospaced)) // Dynamic Type
-                    .padding(DesignSystem.tiny)
+                    .font(.system(size: DesignTokens.SystemFontSize.caption, design: .monospaced)) // Dynamic Type
+                    .padding(DesignTokens.Spacing.tiny)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(height: DesignSystem.Metrics.sourceCardWidth)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.soft))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+            .frame(height: DesignTokens.Metrics.sourceCardWidth)
+            .background(Color.appCard.opacity(DesignTokens.Opacity.soft))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
         }
     }
     

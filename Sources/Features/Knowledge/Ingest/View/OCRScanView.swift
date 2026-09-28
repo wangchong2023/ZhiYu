@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import PhotosUI
+import UFPDesignSystem
 
 // MARK: - OCR Scanner View
 @MainActor
@@ -40,7 +41,7 @@ struct OCRScanView: View {
         } else {
             NavigationStack {
                 ScrollView {
-                    VStack(spacing: DesignSystem.giant) {
+                    VStack(spacing: DesignTokens.Spacing.giant) {
                         // Image picker area
                         OCRImagePickerArea(
                             selectedImage: selectedImage,
@@ -62,14 +63,14 @@ struct OCRScanView: View {
                         if !recognizedText.isEmpty {
                             AppFilledActionButton(
                                 title: L10n.Ingest.OCR.confirmAndEdit,
-                                icon: DesignSystem.Icons.squareAndPencil,
+                                icon: DesignTokens.Icons.squareAndPencil,
                                 action: {
                                     let imageData = selectedImage?.jpegData(compressionQuality: 0.9)
                                     onFinish?(targetTitle, recognizedText, imageData)
                                     dismiss()
                                 }
                             )
-                            .padding(.top, SystemSpacing.tight)
+                            .padding(.top, DesignTokens.SystemSpacing.tight)
                         }
                     }
                     .padding()

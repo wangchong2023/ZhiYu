@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// OCR 选中图片展示组件
 ///
@@ -58,12 +59,12 @@ public struct OCRImageContentView: View {
         image
             .resizable()
             .scaledToFit()
-            .frame(maxHeight: Spacing.Grid.emptyStateHeight)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
-            .shadow(color: .primary.opacity(SystemOpacity.ghost), radius: DesignSystem.small)
+            .frame(maxHeight: DesignTokens.Spacing.Grid.emptyStateHeight)
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+            .shadow(color: .primary.opacity(DesignTokens.SystemOpacity.ghost), radius: DesignTokens.Spacing.small)
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                    .stroke(Color.appBorder, lineWidth: SystemStroke.border)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                    .stroke(Color.appBorder, lineWidth: DesignTokens.SystemStroke.border)
             )
     }
 }

@@ -11,6 +11,7 @@
 
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 /// 插件详情操作区常量
 private enum PluginActionConstants {
@@ -23,7 +24,7 @@ private enum PluginActionConstants {
 extension PluginDetailView {
 
     var actionButtons: some View {
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             // 安装 / 卸载
             Button(action: {
                 if isInstalled {
@@ -40,7 +41,7 @@ extension PluginDetailView {
                     }
                 }
             }) {
-                HStack(spacing: DesignSystem.tiny) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
                     if isInstalling || marketService.downloadingPluginID == plugin.id {
                         ProgressView().scaleEffect(PluginActionConstants.progressScale)
                     } else {
@@ -49,8 +50,8 @@ extension PluginDetailView {
                     Text(isInstalled ? L10n.Plugin.Action.uninstall : L10n.Plugin.Action.install)
                         .fontWeight(.medium)
                 }
-                .padding(.horizontal, DesignSystem.standardPadding)
-                .padding(.vertical, DesignSystem.small)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .padding(.vertical, DesignTokens.Spacing.small)
             }
             .buttonStyle(.borderedProminent)
             .tint(isInstalled ? Color.theme.red : .appAccent)
@@ -58,7 +59,7 @@ extension PluginDetailView {
 
             // 分享
             ShareLink(item: "\(plugin.name) — v\(plugin.version)\n\(plugin.description)") {
-                Image(systemName: DesignSystem.Icons.export)
+                Image(systemName: DesignTokens.Icons.export)
             }
             .buttonStyle(.bordered)
         }

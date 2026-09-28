@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 #if targetEnvironment(macCatalyst)
 import UIKit
@@ -142,12 +143,12 @@ private struct CatalystMenuContent: View {
         // 动态计算 padding：将 popover 从屏幕右上角偏移到 app 窗口右上角
         // trailingPadding = 屏幕右边缘到 app 窗口右边缘的距离 + 安全间距
         let trailingPadding = max(
-            DesignSystem.small,
-            screenBounds.maxX - appWindowFrame.maxX + DesignSystem.small
+            DesignTokens.Spacing.small,
+            screenBounds.maxX - appWindowFrame.maxX + DesignTokens.Spacing.small
         )
         // topPadding = app 窗口顶部到屏幕顶部的距离 + 工具栏区域偏移
         let topPadding = max(
-            DesignSystem.small,
+            DesignTokens.Spacing.small,
             appWindowFrame.minY + toolbarVerticalOffset
         )
 
@@ -215,11 +216,11 @@ struct UserProfileMenu: View {
         .sheet(isPresented: $showWatchMenu) {
             List {
                 Button(action: { showSettings = true; showWatchMenu = false }) {
-                    Label(L10n.Common.settings, systemImage: DesignSystem.Icons.settings)
+                    Label(L10n.Common.settings, systemImage: DesignTokens.Icons.settings)
                 }
 
                 Button(role: .destructive, action: { authService.logout(); showWatchMenu = false }) {
-                    Label(L10n.Common.logout, systemImage: DesignSystem.Icons.logout)
+                    Label(L10n.Common.logout, systemImage: DesignTokens.Icons.logout)
                 }
             }
         }
@@ -287,7 +288,7 @@ struct UserProfileMenu: View {
                 HapticFeedback.shared.trigger(.selection)
                 router.isShowingAISettingsSheet = true
             }) {
-                Label(L10n.Settings.Section.ai, systemImage: DesignSystem.Icons.sparkles)
+                Label(L10n.Settings.Section.ai, systemImage: DesignTokens.Icons.sparkles)
             }
             .accessibilityIdentifier("aiSettingsMenuButton")
 
@@ -304,7 +305,7 @@ struct UserProfileMenu: View {
                 HapticFeedback.shared.trigger(.selection)
                 authService.logout()
             }) {
-                Label(L10n.Common.logout, systemImage: DesignSystem.Icons.logout)
+                Label(L10n.Common.logout, systemImage: DesignTokens.Icons.logout)
             }
             .accessibilityIdentifier("logoutButton")
         } label: {
@@ -323,12 +324,12 @@ struct UserProfileMenu: View {
     private var profileLabel: some View {
         Group {
             if authService.isGuest {
-                Image(systemName: DesignSystem.Icons.personCrop)
-                    .font(.system(size: DesignSystem.bodyFontSize, weight: .medium))
+                Image(systemName: DesignTokens.Icons.personCrop)
+                    .font(.system(size: DesignTokens.Typography.bodyFontSize, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
             } else {
-                Image(systemName: DesignSystem.Icons.personCropFill)
-                    .font(.system(size: DesignSystem.headlineFontSize, weight: .medium))
+                Image(systemName: DesignTokens.Icons.personCropFill)
+                    .font(.system(size: DesignTokens.Typography.headlineFontSize, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
             }
         }
@@ -432,24 +433,24 @@ struct CustomProfilePopover: View {
                 onAction?(.profile)
                 showMenuPopover = false
             }) {
-                HStack(spacing: DesignSystem.medium) {
+                HStack(spacing: DesignTokens.Spacing.medium) {
                     if let url = authService.currentUser?.avatarURL {
                         AsyncImage(url: url) { image in
                             image.resizable().scaledToFill()
                         } placeholder: {
                             Color.appBorder
                         }
-                        .frame(width: DesignSystem.IconSize.huge, height: DesignSystem.IconSize.huge)
+                        .frame(width: DesignTokens.IconSize.huge, height: DesignTokens.IconSize.huge)
                         .clipShape(Circle())
                     } else {
                         Image(systemName: "person.crop.circle.fill")
                             .resizable()
                             .foregroundStyle(.appAccent)
-                            .frame(width: DesignSystem.IconSize.huge, height: DesignSystem.IconSize.huge)
+                            .frame(width: DesignTokens.IconSize.huge, height: DesignTokens.IconSize.huge)
                             .clipShape(Circle())
                     }
                     
-                    VStack(alignment: .leading, spacing: SystemSpacing.tiny) {
+                    VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.tiny) {
                         Text(authService.currentUser?.name ?? L10n.Auth.profileAndQuota)
                             .font(.headline)
                             .foregroundStyle(.appText)
@@ -463,7 +464,7 @@ struct CustomProfilePopover: View {
                     }
                     Spacer()
                 }
-                .padding(DesignSystem.medium)
+                .padding(DesignTokens.Spacing.medium)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -472,7 +473,7 @@ struct CustomProfilePopover: View {
             AppDivider()
 
             // 菜单列表（一次性完整平铺展示，防止出现滚动截断）
-            VStack(spacing: DesignSystem.tiny) {
+            VStack(spacing: DesignTokens.Spacing.tiny) {
                 menuRow(icon: "gearshape.fill", color: .blue, title: L10n.Common.settings) {
                     onAction?(.settings)
                     showMenuPopover = false
@@ -484,7 +485,7 @@ struct CustomProfilePopover: View {
                     showMenuPopover = false
                 }
                 
-                menuRow(icon: DesignSystem.Icons.sparkles, color: .purple, title: L10n.Settings.Section.ai) {
+                menuRow(icon: DesignTokens.Icons.sparkles, color: .purple, title: L10n.Settings.Section.ai) {
                     onAction?(.aiSettings)
                     showMenuPopover = false
                 }
@@ -496,16 +497,16 @@ struct CustomProfilePopover: View {
                 }
                 
                 Divider()
-                    .padding(.vertical, DesignSystem.tiny)
-                    .opacity(DesignSystem.Opacity.soft)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
+                    .opacity(DesignTokens.Opacity.soft)
                 
-                menuRow(icon: DesignSystem.Icons.logout, color: .red, title: L10n.Common.logout, textColor: .red) {
+                menuRow(icon: DesignTokens.Icons.logout, color: .red, title: L10n.Common.logout, textColor: .red) {
                     showMenuPopover = false
                     authService.logout()
                 }
                 .accessibilityIdentifier("logoutButton")
             }
-            .padding(DesignSystem.small)
+            .padding(DesignTokens.Spacing.small)
         }
         .frame(maxWidth: .infinity)
         .background(
@@ -518,13 +519,13 @@ struct CustomProfilePopover: View {
             HapticFeedback.shared.trigger(.selection)
             action()
         }) {
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
-                        .fill(color.opacity(DesignSystem.Opacity.glass))
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                        .fill(color.opacity(DesignTokens.Opacity.glass))
                         .frame(width: Constants.iconBoxSize, height: Constants.iconBoxSize)
                     Image(systemName: icon)
-                        .font(.system(size: SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
+                        .font(.system(size: DesignTokens.SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
                         .symbolRenderingMode(.monochrome)
                         .foregroundStyle(color)
                 }
@@ -535,8 +536,8 @@ struct CustomProfilePopover: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, SystemSpacing.small)
+            .padding(.horizontal, DesignTokens.Spacing.small)
+            .padding(.vertical, DesignTokens.SystemSpacing.small)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

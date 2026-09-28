@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 参数配置 Sheet
 
@@ -20,15 +21,15 @@ extension ModelLabView {
     var configurationSheet: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     // Model Configs / System Prompt 分段
                     Picker("", selection: $selectedConfigTab) {
                         Text(L10n.ModelManager.Lab.modelConfigs).tag(0)
                         Text(L10n.ModelManager.Lab.systemPrompt).tag(1)
                     }
                     .pickerStyle(.segmented)
-                    .padding(.horizontal, DesignSystem.medium)
-                    .padding(.top, DesignSystem.small)
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.top, DesignTokens.Spacing.small)
 
                     if selectedConfigTab == 0 {
                         modelConfigsTabContent
@@ -59,23 +60,23 @@ extension ModelLabView {
         let isMultimodal = useCase == .askImage || useCase == .audioScribe
         let isAgent = useCase == .tinyGarden || useCase == .mobileActions
         
-        return VStack(spacing: DesignSystem.medium) {
+        return VStack(spacing: DesignTokens.Spacing.medium) {
             // 预设模板选择
             presetSelectorView
             
             // 提示文案展示
             if !labManager.paramTips.isEmpty {
-                HStack(alignment: .top, spacing: DesignSystem.tiny) {
-                    Image(systemName: DesignSystem.Icons.infoCircleFill)
+                HStack(alignment: .top, spacing: DesignTokens.Spacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.infoCircleFill)
                         .foregroundStyle(Color.theme.orange)
                     Text(labManager.paramTips)
-                        .font(.system(size: DesignSystem.captionFontSize))
+                        .font(.system(size: DesignTokens.Typography.captionFontSize))
                         .foregroundStyle(Color.theme.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(DesignSystem.small)
-                .background(Color.theme.orange.opacity(DesignSystem.subtleFillOpacity))
-                .cornerRadius(SystemRadius.small)
+                .padding(DesignTokens.Spacing.small)
+                .background(Color.theme.orange.opacity(DesignTokens.Colors.subtleFillOpacity))
+                .cornerRadius(DesignTokens.SystemRadius.small)
             }
 
             // Max Tokens
@@ -125,11 +126,11 @@ extension ModelLabView {
                 )
             }
 
-            Divider().padding(.vertical, DesignSystem.standardPadding)
+            Divider().padding(.vertical, DesignTokens.Spacing.standardPadding)
 
             acceleratorSelector
 
-            Divider().padding(.vertical, DesignSystem.standardPadding)
+            Divider().padding(.vertical, DesignTokens.Spacing.standardPadding)
 
             // 高级开关
             Toggle(L10n.ModelManager.Lab.enableThinking, isOn: $enableThinking)
@@ -138,12 +139,12 @@ extension ModelLabView {
             Toggle(L10n.ModelManager.Lab.enableSpeculativeDecoding, isOn: $enableSpeculativeDecoding)
                 .tint(Color.theme.cyan)
         }
-        .padding(.horizontal, DesignSystem.medium)
+        .padding(.horizontal, DesignTokens.Spacing.medium)
     }
 
     /// CPU / GPU 加速器选择
     private var acceleratorSelector: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
             // Bug #76 修复：硬编码英文替换为 L10n 强类型访问。
             Text(L10n.ModelManager.Lab.accelerator)
                 .font(.subheadline)
@@ -153,8 +154,8 @@ extension ModelLabView {
                 acceleratorButton(title: L10n.ModelManager.Lab.cpu, isActive: !useGPU) { useGPU = false }
                 acceleratorButton(title: L10n.ModelManager.Lab.gpu, isActive: useGPU) { useGPU = true }
             }
-            .background(Color.appCard.opacity(DesignSystem.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: SystemRadius.small))
+            .background(Color.appCard.opacity(DesignTokens.Opacity.subtle))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
         }
     }
 
@@ -164,7 +165,7 @@ extension ModelLabView {
             Text(title)
                 .font(.headline)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, SystemSpacing.content)
+                .padding(.vertical, DesignTokens.SystemSpacing.content)
                 .background(isActive ? Color.theme.cyan : Color.clear)
                 .foregroundStyle(isActive ? .white : Color.secondary)
         }
@@ -174,22 +175,22 @@ extension ModelLabView {
     // MARK: - System Prompt 分段内容
 
     private var systemPromptTabContent: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             Text(L10n.ModelManager.Lab.systemPrompt)
                 .font(.subheadline.bold())
                 .foregroundStyle(.appText)
 
             TextEditor(text: $systemPromptText)
                 .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
-                .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: DesignSystem.standardPadding, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: SystemRadius.small)
+                .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding, backgroundOpacity: DesignTokens.Opacity.subtle, cornerRadius: DesignTokens.SystemRadius.small)
                 .overlay(
-                    RoundedRectangle(cornerRadius: SystemRadius.small)
-                        .stroke(Color.appBorder.opacity(DesignSystem.Opacity.glass), lineWidth: SystemStroke.divider)
+                    RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small)
+                        .stroke(Color.appBorder.opacity(DesignTokens.Opacity.glass), lineWidth: DesignTokens.SystemStroke.divider)
                 )
                 .font(.body)
                 .foregroundStyle(Color.theme.text)
         }
-        .padding(.horizontal, DesignSystem.medium)
+        .padding(.horizontal, DesignTokens.Spacing.medium)
     }
 
     /// 参数配置 Sheet 中单行滑块组件
@@ -201,11 +202,11 @@ extension ModelLabView {
         displayValue: String,
         isDisabled: Bool = false
     ) -> some View {
-        VStack(alignment: .leading, spacing: SystemSpacing.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.small) {
             Text(title)
                 .font(.subheadline)
 
-            HStack(spacing: DesignSystem.medium) {
+            HStack(spacing: DesignTokens.Spacing.medium) {
                 Slider(value: value, in: range, step: step)
                     .tint(Color.theme.cyan)
                     .disabled(isDisabled || !isCustomMode)
@@ -213,8 +214,8 @@ extension ModelLabView {
                 Text(displayValue)
                     .font(.system(.body, design: .monospaced))
                     .lineLimit(1)
-                    .frame(minWidth: Spacing.Sidebar.backButtonWidth, alignment: .trailing)
-                    .cardStyle(horizontalPadding: DesignSystem.standardPadding, verticalPadding: SystemSpacing.small, backgroundOpacity: DesignSystem.Opacity.subtle, cornerRadius: DesignSystem.standardPadding)
+                    .frame(minWidth: DesignTokens.Spacing.Sidebar.backButtonWidth, alignment: .trailing)
+                    .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.SystemSpacing.small, backgroundOpacity: DesignTokens.Opacity.subtle, cornerRadius: DesignTokens.Spacing.standardPadding)
             }
         }
     }
@@ -225,7 +226,7 @@ extension ModelLabView {
         PresetSelectorContainer(
             matchedPreset: matchedPreset,
             selectedBackground: Color.theme.cyan,
-            unselectedBackground: Color.appCard.opacity(DesignSystem.Opacity.subtle),
+            unselectedBackground: Color.appCard.opacity(DesignTokens.Opacity.subtle),
             unselectedForeground: .secondary,
             customNudgeAction: {
                 if let preset = matchedPreset {

@@ -44,8 +44,8 @@ public struct SSRFGuard: Sendable {
 
         // 3. 审查修复 HIGH-5: 归一化 IP 编码后校验私有网络地址段
         //    将十进制/八进制/十六进制/省略格式 IP 归一化为点分十进制
-        if let normalizedIP = normalizeIP(host) {
-            if isPrivateIPv4(normalizedIP) {
+        if let normalizedIP = IPAddressUtility.normalizeIP(host) {
+            if IPAddressUtility.isPrivateIPv4(normalizedIP) {
                 return false
             }
         }
@@ -108,108 +108,10 @@ public struct SSRFGuard: Sendable {
         }
     }
 
-    // MARK: - IPv4 归一化（审查修复 HIGH-5）
-
-    /// 将各种 IP 编码格式归一化为点分十进制
-    /// 支持：十进制整数（2130706433）、八进制（0177.0.0.1）、十六进制（0x7f.0.0.1）、省略格式（127.1）
-    static func normalizeIP(_ host: String) -> String? {
-        // 纯十进制整数 IP（如 2130706433 = 127.0.0.1）
-        if let decimalValue = UInt32(host), host.allSatisfy(\.isNumber) {
-            return ipv4FromUInt32(decimalValue)
-        }
-
-        // 点分格式，可能含八进制/十六进制段
-        let parts = host.split(separator: ".", omittingEmptySubsequences: false)
-        guard parts.count >= NetworkConstants.IPv4Octet.minCount, parts.count <= NetworkConstants.IPv4Octet.maxCount else { return nil }
-
-        var octets: [UInt32] = []
-        for part in parts {
-            guard let octet = parseIPOctet(String(part)) else { return nil }
-            octets.append(octet)
-        }
-
-        // 省略格式处理：1 段 = 整个 IP，2 段 = a.b → a.0.0.b，3 段 = a.b.c → a.b.0.c
-        return combineOctets(octets)
-    }
-
-    /// 解析单个 IP 段（支持十进制、八进制 0xxx、十六进制 0xXX）
-    static func parseIPOctet(_ trimmed: String) -> UInt32? {
-        if trimmed.hasPrefix(NetworkConstants.IPEncoding.hexPrefixLower) || trimmed.hasPrefix(NetworkConstants.IPEncoding.hexPrefixUpper) {
-            // 十六进制段
-            return UInt32(trimmed.dropFirst(2), radix: 16)
-        } else if trimmed.hasPrefix(NetworkConstants.IPEncoding.octalPrefix) && trimmed.count > 1 {
-            // 八进制段
-            return UInt32(trimmed.dropFirst(), radix: 8)
-        } else {
-            // 十进制段
-            return UInt32(trimmed)
-        }
-    }
-
-    /// 将 octets 数组组合为点分十进制 IPv4 字符串（处理省略格式）
-    static func combineOctets(_ octets: [UInt32]) -> String? {
-        switch octets.count {
-        case NetworkConstants.IPv4Octet.minCount:
-            return ipv4FromUInt32(octets[0])
-        case 2:
-            let combined = (octets[0] << NetworkConstants.IPv4BitShift.octet1) | octets[1]
-            return ipv4FromUInt32(combined)
-        case 3:
-            let combined = (octets[0] << NetworkConstants.IPv4BitShift.octet1) | (octets[1] << NetworkConstants.IPv4BitShift.octet2) | octets[2]
-            return ipv4FromUInt32(combined)
-        case NetworkConstants.IPv4Octet.fullCount:
-            // 检查每段是否在 0-255 范围
-            guard octets.allSatisfy({ $0 <= NetworkConstants.IPv4Octet.maxValue }) else { return nil }
-            return "\(octets[0]).\(octets[1]).\(octets[2]).\(octets[3])"
-        default:
-            return nil
-        }
-    }
-
-    /// 将 UInt32 转为点分十进制 IPv4（网络字节序）
-    /// 使用 POSIX `inet_ntop` 系统库函数处理标准转换，避免自研位运算
-    static func ipv4FromUInt32(_ value: UInt32) -> String? {
-        // inet_ntop 要求网络字节序（大端），需将主机字节序转换
-        let networkOrder = value.bigEndian
-        var address = in_addr(s_addr: networkOrder)
-        var buffer = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
-        let result = inet_ntop(AF_INET, &address, &buffer, socklen_t(INET_ADDRSTRLEN))
-        guard result != nil else { return nil }
-        // 截断到 null 终止符，避免将 buffer 尾部的 \0 填充字节纳入字符串
-        let validLength = buffer.firstIndex(of: 0) ?? buffer.count
-        return String(decoding: buffer[0..<validLength].map { UInt8(bitPattern: $0) }, as: UTF8.self)
-    }
-
-    // MARK: - 私有地址段校验
-
-    /// 校验点分十进制 IPv4 是否属于私有网络段
-    static func isPrivateIPv4(_ ip: String) -> Bool {
-        let parts = ip.split(separator: ".").compactMap { UInt32($0) }
-        guard parts.count == NetworkConstants.IPv4Octet.fullCount else { return false }
-
-        // 10.0.0.0/8 — RFC 1918 Class A 私有段
-        if parts[0] == NetworkConstants.IPv4PrivateRange.classAFirstOctet { return true }
-        // 172.16.0.0/12 — RFC 1918 Class B 私有段
-        if parts[0] == NetworkConstants.IPv4PrivateRange.classBFirstOctet,
-           parts[1] >= NetworkConstants.IPv4PrivateRange.classBSecondOctetStart,
-           parts[1] <= NetworkConstants.IPv4PrivateRange.classBSecondOctetEnd { return true }
-        // 192.168.0.0/16 — RFC 1918 Class C 私有段
-        if parts[0] == NetworkConstants.IPv4PrivateRange.classCFirstOctet,
-           parts[1] == NetworkConstants.IPv4PrivateRange.classCSecondOctet { return true }
-        // 0.0.0.0/8 — RFC 5735 本网络段
-        if parts[0] == NetworkConstants.IPv4PrivateRange.thisNetworkOctet { return true }
-        // 100.64.0.0/10 — RFC 6598 CGNAT 段
-        if parts[0] == NetworkConstants.IPv4PrivateRange.cgnatFirstOctet,
-           parts[1] >= NetworkConstants.IPv4PrivateRange.cgnatSecondOctetStart,
-           parts[1] <= NetworkConstants.IPv4PrivateRange.cgnatSecondOctetEnd { return true }
-        // 127.0.0.0/8 — RFC 5735 环回段
-        if parts[0] == NetworkConstants.IPv4PrivateRange.loopbackOctet { return true }
-        // 169.254.0.0/16 — RFC 3927 链路本地段
-        if parts[0] == NetworkConstants.IPv4PrivateRange.linkLocalFirstOctet,
-           parts[1] == NetworkConstants.IPv4PrivateRange.linkLocalSecondOctet { return true }
-
-        return false
-    }
+    // MARK: - IPv4 归一化与私有地址段校验
+    // 审查修复 HIGH-5: IP 归一化与私有段校验逻辑已统一至 IPAddressUtility，
+    // 消除 SSRFGuard 与 IPAddressUtility 之间的 5 处代码重复（~243 tokens）。
+    // 调用方直接使用 IPAddressUtility.normalizeIP / IPAddressUtility.isPrivateIPv4。
 
     /// 校验 IPv6 地址是否属于私有地址段（fc00::/7, fe80::/10）
     /// - Note: 调用前应先通过 isIPv6Format 确认 host 为 IPv6 格式

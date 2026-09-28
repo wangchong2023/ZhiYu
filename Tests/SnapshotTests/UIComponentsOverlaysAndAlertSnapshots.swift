@@ -9,6 +9,7 @@
 //  核心职责：验证 AppEmptyState、AppErrorView、AppLoadingOverlay 与 AppToast 提示浮层的视觉一致性与暗黑模式。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -45,7 +46,7 @@ final class UIComponentsOverlaysAndAlertSnapshots: XCTestCase {
     // MARK: - 1. 空状态与错误视图快照
 
     func testAppEmptyStateAndErrorView_Snapshot() {
-        let view = VStack(spacing: DesignSystem.medium) {
+        let view = VStack(spacing: DesignTokens.Spacing.medium) {
             AppEmptyState(
                 icon: "doc.text.magnifyingglass",
                 title: "暂无搜索结果",
@@ -57,8 +58,8 @@ final class UIComponentsOverlaysAndAlertSnapshots: XCTestCase {
                 retryAction: {}
             )
         }
-        .padding(DesignSystem.medium)
-        .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
+        .padding(DesignTokens.Spacing.medium)
+        .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
         .snapshotEnvironment()
 
         assertSnapshot(of: view, as: .image(layout: .sizeThatFits))

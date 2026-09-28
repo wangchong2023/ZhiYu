@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import UFPDesignSystem
 
 struct PromptWorkshopView: View {
     /// 全局提示词管理服务
@@ -47,22 +48,22 @@ struct PromptWorkshopView: View {
                 // ── 认知补全：功能简介 (可收缩) ──
                 Section {
                     if idiom == .watch {
-                        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-                            Label(L10n.AI.Prompt.Workshop.Intro.title, systemImage: DesignSystem.Icons.promptWorkshop)
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                            Label(L10n.AI.Prompt.Workshop.Intro.title, systemImage: DesignTokens.Icons.promptWorkshop)
                                 .font(.headline)
                                 .foregroundStyle(.appAccent)
                             introDescriptionText
                         }
                     } else {
                         DisclosureGroup(isExpanded: $isIntroExpanded) {
-                            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                                 introDescriptionText
                                     .lineSpacing(4)
-                                    .padding(.top, DesignSystem.tiny)
+                                    .padding(.top, DesignTokens.Spacing.tiny)
                             }
                         } label: {
-                            HStack(spacing: DesignSystem.medium) {
-                                Image(systemName: DesignSystem.Icons.promptWorkshop)
+                            HStack(spacing: DesignTokens.Spacing.medium) {
+                                Image(systemName: DesignTokens.Icons.promptWorkshop)
                                     .font(.title3)
                                     .foregroundStyle(.appAccent)
                                 Text(L10n.AI.Prompt.Workshop.Intro.title)
@@ -81,8 +82,8 @@ struct PromptWorkshopView: View {
                                 .font(.subheadline)
 
                             if promptService.userShortcuts.count > 1 {
-                                Image(systemName: DesignSystem.Icons.line3Horizontal)
-                                    .foregroundStyle(.appSecondary.opacity(DesignSystem.Opacity.soft))
+                                Image(systemName: DesignTokens.Icons.line3Horizontal)
+                                    .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.soft))
                             }
                         }
                     }
@@ -96,12 +97,12 @@ struct PromptWorkshopView: View {
                     Button(action: {
                         promptService.userShortcuts.append(ShortcutItem(text: L10n.AI.Prompt.workshop.add))
                     }) {
-                        Label(L10n.AI.Prompt.workshop.add, systemImage: DesignSystem.Icons.plusCircle)
+                        Label(L10n.AI.Prompt.workshop.add, systemImage: DesignTokens.Icons.plusCircle)
                             .font(.subheadline)
                             .foregroundStyle(.appAccent)
                     }
                 } header: {
-                    Label(L10n.AI.Prompt.workshop.shortcuts.title, systemImage: DesignSystem.Icons.pinFill)
+                    Label(L10n.AI.Prompt.workshop.shortcuts.title, systemImage: DesignTokens.Icons.pinFill)
                 } footer: {
                     Text(L10n.AI.Prompt.workshop.shortcuts.footer)
                 }

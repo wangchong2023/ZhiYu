@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 #if !os(watchOS)
 /// 统一输入文本编辑器
@@ -40,21 +41,21 @@ public struct AppTextEditor: View {
     }
     
     public var body: some View {
-        VStack(alignment: .trailing, spacing: SystemSpacing.small) {
+        VStack(alignment: .trailing, spacing: DesignTokens.SystemSpacing.small) {
             ZStack(alignment: .topLeading) {
                 // 占位文本层：当内容为空且未输入时展示
                 if text.isEmpty {
                     Text(placeholder)
-                        .font(.system(size: SystemFontSize.subheadline)) // Dynamic Type
-                        .foregroundColor(.secondary.opacity(DesignSystem.Opacity.dim))
-                        .padding(.horizontal, SystemSpacing.small)
-                        .padding(.vertical, SystemSpacing.element)
+                        .font(.system(size: DesignTokens.SystemFontSize.subheadline)) // Dynamic Type
+                        .foregroundColor(.secondary.opacity(DesignTokens.Opacity.dim))
+                        .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                        .padding(.vertical, DesignTokens.SystemSpacing.element)
                         .allowsHitTesting(false) // 允许点击穿透到底层 TextEditor
                 }
                 
                 // 原生编辑器层
                 TextEditor(text: $text)
-                    .font(.system(size: SystemFontSize.subheadline)) // Dynamic Type
+                    .font(.system(size: DesignTokens.SystemFontSize.subheadline)) // Dynamic Type
                     .scrollContentBackground(.hidden) // 隐藏原生背景以便显示自定义半透明底色
                     .background(Color.clear)
                     .focused($isFocused)
@@ -65,28 +66,28 @@ public struct AppTextEditor: View {
                         }
                     }
             }
-            .padding(DesignSystem.SpacingToken.tiny.value)
-            .background(Color.primary.opacity(DesignSystem.Opacity.atomic))
-            // Bug #102 修复：硬编码 8 改用 DesignSystem.Radius.small
-            .cornerRadius(DesignSystem.Radius.small)
+            .padding(DesignTokens.SpacingToken.tiny.value)
+            .background(Color.primary.opacity(DesignTokens.Opacity.atomic))
+            // Bug #102 修复：硬编码 8 改用 DesignTokens.Radius.small
+            .cornerRadius(DesignTokens.Radius.small)
             .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.smallRadius)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
                     .stroke(
-                        isFocused ? Color.theme.blue.opacity(DesignSystem.Opacity.dim) : Color.primary.opacity(DesignSystem.Opacity.subtle),
-                        lineWidth: SystemStroke.divider
+                        isFocused ? Color.theme.blue.opacity(DesignTokens.Opacity.dim) : Color.primary.opacity(DesignTokens.Opacity.subtle),
+                        lineWidth: DesignTokens.SystemStroke.divider
                     )
             )
-            // Bug #102 修复：硬编码 4/2 改用 DesignSystem.Shadows.standard
-            .shadow(color: isFocused ? Color.theme.blue.opacity(DesignSystem.Opacity.light) : Color.clear,
-                    radius: DesignSystem.Shadows.standard.radius,
-                    x: DesignSystem.Shadows.standard.x,
-                    y: DesignSystem.Shadows.standard.y)
+            // Bug #102 修复：硬编码 4/2 改用 DesignTokens.Shadows.standard
+            .shadow(color: isFocused ? Color.theme.blue.opacity(DesignTokens.Opacity.light) : Color.clear,
+                    radius: DesignTokens.Shadows.standard.radius,
+                    x: DesignTokens.Shadows.standard.x,
+                    y: DesignTokens.Shadows.standard.y)
             .frame(minHeight: DesignSystem.Gallery.modalMaxWidth)
             
             // 字数限额计数条
             if let limit = maxCharacters {
                 Text("\(text.count)/\(limit)")
-                    .font(.system(size: SystemFontSize.microLarge, weight: .medium, design: .monospaced)) // Dynamic Type
+                    .font(.system(size: DesignTokens.SystemFontSize.microLarge, weight: .medium, design: .monospaced)) // Dynamic Type
                     .foregroundColor(text.count >= limit ? Color.theme.red : .secondary)
             }
         }

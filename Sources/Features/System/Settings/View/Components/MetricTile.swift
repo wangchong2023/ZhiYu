@@ -2,6 +2,7 @@
 // 核心职责：指标瓦片组件，消除 PluginStatsSection.statCard 与 UserProfileView.metricItem 的重复
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 指标瓦片组件（图标 + 标题 + 数值）
 ///
@@ -22,8 +23,8 @@ struct MetricTile: View {
         icon: String,
         iconColor: Color,
         valueColor: Color = .appText,
-        containerOpacity: Double = DesignSystem.softOpacity,
-        cornerRadius: CGFloat = SystemRadius.card
+        containerOpacity: Double = DesignTokens.Colors.Opacity.softOpacity,
+        cornerRadius: CGFloat = DesignTokens.SystemRadius.card
     ) {
         self.title = title
         self.value = value
@@ -35,8 +36,8 @@ struct MetricTile: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-            HStack(spacing: DesignSystem.tiny) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+            HStack(spacing: DesignTokens.Spacing.tiny) {
                 Image(systemName: icon)
                     .font(.caption)
                     .foregroundStyle(iconColor)
@@ -49,7 +50,7 @@ struct MetricTile: View {
                 .foregroundStyle(valueColor)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(DesignSystem.small)
+        .padding(DesignTokens.Spacing.small)
         .background(Color.appCard.opacity(containerOpacity))
         .cornerRadius(cornerRadius)
     }

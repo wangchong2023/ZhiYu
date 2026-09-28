@@ -53,6 +53,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../UFPCore"),
+        .package(path: "\(opensrcRoot)/swift-dependencies"),
         .package(path: "\(opensrcRoot)/lottie-ios"),
         .package(path: "\(opensrcRoot)/swift-markdown-ui")
     ],
@@ -61,6 +62,7 @@ let package = Package(
             name: "UFPDesignSystem",
             dependencies: [
                 .product(name: "UFPCore", package: "UFPCore"),
+                .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "Lottie", package: "lottie-ios", condition: .when(platforms: [.iOS, .macOS, .macCatalyst])),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui", condition: .when(platforms: [.iOS, .macOS, .macCatalyst]))
             ],

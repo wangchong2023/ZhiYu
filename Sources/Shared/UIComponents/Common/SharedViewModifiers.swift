@@ -11,11 +11,12 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 卡片背景 + 圆角裁切修饰符
 
 /// 卡片背景 + 圆角裁切修饰符
-/// 消除重复的 `.background(Color.appCard).clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))` 链
+/// 消除重复的 `.background(Color.appCard).clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))` 链
 struct AppCardClipModifier: ViewModifier {
     let cornerRadius: CGFloat
     let backgroundOpacity: Double
@@ -29,8 +30,8 @@ struct AppCardClipModifier: ViewModifier {
 
 extension View {
     /// 应用卡片背景 + 圆角裁切（默认 cardRadius，不透明背景）
-    func appCardClip(cornerRadius: CGFloat = DesignSystem.cardRadius) -> some View {
-        modifier(AppCardClipModifier(cornerRadius: cornerRadius, backgroundOpacity: DesignSystem.fullOpacity))
+    func appCardClip(cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius) -> some View {
+        modifier(AppCardClipModifier(cornerRadius: cornerRadius, backgroundOpacity: DesignTokens.Colors.Opacity.fullOpacity))
     }
 
     /// 应用卡片背景 + 圆角裁切（自定义背景透明度）
@@ -58,9 +59,9 @@ struct SafeGeometryReader<Content: View>: View {
 // MARK: - 面包屑分隔符
 
 /// 面包屑/导航分隔符视图
-/// 消除重复的 `Image(systemName: DesignSystem.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)` 链
+/// 消除重复的 `Image(systemName: DesignTokens.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)` 链
 struct BreadcrumbSeparator: View {
-    var icon: String = DesignSystem.Icons.forward
+    var icon: String = DesignTokens.Icons.forward
     var font: Font = .caption2
 
     var body: some View {
@@ -88,8 +89,8 @@ struct SectionCaptionLabel: View {
 // MARK: - HIG 点击热区扩展
 
 /// HIG 点击热区扩展修饰符
-/// 消除重复的 `.frame(width: DesignSystem.IconSize.medium, height: DesignSystem.IconSize.medium)`
-/// + `.frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)`
+/// 消除重复的 `.frame(width: DesignTokens.IconSize.medium, height: DesignTokens.IconSize.medium)`
+/// + `.frame(width: DesignTokens.IconSize.xlarge, height: DesignTokens.IconSize.xlarge)`
 /// + `.contentShape(Rectangle())` 链
 struct HIGTouchTargetModifier: ViewModifier {
     let iconSize: CGFloat
@@ -106,8 +107,8 @@ struct HIGTouchTargetModifier: ViewModifier {
 extension View {
     /// 应用 HIG 推荐的 44x44 物理像素点击热区（默认 medium→xlarge）
     func higTouchTarget(
-        iconSize: CGFloat = DesignSystem.IconSize.medium,
-        touchSize: CGFloat = DesignSystem.IconSize.xlarge
+        iconSize: CGFloat = DesignTokens.IconSize.medium,
+        touchSize: CGFloat = DesignTokens.IconSize.xlarge
     ) -> some View {
         modifier(HIGTouchTargetModifier(iconSize: iconSize, touchSize: touchSize))
     }

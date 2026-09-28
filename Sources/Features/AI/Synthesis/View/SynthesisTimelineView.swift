@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 运行中任务时间线
 
@@ -36,11 +37,11 @@ struct SynthesisTimelineView: View {
     // MARK: - 运行任务区块
 
     private func runningTasksSection(tasks: [GlobalTask]) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             Text(L10n.AI.Task.running)
                 .font(.title3.bold())
                 .foregroundStyle(.appAccent)
-                .padding(.horizontal, DesignSystem.tiny)
+                .padding(.horizontal, DesignTokens.Spacing.tiny)
 
             VStack(spacing: 0) {
                 ForEach(tasks) { task in
@@ -58,12 +59,12 @@ struct SynthesisTimelineView: View {
     // MARK: - 单任务行
 
     private func synthesisTaskRow(task: GlobalTask) -> some View {
-        HStack(spacing: DesignSystem.standardPadding) {
+        HStack(spacing: DesignTokens.Spacing.standardPadding) {
             ZStack {
-                Circle().fill(Color.appAccent.opacity(SystemOpacity.faint)).frame(width: DesignSystem.Graph.selectedNodeSize, height: DesignSystem.Graph.selectedNodeSize)
+                Circle().fill(Color.appAccent.opacity(DesignTokens.SystemOpacity.faint)).frame(width: DesignSystem.Graph.selectedNodeSize, height: DesignSystem.Graph.selectedNodeSize)
                 ProgressView()
             }
-            VStack(alignment: .leading, spacing: DesignSystem.small) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                 Text(task.name).font(.subheadline.weight(.semibold))
                 if case .running(let progress, _) = task.status {
                     ProgressView(value: progress).tint(.appAccent)

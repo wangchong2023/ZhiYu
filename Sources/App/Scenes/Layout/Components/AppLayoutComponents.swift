@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 extension ContentView {
     
@@ -60,8 +61,8 @@ extension ContentView {
                         .contentShape(Rectangle())
                 }
                 .accessibilityIdentifier("UITest_ExitVaultButton")
-                .frame(width: DesignSystem.Metrics.uiTestButtonSize, height: DesignSystem.Metrics.uiTestButtonSize)
-                .position(x: DesignSystem.Metrics.uiTestButtonSize / 2, y: DesignSystem.Metrics.uiTestButtonSize / 2)
+                .frame(width: DesignTokens.Metrics.uiTestButtonSize, height: DesignTokens.Metrics.uiTestButtonSize)
+                .position(x: DesignTokens.Metrics.uiTestButtonSize / 2, y: DesignTokens.Metrics.uiTestButtonSize / 2)
             }
         }
         .appToast()
@@ -129,7 +130,7 @@ extension ContentView {
                                 medalService.newlyEarnedMedal = nil
                             }
                         }
-                        .zIndex(DesignSystem.ZIndex.medalPopup)
+                        .zIndex(DesignTokens.ZIndex.medalPopup)
                         .transition(.asymmetric(insertion: .opacity, removal: .scale.combined(with: .opacity)))
                     }
                     
@@ -138,7 +139,7 @@ extension ContentView {
                         CoachMarkOverlay(type: coachMark, selectedTab: $router.selectedTab) {
                             store.pendingCoachMark = nil
                         }
-                        .zIndex(DesignSystem.ZIndex.coachMark)
+                        .zIndex(DesignTokens.ZIndex.coachMark)
                     }
                 }
             }

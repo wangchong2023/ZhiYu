@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 异步切片读取流序列，符合 Swift 官方 AsyncSequence 规范
 public struct FileChunkSequence: AsyncSequence, Sendable {
@@ -106,10 +107,10 @@ public struct FileTextPreviewView: View {
     }
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             if isLargeFile && !isEOF {
-                HStack(spacing: DesignSystem.small) {
-                    Image(systemName: DesignSystem.Icons.warning)
+                HStack(spacing: DesignTokens.Spacing.small) {
+                    Image(systemName: DesignTokens.Icons.warning)
                         .foregroundStyle(Color.theme.orange)
                         .font(.caption)
                     Text(L10n.Ingest.previewTruncated)
@@ -117,13 +118,13 @@ public struct FileTextPreviewView: View {
                         .foregroundStyle(Color.theme.orange)
                 }
                 .padding(.horizontal)
-                .padding(.vertical, DesignSystem.tiny)
-                .background(Color.theme.orange.opacity(DesignSystem.shadowOpacity))
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                .padding(.vertical, DesignTokens.Spacing.tiny)
+                .background(Color.theme.orange.opacity(DesignTokens.Spacing.shadowOpacity))
+                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             }
             
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                     // 渲染已读取的纯文本
                     Text(previewText)
                         .font(.system(.body, design: .monospaced))
@@ -148,13 +149,13 @@ public struct FileTextPreviewView: View {
                         }) {
                             HStack {
                                 Spacer()
-                                Label(L10n.Ingest.previewLoadMore, systemImage: DesignSystem.Icons.refreshCircle)
+                                Label(L10n.Ingest.previewLoadMore, systemImage: DesignTokens.Icons.refreshCircle)
                                     .font(.subheadline.bold())
                                 Spacer()
                             }
                             .padding()
-                            .background(Color.appAccent.opacity(DesignSystem.subtleOpacity))
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                            .background(Color.appAccent.opacity(DesignTokens.Colors.subtleOpacity))
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
                         }
                         .padding(.horizontal)
                     } else if isLargeFile {

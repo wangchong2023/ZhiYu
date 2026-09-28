@@ -8,6 +8,7 @@
 //  核心职责：Vault 数据协调器 — 笔记本元数据加载/初始化、演示库构建与自动热恢复活跃笔记本连接。
 //
 import Foundation
+import UFPDesignSystem
 
 // MARK: - 数据迁移与统计
 
@@ -88,8 +89,8 @@ extension VaultService {
     private func buildDemoVaultPair(id1: UUID, id2: UUID) -> [Vault] {
         let now = Date()
         return [
-            makeDemoVault(id: id1, name: L10n.Vault.defaultName, icon: DesignSystem.Icons.Notebook.defaultBook, description: L10n.Vault.defaultDescription, now: now),
-            makeDemoVault(id: id2, name: L10n.Vault.researchName, icon: DesignSystem.Icons.Notebook.defaultResearch, description: L10n.Vault.researchDescription, now: now)
+            makeDemoVault(id: id1, name: L10n.Vault.defaultName, icon: DesignTokens.Icons.Notebook.defaultBook, description: L10n.Vault.defaultDescription, now: now),
+            makeDemoVault(id: id2, name: L10n.Vault.researchName, icon: DesignTokens.Icons.Notebook.defaultResearch, description: L10n.Vault.researchDescription, now: now)
         ]
     }
 

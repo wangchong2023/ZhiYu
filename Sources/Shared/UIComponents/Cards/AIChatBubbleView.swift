@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 通用 AI 消息气泡组件
 
@@ -32,13 +33,13 @@ public struct AIChatBubbleView: View {
                 Spacer()
                 Text(text)
                     .font(.subheadline)
-                    .aiBubbleStyle(background: Color.theme.cyan.opacity(DesignSystem.Opacity.soft), foreground: .white)
-                    .padding(.leading, DesignSystem.huge)
+                    .aiBubbleStyle(background: Color.theme.cyan.opacity(DesignTokens.Opacity.soft), foreground: .white)
+                    .padding(.leading, DesignTokens.Spacing.huge)
             } else {
                 Text(text)
                     .font(.subheadline)
-                    .aiBubbleStyle(background: Color.appCard.opacity(DesignSystem.Opacity.dim), foreground: .appText)
-                    .padding(.trailing, DesignSystem.huge)
+                    .aiBubbleStyle(background: Color.appCard.opacity(DesignTokens.Opacity.dim), foreground: .appText)
+                    .padding(.trailing, DesignTokens.Spacing.huge)
                 Spacer()
             }
         }
@@ -51,11 +52,11 @@ public struct AIChatBubbleView: View {
 private extension View {
     func aiBubbleStyle(background: Color, foreground: Color) -> some View {
         self
-            .padding(.horizontal, DesignSystem.medium)
-            .padding(.vertical, ComponentSpacing.section)
+            .padding(.horizontal, DesignTokens.Spacing.medium)
+            .padding(.vertical, DesignTokens.ComponentSpacing.section)
             .background(background)
             .foregroundStyle(foreground)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.mediumRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius))
     }
 }
 
@@ -68,15 +69,15 @@ public struct AIThinkingBubbleView: View {
 
     public var body: some View {
         HStack {
-            HStack(spacing: DesignSystem.tightPadding) {
+            HStack(spacing: DesignTokens.Spacing.tightPadding) {
                 ProgressView()
                     .tint(.appAccent)
                 Text(L10n.AI.Status.thinking)
                     .font(.subheadline)
                     .foregroundStyle(.appSecondary)
             }
-            .aiBubbleStyle(background: Color.appCard.opacity(DesignSystem.Opacity.dim), foreground: .appText)
-            .padding(.trailing, DesignSystem.huge)
+            .aiBubbleStyle(background: Color.appCard.opacity(DesignTokens.Opacity.dim), foreground: .appText)
+            .padding(.trailing, DesignTokens.Spacing.huge)
 
             Spacer()
         }

@@ -9,6 +9,7 @@
 //  核心职责：成就勋章墙：解锁条件追踪与视觉展示。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 奖章卡片视图
 struct MedalCard: View {
@@ -16,10 +17,10 @@ struct MedalCard: View {
     let isEarned: Bool
     
     var body: some View {
-        VStack(spacing: DesignSystem.medium) {
+        VStack(spacing: DesignTokens.Spacing.medium) {
             ZStack {
                 let baseColor = Color(hex: medal.colorHex)
-                let fillColor = isEarned ? baseColor.opacity(SystemOpacity.glass) : Color.appBorder.opacity(SystemOpacity.disabled) // 0.1
+                let fillColor = isEarned ? baseColor.opacity(DesignTokens.SystemOpacity.glass) : Color.appBorder.opacity(DesignTokens.SystemOpacity.disabled) // 0.1
                 
                 Circle()
                     .fill(fillColor)
@@ -27,41 +28,41 @@ struct MedalCard: View {
                 
                 Image(systemName: medal.icon)
                     .font(.system(size: DesignSystem.Gallery.iconSize, weight: .bold))
-                    .foregroundStyle(isEarned ? baseColor : .appSecondary.opacity(Reference.Opacity.fifty)) // 0.5
+                    .foregroundStyle(isEarned ? baseColor : .appSecondary.opacity(DesignTokens.Reference.Opacity.fifty)) // 0.5
                 
                 if !isEarned {
-                    Image(systemName: DesignSystem.Icons.lock)
+                    Image(systemName: DesignTokens.Icons.lock)
                         .font(.caption2)
-                        .padding(DesignSystem.tiny)
+                        .padding(DesignTokens.Spacing.tiny)
                         .background(Circle().fill(.ultraThinMaterial))
                         .offset(x: DesignSystem.Gallery.badgeOffset, y: DesignSystem.Gallery.badgeOffset)
                 }
             }
             
-            VStack(spacing: DesignSystem.tiny) {
+            VStack(spacing: DesignTokens.Spacing.tiny) {
                 Text(L10n.Insight.tr(medal.titleKey))
-                    .font(.system(size: DesignSystem.subheadlineFontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold))
                     .foregroundStyle(isEarned ? .appText : .appSecondary)
                 
                 Text(L10n.Insight.tr(medal.descKey))
-                    .font(.system(size: DesignSystem.microFontSize))
+                    .font(.system(size: DesignTokens.Typography.microFontSize))
                     .foregroundStyle(.appSecondary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
         }
-        .padding(DesignSystem.standardPadding)
+        .padding(DesignTokens.Spacing.standardPadding)
         .frame(maxWidth: .infinity)
         .background(Color.appCard)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Gallery.itemRadius))
         .overlay {
-            let overlayColor = isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.glassStrong) : Color.appBorder.opacity(SystemOpacity.disabled)
+            let overlayColor = isEarned ? Color(hex: medal.colorHex).opacity(DesignTokens.SystemOpacity.glassStrong) : Color.appBorder.opacity(DesignTokens.SystemOpacity.disabled)
             RoundedRectangle(cornerRadius: DesignSystem.Gallery.itemRadius)
-                .stroke(overlayColor, lineWidth: DesignSystem.borderWidth)
+                .stroke(overlayColor, lineWidth: DesignTokens.Spacing.borderWidth)
         }
-        .shadow(color: isEarned ? Color(hex: medal.colorHex).opacity(SystemOpacity.disabled) : .clear, radius: SystemRadius.small, y: SystemStroke.heavy)
+        .shadow(color: isEarned ? Color(hex: medal.colorHex).opacity(DesignTokens.SystemOpacity.disabled) : .clear, radius: DesignTokens.SystemRadius.small, y: DesignTokens.SystemStroke.heavy)
         .grayscale(isEarned ? 0 : 1)
-        .opacity(isEarned ? DesignSystem.fullOpacity : SystemOpacity.strong) // 0.9
+        .opacity(isEarned ? DesignTokens.Colors.Opacity.fullOpacity : DesignTokens.SystemOpacity.strong) // 0.9
     }
 }
 
@@ -73,16 +74,16 @@ struct MedalRewardPopup: View {
     
     var body: some View {
         ZStack {
-            Color.theme.black.opacity(Reference.Opacity.forty) // 0.4
+            Color.theme.black.opacity(DesignTokens.Reference.Opacity.forty) // 0.4
                 .ignoresSafeArea()
                 .onTapGesture(perform: onDismiss)
             
-            VStack(spacing: DesignSystem.loosePadding) {
+            VStack(spacing: DesignTokens.Spacing.loosePadding) {
                 // 顶部闪烁装饰
                 ZStack {
                     let baseColor = Color(hex: medal.colorHex)
                     Circle()
-                        .fill(baseColor.opacity(DesignSystem.dimmedOpacity))
+                        .fill(baseColor.opacity(DesignTokens.Colors.Opacity.dimmedOpacity))
                         .frame(width: DesignSystem.Gallery.displayIconSize, height: DesignSystem.Gallery.displayIconSize)
                         .blur(radius: DesignSystem.Gallery.blurRadius)
                         .scaleEffect(isAnimating ? 1.2 : 0.8)
@@ -91,21 +92,21 @@ struct MedalRewardPopup: View {
                         .font(.system(size: DesignSystem.Gallery.mainIconSize, weight: .black))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [baseColor, baseColor.opacity(DesignSystem.Opacity.dim)],
+                                colors: [baseColor, baseColor.opacity(DesignTokens.Opacity.dim)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .shadow(color: baseColor.opacity(Reference.Opacity.fifty), radius: DesignSystem.loosePadding, y: DesignSystem.standardPadding) // 0.5, 20, 10
+                        .shadow(color: baseColor.opacity(DesignTokens.Reference.Opacity.fifty), radius: DesignTokens.Spacing.loosePadding, y: DesignTokens.Spacing.standardPadding) // 0.5, 20, 10
                         .scaleEffect(isAnimating ? 1.1 : 0.9)
                 }
                 .padding(.top, DesignSystem.Gallery.blurRadius)
                 
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     Text(L10n.Insight.Medal.congrats)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appAccent)
-                        .kerning(Reference.Spacing.two)
+                        .kerning(DesignTokens.Reference.Spacing.two)
                     
                     Text(L10n.Insight.tr(medal.titleKey))
                         .font(.title.bold())
@@ -115,7 +116,7 @@ struct MedalRewardPopup: View {
                         .font(.body)
                         .foregroundStyle(.appSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, DesignSystem.Metrics.heroValueSize)
+                        .padding(.horizontal, DesignTokens.Metrics.heroValueSize)
                 }
                 
                 Button(action: onDismiss) {
@@ -126,9 +127,9 @@ struct MedalRewardPopup: View {
                         .frame(width: DesignSystem.Gallery.callToActionWidth, height: DesignSystem.Gallery.callToActionHeight)
                         .background {
                             Capsule()
-                                .fill(LinearGradient(colors: [baseColor, baseColor.opacity(DesignSystem.secondaryOpacity)], startPoint: .leading, endPoint: .trailing))
+                                .fill(LinearGradient(colors: [baseColor, baseColor.opacity(DesignTokens.Colors.Opacity.secondaryOpacity)], startPoint: .leading, endPoint: .trailing))
                         }
-                        .shadow(color: baseColor.opacity(DesignSystem.disabledOpacity), radius: SystemRadius.small, y: SystemSpacing.small) // 0.3, 10, 6
+                        .shadow(color: baseColor.opacity(DesignTokens.Colors.Opacity.disabledOpacity), radius: DesignTokens.SystemRadius.small, y: DesignTokens.SystemSpacing.small) // 0.3, 10, 6
                 }
                 .padding(.bottom, DesignSystem.Gallery.blurRadius)
                 .scaleEffect(isAnimating ? 1 : 0.9)
@@ -138,7 +139,7 @@ struct MedalRewardPopup: View {
                     .fill(Color.appCard)
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.Gallery.containerRadius)
-                            .stroke(LinearGradient(colors: [.appGloss.opacity(DesignSystem.dimmedOpacity), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: DesignSystem.borderWidth)
+                            .stroke(LinearGradient(colors: [.appGloss.opacity(DesignTokens.Colors.Opacity.dimmedOpacity), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: DesignTokens.Spacing.borderWidth)
                     )
             )
             .padding(DesignSystem.Gallery.containerPadding)

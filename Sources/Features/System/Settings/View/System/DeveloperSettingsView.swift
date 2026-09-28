@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 struct DeveloperSettingsView: View {
     @Dependency(\.toastService) private var toastManager
@@ -30,9 +31,9 @@ struct DeveloperSettingsView: View {
             // MARK: - 性能测试 (Performance Testing)
             Section {
                 // 性能测试卡片：将数量选择与压测按钮整合入单个卡片容器中，优化人机交互效率
-                VStack(alignment: .leading, spacing: SystemSpacing.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.medium) {
                     HStack {
-                        Label(L10n.Settings.developer.stressTest.count, systemImage: DesignSystem.Icons.numberCircle)
+                        Label(L10n.Settings.developer.stressTest.count, systemImage: DesignTokens.Icons.numberCircle)
                             .font(.body)
                         Spacer()
                         // 节点数量展示：动态读取本地化表达
@@ -57,28 +58,28 @@ struct DeveloperSettingsView: View {
                     
                     // 下方横跨卡片的一体化压力测试按钮，采用高对比度的蓝色主题，带 gauge.with.needle 仪表盘图标
                     Button(action: { showStressTestConfirmation = true }) {
-                        HStack(spacing: SystemSpacing.element) {
+                        HStack(spacing: DesignTokens.SystemSpacing.element) {
                             Spacer()
-                            Image(systemName: DesignSystem.Icons.gaugeWithNeedle)
+                            Image(systemName: DesignTokens.Icons.gaugeWithNeedle)
                                 .font(.headline)
                             Text(L10n.Settings.developer.stressTest.run)
                                 .bold()
                             if isStressTesting {
                                 ProgressView()
-                                    .padding(.leading, SystemSpacing.tiny)
+                                    .padding(.leading, DesignTokens.SystemSpacing.tiny)
                             }
                             Spacer()
                         }
-                        .padding(.vertical, SystemSpacing.element)
+                        .padding(.vertical, DesignTokens.SystemSpacing.element)
                         .frame(maxWidth: .infinity)
-                        .background(isStressTesting ? Color.secondary.opacity(DesignSystem.Opacity.disabled) : Color.theme.accent)
+                        .background(isStressTesting ? Color.secondary.opacity(DesignTokens.Opacity.disabled) : Color.theme.accent)
                         .foregroundColor(Color.theme.white)
-                        .cornerRadius(SystemRadius.card)
+                        .cornerRadius(DesignTokens.SystemRadius.card)
                     }
                     .disabled(isStressTesting)
                     .buttonStyle(.plain) // 避免嵌套点击污染
                 }
-                .padding(.vertical, SystemSpacing.element)
+                .padding(.vertical, DesignTokens.SystemSpacing.element)
             } header: {
                 Text(L10n.Settings.developer.section.performance_test)
             } footer: {
@@ -95,19 +96,19 @@ struct DeveloperSettingsView: View {
                 NavigationLink {
                     RAGEvaluationView()
                 } label: {
-                    Label(L10n.Dashboard.stats.benchmark, systemImage: DesignSystem.Icons.checkmarkShield)
+                    Label(L10n.Dashboard.stats.benchmark, systemImage: DesignTokens.Icons.checkmarkShield)
                 }
 
                 NavigationLink {
                     PerformanceDashboardView(service: store.performanceService)
                 } label: {
-                    Label(L10n.Common.Perf.title, systemImage: DesignSystem.Icons.chartBarXaxis)
+                    Label(L10n.Common.Perf.title, systemImage: DesignTokens.Icons.chartBarXaxis)
                 }
 
                 NavigationLink {
                     TaskRoutingRulesView()
                 } label: {
-                    Label(L10n.ModelManager.Routing.taskRules, systemImage: DesignSystem.Icons.settingsAI)
+                    Label(L10n.ModelManager.Routing.taskRules, systemImage: DesignTokens.Icons.settingsAI)
                 }
 
             } header: {
@@ -121,7 +122,7 @@ struct DeveloperSettingsView: View {
                     onboardingService.hasCompletedOnboarding = false
                     toastManager.show(type: .success, message: L10n.Settings.developer.resetOnboardingDone)
                 } label: {
-                    Label(L10n.Settings.developer.showWelcomeBanner, systemImage: DesignSystem.Icons.sparkles)
+                    Label(L10n.Settings.developer.showWelcomeBanner, systemImage: DesignTokens.Icons.sparkles)
                 }
 
                 Button {
@@ -131,7 +132,7 @@ struct DeveloperSettingsView: View {
                         onboardingService.reset()
                     }
                 } label: {
-                    Label(L10n.Settings.developer.showGuidePage, systemImage: DesignSystem.Icons.questionCircle)
+                    Label(L10n.Settings.developer.showGuidePage, systemImage: DesignTokens.Icons.questionCircle)
                 }
             } header: {
                 Text(L10n.Settings.developer.section.onboarding)

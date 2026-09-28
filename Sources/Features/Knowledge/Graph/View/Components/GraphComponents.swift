@@ -9,6 +9,7 @@
 //  核心职责：知识图谱：3D 可视化、社区发现、力导向布局。
 //
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 图谱组件常量（组件特定尺寸，无对应命名 token）
 private enum GraphViewConstants {
@@ -51,7 +52,7 @@ struct GraphNodeView: View {
     private var isVisible: Bool {
         guard let rect = viewportRect else { return true }
         // 简单的包围盒检测
-        let margin: CGFloat = DesignSystem.huge
+        let margin: CGFloat = DesignTokens.Spacing.huge
         return rect.insetBy(dx: -margin, dy: -margin).contains(node.position)
     }
 
@@ -79,7 +80,7 @@ struct GraphNodeView: View {
                         // LOD: 远景模式 - 仅显示纯色圆点，极致性能
                         Circle()
                             .fill(nodeBaseColor)
-                            .frame(width: DesignSystem.iconSmall, height: DesignSystem.iconSmall)
+                            .frame(width: DesignTokens.Spacing.iconSmall, height: DesignTokens.Spacing.iconSmall)
                     } else {
                         nodeContent
                     }
@@ -95,18 +96,18 @@ struct GraphNodeView: View {
     @ViewBuilder
     private var nodeContextMenu: some View {
         Button(action: { onSelect() }) {
-            Label(L10n.Graph.viewDetail, systemImage: DesignSystem.Icons.weeklyInsight)
+            Label(L10n.Graph.viewDetail, systemImage: DesignTokens.Icons.weeklyInsight)
         }
         Button(action: {
             let link = "[[\(node.title)]]"
             AppPasteboard.string = link
         }) {
-            Label(L10n.Graph.copyPageLink, systemImage: DesignSystem.Icons.link)
+            Label(L10n.Graph.copyPageLink, systemImage: DesignTokens.Icons.link)
         }
         Divider()
         if idiom == .mac {
             Button(action: { }) {
-                Label(L10n.Graph.openInNewWindow, systemImage: DesignSystem.Icons.macwindowBadgePlus)
+                Label(L10n.Graph.openInNewWindow, systemImage: DesignTokens.Icons.macwindowBadgePlus)
             }
         }
     }
@@ -118,9 +119,9 @@ struct GraphNodeView: View {
             // 1. 深度发光 (Aura Effect)
             if isSelected {
                 Circle()
-                    .fill(nodeBaseColor.opacity(DesignSystem.glassOpacity))
+                    .fill(nodeBaseColor.opacity(DesignTokens.Colors.Opacity.glassOpacity))
                     .frame(width: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier, height: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier)
-                    .blur(radius: DesignSystem.cardRadius)
+                    .blur(radius: DesignTokens.Spacing.cardRadius)
                     .scaleEffect(isAnimating ? 1.1 : 0.9)
                     .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isAnimating)
             }
@@ -128,7 +129,7 @@ struct GraphNodeView: View {
             // 2. 核心脉冲 (Core Pulse)
             if isSelected {
                 Circle()
-                    .stroke(nodeBaseColor.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.divider)
+                    .stroke(nodeBaseColor.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.divider)
                     .frame(width: nodeSize, height: nodeSize)
                     .scaleEffect(isAnimating ? 1.8 : 1.0)
                     .opacity(isAnimating ? 0 : 1)
@@ -139,7 +140,7 @@ struct GraphNodeView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [nodeBaseColor.opacity(DesignSystem.Opacity.pressed), nodeBaseColor],
+                        colors: [nodeBaseColor.opacity(DesignTokens.Opacity.pressed), nodeBaseColor],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -160,14 +161,14 @@ struct GraphNodeView: View {
                 .contextMenu { nodeContextMenu }
                 .overlay(
                     Circle()
-                        .stroke(.appGloss.opacity(SystemOpacity.glassStrong), lineWidth: DesignSystem.borderWidth)
+                        .stroke(.appGloss.opacity(DesignTokens.SystemOpacity.glassStrong), lineWidth: DesignTokens.Spacing.borderWidth)
                 )
-                .shadow(color: nodeBaseColor.opacity(isSelected ? SystemOpacity.textSecondary : SystemOpacity.disabled), radius: isSelected ? DesignSystem.standardPadding : SystemSpacing.small)
+                .shadow(color: nodeBaseColor.opacity(isSelected ? DesignTokens.SystemOpacity.textSecondary : DesignTokens.SystemOpacity.disabled), radius: isSelected ? DesignTokens.Spacing.standardPadding : DesignTokens.SystemSpacing.small)
                 .scaleEffect(isSelected ? 1.1 : 1.0)
 
             // 4. 类型图标
             Image(systemName: node.pageType.icon)
-                .font(.system(size: isSelected ? DesignSystem.subheadlineFontSize : DesignSystem.microFontSize, weight: .bold))
+                .font(.system(size: isSelected ? DesignTokens.Typography.subheadlineFontSize : DesignTokens.Typography.microFontSize, weight: .bold))
                 .foregroundStyle(.white)
         }
         .onTapGesture {
@@ -185,17 +186,17 @@ struct GraphNodeView: View {
     @ViewBuilder
     private var hoverTooltip: some View {
         if isHovered {
-            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                 Text(node.title)
                     .font(.caption.bold())
                 Text(node.pageType.displayName)
-                    .font(.system(size: Reference.FontSize.micro))
+                    .font(.system(size: DesignTokens.Reference.FontSize.micro))
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, DesignSystem.tiny)
+            .padding(.horizontal, DesignTokens.Spacing.small)
+            .padding(.vertical, DesignTokens.Spacing.tiny)
             .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             .offset(y: -GraphViewConstants.badgeOffset)
             .transition(.scale.combined(with: .opacity))
         }
@@ -228,7 +229,7 @@ struct GraphNodeLabel: View {
             .font(.system(size: fontSize, weight: isSelected ? .semibold : .medium))
             .foregroundStyle(isSelected ? .appText : .appSecondary)
             .lineLimit(1)
-            .position(x: node.position.x, y: node.position.y + nodeSize / 2 + DesignSystem.mediumRadius)
+            .position(x: node.position.x, y: node.position.y + nodeSize / 2 + DesignTokens.Spacing.mediumRadius)
             .accessibilityHidden(true) // 节点图标已包含信息，标签设为隐藏以防冗余
     }
 }
@@ -249,7 +250,7 @@ struct GraphZoomControls: View {
     var body: some View {
         HStack(spacing: 0) {
             zoomButton(
-                icon: DesignSystem.Icons.minusMagnifyingglass,
+                icon: DesignTokens.Icons.minusMagnifyingglass,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.zoomOut,
                 accessibilityLabel: L10n.Graph.accessibility.zoomOutLabel,
                 accessibilityHint: L10n.Graph.accessibility.zoomOutHint
@@ -259,7 +260,7 @@ struct GraphZoomControls: View {
             }
 
             zoomButton(
-                icon: DesignSystem.Icons.plusMagnifyingglass,
+                icon: DesignTokens.Icons.plusMagnifyingglass,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.zoomIn,
                 accessibilityLabel: L10n.Graph.accessibility.zoomInLabel,
                 accessibilityHint: L10n.Graph.accessibility.zoomInHint
@@ -271,7 +272,7 @@ struct GraphZoomControls: View {
             zoomDivider()
 
             zoomButton(
-                icon: DesignSystem.Icons.scope,
+                icon: DesignTokens.Icons.scope,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.reset,
                 accessibilityLabel: L10n.Graph.accessibility.resetLabel,
                 accessibilityHint: L10n.Graph.accessibility.resetHint
@@ -287,7 +288,7 @@ struct GraphZoomControls: View {
             zoomDivider()
 
             zoomButton(
-                icon: DesignSystem.Icons.viewfinder,
+                icon: DesignTokens.Icons.viewfinder,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.fitToScreen,
                 accessibilityLabel: L10n.Graph.accessibility.fitToScreenLabel,
                 accessibilityHint: L10n.Graph.accessibility.fitToScreenHint
@@ -298,7 +299,7 @@ struct GraphZoomControls: View {
             zoomDivider()
 
             zoomButton(
-                icon: DesignSystem.Icons.refresh,
+                icon: DesignTokens.Icons.refresh,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.relayout,
                 accessibilityLabel: L10n.Graph.accessibility.relayoutLabel,
                 accessibilityHint: L10n.Graph.accessibility.relayoutHint
@@ -309,7 +310,7 @@ struct GraphZoomControls: View {
             zoomDivider()
 
             zoomButton(
-                icon: DesignSystem.Icons.view3d,
+                icon: DesignTokens.Icons.view3d,
                 accessibilityID: FeatureConstants.GraphAccessibilityID.graph3d,
                 accessibilityLabel: L10n.Graph.accessibility.threeDLabel,
                 accessibilityHint: L10n.Graph.accessibility.threeDHint
@@ -317,14 +318,14 @@ struct GraphZoomControls: View {
                 show3D = true
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.standardRadius))
-        .shadow(color: .black.opacity(DesignSystem.Opacity.ghost), radius: 5, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standardRadius))
+        .shadow(color: .black.opacity(DesignTokens.Opacity.ghost), radius: 5, y: 2)
     }
 
     /// 缩放控件分隔线，消除 4 处重复的 Divider().frame().background() 链
     @ViewBuilder
     private func zoomDivider() -> some View {
-        Divider().frame(width: DesignSystem.borderWidth, height: DesignSystem.iconLarge).background(Color.appBorder)
+        Divider().frame(width: DesignTokens.Spacing.borderWidth, height: DesignTokens.Spacing.iconLarge).background(Color.appBorder)
     }
 
     /// 缩放控制按钮，消除 6 处重复的 Image+frame+background 链

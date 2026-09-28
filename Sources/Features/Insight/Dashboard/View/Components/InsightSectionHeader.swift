@@ -12,6 +12,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：通用章节标题
 ///
@@ -31,13 +32,13 @@ struct InsightSectionHeader: View {
 
 extension View {
     /// 应用 AI 推荐卡片的统一渐变样式
-    func aiRecommendationCardStyle(verticalPadding: CGFloat = DesignSystem.small) -> some View {
+    func aiRecommendationCardStyle(verticalPadding: CGFloat = DesignTokens.Spacing.small) -> some View {
         self
             .accentGradientCardStyle(
-                cornerRadius: DesignSystem.largeRadius,
-                backgroundOpacity: DesignSystem.Opacity.atomic,
-                borderWidth: SystemStroke.divider,
-                borderOpacity: DesignSystem.Opacity.medium
+                cornerRadius: DesignTokens.Spacing.largeRadius,
+                backgroundOpacity: DesignTokens.Opacity.atomic,
+                borderWidth: DesignTokens.SystemStroke.divider,
+                borderOpacity: DesignTokens.Opacity.medium
             )
             .padding(.vertical, verticalPadding)
     }
@@ -46,10 +47,10 @@ extension View {
     func insightOutlineCardStyle() -> some View {
         self
             .cardStyle(
-                horizontalPadding: DesignSystem.standardPadding,
-                verticalPadding: DesignSystem.standardPadding,
-                backgroundOpacity: DesignSystem.Opacity.subtle,
-                cornerRadius: DesignSystem.standardRadius
+                horizontalPadding: DesignTokens.Spacing.standardPadding,
+                verticalPadding: DesignTokens.Spacing.standardPadding,
+                backgroundOpacity: DesignTokens.Opacity.subtle,
+                cornerRadius: DesignTokens.Spacing.standardRadius
             )
     }
 }
@@ -64,7 +65,7 @@ struct InsightDashboardSectionTitle: View {
     var infoAction: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: DesignSystem.tiny) {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
             Image(systemName: icon)
                 .font(.caption)
                 .foregroundStyle(.appAccent)
@@ -72,7 +73,7 @@ struct InsightDashboardSectionTitle: View {
                 .font(.headline)
             if let infoAction {
                 Button(action: infoAction) {
-                    Image(systemName: DesignSystem.Icons.info)
+                    Image(systemName: DesignTokens.Icons.info)
                         .font(.caption)
                         .foregroundStyle(.appSecondary)
                 }

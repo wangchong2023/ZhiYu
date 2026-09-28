@@ -12,6 +12,7 @@ import SwiftUI
 import Combine
 import Dependencies
 import UFPCore
+import UFPDesignSystem
 
 // MARK: - App Toast Type
 /// 轻提示类型枚举
@@ -24,10 +25,10 @@ public enum AppToastType: Equatable {
     
     var icon: String {
         switch self {
-        case .success: return DesignSystem.Icons.checkCircle
-        case .error: return DesignSystem.Icons.warning
-        case .info: return DesignSystem.Icons.info
-        case .processing: return DesignSystem.Icons.sparkles
+        case .success: return DesignTokens.Icons.checkCircle
+        case .error: return DesignTokens.Icons.warning
+        case .info: return DesignTokens.Icons.info
+        case .processing: return DesignTokens.Icons.sparkles
         }
     }
     
@@ -68,7 +69,7 @@ public final class ToastManager: @unchecked Sendable {
     /// - Parameter message: message
     /// - Parameter duration: duration
     public func show(type: AppToastType, message: String, duration: Double = 3.0) {
-        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
+        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignTokens.Animation.standardDamping)) { // 0.4, 0.8
             currentToast = AppToast(type: type, message: message, duration: duration)
         }
 
@@ -84,7 +85,7 @@ public final class ToastManager: @unchecked Sendable {
 
     /// 关闭
     public func dismiss() {
-        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignSystem.Animation.standardDamping)) { // 0.4, 0.8
+        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignTokens.Animation.standardDamping)) { // 0.4, 0.8
             currentToast = nil
         }
     }
@@ -116,11 +117,11 @@ struct AppToastView: View {
     let onDismiss: () -> Void
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) { // 12
+        HStack(spacing: DesignTokens.Spacing.medium) { // 12
             if toast.type == .processing {
                 ProgressView()
                     .tint(toast.type.color)
-                    .scaleEffect(SystemOpacity.textSecondary) // 0.8
+                    .scaleEffect(DesignTokens.SystemOpacity.textSecondary) // 0.8
             } else {
                 Image(systemName: toast.type.icon)
                     .foregroundStyle(toast.type.color)
@@ -133,27 +134,27 @@ struct AppToastView: View {
             Spacer()
             
             Button(action: onDismiss) {
-                Image(systemName: DesignSystem.Icons.xmark)
+                Image(systemName: DesignTokens.Icons.xmark)
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.appSecondary)
             }
         }
-        .padding(.horizontal, DesignSystem.standardPadding) // 16
-        .padding(.vertical, DesignSystem.medium) // 12
+        .padding(.horizontal, DesignTokens.Spacing.standardPadding) // 16
+        .padding(.vertical, DesignTokens.Spacing.medium) // 12
         .background(
             ZStack {
-                RoundedRectangle(cornerRadius: DesignSystem.medium) // 12
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.medium) // 12
                     .fill(.ultraThinMaterial)
-                RoundedRectangle(cornerRadius: DesignSystem.medium) // 12
-                    .fill(Color.appCard.opacity(SystemOpacity.glassStrong)) // 0.7
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.medium) // 12
+                    .fill(Color.appCard.opacity(DesignTokens.SystemOpacity.glassStrong)) // 0.7
             }
         )
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.medium) // 12
-                .stroke(Color.appBorder.opacity(SystemOpacity.disabled), lineWidth: SystemStroke.hairline) // 0.3, 0.5
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.medium) // 12
+                .stroke(Color.appBorder.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.hairline) // 0.3, 0.5
         )
-        .shadow(color: .black.opacity(SystemOpacity.ghost), radius: DesignSystem.standardRadius, y: SystemSpacing.elementLarge) // 0.1, 10, 5
-        .padding(.horizontal, DesignSystem.loosePadding) // 20
+        .shadow(color: .black.opacity(DesignTokens.SystemOpacity.ghost), radius: DesignTokens.Spacing.standardRadius, y: DesignTokens.SystemSpacing.elementLarge) // 0.1, 10, 5
+        .padding(.horizontal, DesignTokens.Spacing.loosePadding) // 20
         .transition(.move(edge: .top).combined(with: .opacity))
     }
 }
@@ -175,7 +176,7 @@ struct AppToastModifier: ViewModifier {
                 AppToastView(toast: toast) {
                     manager.dismiss()
                 }
-                .padding(.top, SystemSpacing.elementLarge) // 10
+                .padding(.top, DesignTokens.SystemSpacing.elementLarge) // 10
                 .zIndex(9999)
             }
         }
@@ -192,7 +193,7 @@ extension View {
 
 // MARK: - 常量
 private enum UIConstants {
-    static let toastDuration: Double = Double(SystemSpacing.tight)
+    static let toastDuration: Double = Double(DesignTokens.SystemSpacing.tight)
 }
 
 // MARK: - Toast 动画配置（非 UI 语境）

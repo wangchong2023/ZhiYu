@@ -12,6 +12,7 @@ import SwiftUI
 import UFPCore
 import UniformTypeIdentifiers
 import Dependencies
+import UFPDesignSystem
 
 // 导入面板最小高度（组件特定值）
 private let ingestPanelMinHeight: CGFloat = 246
@@ -33,7 +34,7 @@ struct IngestView: View {
         ZStack {
             themeManager.pageBackground().ignoresSafeArea()
             ScrollView {
-                VStack(spacing: ComponentSpacing.sectionLarge) {
+                VStack(spacing: DesignTokens.ComponentSpacing.sectionLarge) {
                     ingestProgressPanel
                     actionsSection
                     ImportRecordSection(
@@ -44,8 +45,8 @@ struct IngestView: View {
                     recentActivitiesSection
                 }
                 .padding(.horizontal)
-                .padding(.top, DesignSystem.standardPadding)
-                .padding(.bottom, DesignSystem.huge)
+                .padding(.top, DesignTokens.Spacing.standardPadding)
+                .padding(.bottom, DesignTokens.Spacing.huge)
             }
         }
         .appTabToolbar(title: L10n.Ingest.title)
@@ -119,13 +120,13 @@ struct IngestView: View {
         }()
         
         return AnyView(
-            VStack(alignment: .leading, spacing: DesignSystem.medium) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                 HStack {
-                    Image(systemName: DesignSystem.Icons.wand)
+                    Image(systemName: DesignTokens.Icons.wand)
                         .font(.title3)
                         .foregroundStyle(Color.appAccent)
                     
-                    VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                         Text(L10n.Ingest.smartIngest)
                             .font(.subheadline.bold())
                             .foregroundStyle(.appText)
@@ -138,10 +139,10 @@ struct IngestView: View {
                     Spacer()
                     
                     Text("\(Int(progress * 100))%")
-                        .font(.system(size: DesignSystem.captionFontSize, weight: .bold, design: .monospaced))
-                        .padding(.horizontal, DesignSystem.small)
-                        .padding(.vertical, DesignSystem.tiny)
-                        .background(Color.appAccent.opacity(DesignSystem.Opacity.glass))
+                        .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .bold, design: .monospaced))
+                        .padding(.horizontal, DesignTokens.Spacing.small)
+                        .padding(.vertical, DesignTokens.Spacing.tiny)
+                        .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
                         .foregroundStyle(Color.appAccent)
                         .clipShape(Capsule())
                 }
@@ -149,20 +150,20 @@ struct IngestView: View {
                 Divider()
                 
                 IngestTimelineView(currentStage: currentStage, subLogs: activeTask.subLogs)
-                    .padding(.top, DesignSystem.tiny)
+                    .padding(.top, DesignTokens.Spacing.tiny)
             }
             .appContainer(padding: true)
             .background(
-                RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                    .stroke(Color.appAccent.opacity(DesignSystem.Opacity.shadow), lineWidth: 1)
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                    .stroke(Color.appAccent.opacity(DesignTokens.Opacity.shadow), lineWidth: 1)
             )
-            .shadow(color: Color.appAccent.opacity(DesignSystem.Opacity.subtle), radius: 10, x: 0, y: 5)
+            .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.subtle), radius: 10, x: 0, y: 5)
         )
     }
 
     private var actionsSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            AppSectionHeader(title: L10n.Ingest.actions, icon: DesignSystem.Icons.trayArrowDown).padding(.horizontal, DesignSystem.tiny)
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            AppSectionHeader(title: L10n.Ingest.actions, icon: DesignTokens.Icons.trayArrowDown).padding(.horizontal, DesignTokens.Spacing.tiny)
             IngestEntryCardsSection(
                 showManualForm: Binding(get: { coordinator.showManualForm }, set: { if $0 { coordinator.sourceHint = .manual; coordinator.manualFormTitle = L10n.Ingest.manualEntry }; coordinator.showManualForm = $0 }),
                 showOCRScan: $coordinator.showOCRScan, 
@@ -183,14 +184,14 @@ struct IngestView: View {
     private var taskCenterLinkSection: some View {
         Button(action: { HapticFeedback.shared.trigger(.selection); router.navigateToTool(.taskCenter) }) {
             HStack {
-                Image(systemName: DesignSystem.Icons.history).font(.subheadline.bold()).foregroundStyle(.appAccent)
-                VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                Image(systemName: DesignTokens.Icons.history).font(.subheadline.bold()).foregroundStyle(.appAccent)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                     let runningCount = taskCenter.tasks.filter({ $0.type == .ingest && isRunning(status: $0.status) }).count
                     Text(L10n.Ingest.activeTasks(runningCount)).font(.caption.weight(.bold)).foregroundStyle(.appText)
-                    Text(L10n.Ingest.recentActivity).font(.system(size: DesignSystem.microFontSize)).foregroundStyle(.appSecondary)
+                    Text(L10n.Ingest.recentActivity).font(.system(size: DesignTokens.Typography.microFontSize)).foregroundStyle(.appSecondary)
                 }
                 Spacer()
-                Image(systemName: DesignSystem.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)
+                Image(systemName: DesignTokens.Icons.forward).font(.caption2).foregroundStyle(.appSecondary)
             }
             .appContainer(padding: true)
         }.buttonStyle(.plain)
@@ -198,18 +199,18 @@ struct IngestView: View {
 
     private var recentActivitiesSection: some View {
         let ingestTasks = taskCenter.tasks.filter { $0.type == .ingest }
-        return VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            AppSectionHeader(title: L10n.Ingest.recent, icon: DesignSystem.Icons.listBulletRectangle).padding(.horizontal, DesignSystem.tiny)
+        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            AppSectionHeader(title: L10n.Ingest.recent, icon: DesignTokens.Icons.listBulletRectangle).padding(.horizontal, DesignTokens.Spacing.tiny)
             if ingestTasks.isEmpty {
-                VStack(spacing: DesignSystem.tightPadding) {
-                    Image(systemName: DesignSystem.Icons.clock).font(.title2).foregroundStyle(.appSecondary.opacity(DesignSystem.dimmedOpacity))
+                VStack(spacing: DesignTokens.Spacing.tightPadding) {
+                    Image(systemName: DesignTokens.Icons.clock).font(.title2).foregroundStyle(.appSecondary.opacity(DesignTokens.Colors.Opacity.dimmedOpacity))
                     Text(L10n.Ingest.noActivities).font(.caption).foregroundStyle(.appSecondary)
-                }.frame(maxWidth: .infinity).padding(.vertical, DesignSystem.loosePadding).appContainer()
+                }.frame(maxWidth: .infinity).padding(.vertical, DesignTokens.Spacing.loosePadding).appContainer()
             } else {
                 VStack(spacing: 0) {
-                    ForEach(ingestTasks.prefix(DesignSystem.Metrics.maxRecentItems)) { task in
+                    ForEach(ingestTasks.prefix(DesignTokens.Metrics.maxRecentItems)) { task in
                         ActivityRow(task: task)
-                        if task.id != ingestTasks.prefix(DesignSystem.Metrics.maxRecentItems).last?.id { Divider().padding(.leading, DesignSystem.Metrics.largeIconBoxSize) }
+                        if task.id != ingestTasks.prefix(DesignTokens.Metrics.maxRecentItems).last?.id { Divider().padding(.leading, DesignTokens.Metrics.largeIconBoxSize) }
                     }
                 }.appContainer(padding: false)
             }
@@ -221,39 +222,39 @@ struct IngestView: View {
             Form {
                 Section(header: Text(L10n.Creation.basicInfo)) {
                     TextField(L10n.Creation.pageTitle, text: $coordinator.newTitle).font(.headline)
-                    VStack(alignment: .leading, spacing: DesignSystem.medium) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                         Text(L10n.Creation.pageType).font(.caption.weight(.medium)).foregroundStyle(.appSecondary)
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: DesignSystem.small) {
+                            HStack(spacing: DesignTokens.Spacing.small) {
                                 // 遍历用户可见页面类型，屏蔽 raw 选项
                                 ForEach(PageType.allVisibleCases, id: \.self) { type in
                                     Button(action: { HapticFeedback.shared.trigger(.selection); withAnimation(.spring(response: 0.3)) { coordinator.newType = type } }) {
-                                        HStack(spacing: DesignSystem.tightPadding) { Image(systemName: type.icon); Text(type.displayName) }
-                                        .font(.subheadline.weight(coordinator.newType == type ? .bold : .medium)).padding(.horizontal, DesignSystem.medium).padding(.vertical, DesignSystem.small)
-                                        .background(coordinator.newType == type ? Color.fromModelColorName(type.colorName).opacity(DesignSystem.Opacity.medium) : Color.appCard.opacity(DesignSystem.Opacity.prominent))
+                                        HStack(spacing: DesignTokens.Spacing.tightPadding) { Image(systemName: type.icon); Text(type.displayName) }
+                                        .font(.subheadline.weight(coordinator.newType == type ? .bold : .medium)).padding(.horizontal, DesignTokens.Spacing.medium).padding(.vertical, DesignTokens.Spacing.small)
+                                        .background(coordinator.newType == type ? Color.fromModelColorName(type.colorName).opacity(DesignTokens.Opacity.medium) : Color.appCard.opacity(DesignTokens.Opacity.prominent))
                                         .foregroundStyle(coordinator.newType == type ? Color.fromModelColorName(type.colorName) : .appSecondary)
                                         .clipShape(Capsule())
-                                        .overlay(Capsule().stroke(coordinator.newType == type ? Color.fromModelColorName(type.colorName).opacity(DesignSystem.Opacity.shadow) : Color.appBorder, lineWidth: 1))
+                                        .overlay(Capsule().stroke(coordinator.newType == type ? Color.fromModelColorName(type.colorName).opacity(DesignTokens.Opacity.shadow) : Color.appBorder, lineWidth: 1))
                                     }.buttonStyle(.plain)
                                 }
-                            }.padding(.horizontal, SystemSpacing.divider)
+                            }.padding(.horizontal, DesignTokens.SystemSpacing.divider)
                         }
-                    }.padding(.vertical, DesignSystem.tiny)
+                    }.padding(.vertical, DesignTokens.Spacing.tiny)
                     NavigationLink(destination: IconPickerView(selectedIcon: $coordinator.newCustomIcon)) {
                         HStack {
-                            Label(L10n.Creation.customIcon, systemImage: DesignSystem.Icons.starSquareFill)
+                            Label(L10n.Creation.customIcon, systemImage: DesignTokens.Icons.starSquareFill)
                             Spacer()
-                            if let icon = coordinator.newCustomIcon { Image(systemName: icon).font(.title3).foregroundStyle(.appAccent).padding(DesignSystem.tiny).background(Color.appAccent.opacity(DesignSystem.Opacity.subtle)).clipShape(Circle())
+                            if let icon = coordinator.newCustomIcon { Image(systemName: icon).font(.title3).foregroundStyle(.appAccent).padding(DesignTokens.Spacing.tiny).background(Color.appAccent.opacity(DesignTokens.Opacity.subtle)).clipShape(Circle())
                             } else { Text(L10n.Common.none).foregroundColor(.appSecondary).font(.subheadline) }
                         }
                     }
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         HStack {
-                            Label(L10n.Ingest.smartIngest, systemImage: DesignSystem.Icons.sparkles).font(.subheadline.bold()).foregroundStyle(.appAccent)
+                            Label(L10n.Ingest.smartIngest, systemImage: DesignTokens.Icons.sparkles).font(.subheadline.bold()).foregroundStyle(.appAccent)
                             Spacer(); Toggle("", isOn: $coordinator.useSmartIngest).labelsHidden().tint(.appAccent)
                         }
-                        if coordinator.useSmartIngest { Text(L10n.Ingest.smartIngestDesc).font(.system(size: DesignSystem.captionFontSize)).foregroundStyle(.appSecondary).lineLimit(2).fixedSize(horizontal: false, vertical: true) }
-                    }.padding(.vertical, DesignSystem.tiny)
+                        if coordinator.useSmartIngest { Text(L10n.Ingest.smartIngestDesc).font(.system(size: DesignTokens.Typography.captionFontSize)).foregroundStyle(.appSecondary).lineLimit(2).fixedSize(horizontal: false, vertical: true) }
+                    }.padding(.vertical, DesignTokens.Spacing.tiny)
                 }
                 Section(header: Text(L10n.Creation.content)) {
                     Group {

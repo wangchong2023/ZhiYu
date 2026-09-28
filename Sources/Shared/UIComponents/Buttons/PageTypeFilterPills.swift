@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 页面类型过滤胶囊列表
 ///
@@ -22,7 +23,7 @@ struct PageTypeFilterPills: View {
     var includesAccessibilityID: Bool = false
 
     var body: some View {
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             FilterPill(
                 title: L10n.Search.all,
                 accessibilityIdentifier: includesAccessibilityID ? FeatureConstants.AccessibilityID.filterAll : nil,

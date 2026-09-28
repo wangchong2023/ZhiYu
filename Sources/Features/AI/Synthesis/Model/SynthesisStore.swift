@@ -401,7 +401,6 @@ public final class SynthesisStore {
         if let docs = _synthesisResults[type], !docs.isEmpty,
            let data = try? JSONEncoder().encode(docs) {
             keyStore?.set(data, forKey: key)
-            UserDefaults.standard.set(data, forKey: key)
         } else {
             removePersistedKey(for: type)
         }
@@ -412,7 +411,6 @@ public final class SynthesisStore {
         let key = storageKey(for: type)
         @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
         keyStore?.removeObject(forKey: key)
-        UserDefaults.standard.removeObject(forKey: key)
     }
 
     /// 构造合成文档的持久化存储键

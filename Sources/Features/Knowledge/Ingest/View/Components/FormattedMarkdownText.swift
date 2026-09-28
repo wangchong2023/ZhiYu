@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 格式化 Markdown 行模型
 private struct LineEntry: Identifiable {
@@ -48,7 +49,7 @@ public struct FormattedMarkdownText: View {
 
     public var body: some View {
         let lines: [LineEntry] = text.components(separatedBy: "\n").enumerated().map { LineEntry(id: $0.offset, text: $0.element) }
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             ForEach(lines) { (entry: LineEntry) in
                 let trimmed = entry.text.trimmingCharacters(in: .whitespaces)
                 
@@ -59,7 +60,7 @@ public struct FormattedMarkdownText: View {
                     Text(LocalizedStringKey(trimmed.replacingOccurrences(of: SystemConstants.MarkdownSyntax.h1Prefix, with: "")))
                         .font(.title2.weight(.bold))
                         .foregroundStyle(.appText)
-                        .padding(.top, DesignSystem.tiny)
+                        .padding(.top, DesignTokens.Spacing.tiny)
                 } else if trimmed.hasPrefix(SystemConstants.MarkdownSyntax.h2Prefix) {
                     let sectionTitle = trimmed.replacingOccurrences(of: SystemConstants.MarkdownSyntax.h2Prefix, with: "")
                     HStack {
@@ -70,12 +71,12 @@ public struct FormattedMarkdownText: View {
                         Spacer()
 
                         if onSectionPolish != nil || onSectionRegenerate != nil {
-                            HStack(spacing: DesignSystem.tiny) {
+                            HStack(spacing: DesignTokens.Spacing.tiny) {
                                 if let onSectionPolish {
                                     Button {
                                         onSectionPolish(sectionTitle)
                                     } label: {
-                                        Label(L10n.AI.Synthesis.Actions.polish, systemImage: DesignSystem.Icons.sparkles)
+                                        Label(L10n.AI.Synthesis.Actions.polish, systemImage: DesignTokens.Icons.sparkles)
                                             .font(.caption2)
                                     }
                                     .buttonStyle(.bordered)
@@ -86,7 +87,7 @@ public struct FormattedMarkdownText: View {
                                     Button {
                                         onSectionRegenerate(sectionTitle)
                                     } label: {
-                                        Label(L10n.AI.Synthesis.Actions.regenerate, systemImage: DesignSystem.Icons.arrowClockwise)
+                                        Label(L10n.AI.Synthesis.Actions.regenerate, systemImage: DesignTokens.Icons.arrowClockwise)
                                             .font(.caption2)
                                     }
                                     .buttonStyle(.bordered)
@@ -95,19 +96,19 @@ public struct FormattedMarkdownText: View {
                             }
                         }
                     }
-                    .padding(.top, DesignSystem.tiny)
+                    .padding(.top, DesignTokens.Spacing.tiny)
                 } else if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.blockquotePrefix) {
-                    HStack(spacing: DesignSystem.small) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
                         Rectangle()
                             .fill(Color.appAccent)
-                            .frame(width: DesignSystem.tiny)
+                            .frame(width: DesignTokens.Spacing.tiny)
                         Text(LocalizedStringKey(trimmed.replacingOccurrences(of: ProcessorConstants.MarkdownSyntax.blockquotePrefix, with: "")))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    .padding(DesignSystem.tightPadding)
-                    .background(Color.appAccent.opacity(DesignSystem.Opacity.subtle))
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.smallRadius))
+                    .padding(DesignTokens.Spacing.tightPadding)
+                    .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
                 } else if trimmed.hasPrefix("|") && trimmed.hasSuffix("|") {
                     renderTableRow(trimmed)
                 } else if !trimmed.isEmpty {
@@ -121,26 +122,26 @@ public struct FormattedMarkdownText: View {
     private func renderRichLine(_ line: String) -> some View {
         let wikiMatches = WikiLinkExtractor.extractLinks(from: line)
         if !wikiMatches.isEmpty {
-            VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(LocalizedStringKey(line))
                     .font(.body)
                     .foregroundStyle(.appText)
                 
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: DesignSystem.tiny) {
+                    HStack(spacing: DesignTokens.Spacing.tiny) {
                         ForEach(wikiMatches, id: \WikiLinkMatch.rawMatch) { (match: WikiLinkMatch) in
                             Button {
                                 onWikiLinkTap?(match.targetTitle)
                             } label: {
-                                HStack(spacing: SystemSpacing.atomic) {
-                                    Image(systemName: DesignSystem.Icons.link)
+                                HStack(spacing: DesignTokens.SystemSpacing.atomic) {
+                                    Image(systemName: DesignTokens.Icons.link)
                                         .font(.caption2)
                                     Text("[[\(match.displayTitle)]]")
                                         .font(.caption.weight(.medium))
                                 }
-                                .padding(.horizontal, DesignSystem.tightPadding)
-                                .padding(.vertical, DesignSystem.tiny)
-                                .background(Color.appAccent.opacity(DesignSystem.glassOpacity))
+                                .padding(.horizontal, DesignTokens.Spacing.tightPadding)
+                                .padding(.vertical, DesignTokens.Spacing.tiny)
+                                .background(Color.appAccent.opacity(DesignTokens.Colors.Opacity.glassOpacity))
                                 .foregroundStyle(Color.appAccent)
                                 .clipShape(Capsule())
                             }
@@ -165,16 +166,16 @@ public struct FormattedMarkdownText: View {
     private func renderTableRow(_ line: String) -> some View {
         let rawCols = line.split(separator: "|")
         let columns: [ColumnEntry] = rawCols.enumerated().map { ColumnEntry(id: $0.offset, text: String($0.element).trimmingCharacters(in: .whitespaces)) }
-        HStack(spacing: DesignSystem.tightPadding) {
+        HStack(spacing: DesignTokens.Spacing.tightPadding) {
             ForEach(columns) { (col: ColumnEntry) in
                 Text(LocalizedStringKey(col.text))
                     .font(.caption.weight(col.id == 0 ? .semibold : .regular))
                     .foregroundStyle(.appText)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, DesignSystem.tightPadding)
-                    .padding(.vertical, DesignSystem.tightPadding)
+                    .padding(.horizontal, DesignTokens.Spacing.tightPadding)
+                    .padding(.vertical, DesignTokens.Spacing.tightPadding)
                     .background(Color.appCard)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius))
             }
         }
     }

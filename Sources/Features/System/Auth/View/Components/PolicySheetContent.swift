@@ -2,6 +2,7 @@
 // 核心职责: 隐私政策/服务条款通用弹窗组件，消除 AuthView 与 OverseasLoginCardView 的 policySheetContent 重复
 
 import SwiftUI
+import UFPDesignSystem
 
 /// 隐私政策 / 服务条款通用弹窗组件
 ///
@@ -20,11 +21,11 @@ struct PolicySheetContent: View {
                 themeManager.pageBackground()
                     .ignoresSafeArea()
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.medium) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
                         Text(LocalizedStringKey(content))
                             .font(.body)
                             .foregroundStyle(.appText)
-                            .lineSpacing(Spacing.tiny)
+                            .lineSpacing(DesignTokens.Spacing.tiny)
                         Spacer()
                     }
                     .padding()

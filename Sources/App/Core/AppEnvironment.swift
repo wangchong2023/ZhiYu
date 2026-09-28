@@ -163,7 +163,7 @@ final class AppEnvironment {
             let appGroupIdentifier = AppConstants.Storage.appGroupIdentifier
 
             // 旧的沙盒独立路径
-            let oldDbURL = try DatabaseManager.defaultSandboxDatabaseURL()
+            let oldDbURL = try DatabaseManager.shared.defaultSandboxDatabaseURL()
             let appSupport = oldDbURL.deletingLastPathComponent()
 
             // 新的 App Group 共享路径（若不可用，回退到沙盒路径）

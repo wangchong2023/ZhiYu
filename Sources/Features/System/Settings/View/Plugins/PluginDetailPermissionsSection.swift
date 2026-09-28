@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 权限声明
 
@@ -22,8 +23,8 @@ extension PluginDetailView {
     }
 
     var permissionsSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
-            HStack(spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 Text(L10n.Plugin.section.permissions)
                     .font(.headline)
                     .foregroundStyle(.appText)
@@ -34,15 +35,15 @@ extension PluginDetailView {
             }
 
             if !permissionsList.isEmpty {
-                VStack(spacing: DesignSystem.small) {
+                VStack(spacing: DesignTokens.Spacing.small) {
                     ForEach(permissionsList, id: \.self) { perm in
-                        HStack(spacing: DesignSystem.medium) {
+                        HStack(spacing: DesignTokens.Spacing.medium) {
                             Image(systemName: permIcon(for: perm))
                                 .foregroundStyle(permColor(for: perm))
                                 .font(.subheadline)
-                                .frame(width: DesignSystem.IconSize.small)
+                                .frame(width: DesignTokens.IconSize.small)
 
-                            VStack(alignment: .leading, spacing: DesignSystem.atomic) {
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
                                 Text(L10n.Plugin.permTitle(perm))
                                     .font(.subheadline.weight(.medium))
                                     .foregroundStyle(.appText)
@@ -56,7 +57,7 @@ extension PluginDetailView {
                 }
             } else {
                 HStack {
-                    Image(systemName: DesignSystem.Icons.checkmarkShieldFill)
+                    Image(systemName: DesignTokens.Icons.checkmarkShieldFill)
                         .foregroundStyle(Color.theme.green)
                     Text(L10n.Plugin.perm.none)
                         .font(.subheadline)
@@ -72,12 +73,12 @@ extension PluginDetailView {
     /// 权限图标（静态复用）
     static func permIcon(for perm: String) -> String {
         switch perm {
-        case FeatureConstants.PermissionName.readContent: return DesignSystem.Icons.docMagnify
-        case FeatureConstants.PermissionName.writeContent: return DesignSystem.Icons.squareAndPencil
-        case FeatureConstants.PermissionName.network: return DesignSystem.Icons.globe
-        case FeatureConstants.PermissionName.aiAccess: return DesignSystem.Icons.brainProfile
-        case FeatureConstants.PermissionName.log: return DesignSystem.Icons.listBulletClipboard
-        default: return DesignSystem.Icons.keyFill
+        case FeatureConstants.PermissionName.readContent: return DesignTokens.Icons.docMagnify
+        case FeatureConstants.PermissionName.writeContent: return DesignTokens.Icons.squareAndPencil
+        case FeatureConstants.PermissionName.network: return DesignTokens.Icons.globe
+        case FeatureConstants.PermissionName.aiAccess: return DesignTokens.Icons.brainProfile
+        case FeatureConstants.PermissionName.log: return DesignTokens.Icons.listBulletClipboard
+        default: return DesignTokens.Icons.keyFill
         }
     }
 
@@ -101,11 +102,11 @@ extension PluginDetailView {
 
 /// 权限容器样式修饰符，消除重复的 padding+frame+background+clipShape 链
 extension View {
-    func permissionContainerStyle(cornerRadius: CGFloat = SystemRadius.small) -> some View {
+    func permissionContainerStyle(cornerRadius: CGFloat = DesignTokens.SystemRadius.small) -> some View {
         self
-            .padding(DesignSystem.medium)
+            .padding(DesignTokens.Spacing.medium)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
+            .background(Color.appCard.opacity(DesignTokens.Opacity.disabled))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }

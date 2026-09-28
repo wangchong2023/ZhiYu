@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 主界面布局
 
@@ -50,24 +51,24 @@ extension TagCloudViewContent {
         InsightSearchBar(
             placeholder: L10n.Search.filterTags,
             text: $coordinator.searchText,
-            horizontalPadding: DesignSystem.huge,
-            bottomPadding: DesignSystem.tiny
+            horizontalPadding: DesignTokens.Spacing.huge,
+            bottomPadding: DesignTokens.Spacing.tiny
         )
-        .padding(.top, DesignSystem.medium)
+        .padding(.top, DesignTokens.Spacing.medium)
     }
 
     // MARK: - 悬浮控制舱
 
     private func unifiedToolbar(isExp: Bool) -> some View {
-        HStack(spacing: SystemSpacing.medium) {
+        HStack(spacing: DesignTokens.SystemSpacing.medium) {
             Spacer()
 
             // 右侧动作按钮组：升级为带文字与图标的胶囊型按钮
-            HStack(spacing: SystemSpacing.element) {
+            HStack(spacing: DesignTokens.SystemSpacing.element) {
                 if !coordinator.isEditMode {
                     // ➕ 新建按钮
                     toolbarCapsuleButton(
-                        icon: DesignSystem.Icons.plus,
+                        icon: DesignTokens.Icons.plus,
                         title: L10n.Tag.Management.addNew,
                         foregroundColor: Color.theme.white,
                         action: { coordinator.showAddTagDialog = true }
@@ -86,31 +87,31 @@ extension TagCloudViewContent {
                 )
             }
         }
-        .padding(.horizontal, SystemSpacing.medium)
-        .padding(.vertical, SystemSpacing.element)
+        .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+        .padding(.vertical, DesignTokens.SystemSpacing.element)
         .background(BlurView().background(Color.appCard.opacity(toolbarBgOpacity)))
         .clipShape(RoundedRectangle(cornerRadius: toolbarCornerRadius))
-        .overlay(RoundedRectangle(cornerRadius: toolbarCornerRadius).stroke(Color.appBorder.opacity(toolbarBorderOpacity), lineWidth: SystemStroke.divider))
-        .padding(.horizontal, isExp ? DesignSystem.wide : DesignSystem.medium)
-        .padding(.vertical, SystemSpacing.element)
+        .overlay(RoundedRectangle(cornerRadius: toolbarCornerRadius).stroke(Color.appBorder.opacity(toolbarBorderOpacity), lineWidth: DesignTokens.SystemStroke.divider))
+        .padding(.horizontal, isExp ? DesignTokens.Spacing.wide : DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.SystemSpacing.element)
     }
 
     /// 工具栏胶囊按钮：图标 + 文本 + 统一胶囊样式
     @ViewBuilder
     private func toolbarCapsuleButton(icon: String, title: String, foregroundColor: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: SystemSpacing.small) {
+            HStack(spacing: DesignTokens.SystemSpacing.small) {
                 Image(systemName: icon)
                     .font(.system(size: actionBtnIconFontSize, weight: .bold))
                 Text(title)
                     .font(.system(size: viewModeFontSize - 1, weight: .semibold))
             }
             .foregroundStyle(foregroundColor)
-            .padding(.horizontal, SystemSpacing.medium)
+            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
             .frame(height: actionBtnDiameter)
             .background(Color.appCard.opacity(actionBtnBgOpacity))
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(Color.appBorder.opacity(actionBtnBorderOpacity), lineWidth: SystemStroke.divider))
+            .overlay(Capsule().stroke(Color.appBorder.opacity(actionBtnBorderOpacity), lineWidth: DesignTokens.SystemStroke.divider))
         }
         .buttonStyle(.plain)
     }
@@ -118,41 +119,41 @@ extension TagCloudViewContent {
     // MARK: - 标签云展示区
 
     private var tagCloudSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             HStack {
                 AppSectionHeader(
                     title: L10n.Tag.allTags,
-                    icon: DesignSystem.Icons.tag,
+                    icon: DesignTokens.Icons.tag,
                     iconColor: .appAccent
                 )
                 Spacer()
                 Text(L10n.Tag.tagCount(coordinator.filteredTags.count))
                     .font(.caption2).foregroundStyle(.appSecondary)
             }
-            .padding(.horizontal, DesignSystem.tiny) // 4
+            .padding(.horizontal, DesignTokens.Spacing.tiny) // 4
 
             VStack(spacing: 0) {
                 tagScrollView
             }
-            .appContainer(background: Color.appCard.opacity(DesignSystem.glassOpacity), padding: false)
+            .appContainer(background: Color.appCard.opacity(DesignTokens.Colors.Opacity.glassOpacity), padding: false)
             .overlay(alignment: .bottom) {
                 if coordinator.isEditMode && !coordinator.selectedTagsForBulk.isEmpty {
                     bulkActionBar
                 }
             }
         }
-        .padding(.horizontal, DesignSystem.huge)
+        .padding(.horizontal, DesignTokens.Spacing.huge)
         .padding(.bottom, DesignSystem.Layout.columnSpacing)
     }
 
     // MARK: - 关联页面列表区
 
     private var relatedPagesSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             HStack {
                 AppSectionHeader(
                     title: L10n.Tag.relatedPagesTitle,
-                    icon: DesignSystem.Icons.docOnDocFill,
+                    icon: DesignTokens.Icons.docOnDocFill,
                     iconColor: .appSource
                 )
                 Spacer()
@@ -162,13 +163,13 @@ extension TagCloudViewContent {
                         .foregroundStyle(.appSecondary)
                 }
             }
-            .padding(.horizontal, DesignSystem.tiny)
+            .padding(.horizontal, DesignTokens.Spacing.tiny)
 
             pagesListView
-                .appContainer(background: Color.appCard.opacity(DesignSystem.glassOpacity), padding: false)
-                .frame(minHeight: DesignSystem.Metrics.sourceCardHeight)
+                .appContainer(background: Color.appCard.opacity(DesignTokens.Colors.Opacity.glassOpacity), padding: false)
+                .frame(minHeight: DesignTokens.Metrics.sourceCardHeight)
         }
-        .padding(.horizontal, DesignSystem.huge)
+        .padding(.horizontal, DesignTokens.Spacing.huge)
         .padding(.bottom, DesignSystem.Layout.columnSpacing)
     }
 }

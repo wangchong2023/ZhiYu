@@ -6,6 +6,7 @@
 //  核心职责：订阅套餐组件快照测试，覆盖月付/年付周期选择与套餐对比卡片。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import SnapshotTesting
@@ -40,8 +41,8 @@ final class SubscriptionViewSnapshots: XCTestCase {
         var cycle: BillingCycle = .yearly
         let view = SubscriptionPlanCard(selectedCycle: cycle, onCycleChange: { cycle = $0 })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 400)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 400)))
     }
 
     /// 测试套餐卡片 — 月付选中状态
@@ -49,7 +50,7 @@ final class SubscriptionViewSnapshots: XCTestCase {
         var cycle: BillingCycle = .monthly
         let view = SubscriptionPlanCard(selectedCycle: cycle, onCycleChange: { cycle = $0 })
             .snapshotEnvironment()
-            .frame(width: DesignSystem.Metrics.snapshotPhoneWidth)
-        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignSystem.Metrics.snapshotPhoneWidth, height: 400)))
+            .frame(width: DesignTokens.Metrics.snapshotPhoneWidth)
+        assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .fixed(width: DesignTokens.Metrics.snapshotPhoneWidth, height: 400)))
     }
 }

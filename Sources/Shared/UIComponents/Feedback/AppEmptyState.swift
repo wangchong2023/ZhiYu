@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 智适应空状态视图组件
 /// 负责在内容为空时展示视觉占位符、说明文案及引导操作按钮。
@@ -57,33 +58,33 @@ public struct AppEmptyState: View {
     // MARK: - Body
     
     public var body: some View {
-        VStack(spacing: Spacing.giant) { // 24
+        VStack(spacing: DesignTokens.Spacing.giant) { // 24
             // 视觉展示区
             ZStack {
                 // 背景装饰圆环
                 Circle()
-                    .fill(Color.appAccent.opacity(Colors.glassOpacity * 0.5))
-                    .frame(width: DesignSystem.Metrics.heroValueSize, height: DesignSystem.Metrics.heroValueSize)
+                    .fill(Color.appAccent.opacity(DesignTokens.Colors.glassOpacity * 0.5))
+                    .frame(width: DesignTokens.Metrics.heroValueSize, height: DesignTokens.Metrics.heroValueSize)
 
                 Circle()
-                    .fill(Color.appAccent.opacity(Colors.glassOpacity * 0.3))
+                    .fill(Color.appAccent.opacity(DesignTokens.Colors.glassOpacity * 0.3))
                     .frame(width: DesignSystem.Gallery.emptyStateImageSize, height: DesignSystem.Gallery.emptyStateImageSize)
 
                 // 主图标容器
                 Image(systemName: icon)
-                    .font(.system(size: Spacing.iconHuge * 1.5, weight: .light))
+                    .font(.system(size: DesignTokens.Spacing.iconHuge * 1.5, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.appAccent, .appAccent.opacity(DesignSystem.Opacity.dim)],
+                            colors: [.appAccent, .appAccent.opacity(DesignTokens.Opacity.dim)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
             }
-            .frame(height: DesignSystem.Metrics.emptyStateGraphicHeight)
+            .frame(height: DesignTokens.Metrics.emptyStateGraphicHeight)
 
             // 文字说明区
-            VStack(spacing: Spacing.small) {
+            VStack(spacing: DesignTokens.Spacing.small) {
                 Text(title)
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(.appText)
@@ -101,18 +102,18 @@ public struct AppEmptyState: View {
                 Text(hint)
                     .font(.caption)
                     .foregroundStyle(.appAccent)
-                    .padding(.horizontal, Spacing.medium)
-                    .padding(.vertical, DesignSystem.tiny)
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.vertical, DesignTokens.Spacing.tiny)
                     .background(
-                        RoundedRectangle(cornerRadius: Spacing.chipRadius)
-                            .fill(Color.appAccent.opacity(Colors.glassOpacity))
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.chipRadius)
+                            .fill(Color.appAccent.opacity(DesignTokens.Colors.glassOpacity))
                     )
             }
 
             // 操作引导按钮
             if let action = action {
                 Button(action: action.handler) {
-                    HStack(spacing: Spacing.tiny + Spacing.atomic) {
+                    HStack(spacing: DesignTokens.Spacing.tiny + DesignTokens.Spacing.atomic) {
                         if let icon = action.icon {
                             Image(systemName: icon)
                         }
@@ -120,19 +121,19 @@ public struct AppEmptyState: View {
                     }
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(actionForegroundColor(for: action.role))
-                    .padding(.horizontal, Spacing.widePadding)
-                    .padding(.vertical, Spacing.medium)
+                    .padding(.horizontal, DesignTokens.Spacing.widePadding)
+                    .padding(.vertical, DesignTokens.Spacing.medium)
                     .background(
                         action.role == .primary || action.role == nil
                             ? Color.appAccent
                             : Color.clear
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
                     .overlay(
-                        RoundedRectangle(cornerRadius: Spacing.smallRadius)
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
                             .stroke(
                                 action.role == .primary || action.role == nil ? Color.clear : Color.appAccent, 
-                                lineWidth: Spacing.borderWidth
+                                lineWidth: DesignTokens.Spacing.borderWidth
                             )
                     )
                 }
@@ -141,7 +142,7 @@ public struct AppEmptyState: View {
                 .accessibilityIdentifier("empty_state_action_button")
             }
         }
-        .padding(.horizontal, Spacing.huge)
+        .padding(.horizontal, DesignTokens.Spacing.huge)
         .frame(maxWidth: .infinity)
         // MARK: [UI 测试自愈] 在进行 UI 自动化测试时，允许 XCUITest 穿透容器定位到具体的 action Button；非测试状态下合并为单个无障碍节点以优化 VoiceOver 体验
         .accessibilityElement(children: ProcessInfo.processInfo.arguments.contains("--uitesting") ? .contain : .combine)

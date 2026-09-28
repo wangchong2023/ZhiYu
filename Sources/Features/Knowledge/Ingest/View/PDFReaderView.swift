@@ -13,6 +13,7 @@ import SwiftUI
 import PDFKit
 #endif
 import UniformTypeIdentifiers
+import UFPDesignSystem
 
 // MARK: - PDF Reader View (Full Screen)
 struct PDFReaderView: View {
@@ -50,11 +51,11 @@ struct PDFReaderView: View {
                 .toolbar {
                     ToolbarItemGroup(placement: .automatic) {
                         Button(action: { showHighlightPanel.toggle() }) {
-                            Image(systemName: showHighlightPanel ? DesignSystem.Icons.highlighterFill : DesignSystem.Icons.highlighter)
+                            Image(systemName: showHighlightPanel ? DesignTokens.Icons.highlighterFill : DesignTokens.Icons.highlighter)
                         }
 
                         Button(action: { showIngestSheet = true }) {
-                            Image(systemName: DesignSystem.Icons.arrowDownDoc)
+                            Image(systemName: DesignTokens.Icons.arrowDownDoc)
                         }
                     }
                 }
@@ -88,10 +89,10 @@ struct PDFReaderView: View {
             )
             .ignoresSafeArea()
         } else {
-            ContentUnavailableView(L10n.Ingest.PDF.cannotLoadPDF, systemImage: DesignSystem.Icons.warning)
+            ContentUnavailableView(L10n.Ingest.PDF.cannotLoadPDF, systemImage: DesignTokens.Icons.warning)
         }
         #else
-        ContentUnavailableView(L10n.Ingest.PDF.notSupported, systemImage: DesignSystem.Icons.warning, description: Text(L10n.Ingest.PDF.notSupportedDesc))
+        ContentUnavailableView(L10n.Ingest.PDF.notSupported, systemImage: DesignTokens.Icons.warning, description: Text(L10n.Ingest.PDF.notSupportedDesc))
         #endif
     }
 
@@ -117,21 +118,21 @@ struct PDFReaderView: View {
 
                 if !highlights.isEmpty {
                     Button(action: { showHighlightPanel.toggle() }) {
-                        Label("\(highlights.count)", systemImage: DesignSystem.Icons.highlighter)
+                        Label("\(highlights.count)", systemImage: DesignTokens.Icons.highlighter)
                             .font(.caption)
                             .foregroundStyle(.appAccent)
                     }
                 }
             }
-            .padding(.horizontal, DesignSystem.standardPadding)
-            .padding(.vertical, DesignSystem.small)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.vertical, DesignTokens.Spacing.small)
             .background(Color.appCard)
         }
     }
 
     // MARK: - Highlight Editor
     private var highlightEditor: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.small) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(L10n.Ingest.PDF.annotateSelected)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.appText)
@@ -141,15 +142,15 @@ struct PDFReaderView: View {
                 .foregroundStyle(.appSecondary)
                 .lineLimit(3)
 
-            HStack(spacing: DesignSystem.small) {
+            HStack(spacing: DesignTokens.Spacing.small) {
                 ForEach(PDFHighlightColor.allRawValues, id: \.self) { color in
                     Button(action: { highlightColor = color }) {
                         Circle()
                             .fill(Color.pdfHighlight(color))
-                            .frame(width: DesignSystem.IconSize.standard, height: DesignSystem.IconSize.standard)
+                            .frame(width: DesignTokens.IconSize.standard, height: DesignTokens.IconSize.standard)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.appText, lineWidth: highlightColor == color ? SystemStroke.selected : SystemStroke.none)
+                                    .stroke(Color.appText, lineWidth: highlightColor == color ? DesignTokens.SystemStroke.selected : DesignTokens.SystemStroke.none)
                             )
                     }
                 }
@@ -164,13 +165,13 @@ struct PDFReaderView: View {
                 Text(L10n.Ingest.PDF.saveAnnotation)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, Spacing.medium)
-                    .padding(.vertical, Spacing.small)
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.vertical, DesignTokens.Spacing.small)
                     .background(Color.appAccent)
-                    .clipShape(RoundedRectangle(cornerRadius: Spacing.smallRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             }
         }
-        .padding(DesignSystem.medium)
+        .padding(DesignTokens.Spacing.medium)
         .background(Color.appCard)
     }
 

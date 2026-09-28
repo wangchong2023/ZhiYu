@@ -32,6 +32,8 @@ MIN_DUPLICATE_LINES = 10
 MIN_UNIQUE_TOKENS = 3
 # 审计报告中展示的重复代码片段的最大展示行数
 SAMPLE_SNIPPET_LINES = 3
+# jscpd 超限时打印的重复块详情最大数量
+JSCPD_DETAIL_DISPLAY_LIMIT = 30
 # 扫描时需要过滤的非源码目录集合
 EXCLUDE_DIRS = {'.git', '.build', 'build', 'Pods', 'DerivedData', '__pycache__', 'env'}
 # 目标审计的源文件后缀名集合
@@ -144,19 +146,88 @@ class CodeDuplicationAuditor:
         return duplicates
 
 
+def _parse_jscpd_report(report_path):
+    """
+    解析 jscpd JSON 报告，返回 (total_clones, formats_dict, duplicates_list)。
+    报告不存在或格式异常时返回 None。
+    """
+    import json as json_module
+
+    if not os.path.exists(report_path):
+        print("⚠️  [Code Duplication] jscpd JSON report not found, falling back.")
+        return None
+
+    with open(report_path, "r", encoding="utf-8") as f:
+        report = json_module.load(f)
+
+    stats = report.get("statistics", {})
+    formats = stats.get("formats", {})
+    total_clones = sum(info.get("clones", 0) for info in formats.values())
+    duplicates = report.get("duplicates", [])
+    return total_clones, formats, duplicates
+
+
+def _print_jscpd_duplicates(duplicates, limit):
+    """
+    按 token 数降序打印重复块详情，最多显示 limit 个。
+    """
+    print("\n=== 重复块详情（Top {}，按 token 数降序）===".format(limit))
+    sorted_dups = sorted(duplicates, key=lambda d: d.get("tokens", 0), reverse=True)
+    for i, dup in enumerate(sorted_dups[:limit], 1):
+        lines = dup.get("lines", "?")
+        tokens = dup.get("tokens", "?")
+        fmt = dup.get("format", "?")
+        f1 = dup.get("firstFile", {})
+        f2 = dup.get("secondFile", {})
+        f1_name = os.path.relpath(f1.get("name", "?"), os.getcwd())
+        f2_name = os.path.relpath(f2.get("name", "?"), os.getcwd())
+        f1_range = f"L{f1.get('start', '?')}-{f1.get('end', '?')}"
+        f2_range = f"L{f2.get('start', '?')}-{f2.get('end', '?')}"
+        print(f"  [{i:2d}] {fmt} {lines}行/{tokens}token  {f1_name}:{f1_range}  <->  {f2_name}:{f2_range}")
+
+
 def try_jscpd():
     """
-    优先检测并运行 jscpd。
+    优先检测并运行 jscpd（通过 npx 或全局 jscpd）。
+
+    使用项目 .jscpd.json 配置（min-tokens=50，业界标准），
+    解析 JSON 报告统计重复块数并按阈值阻断。
     """
+    # 优先使用全局 jscpd，其次通过 npx 调用
     jscpd_bin = shutil.which("jscpd")
-    if not jscpd_bin:
+    if jscpd_bin:
+        cmd = [jscpd_bin, "--reporters", "json", "--output", "build/jscpd", "."]
+    elif shutil.which("npx"):
+        cmd = ["npx", "jscpd", "--reporters", "json", "--output", "build/jscpd", "."]
+    else:
         return False
-        
-    print("\n[Code Duplication] Detected 'jscpd' in system. Running standard cross-language scan...")
-    res = subprocess.run([jscpd_bin, "."], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    print(res.stdout)
-    if res.stderr:
-        print(res.stderr, file=sys.stderr)
+
+    print("\n[Code Duplication] Running jscpd (min-tokens=50, industry standard)...")
+    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=os.getcwd())
+
+    # 解析 jscpd JSON 报告
+    report_path = os.path.join(os.getcwd(), "build", "jscpd", "jscpd-report.json")
+    parsed = _parse_jscpd_report(report_path)
+    if parsed is None:
+        return False
+    total_clones, formats, duplicates = parsed
+
+    # 按格式打印摘要
+    print(f"\n[Code Duplication] jscpd 检测到 {total_clones} 处重复代码块（min-tokens=50，上限 {MAX_DUPLICATE_BLOCKS}）")
+    for fmt, info in sorted(formats.items()):
+        clones = info.get("clones", 0)
+        if clones > 0:
+            dup_lines = info.get("duplicatedLines", 0)
+            total_lines = info.get("lines", 0)
+            pct = info.get("percentage", 0)
+            print(f"  {fmt:12s}: {clones:4d} 块, {dup_lines:6d}/{total_lines:7d} 行 ({pct:.1f}%)")
+
+    if total_clones > MAX_DUPLICATE_BLOCKS:
+        print(f"\n❌ [Code Duplication] 重复块 {total_clones} 超过上限 {MAX_DUPLICATE_BLOCKS}，阻断流水线。")
+        _print_jscpd_duplicates(duplicates, JSCPD_DETAIL_DISPLAY_LIMIT)
+        sys.exit(1)
+
+    print(f"✅ [Code Duplication] 重复块 {total_clones} 未超过上限 {MAX_DUPLICATE_BLOCKS}，准予通过。")
     return True
 
 

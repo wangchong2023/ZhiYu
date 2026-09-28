@@ -12,6 +12,7 @@
 //            跨社区桥接节点检测、笔记本名称长度截断及语义主题哈希分发。
 //
 
+import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPCore
@@ -126,16 +127,16 @@ final class KnowledgeDomainComprehensiveDeepTests: XCTestCase {
         let excessiveName = String(repeating: "超长笔记本名称", count: 20)
         viewModel.newNotebookName = excessiveName
 
-        let maxLength = DesignSystem.Metrics.maxNotebookNameLength
+        let maxLength = DesignTokens.Metrics.maxNotebookNameLength
         XCTAssertLessThanOrEqual(viewModel.newNotebookName.count, maxLength, "笔记本名称在赋值时必须受 didSet 保护自动截断至最大上限")
         XCTAssertEqual(viewModel.newNotebookName.count, maxLength, "截断后长度必须严格等于最大合法长度")
 
         // 2. 显示模式切换
         viewModel.displayMode = .grid
-        XCTAssertEqual(viewModel.displayMode.icon, DesignSystem.Icons.gridOutline)
+        XCTAssertEqual(viewModel.displayMode.icon, DesignTokens.Icons.gridOutline)
 
         viewModel.displayMode = .list
-        XCTAssertEqual(viewModel.displayMode.icon, DesignSystem.Icons.list)
+        XCTAssertEqual(viewModel.displayMode.icon, DesignTokens.Icons.list)
 
         // 3. 排序模式切换
         viewModel.sortOption = .date

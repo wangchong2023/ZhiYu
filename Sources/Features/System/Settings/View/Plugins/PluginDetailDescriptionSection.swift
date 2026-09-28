@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 功能描述
 
@@ -20,19 +21,19 @@ extension PluginDetailView {
         PluginDetailSectionContainer(title: L10n.Plugin.section.about) {
             // 如果本地没有 README 缓存，且远端 README 正在加载，则呈现骨架屏
             if localReadme == nil && isReadmeLoading {
-                VStack(alignment: .leading, spacing: DesignSystem.small) {
-                    AppSkeleton(height: Spacing.large, cornerRadius: DesignSystem.microRadius)
-                    AppSkeleton(height: Spacing.large, cornerRadius: DesignSystem.microRadius)
-                    AppSkeleton(width: 200, height: Spacing.large, cornerRadius: DesignSystem.microRadius)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                    AppSkeleton(height: DesignTokens.Spacing.large, cornerRadius: DesignTokens.Spacing.microRadius)
+                    AppSkeleton(height: DesignTokens.Spacing.large, cornerRadius: DesignTokens.Spacing.microRadius)
+                    AppSkeleton(width: 200, height: DesignTokens.Spacing.large, cornerRadius: DesignTokens.Spacing.microRadius)
                 }
-                .padding(.vertical, DesignSystem.small)
+                .padding(.vertical, DesignTokens.Spacing.small)
             } else {
                 // 降级选择链：优先显示本地缓存的 README -> 远端多语言 README -> 插件自身的简短描述
                 let content = localReadme ?? remoteReadme ?? plugin.description
                 let lineCount = content.components(separatedBy: .newlines).count
                 let showExpandButton = lineCount > FeatureConstants.PluginDescription.expandLineThreshold
 
-                VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     MarkdownRendererView(content: content, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
                         .frame(maxHeight: (showExpandButton && !isDescriptionExpanded) ? 180 : nil, alignment: .top)
                         .clipped()
@@ -43,11 +44,11 @@ extension PluginDetailView {
                                         Spacer()
                                         // 渐变蒙层，在折叠状态下于底部实现优雅淡出效果
                                         LinearGradient(
-                                            colors: [Color.appBackground.opacity(Double.zero), Color.appBackground.opacity(DesignSystem.Metrics.lockOverlayScaleMultiplier), Color.appBackground],
+                                            colors: [Color.appBackground.opacity(Double.zero), Color.appBackground.opacity(DesignTokens.Metrics.lockOverlayScaleMultiplier), Color.appBackground],
                                             startPoint: .top,
                                             endPoint: .bottom
                                         )
-                                        .frame(height: DesignSystem.iconDisplay)
+                                        .frame(height: DesignTokens.Spacing.iconDisplay)
                                     }
                                 }
                             }
@@ -60,7 +61,7 @@ extension PluginDetailView {
                                 isDescriptionExpanded.toggle()
                             }
                         }) {
-                            HStack(spacing: DesignSystem.tiny) {
+                            HStack(spacing: DesignTokens.Spacing.tiny) {
                                 Text(isDescriptionExpanded ? L10n.Plugin.Detail.showLess : L10n.Plugin.Detail.readMore)
                                     .font(.subheadline.bold())
                                     .foregroundStyle(.appAccent)
@@ -68,7 +69,7 @@ extension PluginDetailView {
                                     .font(.caption2.bold())
                                     .foregroundStyle(.appAccent)
                             }
-                            .padding(.vertical, DesignSystem.atomic)
+                            .padding(.vertical, DesignTokens.Spacing.atomic)
                         }
                     }
                 }

@@ -9,6 +9,7 @@
 //  核心职责：统一指标卡片组件——消除 LintView/DeveloperSettingsView 中的重复 metricCard 定义。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 统一指标卡片
 /// 用于展示带图标、标题、数值的指标摘要。
@@ -34,8 +35,8 @@ public struct AppMetricCard: View {
         value: String,
         icon: String,
         color: Color,
-        iconSize: CGFloat = DesignSystem.Metrics.iconBoxSize - DesignSystem.small,
-        fontSize: Font = .system(size: DesignSystem.subheadlineFontSize, weight: .bold)
+        iconSize: CGFloat = DesignTokens.Metrics.iconBoxSize - DesignTokens.Spacing.small,
+        fontSize: Font = .system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold)
     ) {
         self.title = title
         self.value = value
@@ -46,11 +47,11 @@ public struct AppMetricCard: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.medium) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
             HStack {
                 ZStack {
                     Circle()
-                        .fill(color.opacity(DesignSystem.Opacity.glass))
+                        .fill(color.opacity(DesignTokens.Opacity.glass))
                         .frame(width: iconSize, height: iconSize)
                     Image(systemName: icon)
                         .font(fontSize)
@@ -65,7 +66,7 @@ public struct AppMetricCard: View {
                 .font(.caption)
                 .foregroundStyle(.appSecondary)
         }
-        .padding(DesignSystem.medium)
-        .appCardClip(cornerRadius: DesignSystem.mediumRadius)
+        .padding(DesignTokens.Spacing.medium)
+        .appCardClip(cornerRadius: DesignTokens.Spacing.mediumRadius)
     }
 }

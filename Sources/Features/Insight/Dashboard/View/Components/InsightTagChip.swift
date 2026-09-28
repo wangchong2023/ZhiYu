@@ -11,18 +11,19 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 /// [L3] 表现层：标签胶囊样式参数
 ///
 /// 共享标签胶囊的样式配置，避免 InsightTagChip 与 InsightTagChipModifier 重复声明相同属性。
 struct InsightTagChipStyle {
     var backgroundColor: Color = .appCard
-    var backgroundOpacity: Double = DesignSystem.Opacity.subtle
+    var backgroundOpacity: Double = DesignTokens.Opacity.subtle
     var borderColor: Color = .appBorder
-    var borderWidth: CGFloat = DesignSystem.borderWidth
-    var borderOpacity: Double = DesignSystem.Opacity.prominent
-    var horizontalPadding: CGFloat = Spacing.Chip.horizontalPadding
-    var verticalPadding: CGFloat = Spacing.atomic
+    var borderWidth: CGFloat = DesignTokens.Spacing.borderWidth
+    var borderOpacity: Double = DesignTokens.Opacity.prominent
+    var horizontalPadding: CGFloat = DesignTokens.Spacing.Chip.horizontalPadding
+    var verticalPadding: CGFloat = DesignTokens.Spacing.atomic
 }
 
 /// [L3] 表现层：通用标签胶囊
@@ -38,13 +39,13 @@ struct InsightTagChip: View {
     var style: InsightTagChipStyle = .init()
 
     var body: some View {
-        HStack(spacing: DesignSystem.atomic) {
+        HStack(spacing: DesignTokens.Spacing.atomic) {
             if let icon {
                 Image(systemName: icon)
-                    .font(.system(size: SystemFontSize.nano))
+                    .font(.system(size: DesignTokens.SystemFontSize.nano))
             } else if hashPrefix {
                 Text(FeatureConstants.Decorator.hash)
-                    .font(.system(size: DesignSystem.caption2FontSize, weight: .bold))
+                    .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold))
             }
             Text(text)
                 .font(font)
@@ -95,8 +96,8 @@ struct InsightTagCountBadge: View {
     var body: some View {
         Text("\(count)")
             .font(.system(size: fontSize, weight: .bold, design: .monospaced))
-            .padding(.horizontal, SystemSpacing.tiny)
-            .padding(.vertical, SystemSpacing.divider)
+            .padding(.horizontal, DesignTokens.SystemSpacing.tiny)
+            .padding(.vertical, DesignTokens.SystemSpacing.divider)
             .background(isSelected ? selectedColor : unselectedColor)
             .clipShape(Capsule())
     }

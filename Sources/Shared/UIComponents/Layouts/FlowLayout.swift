@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 自动换行布局容器
 /// 适用于标签云、芯片列表及令牌输入框等需要动态排列的场景。
@@ -16,11 +17,11 @@ public struct FlowLayout: Layout {
     // MARK: - Properties
     
     /// 元素间的间距
-    public var spacing: CGFloat = Spacing.small
+    public var spacing: CGFloat = DesignTokens.Spacing.small
 
     // MARK: - Initialization
     
-    public init(spacing: CGFloat = Spacing.small) {
+    public init(spacing: CGFloat = DesignTokens.Spacing.small) {
         self.spacing = spacing
     }
 

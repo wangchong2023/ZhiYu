@@ -8,6 +8,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 用户协议勾选区域共享组件
 ///
@@ -19,22 +20,22 @@ struct AgreementCheckboxView: View {
     @Binding var showPrivacySheet: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: Spacing.tightPadding) {
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.tightPadding) {
             Button(action: {
                 withAnimation { isAgreementChecked.toggle() }
             }) {
                 Image(systemName: isAgreementChecked ? "checkmark.circle.fill" : "circle")
                     .foregroundStyle(isAgreementChecked ? Color.appAccent : Color.appSecondary)
-                    .font(.system(size: Spacing.smallIconSize))
+                    .font(.system(size: DesignTokens.Spacing.smallIconSize))
             }
             .accessibilityIdentifier("agreementCheckbox")
             .accessibilityValue(isAgreementChecked ? "checked" : "unchecked")
 
-            VStack(alignment: .leading, spacing: Spacing.tiny) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                 Text(LocalizedStringKey(L10n.Auth.agreementText))
                     .font(.caption2)
                     .foregroundStyle(.appSecondary)
-                    .lineSpacing(Spacing.atomic)
+                    .lineSpacing(DesignTokens.Spacing.atomic)
                     .environment(\.openURL, OpenURLAction { url in
                         if url.scheme == FeatureConstants.URLSchemeName.privacy {
                             if url.host == FeatureConstants.URLSchemeName.terms {
@@ -54,6 +55,6 @@ struct AgreementCheckboxView: View {
                 }
             }
         }
-        .padding(.horizontal, Spacing.small)
+        .padding(.horizontal, DesignTokens.Spacing.small)
     }
 }

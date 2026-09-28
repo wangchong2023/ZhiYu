@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Foundation
+import UFPDesignSystem
 
 struct PageHistoryView: View {
     let page: any KnowledgePageRepresentable
@@ -41,11 +42,11 @@ struct PageHistoryView: View {
                                         .foregroundStyle(.appSecondary)
                                 }
                                 Spacer()
-                                Image(systemName: DesignSystem.Icons.forward)
+                                Image(systemName: DesignTokens.Icons.forward)
                                     .font(.caption2)
                                     .foregroundStyle(.appTertiary)
                             }
-                            .padding(.vertical, DesignSystem.tiny)
+                            .padding(.vertical, DesignTokens.Spacing.tiny)
                         }
                         .foregroundStyle(.primary)
                     }
@@ -95,9 +96,9 @@ struct SnapshotDetailView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: DesignSystem.standardPadding) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
                         HStack {
-                            Label(L10n.Knowledge.Page.History.version, systemImage: DesignSystem.Icons.clock)
+                            Label(L10n.Knowledge.Page.History.version, systemImage: DesignTokens.Icons.clock)
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(.appAccent)
                             Spacer()
@@ -116,7 +117,7 @@ struct SnapshotDetailView: View {
                     .padding()
                 }
                 
-                VStack(spacing: DesignSystem.medium) {
+                VStack(spacing: DesignTokens.Spacing.medium) {
                     AppFilledActionButton(title: L10n.Knowledge.Page.History.rollback, action: onRollback)
                     
                     Button(L10n.Common.cancel) {

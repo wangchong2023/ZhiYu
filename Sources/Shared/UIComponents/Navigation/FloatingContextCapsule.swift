@@ -9,6 +9,7 @@
 //  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
 //
 import SwiftUI
+import UFPDesignSystem
 
 /// 方案 D 核心组件：悬浮上下文胶囊
 /// 集成了侧边栏开关、当前笔记本标识及数据洞察入口
@@ -20,20 +21,20 @@ struct FloatingContextCapsule: View {
     var onShowInsights: (() -> Void)?
     
     var body: some View {
-        HStack(spacing: DesignSystem.medium) {
+        HStack(spacing: DesignTokens.Spacing.medium) {
             // 1. 图 1 风格集成按钮：视图模式切换
             Button {
                 HapticFeedback.shared.trigger(.selection)
                 NotificationCenter.default.post(name: NSNotification.Name("toggleDisplayMode"), object: nil)
             } label: {
-                Image(systemName: DesignSystem.Icons.line3Horizontal)
+                Image(systemName: DesignTokens.Icons.line3Horizontal)
                     .font(.title3.weight(.medium))
-                    .frame(width: DesignSystem.IconSize.xlarge, height: DesignSystem.IconSize.xlarge)
+                    .frame(width: DesignTokens.IconSize.xlarge, height: DesignTokens.IconSize.xlarge)
             }
             
             Divider()
-                .frame(height: DesignSystem.IconSize.small)
-                .background(.white.opacity(DesignSystem.Opacity.shadow))
+                .frame(height: DesignTokens.IconSize.small)
+                .background(.white.opacity(DesignTokens.Opacity.shadow))
             
             // 2. 语境标识 (Avenir Next 风格文字)
             if let currentVault = vaultService.currentVault {
@@ -42,12 +43,12 @@ struct FloatingContextCapsule: View {
                 hubIndicator
             }
         }
-        .padding(.horizontal, DesignSystem.small)
+        .padding(.horizontal, DesignTokens.Spacing.small)
         .accessibilityIdentifier("FloatingContextCapsule")
         .background(
             ZStack {
                 // 方案 D：极高透明度的深色玻璃
-                Capsule().fill(.black.opacity(DesignSystem.Opacity.disabled))
+                Capsule().fill(.black.opacity(DesignTokens.Opacity.disabled))
                 Capsule().fill(.ultraThinMaterial)
             }
         )
@@ -56,46 +57,46 @@ struct FloatingContextCapsule: View {
             Capsule()
                 .stroke(
                     LinearGradient(
-                        colors: [.white.opacity(DesignSystem.Opacity.dim), .appAccent.opacity(DesignSystem.Opacity.disabled), .clear],
+                        colors: [.white.opacity(DesignTokens.Opacity.dim), .appAccent.opacity(DesignTokens.Opacity.disabled), .clear],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: SystemStroke.emphasis
+                    lineWidth: DesignTokens.SystemStroke.emphasis
                 )
-                .shadow(color: .appAccent.opacity(DesignSystem.Opacity.soft), radius: 8, x: 0, y: 0)
+                .shadow(color: .appAccent.opacity(DesignTokens.Opacity.soft), radius: 8, x: 0, y: 0)
         )
         .clipShape(Capsule())
         .foregroundStyle(.white)
-        .shadow(color: .black.opacity(DesignSystem.Opacity.shadow), radius: 20, x: 0, y: 10)
+        .shadow(color: .black.opacity(DesignTokens.Opacity.shadow), radius: 20, x: 0, y: 10)
     }
     
     @ViewBuilder
     private func vaultMenu(_ vault: Vault) -> some View {
         #if os(watchOS)
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             Text(vault.name)
                 .font(.custom("AvenirNext", size: 18).weight(.bold))
                 .lineLimit(1)
         }
-        .padding(.trailing, DesignSystem.medium)
-        .frame(minHeight: Spacing.Action.buttonHeight)
+        .padding(.trailing, DesignTokens.Spacing.medium)
+        .frame(minHeight: DesignTokens.Spacing.Action.buttonHeight)
         #else
         Menu {
             Button(action: {
                 HapticFeedback.shared.trigger(.selection)
                 onShowInsights?()
             }) {
-                Label(L10n.Dashboard.index.overview, systemImage: DesignSystem.Icons.comparison)
+                Label(L10n.Dashboard.index.overview, systemImage: DesignTokens.Icons.comparison)
             }
             
             Divider()
             
             Button(role: .destructive, action: {
-                withAnimation(.spring(response: DesignSystem.Animation.springResponse, dampingFraction: DesignSystem.Animation.springDamping)) {
+                withAnimation(.spring(response: DesignTokens.Animation.springResponse, dampingFraction: DesignTokens.Animation.springDamping)) {
                     vaultService.exitVault()
                 }
             }) {
-                Label(L10n.Vault.backToHub, systemImage: DesignSystem.Icons.backToHub)
+                Label(L10n.Vault.backToHub, systemImage: DesignTokens.Icons.backToHub)
             }
             .accessibilityIdentifier("vaultBackToHubButton")
         } label: {
@@ -110,16 +111,16 @@ struct FloatingContextCapsule: View {
 
     /// 胶囊标签：Text + 下拉箭头（消除 vaultIndicator 与 hubIndicator 的重复 HStack 链）
     private func capsuleLabel(text: String) -> some View {
-        HStack(spacing: DesignSystem.small) {
+        HStack(spacing: DesignTokens.Spacing.small) {
             Text(text)
                 .font(.title3.weight(.bold))
                 .lineLimit(1)
 
-            Image(systemName: DesignSystem.Icons.down)
+            Image(systemName: DesignTokens.Icons.down)
                 .font(.caption.weight(.bold))
-                .foregroundStyle(.white.opacity(DesignSystem.Opacity.dim))
+                .foregroundStyle(.white.opacity(DesignTokens.Opacity.dim))
         }
-        .padding(.trailing, DesignSystem.medium)
-        .frame(minHeight: Spacing.Action.buttonHeight)
+        .padding(.trailing, DesignTokens.Spacing.medium)
+        .frame(minHeight: DesignTokens.Spacing.Action.buttonHeight)
     }
 }

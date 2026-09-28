@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 /// 本地已安装插件详情页（基于 PluginManifest，无需网络）
 @MainActor
@@ -34,33 +35,33 @@ struct LocalPluginDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.giant) {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.giant) {
 
                 // MARK: - 头部
-                HStack(spacing: DesignSystem.wide) {
+                HStack(spacing: DesignTokens.Spacing.wide) {
                     // 优先显示本地 icon.png，fallback SF Symbol
                     if let image = localIcon {
                         Image(uiImage: image)
                             .pluginLocalIconBase()
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.largeRadius))
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius))
                     } else {
                         Color.clear
                             .pluginFallbackIconStyle(iconName: fallbackIcon)
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.giant))
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.giant))
                     }
 
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         Text(manifest.name)
                             .font(.title2.bold()).foregroundStyle(.appText)
                         Text(L10n.Plugin.Detail.byAuthor(manifest.author))
                             .font(.subheadline).foregroundStyle(.appSecondary)
 
-                        HStack(spacing: DesignSystem.small) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
                             Text("v\(manifest.version)")
                                 .pluginVersionTagStyle()
 
                             if isInstalled {
-                                Label(L10n.Plugin.Detail.installed, systemImage: DesignSystem.Icons.checkCircle)
+                                Label(L10n.Plugin.Detail.installed, systemImage: DesignTokens.Icons.checkCircle)
                                     .font(.caption.weight(.medium)).foregroundStyle(Color.theme.green)
                             }
                         }
@@ -72,9 +73,9 @@ struct LocalPluginDetailView: View {
                     registry.unloadPlugin(id: manifest.id)
                     dismiss()
                 }) {
-                    Label(L10n.Plugin.Action.uninstall, systemImage: DesignSystem.Icons.delete)
+                    Label(L10n.Plugin.Action.uninstall, systemImage: DesignTokens.Icons.delete)
                         .font(.headline).frame(maxWidth: .infinity)
-                        .padding(.vertical, DesignSystem.small)
+                        .padding(.vertical, DesignTokens.Spacing.small)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(Color.theme.red)
@@ -85,13 +86,13 @@ struct LocalPluginDetailView: View {
                 PluginDetailSectionContainer(title: L10n.Plugin.Detail.metadataTitle) {
                     VStack(spacing: 0) {
                         detailRow(icon: "number", label: L10n.Plugin.Detail.version, value: manifest.version)
-                        Divider().padding(.leading, DesignSystem.medium)
-                        detailRow(icon: DesignSystem.Icons.personFill, label: L10n.Plugin.Detail.author, value: manifest.author)
-                        Divider().padding(.leading, DesignSystem.medium)
-                        detailRow(icon: DesignSystem.Icons.keyFill, label: L10n.Plugin.Detail.idLabel, value: manifest.id)
+                        Divider().padding(.leading, DesignTokens.Spacing.medium)
+                        detailRow(icon: DesignTokens.Icons.personFill, label: L10n.Plugin.Detail.author, value: manifest.author)
+                        Divider().padding(.leading, DesignTokens.Spacing.medium)
+                        detailRow(icon: DesignTokens.Icons.keyFill, label: L10n.Plugin.Detail.idLabel, value: manifest.id)
                     }
-                    .background(Color.appCard.opacity(DesignSystem.Opacity.disabled))
-                    .clipShape(RoundedRectangle(cornerRadius: SystemRadius.card))
+                    .background(Color.appCard.opacity(DesignTokens.Opacity.disabled))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
                 }
 
                 Divider()
@@ -99,11 +100,11 @@ struct LocalPluginDetailView: View {
                 // MARK: - 权限
                 PluginDetailSectionContainer(title: L10n.Plugin.section.permissions) {
                     ForEach(manifest.permissions, id: \.self) { perm in
-                        HStack(spacing: DesignSystem.medium) {
+                        HStack(spacing: DesignTokens.Spacing.medium) {
                             Image(systemName: PluginDetailView.permIcon(for: perm)).foregroundStyle(.appAccent)
                             Text(L10n.Plugin.permTitle(perm)).font(.subheadline).foregroundStyle(.appText)
                         }
-                        .permissionContainerStyle(cornerRadius: SystemRadius.card)
+                        .permissionContainerStyle(cornerRadius: DesignTokens.SystemRadius.card)
                     }
                 }
 
@@ -112,7 +113,7 @@ struct LocalPluginDetailView: View {
                     MarkdownRendererView(content: localReadme ?? manifest.description, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
                 }
             }
-            .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+            .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .task {

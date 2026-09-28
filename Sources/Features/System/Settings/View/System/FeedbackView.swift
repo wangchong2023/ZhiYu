@@ -11,6 +11,7 @@
 import SwiftUI
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 
 struct FeedbackView: View {
     @Dependency(\.toastService) private var toastManager
@@ -42,7 +43,7 @@ struct FeedbackView: View {
                     Text(L10n.Settings.Feedback.history).tag(1)
                 }
                 .pickerStyle(.segmented)
-                .commonContentPadding(horizontal: DesignSystem.standardPadding, vertical: DesignSystem.standardPadding)
+                .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
 
                 if selectedTab == 0 {
                     submitForm
@@ -96,8 +97,8 @@ struct FeedbackView: View {
                         if contentText.isEmpty {
                             Text(L10n.Settings.Feedback.contentPlaceholder)
                                 .foregroundStyle(.secondary)
-                                .padding(.top, DesignSystem.tightPadding)
-                                .padding(.leading, DesignSystem.atomic)
+                                .padding(.top, DesignTokens.Spacing.tightPadding)
+                                .padding(.leading, DesignTokens.Spacing.atomic)
                                 .allowsHitTesting(false)
                         }
                     }
@@ -139,9 +140,9 @@ struct FeedbackView: View {
     private var historyList: some View {
         Group {
             if history.isEmpty {
-                VStack(spacing: DesignSystem.standardPadding) {
-                    Image(systemName: DesignSystem.Icons.bubbleLeftAndRight)
-                        .font(.largeTitle).foregroundStyle(.secondary.opacity(DesignSystem.Opacity.soft))
+                VStack(spacing: DesignTokens.Spacing.standardPadding) {
+                    Image(systemName: DesignTokens.Icons.bubbleLeftAndRight)
+                        .font(.largeTitle).foregroundStyle(.secondary.opacity(DesignTokens.Opacity.soft))
                     Text(L10n.Settings.Feedback.noHistory)
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
@@ -216,8 +217,8 @@ private struct FeedbackHistoryRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
-            HStack(spacing: DesignSystem.tightPadding) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+            HStack(spacing: DesignTokens.Spacing.tightPadding) {
                 // swiftlint:disable:next magic_numbers_frame
                 Circle().fill(categoryColor).frame(width: 8, height: 8)
                 Text(entry.title).font(.subheadline.weight(.medium)).lineLimit(1)
@@ -227,7 +228,7 @@ private struct FeedbackHistoryRow: View {
                 Text(FeedbackCategory.displayName(entry.category))
                     .font(.caption2).foregroundStyle(.secondary)
             }
-            HStack(spacing: DesignSystem.tightPadding) {
+            HStack(spacing: DesignTokens.Spacing.tightPadding) {
                 Text(entry.createdAt.formatted(date: .numeric, time: .shortened))
                     .font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 0) {
@@ -238,6 +239,6 @@ private struct FeedbackHistoryRow: View {
                 }
             }
         }
-        .padding(.vertical, DesignSystem.tightPadding)
+        .padding(.vertical, DesignTokens.Spacing.tightPadding)
     }
 }

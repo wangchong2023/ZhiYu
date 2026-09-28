@@ -12,6 +12,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 搜索诊断面板私有常量
 private enum SearchDiagConstants {
@@ -31,21 +32,21 @@ struct PagePreviewSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.large) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
                     // ── 顶部物理解耦卡片横幅 ──
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         HStack {
                             Image(systemName: page.displayIcon)
                                 .font(.title)
                                 .foregroundStyle(page.pageType.color)
-                                .padding(DesignSystem.small)
-                                .background(page.pageType.color.opacity(DesignSystem.Opacity.glass))
+                                .padding(DesignTokens.Spacing.small)
+                                .background(page.pageType.color.opacity(DesignTokens.Opacity.glass))
                                 .clipShape(Circle())
                             
                             Spacer()
                             
                             // 状态与置信度胶囊
-                            HStack(spacing: DesignSystem.tiny) {
+                            HStack(spacing: DesignTokens.Spacing.tiny) {
                                 statusPill(text: page.status.displayName, color: page.status.color)
                                 statusPill(text: page.confidence.displayName, color: page.confidence.color)
                             }
@@ -55,41 +56,41 @@ struct PagePreviewSheet: View {
                             .font(.title)
                             .bold()
                             .foregroundStyle(.primary)
-                            .padding(.top, DesignSystem.tiny)
+                            .padding(.top, DesignTokens.Spacing.tiny)
                         
                         Text(page.pageType.displayName)
                             .font(.caption)
                             .bold()
                             .foregroundStyle(page.pageType.color)
-                            .padding(.horizontal, DesignSystem.small)
-                            .padding(.vertical, SystemSpacing.atomic)
-                            .background(page.pageType.color.opacity(DesignSystem.Opacity.subtle))
-                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.microRadius))
+                            .padding(.horizontal, DesignTokens.Spacing.small)
+                            .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                            .background(page.pageType.color.opacity(DesignTokens.Opacity.subtle))
+                            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius))
                     }
                     .padding()
                     .background(
                         LinearGradient(
                             colors: [
-                                page.pageType.color.opacity(DesignSystem.Opacity.light),
+                                page.pageType.color.opacity(DesignTokens.Opacity.light),
                                 .clear
                             ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.cardRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
                     
                     // ── 标签胶囊流式布局 (使用设计系统内建的 FlowLayout) ──
                     if !page.tags.isEmpty {
-                        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                             Text(L10n.Tag.title)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .bold()
                             
-                            FlowLayout(spacing: DesignSystem.tiny) {
+                            FlowLayout(spacing: DesignTokens.Spacing.tiny) {
                                 ForEach(page.tags, id: \.self) { tag in
-                                    statusPill(text: "#\(tag)", color: .secondary, backgroundOpacity: DesignSystem.Opacity.subtle)
+                                    statusPill(text: "#\(tag)", color: .secondary, backgroundOpacity: DesignTokens.Opacity.subtle)
                                 }
                             }
                         }
@@ -97,7 +98,7 @@ struct PagePreviewSheet: View {
                     }
                     
                     // ── 正文内容预览 ──
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         Text(L10n.Knowledge.Page.content)
                             .font(.headline)
                             .foregroundStyle(.primary)
@@ -116,7 +117,7 @@ struct PagePreviewSheet: View {
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, DesignSystem.huge)
+                    .padding(.bottom, DesignTokens.Spacing.huge)
                 }
             }
             .background(themeManager.pageBackground())
@@ -127,12 +128,12 @@ struct PagePreviewSheet: View {
 
     /// 状态/标签胶囊，消除 status/confidence/tag pill 的重复修饰符链
     @ViewBuilder
-    private func statusPill(text: String, color: Color, backgroundOpacity: Double = DesignSystem.Opacity.glass) -> some View {
+    private func statusPill(text: String, color: Color, backgroundOpacity: Double = DesignTokens.Opacity.glass) -> some View {
         Text(text)
             .font(.caption2)
             .bold()
-            .padding(.horizontal, DesignSystem.small)
-            .padding(.vertical, SystemSpacing.tiny)
+            .padding(.horizontal, DesignTokens.Spacing.small)
+            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
             .background(color.opacity(backgroundOpacity))
             .foregroundStyle(color)
             .clipShape(Capsule())
@@ -150,12 +151,12 @@ struct SearchDiagnosticSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: DesignSystem.large) {
+                VStack(spacing: DesignTokens.Spacing.large) {
                     
                     // ── 1. AI 查询重写诊断卡 ──
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         HStack {
-                            Image(systemName: DesignSystem.Icons.sparkles)
+                            Image(systemName: DesignTokens.Icons.sparkles)
                                 .foregroundStyle(Color.theme.purple)
                                 .font(.headline)
                             Text(L10n.Search.Diag.rewrite)
@@ -164,9 +165,9 @@ struct SearchDiagnosticSheet: View {
                         }
                         
                         Divider()
-                            .background(Color.secondary.opacity(DesignSystem.Opacity.medium))
+                            .background(Color.secondary.opacity(DesignTokens.Opacity.medium))
                         
-                        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                             Text(L10n.Search.Diag.originalQuery)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -175,13 +176,13 @@ struct SearchDiagnosticSheet: View {
                                 .font(.subheadline)
                                 .bold()
                                 .foregroundStyle(.primary)
-                                .padding(DesignSystem.small)
+                                .padding(DesignTokens.Spacing.small)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.secondary.opacity(DesignSystem.Opacity.subtle))
-                                .cornerRadius(DesignSystem.smallRadius)
+                                .background(Color.secondary.opacity(DesignTokens.Opacity.subtle))
+                                .cornerRadius(DesignTokens.Spacing.smallRadius)
                         }
                         
-                        VStack(alignment: .leading, spacing: DesignSystem.tiny) {
+                        VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                             Text(L10n.Search.Diag.rewrittenQuery)
                                 .font(.caption2)
                                 .foregroundStyle(Color.theme.purple)
@@ -190,29 +191,29 @@ struct SearchDiagnosticSheet: View {
                                 .font(.subheadline)
                                 .bold()
                                 .foregroundStyle(Color.theme.purple)
-                                .padding(DesignSystem.small)
+                                .padding(DesignTokens.Spacing.small)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.theme.purple.opacity(DesignSystem.Opacity.subtle))
-                                .cornerRadius(DesignSystem.smallRadius)
+                                .background(Color.theme.purple.opacity(DesignTokens.Opacity.subtle))
+                                .cornerRadius(DesignTokens.Spacing.smallRadius)
                         }
                     }
                     .padding()
                     .background(Color.appCard)
-                    .cornerRadius(DesignSystem.cardRadius)
-                    .shadow(color: DesignSystem.shadowColor.opacity(DesignSystem.Opacity.atomic), radius: DesignSystem.shadowRadius, y: DesignSystem.shadowY)
+                    .cornerRadius(DesignTokens.Spacing.cardRadius)
+                    .shadow(color: DesignTokens.Colors.Opacity.shadowColor.opacity(DesignTokens.Opacity.atomic), radius: DesignTokens.Spacing.shadowRadius, y: DesignTokens.Spacing.shadowY)
                     .padding(.horizontal)
                     
                     // ── 2. 多源召回对比圆环/指标面板 ──
-                    HStack(spacing: DesignSystem.large) {
+                    HStack(spacing: DesignTokens.Spacing.large) {
                         // 全文检索召回卡
                         recallMetricCard(
                             rankLabel: L10n.Search.Diag.ftsRank,
                             count: info.ftsCount,
                             engineLabel: L10n.Search.Diag.ftsEngine,
                             countColor: Color.theme.blue,
-                            engineColor: .blue.opacity(DesignSystem.Opacity.prominent),
-                            gradientColors: [Color.theme.blue.opacity(DesignSystem.Opacity.ghost), Color.theme.blue.opacity(DesignSystem.Opacity.atomic)],
-                            borderColor: Color.theme.blue.opacity(DesignSystem.Opacity.glass)
+                            engineColor: .blue.opacity(DesignTokens.Opacity.prominent),
+                            gradientColors: [Color.theme.blue.opacity(DesignTokens.Opacity.ghost), Color.theme.blue.opacity(DesignTokens.Opacity.atomic)],
+                            borderColor: Color.theme.blue.opacity(DesignTokens.Opacity.glass)
                         )
                         
                         // 向量检索召回卡
@@ -221,17 +222,17 @@ struct SearchDiagnosticSheet: View {
                             count: info.vectorCount,
                             engineLabel: L10n.Search.Diag.vectorEngine,
                             countColor: Color.theme.green,
-                            engineColor: .green.opacity(DesignSystem.Opacity.prominent),
-                            gradientColors: [Color.theme.green.opacity(DesignSystem.Opacity.ghost), Color.theme.green.opacity(DesignSystem.Opacity.atomic)],
-                            borderColor: Color.theme.green.opacity(DesignSystem.Opacity.glass)
+                            engineColor: .green.opacity(DesignTokens.Opacity.prominent),
+                            gradientColors: [Color.theme.green.opacity(DesignTokens.Opacity.ghost), Color.theme.green.opacity(DesignTokens.Opacity.atomic)],
+                            borderColor: Color.theme.green.opacity(DesignTokens.Opacity.glass)
                         )
                     }
                     .padding(.horizontal)
                     
                     // ── 3. RRF (Reciprocal Rank Fusion) 重排精细得分列表 ──
-                    VStack(alignment: .leading, spacing: DesignSystem.small) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         HStack {
-                            Image(systemName: DesignSystem.Icons.listNumber)
+                            Image(systemName: DesignTokens.Icons.listNumber)
                                 .foregroundStyle(Color.theme.orange)
                             Text(L10n.Search.Diag.rrfDetail)
                                 .font(.headline)
@@ -249,24 +250,24 @@ struct SearchDiagnosticSheet: View {
                         } else {
                             VStack(spacing: 0) {
                                 ForEach(Array(info.rrfTopResults.enumerated()), id: \.element.id) { index, item in
-                                    HStack(spacing: DesignSystem.medium) {
+                                    HStack(spacing: DesignTokens.Spacing.medium) {
                                         // 序号标识
                                         Text("\(index + 1)")
                                             .font(.caption)
                                             .bold()
                                             .foregroundStyle(Color.theme.orange)
-                                            .frame(width: DesignSystem.IconSize.standard, height: DesignSystem.IconSize.standard)
-                                            .background(Color.theme.orange.opacity(DesignSystem.Opacity.subtle))
+                                            .frame(width: DesignTokens.IconSize.standard, height: DesignTokens.IconSize.standard)
+                                            .background(Color.theme.orange.opacity(DesignTokens.Opacity.subtle))
                                             .clipShape(Circle())
                                         
-                                        VStack(alignment: .leading, spacing: SystemSpacing.atomic) {
+                                        VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
                                             Text(item.title)
                                                 .font(.subheadline)
                                                 .bold()
                                                 .foregroundStyle(.primary)
                                                 .lineLimit(1)
                                             
-                                            HStack(spacing: DesignSystem.small) {
+                                            HStack(spacing: DesignTokens.Spacing.small) {
                                                 // FTS 排位
                                                 rankBadge(
                                                     prefix: L10n.Search.Diag.ftsPrefix,
@@ -290,26 +291,26 @@ struct SearchDiagnosticSheet: View {
                                             .font(.system(.subheadline, design: .monospaced))
                                             .bold()
                                             .foregroundStyle(Color.theme.orange)
-                                            .padding(.horizontal, DesignSystem.small)
-                                            .padding(.vertical, SystemSpacing.tiny)
-                                            .background(Color.theme.orange.opacity(DesignSystem.Opacity.subtle))
-                                            .cornerRadius(DesignSystem.microRadius)
+                                            .padding(.horizontal, DesignTokens.Spacing.small)
+                                            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
+                                            .background(Color.theme.orange.opacity(DesignTokens.Opacity.subtle))
+                                            .cornerRadius(DesignTokens.Spacing.microRadius)
                                     }
-                                    .padding(.vertical, DesignSystem.small)
+                                    .padding(.vertical, DesignTokens.Spacing.small)
                                     .padding(.horizontal)
                                     
                                     if index < info.rrfTopResults.count - 1 {
                                         Divider()
-                                            .background(Color.secondary.opacity(DesignSystem.Opacity.subtle))
-                                            .padding(.leading, ComponentSpacing.massive)
+                                            .background(Color.secondary.opacity(DesignTokens.Opacity.subtle))
+                                            .padding(.leading, DesignTokens.ComponentSpacing.massive)
                                     }
                                 }
                             }
                             .background(Color.appCard)
-                            .cornerRadius(DesignSystem.cardRadius)
+                            .cornerRadius(DesignTokens.Spacing.cardRadius)
                         }
                     }
-                    .padding(.top, DesignSystem.small)
+                    .padding(.top, DesignTokens.Spacing.small)
                     .padding(.horizontal)
                 }
                 .padding(.vertical)
@@ -331,7 +332,7 @@ struct SearchDiagnosticSheet: View {
         gradientColors: [Color],
         borderColor: Color
     ) -> some View {
-        VStack(spacing: DesignSystem.tiny) {
+        VStack(spacing: DesignTokens.Spacing.tiny) {
             Text(rankLabel)
                 .font(.caption2)
                 .bold()
@@ -354,17 +355,17 @@ struct SearchDiagnosticSheet: View {
                 endPoint: .bottomTrailing
             )
         )
-        .cornerRadius(DesignSystem.cardRadius)
+        .cornerRadius(DesignTokens.Spacing.cardRadius)
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.cardRadius)
-                .stroke(borderColor, lineWidth: DesignSystem.borderWidth)
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
+                .stroke(borderColor, lineWidth: DesignTokens.Spacing.borderWidth)
         )
     }
 
     /// 排位 Badge，消除 FTS/向量排位的重复修饰符链
     @ViewBuilder
     private func rankBadge(prefix: String, rank: Int, activeColor: Color) -> some View {
-        HStack(spacing: SystemSpacing.atomic) {
+        HStack(spacing: DesignTokens.SystemSpacing.atomic) {
             Text(prefix)
             Text(rank > 0 ? "#\(rank)" : L10n.Search.Diag.miss)
         }
