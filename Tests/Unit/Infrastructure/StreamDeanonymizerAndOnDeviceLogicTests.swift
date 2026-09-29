@@ -211,7 +211,7 @@ final class ModelDownloadManagerProgressTests: XCTestCase {
         )
         let stream = await manager.observeDownloadState(for: modelId)
         for await state in stream {
-            if case .downloading(let progress, _) = state {
+            if case .downloading(let progress, _, _, _) = state {
                 XCTAssertEqual(progress, 0.1, accuracy: 0.001)
                 break
             }
@@ -243,7 +243,7 @@ final class ModelDownloadManagerProgressTests: XCTestCase {
         await manager.updateProgress(for: modelId, progress: 0.5)
         let stream = await manager.observeDownloadState(for: modelId)
         for await state in stream {
-            if case .downloading(let progress, _) = state {
+            if case .downloading(let progress, _, _, _) = state {
                 XCTAssertEqual(progress, 0.5, accuracy: 0.001)
                 break
             }

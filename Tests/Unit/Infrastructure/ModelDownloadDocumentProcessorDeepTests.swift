@@ -64,7 +64,7 @@ final class ModelDownloadManagerDeepTests: XCTestCase {
         }
         timeoutTask.cancel()
 
-        if case .downloading(let progress, _) = receivedState {
+        if case .downloading(let progress, _, _, _) = receivedState {
             XCTAssertEqual(progress, 0.25, accuracy: 0.01, "1024/4096 = 0.25")
         } else {
             XCTFail("状态应为 downloading")
@@ -94,7 +94,7 @@ final class ModelDownloadManagerDeepTests: XCTestCase {
         }
         timeoutTask.cancel()
 
-        if case .downloading(let progress, _) = receivedState {
+        if case .downloading(let progress, _, _, _) = receivedState {
             XCTAssertEqual(progress, 0.2, accuracy: 0.01, "200/1000 = 0.2")
         }
     }

@@ -275,12 +275,28 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
             downloadSpeedTrackers[modelId] = SpeedTrackerState(lastBytes: totalBytesWritten, lastTime: now, currentSpeed: 0)
         }
 
-        updateState(for: modelId, to: .downloading(progress: progress, bytesPerSecond: calculatedSpeed))
+        updateState(
+            for: modelId,
+            to: .downloading(
+                progress: progress,
+                bytesPerSecond: calculatedSpeed,
+                downloadedBytes: totalBytesWritten,
+                totalBytes: totalBytesExpectedToWrite
+            )
+        )
     }
 
     /// 更新下载进度百分比 (兼容旧模式)
     public func updateProgress(for modelId: String, progress: Double) {
-        updateState(for: modelId, to: .downloading(progress: progress, bytesPerSecond: 0))
+        updateState(
+            for: modelId,
+            to: .downloading(
+                progress: progress,
+                bytesPerSecond: 0,
+                downloadedBytes: 0,
+                totalBytes: 0
+            )
+        )
     }
     
     /// 完成下载，在沙盒临时路径触发指纹完整性验证

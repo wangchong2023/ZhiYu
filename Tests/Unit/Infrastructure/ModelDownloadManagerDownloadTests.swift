@@ -34,7 +34,7 @@ final class ModelDownloadManagerDownloadTests: XCTestCase {
         // 状态应保持 downloading（未被覆盖为 pending）
         let stream = await manager.observeDownloadState(for: modelId)
         let state = await stream.first { _ in true }
-        if case .downloading(let progress, _) = state {
+        if case .downloading(let progress, _, _, _) = state {
             XCTAssertEqual(progress, 0.5, accuracy: 0.001, "已有 downloading 状态时 startDownload 应直接 return")
         } else {
             XCTFail("状态应保持 .downloading，实际: \(String(describing: state))")
@@ -213,7 +213,7 @@ final class ModelDownloadManagerDownloadTests: XCTestCase {
 
         let stream = await manager.observeDownloadState(for: modelId)
         let state = await stream.first { _ in true }
-        if case .downloading(_, let speed) = state {
+        if case .downloading(_, let speed, _, _) = state {
             // 高频采样时 speed 应为 0（沿用初始化时的 currentSpeed）
             XCTAssertEqual(speed, 0, accuracy: 0.001, "高频采样时应沿用旧 currentSpeed")
         }

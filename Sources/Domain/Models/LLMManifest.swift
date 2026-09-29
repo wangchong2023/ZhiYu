@@ -26,7 +26,7 @@ public struct LLMManifest: Codable, Sendable, Identifiable, Equatable {
     public let vendor: String
     
     /// 模型权重 file 包大小 (单位: 字节)
-    public let fileSizeInBytes: Int64
+    public var fileSizeInBytes: Int64
     
     /// 推荐的物理设备内存门槛限制 (单位: GB，如 8.0, 12.0)
     public let minDeviceMemoryInGb: Double

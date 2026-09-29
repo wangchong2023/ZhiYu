@@ -14,12 +14,51 @@ import Foundation
 /// 任务下载状态枚举
 public enum DownloadState: Codable, Sendable, Equatable {
     case pending         // 等待排队
-    case downloading(progress: Double, bytesPerSecond: Double = 0) // 下载中，附带 0.0 到 1.0 的百分比进度与实时下载速率
+    case downloading(
+        progress: Double,
+        bytesPerSecond: Double = 0,
+        downloadedBytes: Int64 = 0,
+        totalBytes: Int64 = 0
+    ) // 下载中，附带 0.0 到 1.0 的百分比进度、实时速率、已下载字节数与期望总字节数
     case paused          // 暂停中 (包含断点续传数据已捕获)
     case verifying       // 校验签名与指纹中 (100% 下载完成)
     case completed(localURL: URL) // 下载且校验完成，模型已安全移入沙盒 Document 目录
     case cancelled       // 用户主动取消下载
     case failed(error: String)  // 下载或校验失败，记录异常信息
+
+    // MARK: - 便捷计算属性
+
+    /// 下载进度百分比（0.0 ~ 1.0），非 downloading 状态返回 nil
+    public var progress: Double? {
+        if case .downloading(let progress, _, _, _) = self {
+            return progress
+        }
+        return nil
+    }
+
+    /// 实时下载速率（字节/秒），非 downloading 状态返回 nil
+    public var bytesPerSecond: Double? {
+        if case .downloading(_, let bytesPerSecond, _, _) = self {
+            return bytesPerSecond
+        }
+        return nil
+    }
+
+    /// 已下载字节数，非 downloading 状态返回 nil
+    public var downloadedBytes: Int64? {
+        if case .downloading(_, _, let downloadedBytes, _) = self {
+            return downloadedBytes
+        }
+        return nil
+    }
+
+    /// 文件总字节数（来自网络握手 Content-Length），非 downloading 状态返回 nil
+    public var totalBytes: Int64? {
+        if case .downloading(_, _, _, let totalBytes) = self {
+            return totalBytes
+        }
+        return nil
+    }
 }
 
 /// 大模型权重后台静默下载能力契约

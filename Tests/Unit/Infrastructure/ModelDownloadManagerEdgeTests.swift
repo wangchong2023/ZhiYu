@@ -102,7 +102,7 @@ final class ModelDownloadManagerEdgeTests: XCTestCase {
         let stream = await manager.observeDownloadState(for: modelId)
         var firstProgress: Double = 0
         for await state in stream {
-            if case let .downloading(progress, _) = state {
+            if case let .downloading(progress, _, _, _) = state {
                 firstProgress = progress
                 break
             }

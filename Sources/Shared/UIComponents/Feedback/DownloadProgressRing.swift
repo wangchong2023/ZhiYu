@@ -30,7 +30,7 @@ public struct DownloadProgressRing: View {
     }
 
     private var clampedProgress: Double {
-        if case .downloading(let p, _) = state {
+        if let p = state.progress {
             return min(max(p, 0), 1)
         }
         return lastProgress
@@ -66,12 +66,12 @@ public struct DownloadProgressRing: View {
         }
         .frame(width: size, height: size)
         .onChange(of: state) { _, newState in
-            if case .downloading(let p, _) = newState {
+            if let p = newState.progress {
                 lastProgress = p
             }
         }
         .onAppear {
-            if case .downloading(let p, _) = state {
+            if let p = state.progress {
                 lastProgress = p
             }
             if isIndeterminate {

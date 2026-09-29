@@ -55,10 +55,10 @@ struct ModelDownloadStatusBar: View {
     @ViewBuilder
     private func statusLabel(for state: DownloadState) -> some View {
         switch state {
-        case .downloading(let progress, let speed):
-            let totalBytes = manifest.fileSizeInBytes
-            let downloadedBytes = Int64(Double(totalBytes) * progress)
-            let progressText = ByteFormatter.formatProgress(downloadedBytes: downloadedBytes, totalBytes: totalBytes)
+        case .downloading(let progress, let speed, let stateDownloadedBytes, let stateTotalBytes):
+            let effectiveTotalBytes: Int64 = stateTotalBytes > 0 ? stateTotalBytes : manifest.fileSizeInBytes
+            let effectiveDownloadedBytes: Int64 = stateDownloadedBytes > 0 ? stateDownloadedBytes : Int64(Double(effectiveTotalBytes) * progress)
+            let progressText = ByteFormatter.formatProgress(downloadedBytes: effectiveDownloadedBytes, totalBytes: effectiveTotalBytes)
             let speedText = bytesLabelWithSpeed(progressText: progressText, speed: speed)
             Text(speedText)
                 .font(.caption.bold())

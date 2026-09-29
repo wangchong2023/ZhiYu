@@ -221,8 +221,10 @@ final class ModelDownloadManagerStateTests: XCTestCase {
         let stream = await manager.observeDownloadState(for: modelId)
         let state = await stream.first { _ in true }
 
-        if case .downloading(let progress, _) = state {
+        if case .downloading(let progress, _, let downloadedBytes, let totalBytes) = state {
             XCTAssertEqual(progress, 0.5, accuracy: 0.001, "进度应为 0.5")
+            XCTAssertEqual(downloadedBytes, 500, "已下载字节应为 500")
+            XCTAssertEqual(totalBytes, 1000, "期望总字节应为 1000")
         } else {
             XCTFail("应为 .downloading 状态，实际: \(String(describing: state))")
         }
@@ -246,7 +248,7 @@ final class ModelDownloadManagerStateTests: XCTestCase {
         let stream = await manager.observeDownloadState(for: modelId)
         let state = await stream.first { _ in true }
 
-        if case .downloading(_, let speed) = state {
+        if case .downloading(_, let speed, _, _) = state {
             // 500 bytes / 0.6 seconds ≈ 833 bytes/sec
             XCTAssertGreaterThan(speed, 0, "速度应大于 0")
         }

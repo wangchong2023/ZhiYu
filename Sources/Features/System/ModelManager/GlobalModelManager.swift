@@ -193,60 +193,72 @@ public final class GlobalModelManager: TestStateResettable {
         let currentFlags = downloadedModelIds
         
         for manifest in remoteManifests {
-            let modelId = manifest.modelId
-            let fileURL = documentDirectory.appendingPathComponent("\(modelId).bin")
-            
-            var isFileValid = false
-            let hasFile = FileManager.default.fileExists(atPath: fileURL.path)
-            
-            if hasFile {
-                do {
-                    let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
-                    let fileSize = (attributes[.size] as? Int64) ?? 0
-                    let expectedSize = manifest.fileSizeInBytes
-                    
-                    if fileSize > 0 && (expectedSize <= 0 || fileSize == expectedSize) {
-                        isFileValid = true
-                        modelStorageUsage[modelId] = fileSize
-                        // 物理文件合法非空，自动自愈补齐持久化 Flag
-                        markModelAsDownloaded(modelId)
-                    } else {
-                        // 物理文件为 0 字节或大小不匹配：强力删除物理残留坏包并移除标志
-                        try? FileManager.default.removeItem(at: fileURL)
-                        modelStorageUsage.removeValue(forKey: modelId)
-                        markModelAsRemoved(modelId)
-                        Logger.shared.warning("[GlobalModelManager] 物理清理损坏/大小不匹配的大模型文件: \(modelId) (实际: \(fileSize) B, 期望: \(expectedSize) B)")
-                    }
-                } catch {
-                    Logger.shared.error("[GlobalModelManager] 校验模型权重文件属性失败: \(modelId)，错误: \(error.localizedDescription)")
-                }
-            } else if currentFlags.contains(modelId) {
-                // 若磁盘文件已被物理清理，同步移除已失效的持久化 Flag
+            syncLocalModelState(for: manifest, directory: documentDirectory, currentFlags: currentFlags)
+        }
+    }
+
+    /// 校验并对齐单个大模型在本地沙盒中的物理状态
+    private func syncLocalModelState(for manifest: LLMManifest, directory: URL, currentFlags: Set<String>) {
+        let modelId = manifest.modelId
+        let fileURL = directory.appendingPathComponent("\(modelId).bin")
+
+        let isFileValid = validateAndAlignDiskFile(manifest: manifest, fileURL: fileURL, currentFlags: currentFlags)
+
+        if isFileValid {
+            downloadStates[modelId] = .completed(localURL: fileURL)
+        } else {
+            alignIncompleteDownloadState(for: modelId)
+        }
+    }
+
+    /// 校验沙盒物理权重文件合法性并执行自愈与坏包清理
+    private func validateAndAlignDiskFile(manifest: LLMManifest, fileURL: URL, currentFlags: Set<String>) -> Bool {
+        let modelId = manifest.modelId
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            if currentFlags.contains(modelId) {
                 markModelAsRemoved(modelId)
             }
-            
-            // 物理文件校验合法才认定为完成
-            if isFileValid {
-                downloadStates[modelId] = .completed(localURL: fileURL)
+            return false
+        }
+
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+            let fileSize = (attributes[.size] as? Int64) ?? 0
+            let expectedSize = manifest.fileSizeInBytes
+
+            if fileSize > 0 && (expectedSize <= 0 || fileSize == expectedSize) {
+                modelStorageUsage[modelId] = fileSize
+                markModelAsDownloaded(modelId)
+                if let index = self.remoteManifests.firstIndex(where: { $0.modelId == modelId }), self.remoteManifests[index].fileSizeInBytes == 0 {
+                    self.remoteManifests[index].fileSizeInBytes = fileSize
+                }
+                return true
             } else {
-                // 文件不存在或无效，降级为未下载状态（若处于下载中则保持）
-                let currentState = downloadStates[modelId]
-                let isDownloadingOrActive: Bool
-                if let state = currentState {
-                    switch state {
-                    case .downloading, .paused, .pending, .verifying:
-                        isDownloadingOrActive = true
-                    default:
-                        isDownloadingOrActive = false
-                    }
-                } else {
-                    isDownloadingOrActive = false
-                }
-                
-                if !isDownloadingOrActive {
-                    downloadStates[modelId] = .failed(error: FeatureConstants.MockData.notDownloaded)
-                }
+                try? FileManager.default.removeItem(at: fileURL)
+                modelStorageUsage.removeValue(forKey: modelId)
+                markModelAsRemoved(modelId)
+                Logger.shared.warning("[GlobalModelManager] 物理清理损坏/大小不匹配的大模型文件: \(modelId) (实际: \(fileSize) B, 期望: \(expectedSize) B)")
+                return false
             }
+        } catch {
+            Logger.shared.error("[GlobalModelManager] 校验模型权重文件属性失败: \(modelId)，错误: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    /// 对齐未完成或无效模型的下载状态
+    private func alignIncompleteDownloadState(for modelId: String) {
+        let currentState = downloadStates[modelId]
+        let isDownloadingOrActive: Bool
+        switch currentState {
+        case .downloading, .paused, .pending, .verifying:
+            isDownloadingOrActive = true
+        default:
+            isDownloadingOrActive = false
+        }
+
+        if !isDownloadingOrActive {
+            downloadStates[modelId] = .failed(error: FeatureConstants.MockData.notDownloaded)
         }
     }
     
@@ -323,6 +335,14 @@ public final class GlobalModelManager: TestStateResettable {
                 // 确保在主线程更新 `@Observable` 响应式状态以驱动 UI 安全重绘
                 await MainActor.run {
                     self.downloadStates[modelId] = state
+                    // 当握手到真实网络文件大小时，动态更新本地清单中的 fileSizeInBytes
+                    if case .downloading(_, _, _, let totalBytes) = state, totalBytes > 0 {
+                        if let index = self.remoteManifests.firstIndex(where: { $0.modelId == modelId }) {
+                            if self.remoteManifests[index].fileSizeInBytes == 0 || self.remoteManifests[index].fileSizeInBytes != totalBytes {
+                                self.remoteManifests[index].fileSizeInBytes = totalBytes
+                            }
+                        }
+                    }
                     if case .completed = state {
                         self.markModelAsDownloaded(modelId)
                     }

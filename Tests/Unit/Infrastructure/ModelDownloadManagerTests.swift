@@ -124,7 +124,7 @@ final class ModelDownloadManagerTests: XCTestCase {
 
         Task {
             for await state in stream {
-                if case .downloading(let progress, _) = state {
+                if case .downloading(let progress, _, _, _) = state {
                     XCTAssertEqual(progress, 0.1, accuracy: 0.001)
                     expectation.fulfill()
                     return
@@ -157,7 +157,7 @@ final class ModelDownloadManagerTests: XCTestCase {
 
         Task {
             for await state in stream {
-                if case .downloading(let progress, let speed) = state {
+                if case .downloading(let progress, let speed, _, _) = state {
                     XCTAssertEqual(progress, 0.5, accuracy: 0.001)
                     XCTAssertEqual(speed, 0)
                     expectation.fulfill()

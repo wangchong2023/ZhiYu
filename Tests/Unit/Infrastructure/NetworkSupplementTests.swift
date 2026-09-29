@@ -40,7 +40,7 @@ final class NetworkSupplementTests: XCTestCase {
         let original: DownloadState = .downloading(progress: 0.3)
         let data = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(DownloadState.self, from: data)
-        if case .downloading(let progress, let bps) = decoded {
+        if case .downloading(let progress, let bps, _, _) = decoded {
             XCTAssertEqual(progress, 0.3, accuracy: 0.001)
             XCTAssertEqual(bps, 0.0, accuracy: 0.001)
         } else {
