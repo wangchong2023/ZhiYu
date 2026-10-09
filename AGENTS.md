@@ -25,6 +25,7 @@
 | `Docs/Architecture/ADR.md` | 架构决策记录（ADR-001~012） |
 | `Docs/Architecture/AUTH_ARCHITECTURE.md` | 认证架构与多平台登录流程 |
 | `Docs/Architecture/CI_CD_WORKFLOW.md` | CI/CD 流水线与构建部署、Git 分支管理与 MR 卡控规范（对齐 ZhiYu-Backend） |
+| `Docs/Architecture/RELEASE_GOVERNANCE.md` | 🆕 发布治理规范（发布门禁矩阵 12 项、发布分支治理、热修复治理、发布后审计、Agent 发布行为约束） |
 | `Docs/Guides/srp-file-organization.md` | 🆕 SRP 文件拆分原则、重构方法论、View/Service 拆分模式 |
 | `Docs/Design/DATABASE_SCHEMA.md` | 完整 DDL、ER 关系、索引设计 |
 | `Docs/Design/DETAILED_DESIGN.md` | 详细设计（模块级接口与数据流） |
@@ -41,6 +42,7 @@
 | `Docs/Requirements/SOFTWARE_REQUIREMENTS_SPECIFICATION.md` | 软件需求规格说明 |
 | `Docs/Requirements/ROADMAP.md` | 版本路线图 |
 | `Docs/Testing/TEST_CASES.md` | 各模块测试用例 |
+| `Docs/Testing/TEST_CASE_STANDARDS.md` | 🆕 测试用例编写规范（FIRST/AAA/ISTQB设计技术/测试替身/腐化预防/评审清单） |
 | `Docs/Testing/UNIT_TEST_GUIDE.md` | 单元测试编写指南 |
 | `Docs/Testing/TEST_DRIVEN_FINDINGS.md` | 🆕 测试驱动发现问题台账（含序号、问题描述、严重程度、修改方案、是否解决） |
 | `Docs/Testing/COVERAGE_REPORT.md` | 🆕 代码覆盖率与测试质量报告（SonarQube 标准） |
