@@ -277,6 +277,8 @@ public struct AppConstants {
             // ── 认证与会话 ──
             public static let authIsAuthenticated = "auth.isAuthenticated"
             public static let authIsGuest = "auth.isGuest"
+            /// 本地头像 Base64 Data URL（不再回传后端，仅本地持久化）
+            public static let authAvatarDataURL = "auth.avatarDataURL"
             
             // ── 笔记本与知识库 ──
             public static let vaultsList = "vaults.list"

@@ -12,6 +12,7 @@
 import Foundation
 import UFPCore
 import Observation
+import Dependencies
 
 /// 身份认证服务
 /// 负责管理应用的访问权限，支持多种登录方式及游客模式。
@@ -41,6 +42,9 @@ public final class AuthService: AuthServiceProtocol {
     public static let shared = AuthService()
     
     private init() {}
+
+    /// 键值存储抽象（DI 注入，替代 UserDefaults.standard 直接访问）
+    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     // MARK: - 测试辅助
 
@@ -159,7 +163,8 @@ public final class AuthService: AuthServiceProtocol {
             let birthday: String?
         }
         
-        let req = ProfileUpdateRequest(nick: nickname, avatar: avatar, gender: gender, birthday: birthday)
+        // 头像已改为本地 Base64 Data URL 持久化，不再回传后端，故 avatar 置 nil（JSONEncoder 对 nil 可选字段自动省略该键）
+        let req = ProfileUpdateRequest(nick: nickname, avatar: nil, gender: gender, birthday: birthday)
         do {
             let response: UserProfileResponse = try await NetworkClient.shared.request(
                 path: APIPaths.userProfilePath,
@@ -168,14 +173,14 @@ public final class AuthService: AuthServiceProtocol {
                 requiresAuth: true
             )
             
-            // 更新本地用户信息
+            // 更新本地用户信息（头像改为本地 Data URL 维护，保留现有本地头像，不回写后端返回值，避免覆盖本地头像）
             if let user = AuthSession.shared.currentUser {
                 let updated = updatedUser(
                     from: user,
                     name: response.nick,
                     email: response.email ?? user.email,
                     phone: response.mobile ?? user.phone,
-                    avatarURL: response.avatar.flatMap { URL(string: $0) },
+                    avatarURL: user.avatarURL,
                     gender: response.gender,
                     birthday: response.birthday
                 )
@@ -201,14 +206,30 @@ public final class AuthService: AuthServiceProtocol {
         
         do {
             // 调用 NetworkClient 的 multipart 上传接口
-            let avatarUrl: String = try await NetworkClient.shared.uploadFile(
+            _ = try await NetworkClient.shared.uploadFile(
                 path: APIPaths.avatarUploadPath,
                 fileData: imageData,
                 fileName: AppConstants.Network.avatarFileName,
                 mimeType: AppConstants.Network.avatarMimeType,
                 requiresAuth: true
             )
-            return avatarUrl
+            // 头像改为本地 Base64 Data URL 持久化：构建 Data URL 存储到 UserDefaults，不再回传后端
+            let dataURL = "data:\(AppConstants.Network.avatarMimeType);base64,\(imageData.base64EncodedString())"
+            keyStore?.set(dataURL, forKey: AppConstants.Keys.Storage.authAvatarDataURL)
+            // 同步更新本地用户头像，使视图层立即渲染新头像
+            if let user = AuthSession.shared.currentUser {
+                let updated = updatedUser(
+                    from: user,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    avatarURL: URL(string: dataURL),
+                    gender: user.gender,
+                    birthday: user.birthday
+                )
+                AuthSession.shared.update(user: updated)
+            }
+            return dataURL
         } catch {
             Logger.shared.error("[AuthService] 上传头像失败: ", error: error)
             return nil

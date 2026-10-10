@@ -356,12 +356,9 @@ public struct UserProfileView: View {
             presentToast(L10n.Auth.uploadingAvatar)
             do {
                 if let data = try await item.loadTransferable(type: Data.self) {
-                    if let avatarURL = await authService.uploadAvatar(imageData: data) {
-                        let success = await authService.updateUserProfile(
-                            nickname: nickname,
-                            avatar: avatarURL
-                        )
-                        presentToast(success ? L10n.Auth.uploadSuccess : L10n.Auth.uploadFailed)
+                    // 头像已由 uploadAvatar 内部本地持久化为 Base64 Data URL 并更新本地用户，不再回传后端
+                    if await authService.uploadAvatar(imageData: data) != nil {
+                        presentToast(L10n.Auth.uploadSuccess)
                     } else {
                         presentToast(L10n.Auth.uploadFailed)
                     }
@@ -377,14 +374,13 @@ public struct UserProfileView: View {
     private func handleProfileSave() {
         Task {
             isSaving = true
-            let avatarString = authService.currentUser?.avatarURL?.absoluteString
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
             let birthdayString = formatter.string(from: birthday)
             
             let success = await authService.updateUserProfile(
                 nickname: nickname,
-                avatar: avatarString,
+                avatar: nil,
                 gender: gender,
                 birthday: birthdayString
             )
