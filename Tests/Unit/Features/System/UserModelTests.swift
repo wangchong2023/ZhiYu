@@ -25,7 +25,7 @@ final class UserModelTests: XCTestCase {
     }
 
     func testDefaultQuotas_proValues() {
-        XCTAssertEqual(User.DefaultQuotas.proMaxVaults, 100)
+        XCTAssertEqual(User.DefaultQuotas.proMaxVaults, 10)
         XCTAssertEqual(User.DefaultQuotas.proMaxPages, 50000)
         XCTAssertEqual(User.DefaultQuotas.proMaxPlugins, 999999)
     }

@@ -96,7 +96,7 @@ public struct User: Codable, Identifiable, Sendable {
         public static let freeMaxPages = 1000
         public static let freeMaxPlugins = 3
         
-        public static let proMaxVaults = 100
+        public static let proMaxVaults = 10
         public static let proMaxPages = 50000
         public static let proMaxPlugins = 999999
 

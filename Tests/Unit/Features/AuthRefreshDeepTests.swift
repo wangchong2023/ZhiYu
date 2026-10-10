@@ -212,7 +212,22 @@ final class AuthRefreshDeepTests: XCTestCase {
                 ]
                 return (response, try JSONSerialization.data(withJSONObject: json))
             } else if request.url?.path == APIPaths.subscriptionsMePath {
-                let quotas = ["max_vaults_count": 100, "max_knowledge_pages": 50000, "max_plugins": 999999]
+                let quotas = [
+                    "max_knowledge_pages": User.DefaultQuotas.proMaxPages,
+                    "max_vaults_count": User.DefaultQuotas.proMaxVaults,
+                    "max_file_size_mb": 50,
+                    "daily_ai_messages": -1,
+                    "cloud_llm_models_enabled": true,
+                    "vector_search_enabled": true,
+                    "graph_advanced_enabled": false,
+                    "audio_overview_enabled": false,
+                    "large_attachment_sync": true,
+                    "advanced_export_enabled": true,
+                    "spotlight_indexing_enabled": true,
+                    "pro_plugins_enabled": true,
+                    "custom_local_llm_enabled": true,
+                    "ad_free_enabled": true
+                ]
                 let quotasData = try JSONSerialization.data(withJSONObject: quotas)
                 let quotasJson = String(data: quotasData, encoding: .utf8) ?? ""
                 let json: [String: Any] = [
