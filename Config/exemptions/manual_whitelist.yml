@@ -161,6 +161,204 @@ concept_words:
   expiry_check: false
   category:
   - doc-drift
+- symbol: APIResponse
+  reason: 文档规范中规划的统一响应泛型，尚未在代码中定义
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: At
+  reason: 测试命名规范示例词（test_X_At_Y），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: AtMaxLength
+  reason: 测试命名规范示例词（test_X_AtMaxLength），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ChatStore
+  reason: 文档规范示例组件名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DispatchSemaphore
+  reason: Apple 测试并发示例符号，非项目代码引用
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Exceeds
+  reason: 测试命名规范示例词（test_X_Exceeds_Y），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ExceedsMaxLength
+  reason: 测试命名规范示例词（test_X_ExceedsMaxLength），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Fake
+  reason: 替身命名规范示例前缀（Fake 前缀），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: FakeEmbeddingProvider
+  reason: 替身命名规范示例类名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Given
+  reason: BDD 测试命名规范示例词（Given_When_Then），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: InMemory
+  reason: 替身命名规范示例前缀（InMemory 前缀），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: InMemoryPageStore
+  reason: 替身命名规范示例类名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: MockPageStore
+  reason: 替身命名规范示例类名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ModuleRegistrar
+  reason: 文档规范中规划的平台宏收敛文件，尚未在代码中定义
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Should
+  reason: 测试命名规范示例词（test_X_Should_Y），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ShouldNot
+  reason: 测试命名规范示例词（test_X_ShouldNot_Y），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ShouldNotDeadlock
+  reason: 测试命名规范示例方法名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ShouldReturnNewPage
+  reason: 测试命名规范示例方法名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ShouldThrow
+  reason: 测试命名规范示例方法名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ShouldThrowNotFoundError
+  reason: 测试命名规范示例方法名，非真实代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: StubXxx
+  reason: 替身命名规范示例占位词（禁止使用），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: Tests
+  reason: 测试目录概念词，非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TestXxx
+  reason: 替身命名规范示例占位词（禁止使用），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TOKEN_SUGGESTIONS
+  reason: 文档规范中规划的建议 Token 映射表，尚未落地
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UNSUPPORTED_PAYMENT_CHANNEL
+  reason: 文档规范中规划的支付渠道错误码常量，尚未在代码中定义
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: When
+  reason: BDD 测试命名规范示例词（Given_When_Then），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: WhenConcurrent
+  reason: 测试命名规范示例词（test_X_WhenConcurrent），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: With
+  reason: 测试命名规范示例词（test_X_With_Y），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: WithEmptyQuery
+  reason: 测试命名规范示例词（test_X_WithEmptyQuery），非 Swift 类型
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTMeasureOptions
+  reason: Apple XCTest 性能测试类型，非项目代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTMetric
+  reason: Apple XCTest 性能测试类型，非项目代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTSkip
+  reason: Apple XCTest 跳过测试 API，非项目代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: XCTUnwrap
+  reason: Apple XCTest 解包 API，非项目代码符号
+  added: 2026-10-10
+  expiry_check: false
+  category:
+  - doc-drift
 sql_artifacts:
 - symbol: v1_initial
   reason: 数据库迁移版本号
