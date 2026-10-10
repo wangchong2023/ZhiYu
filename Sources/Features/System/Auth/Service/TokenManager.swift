@@ -159,7 +159,7 @@ extension AuthService {
         )
 
         var currentPlanKey: String? = PlanKey.free
-        var parsedQuotas: RefreshPlanQuotas?
+        var parsedQuotas: PlanQuotasVo?
         var parsedFeatures: [String] = []
 
         do {
@@ -172,7 +172,7 @@ extension AuthService {
 
             if let quotasStr = sub.quotasJson {
                 let data = Data(quotasStr.utf8)
-                parsedQuotas = try? JSONDecoder().decode(RefreshPlanQuotas.self, from: data)
+                parsedQuotas = try? JSONDecoder().decode(PlanQuotasVo.self, from: data)
             }
 
             if let featuresStr = sub.featuresJson {
@@ -188,12 +188,10 @@ extension AuthService {
         // 3. 合并更新本地 User 对象
         if let user = AuthSession.shared.currentUser {
             // 如果后端未返回或解析失败，默认给与 Lite (free) 的限制以策安全
-            let defaultLiteQuotas = RefreshPlanQuotas(
-                maxVaults: User.DefaultQuotas.liteMaxVaults,
-                maxPages: User.DefaultQuotas.liteMaxPages,
-                maxPlugins: User.DefaultQuotas.liteMaxPlugins
-            )
-            let quotasToUse = parsedQuotas ?? defaultLiteQuotas
+            let quotasToUse = parsedQuotas ?? PlanQuotasVo.createLiteDefault
+
+            // 将生效配额同步至 FeatureGateManager，驱动全局能力门禁与离线配额缓存
+            FeatureGateManager.shared.updateActiveQuotas(quotasToUse)
 
             let updated = User(
                 id: user.id,
@@ -202,9 +200,9 @@ extension AuthService {
                 phone: profile.mobile.flatMap { $0.isEmpty ? nil : $0 } ?? user.phone,
                 avatarURL: profile.avatar.flatMap { $0.isEmpty ? nil : URL(string: $0) } ?? user.avatarURL,
                 planKey: currentPlanKey,
-                maxVaults: quotasToUse.maxVaults,
-                maxPages: quotasToUse.maxPages,
-                maxPlugins: quotasToUse.maxPlugins,
+                maxVaults: quotasToUse.maxVaultsCount,
+                maxPages: quotasToUse.maxKnowledgePages,
+                maxPlugins: 999,
                 features: parsedFeatures
             )
             AuthSession.shared.update(user: updated)
@@ -229,17 +227,4 @@ private struct RefreshSubscriptionResponse: Codable {
     let planKey: String?
     let quotasJson: String?
     let featuresJson: String?
-}
-
-/// 用户订阅配置限额详情
-private struct RefreshPlanQuotas: Codable {
-    let maxVaults: Int
-    let maxPages: Int
-    let maxPlugins: Int
-
-    enum CodingKeys: String, CodingKey {
-        case maxVaults = "max_vaults"
-        case maxPages = "max_pages"
-        case maxPlugins = "max_plugins"
-    }
 }
