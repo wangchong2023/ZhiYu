@@ -314,8 +314,8 @@ final class APIPathsTests: XCTestCase {
 
     /// 验证用户 API 路径
     func testUserAPIPaths() {
-        XCTAssertEqual(APIPaths.userProfilePath, "/api/v1/user/profile")
-        XCTAssertEqual(APIPaths.avatarUploadPath, "/api/v1/user/profile/avatar")
+        XCTAssertEqual(APIPaths.userProfilePath, "/api/v1/auth/user/profile")
+        XCTAssertEqual(APIPaths.avatarUploadPath, "/api/v1/auth/user/profile/avatar")
     }
 
     /// 验证订阅 API 路径

@@ -448,7 +448,7 @@ final class AuthServiceTests: XCTestCase {
                 headerFields: ["Content-Type": "application/json"]
             ))
 
-            if request.url?.path == "/api/v1/user/profile" {
+            if request.url?.path == "/api/v1/auth/user/profile" {
                 // 后端返回空字符串 email 和 mobile
                 let json: [String: Any] = [
                     "code": 0,
@@ -517,7 +517,7 @@ final class AuthServiceTests: XCTestCase {
                 headerFields: ["Content-Type": "application/json"]
             ))
 
-            if request.url?.path == "/api/v1/user/profile" {
+            if request.url?.path == "/api/v1/auth/user/profile" {
                 let json: [String: Any] = [
                     "code": 0,
                     "message": "success",

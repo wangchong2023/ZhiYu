@@ -155,7 +155,7 @@ public final class AuthService: AuthServiceProtocol {
         }
         #endif
         
-        // 实际请求后端 PUT /api/v1/user/profile 更新昵称和头像
+        // 实际请求后端 PUT /api/v1/auth/user/profile 更新昵称和头像
         struct ProfileUpdateRequest: Codable {
             let nick: String
             let avatar: String?
