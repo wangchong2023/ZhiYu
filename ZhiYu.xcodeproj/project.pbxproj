@@ -2230,6 +2230,7 @@
 		C0E7C9FE8591F414BECBBCC4 /* testCollabRoleBadgeThreeRoles.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 04B2A6F873E7452F3A60916A /* testCollabRoleBadgeThreeRoles.1.png */; };
 		C12A5C02121BE11F9F549079 /* testAuthViewDefaultChinaRegion.1.png in Resources */ = {isa = PBXBuildFile; fileRef = C30EF9975D5CC1978B3917C5 /* testAuthViewDefaultChinaRegion.1.png */; };
 		C131AF5C1C3188C96A99B967 /* AuthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3741886E88A7A728507E1E7 /* AuthUITests.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* AuthRealBackendUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E6F708192A3B4C5D6E7F80 /* AuthRealBackendUITests.swift */; };
 		C14F57423075483FABE68F4A /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AD8F8969EFF35350ADACC3B /* AuthView.swift */; };
 		C158CF7AAE884D893FB745ED /* IngestPipelineConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A20125A434B445982AC52DB /* IngestPipelineConstants.swift */; };
 		C17EE761C5D4A8017DBBDBF3 /* PageType+GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6015F67B118E4ADFE528C3 /* PageType+GRDB.swift */; };
@@ -4550,6 +4551,7 @@
 		C34F21022BCCC9147ED1156A /* testQuizView_EmptyQuestions_RendersUnavailableState.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testQuizView_EmptyQuestions_RendersUnavailableState.1.png; sourceTree = "<group>"; };
 		C35E21BE89F05B8C8E54C583 /* iOSReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSReminderService.swift; sourceTree = "<group>"; };
 		C3741886E88A7A728507E1E7 /* AuthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUITests.swift; sourceTree = "<group>"; };
+		D5E6F708192A3B4C5D6E7F80 /* AuthRealBackendUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthRealBackendUITests.swift; sourceTree = "<group>"; };
 		C38E641235EECC22B0A1145D /* KnowledgeRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeRepository.swift; sourceTree = "<group>"; };
 		C3A23B6E84B4C8880DE6B316 /* testEntityDetailBodyView_NoFrontmatter.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testEntityDetailBodyView_NoFrontmatter.1.png; sourceTree = "<group>"; };
 		C3AF0BF37240ED5E5E04AAE3 /* LLMContextBuilderSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMContextBuilderSupplementTests.swift; sourceTree = "<group>"; };
@@ -6184,6 +6186,7 @@
 			children = (
 				18474C2C76E3C127CADF4E1F /* AISettingsTabSwitchingUITests.swift */,
 				C3741886E88A7A728507E1E7 /* AuthUITests.swift */,
+				D5E6F708192A3B4C5D6E7F80 /* AuthRealBackendUITests.swift */,
 				8AACB1253A863C68867FEA34 /* BaseUITestCase.swift */,
 				9E6D37A560B44740A5207FDB /* GraphUITests.swift */,
 				5695E85C3C97CEC9DC7F5602 /* IngestUITests.swift */,
@@ -11790,6 +11793,7 @@
 			files = (
 				D70BF12B6FC0204C7936F21B /* AISettingsTabSwitchingUITests.swift in Sources */,
 				C131AF5C1C3188C96A99B967 /* AuthUITests.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* AuthRealBackendUITests.swift in Sources */,
 				37786CFCA8641CCC5E487E2A /* BaseUITestCase.swift in Sources */,
 				7DE36876A9AA1ABEEA251BBD /* GraphUITests.swift in Sources */,
 				9863B800C8BD496A9CC9F9F8 /* IngestUITests.swift in Sources */,

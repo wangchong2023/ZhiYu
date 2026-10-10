@@ -158,8 +158,10 @@ struct ContentView: View {
         .onAppear {
             // 🎬 正常应用启动时，若处于未登录状态且非游客模式且非 UI 测试环境，自动尝试恢复本地 KeyChain Token 并登录
             let isTesting = TestModeDetector.isUITesting
+            // 真实后端联调：UI 测试经 launchEnvironment 注入 accessToken 时允许自动恢复会话（非 mock）。
+            let injectedRealToken = !(ProcessInfo.processInfo.environment["UITest_InjectAccessToken"] ?? "").isEmpty
             // Bug #72 修复：用标志位防重入，避免 onAppear 多次触发时重复登录。
-            if !authSession.isLoggedIn && !authSession.isGuest && !isTesting && !hasAttemptedAutoLogin {
+            if !authSession.isLoggedIn && !authSession.isGuest && (!isTesting || injectedRealToken) && !hasAttemptedAutoLogin {
                 hasAttemptedAutoLogin = true
                 Task {
                     _ = await authService.tryAutoLogin()

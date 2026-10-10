@@ -175,6 +175,17 @@ struct AppLauncher {
                 Logger.shared.info("[AppLauncher] Detected --reset-auth-state. Cleared auth state.")
             }
             
+            #if DEBUG
+            // 真实后端联调 UI 测试：通过 launchEnvironment 注入已换取的真实 accessToken，
+            // 写入 Keychain 后由 ContentView 的 tryAutoLogin() 走真实后端恢复会话（非 mock）。
+            // 仅 DEBUG 生效；生产构建无此分支。
+            let injectedToken = ProcessInfo.processInfo.environment["UITest_InjectAccessToken"] ?? ""
+            if !injectedToken.isEmpty {
+                try? KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: injectedToken)
+                Logger.shared.info("[AppLauncher] Injected UI-test access token for real-backend integration.")
+            }
+            #endif
+            
             if CommandLine.arguments.contains("-ResetUserDefaults") {
                 let defaults = UserDefaults.standard
                 let keys = defaults.dictionaryRepresentation().keys

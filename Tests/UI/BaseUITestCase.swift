@@ -16,6 +16,10 @@ open class BaseUITestCase: XCTestCase {
 
     public var app: XCUIApplication!
 
+    /// 真实后端联调：子类在 setUp 中换取真实 accessToken 后设置此属性，
+    /// launch 前会注入 `UITest_InjectAccessToken` 供 AppLauncher 写入 Keychain 恢复会话。
+    public var injectedAccessToken: String?
+
     override open func setUp() async throws {
         try await super.setUp()
 
@@ -38,6 +42,10 @@ open class BaseUITestCase: XCTestCase {
             "UITesting": "true",
             "DISABLE_ANIMATIONS": "true"
         ]
+        // 真实后端联调：注入已换取的 accessToken（仅当子类提供时）
+        if let token = injectedAccessToken, !token.isEmpty {
+            app.launchEnvironment["UITest_InjectAccessToken"] = token
+        }
         app.launch()
     }
 
