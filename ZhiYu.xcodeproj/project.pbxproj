@@ -2220,6 +2220,7 @@
 		C00551A20415E0CE40D11F30 /* MindmapSynthesisStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D636997BC967E51E892CBBC /* MindmapSynthesisStrategy.swift */; };
 		C0065C24EB020843C404CCE1 /* SystemStatsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2376A3A79D6CF289F25A16A9 /* SystemStatsCoordinator.swift */; };
 		C00D9ECE3DE489260E80C6BC /* MacHapticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0139F64CD1544279326E3B93 /* MacHapticService.swift */; };
+		C0139CCFBEE44EA45E8A89EB /* PaymentRetryQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C2E7C4D23AFCF94D5445CAE /* PaymentRetryQueue.swift */; };
 		C03539D73D5F53AD871E563F /* KnowledgeRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C38E641235EECC22B0A1145D /* KnowledgeRepository.swift */; };
 		C06A7DBFAE19DDEEDC716F66 /* testPageDetailContentSection_RawType.1.png in Resources */ = {isa = PBXBuildFile; fileRef = A878649C1FE4F530B4E96EC9 /* testPageDetailContentSection_RawType.1.png */; };
 		C07A3D6BF93BCF7565A86498 /* SQLiteTransactionConcurrencyStressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301F080A4D80C31696EC5A9D /* SQLiteTransactionConcurrencyStressTests.swift */; };
@@ -2585,6 +2586,7 @@
 		E0E71ADDDD1FAADD31956932 /* DesignModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34909E3D96BEDC5A366B4778 /* DesignModifiers.swift */; };
 		E10741496209FC13FD79D669 /* MermaidSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF3DF57C45369D853F4B0FCD /* MermaidSanitizer.swift */; };
 		E11B786FAD3AC2D02DCF2AE4 /* PageDetailTagCloudCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F291BBBBABE84DA54253A0A2 /* PageDetailTagCloudCoordinatorTests.swift */; };
+		E134050620B3C2F8FDF312C0 /* PaymentRetryQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C2E7C4D23AFCF94D5445CAE /* PaymentRetryQueue.swift */; };
 		E1459EEDCD1DC0CF3CB3AEEE /* FileManager+FolderSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FEC6809CA73987677FB0093 /* FileManager+FolderSize.swift */; };
 		E1694533F80666CB331C942A /* L10n+Dashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CBD4E32BC345BA0A2712D05 /* L10n+Dashboard.swift */; };
 		E1859FB0C9F173A4E6DDEBBD /* testSynthesisDocRow_NormalAndEditMode_RendersCorrectly.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 052E9626FE4FE74E137EF6F3 /* testSynthesisDocRow_NormalAndEditMode_RendersCorrectly.1.png */; };
@@ -3257,6 +3259,7 @@
 		1BCC089BA8CF7523B396E06F /* ModelLabManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabManager.swift; sourceTree = "<group>"; };
 		1BCD428C42C3220751866708 /* DocumentFormatDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFormatDeepTests.swift; sourceTree = "<group>"; };
 		1C15497B1E348F7B42C3FB76 /* SyncProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncProtocols.swift; sourceTree = "<group>"; };
+		1C2E7C4D23AFCF94D5445CAE /* PaymentRetryQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentRetryQueue.swift; sourceTree = "<group>"; };
 		1C9D2B72CC936219004CEE6D /* testSaveVoiceNoteSheetWithTranscription.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSaveVoiceNoteSheetWithTranscription.1.png; sourceTree = "<group>"; };
 		1CDA70BD2B1CDDF6346AB847 /* L10n+ModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+ModelManager.swift"; sourceTree = "<group>"; };
 		1CFBAAF41B7B064820E8022A /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
@@ -7647,6 +7650,7 @@
 			children = (
 				34F967ED20B869F1E7C5ECC4 /* AuthService.swift */,
 				D62770C897679694CEA210B9 /* OAuthService.swift */,
+				1C2E7C4D23AFCF94D5445CAE /* PaymentRetryQueue.swift */,
 				6FBD347875AB4FCC36E07EB4 /* PhoneAuthService.swift */,
 				F0F90360E49ED72DADD83404 /* StoreKitService.swift */,
 				757C3CA17076EBB0FAE7FACA /* TokenManager.swift */,
@@ -11479,6 +11483,7 @@
 				9850378840BA3F43FEE439F2 /* PanelCloseButton.swift in Sources */,
 				5F7C3E793F1ABB3595450C0E /* ParameterPreset.swift in Sources */,
 				F4B6AD303D2C445E4DD0D147 /* PasteboardProtocol.swift in Sources */,
+				C0139CCFBEE44EA45E8A89EB /* PaymentRetryQueue.swift in Sources */,
 				835F53D8832862031AD61E75 /* PencilManager.swift in Sources */,
 				951862DE07C5E687D5C6D731 /* PerformanceBenchmarker.swift in Sources */,
 				29BB92D9DC0ADD4998174091 /* PerformanceDashboardView.swift in Sources */,
@@ -12290,6 +12295,7 @@
 				EF0A4E0BCA114BE558C37AB2 /* PanelCloseButton.swift in Sources */,
 				B35C5D2D34C861B333CBACC5 /* ParameterPreset.swift in Sources */,
 				F898578B3123872A1F1E477F /* PasteboardProtocol.swift in Sources */,
+				E134050620B3C2F8FDF312C0 /* PaymentRetryQueue.swift in Sources */,
 				7FA3D10B836E007962B722D4 /* PencilManager.swift in Sources */,
 				49CBC39A438F4F82B7500378 /* PerformanceBenchmarker.swift in Sources */,
 				AC556CD814C84AFF995D2D11 /* PerformanceDashboardView.swift in Sources */,

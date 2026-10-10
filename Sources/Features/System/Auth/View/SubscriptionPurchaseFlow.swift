@@ -96,23 +96,7 @@ struct SubscriptionPurchaseFlow: View {
                     case .success(let verification):
                         switch verification {
                         case .verified(let transaction):
-                            let receipt = transaction.jsonRepresentation.base64EncodedString()
-                            let success = await authService.verifyApplePurchase(
-                                productId: productId,
-                                receiptData: receipt,
-                                orderNo: nil
-                            )
-                            await transaction.finish()
-                            if success {
-                                isPurchasing = false
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                                    isUpgradeSuccess = true
-                                }
-                                updateSessionToPro()
-                                return
-                            } else {
-                                errorMessage = L10n.Auth.verifyFailed
-                            }
+                            await handleVerifiedTransaction(transaction, productId: productId)
                         case .unverified:
                             errorMessage = L10n.Auth.verifyFailed
                         }
@@ -143,6 +127,33 @@ struct SubscriptionPurchaseFlow: View {
                 isPurchasing = false
                 #endif
             }
+        }
+    }
+
+    /// 处理已通过苹果校验的交易：仅验证成功后才 finish，失败时入队指数退避重试
+    private func handleVerifiedTransaction(_ transaction: StoreKit.Transaction, productId: String) async {
+        let receipt = transaction.jsonRepresentation.base64EncodedString()
+        let success = await authService.verifyApplePurchase(
+            productId: productId,
+            receiptData: receipt,
+            orderNo: nil
+        )
+        if success {
+            // 仅在验证成功后才 finish 交易，避免 StoreKit 判定交易已完成导致无法重试
+            await transaction.finish()
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                isUpgradeSuccess = true
+            }
+            updateSessionToPro()
+        } else {
+            // 验证失败不 finish：保留交易供 StoreKit 下次重推，并主动入队指数退避重试
+            await PaymentRetryQueue.shared.enqueue(
+                productId: productId,
+                receiptData: receipt,
+                transactionId: String(transaction.id),
+                orderNo: nil
+            )
+            errorMessage = L10n.Auth.verifyFailed
         }
     }
 

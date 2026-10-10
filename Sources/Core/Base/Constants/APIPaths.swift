@@ -43,6 +43,8 @@ public enum APIPaths {
 
     /// Apple 订阅验证接口路径
     public static let subscriptionAppleVerifyPath = "/api/v1/subscriptions/apple/verify"
+    /// 通用支付凭证验证接口路径（按 channel 路由到对应支付策略）
+    public static let subscriptionVerifyPath = "/api/v1/subscriptions/verify"
     /// 当前用户订阅信息接口路径
     public static let subscriptionsMePath = "/api/v1/subscriptions/me"
 

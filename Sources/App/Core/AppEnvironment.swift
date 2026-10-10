@@ -244,6 +244,9 @@ final class AppEnvironment {
             // 启动 StoreKit 2 Transaction 持久监听（审核必须项）
             StoreKitService.shared.startListening()
 
+            // 恢复支付验证失败重试队列（App 重启后继续退避重试）
+            await PaymentRetryQueue.shared.start()
+
             await self.store.seedDefaultContent()
             
             // 异步安全触发数据同步编排

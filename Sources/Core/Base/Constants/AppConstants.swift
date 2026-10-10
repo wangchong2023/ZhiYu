@@ -279,6 +279,8 @@ public struct AppConstants {
             public static let authIsGuest = "auth.isGuest"
             /// 本地头像 Base64 Data URL（不再回传后端，仅本地持久化）
             public static let authAvatarDataURL = "auth.avatarDataURL"
+            /// 支付验证失败重试队列（UserDefaults 持久化，App 重启后恢复）
+            public static let paymentRetryQueue = "payment.retryQueue"
             
             // ── 笔记本与知识库 ──
             public static let vaultsList = "vaults.list"
