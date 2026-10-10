@@ -473,8 +473,8 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
         let manager = try XCTUnwrap(sut)
         let freeVo = PlanQuotasVo.createFreeDefault
         manager.updateActiveQuotas(freeVo)
-        // maxVaultsCount = 2，currentUsage = 2 应算超限
-        XCTAssertTrue(manager.isQuotaExceeded(\.maxVaultsCount, currentUsage: 2), "usage == limit 应算超限")
+        // maxVaultsCount = 4，currentUsage = 4 应算超限
+        XCTAssertTrue(manager.isQuotaExceeded(\.maxVaultsCount, currentUsage: 4), "usage == limit 应算超限")
     }
 
     // MARK: isQuotaExceeded 低于限制不超限

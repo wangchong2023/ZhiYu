@@ -632,7 +632,7 @@ final class TokenManagerDeepTests: XCTestCase {
     // MARK: - refreshUserProfile 订阅解析
 
     /// 验证 refreshUserProfile 订阅接口失败时降级为 Free 默认配额
-    func testRefreshUserProfileSubscriptionFailureDegradesToLiteDefaultQuotas() async throws {
+    func testRefreshUserProfileSubscriptionFailureDegradesToFreeDefaultQuotas() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif
@@ -684,8 +684,8 @@ final class TokenManagerDeepTests: XCTestCase {
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.free))
 
         let quotas: [String: Any] = [
-            "max_vaults": User.DefaultQuotas.proMaxVaults,
-            "max_pages": User.DefaultQuotas.proMaxPages,
+            "max_vaults_count": User.DefaultQuotas.proMaxVaults,
+            "max_knowledge_pages": User.DefaultQuotas.proMaxPages,
             "max_plugins": User.DefaultQuotas.proMaxPlugins
         ]
         let quotasData = try JSONSerialization.data(withJSONObject: quotas)
@@ -809,7 +809,7 @@ final class TokenManagerDeepTests: XCTestCase {
     }
 
     /// 验证 refreshUserProfile 订阅返回无效 quotas JSON 时降级为 Free 默认配额
-    func testRefreshUserProfileInvalidQuotasJsonDegradesToLiteDefaultQuotas() async throws {
+    func testRefreshUserProfileInvalidQuotasJsonDegradesToFreeDefaultQuotas() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
         #endif

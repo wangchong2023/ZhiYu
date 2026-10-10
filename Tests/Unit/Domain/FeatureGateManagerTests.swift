@@ -73,7 +73,7 @@ final class FeatureGateManagerTests: XCTestCase {
         XCTAssertFalse(gateManager.isFeatureEnabled(\.vectorSearchEnabled))
 
         XCTAssertEqual(gateManager.getQuotaLimit(\.maxKnowledgePages), 1000)
-        XCTAssertEqual(gateManager.getQuotaLimit(\.maxVaultsCount), 2)
+        XCTAssertEqual(gateManager.getQuotaLimit(\.maxVaultsCount), 4)
     }
 
     func testCacheFirstPreservesProPlanOffline() throws {
