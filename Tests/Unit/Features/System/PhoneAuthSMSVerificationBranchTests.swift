@@ -21,9 +21,16 @@ final class PhoneAuthSMSVerificationBranchTests: XCTestCase {
         try await super.setUp()
         setupFullMockEnvironment()
         AuthService.forceMockBackend = true
+        // 注入 TestMockURLProtocol 测试 URLSession，隔离真实网络：
+        // 防止 backend_base_url 可达时 sendSmsCode 真实请求成功导致断言失败（CVE/环境无关，纯测试确定性）
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [TestMockURLProtocol.self]
+        await NetworkClient.shared.setTestSession(URLSession(configuration: config))
     }
 
     override func tearDown() async throws {
+        await NetworkClient.shared.setTestSession(nil)
+        TestMockURLProtocol.requestHandler = nil
         AuthService.forceMockBackend = false
         AuthSession.shared.logout()
         DatabaseManager.shared.reset()
@@ -48,7 +55,12 @@ final class PhoneAuthSMSVerificationBranchTests: XCTestCase {
         AuthService.forceMockBackend = false
         let authService = AuthService.shared
 
-        // 未 mock network client request 时应优雅捕获错误返回 false
+        // mock 网络层抛错，确定性模拟网络请求失败，返回 false
+        TestMockURLProtocol.requestHandler = { _ in
+            throw NSError(domain: "TestMockURLProtocol", code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "network down"])
+        }
+
         let success = await authService.sendSmsCode(phone: "13800000000", scene: "login")
 
         XCTAssertFalse(success, "网络请求失败时应当优雅返回 false 而非崩溃")
