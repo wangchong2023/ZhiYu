@@ -92,7 +92,7 @@ public struct User: Codable, Identifiable, Sendable {
     public var features: [String]
 
     public struct DefaultQuotas {
-        public static let freeMaxVaults = 2
+        public static let freeMaxVaults = 4
         public static let freeMaxPages = 1000
         public static let freeMaxPlugins = 3
         

@@ -18,8 +18,8 @@ final class UserModelTests: XCTestCase {
 
     // MARK: - DefaultQuotas 常量
 
-    func testDefaultQuotas_liteValues() {
-        XCTAssertEqual(User.DefaultQuotas.freeMaxVaults, 2)
+    func testDefaultQuotas_freeValues() {
+        XCTAssertEqual(User.DefaultQuotas.freeMaxVaults, 4)
         XCTAssertEqual(User.DefaultQuotas.freeMaxPages, 1000)
         XCTAssertEqual(User.DefaultQuotas.freeMaxPlugins, 3)
     }
