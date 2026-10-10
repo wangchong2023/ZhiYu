@@ -35,9 +35,9 @@ public enum APIPaths {
     // MARK: - 用户相关 API 路径
 
     /// 用户资料接口路径
-    public static let userProfilePath = "/api/v1/user/profile"
+    public static let userProfilePath = "/api/v1/auth/user/profile"
     /// 用户资料头像上传接口路径
-    public static let avatarUploadPath = "/api/v1/user/profile/avatar"
+    public static let avatarUploadPath = "/api/v1/auth/user/profile/avatar"
 
     // MARK: - 订阅相关 API 路径
 
