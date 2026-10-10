@@ -1759,7 +1759,7 @@
         }
       }
     },
-    "auth.feature.aiSynthLiteValue": {
+    "auth.feature.aiSynthFreeValue": {
       "comment": "基础",
       "extractionState": "manual",
       "localizations": {
@@ -1957,7 +1957,7 @@
         }
       }
     },
-    "auth.feature.privacySecurityLiteValue": {
+    "auth.feature.privacySecurityFreeValue": {
       "comment": "不支持",
       "extractionState": "manual",
       "localizations": {
@@ -2155,7 +2155,7 @@
         }
       }
     },
-    "auth.feature.pagesLiteValue": {
+    "auth.feature.pagesFreeValue": {
       "comment": "1,000 页",
       "extractionState": "manual",
       "localizations": {
@@ -2287,7 +2287,7 @@
         }
       }
     },
-    "auth.feature.pluginsLiteValue": {
+    "auth.feature.pluginsFreeValue": {
       "comment": "3 个",
       "extractionState": "manual",
       "localizations": {
@@ -2485,7 +2485,7 @@
         }
       }
     },
-    "auth.feature.vaultsLiteValue": {
+    "auth.feature.vaultsFreeValue": {
       "comment": "2 个",
       "extractionState": "manual",
       "localizations": {
@@ -2747,67 +2747,67 @@
         }
       }
     },
-    "auth.litePlan": {
+    "auth.freePlan": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite版"
+            "value": "免费版"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite版"
+            "value": "免费版"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lite"
+            "value": "Free"
           }
         }
       }
@@ -21028,67 +21028,67 @@
         }
       }
     },
-    "auth.litePlanTitle": {
+    "auth.freePlanTitle": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "您当前是 Lite 用户"
+            "value": "您当前是 免费用户"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "您当前是 Lite 使用者"
+            "value": "您当前是 免費使用者"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         },
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are currently a Lite user"
+            "value": "You are currently a Free user"
           }
         }
       }
@@ -21158,7 +21158,7 @@
         }
       }
     },
-    "auth.litePlanDesc": {
+    "auth.freePlanDesc": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -22003,7 +22003,7 @@
         }
       }
     },
-    "auth.priceMonthlyLite": {
+    "auth.priceMonthlyFree": {
       "extractionState": "manual",
       "localizations": {
         "en": {

@@ -62,10 +62,10 @@ public final class FeatureGateManager: @unchecked Sendable {
 
     // MARK: - Offline Fallback Baseline Strategy
 
-    /// C 端纯新机未联网/未登录时的 Lite 基础保底策略 (Cold-Start Baseline)
-    public static let offlineColdStartQuotas = PlanQuotasVo.createLiteDefault
+    /// C 端纯新机未联网/未登录时的 Free 基础保底策略 (Cold-Start Baseline)
+    public static let offlineColdStartQuotas = PlanQuotasVo.createFreeDefault
 
-    /// 获取当前生效的配额实体（优先使用本地已缓存套餐，若无缓存且允许游客模式则回退至 Lite 基础保底）
+    /// 获取当前生效的配额实体（优先使用本地已缓存套餐，若无缓存且允许游客模式则回退至 Free 基础保底）
     public var currentEffectiveQuotas: PlanQuotasVo? {
         if let cached = activeQuotas {
             return cached

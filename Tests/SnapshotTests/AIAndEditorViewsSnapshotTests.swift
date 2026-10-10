@@ -477,7 +477,7 @@ final class AIAndEditorViewsSnapshotTests: XCTestCase {
     // MARK: - 8. SubscriptionPlanCard（订阅套餐卡片）
 
     /// TC-B3-16: SubscriptionPlanCard 月付选中
-    /// 目的：验证 selectedCycle=.monthly 时月付高亮 + Lite/Pro 卡片对比，
+    /// 目的：验证 selectedCycle=.monthly 时月付高亮 + Free/Pro 卡片对比，
     ///       同时检测 cycleTabSelector 的 monthly 分支描边渐变与 tierCardsSection 的 Pro 价格显示
     func testSubscriptionPlanCardMonthlySelected() {
         let view = SubscriptionPlanCard(selectedCycle: .monthly, onCycleChange: { _ in })

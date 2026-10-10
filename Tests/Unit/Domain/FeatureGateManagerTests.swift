@@ -66,7 +66,7 @@ final class FeatureGateManagerTests: XCTestCase {
         let gateManager = try XCTUnwrap(sut)
         gateManager.clearQuotasCache()
         
-        // 无缓存时应当生效冷启动基线 (Lite)
+        // 无缓存时应当生效冷启动基线 (Free)
         XCTAssertTrue(gateManager.isFeatureEnabled(\.customLocalLlmEnabled))
         XCTAssertTrue(gateManager.isFeatureEnabled(\.adFreeEnabled))
         XCTAssertFalse(gateManager.isFeatureEnabled(\.cloudLlmModelsEnabled))

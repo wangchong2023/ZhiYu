@@ -8,7 +8,7 @@
 //  系统层级：[Shared] 测试层
 //  核心职责：针对 privacy_security 特性的订阅套餐权限控制进行单元测试验证。
 //  覆盖范围：
-//    - User.hasPrivacySecurity 计算属性在 Lite/Pro 套餐下的正确性
+//    - User.hasPrivacySecurity 计算属性在 Free/Pro 套餐下的正确性
 //    - features 数组中 privacy_security 标识的精准匹配
 //    - SettingsStore 中隐私模式/生物识别开关的读写与持久化
 //
@@ -21,16 +21,16 @@ final class PrivacySecurityFeatureTests: XCTestCase {
 
     // MARK: - User.hasPrivacySecurity 权限计算测试
 
-    /// Lite 用户（planKey = "free"）且 features 不包含 privacy_security 时，应无权限
+    /// 免费用户（planKey = "free"）且 features 不包含 privacy_security 时，应无权限
     func testLiteUserWithoutFeatureHasNoPrivacySecurity() {
         let user = User(
-            name: "Lite 用户",
-            email: "lite@test.com",
+            name: "免费用户",
+            email: "free@test.com",
             planKey: "free",
             features: ["basic_chat", "text_search", "sandbox_plugins"]
         )
-        XCTAssertFalse(user.isPro, "Lite 用户的 isPro 应为 false")
-        XCTAssertFalse(user.hasPrivacySecurity, "Lite 用户不含 privacy_security 特性时应无权限")
+        XCTAssertFalse(user.isPro, "免费用户的 isPro 应为 false")
+        XCTAssertFalse(user.hasPrivacySecurity, "免费用户不含 privacy_security 特性时应无权限")
     }
 
     /// Pro 用户（planKey = "pro"）即使 features 数组为空，也应自动拥有隐私安全权限
@@ -56,7 +56,7 @@ final class PrivacySecurityFeatureTests: XCTestCase {
         XCTAssertTrue(user.hasPrivacySecurity, "Pro 用户 + 显式 privacy_security 应返回 true")
     }
 
-    /// Lite 用户但 features 中包含 privacy_security（特殊授权场景），应有权限
+    /// 免费用户但 features 中包含 privacy_security（特殊授权场景），应有权限
     func testLiteUserWithExplicitFeatureHasPrivacySecurity() {
         let user = User(
             name: "特殊授权用户",

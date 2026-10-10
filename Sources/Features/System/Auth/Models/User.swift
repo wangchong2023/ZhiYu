@@ -44,7 +44,7 @@ public enum PlanTier: String, Comparable, Sendable {
     public var defaultQuotas: User.DefaultQuotas.Quota {
         switch self {
         case .free:
-            return User.DefaultQuotas.liteQuota
+            return User.DefaultQuotas.freeQuota
         case .pro:
             return User.DefaultQuotas.proQuota
         }
@@ -80,7 +80,7 @@ public struct User: Codable, Identifiable, Sendable {
 
     // MARK: - 订阅套餐信息
 
-    /// 当前套餐标识：free（Lite 基础版）或 pro（Pro 专业版）
+    /// 当前套餐标识：free（Free 基础版）或 pro（Pro 专业版）
     public var planKey: String?
     /// 套餐允许的最大笔记本数量
     public var maxVaults: Int
@@ -92,9 +92,9 @@ public struct User: Codable, Identifiable, Sendable {
     public var features: [String]
 
     public struct DefaultQuotas {
-        public static let liteMaxVaults = 2
-        public static let liteMaxPages = 1000
-        public static let liteMaxPlugins = 3
+        public static let freeMaxVaults = 2
+        public static let freeMaxPages = 1000
+        public static let freeMaxPlugins = 3
         
         public static let proMaxVaults = 100
         public static let proMaxPages = 50000
@@ -107,11 +107,11 @@ public struct User: Codable, Identifiable, Sendable {
             public let maxPlugins: Int
         }
 
-        /// Lite 基础版默认配额
-        public static let liteQuota = Quota(
-            maxVaults: liteMaxVaults,
-            maxPages: liteMaxPages,
-            maxPlugins: liteMaxPlugins
+        /// Free 基础版默认配额
+        public static let freeQuota = Quota(
+            maxVaults: freeMaxVaults,
+            maxPages: freeMaxPages,
+            maxPlugins: freeMaxPlugins
         )
 
         /// Pro 专业版默认配额
@@ -132,9 +132,9 @@ public struct User: Codable, Identifiable, Sendable {
         phone: String? = nil,
         avatarURL: URL? = nil,
         planKey: String? = PlanKey.free,
-        maxVaults: Int = DefaultQuotas.liteMaxVaults,
-        maxPages: Int = DefaultQuotas.liteMaxPages,
-        maxPlugins: Int = DefaultQuotas.liteMaxPlugins,
+        maxVaults: Int = DefaultQuotas.freeMaxVaults,
+        maxPages: Int = DefaultQuotas.freeMaxPages,
+        maxPlugins: Int = DefaultQuotas.freeMaxPlugins,
         features: [String] = [],
         gender: Int? = nil,
         birthday: String? = nil
@@ -261,9 +261,9 @@ public struct User: Codable, Identifiable, Sendable {
         
         // 赋予默认套餐属性（因为后端目前暂无此字段）
         self.planKey = (try? container.decodeIfPresent(String.self, forKey: .planKey)) ?? PlanKey.free
-        self.maxVaults = (try? container.decodeIfPresent(Int.self, forKey: .maxVaults)) ?? DefaultQuotas.liteMaxVaults
-        self.maxPages = (try? container.decodeIfPresent(Int.self, forKey: .maxPages)) ?? DefaultQuotas.liteMaxPages
-        self.maxPlugins = (try? container.decodeIfPresent(Int.self, forKey: .maxPlugins)) ?? DefaultQuotas.liteMaxPlugins
+        self.maxVaults = (try? container.decodeIfPresent(Int.self, forKey: .maxVaults)) ?? DefaultQuotas.freeMaxVaults
+        self.maxPages = (try? container.decodeIfPresent(Int.self, forKey: .maxPages)) ?? DefaultQuotas.freeMaxPages
+        self.maxPlugins = (try? container.decodeIfPresent(Int.self, forKey: .maxPlugins)) ?? DefaultQuotas.freeMaxPlugins
         self.features = (try? container.decodeIfPresent([String].self, forKey: .features)) ?? []
     }
 }

@@ -221,10 +221,10 @@ final class AppConstantsTests: XCTestCase {
         XCTAssertEqual(AppConstants.Keys.ImportLimits.uuidPrefixLength, 8)
     }
 
-    /// 验证 ImportLimits liteMaxFileSizeBytes = 10MB
+    /// 验证 ImportLimits freeMaxFileSizeBytes = 10MB
     func testImportLimitsLiteMaxFileSize() {
         let tenMB = 10 * 1024 * 1024
-        XCTAssertEqual(AppConstants.Keys.ImportLimits.liteMaxFileSizeBytes, Int64(tenMB))
+        XCTAssertEqual(AppConstants.Keys.ImportLimits.freeMaxFileSizeBytes, Int64(tenMB))
     }
 
     /// 验证 ImportLimits maxFileSizeBytes = 50MB

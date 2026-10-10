@@ -6,13 +6,13 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L3] 表现层
-//  核心职责：订阅套餐卡片组件，展示 Lite/Pro 套餐对比与计费周期选择器。
+//  核心职责：订阅套餐卡片组件，展示 Free/Pro 套餐对比与计费周期选择器。
 //
 
 import SwiftUI
 import UFPDesignSystem
 
-/// 订阅套餐卡片对比组件（Lite vs Pro）
+/// 订阅套餐卡片对比组件（Free vs Pro）
 @MainActor
 struct SubscriptionPlanCard: View {
     let selectedCycle: BillingCycle
@@ -88,7 +88,7 @@ struct SubscriptionPlanCard: View {
 
     private var tierCardsSection: some View {
         HStack(spacing: DesignTokens.Spacing.medium) {
-            // Lite Card
+            // Free Card
             VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.element) {
                 HStack {
                     Image(systemName: DesignTokens.Icons.lightbulb)
@@ -100,7 +100,7 @@ struct SubscriptionPlanCard: View {
 
                     Spacer()
 
-                    Text(FeatureConstants.MockData.litePlanName)
+                    Text(FeatureConstants.MockData.freePlanName)
                         .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
                         .padding(.horizontal, DesignTokens.SystemSpacing.small)
@@ -109,11 +109,11 @@ struct SubscriptionPlanCard: View {
                             Capsule().stroke(Color.appBorder, lineWidth: DesignTokens.SystemStroke.divider)
                         )
                 }
-                Text(L10n.Auth.priceMonthlyLite)
+                Text(L10n.Auth.priceMonthlyFree)
                     .font(.title3.bold())
                     .foregroundStyle(.appText)
 
-                Text(L10n.Auth.litePlanDesc)
+                Text(L10n.Auth.freePlanDesc)
                     .planDescStyle()
             }
             .planCardContainerBase()
@@ -196,7 +196,7 @@ private extension View {
             )
     }
 
-    /// 套餐描述文本样式，消除 Lite/Pro Card 的重复
+    /// 套餐描述文本样式，消除 Free/Pro Card 的重复
     func planDescStyle() -> some View {
         self
             .font(.system(size: DesignTokens.SystemFontSize.micro))
@@ -204,7 +204,7 @@ private extension View {
             .lineLimit(2)
     }
 
-    /// 套餐卡片容器基础布局，消除 Lite/Pro Card 的 padding+frame 重复
+    /// 套餐卡片容器基础布局，消除 Free/Pro Card 的 padding+frame 重复
     func planCardContainerBase() -> some View {
         self
             .padding(DesignTokens.Spacing.medium)

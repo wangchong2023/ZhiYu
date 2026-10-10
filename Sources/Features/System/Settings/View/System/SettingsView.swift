@@ -95,7 +95,7 @@ struct SettingsView: View {
     @State private var languageChanged = false
     @State private var showInjectConfirmation = false
     @State private var isInjecting = false
-    /// Lite 用户尝试开启安全功能时弹出升级提示
+    /// 免费用户尝试开启安全功能时弹出升级提示
     @State private var showUpgradeSheet = false
     /// 当前大屏布局下选中的设置分类，默认选中“外观”
     @State private var selectedSection: SettingsSection? = .appearance
@@ -379,14 +379,14 @@ struct SettingsView: View {
         let hasFeature = AuthSession.shared.currentUser?.hasPrivacySecurity == true
         let showBiometric = appEnv.platformEnv.interactionStyle == .touch
         
-        // 自定义 Binding：Lite 用户尝试开启时拦截并弹出升级提示
+        // 自定义 Binding：免费用户尝试开启时拦截并弹出升级提示
         let privacyBinding = Binding<Bool>(
             get: { settingsStore.isPrivacyModeEnabled },
             set: { newValue in
                 if hasFeature {
                     settingsStore.isPrivacyModeEnabled = newValue
                 } else if newValue {
-                    // Lite 用户尝试开启 → 弹出升级提示，不修改状态
+                    // 免费用户尝试开启 → 弹出升级提示，不修改状态
                     showUpgradeSheet = true
                 } else {
                     settingsStore.isPrivacyModeEnabled = newValue

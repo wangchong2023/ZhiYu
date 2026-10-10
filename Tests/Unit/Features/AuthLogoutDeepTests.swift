@@ -19,8 +19,8 @@ final class AuthLogoutDeepTests: XCTestCase {
 
     /// 测试用邮箱
     private let testEmail = "test@example.com"
-    /// Lite 套餐最大笔记本数
-    private let liteMaxVaults = User.DefaultQuotas.liteMaxVaults
+    /// Free 套餐最大笔记本数
+    private let freeMaxVaults = User.DefaultQuotas.freeMaxVaults
     /// JWT Token Key
     private let jwtTokenKey = AppConstants.Network.jwtTokenKey
     /// Refresh Token Key
@@ -97,9 +97,9 @@ final class AuthLogoutDeepTests: XCTestCase {
             phone: phone,
             avatarURL: nil,
             planKey: planKey,
-            maxVaults: liteMaxVaults,
-            maxPages: User.DefaultQuotas.liteMaxPages,
-            maxPlugins: User.DefaultQuotas.liteMaxPlugins,
+            maxVaults: freeMaxVaults,
+            maxPages: User.DefaultQuotas.freeMaxPages,
+            maxPlugins: User.DefaultQuotas.freeMaxPlugins,
             features: features,
             gender: gender,
             birthday: birthday

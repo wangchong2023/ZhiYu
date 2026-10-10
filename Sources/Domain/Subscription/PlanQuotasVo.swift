@@ -117,8 +117,8 @@ public struct PlanQuotasVo: Codable, Equatable, Sendable {
 
 extension PlanQuotasVo {
 
-    /// Lite 离线冷启动保底基线 (Cold-Start Baseline)
-    public static var createLiteDefault: PlanQuotasVo {
+    /// Free 离线冷启动保底基线 (Cold-Start Baseline)
+    public static var createFreeDefault: PlanQuotasVo {
         PlanQuotasVo(
             maxKnowledgePages: 1000,
             maxVaultsCount: 4,

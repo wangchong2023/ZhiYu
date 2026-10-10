@@ -87,11 +87,11 @@ extension L10n {
         public static var profileAndQuota: String { tr("auth.profileAndQuota") }
         public static var currentSubscription: String { tr("auth.currentSubscription") }
         public static var subscription: String { tr("auth.subscription") }
-        public static var litePlan: String { tr("auth.litePlan") }
+        public static var freePlan: String { tr("auth.freePlan") }
         public static var proPlan: String { tr("auth.proPlan") }
-        public static var litePlanTitle: String { tr("auth.litePlanTitle") }
+        public static var freePlanTitle: String { tr("auth.freePlanTitle") }
         public static var proPlanTitle: String { tr("auth.proPlanTitle") }
-        public static var litePlanDesc: String { tr("auth.litePlanDesc") }
+        public static var freePlanDesc: String { tr("auth.freePlanDesc") }
         public static var proPlanDesc: String { tr("auth.proPlanDesc") }
         public static var upgradeToPro: String { tr("auth.upgradeToPro") }
         public static var unlockEverything: String { tr("auth.unlockEverything") }
@@ -140,7 +140,7 @@ extension L10n {
         public static var save20Percent: String { tr("auth.save20Percent") }
         public static var priceMonthlyPro: String { tr("auth.priceMonthlyPro") }
         public static var priceYearlyPro: String { tr("auth.priceYearlyPro") }
-        public static var priceMonthlyLite: String { tr("auth.priceMonthlyLite") }
+        public static var priceMonthlyFree: String { tr("auth.priceMonthlyFree") }
         public static var priceMonthlyProEquivalent: String { tr("auth.priceMonthlyProEquivalent") }
         public static var upgradeToProYearly: String { tr("auth.upgradeToProYearly") }
         public static var upgradeToProMonthly: String { tr("auth.upgradeToProMonthly") }
@@ -176,15 +176,15 @@ extension L10n {
             public static var plugins: String { Localized.tr("auth.feature.plugins", table: Auth.t) }
             public static var aiSynth: String { Localized.tr("auth.feature.aiSynth", table: Auth.t) }
             public static var privacySecurity: String { Localized.tr("auth.feature.privacySecurity", table: Auth.t) }
-            public static var vaultsLiteValue: String { Localized.tr("auth.feature.vaultsLiteValue", table: Auth.t) }
+            public static var vaultsFreeValue: String { Localized.tr("auth.feature.vaultsFreeValue", table: Auth.t) }
             public static var vaultsProValue: String { Localized.tr("auth.feature.vaultsProValue", table: Auth.t) }
-            public static var pagesLiteValue: String { Localized.tr("auth.feature.pagesLiteValue", table: Auth.t) }
+            public static var pagesFreeValue: String { Localized.tr("auth.feature.pagesFreeValue", table: Auth.t) }
             public static var pagesProValue: String { Localized.tr("auth.feature.pagesProValue", table: Auth.t) }
-            public static var pluginsLiteValue: String { Localized.tr("auth.feature.pluginsLiteValue", table: Auth.t) }
+            public static var pluginsFreeValue: String { Localized.tr("auth.feature.pluginsFreeValue", table: Auth.t) }
             public static var pluginsProValue: String { Localized.tr("auth.feature.pluginsProValue", table: Auth.t) }
-            public static var aiSynthLiteValue: String { Localized.tr("auth.feature.aiSynthLiteValue", table: Auth.t) }
+            public static var aiSynthFreeValue: String { Localized.tr("auth.feature.aiSynthFreeValue", table: Auth.t) }
             public static var aiSynthProValue: String { Localized.tr("auth.feature.aiSynthProValue", table: Auth.t) }
-            public static var privacySecurityLiteValue: String { Localized.tr("auth.feature.privacySecurityLiteValue", table: Auth.t) }
+            public static var privacySecurityFreeValue: String { Localized.tr("auth.feature.privacySecurityFreeValue", table: Auth.t) }
             public static var privacySecurityProValue: String { Localized.tr("auth.feature.privacySecurityProValue", table: Auth.t) }
         }
 

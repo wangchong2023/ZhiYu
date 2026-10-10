@@ -106,9 +106,9 @@ final class TokenManagerDeepTests: XCTestCase {
             phone: testPhone,
             avatarURL: nil,
             planKey: planKey,
-            maxVaults: User.DefaultQuotas.liteMaxVaults,
-            maxPages: User.DefaultQuotas.liteMaxPages,
-            maxPlugins: User.DefaultQuotas.liteMaxPlugins,
+            maxVaults: User.DefaultQuotas.freeMaxVaults,
+            maxPages: User.DefaultQuotas.freeMaxPages,
+            maxPlugins: User.DefaultQuotas.freeMaxPlugins,
             features: features
         )
     }
@@ -631,7 +631,7 @@ final class TokenManagerDeepTests: XCTestCase {
 
     // MARK: - refreshUserProfile 订阅解析
 
-    /// 验证 refreshUserProfile 订阅接口失败时降级为 Lite 默认配额
+    /// 验证 refreshUserProfile 订阅接口失败时降级为 Free 默认配额
     func testRefreshUserProfileSubscriptionFailureDegradesToLiteDefaultQuotas() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
@@ -665,13 +665,13 @@ final class TokenManagerDeepTests: XCTestCase {
 
         try await AuthService.shared.refreshUserProfile()
 
-        // 订阅失败时 currentPlanKey 保持 PlanKey.free，配额降级为 Lite 默认
+        // 订阅失败时 currentPlanKey 保持 PlanKey.free，配额降级为 Free 默认
         XCTAssertEqual(AuthService.shared.currentUser?.name, "降级用户", "应更新昵称")
         XCTAssertEqual(AuthService.shared.currentUser?.planKey, PlanKey.free, "订阅失败应降级为 free")
         XCTAssertEqual(
             AuthService.shared.currentUser?.maxVaults,
-            User.DefaultQuotas.liteMaxVaults,
-            "应降级为 Lite 最大笔记本数"
+            User.DefaultQuotas.freeMaxVaults,
+            "应降级为 Free 最大笔记本数"
         )
     }
 
@@ -808,7 +808,7 @@ final class TokenManagerDeepTests: XCTestCase {
         )
     }
 
-    /// 验证 refreshUserProfile 订阅返回无效 quotas JSON 时降级为 Lite 默认配额
+    /// 验证 refreshUserProfile 订阅返回无效 quotas JSON 时降级为 Free 默认配额
     func testRefreshUserProfileInvalidQuotasJsonDegradesToLiteDefaultQuotas() async throws {
         #if DEBUG
         AuthService.forceMockBackend = false
@@ -839,12 +839,12 @@ final class TokenManagerDeepTests: XCTestCase {
 
         try await AuthService.shared.refreshUserProfile()
 
-        // quotas 解析失败，parsedQuotas 为 nil，降级为 Lite 默认配额
+        // quotas 解析失败，parsedQuotas 为 nil，降级为 Free 默认配额
         XCTAssertEqual(AuthService.shared.currentUser?.planKey, PlanKey.pro, "planKey 仍为 Pro")
         XCTAssertEqual(
             AuthService.shared.currentUser?.maxVaults,
-            User.DefaultQuotas.liteMaxVaults,
-            "无效 quotas JSON 应降级为 Lite 默认配额"
+            User.DefaultQuotas.freeMaxVaults,
+            "无效 quotas JSON 应降级为 Free 默认配额"
         )
     }
 

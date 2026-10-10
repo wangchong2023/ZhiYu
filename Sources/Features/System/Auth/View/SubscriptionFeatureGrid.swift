@@ -6,7 +6,7 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L3] 表现层
-//  核心职责：订阅套餐功能对比网格，展示 Lite/Pro 权益逐项对照。
+//  核心职责：订阅套餐功能对比网格，展示 Free/Pro 权益逐项对照。
 //
 
 import SwiftUI
@@ -15,7 +15,7 @@ import UFPDesignSystem
 /// 订阅套餐权益对比网格组件
 @MainActor
 struct SubscriptionFeatureGrid: View {
-    let liteFeatures: [PlanFeature]
+    let freeFeatures: [PlanFeature]
     let proFeatures: [PlanFeature]
 
     var body: some View {
@@ -26,7 +26,7 @@ struct SubscriptionFeatureGrid: View {
                     Color.clear
                         .frame(maxWidth: .infinity)
 
-                    headerTitle(L10n.Auth.litePlan, color: .appSecondary)
+                    headerTitle(L10n.Auth.freePlan, color: .appSecondary)
 
                     verticalDivider(maxHeight: DesignTokens.Spacing.iconSmall)
 
@@ -37,11 +37,11 @@ struct SubscriptionFeatureGrid: View {
                 AppDivider()
 
                 // 权益对比行
-                // Bug #105 修复：Divider 判断用 min(count) 而非 liteFeatures.count，
+                // Bug #105 修复：Divider 判断用 min(count) 而非 freeFeatures.count，
                 // 避免两个数组长度不一致时 Divider 显示错误。
-                let displayCount = min(liteFeatures.count, proFeatures.count)
+                let displayCount = min(freeFeatures.count, proFeatures.count)
                 ForEach(0..<displayCount, id: \.self) { i in
-                    featureRow(lite: liteFeatures[i], pro: proFeatures[i])
+                    featureRow(free: freeFeatures[i], pro: proFeatures[i])
                     if i < displayCount - 1 {
                         AppDivider().padding(.leading, DesignTokens.Spacing.large)
                     }
@@ -50,21 +50,21 @@ struct SubscriptionFeatureGrid: View {
         }
     }
 
-    private func featureRow(lite: PlanFeature, pro: PlanFeature) -> some View {
+    private func featureRow(free: PlanFeature, pro: PlanFeature) -> some View {
         HStack(alignment: .center) {
             // 功能名
             HStack(spacing: DesignTokens.Spacing.small) {
                 Image(systemName: pro.icon)
                     .foregroundStyle(.appAccent)
                     .frame(width: DesignTokens.IconSize.small)
-                Text(lite.title)
+                Text(free.title)
                     .font(.caption)
                     .foregroundStyle(.appText)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Lite 值
-            planValueText(lite.value, color: .appSecondary)
+            // Free 值
+            planValueText(free.value, color: .appSecondary)
 
             verticalDivider(maxHeight: DesignTokens.Spacing.medium)
 
@@ -83,7 +83,7 @@ struct SubscriptionFeatureGrid: View {
             .frame(maxHeight: maxHeight)
     }
 
-    /// 套餐值文本，消除 Lite/Pro 数据行的 Text 样式重复
+    /// 套餐值文本，消除 Free/Pro 数据行的 Text 样式重复
     private func planValueText(_ value: String, color: Color) -> some View {
         Text(value)
             .font(.caption.bold())
@@ -91,7 +91,7 @@ struct SubscriptionFeatureGrid: View {
             .foregroundStyle(color)
     }
 
-    /// 表头标题文本，消除 Lite/Pro 表头的 Text 样式重复
+    /// 表头标题文本，消除 Free/Pro 表头的 Text 样式重复
     private func headerTitle(_ text: String, color: Color) -> some View {
         Text(text)
             .font(.subheadline.bold())

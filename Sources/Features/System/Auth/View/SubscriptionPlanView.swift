@@ -50,13 +50,13 @@ public struct SubscriptionPlanView: View {
 
     // MARK: - 权益对比数据
 
-    private var liteFeatures: [PlanFeature] {
+    private var freeFeatures: [PlanFeature] {
         [
-            PlanFeature(icon: "books.vertical", title: L10n.Auth.Feature.vaults, value: L10n.Auth.Feature.vaultsLiteValue),
-            PlanFeature(icon: "doc.text", title: L10n.Auth.Feature.pages, value: L10n.Auth.Feature.pagesLiteValue),
-            PlanFeature(icon: "puzzlepiece", title: L10n.Auth.Feature.plugins, value: L10n.Auth.Feature.pluginsLiteValue),
-            PlanFeature(icon: "sparkle", title: L10n.Auth.Feature.aiSynth, value: L10n.Auth.Feature.aiSynthLiteValue),
-            PlanFeature(icon: "lock.shield", title: L10n.Auth.Feature.privacySecurity, value: L10n.Auth.Feature.privacySecurityLiteValue)
+            PlanFeature(icon: "books.vertical", title: L10n.Auth.Feature.vaults, value: L10n.Auth.Feature.vaultsFreeValue),
+            PlanFeature(icon: "doc.text", title: L10n.Auth.Feature.pages, value: L10n.Auth.Feature.pagesFreeValue),
+            PlanFeature(icon: "puzzlepiece", title: L10n.Auth.Feature.plugins, value: L10n.Auth.Feature.pluginsFreeValue),
+            PlanFeature(icon: "sparkle", title: L10n.Auth.Feature.aiSynth, value: L10n.Auth.Feature.aiSynthFreeValue),
+            PlanFeature(icon: "lock.shield", title: L10n.Auth.Feature.privacySecurity, value: L10n.Auth.Feature.privacySecurityFreeValue)
         ]
     }
 
@@ -96,7 +96,7 @@ public struct SubscriptionPlanView: View {
 
                         // 权益对比网格
                         SubscriptionFeatureGrid(
-                            liteFeatures: liteFeatures,
+                            freeFeatures: freeFeatures,
                             proFeatures: proFeatures
                         )
 

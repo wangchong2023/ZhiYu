@@ -25,8 +25,8 @@ final class AuthRefreshDeepTests: XCTestCase {
     private let proMaxVaults = User.DefaultQuotas.proMaxVaults
     /// Pro 套餐最大页面数
     private let proMaxPages = User.DefaultQuotas.proMaxPages
-    /// Lite 套餐最大笔记本数
-    private let liteMaxVaults = User.DefaultQuotas.liteMaxVaults
+    /// Free 套餐最大笔记本数
+    private let freeMaxVaults = User.DefaultQuotas.freeMaxVaults
     /// JWT Token Key
     private let jwtTokenKey = AppConstants.Network.jwtTokenKey
     /// 测试用 JWT Token 值
@@ -98,9 +98,9 @@ final class AuthRefreshDeepTests: XCTestCase {
             phone: phone,
             avatarURL: nil,
             planKey: planKey,
-            maxVaults: liteMaxVaults,
-            maxPages: User.DefaultQuotas.liteMaxPages,
-            maxPlugins: User.DefaultQuotas.liteMaxPlugins,
+            maxVaults: freeMaxVaults,
+            maxPages: User.DefaultQuotas.freeMaxPages,
+            maxPlugins: User.DefaultQuotas.freeMaxPlugins,
             features: features,
             gender: gender,
             birthday: birthday

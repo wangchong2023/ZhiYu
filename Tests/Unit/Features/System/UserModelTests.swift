@@ -19,9 +19,9 @@ final class UserModelTests: XCTestCase {
     // MARK: - DefaultQuotas 常量
 
     func testDefaultQuotas_liteValues() {
-        XCTAssertEqual(User.DefaultQuotas.liteMaxVaults, 2)
-        XCTAssertEqual(User.DefaultQuotas.liteMaxPages, 1000)
-        XCTAssertEqual(User.DefaultQuotas.liteMaxPlugins, 3)
+        XCTAssertEqual(User.DefaultQuotas.freeMaxVaults, 2)
+        XCTAssertEqual(User.DefaultQuotas.freeMaxPages, 1000)
+        XCTAssertEqual(User.DefaultQuotas.freeMaxPlugins, 3)
     }
 
     func testDefaultQuotas_proValues() {
@@ -35,9 +35,9 @@ final class UserModelTests: XCTestCase {
     func testInit_defaultValues_appliesLiteQuotas() {
         let user = User(name: "Alice", email: "alice@test.com")
         XCTAssertEqual(user.planKey, "free")
-        XCTAssertEqual(user.maxVaults, User.DefaultQuotas.liteMaxVaults)
-        XCTAssertEqual(user.maxPages, User.DefaultQuotas.liteMaxPages)
-        XCTAssertEqual(user.maxPlugins, User.DefaultQuotas.liteMaxPlugins)
+        XCTAssertEqual(user.maxVaults, User.DefaultQuotas.freeMaxVaults)
+        XCTAssertEqual(user.maxPages, User.DefaultQuotas.freeMaxPages)
+        XCTAssertEqual(user.maxPlugins, User.DefaultQuotas.freeMaxPlugins)
         XCTAssertTrue(user.features.isEmpty)
         XCTAssertNil(user.phone)
         XCTAssertNil(user.avatarURL)
@@ -209,9 +209,9 @@ final class UserModelTests: XCTestCase {
         {"userId": 1, "nick": "U", "email": ""}
         """.utf8)
         let user = try JSONDecoder().decode(User.self, from: json)
-        XCTAssertEqual(user.maxVaults, User.DefaultQuotas.liteMaxVaults)
-        XCTAssertEqual(user.maxPages, User.DefaultQuotas.liteMaxPages)
-        XCTAssertEqual(user.maxPlugins, User.DefaultQuotas.liteMaxPlugins)
+        XCTAssertEqual(user.maxVaults, User.DefaultQuotas.freeMaxVaults)
+        XCTAssertEqual(user.maxPages, User.DefaultQuotas.freeMaxPages)
+        XCTAssertEqual(user.maxPlugins, User.DefaultQuotas.freeMaxPlugins)
         XCTAssertEqual(user.planKey, "free")
     }
 
@@ -267,14 +267,11 @@ final class UserModelTests: XCTestCase {
     // MARK: - PlanTier 等级枚举
 
     func testPlanTier_comparableOrdering() {
-        XCTAssertLessThan(PlanTier.free, PlanTier.lite)
-        XCTAssertLessThan(PlanTier.lite, PlanTier.pro)
         XCTAssertLessThan(PlanTier.free, PlanTier.pro)
     }
 
     func testPlanTier_fromPlanKey_knownValues() {
         XCTAssertEqual(PlanTier.from(planKey: "free"), .free)
-        XCTAssertEqual(PlanTier.from(planKey: "lite"), .lite)
         XCTAssertEqual(PlanTier.from(planKey: "pro"), .pro)
     }
 
@@ -283,23 +280,23 @@ final class UserModelTests: XCTestCase {
     }
 
     func testPlanTier_fromPlanKey_unknown_returnsFree() {
-        // 未知字符串降级为 .free（按 Lite 权益处理，策安全）
+        // 未知字符串降级为 .free（按 Free 权益处理，策安全）
         XCTAssertEqual(PlanTier.from(planKey: "team"), .free)
         XCTAssertEqual(PlanTier.from(planKey: "enterprise"), .free)
         XCTAssertEqual(PlanTier.from(planKey: ""), .free)
     }
 
-    func testPlanTier_defaultQuotas_freeEqualsLite() {
-        // free 和 lite 的默认配额相同（free 按 Lite 权益处理）
-        XCTAssertEqual(PlanTier.free.defaultQuotas.maxVaults, PlanTier.lite.defaultQuotas.maxVaults)
-        XCTAssertEqual(PlanTier.free.defaultQuotas.maxPages, PlanTier.lite.defaultQuotas.maxPages)
-        XCTAssertEqual(PlanTier.free.defaultQuotas.maxPlugins, PlanTier.lite.defaultQuotas.maxPlugins)
+    func testPlanTier_defaultQuotas_freeBaseline() {
+        // free 档默认配额即为 Free 基础权益
+        XCTAssertEqual(PlanTier.free.defaultQuotas.maxVaults, User.DefaultQuotas.freeMaxVaults)
+        XCTAssertEqual(PlanTier.free.defaultQuotas.maxPages, User.DefaultQuotas.freeMaxPages)
+        XCTAssertEqual(PlanTier.free.defaultQuotas.maxPlugins, User.DefaultQuotas.freeMaxPlugins)
     }
 
-    func testPlanTier_defaultQuotas_proGreaterThanLite() {
-        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxVaults, PlanTier.lite.defaultQuotas.maxVaults)
-        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxPages, PlanTier.lite.defaultQuotas.maxPages)
-        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxPlugins, PlanTier.lite.defaultQuotas.maxPlugins)
+    func testPlanTier_defaultQuotas_proGreaterThanFree() {
+        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxVaults, PlanTier.free.defaultQuotas.maxVaults)
+        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxPages, PlanTier.free.defaultQuotas.maxPages)
+        XCTAssertGreaterThan(PlanTier.pro.defaultQuotas.maxPlugins, PlanTier.free.defaultQuotas.maxPlugins)
     }
 
     // MARK: - User.planTier 计算属性
@@ -314,9 +311,10 @@ final class UserModelTests: XCTestCase {
         XCTAssertEqual(user.planTier, .free)
     }
 
-    func testPlanTier_planKeyLite_returnsLite() {
+    func testPlanTier_planKeyLiteUnknown_returnsFree() {
+        // "lite" 已废弃，枚举无此 case，视为未知字符串降级为 free
         let user = User(name: "A", email: "", planKey: "lite")
-        XCTAssertEqual(user.planTier, .lite)
+        XCTAssertEqual(user.planTier, .free)
     }
 
     func testPlanTier_planKeyNil_returnsFree() {
@@ -334,28 +332,18 @@ final class UserModelTests: XCTestCase {
     func testIsAtLeast_proUser_isAtLeastPro() {
         let user = User(name: "A", email: "", planKey: "pro")
         XCTAssertTrue(user.isAtLeast(.pro))
-        XCTAssertTrue(user.isAtLeast(.lite))
-        XCTAssertTrue(user.isAtLeast(.free))
-    }
-
-    func testIsAtLeast_liteUser_isAtLeastLiteButNotPro() {
-        let user = User(name: "A", email: "", planKey: "lite")
-        XCTAssertFalse(user.isAtLeast(.pro))
-        XCTAssertTrue(user.isAtLeast(.lite))
         XCTAssertTrue(user.isAtLeast(.free))
     }
 
     func testIsAtLeast_freeUser_isAtLeastFreeOnly() {
         let user = User(name: "A", email: "", planKey: "free")
         XCTAssertFalse(user.isAtLeast(.pro))
-        XCTAssertFalse(user.isAtLeast(.lite))
         XCTAssertTrue(user.isAtLeast(.free))
     }
 
     func testIsAtLeast_unknownPlanKey_treatedAsFree() {
         let user = User(name: "A", email: "", planKey: "mystery")
         XCTAssertFalse(user.isAtLeast(.pro))
-        XCTAssertFalse(user.isAtLeast(.lite))
         XCTAssertTrue(user.isAtLeast(.free))
     }
 }

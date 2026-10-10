@@ -40,7 +40,7 @@ final class SettingsViewInteractiveTests: XCTestCase {
         try await super.tearDown()
     }
 
-    // MARK: - 2. 特权拦截逻辑防腐测试 (Lite 用户开启特权项需弹窗拦截)
+    // MARK: - 2. 特权拦截逻辑防腐测试 (免费用户开启特权项需弹窗拦截)
 
     func testPrivacyAndBiometricFeatureGateForLiteUsers() {
         // 当前用户若未开通隐私模式特权，直接尝试修改状态

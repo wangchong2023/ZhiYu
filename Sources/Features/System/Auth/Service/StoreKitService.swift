@@ -11,7 +11,7 @@
 //       苹果要求：若不监听此流，家庭共享购买、订阅续费、后台恢复均无法触发本地权益更新。
 //    2. 提供 restorePurchases() 接口，调用 AppStore.sync() 触发票据验证，
 //       满足 App Store 审核要求（§3.1.1 订阅型 App 必须提供恢复购买入口）。
-//    3. 监听到订阅过期时，自动将本地用户降级为 Lite 配额，防止权益残留。
+//    3. 监听到订阅过期时，自动将本地用户降级为 Free 配额，防止权益残留。
 //
 
 import Foundation
@@ -131,7 +131,7 @@ public final class StoreKitService {
         // 检查是否为已吊销（退款 / 家长控制撤销）的交易
         if let revocationDate = transaction.revocationDate {
             Logger.shared.warning("[StoreKitService] 交易已被吊销（\(revocationDate)），降级用户权益")
-            downgradeToLite()
+            downgradeToFree()
             await transaction.finish()
             return
         }
@@ -139,7 +139,7 @@ public final class StoreKitService {
         // 检查订阅是否已过期
         if let expirationDate = transaction.expirationDate, expirationDate < Date() {
             Logger.shared.info("[StoreKitService] 订阅已过期（\(expirationDate)），降级用户权益")
-            downgradeToLite()
+            downgradeToFree()
             await transaction.finish()
             return
         }
@@ -173,19 +173,19 @@ public final class StoreKitService {
     
     // MARK: - 权益降级
     
-    /// 将当前用户降级为 Lite 配额（订阅过期 / 退款时调用）
-    func downgradeToLite() {
+    /// 将当前用户降级为 Free 配额（订阅过期 / 退款时调用）
+    func downgradeToFree() {
         guard let user = AuthSession.shared.currentUser,
               user.isPro else { return }
         
-        let lite = user.withPlan(
+        let free = user.withPlan(
             planKey: PlanKey.free,
-            maxVaults: User.DefaultQuotas.liteMaxVaults,
-            maxPages: User.DefaultQuotas.liteMaxPages,
-            maxPlugins: User.DefaultQuotas.liteMaxPlugins
+            maxVaults: User.DefaultQuotas.freeMaxVaults,
+            maxPages: User.DefaultQuotas.freeMaxPages,
+            maxPlugins: User.DefaultQuotas.freeMaxPlugins
         )
-        AuthSession.shared.update(user: lite)
-        Logger.shared.info("[StoreKitService] 用户权益已降级为 Lite")
+        AuthSession.shared.update(user: free)
+        Logger.shared.info("[StoreKitService] 用户权益已降级为 Free")
     }
 }
 

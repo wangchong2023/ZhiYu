@@ -471,8 +471,8 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     func testIsQuotaExceededExactlyAtLimitCountsAsExceeded() throws {
         let manager = try XCTUnwrap(sut)
-        let liteVo = PlanQuotasVo.createLiteDefault
-        manager.updateActiveQuotas(liteVo)
+        let freeVo = PlanQuotasVo.createFreeDefault
+        manager.updateActiveQuotas(freeVo)
         // maxVaultsCount = 2，currentUsage = 2 应算超限
         XCTAssertTrue(manager.isQuotaExceeded(\.maxVaultsCount, currentUsage: 2), "usage == limit 应算超限")
     }
@@ -481,8 +481,8 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
 
     func testIsQuotaExceededBelowLimitNotExceeded() throws {
         let manager = try XCTUnwrap(sut)
-        let liteVo = PlanQuotasVo.createLiteDefault
-        manager.updateActiveQuotas(liteVo)
+        let freeVo = PlanQuotasVo.createFreeDefault
+        manager.updateActiveQuotas(freeVo)
         XCTAssertFalse(manager.isQuotaExceeded(\.maxVaultsCount, currentUsage: 1), "usage < limit 不超限")
     }
 
@@ -492,9 +492,9 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
         let manager = try XCTUnwrap(sut)
         manager.clearQuotasCache()
         // DEBUG 模式下 isGuestModeAllowed = true，会返回 offlineColdStartQuotas
-        // 验证 DEBUG 模式下返回 Lite 默认值
+        // 验证 DEBUG 模式下返回 Free 默认值
         #if DEBUG
-        XCTAssertEqual(manager.getQuotaLimit(\.maxKnowledgePages), 1000, "DEBUG 模式无缓存应返回 Lite 保底")
+        XCTAssertEqual(manager.getQuotaLimit(\.maxKnowledgePages), 1000, "DEBUG 模式无缓存应返回 Free 保底")
         #else
         XCTAssertEqual(manager.getQuotaLimit(\.maxKnowledgePages), 0, "Release 模式无缓存禁用游客应返回 0")
         #endif
@@ -506,8 +506,8 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
         let manager = try XCTUnwrap(sut)
         manager.clearQuotasCache()
         #if DEBUG
-        XCTAssertTrue(manager.isFeatureEnabled(\.customLocalLlmEnabled), "DEBUG 模式应返回 Lite 保底 customLocalLlmEnabled = true")
-        XCTAssertFalse(manager.isFeatureEnabled(\.cloudLlmModelsEnabled), "DEBUG 模式应返回 Lite 保底 cloudLlmModelsEnabled = false")
+        XCTAssertTrue(manager.isFeatureEnabled(\.customLocalLlmEnabled), "DEBUG 模式应返回 Free 保底 customLocalLlmEnabled = true")
+        XCTAssertFalse(manager.isFeatureEnabled(\.cloudLlmModelsEnabled), "DEBUG 模式应返回 Free 保底 cloudLlmModelsEnabled = false")
         #else
         XCTAssertFalse(manager.isFeatureEnabled(\.customLocalLlmEnabled), "Release 模式无缓存应返回 false")
         #endif
@@ -531,7 +531,7 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
         let cancellable = manager.quotasSubject.sink { quotas in
             if quotas != nil { expectation.fulfill() }
         }
-        manager.updateActiveQuotas(PlanQuotasVo.createLiteDefault)
+        manager.updateActiveQuotas(PlanQuotasVo.createFreeDefault)
         wait(for: [expectation], timeout: 1.0)
         cancellable.cancel()
     }

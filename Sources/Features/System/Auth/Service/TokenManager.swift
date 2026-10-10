@@ -187,8 +187,8 @@ extension AuthService {
 
         // 3. 合并更新本地 User 对象
         if let user = AuthSession.shared.currentUser {
-            // 如果后端未返回或解析失败，默认给与 Lite (free) 的限制以策安全
-            let quotasToUse = parsedQuotas ?? PlanQuotasVo.createLiteDefault
+            // 如果后端未返回或解析失败，默认给与 Free 的限制以策安全
+            let quotasToUse = parsedQuotas ?? PlanQuotasVo.createFreeDefault
 
             // 将生效配额同步至 FeatureGateManager，驱动全局能力门禁与离线配额缓存
             FeatureGateManager.shared.updateActiveQuotas(quotasToUse)

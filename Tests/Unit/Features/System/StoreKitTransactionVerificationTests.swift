@@ -3,7 +3,7 @@
 //  ZhiYuTests
 //
 //  系统层级：[L2] 系统服务测试 - StoreKit
-//  核心职责：验证交易后端验证分支（成功完成交易、失败保留未决）以及降级至 Lite 的配额逻辑。
+//  核心职责：验证交易后端验证分支（成功完成交易、失败保留未决）以及降级至 Free 的配额逻辑。
 //
 
 import XCTest
@@ -34,10 +34,10 @@ final class StoreKitTransactionVerificationTests: XCTestCase {
         XCTAssertTrue(didFinish, "后端验证成功时应 finish 交易")
     }
 
-    /// 验证降级为 Lite 时正确使用 Lite 默认配额
-    func testUserDefaultQuotas_downgradeToLite_usesLiteQuotas() {
-        let liteMaxVaults = User.DefaultQuotas.liteMaxVaults
-        XCTAssertGreaterThan(liteMaxVaults, 0, "liteMaxVaults 应为正数")
+    /// 验证降级为 Free 时正确使用 Free 默认配额
+    func testUserDefaultQuotas_downgradeToFree_usesFreeQuotas() {
+        let freeMaxVaults = User.DefaultQuotas.freeMaxVaults
+        XCTAssertGreaterThan(freeMaxVaults, 0, "freeMaxVaults 应为正数")
     }
 }
 #endif

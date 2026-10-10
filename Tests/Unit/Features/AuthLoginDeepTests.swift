@@ -33,8 +33,8 @@ final class AuthLoginDeepTests: XCTestCase {
     private let testPhone = "13800138000"
     /// 测试用头像图片数据
     private let testAvatarImageData = Data([0x89, 0x50, 0x4E, 0x47])
-    /// Lite 套餐最大笔记本数
-    private let liteMaxVaults = User.DefaultQuotas.liteMaxVaults
+    /// Free 套餐最大笔记本数
+    private let freeMaxVaults = User.DefaultQuotas.freeMaxVaults
     /// JWT Token Key
     private let jwtTokenKey = AppConstants.Network.jwtTokenKey
 
@@ -104,9 +104,9 @@ final class AuthLoginDeepTests: XCTestCase {
             phone: phone,
             avatarURL: nil,
             planKey: planKey,
-            maxVaults: liteMaxVaults,
-            maxPages: User.DefaultQuotas.liteMaxPages,
-            maxPlugins: User.DefaultQuotas.liteMaxPlugins,
+            maxVaults: freeMaxVaults,
+            maxPages: User.DefaultQuotas.freeMaxPages,
+            maxPlugins: User.DefaultQuotas.freeMaxPlugins,
             features: features,
             gender: gender,
             birthday: birthday

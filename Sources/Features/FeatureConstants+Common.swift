@@ -52,7 +52,7 @@ extension FeatureConstants {
         /// Mock 模式下 token 过期时间（秒）
         static let mockExpiresInSeconds: Int = 3600
         static let workspaceBenchFileName: String = "workspace_bench.jpg"
-        static let litePlanName: String = "Lite"
+        static let freePlanName: String = "Free"
         static let github = "github"
         static let wifi = "WiFi"
         static let latency23ms = "23ms"
