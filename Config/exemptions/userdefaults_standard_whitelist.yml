@@ -1,9 +1,12 @@
 # UserDefaults.standard 冻结白名单
 # 策略：冻结现状，禁止新增。已迁移 25 处到 KeyStoreProtocol（P0-1 阶段完成）。
-# 仅保留 ZhiYuApp.swift 2 处（引导层架构约束：DI 容器注册之前运行，KeyStoreProtocol 无法覆盖）。
-# 登记总数：2 项
+# 仅保留 ZhiYuApp.swift 3 处（引导层架构约束：DI 容器注册之前运行，KeyStoreProtocol 无法覆盖；
+#   含 -ResetUserDefaults 测试辅助参数，用于清除 seeded_vault_ 种子数据）。
+# 登记总数：3 项
 
   - file: "Sources/App/Core/ZhiYuApp.swift"
     line: 166
   - file: "Sources/App/Core/ZhiYuApp.swift"
     line: 179
+  - file: "Sources/App/Core/ZhiYuApp.swift"
+    line: 190
