@@ -30,9 +30,9 @@ actor PaymentRetryQueue {
     // MARK: - 常量
 
     /// 指数退避时间（秒）：第 n 次重试前的等待间隔
-    private let backoffSeconds: [TimeInterval] = [30, 60, 120, 300, 900]
+    private let backoffSeconds: [TimeInterval] = PaymentRetryQueue.BackoffIntervals.allCases.map(\.rawValue)
     /// 最大重试次数（达到后丢弃该交易）
-    private let maxAttempts = 5
+    private let maxAttempts = PaymentRetryQueue.BackoffIntervals.allCases.count
     /// 支付渠道标识（对齐后端 PaymentStrategyFactory 路由）
     private let channel = "APPLE"
     /// 持久化存储 key（UserDefaults）
@@ -177,6 +177,17 @@ actor PaymentRetryQueue {
             Logger.shared.error("[PaymentRetryQueue] 队列恢复失败", error: error)
             return [:]
         }
+    }
+
+    // MARK: - 内部枚举
+
+    /// 指数退避重试间隔（秒）
+    private enum BackoffIntervals: TimeInterval, CaseIterable {
+        case first = 30
+        case second = 60
+        case third = 120
+        case fourth = 300
+        case fifth = 900
     }
 
     // MARK: - 内部模型
