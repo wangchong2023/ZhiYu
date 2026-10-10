@@ -179,7 +179,7 @@ public final class StoreKitService {
               user.isPro else { return }
         
         let lite = user.withPlan(
-            planKey: PlanKey.lite,
+            planKey: PlanKey.free,
             maxVaults: User.DefaultQuotas.liteMaxVaults,
             maxPages: User.DefaultQuotas.liteMaxPages,
             maxPlugins: User.DefaultQuotas.liteMaxPlugins

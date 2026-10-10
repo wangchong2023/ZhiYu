@@ -12,26 +12,22 @@ import Foundation
 
 /// 用户订阅套餐 Key 常量（与后端通信的字符串标识）
 public enum PlanKey {
-    /// Lite 版（未订阅时后端返回 "free"，本地按 Lite 权益处理）
-    public static let lite = "lite"
+    /// Free 版（未订阅时后端返回 "free"，本地按 Free 权益处理）
+    public static let free = "free"
     /// Pro 专业版
     public static let pro = "pro"
-    /// 后端返回的未订阅标识，本地按 Lite 权益处理
-    public static let free = "free"
 }
 
 /// 用户订阅套餐等级（按权益高低排序，支持 Comparable 进行等级比较）
 /// 新增套餐时只需在此枚举追加 case 并配置 rawValue 与 defaultQuotas，
 /// 业务侧的 `isPro` / `isAtLeast` 等判断无需改动。
 public enum PlanTier: String, Comparable, Sendable {
-    /// 未订阅（后端返回 "free"，本地按 Lite 权益处理）
+    /// 未订阅（后端返回 "free"，本地按 Free 权益处理）
     case free
-    /// Lite 基础版
-    case lite
     /// Pro 专业版
     case pro
 
-    /// Comparable 排序：free < lite < pro
+    /// Comparable 排序：free < pro
     public static func < (lhs: PlanTier, rhs: PlanTier) -> Bool {
         lhs.rank < rhs.rank
     }
@@ -40,7 +36,6 @@ public enum PlanTier: String, Comparable, Sendable {
     private var rank: Int {
         switch self {
         case .free: return 0
-        case .lite: return 1
         case .pro: return 2
         }
     }
@@ -48,7 +43,7 @@ public enum PlanTier: String, Comparable, Sendable {
     /// 该等级的默认配额（后端未返回配额时使用）
     public var defaultQuotas: User.DefaultQuotas.Quota {
         switch self {
-        case .free, .lite:
+        case .free:
             return User.DefaultQuotas.liteQuota
         case .pro:
             return User.DefaultQuotas.proQuota
@@ -56,7 +51,7 @@ public enum PlanTier: String, Comparable, Sendable {
     }
 
     /// 从后端返回的 planKey 字符串解析为 PlanTier
-    /// 未知字符串降级为 `.free`（按 Lite 权益处理，策安全）
+    /// 未知字符串降级为 `.free`（按 Free 权益处理，策安全）
     public static func from(planKey: String?) -> PlanTier {
         guard let key = planKey else { return .free }
         return PlanTier(rawValue: key) ?? .free

@@ -13,17 +13,17 @@ import Foundation
 
 /// 会员与套餐配额强类型常量
 public enum SubscriptionQuotaConstants {
-    /// Lite 基础免费版配额基线
+    /// Free 基础免费版配额基线
     public enum Lite {
         public static let maxKnowledgePages: Int = 1000
-        public static let maxVaultsCount: Int = 2
+        public static let maxVaultsCount: Int = 4
         public static let maxFileSizeMb: Int = 10
     }
 
     /// Pro 专业版配额基线
     public enum Pro {
         public static let maxKnowledgePages: Int = 50000
-        public static let maxVaultsCount: Int = 100
+        public static let maxVaultsCount: Int = 10
         public static let maxFileSizeMb: Int = 50
     }
 }

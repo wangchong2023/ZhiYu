@@ -121,7 +121,7 @@ extension PlanQuotasVo {
     public static var createLiteDefault: PlanQuotasVo {
         PlanQuotasVo(
             maxKnowledgePages: 1000,
-            maxVaultsCount: 2,
+            maxVaultsCount: 4,
             maxFileSizeMb: 10,
             dailyAiMessages: 0, // 离线无云端消息
             cloudLlmModelsEnabled: false,
@@ -141,7 +141,7 @@ extension PlanQuotasVo {
     public static var createProDefault: PlanQuotasVo {
         PlanQuotasVo(
             maxKnowledgePages: 50000,
-            maxVaultsCount: 100,
+            maxVaultsCount: 10,
             maxFileSizeMb: 50, // 50 MB
             dailyAiMessages: -1,
             cloudLlmModelsEnabled: true,
