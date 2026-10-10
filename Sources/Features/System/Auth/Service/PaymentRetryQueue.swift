@@ -38,6 +38,14 @@ actor PaymentRetryQueue {
     /// 持久化存储 key（UserDefaults）
     private let storageKey = AppConstants.Keys.Storage.paymentRetryQueue
 
+    // MARK: - 依赖
+
+    // 键值存储抽象（extension 不支持 @Inject，使用 computed property 安全解析）
+    // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
+    private var keyStore: (any KeyStoreProtocol)? {
+        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+    }
+
     // MARK: - 状态
 
     /// 待重试的验证项（key: transactionId）
@@ -160,14 +168,14 @@ actor PaymentRetryQueue {
     private func persist() {
         do {
             let data = try JSONEncoder().encode(Array(pending.values))
-            UserDefaults.standard.set(data, forKey: storageKey)
+            keyStore?.set(data, forKey: storageKey)
         } catch {
             Logger.shared.error("[PaymentRetryQueue] 队列持久化失败", error: error)
         }
     }
 
     private static func loadPersisted() -> [String: PendingVerify] {
-        guard let data = UserDefaults.standard.data(forKey: AppConstants.Keys.Storage.paymentRetryQueue) else {
+        guard let data = UserDefaultsKeyStore.shared.data(forKey: AppConstants.Keys.Storage.paymentRetryQueue) else {
             return [:]
         }
         do {
