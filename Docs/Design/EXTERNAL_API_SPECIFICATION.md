@@ -27,7 +27,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "success",
   "data": { ... },
   "timestamp": 1784724059
@@ -38,7 +38,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 
 | HTTP Status | 业务 code | 描述说明 |
 | :--- | :--- | :--- |
-| `200 OK` | `200` | 请求处理成功 |
+| `200 OK` | `0` | 请求处理成功 |
 | `400 Bad Request` | `40001` | 请求参数检验失败或缺失 |
 | `401 Unauthorized` | `40101` | Token 无效、已过期或未提供 Authorization 头 |
 | `403 Forbidden` | `40301` | 权限不足（如非 Pro 订阅用户尝试访问高级 AI 权益） |
@@ -52,17 +52,18 @@ Token 可通过登录接口或刷新 Token 接口获取。
 
 | 业务模块 | 接口名称 | 核心作用与描述 | 请求方法 & URI | 发起方 (Caller) | 提供方 (Provider) | 注意事项与安全约束 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **账号与资料** | 获取用户 Profile | 拉取当前登录用户的完整资料与全局权限状态 | `GET /api/v1/user/profile` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；用于自动登录恢复及 Token 刷新后同步态 |
-| **账号与资料** | 更新个人资料 | 修改用户显示昵称、头像 URL、性别及生日 | `PUT /api/v1/user/profile` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；Mock 模式下仅同步更新本地内存缓存 |
-| **账号与资料** | 上传用户头像 | 上传二进制头像图片并返回存储 OSS 访问地址 | `POST /api/v1/user/profile/avatar` | 智宇 App 客户端 | 智宇后端 API / OSS | 需 `Bearer Token`；`multipart/form-data`，图片限制 5MB 内 |
+| **账号与资料** | 获取用户 Profile | 拉取当前登录用户的完整资料与全局权限状态 | `GET /api/v1/auth/user/profile` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；用于自动登录恢复及 Token 刷新后同步态 |
+| **账号与资料** | 更新个人资料 | 修改用户显示昵称、头像 URL、性别及生日 | `PUT /api/v1/auth/user/profile` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；Mock 模式下仅同步更新本地内存缓存 |
+| **账号与资料** | 上传用户头像 | 上传二进制头像图片并返回存储 OSS 访问地址 | `POST /api/v1/auth/user/profile/avatar` | 智宇 App 客户端 | 智宇后端 API / OSS | 需 `Bearer Token`；`multipart/form-data`，图片限制 5MB 内 |
 | **账号与资料** | 账号登录与注册 | 支持密码登录或手机短信验证码一键注册登录 | `POST /api/v1/auth/login` | 智宇 App 客户端 | 智宇后端 API 服务 | 响应返回 AccessToken 与 RefreshToken，自动存入 Keychain |
 | **账号与资料** | 发送短信验证码 | 向目标手机号下发登录/重置密码所需的验证码 | `POST /api/v1/auth/sms/send` | 智宇 App 客户端 | 智宇后端 API / 短信网关 | 限制单 IP 及手机号高频触发，防止恶意短信接口刷量 |
 | **账号与资料** | 第三方 OAuth 登录 | 整合 Apple/微信/Google/GitHub/运营商免密登录 | `POST /api/v1/auth/oauth/{provider}` | 智宇 App 客户端 | 智宇后端 API 服务 | 需要提交第三方平台签发的 Authorization Code / ID Token |
 | **账号与资料** | 刷新 Access Token | 当访问 Token 过期时利用 RefreshToken 换取新凭证 | `POST /api/v1/auth/refresh` | 智宇 App 客户端 | 智宇后端 API 服务 | 客户端 HTTP 网络拦截器检测到 `401` 时自动无感触发 |
 | **账号与资料** | 退出登录 | 注销并吊销服务端的 RefreshToken 凭证 | `POST /api/v1/auth/logout` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；同步清空 Keychain 中的本地密钥存储 |
-| **订阅与套餐** | 查询订阅套餐列表 | 获取 Lite / Pro / Team 各级别套餐定价与权益配额 | `GET /api/v1/subscriptions/plans` | 智宇 App 客户端 | 智宇后端 API 服务 | 公开接口；用于收银台/付费墙/升级引导界面的展示 |
+| **订阅与套餐** | 查询订阅套餐列表 | 获取 Free / Pro 各级别套餐定价与权益配额 | `GET /api/v1/subscriptions/plans` | 智宇 App 客户端 | 智宇后端 API 服务 | 公开接口；用于收银台/付费墙/升级引导界面的展示 |
 | **订阅与套餐** | 查询当前用户订阅 | 拉取当前登录用户生效的套餐类型、到期日与限额 | `GET /api/v1/subscriptions/me` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；用于客户端控制 Vaults/Pages/Plugins 额度 |
 | **订阅与套餐** | 验证 Apple 购买凭证 | 校验 App Store StoreKit 内购收据并激活 Pro | `POST /api/v1/subscriptions/apple/verify` | 智宇 App 客户端 | 智宇后端 API / Apple Verify | 需 `Bearer Token`；服务器二次校验成功后刷新本地 Profile |
+| **订阅与套餐** | 通用支付验证 | 通过 `channel` 路由到对应支付策略并激活订阅 | `POST /api/v1/subscriptions/verify` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；目前支持 `channel=APPLE`，不支持的渠道返回 `40047` |
 | **应用改进** | 提交通用反馈改进 | 上报 Bug 缺陷、功能建议及体验改善工单 | `POST /api/v1/feedback/submit` | 智宇 App 客户端 | 智宇后端 API 服务 | 本地 SQLite 优先持久化，联网时通过后台任务静默异步同步 |
 | **AI 对话评测** | 发送对话结果反馈 | 提交某条 AI 问答消息的点赞/点踩满意度与评语 | `POST /api/v1/ai/chat/feedback` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；用于 RAG 检索模型调优与回答质量迭代 |
 | **AI 对话评测** | 发送 RAG 质量评估 | 上报 LLM-as-a-Judge 的 7 维 Benchmark 测评指标 | `POST /api/v1/ai/rag/evaluation` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；包含忠实度、幻觉率、引用准确度等 7 维分值 |
@@ -78,13 +79,13 @@ Token 可通过登录接口或刷新 Token 接口获取。
 
 ### 2.1 获取当前登录用户 Profile
 - **HTTP 方法**：`GET`
-- **请求路径**：`/api/v1/user/profile`
+- **请求路径**：`/api/v1/auth/user/profile`
 - **需要鉴权**：是 (`Bearer Token`)
 
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "success",
   "data": {
     "userId": 10086,
@@ -103,7 +104,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 
 ### 2.2 更新个人资料
 - **HTTP 方法**：`PUT`
-- **请求路径**：`/api/v1/user/profile`
+- **请求路径**：`/api/v1/auth/user/profile`
 - **需要鉴权**：是 (`Bearer Token`)
 
 #### 请求 Body 示例
@@ -127,7 +128,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "profile updated successfully",
   "data": {
     "userId": 10086,
@@ -146,7 +147,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 
 ### 2.3 上传用户头像
 - **HTTP 方法**：`POST`
-- **请求路径**：`/api/v1/user/profile/avatar`
+- **请求路径**：`/api/v1/auth/user/profile/avatar`
 - **Content-Type**：`multipart/form-data`
 - **需要鉴权**：是 (`Bearer Token`)
 
@@ -158,7 +159,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "avatar uploaded successfully",
   "data": "https://cdn.zhiyu.app/avatars/20260723_avatar_10086.png"
 }
@@ -183,7 +184,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 请求 Body 示例（短信验证码登录/注册）
 ```json
 {
-  "grantType": "sms",
+  "grantType": "sms_code",
   "phone": "13800008888",
   "code": "888888"
 }
@@ -192,7 +193,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "login success",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -224,7 +225,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "verification code sent",
   "data": null
 }
@@ -266,7 +267,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "token refreshed",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.new...",
@@ -293,7 +294,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "logged out successfully",
   "data": null
 }
@@ -311,17 +312,16 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "success",
   "data": [
     {
       "planKey": "free",
-      "name": "基础版 (Lite)",
+      "name": "免费版 (Free)",
       "priceMonth": 0,
       "priceYear": 0,
-      "maxVaults": 3,
+      "maxVaults": 4,
       "maxPages": 1000,
-      "maxPlugins": 5,
       "features": ["local_fts_search", "basic_note_editing"]
     },
     {
@@ -329,9 +329,8 @@ Token 可通过登录接口或刷新 Token 接口获取。
       "name": "专业版 (Pro)",
       "priceMonth": 30,
       "priceYear": 288,
-      "maxVaults": 100,
-      "maxPages": 100000,
-      "maxPlugins": 50,
+      "maxVaults": 10,
+      "maxPages": 50000,
       "features": ["local_fts_search", "rag_synthesis", "local_llm_acceleration", "unlimited_plugins"]
     }
   ]
@@ -348,13 +347,13 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "success",
   "data": {
     "planKey": "pro",
     "status": "active",
     "expireAt": "2027-07-01T00:00:00Z",
-    "quotasJson": "{\"max_vaults\": 100, \"max_pages\": 100000, \"max_plugins\": 50}",
+    "quotasJson": "{\"max_knowledge_pages\": 50000, \"max_vaults_count\": 10, \"max_file_size_mb\": 50, \"daily_ai_messages\": -1, \"cloud_llm_models_enabled\": true, \"vector_search_enabled\": true, \"graph_advanced_enabled\": false, \"audio_overview_enabled\": false, \"large_attachment_sync\": true, \"advanced_export_enabled\": true, \"spotlight_indexing_enabled\": true, \"pro_plugins_enabled\": true, \"custom_local_llm_enabled\": true, \"ad_free_enabled\": true}",
     "featuresJson": "[\"local_fts_search\", \"rag_synthesis\", \"local_llm_acceleration\", \"unlimited_plugins\"]"
   }
 }
@@ -379,7 +378,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "purchase verified and pro activated",
   "data": {
     "orderNo": "ORD_20260723_001",
@@ -388,6 +387,48 @@ Token 可通过登录接口或刷新 Token 接口获取。
   }
 }
 ```
+
+---
+
+### 3.4 通用支付购买验证并激活订阅
+- **HTTP 方法**：`POST`
+- **请求路径**：`/api/v1/subscriptions/verify`
+- **需要鉴权**：是 (`Bearer Token`)
+
+通用支付验证入口，通过 `channel` 字段路由到对应支付策略（目前支持 `APPLE`），服务端二次校验后激活订阅。与 3.3 的 `/apple/verify` 兼容端点等价，`/apple/verify` 保留用于旧客户端。
+
+#### 请求 Body 示例
+```json
+{
+  "channel": "APPLE",
+  "productId": "com.zhiyu.app.pro.monthly",
+  "receiptData": "MIITwAYJKoZIhvcNAQcCoIITsTCC...",
+  "orderNo": "ORD_20260723_001"
+}
+```
+
+#### 字段说明
+| 参数名 | 类型 | 必填 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `channel` | String | 是 | 支付渠道标识，目前支持 `APPLE` |
+| `productId` | String | 是 | StoreKit 内购产品 ID |
+| `receiptData` | String | 是 | 内购收据 Base64 数据 |
+| `orderNo` | String | 否 | 客户端订单号（可选，用于幂等关联） |
+
+#### 响应示例 (`200 OK`)
+```json
+{
+  "code": 0,
+  "message": "purchase verified and pro activated",
+  "data": {
+    "orderNo": "ORD_20260723_001",
+    "status": "completed",
+    "planKey": "pro"
+  }
+}
+```
+
+> 不支持的 `channel` 将返回错误码 `40047`（`UNSUPPORTED_PAYMENT_CHANNEL`）。
 
 ---
 
@@ -425,7 +466,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "feedback submitted",
   "data": {
     "id": "fb_20260723_999",
@@ -467,7 +508,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "ai feedback recorded",
   "data": {
     "evaluationId": 5001,
@@ -521,7 +562,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "rag evaluation report uploaded",
   "data": {
     "evaluationId": 5002,
@@ -542,7 +583,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "success",
   "data": [
     {
@@ -661,7 +702,7 @@ Content-Type: application/octet-stream
 #### 响应示例 (`200 OK`)
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "success",
   "data": [
     {
