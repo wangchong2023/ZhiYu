@@ -73,7 +73,7 @@ final class StoreKitAndInfraServiceDeepTests: XCTestCase {
 
         let downgradedUser = AuthSession.shared.currentUser
         XCTAssertNotNil(downgradedUser)
-        XCTAssertEqual(downgradedUser?.planKey, PlanKey.lite)
+        XCTAssertEqual(downgradedUser?.planKey, PlanKey.free)
         XCTAssertFalse(downgradedUser?.isPro ?? true)
         XCTAssertEqual(downgradedUser?.maxVaults, User.DefaultQuotas.liteMaxVaults)
         XCTAssertEqual(downgradedUser?.maxPages, User.DefaultQuotas.liteMaxPages)
@@ -81,7 +81,7 @@ final class StoreKitAndInfraServiceDeepTests: XCTestCase {
 
         // 场景 2：当前用户已是 Lite 用户，重复降级应静默无操作
         service.downgradeToLite()
-        XCTAssertEqual(AuthSession.shared.currentUser?.planKey, PlanKey.lite)
+        XCTAssertEqual(AuthSession.shared.currentUser?.planKey, PlanKey.free)
 
         // 场景 3：当前无登录用户，降级应安全守卫退出
         AuthSession.shared.logout()
