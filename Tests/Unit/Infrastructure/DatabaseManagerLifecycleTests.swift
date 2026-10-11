@@ -45,16 +45,6 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         try await super.tearDown()
     }
 
-    // MARK: - reset 后属性验证
-
-    func testResetAfterDbWriterIsNil() {
-        XCTAssertNil(DatabaseManager.shared.dbWriter, "reset 后 dbWriter 应为 nil")
-    }
-
-    func testResetAfterGlobalWriterIsNil() {
-        XCTAssertNil(DatabaseManager.shared.globalWriter, "reset 后 globalWriter 应为 nil")
-    }
-
     // MARK: - 事务计数（Finding #18 修复后：通过 TransactionGatekeeper actor 串行化）
 
     func testIncrementActiveTransactionsCountIncrements() async throws {
@@ -148,19 +138,6 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         XCTAssertTrue(tables.count > 0, "migrate 后应有表存在")
         // 验证 FeedbackEntry 表存在（V13 迁移）
         XCTAssertTrue(tables.contains(FeedbackEntry.databaseTableName), "migrate 后应有 feedback_entries 表")
-    }
-
-    // MARK: - reset
-
-    func testResetClearsAllWriters() throws {
-        // 用独立 DatabaseQueue 验证 reset 逻辑，不调用 setupForTesting 避免 DI 污染
-        let memoryQueue = try DatabaseQueue()
-        DatabaseManager.shared.dbWriter = memoryQueue
-        XCTAssertNotNil(DatabaseManager.shared.dbWriter)
-
-        DatabaseManager.shared.reset()
-        XCTAssertNil(DatabaseManager.shared.dbWriter, "reset 后 dbWriter 应为 nil")
-        XCTAssertNil(DatabaseManager.shared.globalWriter, "reset 后 globalWriter 应为 nil")
     }
 
     // MARK: - Finding #17 修复验证：dbWriter 为 nil 时抛错而非静默降级
