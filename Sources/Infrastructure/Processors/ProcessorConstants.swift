@@ -347,10 +347,10 @@ enum ProcessorConstants {
         static let quizOptionStrip: String = "^[*\\-]\\s*"
         /// 匹配 Quiz Answer 行（Answer: 后跟字母/数字）
         static let quizAnswer: String = #"Answer:\s*([A-Da-d1-4])"#
-        /// 匹配 CJK 与 ANSI 字符边界（CJK 在前）
-        static let cjkAnsBoundary: String = #"([\u4e00-\u9fa5\u3040-\u30ff])([A-Za-z0-9@#\$%\^&\*\-\+\=])"#
-        /// 匹配 CJK 与 ANSI 字符边界（ANSI 在前）
-        static let ansCjkBoundary: String = #"([A-Za-z0-9@#\$%\^&\*\-\+\=])([\u4e00-\u9fa5\u3040-\u30ff])"#
+        /// 匹配 CJK 与 ANSI 字符边界（CJK 在前），引用 UFPCore.RegexConstants.CJKSpacing
+        static let cjkAnsBoundary: String = RegexConstants.CJKSpacing.cjkAnsBoundary
+        /// 匹配 CJK 与 ANSI 字符边界（ANSI 在前），引用 UFPCore.RegexConstants.CJKSpacing
+        static let ansCjkBoundary: String = RegexConstants.CJKSpacing.ansCjkBoundary
         /// 匹配 Mermaid 标准节点 NodeID[Label]
         static let mermaidNodeStandard: String = #"([A-Za-z0-9_\-]+)\[([^"\]]+)\]"#
         /// 匹配 Mermaid 嵌套方括号节点 NodeID[Label[...]]
