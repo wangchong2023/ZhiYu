@@ -13,28 +13,12 @@ import UFPCore
 public enum CoreConstants {
 
     // MARK: - 语言代码 (Language Code)
-    public enum LanguageCode {
-        public static let zh = "zh"
-        public static let zhHans = "zh-Hans"
-        public static let zhHant = "zh-Hant"
-        public static let zhHK = "zh-HK"
-        public static let zhTW = "zh-TW"
-        public static let zhMO = "zh-MO"
-        public static let en = "en"
-        public static let es = "es"
-        public static let fr = "fr"
-        public static let ar = "ar"
-        public static let ru = "ru"
-        public static let ko = "ko"
-        public static let ja = "ja"
-        public static let pt = "pt"
-    }
+    /// 转发至 UFPCore 的 SystemConstants.LanguageCode（语言常量下沉至底座包）
+    public typealias LanguageCode = SystemConstants.LanguageCode
 
     // MARK: - 本地化 (Localization)
-    public enum Localization {
-        public static let lproj = "lproj"
-        public static let commonTable = "Common"
-    }
+    /// 转发至 UFPCore 的 SystemConstants.Localization（本地化常量下沉至底座包）
+    public typealias Localization = SystemConstants.Localization
 
     // MARK: - 安全 (Security)
     public enum Security {

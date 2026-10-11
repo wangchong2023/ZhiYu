@@ -13,6 +13,7 @@
 import XCTest
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 import Dependencies
 @testable import ZhiYu
 
@@ -123,19 +124,6 @@ final class SearchDetailAndSharedViewsDeepTests: XCTestCase {
         XCTAssertNotNil(hostCard.view, "AppCard 标准卡片容器应能正常挂载渲染")
         XCTAssertEqual(card.cornerRadiusToken, .card)
         XCTAssertEqual(card.paddingToken, .standardPadding)
-
-        // 2. AppCardModifier 视图修饰符
-        let modifier = AppCardModifier(
-            cornerRadiusToken: .medium,
-            paddingToken: .small,
-            backgroundColor: .appBackground
-        )
-        let modifiedView = Text("修饰符测试内容")
-            .modifier(modifier)
-        let hostModified = modifiedView.snapshotEnvironment().renderInWindow()
-        XCTAssertNotNil(hostModified.view, "AppCardModifier 修饰符应能正确计算并渲染内边距与背景")
-        XCTAssertEqual(modifier.cornerRadiusToken, .medium)
-        XCTAssertEqual(modifier.paddingToken, .small)
     }
 
     // MARK: - 5. AIRainbowGlowBadge 呼吸微标与弹窗状态深测

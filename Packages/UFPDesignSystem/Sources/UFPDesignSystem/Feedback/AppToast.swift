@@ -1,18 +1,18 @@
 //
 //  AppToast.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
-//  Created by Antigravity on 2026/05/23.
+//  Created by Antigravity on 2026/10/11.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem]
+//  核心职责：可复用轻提示（Toast）组件：Toast 类型、模型、队列管理器与视觉组件。
 //
+
 import SwiftUI
 import Combine
 import Dependencies
 import UFPCore
-import UFPDesignSystem
 
 // MARK: - App Toast Type
 /// 轻提示类型枚举
@@ -22,7 +22,7 @@ public enum AppToastType: Equatable {
     case error
     case info
     case processing
-    
+
     var icon: String {
         switch self {
         case .success: return DesignTokens.Icons.checkCircle
@@ -31,7 +31,7 @@ public enum AppToastType: Equatable {
         case .processing: return DesignTokens.Icons.sparkles
         }
     }
-    
+
     var color: Color {
         switch self {
         case .success: return .green
@@ -101,7 +101,7 @@ private enum ToastManagerKey: DependencyKey {
 
 extension DependencyValues {
     /// Toast 服务依赖（原 ToastManager.shared）
-    nonisolated var toastService: ToastManager {
+    public nonisolated var toastService: ToastManager {
         get { self[ToastManagerKey.self] }
         set { self[ToastManagerKey.self] = newValue }
     }
@@ -115,7 +115,7 @@ extension DependencyValues {
 struct AppToastView: View {
     let toast: AppToast
     let onDismiss: () -> Void
-    
+
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.medium) { // 12
             if toast.type == .processing {
@@ -126,13 +126,13 @@ struct AppToastView: View {
                 Image(systemName: toast.type.icon)
                     .foregroundStyle(toast.type.color)
             }
-            
+
             Text(toast.message)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.appText)
-            
+
             Spacer()
-            
+
             Button(action: onDismiss) {
                 Image(systemName: DesignTokens.Icons.xmark)
                     .font(.caption2.weight(.bold))
@@ -186,7 +186,7 @@ struct AppToastModifier: ViewModifier {
 extension View {
 
     /// appToast
-    func appToast() -> some View {
+    public func appToast() -> some View {
         modifier(AppToastModifier())
     }
 }

@@ -1,15 +1,15 @@
 //
 //  AppLoadingOverlay.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
-//  Created by Antigravity on 2026/05/23.
+//  Created by Antigravity on 2026/10/11.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem]
+//  核心职责：全屏加载遮罩组件，统一各页面的 Loading 状态展示。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 // MARK: - App Loading Overlay
 /// 全屏加载遮罩，统一各页面的 Loading 状态展示。
@@ -43,7 +43,7 @@ public struct AppLoadingOverlay: View {
                 backgroundColor
                     .ignoresSafeArea()
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel(message ?? L10n.Common.loading)
+                    .accessibilityLabel(message ?? AppFeedbackL10n.loading)
 
                 VStack(spacing: DesignTokens.Spacing.standardPadding) {
                     ProgressView()

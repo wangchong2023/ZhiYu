@@ -372,4 +372,30 @@ public enum SystemConstants {
         public static let exclamation: String = "!"
         public static let backtick: String = "`"
     }
+
+    // MARK: - 语言代码 (Language Code)
+    /// 系统支持的 ISO 语言代码常量集（与业务无关）
+    public enum LanguageCode {
+        public static let zh = "zh"
+        public static let zhHans = "zh-Hans"
+        public static let zhHant = "zh-Hant"
+        public static let zhHK = "zh-HK"
+        public static let zhTW = "zh-TW"
+        public static let zhMO = "zh-MO"
+        public static let en = "en"
+        public static let es = "es"
+        public static let fr = "fr"
+        public static let ar = "ar"
+        public static let ru = "ru"
+        public static let ko = "ko"
+        public static let ja = "ja"
+        public static let pt = "pt"
+    }
+
+    // MARK: - 本地化 (Localization)
+    /// 本地化资源相关常量集（与业务无关）
+    public enum Localization {
+        public static let lproj = "lproj"
+        public static let commonTable = "Common"
+    }
 }

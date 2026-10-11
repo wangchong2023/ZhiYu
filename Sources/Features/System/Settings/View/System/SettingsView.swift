@@ -11,6 +11,7 @@
 import SwiftUI
 import Dependencies
 import UFPDesignSystem
+import UFPCore
 
 struct SettingsView: View {
     @Dependency(\.toastService) private var toastManager

@@ -1,13 +1,14 @@
 //
 //  AppToastTests.swift
-//  ZhiYuTests
+//  UFPDesignSystemTests
 //
-//  系统层级：[Tests] 单元测试层
+//  系统层级：[UFPDesignSystemTests]
 //  核心职责：验证 Toast 类型枚举映射、Toast 数据模型与 ToastManager 状态机生命周期。
 //
 
 import XCTest
-@testable import ZhiYu
+import SwiftUI
+@testable import UFPDesignSystem
 
 final class AppToastTypeTests: XCTestCase {
 

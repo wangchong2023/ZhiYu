@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 extension L10n {
     public enum ModelManager: L10nTableEntry {

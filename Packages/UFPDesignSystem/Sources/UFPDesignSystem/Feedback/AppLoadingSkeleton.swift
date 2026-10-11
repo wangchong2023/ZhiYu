@@ -1,15 +1,15 @@
 //
 //  AppLoadingSkeleton.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
-//  Created by Antigravity on 2026/05/23.
+//  Created by Antigravity on 2026/10/11.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem]
+//  核心职责：骨架屏占位加载组件（流光闪烁微动画）。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 /// 骨架屏占位加载组件
 /// 包含流光闪烁微动画，能够模拟不同尺寸与结构的排版占位。
@@ -23,33 +23,33 @@ public struct AppLoadingSkeleton: View {
         /// 卡片大图块占位
         case cardBlock
     }
-    
+
     /// 当前骨架屏样式
     public let type: SkeletonType
-    
+
     /// 动画透明度控制状态
     @State private var animateOpacity = DesignTokens.Opacity.shadow
-    
+
     /// 初始化骨架屏加载组件
     /// - Parameter type: 骨架样式，默认为 .textRow
     public init(type: SkeletonType = .textRow) {
         self.type = type
     }
-    
+
     public var body: some View {
         Group {
             switch type {
             case .textRow:
                 skeletonRectangle()
                     .frame(height: DesignTokens.IconSize.micro)
-                
+
             case .paragraph:
                 VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.tight) {
                     skeletonRectangle().frame(height: DesignTokens.IconSize.micro).frame(maxWidth: .infinity)
                     skeletonRectangle().frame(height: DesignTokens.IconSize.micro).frame(maxWidth: .infinity)
                     skeletonRectangle().frame(height: DesignTokens.IconSize.micro).frame(width: DesignTokens.Metrics.sourceCardWidth)
                 }
-                
+
             case .cardBlock:
                 VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.medium) {
                     skeletonRectangle()
@@ -68,7 +68,7 @@ public struct AppLoadingSkeleton: View {
             // 1. 物理挂载后立即执行无限往复的流光透明度插值动画
             withAnimation(
                 .easeInOut(duration: DesignTokens.Animations.Decorator.pulseDuration)
-                .repeatForever(autoreverses: true)
+                    .repeatForever(autoreverses: true)
             ) {
                 animateOpacity = DesignTokens.Opacity.prominent
             }
@@ -81,7 +81,7 @@ public struct AppLoadingSkeleton: View {
             }
         }
     }
-    
+
     /// 构建骨架屏基础灰色微动画圆角矩形
     private func skeletonRectangle() -> some View {
         RoundedRectangle(cornerRadius: DesignTokens.Spacing.chipRadius)

@@ -1,21 +1,22 @@
 //
 //  AppEmptyState.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
-//  Created by Antigravity on 2026/05/23.
+//  Created by Antigravity on 2026/10/11.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem]
+//  核心职责：智适应空状态视图组件（视觉占位符、说明文案及引导操作按钮）。
 //
+
 import SwiftUI
-import UFPDesignSystem
+import Foundation
 
 /// 智适应空状态视图组件
 /// 负责在内容为空时展示视觉占位符、说明文案及引导操作按钮。
 public struct AppEmptyState: View {
     // MARK: - Properties
-    
+
     public let icon: String
     public let title: String
     public let description: String?
@@ -40,7 +41,7 @@ public struct AppEmptyState: View {
     }
 
     // MARK: - Initialization
-    
+
     public init(
         icon: String,
         title: String,
@@ -56,7 +57,7 @@ public struct AppEmptyState: View {
     }
 
     // MARK: - Body
-    
+
     public var body: some View {
         VStack(spacing: DesignTokens.Spacing.giant) { // 24
             // 视觉展示区
@@ -68,7 +69,7 @@ public struct AppEmptyState: View {
 
                 Circle()
                     .fill(Color.appAccent.opacity(DesignTokens.Colors.glassOpacity * 0.3))
-                    .frame(width: DesignSystem.Gallery.emptyStateImageSize, height: DesignSystem.Gallery.emptyStateImageSize)
+                    .frame(width: DesignTokens.Spacing.Gallery.emptyStateImageSize, height: DesignTokens.Spacing.Gallery.emptyStateImageSize)
 
                 // 主图标容器
                 Image(systemName: icon)
@@ -132,7 +133,7 @@ public struct AppEmptyState: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
                             .stroke(
-                                action.role == .primary || action.role == nil ? Color.clear : Color.appAccent, 
+                                action.role == .primary || action.role == nil ? Color.clear : Color.appAccent,
                                 lineWidth: DesignTokens.Spacing.borderWidth
                             )
                     )
@@ -150,7 +151,7 @@ public struct AppEmptyState: View {
     }
 
     // MARK: - Private Methods
-    
+
     private func actionForegroundColor(for role: Action.Role?) -> Color {
         switch role {
         case .primary, .none: return .white

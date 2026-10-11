@@ -9,6 +9,7 @@
 //  核心职责：为 Action 模块提供本地化强类型字符串的访问扩展。
 //
 import Foundation
+import UFPCore
 
 extension L10n {
     public struct Action: L10nTableEntry {

@@ -1,15 +1,15 @@
 //
 //  AppFeedback.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
-//  Created by Antigravity on 2026/05/23.
+//  Created by Antigravity on 2026/10/11.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem]
+//  核心职责：反馈类装饰组件集（脉冲点、流光、骨架、成功横幅、光晕）。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 // MARK: - App Pulse Dot
 

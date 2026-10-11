@@ -11,6 +11,7 @@
 import SwiftUI
 import Dependencies
 import UFPDesignSystem
+import UFPCore
 
 /// 身份认证主视图
 struct AuthView: View {

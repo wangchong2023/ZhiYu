@@ -9,6 +9,7 @@
 import XCTest
 import UFPCore
 import Dependencies
+import UFPDesignSystem
 @testable import ZhiYu
 
 @MainActor

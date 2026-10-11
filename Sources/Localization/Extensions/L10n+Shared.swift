@@ -9,6 +9,7 @@
 //  核心职责：为 Shared 模块提供本地化强类型字符串的访问扩展。
 //
 import Foundation
+import UFPCore
 
 extension L10n {
     /// 共享组件与通用视觉风格本地化词条
