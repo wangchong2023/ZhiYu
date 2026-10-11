@@ -122,7 +122,7 @@ struct VoiceNoteView: View {
     
     // MARK: - 录音控制板块
     private var recordingSection: some View {
-        VStack(spacing: DesignSystem.Domain.Voice.recordingSectionSpacing) {
+        VStack(spacing: DesignTokens.Spacing.Voice.recordingSectionSpacing) {
             if !speechService.hasPermission {
                 permissionSection
             } else {
@@ -133,7 +133,7 @@ struct VoiceNoteView: View {
     }
     
     private var permissionSection: some View {
-        VStack(spacing: DesignSystem.Domain.Voice.permissionSectionSpacing) {
+        VStack(spacing: DesignTokens.Spacing.Voice.permissionSectionSpacing) {
             Image(systemName: DesignTokens.Icons.micSlashFill)
                 .font(.title)
                 .foregroundStyle(Color.theme.red)
@@ -166,7 +166,7 @@ struct VoiceNoteView: View {
             ZStack {
                 Circle()
                     .fill(speechService.isRecording ? Color.appRecording.opacity(DesignTokens.SystemOpacity.glass) : Color.appAccent.opacity(DesignTokens.Opacity.glass))
-                    .frame(width: DesignSystem.Domain.Voice.recordButtonSize, height: DesignSystem.Domain.Voice.recordButtonSize)
+                    .frame(width: DesignTokens.Spacing.Voice.recordButtonSize, height: DesignTokens.Spacing.Voice.recordButtonSize)
                 
                 if speechService.isRecording {
                     RoundedRectangle(cornerRadius: DesignTokens.Spacing.microRadius)
@@ -183,7 +183,7 @@ struct VoiceNoteView: View {
     }
     
     private var recordingStatusText: some View {
-        VStack(spacing: DesignSystem.Domain.Voice.statusTextSpacing) {
+        VStack(spacing: DesignTokens.Spacing.Voice.statusTextSpacing) {
             Text(speechService.isRecording ? L10n.Voice.Speech.tapToStop : L10n.Voice.Speech.tapToRecord)
                 .font(.caption)
                 .foregroundStyle(.appSecondary)
@@ -191,8 +191,8 @@ struct VoiceNoteView: View {
             Text(speechService.statusMessage)
                 .font(.caption2)
                 .foregroundStyle(.appSecondary)
-                .padding(.horizontal, DesignSystem.Domain.Voice.statusLabelHorizontalPadding)
-                .padding(.vertical, DesignSystem.Domain.Voice.statusLabelVerticalPadding)
+                .padding(.horizontal, DesignTokens.Spacing.Voice.statusLabelHorizontalPadding)
+                .padding(.vertical, DesignTokens.Spacing.Voice.statusLabelVerticalPadding)
                 .appCardClip(cornerRadius: DesignTokens.Spacing.smallRadius)
         }
     }
@@ -204,14 +204,14 @@ struct VoiceNoteView: View {
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.appSecondary)
 
-            HStack(spacing: DesignSystem.Domain.Voice.waveBarSpacing) {
+            HStack(spacing: DesignTokens.Spacing.Voice.waveBarSpacing) {
                 ForEach(0..<UIConstants.waveformBarCount, id: \.self) { i in
                     RoundedRectangle(cornerRadius: DesignTokens.Spacing.tiny)
                         .fill(Color.appAccent)
-                        .frame(width: DesignSystem.Domain.Voice.waveBarWidth, height: max(DesignSystem.Domain.Voice.waveBarMinHeight, CGFloat(speechService.audioLevelHistory[i]) * DesignSystem.Domain.Voice.waveScale))
+                        .frame(width: DesignTokens.Spacing.Voice.waveBarWidth, height: max(DesignTokens.Spacing.Voice.waveBarMinHeight, CGFloat(speechService.audioLevelHistory[i]) * DesignTokens.Spacing.Voice.waveScale))
                 }
             }
-            .frame(height: DesignSystem.Domain.Voice.waveformHeight)
+            .frame(height: DesignTokens.Spacing.Voice.waveformHeight)
         }
         .appContainer(cornerRadius: DesignTokens.Spacing.cardRadius, padding: true)
     }
@@ -242,8 +242,8 @@ struct VoiceNoteView: View {
             makeTranscriptionEditor(
                 speechService: speechService,
                 idiom: idiom,
-                minHeight: DesignSystem.Domain.Voice.transcriptionEditorMinHeight,
-                maxHeight: DesignSystem.Domain.Voice.transcriptionEditorMaxHeight,
+                minHeight: DesignTokens.Spacing.Voice.transcriptionEditorMinHeight,
+                maxHeight: DesignTokens.Spacing.Voice.transcriptionEditorMaxHeight,
                 padding: DesignTokens.Spacing.medium,
                 cornerRadius: DesignTokens.Spacing.smallRadius
             )

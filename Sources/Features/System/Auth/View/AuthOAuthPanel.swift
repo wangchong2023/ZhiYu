@@ -104,12 +104,12 @@ struct ThirdPartyIconButton: View {
             ZStack {
                 Circle()
                     .fill(Color.appCard)
-                    .frame(width: DesignSystem.Domain.Auth.thirdPartyIconContainerSize, height: DesignSystem.Domain.Auth.thirdPartyIconContainerSize)
+                    .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize, height: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize)
                     .shadow(color: .primary.opacity(DesignTokens.Opacity.ghost), radius: DesignTokens.Spacing.tiny, y: DesignTokens.Spacing.atomic)
 
                 if isSystem {
                     Image(systemName: icon)
-                        .font(.system(size: DesignSystem.Domain.Auth.thirdPartyIconFontSize))
+                        .font(.system(size: DesignTokens.Spacing.Auth.thirdPartyIconFontSize))
                         .foregroundStyle(color)
                 } else {
                     if icon == FeatureConstants.AssetName.githubLogo {
@@ -117,13 +117,13 @@ struct ThirdPartyIconButton: View {
                             .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: DesignSystem.Domain.Auth.thirdPartyIconFontSize, height: DesignSystem.Domain.Auth.thirdPartyIconFontSize)
+                            .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconFontSize, height: DesignTokens.Spacing.Auth.thirdPartyIconFontSize)
                             .foregroundStyle(color)
                     } else {
                         Image(icon)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: DesignSystem.Domain.Auth.thirdPartyIconFontSize, height: DesignSystem.Domain.Auth.thirdPartyIconFontSize)
+                            .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconFontSize, height: DesignTokens.Spacing.Auth.thirdPartyIconFontSize)
                     }
                 }
             }

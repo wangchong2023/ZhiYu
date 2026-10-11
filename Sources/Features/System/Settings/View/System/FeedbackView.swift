@@ -19,8 +19,8 @@ struct FeedbackView: View {
     @State private var selectedTab = 0
     @State private var titleText = ""
     @State private var selectedCategory = FeedbackCategory.bug
-    private let maxRating = DesignSystem.Domain.Feedback.maxRating
-    @State private var rating: Int = DesignSystem.Domain.Feedback.defaultRating
+    private let maxRating = DesignTokens.Spacing.Feedback.maxRating
+    @State private var rating: Int = DesignTokens.Spacing.Feedback.defaultRating
     @State private var contentText = ""
     @State private var isSubmitting = false
     @State private var history: [FeedbackEntry] = []
@@ -176,7 +176,7 @@ struct FeedbackView: View {
             try? await repo.save(entry)
             await MainActor.run {
                 isSubmitting = false
-                titleText = ""; contentText = ""; rating = DesignSystem.Domain.Feedback.defaultRating
+                titleText = ""; contentText = ""; rating = DesignTokens.Spacing.Feedback.defaultRating
                 HapticFeedback.shared.trigger(.success)
                 toastManager.show(type: .success, message: L10n.Settings.Feedback.submitted)
                 Task { await loadHistory() }
@@ -232,7 +232,7 @@ private struct FeedbackHistoryRow: View {
                 Text(entry.createdAt.formatted(date: .numeric, time: .shortened))
                     .font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 0) {
-                    ForEach(1...DesignSystem.Domain.Feedback.maxRating, id: \.self) { i in
+                    ForEach(1...DesignTokens.Spacing.Feedback.maxRating, id: \.self) { i in
                         Image(systemName: i <= entry.rating ? "star.fill" : "star")
                             .font(.caption2).foregroundStyle(.appAccent)
                     }
