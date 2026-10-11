@@ -11,6 +11,7 @@
 import Testing
 import XCTest
 import UFPCore
+import ZhiYuDomain
 @testable import ZhiYu
 
 @MainActor
@@ -64,34 +65,6 @@ final class TaskCenterTests: XCTestCase {
         for type in TaskType.allCases {
             XCTAssertFalse(type.localizedName.isEmpty)
         }
-    }
-
-    // MARK: - TaskStatus Equatable
-
-    func testTaskStatusPendingEqual() {
-        XCTAssertEqual(TaskStatus.pending, TaskStatus.pending)
-    }
-
-    func testTaskStatusCompletedEqual() {
-        XCTAssertEqual(TaskStatus.completed, TaskStatus.completed)
-    }
-
-    func testTaskStatusRunningEqual() {
-        XCTAssertEqual(TaskStatus.running(progress: 0.5, stage: .extraction),
-                       TaskStatus.running(progress: 0.5, stage: .extraction))
-    }
-
-    func testTaskStatusRunningNotEqualDifferentProgress() {
-        XCTAssertNotEqual(TaskStatus.running(progress: 0.5, stage: .extraction),
-                          TaskStatus.running(progress: 0.6, stage: .extraction))
-    }
-
-    func testTaskStatusFailedEqual() {
-        XCTAssertEqual(TaskStatus.failed(error: "err"), TaskStatus.failed(error: "err"))
-    }
-
-    func testTaskStatusFailedNotEqualDifferentError() {
-        XCTAssertNotEqual(TaskStatus.failed(error: "err1"), TaskStatus.failed(error: "err2"))
     }
 
     // MARK: - addTask

@@ -9,6 +9,7 @@
 //  核心职责：RAG 检索增强生成管道：语义搜索、链接发现、内容增强、评估。
 //
 import Foundation
+import ZhiYuDomain
 import UFPCore
 import Dependencies
 

@@ -9,6 +9,7 @@
 //  核心职责：构建 Ingest 界面的 UI 视图层组件。
 //
 import SwiftUI
+import ZhiYuDomain
 import UFPCore
 import UniformTypeIdentifiers
 import Dependencies

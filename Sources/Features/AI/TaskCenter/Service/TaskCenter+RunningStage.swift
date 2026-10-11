@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import ZhiYuDomain
 
 extension TaskCenter {
     /// 当前正在运行任务的阶段（若无运行任务则返回 .general）

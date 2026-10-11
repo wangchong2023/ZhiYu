@@ -9,6 +9,7 @@
 //  核心职责：定义 TaskCenter 模块的抽象契约接口。
 //
 import Foundation
+import ZhiYuDomain
 
 /// 任务中心协议 (L1.5-Domain)
 /// 抽象任务进度追踪能力，使 Domain 层无需直接依赖 L2 TaskCenter

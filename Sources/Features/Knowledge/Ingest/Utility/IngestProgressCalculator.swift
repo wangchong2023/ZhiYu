@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import ZhiYuDomain
 import UFPCore
 
 /// 知识摄入进度安全计算器
