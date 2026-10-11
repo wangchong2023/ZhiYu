@@ -1,10 +1,10 @@
 # UFPStorage 下沉设计：GRDB 存储引擎分层重构
 
-> **设计日期**: 2026-10-11
+> **设计日期**: 2026-10-11（修订：DatabaseManager 二次拆分）
 > **来源**: `Docs/superpowers/plans/2026-10-11-common-capability-extraction.md` Task A2.1（协议层重构后再全量下沉，USER 确认）
 > **方法论**: superpowers（brainstorming → 设计 → 实施）
-> **目标**: 将 GRDB 物理引擎（DatabaseManager + DatabaseSchemaMigrator + SQLiteStore）完整下沉 UFPStorage，消除 SQLiteStore 对 Domain/App 层的反向依赖，UFPStorage 成为可复用的通用存储底座
-> **方案**: 引擎层 + 业务装配层拆分（协议层重构，USER 确认）
+> **目标**: 将 GRDB 物理引擎（DatabaseManager + DatabaseSchemaMigrator + SQLiteStore）核心下沉 UFPStorage，消除对 Domain/App 层的反向依赖，UFPStorage 成为可复用的通用存储底座
+> **方案**: 引擎层 + 业务装配层拆分 + **DatabaseManager 二次拆分**（协议层重构，USER 确认）
 
 ---
 
@@ -16,7 +16,7 @@
 
 | 文件 | 行数 | 当前层级 | 说明 |
 |------|------|---------|------|
-| `Persistence/DatabaseManager.swift` | 487 | App L1 | 数据库中枢，建库/连接管理/多库热切换/降级，**17 处 App Logger 调用** |
+| `Persistence/DatabaseManager.swift` | 487 | App L1 | 数据库中枢，建库/连接管理/多库热切换/降级，**17 处 App Logger 调用 + 深度耦合业务符号（SecurityManager/VaultDatabaseSwitcher/L10n/AppConstants/KnowledgePage 等）** |
 | `Persistence/DatabaseSchemaMigrator.swift` | 428 | App L1 | Schema 迁移执行器，20 处 GRDB 引用 |
 | `Engine/SQLiteStore.swift` | 374 | App L1 | `public actor SQLiteStore: AnyPageStoreCapabilities`，装配各 Repository |
 
@@ -39,6 +39,26 @@ Domain 协议 `AnyPageStoreCapabilities`/`KnowledgeRepository`/`VectorRepository
 
 若将协议整体下沉到 UFPStorage，这些业务模型也必须下沉——把通用存储底座污染成业务库，违背 UFPStorage「与业务完全无关」的设计初衷（见 `StorageConstants.swift` 注释）。
 
+### 1.4 DatabaseManager 二次拆分障碍（implementer 实测发现）
+
+`DatabaseManager.swift`（487 行）**并非纯物理引擎**，而是「业务安全增强 + 数据库管理」混合体，深度耦合：
+
+| 依赖符号 | 所在模块 | 用途 |
+|---------|---------|------|
+| `SecurityManager.shared.verifyIntegrity/updateSignature` | App | setup/switchDatabase 完整性校验与签名 |
+| `KnowledgePage.fetchCount` | Domain | countPagesInCurrentVault/countPages |
+| `VaultDatabaseSwitcher` 协议 + conform | App | 整个 `extension DatabaseManager: VaultDatabaseSwitcher` |
+| `AppConstants.Storage.databaseName/globalDatabaseName` | App | 默认数据库 URL |
+| `L10n.Security.targetIntegrityVerificationFailed` | App | switchDatabase 错误消息 |
+| App 层 `StorageConstants`（JSONKey/LogConcat/ErrorDomain） | App | 通知 userInfo/日志（**与 UFPStorage 同名 StorageConstants 冲突**） |
+| `TransactionGatekeeper` / `DatabaseWriterProvider` | App | 事务门禁 / 测试协议 |
+
+若按「整体下沉 + typealias 兼容」执行，UFPStorage 将被强制引入业务模型/协议/App 常量，**直接违反 L0-L3 单向依赖红线**。因此 DatabaseManager 也需**二次拆分**（USER 确认）。
+
+### 1.5 测试迁移偏差
+
+`DatabaseManagerLifecycleTests`(18) + `DegradationTests`(4) = 22 用例，但核心断言依赖业务符号（`FeedbackEntry.databaseTableName`、`KnowledgePage`、`VaultDatabaseSwitcher` countPages、App 层 `StorageConstants`/`DatabaseError`）。**只有物理引擎相关用例（reset/事务计数/排空/降级状态）可迁 UFPStorage**，业务断言（FeedbackEntry 表、countPages）留 App 或改写为通用断言。
+
 ---
 
 ## 2. 目标架构（分层重构终态）
@@ -54,37 +74,41 @@ Domain 协议 `AnyPageStoreCapabilities`/`KnowledgeRepository`/`VectorRepository
 │  L1   App（ZhiYu）—— 业务装配层                                   │
 │  SQLiteStore（薄 actor）：实现 Domain 协议，注入 App Repository  │
 │  KnowledgePageRepository / VectorDataRepository / ...           │
+│  DatabaseManager 业务扩展（SecurityManager 适配/               │
+│   VaultDatabaseSwitcher conform/countPages/L10n/AppConstants）  │
 │      ▲ 依赖通用引擎                                              │
 │  L1   UFPStorage（通用存储底座，与业务完全无关）                  │
-│  DatabaseManager / DatabaseSchemaMigrator / GenericSQLiteEngine │
-│  GRDBReexport / StorageConstants                                │
+│  GenericDatabaseManager（纯物理）/ GenericSchemaMigrator /      │
+│  GenericSQLiteEngine / GRDBReexport / StorageConstants          │
 └────────────────────────────────────────────────────────────────┘
 ```
 
 **关键原则**：
 1. **UFPStorage 只含通用能力**，零业务协议/模型引用，零 App 层依赖
-2. **DatabaseManager + DatabaseSchemaMigrator** 纯 GRDB 物理引擎，无业务耦合，**直接下沉**（唯一需处理：Logger 适配）
-3. **SQLiteStore 不下沉为整体**，拆为「通用 GRDB 引擎骨架（入 UFPStorage）+ 业务装配（留 App 层）」
+2. **DatabaseManager 二次拆分**：UFPStorage 下沉 `GenericDatabaseManager` 纯物理引擎（建库/连接/WAL/降级骨架，完整性校验闭包注入、文件名注入，零业务符号）；App 层保留业务扩展（SecurityManager 适配、VaultDatabaseSwitcher conform、countPages、L10n/AppConstants）
+3. **Migrator 拆两层**：UFPStorage 通用执行器（GRDB `DatabaseMigrator` 机制，无业务 schema）+ App 业务 schema（v1-v13+全局，setup 注入）
+4. **SQLiteStore 不下沉为整体**，拆为「通用 GRDB 引擎骨架（入 UFPStorage）+ 业务装配（留 App 层）」
 
 ---
 
 ## 3. 方案分解
 
-### 3.1 引擎层下沉（纯物理，无协议障碍）
+### 3.1 引擎层下沉（二次拆分，无协议障碍）
 
-`DatabaseManager` + `DatabaseSchemaMigrator` 迁移到 `Packages/UFPStorage/Sources/UFPStorage/Engine/`：
+`DatabaseManager` **二次拆分**：物理引擎下沉，业务扩展留 App。
 
 | 迁移目标 | 内容 | 适配点 |
 |---------|------|--------|
-| `Engine/DatabaseManager.swift` | 建库/连接池/WAL/多库热切换/降级 | `Logger.shared`(17处) → `UFPCore.MinimalLogger`；`TestStateResettable`(UFPCore已有) |
-| `Engine/DatabaseSchemaMigrator.swift`（通用执行器） | GRDB 迁移执行器机制（无业务 schema） | 拆两层：通用执行器下沉，业务 schema 留 App |
+| `Engine/GenericDatabaseManager.swift` | **纯物理引擎**：建库/连接池/WAL/多库热切换/降级骨架 | `Logger.shared`(17处) → `UFPCore.MinimalLogger`；完整性校验闭包注入、数据库文件名注入；`TestStateResettable`(UFPCore已有) |
+| `Engine/GenericSchemaMigrator.swift` | GRDB 迁移执行器机制（无业务 schema） | 拆两层：通用执行器下沉，业务 schema 留 App |
 
 - **Logger 适配**：App `Logger.error(_:error:)` 带 error 参数，UFPCore `MinimalLogger.error(_:)` 无 error 参数——把 error 拼进 message（复用 A1.1/A1.4 经验）
+- **DatabaseManager 二次拆分（USER 确认）**：UFPStorage 只含 `GenericDatabaseManager` 纯物理引擎（零业务符号，完整性校验/文件名通过闭包注入）；App 层保留 `SecurityManager` 适配、`VaultDatabaseSwitcher` conform、`countPages`（依赖 KnowledgePage）、`L10n`/`AppConstants`/App 层 `StorageConstants`
 - **Migrator 拆两层（USER 确认）**：`DatabaseSchemaMigrator` 内嵌业务 schema（`registerMigration` 闭包，17 处业务表 pages/links/tags 等）。拆分——
   - **UFPStorage 下沉**：通用迁移执行器（GRDB `DatabaseMigrator` 机制封装，不含业务 schema）
   - **App 层保留**：业务 schema 迁移定义（v1-v13 + 全局），在 `DatabaseManager.setup` 时作为 migrator 闭包注入
 - **SQL 资源**：`global_schema.sql` / `init_schema.sql` 为 bundled 资源（pbxproj Resources），供参考/审计，**不随引擎迁移**；实际 schema 在 Migrator 代码（业务部分留 App）
-- **App 层**：`Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift` / `DatabaseSchemaMigrator.swift` 改 typealias 兼容层，`StorageModuleRegistrar` 引用同步
+- **App 层**：`Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift` 保留业务扩展并基于 UFPStorage `GenericDatabaseManager`；`DatabaseSchemaMigrator.swift` 保留业务 schema 并基于通用执行器；`StorageModuleRegistrar` 引用同步
 
 ### 3.2 SQLiteStore 拆分（协议层重构，USER 确认的方向）
 
@@ -126,8 +150,10 @@ SQLiteStore 拆为两层，**目标是把"通用 CRUD/事务/检索骨架"下沉
 
 | 类别 | 测试文件 | 迁移目标 | 迁移原因 |
 |------|---------|---------|---------|
-| **引擎测试（迁移）** | `DatabaseManagerLifecycleTests.swift`、`DatabaseManagerDegradationTests.swift`（共 2 个） | `Packages/UFPStorage/Tests/UFPStorageTests/DatabaseManagerTests.swift` | 测试对象是 DatabaseManager（建库/连接/降级，纯物理引擎），随引擎下沉 |
-| **装配/业务 schema 测试（留 App 层）** | `DatabaseSchemaMigratorTests.swift`、`DatabaseSchemaMigratorEdgeTests.swift`（测业务 schema 创建，断言 pages/links/tags + KnowledgePage 模型）、`SQLiteStoreSupplementTests.swift`、`SQLiteStoreFailureEdgeTests.swift`、`SQLiteTransactionConcurrencyStressTests.swift`（共 5 个） | **不迁移**，保留在 `Tests/Unit/Infrastructure/` | Migrator 拆两层后业务 schema 留 App，其测试断言业务表/模型；SQLiteStore 留 App 层测试引用 Domain 协议/业务模型。UFPStorage 无法承载 |
+| **引擎测试（迁移）** | `DatabaseManagerLifecycleTests.swift`、`DatabaseManagerDegradationTests.swift`（共 2 个文件的**物理引擎用例**：reset/事务计数/排空/降级状态） | `Packages/UFPStorage/Tests/UFPStorageTests/GenericDatabaseManagerTests.swift` | 测 GenericDatabaseManager 纯物理引擎（建库/连接/降级骨架） |
+| **装配/业务测试（留 App 层）** | `DatabaseSchemaMigratorTests.swift`、`DatabaseSchemaMigratorEdgeTests.swift`（测业务 schema，断言 pages/links/tags + KnowledgePage）、`SQLiteStoreSupplementTests.swift`、`SQLiteStoreFailureEdgeTests.swift`、`SQLiteTransactionConcurrencyStressTests.swift` + **DatabaseManager 业务用例**（FeedbackEntry 表断言、countPages、VaultDatabaseSwitcher，留原文件或抽 `DatabaseManagerBusinessTests`） | **不迁移**，保留在 `Tests/Unit/Infrastructure/` | 依赖业务 schema/模型/Domain 协议/App 常量，UFPStorage 无法承载 |
+
+> **22 用例内部分流**：仅物理引擎用例迁 UFPStorage；业务断言（FeedbackEntry 表、countPages）留 App（或改写为通用表断言后迁）。迁移用例数以 implementer 实拆为准，报告说明。
 
 ### 3.4.2 迁移后的优化要点
 
@@ -139,9 +165,9 @@ SQLiteStore 拆为两层，**目标是把"通用 CRUD/事务/检索骨架"下沉
 ### 3.4.3 一致性校验（对齐 C5.1 Step 1b）
 
 - 迁移后 `grep -rn "@testable import ZhiYu" Packages/UFPStorage/Tests/` 应无残留
-- 引擎测试用例数守恒：迁移 2 个 DatabaseManager 测试文件到 UFPStorage 后，`DatabaseManagerLifecycleTests`(18) + `DegradationTests`(4) = **22 用例**应全量迁入 UFPStorage（允许合理拆分波动，报告中说明）
-- 原 `Tests/Unit/Infrastructure/` 下 2 个 DatabaseManager 引擎测试文件须从 `ZhiYuTests` target 移除（防 `@testable import ZhiYu` 引用已删符号导致编译失败）
-- 5 个装配/业务 schema 测试文件（Migrator ×2 + SQLiteStore ×3）**保持**在 App 层，不得删除
+- 引擎测试迁移的物理引擎用例数守恒：`DatabaseManagerLifecycleTests`/`DegradationTests` 中的**物理引擎用例**全量迁入 UFPStorage（reset/事务计数/排空/降级状态；业务断言留 App）。迁移数量以实拆为准，报告中说明守恒核对
+- 原 `Tests/Unit/Infrastructure/` 下 DatabaseManager 引擎测试文件（或拆分后的物理引擎测试文件）须从 `ZhiYuTests` target 移除（防 `@testable import ZhiYu` 引用已删符号导致编译失败）
+- 5 个装配/业务 schema 测试文件 + DatabaseManager 业务用例**保持**在 App 层，不得删除
 
 ---
 
@@ -149,10 +175,10 @@ SQLiteStore 拆为两层，**目标是把"通用 CRUD/事务/检索骨架"下沉
 
 > 本设计文档化后，A2.1 按其执行。分阶段，每阶段验证。
 
-- [ ] **Step 0**：探查 SQL 资源（`global_schema.sql`/`init_schema.sql`）是否含业务表，确定拆分边界（通用表随引擎下沉，业务表留 App 层迁移）
-- [ ] **Step 1**：下沉 DatabaseManager + DatabaseSchemaMigrator 到 UFPStorage（Logger 适配 MinimalLogger），App 层 typealias 兼容 + 迁移**引擎测试**（DatabaseManagerLifecycle/Degradation、MigratorTests/Edge 共 4 个文件迁 UFPStorage）
-- [ ] **Step 2**：UFPStorage 新增 `GenericSQLiteEngine`（泛型 CRUD/事务骨架，无业务依赖）
-- [ ] **Step 3**：重构 App 层 SQLiteStore 为薄装配层（基于 GenericSQLiteEngine），保持 `AnyPageStoreCapabilities` conform；**SQLiteStore 3 个测试（Supplement/FailureEdge/TransactionConcurrency）留 App 层**（装配层测试，依赖 Domain 协议/业务模型）
+- [ ] **Step 0**：拆分 Migrator 两层（通用执行器下沉 UFPStorage，业务 schema 留 App）+ 拆分 DatabaseManager 二次（物理引擎下沉，业务扩展留 App）。`global_schema.sql`/`init_schema.sql` 为 bundled 参考，不迁移
+- [ ] **Step 1**：迁移 DatabaseManager 物理引擎测试到 UFPStorage（reset/事务计数/排空/降级状态用例，`@testable import UFPStorage`），业务断言用例留 App；从 ZhiYuTests target 移除已迁物理引擎测试文件
+- [ ] **Step 2**：UFPStorage 新增 `GenericDatabaseManager`（纯物理引擎，完整性校验/文件名闭包注入）+ `GenericSchemaMigrator`（通用迁移执行器）+ `GenericSQLiteEngine`（泛型 CRUD/事务骨架，无业务依赖）
+- [ ] **Step 3**：App 层重构——`DatabaseManager` 保留业务扩展（SecurityManager 适配/VaultDatabaseSwitcher conform/countPages）基于 GenericDatabaseManager；`DatabaseSchemaMigrator` 保留业务 schema 基于 GenericSchemaMigrator；`SQLiteStore` 改薄装配层基于 GenericSQLiteEngine，conform 不变；更新 StorageModuleRegistrar
 - [ ] **Step 4**：`make test-spm PKG=UFPStorage` + `make ios` + 存储相关测试回归
 - [ ] **Step 5**：提交 `refactor: 下沉 GRDB 存储引擎到 UFPStorage`
 
@@ -162,10 +188,12 @@ SQLiteStore 拆为两层，**目标是把"通用 CRUD/事务/检索骨架"下沉
 
 | 风险 | 缓解 |
 |------|------|
-| DatabaseManager 单例 + 204 次测试引用（旧设计文档已提） | 保留单例 + typealias 兼容层；测试迁移而非改动 |
+| DatabaseManager 单例 + 204 次测试引用（旧设计文档已提） | 保留单例语义 + 业务扩展留 App；测试分流而非大改 |
+| DatabaseManager 深度耦合业务符号（SecurityManager/VaultDatabaseSwitcher/L10n/AppConstants/App 版 StorageConstants） | 二次拆分：UFPStorage 只下沉 `GenericDatabaseManager` 纯物理引擎（校验/文件名闭包注入），业务扩展留 App（USER 确认） |
 | Migrator 内嵌业务 schema 污染 UFPStorage | Migrator 拆两层：通用执行器下沉，业务 schema 留 App（USER 确认） |
 | SQLiteStore 重构引入行为回归 | 迁移测试先行 + 存储相关测试全量回归 |
 | Logger 语义丢失（MinimalLogger 无持久化） | 引擎层日志降级为诊断日志可接受；业务持久化日志仍走 App Logger |
+| App 层 `StorageConstants` 与 UFPStorage 同名冲突 | 二次拆分后 UFPStorage 用自身 `StorageConstants`，App 层业务扩展继续用 App 版 `StorageConstants`，互不干扰 |
 
 ---
 
