@@ -1790,7 +1790,6 @@
 		9CF952EB24082B3CA630219E /* DemoPDFBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 239D9592E6B2B38915DF4F3B /* DemoPDFBuilder.swift */; };
 		9D314B34756C91C8CE904E30 /* ProtocolsAndFallbacksInteractiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 918F2C738D79A10DF7E421FF /* ProtocolsAndFallbacksInteractiveTests.swift */; };
 		9D3BACCE19653404C5D8FF5D /* testRAGEvaluationViewLoading.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 84178368317126D7B249CF11 /* testRAGEvaluationViewLoading.1.png */; };
-		9D6D1A383FAD4EC2B248329E /* AsyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A64FFCFBB2B095EBDDF5C66 /* AsyncStatus.swift */; };
 		9DBD949BD3AD7E21C2B0659F /* RAGPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDA46686C68D592D918AC61 /* RAGPipelineTests.swift */; };
 		9DC900BDB8DEAF8D5263B41F /* PlatformSpotlightAndSyncDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82707EE4157FBE66045CCBB3 /* PlatformSpotlightAndSyncDeepTests.swift */; };
 		9DCDC023050CA9E87E37CC1C /* OnDeviceLLMSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DC5399AF3D4992BBE851F24 /* OnDeviceLLMSettingsView.swift */; };
@@ -2073,7 +2072,6 @@
 		B69801060690702DD6AD7EA5 /* NotebookThemeFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 594CA129C7F8546E2C028D09 /* NotebookThemeFactory.swift */; };
 		B69B0330C7AE10D77FBBDA24 /* UIComponentsAnimationAndTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042B1BE6A789C2C3E98533A0 /* UIComponentsAnimationAndTokensTests.swift */; };
 		B69B2342350D85A00484A30A /* StoreKitTransactionVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32FFD8584853EB2F60AC005B /* StoreKitTransactionVerificationTests.swift */; };
-		B69F06CAA667B3683AF173DC /* AsyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A64FFCFBB2B095EBDDF5C66 /* AsyncStatus.swift */; };
 		B6B977471909210EF6E5B9FD /* PhoneAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FBD347875AB4FCC36E07EB4 /* PhoneAuthService.swift */; };
 		B6CC27AFD5B4103E16050F71 /* SynthesisSlidesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283392E7911FC70AC432C463 /* SynthesisSlidesView.swift */; };
 		B6DA49CAD17A29A38F751483 /* UnsupportedFileArchiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8558231F0EF84557967A10 /* UnsupportedFileArchiver.swift */; };
@@ -3318,7 +3316,6 @@
 		2A34BC0A233A1E6627A7D10D /* LockOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockOverlayView.swift; sourceTree = "<group>"; };
 		2A372180FDFA00A6A8426A0B /* ChatCoordinatorDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCoordinatorDeepTests.swift; sourceTree = "<group>"; };
 		2A3D238DE824A5C4D40ED087 /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GRDB.swift; path = ../../opensrc/swift/GRDB.swift; sourceTree = SOURCE_ROOT; };
-		2A64FFCFBB2B095EBDDF5C66 /* AsyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncStatus.swift; sourceTree = "<group>"; };
 		2AACAF237118AEFF5AA056DD /* VaultLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultLayout.swift; sourceTree = "<group>"; };
 		2AC850F03FA776349B164FFE /* ChatHistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatHistoryStoreTests.swift; sourceTree = "<group>"; };
 		2ADAA6A44F349A47FE741661 /* pptxgen.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = pptxgen.bundle.js; sourceTree = "<group>"; };
@@ -6816,7 +6813,6 @@
 				83466D0DA85F0E9AA358DEB1 /* AgentTool.swift */,
 				2179BFDE3EEE56249DC8559C /* AITaskProgress.swift */,
 				94589743C22E4B620F5E914B /* AppTab.swift */,
-				2A64FFCFBB2B095EBDDF5C66 /* AsyncStatus.swift */,
 				7AB442FBD10FAA985B03AE24 /* ChunkType.swift */,
 				FBEF7D0487FEC1082338879C /* CreatePageInput.swift */,
 				FE4746D6106D094CEE034331 /* DomainThresholds.swift */,
@@ -10925,7 +10921,6 @@
 				360E31C6DA800627E263353C /* AppWindowSceneDelegate.swift in Sources */,
 				2E9B609C341591ABB21657C3 /* AppleAuthStrategy.swift in Sources */,
 				73B41F24053C400EE33A09A6 /* ApplePlatformCapabilities.swift in Sources */,
-				9D6D1A383FAD4EC2B248329E /* AsyncStatus.swift in Sources */,
 				2661532A42254FA1377D1143 /* AudioSplitter.swift in Sources */,
 				8F6695E6DF57C22F803DCD4C /* AuthButtonStyles.swift in Sources */,
 				E2D95B0D94A1ED64C67F197F /* AuthDTOs.swift in Sources */,
@@ -11727,7 +11722,6 @@
 				0F3559139D448B8BB8CE8B64 /* AppWindowSceneDelegate.swift in Sources */,
 				C5995E19A4612D249FBD479F /* AppleAuthStrategy.swift in Sources */,
 				EE66C6C7EDF39C7D05D58B4E /* ApplePlatformCapabilities.swift in Sources */,
-				B69F06CAA667B3683AF173DC /* AsyncStatus.swift in Sources */,
 				49C55E5482B9DADDB60F2972 /* AudioSplitter.swift in Sources */,
 				E81BFB060AF9A83B7A5EB643 /* AuthButtonStyles.swift in Sources */,
 				645A08498F7FCBABB94E0AAD /* AuthDTOs.swift in Sources */,

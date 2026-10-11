@@ -25,8 +25,7 @@ extension IngestCoordinator {
                 importSingleFile(at: url)
             }
         case .failure(let error):
-            errorMessage = error.localizedDescription
-            showError = true
+            status = .failure(error.localizedDescription)
         }
     }
 

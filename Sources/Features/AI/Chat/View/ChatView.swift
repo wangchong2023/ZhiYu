@@ -62,7 +62,7 @@ struct ChatViewContent: View {
             ActivityView(activityItems: [identifiable.url])
         } }
         .alert(L10n.Common.error, isPresented: $coordinator.showError) {
-            Button(L10n.Common.ok) { coordinator.errorMessage = nil }
+            Button(L10n.Common.ok) { coordinator.showError = false }
         } message: {
             Text(coordinator.errorMessage ?? "")
         }

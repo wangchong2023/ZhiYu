@@ -51,7 +51,7 @@ struct IngestView: View {
         }
         .appTabToolbar(title: L10n.Ingest.title)
         .alert(L10n.Ingest.error, isPresented: $coordinator.showError) {
-            Button(L10n.Ingest.ok) { coordinator.errorMessage = nil }
+            Button(L10n.Ingest.ok) { coordinator.showError = false }
         } message: { Text(coordinator.errorMessage ?? "") }
         .alert(L10n.Common.configureAI, isPresented: $coordinator.showLLMAlert) {
             Button(L10n.ModelManager.Lab.configurations) {
