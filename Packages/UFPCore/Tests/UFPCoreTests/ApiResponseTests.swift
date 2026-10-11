@@ -1,13 +1,13 @@
 //
 //  ApiResponseTests.swift
-//  ZhiYuTests
+//  UFPCoreTests
 //
-//  系统层级：[L1] 基础设施层测试
-//  核心职责：验证 ApiResponse 泛型封装的编解码往返、isSuccess 判定、EmptyData 占位以及 NetworkError 各 case 的 errorDescription 本地化文案。
+//  系统层级：[L0] 测试层
+//  核心职责：验证 ApiResponse 泛型封装的编解码往返、isSuccess 判定、EmptyData 占位以及 NetworkError 各 case 的 errorDescription 英文调试描述。
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import UFPCore
 
 // MARK: - ApiResponse 单元测试
 
@@ -104,7 +104,7 @@ final class ApiResponseTests: XCTestCase {
         XCTAssertNotNil(decoded, "EmptyData 编解码往返应成功")
     }
 
-    // MARK: - NetworkError.errorDescription 本地化文案测试
+    // MARK: - NetworkError.errorDescription 英文调试描述测试
 
     /// 验证 .invalidURL 的 errorDescription 非空
     func testNetworkErrorInvalidURLDescription() {
@@ -207,15 +207,6 @@ final class ApiResponseTests: XCTestCase {
     func testNetworkErrorSessionInvalidatedDescription() {
         let error = NetworkError.sessionInvalidated
         XCTAssertEqual(error.errorDescription, "Session invalidated.")
-    }
-
-    /// 验证 NetworkError 不混入 L10n（工具类纯错误码原则）
-    /// errorDescription 应为英文调试描述，不是本地化文案
-    func testNetworkErrorErrorDescriptionIsDebugDescriptionNotLocalized() {
-        let error = NetworkError.invalidHTTPResponse
-        XCTAssertEqual(error.errorDescription, "Invalid HTTP response.")
-        XCTAssertNotEqual(error.errorDescription, L10n.Network.invalidHTTPResponse,
-                          "工具类 errorDescription 应为英文调试描述，不应等于本地化文案")
     }
 
     // MARK: - 辅助方法
