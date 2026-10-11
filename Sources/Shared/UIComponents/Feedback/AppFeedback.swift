@@ -204,15 +204,6 @@ public extension View {
     }
 }
 
-// MARK: - 自适应排版辅助
-
-/// 根据水平尺寸类选择字号，消除 AppChips / AppFeedback 中重复的 `horizontalSizeClass == .regular ? DesignTokens.Typography.secondaryFont : DesignTokens.Typography.captionFont` 三元表达式。
-enum AdaptiveTypography {
-    static func adaptiveSecondaryFont(horizontalSizeClass: UserInterfaceSizeClass?) -> Font {
-        horizontalSizeClass == .regular ? DesignTokens.Typography.secondaryFont : DesignTokens.Typography.captionFont
-    }
-}
-
 // MARK: - 流光动画共享辅助
 
 /// 统一的线性流光动画启动器，消除 AppShimmer / ShimmerModifier 两处重复的 withAnimation + shimmerDuration + repeatForever 链。

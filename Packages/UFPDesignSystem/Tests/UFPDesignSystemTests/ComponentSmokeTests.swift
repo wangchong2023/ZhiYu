@@ -170,4 +170,80 @@ final class ComponentSmokeTests: XCTestCase {
         _ = editor.body
         XCTAssertTrue(true, "AdaptiveTextEditor body 可构建")
     }
+
+    // MARK: - Chips
+
+    func testAppChipInitialization() {
+        let chip = AppChip(text: "chip")
+        _ = chip.body
+        XCTAssertTrue(true, "AppChip body 可构建")
+    }
+
+    func testAppIconChipInitialization() {
+        let chip = AppIconChip(icon: "star", text: "chip")
+        _ = chip.body
+        XCTAssertTrue(true, "AppIconChip body 可构建")
+    }
+
+    func testAppBadgeInitialization() {
+        let badge = AppBadge(text: "3")
+        _ = badge.body
+        XCTAssertTrue(true, "AppBadge body 可构建")
+    }
+
+    func testAppBadgeNonPillInitialization() {
+        let badge = AppBadge(text: "3", isPill: false)
+        _ = badge.body
+        XCTAssertTrue(true, "AppBadge 非胶囊形态 body 可构建")
+    }
+
+    func testAppScrollableChipsInitialization() {
+        let chipList = AppScrollableChips(items: ["a", "b"], selectedItem: "a", onSelect: { _ in }) { item in
+            Text(item)
+        }
+        _ = chipList.body
+        XCTAssertTrue(true, "AppScrollableChips body 可构建")
+    }
+
+    func testAppSubtlePillInitialization() {
+        let pill = AppSubtlePill(text: "pill")
+        _ = pill.body
+        XCTAssertTrue(true, "AppSubtlePill body 可构建")
+    }
+
+    // MARK: - Inputs
+
+    func testAppTextFieldInitialization() {
+        var text = ""
+        let field = AppTextField(placeholder: "placeholder", text: Binding(get: { text }, set: { text = $0 }))
+        _ = field.body
+        XCTAssertTrue(true, "AppTextField body 可构建")
+    }
+
+    func testAppTagFieldInitialization() {
+        var tags: [String] = []
+        let field = AppTagField(placeholder: "tag", tags: Binding(get: { tags }, set: { tags = $0 }))
+        _ = field.body
+        XCTAssertTrue(true, "AppTagField body 可构建")
+    }
+
+    func testAppMonospacedEditorInitialization() {
+        var text = ""
+        let editor = AppMonospacedEditor(text: Binding(get: { text }, set: { text = $0 }))
+        _ = editor.body
+        XCTAssertTrue(true, "AppMonospacedEditor body 可构建")
+    }
+
+    func testAppTextEditorInitialization() {
+        var text = ""
+        let editor = AppTextEditor(text: Binding(get: { text }, set: { text = $0 }), placeholder: "placeholder")
+        _ = editor.body
+        XCTAssertTrue(true, "AppTextEditor body 可构建")
+    }
+
+    func testAdaptiveTypographySelection() {
+        let regularFont = AdaptiveTypography.adaptiveSecondaryFont(horizontalSizeClass: .regular)
+        let compactFont = AdaptiveTypography.adaptiveSecondaryFont(horizontalSizeClass: .compact)
+        XCTAssertNotEqual(regularFont, compactFont)
+    }
 }

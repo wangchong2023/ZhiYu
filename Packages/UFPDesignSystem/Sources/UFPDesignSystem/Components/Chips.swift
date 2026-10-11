@@ -1,15 +1,16 @@
 //
-//  AppChips.swift
-//  ZhiYu
+//  Chips.swift
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem] SPM Package — 物理归位
+//  核心职责：通用标签/徽章组件集 —— 胶囊标签、图标标签、信息徽章、可滚动标签列表、浅色胶囊。
+//           沉淀自 ZhiYu App 层 Shared/UIComponents，供包内组件与上层共享。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 // MARK: - App Chip
 
@@ -35,8 +36,8 @@ public struct AppChip: View {
     public var body: some View {
         Text(text)
             .font(chipFont)
-            .padding(.horizontal, DesignSystem.Chip.horizontalPadding)
-            .padding(.vertical, DesignSystem.Chip.verticalPadding)
+            .padding(.horizontal, DesignTokens.Spacing.Chip.horizontalPadding)
+            .padding(.vertical, DesignTokens.Spacing.Chip.verticalPadding)
             .background(color.opacity(backgroundOpacity))
             .clipShape(Capsule())
             .foregroundStyle(color)
@@ -106,8 +107,8 @@ public struct AppBadge: View {
                 Text(text)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, text.count > 1 ? DesignSystem.Chip.horizontalPadding : DesignSystem.Chip.verticalPadding)
-                    .padding(.vertical, DesignSystem.Chip.verticalPadding)
+                    .padding(.horizontal, text.count > 1 ? DesignTokens.Spacing.Chip.horizontalPadding : DesignTokens.Spacing.Chip.verticalPadding)
+                    .padding(.vertical, DesignTokens.Spacing.Chip.verticalPadding)
                     .background(color)
                     .clipShape(Capsule())
             } else {
