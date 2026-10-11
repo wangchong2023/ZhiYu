@@ -441,10 +441,7 @@ final class ModelStoreConfigTests: XCTestCase {
         // 注入 ephemeral session + MockDownloadURLProtocol，避免真实网络请求
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockDownloadURLProtocol.self]
-        let manager = ModelDownloadManager(sessionFactory: { owner in
-            let delegateHelper = ModelDownloadDelegateHelper(manager: owner)
-            return URLSession(configuration: config, delegate: delegateHelper, delegateQueue: nil)
-        })
+        let manager = ModelDownloadManager(configuration: config)
         let modelId = "test-consume-resume-model-id"
         
         // 1. 获取物理路径
