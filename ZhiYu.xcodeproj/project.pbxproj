@@ -42,7 +42,6 @@
 		02875973B187B3D55E52C2DD /* GradientBorderCardModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BC1219F105837594DCEFC4 /* GradientBorderCardModifier.swift */; };
 		028BE6F0FB665AB1906472ED /* QueryReranker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701F3393E1BA5DC6576628FB /* QueryReranker.swift */; };
 		028E7AA7855C1C434C89E778 /* ZhiYuAICore in Frameworks */ = {isa = PBXBuildFile; productRef = 95D20DBAEE53222522783650 /* ZhiYuAICore */; };
-		02AF764A135D00C3D349A52A /* GraphEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0CC4E9A4537C24396CC42F /* GraphEmptyStateView.swift */; };
 		02C484B95062FB4A21DA6FE9 /* testAIPulseIndicator_Idle.1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEDB131320EDB607D5830EB6 /* testAIPulseIndicator_Idle.1.png */; };
 		02CC7E9DE08A54325EA60B12 /* ContentModerationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 594597DFD1A3298F507AB04D /* ContentModerationEngine.swift */; };
 		02D82762B55222630BFA9862 /* OnDeviceComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB54029668BB89D3EC4670D4 /* OnDeviceComponents.swift */; };
@@ -789,7 +788,6 @@
 		44CC7DA7D321754964FDBB96 /* DesignSystem+Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0591F3A92EFAC5ED04876559 /* DesignSystem+Vault.swift */; };
 		44DC1D769BA20AA930BCD8B0 /* ChatContentSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BC4943EF495E0234C2072D /* ChatContentSanitizer.swift */; };
 		45117F6E1D31A6F49D11EE86 /* LogViewAndSystemAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BE658762603F0EBCBF3946 /* LogViewAndSystemAuditTests.swift */; };
-		45119EE39D4C7B6ACE1467F1 /* InsightEmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5A8FCB7BCD00257D78A6F /* InsightEmptyState.swift */; };
 		451BB358F01F3E907F8D4BF5 /* ModelManagerViewSnapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571DEFD9E00EFFF949A71DA4 /* ModelManagerViewSnapshots.swift */; };
 		4543F66BBA0577010A2654B5 /* CommonPaddingModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DF36CBA2152640DD6D2F0C /* CommonPaddingModifier.swift */; };
 		454DE640FE0AFF097080DC96 /* L10n+Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E6B0D0DF8E322859419C80D /* L10n+Graph.swift */; };
@@ -1281,7 +1279,6 @@
 		73FEB313B1B4ED54EF34E444 /* KeyStoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847817CF10BD9D479CA8EAEB /* KeyStoreProtocol.swift */; };
 		7405F140919F8613AB26947B /* GraphCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514608DCE194C35F243A59CD /* GraphCanvasView.swift */; };
 		7416EA810782A516F7774005 /* TagCloudSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42832AC9B2F6BF26F3BD0393 /* TagCloudSupport.swift */; };
-		741E0BE9920689633FB1A57A /* GraphEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0CC4E9A4537C24396CC42F /* GraphEmptyStateView.swift */; };
 		74208A3F9F7F8B78B5930184 /* MarkdownRendererView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E576EA1E3290CF2CFA8C35 /* MarkdownRendererView.swift */; };
 		74238128ACE16783F921F791 /* DoneDismissToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14C24BD463386B57A94B1E0 /* DoneDismissToolbarModifier.swift */; };
 		742B690C8878F6B4C5EDA0CE /* KnowledgePageFTSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D5F6E97D4775CF047045482 /* KnowledgePageFTSTests.swift */; };
@@ -1914,7 +1911,6 @@
 		A8CF63AA0B2DC6A66D95F3B2 /* ContentModerationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 594597DFD1A3298F507AB04D /* ContentModerationEngine.swift */; };
 		A8D47BFE13B1CF6B89C12A79 /* ShareSheetProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DF694E5452A91A3B0C85E4 /* ShareSheetProtocol.swift */; };
 		A8D490D26988230961A4A423 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB96971049540A59EAC1358 /* AppConfig.swift */; };
-		A8DA09ACF98092C47F8C7C99 /* InsightEmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC5A8FCB7BCD00257D78A6F /* InsightEmptyState.swift */; };
 		A8E5B29428A2D629A4AD2035 /* Chat.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A8159214A16979D6C00680FE /* Chat.xcstrings */; };
 		A91053C210FFD9BF8C2A5414 /* PDFModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 184351F1861A0151EBFF16E5 /* PDFModels.swift */; };
 		A922933FC1BC67387DC5BD4E /* testSnapshotDetailViewDefault.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 7B47D8F59948E2FE867D42F8 /* testSnapshotDetailViewDefault.1.png */; };
@@ -3799,7 +3795,6 @@
 		6A3A1A37B89CE167B274294F /* WidgetsAndWatchViewsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsAndWatchViewsTests.swift; sourceTree = "<group>"; };
 		6A5987A12F53D8FD23A3B2ED /* MacAccessibilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAccessibilityService.swift; sourceTree = "<group>"; };
 		6A6A6A8F6186742B20AD9D20 /* VaultSystemDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSystemDeepTests.swift; sourceTree = "<group>"; };
-		6AC5A8FCB7BCD00257D78A6F /* InsightEmptyState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightEmptyState.swift; sourceTree = "<group>"; };
 		6ACCFA1A7588AF221930783D /* GoogleAuthStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleAuthStrategy.swift; sourceTree = "<group>"; };
 		6ADDDBD0C5A65C401B8CB784 /* QuickCaptureWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureWidget.swift; sourceTree = "<group>"; };
 		6B4293F266A4DB35DA44853B /* ImportBoundaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportBoundaryTests.swift; sourceTree = "<group>"; };
@@ -4171,7 +4166,6 @@
 		9EAE1990A7BFB7208B3F6E9E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9EB1EB638D518882AA2A76C3 /* DynamicComplianceManager+Patch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DynamicComplianceManager+Patch.swift"; sourceTree = "<group>"; };
 		9F0551795EC94A9DAA66E542 /* SynthesisStrategiesMutationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthesisStrategiesMutationTests.swift; sourceTree = "<group>"; };
-		9F0CC4E9A4537C24396CC42F /* GraphEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphEmptyStateView.swift; sourceTree = "<group>"; };
 		9F956A200480CBF352E6602A /* FileSignatureRepoEdgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSignatureRepoEdgeTests.swift; sourceTree = "<group>"; };
 		9FCFC9C68AA5487C8ED2EE5E /* testTaskCenterView_EmptyState_RendersDashboardAndCards.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testTaskCenterView_EmptyState_RendersDashboardAndCards.1.png; sourceTree = "<group>"; };
 		9FDE60BF8712A69B15F40AEB /* WatchURLOpenerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchURLOpenerService.swift; sourceTree = "<group>"; };
@@ -5642,7 +5636,6 @@
 				44644E26DB1664962C76BA9F /* Graph3DComponents.swift */,
 				514608DCE194C35F243A59CD /* GraphCanvasView.swift */,
 				AC94C91880AB20A5F71B503E /* GraphComponents.swift */,
-				9F0CC4E9A4537C24396CC42F /* GraphEmptyStateView.swift */,
 				6505AB6895A4F5F1DAF951A5 /* GraphFilterPillsView.swift */,
 				15D8BA90B5D1B8A14001008B /* GraphInfoPanel.swift */,
 			);
@@ -7185,7 +7178,6 @@
 		850514AADD5AF31F8FF58961 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				6AC5A8FCB7BCD00257D78A6F /* InsightEmptyState.swift */,
 				327C6AA8AC9619AEA77F5151 /* InsightGlassCapsule.swift */,
 				B5CB56983475F67C39D5C92D /* InsightMetricCard.swift */,
 				B62EEBD1511F6AAC49120D28 /* InsightPageTypeIcon.swift */,
@@ -11052,7 +11044,6 @@
 				B7E989B67CD1E8A4AB78C0AA /* GraphComponents.swift in Sources */,
 				5A123C19E7B5454CADB81D42 /* GraphConstants.swift in Sources */,
 				2F56C7877BB0A565737992FB /* GraphDataProvider.swift in Sources */,
-				741E0BE9920689633FB1A57A /* GraphEmptyStateView.swift in Sources */,
 				CD274407D4EED7038D1BF46C /* GraphFilterPillsView.swift in Sources */,
 				84844FC0B6A6817D93FBFB09 /* GraphInfoPanel.swift in Sources */,
 				9485789C701A5532EDD00A42 /* GraphInsightDetection.swift in Sources */,
@@ -11092,7 +11083,6 @@
 				24DC654D3736BBAA3A304E8E /* IngestURLHandler.swift in Sources */,
 				40601D8CC622058D8C65A348 /* IngestView.swift in Sources */,
 				58876310135D6DCFCAA9B72C /* InitialNotebookGenerator.swift in Sources */,
-				A8DA09ACF98092C47F8C7C99 /* InsightEmptyState.swift in Sources */,
 				6250F5312B883CC548CF82C4 /* InsightGlassCapsule.swift in Sources */,
 				CB6E37DA704FF024F581359E /* InsightMetricCard.swift in Sources */,
 				66260A619B8AD278ADC1B429 /* InsightPageTypeIcon.swift in Sources */,
@@ -11852,7 +11842,6 @@
 				986DE71A8A2C33BB76D5FEB4 /* GraphComponents.swift in Sources */,
 				80F7C7060F1F1B40DB8846A7 /* GraphConstants.swift in Sources */,
 				A9D01DFF11E187298557F587 /* GraphDataProvider.swift in Sources */,
-				02AF764A135D00C3D349A52A /* GraphEmptyStateView.swift in Sources */,
 				855288FFB846010111ECBADF /* GraphFilterPillsView.swift in Sources */,
 				C2936BBD681B065D7A0F6DC0 /* GraphInfoPanel.swift in Sources */,
 				F101BB6ACFE3CA42F89FE1FB /* GraphInsightDetection.swift in Sources */,
@@ -11892,7 +11881,6 @@
 				5E216038B4F1D9B8030B2469 /* IngestURLHandler.swift in Sources */,
 				E888E28F431CE8555DAD00F4 /* IngestView.swift in Sources */,
 				2C25347DAB9BB890C165A731 /* InitialNotebookGenerator.swift in Sources */,
-				45119EE39D4C7B6ACE1467F1 /* InsightEmptyState.swift in Sources */,
 				2F3E98D0AFEE3706CE1C86DF /* InsightGlassCapsule.swift in Sources */,
 				8A223D23FBA8F978ED7DA57D /* InsightMetricCard.swift in Sources */,
 				0A253B9B955B67441A72FF03 /* InsightPageTypeIcon.swift in Sources */,

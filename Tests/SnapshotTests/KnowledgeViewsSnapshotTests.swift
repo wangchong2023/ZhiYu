@@ -257,8 +257,14 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     /// TC-B1-16: GraphEmptyStateView 默认状态 — 无知识图谱时的引导界面
     /// 目的：验证空图谱状态下的引导文案和按钮渲染
     func testGraphEmptyStateViewDefault() {
-        var selectedTab: AppTab = .graph
-        let view = GraphEmptyStateView(selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 }))
+        let view = AppEmptyState.withAction(
+            icon: DesignTokens.Icons.circleGrid3x3Fill,
+            title: L10n.Graph.emptyTitle,
+            description: L10n.Graph.emptyDesc,
+            actionLabel: L10n.Graph.startBuilding,
+            actionRole: .primary,
+            actionHandler: {}
+        )
             .snapshotEnvironment()
             .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
 
