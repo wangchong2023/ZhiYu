@@ -283,14 +283,10 @@ extension Notification.Name {
     static let databaseIntegrityCheckFailed = Notification.Name("databaseIntegrityCheckFailed")
 }
 
-// MARK: - 物理隔离层强类型异常
+// MARK: - 物理隔离层强类型异常（已下沉至 UFPStorage）
 
-enum DatabaseError: Error {
-    /// 数据库未就绪（dbWriter 为 nil，如启动早期、Vault 热切换瞬态、reset 后）。
-    case notReady
-    /// 数据库正在排空（Vault 热切换中，拒绝新事务）。
-    case draining
-}
+/// 数据库强类型异常（兼容层，指向 UFPStorage 通用错误）。
+typealias DatabaseError = UFPStorage.DatabaseError
 
 /// 数据库中枢当前的运行状态。
 enum DatabaseState: Sendable, Equatable {

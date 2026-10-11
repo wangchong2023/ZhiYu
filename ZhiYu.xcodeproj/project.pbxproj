@@ -2433,7 +2433,6 @@
 		D3A2AFDD52CF81F22FC51F92 /* TagBubbleCloudCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = D59FD854566DB86CF572E16A /* TagBubbleCloudCanvas.swift */; };
 		D3A86AF41AD4CBE9D0045A2C /* AppStore+System.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721519B3ADCD8844AB258187 /* AppStore+System.swift */; };
 		D3D05B7488F0DEEC03E32E92 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311C9B98A4351AEBDD9BA1FC /* ThemeManager.swift */; };
-		D3EAD18F0C0D14FDA387169E /* SQLQuerySanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29908677336C8E16DD86F3CC /* SQLQuerySanitizerTests.swift */; };
 		D3FCC87288B6147E0B1C75D5 /* SubscriptionAndAuthViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59DA5ACD2B936A7CF6DDA071 /* SubscriptionAndAuthViewTests.swift */; };
 		D401A0DFE4AE6F154E9BD9F1 /* Widget.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5F2363B3ACD7889BFEC66EF0 /* Widget.xcstrings */; };
 		D444B2BA12717B6A0ADC4E7D /* FileSystemSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE23A6BB463ABF559CBC21F2 /* FileSystemSyncService.swift */; };
@@ -3363,7 +3362,6 @@
 		295A4442DA2E0425FC3A21D8 /* FeedbackRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackRepositoryTests.swift; sourceTree = "<group>"; };
 		298B4CF76CE459BE937A504F /* StandardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardSection.swift; sourceTree = "<group>"; };
 		298F24C8533C59BEACE0A2C0 /* testSynthesisMindmapView_FallbackToText.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSynthesisMindmapView_FallbackToText.1.png; sourceTree = "<group>"; };
-		29908677336C8E16DD86F3CC /* SQLQuerySanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLQuerySanitizerTests.swift; sourceTree = "<group>"; };
 		29D110A90005C6D5B40DD566 /* PhoneAuthServiceDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneAuthServiceDeepTests.swift; sourceTree = "<group>"; };
 		29D2B623011C6C3BCE1A37B2 /* AppConfig.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = AppConfig.json; sourceTree = "<group>"; };
 		29FBE39C2BBE3AB9C88B58FF /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatService.swift; sourceTree = "<group>"; };
@@ -9118,7 +9116,6 @@
 				3EDA907D30383316760A7727 /* SQLiteStoreSupplementTests.swift */,
 				301F080A4D80C31696EC5A9D /* SQLiteTransactionConcurrencyStressTests.swift */,
 				4EEF67DC8E283EEE30493F2B /* SQLiteVaultRepositoryEdgeCaseTests.swift */,
-				29908677336C8E16DD86F3CC /* SQLQuerySanitizerTests.swift */,
 				6EAE31C14FF6B2C9B5A4FFD9 /* StorageAndNetworkDeepTests.swift */,
 				AD22E80E793B053F6B2952D9 /* StorageAndVectorResilienceTests.swift */,
 				8FF1A373446FB3D514AE2BC6 /* StorageRecordsTests.swift */,
@@ -10735,7 +10732,6 @@
 				B5BE2D3ACB5C6165DCD89837 /* RerankServiceTests.swift in Sources */,
 				3E282EA4D414341EFD0D75D3 /* RouterNavigationPathStressTests.swift in Sources */,
 				24A76FAF88EF20565D9E7F90 /* RouterTests.swift in Sources */,
-				D3EAD18F0C0D14FDA387169E /* SQLQuerySanitizerTests.swift in Sources */,
 				D22334CE9D7D8B6D39AC4C4E /* SQLiteImportRecordRepositoryEdgeCaseTests.swift in Sources */,
 				E495AB88FAA75A83216B7E36 /* SQLitePluginRepositoryEdgeCaseTests.swift in Sources */,
 				9B85285C5E30A5E4BE613E96 /* SQLiteStoreFailureEdgeTests.swift in Sources */,
