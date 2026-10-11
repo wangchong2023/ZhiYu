@@ -4,6 +4,8 @@
 //
 //  Copyright © 2026 WangChong. All rights reserved.
 //
+//  系统层级：[L0] 测试层
+//  核心职责：验证 JSONExtractor 从 LLM 返回文本中提取 JSON 对象的边界场景。
 
 import XCTest
 @testable import UFPCore
