@@ -1,12 +1,12 @@
 //
 //  JSONExtractorTests.swift
-//  ZhiYu
+//  UFPCore
 //
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import UFPCore
 
 /// JSONExtractor 单元测试
 /// 验证从 LLM 返回文本中提取 JSON 对象的边界场景
