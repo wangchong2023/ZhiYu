@@ -15,8 +15,9 @@ import Dependencies
 
 // MARK: - Logger Protocol
 
-/// 日志记录协议，定义日志输出与持久化的核心行为
-public protocol LoggerProtocol: Sendable {
+/// 日志记录协议，定义日志输出与持久化的核心行为。
+/// 继承 UFPCore 的 `UFPLogging`，使 App 层 Logger/NoOpLogger 实现同时 witness 通用日志协议要求。
+public protocol LoggerProtocol: Sendable, UFPLogging {
 
     /// 添加记录日志
     func addLog(

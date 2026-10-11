@@ -1,13 +1,13 @@
 //
 //  SSEParserTests.swift
-//  ZhiYu
+//  UFPCoreTests
 //
-//  系统层级：[Shared] 测试层
+//  系统层级：[L0] 测试层
 //  核心职责：验证 SSEParser 对多种 LLM 提供商流式响应格式的解析正确性。
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import UFPCore
 
 final class SSEParserTests: XCTestCase {
 

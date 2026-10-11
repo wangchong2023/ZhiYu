@@ -9,6 +9,7 @@
 //  核心职责：大语言模型客户端：多提供商适配、流式响应解析、端侧推理。
 //
 import Foundation
+import UFPCore
 
 /// OpenAI 兼容适配器 (DeepSeek, SiliconFlow 等)
 struct OpenAICompatibleAdapter: LLMAdapter {

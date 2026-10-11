@@ -9,6 +9,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 @MainActor
