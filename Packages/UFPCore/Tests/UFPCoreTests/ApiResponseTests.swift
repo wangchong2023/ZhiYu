@@ -176,7 +176,8 @@ final class ApiResponseTests: XCTestCase {
             .invalidHTTPResponse,
             .missingDataPayload,
             .missingRefreshToken,
-            .sessionInvalidated
+            .sessionInvalidated,
+            .invalidFileName
         ]
         for error in errors {
             XCTAssertNotNil(error.errorDescription, "所有 NetworkError case 都应有 errorDescription: \(error)")
@@ -207,6 +208,12 @@ final class ApiResponseTests: XCTestCase {
     func testNetworkErrorSessionInvalidatedDescription() {
         let error = NetworkError.sessionInvalidated
         XCTAssertEqual(error.errorDescription, "Session invalidated.")
+    }
+
+    /// 验证 .invalidFileName 的 errorDescription 为英文调试描述
+    func testNetworkErrorInvalidFileNameDescription() {
+        let error = NetworkError.invalidFileName
+        XCTAssertEqual(error.errorDescription, "Invalid file name (contains CRLF characters).")
     }
 
     // MARK: - 辅助方法
