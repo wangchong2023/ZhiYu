@@ -18,6 +18,7 @@
 | ADR-010 | 2026-08-04 | Domain 层禁止 #if os()，平台条件编译下沉至 Platforms/ | 已实施 |
 | ADR-011 | 2026-08-04 | inject_exempt/arch_exempt 豁免机制规范化 | 已实施 |
 | ADR-012 | 2026-08-04 | SecurityManager 密钥存储失败改 assertionFailure + 临时密钥降级 | 已实施 |
+| ADR-013 | 2026-10-11 | UFPStorage 下沉采用引擎层 + 业务装配层拆分，业务协议不物理下沉 | 设计中 |
 
 ---
 
@@ -118,3 +119,12 @@
 **决策**: 改为 assertionFailure（DEBUG 崩溃、Release 记录）+ 返回内存中的临时密钥（重启后丢失，但不崩溃）。
 **影响**: SecurityManager.swift:90。
 **后果**: 生产环境不再因 Keychain 故障白屏；临时密钥不持久化，重启后重新生成。
+
+## ADR-013: UFPStorage 下沉采用引擎层 + 业务装配层拆分
+
+**日期**: 2026-10-11
+**状态**: 设计中
+**背景**: A2.1 计划把 GRDB 存储引擎（DatabaseManager + Migrator + SQLiteStore）整体下沉 UFPStorage。探查发现 SQLiteStore（actor）深度依赖 Domain/App 层：`AnyPageStoreCapabilities`/`KnowledgeRepository`/`VectorRepository`/`RAGGovernanceRepository`（Domain L1.5 协议）与 `KnowledgePageRepository`/`VectorDataRepository`/`RAGGovernanceSQLiteStore`（App Repository）。若整体下沉会形成 UFPStorage(L1) → Domain(L1.5)/App 的反向依赖，违反分层红线；而 Domain 协议引用业务模型（KnowledgePage/PageChunk 等），协议物理下沉会污染 UFPStorage。
+**决策**: 采用**引擎层 + 业务装配层拆分**——纯物理引擎（DatabaseManager + DatabaseSchemaMigrator）直接下沉 UFPStorage；SQLiteStore 拆为「UFPStorage 通用 GRDB 引擎骨架（泛型、无业务依赖）+ App 层薄装配」（后者继续 conform Domain 协议）。`AnyPageStoreCapabilities` 等业务协议**不物理下沉**，留在 Domain 层。
+**影响**: `Packages/UFPStorage/Sources/UFPStorage/Engine/` 新增 DatabaseManager/DatabaseSchemaMigrator/GenericSQLiteEngine；App 层 DatabaseManager/Migrator 改 typealias 兼容层；SQLiteStore 改为基于通用引擎的薄装配层。
+**后果**: UFPStorage 保持「与业务完全无关」的通用底座定位；分层方向正确；SQLiteStore 依赖从直接 GRDB 收敛为依赖 UFPStorage 通用引擎。详见 `Docs/Architecture/2026-10-11-ufpstorage-downstream-design.md`。
