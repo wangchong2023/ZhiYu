@@ -117,10 +117,10 @@ SQLiteStore 拆为两层，**目标是把"通用 CRUD/事务/检索骨架"下沉
 
 > 本设计文档化后，A2.1 按其执行。分阶段，每阶段验证。
 
-- [ ] **Step 0**：探查 SQL 资源（`global_schema.sql`/`init_schema.sql`）是否含业务表，确定拆分边界
-- [ ] **Step 1**：下沉 DatabaseManager + DatabaseSchemaMigrator 到 UFPStorage（Logger 适配 MinimalLogger），App 层 typealias 兼容 + 迁移测试（7 个存储测试文件）
+- [ ] **Step 0**：探查 SQL 资源（`global_schema.sql`/`init_schema.sql`）是否含业务表，确定拆分边界（通用表随引擎下沉，业务表留 App 层迁移）
+- [ ] **Step 1**：下沉 DatabaseManager + DatabaseSchemaMigrator 到 UFPStorage（Logger 适配 MinimalLogger），App 层 typealias 兼容 + 迁移**引擎测试**（DatabaseManagerLifecycle/Degradation、MigratorTests/Edge 共 4 个文件迁 UFPStorage）
 - [ ] **Step 2**：UFPStorage 新增 `GenericSQLiteEngine`（泛型 CRUD/事务骨架，无业务依赖）
-- [ ] **Step 3**：重构 App 层 SQLiteStore 为薄装配层（基于 GenericSQLiteEngine），保持 `AnyPageStoreCapabilities` conform
+- [ ] **Step 3**：重构 App 层 SQLiteStore 为薄装配层（基于 GenericSQLiteEngine），保持 `AnyPageStoreCapabilities` conform；**SQLiteStore 3 个测试（Supplement/FailureEdge/TransactionConcurrency）留 App 层**（装配层测试，依赖 Domain 协议/业务模型）
 - [ ] **Step 4**：`make test-spm PKG=UFPStorage` + `make ios` + 存储相关测试回归
 - [ ] **Step 5**：提交 `refactor: 下沉 GRDB 存储引擎到 UFPStorage`
 
