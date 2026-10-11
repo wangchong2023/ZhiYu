@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuDomain
 
 final class TextChunkerDeepTests: XCTestCase {
 

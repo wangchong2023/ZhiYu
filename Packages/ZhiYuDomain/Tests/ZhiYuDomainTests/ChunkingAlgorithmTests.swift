@@ -9,7 +9,7 @@
 //  核心职责：针对 ChunkingAlgorithm 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuDomain
 
 /// 语义分块边界测试套件 (ChunkingAlgorithmTests)
 final class ChunkingAlgorithmTests: XCTestCase {
