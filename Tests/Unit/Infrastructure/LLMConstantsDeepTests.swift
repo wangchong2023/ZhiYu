@@ -12,6 +12,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 // MARK: - LLMConstants 常量完整性测试
@@ -28,9 +29,9 @@ final class LLMConstantsDeepTests: XCTestCase {
         XCTAssertEqual(LLMConstants.LogPreview.memorySummaryLength, 300)
         XCTAssertEqual(LLMConstants.LogPreview.systemPromptLength, 300)
         XCTAssertEqual(LLMConstants.LogPreview.queryLength, 200)
-        XCTAssertEqual(LLMConstants.LogPreview.maxDiagnosticLines, 15)
-        XCTAssertEqual(LLMConstants.LogPreview.diagnosticLineLength, 250)
-        XCTAssertEqual(LLMConstants.LogPreview.sseNonJsonLength, 120)
+        XCTAssertEqual(SSEConstants.maxDiagnosticLines, 15)
+        XCTAssertEqual(SSEConstants.diagnosticLineLength, 250)
+        XCTAssertEqual(SSEConstants.sseNonJsonLength, 120)
         XCTAssertEqual(LLMConstants.LogPreview.refactorPageContentLength, 150)
         XCTAssertEqual(LLMConstants.LogPreview.smartIngestSummaryLength, 100)
     }
@@ -132,9 +133,9 @@ final class LLMConstantsDeepTests: XCTestCase {
 
     /// 验证 SSEStream 标记
     func testSSEStreamMarkers() {
-        XCTAssertEqual(LLMConstants.SSEStream.doneMarker, "[DONE]")
-        XCTAssertEqual(LLMConstants.SSEStream.dataPrefix, "data: ")
-        XCTAssertEqual(LLMConstants.SSEStream.dataPrefixNoSpace, "data:")
+        XCTAssertEqual(SSEConstants.doneMarker, "[DONE]")
+        XCTAssertEqual(SSEConstants.dataPrefix, "data: ")
+        XCTAssertEqual(SSEConstants.dataPrefixNoSpace, "data:")
     }
 
     /// 验证 TaskName 任务名

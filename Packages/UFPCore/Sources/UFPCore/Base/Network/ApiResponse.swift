@@ -23,6 +23,15 @@ public struct ApiResponse<T: Codable & Sendable>: Codable, Sendable {
     public let requestId: String
     /// 服务端响应的毫秒级时间戳
     public let timestamp: Int64
+
+    /// 显式 public 初始化（跨模块 memberwise init 为 internal，App 层测试需此构造器）
+    public init(code: Int, message: String, data: T?, requestId: String, timestamp: Int64) {
+        self.code = code
+        self.message = message
+        self.data = data
+        self.requestId = requestId
+        self.timestamp = timestamp
+    }
     
     /// 判断业务请求是否成功
     public var isSuccess: Bool {

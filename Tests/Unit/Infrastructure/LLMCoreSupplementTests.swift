@@ -306,9 +306,9 @@ final class LLMCoreSupplementTests: XCTestCase {
 
     /// 验证 LLMConstants SSEStream 常量
     func testLLMConstantsSSEStreamConstants() {
-        XCTAssertEqual(LLMConstants.SSEStream.doneMarker, "[DONE]")
-        XCTAssertEqual(LLMConstants.SSEStream.dataPrefix, "data: ")
-        XCTAssertEqual(LLMConstants.SSEStream.dataPrefixNoSpace, "data:")
+        XCTAssertEqual(SSEConstants.doneMarker, "[DONE]")
+        XCTAssertEqual(SSEConstants.dataPrefix, "data: ")
+        XCTAssertEqual(SSEConstants.dataPrefixNoSpace, "data:")
     }
 
     /// 验证 LLMConstants Anonymization 常量
@@ -329,8 +329,8 @@ final class LLMCoreSupplementTests: XCTestCase {
 
     /// 验证 LLMConstants LogPreview 常量
     func testLLMConstantsLogPreviewConstants() {
-        XCTAssertEqual(LLMConstants.LogPreview.maxDiagnosticLines, 15)
-        XCTAssertEqual(LLMConstants.LogPreview.diagnosticLineLength, 250)
-        XCTAssertEqual(LLMConstants.LogPreview.sseNonJsonLength, 120)
+        XCTAssertEqual(SSEConstants.maxDiagnosticLines, 15)
+        XCTAssertEqual(SSEConstants.diagnosticLineLength, 250)
+        XCTAssertEqual(SSEConstants.sseNonJsonLength, 120)
     }
 }
