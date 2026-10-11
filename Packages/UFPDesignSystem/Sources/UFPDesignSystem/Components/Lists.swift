@@ -1,15 +1,16 @@
 //
-//  AppRows.swift
-//  ZhiYu
+//  Lists.swift
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem] SPM Package — 物理归位
+//  核心职责：通用列表行/分区组件集 —— 章节标题、标签行、步骤行、分隔线、强调线、图标容器。
+//           沉淀自 ZhiYu App 层 Shared/UIComponents，供包内组件与上层共享。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 // MARK: - App Section Header
 

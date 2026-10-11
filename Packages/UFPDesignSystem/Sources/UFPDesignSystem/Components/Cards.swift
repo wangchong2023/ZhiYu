@@ -1,15 +1,16 @@
 //
-//  AppCard.swift
-//  ZhiYu
+//  Cards.swift
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem] SPM Package — 物理归位
+//  核心职责：通用卡片容器组件集 —— 标准/描边/玻璃拟态卡片、卡片强调条、卡片背景修饰符。
+//           沉淀自 ZhiYu App 层 Shared/UIComponents，供包内组件与上层共享。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 // MARK: - App Card Modifier
 
@@ -57,7 +58,7 @@ public struct AppCard<Content: View>: View {
         @ViewBuilder content: () -> Content
     ) {
         self.cornerRadiusToken = AppCardTokenMapper.radiusToken(for: cornerRadius)
-        
+
         self.paddingToken = AppCardTokenMapper.spacingToken(for: padding)
 
         self.content = content()
@@ -140,8 +141,8 @@ public struct AppGlassCard<Content: View>: View {
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .shadow(
                 color: .primary.opacity(isHighlighted ? DesignTokens.SystemOpacity.glass : DesignTokens.SystemOpacity.ghost),
-                radius: isHighlighted ? DesignTokens.Spacing.Decorator.shadowRadiusLarge : DesignTokens.Spacing.Decorator.shadowRadiusSmall, 
-                x: 0, 
+                radius: isHighlighted ? DesignTokens.Spacing.Decorator.shadowRadiusLarge : DesignTokens.Spacing.Decorator.shadowRadiusSmall,
+                x: 0,
                 y: isHighlighted ? DesignTokens.Spacing.Decorator.shadowOffsetYLarge : DesignTokens.Spacing.Decorator.shadowOffsetYSmall
             )
     }
@@ -172,15 +173,15 @@ public struct AppCardAccent: View {
 public extension View {
     /// 应用标准卡片背景，使用强类型设计系统令牌。
     func appCard(
-        cornerRadiusToken: DesignTokens.RadiusToken = .card, 
+        cornerRadiusToken: DesignTokens.RadiusToken = .card,
         paddingToken: DesignTokens.SpacingToken = .standardPadding
     ) -> some View {
         modifier(AppCardModifier(cornerRadiusToken: cornerRadiusToken, paddingToken: paddingToken))
     }
-    
+
     /// 向后兼容原有 CGFloat 参数的卡片背景应用扩展。
     func appCard(
-        cornerRadius: CGFloat, 
+        cornerRadius: CGFloat,
         padding: CGFloat = DesignTokens.Spacing.Layout.cardContentPadding
     ) -> some View {
         let cornerToken = AppCardTokenMapper.radiusToken(for: cornerRadius)

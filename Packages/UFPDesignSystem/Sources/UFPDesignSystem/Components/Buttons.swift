@@ -1,15 +1,16 @@
 //
-//  AppButtons.swift
-//  ZhiYu
+//  Buttons.swift
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem] SPM Package — 物理归位
+//  核心职责：通用按钮组件集 —— 主操作/边框/胶囊/填充按钮、缩放点击样式、清除按钮、来源徽标。
+//           沉淀自 ZhiYu App 层 Shared/UIComponents，供包内组件与上层共享。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 // MARK: - App Primary Button
 
@@ -168,7 +169,7 @@ public struct AppCapsuleButton: View {
             capsuleLabel
         }
     }
-    
+
     // MARK: - 胶囊样式内容
     private var capsuleLabel: some View {
         HStack(spacing: DesignTokens.Spacing.tiny) {
@@ -184,6 +185,46 @@ public struct AppCapsuleButton: View {
         .background(isPrimary ? color : Color.appCard)
         .foregroundStyle(isPrimary ? .white : .appSecondary)
         .clipShape(Capsule())
+    }
+}
+
+// MARK: - 品牌色填充主操作按钮
+
+/// 品牌色填充主操作按钮
+///
+/// 消除 `VoiceNoteComponents`、`PageHistoryView`、`OCRScanView`、`CollaborationView` 中重复的
+/// `Text/HStack.font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding().background(Color.appAccent).clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))` 模式。
+public struct AppFilledActionButton: View {
+    public let title: String
+    public var icon: String?
+    public var action: () -> Void
+
+    public init(title: String, icon: String? = nil, action: @escaping () -> Void) {
+        self.title = title
+        self.icon = icon
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            Group {
+                if let icon {
+                    HStack {
+                        Image(systemName: icon)
+                        Text(title)
+                    }
+                } else {
+                    Text(title)
+                }
+            }
+            .font(.headline)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.appAccent)
+            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+        }
+        .buttonStyle(.plain)
     }
 }
 

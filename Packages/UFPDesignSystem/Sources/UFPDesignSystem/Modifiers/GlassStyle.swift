@@ -1,28 +1,29 @@
 //
 //  GlassStyle.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem] SPM Package — 物理归位
+//  核心职责：统一玻璃拟态风格修饰符集 —— 玻璃卡片、标准卡片容器、页面容器、指标卡片、列表行毛玻璃背景。
+//           沉淀自 ZhiYu App 层 Shared/UIComponents，供包内组件与上层共享。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 /// 统一的玻璃卡片视图修饰符
 /// 使用系统材质 (Material) 结合自定义不透明度实现通用的玻璃质感背景。
 public struct GlassCardModifier: ViewModifier {
     // MARK: - Properties
-    
+
     /// 材质的不透明度
     public let opacity: Double
     /// 圆角半径
     public let cornerRadius: CGFloat
-    
+
     // MARK: - Initialization
-    
+
     /// 初始化玻璃卡片修饰符
     /// - Parameters:
     ///   - opacity: 默认 1.0
@@ -31,9 +32,9 @@ public struct GlassCardModifier: ViewModifier {
         self.opacity = opacity
         self.cornerRadius = cornerRadius
     }
-    
+
     // MARK: - Body
-    
+
     /// 视图主体
     /// - Parameter content: content
     /// - Returns: 返回值
@@ -61,7 +62,7 @@ public extension View {
     func appGlassCardStyle(opacity: Double = 1.0, cornerRadius: CGFloat = DesignTokens.Spacing.cardRadius) -> some View {
         self.modifier(GlassCardModifier(opacity: opacity, cornerRadius: cornerRadius))
     }
-    
+
     /// 应用标准卡片容器样式
     /// 提供统一的内边距、背景和阴影效果。
     /// - Parameter cornerRadius: 圆角半径
@@ -77,7 +78,7 @@ public extension View {
             )
             .shadow(color: Color.theme.black.opacity(DesignTokens.Opacity.ghost), radius: 10, x: 0, y: 5)
     }
-    
+
     /// 应用通用页面容器样式
     /// - Parameters:
     ///   - background: 背景颜色
@@ -106,7 +107,7 @@ public extension View {
                 shadowY: 5
             )
     }
-    
+
     /// 仪表盘指标卡片风格 (Metric Card Style)
     /// 带有微弱的渐变效果和加大的圆角规范。
     /// - Parameters:
@@ -161,12 +162,12 @@ private extension View {
 /// 使用系统的超薄材质 (.ultraThinMaterial) 叠加轻微微透的强调底色，保障其在深色模式与浅色模式下均具有极佳的视觉可读性与高级感
 public struct AppListRowBackground: View {
     // MARK: - 初始化
-    
+
     /// 初始化磨砂玻璃背景组件
     public init() {}
-    
+
     // MARK: - 视图主体
-    
+
     public var body: some View {
         Color.appCard.opacity(DesignTokens.Colors.subtleOpacity)
             .background(.ultraThinMaterial)
@@ -176,12 +177,12 @@ public struct AppListRowBackground: View {
 /// 列表行磨砂玻璃背景修饰符
 public struct AppListRowBackgroundModifier: ViewModifier {
     // MARK: - 初始化
-    
+
     /// 初始化修饰符
     public init() {}
-    
+
     // MARK: - 视图转换
-    
+
     /// 视图主体
     /// - Parameter content: content
     /// - Returns: 返回值

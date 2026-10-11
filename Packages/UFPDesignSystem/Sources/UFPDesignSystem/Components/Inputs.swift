@@ -1,12 +1,13 @@
 //
-//  AdaptiveTextEditor.swift
-//  ZhiYu
+//  Inputs.swift
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/06/04.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：跨平台自适应文本编辑器 —— watchOS 使用可垂直扩展的 TextField，其他平台使用 TextEditor。
+//  系统层级：[UFPDesignSystem] SPM Package — 物理归位
+//  核心职责：通用输入组件集 —— 跨平台自适应文本编辑器。
+//           沉淀自 ZhiYu App 层 Shared/UIComponents，供包内组件与上层共享。
 //
 
 import SwiftUI
