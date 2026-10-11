@@ -159,6 +159,19 @@ public enum SystemConstants {
         public static let oneSecond: TimeInterval = 1.0
     }
 
+    // MARK: - 重试退避 (Retry Backoff)
+    /// 指数退避重试机制的默认参数
+    public enum RetryBackoff {
+        /// 默认最大重试次数（不含首次执行）
+        public static let defaultMaxRetries: Int = 3
+        /// 默认首次重试延迟（秒）
+        public static let defaultInitialDelay: TimeInterval = Time.oneSecond
+        /// 默认指数乘数（每次重试延迟翻倍）
+        public static let defaultMultiplier: Double = 2.0
+        /// 默认单次重试最大延迟上限（秒）
+        public static let defaultMaxDelay: TimeInterval = 15.0
+    }
+
     // MARK: - 错误码 (Error Codes)
     /// 与业务无关的通用错误码常量
     public enum ErrorCode {

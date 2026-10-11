@@ -742,7 +742,6 @@
 		408989232ACA6FFBA6988FF2 /* LLMUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D4433F02C422E4360DAF8B /* LLMUtils.swift */; };
 		40992E895A6E8C206D408730 /* AppLaunchAndEnvironmentDeepAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994BCBDA0F22638F683A43B1 /* AppLaunchAndEnvironmentDeepAuditTests.swift */; };
 		409C84AB3238B7E60E7BE26C /* IngestQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581D70F8FCE05A1D63716B8A /* IngestQueue.swift */; };
-		40B767384C85A23D5E38644A /* RetryTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C43E5DF7050E9F997B6B08 /* RetryTaskTests.swift */; };
 		40C0DB04BBB82BA2D31FF53B /* testAppErrorViewWithoutRetry.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 971133E9DC7DD8C1F2706EF0 /* testAppErrorViewWithoutRetry.1.png */; };
 		40C51D871BF499978D5B61EB /* VersionInfoFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032D5A388499323208FCB723 /* VersionInfoFormatterTests.swift */; };
 		40DDAC97B795792E94D0C625 /* TagCloudView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D83E5ECB173E8651D97CB88 /* TagCloudView.swift */; };
@@ -2126,6 +2125,7 @@
 		B8209DB8CFD294A7B7174341 /* InfrastructureFaultInjectionAndStorageDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704B9CFC507C0CD0C2E8105D /* InfrastructureFaultInjectionAndStorageDeepTests.swift */; };
 		B851A40D66261F2AF569FFA1 /* testModelCardView_LargeModel.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A012BCBD907EF4B95724F7D /* testModelCardView_LargeModel.1.png */; };
 		B8683B9D4DE9792457C5E416 /* L10n+Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70421C76A5D2D21EFFE48511 /* L10n+Platform.swift */; };
+		B8886909F44BF900CABDCA71 /* AuthRealBackendUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69213241DB2C85ED482539E3 /* AuthRealBackendUITests.swift */; };
 		B88F7439AF31C11DCF78A37A /* AccentIconBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 185232832D233E7ADCCAD8AC /* AccentIconBox.swift */; };
 		B8AC9BFEDB59153392F76CD9 /* QuizPresentationModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0E7C119C96145ACEE9F4C4 /* QuizPresentationModifier.swift */; };
 		B8BBF5F8C832B58CB6C43939 /* FeatureConstants+Knowledge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC8C39E19CC70B00E4A6F48 /* FeatureConstants+Knowledge.swift */; };
@@ -2230,7 +2230,6 @@
 		C0E7C9FE8591F414BECBBCC4 /* testCollabRoleBadgeThreeRoles.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 04B2A6F873E7452F3A60916A /* testCollabRoleBadgeThreeRoles.1.png */; };
 		C12A5C02121BE11F9F549079 /* testAuthViewDefaultChinaRegion.1.png in Resources */ = {isa = PBXBuildFile; fileRef = C30EF9975D5CC1978B3917C5 /* testAuthViewDefaultChinaRegion.1.png */; };
 		C131AF5C1C3188C96A99B967 /* AuthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3741886E88A7A728507E1E7 /* AuthUITests.swift */; };
-		A1B2C3D4E5F60718293A4B5C /* AuthRealBackendUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E6F708192A3B4C5D6E7F80 /* AuthRealBackendUITests.swift */; };
 		C14F57423075483FABE68F4A /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AD8F8969EFF35350ADACC3B /* AuthView.swift */; };
 		C158CF7AAE884D893FB745ED /* IngestPipelineConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A20125A434B445982AC52DB /* IngestPipelineConstants.swift */; };
 		C17EE761C5D4A8017DBBDBF3 /* PageType+GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6015F67B118E4ADFE528C3 /* PageType+GRDB.swift */; };
@@ -3860,6 +3859,7 @@
 		690D85A9ADB0D3C724C3A072 /* OnDeviceLLMServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceLLMServiceProtocol.swift; sourceTree = "<group>"; };
 		6913628E07E9265E37D48C19 /* InsightProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightProgressBar.swift; sourceTree = "<group>"; };
 		691D9A1F5B0CAE38FD5FA63D /* testTagCapsuleViewListModeSelected.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testTagCapsuleViewListModeSelected.1.png; sourceTree = "<group>"; };
+		69213241DB2C85ED482539E3 /* AuthRealBackendUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthRealBackendUITests.swift; sourceTree = "<group>"; };
 		698B86E3E397AB6EFE1D6C4F /* IngestCoordinatorImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestCoordinatorImportTests.swift; sourceTree = "<group>"; };
 		698FD4C3D53E3692424E49FF /* PageDetailAndLogViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageDetailAndLogViewTests.swift; sourceTree = "<group>"; };
 		69915C55C8755445B846F41D /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
@@ -4551,7 +4551,6 @@
 		C34F21022BCCC9147ED1156A /* testQuizView_EmptyQuestions_RendersUnavailableState.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testQuizView_EmptyQuestions_RendersUnavailableState.1.png; sourceTree = "<group>"; };
 		C35E21BE89F05B8C8E54C583 /* iOSReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSReminderService.swift; sourceTree = "<group>"; };
 		C3741886E88A7A728507E1E7 /* AuthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUITests.swift; sourceTree = "<group>"; };
-		D5E6F708192A3B4C5D6E7F80 /* AuthRealBackendUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthRealBackendUITests.swift; sourceTree = "<group>"; };
 		C38E641235EECC22B0A1145D /* KnowledgeRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeRepository.swift; sourceTree = "<group>"; };
 		C3A23B6E84B4C8880DE6B316 /* testEntityDetailBodyView_NoFrontmatter.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testEntityDetailBodyView_NoFrontmatter.1.png; sourceTree = "<group>"; };
 		C3AF0BF37240ED5E5E04AAE3 /* LLMContextBuilderSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMContextBuilderSupplementTests.swift; sourceTree = "<group>"; };
@@ -4770,7 +4769,6 @@
 		E17CE99805CEC632ADB75EB2 /* SynthesisViewActionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthesisViewActionHelper.swift; sourceTree = "<group>"; };
 		E1920ECA24AAAC4A387BD4B4 /* ImportRecordRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportRecordRepository.swift; sourceTree = "<group>"; };
 		E1AD440106F9F590E94075D0 /* MemoryEngineProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryEngineProtocol.swift; sourceTree = "<group>"; };
-		E1C43E5DF7050E9F997B6B08 /* RetryTaskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetryTaskTests.swift; sourceTree = "<group>"; };
 		E203A9E4DF95CF56C6459C53 /* PageDetailMetaSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageDetailMetaSectionView.swift; sourceTree = "<group>"; };
 		E2309AE880C99D792C932316 /* CoreUtilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreUtilitiesTests.swift; sourceTree = "<group>"; };
 		E257E3A3A41FF7D1CF0A29C8 /* testSubscriptionPlanCard_YearlySelected.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSubscriptionPlanCard_YearlySelected.1.png; sourceTree = "<group>"; };
@@ -5262,7 +5260,6 @@
 				06F28475588684CD793A8629 /* PIIMaskerTests.swift */,
 				1E6B64C39EDBB7C760973846 /* PromptDefenseTests.swift */,
 				666C1D15D38835DFF1ABB489 /* PromptSecurityGuardTests.swift */,
-				E1C43E5DF7050E9F997B6B08 /* RetryTaskTests.swift */,
 				1D62F5E84D5198C2F97646EA /* SecureEnclaveCryptoServicePlusTests.swift */,
 				0F7BD73C58CED36C876F84C0 /* SecureEnclaveCryptoServiceTests.swift */,
 				D8C114DC9B0A71CA3651E93D /* SecureEnclaveCryptoSupplementTests.swift */,
@@ -6185,8 +6182,8 @@
 			isa = PBXGroup;
 			children = (
 				18474C2C76E3C127CADF4E1F /* AISettingsTabSwitchingUITests.swift */,
+				69213241DB2C85ED482539E3 /* AuthRealBackendUITests.swift */,
 				C3741886E88A7A728507E1E7 /* AuthUITests.swift */,
-				D5E6F708192A3B4C5D6E7F80 /* AuthRealBackendUITests.swift */,
 				8AACB1253A863C68867FEA34 /* BaseUITestCase.swift */,
 				9E6D37A560B44740A5207FDB /* GraphUITests.swift */,
 				5695E85C3C97CEC9DC7F5602 /* IngestUITests.swift */,
@@ -10760,7 +10757,6 @@
 				26B96B3FB6FEFA0C6B8C6154 /* RawStorageTableDiagnosticsDeepTests.swift in Sources */,
 				36D503A0C01300FFE3436DCC /* RemoteConfigServiceTests.swift in Sources */,
 				B5BE2D3ACB5C6165DCD89837 /* RerankServiceTests.swift in Sources */,
-				40B767384C85A23D5E38644A /* RetryTaskTests.swift in Sources */,
 				3E282EA4D414341EFD0D75D3 /* RouterNavigationPathStressTests.swift in Sources */,
 				24A76FAF88EF20565D9E7F90 /* RouterTests.swift in Sources */,
 				D3EAD18F0C0D14FDA387169E /* SQLQuerySanitizerTests.swift in Sources */,
@@ -11792,8 +11788,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D70BF12B6FC0204C7936F21B /* AISettingsTabSwitchingUITests.swift in Sources */,
+				B8886909F44BF900CABDCA71 /* AuthRealBackendUITests.swift in Sources */,
 				C131AF5C1C3188C96A99B967 /* AuthUITests.swift in Sources */,
-				A1B2C3D4E5F60718293A4B5C /* AuthRealBackendUITests.swift in Sources */,
 				37786CFCA8641CCC5E487E2A /* BaseUITestCase.swift in Sources */,
 				7DE36876A9AA1ABEEA251BBD /* GraphUITests.swift in Sources */,
 				9863B800C8BD496A9CC9F9F8 /* IngestUITests.swift in Sources */,
