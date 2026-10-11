@@ -113,6 +113,35 @@ SQLiteStore 拆为两层，**目标是把"通用 CRUD/事务/检索骨架"下沉
 
 ---
 
+## 3.4 测试用例迁移与优化
+
+> **原则**：测试跟随代码下沉（`Tests/Unit` → SPM 包 `Tests/`），但只迁移**纯引擎层测试**；装配层测试因引用 Domain 协议/业务模型，留 App 层。
+
+### 3.4.1 测试迁移映射表
+
+按拆分设计，7 个存储测试文件分为两类：
+
+| 类别 | 测试文件 | 迁移目标 | 迁移原因 |
+|------|---------|---------|---------|
+| **引擎测试（迁移）** | `DatabaseManagerLifecycleTests.swift`、`DatabaseManagerDegradationTests.swift`、`DatabaseSchemaMigratorTests.swift`、`DatabaseSchemaMigratorEdgeTests.swift`（共 4 个） | `Packages/UFPStorage/Tests/UFPStorageTests/DatabaseManagerTests.swift` | 测试对象是 DatabaseManager/Migrator（纯 GRDB 物理引擎），随引擎下沉 |
+| **装配测试（留 App 层）** | `SQLiteStoreSupplementTests.swift`、`SQLiteStoreFailureEdgeTests.swift`、`SQLiteTransactionConcurrencyStressTests.swift`（共 3 个） | **不迁移**，保留在 `Tests/Unit/Infrastructure/` | SQLiteStore 留 App 层；测试引用 `AnyPageStoreCapabilities`/`KnowledgePage` 等 Domain 协议/业务模型，UFPStorage 无法承载 |
+
+### 3.4.2 迁移后的优化要点
+
+1. **import 调整**：`@testable import ZhiYu` → `@testable import UFPStorage`；GRDB 相关 import 保留（UFPStorage 已 `GRDBReexport` re-export GRDB，测试无需直接 `import GRDB`）
+2. **去掉对已删 App 符号的引用**：迁移后若测试仍引用 App 层已删符号（如 `Logger`、业务常量），须改为 UFPStorage/UFPCore 等价物或删除对应断言
+3. **Logger 断言适配**：引擎测试若断言 `Logger` 输出，改适配 MinimalLogger 或移除（MinimalLogger 无持久化，仅诊断日志）
+4. **单例测试隔离**：`DatabaseManager.shared` 依赖 `TestStateResettable`（UFPCore 已有）重置，迁移后保持 `resetStateForTesting()` 隔离逻辑
+
+### 3.4.3 一致性校验（对齐 C5.1 Step 1b）
+
+- 迁移后 `grep -rn "@testable import ZhiYu" Packages/UFPStorage/Tests/` 应无残留
+- 引擎测试用例数守恒：迁移 4 个文件到 UFPStorage 后，`DatabaseManagerLifecycleTests`(18) + `DegradationTests`(4) + `MigratorTests`(2) + `MigratorEdgeTests`(15) = **39 用例**应全量迁入 UFPStorage（允许合理拆分波动，报告中说明）
+- 原 `Tests/Unit/Infrastructure/` 下 4 个引擎测试文件须从 `ZhiYuTests` target 移除（防 `@testable import ZhiYu` 引用已删符号导致编译失败）
+- 3 个装配测试文件**保持**在 App 层，不得删除
+
+---
+
 ## 4. 实施步骤
 
 > 本设计文档化后，A2.1 按其执行。分阶段，每阶段验证。
