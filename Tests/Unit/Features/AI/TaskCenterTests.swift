@@ -347,4 +347,42 @@ final class TaskCenterTests: XCTestCase {
 
         XCTAssertLessThanOrEqual(center.tasks.count, 20)
     }
+
+    // MARK: - runTrackedTask
+
+    func testRunTrackedTaskSuccessAddsCompletedTask() async throws {
+        let result = try await center.runTrackedTask(type: .ai, name: "综合", target: "页面") {
+            "合成结果"
+        }
+
+        XCTAssertEqual(result, "合成结果")
+        XCTAssertEqual(center.tasks.count, 1)
+        XCTAssertEqual(center.tasks[0].status, .completed)
+        XCTAssertEqual(center.tasks[0].name, "综合")
+    }
+
+    func testRunTrackedTaskSuccessPassesThroughGenericValue() async throws {
+        let result: Int = try await center.runTrackedTask(type: .synthesis, name: "计数", target: "目标") {
+            42
+        }
+
+        XCTAssertEqual(result, 42)
+        XCTAssertEqual(center.tasks[0].status, .completed)
+    }
+
+    func testRunTrackedTaskFailureMarksFailedAndThrows() async {
+        do {
+            _ = try await center.runTrackedTask(type: .ai, name: "失败", target: "目标") {
+                throw NSError(domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "操作失败"])
+            }
+            XCTFail("应抛出错误")
+        } catch {
+            XCTAssertEqual(center.tasks.count, 1)
+            if case let .failed(error) = center.tasks[0].status {
+                XCTAssertEqual(error, "操作失败")
+            } else {
+                XCTFail("任务应为 failed 状态")
+            }
+        }
+    }
 }

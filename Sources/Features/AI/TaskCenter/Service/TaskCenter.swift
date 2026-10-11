@@ -106,6 +106,33 @@ public final class TaskCenter: @unchecked Sendable {
         return task.id
     }
 
+    /// 以任务追踪方式执行一段异步操作，消除 addTask / completeTask / failTask 三段式样板。
+    /// 内部自动 addTask + do/catch（成功 completeTask，失败 failTask 并重新抛出）。
+    /// - Parameters:
+    ///   - type: 任务类型
+    ///   - name: 任务名称
+    ///   - target: 目标对象
+    ///   - operation: 被追踪的异步操作，可抛出
+    /// - Returns: 操作结果
+    /// - Throws: 操作抛出的错误（已同步 failTask）
+    @discardableResult
+    public func runTrackedTask<T>(
+        type: TaskType = .ai,
+        name: String,
+        target: String,
+        operation: () async throws -> T
+    ) async throws -> T {
+        let taskID = addTask(type: type, name: name, target: target)
+        do {
+            let result = try await operation()
+            completeTask(id: taskID)
+            return result
+        } catch {
+            failTask(id: taskID, error: error.localizedDescription)
+            throw error
+        }
+    }
+
     /// 更新Task
     /// - Parameter id: id
     /// - Parameter status: status
