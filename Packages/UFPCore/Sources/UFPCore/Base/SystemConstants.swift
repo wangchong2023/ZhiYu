@@ -170,6 +170,10 @@ public enum SystemConstants {
         public static let defaultMultiplier: Double = 2.0
         /// 默认单次重试最大延迟上限（秒）
         public static let defaultMaxDelay: TimeInterval = 15.0
+        /// 抖动区间下限（指数退避防惊群，随机延迟乘子下界）
+        public static let jitterMin: Double = 0.8
+        /// 抖动区间上限（指数退避防惊群，随机延迟乘子上界）
+        public static let jitterMax: Double = 1.2
     }
 
     // MARK: - 错误码 (Error Codes)

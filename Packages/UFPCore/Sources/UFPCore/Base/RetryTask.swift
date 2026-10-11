@@ -53,7 +53,7 @@ public enum RetryTask {
                 retries += 1
 
                 // 加入 Jitter (随机抖动) 防范惊群效应 (Thundering Herd Problem)
-                let jitter = Double.random(in: 0.8...1.2)
+                let jitter = Double.random(in: SystemConstants.RetryBackoff.jitterMin...SystemConstants.RetryBackoff.jitterMax)
                 let actualDelay = min(currentDelay * jitter, maxDelay)
 
                 MinimalLogger.shared.warning("[RetryTask] 第 \(retries)/\(maxRetries) 次重试: \(error.localizedDescription) 延迟 \(String(format: "%.2f", actualDelay))s ...")
