@@ -331,6 +331,6 @@ container.register(tagStore, for: TagStore.self)
 - typecheck: make ios（Swift 6 严格并发编译 + Gatekeeper 22 项）
 - lint: make lint（swiftlint --strict）
 - test: make test-spm-all（UFPCore/UFPStorage/UFPDesignSystem/ZhiYuDomain/ZhiYuAICore/ZhiYuFeatures 6 包）+ App 层单元测试
-- arch: make audit（8 项架构/开源依赖审计，需 python3.14 运行——默认 python3=3.9 因 `dict | None` 3.10 语法失败）
-- teststruct: python3.14 Tools/CI/audit-test-structure.py --verbose（6 项测试结构度量）
+- arch: make audit（8 项架构/开源依赖审计，自动经 env/venv 引导 ≥3.10 Python，规避系统默认 python3=3.9 的 `dict | None` 运行时失败）
+- teststruct: bash Tools/scripts/python-venv-bootstrap.sh 后运行 Tools/CI/audit-test-structure.py --verbose（6 项测试结构度量）
 - snapshot: make ios 后 SnapshotTests（存在既有基线漂移，台账记录）
