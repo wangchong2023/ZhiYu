@@ -12,6 +12,7 @@
 #if ICLOUD_ENABLED
 import SwiftUI
 import UFPDesignSystem
+import UFPCore
 
 /// 冲突比对视图常量
 private enum ConflictDiffConstants {
@@ -395,10 +396,7 @@ struct ConflictDiffView: View {
     /// - Returns: 时间格式化字符串
     private func formatDate(_ date: Date?) -> String {
         guard let date else { return L10n.ICloud.Conflict.noTimeInfo }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .medium
-        return formatter.string(from: date)
+        return DateFormatterFactory.shared.string(from: date, dateStyle: .short, timeStyle: .medium)
     }
 }
 #endif

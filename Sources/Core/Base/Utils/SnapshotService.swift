@@ -38,7 +38,7 @@ final class SnapshotService: @unchecked Sendable {
         let pageDir = snapshotsURL.appendingPathComponent(pageID.uuidString, isDirectory: true)
         try? fileManager.createDirectory(at: pageDir, withIntermediateDirectories: true)
 
-        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let timestamp = DateFormatterFactory.shared.iso8601String(from: Date())
         let fileURL = pageDir.appendingPathComponent("\(timestamp).md")
 
         // 构建带元数据的快照内容
@@ -65,7 +65,7 @@ final class SnapshotService: @unchecked Sendable {
             .filter { $0.pathExtension == SystemConstants.FileExtension.markdown }
             .compactMap { url -> SnapshotInfo? in
                 let timestamp = url.deletingPathExtension().lastPathComponent
-                guard let date = ISO8601DateFormatter().date(from: timestamp) else { return nil }
+                guard let date = DateFormatterFactory.shared.iso8601Date(from: timestamp) else { return nil }
                 return SnapshotInfo(url: url, date: date)
             }
             .sorted { $0.date > $1.date }

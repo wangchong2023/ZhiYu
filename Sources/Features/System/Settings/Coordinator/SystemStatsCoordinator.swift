@@ -151,9 +151,8 @@ final class SystemStatsCoordinator {
 
     private func fetchAIDailyStats() async {
         guard let daily = try? await governanceRepo.fetchDailyAIStats(days: AppConstants.Keys.Stats.dailyStatsDays) else { return }
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = AppConstants.Keys.Stats.dailyDateFormat
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        let statsFormat = AppConstants.Keys.Stats.dailyDateFormat
+        let statsLocale = Locale(identifier: "en_US_POSIX")
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let components = calendar.dateComponents([.year, .month], from: today)
@@ -163,12 +162,12 @@ final class SystemStatsCoordinator {
         var statsMap: [String: DailyAIUsage] = [:]
         for i in 0..<numberOfDays {
             if let date = calendar.date(byAdding: .day, value: i, to: startDate) {
-                let ds = dateFormatter.string(from: date)
+                let ds = DateFormatterFactory.shared.string(from: date, format: statsFormat, locale: statsLocale)
                 statsMap[ds] = DailyAIUsage(date: date, dateString: ds, tokens: 0, requests: 0)
             }
         }
         for item in daily {
-            if let date = dateFormatter.date(from: item.date), statsMap[item.date] != nil {
+            if let date = DateFormatterFactory.shared.date(from: item.date, format: statsFormat, locale: statsLocale), statsMap[item.date] != nil {
                 statsMap[item.date] = DailyAIUsage(date: date, dateString: item.date, tokens: item.tokens, requests: item.requests)
             }
         }
