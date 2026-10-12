@@ -323,3 +323,14 @@ container.register(tagStore, for: TagStore.self)
 - **文档注释（`///`）**：解释"为什么"，用于公开 API。
 - **实现注释（`//`）**：解释"怎么做"，用于内部逻辑。
 - **MARK 标签**：使用 `// MARK: - 中文标题` 格式。
+
+## Health Stack
+
+本项目为 Swift/iOS 多目标（iOS/macOS/watchOS），代码质量健康检查工具栈：
+
+- typecheck: make ios（Swift 6 严格并发编译 + Gatekeeper 22 项）
+- lint: make lint（swiftlint --strict）
+- test: make test-spm-all（UFPCore/UFPStorage/UFPDesignSystem/ZhiYuDomain/ZhiYuAICore/ZhiYuFeatures 6 包）+ App 层单元测试
+- arch: make audit（8 项架构/开源依赖审计，需 python3.14 运行——默认 python3=3.9 因 `dict | None` 3.10 语法失败）
+- teststruct: python3.14 Tools/CI/audit-test-structure.py --verbose（6 项测试结构度量）
+- snapshot: make ios 后 SnapshotTests（存在既有基线漂移，台账记录）
