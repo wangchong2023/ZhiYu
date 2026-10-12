@@ -123,9 +123,10 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     /// 目的：验证当 firstLaunchTime 晚于当前时间（系统时间回拨）时，
     ///       activeDays 仍返回 1（因 max(1, ...) 保护），但 diff.day 为负数
     func testUserProfileViewActiveDaysTimeRollback() {
-        // 设置 firstLaunchTime 为未来日期（模拟系统时间回拨）
+        // 设置 firstLaunchTime 为未来日期（模拟系统时间回拨，写入注入 keyStore）
         let futureDate = Date().addingTimeInterval(86400 * 30) // 30 天后
-        UserDefaults.standard.set(futureDate, forKey: "app.firstLaunchTime")
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        keyStore?.set(futureDate, forKey: "app.firstLaunchTime")
 
         let view = UserProfileView()
             .snapshotEnvironment()
