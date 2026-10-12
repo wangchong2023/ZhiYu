@@ -104,8 +104,9 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
     /// 目的：验证 activeDays 计算属性在首次启动（无 firstLaunchTime）时返回 1，
     ///       同时检测副作用：计算属性中执行 UserDefaults.standard.set
     func testUserProfileViewActiveDaysFirstLaunch() {
-        // 清理 firstLaunchTime 模拟首次启动
-        UserDefaults.standard.removeObject(forKey: "app.firstLaunchTime")
+        // 清理 firstLaunchTime 模拟首次启动（使用与 UserProfileView 相同的注入 keyStore）
+        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
+        keyStore?.removeObject(forKey: "app.firstLaunchTime")
 
         let view = UserProfileView()
             .snapshotEnvironment()
@@ -113,9 +114,9 @@ final class KnowledgeViewsSnapshotTests: XCTestCase {
 
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))
 
-        // 验证副作用：计算属性应已写入 firstLaunchTime
-        let stored = UserDefaults.standard.object(forKey: "app.firstLaunchTime")
-        XCTAssertNotNil(stored, "activeDays 计算属性应在首次访问时写入 firstLaunchTime")
+        // 验证副作用：UserProfileView 出现（onAppear → ensureFirstLaunchRecorded）后应写入 firstLaunchTime
+        let stored = keyStore?.object(forKey: "app.firstLaunchTime")
+        XCTAssertNotNil(stored, "UserProfileView onAppear 应写入 firstLaunchTime")
     }
 
     /// TC-B1-05: UserProfileView activeDays 系统时间回拨边界
