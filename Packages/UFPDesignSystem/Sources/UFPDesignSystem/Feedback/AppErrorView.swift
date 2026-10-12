@@ -74,8 +74,8 @@ public struct AppErrorView: View {
             // 重试按钮
             if let retryAction = retryAction {
                 Button(action: {
-                    // 1. 触发触觉反馈 (仅支持 iOS 平台)
-                    #if canImport(UIKit)
+                    // 1. 触发触觉反馈 (仅支持 iOS 平台；watchOS 虽可 import UIKit 但 UIImpactFeedbackGenerator 不可用)
+                    #if canImport(UIKit) && !os(watchOS)
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
                     #endif
