@@ -15,6 +15,11 @@ import UIKit
 import GoogleSignIn
 #endif
 
+/// GoogleSignIn SDK 未编译时的错误描述（技术性说明，非用户可见文案，不走 L10n）
+private enum GoogleSdkErrorText {
+    static let notCompiled = "Google SDK not compiled"
+}
+
 /// Google Sign-In 登录返回的用户凭证数据（解耦 SDK 具体类型，便于注入测试）
 public struct GoogleSignInCredentialData {
     public let idToken: String
@@ -55,7 +60,7 @@ public struct GIDSignInProvider: GoogleSignInProviding {
         throw AppError.auth(
             domain: FeatureConstants.ModuleName.googleAuthStrategy,
             code: -99,
-            description: "Google SDK not compiled"
+            description: GoogleSdkErrorText.notCompiled
         )
         #endif
     }
