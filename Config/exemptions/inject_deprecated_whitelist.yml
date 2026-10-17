@@ -91,13 +91,13 @@ inject_deprecated_whitelist:
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/Core/Base/Utils/Localized.swift
-  line: 157
+  line: 101
   type: ServiceContainer.shared
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
 - file: Sources/Core/Base/Utils/Localized.swift
-  line: 169
+  line: 113
   type: ServiceContainer.shared
   reason: P7 渐进式迁移存量
   added: '2026-08-12'

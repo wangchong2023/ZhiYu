@@ -16,7 +16,7 @@ import UFPDesignSystem
 /// 插件指标区常量
 private enum PluginMetricsConstants {
     /// 指标栏高度 (iconDisplay + giant = 72)
-    static let barHeight: CGFloat = 72
+    static let barHeight: CGFloat = DesignTokens.Metrics.pluginMetricsBarHeight
 }
 
 // MARK: - App Store 风格快捷指标滚轴

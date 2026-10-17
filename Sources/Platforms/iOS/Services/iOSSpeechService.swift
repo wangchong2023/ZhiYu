@@ -65,9 +65,7 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
         let docDir = fm.urls(for: .documentDirectory, in: .userDomainMask).first ?? fm.temporaryDirectory
         let recordsDir = docDir.appendingPathComponent("import_records", isDirectory: true)
         try? fm.createDirectory(at: recordsDir, withIntermediateDirectories: true)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd_HHmmss"
-        let ts = formatter.string(from: Date())
+        let ts = DateFormatterFactory.shared.string(from: Date(), format: "yyyyMMdd_HHmmss")
         let fileName = "voice_\(ts).m4a"
         let fileURL = recordsDir.appendingPathComponent(fileName)
         let settings: [String: Any] = [

@@ -9,6 +9,7 @@
 import XCTest
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 @testable import ZhiYu
 
 @MainActor

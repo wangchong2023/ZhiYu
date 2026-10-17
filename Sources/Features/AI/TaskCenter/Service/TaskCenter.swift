@@ -9,91 +9,10 @@
 //  核心职责：任务中心：后台 AI 任务调度与进度追踪。
 //
 import Foundation
+import ZhiYuDomain
 import UFPCore
 import Combine
 import Dependencies
-
-/// 任务类型
-public enum TaskType: String, CaseIterable, Sendable {
-    case ai             // 通用 AI 任务
-    case ingest         // 导入任务
-    case aiScan         // AI 扫描
-    case healthCheck    // 健康检查
-    case synthesis      // 知识合成
-
-    var icon: String {
-        switch self {
-        case .ai: return "sparkles"
-        case .ingest: return "tray.and.arrow.down"
-        case .aiScan: return "bolt.shield.fill"
-        case .healthCheck: return "stethoscope"
-        case .synthesis: return "wand.and.stars"
-        }
-    }
-
-    var defaultColor: String {
-        switch self {
-        case .ingest: return "blue"
-        case .healthCheck: return "red"
-        case .aiScan, .ai: return "orange"
-        case .synthesis: return "purple"
-        }
-    }
-    
-    var localizedName: String {
-        switch self {
-        case .ai: return "AI"
-        case .ingest: return L10n.AI.Task.typeIngest
-        case .aiScan: return L10n.AI.Task.typeAIScan
-        case .healthCheck: return L10n.AI.Task.typeHealthCheck
-        case .synthesis: return L10n.AI.Task.typeSynthesis
-        }
-    }
-}
-
-/// RAG / AI 执行阶段 (用于多维视觉反馈)
-public enum TaskStage: String, Equatable, Sendable {
-    case pending       // 准备阶段
-    case extraction    // 文本提取/预处理 (Gray)
-    case enrichment    // AI语义增强 (Indigo)
-    case chunking      // 语义分块 (Cyan)
-    case embedding     // 向量化/特征提取 (Teal)
-    case retrieval     // 数据库检索/BM25 (Blue)
-    case synthesis     // 大模型合成生成 (Purple)
-    case general       // 通用执行 (Orange)
-}
-
-/// 任务执行状态
-public enum TaskStatus: Equatable, Sendable {
-    case pending                                      // 等待中
-    case running(progress: Double, stage: TaskStage)  // 执行中（带进度与具体阶段）
-    case completed                                    // 已完成
-    case failed(error: String)                        // 执行失败（带错误信息）
-
-    /// 判等比较
-    public static func == (lhs: TaskStatus, rhs: TaskStatus) -> Bool {
-        switch (lhs, rhs) {
-        case (.pending, .pending): return true
-        case (.completed, .completed): return true
-        case let (.running(p1, s1), .running(p2, s2)): return p1 == p2 && s1 == s2
-        case let (.failed(e1), .failed(e2)): return e1 == e2
-        default: return false
-        }
-    }
-}
-
-/// 全球异步任务模型
-public struct GlobalTask: Identifiable, Equatable, Sendable {
-    public let id = UUID()
-    public let type: TaskType
-    public let name: String                // 任务名称
-    public let target: String              // 目标对象
-    public var status: TaskStatus          // 当前状态
-    public let startTime = Date()          // 启动时间
-    public var isRead: Bool = false        // 用户是否已读
-    public var associatedPageID: UUID? // 关联页面
-    public var subLogs: [String] = []      // 细粒度子状态日志 (消除信息真空)
-}
 
 /// 全局任务管理中心
 @MainActor
@@ -185,6 +104,33 @@ public final class TaskCenter: @unchecked Sendable {
         activityService?.startActivity(id: task.id, name: name, target: target)
 
         return task.id
+    }
+
+    /// 以任务追踪方式执行一段异步操作，消除 addTask / completeTask / failTask 三段式样板。
+    /// 内部自动 addTask + do/catch（成功 completeTask，失败 failTask 并重新抛出）。
+    /// - Parameters:
+    ///   - type: 任务类型
+    ///   - name: 任务名称
+    ///   - target: 目标对象
+    ///   - operation: 被追踪的异步操作，可抛出
+    /// - Returns: 操作结果
+    /// - Throws: 操作抛出的错误（已同步 failTask）
+    @discardableResult
+    public func runTrackedTask<T>(
+        type: TaskType = .ai,
+        name: String,
+        target: String,
+        operation: () async throws -> T
+    ) async throws -> T {
+        let taskID = addTask(type: type, name: name, target: target)
+        do {
+            let result = try await operation()
+            completeTask(id: taskID)
+            return result
+        } catch {
+            failTask(id: taskID, error: error.localizedDescription)
+            throw error
+        }
     }
 
     /// 更新Task
@@ -346,4 +292,40 @@ extension DependencyValues {
 
 extension NSNotification.Name {
     static let taskCompleted = NSNotification.Name("app_task_completed")
+}
+
+// MARK: - TaskType 展示属性（依赖 UI / L10n，留在 App 层）
+
+extension TaskType {
+    /// SF Symbol 图标名
+    var icon: String {
+        switch self {
+        case .ai: return "sparkles"
+        case .ingest: return "tray.and.arrow.down"
+        case .aiScan: return "bolt.shield.fill"
+        case .healthCheck: return "stethoscope"
+        case .synthesis: return "wand.and.stars"
+        }
+    }
+
+    /// 主题色名称
+    var defaultColor: String {
+        switch self {
+        case .ingest: return "blue"
+        case .healthCheck: return "red"
+        case .aiScan, .ai: return "orange"
+        case .synthesis: return "purple"
+        }
+    }
+
+    /// 本地化名称
+    var localizedName: String {
+        switch self {
+        case .ai: return "AI"
+        case .ingest: return L10n.AI.Task.typeIngest
+        case .aiScan: return L10n.AI.Task.typeAIScan
+        case .healthCheck: return L10n.AI.Task.typeHealthCheck
+        case .synthesis: return L10n.AI.Task.typeSynthesis
+        }
+    }
 }

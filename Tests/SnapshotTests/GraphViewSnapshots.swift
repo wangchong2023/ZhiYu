@@ -38,8 +38,14 @@ final class GraphViewSnapshots: XCTestCase {
 
     /// 测试空状态占位视图 — 无知识图谱时的引导界面
     func testGraphEmptyStateView_Default() {
-        var selectedTab: AppTab = .graph
-        let view = GraphEmptyStateView(selectedTab: Binding(get: { selectedTab }, set: { selectedTab = $0 }))
+        let view = AppEmptyState.withAction(
+            icon: DesignTokens.Icons.circleGrid3x3Fill,
+            title: L10n.Graph.emptyTitle,
+            description: L10n.Graph.emptyDesc,
+            actionLabel: L10n.Graph.startBuilding,
+            actionRole: .primary,
+            actionHandler: {}
+        )
             .snapshotEnvironment()
             .frame(width: DesignTokens.Metrics.snapshotPhoneWidth, height: DesignTokens.Metrics.snapshotPhoneHeight)
         assertSnapshot(of: view, as: .image(precision: SnapshotConfig.defaultPrecision, layout: .device(config: .iPhone13Pro)))

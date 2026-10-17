@@ -139,9 +139,7 @@ struct SynthesisDocRow: View {
     
     // MARK: - Helpers
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
-        return formatter.string(from: date)
+        DateFormatterFactory.shared.string(from: date, format: "yyyy-MM-dd HH:mm")
     }
 
     private func formatByteSize(_ bytes: Int) -> String {

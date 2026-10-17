@@ -10,6 +10,7 @@
 //           以及 Localized.languageMode 缓存在 actor 隔离下的安全性。
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 final class L10nVaultTests: XCTestCase {

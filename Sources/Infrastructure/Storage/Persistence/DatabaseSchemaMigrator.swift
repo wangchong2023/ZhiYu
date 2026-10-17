@@ -25,7 +25,7 @@ extension DatabaseManager {
     ///   - isNotNull: 是否 NOT NULL（默认 false）
     ///   - defaultValue: 默认值（可选）
     /// - Throws: 数据库错误
-    private func addColumnIfNotExists(
+    private nonisolated func addColumnIfNotExists(
         db: Database,
         tableName: String,
         columnName: String,
@@ -42,11 +42,11 @@ extension DatabaseManager {
         }
     }
 
-    // MARK: - 专属笔记本库迁移方案 (DatabaseMigrator)
+    // MARK: - 专属笔记本库迁移方案 (GenericSchemaMigrator)
     
-    /// 专属笔记本数据库对应的渐进式架构迁移器。
-    var migrator: DatabaseMigrator {
-        var migrator = DatabaseMigrator()
+    /// 专属笔记本数据库对应的渐进式架构迁移器（业务 schema，基于通用执行器）。
+    var migrator: GenericSchemaMigrator {
+        let migrator = GenericSchemaMigrator()
         
         // DEBUG 模式下也不抹除——schema 变更统一通过增量迁移处理
         // (eraseDatabaseOnSchemaChange=true 会导致每次切库数据全部丢失)
@@ -342,11 +342,11 @@ extension DatabaseManager {
         return migrator
     }
 
-    // MARK: - 全局数据库迁移方案 (DatabaseMigrator)
+    // MARK: - 全局数据库迁移方案 (GenericSchemaMigrator)
     
-    /// 全局数据库对应的架构迁移器。
-    var globalMigrator: DatabaseMigrator {
-        var migrator = DatabaseMigrator()
+    /// 全局数据库对应的架构迁移器（业务 schema，基于通用执行器）。
+    var globalMigrator: GenericSchemaMigrator {
+        let migrator = GenericSchemaMigrator()
         
         // DEBUG 模式下也不抹除——schema 变更统一通过增量迁移处理
         // (eraseDatabaseOnSchemaChange=true 会导致每次切库数据全部丢失)

@@ -61,12 +61,10 @@ final class IngestAndContentViewFullCoverageTests: XCTestCase {
         XCTAssertFalse(coordinator.newContent.isEmpty)
 
         // 错误状态弹窗
-        coordinator.errorMessage = "网络请求超时"
-        coordinator.showError = true
+        coordinator.status = .failure("网络请求超时")
         XCTAssertTrue(coordinator.showError)
         XCTAssertEqual(coordinator.errorMessage, "网络请求超时")
 
-        coordinator.errorMessage = nil
         coordinator.showError = false
         XCTAssertFalse(coordinator.showError)
     }

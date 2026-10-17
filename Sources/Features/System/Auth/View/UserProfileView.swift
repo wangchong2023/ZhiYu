@@ -126,11 +126,8 @@ public struct UserProfileView: View {
                 nickname = user.name
                 gender = user.gender ?? 0
                 
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd"
-                
                 if let birthdayString = user.birthday,
-                   let date = formatter.date(from: birthdayString) {
+                   let date = DateFormatterFactory.shared.date(from: birthdayString, format: "yyyy-MM-dd") {
                     birthday = date
                 }
             }
@@ -374,9 +371,7 @@ public struct UserProfileView: View {
     private func handleProfileSave() {
         Task {
             isSaving = true
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            let birthdayString = formatter.string(from: birthday)
+            let birthdayString = DateFormatterFactory.shared.string(from: birthday, format: "yyyy-MM-dd")
             
             let success = await authService.updateUserProfile(
                 nickname: nickname,

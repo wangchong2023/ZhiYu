@@ -140,4 +140,39 @@ final class SystemConstantsTests: XCTestCase {
         XCTAssertEqual(SystemConstants.bytesPerGB, kb * kb * kb,
                        "bytesPerGB 必须等于 bytesPerKB 的立方")
     }
+
+    // MARK: - 语言代码常量
+
+    func testLanguageCodes() {
+        XCTAssertEqual(SystemConstants.LanguageCode.zh, "zh")
+        XCTAssertEqual(SystemConstants.LanguageCode.zhHans, "zh-Hans")
+        XCTAssertEqual(SystemConstants.LanguageCode.zhHant, "zh-Hant")
+        XCTAssertEqual(SystemConstants.LanguageCode.zhHK, "zh-HK")
+        XCTAssertEqual(SystemConstants.LanguageCode.zhTW, "zh-TW")
+        XCTAssertEqual(SystemConstants.LanguageCode.zhMO, "zh-MO")
+        XCTAssertEqual(SystemConstants.LanguageCode.en, "en")
+        XCTAssertEqual(SystemConstants.LanguageCode.es, "es")
+        XCTAssertEqual(SystemConstants.LanguageCode.fr, "fr")
+        XCTAssertEqual(SystemConstants.LanguageCode.ar, "ar")
+        XCTAssertEqual(SystemConstants.LanguageCode.ru, "ru")
+        XCTAssertEqual(SystemConstants.LanguageCode.ko, "ko")
+        XCTAssertEqual(SystemConstants.LanguageCode.ja, "ja")
+        XCTAssertEqual(SystemConstants.LanguageCode.pt, "pt")
+    }
+
+    // MARK: - 本地化常量
+
+    func testLocalizationConstants() {
+        XCTAssertEqual(SystemConstants.Localization.lproj, "lproj")
+        XCTAssertEqual(SystemConstants.Localization.commonTable, "Common")
+    }
+
+    // MARK: - 语言常量与本地化常量一致性
+
+    /// 简体中文语言代码应与首选中文环境一致（zh-Hans）
+    func testLanguageCodeConsistency() {
+        XCTAssertEqual(SystemConstants.LanguageCode.zhHans, "zh-Hans")
+        XCTAssertNotEqual(SystemConstants.LanguageCode.zh, SystemConstants.LanguageCode.zhHans,
+                          "通用 zh 与简体 zh-Hans 不应相同")
+    }
 }

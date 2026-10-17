@@ -244,12 +244,10 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
     public func performPageSynthesis(type: SynthesisStore.SynthesisType, title: String, content: String) async throws -> String {
         isProcessingPageAI = true
         defer { isProcessingPageAI = false }
-        
-        let taskID = taskCenter.addTask(type: .ai, name: type.title, target: title)
-        do {
+
+        return try await taskCenter.runTrackedTask(type: .ai, name: type.title, target: title) {
             let result = try await AISynthesisService.shared.synthesize(type: type, content: content)
-            taskCenter.completeTask(id: taskID)
-            
+
             // 🛡️ 持久化落盘存入 SynthesisDocument 数组，确保在合成列表中可查
             synthesisStore.saveSynthesisResult(type: type, content: result)
 
@@ -266,9 +264,6 @@ public final class AIWorkflowStore: AIWorkflowCapabilities {
                 activePageAIResult = result
             }
             return result
-        } catch {
-            taskCenter.failTask(id: taskID, error: error.localizedDescription)
-            throw error
         }
     }
 

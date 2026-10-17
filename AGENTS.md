@@ -308,6 +308,7 @@ container.register(tagStore, for: TagStore.self)
 
 - [GRDB](https://github.com/groue/GRDB.swift.git) (~> 6.29) — SQLite + FTS5 数据库
 - [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) (~> 1.17) — 快照测试
+- [GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS.git) (10.0.0, Apache-2.0) — Google 账号登录 SDK（GIDSignIn 拉取 idToken）。本地克隆于 `${OPENSRC_ROOT}/GoogleSignIn-iOS`，经 `Config/opensource_dependencies.yml` 登记、`Config/project.yml.template` 以 path 依赖引入（非远程 GitHub URL）；`Info.plist` 标准键 `GIDClientID` + 反向 URL scheme
 
 ## 提交规范
 
@@ -323,3 +324,14 @@ container.register(tagStore, for: TagStore.self)
 - **文档注释（`///`）**：解释"为什么"，用于公开 API。
 - **实现注释（`//`）**：解释"怎么做"，用于内部逻辑。
 - **MARK 标签**：使用 `// MARK: - 中文标题` 格式。
+
+## Health Stack
+
+本项目为 Swift/iOS 多目标（iOS/macOS/watchOS），代码质量健康检查工具栈：
+
+- typecheck: make ios（Swift 6 严格并发编译 + Gatekeeper 22 项）
+- lint: make lint（swiftlint --strict）
+- test: make test-spm-all（UFPCore/UFPStorage/UFPDesignSystem/ZhiYuDomain/ZhiYuAICore/ZhiYuFeatures 6 包）+ App 层单元测试
+- arch: make audit（8 项架构/开源依赖审计，自动经 env/venv 引导 ≥3.10 Python，规避系统默认 python3=3.9 的 `dict | None` 运行时失败）
+- teststruct: bash Tools/scripts/python-venv-bootstrap.sh 后运行 Tools/CI/audit-test-structure.py --verbose（6 项测试结构度量）
+- snapshot: make ios 后 SnapshotTests（存在既有基线漂移，台账记录）

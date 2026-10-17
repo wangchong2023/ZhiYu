@@ -29,8 +29,8 @@ struct MarkdownRendererView: View {
 
     private enum Layout {
         static let minColWidth: CGFloat = DesignTokens.ComponentSpacing.metricChipWidth
-        static let maxColWidth: CGFloat = 180
-        static let cellHeight: CGFloat = 36
+        static let maxColWidth: CGFloat = DesignTokens.Metrics.markdownTableMaxColWidth
+        static let cellHeight: CGFloat = DesignTokens.Metrics.markdownTableCellHeight
     }
 
     var body: some View {

@@ -14,6 +14,7 @@ import WidgetKit
 import XCTest
 
 @testable import ZhiYu
+import ZhiYuDomain
 
 @MainActor
 final class VaultCoordinatorDeepTests: XCTestCase {

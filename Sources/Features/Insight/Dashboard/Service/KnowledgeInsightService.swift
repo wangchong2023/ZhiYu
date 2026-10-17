@@ -163,10 +163,8 @@ actor KnowledgeInsightService {
 
     /// 从字符串中提取第一个完整 JSON 对象（花括号配对）
     private func cacheKey() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = InsightConfig.cacheDateFormat
         let lang = Localized.currentLanguage
-        return "\(AppConstants.Keys.Storage.dailyRecapPrefix)\(formatter.string(from: Date()))_\(lang)"
+        return "\(AppConstants.Keys.Storage.dailyRecapPrefix)\(DateFormatterFactory.shared.string(from: Date(), format: InsightConfig.cacheDateFormat))_\(lang)"
     }
 
     private func loadCachedDailyRecap() async -> DailyRecap? {
@@ -237,10 +235,7 @@ actor KnowledgeInsightService {
             .prefix(InsightConfig.topKeywordsCount)
             .map { $0.key }
 
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.locale = Locale(identifier: Localized.currentLanguage)
-        let dateRange = "\(formatter.string(from: lastWeek)) - \(formatter.string(from: Date()))"
+        let dateRange = "\(DateFormatterFactory.shared.string(from: lastWeek, dateStyle: .medium, timeStyle: .none, locale: Locale(identifier: Localized.currentLanguage))) - \(DateFormatterFactory.shared.string(from: Date(), dateStyle: .medium, timeStyle: .none, locale: Locale(identifier: Localized.currentLanguage)))"
 
         let insight = WeeklyInsight(
             dateRange: dateRange,

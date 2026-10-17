@@ -1780,6 +1780,24 @@ planned_types:
   expiry_check: false
   category:
   - doc-drift
+- symbol: DatabaseMigrator
+  reason: 文档历史引用（内部迁移器，符号图未收录）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ModelDownloadDelegateHelper
+  reason: 文档历史引用（辅助类型已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TextChunker
+  reason: 占位协议（符号图未收录），文档引用有据
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
 planned_test_classes:
 - symbol: WatchOCRServiceTests
   reason: 规划中 WatchOCR 测试类（实际为 WatchPlatformTests.testWatchOCRServiceStub）
@@ -2027,6 +2045,30 @@ planned_test_classes:
   expiry_check: false
   category:
   - doc-drift
+- symbol: DatabaseManagerBusinessTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DegradationTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ModelDownloadManagerDownloadTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ModelDownloadManagerTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
 business_magic_exempt:
 - file: Sources/Infrastructure/Storage/Utility/SQLQuerySanitizer.swift
   line: 22
@@ -2062,56 +2104,3 @@ business_magic_exempt:
   expiry_check: false
 magic_string_exempt: []
 ufpcore_pure_exempt: []
-private_const_whitelist:
-- file: Sources/Features/System/Settings/View/Plugins/PluginDetailMetricsSection.swift
-  const: barHeight
-  reason: 插件指标条高度（72pt），组件特定尺寸，无匹配 token
-  expiry_check: 2026-12-31
-- file: Sources/Features/Knowledge/Ingest/View/Components/PDFComponents.swift
-  const: pageRangeFieldWidth
-  reason: PDF 页码输入框宽度（50pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Features/Knowledge/Ingest/View/Components/PDFComponents.swift
-  const: previewMaxHeight
-  reason: PDF 预览最大高度（150pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Features/AI/Chat/View/ChatView.swift
-  const: streamingBubbleIconSize
-  reason: 流式气泡图标尺寸（28.8pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Features/AI/Synthesis/View/Components/SynthesisErrorStateView.swift
-  const: iconFontSize
-  reason: 错误态图标字号（36pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Features/AI/Synthesis/View/Components/SynthesisErrorStateView.swift
-  const: cardMinHeight
-  reason: 错误态卡片最小高度（320pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Features/AI/VoiceNote/View/Components/VoiceNoteComponents.swift
-  const: previewMinHeight
-  reason: 语音笔记预览最小高度（147.2pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Features/AI/VoiceNote/View/Components/VoiceNoteComponents.swift
-  const: previewMaxHeight
-  reason: 语音笔记预览最大高度（368pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Shared/UIComponents/Overlays/SplashComponents.swift
-  const: glowHeight
-  reason: 启动屏光晕高度（368pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Shared/UIComponents/Overlays/SplashComponents.swift
-  const: glowOffset
-  reason: 启动屏光晕偏移（96pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Shared/UIComponents/Editors/MarkdownRendererView.swift
-  const: maxColWidth
-  reason: 表格列最大宽度（180pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Shared/UIComponents/Editors/MarkdownRendererView.swift
-  const: cellHeight
-  reason: 表格单元格高度（36pt），组件特定尺寸
-  expiry_check: 2026-12-31
-- file: Sources/Shared/UIComponents/Feedback/AppErrorView.swift
-  const: iconSize
-  reason: 错误图标尺寸（54pt），组件特定尺寸
-  expiry_check: 2026-12-31

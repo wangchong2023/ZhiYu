@@ -9,7 +9,7 @@ struct AuthActionButtonStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.Domain.Auth.actionButtonVerticalPadding)
+            .padding(.vertical, DesignTokens.Spacing.Auth.actionButtonVerticalPadding)
             .background(Color.appAccent)
             .clipShape(Capsule())
             .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.shadowRadius, y: DesignTokens.Spacing.shadowY)

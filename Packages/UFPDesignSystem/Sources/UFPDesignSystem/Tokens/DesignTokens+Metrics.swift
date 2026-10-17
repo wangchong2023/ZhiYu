@@ -159,5 +159,31 @@ extension DesignTokens {
         public static let snapshotNotebookCardHeight: CGFloat = 220
         /// 笔记本列表行快照高度 (80pt)
         public static let snapshotNotebookRowHeight: CGFloat = 80
+
+        // MARK: - 组件特定尺寸（组件私有、一次性视觉尺寸，无共享语义）
+        /// 插件指标条高度 (72pt)
+        public static let pluginMetricsBarHeight: CGFloat = 72
+        /// PDF 页码输入框宽度 (50pt)
+        public static let pdfPageRangeFieldWidth: CGFloat = 50
+        /// PDF 预览最大高度 (150pt)
+        public static let pdfPreviewMaxHeight: CGFloat = 150
+        /// 流式气泡图标尺寸 (28.8pt)
+        public static let chatStreamingBubbleIconSize: CGFloat = 28.8
+        /// 错误态图标字号 (36pt)
+        public static let synthesisErrorIconFontSize: CGFloat = 36
+        /// 错误态卡片最小高度 (320pt)
+        public static let synthesisErrorCardMinHeight: CGFloat = 320
+        /// 语音笔记预览最小高度 (147.2pt)
+        public static let voiceNotePreviewMinHeight: CGFloat = 147.2
+        /// 语音笔记预览最大高度 (368pt)
+        public static let voiceNotePreviewMaxHeight: CGFloat = 368
+        /// 启动屏光晕高度 (368pt)
+        public static let splashGlowHeight: CGFloat = 368
+        /// 启动屏光晕偏移 (96pt)
+        public static let splashGlowOffset: CGFloat = 96
+        /// 表格列最大宽度 (180pt)
+        public static let markdownTableMaxColWidth: CGFloat = 180
+        /// 表格单元格高度 (36pt)
+        public static let markdownTableCellHeight: CGFloat = 36
     }
 }

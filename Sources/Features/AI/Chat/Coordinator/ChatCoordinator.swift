@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import UFPCore
+import ZhiYuDomain
 import Observation
 import Combine
 import Dependencies
@@ -21,13 +22,24 @@ final class ChatCoordinator {
     var inputText = ""
     var insightfulQuestions: [String] = []
     var chatHistory: [ChatMessage] = []
-    var isProcessing = false
+
+    /// 异步任务状态真值源（统一承载 loading 与 failure，替代 isProcessing/errorMessage/showError 三件套）
+    var status: AsyncStatus<Void> = .idle
     var streamingContent = ""
     
     // ── UI 交互状态 ──
     var isExporting = false
-    var errorMessage: String?
-    var showError = false
+    /// 是否处理中（由 status 派生，兼容 View/测试读取）
+    var isProcessing: Bool { status.isLoading }
+    /// 当前错误消息（由 status.failure 派生，兼容 View/测试读取）
+    var errorMessage: String? { status.errorMessage }
+    /// 是否展示错误弹窗（由 status.failure 派生，提供 setter 供 alert 绑定关闭）
+    var showError: Bool {
+        get { status.errorMessage != nil }
+        set {
+            if !newValue, status.errorMessage != nil { status = .idle }
+        }
+    }
     var showLLMAlert = false
     var isGeneratingAIQuestions = false
     var showPrompts = false
@@ -87,14 +99,14 @@ final class ChatCoordinator {
         }
         
         if query == nil { inputText = "" }
-        errorMessage = nil
+        status = .idle // 清空旧错误/加载状态
         predictedQuestions = [] // 清空旧的预测追问，避免在新输入过程中产生视觉干扰
         
         // 1. 保存并展示用户消息
         chatService.saveUserMessage(text)
         self.chatHistory.append(ChatMessage(role: .user, content: text))
         
-        self.isProcessing = true
+        self.status = .loading(L10n.Chat.aiRunning)
         self.streamingContent = ""
         
         // 2. 启动流式请求 Task，保存引用以支持显式取消
@@ -133,21 +145,24 @@ final class ChatCoordinator {
                     await self.generatePredictedQuestions(pages: pages)
                 }
             }
+            // 成功结束（含未取消分支）：复位为 idle
+            self.status = .idle
         } catch {
             if !Task.isCancelled {
                 // 提供明确的错误反馈，包括 notConfigured 场景不再静默吞噬
                 if case LLMError.notConfigured = error {
                     self.showLLMAlert = true
+                    self.status = .idle
                 } else {
-                    self.errorMessage = error.localizedDescription
-                    self.showError = true
+                    self.status = .failure(error.localizedDescription)
                 }
                 self.logger.error(" [ChatCoordinator] 流式响应出错 ", error: error)
+            } else {
+                self.status = .idle
             }
         }
         
-        // 无论成功或取消，都清理状态
-        self.isProcessing = false
+        // 流式处理结束，清理残留半截内容
         self.streamingContent = ""
         self.currentStreamTask = nil
     }
@@ -157,7 +172,7 @@ final class ChatCoordinator {
         // 显式取消底层 Task，确保 AsyncThrowingStream 被终止
         currentStreamTask?.cancel()
         currentStreamTask = nil
-        isProcessing = false
+        status = .idle
         // 清理残留的半截内容
         streamingContent = ""
     }
@@ -213,8 +228,7 @@ final class ChatCoordinator {
             let url = try await WebViewExportService.shared.exportToPDF(markdown: md, fileName: L10n.Chat.exportFileName)
             self.exportURL = IdentifiableURL(url: url)
         } catch {
-            errorMessage = error.localizedDescription
-            showError = true
+            status = .failure(error.localizedDescription)
         }
         isExporting = false
     }

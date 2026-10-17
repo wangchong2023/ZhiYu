@@ -17,8 +17,8 @@ import UFPDesignSystem
 struct SaveVoiceNoteSheet: View {
     // MARK: - UI 常量
     private enum UIConstants {
-        static let previewMinHeight: CGFloat = 147.2
-        static let previewMaxHeight: CGFloat = 368
+        static let previewMinHeight: CGFloat = DesignTokens.Metrics.voiceNotePreviewMinHeight
+        static let previewMaxHeight: CGFloat = DesignTokens.Metrics.voiceNotePreviewMaxHeight
     }
     
     var speechService: any SpeechServiceProtocol

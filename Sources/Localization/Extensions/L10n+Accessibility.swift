@@ -9,6 +9,7 @@
 //  核心职责：为 Accessibility 模块提供本地化强类型字符串的访问扩展。
 //
 import Foundation
+import UFPCore
 
 extension L10n {
     public struct Accessibility: L10nTableEntry, Sendable {

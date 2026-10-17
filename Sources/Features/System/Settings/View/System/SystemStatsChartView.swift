@@ -11,6 +11,7 @@
 import SwiftUI
 import Charts
 import UFPDesignSystem
+import UFPCore
 
 // MARK: - 子视图：资源图表实现
 struct ChartView: View {
@@ -194,9 +195,7 @@ struct ChartView: View {
     }
     
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "M-d"
-        return formatter.string(from: date)
+        DateFormatterFactory.shared.string(from: date, format: "M-d")
     }
     
     /// 选中日期的 RuleMark + annotation，消除跨图表的重复

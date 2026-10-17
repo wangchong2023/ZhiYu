@@ -11,6 +11,7 @@
 
 import XCTest
 import SwiftUI
+import UFPDesignSystem
 @testable import ZhiYu
 
 @MainActor

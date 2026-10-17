@@ -11,6 +11,7 @@
 //
 import SwiftUI
 import UFPCore
+import ZhiYuDomain
 import Observation
 import UniformTypeIdentifiers
 import Dependencies
@@ -35,7 +36,10 @@ final class IngestCoordinator {
     private var ingestTask: Task<Void, Never>?
 
     // ── UI 控制状态 ──
-    var isIngesting = false
+    /// 异步任务状态真值源（统一承载 loading 与 failure，替代 isIngesting/errorMessage/showError 三件套）
+    var status: AsyncStatus<Void> = .idle
+    /// 是否正在导入（由 status 派生，兼容 View/测试读取）
+    var isIngesting: Bool { status.isLoading }
     var isImporting: Bool {
         let elapsed = Date().timeIntervalSince(lastImportTime)
         return elapsed < importCooldownSeconds
@@ -46,8 +50,15 @@ final class IngestCoordinator {
     var showURLImport = false
     var showFileImporter = false
     var showVoiceNote = false
-    var errorMessage: String?
-    var showError = false
+    /// 当前错误消息（由 status.failure 派生，兼容 View/测试读取）
+    var errorMessage: String? { status.errorMessage }
+    /// 是否展示错误弹窗（由 status.failure 派生，提供 setter 供 alert 绑定关闭）
+    var showError: Bool {
+        get { status.errorMessage != nil }
+        set {
+            if !newValue, status.errorMessage != nil { status = .idle }
+        }
+    }
     var showLLMAlert = false
 
     // ── 业务表单数据 ──
@@ -90,12 +101,13 @@ final class IngestCoordinator {
     /// 执行导入摄取
     func performIngest() {
         if checkImportCooldown() { return }
-        isIngesting = true
+        status = .loading(L10n.Common.loading)
         lastImportTime = Date()
         let recordID = UUID().uuidString
 
         guard let prep = prepareImportFiles(recordID: recordID) else {
-            isIngesting = false
+            // prepareImportFiles 内部可能已设置 failure（如 OCR 超限），此处仅复位未设置错误的情形
+            if status.errorMessage == nil { status = .idle }
             return
         }
 
@@ -134,7 +146,7 @@ final class IngestCoordinator {
                 }
 
                 await MainActor.run {
-                    self.isIngesting = false
+                    self.status = .idle
                     self.showManualForm = false
                     self.resetForm()
                     HapticFeedback.shared.trigger(.success)
@@ -142,9 +154,7 @@ final class IngestCoordinator {
             } catch {
                 await markImportRecordFailed(recordID: recordID)
                 await MainActor.run {
-                    self.isIngesting = false
-                    self.errorMessage = L10n.Ingest.importFailed
-                    self.showError = true
+                    self.status = .failure(L10n.Ingest.importFailed)
                     HapticFeedback.shared.trigger(.error)
                 }
             }
@@ -176,10 +186,8 @@ final class IngestCoordinator {
                 )
                 Task { try? await importRecordRepo.save(failedRecord) }
                 pendingImageData = nil
-                isIngesting = false
+                status = .failure(L10n.Ingest.imageTooLarge)
                 lastImportTime = .distantPast
-                errorMessage = L10n.Ingest.imageTooLarge
-                showError = true
                 return nil
             }
             _ = fileStore.saveData(imgData, category: .ocr, ext: SystemConstants.FileExtension.jpg)

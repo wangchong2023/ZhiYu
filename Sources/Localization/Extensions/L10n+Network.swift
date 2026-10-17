@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import UFPCore
 
 public extension L10n {
     enum Network: L10nTableEntry {
