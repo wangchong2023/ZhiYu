@@ -308,6 +308,7 @@ container.register(tagStore, for: TagStore.self)
 
 - [GRDB](https://github.com/groue/GRDB.swift.git) (~> 6.29) — SQLite + FTS5 数据库
 - [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) (~> 1.17) — 快照测试
+- [GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS.git) (10.0.0, Apache-2.0) — Google 账号登录 SDK（GIDSignIn 拉取 idToken）。本地克隆于 `${OPENSRC_ROOT}/GoogleSignIn-iOS`，经 `Config/opensource_dependencies.yml` 登记、`Config/project.yml.template` 以 path 依赖引入（非远程 GitHub URL）；`Info.plist` 标准键 `GIDClientID` + 反向 URL scheme
 
 ## 提交规范
 
