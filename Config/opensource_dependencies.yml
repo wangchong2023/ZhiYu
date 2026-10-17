@@ -150,3 +150,63 @@ dependencies:
     integration: project_yml_path
     license: Apache-2.0
     purpose: "Google 账号登录 SDK（GIDSignIn 拉取 idToken，Info.plist 标准键 GIDClientID）"
+    note: "本地克隆的 Package.swift 依赖已打本地 path 补丁（见下方 8 个传递依赖），升级需重打补丁"
+
+  # ── GoogleSignIn-iOS 传递依赖（离线化，本地 path 补丁）────────────────
+  # 均通过修改 GoogleSignIn-iOS/Package.swift 与 app-check/GTMAppAuth/Package.swift
+  # 中的 .package(url:) 为 .package(path:) 引入，故在此登记以便架构审计通过。
+  - name: app-check
+    upstream: "https://github.com/google/app-check.git"
+    version: "97f7d74d"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（AppCheckCore，本地 path 补丁）"
+
+  - name: AppAuth-iOS
+    upstream: "https://github.com/openid/AppAuth-iOS.git"
+    version: "a972daac"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（AppAuth/AppAuthCore，本地 path 补丁）"
+
+  - name: GoogleUtilities
+    upstream: "https://github.com/google/GoogleUtilities.git"
+    version: "5459ee56"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（GUL 工具，本地 path 补丁）"
+
+  - name: gtm-session-fetcher
+    upstream: "https://github.com/google/gtm-session-fetcher.git"
+    version: "724a52ee"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（GTMSessionFetcherCore，本地 path 补丁）"
+
+  - name: GTMAppAuth
+    upstream: "https://github.com/google/GTMAppAuth.git"
+    version: "57094cd4"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（GTMAppAuth，本地 path 补丁）"
+
+  - name: interop-ios-for-google-sdks
+    upstream: "https://github.com/google/interop-ios-for-google-sdks.git"
+    version: "040d087a"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（interop，本地 path 补丁）"
+
+  - name: ocmock
+    upstream: "https://github.com/firebase/ocmock.git"
+    version: "7291762d"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（OCMock 测试替身，本地 path 补丁）"
+
+  - name: promises
+    upstream: "https://github.com/google/promises.git"
+    version: "f4a19a3c"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "GoogleSignIn 传递依赖（FBLPromises，本地 path 补丁）"
