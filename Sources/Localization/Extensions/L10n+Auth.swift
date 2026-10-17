@@ -46,6 +46,15 @@ extension L10n {
         /// Google 登录开发中提示文案
         public static var googleDeveloping: String { tr("auth.googleDeveloping") }
         
+        /// Google 登录 SDK 未配置的错误提示
+        public static var googleSdkNotConfigured: String { tr("auth.googleSdkNotConfigured") }
+        
+        /// 无法打开 Google 登录窗口的错误提示
+        public static var googleWindowError: String { tr("auth.googleWindowError") }
+        
+        /// 无法获取 Google 登录令牌的错误提示
+        public static var googleTokenError: String { tr("auth.googleTokenError") }
+        
         /// Apple 登录测试用户默认昵称
         public static var appleTestUser: String { tr("auth.appleTestUser") }
         
