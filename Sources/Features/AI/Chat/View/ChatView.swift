@@ -25,7 +25,7 @@ struct ChatView: View {
 
 // MARK: - ChatView UI 常量
 private enum UIConstants {
-    static let streamingBubbleIconSize: CGFloat = 28.8
+    static let streamingBubbleIconSize: CGFloat = DesignTokens.Metrics.chatStreamingBubbleIconSize
     static let stopButtonFontSize: CGFloat = DesignTokens.SystemFontSize.microLarge
 }
 
