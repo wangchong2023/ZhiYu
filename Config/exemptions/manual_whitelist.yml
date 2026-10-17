@@ -1780,6 +1780,24 @@ planned_types:
   expiry_check: false
   category:
   - doc-drift
+- symbol: DatabaseMigrator
+  reason: 文档历史引用（内部迁移器，符号图未收录）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ModelDownloadDelegateHelper
+  reason: 文档历史引用（辅助类型已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: TextChunker
+  reason: 占位协议（符号图未收录），文档引用有据
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
 planned_test_classes:
 - symbol: WatchOCRServiceTests
   reason: 规划中 WatchOCR 测试类（实际为 WatchPlatformTests.testWatchOCRServiceStub）
@@ -2024,6 +2042,30 @@ planned_test_classes:
 - symbol: XlsxStringsProcessor
   reason: 处理器类名（审计文档引用，可能已重命名）
   added: 2026-08-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DatabaseManagerBusinessTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: DegradationTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ModelDownloadManagerDownloadTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: ModelDownloadManagerTests
+  reason: 文档历史引用（测试类已移除）
+  added: 2026-10-17
   expiry_check: false
   category:
   - doc-drift

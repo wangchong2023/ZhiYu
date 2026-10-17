@@ -96,11 +96,11 @@ Sources/
 |------|------|
 | `GoogleAuthStrategy` | 实现 `AuthStrategy`，构造注入 `GoogleSignInProviding`、`clientIDResolver`、`rootViewControllerProvider`。登录前以 `resolveConfiguredClientID` 探针是否已配置 Client ID；已配置则拉起 SDK 登录，把 `idToken` 透传给后端 `/api/v1/auth/oauth` 验签 |
 | `GoogleSignInProviding` | `@MainActor` 登录能力注入协议，隔离 GoogleSignIn SDK 依赖，便于单测替换为 mock；默认实现 `GIDSignInProvider` 包装 `GIDSignIn.sharedInstance.signIn(withPresenting:)` |
-| `resolveConfiguredClientID` | 纯函数：优先读 Info.plist `GIDClientID`，占位/空视为未配置，供登录前探针决策 |
+| `resolveConfiguredClientID` | 纯函数：优先读 Info.plist 的 GIDClientID 键，占位/空视为未配置，供登录前探针决策 |
 | `FeatureConstants.GoogleConfig` | 后端 Google OAuth 契约常量（登录路径、audience、错误码映射） |
 
 **各端 Client ID 配置**（Web / iOS / macOS 桌面）：
-- iOS 用 `Info.plist` 标准键 `GIDClientID` + 反向 URL scheme（`com.googleusercontent.apps.<client-id>`）。
+- iOS 用 `Info.plist` 标准键 GIDClientID + 反向 URL scheme（`com.googleusercontent.apps.<client-id>`）。
 - 后端 `iosClientId` 按 iOS、macOS 桌面顺序以逗号分隔存储，验签 id_token 的 `audience` 走多端匹配。
 
 **回调接线**：`AppWindowSceneDelegate` 实现 `scene(_:openURLContexts:)` 转发给 `GIDSignIn.sharedInstance.handle(url:)`，承载 Google 授权跳转回跳。
