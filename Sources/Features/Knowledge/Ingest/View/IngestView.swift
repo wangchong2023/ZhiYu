@@ -9,6 +9,7 @@
 //  核心职责：构建 Ingest 界面的 UI 视图层组件。
 //
 import SwiftUI
+import ZhiYuDomain
 import UFPCore
 import UniformTypeIdentifiers
 import Dependencies
@@ -51,7 +52,7 @@ struct IngestView: View {
         }
         .appTabToolbar(title: L10n.Ingest.title)
         .alert(L10n.Ingest.error, isPresented: $coordinator.showError) {
-            Button(L10n.Ingest.ok) { coordinator.errorMessage = nil }
+            Button(L10n.Ingest.ok) { coordinator.showError = false }
         } message: { Text(coordinator.errorMessage ?? "") }
         .alert(L10n.Common.configureAI, isPresented: $coordinator.showLLMAlert) {
             Button(L10n.ModelManager.Lab.configurations) {

@@ -9,6 +9,7 @@
 //  核心职责：导入原始内容留存数据模型
 
 import Foundation
+import ZhiYuDomain
 import UFPStorage
 
 /// 导入原始内容留存记录

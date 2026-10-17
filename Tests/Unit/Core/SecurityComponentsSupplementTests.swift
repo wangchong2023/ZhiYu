@@ -3,7 +3,7 @@
 //  ZhiYu
 //
 //  系统层级：[L0] 测试层
-//  核心职责：补充验证 KeychainService/SecurityManager/AhoCorasickEngine/
+//  核心职责：补充验证 KeychainService/SecurityManager/
 //           JailbreakDetector/ContentModerationEngine/DynamicComplianceManager
 //           的未覆盖分支（错误路径、边界值、状态转换、降级路径）。
 //
@@ -16,7 +16,7 @@ import CryptoKit
 /// Core/Security 6 组件问题驱动补充测试
 ///
 /// 覆盖目标：KeychainService（错误分支）、SecurityManager（加解密边界+完整性校验降级）、
-/// AhoCorasickEngine（重叠/重复模式+索引正确性）、JailbreakDetector（模拟器非越狱）、
+/// JailbreakDetector（模拟器非越狱）、
 /// ContentModerationEngine（空文本+4 类拦截+节流错误）、DynamicComplianceManager+Patch（验签失败+JSON 解析失败+未知分类）。
 @MainActor
 final class SecurityComponentsSupplementTests: XCTestCase {
@@ -198,67 +198,6 @@ final class SecurityComponentsSupplementTests: XCTestCase {
         await manager.updateSignature(for: nonExistentURL)
         let isValid = await manager.verifyIntegrity(for: nonExistentURL)
         XCTAssertFalse(isValid, "不存在的文件完整性校验应返回 false")
-    }
-
-    // MARK: - AhoCorasickEngine 深度边界
-
-    /// 重复模式应被去重（Set 去重），不影响匹配结果
-    func testAhoCorasickEngine_DuplicatePatterns_MatchesNormally() {
-        let patterns = ["abc", "abc", "abc", "def"]
-        let engine = AhoCorasickEngine(patterns: patterns)
-        let matches = engine.search(in: "abcdef")
-        let uniquePatterns = Set(matches.map { $0.pattern })
-        XCTAssertTrue(uniquePatterns.contains("abc"), "应匹配到 abc")
-        XCTAssertTrue(uniquePatterns.contains("def"), "应匹配到 def")
-    }
-
-    /// 空字符串模式应被过滤（filter { !$0.isEmpty }），非空模式正常匹配
-    func testAhoCorasickEngine_EmptyPattern_FiltersAndWorks() {
-        let patterns = ["", "test", ""]
-        let engine = AhoCorasickEngine(patterns: patterns)
-        XCTAssertTrue(engine.containsAny(in: "test"), "空字符串模式应被过滤，test 应匹配")
-        XCTAssertFalse(engine.containsAny(in: "nomatch"), "无匹配文本应返回 false")
-    }
-
-    /// search 返回的 startIndex/endIndex 应正确
-    func testAhoCorasickEngine_Search_IndexCorrectness() {
-        let engine = AhoCorasickEngine(patterns: ["cat"])
-        let text = "the cat sat"
-        let matches = engine.search(in: text)
-        XCTAssertEqual(matches.count, 1, "应匹配到 1 个结果")
-        if let match = matches.first {
-            XCTAssertEqual(match.pattern, "cat")
-            XCTAssertEqual(match.startIndex, 4, "cat 起始索引应为 4")
-            XCTAssertEqual(match.endIndex, 6, "cat 结束索引应为 6")
-        }
-    }
-
-    /// containsAny 空文本应返回 false
-    func testAhoCorasickEngine_ContainsAny_EmptyText_ReturnsFalse() {
-        let engine = AhoCorasickEngine(patterns: ["test"])
-        XCTAssertFalse(engine.containsAny(in: ""), "空文本应返回 false")
-    }
-
-    /// containsAny 空模式列表应返回 false
-    func testAhoCorasickEngine_ContainsAny_EmptyPatterns_ReturnsFalse() {
-        let engine = AhoCorasickEngine(patterns: [])
-        XCTAssertFalse(engine.containsAny(in: "any text"), "空模式列表应返回 false")
-    }
-
-    /// search 部分匹配但未完整匹配应返回空结果
-    func testAhoCorasickEngine_PartialMatch_DoesNotHit() {
-        let engine = AhoCorasickEngine(patterns: ["hello"])
-        let matches = engine.search(in: "hel lo")
-        XCTAssertTrue(matches.isEmpty, "部分匹配（中间有空格）不应命中")
-    }
-
-    /// 多个模式在同一位置重叠应全部命中
-    func testAhoCorasickEngine_OverlappingPatterns_AllHit() {
-        let engine = AhoCorasickEngine(patterns: ["he", "she", "her"])
-        let matches = engine.search(in: "she")
-        let patterns = Set(matches.map { $0.pattern })
-        XCTAssertTrue(patterns.contains("she"), "应命中 she")
-        XCTAssertTrue(patterns.contains("he"), "应命中 he（she 的子串）")
     }
 
     // MARK: - JailbreakDetector

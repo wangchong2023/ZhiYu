@@ -9,6 +9,7 @@
 //  核心职责：AI 对话功能：多轮对话、流式响应、聊天历史管理。
 //
 import SwiftUI
+import ZhiYuDomain
 import Observation
 import Dependencies
 import UFPDesignSystem

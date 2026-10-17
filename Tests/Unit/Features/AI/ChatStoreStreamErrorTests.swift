@@ -34,7 +34,7 @@ final class ChatStoreStreamErrorTests: XCTestCase {
     // MARK: - 1. 流式取消逻辑
 
     func testCancelCurrentRequestCleansState() {
-        coordinator.isProcessing = true
+        coordinator.status = .loading("")
         coordinator.streamingContent = "部分已接收的流式内容"
 
         coordinator.cancelCurrentRequest()

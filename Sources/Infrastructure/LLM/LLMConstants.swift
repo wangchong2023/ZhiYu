@@ -26,12 +26,6 @@ public enum LLMConstants {
         public static let systemPromptLength = 300
         /// 用户 Query 预览截断长度
         public static let queryLength = 200
-        /// SSE 诊断日志最大记录行数
-        public static let maxDiagnosticLines = 15
-        /// SSE 诊断单行预览截断长度
-        public static let diagnosticLineLength = 250
-        /// SSE 非 JSON 行预览截断长度
-        public static let sseNonJsonLength = 120
         /// 重构分析页面内容预览截断长度
         public static let refactorPageContentLength = 150
         /// 端侧智能导入摘要截断长度
@@ -187,18 +181,6 @@ public enum LLMConstants {
         public static let ipv6LoopbackMarker: String = "://[::1]"
         /// 任意地址绑定标记（0.0.0.0）
         public static let anyAddressMarker: String = "://0.0.0.0"
-    }
-
-    // MARK: - SSE 流式响应标记 (SSE Stream Markers)
-
-    /// SSE 流式响应标记常量集
-    public enum SSEStream {
-        /// 流结束标记
-        public static let doneMarker: String = "[DONE]"
-        /// data 行前缀（带空格）
-        public static let dataPrefix: String = "data: "
-        /// data 行前缀（无空格，兼容部分提供商）
-        public static let dataPrefixNoSpace: String = "data:"
     }
 
     // MARK: - 任务中心任务名 (Task Center Names)

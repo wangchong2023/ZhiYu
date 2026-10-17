@@ -290,7 +290,7 @@ final class ChatCoordinatorDeepTests: XCTestCase {
 
     /// 验证 sendMessage 发送后清空 errorMessage
     func testSendMessageAfterSendClearsErrorMessage() async throws {
-        coordinator.errorMessage = "旧错误"
+        coordinator.status = .failure("旧错误")
         capturableChat.streamChatHandler = { _, _ in [self.streamChunk1] }
 
         await coordinator.sendMessage(query: testQuery, pages: [])

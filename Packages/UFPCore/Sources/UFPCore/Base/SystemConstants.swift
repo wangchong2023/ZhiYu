@@ -159,6 +159,23 @@ public enum SystemConstants {
         public static let oneSecond: TimeInterval = 1.0
     }
 
+    // MARK: - 重试退避 (Retry Backoff)
+    /// 指数退避重试机制的默认参数
+    public enum RetryBackoff {
+        /// 默认最大重试次数（不含首次执行）
+        public static let defaultMaxRetries: Int = 3
+        /// 默认首次重试延迟（秒）
+        public static let defaultInitialDelay: TimeInterval = Time.oneSecond
+        /// 默认指数乘数（每次重试延迟翻倍）
+        public static let defaultMultiplier: Double = 2.0
+        /// 默认单次重试最大延迟上限（秒）
+        public static let defaultMaxDelay: TimeInterval = 15.0
+        /// 抖动区间下限（指数退避防惊群，随机延迟乘子下界）
+        public static let jitterMin: Double = 0.8
+        /// 抖动区间上限（指数退避防惊群，随机延迟乘子上界）
+        public static let jitterMax: Double = 1.2
+    }
+
     // MARK: - 错误码 (Error Codes)
     /// 与业务无关的通用错误码常量
     public enum ErrorCode {
@@ -354,5 +371,31 @@ public enum SystemConstants {
         public static let closeBrace: String = "}"
         public static let exclamation: String = "!"
         public static let backtick: String = "`"
+    }
+
+    // MARK: - 语言代码 (Language Code)
+    /// 系统支持的 ISO 语言代码常量集（与业务无关）
+    public enum LanguageCode {
+        public static let zh = "zh"
+        public static let zhHans = "zh-Hans"
+        public static let zhHant = "zh-Hant"
+        public static let zhHK = "zh-HK"
+        public static let zhTW = "zh-TW"
+        public static let zhMO = "zh-MO"
+        public static let en = "en"
+        public static let es = "es"
+        public static let fr = "fr"
+        public static let ar = "ar"
+        public static let ru = "ru"
+        public static let ko = "ko"
+        public static let ja = "ja"
+        public static let pt = "pt"
+    }
+
+    // MARK: - 本地化 (Localization)
+    /// 本地化资源相关常量集（与业务无关）
+    public enum Localization {
+        public static let lproj = "lproj"
+        public static let commonTable = "Common"
     }
 }

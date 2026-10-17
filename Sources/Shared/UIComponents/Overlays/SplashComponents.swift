@@ -203,8 +203,8 @@ struct SplashBackgroundView: View {
 
     // MARK: - 常量
     private enum UIConstants {
-        static let glowHeight: CGFloat = 368
-        static let glowOffset: CGFloat = 96
+        static let glowHeight: CGFloat = DesignTokens.Metrics.splashGlowHeight
+        static let glowOffset: CGFloat = DesignTokens.Metrics.splashGlowOffset
     }
 
     // MARK: - 颜色辅助

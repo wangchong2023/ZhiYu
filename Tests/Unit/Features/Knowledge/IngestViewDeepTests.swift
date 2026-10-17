@@ -11,6 +11,7 @@ import UFPCore
 import XCTest
 
 @testable import ZhiYu
+import ZhiYuDomain
 
 @MainActor
 final class IngestViewDeepTests: XCTestCase {

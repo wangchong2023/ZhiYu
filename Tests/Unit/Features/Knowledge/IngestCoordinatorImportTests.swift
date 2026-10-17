@@ -17,7 +17,7 @@ final class IngestCoordinatorImportTests: XCTestCase {
     /// 验证 OCR 图片超限时 prepareImportFiles 返回 nil 并确保 isIngesting 重置为 false
     func testPrepareImportFiles_oversizedOCRImage_resetsIsIngesting() {
         let coordinator = IngestCoordinator()
-        coordinator.isIngesting = true
+        coordinator.status = .loading("")
         coordinator.sourceHint = .ocr
         coordinator.newTitle = "ImportTest"
         coordinator.newContent = "TestContent"

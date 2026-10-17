@@ -384,15 +384,8 @@ public final class SynthesisStore {
         return SynthesisProcessor.extractTitle(from: content) ?? type.title
     }
 
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter
-    }()
-
     private func formatDateFull(_ date: Date) -> String {
-        Self.dateFormatter.string(from: date)
+        DateFormatterFactory.shared.string(from: date, dateStyle: .medium, timeStyle: .short)
     }
     
     private func persistResults(for type: SynthesisType) {

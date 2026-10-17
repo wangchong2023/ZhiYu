@@ -291,8 +291,8 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
     /// 执行批量数据库写入操作 (在隔离环境内)
     public func performBatchWrite(_ block: @escaping @Sendable (Database) throws -> Void) async throws {
         let writer = try await dbWriter
-        // 核心步骤：直接使用局部的 dbWriter 执行写入，实现 100% 线程安全的隔离事务
-        try await writer.write { db in try block(db) }
+        // 核心步骤：基于 UFPStorage 通用引擎执行写入，实现 100% 线程安全的隔离事务
+        try await GenericSQLiteEngine(writer: writer).write(block)
     }
     
     /// 填充默认引导内容 (Obsolete)

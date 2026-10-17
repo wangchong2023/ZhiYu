@@ -143,3 +143,10 @@ dependencies:
     integration: spm
     license: Apache-2.0
     purpose: "swift-dependencies 传递依赖（Swift 语法树，宏支持）"
+
+  - name: GoogleSignIn-iOS
+    upstream: "https://github.com/google/GoogleSignIn-iOS.git"
+    version: "10.0.0"
+    integration: project_yml_path
+    license: Apache-2.0
+    purpose: "Google 账号登录 SDK（GIDSignIn 拉取 idToken，Info.plist 标准键 GIDClientID）"

@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import UFPCore
 
 /// 版本信息格式化器，将 Info.plist 原始字典转换为 UI 展示文本
 enum VersionInfoFormatter {
@@ -43,14 +44,9 @@ enum VersionInfoFormatter {
             return ""
         }
 
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime]
-        guard let date = isoFormatter.date(from: raw) else { return raw }
+        guard let date = DateFormatterFactory.shared.iso8601Date(from: raw) else { return raw }
 
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        displayFormatter.timeZone = TimeZone.current
-        return displayFormatter.string(from: date)
+        return DateFormatterFactory.shared.string(from: date, format: "yyyy-MM-dd HH:mm:ss", timeZone: TimeZone.current)
     }
 
     // MARK: - 辅助

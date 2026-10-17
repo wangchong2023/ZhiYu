@@ -81,7 +81,7 @@ struct ChatBubbleView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Domain.AI.Chat.bubbleCornerRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.AI.Chat.bubbleCornerRadius))
                     .shadow(color: Color.appAccent.opacity(DesignTokens.Opacity.subtle), radius: 8, x: 0, y: 4)
                 
                 Image(systemName: DesignTokens.Icons.personCircle)
@@ -94,7 +94,7 @@ struct ChatBubbleView: View {
                 .padding(.trailing, DesignTokens.SystemSpacing.content)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding(.leading, DesignSystem.Domain.AI.Chat.bubbleTrailingPadding) // 左侧与 trailing 对称避让
+        .padding(.leading, DesignTokens.Spacing.AI.Chat.bubbleTrailingPadding) // 左侧与 trailing 对称避让
         .padding(.trailing, DesignTokens.Spacing.standardPadding) // 增加右侧间距，防贴边
     }
     
@@ -105,7 +105,7 @@ struct ChatBubbleView: View {
                 ZStack {
                     Circle()
                         .fill(Color.appAccent.opacity(DesignTokens.Opacity.glass))
-                        .frame(width: DesignSystem.Domain.AI.Chat.avatarSize, height: DesignSystem.Domain.AI.Chat.avatarSize)
+                        .frame(width: DesignTokens.Spacing.AI.Chat.avatarSize, height: DesignTokens.Spacing.AI.Chat.avatarSize)
                     Image(systemName: DesignTokens.Icons.sparkles)
                         .font(.system(size: DesignTokens.Typography.microFontSize, weight: .bold))
                         .foregroundStyle(.appAccent)
@@ -197,7 +197,7 @@ struct ChatBubbleView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, DesignTokens.Spacing.standardPadding)
-        .padding(.trailing, DesignSystem.Domain.AI.Chat.bubbleTrailingPadding)
+        .padding(.trailing, DesignTokens.Spacing.AI.Chat.bubbleTrailingPadding)
     }
 
     /// 评分按钮（点赞/贬低共用，消除重复的 Button+Image+foregroundStyle 链）
@@ -265,7 +265,7 @@ struct ChatBubbleView: View {
                                         }
                                         .commonContentPadding(horizontal: DesignTokens.Spacing.small, vertical: DesignTokens.Spacing.tiny)
                                         .background(Color.fromModelColorName(type.colorName).opacity(DesignTokens.Opacity.glass))
-                                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Domain.AI.Chat.referencePanelCornerRadius))
+                                        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.AI.Chat.referencePanelCornerRadius))
                                         .foregroundStyle(Color.fromModelColorName(type.colorName))
                                     }
                                     .buttonStyle(.plain)

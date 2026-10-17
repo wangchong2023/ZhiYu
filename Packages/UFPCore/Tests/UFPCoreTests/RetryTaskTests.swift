@@ -1,0 +1,325 @@
+//
+//  RetryTaskTests.swift
+//  UFPCoreTests
+//
+//  系统层级：[L0] 测试层
+//  核心职责：验证 RetryTask 指数退避重试逻辑的正确性（成功/重试/耗尽/边界）。
+//
+
+import XCTest
+@testable import UFPCore
+
+/// 线程安全计数器（Swift 6 @Sendable 闭包安全捕获）
+private actor TestCounter {
+    private(set) var value = 0
+    func incrementAndGet() -> Int {
+        value += 1
+        return value
+    }
+}
+
+final class RetryTaskTests: XCTestCase {
+
+    // MARK: - 成功路径
+
+    /// 首次执行即成功，不应重试
+    func testExecuteFirstSuccessNoRetry() async throws {
+        let counter = TestCounter()
+        let result = try await RetryTask.execute(
+            maxRetries: 3,
+            initialDelay: 0.001,
+            operation: { @Sendable in
+                _ = await counter.incrementAndGet()
+                return "success"
+            }
+        )
+        XCTAssertEqual(result, "success")
+        let finalCount = await counter.value; XCTAssertEqual(finalCount, 1, "首次成功应只调用一次")
+    }
+
+    // MARK: - 重试后成功
+
+    /// 前 N 次失败，第 N+1 次成功
+    func testExecuteRetryThenSuccessReturnsSuccessValue() async throws {
+        let counter = TestCounter()
+        let result = try await RetryTask.execute(
+            maxRetries: 3,
+            initialDelay: 0.001,
+            operation: { @Sendable in
+                let count = await counter.incrementAndGet()
+                if count < 3 {
+                    throw TestError.failure
+                }
+                return "recovered"
+            }
+        )
+        XCTAssertEqual(result, "recovered")
+        let finalCount = await counter.value; XCTAssertEqual(finalCount, 3, "前 2 次失败 + 第 3 次成功 = 3 次调用")
+    }
+
+    // MARK: - 重试耗尽
+
+    /// 始终失败，重试耗尽后抛出最后一次错误
+    func testExecuteRetryExhaustedThrowsError() async throws {
+        let counter = TestCounter()
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 2,
+                initialDelay: 0.001,
+                operation: { @Sendable in
+                    _ = await counter.incrementAndGet()
+                    throw TestError.failure
+                }
+            )
+            XCTFail("应抛出错误")
+        } catch {
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 3, "首次 + 2 次重试 = 3 次调用")
+            XCTAssertTrue(error is TestError, "应抛出原始错误类型")
+        }
+    }
+
+    // MARK: - 边界值：maxRetries
+
+    /// maxRetries=0，首次失败即抛出，不重试
+    func testExecuteMaxRetriesZeroNoRetry() async throws {
+        let counter = TestCounter()
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 0,
+                initialDelay: 0.001,
+                operation: { @Sendable in
+                    _ = await counter.incrementAndGet()
+                    throw TestError.failure
+                }
+            )
+            XCTFail("应抛出错误")
+        } catch {
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 1, "maxRetries=0 应只调用一次")
+        }
+    }
+
+    /// maxRetries=1，最多调用 2 次（首次 + 1 次重试）
+    func testExecuteMaxRetriesOneMaxTwoCalls() async throws {
+        let counter = TestCounter()
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 1,
+                initialDelay: 0.001,
+                operation: { @Sendable in
+                    _ = await counter.incrementAndGet()
+                    throw TestError.failure
+                }
+            )
+            XCTFail("应抛出错误")
+        } catch {
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 2, "首次 + 1 次重试 = 2 次调用")
+        }
+    }
+
+    // MARK: - 错误类型保持
+
+    /// 抛出的错误应原样传递（自定义错误枚举）
+    func testExecuteErrorTypePreservedThrowsOriginalError() async throws {
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 1,
+                initialDelay: 0.001,
+                operation: { @Sendable in
+                    throw TestError.specificError
+                }
+            )
+            XCTFail("应抛出错误")
+        } catch let error as TestError {
+            XCTAssertEqual(error, TestError.specificError, "应保持原始错误类型和值")
+        } catch {
+            XCTFail("应抛出 TestError 类型，实际：\(type(of: error))")
+        }
+    }
+
+    // MARK: - 返回值类型
+
+    /// 泛型返回值应正确传递（Int 类型）
+    func testExecuteReturnsIntTypeValueCorrect() async throws {
+        let result = try await RetryTask.execute(
+            maxRetries: 0,
+            initialDelay: 0.001,
+            operation: { @Sendable in 42 }
+        )
+        XCTAssertEqual(result, 42)
+    }
+
+    /// 泛型返回值应正确传递（可选类型）
+    func testExecuteReturnsOptionalTypeValueCorrect() async throws {
+        let result: String? = try await RetryTask.execute(
+            maxRetries: 0,
+            initialDelay: 0.001,
+            operation: { @Sendable in nil }
+        )
+        XCTAssertNil(result)
+    }
+
+    // MARK: - 退避参数验证
+
+    /// multiplier=1.0，延迟不增长（仅验证不崩溃 + 最终成功）
+    func testExecuteMultiplierOneDelayNoGrowth() async throws {
+        let counter = TestCounter()
+        let result = try await RetryTask.execute(
+            maxRetries: 2,
+            initialDelay: 0.001,
+            multiplier: 1.0,
+            operation: { @Sendable in
+                let count = await counter.incrementAndGet()
+                if count < 2 { throw TestError.failure }
+                return "ok"
+            }
+        )
+        XCTAssertEqual(result, "ok")
+        let finalCount = await counter.value; XCTAssertEqual(finalCount, 2)
+    }
+
+    /// maxDelay 截断验证（initialDelay 极大 + maxDelay 极小，应被截断）
+    func testExecuteMaxDelayTruncatedNoTimeout() async throws {
+        let result = try await RetryTask.execute(
+            maxRetries: 1,
+            initialDelay: 100.0,
+            multiplier: 10.0,
+            maxDelay: 0.001,
+            operation: { @Sendable in "fast" }
+        )
+        XCTAssertEqual(result, "fast", "maxDelay 应截断 initialDelay，避免长时间等待")
+    }
+
+    // MARK: - shouldRetry 谓词
+
+    /// shouldRetry 返回 false 时，不可重试错误直接抛出
+    func testExecuteShouldRetryFiltersNonRetryableError() async throws {
+        let counter = TestCounter()
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 3,
+                initialDelay: 0.001,
+                shouldRetry: { _ in false },
+                operation: { @Sendable in
+                    _ = await counter.incrementAndGet()
+                    throw TestError.failure
+                }
+            )
+            XCTFail("不可重试错误应直接抛出")
+        } catch {
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 1, "shouldRetry=false 应只调用 1 次")
+        }
+    }
+
+    /// shouldRetry 返回 true 时，可重试错误按 maxRetries 重试
+    func testExecuteShouldRetryAllowsRetryableError() async throws {
+        let counter = TestCounter()
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 2,
+                initialDelay: 0.001,
+                shouldRetry: { _ in true },
+                operation: { @Sendable in
+                    _ = await counter.incrementAndGet()
+                    throw TestError.failure
+                }
+            )
+            XCTFail("应在重试上限后抛出错误")
+        } catch {
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 3, "首次 + 2 次重试 = 3 次调用")
+        }
+    }
+
+    /// shouldRetry 为 nil 时（默认路径），所有错误都应重试直到耗尽
+    func testExecuteDefaultShouldRetryNilRetriesAllErrors() async throws {
+        let counter = TestCounter()
+        do {
+            _ = try await RetryTask.execute(
+                maxRetries: 2,
+                initialDelay: 0.001,
+                operation: { @Sendable in
+                    _ = await counter.incrementAndGet()
+                    throw TestError.failure
+                }
+            )
+            XCTFail("应在重试上限后抛出错误")
+        } catch {
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 3, "shouldRetry=nil 应重试所有错误：首次 + 2 次重试 = 3 次调用")
+        }
+    }
+
+    // MARK: - 默认参数（RetryBackoff 常量）
+
+    /// 不带任何参数调用 execute 时应使用 RetryBackoff 默认常量（仅验证不崩溃 + 成功）
+    func testExecuteDefaultParametersUsesRetryBackoff() async throws {
+        let result = try await RetryTask.execute(operation: { @Sendable in "default-ok" })
+        XCTAssertEqual(result, "default-ok", "应使用 SystemConstants.RetryBackoff 默认参数成功执行")
+    }
+
+    // MARK: - poll 轮询
+
+    /// poll 条件满足时返回结果
+    func testPollConditionMetReturnsResult() async throws {
+        let counter = TestCounter()
+        let result = try await RetryTask.poll(maxAttempts: 5, interval: 0.001) {
+            let count = await counter.incrementAndGet()
+            return count >= 3 ? "READY" : nil
+        }
+        XCTAssertEqual(result, "READY")
+        let finalCount = await counter.value; XCTAssertEqual(finalCount, 3, "应在第 3 次轮询时满足条件")
+    }
+
+    /// poll 条件始终不满足时抛出 pollingExhausted
+    func testPollConditionNotMetThrowsPollingExhausted() async throws {
+        do {
+            let _: String = try await RetryTask.poll(maxAttempts: 3, interval: 0.001) {
+                return nil
+            }
+            XCTFail("应在轮询耗尽后抛出 RetryError")
+        } catch RetryError.pollingExhausted(let attempts) {
+            XCTAssertEqual(attempts, 3, "应尝试 3 次")
+        } catch {
+            XCTFail("应抛出 RetryError.pollingExhausted，实际：\(error)")
+        }
+    }
+
+    /// poll 首次即满足条件
+    func testPollFirstMetReturnsImmediately() async throws {
+        let result = try await RetryTask.poll(maxAttempts: 5, interval: 0.001) {
+            return "IMMEDIATE"
+        }
+        XCTAssertEqual(result, "IMMEDIATE")
+    }
+
+    /// poll maxAttempts=0，不执行条件，立即抛出 pollingExhausted(attempts: 0)
+    func testPollMaxAttemptsZeroThrowsImmediately() async throws {
+        let counter = TestCounter()
+        do {
+            let _: String = try await RetryTask.poll(maxAttempts: 0, interval: 0.001) {
+                _ = await counter.incrementAndGet()
+                return "SHOULD_NOT_CALL"
+            }
+            XCTFail("maxAttempts=0 应直接抛出 RetryError")
+        } catch RetryError.pollingExhausted(let attempts) {
+            XCTAssertEqual(attempts, 0, "应报告尝试 0 次")
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 0, "maxAttempts=0 不应调用条件闭包")
+        } catch {
+            XCTFail("应抛出 RetryError.pollingExhausted，实际：\(error)")
+        }
+    }
+
+    // MARK: - RetryError
+
+    /// RetryError 的 errorDescription 应正确描述轮询耗尽
+    func testRetryErrorDescription() {
+        let error = RetryError.pollingExhausted(attempts: 5)
+        XCTAssertEqual(error.errorDescription, "Polling exhausted after 5 attempts")
+        XCTAssertNotNil(error.localizedDescription)
+    }
+}
+
+// MARK: - 测试专用错误类型
+
+private enum TestError: Error, Equatable {
+    case failure
+    case specificError
+}

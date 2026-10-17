@@ -5,6 +5,7 @@
 //                或通过 @Dependency(\.xxxService) 直接注入。
 
 import Foundation
+import UFPDesignSystem
 
 // MARK: - DependencyContainer
 

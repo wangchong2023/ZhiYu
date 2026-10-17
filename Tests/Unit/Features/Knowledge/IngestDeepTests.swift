@@ -12,6 +12,7 @@ import UFPStorage
 import XCTest
 
 @testable import ZhiYu
+import ZhiYuDomain
 
 @MainActor
 final class IngestDeepTests: XCTestCase {

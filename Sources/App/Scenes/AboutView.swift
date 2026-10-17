@@ -23,12 +23,12 @@ struct AboutView: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: DesignTokens.Spacing.giant)
                             .fill(LinearGradient(colors: [.appAccent, .appConcept], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: DesignSystem.Domain.About.logoSize, height: DesignSystem.Domain.About.logoSize)
+                            .frame(width: DesignTokens.Spacing.About.logoSize, height: DesignTokens.Spacing.About.logoSize)
                             .shadow(color: .appAccent.opacity(DesignTokens.Opacity.shadow), radius: 15, y: 8)
                         
                         // 修正：使用 DesignTokens.Icons.library 作为标志图标，以确保与 Splash 启动页的品牌标志完全一致
                         Image(systemName: DesignTokens.Icons.library)
-                            .font(.system(size: DesignSystem.Domain.About.logoSize / 2))
+                            .font(.system(size: DesignTokens.Spacing.About.logoSize / 2))
                             .foregroundStyle(.white)
                     }
                     

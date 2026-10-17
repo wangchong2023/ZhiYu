@@ -99,20 +99,6 @@ struct GlowingNeonBorderModifier: ViewModifier {
 // MARK: - View 语义链式调用扩展
 
 public extension View {
-    /// 注入基于设计系统的原子内边距修饰器
-    /// - Parameters:
-    ///   - edges: 内边距作用方向，默认全部边缘
-    ///   - token: 强类型间距令牌
-    func appPadding(_ edges: Edge.Set = .all, _ token: DesignTokens.SpacingToken) -> some View {
-        self.padding(edges, token.value)
-    }
-    
-    /// 注入基于设计系统的原子圆角裁切修饰器
-    /// - Parameter token: 强类型圆角令牌
-    func appCornerRadius(_ token: DesignTokens.RadiusToken) -> some View {
-        self.clipShape(RoundedRectangle(cornerRadius: token.value))
-    }
-
     /// 注入支持高级阻尼弹性悬停物理微动效
     /// - Parameter scale: 悬停时的缩放比例（默认 1.025）
     func scaleOnHover(scale: CGFloat = 1.025) -> some View {

@@ -59,9 +59,7 @@ final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
     }
 
     func saveData(_ data: Data, category: ImportCategory, ext: String) -> String? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd_HHmmss"
-        let ts = formatter.string(from: Date())
+        let ts = DateFormatterFactory.shared.string(from: Date(), format: "yyyyMMdd_HHmmss")
         let fileName = "\(category.rawValue)_\(ts).\(ext)"
         let recordsDir = getRecordsDir(for: category)
         let fileURL = recordsDir.appendingPathComponent(fileName)
@@ -93,9 +91,7 @@ final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
         let ext = url.pathExtension
         let nameWithoutExt = url.deletingPathExtension().lastPathComponent
         
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd_HHmmss"
-        let ts = formatter.string(from: Date())
+        let ts = DateFormatterFactory.shared.string(from: Date(), format: "yyyyMMdd_HHmmss")
         
         // 构造带时间戳的新物理文件名以防重名冲突
         let newFileName = "\(nameWithoutExt)_\(ts).\(ext)"

@@ -59,7 +59,7 @@ final class ChatCoordinatorDeepBranchTests: XCTestCase {
 
     func testSendMessage_WhenAlreadyProcessing_CancelsCurrentRequest() async {
         let coordinator = ChatCoordinator()
-        coordinator.isProcessing = true
+        coordinator.status = .loading("")
         coordinator.streamingContent = "部分已生成的流式内容"
 
         await coordinator.sendMessage(query: "第二次连续提问", pages: [])
@@ -72,7 +72,7 @@ final class ChatCoordinatorDeepBranchTests: XCTestCase {
 
     func testCancelCurrentRequest_ResetsStreamingContentAndTask() {
         let coordinator = ChatCoordinator()
-        coordinator.isProcessing = true
+        coordinator.status = .loading("")
         coordinator.streamingContent = "正在输出的代码块..."
 
         coordinator.cancelCurrentRequest()

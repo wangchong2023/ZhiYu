@@ -49,7 +49,7 @@ final class ChatViewDeepTests: XCTestCase {
         XCTAssertTrue(coordinator.streamingContent.isEmpty)
 
         // 模拟进入流式生成状态
-        coordinator.isProcessing = true
+        coordinator.status = .loading("")
         coordinator.streamingContent = "正在为您检索知识库相关段落并生成回复..."
 
         XCTAssertTrue(coordinator.isProcessing)

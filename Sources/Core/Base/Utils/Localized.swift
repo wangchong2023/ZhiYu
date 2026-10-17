@@ -12,62 +12,6 @@ import Foundation
 import UFPCore
 import os
 
-/// 智宇系统支持的语言模式定义。
-public enum LanguageMode: String, CaseIterable, Identifiable, Sendable {
-    /// 自动随系统首选语言环境。
-    case auto = "auto"
-    
-    /// 强制英文环境。
-    case english = "en"
-    
-    /// 强制简体中文环境。
-    case chinese = "zh-Hans"
-    
-    /// 强制繁体中文环境。
-    case traditionalChinese = "zh-Hant"
-    
-    /// 强制西班牙语环境。
-    case spanish = "es"
-    
-    /// 强制法语环境。
-    case french = "fr"
-    
-    /// 强制阿拉伯语环境。
-    case arabic = "ar"
-    
-    /// 强制俄语环境。
-    case russian = "ru"
-    
-    /// 强制韩语环境。
-    case korean = "ko"
-    
-    /// 强制日语环境。
-    case japanese = "ja"
-    
-    /// 强制葡萄牙语环境。
-    case portuguese = "pt"
-    
-    /// 遵循 Identifiable 协议的唯一识别码。
-    public var id: String { self.rawValue }
-    
-    /// 针对当前语言模式显示的本地化可读标题。
-    public var displayName: String {
-        switch self {
-        case .auto: return L10n.Settings.languageSystem
-        case .english: return L10n.Settings.languageEnglish
-        case .chinese: return L10n.Settings.languageChinese
-        case .traditionalChinese: return L10n.Settings.languageTraditionalChinese
-        case .spanish: return L10n.Settings.languageSpanish
-        case .french: return L10n.Settings.languageFrench
-        case .arabic: return L10n.Settings.languageArabic
-        case .russian: return L10n.Settings.languageRussian
-        case .korean: return L10n.Settings.languageKorean
-        case .japanese: return L10n.Settings.languageJapanese
-        case .portuguese: return L10n.Settings.languagePortuguese
-        }
-    }
-}
-
 /// 智宇本地化翻译执行中枢（Localized）。
 /// 托管多语言翻译的实际加载、缓存和查找降级逻辑。
 ///
@@ -427,13 +371,8 @@ private enum L10nTable {
     static let widget = "Widget"
 }
 
-/// 为本地化命名空间中的枚举/结构体提供 `tr`/`trf` 默认实现的协议。
-///
-/// 消除 40+ L10n 扩展文件中重复的 `tr`/`trf` 样板。
-public protocol L10nTableEntry {
-    static var tableName: String { get }
-}
-
+// 为 L10nTableEntry（声明于 UFPCore）补充 tr/trf 默认实现。
+// 翻译执行依赖 App 层 Localized，故扩展保留在 App 层，避免 UFPCore 反向依赖上层。
 extension L10nTableEntry {
     public static func tr(_ key: String) -> String {
         Localized.tr(key, table: tableName)

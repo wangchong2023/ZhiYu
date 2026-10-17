@@ -72,7 +72,7 @@ struct LintAISuggestionsPanel: View {
         VStack(spacing: DesignTokens.Spacing.standardPadding) {
             Spacer()
             Image(systemName: DesignTokens.Icons.sparkles)
-                .font(.system(size: DesignSystem.Domain.Lint.emptyIconSize))
+                .font(.system(size: DesignTokens.Spacing.Lint.emptyIconSize))
                 .foregroundStyle(.appAccent)
             Text(L10n.Lint.noAISuggestions)
                 .font(.title3.weight(.semibold))

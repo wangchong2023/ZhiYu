@@ -105,7 +105,7 @@ struct LintHealthCheckSection: View {
                     ZStack {
                         Circle()
                             .stroke(healthColor.opacity(DesignTokens.Opacity.light), lineWidth: progressRingLineWidth)
-                            .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
+                            .frame(width: DesignTokens.Spacing.Lint.chartSize, height: DesignTokens.Spacing.Lint.chartSize)
 
                         // 进度环
                         Circle()
@@ -114,12 +114,12 @@ struct LintHealthCheckSection: View {
                                 LinearGradient(colors: [healthColor.opacity(DesignTokens.Opacity.dim), healthColor], startPoint: .top, endPoint: .bottom),
                                 style: StrokeStyle(lineWidth: progressRingLineWidth, lineCap: .round)
                             )
-                            .frame(width: DesignSystem.Domain.Lint.chartSize, height: DesignSystem.Domain.Lint.chartSize)
+                            .frame(width: DesignTokens.Spacing.Lint.chartSize, height: DesignTokens.Spacing.Lint.chartSize)
                             .rotationEffect(.degrees(-90))
 
                         VStack(spacing: 0) {
                             Text("\(aiStore.lintScore)")
-                                .font(.system(size: DesignSystem.Domain.Lint.scoreFontSize, weight: .bold, design: .rounded))
+                                .font(.system(size: DesignTokens.Spacing.Lint.scoreFontSize, weight: .bold, design: .rounded))
                                 .foregroundStyle(.appText)
 
                             Text(aiStore.healthLevel.title)

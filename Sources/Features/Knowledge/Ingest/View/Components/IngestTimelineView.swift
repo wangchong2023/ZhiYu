@@ -9,6 +9,7 @@
 //  核心职责：知识摄入：文档导入、URL 抓取、OCR 扫描、PDF 解析。
 //
 import SwiftUI
+import ZhiYuDomain
 import UFPDesignSystem
 
 // MARK: - Ingest Timeline View

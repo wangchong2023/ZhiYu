@@ -28,8 +28,80 @@ public final class GoogleAuthStrategy: AuthStrategy {
     /// 鉴权提供方唯一标识
     public var identityType: String { "google" }
     
+    /// 注入的 GoogleSignIn 登录能力（默认为真实 SDK 实现，测试可注入 Mock）
+    private let signInProvider: GoogleSignInProviding
+    private let clientIDResolver: (() -> String?)?
+    private let rootViewControllerProvider: (() -> UIViewController?)?
+    
     /// 初始化策略
-    public init() {}
+    /// - Parameters:
+    ///   - signInProvider: GoogleSignIn 登录能力实现（默认为真实 SDK）
+    ///   - clientIDResolver: 客户端 ID 解析闭包；为 nil 时走真实探针（Info.plist → SDK configuration）。测试可注入以独立验证各分支。
+    ///   - rootViewControllerProvider: 前台根控制器解析闭包；为 nil 时走真实场景查询。测试环境无真实前台场景，注入以便覆盖 signIn 分支。
+    public init(
+        signInProvider: GoogleSignInProviding = GIDSignInProvider(),
+        clientIDResolver: (() -> String?)? = nil,
+        rootViewControllerProvider: (() -> UIViewController?)? = nil
+    ) {
+        self.signInProvider = signInProvider
+        self.clientIDResolver = clientIDResolver
+        self.rootViewControllerProvider = rootViewControllerProvider
+    }
+    
+    /// 解析「已配置且有效」的 Google 客户端 ID
+    ///
+    /// 优先级：Info.plist 的 `GIDClientID` → SDK `configuration.clientID`。
+    /// 命中占位值或空值视为「未配置」，返回 nil。
+    /// 纯函数，便于单元测试覆盖探针分支（避免依赖 Bundle / GIDSignIn 单例）。
+    /// - Parameters:
+    ///   - infoPlist: Info.plist 字典（默认取主 Bundle）
+    ///   - sdkClientID: SDK 侧已配置的 clientID
+    /// - Returns: 有效的客户端 ID；未配置返回 nil
+    static func resolveConfiguredClientID(
+        infoPlist: [String: Any]?,
+        sdkClientID: String?
+    ) -> String? {
+        let fromInfo = infoPlist?[FeatureConstants.GoogleConfig.clientIDKey] as? String
+        let candidate = fromInfo ?? sdkClientID
+        guard let candidate, !candidate.isEmpty,
+              candidate != FeatureConstants.GoogleConfig.placeholderClientID else {
+            return nil
+        }
+        return candidate
+    }
+    
+    /// 返回当前有效的 Google 客户端 ID
+    ///
+    /// 优先使用注入的解析闭包（便于测试独立验证各分支），否则走真实探针。
+    /// - Returns: 有效客户端 ID；未配置返回 nil
+    private func currentClientID() -> String? {
+        if let clientIDResolver {
+            return clientIDResolver()
+        }
+        #if canImport(GoogleSignIn)
+        let sdkClientID = GIDSignIn.sharedInstance.configuration?.clientID
+        return Self.resolveConfiguredClientID(
+            infoPlist: Bundle.main.infoDictionary,
+            sdkClientID: sdkClientID
+        )
+        #else
+        return nil
+        #endif
+    }
+    
+    /// 返回当前前台根控制器
+    ///
+    /// 优先使用注入的解析闭包（便于测试覆盖 signIn 分支），否则查询真实前台场景。
+    /// - Returns: 根控制器；无前台场景返回 nil
+    private func activeRootViewController() -> UIViewController? {
+        if let rootViewControllerProvider {
+            return rootViewControllerProvider()
+        }
+        let activeScene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+        return activeScene?.keyWindow?.rootViewController
+    }
     
     /// 异步拉起 Google SDK 授权并获取用户身份凭证
     ///
@@ -38,36 +110,32 @@ public final class GoogleAuthStrategy: AuthStrategy {
     public func acquireCredentials() async throws -> AuthCredential {
         #if canImport(GoogleSignIn)
         
-        // 1. 防御性配置探针：检测 Info.plist 或者是 GIDSignIn 的 configuration 中是否配置了有效的 clientID
-        let clientID = Bundle.main.object(forInfoDictionaryKey: FeatureConstants.GoogleConfig.clientIDKey) as? String ?? GIDSignIn.sharedInstance.configuration?.clientID
-        if clientID == nil || clientID == FeatureConstants.GoogleConfig.placeholderClientID || clientID?.isEmpty == true {
+        // 1. 防御性配置探针：检测是否配置了有效的 clientID
+        let clientID = currentClientID()
+        if clientID == nil {
             if let mock = testModeMockCredential(identityType: identityType) {
                 return mock
             }
             throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -99, description: L10n.Auth.googleSdkNotConfigured)
         }
         
-        let activeScene = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }
-        
-        guard let rootVC = activeScene?.keyWindow?.rootViewController else {
+        guard let rootVC = activeRootViewController() else {
             throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -1, description: L10n.Auth.googleWindowError)
         }
         
-        let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootVC)
-        guard let idToken = result.user.idToken?.tokenString else {
+        let data = try await signInProvider.signIn(presenting: rootVC)
+        guard !data.idToken.isEmpty else {
             throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -2, description: L10n.Auth.googleTokenError)
         }
         
         return AuthCredential(
             identityType: identityType,
-            identifier: result.user.userID ?? "",
+            identifier: data.userID ?? "",
             credential: FeatureConstants.MockData.mockGoogleCode, // Google 使用 idToken 发往后端，传非空以绕过 @NotBlank 校验
             extraInfo: [
-                "idToken": idToken,
-                "email": result.user.profile?.email ?? "",
-                "nickname": result.user.profile?.name ?? ""
+                "idToken": data.idToken,
+                "email": data.email ?? "",
+                "nickname": data.name ?? ""
             ]
         )
         #else

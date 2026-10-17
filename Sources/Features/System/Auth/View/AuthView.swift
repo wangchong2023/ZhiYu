@@ -11,6 +11,7 @@
 import SwiftUI
 import Dependencies
 import UFPDesignSystem
+import UFPCore
 
 /// 身份认证主视图
 struct AuthView: View {
@@ -160,7 +161,7 @@ struct AuthView: View {
             ZStack {
                 Circle()
                     .fill(LinearGradient(colors: [.appAccent.opacity(DesignTokens.Opacity.medium), .appConcept.opacity(DesignTokens.Opacity.subtle)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: DesignSystem.Domain.Auth.logoBackgroundSize, height: DesignSystem.Domain.Auth.logoBackgroundSize)
+                    .frame(width: DesignTokens.Spacing.Auth.logoBackgroundSize, height: DesignTokens.Spacing.Auth.logoBackgroundSize)
                     .blur(radius: DesignTokens.Spacing.shadowRadius)
 
                 Image(systemName: DesignTokens.Icons.knowledge)

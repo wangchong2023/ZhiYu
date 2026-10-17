@@ -38,6 +38,10 @@ packages:
   ZIPFoundation:
     path: ${OPENSRC_ROOT}/ZIPFoundation
 
+  # 第三方登录
+  GoogleSignIn:
+    path: ${OPENSRC_ROOT}/GoogleSignIn-iOS
+
   # 测试工具
   SnapshotTesting:
     path: ${OPENSRC_ROOT}/swift-snapshot-testing
@@ -109,6 +113,7 @@ targetTemplates:
       - package: ZhiYuFeatures
       - package: GRDB
       - package: ZIPFoundation
+      - package: GoogleSignIn
   WatchAppTemplate:
     preBuildScripts:
       - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/scripts/run-quality-all-audits.py"

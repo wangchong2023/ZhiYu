@@ -8,6 +8,7 @@
 import Dependencies
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 import XCTest
 
 @testable import ZhiYu

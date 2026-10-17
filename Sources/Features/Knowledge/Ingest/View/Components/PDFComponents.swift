@@ -16,8 +16,8 @@ import UFPDesignSystem
 
 // MARK: - PDF 组件私有常量
 private enum PDFUIConstants {
-    static let pageRangeFieldWidth: CGFloat = 50
-    static let previewMaxHeight: CGFloat = 150
+    static let pageRangeFieldWidth: CGFloat = DesignTokens.Metrics.pdfPageRangeFieldWidth
+    static let previewMaxHeight: CGFloat = DesignTokens.Metrics.pdfPreviewMaxHeight
     static let previewLineLimit: Int = Int(DesignTokens.SystemSpacing.elementLarge)
     static let pageStartPlaceholder: String = "1"
 }

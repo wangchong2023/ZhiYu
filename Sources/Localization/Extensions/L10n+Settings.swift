@@ -9,6 +9,7 @@
 //  核心职责：为 Settings 模块提供本地化强类型字符串的访问扩展。
 //
 import Foundation
+import UFPCore
 
 extension L10n {
     public struct Settings: L10nTableEntry {
@@ -205,6 +206,28 @@ extension L10n {
             public static var overheatProtection: String { Localized.tr("settings.ondevice.overheat", table: t) }
             public static var descOverheat: String { Localized.tr("settings.ondevice.descOverheat", table: t) }
             public static var performanceConfig: String { Localized.tr("settings.ondevice.perfConfig", table: t) }
+        }
+    }
+}
+
+// MARK: - LanguageMode 本地化可读标题
+
+/// 针对当前语言模式显示的本地化可读标题。
+/// displayName 依赖 App 层 Settings 词条，故作为 App 层扩展补充（LanguageMode 枚举本体在 UFPCore）。
+extension LanguageMode {
+    public var displayName: String {
+        switch self {
+        case .auto: return L10n.Settings.languageSystem
+        case .english: return L10n.Settings.languageEnglish
+        case .chinese: return L10n.Settings.languageChinese
+        case .traditionalChinese: return L10n.Settings.languageTraditionalChinese
+        case .spanish: return L10n.Settings.languageSpanish
+        case .french: return L10n.Settings.languageFrench
+        case .arabic: return L10n.Settings.languageArabic
+        case .russian: return L10n.Settings.languageRussian
+        case .korean: return L10n.Settings.languageKorean
+        case .japanese: return L10n.Settings.languageJapanese
+        case .portuguese: return L10n.Settings.languagePortuguese
         }
     }
 }

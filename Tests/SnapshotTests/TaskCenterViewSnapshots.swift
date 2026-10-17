@@ -13,6 +13,7 @@ import SnapshotTesting
 import UFPCore
 import Dependencies
 @testable import ZhiYu
+import ZhiYuDomain
 
 @MainActor
 final class TaskCenterViewSnapshots: XCTestCase {

@@ -45,6 +45,15 @@ extension FeatureConstants {
         static let code = "code"
     }
 
+    // MARK: - Google Sign-In SDK 配置 (Google Sign-In SDK Config)
+    /// GoogleSignIn SDK 的 Info.plist 配置探针常量
+    enum GoogleConfig {
+        /// Info.plist 中 Google 客户端 ID 的标准键名（SDK 默认读取，非自定义键）
+        static let clientIDKey = "GIDClientID"
+        /// 占位客户端 ID，用于区分「已配置」与「未替换占位」
+        static let placeholderClientID = "your-google-client-id"
+    }
+
     // MARK: - 插件权限名 (Permission Name)
     /// 插件权限标识字符串键，用于 switch case 匹配
     enum PermissionName {

@@ -18,8 +18,8 @@ struct SynthesisErrorStateView: View {
     // MARK: - Constants
     private enum Layout {
         static let iconCircleSize: CGFloat = DesignTokens.ComponentSpacing.metricChipWidth
-        static let iconFontSize: CGFloat = 36
-        static let cardMinHeight: CGFloat = 320
+        static let iconFontSize: CGFloat = DesignTokens.Metrics.synthesisErrorIconFontSize
+        static let cardMinHeight: CGFloat = DesignTokens.Metrics.synthesisErrorCardMinHeight
     }
 
     let docType: SynthesisStore.SynthesisType

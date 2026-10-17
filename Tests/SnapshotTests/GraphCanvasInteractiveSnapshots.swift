@@ -13,6 +13,7 @@ import XCTest
 import SwiftUI
 import SnapshotTesting
 import UFPCore
+import UFPDesignSystem
 @testable import ZhiYu
 
 @MainActor
@@ -44,7 +45,14 @@ final class GraphCanvasInteractiveSnapshots: XCTestCase {
     // MARK: - 1. 图谱空数据占位引导快照
 
     func testGraphEmptyStateView_RendersStartBuildingCard() {
-        let view = GraphEmptyStateView(selectedTab: .constant(.knowledge))
+        let view = AppEmptyState.withAction(
+            icon: DesignTokens.Icons.circleGrid3x3Fill,
+            title: L10n.Graph.emptyTitle,
+            description: L10n.Graph.emptyDesc,
+            actionLabel: L10n.Graph.startBuilding,
+            actionRole: .primary,
+            actionHandler: {}
+        )
             .padding()
             .snapshotEnvironment()
 

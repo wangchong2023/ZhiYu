@@ -66,10 +66,7 @@ final class BackupService: ObservableObject {
         let fileName: String
 
         var displayName: String {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
-            return formatter.string(from: timestamp)
+            DateFormatterFactory.shared.string(from: timestamp, dateStyle: .medium, timeStyle: .short)
         }
 
         /// fileSize
@@ -138,10 +135,8 @@ final class BackupService: ObservableObject {
         encoder.dateEncodingStrategy = .iso8601
 
         let timestamp = Date()
-        let formatter = DateFormatter()
         // Bug #42 修复：文件名包含毫秒，避免同秒备份文件名冲突
-        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss-SSS"
-        let fileName = "backup_\(formatter.string(from: timestamp)).json"
+        let fileName = "backup_\(DateFormatterFactory.shared.string(from: timestamp, format: "yyyy-MM-dd_HH-mm-ss-SSS")).json"
 
         do {
             let data = try encoder.encode(pages)

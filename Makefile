@@ -99,15 +99,16 @@ test-all: test-spm-all test
 
 audit:
 	@echo "🔍 运行 CI 架构与开源依赖门禁体系..."
-	@python3 Tools/ios/check-arch-opensource-adapters.py
-	@python3 Tools/ios/check-arch-dependency-registry.py
-	@python3 Tools/ios/check-arch-opensource-internal-deps.py
-	@python3 Tools/ios/check-code-absolute-paths.py
-	@python3 Tools/ios/check-code-snapshot-environment.py --strict
-	@python3 Tools/ios/audit-dependency-key-test-value.py
-	@python3 Tools/ios/audit-test-naming-chinese.py || (echo "❌ 测试函数存在中文命名，请运行 'python3 Tools/ios/audit-test-naming-chinese.py' 查看详情并重命名为英文" && exit 1)
-	@echo "📊 运行测试结构度量..."
-	@python3 Tools/CI/audit-test-structure.py --verbose || (echo "❌ 测试结构度量不达标，请运行 'python3 Tools/CI/audit-test-structure.py --json' 查看详情" && exit 1)
+	@VENV_PY="$$(bash Tools/scripts/python-venv-bootstrap.sh)"; \
+	"$$VENV_PY" Tools/ios/check-arch-opensource-adapters.py && \
+	"$$VENV_PY" Tools/ios/check-arch-dependency-registry.py && \
+	"$$VENV_PY" Tools/ios/check-arch-opensource-internal-deps.py && \
+	"$$VENV_PY" Tools/ios/check-code-absolute-paths.py && \
+	"$$VENV_PY" Tools/ios/check-code-snapshot-environment.py --strict && \
+	"$$VENV_PY" Tools/ios/audit-dependency-key-test-value.py && \
+	("$$VENV_PY" Tools/ios/audit-test-naming-chinese.py || (echo "❌ 测试函数存在中文命名，请运行 '$$VENV_PY Tools/ios/audit-test-naming-chinese.py' 查看详情并重命名为英文" && exit 1)) && \
+	echo "📊 运行测试结构度量..." && \
+	("$$VENV_PY" Tools/CI/audit-test-structure.py --verbose || (echo "❌ 测试结构度量不达标，请运行 '$$VENV_PY Tools/CI/audit-test-structure.py --json' 查看详情" && exit 1))
 
 lint:
 	@swiftlint --strict

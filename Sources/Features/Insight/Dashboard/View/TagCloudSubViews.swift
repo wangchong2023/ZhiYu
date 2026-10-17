@@ -47,7 +47,7 @@ extension TagCloudViewContent {
     }
 
     var emptyTagsView: some View {
-        InsightEmptyState(
+        AppEmptyState(
             icon: DesignTokens.Icons.tag,
             title: L10n.Tag.Action.noTags,
             hint: L10n.Tag.Action.noTagsHint

@@ -10,13 +10,11 @@
 
 set -uo pipefail
 
-# 自动探测 Python 解释器：优先本地 venv（含 radon），CI 环境回退到系统 python3
-# CI 环境须在 static-analysis step 中预先执行 pip3 install radon
-if [ -x "./env/venv/bin/python3" ]; then
-    PYTHON3="./env/venv/bin/python3"
-else
-    PYTHON3="python3"
-fi
+# 统一使用 env/venv 的 Python（≥3.10，含 radon），规避系统默认 python3(3.9)
+# 对 `dict | None` 等 3.10+ 语法的运行时 TypeError。
+# 引导脚本幂等：venv 缺失或版本过旧时自动重建并安装 radon。
+PYTHON3="$(bash Tools/scripts/python-venv-bootstrap.sh 2>/dev/null)"
+[ -x "${PYTHON3:-}" ] || PYTHON3="python3"
 export PYTHON3
 
 LOG_DIR="build/static_analysis_logs"
@@ -60,46 +58,46 @@ run_parallel_task() {
 }
 
 # 并发执行所有的独立检查
-run_parallel_task "Architecture Dependency" "arch_dependency" "python3 Tools/ios/audit-arch-dependency.py" & pid1=$!
-run_parallel_task "Domain Purity" "domain_purity" "python3 Tools/ios/audit-arch-domain-purity.py" & pid2=$!
-run_parallel_task "DI Test Setup" "di_test_setup" "python3 Tools/ios/check-arch-test-di-setup.py" & pid3=$!
-run_parallel_task "Root Hygiene" "root_hygiene" "python3 Tools/scripts/check-quality-root-hygiene.py" & pid4=$!
-run_parallel_task "Magic Numbers & Strings" "magic_numbers" "python3 Tools/ios/audit-design-token-magic-numbers.py" & pid5=$!
+run_parallel_task "Architecture Dependency" "arch_dependency" "$PYTHON3 Tools/ios/audit-arch-dependency.py" & pid1=$!
+run_parallel_task "Domain Purity" "domain_purity" "$PYTHON3 Tools/ios/audit-arch-domain-purity.py" & pid2=$!
+run_parallel_task "DI Test Setup" "di_test_setup" "$PYTHON3 Tools/ios/check-arch-test-di-setup.py" & pid3=$!
+run_parallel_task "Root Hygiene" "root_hygiene" "$PYTHON3 Tools/scripts/check-quality-root-hygiene.py" & pid4=$!
+run_parallel_task "Magic Numbers & Strings" "magic_numbers" "$PYTHON3 Tools/ios/audit-design-token-magic-numbers.py" & pid5=$!
 run_parallel_task "Layer Markers" "layer_markers" "bash Tools/ios/check-arch-layer-markers.sh" & pid6=$!
-run_parallel_task "Unsafe String.Index Scan" "unsafe_string_index" "python3 Tools/ios/check-code-unsafe-string-index.py" & pid7=$!
-run_parallel_task "Docs & Config Integrity" "docs_and_configs" "python3 Tools/docs/check-quality-docs.py" & pid8=$!
-run_parallel_task "SPM Dependencies Audit" "spm_audit" "python3 Tools/ci/audit-arch-spm-deps.py" & pid9=$!
+run_parallel_task "Unsafe String.Index Scan" "unsafe_string_index" "$PYTHON3 Tools/ios/check-code-unsafe-string-index.py" & pid7=$!
+run_parallel_task "Docs & Config Integrity" "docs_and_configs" "$PYTHON3 Tools/docs/check-quality-docs.py" & pid8=$!
+run_parallel_task "SPM Dependencies Audit" "spm_audit" "$PYTHON3 Tools/ci/audit-arch-spm-deps.py" & pid9=$!
 run_parallel_task "SPM Integrity" "spm_integrity" "bash Tools/ci/check-arch-spm-integrity.sh" & pid10=$!
 run_parallel_task "Tools Quality Gatekeeper" "tools_quality" "$PYTHON3 Tools/scripts/audit-quality-scripts.py" & pid11=$!
 run_parallel_task "Swift Quality Guard" "swift_quality" "$PYTHON3 Tools/ios/audit-code-swift-quality.py" & pid12=$!
-run_parallel_task "Cyclomatic Complexity" "complexity" "python3 Tools/ios/check-code-complexity.py" & pid13=$!
-run_parallel_task "Localization Compliance" "localization" "python3 Tools/ios/check-code-localization.py" & pid14=$!
+run_parallel_task "Cyclomatic Complexity" "complexity" "$PYTHON3 Tools/ios/check-code-complexity.py" & pid13=$!
+run_parallel_task "Localization Compliance" "localization" "$PYTHON3 Tools/ios/check-code-localization.py" & pid14=$!
 run_parallel_task "SwiftLint" "swiftlint" "swiftlint --strict --reporter github-actions-logging 2>/dev/null || swiftlint --strict" & pid15=$!
-run_parallel_task "Hardcoded Secrets" "hardcoded_secrets" "python3 Tools/ios/assert-release-hardcoded-secrets.py" & pid16=$!
+run_parallel_task "Hardcoded Secrets" "hardcoded_secrets" "$PYTHON3 Tools/ios/assert-release-hardcoded-secrets.py" & pid16=$!
 run_parallel_task "Commit Signature" "signature" "bash Tools/ci/check-release-commit-signature.sh" & pid18=$!
-run_parallel_task "SBOM Generation & Syft Scan" "sbom_generation" "(python3 Tools/ci/generate-arch-sbom-single.py && (syft . --exclude ./build --exclude ./env -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo Syft skipped) && python3 Tools/ci/generate-arch-sbom-merged.py)" & pid19=$!
-run_parallel_task "Heuristic View Duplication" "view_duplication" "python3 Tools/ios/audit-arch-view-duplication.py" & pid20=$!
-run_parallel_task "Design Token Layering" "token_layering" "python3 Tools/ios/audit-design-token-layering.py" & pid21=$!
+run_parallel_task "SBOM Generation & Syft Scan" "sbom_generation" "($PYTHON3 Tools/ci/generate-arch-sbom-single.py && (syft . --exclude ./build --exclude ./env -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo Syft skipped) && python3 Tools/ci/generate-arch-sbom-merged.py)" & pid19=$!
+run_parallel_task "Heuristic View Duplication" "view_duplication" "$PYTHON3 Tools/ios/audit-arch-view-duplication.py" & pid20=$!
+run_parallel_task "Design Token Layering" "token_layering" "$PYTHON3 Tools/ios/audit-design-token-layering.py" & pid21=$!
 run_parallel_task "Swift Compiler Warnings" "swift_warnings" "bash Tools/CI/check-code-swift-warnings.sh" & pid22=$!
-run_parallel_task "Platform Macros Guard" "platform_macros" "python3 Tools/ios/check-code-platform-macros.py" & pid23=$!
-run_parallel_task "Open-Source Adapters" "opensource_adapters" "python3 Tools/ios/check-arch-opensource-adapters.py" & pid24=$!
-run_parallel_task "Magic Strings Audit" "magic_strings" "python3 Tools/ios/audit-code-magic-strings.py" & pid25=$!
-run_parallel_task "File Headers" "file_headers" "python3 Tools/ios/check-code-file-headers.py" & pid26=$!
-run_parallel_task "DI Registration" "di_registration" "python3 Tools/ios/check-arch-di-registration.py" & pid27=$!
-run_parallel_task "Inject Safety" "inject_safety" "python3 Tools/ios/check-code-inject-safety.py --strict" & pid28=$!
-run_parallel_task "Doc Drift" "doc_drift" "python3 Tools/CI/check-doc-drift.py --strict" "full" & pid29=$!
-run_parallel_task "Exemption Stale" "exemption_stale" "python3 Tools/CI/exemption_registry.py check-stale --strict" & pid30=$!
-run_parallel_task "Business Magic Numbers" "business_magic" "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins --magic-string-scope Sources/Features" & pid31=$!
-run_parallel_task "UFPCore Purity" "ufpcore_purity" "python3 Tools/ios/audit-arch-ufpcore-purity.py" & pid32=$!
-run_parallel_task "Test Coupling Anti-Pattern" "test_coupling" "python3 Tools/ios/check-code-test-coupling.py --strict" & pid33=$!
-run_parallel_task "Singleton Frozen" "singleton_frozen" "python3 Tools/ios/audit-singleton-frozen.py" & pid34=$!
-run_parallel_task "Environment Object Frozen" "env_object_frozen" "python3 Tools/ios/audit-environment-object.py" & pid35=$!
-run_parallel_task "UserDefaults Standard Frozen" "userdefaults_frozen" "python3 Tools/ios/audit-userdefaults-standard.py" & pid36=$!
-run_parallel_task "Inject Deprecated" "inject_deprecated" "python3 Tools/ios/audit-inject-deprecated.py" & pid37=$!
-run_parallel_task "OpenSource Internal Deps" "opensource_internal_deps" "python3 Tools/ios/check-arch-opensource-internal-deps.py" & pid38=$!
-run_parallel_task "OWASP MASVS Security Scan" "owasp_masvs" "python3 Tools/ios/check-security-owasp-masvs.py --strict" & pid39=$!
-run_parallel_task "Design Token Naming" "token_naming" "python3 Tools/ios/audit-design-token-arithmetic.py" & pid40=$!
-run_parallel_task "Design Token Budget" "token_budget" "python3 Tools/ios/audit-design-token-budget.py" & pid41=$!
+run_parallel_task "Platform Macros Guard" "platform_macros" "$PYTHON3 Tools/ios/check-code-platform-macros.py" & pid23=$!
+run_parallel_task "Open-Source Adapters" "opensource_adapters" "$PYTHON3 Tools/ios/check-arch-opensource-adapters.py" & pid24=$!
+run_parallel_task "Magic Strings Audit" "magic_strings" "$PYTHON3 Tools/ios/audit-code-magic-strings.py" & pid25=$!
+run_parallel_task "File Headers" "file_headers" "$PYTHON3 Tools/ios/check-code-file-headers.py" & pid26=$!
+run_parallel_task "DI Registration" "di_registration" "$PYTHON3 Tools/ios/check-arch-di-registration.py" & pid27=$!
+run_parallel_task "Inject Safety" "inject_safety" "$PYTHON3 Tools/ios/check-code-inject-safety.py --strict" & pid28=$!
+run_parallel_task "Doc Drift" "doc_drift" "$PYTHON3 Tools/CI/check-doc-drift.py --strict" "full" & pid29=$!
+run_parallel_task "Exemption Stale" "exemption_stale" "$PYTHON3 Tools/CI/exemption_registry.py check-stale --strict" & pid30=$!
+run_parallel_task "Business Magic Numbers" "business_magic" "$PYTHON3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins --magic-string-scope Sources/Features" & pid31=$!
+run_parallel_task "UFPCore Purity" "ufpcore_purity" "$PYTHON3 Tools/ios/audit-arch-ufpcore-purity.py" & pid32=$!
+run_parallel_task "Test Coupling Anti-Pattern" "test_coupling" "$PYTHON3 Tools/ios/check-code-test-coupling.py --strict" & pid33=$!
+run_parallel_task "Singleton Frozen" "singleton_frozen" "$PYTHON3 Tools/ios/audit-singleton-frozen.py" & pid34=$!
+run_parallel_task "Environment Object Frozen" "env_object_frozen" "$PYTHON3 Tools/ios/audit-environment-object.py" & pid35=$!
+run_parallel_task "UserDefaults Standard Frozen" "userdefaults_frozen" "$PYTHON3 Tools/ios/audit-userdefaults-standard.py" & pid36=$!
+run_parallel_task "Inject Deprecated" "inject_deprecated" "$PYTHON3 Tools/ios/audit-inject-deprecated.py" & pid37=$!
+run_parallel_task "OpenSource Internal Deps" "opensource_internal_deps" "$PYTHON3 Tools/ios/check-arch-opensource-internal-deps.py" & pid38=$!
+run_parallel_task "OWASP MASVS Security Scan" "owasp_masvs" "$PYTHON3 Tools/ios/check-security-owasp-masvs.py --strict" & pid39=$!
+run_parallel_task "Design Token Naming" "token_naming" "$PYTHON3 Tools/ios/audit-design-token-arithmetic.py" & pid40=$!
+run_parallel_task "Design Token Budget" "token_budget" "$PYTHON3 Tools/ios/audit-design-token-budget.py" & pid41=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1

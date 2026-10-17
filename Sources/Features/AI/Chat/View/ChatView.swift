@@ -25,7 +25,7 @@ struct ChatView: View {
 
 // MARK: - ChatView UI 常量
 private enum UIConstants {
-    static let streamingBubbleIconSize: CGFloat = 28.8
+    static let streamingBubbleIconSize: CGFloat = DesignTokens.Metrics.chatStreamingBubbleIconSize
     static let stopButtonFontSize: CGFloat = DesignTokens.SystemFontSize.microLarge
 }
 
@@ -62,7 +62,7 @@ struct ChatViewContent: View {
             ActivityView(activityItems: [identifiable.url])
         } }
         .alert(L10n.Common.error, isPresented: $coordinator.showError) {
-            Button(L10n.Common.ok) { coordinator.errorMessage = nil }
+            Button(L10n.Common.ok) { coordinator.showError = false }
         } message: {
             Text(coordinator.errorMessage ?? "")
         }

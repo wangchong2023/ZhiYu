@@ -96,7 +96,14 @@ struct GraphContainerView: View {
                         .foregroundStyle(.appSecondary)
                 }
             } else if viewModel.nodes.isEmpty {
-                GraphEmptyStateView(selectedTab: $selectedTab)
+                AppEmptyState.withAction(
+                    icon: DesignTokens.Icons.circleGrid3x3Fill,
+                    title: L10n.Graph.emptyTitle,
+                    description: L10n.Graph.emptyDesc,
+                    actionLabel: L10n.Graph.startBuilding,
+                    actionRole: .primary,
+                    actionHandler: { selectedTab = .ingest }
+                )
             } else {
                 // 2. 主体布局：标题/过滤项 + 画布
                 VStack(spacing: DesignTokens.Spacing.medium) {

@@ -218,10 +218,7 @@ final class ModelDownloadManagerDeepTests: XCTestCase {
     func testStartDownloadWithPausedStateProceeds() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockDownloadURLProtocol.self]
-        let manager = ModelDownloadManager(sessionFactory: { owner in
-            let delegateHelper = ModelDownloadDelegateHelper(manager: owner)
-            return URLSession(configuration: config, delegate: delegateHelper, delegateQueue: nil)
-        })
+        let manager = ModelDownloadManager(configuration: config)
         let modelId = "test-start-paused-\(UUID().uuidString)"
 
         // 先设置 paused 状态

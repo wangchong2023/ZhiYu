@@ -45,6 +45,7 @@ default:
 build-prepare:
   stage: prepare
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - make gen
@@ -66,10 +67,11 @@ static-analysis:
   needs: [build-prepare]
   dependencies: [build-prepare]
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
-    - echo "===> 安装静态分析 Python 依赖"
-    - pip3 install --quiet radon 2>/dev/null || true
+    - echo "===> 引导静态分析 Python 虚拟环境 (env/venv, ≥3.10)"
+    - bash Tools/scripts/python-venv-bootstrap.sh >/dev/null
     - echo "===> 运行全部静态分析（含 Swift 编译告警门禁）"
     - bash Tools/CI/run-code-static-analysis.sh
 
@@ -82,6 +84,7 @@ plugin-validation:
   needs: [build-prepare]
   dependencies: [build-prepare]
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - echo "===> 运行插件安全校验（扫描所有 .zyplugin 包）"
@@ -96,6 +99,7 @@ build-ios:
   needs: [build-prepare, static-analysis]
   dependencies: [build-prepare]
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - make ios
@@ -105,6 +109,7 @@ build-macos:
   needs: [build-ios, build-prepare]
   dependencies: [build-prepare]
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - make mac
@@ -114,6 +119,7 @@ build-watchos:
   needs: [build-macos, build-prepare]
   dependencies: [build-prepare]
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - make watch
@@ -128,6 +134,7 @@ test-and-coverage:
   dependencies: [build-prepare]
   timeout: 2h
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"

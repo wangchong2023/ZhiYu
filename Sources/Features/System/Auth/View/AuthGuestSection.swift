@@ -27,7 +27,7 @@ struct AuthGuestSection: View {
                         .foregroundStyle(.appBorder)
                 )
         }
-        .padding(.top, DesignSystem.Domain.Auth.guestButtonTopPadding)
+        .padding(.top, DesignTokens.Spacing.Auth.guestButtonTopPadding)
         .accessibilityIdentifier("guestButton")
     }
 }

@@ -138,7 +138,7 @@ final class ChatCoordinatorTests: XCTestCase {
 
     /// 验证 cancelCurrentRequest 设置 isProcessing 为 false
     func testCancelCurrentRequestSetsIsProcessingFalse() {
-        coordinator.isProcessing = true
+        coordinator.status = .loading("")
 
         coordinator.cancelCurrentRequest()
 
@@ -148,7 +148,7 @@ final class ChatCoordinatorTests: XCTestCase {
     /// 验证 cancelCurrentRequest 清空 streamingContent
     func testCancelCurrentRequestClearsStreamingContent() {
         coordinator.streamingContent = "partial content"
-        coordinator.isProcessing = true
+        coordinator.status = .loading("")
 
         coordinator.cancelCurrentRequest()
 

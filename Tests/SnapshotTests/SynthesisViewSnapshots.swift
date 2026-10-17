@@ -12,6 +12,7 @@ import SwiftUI
 import SnapshotTesting
 import UFPCore
 @testable import ZhiYu
+import ZhiYuDomain
 
 @MainActor
 final class SynthesisViewSnapshots: XCTestCase {
