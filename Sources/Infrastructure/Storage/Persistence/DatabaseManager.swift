@@ -194,14 +194,6 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
         try engine.setupForTesting(with: writer)
     }
     
-    /// 初始化全局共享的主配置库连接。
-    /// - Parameter url: 物理沙盒中指向 `global.sqlite3` 文件的绝对路径 URL。
-    /// - Throws: 目录创建失败或 GRDB 数据库连接池实例化异常。
-    func setupGlobal(at url: URL) throws {
-        configureEngineIfNeeded()
-        try engine.setupGlobal(at: url)
-    }
-
     /// 初始化激活默认专属数据库（vault.sqlite3）连接，并级联初始化 global.sqlite3。
     /// - Parameter url: 指向专属数据库的物理文件 URL 路径。
     /// - Throws: 目录授权、SQLite 实例化或专属 Schema 迁移失败。

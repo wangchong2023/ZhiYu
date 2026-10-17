@@ -15,22 +15,6 @@ import Foundation
 import UFPStorage
 import UFPCore
 
-/// 下载状态错误消息常量（通过 L10n 强类型访问实现多语言本地化）
-private enum DownloadErrorMessage {
-    /// 无续传数据文件
-    static var noResumeData: String { L10n.ModelManager.Status.DownloadError.noResumeData }
-    /// 空闲状态占位
-    static var idle: String { L10n.ModelManager.Status.DownloadError.idle }
-    /// 临时副本生成失败前缀
-    static var temporaryCopyFailedPrefix: String { L10n.ModelManager.Status.DownloadError.temporaryCopyFailedPrefix }
-    /// 生成失败连接符
-    static var generationFailedConnector: String { L10n.ModelManager.Status.DownloadError.generationFailedConnector }
-    /// resumeData 持久化失败前缀
-    static var persistResumeDataFailedPrefix: String { L10n.ModelManager.Status.DownloadError.persistResumeDataFailedPrefix }
-    /// 网络错误 resumeData 持久化失败前缀
-    static var networkErrorResumeDataFailedPrefix: String { L10n.ModelManager.Status.DownloadError.networkErrorResumeDataFailedPrefix }
-}
-
 /// 大模型权重文件后台静默下载与状态管理器。
 ///
 /// 保持 `ModelDownloadCapabilities` 契约不变，内部组合 UFPStorage 通用下载器 `StreamingDownloadManager`：
@@ -67,24 +51,6 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
                 config.sessionSendsLaunchEvents = true
                 return URLSession(configuration: config, delegate: nil, delegateQueue: nil)
             },
-            resumeDataDirectory: {
-                try? FileManager.default.createDirectory(at: resumeDirectory, withIntermediateDirectories: true)
-                return resumeDirectory
-            },
-            destinationURL: { modelId in
-                let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                return documentDirectory.appendingPathComponent("\(modelId).bin")
-            }
-        )
-    }
-
-    /// 测试环境初始化器 — 允许注入自定义 Session 工厂
-    /// - Parameter sessionFactory: 自定义 Session 工厂闭包
-    internal init(sessionFactory: @escaping @Sendable (StreamingDownloadManager) -> URLSession) {
-        let resumeDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("com.zhiyu.app.download.resume", isDirectory: true)
-        streaming = StreamingDownloadManager(
-            sessionFactory: sessionFactory,
             resumeDataDirectory: {
                 try? FileManager.default.createDirectory(at: resumeDirectory, withIntermediateDirectories: true)
                 return resumeDirectory

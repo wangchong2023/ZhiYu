@@ -207,7 +207,6 @@ enum ProcessorConstants {
         static let newlineWithIndent: String = "\n  "
         static let tab: String = SystemConstants.Character.tab
         static let doubleSpace: String = "  "
-        static let quadSpace: String = "    "
         static let dotSpace: String = ". "
         static let ideographicComma: String = "、"
     }
@@ -312,18 +311,10 @@ enum ProcessorConstants {
         static let prefixedImageTemplate: String = "> ![%@_%d]: %@"
     }
 
-    // MARK: - 布尔字面量 (Boolean String)
-    /// 引用 SystemConstants.BooleanLiteral，避免重复定义
-    enum BoolString {
-        static let `true`: String = SystemConstants.BooleanLiteral.true
-        static let `false`: String = SystemConstants.BooleanLiteral.false
-    }
-
     // MARK: - Frontmatter 语法 (Frontmatter Syntax)
     enum Frontmatter {
         /// 引用 SystemConstants.MarkdownDelimiter.horizontalRule，避免重复定义
         static let yamlDelimiter: String = SystemConstants.MarkdownDelimiter.horizontalRule
-        static let jsonDelimiter: String = "---json"
         static let minKey: String = "min"
     }
 
@@ -333,8 +324,6 @@ enum ProcessorConstants {
         static let numberedList: String = "^[0-9]+[.\\s、]+"
         /// 匹配选择题选项前缀（如 "A. " 或 "B:"）
         static let choiceOption: String = "^[A-D][.\\s、:]"
-        /// 正则替换中的捕获组引用
-        static let captureGroup12: String = "$1 $2"
         /// 多行匹配标志前缀
         static let multilineFlag: String = "(?s)"
         /// 匹配 Markdown 行首项目符号/标题前缀（- * + # 数字.）
@@ -347,10 +336,6 @@ enum ProcessorConstants {
         static let quizOptionStrip: String = "^[*\\-]\\s*"
         /// 匹配 Quiz Answer 行（Answer: 后跟字母/数字）
         static let quizAnswer: String = #"Answer:\s*([A-Da-d1-4])"#
-        /// 匹配 CJK 与 ANSI 字符边界（CJK 在前），引用 UFPCore.RegexConstants.CJKSpacing
-        static let cjkAnsBoundary: String = RegexConstants.CJKSpacing.cjkAnsBoundary
-        /// 匹配 CJK 与 ANSI 字符边界（ANSI 在前），引用 UFPCore.RegexConstants.CJKSpacing
-        static let ansCjkBoundary: String = RegexConstants.CJKSpacing.ansCjkBoundary
         /// 匹配 Mermaid 标准节点 NodeID[Label]
         static let mermaidNodeStandard: String = #"([A-Za-z0-9_\-]+)\[([^"\]]+)\]"#
         /// 匹配 Mermaid 嵌套方括号节点 NodeID[Label[...]]
@@ -365,27 +350,6 @@ enum ProcessorConstants {
         static let promptBlockDepth: String = #"【(篇幅要求|目标受众|语气风格|自定义要求|深度要求)[^】]*】[^\n]*\n?"#
         /// 匹配 Prompt 控制参数块（简短形式）
         static let promptBlockShort: String = #"【(篇幅|受众|语气|风格)[^】]*】[^\n]*\n?"#
-    }
-
-    // MARK: - 文本分块器 (Text Chunker)
-    enum TextChunker {
-        /// 根锚点标识
-        static let rootAnchor: String = "Root"
-        /// 面包屑分隔符
-        static let breadcrumbSeparator: String = " > "
-        /// 上下文前缀模板
-        static let contextPrefix: String = "[Context: "
-        /// 上下文后缀
-        static let contextSuffix: String = "]\n"
-        /// 默认分块大小
-        static let defaultChunkSize: Int = 1000
-        /// 默认重叠窗口
-        static let defaultChunkOverlap: Int = 200
-        /// 默认分隔符梯度
-        static let defaultSeparators: [String] = [
-            "\n# ", "\n## ", "\n### ", "\n#### ",
-            "\n\n", "\n", ". ", ". ", " ", ""
-        ]
     }
 
     // MARK: - 合成处理 (Synthesis)
