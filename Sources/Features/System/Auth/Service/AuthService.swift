@@ -36,6 +36,10 @@ public final class AuthService: AuthServiceProtocol {
     public var currentUser: User? {
         AuthSession.shared.currentUser
     }
+
+    /// 运营商 SDK 预取的手机掩码号（登录前展示，由 CarrierAuthStrategy.initializeSDK 写入）
+    /// 示例：`138****8888`；SDK 未就绪或非运营商登录场景时为 nil
+    public var carrierMaskedPhone: String?
     
     // MARK: - 单例与初始化
     

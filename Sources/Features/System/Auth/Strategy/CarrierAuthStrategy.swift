@@ -50,10 +50,31 @@ public final class CarrierAuthStrategy: AuthStrategy {
     private static var isInitialized = false
     // MARK: - 初始化
 
-    /// 初始化运营商 SDK（当前为 Mock 实现）
-    public static func initializeSDK(with _: String) {
+    /// 初始化运营商 SDK 并预取手机掩码号（当前为 Mock 实现）
+    /// - Parameter appKey: ATAuthSDK 应用密钥
+    /// 初始化成功后调用 SDK 预取接口将掩码号写入 `AuthService.shared.carrierMaskedPhone`，
+    /// 驱动 `AuthPhonePanel` 在用户点击登录之前即可展示真实号码。
+    public static func initializeSDK(with appKey: String) {
         // Mock implementation
         isInitialized = true
+
+        // 预取运营商掩码号：实际接入 ATAuthSDK 时替换为
+        //   TXCommonHandler.sharedInstance().getLoginToken(timeout:complete:)
+        // 并从回调的 resultDic[\"Number\"] 中解析掩码号写入。
+        // 当前 Mock：异步模拟网络延迟后写入占位掩码号。
+        Task { @MainActor in
+            // Mock：实际项目中此处调用 ATAuthSDK 预取接口并解析回调
+            let maskedPhone = await fetchCarrierMaskedPhone()
+            AuthService.shared.carrierMaskedPhone = maskedPhone
+        }
+    }
+
+    /// 从运营商 SDK 预取手机掩码号（Mock 实现）
+    /// 实际接入 ATAuthSDK 时，此处调用 TXCommonHandler 的预取 API 并解析 resultDic[\"Number\"]
+    private static func fetchCarrierMaskedPhone() async -> String? {
+        // Mock：返回 nil 表示 SDK 尚未能提供掩码号（视图层将展示占位符）
+        // 实际接入后应返回 ATAuthSDK 回调中的掩码号字符串
+        return nil
     }
 
     public init() {}

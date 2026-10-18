@@ -22,8 +22,8 @@ struct AuthPhonePanel: View {
 
     var body: some View {
         VStack(spacing: DesignTokens.Spacing.large) {
-            // 手机号掩码显示
-            Text(authService.currentUser?.phone?.maskedPhoneNumber ?? "180****6625")
+            // 手机号掩码显示：优先展示运营商 SDK 预取的掩码号，已登录后回退到 currentUser.phone
+            Text(authService.carrierMaskedPhone ?? authService.currentUser?.phone?.maskedPhoneNumber ?? L10n.Auth.phonePlaceholder)
                 .authHeroTextStyle()
 
             // 登录动作按钮
