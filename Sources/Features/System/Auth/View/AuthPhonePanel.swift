@@ -29,10 +29,10 @@ struct AuthPhonePanel: View {
             // 登录动作按钮
             actionButton
 
-            // 协议勾选
-            agreementSection
-
             Spacer().frame(height: DesignTokens.Spacing.large)
+
+            // 协议勾选（靠近卡片底部）
+            agreementSection
         }
         .padding(DesignTokens.Spacing.wide)
         .appContainer(cornerRadius: DesignTokens.Spacing.largeRadius)
