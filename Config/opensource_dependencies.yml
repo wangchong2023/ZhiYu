@@ -203,6 +203,7 @@ dependencies:
     integration: project_yml_path
     license: Apache-2.0
     purpose: "GoogleSignIn 传递依赖（OCMock 测试替身，本地 path 补丁）"
+    note: "本地补丁含两处：① 依赖经 GoogleSignIn-iOS/Package.swift 的 path 引入；② Package.swift target 的 exclude 移除了本 commit 不存在的 Carthage/ 与 OCMock/en.lproj/ 路径（消除 SwiftPM Invalid Exclude 告警）。"
 
   - name: promises
     upstream: "https://github.com/google/promises.git"
