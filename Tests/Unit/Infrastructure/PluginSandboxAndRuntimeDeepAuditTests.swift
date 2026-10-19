@@ -178,7 +178,8 @@ final class PluginSandboxAndRuntimeDeepAuditTests: XCTestCase {
     // MARK: - 3. JSContext 连接池硬化与全局污染清理
 
     func testPluginEnginePool_SandboxHardeningAndStateCleanup() {
-        let pool = PluginEnginePool.shared
+        // 使用独立池实例而非全局单例，避免进程内并行测试共享 PluginEnginePool.shared 时互相污染
+        let pool = PluginEnginePool()
 
         // 借出 context 并验证 eval / Function 禁用
         let ctx = pool.borrowContext()
